@@ -1,0 +1,330 @@
+# cw159, the chapel soap hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw159
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_kell_honeyfield
+written_by claude-codex-cw-2
+title the chapel soap hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk keeps_a_clear_path_to_the_exit
+likes honey_cakes wrestling quiet_chapel misty_dawns
+dislikes drizzle smoke
+fears a_fire_in_the_boiling_house a_prayer_spoken_without_action
+hopes a_tract_of_orchard_on_the_south_slope a_quiet_hour_in_the_chapel
+topics faith +0.5 work +0.4 home +0.3 pastimes +0.2
+styles comfort=direct gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# keeps the #exit# clear at the #boiling# #house#, seeks the empty #chapel#, and sketches a future #orchard#.
+
+words
+oath! = Bright One, guard the doorway | Ash and prayer
+saying! = A prayer ought to carry bread | Leave a clear way out
+chapel = chapel | quiet chapel
+prayer = prayer | spoken prayer
+prayers = prayers | evening prayers
+cross = cross | reed cross
+reed = reed | chapel reed
+lamp = lamp | chapel lamp
+bench = bench | plain bench
+door = door | open door
+exit = exit | clear exit
+path = path | open path
+house = house | shared house
+home = home | small home
+family = family | household
+spouse = spouse | dear spouse
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+bread = bread | fresh bread
+loaf = loaf | small loaf
+cake = cake | honey cake
+cakes = cakes | honey cakes
+honey = honey | thick honey
+plate = plate | supper plate
+table = table | kitchen table
+cup = cup | plain cup
+water = water | clear water
+soap = soap | plain soap
+bar = bar | soap bar
+bars = bars | drying bars
+pan = pan | boiling pan
+boil = boil | slow boil
+lye = lye | strong lye
+ash = ash | clean ash
+fire = fire | banked fire
+flame = flame | open flame
+smoke = smoke | dark smoke
+steam = steam | hot steam
+paddle = paddle | stirring paddle
+rack = rack | drying rack
+batch = batch | soap batch
+batches = batches | soap batches
+work = work | boiling work
+hand = hand | working hand
+hands = hands | sore hands
+wages = wages | small wages
+coin = coin | saved coin
+price = price | rising price
+shop = shop | town shop
+merchant = merchant | passing merchant
+city = city | Ridgemere
+road = road | High Road
+watch = watch | town watch
+green = green | village green
+bout = bout | wrestling bout
+grip = grip | steady grip
+mist = mist | lake mist
+dawn = dawn | misty dawn
+morning = morning | early morning
+drizzle = drizzle | thin drizzle
+rain = rain | cold rain
+lake = lake | Glasswater
+shore = shore | lakeshore
+orchard = orchard | hoped-for orchard
+tree = tree | fruit tree
+trees = trees | fruit trees
+root = root | young root
+roots = roots | young roots
+soil = soil | dark soil
+slope = slope | south slope
+spade = spade | digging spade
+field = field | open field
+day = day | long day
+hour = hour | quiet hour
+heat = heat | steady heat
+benches = benches | chapel benches
+oven = oven | small oven
+sun = sun | rising sun
+south = south | southern
+summer = summer | warm season
+boiling = boiling | soap boiling
+silence = silence | chapel silence
+evening = evening | late evening
+
+any
+opinion @1 church for 1 : I enter the #chapel# before the #work# begins. | I also carry #bread# when someone needs it.
+opinion @1 city against 1 : The #city# gives me #smoke# and no place to breathe. | I will keep to this #shore#.
+opinion @1 dole for 1 : If a neighbour cannot buy a #loaf#, the #plate# should go to them first. | I count that as the Bright One's #work#.
+opinion @1 drink against 1 : A second #cup# can make a gentle voice unkind. | Quiet company waits at the #chapel#.
+opinion @1 houses against 1 : Their doors stay shut to working #hands#. | A reed #cross# welcomes more folk.
+opinion @1 merchants against 2 : My #wages# will not follow the #price# of #bread#. | Someone with full shelves ought to notice.
+opinion @1 newcomers against 1 : New folk should learn who already needs #work#. | I would still feed a hungry #stranger#.
+opinion @1 festivals mixed 0 : I will watch a fair #bout# on the #green#. | I leave before the drinking.
+line @1 greet : #greet#. Keep the #exit# clear, please. | #greet#. I was about to stir the #pan#.
+line @2 greet [pair.band=friends|family] : There are #cakes# beside the #table# for you. | Come in; the #fire# is low.
+line @3 greet [here.time=dawn] : The #chapel# was empty when I went in. | #greet#. The #mist# has not lifted yet.
+line @1 greet.return : You returned while the #batch# was cooling. | The #chapel# is quiet now if you need it.
+line @1 kin.open [pair.kin!=no] : Come in and take some #bread#. | Sit where the #lamp# reaches.
+line @1 again.open : I was speaking about the #rack#. | Have you seen the #field# beyond the #shore#?
+line @1 farewell : #farewell#. I must bank the #fire#. | Leave the #path# to the #door# open.
+line @1 farewell.return : We can talk after #prayers# another #day#. | There will be #cakes# if I have #honey#.
+line @1 react.news : Say it plainly; I am listening. | Whose eyes were on it?
+line @1 react.news.new : Nobody under this roof brought me such word. | Who brought it along the #road#?
+line @1 react.news.known : I heard a little at the #shop#. | Your account gives it shape.
+line @1 react.news.doubt : I would ask whoever saw it. | The #watch# should check before speaking.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Once the #fire# is banked, I can give you my whole #hour#. | The #chapel# is open if you want quiet.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for #bread# on the #table#. | The Bright One will have my thanks tonight.
+line @1 answer.how : The #batch# has set and I found a quiet #hour#. | I ate a #cake# before the #morning# shift.
+line @1 answer.how.busy [self.working=yes] : The #lye# needs a careful #hand#. | I am turning the #paddle# until the #boil# settles.
+line @1 ask.how : Has the #road# treated you fairly? | Did you find a moment to rest?
+line @1 sympathise : I can light the #lamp# and remain nearby. | You need no words for this #hour#.
+line @1 reassure : The #fire# is banked; we are safe. | A broken #bar# can become a new #batch#.
+line @1 decline : The hot #pan# holds me here. | I will not walk into that #smoke#.
+line @1 accept_decline : I hear your answer. Let the matter rest. | Then the #rack# can have my attention.
+line @1 thank : You kept the #exit# clear when the #steam# rose. | That #loaf# helped more than you know.
+line @1 deflect_thanks : I only carried a #plate#. | Another #hand# would have done it.
+line @1 preclose : The #chapel# #lamp# will be lit soon. | I have #bars# to turn on the #rack#.
+line @1 tease [pair.band=friends] : You wrestle like a #paddle# tied to a #bench#. | Your #prayer# was shorter than your #bout#.
+line @1 ack : #bc_right#. The #flame# is low enough. | #bc_fair_enough#. We can take the #path#.
+line @1 give.advice : Test the #pan# #heat# before pouring #lye#. | Keep a clear #path# when carrying hot #soap#.
+line @1 warn [world.bandits=near] : Travel the #road# with company. | Leave the far #shore# until the #morning#.
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I go to the #chapel# while the #benches# are still empty. | My #prayer# sounds clearer without a crowd around it.
+b : Do you stay long? | Does anyone join you?
+a : Until the first #lamp# is lit. | A few, when #dawn# breaks.
+
+scene reed_cross
+when topic=faith
+does tell.self / react.self / assess
+a : A reed #cross# hangs beside the #chapel# #door#. | It bends in the #wind# but stays tied.
+b : Who made it? | Do you touch it?
+a : Someone patient. | Before difficult #work#.
+
+scene prayer_and_bread
+when topic=faith
+does tell.self / react.self / assess
+a : I believe a #prayer# should lead to a #loaf# when a #neighbour# is hungry. | Words alone leave the #table# bare.
+b : Do you bring bread? | Does the chapel help?
+a : When my #wages# allow it. | Some days more than others.
+
+scene open_exit
+when topic=work
+does tell.self / react.self / assess
+a : I move every #rack# away from the #exit# before we light the #fire#. | Hot #lye# leaves no time to move furniture.
+b : Has there been a fire? | Who checks the door?
+a : Not since I began checking. | I do.
+
+scene smoke_in_pan
+when topic=work
+does tell.self / react.self / assess
+a : Smoke over the #pan# means the #flame# is too high. | I pull the fuel apart before the #batch# takes the taste.
+b : Can soap taste of smoke? | Is that dangerous?
+a : It carries the smell. | The #fire# is the danger.
+
+scene sore_hands
+when topic=work
+does tell.self / react.self / assess
+a : Lye finds every cut on my #hands#. | I wrap them before lifting the #paddle#.
+b : Do you stop? | Does cloth help?
+a : When I must. | It keeps the worst away.
+
+scene honey_cakes
+when topic=food
+does tell.self / react.self / assess
+a : A #honey# #cake# is best while the middle is warm. | I set one aside for someone coming home late.
+b : Do you bake them? | Who gets the spare?
+a : When the #oven# is free. | Whoever needs it.
+
+scene fair_wrestling
+when topic=pastimes
+does tell.self / react.self / assess
+a : A wrestling #bout# should end the moment someone yields. | I like strength with a little mercy in it.
+b : Do you still compete? | Has anyone kept holding?
+a : On a dry #green#. | Once, and never with me again.
+
+scene mist_chapel
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : Mist makes the #chapel# #lamp# look farther away at #dawn#. | The #path# is still familiar beneath my feet.
+b : Can you find it? | Is the lake hidden?
+a : With my eyes half shut. | Until the #sun# rises.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : A thin #drizzle# wets my coat without washing the #smoke# away. | I would welcome honest #rain#.
+b : Do you stay outside? | Does it last?
+a : Only for the walk #home#. | Longer than I like.
+
+scene south_orchard
+when topic=home
+does tell.self / react.self / assess
+a : I have looked at the #south# #slope# beyond the #field#. | The #soil# there might hold a small #orchard#.
+b : Would you plant it? | What trees?
+a : If I can save the #coin#. | Fruit trees with deep #roots#.
+
+scene first_root
+when topic=pastimes
+does tell.self / react.self / assess
+a : I planted one #tree# on a day off to see whether the #soil# would take it. | I marked the #root# with a reed #cross#.
+b : Did it grow? | Why mark it?
+a : A little each #summer#. | So nobody steps on it.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : In a shared #house# I keep my #plate# beside the #door#. | The room fills quickly after the #work# ends.
+b : Do you eat together? | Is it loud?
+a : When everyone has #bread#. | Too loud for #prayers#.
+
+scene road_stranger
+when topic=travel
+does tell.self / react.self / assess
+a : A #stranger# asked the way to the #chapel# while I carried #soap# #bars#. | I gave directions and kept walking.
+b : Did they find it? | Why not go along?
+a : The #lamp# showed the way. | The #batch# needed tending.
+
+scene shop_price
+when topic=prices
+does tell.self / react.self / assess
+a : The #price# of a #loaf# rose while my #wages# stood still. | I counted what remained before buying #honey#.
+b : Did you buy the cakes? | Did you complain?
+a : A smaller piece. | To the #merchant# who marked it.
+
+scene fire_memory
+when topic=memories
+does tell.self / react.self / assess
+a : Once #steam# hid the #flame# rising beside a #pan#. | I saw it only because the #exit# was clear.
+b : Did anyone get hurt? | What did you do?
+a : No one was harmed. | I pulled the fuel away.
+
+scene quiet_bench
+when topic=faith
+does tell.self / react.self / assess
+a : One #bench# near the #chapel# wall stays empty until the #morning# prayers. | I sit there before anyone asks me to speak.
+b : Do you pray aloud? | Is it peaceful?
+a : Rarely. | Until the #door# opens.
+
+story open_door [topic=work self.age>=18]
+  : The #boiling# #house# filled with #steam# while a #rack# stood in the #exit#.
+  : I moved it before the next #pan# went over the #fire#.
+  ask : Was there trouble?
+  b : That was a careful choice.
+  : None that day, and I intend to keep it so.
+
+story chapel_loaf [topic=faith self.age>=18]
+  : I heard a #prayer# for the hungry while carrying a spare #loaf#.
+  : Afterward I left it with a #neighbour# who had missed #supper#.
+  ask : Did they know it was yours?
+  b : Bread answers quickly.
+  : They knew someone had remembered.
+
+story young_tree [topic=home self.age>=18]
+  : I put a young #tree# in dark #soil# on the #south# #slope#.
+  : The #wind# bent it, so I tied a reed beside the #root#.
+  ask : Is it standing?
+  b : A beginning for your orchard.
+  : Through two winters now.
+
+rule @bark_exit
+when concept=bark
+does aside
+cooldown 8h
+say Clear the #exit# before the #fire# grows. | That #rack# belongs against the wall.
+
+rule @bark_chapel
+when concept=bark
+does aside
+cooldown 9h
+say The #chapel# is quiet at #dawn#. | A #prayer# needs a little #silence#.
+
+rule @bark_cake
+when concept=bark
+does aside
+cooldown 10h
+say One #honey# #cake# remains. | I put the better #plate# aside.
+
+rule @bark_rain
+when concept=bark
+does aside
+cooldown 11h
+say This #drizzle# will not wash the #smoke# away. | Give me proper #rain#.
+
+dlg @1 resident.hub : #greet#. Keep the #door# clear while the #pan# is hot. | #greet#. The #chapel# #lamp# was still burning when I left.
+dlg @2 resident.hub [topic.meeting=known] : You know where the #rack# stands now. | Back again? I saved a #cake#.
+dlg @1 resident.job : I tend #soap# at the boiling #house#. | A safe #exit# matters as much as a steady #fire#.
+dlg @1 resident.bye : #farewell#. The #pan# needs its #paddle#. | #saying.capitalize#. May your #road# be clear.
+graft resident.hub
+choice Why keep the exit clear? -> exit
+node exit
+say Lye and #fire# are both quick. I leave a clear #path# so every worker can get out if the #pan# turns.
+free
+choice Is the chapel open? -> chapel
+choice Goodbye. -> bye
+node chapel
+say The #chapel# is quiet at #dawn#. There is a #bench# and a reed #cross# by the #door#.
+choice Back to the pan. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #fire# is low enough now. | #greet#. I came from the #chapel# at #dawn#.
+line @1 farewell : #farewell#. I check the open #path# through the #exit#. | The #rack# will be ready by #morning#.

@@ -1,0 +1,296 @@
+# cw135, the lark's answer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw135
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_juniper_larkcombe
+written_by claude-codex-cw-2
+title the lark's answer
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=plain warmth=cold humour=dry honesty=guarded piety=ordinary drive=steady
+quirk whistles_back_at_the_larks
+likes barley_soup riddles festival_bells frosty_mornings
+dislikes wet_floors bad_manners
+fears a_farm_just_out_of_reach a_lamb_lost_in_first_frost
+hopes a_small_farm_to_share a_dry_barn_and_clear_morning
+topics work +0.5 dreams +0.4 weather +0.3 pastimes +0.3 gossip -0.5
+styles comfort=practical gossip=guarded refuse=terse tease=dry
+marks oath saying
+persona #self.first# whistles back at the #larks#, guards a plan for a small #farm#, and counts #sheep# before the #bells#.
+
+words
+oath! = Lark and lamb | By the frost on the gate
+saying! = A whistle won't mend a fence | Count the flock before the bells
+lark = lark | field lark
+larks = larks | field larks
+whistle = whistle | short whistle
+song = song | bird song
+sheep = sheep | flock
+flock = flock | sheep
+lamb = lamb | young lamb
+lambs = lambs | young lambs
+ewe = ewe | mother ewe
+wool = wool | fleece
+fleece = fleece | shorn fleece
+shears = shears | shearing blades
+barn = barn | shearing barn
+gate = gate | pasture gate
+fence = fence | field fence
+fences = fences | field fences
+field = field | grazing field
+grass = grass | pasture
+hill = hill | high hill
+frost = frost | morning frost
+snow = snow | first snow
+floor = floor | barn floor
+plank = plank | floor plank
+straw = straw | clean straw
+soup = soup | barley soup
+barley = barley | barley grain
+pot = pot | soup pot
+spoon = spoon | wooden spoon
+riddle = riddle | puzzle
+answer = answer | answer
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | town festival
+farm = farm | small farm
+acre = acre | patch of land
+soil = soil | dark soil
+seed = seed | grain seed
+coin = coin | saved penny
+price = price | asking price
+market = market | market square
+city = city | Ridgemere
+road = road | High Road
+lake = lake | Glasswater
+home = home | cottage
+hand = hand | working hand
+boots = boots | work boots
+boot = boot | work boot
+count = count | tally
+sun = sun | morning sun
+manners = manners | courtesy
+
+any
+opinion @1 city against 1 : The #city# has no room for a #lark# to finish its #song#. | A quiet #field# lets me hear my own thoughts.
+opinion @1 dole against 1 : I want a paid #acre# to work more than a place in a queue. | A full #pot# is better earned with a steady #hand#.
+opinion @1 houses against 1 : Their #fences# run past land I could work myself. | I shear their #sheep# without seeing who owns them.
+opinion @1 merchants against 1 : They remember the #price# of #wool# and forget the hours with the #shears#. | I count the #coin# before leaving the #market#.
+opinion @1 strangers against 2 : An unknown face can speak to me at the #gate#. | My #home# remains closed until I trust them.
+opinion @1 festivals mixed 0 : The #bells# carry across the #field# nicely. | I leave before the crowd tramples the #grass#.
+opinion @1 newcomers mixed 0 : A new shepherd may keep a good #flock#. | First I watch how they handle a frightened #lamb#.
+opinion @1 road mixed 0 : The #road# could take me to a cheaper #acre#. | It also takes the #coin# I need for one.
+
+grown
+line @1 greet : #greet#. Was that you or the #lark#? | #greet#. Keep to the dry #plank#.
+line @2 greet [self.working=yes] : I am counting #sheep#; talk between numbers. | Wait while I set these #shears# down.
+line @3 greet [pair.band=friends|family] : The #pot# holds enough #soup# for another bowl. | Let me try a new #riddle# on you.
+line @4 greet [here.time=dawn] : The #larks# started before the #flock#. | #greet#. #frost.capitalize# coats the #gate# this morning.
+line @1 greet.return : #welcome_back#. I found your #riddle# too easy. | The #sheep# have moved to the high #field#.
+line @1 kin.open [pair.kin!=no] : Come in; take the clean side of the #floor#. | I have kept a #spoon# for you.
+line @1 again.open : We left the #fence# half discussed. | Have you brought a better #answer#?
+line @1 farewell : #farewell#. Mind the #gate# latch. | #saying.capitalize#. I must bring the #flock# in.
+line @1 farewell.return : Come when the #bells# are ringing. | I may have another #riddle# then.
+line @1 react.news : I will hear the facts without the market chatter. | My #shears# can wait until you finish.
+line @1 react.news.new : That is a new matter to this #barn#. | Where did you hear it?
+line @1 react.news.known : A traveller gave me another account by the #road#. | This sounds different from the first telling.
+line @1 react.news.doubt : #hedge#, who can check that account? | A tale can cross a #field# without leaving tracks.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit where the #barn# is warm. | You may leave the #flock# to us while you speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the #bells#, I suppose. | Good. I hope the new day starts kindly for them.
+line @1 answer.how : The #flock# is whole. So am I. | I am thinking about the #farm# I mean to have.
+line @1 answer.how.busy [self.working=yes] : More #wool# to sort than hands to sort it. | The #lambs# have found a gap by the #fence#.
+line @1 ask.how : Did you stay warm this morning? | Have you had #soup#?
+line @1 sympathise : I can make room by the #pot#. | Say it once; I will not pass it along.
+line @1 reassure : We can fix the #fence# after the #flock# is safe. | A missed #bell# is no loss beside that.
+line @1 decline : No. I need this #coin# for land. | The #sheep# cannot be left by that #gate#.
+line @1 accept_decline : I understand; that is your answer. | Then I shall put the matter down.
+line @1 thank : You caught the #lamb# before it reached the #road#. | I saw the work you did; thank you.
+line @1 deflect_thanks : The #gate# was close to hand. | I only stirred the #soup#.
+line @1 preclose : I need a final #count# of the #sheep#. | The #barn# wants closing before dusk.
+line @1 tease [pair.band=friends] : That #riddle# had more holes than the #fence#. | The #lark# could teach you a cleaner note.
+line @1 ack : #bc_right#. I will check the #plank#. | #bc_fair_enough#. The #flock# can wait.
+line @1 give.advice : Test a #floor# before carrying a #fleece# across it. | Give a nervous #ewe# space at the #gate#.
+line @1 warn [world.bandits=near] : Keep clear of the lonely #road# tonight. | Put your #coin# inside your #boots# if you must travel.
+scene lark_reply
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #lark# whistles from the fence post and I answer once. | It calls again as if my note were wrong.
+b : Does it recognize you? | Can you copy the song?
+a : It knows a fool will reply. | The first few notes.
+
+scene morning_frost
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : #frost.capitalize# makes the #field# sound different under my #boots#. | I look for the #lambs# before the #sun# warms the #grass#.
+b : Do they shelter together? | Is the ground dangerous?
+a : Around the #ewe#. | The wet #plank# becomes slick.
+
+scene barley_soup
+when topic=food
+does tell.self / react.self / assess
+a : A #pot# of #barley# #soup# waits better than any feast. | I keep a #spoon# beside the fire after a cold shift.
+b : Do you make it thick? | Do you share it?
+a : Thick enough to stand the #spoon#. | When the visitor has manners.
+
+scene riddle_gate
+when topic=pastimes
+does tell.self / react.self / assess
+a : I ask a #riddle# while we repair the #gate#. | The right #answer# never comes from the one holding the hammer.
+b : Does that help the work? | What is the riddle?
+a : It keeps us awake. | Ask me when the #fence# is finished.
+
+scene festival_bells
+when topic=festival
+does tell.self / react.self / assess
+a : The #bells# arrive at the #barn# before the festival crowd. | I like the sound best while the #field# is empty.
+b : Do you follow the #bells# to town? | Do the sheep startle?
+a : After the #flock# is safe. | They lift their heads.
+
+scene wet_floor
+when topic=work
+does tell.self / react.self / assess
+a : A wet #floor# can send a #fleece# sliding underfoot. | I put down a dry #plank# before bringing the #sheep# in.
+b : Has someone fallen? | Can you fix the leak?
+a : I nearly did. | The roof wants another board.
+
+scene shearing_steady
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #shears# level while a #ewe# settles. | A rushed cut marks the #wool# and frightens the animal.
+b : Do you work quickly? | Who holds the ewe?
+a : Quickly enough after it calms. | A steady #hand#.
+
+scene lost_lamb
+when topic=work
+does tell.self / react.self / assess
+a : The #lambs# pass my #gate# first, before the older #sheep#. | A small one can vanish behind the last rise of the #hill#.
+b : Have you searched there? | How do you find one?
+a : More than once. | I listen for its call.
+
+scene fence_gap
+when topic=work
+does tell.self / react.self / assess
+a : A gap in the #fence# looks smaller without a #lamb# squeezing through it. | I test the bottom rail with my #boot#.
+b : Does it move? | Who mends it?
+a : If it does, I mark it. | I do, after the #count#.
+
+scene wool_price
+when topic=prices
+does tell.self / react.self / assess
+a : The #market# weighs our #wool# as if the morning work weighed nothing. | I ask the merchant to name the #price# before untying a #fleece#.
+b : Do they bargain? | Is that price enough?
+a : When they think I will tire. | Not for a #farm# yet.
+
+scene farm_plan
+when topic=dreams
+does tell.self / react.self / assess
+a : I want an #acre# that answers to my own #gate#. | A small #farm# would give this #flock# a place to stay.
+b : Where would you buy? | Is there enough coin?
+a : Somewhere the #soil# drains. | Not yet.
+
+scene seed_row
+when topic=dreams
+does tell.self / react.self / assess
+a : I have planned a row of #barley# on ground I do not own. | A plan costs nothing until the #seed# goes in.
+b : Will you keep sheep too? | Does your spouse know?
+a : A few, if the land holds. | We speak of it at #home#.
+
+scene spouse_farm
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# knows the #farm# I sketch with words. | We disagree about the size of the #barn#, then laugh.
+b : Who wants it bigger? | Would you leave this work?
+a : I do, naturally. | When we can pay for land.
+
+scene bad_manners
+when topic=family
+does tell.self / react.self / assess
+a : I notice how a visitor treats the person sweeping the #floor#. | Bad #manners# at supper tell me to keep my door closed.
+b : Do you say so? | Do you give second chances?
+a : When I must. | If they mend it.
+
+scene home_soup
+when topic=family
+does tell.self / react.self / assess
+a : I keep #soup# warm for anyone late from the #field#. | A small #home# can still hold a large #pot#.
+b : Is it crowded? | Do you cook often?
+a : At supper. | Whenever I can.
+
+scene straw_winter
+when topic=work here.season=winter
+does tell.self / react.self / assess
+a : I lay fresh #straw# before bringing the #lambs# into the #barn#. | A dry bed matters more than a pretty #fence#.
+b : Do you have enough? | Does the frost last?
+a : I count the bundles. | Longer than I like.
+
+scene field_whistle
+when topic=work
+does tell.self / react.self / assess
+a : I whistle to move the #flock# around the bend. | The #larks# whistle back and confuse a young #lamb#.
+b : Do the sheep know your call? | Do you change it?
+a : The older ones do. | Only when the #wind# carries it poorly.
+
+story first_riddle [topic=pastimes self.age>=25]
+  : I asked a #riddle# while mending the #fence# with another shepherd.
+  : The #lark# sang over the answer and I had to ask again.
+  ask : Did they solve it?
+  b : The bird wanted a turn.
+  : Eventually. We had finished the rail by then.
+
+story frost_lamb [topic=work self.age>=25]
+  : My #count# came short on a frosty morning.
+  : One #lamb# had curled behind the #gate# where the #straw# blew against it.
+  ask : Was it warm enough?
+  b : The count found it in time.
+  : I carried it into the #barn# beside its #ewe#.
+
+story imagined_acre [topic=dreams self.age>=25]
+  : I once walked a vacant #acre# and imagined where the #gate# would stand.
+  : The owner named a #price# beyond my saved #coin#.
+  ask : Did you give up?
+  b : That must have stung.
+  : I learned how much more I need to put aside.
+
+rule @bark_lark
+when concept=bark
+does aside
+cooldown 8h
+say That #lark# has copied me again. | My #whistle# was better than yours.
+
+rule @bark_flock
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One #lamb# behind the #gate#. | Count them again before the #hill#.
+
+rule @bark_soup
+when concept=bark
+does aside
+cooldown 10h
+say The #soup# will need stirring. | I saved a #spoon# for supper.
+
+rule @bark_frost
+when concept=bark here.season=winter
+does aside
+cooldown 12h
+say The #floor# will be slick by dawn. | Another bundle of #straw# for the #lambs#.
+
+dlg @1 resident.hub : #greet#. Leave room for the #sheep# at the #gate#. | #greet#. Speak between the #larks#' calls.
+dlg @2 resident.hub [topic.meeting=known] : You have returned; I found a new #riddle#. | I remember you. The #flock# is counted now.
+dlg @1 resident.job : I herd #sheep# at #self.workplace# and help with the #shears#. | I mend the #fence#, count #lambs#, and keep the #floor# dry.
+dlg @1 resident.bye : #farewell#. I have to bring the #flock# down. | #saying.capitalize#. Close the #gate# after you.
+graft resident.hub
+choice Why whistle at the larks? -> larks
+node larks
+say They answer with more confidence than most people. I am still trying to get one note right.
+free
+choice Will you have your own farm? -> farm
+choice Back to the flock. -> hub
+node farm
+say I mean to, when the #coin# catches up with the #acre# I can picture.
+choice Back to the flock. -> hub
+choice Goodbye. -> bye

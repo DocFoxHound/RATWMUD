@@ -1,0 +1,297 @@
+# cw142, the warm loaf saying (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw142
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_oriel_blossomby
+written_by claude-codex-cw-2
+title the warm loaf saying
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk sings_old_sayings_while_stacking_apples
+likes warm_bread singing market_bustle first_warm_day
+dislikes stale_bread early_bells
+fears a_winter_without_work forgetting_the_road_that_brought_her_home
+hopes a_full_table_after_each_harvest a_song_shared_across_the_market
+topics work +0.4 food +0.4 memories +0.3 festival +0.3 gossip -0.3
+styles comfort=warm gossip=reluctant refuse=plain tease=gentle
+marks oath saying
+persona #self.first# sings while stacking #apples#, quotes #sayings# over warm #bread#, and remembers arriving with an empty #purse#.
+
+words
+oath! = Loaf and leaf | Bright One warm the table
+saying! = The warm loaf makes room for another | A road ends where the hands begin
+sayings = sayings | old sayings
+apple = apple | orchard apple
+apples = apples | orchard fruit
+orchard = orchard | apple ground
+tree = tree | apple tree
+trees = trees | orchard trees
+branch = branch | bough
+blossom = blossom | spring bloom
+row = row | planted row
+rows = rows | planted rows
+ladder = ladder | picking ladder
+basket = basket | picking basket
+baskets = baskets | picking baskets
+crate = crate | fruit crate
+crates = crates | fruit crates
+store = store | apple store
+shelf = shelf | store shelf
+shelves = shelves | store shelves
+market = market | market square
+stall = stall | market stall
+buyer = buyer | visiting buyer
+price = price | asking price
+coin = coin | pay
+purse = purse | small purse
+bread = bread | warm bread
+loaf = loaf | oven loaf
+crust = crust | crisp crust
+oven = oven | baker's oven
+table = table | supper table
+meal = meal | warm meal
+song = song | familiar song
+songs = songs | familiar songs
+sing = sing | sing softly
+voice = voice | singing voice
+bell = bell | early bell
+bells = bells | early bells
+spring = spring | warm spring
+sun = sun | morning sun
+road = road | High Road
+city = city | Ridgemere
+lake = lake | Glasswater
+chapel = chapel | small chapel
+prayer = prayer | quiet prayer
+home = home | cottage
+hand = hand | working hand
+hands = hands | working hands
+friend = friend | trusted friend
+birds = birds | orchard birds
+mark = mark | ink mark
+name = name | given name
+harvest = harvest | apple crop
+
+any
+opinion @1 church for 1 : The Bright One heard me when I came by the #road# with little else. | I offer a #prayer# before a full #table#.
+opinion @1 dole for 1 : Feed the hungry before you ask how they got there. | A spare #loaf# does more good than a hard speech.
+opinion @1 drink against 1 : Strong drink can empty a #table# of peace. | I have seen a #song# turn sour after too many cups.
+opinion @1 festivals for 1 : A crowded #market# sounds like a hundred #songs# starting at once. | I join the singing after the last #crate# goes into the #store#.
+opinion @1 houses against 1 : Their doors stayed shut when I had an empty #purse#. | A good #hand# should not wait outside for an invitation to work.
+opinion @1 merchants against 2 : The #bread# #price# has climbed while our picking pay stands still. | I ask the #buyer# what the orchard work is worth to them.
+opinion @1 newcomers against 1 : A new worker can take a #row# I was counting on. | I still show them the safe side of the #ladder#.
+opinion @1 city against 1 : I heard plenty of #city# promises on the #road#. | A known #orchard# makes better sense to me.
+opinion @1 times against 1 : #bread.capitalize# takes more #coin# each week. | I work a full day and keep a close eye on the #purse#.
+
+grown
+line @1 greet : #greet#. I have a #song# in my head; speak over it. | #greet#. These #apples# are ready for the #store#.
+line @2 greet [self.working=yes] : Speak beside the #crate# as we carry it. | My answer can come after I fill this #basket#.
+line @3 greet [pair.band=friends|family] : I kept a warm #loaf# for you. | Do you remember the next verse of this #song#?
+line @4 greet [here.time=dawn] : The #bells# began before I finished my #prayer#. | #greet#. The first #row# is in shade.
+line @1 greet.return : #welcome_back#. The #crates# have changed places. | I have another #saying# for you.
+line @1 kin.open [pair.kin!=no] : Come to the #table#; the #bread# is warm. | I will put a #meal# beside your seat.
+line @1 again.open : We were halfway through that #song#. | Did you return for the #apples#?
+line @1 farewell : #farewell#. Take a #loaf# for the #road#. | #saying.capitalize#. I must close the #store#.
+line @1 farewell.return : Next time I may know another verse. | We can speak when the #market# is quieter.
+line @1 react.news : Tell me what happened before I make a #song# of it. | Let me rest this #crate# so I can listen.
+line @1 react.news.new : That has not been sung through this #store# yet. | Who brought the word to the #market#?
+line @1 react.news.known : I heard one line of it earlier. | Your account makes the whole tune clearer.
+line @1 react.news.doubt : #hedge#, who stood there and saw it? | A #song# can change each time it is sung.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. No #song# will fix that today. | Sit at the #table#; I will bring #bread#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a full #song# at supper. | The Bright One has given us a bright thing to share.
+line @1 answer.how : The #crates# are full and I am content. | I am thinking of the #road# that brought me here.
+line @1 answer.how.busy [self.working=yes] : I have #apples# to pick and #crates# to stack. | The #store# will be crowded by noon.
+line @1 ask.how : Have you eaten warm #bread# today? | Did the #road# bring you safely?
+line @1 sympathise : We can sit without a #song# until you are ready. | I will listen and keep the #oven# warm.
+line @1 reassure : We can bring a #loaf# to this empty #table# first. | The next #row# may bring sound fruit.
+line @1 decline : The #store# has a #buyer# I promised to serve now. | No; that #price# will not feed the pickers.
+line @1 accept_decline : I hear your choice. | We can put that #crate# aside.
+line @1 thank : My tired #hand# is grateful for the #basket# you carried. | The #store# got through the rush because you helped.
+line @1 deflect_thanks : There was an extra #loaf#. | The #song# belonged to everyone.
+line @1 preclose : The #shelves# need checking before night. | I want to finish the last #row#.
+line @1 ack : #bc_right#. The #crate# stays here. | #bc_fair_enough#. I know the tune.
+line @1 give.advice : Leave the bruised #apples# for the #oven#. | Keep a #loaf# dry on the #road#.
+line @1 warn [world.bandits=near] : Go with the #market# carts after dark. | Keep your #purse# close by the #road#.
+scene old_saying
+when topic=memories
+does tell.self / react.self / assess
+a : An old #saying# comes to me before a new answer does. | I learned them beside a warm #oven#.
+b : Are they always useful? | Who taught you?
+a : Some are; the rest make people smile. | More than one elder.
+
+scene warm_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A #loaf# warm from the #oven# needs little beside it. | I pull the #crust# apart before supper.
+b : Do you bake it? | Who gets the first piece?
+a : When the #store# is shut. | Whoever came home cold.
+
+scene stale_bread
+when topic=food
+does tell.self / react.self / assess
+a : Stale #bread# can be warmed again, but it will never sing like a fresh #loaf#. | I soak a hard #crust# for a thin #meal#.
+b : Do you dislike it that much? | Do you waste any?
+a : I eat what we have. | Not while someone can still make a #meal# of it.
+
+scene market_song
+when topic=festival
+does tell.self / react.self / assess
+a : I sing while the #market# is busiest. | Someone at the next #stall# usually finds the next verse.
+b : Do buyers listen? | Does the crowd join?
+a : Some stop. | By midday, often.
+
+scene wrong_verse
+when topic=pastimes
+does tell.self / react.self / assess
+a : I learned a #song# with the middle verse wrong. | Friends have corrected me for years and I still sing the old line.
+b : Why keep it? | Do they laugh?
+a : It reminds me who taught it. | Kindly.
+
+scene first_warm_day
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : The first warm day makes the #orchard# smell of new #blossom#. | I carry the #basket# without a heavy coat.
+b : Do you work longer? | Does the blossom last?
+a : Until the light goes. | If no frost follows.
+
+scene early_bell
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# before dawn breaks the best part of sleep. | Let the #birds# in the #trees# wake me instead.
+b : Do you rise anyway? | Does it ring every day?
+a : The #row# waits. | Often enough.
+
+scene apple_ladder
+when topic=work
+does tell.self / react.self / assess
+a : I put the #ladder# against a firm #branch# before climbing. | I hand the #basket# down rather than carry it on the rungs.
+b : Is that safer? | Who takes it?
+a : For my knees, yes. | A worker below.
+
+scene sorting_crates
+when topic=work
+does tell.self / react.self / assess
+a : I separate the small #apples# from those ready for the #market#. | Each #crate# gets a clear #mark#.
+b : Do the small ones sell? | Who marks them?
+a : Some go to the #oven#. | I do before closing.
+
+scene store_shelf
+when topic=work
+does tell.self / react.self / assess
+a : The #shelf# nearest the door takes fruit for today's buyers. | I move older #crates# forward before they soften.
+b : Do you lose much? | Do you count them?
+a : Less when I check. | Each morning.
+
+scene market_bustle
+when topic=work
+does tell.self / react.self / assess
+a : A busy #market# tells me what people will cook tonight. | I hear #bread# sellers and fruit buyers calling across one another.
+b : Do you enjoy it? | Is it hard to hear?
+a : After a quiet week. | I learned to listen for my own #name#.
+
+scene road_arrival
+when topic=memories
+does tell.self / react.self / assess
+a : As a young traveller, I reached this #road# with little in my #purse#. | The #orchard# gave me work before it gave me a #home#.
+b : Were you frightened? | Who welcomed you?
+a : I was. | Someone who needed another #hand#.
+
+scene built_home
+when topic=memories
+does tell.self / react.self / assess
+a : I am proud of the #table# we can fill now. | I remember when a single #loaf# had to stretch through two days.
+b : Do you tell others? | Has it changed you?
+a : Quietly. | I think about who needs a place.
+
+scene spouse_song
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# knows the old #song# that follows me into the #store#. | We try to finish the last verse together at #home#.
+b : Who sings louder? | Is it a good tune?
+a : I do when I forget myself. | Good enough to keep.
+
+scene chapel_prayer
+when topic=family
+does tell.self / react.self / assess
+a : I offer a #prayer# when the #store# closes safely. | A warm #meal# is reason enough to thank the Bright One.
+b : Is the #chapel# where you pray? | Is it a spoken prayer?
+a : When I can. | Softly.
+
+scene price_of_bread
+when topic=prices
+does tell.self / react.self / assess
+a : I note the #bread# #price# before promising a #loaf# to anyone. | A good #harvest# should mean more food for its workers.
+b : Is the price fair? | Do you speak to merchants?
+a : Not lately. | When I know the numbers.
+
+scene shared_supper
+when topic=family
+does tell.self / react.self / assess
+a : There is always room for another voice at our #table#. | I cut the #loaf# after everyone has sat.
+b : Do you have enough? | Is supper noisy?
+a : We make enough. | Pleasantly.
+
+story empty_purse [topic=memories self.age>=25]
+  : I reached town by the #road# with an almost empty #purse#.
+  : An #orchard# needed a worker and I took the #basket# that was offered.
+  ask : Did you mean to stay?
+  b : Work gave you a beginning.
+  : At first I meant one season. Then I found a #home#.
+
+story market_chorus [topic=pastimes self.age>=25]
+  : I began a #song# while stacking #crates# at the #market#.
+  : A voice from another #stall# gave me the verse I had forgotten.
+  ask : Did you know the singer?
+  b : The market joined the tune.
+  : Not then. We know each other now.
+
+story first_loaf [topic=food self.age>=25]
+  : I bought a warm #loaf# with the first full pay I carried home.
+  : I placed the warm #loaf# in the middle of our #table# and waited for everyone.
+  ask : Did it last?
+  b : That loaf meant more than supper.
+  : Only through the meal, and it was enough.
+
+rule @bark_song
+when concept=bark
+does aside
+cooldown 8h
+say I have lost the next verse again. | Someone at the #market# will know it.
+
+rule @bark_crates
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more #crate# for the #store#. | The small #apples# go on this #shelf#.
+
+rule @bark_bread
+when concept=bark
+does aside
+cooldown 10h
+say A warm #loaf# would do nicely now. | I should leave #bread# for the late workers.
+
+rule @bark_spring
+when concept=bark here.season=spring
+does aside
+cooldown 11h
+say The #blossom# smells warm today. | We may have the first fine day.
+
+dlg @1 resident.hub : #greet#. I was singing to the #crates#. | #greet#. Come see the #apples# we picked.
+dlg @2 resident.hub [topic.meeting=known] : Back again? I have remembered the next verse. | I know you; the #store# has filled since morning.
+dlg @1 resident.job : I pick #apples# for #self.workplace# and stack the #crates#. | I work the #rows#, carry #baskets#, and sort fruit for the #market#.
+dlg @1 resident.bye : #farewell#. Take a warm #loaf# if you need it. | #saying.capitalize#. I must finish this #row#.
+graft resident.hub
+choice What song were you singing? -> song
+node song
+say An old one from the #road#. I keep forgetting the middle verse and remembering the people who taught it.
+free
+choice Did you always live here? -> road
+choice Back to the apples. -> hub
+node road
+say I arrived young with almost no #coin#. The #orchard# gave me work and time to build a #home#.
+choice Back to the apples. -> hub
+choice Goodbye. -> bye

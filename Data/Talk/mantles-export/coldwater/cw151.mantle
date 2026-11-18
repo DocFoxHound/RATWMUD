@@ -1,0 +1,329 @@
+# cw151, the map marcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw151
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_cairn_downfield
+written_by claude-codex-cw-2
+title the map marcher
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes fried_fish whittling old_maps frosty_mornings
+dislikes crowds smoke
+fears a_lamb_lost_beyond_the_fold a_map_that_leads_a_friend_astray
+hopes a_small_farm_of_one_own a_complete_map_of_the_downs
+topics home +0.4 pastimes +0.4 family +0.3 weather +0.3 food +0.2
+styles comfort=gentle gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# hums a #march# while tending the #fold#, corrects old #maps# in pencil, and imagines a little #farm# of familiar fields.
+
+words
+oath! = Map and morning | By the quiet fold
+saying! = The road is wider on paper | Hum the way home
+march = march | old march
+song = song | marching song
+tune = tune | remembered tune
+hum = hum | low hum
+beat = beat | walking beat
+map = map | old map
+maps = maps | old maps
+line = line | drawn line
+lines = lines | drawn lines
+mark = mark | pencil mark
+pencil = pencil | short pencil
+paper = paper | folded paper
+road = road | High Road
+roads = roads | drawn roads
+path = path | down path
+turn = turn | wrong turn
+hill = hill | grassy hill
+hills = hills | grassy hills
+field = field | open field
+fields = fields | open fields
+farm = farm | small farm
+fold = fold | sheep fold
+gate = gate | fold gate
+fence = fence | low fence
+sheep = sheep | grazing sheep
+lamb = lamb | young lamb
+lambs = lambs | young lambs
+wool = wool | soft wool
+grass = grass | wet grass
+hay = hay | dry hay
+bucket = bucket | water bucket
+chores = chores | farm chores
+home = home | farmhouse
+house = house | family house
+family = family | household
+friend = friend | close friend
+stranger = stranger | new face
+roof = roof | sound roof
+fire = fire | hearth fire
+wood = wood | carving wood
+chip = chip | wood chip
+chips = chips | wood chips
+knife = knife | small knife
+figure = figure | carved figure
+fish = fish | fried fish
+butter = butter | warm butter
+pan = pan | frying pan
+plate = plate | supper plate
+bread = bread | loaf
+frost = frost | morning frost
+morning = morning | early morning
+summer = summer | warm season
+winter = winter | cold season
+wind = wind | hill wind
+rain = rain | shower
+sky = sky | open sky
+sun = sun | rising sun
+lake = lake | Glasswater
+water = water | clear water
+shore = shore | lakeshore
+market = market | busy market
+stall = stall | market stall
+crowd = crowd | packed crowd
+smoke = smoke | cooking smoke
+bell = bell | chapel bell
+festival = festival | feast day
+night = night | dark hour
+day = day | clear day
+hour = hour | long hour
+hand = hand | steady hand
+hands = hands | steady hands
+steps = steps | steady steps
+boot = boot | work boot
+boots = boots | work boots
+
+any
+opinion @1 dole for 1 : A hungry #lamb# gets feed; a hungry neighbour deserves #bread#. | We can share supper when the #farm# has enough.
+opinion @1 festivals for 1 : I like the #song# and a sweet after supper. | A #festival# means the #fold# chores end early.
+opinion @1 newcomers for 1 : A new #friend# can follow the #path# with me. | I will show a visitor where the #gate# opens.
+opinion @1 strangers for 1 : A #stranger# may be lost on these #hills#. | I would offer the #map# before letting someone wander farther.
+opinion @1 road mixed 0 : The #road# looks straight on #paper# and bends in the real #fields#. | I want to learn both versions.
+opinion @1 city mixed 0 : A big city must have more #roads# than my #map# can hold. | I still like the #fold# where I know every #gate#.
+opinion @1 times mixed 0 : We have a #roof#, #fish# for supper, and work to do. | I hope the #lambs# have a good season.
+line @1 greet : #greet#. I drew the #hill# in the wrong place again. | #greet#. The #lambs# are near the #fold#.
+line @2 greet [pair.band=friends|family] : I marked a new bend on the #map# for you. | My carved #figure# is on the shelf near the #fire#.
+line @3 greet [here.time=dawn] : The #frost# is bright on the #fence#. | The #bell# rang while the #sheep# were still quiet.
+line @1 greet.return : I found the turn I missed on the #map#. | #welcome_back#. The #lambs# have moved uphill.
+line @1 kin.open [pair.kin!=no] : We have a warm #pan# inside. | Your #boots# can stay by the #fire#.
+line @1 again.open : We were tracing the #path# across this #field#. | My #tune# is still missing its last part.
+line @1 farewell : #farewell#. I must close the #fold# #gate#. | #saying.capitalize#. The #map# can wait.
+line @1 farewell.return : Tell me where your #road# goes next. | I will finish this #figure# when you return.
+line @1 react.news : I will stop humming and listen. | Which #path# did it happen on?
+line @1 react.news.new : The #fold# has been quiet about that. | Who brought it over the #hill#?
+line @1 react.news.known : I caught a little of that at supper. | That tells me where the story turned.
+line @1 react.news.doubt : A #map# can put a #hill# where there is none. | I would ask someone who stood there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That sounds painful. I can stay nearby. | Shall I bring a #plate# from #home#?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will remember the happy part. | May the #bell# ring for them.
+line @1 answer.how : I have done my #chores# and eaten #fish#. | The #frost# made the #hills# look new.
+line @1 answer.how.busy [self.working=yes] : I am carrying a #bucket# to the #fold#. | The #lambs# need fresh #hay#.
+line @1 ask.how : Did your journey stay on the right #path#? | Is everyone at your #home# well?
+line @1 sympathise : Walk beside me; I can listen all the way back to the #fold#. | The #fire# is warm and there is a quiet chair.
+line @1 reassure : We can trace the #road# together before setting out. | A #lamb# can find its way back with help.
+line @1 decline : I should not leave the #fold# open. | No, that #path# goes too far after dark.
+line @1 accept_decline : All right. I can ask another time. | Then we will stay closer to #home#.
+line @1 thank : You held the #map# flat against the #wind#. | That helped me bring the #lamb# inside.
+line @1 deflect_thanks : I already knew the #gate# needed closing. | There was room on my #plate#.
+line @1 preclose : The #sheep# are coming back to the #fold#. | I have a #figure# to put away safely.
+line @1 tease [pair.band=friends] : Your #map# puts the #lake# above the #hill#. | Your #tune# has an extra beat no one can march to.
+line @1 ack : #bc_right#. The #path# curves here. | #bc_fair_enough#. I will put away the #knife#.
+line @1 give.advice : Look for the real #gate# before trusting a drawn #line#. | Put your other #hand# behind the #knife# while carving.
+line @1 warn [world.bandits=near] : Stay near the #farm# today. | The #road# needs a grown companion now.
+scene crooked_map
+when topic=pastimes
+does tell.self / react.self / assess
+a : An old #map# puts this #road# across a #field# where no track remains. | I keep the #paper# because it shows how someone once travelled.
+b : Do you correct it? | Have you followed the old route?
+a : In #pencil#. | Only to the first #fence#.
+
+scene march_tune
+when topic=pastimes
+does tell.self / react.self / assess
+a : I hum an old #march# while walking the #fold# fence. | The #beat# tells me when I have reached the far #gate#.
+b : Which verse stays with you? | Who taught you?
+a : Only a few. | Someone at #home#.
+
+scene own_farm
+when topic=home
+does tell.self / react.self / assess
+a : I draw a small #farm# on the blank side of my #map#. | It has room for a #fold#, a #field#, and a #house#.
+b : Would you live there? | Where would it be?
+a : When I am grown. | Somewhere the #lake# is still visible.
+
+scene frosty_fold
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : #frost.capitalize# whitens the #fold# #gate# before dawn. | I tap the latch gently so it does not stick.
+b : Do the #sheep# mind? | Can you warm it?
+a : They want the #hay#. | My #hand# is enough.
+
+scene fish_in_butter
+when topic=food
+does tell.self / react.self / assess
+a : #fish.capitalize# fried in #butter# smells better than the #smoke# from the #pan#. | I wait beside the #fire# for the first #plate#.
+b : Do you cook it? | Do you share?
+a : I can turn a small piece. | When there is enough.
+
+scene little_carving
+when topic=pastimes
+does tell.self / react.self / assess
+a : I am carving a #figure# from a piece of #wood# no longer than my #hand#. | It might become a #sheep# if I leave the ears broad.
+b : Is the knife sharp? | Who will keep it?
+a : Sharp enough for small #chips#. | A #friend# if it turns out well.
+
+scene crowded_market
+when topic=home
+does tell.self / react.self / assess
+a : A #crowd# at the #market# presses close enough to hide the #stall# signs. | I stand near the edge and let the rush pass.
+b : Do you dislike all markets? | What do you buy?
+a : Only the busiest hour. | #bread# and sometimes #fish#.
+
+scene smoke_in_eyes
+when topic=home
+does tell.self / react.self / assess
+a : The #smoke# from a damp #fire# makes my eyes sting. | I take my #map# outside until the hearth draws cleanly.
+b : Can you fix the fire? | Does the paper get wet?
+a : Someone older knows the flue. | I keep it under my coat.
+
+scene lamb_tracks
+when topic=work
+does tell.self / react.self / assess
+a : A #lamb# left small prints beside the #fence# before anyone noticed it gone. | I followed them toward the #hill#.
+b : Did you find it? | Was it far away?
+a : Behind the #gate#. | Close to the #fold# but out of sight.
+
+scene water_bucket
+when topic=work
+does tell.self / react.self / assess
+a : I carry a half-full #bucket# so it does not spill on my #boots#. | Two trips are easier than one soaking walk.
+b : Does anyone help? | Do the #sheep# wait?
+a : If the #fold# is busy. | They lift their heads when the #bucket# comes.
+
+scene wrong_turn
+when topic=travel
+does tell.self / react.self / assess
+a : My #map# said the #path# turned after the second #field#. | The real turn came before a low #fence#.
+b : Did you get lost? | Did you change the map?
+a : For one short walk. | I drew a new #line#.
+
+scene friend_map
+when topic=family
+does tell.self / react.self / assess
+a : A #friend# held my #map# while I drew the #lake# shore. | We disagreed about which #hill# shows first from the #farm#.
+b : How did you settle it? | Was the drawing finished?
+a : We walked outside and looked. | After changing the #line# twice.
+
+scene spring_farm
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : When spring #sun# reaches the #fold#, the #grass# shines again. | I think of all the #fields# I might tend someday.
+b : Would you raise sheep? | Is there work today?
+a : Some, and perhaps crops. | The #gate# still needs mending.
+
+scene summer_walk
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : In summer I can walk beyond the #hill# before the #sun# goes low. | I mark each #turn# on the #paper# when I return.
+b : Do you travel alone? | What is beyond it?
+a : Someone knows my route. | Another #field# and the #road#.
+
+scene festival_song
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : The #festival# #song# has a #beat# like my old #march#. | I can hum it even when the crowd has gone.
+b : Do you join the singing? | Is it the same tune?
+a : From the edge. | The ending is different.
+
+scene map_shelter
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# makes the #paper# soft at the folds. | I tuck the #map# inside my coat before climbing the #hill#.
+b : Does it stay dry? | Can you draw on it later?
+a : Mostly. | When it has dried flat.
+
+scene quiet_fold
+when topic=memories
+does tell.self / react.self / assess
+a : The #fold# sounded empty the first time I closed it alone. | Then I heard a #lamb# shifting in the #hay#.
+b : Were you frightened? | Did you check the gate?
+a : Only until I heard it. | Twice before leaving.
+
+story reversed_road [topic=pastimes self.age>=9]
+  : I copied an old #map# and drew the #road# bending toward the wrong #hill#.
+  : A #friend# followed it with a finger and showed me where the #lake# should be.
+  ask : Did you erase it?
+  b : Your friend caught the turn.
+  : I kept both #lines# so I would remember the mistake.
+
+story lost_lamb [topic=work self.age>=9]
+  : A young #lamb# went through a gap beside the #fold#.
+  : I followed its tracks across wet #grass# and found it behind the first #fence#.
+  ask : Was it hurt?
+  b : Good that you looked.
+  : Only hungry. I carried it back.
+
+story march_ending [topic=memories self.age>=9]
+  : I hummed an old #march# while taking #hay# to the #sheep#.
+  : Another wolf knew the missing ending and sang it softly beside the #gate#.
+  ask : Can you sing it now?
+  b : You found the last part.
+  : I can hum every note, though the words still slip away.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 8h
+say That #hill# is in the wrong place again. | I need another #line# on the #map#.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 9h
+say I know this #tune# up to the last beat. | The #fold# fence keeps time with my #steps#.
+
+rule @bark_sheep
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #lambs# have found the #gate#. | Another #bucket# for the #fold#.
+
+rule @bark_frost
+when concept=bark here.season=winter
+does aside
+cooldown 10h
+say The #frost# made every #field# look new. | My #boots# are cold already.
+
+dlg @1 resident.hub : #greet#. I am drawing the #fold# on this #map#. | #greet#. Mind the #lambs# near the #gate#.
+dlg @2 resident.hub [topic.meeting=known] : You can see the corrected #road# here. | Since your last visit, I carved a new #figure# by the #fire#.
+dlg @1 resident.job : I help with #chores# at the #farm# and watch the #fold#. | I bring #hay# and #water# for the #sheep#.
+dlg @1 resident.bye : #farewell#. The #fold# #gate# still needs closing. | #saying.capitalize#. I will finish the #map# later.
+graft resident.hub
+choice Why draw your own maps? -> maps
+node maps
+say Some old #maps# put the #road# through a #field# that has no track. I draw what I can see and keep the old #paper# for its stories.
+free
+choice What are you humming? -> song
+choice Back to the fold. -> hub
+node song
+say I hum a #march# with a steady #beat#, though some words slip away. I use it to pace the walk around the #fold#.
+choice Back to the fold. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I have the #fold# in order. | #greet#. Let me show you the route I found.
+line @1 farewell : #farewell#. I should bring the #sheep# down soon. | #saying.capitalize#. I have a #field# to cross.
+
+young
+line @1 greet : #greet#. The #lambs# are all inside now. | #greet#. Look at my new #map#.
+line @1 farewell : #farewell#. I have to take this #bucket# back. | The #figure# should be finished by your next visit.
+
+adolescent
+line @1 greet : #greet#. I have redrawn the #road# after walking it. | #greet#. Can you hear the end of this #march#?
+line @1 farewell : #farewell#. The #fold# needs one more look. | My #map# will be dry tomorrow.

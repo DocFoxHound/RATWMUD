@@ -1,0 +1,295 @@
+# cw140, the wedding promise (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw140
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for cty_ingram_hazelshaw
+written_by claude-codex-cw-2
+title the wedding promise
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk judges_a_guest_by_how_they_greet_an_elder
+likes crisp_apples dancing festival_bells misty_dawns
+dislikes gulls flies
+fears breaking_a_wedding_promise a_pig_lost_in_the_mist
+hopes a_festival_where_everyone_dances a_yard_kept_sound_by_trusted_hands
+topics work +0.4 festival +0.4 pastimes +0.3 memories +0.3 gossip -0.3
+styles comfort=light gossip=careful refuse=wry tease=playful
+marks oath saying
+persona #self.first# watches how guests greet an #elder#, remembers a wedding #promise#, and dances whenever the #bells# reach the #yard#.
+
+words
+oath! = Bell and binding | By the promise I keep
+saying! = A dance begins with a kept word | Greet the elder before the host
+elder = elder | older neighbour
+elders = elders | older neighbours
+guest = guest | visitor
+guests = guests | visitors
+promise = promise | sworn word
+@2 oath = oath | solemn word
+wedding = wedding | marriage feast
+bell = bell | festival bell
+bells = bells | festival bells
+dance = dance | festival dance
+step = step | dance step
+music = music | festival tune
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+pen = pen | pig pen
+gate = gate | yard gate
+trough = trough | feed trough
+feed = feed | mash
+bucket = bucket | feed bucket
+straw = straw | dry bedding
+fence = fence | yard fence
+hoof = hoof | pig hoof
+claw = claw | old claw
+apple = apple | crisp apple
+apples = apples | orchard apples
+mist = mist | dawn mist
+dawn = dawn | first light
+gull = gull | shore gull
+gulls = gulls | shore gulls
+flies = flies | biting flies
+lake = lake | Glasswater
+shore = shore | lakeshore
+chapel = chapel | small chapel
+plate = plate | collection plate
+prayer = prayer | quiet prayer
+city = city | Ridgemere
+road = road | High Road
+market = market | market square
+price = price | asking price
+coin = coin | pay
+cup = cup | cup of ale
+home = home | farmhouse
+hand = hand | working hand
+hands = hands | working hands
+green = green | village green
+story = story | old account
+boots = boots | dance boots
+sun = sun | morning sun
+
+any
+opinion @1 church against 1 : The #plate# seems to arrive before the end of the #prayer#. | I will keep my #promise# without a witness in the #chapel#.
+opinion @1 city against 1 : In the #city#, no one stops to greet an #elder#. | I prefer a #yard# where the #guest# has time to speak.
+opinion @1 dole against 1 : I would rather pay a #hand# to carry #feed# than send them to wait. | The #trough# fills from work, not a speech.
+opinion @1 drink for 1 : One #cup# after the #pigs# are settled makes a good evening. | I keep enough sense to remember my #promise#.
+opinion @1 festivals for 2 : The #bells# invite every pair of feet onto the #green#. | A good #dance# lasts longer in memory than a full purse.
+opinion @1 houses mixed 0 : A House's #coin# might mend the #fence#. | I judge its folk by whether they greet the #hands# who built it.
+opinion @1 watch against 1 : The #watch# checks every #gate# except the one that needs mending. | I would rather settle a missing #pig# with my neighbours.
+opinion @1 times for 1 : There is #feed# in the #trough# and music in the square. | I have no cause to quarrel with this season.
+
+grown
+line @1 greet : #greet#. Have you greeted the #elder# by the #gate#? | #greet#. The #pigs# will make room if I ask.
+line @2 greet [self.working=yes] : Speak while I set out the #feed#. | The #pen# needs closing; follow along.
+line @3 greet [pair.band=friends|family] : I have kept an #apple# for you. | You missed a fine #dance# yesterday.
+line @4 greet [here.time=dawn] : The #mist# has the #yard# half hidden. | #greet#. The #pigs# are waiting for breakfast.
+line @1 greet.return : #welcome_back#. The #gate# is sound again. | I remember the #step# you missed.
+line @1 kin.open [pair.kin!=no] : Come inside; there is a #cup# ready. | Tell me what the #road# brought you.
+line @1 again.open : We had not finished that wedding #story#. | Have you found your way back to the #gate#?
+line @1 farewell : #farewell#. Keep your #promise# as I keep mine. | #saying.capitalize#. I must see to the #pen#.
+line @1 farewell.return : Bring a better #step# next time. | I may have fresh #apples# then.
+line @1 react.news : Set the #bucket# down; I want the account clearly. | Start with the person who saw it.
+line @1 react.news.new : Nothing of that sort has reached this #yard#. | Was it spoken at the #market#?
+line @1 react.news.known : I heard a different telling near the #chapel#. | Yours brings the missing part.
+line @1 react.news.doubt : #hedge#, a #guest# may have heard the wrong #bell#. | Name the person who saw it for themselves.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put aside the #music#; this grief deserves time. | Sit down; the #pigs# can wait a little.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Then there should be a #dance#. | That is news worth a full #cup#.
+line @1 answer.how : The #yard# is sound and my feet are ready for music. | I have been thinking about an old #promise#.
+line @1 answer.how.busy [self.working=yes] : I am feeding the #pigs# and mending a #gate#. | There is #straw# to replace before dark.
+line @1 ask.how : Has your day given you a reason to #dance#? | Did the #road# treat you gently?
+line @1 sympathise : I shall finish the #trough#, then sit with you over a #cup#. | Let your words come when they will.
+line @1 reassure : We can mend that #fence# together. | An awkward #step# is no reason to leave the #dance#.
+line @1 decline : No. I gave my word for this #yard#. | The #pigs# need their #feed# before I leave.
+line @1 accept_decline : I shall respect that. | The #apple# can remain on the shelf.
+line @1 thank : You caught the #pig# before the #road# did. | I will remember the #hand# you gave me.
+line @1 deflect_thanks : The #gate# was close to me. | A #cup# was easy to pour.
+line @1 preclose : The #pen# needs a last check. | I hear the #bells# and have work left.
+line @1 tease [pair.band=friends] : Your #dance# has the wrong number of feet. | Even a #gull# would pick that #apple#.
+line @1 ack : #bc_right#. I will test the #fence#. | #bc_fair_enough#. You have my word.
+line @1 give.advice : Test the #gate# before calling the #pigs# through. | Greet the #elder# before asking for a #cup#.
+line @1 warn [world.bandits=near] : Stay off the empty #road# tonight. | Keep your #coin# inside your coat at the #market#.
+scene wedding_oath
+when topic=memories
+does tell.self / react.self / assess
+a : At a #wedding# I made a #promise# that I still keep. | The #bells# had stopped before I understood how long the words would last.
+b : What did you promise? | Have you told anyone?
+a : It belongs to the people who heard it. | Those who need to know.
+
+scene promise_kept
+when topic=family
+does tell.self / react.self / assess
+a : A #promise# is measured on the ordinary days after the feast. | I set aside time for it even when the #yard# is busy.
+b : Is it difficult? | Does someone help?
+a : Some seasons. | When I ask plainly.
+
+scene elder_greeting
+when topic=family
+does tell.self / react.self / assess
+a : I watch how a #guest# greets the oldest person at the table. | An #elder# should not have to ask to be seen.
+b : Do you judge quickly? | Does it matter to you?
+a : I notice first and decide later. | More than polished manners.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : A crisp #apple# makes good breakfast before the #yard# wakes. | I keep the soundest #apples# away from the #pigs#.
+b : Do you share them? | Do the pigs want them?
+a : With someone who asks. | Every one.
+
+scene festival_bells
+when topic=festival
+does tell.self / react.self / assess
+a : The #bells# sound over the #trough# on festival morning. | I finish the #feed# quickly, then change my #boots#.
+b : Do you go straight there? | Do you dance all day?
+a : After the #gate# is latched. | Until my feet complain.
+
+scene dance_steps
+when topic=pastimes
+does tell.self / react.self / assess
+a : I learn a #dance# by watching its first turn. | The second #step# usually tells me whether I will stumble.
+b : Do you lead? | Have you fallen?
+a : If the tune is familiar. | Once, to much laughter.
+
+scene missed_step
+when topic=pastimes
+does tell.self / react.self / assess
+a : I stepped on a neighbour's foot during a fast #dance#. | I bought a #cup# afterward and asked for another turn.
+b : Did they forgive you? | Was the second try better?
+a : They laughed. | Much.
+
+scene misty_dawn
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : #mist.capitalize# hides the far #fence# before the #sun# reaches the #yard#. | The #pigs# announce themselves from behind the #pen# wall.
+b : Do you wait for light? | Is it dangerous?
+a : Only for the road work. | If a #gate# has been left open.
+
+scene gull_at_shore
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #gull# follows me along the #shore# when I carry an #apple#. | Its cry sounds like a demand.
+b : Do you feed it? | Does it follow far?
+a : Never on purpose. | Until it sees another meal.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# gather by the #trough# on warm afternoons. | I wash the #bucket# before they settle on its rim.
+b : Do the pigs mind? | Can you keep them away?
+a : They stamp. | Cleaning helps.
+
+scene pig_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #pigs# at the #gate# before opening the #pen#. | The smallest one can hide behind the #straw#.
+b : Do they move quickly? | Have you missed one?
+a : When #feed# is near. | Only until I counted again.
+
+scene fence_mend
+when topic=work
+does tell.self / react.self / assess
+a : A loose #fence# post lets the #pigs# test their luck. | I brace it before a wet day softens the ground.
+b : Who helps you? | Does it hold?
+a : Whoever can spare a #hand#. | Until a proper repair.
+
+scene missing_claw
+when topic=work
+does tell.self / react.self / assess
+a : A missing #claw# reminds me to grip the #bucket# differently. | I learned that lesson long before I ran this #yard#.
+b : Does it slow you? | Was it an accident?
+a : Only with a slick handle. | It was.
+
+scene dry_straw
+when topic=work
+does tell.self / react.self / assess
+a : I stack #straw# above the splash from the #trough#. | A dry #pen# keeps the young #pigs# warm.
+b : How soon does it sour? | Does the roof leak?
+a : As soon as it sours. | Not where I store it.
+
+scene city_manners
+when topic=travel
+does tell.self / react.self / assess
+a : I visited the #city# and watched a #guest# pass an #elder# without greeting. | I remembered it longer than the street names.
+b : Did you say anything? | Is that common?
+a : The elder spoke first. | More than I like.
+
+scene chapel_plate
+when topic=memories
+does tell.self / react.self / assess
+a : The #plate# went around while I was still trying to hear the #prayer#. | I kept my #coin# until I knew what the need was.
+b : Did you give later? | Did anyone mind?
+a : To someone I could ask. | I did not inquire.
+
+scene market_price
+when topic=prices
+does tell.self / react.self / assess
+a : I look at the #price# of #feed# before buying another #cup#. | A festival can empty a purse if the #yard# is forgotten.
+b : Do you bargain? | Do you keep a tally?
+a : When I have another seller. | In my head.
+
+story wedding_words [topic=memories self.age>=25]
+  : The #bells# sounded as I made a #promise# at a #wedding#.
+  : The feast ended, but the words still had work for me the next morning.
+  ask : What was the promise?
+  b : You have kept it a long time.
+  : It is for the people I made it to; I still remember.
+
+story gull_apple [topic=pastimes self.age>=25]
+  : A #gull# caught the #apple# I dropped along the #shore#.
+  : It carried the fruit a short way, then lost interest.
+  ask : Did you get it back?
+  b : The gull chose poorly.
+  : I left it there and ate a better one at #home#.
+
+story dance_again [topic=pastimes self.age>=25]
+  : I missed the turn in a festival #dance# and stepped on a neighbour's foot.
+  : We began again after I bought a #cup#.
+  ask : Did you get the step right?
+  b : A second try is fair.
+  : Yes, and I did not need a third.
+
+rule @bark_bells
+when concept=bark
+does aside
+cooldown 8h
+say The #pen# hears those #bells# as clearly as I do. | I can hear a #dance# coming.
+
+rule @bark_pigs
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #gate# needs testing before #feed#. | One #pig# is behind the #straw#.
+
+rule @bark_guest
+when concept=bark
+does aside
+cooldown 10h
+say Greet the #elder# before you sit. | The #guest# has forgotten a courtesy.
+
+rule @bark_mist
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say The #mist# has swallowed the #fence#. | I can hear the #pigs# clearly enough.
+
+dlg @1 resident.hub : #greet#. Stand beside the #gate# for a word. | #greet#. The #pigs# are settled; speak up.
+dlg @2 resident.hub [topic.meeting=known] : I recall your last #dance# step. | Back again? The #yard# is in better order.
+dlg @1 resident.job : I keep #pigs# at #self.workplace# and see to the #pen#. | I check the #fence#, fill the #trough#, and keep the #feed# dry.
+dlg @1 resident.bye : #farewell#. I still have the #gate# to close. | #saying.capitalize#. Keep your word.
+graft resident.hub
+choice What promise did you make at the wedding? -> promise
+node promise
+say It was meant for the people who heard it. I can tell you I have kept it.
+free
+choice Do you like festival dances? -> dance
+choice Back to the yard. -> hub
+node dance
+say I do. The #bells# find me even when I am busy with the #trough#.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye

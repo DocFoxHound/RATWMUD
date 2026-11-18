@@ -1,0 +1,295 @@
+# cw141, the patient wager (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw141
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_nell_barleycombe
+written_by claude-codex-cw-2
+title the patient wager
+fits stage=adult|old
+prefers talk=chatty
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk cannot_resist_a_wager
+likes spiced_cider swimming full_larder frosty_mornings
+dislikes cold_tea early_bells
+fears another_city_promise_with_no_pay an_empty_larder_in_winter
+hopes a_full_larder_without_hurrying a_clear_lake_after_work
+topics work +0.4 pastimes +0.4 food +0.3 weather +0.3 memories -0.3
+styles comfort=unhurried gossip=reluctant refuse=plain tease=gentle
+marks oath saying
+persona #self.first# takes time to choose each #apple#, wagers on the next #frost#, and keeps #cider# warm for a late return.
+
+words
+oath! = Cider and cold shore | By the last picked apple
+saying! = Leave the wager smaller than the meal | An apple falls when it is ready
+wager = wager | small bet
+bet = bet | friendly wager
+coin = coin | penny
+apple = apple | picked apple
+apples = apples | orchard fruit
+tree = tree | apple tree
+trees = trees | orchard trees
+branch = branch | bough
+branches = branches | boughs
+orchard = orchard | apple ground
+row = row | planted row
+rows = rows | planted rows
+ladder = ladder | picking ladder
+basket = basket | picking basket
+baskets = baskets | picking baskets
+crate = crate | fruit crate
+crates = crates | fruit crates
+tray = tray | drying tray
+trays = trays | drying trays
+drying = drying | slow drying
+larder = larder | food cupboard
+bread = bread | loaf
+supper = supper | evening meal
+cider = cider | spiced cider
+spice = spice | warm spice
+cup = cup | warm cup
+tea = tea | cup of tea
+lake = lake | Glasswater
+shore = shore | lakeshore
+water = water | clear water
+swim = swim | lake swim
+frost = frost | morning frost
+snow = snow | first snow
+bell = bell | early bell
+bells = bells | early bells
+dawn = dawn | first light
+mist = mist | lake mist
+road = road | High Road
+city = city | Ridgemere
+market = market | market square
+price = price | asking price
+home = home | shared cottage
+hand = hand | working hand
+hands = hands | working hands
+time = time | patient hour
+meal = meal | supper
+soil = soil | firm ground
+bird = bird | early bird
+boots = boots | work boots
+
+any
+opinion @1 city against 1 : I followed a #city# promise once and returned with little #coin#. | At least the #orchard# shows me the fruit of a day's work.
+opinion @1 festivals for 1 : I like a square full of talk when my #basket# is empty. | I will share #cider# after the #market# closes.
+opinion @1 houses against 1 : They leave work undone while a good #hand# asks for a place. | I have waited at their doors longer than I wait for #apples#.
+opinion @1 merchants against 2 : A merchant can raise #bread# while a picker's pay stays level. | I compare the #price# on each #market# day.
+opinion @1 newcomers against 1 : A new picker may take a #row# I was promised. | I still show them how to set the #ladder# safely.
+opinion @1 road mixed 0 : The #road# brought me home after the #city# taught me enough. | I can take it again for a good reason.
+opinion @1 strangers mixed 0 : I can offer a traveller #cider# without recounting my mistakes. | I ask them to carry a #basket# before offering a wager.
+opinion @1 times against 1 : The #larder# fills less easily each cold season. | I can work a full #row# and still count the #coin# twice.
+
+grown
+line @1 greet : #greet#. Care to wager which #apple# falls next? | #greet#. The #basket# has room if you want to help.
+line @2 greet [self.working=yes] : Speak while I choose the sound #apples#. | I am taking this #crate# to the #trays#.
+line @3 greet [pair.band=friends|family] : I saved you a #cup# of #cider#. | Tell me if the #lake# is clear enough for a #swim#.
+line @4 greet [here.time=dawn] : The #bells# found me before the #frost# lifted. | #greet#. I have the first #basket# ready.
+line @1 greet.return : #welcome_back#. Did your wager turn out? | The #crates# are fuller than when you left.
+line @1 kin.open [pair.kin!=no] : Come in; the #cider# is warming. | There is #bread# in the #larder#.
+line @1 again.open : We had not finished comparing those #apples#. | Do you have another question from the #market#?
+line @1 farewell : #farewell#. Keep your #coin# for supper. | #saying.capitalize#. I have another #row# to pick.
+line @1 farewell.return : I may owe you a #cup# by then. | Perhaps the #lake# will be calm next time.
+line @1 react.news : I can listen without rushing you. | Put the #crate# down and begin.
+line @1 react.news.new : No one on this #row# has mentioned it. | Did the news arrive by the #road#?
+line @1 react.news.known : I heard a fragment at the #market#. | Your version helps me place it.
+line @1 react.news.doubt : #hedge#, I want someone who saw the whole matter. | I have lost #coin# on a good sounding promise before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That grief deserves more than hurried work; the #apples# can wait. | Take a warm #cup# and sit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is worth the good #cider#. | I would wager they are smiling at #home#.
+line @1 answer.how : The #larder# is full enough for now. | Ready for a #swim# when this work is finished.
+line @1 answer.how.busy [self.working=yes] : A full #basket# waits at the end of each #row#. | I have #trays# to fill before dark.
+line @1 ask.how : Have you had time to rest? | Did you eat before setting out?
+line @1 sympathise : We can take the long way through the #orchard#. | I will hear you as slowly as you need.
+line @1 reassure : A bare #crate# can be filled another day. | We can take stock of the #larder# after supper.
+line @1 decline : No; the #basket# needs filling today. | The #bread# money stays out of my bets.
+line @1 accept_decline : Your answer is clear. | Then the #bet# stays unmade.
+line @1 thank : You steadied the #ladder# while I reached the #branch#. | I appreciate the #hand# you lent the #trays#.
+line @1 deflect_thanks : I had a spare #cup#. | That #apple# was easy to reach.
+line @1 preclose : The #crates# need their cover against #frost#. | The #cider# will cool if I stay.
+line @1 tease [pair.band=friends] : You picked the wrong #apple# to wager on. | I have seen a #ladder# climb more gracefully.
+line @1 ack : #bc_right#. I shall check the #basket#. | #bc_fair_enough#. You may have that #cup#.
+line @1 give.advice : Test the #branch# before trusting the #ladder#. | Let #cider# warm slowly over the fire.
+line @1 warn [world.bandits=near] : Keep your #coin# hidden on the #road#. | Walk with the #market# carts after dusk.
+scene next_apple
+when topic=pastimes
+does tell.self / react.self / assess
+a : I wagered on which #apple# would fall first. | The #wind# chose a different #tree# entirely.
+b : Did you lose much? | Who won?
+a : Only a #cup# of #cider#. | Someone with better patience.
+
+scene measured_bet
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep a #bet# smaller than the next #meal#. | It is easier to laugh when losing does not empty the #larder#.
+b : Do you ever stop? | Does that help?
+a : When the work begins. | Usually.
+
+scene apple_choice
+when topic=work
+does tell.self / react.self / assess
+a : A ripe #apple# loosens when I turn it gently. | Pulling early leaves the #branch# sore and the fruit sour.
+b : Can you feel it? | Does it take longer?
+a : At the stem. | Less time than sorting bad fruit.
+
+scene full_basket
+when topic=work
+does tell.self / react.self / assess
+a : A #basket# filled level rides better down the #row#. | I do not stack the heavy #apples# on top.
+b : Why not? | Do you carry many?
+a : They bruise the lower fruit. | As many as the #tree# gives.
+
+scene drying_house
+when topic=work
+does tell.self / react.self / assess
+a : I bring #crates# into the #drying# house before the evening damp. | The #trays# need space between them.
+b : Do they stay warm? | Who turns them?
+a : Warm enough to dry. | Whoever finishes picking first.
+
+scene ladder_foot
+when topic=work
+does tell.self / react.self / assess
+a : I set the #ladder# on firm #soil# before climbing. | A friend holding the foot can save a fall.
+b : Do you ask for help? | Have you slipped?
+a : For the high #branches#. | Once, and I landed in a #basket#.
+
+scene frost_dawn
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : I like #frost# before the #bells# start. | The #orchard# turns quiet and the #rows# show every footprint.
+b : Do you work then? | Is it too cold?
+a : After the light comes. | For a short walk, no.
+
+scene early_bells
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : Those #bells# before #dawn# startle me from sleep. | I prefer the #orchard# to wake one #bird# at a time.
+b : Can you sleep through them? | Do you complain?
+a : Never. | Only to the empty #basket#.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : #tea.capitalize# left cold by the #trays# tastes like delay. | I would sooner drink warm #cider# after a shift.
+b : Do you heat it again? | With spice?
+a : If the fire is lit. | A little.
+
+scene spiced_cider
+when topic=food
+does tell.self / react.self / assess
+a : A pinch of #spice# turns plain #cider# into a winter comfort. | I keep a #cup# ready when the workers come in.
+b : Who makes it? | Is it strong?
+a : I do when there is time. | Only warm enough to notice.
+
+scene lake_swim
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #swim# in the #lake# clears the orchard dust from me. | Even cold #water# is better than a crowded room.
+b : Do you go often? | Do you mind the chill?
+a : After long shifts. | I ease in slowly.
+
+scene clear_shore
+when topic=pastimes
+does tell.self / react.self / assess
+a : I leave my #boots# high on the #shore# before swimming. | The #lake# is still enough to show the stones below.
+b : Have you lost your boots? | Do you swim far?
+a : No, I place them well. | Within sight of the #shore#.
+
+scene larder_shelf
+when topic=family
+does tell.self / react.self / assess
+a : I count the #bread# before setting aside any #coin# for fun. | A full #larder# means the household can breathe.
+b : Do you keep stores? | Is it full now?
+a : What I can. | Enough for this week.
+
+scene city_return
+when topic=memories
+does tell.self / react.self / assess
+a : I went to the #city# hoping to fill a purse quickly. | The #road# home was longer with the purse nearly empty.
+b : What work did you find? | Would you try again?
+a : Less than promised. | I prefer the #orchard#.
+
+scene quiet_about_city
+when topic=memories
+does tell.self / react.self / assess
+a : I do not give the whole account of that #city# journey. | It taught me to ask what a promise will actually pay.
+b : Is that why you wager small? | Does anyone know?
+a : Partly. | A few at #home#.
+
+scene festival_talk
+when topic=festival
+does tell.self / react.self / assess
+a : A festival lets me hear news from every #road# at once. | I carry #cider# to the square after the #crates# are put away.
+b : Do all those voices please you? | Do you make wagers?
+a : For a while. | Only for a #cup#.
+
+scene first_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The first #snow# makes the #orchard# feel larger. | The bare #trees# show paths I miss in summer.
+b : Do you walk there? | Does it damage branches?
+a : When the #road# is clear. | If it comes wet and heavy.
+
+story lost_purse [topic=memories self.age>=25]
+  : I left for the #city# with more hope than #coin#.
+  : I came home with an almost empty purse and a better ear for promises.
+  ask : Did you tell the household?
+  b : A costly lesson.
+  : Enough of it for them to know I was staying.
+
+story frost_wager [topic=weather self.age>=25]
+  : I wagered a #cup# that #frost# would reach the #orchard# by morning.
+  : The white edge appeared just before the #bells#.
+  ask : Did you win?
+  b : A close wager.
+  : By a few moments, and I shared the #cider#.
+
+story ladder_basket [topic=work self.age>=25]
+  : The #ladder# slipped as I reached for a high #apple#.
+  : I fell into an empty #basket# and broke its handle.
+  ask : Were you hurt?
+  b : The basket took the worst of it.
+  : A bruise. I ask someone to hold the foot now.
+
+rule @bark_wager
+when concept=bark
+does aside
+cooldown 8h
+say One #cup# says the #frost# comes tomorrow. | Keep the #bet# small.
+
+rule @bark_basket
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say This #basket# needs another #apple#. | Let the #branch# release it first.
+
+rule @bark_cider
+when concept=bark
+does aside
+cooldown 10h
+say The #cider# is ready for warming. | I should fill the #larder# shelf.
+
+rule @bark_lake
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say A #swim# after this last #crate#. | The #shore# should be quiet now.
+
+dlg @1 resident.hub : #greet#. Take your time; I am sorting #apples#. | #greet#. Do you want to make a small #wager#?
+dlg @2 resident.hub [topic.meeting=known] : Another #basket# has filled since we last spoke. | Back again? The #cider# is warmer now.
+dlg @1 resident.job : I pick #apples# at #self.workplace# and fill the #drying# #trays#. | I set the #ladder#, sort the #crates#, and bring the fruit inside.
+dlg @1 resident.bye : #farewell#. I must finish this #row#. | #saying.capitalize#. The #larder# wants a look.
+graft resident.hub
+choice What do you wager on? -> wager
+node wager
+say Small things: the next #apple# to fall or the first #frost#. A #cup#, never supper.
+free
+choice Why do you like swimming? -> swim
+choice Back to the orchard. -> hub
+node swim
+say The #lake# leaves work behind for an hour. I keep within sight of the #shore#.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye

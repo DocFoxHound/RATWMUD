@@ -1,0 +1,323 @@
+# cw157, the bellwatch orchard keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw157
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for tn_sm_fallow_cornwell
+written_by claude-codex-cw-2
+title the bellwatch orchard keeper
+fits stage=adult|old
+prefers talk=chatty
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk checks_city_parcels_before_they_enter_the_house
+likes plum_tart dancing festival_bells misty_dawns
+dislikes crowds night_noise
+fears a_stranger_at_the_orchard_gate_after_dark a_blown_blossom_before_fruit_sets
+hopes a_wider_orchard_on_the_south_slope a_clear_festival_morning
+topics home +0.5 family +0.4 weather +0.3 pastimes +0.2
+styles comfort=gentle gossip=curious refuse=firm tease=dry
+marks oath saying
+persona #self.first# counts the #bells# from the #orchard#, checks each #parcel# at the #gate#, and imagines another #row# of #trees#.
+
+words
+oath! = Bell above the mist | By the clean threshold
+saying! = Ask who carried it before you open it | A new row starts with one tree
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | feast morning
+dance = dance | festival dance
+dancing = dancing | evening dancing
+music = music | street music
+plum = plum | ripe plum
+plums = plums | orchard plums
+tart = tart | plum tart
+slice = slice | warm slice
+oven = oven | kitchen oven
+kitchen = kitchen | clean kitchen
+table = table | supper table
+plate = plate | small plate
+house = house | orchard house
+home = home | farmhouse
+door = door | front door
+threshold = threshold | swept threshold
+window = window | front window
+lamp = lamp | small lamp
+night = night | dark night
+noise = noise | night noise
+crowd = crowd | festival crowd
+visitor = visitor | unexpected visitor
+stranger = stranger | unfamiliar face
+parcel = parcel | city parcel
+parcels = parcels | wrapped parcels
+wrapper = wrapper | paper wrapper
+string = string | tied string
+city = city | Ridgemere
+road = road | High Road
+cart = cart | passing cart
+gate = gate | orchard gate
+fence = fence | orchard fence
+orchard = orchard | Greenholt orchard
+tree = tree | plum tree
+trees = trees | fruit trees
+row = row | orchard row
+rows = rows | planted rows
+slope = slope | south slope
+soil = soil | dark soil
+spade = spade | digging spade
+root = root | young root
+roots = roots | new roots
+blossom = blossom | spring blossom
+fruit = fruit | ripe fruit
+basket = basket | wicker basket
+family = family | household
+child = child | growing child
+husband = husband | orchard tending husband
+friend = friend | trusted friend
+mist = mist | lake mist
+dawn = dawn | misty dawn
+morning = morning | early morning
+evening = evening | quiet evening
+wind = wind | lake wind
+rain = rain | cold rain
+lake = lake | Glasswater
+shore = shore | lakeshore
+market = market | town market
+stall = stall | market stall
+coin = coin | saved coin
+price = price | marked price
+south = south | southern
+steps = steps | counted steps
+sun = sun | low sun
+floor = floor | kitchen floor
+boots = boots | muddy boots
+path = path | orchard path
+branches = branches | low branches
+water = water | fresh water
+latch = latch | door latch
+day = day | busy day
+hour = hour | late hour
+step = step | careful step
+
+any
+opinion @1 city against 2 : A #parcel# from the #city# stays at my #threshold# until I know who sent it. | The streets there sound crowded even in a letter.
+opinion @1 drink against 1 : Wine loosens words that cannot be put back. | I prefer the #music# without that trouble.
+opinion @1 festivals for 1 : I go for the #bells# and a little #dancing#. | The #crowd# is easier to bear in daylight.
+opinion @1 newcomers against 1 : I ask where a #visitor# has come from before opening the #gate#. | Trust grows more slowly than a #tree#.
+opinion @1 road against 1 : I would rather send a #cart# than walk the #road# myself. | Home is safer after dusk.
+opinion @1 strangers against 1 : A #stranger# can speak through the #fence# first. | My #child# does not have to answer the #door#.
+opinion @1 times mixed 0 : The #orchard# has good years and thin ones. | I try to plant for the years ahead.
+opinion @1 merchants mixed 0 : A #stall# with a clear #price# earns my #coin#. | I look beneath the #wrapper# first.
+line @1 greet : #greet#. Were you coming from the #road#? | #greet#. Mind the #gate#; it catches.
+line @2 greet [pair.band=friends|family] : Come in; the #tart# has cooled. | Your #slice# waits beside the #oven#.
+line @3 greet [here.time=dawn] : The #mist# was thick enough to hide the far #row#. | #greet#. I heard the first #bell# at #dawn#.
+line @1 greet.return : I have checked the #parcel# since you left. | The #orchard# is quiet again.
+line @1 kin.open [pair.kin!=no] : I know that step; come through the #door#. | Come through before the #rain# reaches you.
+line @1 again.open : Did you see who drove that #cart#? | I have another thought about the #south# #slope#.
+line @1 farewell : #farewell#. I will fasten the #gate# behind you. | The #bells# sound clearer from the #window#.
+line @1 farewell.return : Visit before the #evening# #noise# starts. | There may be another #slice# tomorrow.
+line @1 react.news : Tell me exactly where it happened. | Was anyone near the #orchard#?
+line @1 react.news.new : No one in this #house# mentioned such a thing. | Did the word come from the #city#?
+line @1 react.news.known : I heard something at the #market#, though little was certain. | Your account fills in a gap.
+line @1 react.news.doubt : I want the name of a witness. | A #wrapper# shows me little about what is inside.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit here by the #lamp#; I will listen. | Let the #door# stay shut while you gather yourself.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Shall I cut the #tart# to celebrate? | That deserves the #festival# #bells#.
+line @1 answer.how : The #fruit# is sound, and all is well under our roof. | I slept through most of the #night#.
+line @1 answer.how.busy [self.working=yes] : I am washing the #basket# and checking the #oven#. | This #table# still needs setting.
+line @1 ask.how : Is the #road# calm today? | Did your #home# stay quiet last #night#?
+line @1 sympathise : The #window# is a quiet place; let me sit nearby. | You need not say more until you are ready.
+line @1 reassure : The #gate# is fastened and the #lamp# is lit. | We can inspect the #parcel# together.
+line @1 decline : No, I will not open that #wrapper# here. | The #crowd# can have this #night# without me.
+line @1 accept_decline : I understand; we can set it aside. | All right. Another #day# may suit us.
+line @1 thank : When the #wind# rose, you secured our #gate#. | I am grateful you carried the #basket#.
+line @1 deflect_thanks : The #spade# was beside me anyway. | It was a small thing to do.
+line @1 preclose : The #evening# is coming down on the #orchard#. | I should bring the #lamp# inside.
+line @1 tease [pair.band=friends] : Your #dance# is slower than my #plum# tree grows. | You would inspect a #tart# for hidden #string#.
+line @1 ack : #bc_right#. I will look from the #window#. | #bc_fair_enough#. The #gate# can stay shut.
+line @1 give.advice : Keep a young #root# damp until it is in the #soil#. | Ask a #visitor# who sent the #parcel#.
+line @1 warn [world.bandits=near] : Come home before the #night# #noise# begins. | Keep the #orchard# #gate# barred.
+scene parcel_at_gate
+when topic=home
+does tell.self / react.self / assess
+a : A #cart# left a #parcel# at our #gate# with no name on the #wrapper#. | I set it outside until someone told me its origin.
+b : Did anyone claim it? | Was it dangerous?
+a : The #market# #stall# did. | Only a broken cup.
+
+scene festival_bells
+when topic=pastimes
+does tell.self / react.self / assess
+a : I count the #festival# #bells# from the #kitchen#. | By the third one I can usually face the #crowd#.
+b : Do you dance? | Why wait inside?
+a : For a little while. | I like knowing where everyone is.
+
+scene plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : A #plum# #tart# needs the fruit cut thick or it disappears in the #oven#. | I keep one #slice# for a late arrival.
+b : Is it sweet? | Who arrives late?
+a : When the #plums# are ripe. | Anyone still working the #rows#.
+
+scene south_slope
+when topic=home
+does tell.self / react.self / assess
+a : The #south# #slope# could hold another #row# of #trees#. | I have been measuring it with my #steps#.
+b : Would the soil take them? | How many would fit?
+a : With careful digging. | Enough to change the view.
+
+scene new_roots
+when topic=work
+does tell.self / react.self / assess
+a : Young #roots# dry quickly after the #spade# lifts them. | I keep a damp cloth near the planting #row#.
+b : Do you plant alone? | Does it work?
+a : Not if the #basket# is heavy. | More often than leaving them bare.
+
+scene orchard_mist
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : At #dawn# the #mist# hides the far #fence#. | Only after a #bell# sounds do I cross the #rows#.
+b : Can you lose your way? | What if the bell is late?
+a : Only if I hurry. | The #sun# finds me eventually.
+
+scene night_window
+when topic=home
+does tell.self / react.self / assess
+a : At #night# I listen through the #window# before opening the #door#. | Wind and footsteps make different sounds.
+b : Do you hear both often? | Does it help?
+a : Too often for my liking. | It keeps a stranger outside.
+
+scene market_crush
+when topic=prices
+does tell.self / react.self / assess
+a : The #market# #crowd# presses against every #stall#. | I write my list before I go so I can leave quickly.
+b : Do you forget things? | Is it worse at festivals?
+a : When the #bells# distract me. | The #music# draws more people.
+
+scene quiet_dance
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : I dance near the outer #fence# with the #gate# squarely in sight. | The #music# reaches there well enough.
+b : Do you miss the centre? | Who joins you?
+a : The outer edge suits me. | Whoever wants room to breathe.
+
+scene city_string
+when topic=memories
+does tell.self / react.self / assess
+a : A #city# #parcel# once came with three knots in its #string#. | The #wrapper# had been opened and tied again.
+b : Did you keep it? | Who had touched it?
+a : After I checked the contents. | No one would say.
+
+scene wet_floor
+when topic=home
+does tell.self / react.self / assess
+a : I wash the #floor# after anyone comes in from #rain#. | My #child# should not slip on somebody else's #boots#.
+b : Does it take long? | Do visitors help?
+a : A few moments. | The considerate ones do.
+
+scene family_lamp
+when topic=family
+does tell.self / react.self / assess
+a : Our #lamp# burns beside the #door# until my #family# is inside. | The #orchard# #path# can vanish in the dark.
+b : Do they come late? | Can they see it from the gate?
+a : During harvest. | If the #mist# stays low.
+
+scene husband_spade
+when topic=family
+does tell.self / react.self / assess
+a : My #husband# marks a new #row# with the #spade# before planting. | I check the distance from each #tree#.
+b : Do you agree on the spacing? | Who chooses the fruit?
+a : After some discussion. | We choose together.
+
+scene hidden_noise
+when topic=weather
+does tell.self / react.self / assess
+a : Wind in the #trees# can sound like voices at #night#. | I look once from the #window# and then leave it be.
+b : Can you sleep after? | Is it always the wind?
+a : Better than if I guessed all #night#. | So far.
+
+scene visitor_question
+when topic=travel
+does tell.self / react.self / assess
+a : I ask a #visitor# which turning brought them to our #gate#. | Someone honest usually remembers the #road#.
+b : Do they take offence? | What if they are lost?
+a : Some do. | I can give directions through the #fence#.
+
+scene blossom_frost
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : A late cold #wind# can damage #blossom# before the #fruit# sets. | I check the lower #branches# at #dawn#.
+b : Can you protect it? | Do you lose the harvest?
+a : Some trees, with a cover. | Only part, I hope.
+
+scene larger_orchard
+when topic=memories
+does tell.self / react.self / assess
+a : I remember when this #orchard# ended at the near #fence#. | Each new #row# made the #house# feel farther from town.
+b : Do you want more rows? | Would that be lonely?
+a : As many as the #slope# will hold. | The #bells# still reach us.
+
+story opened_parcel [topic=home self.age>=18]
+  : A #parcel# arrived with a loose #string# and a #city# mark.
+  : I checked the #wrapper# at the #gate# before carrying it over our #threshold#.
+  ask : What was inside?
+  b : Sensible to inspect it.
+  : A cracked #plate# and a note meant for another #house#.
+
+story festival_edge [topic=pastimes self.age>=18]
+  : I promised myself I would dance when the #festival# #bells# rang.
+  : The #crowd# grew thick, so I stayed near the outer #fence# with the #music#.
+  ask : Did you dance?
+  b : You found your own place.
+  : Enough to wear out my shoes.
+
+story south_row [topic=home self.age>=18]
+  : I measured the #south# #slope# for a new #row# of #trees#.
+  : The #soil# was dark, but I found stone below one shallow patch.
+  ask : Did you plant there?
+  b : The ground has its say.
+  : I moved the mark uphill and kept the plan.
+
+rule @bark_gate
+when concept=bark
+does aside
+cooldown 8h
+say Fasten the #gate# after you. | Who left that #parcel# by the #fence#?
+
+rule @bark_bell
+when concept=bark
+does aside
+cooldown 9h
+say I heard the second #bell#. | The #music# will begin soon.
+
+rule @bark_tart
+when concept=bark
+does aside
+cooldown 10h
+say The #tart# needs another moment in the #oven#. | I kept a #slice# aside.
+
+rule @bark_rows
+when concept=bark
+does aside
+cooldown 11h
+say Another #row# would fit the #slope#. | Those #roots# need #water#.
+
+dlg @1 resident.hub : #greet#. Come through the #gate# and tell me where you came from. | #greet#. The #tart# is on the #table#.
+dlg @2 resident.hub [topic.meeting=known] : I know your #step# now; come in. | You returned while I was measuring the #south# #slope#.
+dlg @1 resident.job : I keep our #house# and help plan the #orchard#. | There is always a #basket# or #row# to see to.
+dlg @1 resident.bye : #farewell#. I will close the #gate#. | #saying.capitalize#. Come before #night#.
+graft resident.hub
+choice Why check that parcel? -> parcel
+node parcel
+say It came from the #city# without a clear sender. I inspect the #wrapper# before carrying anything past our #door#.
+free
+choice Are you planting more trees? -> trees
+choice Goodbye. -> bye
+node trees
+say The #south# #slope# has room for another #row#. I want the #roots# in good #soil# before next spring.
+choice Back to the house. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #orchard# is clear this #morning#. | #greet#. Did you hear the #bells#?
+line @1 farewell : #farewell#. I must check the #door# #latch#. | A #slice# will be here after your next visit.

@@ -1,0 +1,300 @@
+# rm108, the contrary boatman (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm108
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_thorn_mistmere
+written_by claude-codex-cw-2
+title the contrary boatman
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk argues_with_the_weather
+likes roast_pork draughts market_bustle summer_evenings
+dislikes flies haggling
+fears a_boat_adrift_in_mist losing_the_thing_coin_was_saved_for
+hopes enough_coin_for_a_private_plan a_safe_crossing_at_dawn
+topics work +0.4 weather +0.5 pastimes +0.3 prices +0.2 gossip -0.2
+styles comfort=plain gossip=reluctant refuse=direct tease=dry
+marks oath saying
+persona #self.first# disputes the #weather# aloud, keeps the #boat# ready, and counts saved #coin# without explaining its purpose.
+
+words
+oath! = By the backward wind | River and rope
+saying! = Water has the last word | A dry oar is no use ashore
+weather = weather | sky
+boat = boat | little boat
+boats = boats | lake boats
+oar = oar | working oar
+oars = oars | pair of oars
+rope = rope | mooring rope
+knot = knot | close knot
+jetty = jetty | landing stage
+lake = lake | Glasswater
+water = water | clear water
+river = river | Long River
+shore = shore | lakeshore
+mist = mist | lake mist
+wind = wind | crosswind
+rain = rain | hard rain
+cloud = cloud | low cloud
+sun = sun | evening sun
+ice = ice | winter ice
+summer = summer | warm season
+evening = evening | long evening
+dawn = dawn | first light
+passenger = passenger | traveller
+crossing = crossing | passage
+load = load | carried load
+board = board | boat board
+plank = plank | landing plank
+hand = hand | steady hand
+hands = hands | working hands
+shelter = covered shelter | landing shelter
+market = market | busy market
+crowd = crowd | market crowd
+flies = flies | biting flies
+pork = pork | roast pork
+crackling = crackling | browned crackling
+draughts = draughts | board game
+piece = piece | draughts piece
+board_game = board | playing board
+coin = coin | saved coin
+purse = purse | small purse
+price = price | asking price
+wage = wage | day's wage
+loaf = loaf | bread loaf
+home = home | cottage
+city = city | Ridgemere
+street = street | city street
+road = road | High Road
+friend = friend | familiar face
+secret = secret | private purpose
+step = step | next step
+cup = cup | full cup
+night = night | late night
+nights = nights | late evenings
+storm = storm | lake storm
+current = current | running water
+reed = reed | shoreline reed
+
+any
+opinion @1 city for 1 : I learned to like a busy #street# before I came to the #lake#. | A #city# crowd can make room for its own.
+opinion @1 festivals for 1 : A #market# full of voices is worth the noise. | Give me an #evening# when everyone has come out.
+opinion @1 houses against 1 : The grand houses never seem to notice a #boat# worker. | Their windows are high above a day's #wage#.
+opinion @1 merchants against 2 : They have raised the #loaf# #price# again. | They ask a full #purse# for goods a working #hand# must buy.
+opinion @1 newcomers against 1 : I want to know who can handle a #rope# before I offer a crossing. | A new face can be useful, but I watch the first #knot#.
+opinion @1 times against 1 : A day's #wage# buys less each week. | I keep #coin# back because the next need is never announced.
+opinion @1 drink mixed 0 : A #cup# after work is pleasant. | I still count what stays in the #purse#.
+
+grown
+line @1 greet : #greet#. Are you looking for the #jetty#? | #greet#. Tell me where you are headed.
+line @2 greet [self.working=yes] : I can listen while I tie this #rope#. | Step clear of the #plank# and speak.
+line @3 greet [pair.band=friends|family] : There is room beside the #boat#. | I kept the #draughts# pieces dry for you.
+line @4 greet [here.weather=rain] : This #rain# has poor timing. Come under the #shelter#. | The #weather# picked a fine hour to turn.
+line @1 greet.return : You found the #jetty# again. | #welcome_back#. The #wind# is behaving for once.
+line @1 kin.open [pair.kin!=no] : Come inside before the #flies# follow you. | I saved you the better chair for #draughts#.
+line @1 again.open : You were asking about the #crossing#. | I have not changed my mind about that #cloud#.
+line @1 farewell : #farewell#. Keep a #hand# on the rail. | #saying.capitalize#. I have a #knot# to finish.
+line @1 farewell.return : Next time we can finish the game. | Come back when the #lake# has settled.
+line @1 react.news : Tell me how it happened. | I can set this #oar# down and listen.
+line @1 react.news.new : Nothing of that has come to the #jetty# yet. | Who brought this word across the #lake#?
+line @1 react.news.known : I heard part of it from a #passenger#. | Your account fills the gap.
+line @1 react.news.doubt : A crowded #market# can turn one voice into ten. | I want to know who saw it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is heavy news. Sit here a while. | I can make the #crossing# later.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That calls for a warm #cup#. | I hope they get a clear #evening# to celebrate.
+line @1 answer.how : The #lake# kept me busy, which helps. | I have enough for today.
+line @1 answer.how.busy [self.working=yes] : The #rope# is holding and the #boat# is ready. | One more #load# before I rest.
+line @1 ask.how : Have you kept dry? | Did the #road# treat you kindly?
+line @1 sympathise : I will take the #oars# if you need a rest. | You can talk while we walk the #shore#.
+line @1 reassure : The #mist# will lift. We can wait. | Put one #step# down, then the next.
+line @1 decline : No, the #boat# is not going out in that #wind#. | I cannot spare the #coin# for it.
+line @1 accept_decline : Fair enough. I can ask another day. | Your answer is clear.
+line @1 thank : You held the #rope# when my #hands# were full. | That saved the #load# from the #water#.
+line @1 deflect_thanks : I was standing by the #plank# already. | A #knot# is easier with two #hands#.
+line @1 preclose : The #boat# needs pulling in. | I have a #draughts# game to finish.
+line @1 tease [pair.band=friends] : Your #draughts# piece travels more than my #boat#. | That #knot# looks like it made its own decision.
+line @1 ack : #bc_right#. I will check the #rope#. | #bc_fair_enough#. Let the #wind# settle.
+line @1 give.advice : Test the #plank# before carrying a #load#. | Save a little #coin# from the first #wage#.
+line @1 warn [world.bandits=near] : Stay with others on the #road# after dusk. | Ask at the #jetty# before travelling alone.
+scene weather_argument
+when topic=weather
+does tell.self / react.self / assess
+a : I told the #wind# to turn west. It ignored me. | I argued with the #cloud# until my voice gave out.
+b : Did you expect an answer? | Did it clear?
+a : I expected the #boat# to stay steady. | After the #crossing# ended.
+
+scene lake_mist
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : The #mist# sits low enough to hide the #jetty# from a #boat#. | I wait until I can see the landing #plank#.
+b : Can you hear your way in? | Does that delay everyone?
+a : I can hear the #shore#, but seeing is safer. | It does, and they arrive alive.
+
+scene contrary_wind
+when topic=work
+does tell.self / react.self / assess
+a : A cross #wind# makes the #oar# feel twice its weight. | I keep the #boat# angled until the #jetty# comes into view.
+b : Can a passenger help? | Do you have to turn back?
+a : By sitting still. | Only when the gusts make landing unsafe.
+
+scene passenger_load
+when topic=work
+does tell.self / react.self / assess
+a : Some travellers bring a #load# heavier than they admit. | I ask before they step onto the #plank#.
+b : Do they tell you the truth? | Can the boat carry it?
+a : Once they see where it must go. | If I balance it near the middle.
+
+scene mooring_knot
+when topic=work
+does tell.self / react.self / assess
+a : A #knot# at the #jetty# must come loose with cold #hands#. | I never tighten it beyond what I can undo.
+b : Has one held too fast? | Does it stay secure?
+a : During winter #ice#, yes. | If the #rope# is sound.
+
+scene winter_ice
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The #ice# comes first along the quiet #shore#. | I test the #water# with an #oar# before I move the #boat#.
+b : Does it stop your work? | Can you break through?
+a : When it thickens. | Thin ice, yes; I never force the rest.
+
+scene river_start
+when topic=travel
+does tell.self / react.self / assess
+a : The #river# begins near this #lake# and keeps going beyond my #boat#. | I know this stretch better than the long #road#.
+b : Have you followed it far? | Would you like to?
+a : Only a little way. | One #summer# I might.
+
+scene city_memory
+when topic=memories
+does tell.self / react.self / assess
+a : I grew up with the sound of a #city# #street# outside. | Here I can hear the #water# through an open window.
+b : Which do you miss? | Did the quiet surprise you?
+a : The people at the #market#. | For the first few #nights#.
+
+scene market_bustle
+when topic=prices
+does tell.self / react.self / assess
+a : I like the #market# when it is too busy to walk straight through. | Every voice is selling something different.
+b : Do you buy anything? | Can you hear yourself think?
+a : A #loaf# and sometimes #pork#. | I think after I leave.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : Give me roast #pork# with the #crackling# still on. | I would row a late #crossing# for that supper.
+b : Do you cook it yourself? | Is it worth the trip?
+a : When I can afford it. | Ask me after the plate is empty.
+
+scene draughts_end
+when topic=pastimes
+does tell.self / react.self / assess
+a : I leave a #draughts# #piece# where it looks safe, then regret it. | A quiet game can become fierce in three moves.
+b : Do you win often? | Will you play another?
+a : Often enough to return. | Set the #board_game# out.
+
+scene saved_coin
+when topic=prices
+does tell.self / react.self / assess
+a : I put a little #coin# aside whenever the #wage# reaches my #hand#. | I have a purpose for it, though I keep that part private.
+b : Can you spare it? | Will you say what for?
+a : Not yet. | When the time comes.
+
+scene haggling
+when topic=prices
+does tell.self / react.self / assess
+a : I dislike arguing over a #price# while a queue forms behind me. | Say the sum plainly and let me decide.
+b : What if it is too high? | Do sellers listen?
+a : I keep my #purse# shut. | Some do when the #market# quiets.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #evening# is good until the #flies# rise from the #reed#. | I pull the #boat# in before they cover the #plank#.
+b : Do they bite? | Does the breeze help?
+a : Enough to send me inside. | If the #wind# remembers to blow.
+
+scene shared_cottage
+when topic=family
+does tell.self / react.self / assess
+a : The #home# is busy with working folk. | Even when I say little, someone has saved a place by the fire.
+b : Do you like the company? | Do you eat together?
+a : Most #nights#. | When our hours meet.
+
+scene hard_times
+when topic=prices
+does tell.self / react.self / assess
+a : The #wage# has stayed still while the #loaf# grew dearer. | I count the #purse# before agreeing to any journey.
+b : Are you managing? | Can another crossing help?
+a : For now. | It can, if the #weather# allows it.
+
+scene storm_wait
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I have a complaint for this #storm#, but I am staying ashore. | The #boat# can wait under the #shelter#.
+b : Will it pass soon? | Are the ropes secure?
+a : When it chooses. | I checked every #knot# twice.
+
+story first_landing [topic=work self.age>=18]
+  : I tried to bring a #boat# in while a cross #wind# pushed the stern away.
+  : The first approach failed, so I circled and came alongside the #jetty# slowly.
+  ask : Did anyone fall?
+  b : You gave yourself room.
+  : No. I learned to let the #water# set the pace.
+
+story lost_piece [topic=pastimes self.age>=18]
+  : A #draughts# #piece# slipped between the boards of a #plank#.
+  : We could see it from the #boat#, but reaching it meant wet sleeves.
+  ask : Did you fetch it?
+  b : You played with one less?
+  : I borrowed an #oar# and lifted it free.
+
+story saved_purse [topic=prices self.age>=18]
+  : I once carried the day's #wage# loose in my #purse# beside the #lake#.
+  : The tie came undone on the #jetty#, and I had to catch each #coin# before it rolled away.
+  ask : Did you get it all?
+  b : That was close.
+  : All but one. I tie the #knot# twice now.
+
+rule @bark_weather
+when concept=bark
+does aside
+cooldown 8h
+say You can keep that #wind# to yourself. | The #cloud# changed its mind again.
+
+rule @bark_mooring
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep clear of the #plank#. | Another turn around the post for this #rope#.
+
+rule @bark_game
+when concept=bark
+does aside
+cooldown 10h
+say I should move that #draughts# #piece#. | The #board_game# can wait until supper.
+
+rule @bark_evening
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say A long #evening#, at last. | The #flies# have found the #shore#.
+
+dlg @1 resident.hub : #greet#. I work the #boat# at #self.workplace#. | #greet#. Mind the #rope# beside your feet.
+dlg @2 resident.hub [topic.meeting=known] : Back for the #crossing#? | I remember you. The #weather# has changed since we spoke.
+dlg @1 resident.job : I carry travellers by #boat# at #self.workplace# when the #lake# is safe. | I keep the #oars# and #rope# ready for crossings.
+dlg @1 resident.bye : #farewell#. Watch the #plank# as you go. | #saying.capitalize#. I must tie the #boat# in.
+graft resident.hub
+choice Is the lake safe today? -> lake
+node lake
+say I check the #wind# and the #jetty# before taking anyone out. In thick #mist# or a #storm#, we wait.
+free
+choice What do you do after work? -> pastime
+choice Back to the landing. -> hub
+node pastime
+say I will play #draughts# or walk a crowded #market#. I keep some #coin# aside for my own plans.
+choice Back to the landing. -> hub
+choice Goodbye. -> bye

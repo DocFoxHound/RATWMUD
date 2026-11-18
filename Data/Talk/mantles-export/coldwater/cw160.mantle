@@ -1,0 +1,332 @@
+# cw160, the starlit orchard keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw160
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for tn_sm_ulric_harvestley
+written_by claude-codex-cw-2
+title the starlit orchard keeper
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk knows_apples_by_their_scent_after_dark
+likes crisp_apples stars market_bustle summer_evenings
+dislikes gulls early_bells
+fears a_harvest_spoiled_by_frost a_child_lost_on_the_road
+hopes a_southward_orchard_extension a_clear_evening_for_stars
+topics home +0.5 family +0.4 weather +0.3 pastimes +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# keeps the #house# at the #orchard#, knows ripe #apples# by #scent#, and counts #stars# after the #market# closes.
+
+words
+oath! = Pip and northern star | By the quiet orchard
+saying! = Let the fruit tell you when | A quiet sky keeps its own account
+apple = apple | crisp apple
+apples = apples | orchard apples
+fruit = fruit | picked fruit
+peel = peel | red peel
+pip = pip | apple pip
+scent = scent | apple scent
+smell = smell | orchard smell
+basket = basket | wicker basket
+baskets = baskets | fruit baskets
+orchard = orchard | Meresend orchard
+tree = tree | apple tree
+trees = trees | fruit trees
+row = row | orchard row
+rows = rows | orchard rows
+branch = branch | fruit branch
+branches = branches | low branches
+root = root | young root
+roots = roots | young roots
+soil = soil | dark soil
+slope = slope | southern slope
+spade = spade | garden spade
+harvest = harvest | autumn harvest
+frost = frost | early frost
+store = store | fruit store
+crate = crate | wooden crate
+crates = crates | wooden crates
+market = market | busy market
+stall = stall | market stall
+seller = seller | fruit seller
+buyer = buyer | passing buyer
+crowd = crowd | market crowd
+coin = coin | copper coin
+price = price | marked price
+road = road | High Road
+city = city | Ridgemere
+cart = cart | supply cart
+gate = gate | orchard gate
+fence = fence | low fence
+path = path | orchard path
+house = house | family house
+home = home | farmhouse
+family = family | household
+child = child | growing child
+spouse = spouse | dear spouse
+friend = friend | trusted friend
+visitor = visitor | visiting neighbour
+stranger = stranger | unfamiliar traveller
+table = table | kitchen table
+plate = plate | supper plate
+bread = bread | fresh bread
+cup = cup | plain cup
+lamp = lamp | kitchen lamp
+window = window | open window
+door = door | house door
+sky = sky | evening sky
+star = star | bright star
+stars = stars | distant stars
+moon = moon | thin moon
+summer = summer | late summer
+evening = evening | long evening
+morning = morning | early morning
+dawn = dawn | pale dawn
+bell = bell | early bell
+bells = bells | morning bells
+gull = gull | lake gull
+gulls = gulls | noisy gulls
+lake = lake | Glasswater
+shore = shore | lakeshore
+wind = wind | evening wind
+rain = rain | passing rain
+mist = mist | lake mist
+day = day | long day
+hour = hour | quiet hour
+night = night | clear night
+music = music | market music
+carts = carts | supply carts
+buyers = buyers | passing buyers
+birds = birds | orchard birds
+hand = hand | steady hand
+sun = sun | rising sun
+plates = plates | supper plates
+boots = boots | walking boots
+prices = prices | marked prices
+harvests = harvests | autumn harvests
+
+any
+opinion @1 city against 1 : The #city# has more #crowd# than I care to meet. | I can smell our #orchard# before seeing its #gate#.
+opinion @1 dole against 1 : I prefer a #basket# earned in our own #rows#. | The store should still know who has no #bread#.
+opinion @1 festivals against 1 : I watch the #market# from our #window# when the bells begin. | There is room here to hear the #music# without the crush.
+opinion @1 houses for 1 : Household estates send #carts# along the #road#. | Those #carts# keep a market open for our #fruit#.
+opinion @1 merchants mixed 0 : A #seller# who shows the #crate# bottom gets a fair #price#. | I count the #apples# myself.
+opinion @1 newcomers mixed 0 : I would show a #visitor# the #orchard# #path#. | I would also learn why they came.
+opinion @1 road mixed 0 : The #road# brings #buyers# close to our #gate#. | I like it best after they have gone.
+opinion @1 times for 1 : The #harvest# has fed this #house# well enough. | I will not complain at a full #table#.
+line @1 greet : #greet#. The #apples# are ready for sorting. | #greet#. Is the #market# closing already?
+line @2 greet [pair.band=friends|family] : Come inside; the #lamp# is lit. | Your #plate# is by the #window#.
+line @3 greet [here.time=dawn] : The #bells# have started earlier than the #birds#. | #greet#. The #frost# missed the #rows#.
+line @1 greet.return : You returned before the #fruit# went into the #store#. | The #sky# has cleared since you left.
+line @1 kin.open [pair.kin!=no] : Your #cup# is waiting at the #table#. | Come up the #path#; the #gate# is open.
+line @1 again.open : We were comparing those #crates#. | The #stars# came out while you were away.
+line @1 farewell : #farewell#. I will close the #store#. | Close the #gate# after your crossing.
+line @1 farewell.return : Come when the #sky# is clear. | The next #basket# should be ready tomorrow.
+line @1 react.news : I am listening. Take your time. | Begin with the part you saw yourself.
+line @1 react.news.new : Nothing of that reached the #orchard#. | Did the #cart# bring the word?
+line @1 react.news.known : A #buyer# said something similar at the #market#. | Your account is clearer.
+line @1 react.news.doubt : I would count the #crate# before claiming it was full. | Whose account can I compare with yours?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit beside the #lamp#; I can stay. | Take the #hour# you need; I will mind the #harvest#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Then I will bring out the good #apples#. | That is news for the whole #table#.
+line @1 answer.how : Last #night# the clear #sky# kept me outside after filling the #store#. | I slept after the #market# quieted.
+line @1 answer.how.busy [self.working=yes] : I am sorting #fruit# by #scent#. | These #baskets# must reach the #store#.
+line @1 ask.how : Have you eaten since the #road#? | Were the #market# #prices# sensible today?
+line @1 sympathise : The #window# has a quiet place beside it. | I can make a #cup# while you rest.
+line @1 reassure : We can check every #row# in daylight. | A poor #harvest# is not the end of the #orchard#.
+line @1 decline : I will stay with the #house# tonight. | No, the #crates# are not for sale yet.
+line @1 accept_decline : I understand; leave it there. | Then we will speak after #supper#.
+line @1 thank : You brought the #basket# through the #rain#. | Thank you for securing the #gate#.
+line @1 deflect_thanks : The #spade# was in my #hand# already. | Someone had to count the #fruit#.
+line @1 preclose : The #stars# are coming into view. | I have a #crate# to cover before dark.
+line @1 tease [pair.band=friends] : You have mistaken a #gull# for a #star# again. | That #apple# is riper than your best joke.
+line @1 ack : #bc_right#. This #crate# is sound. | #bc_fair_enough#. Let us leave the #gate# open.
+line @1 give.advice : Smell the #apple# near its stem before cutting it. | Plant new #roots# below the frost line.
+line @1 warn [world.bandits=near] : Leave the empty #road# to the #moon#. | Bring another person if you travel.
+scene apple_by_scent
+when topic=food
+does tell.self / react.self / assess
+a : I can tell which #row# an #apple# came from after dark. | The lower #trees# have a sharper #scent#.
+b : Do you need to taste it? | Is that always true?
+a : Not unless I doubt myself. | During a good #harvest#.
+
+scene crisp_bite
+when topic=food
+does tell.self / react.self / assess
+a : A crisp #apple# is enough for my #supper# after a market #day#. | I choose one with an unmarked #peel#.
+b : Do you eat it alone? | Is one enough?
+a : Sometimes beneath the #stars#. | With a piece of #bread#.
+
+scene market_noise
+when topic=home
+does tell.self / react.self / assess
+a : I like the #market# when it is busiest, from a little distance. | The #crowd# tells me the #fruit# will sell.
+b : Why stand apart? | Do you take a stall?
+a : I can see the #carts# better. | When the #baskets# are full.
+
+scene early_bell
+when topic=home
+does tell.self / react.self / assess
+a : The first #bell# reaches our #window# before the #sun#. | I would prefer an extra #hour# of quiet.
+b : Do you wake anyway? | Does the family?
+a : Every time. | Some sleep through it.
+
+scene gulls_at_store
+when topic=weather
+does tell.self / react.self / assess
+a : Gulls gather above the #store# when the #fruit# is carried in. | Their noise follows me to the #house#.
+b : Do they take apples? | Can you chase them?
+a : Any that fall. | For a little while.
+
+scene southern_slope
+when topic=home
+does tell.self / react.self / assess
+a : The #slope# beyond the last #row# could hold more #trees#. | I study the #soil# after each #rain#.
+b : Will you plant there? | Is the ground deep?
+a : When the #roots# are ready. | In most places.
+
+scene star_count
+when topic=pastimes
+does tell.self / react.self / assess
+a : I count the first #stars# over the #orchard# before going inside. | Their order changes with the season.
+b : Do you know their names? | Can you see the lake?
+a : A few. | When the #moon# is bright.
+
+scene summer_window
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #summer# #evening# lets me leave the #window# open. | The #orchard# smells warmer after the #sun# goes down.
+b : Do you sit outside? | Are there insects?
+a : Until the #stars# show. | More than I invite.
+
+scene frost_watch
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : I check the #branches# after a hard #frost#. | A cracked limb can drop on the #path#.
+b : Can you save it? | Do you check before the #bells#?
+a : Sometimes with a careful cut. | Before the #bells#.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : Our #table# gets crowded with #baskets# before it holds #plates#. | I clear the #fruit# away for the evening meal.
+b : Does anyone help? | Do you eat late?
+a : When I ask. | During #harvest#, yes.
+
+scene child_road
+when topic=family
+does tell.self / react.self / assess
+a : A #child# once walked farther along the #road# than I expected. | I waited by the #gate# until the familiar #boots# returned.
+b : Were you angry? | Was the child safe?
+a : Worried first. | Tired, and safe.
+
+scene spouse_rows
+when topic=family
+does tell.self / react.self / assess
+a : My #spouse# tends the #trees# while I keep the #house# and #store#. | We meet among the #rows# when the #sun# slips below the #rows#.
+b : Do you work together? | Who picks the fruit?
+a : When a #crate# is heavy. | Whoever reaches it first.
+
+scene old_map
+when topic=travel
+does tell.self / react.self / assess
+a : I have watched the #road# from the #orchard# since I was young. | Carts change, but the bend by the #shore# does not.
+b : Do you travel often? | Do you know every cart?
+a : As little as I need. | Their wheels have different sounds.
+
+scene marked_crate
+when topic=prices
+does tell.self / react.self / assess
+a : I mark each #crate# by #row# before it goes to the #market#. | A #buyer# can then tell where the #apples# grew.
+b : Does that raise the price? | Do they care?
+a : Sometimes. | The careful ones do.
+
+scene first_harvest
+when topic=memories
+does tell.self / react.self / assess
+a : The first #harvest# I kept here filled only two #crates#. | I thought the #orchard# would always seem small.
+b : Has it changed? | Were you disappointed?
+a : It fills the #store# now. | Only for a moment.
+
+scene night_sky
+when topic=weather here.time=night
+does tell.self / react.self / assess
+a : A clear #night# puts the #stars# above the #lake# like a second #harvest#. | I leave the #lamp# low to see them.
+b : Do you stay up? | Is it cold?
+a : Until the #house# settles. | Less in #summer#.
+
+scene market_basket
+when topic=work
+does tell.self / react.self / assess
+a : I carry the smallest #basket# to the #market# myself. | It lets me hear what #buyers# ask for.
+b : Do you sell directly? | What do they want?
+a : When the #stall# is open. | Crisp #fruit# and a clear #price#.
+
+story city_smell [topic=travel self.age>=18]
+  : I followed a #cart# toward the #city# and missed the #orchard# before reaching it.
+  : The stone streets held every smell but ripe #apples#.
+  ask : Did you return quickly?
+  b : You knew where you belonged.
+  : Before the next #market# #day#.
+
+story first_star [topic=pastimes self.age>=18]
+  : I stayed out after the #harvest# and waited for the first #star#.
+  : A #gull# crossed the #sky# and made me count again.
+  ask : Which appeared first?
+  b : A close contest.
+  : The #star#; the #gull# only made noise.
+
+story small_crate [topic=work self.age>=18]
+  : I sent two #crates# from the same #row# to the #market#.
+  : One held crisp #fruit# and the other bruised #apples#, so I marked them separately.
+  ask : Did both sell?
+  b : Honest sorting.
+  : At different #prices#, as they should.
+
+rule @bark_apple
+when concept=bark
+does aside
+cooldown 8h
+say That #apple# came from the lower #row#. | The #scent# is sharper tonight.
+
+rule @bark_star
+when concept=bark
+does aside
+cooldown 9h
+say The first #star# is out. | Leave the #lamp# low for a moment.
+
+rule @bark_gull
+when concept=bark
+does aside
+cooldown 10h
+say The #gulls# have found the #store# again. | Keep the #crate# covered.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 11h
+say This #basket# goes to the #market#. | Mark the #row# on that #crate#.
+
+dlg @1 resident.hub : #greet#. The #store# can take these sorted #apples#. | #greet#. The #sky# should clear by #evening#.
+dlg @2 resident.hub [topic.meeting=known] : The #market# is still open on your return. | The #apples# are sorted since your last visit.
+dlg @1 resident.job : Our #house# and the #orchard# #store# are in my care. | I sort #crates#, tend the #store#, and watch the #road#.
+dlg @1 resident.bye : #farewell#. The #gate# needs closing before dusk. | #saying.capitalize#. The #stars# are coming out.
+graft resident.hub
+choice Can you really know an apple by smell? -> apple
+node apple
+say The #apples# in each #row# carry a different #scent#. After a few #harvests#, I can name a #tree# in the dark.
+free
+choice Do you want a bigger orchard? -> orchard
+choice Goodbye. -> bye
+node orchard
+say The #slope# beyond the last #row# has good #soil#. I would put a few more #trees# there when we have the #roots#.
+choice Back to the house. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I have been sorting the #crates#. | #greet#. It is a good #night# for #stars#.
+line @1 farewell : #farewell#. I should put away the #basket#. | The #house# will be quiet after the #market# closes.

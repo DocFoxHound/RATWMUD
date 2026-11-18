@@ -1,0 +1,294 @@
+# cw138, the favour tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw138
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_heather_fernshaw
+written_by claude-codex-cw-2
+title the favour tally
+fits stage=adult|old
+prefers talk=plain
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk records_each_favour_in_a_small_book
+likes oatcakes cards tidy_house thunder
+dislikes night_noise wet_floors
+fears a_house_secret_spoken_aloud a_friend_left_unrepaid
+hopes every_favour_returned a_home_quiet_after_dark
+topics work +0.4 family +0.3 pastimes +0.3 food +0.3 gossip -0.5
+styles comfort=warm gossip=refuse refuse=gentle tease=careful
+marks oath saying
+persona #self.first# keeps a #tally# of every kindness, sweeps the #floor# before supper, and listens for #noise# after dark.
+
+words
+oath! = Tally and trough | By the last clean card
+saying! = Return the hand that helped you | A quiet house holds its own
+favour = favour | kindness
+favours = favours | kindnesses
+tally = tally | written tally
+mark = mark | tally mark
+marks = marks | tally marks
+book = book | small book
+ink = ink | dark ink
+hand = hand | helping hand
+hands = hands | helping hands
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+pen = pen | pig pen
+gate = gate | yard gate
+trough = trough | feed trough
+feed = feed | mash
+bucket = bucket | feed bucket
+buckets = buckets | feed buckets
+straw = straw | fresh bedding
+floor = floor | plank floor
+boots = boots | yard boots
+plank = plank | floor plank
+broom = broom | straw broom
+home = home | shared cottage
+house = house | tidy house
+roof = roof | sound roof
+night = night | late hour
+noise = noise | shouting
+thunder = thunder | thunderstorm
+rain = rain | shower
+oatcake = oatcake | oatcake with butter
+oatcakes = oatcakes | buttered oatcakes
+butter = butter | fresh butter
+cards = cards | playing cards
+card = card | playing card
+table = table | card table
+coin = coin | penny
+bread = bread | loaf
+price = price | asking price
+market = market | market square
+road = road | High Road
+city = city | Ridgemere
+lake = lake | Glasswater
+shore = shore | lake shore
+secret = secret | private matter
+story = story | old account
+watch = watch | patrol
+
+any
+opinion @1 city against 2 : A #city# full of unknown doors leaves me uneasy. | The #lake# gives me quieter company than city streets.
+opinion @1 dole for 1 : I have seen an empty #table# and would fill it before asking why. | A hungry household needs #bread# today.
+opinion @1 drink against 1 : A jar can loosen a #secret# that should have stayed quiet. | I do not enjoy shouting after the cups are empty.
+opinion @1 houses against 1 : A House can leave a worker waiting outside a locked #gate#. | I keep my own #story# away from their ears.
+opinion @1 merchants against 2 : A #bread# seller can raise the #price# faster than I earn a #coin#. | I remember the cost from last #market# day.
+opinion @1 newcomers against 1 : A new face may be kind, but I learn that slowly. | I do not show the #book# to someone just arrived.
+opinion @1 road against 1 : I dislike the #road# after dark; every sound travels. | Even by day I would rather stay near the #yard#.
+opinion @1 strangers mixed 1 : A stranger may need an #oatcake# and a dry #plank#. | I ask for a name before opening the #home#.
+opinion @1 times against 1 : Each week brings more #noise# and dearer #bread#. | The #tally# grows while my #coin# does not.
+
+grown
+line @1 greet : #greet#. Mind the wet #floor#. | #greet#. The #feed# can wait through one question.
+line @2 greet [self.working=yes] : Let me close the #pen#, then speak. | The #bucket# needs emptying first.
+line @3 greet [pair.band=friends|family] : There is an #oatcake# with your place at the #table#. | Come in; the #table# is clear.
+line @4 greet [here.time=dawn] : The #pigs# are awake and the #roof# is still dry. | #greet#. I have already swept once.
+line @1 greet.return : #welcome_back#. The #floor# is clean now. | I remember what you helped with last time.
+line @1 kin.open [pair.kin!=no] : Your seat is ready by the #table#. | I have #oatcakes# still warm.
+line @1 again.open : I had not finished the #tally#. | Did you come back about the #cards#?
+line @1 farewell : #farewell#. Step over the loose #plank#. | #saying.capitalize#. I must check the #gate#.
+line @1 farewell.return : We can play another #card# game then. | The #home# should be quieter tomorrow.
+line @1 react.news : Tell me softly; the #yard# carries sound. | I will listen after setting down the #bucket#.
+line @1 react.news.new : I have not written that in the #book#. | Did it happen nearby?
+line @1 react.news.known : I heard one part at the #market#. | Your words change how I should remember it.
+line @1 react.news.doubt : #hedge#, that #story# needs someone who saw it. | I have heard a #secret# turn into a rumour before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit inside where it is still. | You have my attention; the #pigs# can wait.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will put a glad #mark# beside that day. | Good. Let us share an #oatcake#.
+line @1 answer.how : The #house# is tidy and I am nearly calm. | A little worried about a #favour# I owe.
+line @1 answer.how.busy [self.working=yes] : The #pen# needs #straw# and the #floor# wants drying. | I have #feed# to carry before supper.
+line @1 ask.how : Did you rest last #night#? | Have you had enough to eat?
+line @1 sympathise : You may sit at my #table# without explaining. | We can wait for your breathing to settle.
+line @1 reassure : I will make another #mark# and help when I can. | The #roof# is sound; we can wait out the #thunder#.
+line @1 decline : No; the open #gate# needs someone watching it. | I promised my #coin# for #feed#.
+line @1 accept_decline : I understand; I will not ask again. | We can leave the #cards# unplayed.
+line @1 thank : Your #hand# saved me from carrying both #buckets#. | I have written down what you did for me.
+line @1 deflect_thanks : You have helped me before. | It was one #plank# and a little time.
+line @1 preclose : The #book# needs its last #mark#. | I want the #home# quiet before #night#.
+line @1 tease [pair.band=friends] : You have lost that #card# twice already. | Your #broom# work would not pass my inspection.
+line @1 ack : #bc_right#. I will check the #tally#. | #bc_fair_enough#. I heard you.
+line @1 give.advice : Dry the #floor# before carrying the #feed#. | Pay back a #favour# while you remember it.
+line @1 warn [world.bandits=near] : Come inside before the #road# goes dark. | Keep your #coin# close at the #market#.
+scene favour_book
+when topic=pastimes
+does tell.self / react.self / assess
+a : I put a #mark# beside every #favour# I owe. | The #book# keeps me from forgetting a quiet kindness.
+b : Do you record what others owe? | Is the list long?
+a : Only what I owe them. | Long enough to need #ink#.
+
+scene returned_bucket
+when topic=work
+does tell.self / react.self / assess
+a : Someone carried a #bucket# for me when my #hand# was sore. | I took their turn with the #broom# the next morning.
+b : Did they expect it? | Was that enough?
+a : I think not. | It was a start.
+
+scene cards_evening
+when topic=pastimes
+does tell.self / react.self / assess
+a : A hand of #cards# can settle my thoughts after the #yard#. | I count the #marks# on a #card# before making a move.
+b : Do you win? | Who plays with you?
+a : When I stop worrying. | Whoever has finished work.
+
+scene mislaid_card
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #card# went under the #table# and everyone blamed the #pig# outside. | I found it beside a chair leg.
+b : Did the game restart? | Who dropped it?
+a : With a fresh deal. | The one who accused the #pig#.
+
+scene oatcake_plate
+when topic=food
+does tell.self / react.self / assess
+a : I put #oatcakes# on the #table# before people come home. | A little #butter# makes them feel like supper.
+b : Do they keep well? | Who eats the first?
+a : Until morning. | Whoever worked longest.
+
+scene tidy_floor
+when topic=family
+does tell.self / react.self / assess
+a : I sweep the #floor# twice when the #yard# has been muddy. | In a tidy #house#, my thoughts stop racing.
+b : Do others help? | Does it stay clean?
+a : When I ask. | Until the next pair of #boots#.
+
+scene wet_plank
+when topic=work
+does tell.self / react.self / assess
+a : The #plank# outside the #pen# stays wet after the #rain#. | I set the #bucket# down before crossing it.
+b : Have you slipped? | Can it be replaced?
+a : Once, without the #feed#. | When we have sound wood.
+
+scene night_noise
+when topic=weather here.time=night
+does tell.self / react.self / assess
+a : #noise.capitalize# at #night# sends me to the window. | I check the #gate# before believing it was only wind.
+b : Has anyone come in? | Do you wake the others?
+a : No one so far. | Only if the sound returns.
+
+scene thunder_shelter
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# when the #roof# holds and everyone is inside. | The #pigs# settle after the first loud roll.
+b : Do you sit by a fire? | Are you frightened?
+a : With #cards#, if there is time. | Less than I am of the #road# at #night#.
+
+scene straw_bedding
+when topic=work
+does tell.self / react.self / assess
+a : I lay dry #straw# in the #pen# before the #pigs# need it. | A damp corner makes the whole #yard# smell sour.
+b : Is it heavy work? | How do you keep it dry?
+a : More than it looks. | On a shelf above the #floor#.
+
+scene open_gate
+when topic=work
+does tell.self / react.self / assess
+a : I cannot relax when the #gate# hangs open. | Even at supper I remember which #pig# presses the latch.
+b : Do you check it often? | Does someone else close it?
+a : Before each shift ends. | I ask, then I look myself.
+
+scene apprentice_feed
+when topic=work
+does tell.self / react.self / assess
+a : I am learning to mix #feed# for the smaller #pigs#. | The #trough# must be low enough for them.
+b : Who teaches you? | Have you made a mistake?
+a : The older #hands#. | More than one, and I corrected them.
+
+scene market_secret
+when topic=memories
+does tell.self / react.self / assess
+a : I heard a #story# about a great House that I keep out of the #book#. | It is not mine to spend at the #market#.
+b : Is it true? | Will you ever tell?
+a : I know enough to be careful. | Not for a game of #cards#.
+
+scene stranger_name
+when topic=family
+does tell.self / react.self / assess
+a : I ask a stranger's name before opening the #home#. | A warm #oatcake# does not require a long #story#.
+b : Do they stay? | Are you trusting?
+a : Until they are dry. | With small things first.
+
+scene bread_cost
+when topic=prices
+does tell.self / react.self / assess
+a : I note the #bread# #price# beside the #coin# left from wages. | The line gets tighter each week.
+b : Do you buy less? | Does anyone help?
+a : I make smaller meals. | We share when we can.
+
+scene lake_quiet
+when topic=pastimes
+does tell.self / react.self / assess
+a : I walk to the #lake# when the #home# is too loud. | The #shore# gives me a place to finish a thought.
+b : Do you go alone? | Does it help?
+a : Usually. | Until the next #noise# at #night#.
+
+scene favour_repaid
+when topic=family
+does tell.self / react.self / assess
+a : A friend once mended our #roof# without asking for #coin#. | I helped fill their #home# store before winter.
+b : Did they accept? | Was that the end of it?
+a : Gladly. | I still remember the #mark#.
+
+story first_tally [topic=memories self.age>=18]
+  : I wrote my first #favour# in a small #book# after someone carried #feed# for me.
+  : The #mark# felt too little for a whole morning of help.
+  ask : How did you repay it?
+  b : The book kept the promise visible.
+  : I took the hard #yard# shift when they needed a rest.
+
+story storm_cards [topic=pastimes self.age>=18]
+  : #thunder.capitalize# shook the #roof# while we played #cards#.
+  : A #card# slid beneath the #table# and nobody moved until the next roll faded.
+  ask : Who won?
+  b : That storm had everyone listening.
+  : I forgot the score, which was probably for the best.
+
+story house_whisper [topic=memories self.age>=18]
+  : Someone told me a #story# about a House while we waited at the #market#.
+  : I realized the teller had trusted me with more than gossip.
+  ask : Did you repeat it?
+  b : Some stories are dangerous to carry.
+  : No. I put no #mark# for that in the #book#.
+
+rule @bark_tally
+when concept=bark
+does aside
+cooldown 8h
+say One #favour# still needs repaying. | Where did I put the #book#?
+
+rule @bark_floor
+when concept=bark
+does aside
+cooldown 9h
+say That #plank# has not dried. | Another pass with the #broom#.
+
+rule @bark_feed
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The smaller #pigs# need their #feed#. | I will fill the #trough# now.
+
+rule @bark_night
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say Was that the #gate#? | Let the #home# stay quiet tonight.
+
+dlg @1 resident.hub : #greet#. Come in from the #yard#. | #greet#. Is the #gate# closed behind you?
+dlg @2 resident.hub [topic.meeting=known] : I remember that #favour# you did. | Back again? The #table# is clear now.
+dlg @1 resident.job : I learn the #pig# work at #self.workplace# and keep the #pen# dry. | I mix #feed#, sweep the #floor#, and check the #gate#.
+dlg @1 resident.bye : #farewell#. Mind the wet #plank#. | #saying.capitalize#. I must finish the #tally#.
+graft resident.hub
+choice Why keep a tally of favours? -> tally
+node tally
+say Kindness can be forgotten in a tired week. The #book# helps me return it.
+free
+choice Do you play cards? -> cards
+choice Back to the yard. -> hub
+node cards
+say After the #pen# is settled. I play better when the #home# is quiet.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye

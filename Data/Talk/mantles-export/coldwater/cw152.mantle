@@ -1,0 +1,321 @@
+# cw152, the market voice (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw152
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for tn_lf_isla_downfield
+written_by claude-codex-cw-2
+title the market voice
+fits stage=adult|old
+prefers talk=chatty
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes smoked_eel wrestling market_bustle misty_dawns
+dislikes rats gulls
+fears a_larder_overrun_by_rats a_city_bargain_that_takes_the_farm
+hopes a_farm_with_a_gate_of_own a_full_stall_on_market_day
+topics home +0.5 pastimes +0.3 prices +0.3 weather +0.3 family +0.2
+styles comfort=blunt gossip=careful refuse=direct tease=dry
+marks oath saying
+persona #self.first# calls across a crowded #market#, keeps #rats# out of the #larder#, and imagines a #farm# with a gate of its own.
+
+words
+oath! = Green and good ground | By the loudest stall
+saying! = A full room needs a firm voice | Check the gate before praising the farm
+home = home | farmhouse
+house = house | busy house
+room = room | living room
+door = door | house door
+roof = roof | sound roof
+shelf = shelf | larder shelf
+floor = floor | swept floor
+table = table | family table
+plate = plate | supper plate
+fire = fire | cooking fire
+pot = pot | supper pot
+larder = larder | food cupboard
+rat = rat | larder rat
+rats = rats | larder rats
+trap = trap | covered trap
+gull = gull | shore gull
+gulls = gulls | noisy gulls
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+market = market | crowded market
+stall = stall | market stall
+stalls = stalls | market stalls
+crowd = crowd | market crowd
+buyer = buyer | market buyer
+seller = seller | stall seller
+price = price | asking price
+coin = coin | household coin
+bag = bag | market bag
+goods = goods | market goods
+city = city | Ridgemere
+road = road | High Road
+cart = cart | goods cart
+wheel = wheel | cart wheel
+box = box | city box
+label = label | printed label
+farm = farm | small farm
+field = field | open field
+fields = fields | open fields
+fold = fold | sheep fold
+gate = gate | farm gate
+fence = fence | low fence
+sheep = sheep | grazing sheep
+hay = hay | dry hay
+garden = garden | kitchen garden
+soil = soil | dark soil
+spade = spade | garden spade
+green = green | village green
+wrestling = wrestling | fair wrestling
+bout = bout | wrestling bout
+grip = grip | strong grip
+shoulder = shoulder | braced shoulder
+mist = mist | dawn mist
+dawn = dawn | first light
+morning = morning | early morning
+wind = wind | hill wind
+rain = rain | shower
+sun = sun | rising sun
+lake = lake | Glasswater
+shore = shore | lakeshore
+family = family | household
+friend = friend | close friend
+neighbour = neighbour | nearby neighbour
+neighbours = neighbours | nearby neighbours
+stranger = stranger | new face
+voice = voice | carrying voice
+voices = voices | market voices
+bell = bell | morning bell
+festival = festival | feast day
+bench = bench | wooden bench
+hour = hour | passing hour
+night = night | late hour
+hand = hand | working hand
+hands = hands | working hands
+
+any
+opinion @1 city against 2 : I have seen a #city# #box# with more #label# than useful #goods#. | I will open it before giving the seller my #coin#.
+opinion @1 dole mixed 0 : I would feed a hungry neighbour today. | I would rather see work offered tomorrow.
+opinion @1 festivals mixed 1 : The #market# grows noisy on a #festival#, and I can match it. | I still want the #house# quiet by night.
+opinion @1 houses mixed 0 : A House can pay for a good #cart# of #goods#. | Its name cannot make a poor bargain fair.
+opinion @1 merchants mixed 0 : Show me the #goods# and name the #price# plainly. | I will not buy a sealed #box# on a stranger's promise.
+opinion @1 newcomers mixed 0 : A new face can help at the #stall#. | Let that #hand# show its strength with a #bag#.
+opinion @1 strangers mixed 0 : A #stranger# may need directions and a #plate#. | I ask a name before opening our #door# at night.
+opinion @1 times mixed 0 : The #house# has supper and the #fold# has #hay#. | I still watch what the next #market# costs.
+
+grown
+line @1 greet : #greet#. You have found the loudest voice near the #fold#. | #greet#. Watch for the #gulls# beside your #bag#.
+line @2 greet [self.working=yes] : Keep speaking as I sweep the #floor#. | Let me move the #pot# off the #fire# first.
+line @3 greet [pair.band=friends|family] : There is #eel# on the #plate# for you. | Come see the #field# I marked out.
+line @4 greet [here.time=dawn] : #mist.capitalize# has swallowed the far #fence#. | #greet#. The #house# woke before the #bell#.
+line @1 greet.return : I knew that #voice# would come back. | #welcome_back#. The #market# is quieter now.
+line @1 kin.open [pair.kin!=no] : Come through; I have cleared the #table#. | Leave your #bag# by the #door#.
+line @1 again.open : We had not finished the matter of that #box#. | Did you get a better #price# at the next #stall#?
+line @1 farewell : #farewell#. Close the #gate# after you. | #saying.capitalize#. I have the #larder# to check.
+line @1 farewell.return : Bring word from the #market# on your return. | I may have found another patch for that #garden#.
+line @1 react.news : Speak up; the #pot# is hissing. | Say which part you actually saw.
+line @1 react.news.new : Nobody at our #table# had heard of that. | Was it said on the #road#?
+line @1 react.news.known : I caught the first account near a #stall#. | Yours makes the ending clearer.
+line @1 react.news.doubt : I want the lid off that story. | A bright #label# can hide an empty #box#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is cruel. Sit by the #fire# while I set supper aside. | Our #family# can leave you space to rest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! I will tell the #family# at supper. | Let the #market# hear that happy word.
+line @1 answer.how : Loud enough to be heard, and well enough. | The #larder# is full and so is my day.
+line @1 answer.how.busy [self.working=yes] : Supper is warming while I sweep the #floor#. | A #market# #bag# still needs bringing inside.
+line @1 ask.how : Did you get through the #crowd#? | Was the #morning# peaceful at your #home#?
+line @1 sympathise : I will make room at the #table#. | You can speak as little as you like; I can sit nearby.
+line @1 reassure : We can put the #trap# out and check the #larder# again. | One lost #bout# need not be the last.
+line @1 decline : I will not take a sealed #box# from the #city#. | These #goods# are worth less than the #price# you named.
+line @1 accept_decline : Then keep it. I shall look elsewhere. | Your answer is clear; let the subject rest.
+line @1 thank : You helped lift the #bag# clear of the #mud#. | You latched the #gate# after the #sheep# passed through.
+line @1 deflect_thanks : I was carrying the #plate# toward you anyway. | I needed to cross the #market# myself.
+line @1 preclose : The #pot# is calling from the #fire#. | I need the #larder# shut before #night#.
+line @1 tease [pair.band=friends] : Your #grip# would lose to a #bag# of #hay#. | I could hear your #voice# over three #stalls#.
+line @1 ack : #bc_right#. I will look under the #shelf#. | #bc_fair_enough#. Show me the #box#.
+line @1 give.advice : Turn a #box# over and read its small #label#. | Keep the #bread# covered when #gulls# are near.
+line @1 warn [world.bandits=near] : Travel through the #market# with company. | Do not take the #road# alone after dark.
+scene market_call
+when topic=home
+does tell.self / react.self / assess
+a : I can call to a #seller# across the #market# without leaving my #stall#. | The #crowd# carries my #voice# farther than I expect.
+b : Does the seller answer? | Do people turn around?
+a : Usually. | More than I would like.
+
+scene misty_dawn
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : At a misty #dawn#, the #fold# #gate# appears before the #field# behind it. | I like the #morning# until the #bell# breaks it.
+b : Can you see the sheep? | Were you awake before the #bell#?
+a : When they come close. | To check the latch.
+
+scene own_field
+when topic=home
+does tell.self / react.self / assess
+a : I would like a #farm# with one #field# I can call my own. | The #garden# would come before the painted sign.
+b : Where would it stand? | Would you raise sheep?
+a : Within sight of the #lake#. | If the #fold# had room.
+
+scene eel_supper
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# needs little more than #bread# beside it. | After the #market# shuts, I bring supper to the #table#.
+b : Do you buy it there? | Is it enough for everyone?
+a : When the #stall# has a good piece. | With a larger #loaf#.
+
+scene rats_larder
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# found a gap behind the #larder# #shelf#. | I sealed it before setting the #trap#.
+b : Did it return? | Was food spoiled?
+a : Not through that gap. | A corner of one #bag#.
+
+scene gulls_bag
+when topic=home
+does tell.self / react.self / assess
+a : A #gull# pulled at my #bag# when I stopped by the #shore#. | I held it high and chased the bird off with my #voice#.
+b : Did it take anything? | Was anyone watching?
+a : Only the wrapping. | Two #neighbours# laughed.
+
+scene wrestling_turn
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a #wrestling# #bout# with clear rules. | A clever #grip# is better than simply shoving.
+b : Do you compete? | Who decides the winner?
+a : When the #green# is open. | Whoever stays on their feet.
+
+scene fair_grip
+when topic=pastimes
+does tell.self / react.self / assess
+a : I practise turning a #shoulder# before taking a #grip#. | The move works only when I wait for the other wolf's weight.
+b : Have you taught anyone? | Is it hard to learn?
+a : A willing #friend#. | Easier to feel than explain.
+
+scene city_box
+when topic=prices
+does tell.self / react.self / assess
+a : A #city# #box# arrived with a grand #label# and poor hinges. | I opened it before paying the #seller#.
+b : What was inside? | Did you send it back?
+a : Useful tools mixed with broken ones. | I paid only for the sound pieces.
+
+scene market_price
+when topic=prices
+does tell.self / react.self / assess
+a : A #seller# gave me a #price# while hiding the bottom of the #bag#. | Before paying, I turned the #bag# and checked its measure.
+b : Did they show it? | Did you buy?
+a : After a pause. | From the next #stall#.
+
+scene festival_crowd
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : The #festival# puts too many wolves in the #market# for my liking. | I still know how to make my #voice# heard there.
+b : Do you stay? | Is there anything you enjoy?
+a : Until the #bout# is done. | The music from the #green#.
+
+scene sheep_supper
+when topic=family
+does tell.self / react.self / assess
+a : At our #house#, supper waits until the #fold# is closed. | We can hear the #sheep# settle from the #table#.
+b : Does everyone eat together? | Who checks the gate?
+a : When the chores allow. | Whoever is nearest.
+
+scene floor_sweep
+when topic=home
+does tell.self / react.self / assess
+a : The #floor# catches #hay# from every coat that comes through the #door#. | I sweep it toward the #fire# and carry it out.
+b : Does the house stay clean? | Does anyone help?
+a : For an #hour#. | When I hand them the broom.
+
+scene first_warm_day
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : Morning #sun# warms the #garden# while the #fold# stays shaded. | I put my #hands# in the #soil# to see if it is ready.
+b : Do you plant then? | Is it still cold?
+a : The early seeds. | Beneath the top, yes.
+
+scene road_bargain
+when topic=travel
+does tell.self / react.self / assess
+a : I use the #road# for good #market# days, but I inspect every #cart# bargain. | A city #label# cannot pull a broken #wheel# home.
+b : Have you been cheated? | Do you travel far?
+a : Once was enough. | I stop where the #market# has what I need.
+
+scene spare_plate
+when topic=home
+does tell.self / react.self / assess
+a : A spare #plate# stays by our #table# when the #market# is busy. | Someone may arrive hungry after the #stalls# close.
+b : Do visitors come often? | Is there enough food?
+a : Often enough. | We divide what we have.
+
+scene loud_answer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : My #voice# is loud even when I am pleased. | People think I am quarrelling before they see my face.
+b : Does that trouble you? | Can you speak softly?
+a : I explain it. | For a little while.
+
+story broken_box [topic=prices self.age>=18]
+  : A #cart# brought a painted #box# from the #city# with a splendid #label#.
+  : The corner broke when I lifted it, and I found half the #goods# were damaged.
+  ask : Did you pay for it?
+  b : The paint hid poor wood.
+  : Only for what I could use.
+
+story market_gull [topic=home self.age>=18]
+  : A #gull# followed my #bag# from the #market# to the #shore#.
+  : It caught the loose wrapping, so I lifted the #bag# and shouted until it let go.
+  ask : Was your food safe?
+  b : That bird was bold.
+  : Every piece of #eel# stayed inside.
+
+story first_bout [topic=pastimes self.age>=18]
+  : I entered a #wrestling# #bout# thinking a strong #grip# would settle it.
+  : My opponent turned a #shoulder# and put me on the #green# before I could plant my feet.
+  ask : Did you try again?
+  b : You learned the turn.
+  : Next time I waited instead of rushing.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 8h
+say The #market# is loud even from the #house#. | That #seller# needs to show the whole #bag#.
+
+rule @bark_larder
+when concept=bark
+does aside
+cooldown 9h
+say The #larder# #door# is shut. | I saw a #rat# track by the #shelf#.
+
+rule @bark_gulls
+when concept=bark here.place=shore
+does aside
+cooldown 10h
+say Keep that #bag# above the #gulls#. | The birds know when supper is near.
+
+rule @bark_mist
+when concept=bark here.weather=fog
+does aside
+cooldown 11h
+say I can barely see the #fold# #gate#. | The #mist# makes the #field# look longer.
+
+dlg @1 resident.hub : #greet#. I was calling to the #market#, not to you. | #greet#. Step clear of the #fold# #gate#.
+dlg @2 resident.hub [topic.meeting=known] : I know you. Did you find a fair #price#? | Back again? The #eel# is ready for supper.
+dlg @1 resident.job : I keep the #house# in order and tend the #larder#. | The #floor#, the #pot#, and the family's supper are my work.
+dlg @1 resident.bye : #farewell#. Take care near the #gulls#. | #saying.capitalize#. I have the #pot# to mind.
+graft resident.hub
+choice Why inspect city goods so closely? -> goods
+node goods
+say A grand #label# can hide damaged #goods#. I open the #box#, look at every piece, and pay only for what is sound.
+free
+choice Do you wrestle on the green? -> wrestling
+choice Back to the house. -> hub
+node wrestling
+say When there is a fair #bout#. A strong #grip# helps, but waiting for the right turn helps more.
+choice Back to the house. -> hub
+choice Goodbye. -> bye

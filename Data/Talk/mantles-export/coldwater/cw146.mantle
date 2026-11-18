@@ -1,0 +1,309 @@
+# cw146, the ledger skipper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw146
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_cw_bramble_reedmere
+written_by claude-codex-cw-2
+title the ledger skipper
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk remembers_every_name_ever_heard
+likes smoked_eel wrestling sharp_knife warm_rain
+dislikes rats crowds
+fears a_passenger_lost_in_mist cargo_loose_in_the_hold
+hopes every_crossing_ends_at_home a_quiet_evening_after_the_last_cart
+topics work +0.5 travel +0.3 pastimes +0.2 food +0.2 weather +0.2
+styles comfort=plain gossip=reluctant refuse=direct tease=dry
+marks oath saying
+persona #self.first# keeps a #ledger# of names and cargo, knows the #lake# by its weather, and dislikes each mile of the #road#.
+
+words
+oath! = By ink and oar | Deep water, hear me
+saying! = Count the paws before the freight | A clean blade saves a knot
+ledger = ledger | ink ledger
+ink = ink | dark ink
+page = page | ledger page
+name = name | passenger name
+names = names | remembered names
+boat = boat | lake boat
+boats = boats | working boats
+oar = oar | long oar
+oars = oars | paired oars
+rope = rope | mooring rope
+knot = knot | mooring knot
+hull = hull | sound hull
+bow = bow | boat bow
+stern = stern | boat stern
+hold = hold | cargo hold
+cargo = cargo | carried goods
+crate = crate | freight crate
+crates = crates | freight crates
+load = load | full load
+passenger = passenger | paying traveller
+passengers = passengers | travellers aboard
+crossing = crossing | lake passage
+shore = shore | near shore
+jetty = jetty | lake jetty
+landing = landing | sheltered landing
+lake = lake | Glasswater
+water = water | deep water
+mist = mist | lake mist
+rain = rain | warm rain
+wind = wind | lake wind
+week = week | working week
+summer = summer | warm season
+knife = knife | sharp knife
+blade = blade | clean blade
+edge = edge | keen edge
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+fire = fire | hearth fire
+plate = plate | supper plate
+table = table | family table
+larder = larder | food cupboard
+rat = rat | larder rat
+rats = rats | thieving rats
+green = green | village green
+bout = bout | wrestling bout
+grip = grip | firm grip
+shoulder = shoulder | strong shoulder
+crowd = crowd | packed crowd
+festival = festival | feast day
+city = city | Ridgemere
+road = road | High Road
+cart = cart | goods cart
+wheel = wheel | cart wheel
+mile = mile | road mile
+miles = miles | road miles
+home = home | farmhouse
+child = child | young one
+children = children | young ones
+roof = roof | sound roof
+bread = bread | warm bread
+market = market | busy market
+coin = coin | earned coin
+hour = hour | late hour
+door = door | farmhouse door
+voice = voice | familiar voice
+
+any
+opinion @1 city against 1 : The #city# gives me smoke and a #crowd# too dense to steer through. | I come back to the #lake# as soon as the #cart# is unloaded.
+opinion @1 festivals for 1 : At a #festival# I can hear the whole village talk at once. | I leave the #ledger# shut for that day.
+opinion @1 houses for 1 : Their orders keep a #boat# in work. | I still want fair pay for every #load#.
+opinion @1 road against 1 : Every #mile# toward the #city# feels longer than the return. | I would take the #lake# route if one reached that far.
+opinion @1 times for 1 : There is #bread# on our #table# and a sound #roof#. | The #boat# has work and our #home# has warmth.
+opinion @1 strangers mixed 0 : I write a #passenger#'s #name# before we leave the #jetty#. | A stranger can still be good company on the #water#.
+
+grown
+line @1 greet : #greet#. I will write your #name# in the #ledger#. | #greet#. The #boat# leaves when the #load# is balanced.
+line @2 greet [self.working=yes] : Speak up while I coil this #rope#. | Come to the #jetty# side where I can see you.
+line @3 greet [pair.band=friends|family] : You know the safe place by the #stern#. | Your #plate# is waiting at #home# after the crossing.
+line @4 greet [here.weather=rain] : This #rain# is warm enough for me. | Cover the #ledger#; I can stand the wet.
+line @1 greet.return : Back to the #jetty#, are you? | #welcome_back#. Your #name# is still on my #page#.
+line @1 kin.open [pair.kin!=no] : Come inside and warm yourself by the #fire#. | There is #bread# left on the #table#.
+line @1 again.open : We were speaking of the #road# before that #cart# arrived. | Have you come for another #crossing#?
+line @1 farewell : #farewell#. Step carefully off the #bow#. | #saying.capitalize#. I have the #rope# to coil.
+line @1 farewell.return : Bring back word of the #road#. | Look for my #boat# beside the #jetty# next time.
+line @1 react.news : Let me close the #ledger# and listen. | Who was there when it happened?
+line @1 react.news.new : That has not come aboard my #boat# before. | Which #passenger# carried the account?
+line @1 react.news.known : One #passenger# mentioned it on a crossing. | Your telling explains the part I missed.
+line @1 react.news.doubt : Let the witness speak before we settle this. | A full #boat# can pass along a false account quickly.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry for those caught in it. Sit beside the #jetty#. | I will leave the #ledger# closed for now.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will remember this #name# with pleasure. | Let them have a warm #plate# tonight.
+line @1 answer.how : I have had a safe #crossing# and enough supper. | The #lake# has been kind today.
+line @1 answer.how.busy [self.working=yes] : Cargo is stowed; now I inspect the #rope#. | I have one more #load# to carry.
+line @1 ask.how : Did the #road# wear you out? | Has your #home# stayed dry?
+line @1 sympathise : I can stay here after the last #passenger# leaves. | Come warm yourself by the #fire#; I can listen.
+line @1 reassure : We will bring the #boat# in slowly. | Hold the near #oar# and follow my pace.
+line @1 decline : No. The #hull# will not take that #load#. | I will not sail into thick #mist#.
+line @1 accept_decline : I understand. Another #boat# may suit you. | Very well; I shall tie up instead.
+line @1 thank : You steadied the #crate# when the #boat# shifted. | I noticed you held the #rope# until we landed.
+line @1 deflect_thanks : The #jetty# was close enough. | That #knot# was my work anyway.
+line @1 preclose : The last #passenger# is waiting at the #jetty#. | I need to settle the #ledger# before dusk.
+line @1 tease [pair.band=friends] : Your #grip# would not hold an empty #crate#. | You count #miles# louder than I do.
+line @1 ack : #bc_right#. I will check the #hold#. | #bc_fair_enough#. Let me mark the #page#.
+line @1 give.advice : Keep the heavy #crate# low in the #hold#. | A #knife# should be sharp enough to cut cleanly, then put away.
+line @1 warn [world.bandits=near] : Find company on the #road#. | The #boat# is safer at the #jetty# after dark.
+scene ledger_names
+when topic=work
+does tell.self / react.self / assess
+a : I keep each #passenger#'s #name# beside the #load# in my #ledger#. | I can recall who crossed even when the #page# gets wet.
+b : Do people mind being written down? | Why keep both?
+a : Some ask why; I tell them. | To know who is safe at the other #shore#.
+
+scene balancing_hold
+when topic=work
+does tell.self / react.self / assess
+a : A heavy #crate# belongs low in the #hold#. | I shift the #cargo# before anyone boards.
+b : Does it take long? | Can passengers help?
+a : Less time than righting a #boat#. | By waiting on the #jetty#.
+
+scene count_paws
+when topic=work
+does tell.self / react.self / assess
+a : I count the #passengers# aloud before the #rope# comes free. | I count again when we reach the #landing#.
+b : Have you ever lost count? | Do they answer?
+a : Once in heavy #mist#. | Most call back.
+
+scene warm_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : A warm #rain# after a dry #week# feels welcome on the #lake#. | I keep the #ledger# under cover and let the #boat# take the shower.
+b : Does it slow you? | Do passengers complain?
+a : Only when the #wind# joins it. | Some do until the #shore# appears.
+
+scene mist_route
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : In #mist# I keep the #boat# close enough to hear the #shore#. | A familiar #landing# can vanish between two #oar# strokes.
+b : Will you keep going? | Can you find the #jetty#?
+a : If I can see the water ahead. | When the grey begins to lift.
+
+scene sharp_blade
+when topic=pastimes
+does tell.self / react.self / assess
+a : I sharpen a #knife# until the #edge# will cut one #rope# cleanly. | A blunt #blade# makes more trouble than it saves.
+b : Do you carry it aboard? | What tells you the #edge# is ready?
+a : In its sheath. | On a scrap end of #rope#.
+
+scene wrestling_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a fair wrestling #bout# on the #green#. | The best #grip# comes from waiting for the other shoulder to turn.
+b : Do you join in? | Can anyone beat you?
+a : When the #boat# is tied. | More than one has.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : #smoke.capitalize# gives an #eel# enough flavour for a plain #plate#. | I eat it after the last #crossing#.
+b : Do you make it? | Is there enough to share?
+a : When I have time. | Take a piece.
+
+scene larder_rats
+when topic=home
+does tell.self / react.self / assess
+a : I found a #rat# near the #larder# and moved the #bread# higher. | The #home# needs a close door at night.
+b : Did it return? | Was the food spoiled?
+a : Not since I set the latch. | A corner of one loaf.
+
+scene hated_road
+when topic=travel
+does tell.self / react.self / assess
+a : I cart #cargo# toward the #city# when a customer needs it. | I resent every #mile# because the #boat# is where I belong.
+b : Why not send another driver? | Is the return easier?
+a : I know the #load# myself. | Once I see the #lake#.
+
+scene cart_wheel
+when topic=travel
+does tell.self / react.self / assess
+a : I stop the #cart# at the first strange sound from a #wheel#. | A lost pin could leave the whole #load# beside the #road#.
+b : Do you carry a spare? | Has that happened?
+a : In the #cart#. | Once, before I learned.
+
+scene quiet_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #home# is noisy when everyone returns from the #lake#. | I know who came in by the way the #door# sounds.
+b : Do you like the noise? | Can you rest there?
+a : Better than a #crowd#. | After supper.
+
+scene child_crossing
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I taught my #self.child# to wait for my word before stepping aboard. | A moving #boat# can surprise a young wolf.
+b : Was your child patient? | Did you teach rowing too?
+a : After some practice. | When the #oar# could be held steady.
+
+scene festival_off
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : On a #festival# day I leave the #ledger# at #home#. | I hear enough #names# on the #green# to fill a #page# anyway.
+b : Do you remember them? | Do you wrestle there?
+a : Nearly every one. | If the #bout# is open.
+
+scene market_crowd
+when topic=prices
+does tell.self / react.self / assess
+a : A #crowd# at the #market# makes me miss the open #lake#. | I buy what the #home# needs and leave quickly.
+b : Do you bargain? | What do you buy first?
+a : Only for a costly #load#. | #bread# and oil.
+
+scene winter_hull
+when topic=work here.season=winter
+does tell.self / react.self / assess
+a : Cold #water# finds a weak place in the #hull#. | I inspect every seam before I bring the #boat# out.
+b : Can you mend it? | Does winter stop the crossings?
+a : A small leak, yes. | When the #lake# freezes.
+
+scene ink_paws
+when topic=memories
+does tell.self / react.self / assess
+a : I once tipped the #ink# across a #page# of #names#. | I recopied the #ledger# before the next #boat# left.
+b : Did you remember everyone? | Did any name vanish?
+a : The voices helped. | One, until the #passenger# returned.
+
+story fog_return [topic=work self.age>=25]
+  : I brought a #boat# toward the #jetty# while #mist# covered the posts.
+  : I held the #oar# still and waited for a voice from the #shore#.
+  ask : Did someone call?
+  b : Waiting was wiser.
+  : Yes. The sound gave me the last few lengths.
+
+story snapped_knife [topic=pastimes self.age>=25]
+  : My dull #knife# slipped against a #rope# while a #crate# shifted.
+  : The #blade# slipped, so I fetched a sharp one and made a single cut.
+  ask : Was the cargo saved?
+  b : That taught you to sharpen it.
+  : Every piece. I keep the #edge# sound now.
+
+story road_mile [topic=travel self.age>=25]
+  : A #cart# #wheel# complained halfway along the #road# to the #city#.
+  : I stopped, found a loose pin, and fixed it before the #load# could spill.
+  ask : Did you reach the city?
+  b : That was worth the stop.
+  : Late, and happy to turn back to the #lake#.
+
+rule @bark_ledger
+when concept=bark
+does aside
+cooldown 8h
+say One #name# missing from this #page#. | I know that #passenger#'s #voice#.
+
+rule @bark_cargo
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Put the #crate# low in the #hold#. | Check the #rope# before we cast off.
+
+rule @bark_knife
+when concept=bark
+does aside
+cooldown 10h
+say This #blade# needs another pass. | A keen #edge# makes a clean cut.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 11h
+say Good warm #rain# at last. | Keep the #ledger# dry for me.
+
+dlg @1 resident.hub : #greet#. My #ledger# is open for the next #boat# from #self.workplace#. | #greet#. State your #name# before boarding.
+dlg @2 resident.hub [topic.meeting=known] : I remember you. Is there another #crossing# in mind? | Back at the #jetty#? Your #name# is on my #page#.
+dlg @1 resident.job : I skipper the #boat# from #self.workplace# and account for the #cargo#. | I carry #passengers# across the #lake# when the weather allows.
+dlg @1 resident.bye : #farewell#. Keep clear of the #rope#. | #saying.capitalize#. The next #load# is waiting.
+graft resident.hub
+choice Why keep everyone's name? -> ledger
+node ledger
+say If a #passenger# boards, I write the #name# beside the #cargo#. I count again at the far #shore# so no one is missed.
+free
+choice Do you always sail in rain? -> rain
+choice Back to the jetty. -> hub
+node rain
+say A warm #rain# is fine. Thick #mist# or a strong #wind# can make me keep the #boat# tied.
+choice Back to the jetty. -> hub
+choice Goodbye. -> bye
