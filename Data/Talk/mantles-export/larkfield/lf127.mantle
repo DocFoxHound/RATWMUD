@@ -1,0 +1,353 @@
+# lf127, the wheat-price map keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf127
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_lf_rook_wheatfield
+written_by claude-codex-lf-1
+title the wheat-price map keeper
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk always_knows_the_price_of_wheat
+likes warm_bread old_tales old_maps summer_evenings
+dislikes crowds drizzle
+fears a_bad_harvest_with_no_bread_to_share another_thief_crossing_the_farm_gate
+hopes a_full_granary_for_the_house a_fair_wheat_price_next_season
+topics work +0.5 prices +0.4 family +0.3 pastimes +0.2
+styles comfort=generous gossip=curious refuse=plain tease=warm
+marks oath saying
+persona #self.first# runs the #farm#, knows the day's #wheat# #price#, shares #bread# freely, and keeps an old #map# whose #roads# are wrong.
+
+words
+oath! = Wheat and warm bread | By the good field
+saying! = Know the price before filling the cart | A wrong road can still lead home
+farm = farm | Longmead farm
+field = field | wheat field
+fields = fields | open fields
+granary = granary | dry granary
+barn = barn | farm barn
+wheat = wheat | harvest wheat
+grain = grain | stored grain
+barley = barley | field barley
+seed = seed | saved seed
+seeds = seeds | saved seeds
+sack = sack | grain sack
+sacks = sacks | full sacks
+bin = bin | grain bin
+bins = bins | grain bins
+stack = stack | covered stack
+stacks = stacks | covered stacks
+sheaf = sheaf | bound sheaf
+sheaves = sheaves | bound sheaves
+harvest = harvest | wheat harvest
+plough = plough | field plough
+furrow = furrow | straight furrow
+soil = soil | good soil
+rain = rain | needed rain
+drizzzle = drizzle | thin drizzle
+sun = sun | summer sun
+summer = summer | long summer
+evening = evening | long evening
+morning = morning | early morning
+night = night | quiet night
+day = day | working day
+hour = hour | late hour
+cart = cart | grain cart
+wagon = wagon | supply wagon
+wheel = wheel | cart wheel
+road = road | field road
+roads = roads | drawn roads
+path = path | farm path
+bridge = bridge | stone bridge
+map = map | old map
+maps = maps | old maps
+ink = ink | faded ink
+mark = mark | map mark
+marks = marks | map marks
+town = town | near town
+city = city | far city
+market = market | busy market
+price = price | wheat price
+prices = prices | market prices
+coin = coin | saved coin
+wage = wage | fair wage
+merchant = merchant | grain merchant
+buyer = buyer | grain buyer
+seller = seller | market seller
+crowd = crowd | market crowd
+crowds = crowds | market crowds
+watch = watch | town watch
+thief = thief | unknown thief
+thieves = thieves | passing thieves
+gate = gate | farm gate
+fence = fence | field fence
+hand = hand | farm hand
+hands = hands | working hands
+work = work | farm work
+home = home | farmhouse
+house = house | farm house
+door = door | front door
+window = window | front window
+roof = roof | sound roof
+larder = larder | home larder
+table = table | family table
+plate = plate | supper plate
+plates = plates | supper plates
+bread = bread | warm bread
+loaf = loaf | fresh loaf
+loaves = loaves | fresh loaves
+meal = meal | evening meal
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | hungry stranger
+family = family | farm family
+child = child | young child
+tale = tale | old tale
+tales = tales | old tales
+story = story | familiar story
+stories = stories | familiar stories
+festival = festival | town festival
+bench = bench | wooden bench
+cost = cost | wagon cost
+leg = leg | aching leg
+book = book | farm book
+mornings = mornings | clear mornings
+forge = forge | smithy forge
+rope = rope | binding rope
+storm = storm | passing storm
+drizzle = drizzle | thin drizzle
+tables = tables | long tables
+latch = latch | gate latch
+tracks = tracks | faint tracks
+pace = pace | steady pace
+
+any
+opinion @1 city against 1 : The #city# has too many faces and too little room for a good #cart#. | I would rather bargain at our #market#.
+opinion @1 dole for 1 : A hungry #neighbour# can have #bread# before anyone asks about #coin#. | A town should manage that much.
+opinion @1 festivals for 1 : The #festival# brings the whole #town# out to talk. | The #tales# reach me while I set the supper #plates#.
+opinion @1 newcomers for 1 : A new #hand# who pulls a #cart# can find #work# here. | I ask what they know and show the rest.
+opinion @1 strangers for 1 : A #stranger# at my #gate# may need a #plate# before directions. | I keep a spare #loaf#.
+opinion @1 watch against 1 : The #watch# did not find the #thief# who crossed my #field#. | I still count my #sacks# myself.
+opinion @1 merchants mixed 0 : The #merchant# knows the #wagon# #cost#. | I know the #wheat# #price# before they speak.
+opinion @1 road mixed 0 : The #road# brings buyers to the #farm#. | My old #map# puts its #bridge# in the wrong place.
+line @1 greet : #greet#. The #wheat# #price# changed this #morning#. | #greet#. There is #bread# at the #house#.
+line @2 greet [pair.band=friends|family] : Come eat before we count the #sacks#. | I found another fault in my #map#.
+line @1 greet.return : The #wheat# has held its #price# since you left. | The #cart# has not yet left since your last visit.
+line @1 kin.open [pair.kin!=no] : The #table# is ready if you are hungry. | I saved a place by the #window#.
+line @1 again.open : I was tracing this #road# on the #map#. | Has the latest #wheat# #price# reached you?
+line @1 farewell : #farewell#. Take a #loaf# for the #road#. | I must check the #granary#.
+line @1 farewell.return : Another #tale# will be waiting. | The #wheat# may cost differently next time.
+line @1 react.news : Speak while I close this #bin#. | Was it near the #market#?
+line @1 react.news.new : I have not heard it at the #farm#. | Who brought this along the #road#?
+line @1 react.news.known : A #buyer# gave me a rough account. | You have filled a turn in the #story#.
+line @1 react.news.doubt : The #sack# count might settle that claim. | Does the #market# #price# bear that out?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit and have #bread#. | The #work# can wait until you are ready.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will bring out a fresh #loaf# for that. | There will be room at our #table#.
+line @1 answer.how : Our #harvest# held, and the #family# has eaten. | My #leg# aches only a little today.
+line @1 answer.how.busy [self.working=yes] : I am checking the #wheat# in this #bin#. | Let me finish the #cart# count.
+line @1 ask.how : Have you eaten on the #road#? | Did you see the #market# #price#?
+line @1 sympathise : Come under the #roof# and eat first. | I have an old #tale# if company helps.
+line @1 reassure : We can find another #path# on the #map#. | There will be #bread# for supper.
+line @1 decline : I cannot sell the #seed# set aside for planting. | The #gate# stays locked after theft.
+line @1 accept_decline : Fair enough. The #sacks# can remain in the #granary#. | Then we will speak after #harvest#.
+line @1 thank : You helped turn the #cart# at the #gate#. | I was glad to share that #loaf#.
+line @1 deflect_thanks : The #bread# was on the #table# already. | I had that #map# open for my own use.
+line @1 preclose : I must check the #bins# before #night#. | The #family# will be at the #table# soon.
+line @1 tease [pair.band=friends] : Your directions follow my old #map# too closely. | You know the #wheat# #price# from last season.
+line @1 ack : #bc_right#. The #grain# is dry. | #bc_fair_enough#. Another look at the #map# may help.
+line @1 give.advice : Save a #sack# of #seed# before pricing the #harvest#. | Ask who drew the #road# on any old #map#.
+line @1 warn [world.bandits=near] : Keep company with the #wagon# as you travel. | Tell the #watch# if you see a strange #cart#.
+scene wheat_price
+when topic=prices
+does tell.self / react.self / assess
+a : I know the #wheat# #price# before breakfast. | The #price# decides whether to send a #cart# to #market#.
+b : Do you write it down? | Who brings the news?
+a : In the #book#. | A buyer or a #hand#.
+
+scene market_tally
+when topic=prices
+does tell.self / react.self / assess
+a : The #merchant# counts #sacks# while I count #wages# and #seed#. | A fair #price# must leave room for both.
+b : Does it ever? | Do you bargain long?
+a : In a good #harvest#. | Until the sums agree.
+
+scene saved_seed
+when topic=work
+does tell.self / react.self / assess
+a : I put the best #seed# aside before selling any #wheat#. | A full #wagon# means little without next season of planting.
+b : Do you choose it yourself? | Where is it kept?
+a : With another #hand#. | In the dry #bin#.
+
+scene granary_bins
+when topic=work
+does tell.self / react.self / assess
+a : The #granary# #bins# need air around the lower #sacks#. | I check them after every #rain#.
+b : Do they stay dry? | Who helps?
+a : Under this #roof#. | The farm #hands#.
+
+scene straight_furrow
+when topic=work
+does tell.self / react.self / assess
+a : A straight #furrow# keeps the #plough# moving when the #field# is long. | I walk the first line before we begin.
+b : Can you see the end? | Does the soil vary?
+a : On clear #mornings#. | Near the #fence#.
+
+scene cart_axle
+when topic=work
+does tell.self / react.self / assess
+a : I look at the #wheel# before loading a full #cart#. | A broken one costs the #market# #day#.
+b : Have you lost a load? | Can you mend it?
+a : Not this season. | With the smith at the #forge#.
+
+scene covered_stack
+when topic=work
+does tell.self / react.self / assess
+a : A #stack# can shed #rain# if its top is properly tied. | I check the #rope# before a #storm#.
+b : Does it hold? | What if it leaks?
+a : Most times. | We move the #sheaves#.
+
+scene wrong_bridge
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# draws the #bridge# upstream of its true place. | I leave the error there to remind me to look up.
+b : Did you draw it? | Do you still use it?
+a : A former owner did. | For the #roads# that remain.
+
+scene map_ink
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #ink# on one old #road# has faded almost away. | I can still follow it with a finger.
+b : Where does it lead? | Have you walked it?
+a : Toward the #field#. | Not the whole distance.
+
+scene old_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : A good old #tale# changes a little each time it is told. | I listen for the part the teller still remembers clearly.
+b : Do you tell many? | Which is your favorite?
+a : At supper. | One about a wrong #road#.
+
+scene warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : Warm #bread# at the #table# can draw the #family# in from the #field#. | I keep one #loaf# for a late #hand#.
+b : Do you bake it? | Do they come late?
+a : The baker does. | During #harvest#.
+
+scene summer_evening
+when topic=weather
+does tell.self / react.self / assess
+a : A long #summer# #evening# lets me walk the #fields# after supper. | I see which #fence# needs work.
+b : Do you rest then? | Does the light last?
+a : When I return. | Long enough.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : Thin #drizzle# leaves a #cart# muddy without watering the #wheat# deeply. | I would rather have a steady #rain#.
+b : Does it hurt the crop? | Do you keep working?
+a : When it lingers. | Under a #roof#.
+
+scene festival_tables
+when topic=home
+does tell.self / react.self / assess
+a : The #festival# brings every #neighbour# to the long #tables#. | I like hearing what grew in other #fields#.
+b : Do you trade stories? | Do you stay late?
+a : A few #tales#. | Until the #family# is ready.
+
+scene farmhouse_meal
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# serves whoever helped with the #harvest# that #day#. | I count #plates# before the #sacks#.
+b : Do you have enough? | Who cooks?
+a : I make sure. | We share it.
+
+scene thief_at_gate
+when topic=memories
+does tell.self / react.self / assess
+a : A #thief# crossed our #gate# and the #watch# found no one. | I have checked the #latch# myself since.
+b : What was taken? | Did you see them?
+a : A little #grain#. | Only their #tracks#.
+
+scene new_hand
+when topic=work
+does tell.self / react.self / assess
+a : Following one #furrow# teaches a fresh #hand# the #field#. | I give them a steady #pace# before a full #cart#.
+b : Do they stay? | Who teaches them?
+a : Some do. | I do when I can.
+
+scene road_map
+when topic=travel
+does tell.self / react.self / assess
+a : The real #road# bends where my old #map# draws a straight line. | I have walked that bend often enough to know.
+b : Does that bother you? | Will you correct it?
+a : It amuses me. | Not yet.
+
+story wrong_map [topic=pastimes self.age>=18]
+  : I followed an old #map# toward a #bridge# it placed too near the #field#.
+  : The real #bridge# stood farther down the #road#.
+  ask : Did you keep the map?
+  b : A useful mistake.
+  : It still sits by my #window#.
+
+story thief_night [topic=memories self.age>=18]
+  : Someone crossed the #farm# #gate# and took a little #grain#.
+  : The #watch# came later and found no #tracks# they could use.
+  ask : Did it happen again?
+  b : That would anger me.
+  : I repaired the #latch# and kept count.
+
+story market_price [topic=prices self.age>=18]
+  : A #buyer# offered the previous #price# for the present #wheat#.
+  : I showed the #seed# and #wages# in my count.
+  ask : Did they agree?
+  b : An honest calculation.
+  : After another #hour# at the #table#.
+
+rule @bark_wheat
+when concept=bark
+does aside
+cooldown 8h
+say The #wheat# #price# rose today. | Count the #sacks# before loading.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 9h
+say That #bridge# is drawn wrong. | The #road# bends beyond the #field#.
+
+rule @bark_bread
+when concept=bark
+does aside
+cooldown 10h
+say There is #bread# at the #house#. | Set another #plate# on the #table#.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 11h
+say The #cart# #wheel# needs checking. | Leave the #seed# #sack# here.
+
+dlg @1 resident.hub : #greet#. I have the #wheat# #price# for today. | #greet#. Come inside for #bread#.
+dlg @2 resident.hub [topic.meeting=known] : The #map# still puts that #bridge# wrong. | The #cart# is still being loaded on your return.
+dlg @1 resident.job : I farm #self.workplace# and keep its #granary#. | I count #seed#, #sacks#, #wages#, and #market# #prices#.
+dlg @1 resident.bye : #farewell#. Take a #loaf# if you need one. | #saying.capitalize#. Mind the #gate#.
+graft resident.hub
+choice What is wheat worth today? -> price
+node price
+say I know the #market# #price#, but first I keep enough #seed# for our #field#.
+free
+choice Why keep a wrong map? -> map
+choice Goodbye. -> bye
+node map
+say Its errors make me look up at the real #road#.
+choice Back to the farm. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #grain# is dry. | #greet#. I have another old #tale#.
+line @1 farewell : #farewell#. The #family# is waiting for supper. | I will check the #bins# tomorrow.
