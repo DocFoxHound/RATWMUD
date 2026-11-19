@@ -894,9 +894,10 @@ void matchmaking()
     FakeMind mind;
     auto o = options(writeStrip(root));
     o.dialogueEndpoint = mind.endpoint();
-    // (The innkeeper's briefing for a newcomer's words, as the window's free talk hears them: asked here in open chat,
-    // which only a test lets residents answer since doc 84 Phase 12. P13 moves these asks into the window.)
-    o.residentsAnswerChat = true;
+    o.voiceData = RATW_SOURCE_DIR "/Data/Voice";     // (The talk library beside it: the innkeeper's window.)
+    // (Asked in the innkeeper's window, as every word to a resident is since doc 84 Phase 12: Phase 13 moved these asks
+    // there. The stand-in Mind refuses (503) until `speak`: then the window's own understanding answers, the written
+    // pointer with it; once it speaks, its words.)
     game::Game g(o);
     std::string problem;
     expect(start(g, problem), "starts: " + problem);
@@ -956,8 +957,24 @@ void matchmaking()
     // one still on its way after them is waited for with ticks of a thousandth of a second, the clock all but still.
     // The bound is only against a hang (about ten minutes, under ctest's timeout).
     const auto answer = [&](Client& c, const std::string& text) {
+        // In the innkeeper's window: stepped up to the counter, Talk, then the words typed.
+        if (auto* e = g.world().entity(ids[&c]))
+            if (const auto* keeper = g.world().entity("ui"))
+                e->cellId = keeper->cellId, e->position = {keeper->position.x, keeper->position.y + 1};
+        g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", "ui"}, {"entry", "talk"}}));
+        g.settle();
+        const json::Value* window = nullptr;
+        for (auto k = c.events.size(); k-- > 0 && !window;)
+            if (c.events[k].string("type") == "dialogue")
+                window = &c.events[k];
+        if (!window)
+            for (auto k = c.events.size(); k-- > 0 && k + 6 > c.events.size();)
+                std::cerr << "  event: " << json::dump(c.events[k]).substr(0, 300) << "\n";
+        expect(window != nullptr, "the innkeeper's window opens for " + text);
+        const int session = window ? int(window->number("session")) : 0;
         const auto before = c.events.size();
-        say(c, text, true);
+        g.command(&c, cmd({{"type", "dialogue_say"}, {"session", double(session)}, {"text", text}}));
+        g.settle();
         const auto heard = [&]() {
             const auto* inn = c.seen("ui");
             for (auto k = before; inn && k < c.events.size(); ++k)
@@ -1181,6 +1198,10 @@ void evenings()
     expect(!heard("Welcome, friend"), "no word yet");
     const auto* hint = nell.last("talkHint");
     expect(hint && hint->string("npc") == "ui" && contains(hint->string("text"), "(T)"), "and Nell is told how to talk with her");
+    // (Doc 84 Phase 13: the welcome waits for her window, past P12's half an hour: Nell comes over 35 minutes later.)
+    const double dueFrom = g.world().time();
+    while (g.world().time() - dueFrom < 35 * 60)
+        inn.run(60);
     inn.place("ui", 1, 8.5, 9.5);
     g.command(&nell, cmd({{"type", "dialogue_open"}, {"npc", "ui"}, {"entry", "talk"}}));
     inn.run(1);

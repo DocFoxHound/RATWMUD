@@ -1070,14 +1070,22 @@ void otherRoles()
     // The resident's hub: the town from its real numbers; the way to a place, from the world's own posts and doors.
     auto* d = open("u1", "talk");
     expect(d && d->string("tree") == "resident" && d->string("node") == "hub", "Talk with a neighbour: the hub: " + show(d));
-    for (const auto* topic : {"What's it like around here?", "What do you do?", "Heard any news?", "Could you tell me the way?", "Goodbye."})
+    // (Doc 84 §13.4.3, Phase 13: the hub rebuilt: the news, Ask about..., a name given, goodbye; the town, the work and the
+    // way under Ask about...)
+    for (const auto* topic : {"Heard any news?", "Ask about...", "I'm Ash.", "Goodbye."})
         expect(pick(d, topic) > 0, std::string("the hub offers: ") + topic + " " + texts(d));
+    expect(d && d->array("choices").size() <= 9, "nine choices at most: " + texts(d));
     talk::Facts facts;
     town.g.dialogueRoleFacts(town.ash.entityId, "u1", facts);
+    d = choose(pick(d, "Ask about..."));
+    for (const auto* topic : {"Tell me about yourself.", "What's it like around here?", "Could you tell me the way?", "Back to the rest."})
+        expect(pick(d, topic) > 0, std::string("Ask about... offers: ") + topic + " " + texts(d));
     d = choose(pick(d, "What's it like around here?"));
     expect(d && d->string("node") == "town" && (contains(d->string("line"), facts["here.folk"]) || contains(d->string("line"), facts["here.shops"]) ||
                                                 contains(d->string("line"), "times") || contains(d->string("line"), "doing well")),
            "the town, by its numbers (" + facts["here.folk"] + " folk, " + facts["here.shops"] + " shops): " + show(d));
+    d = choose(pick(d, "Back to the rest."));
+    d = choose(pick(d, "Ask about..."));
     d = choose(pick(d, "Could you tell me the way?"));
     expect(d && d->string("node") == "way" && pick(d, "The Chapel (the church)") > 0, "the ways: the chapel among them: " + show(d));
     d = choose(pick(d, "The Chapel (the church)"));
@@ -1410,6 +1418,310 @@ void windowPromises()
            "and the promise in it, said of words from the window, is let go");
     fs::remove_all(root);
 }
+
+void windowTalk()
+{
+    // Doc 84 §13.4-13.6 (Phase 13): the window's talk and typed words. The loader holds every node to nine choices; the
+    // hub rebuilt (a name given, Ask about...); an `answers` node; typed words understood without the Mind (a choice by its
+    // words, a node, a move, "didn't follow", goodbye) and when its call fails; what the player heard brought up; the
+    // ledger's callback; lines turned over.
+    std::string problem;
+    {
+        talk::Library lib;
+        expect(lib.load(RATW_SOURCE_DIR "/Data/Talk", problem), "the library loads: " + problem);
+        std::string ten = "tree capped\nentry capped hub\nnode hub\nsay Yes?\n";
+        for (int i = 1; i <= 10; ++i)
+            ten += "choice Choice " + std::to_string(i) + ". -> hub\n";
+        const bool tenOk = lib.parseTree(ten, "capped.tree", problem);
+        expect(!tenOk && contains(problem, "could show 10 choices"), "a node of ten choices is refused: " + problem);
+        std::string nine = "tree capped2\nentry capped2 hub\nnode hub\nsay Yes?\n";
+        nine += "choice Wares. [role=merchant] -> hub\nchoice Missions. [role!=merchant] -> hub\n";
+        for (int i = 1; i <= 7; ++i)
+            nine += "choice Choice " + std::to_string(i) + ". -> hub\n";
+        nine += "each heard in here.heard max 1\nchoice I heard #heard.words#. [does tell.news] -> hub\n";
+        const bool nineOk = lib.parseTree(nine, "capped2.tree", problem);
+        expect(nineOk, "choices that can't show together count once: " + problem);
+        std::string bad = "tree capped3\nentry capped3 hub\nnode hub\nanswers ask.nothing\nsay Yes?\nchoice Hm. [does no.such] -> hub\n";
+        const bool badOk = lib.parseTree(bad, "capped3.tree", problem);
+        expect(!badOk && contains(problem, "not a move"), "an unknown move is refused: " + problem);
+        for (const auto& [id, t] : lib.trees())
+            for (const auto& [n, node] : t.nodes)
+                expect(talk::Library::mostShown(node) <= 9, "every node of every tree shows nine at most: " + id + "." + n);
+    }
+    for (const bool failing : {false, true})
+    {
+        // Without the Mind; then with one that is plugged in but fails (a port nobody answers): the same understanding.
+        const auto root = fs::temp_directory_path() / ("ratw-dialogue-window-" + std::to_string(::getpid()) + (failing ? "-f" : ""));
+        const auto worldPath = writeStrip(root / "world");
+        Town town(worldPath, (root / "save").string(), 120, true, 3 * 86400, failing ? "http://127.0.0.1:9/dialogue" : "");
+        auto& w = town.g.world();
+        town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+        w.setTimeOfDay(12);
+        town.run(2);
+        const auto keep = [&](const char* who) {
+            auto* n = w.entity(who);
+            n->cellId = cellId(1);
+            n->position = {10.5, 9.5};
+            w.stop(who);
+            town.place(town.ash, 1, 9.5);
+        };
+        const auto open = [&](const char* npc) -> const json::Value* {
+            if (const auto* d = town.g.dialogueOf(town.ash.entityId))
+                town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+            keep(npc);
+            town.ash.events.clear();
+            town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", "talk"}}));
+            town.g.settle();
+            return lastOf(town.ash, "dialogue");
+        };
+        const auto pick = [&](const json::Value* d, const std::string& starts) {
+            if (d)
+                for (const auto& c : d->array("choices"))
+                    if (c.string("text").rfind(starts, 0) == 0)
+                        return int(c.number("n"));
+            return 0;
+        };
+        const auto texts = [](const json::Value* d) {
+            std::string all;
+            if (d)
+                for (const auto& c : d->array("choices"))
+                    all += "[" + c.string("text") + "]";
+            return all;
+        };
+        const auto choose = [&](int n) -> const json::Value* {
+            const auto* d = town.g.dialogueOf(town.ash.entityId);
+            town.ash.events.clear();
+            if (d)
+                town.g.command(&town.ash, cmd({{"type", "dialogue_choose"}, {"session", d->id}, {"n", n}}));
+            town.g.settle();
+            return lastOf(town.ash, "dialogue");
+        };
+        const auto type = [&](const std::string& text) -> const json::Value* {
+            town.run(1.1);                          // (A line a second at most, as chat.)
+            keep(town.g.dialogueOf(town.ash.entityId) ? town.g.dialogueOf(town.ash.entityId)->npc.c_str() : "u1");
+            const auto* d = town.g.dialogueOf(town.ash.entityId);
+            town.ash.events.clear();
+            if (d)
+                town.g.command(&town.ash, cmd({{"type", "dialogue_say"}, {"session", d->id}, {"text", text}}));
+            town.g.settle();
+            for (int i = 0; i < 100 && !lastOf(town.ash, "dialogue_close"); ++i)
+            {
+                const auto* last = lastOf(town.ash, "dialogue");
+                if (last && !last->boolean("awaiting") && i > 0)
+                    break;
+                town.run(.1);                       // (A failing Mind's answer comes back on the game thread.)
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            return lastOf(town.ash, "dialogue");
+        };
+        const auto show = [&](const json::Value* d) { return d ? d->string("node") + ": " + d->string("line") + " " + texts(d) : std::string("none"); };
+        const std::string mode = failing ? " (the Mind failing)" : " (no Mind)";
+
+        // The hub: a name to give, nine choices at most, for every resident here.
+        for (const char* who : {"u1", "um", "ui"})
+        {
+            const auto* d = open(who);
+            expect(d && d->array("choices").size() <= 9, std::string("nine at most at ") + who + "'s: " + show(d));
+        }
+        auto* d = open("u1");
+        expect(d && d->string("node") == "hub" && pick(d, "I'm Ash.") > 0 && pick(d, "What's your name?") == 0, "the hub: a name to give: " + show(d));
+        d = choose(pick(d, "I'm Ash."));
+        expect(d && d->string("node") == "introduced" && contains(d->string("line"), "Ash"),
+               "introduced: the name learned and said back: " + show(d));
+        d = open("u1");
+        expect(pick(d, "I'm Ash.") == 0 && pick(d, "What's your name?") == 0, "and not offered again, theirs given back: " + show(d));
+        // An `answers` node: the move made, answered.
+        d = choose(pick(d, "Ask about..."));
+        d = choose(pick(d, "Tell me about yourself."));
+        expect(d && d->string("node") == "job" && pick(d, "How are you keeping") > 0, "about themselves: " + show(d));
+        d = choose(pick(d, "How are you keeping"));
+        expect(d && d->string("node") == "how" && !d->string("line").empty(), "how they are keeping, answered: " + show(d));
+
+        // Typed words (§13.5): a choice by its own words; a node by what they mean; a move answered; not followed.
+        d = open("u1");
+        d = type("heard any news lately?");
+        expect(d && d->string("node") == "news", "\"heard any news lately?\": the news" + mode + ": " + show(d));
+        d = type("What do you make of the Watch these days?");
+        expect(d && d->string("node") == "opinion" && !d->string("line").empty(), "an opinion asked: the opinion node" + mode + ": " + show(d));
+        const auto before = texts(d);
+        d = type("can you read the stars for me?");
+        expect(d && d->string("node") == "opinion" && texts(d) == before && !d->string("line").empty(),
+               "not followed: said in character, the choices again" + mode + ": " + show(d));
+        d = type("You're a fool.");
+        expect(d && !d->string("line").empty(), "an insult: answered" + mode + ": " + show(d));
+        d = open("um");
+        d = type("show me your wares");
+        expect(lastOf(town.ash, "dialogue_shop") != nullptr || (d && d->string("node") == "hub"),
+               "\"show me your wares\" at the counter: the shop" + mode);
+        d = open("u1");
+        type("Well, I'll be off. Goodbye.");
+        expect(lastOf(town.ash, "dialogue_close") && !town.g.dialogueOf(town.ash.entityId), "goodbye: the window closes" + mode);
+
+        // What the player heard, brought up (§13.4.5): a claim about another, then told.
+        Belief b;
+        b.holder = "u3";
+        b.subject = "u2";
+        b.claim = "stole from Merchant u";
+        b.confidence = .9;
+        b.day = w.calendarDays();
+        auto heard = town.g.claimHeard(town.ash.entityId, b, "u3");
+        expect(!heard.key.empty() && contains(heard.words, "Neighbour u2"), "a claim in the player's words: " + heard.words);
+        town.g.playerHeard(town.ash.entityId, heard);
+        d = open("u1");
+        expect(pick(d, "I heard") > 0, "the hub offers to bring it up: " + show(d));
+        d = choose(pick(d, "I heard"));
+        bool holds = false;
+        if (const auto* held = w.beliefsOf("u1"))
+            for (const auto& x : *held)
+                holds |= x.subject == "u2";
+        expect(d && d->string("node") == "told" && !d->string("line").empty() && holds, "told: answered, and it holds the claim now: " + show(d));
+        d = open("u1");
+        expect(pick(d, "I heard") == 0, "and it isn't offered again to the one told: " + show(d));
+
+        // (With the Mind plugged in, the router's own answers come first, as before: "Merchant u works at...". The rest is
+        // the window's alike.)
+        if (failing)
+        {
+            d = type("Where's Merchant u?");
+            expect(d && contains(d->string("line"), "Merchant u"), "the router's answer, the Mind plugged in: " + show(d));
+            fs::remove_all(root);
+            continue;
+        }
+        // The ledger with players (§13.4.7): someone asked after, remembered, and brought up a while later (once).
+        d = type("Where's Merchant u?");
+        expect(d && d->string("node") == "whereis", "asked after Merchant u" + mode + ": " + show(d));
+        town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"why", "bye"}}));
+        auto later = w.save();
+        later.calendarDays += .3;
+        expect(w.restore(later).ok, "a while passes");
+        d = open("u1");
+        expect(d && contains(d->string("line"), "Merchant u"), "the callback: " + show(d));
+        d = open("u1");
+        expect(d && !contains(d->string("line"), "Merchant u"), "said once: " + show(d));
+        // Lines turn over: the hub's greeting not the same twice running.
+        std::string last, again;
+        int same = 0;
+        for (int i = 0; i < 6; ++i)
+        {
+            town.run(4);
+            d = open("u1");
+            again = d ? d->string("line") : std::string();
+            same += again == last;
+            last = again;
+        }
+        expect(same == 0, "the hub's line never the same twice running (" + std::to_string(same) + ")");
+        fs::remove_all(root);
+    }
+}
+
+void windowMantle()
+{
+    // W1 (doc 84 §13.4.1, Phase 13): a wearer's window talk is their mantle's where it has a line: the hub, the job and the
+    // goodbye (the last two once the game's own answers, now the mantle's first); a graft's choice shown on the hub for
+    // them alone, its node and its way back; typed words about their quirk taken to it.
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-mantle-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    fs::create_directories(root / "mantles" / "plain");
+    std::ofstream(root / "mantles" / "plain" / "rm950.mantle") << R"(# rm950 (test): worn by Neighbour u1.
+mantle rm950
+state ready
+dialect plain
+accent none
+tier standard
+written_for u1
+title the cobble counter
+fits stage=adult|old
+traits talk=chatty humour=merry warmth=warm
+quirk counts_the_cobbles
+marks oath
+
+words
+oath! = Cobbles and crumbs | By my tail
+
+dlg resident.hub : Four hundred and twelve cobbles in this lane, and you're standing on the loose one. What is it?
+dlg resident.job : I count the cobbles, and I mind the lane. Somebody has to.
+dlg resident.bye : Mind the loose one on your way out.
+
+graft resident.hub
+choice What are you counting? -> counting
+node counting
+say Cobbles. Four hundred and twelve, last I looked. One's loose.
+mood pleased
+free
+choice Which one's loose? -> loose
+choice Goodbye. -> bye
+node loose
+say The one you're on. Step careful.
+choice Back to the rest. -> hub
+)";
+    Town town(worldPath, (root / "save").string(), 120, true, 3 * 86400, "", (root / "mantles").string());
+    auto& w = town.g.world();
+    expect(town.g.mantleWearers().count("u1") && town.g.mantleWearers().at("u1") == "rm950", "u1 wears rm950");
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto keep = [&](const char* who) {
+        auto* n = w.entity(who);
+        n->cellId = cellId(1);
+        n->position = {10.5, 9.5};
+        w.stop(who);
+        town.place(town.ash, 1, 9.5);
+    };
+    const auto open = [&](const char* npc) -> const json::Value* {
+        if (const auto* d = town.g.dialogueOf(town.ash.entityId))
+            town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        keep(npc);
+        town.run(1.1);
+        town.ash.events.clear();
+        town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", "talk"}}));
+        town.g.settle();
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto pick = [&](const json::Value* d, const std::string& starts) {
+        if (d)
+            for (const auto& c : d->array("choices"))
+                if (c.string("text").rfind(starts, 0) == 0)
+                    return int(c.number("n"));
+        return 0;
+    };
+    const auto choose = [&](int n) -> const json::Value* {
+        const auto* d = town.g.dialogueOf(town.ash.entityId);
+        town.ash.events.clear();
+        if (d)
+            town.g.command(&town.ash, cmd({{"type", "dialogue_choose"}, {"session", d->id}, {"n", n}}));
+        town.g.settle();
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto show = [&](const json::Value* d) { return d ? d->string("node") + ": " + d->string("line") : std::string("none"); };
+    auto* d = open("u1");
+    expect(d && contains(d->string("line"), "Four hundred and twelve cobbles"), "the hub's line is the wearer's: " + show(d));
+    expect(pick(d, "What are you counting?") > 0 && d->array("choices").size() <= 9, "the graft's choice on their hub: " + show(d));
+    d = choose(pick(d, "What are you counting?"));
+    expect(d && contains(d->string("line"), "One's loose") && d->string("mood") == "pleased", "the graft's node, its mood: " + show(d));
+    d = choose(pick(d, "Which one's loose?"));
+    expect(d && contains(d->string("line"), "The one you're on"), "and on: " + show(d));
+    d = choose(pick(d, "Back to the rest."));
+    expect(d && d->string("node") == "hub", "back to the tree's hub: " + show(d));
+    d = choose(pick(d, "Ask about..."));
+    d = choose(pick(d, "Tell me about yourself."));
+    expect(d && contains(d->string("line"), "I count the cobbles"), "the job's line the wearer's, before the game's answer: " + show(d));
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"why", "bye"}}));
+    town.g.settle();
+    expect(std::any_of(town.ash.events.begin(), town.ash.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Mind the loose one"); }),
+           "the goodbye the wearer's");
+    d = open("u2");
+    expect(d && pick(d, "What are you counting?") == 0 && !contains(d->string("line"), "cobbles"), "nobody else's: " + show(d));
+    // Typed words about the quirk: the graft.
+    d = open("u1");
+    town.run(1.1);
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "dialogue_say"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"text", "Do you really count the cobbles?"}}));
+    town.g.settle();
+    d = lastOf(town.ash, "dialogue");
+    expect(d && contains(d->string("line"), "One's loose"), "asked of their quirk in their own words: the graft: " + show(d));
+    fs::remove_all(root);
+}
 } // namespace
 
 int main()
@@ -1424,6 +1736,8 @@ int main()
         roleTrees();
         otherRoles();
         windowPromises();
+        windowTalk();
+        windowMantle();
     }
     catch (const std::exception& e)
     {
