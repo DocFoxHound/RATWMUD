@@ -1,0 +1,402 @@
+mantle rm373
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_aldric_fogwell
+title the rest in the response
+fits stage=adult|old
+prefers job=priest
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk fits_a_caught_breath_inside_the_congregations_response
+likes hard_cheese roof_birds festival_bells first_warm_day
+dislikes haggling wet_floors
+fears the_voice_failing_before_the_last_blessing
+hopes a_winter_service_with_the_doors_open
+topics faith +0.6 health +0.5 pastimes +0.3 day +0.3
+styles comfort=earnest gossip=reluctant refuse=hesitant tease=none
+marks oath saying
+persona persona #self.first# practises a blessing in the length of one breath and listens for the roof birds to finish the pause.
+
+words
+oath! = Rattle my cheese board | Turn my stool to the damp
+saying! = A short blessing reaches a long bench | Hear the quiet voice before filling the rafters
+breathgap = a rest for breath | a little space in the response
+cheese = a hard wedge | a clean-edged bit of cheese
+roofbird = a pale-breasted hopper | a dust-brown roof bird
+bellrope = the bell line | a long hanging rope
+cloth = a plain wiping cloth | a square of linen
+benchend = the narrow bench end | a corner of oak
+mat = the rush runner | a strip of matting
+doorlight = the broad doorlight | a rectangle of pale light
+song = a measured answer | a sung response
+rind = a tough rind | a hard cheese heel
+cut = a narrow slice | a thin shaving
+candlecup = a little metal cup | a plain clay holder
+wax = a falling tear of wax | a hot wax bead
+loft = the roof space | the dim upper beams
+mist = a low roof mist | a fringe of damp air
+step = a smooth step | a hollow doorstep
+echo = an answering note | a faint high echo
+dayglow = a touch of sun | a mild spring gleam
+slate = a tilted slate | a dark little roof tile
+
+any
+opinion church for 2 : There's a place in a service where a wolf can take the weight off one private hurt for a minute.
+opinion dole for 3 : Cheese and a little bread suffice for some prayers better than a second reading.
+opinion houses against 2 : I dread a quarrel between high benches that leaves the street to spend the winter in its shadow.
+opinion festivals for 2 : The first bell that puts a smile round a tired mouth has already done some good.
+opinion sump for 2 : I can pray with the low street under my paws as readily as the polished flags.
+opinion merchants against 1 : A portion for a hungry visitor should not be made smaller over three rounds of bargaining.
+opinion strangers for 1 : I can shift down a bench for a stranger who hasn't given a name.
+opinion road mixed 1 : Feet coming in off a rough road need a dry patch before anything is asked of them.
+opinion times against 1 [world.times=hard|lean] : Cold and hunger have grown loud in the response. We ought to listen before speaking over them.
+
+grown
+line greet : Stand here in the clear strip of air. | A plain welcome and a place in the light.
+line greet.return : Welcome returned in my own quiet breath. | Glad your greeting carried so clearly.
+line again.open : Back before we've quite spent the pause.
+line farewell : Go out with room to breathe inside your coat. | May you take an easier pace on the homeward stones.
+line farewell.return : Your own breath stay free on the way. | That is a kind parting for a tired ear.
+line react.news : Let the account come through in the voice you first heard. | I can leave a proper silence for your news.
+line react.news.new : I hadn't heard even the echo of that.
+line react.news.known : Yes, that has sounded under these rafters before.
+line react.news.doubt : I'd leave a pause before giving that one an answer.
+line react.news.sorrow [topic.kind=death|loss|assault] : Dear Bright One, give the hurting somewhere gentle to rest.
+line react.news.glad [topic.kind=birth|marriage|work] : A joyful sound, even when spoken very softly.
+line ask.how : Has the damp day taken much from your breathing?
+line answer.how : One breath after another. Some of them quite easy.
+line sympathise : I'll wait quietly beside you till the words have room.
+line reassure : An answer can come on the breath after the first one.
+line refuse : I have duties awaiting the little voice I've saved today.
+line accept_decline : There's no obligation to find a different answer for me.
+line preclose : I'd better spare one good breath for what's waiting.
+line accept_preclose : Go make what use you can of a quiet interval.
+line ack : Yes. I can hear the sense inside that.
+line greet [pair.band=strangers] : A place for an unfamiliar face beside an ordinary wolf.
+line greet [here.time=dawn] : A little new light to share before the street grows loud.
+line greet.return [pair.band=friends] : That voice could find me under any height of roof.
+line hail [pair.band=friends] : Come just this side, where the air moves freely!
+line thank : My breath comes easier for your help. I am grateful.
+line deflect_thanks : You came when I had a little steadiness worth sharing.
+line give.advice : Reach for dry wood before you trust all your weight.
+line answer.how.busy [self.working=yes] : The work is moving. I've one clear moment for your words.
+line ask.how [pair.band=friends] : Have you had a chance to let a difficult day go quiet?
+line greet [here.time=night] : A late arrival may still have the lamp's better side.
+
+scene exchange1
+when topic=faith self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I fit the shortest blessing into one clean breath. | I give the congregation a little space after each answer.
+b : What if the breath catches? | Do you forget the words?
+a : Then I speak the last word slowly on the next. | I remember that somebody else may need longer over them.
+
+scene exchange2
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Damp puts a little catch into my best speaking voice. | I turn my head during the longest response.
+b : Was that a cough just now? | To hear the back bench?
+a : Only the pause taking rather more sound than usual. | Partly. And sometimes a throat deserves a discreet corner.
+
+scene exchange3
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A hard cheese pares into very thin pieces. | I save the rough rind for the end.
+b : Are you saving it? | A reward for eating the rest?
+a : I like a little taste that asks me to take time. | It lets me sit chewing awhile longer in peace.
+
+scene exchange4
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : Roof birds go quiet for one heartbeat when a door bangs. | I watch for the bird that stays when the others lift.
+b : Are you counting heartbeats? | Why that one?
+a : I'm waiting for their shoulders to come down with mine. | Courage and good balance can look much alike at a distance.
+
+scene exchange5
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : My voice knows the first mild day before my coat knows it. | I like a first warm afternoon on bare stone.
+b : A stronger voice? | Does it hold the sun?
+a : A longer breath without any scratch along the edge. | Long enough to lean against it after a service.
+
+scene exchange6
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : A festival bell seems to rise at the end. | The last festival bell leaves people talking in louder voices.
+b : Does the note change? | Do you mind the noise?
+a : My chin goes up. That's probably where the lifting happens. | No. Some kinds of volume come from a happy surprise.
+
+scene exchange7
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I find haggling tiring before the first figure's finished. | Three voices arguing over a wedge of cheese spoil its taste in my head.
+b : Do you accept any price? | Do you go without?
+a : I look for a plain one that fits my purse. | I save the purchase for a quieter counter.
+
+scene exchange8
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I put the first mat where wet paws actually land. | Wet stone shines beautifully until one's foot slides.
+b : And the second? | Do you prefer it dull?
+a : No second one. I move the first when I'm wrong. | I prefer getting to choose when I kneel.
+
+scene exchange9
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I keep the truest answer about my breathing for #self.spouse#. | A small silence beside #self.spouse# does me as much good as a whole high window.
+b : Why only there? | Just sitting together?
+a : It's easier to be plain in a familiar room. | That is a fairly considerable thing.
+
+scene exchange10
+when topic=work self.job=priest self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the nearest wall sends a quick answer back. | I test a speaking place with a soft ordinary word.
+b : Can a wolf be mistaken for an echo? | Before a prayer?
+a : If I speak too fast I can interrupt myself. | I want the listener farthest from me to hear a blessing the first time.
+
+scene exchange11
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : After my cough, I trust the Bright One with even a word that's half swallowed. | I don't think a quiet prayer counts for less.
+b : Even if the congregation misses it? | Why lift the voice at all?
+a : A wolf can ask me to repeat a word. Heaven needn't be my measure of volume. | So the wolf praying beside me can find where the words join.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. I'm letting the words rest a bit. | A rumour dances very nicely on an echo.
+b : For how long? | What does that prove?
+a : Until repeating those words might comfort somebody instead of causing hurt. | That a room has hard walls. Nothing about the matter itself.
+
+scene exchange13
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean days put a thin edge on the singing. | When supper's short I shorten the reading before it.
+b : Are fewer wolves coming? | For impatience?
+a : I can't say that. I hear tiredness in some of the voices. | For hunger. They need a different response.
+
+scene exchange14
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'm afraid the Houses may lose patience with each other before winter. | I'd like a service with both doors open in winter.
+b : Are you announcing a quarrel? | Wouldn't that chill the room?
+a : No. A fear of mine shouldn't arrive in somebody else's ears dressed as news. | In my imagining every visitor brings enough warmth to make the draught worthwhile.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The streets climbing out of the Sump require a different pace from a prayer. | I like the roofs seen from the first bend up the hill.
+b : A quicker pace? | The better houses?
+a : A slower one, if I'm to have breath enough on arrival. | All the roofs. The low ones make a grand place for a small bird.
+
+scene exchange16
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I break an uphill journey into phrases. | I come down a hill looking for wet flags.
+b : Do you say them aloud? | Skidded before?
+a : I keep the punctuation under my breath until the steep bit ends. | I have a convincing imagination and a spare memory or two.
+
+scene exchange17
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember the first response I ever heard quite clearly. | I was once too proud to stop and clear my throat.
+b : What did it say? | What happened?
+a : I remember somebody making space to let my voice come through. | The next words came out like gravel. I let the pause do its honest work now.
+
+scene exchange18
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I keep a plain cloth beside the lectern. | I let the last listener choose how long a greeting lasts.
+b : For the damp? | What if you both fall silent?
+a : For any wolf needing it. It gets less remarkable that way. | We have made a perfectly good beginning.
+
+scene exchange19
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I listen to the street before I decide how loudly to speak. | I shut a door by its handle before I set a book down.
+b : Are you competing with it? | So the words won't blow away?
+a : Trying to find the gap the carts aren't using. | So nobody's prayer ends in a bang.
+
+scene exchange20
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I warm my hands across my throat before a long reading. | A cold neck makes me read in short phrases.
+b : Does the warmth travel inward? | Is that a disadvantage?
+a : Enough that I remember the body has to carry the words. | A short phrase gives a listener a decent foothold sometimes.
+
+scene exchange21
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar wolf may choose the end seat. | I give a late arrival the nod I wanted when I was new.
+b : May want to leave early? | Which nod?
+a : May want to stay without having to climb over anybody first. | One that means sit down in peace and nobody's counting the minutes.
+
+scene exchange22
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I can tell well-aged cheese by the way a corner breaks. | I put cheese in a separate twist of cloth.
+b : Straight across? | To keep the taste out of the bread?
+a : A rough little cliff face with crystals in it. | To keep the tiny crumbs in my possession.
+
+scene exchange23
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the shelf with my books on the dry side. | I turn a rush mat over to dry it.
+b : Which side stays safest in a shower? | Both sides evenly?
+a : The paste softens where the wall's been damp. I inspect the least important spine. | If I don't, the damp underneath gets the last word.
+
+scene exchange24
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# hear a prayer while I'm still trying out the words. | A friend can tell my best voice from my bravest one.
+b : Even the pauses? | Which gets louder?
+a : Especially those. It helps me hear where the person listening needs a breath. | The brave one. The best one doesn't have to prove itself.
+
+scene exchange25
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I don't let the whole service depend on my longest note. | I reserve space in my notes for a plain word after a formal one.
+b : Does the note sometimes fail? | Is one better?
+a : What's being said deserves to outlast one throat's best effort. | The second gives any lost listener a chance to find the way again.
+
+scene exchange26
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I can hear the damp in the first sound off the wall. | Rain finds the lowest groove on the flags.
+b : Is that why you swallowed? | Do you put a bucket there?
+a : That and trying to speak before I'd finished listening. | I put the mat where the next foot would otherwise find it.
+
+scene exchange27
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I like a bird that studies the edge before hopping over. | A bird's claws make a surprisingly clear tick on tile.
+b : Are you fond of caution? | Can you tell which bird?
+a : It's easier to call a small pause sensible when it belongs to another creature. | Only that one has gone and another hasn't followed yet.
+
+scene exchange28
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I've never prayed for a thunderous voice. | I set my light where a weary face can look away from it.
+b : But you want to be heard? | Is that part of a service?
+a : Clearly. Thunder doesn't always say the words one wants to hear. | It's part of sharing one small flame in a roomful of faces.
+
+scene exchange29
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I reckon the cost of a meal in the time spent arranging it. | I take small change loose in a pocket.
+b : Not only the coin? | A habit for offerings?
+a : A hungry wolf has already paid plenty in waiting. | For a purchase that ought to be done without a dozen counters looking on.
+
+scene exchange30
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : The autumn air feels thin before the roof birds depart. | Winter makes me put a warm cloth by the door before I go out.
+b : Are you sorry about winter? | Ready for your return?
+a : I'm sorry to see a good pair of wings leave a good patch of tile. | Ready if somebody colder walks in ahead of me.
+
+story tale1 [topic=work self.job=priest]
+  : I tried a reading in an empty room and timed my pauses with drops from the eaves. I had an elegant arrangement worked out.
+  : When the rain stopped, I stood waiting in perfect silence for the next line.
+  b : Who gave you the cue?
+  : A bird finally shook a drop off a branch. I finished the passage and resolved to keep my time with breathing things.
+
+story tale2 [topic=pastimes self.likes=roof_birds]
+  : A roof bird shook a feather loose and it drifted straight down the shaft of light over my book. I followed it with great solemnity.
+  : It landed on the word I'd stopped at, which struck me as a courteous piece of assistance.
+  b : Did you keep it for a marker?
+  : I took it outside. A clean slip of paper does the work and catches fewer breaths on the way.
+
+story tale3 [topic=food self.likes=hard_cheese]
+  : I shaved a piece of cheese so thin the window shone through it. One little bright patch looked just like the door standing open after a service.
+  : I put it on my bread, meaning to admire the picture another minute.
+  b : Did it still look like a door?
+  : The light went out the instant it touched the crust. I ate that little door with an entirely clear conscience.
+
+story tale4 [topic=memories]
+  : I used to carry a spare scrap of a reading in case I forgot the middle. I copied it out in a cramped hand on very thin paper.
+  : The first time I actually needed the scrap the words were too small to read in decent light.
+  b : Did the middle stay forgotten?
+  : I said in plain words what the missing passage meant. Nobody was left without the sense of it. I copy in a wider hand now.
+
+story tale5 [topic=faith]
+  : I cleared my throat softly before a blessing and startled myself with the voice that rose from my chest. It rose right up under the rafters.
+  : I stopped, waiting for the echo to settle back down.
+  b : Did the prayer lose its way?
+  : No. For the first time I noticed how the pause gave the other voices a place to join in.
+
+rule @call1
+when concept=bark working=yes self.job=priest
+does aside
+cooldown 8h
+say A little clear space for the last response. | The far bench wants to hear these words too.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The mat needs moving over another hand's breadth. | Damp doing the talking behind my voice.
+
+rule @call3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First light finds dry stone above the drip. | Hush, there's a roof bird calling ahead of the bell.
+
+rule @call4
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say Give the last bell room to finish ringing. | That note could lift a dozen lowered chins.
+
+rule @call5
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say A thin slice and a moment to chew. | A little cheese goes a good way after a service.
+
+rule @call6
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Leave the lower light burning a moment. | Evening voices needn't strain to fill the roof.
+dlg resident.hub : I've a quieter spot at my elbow, even if the street outside is noisy.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your voice is clear to me over the sound of the rafters.
+dlg resident.hub [here.time=night] : A quiet word suits this late hour very well.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll give your words a hearing without raising mine.
+dlg resident.job [self.job=priest] : I lead prayers at #self.workplace#. I keep weary voices in mind when choosing the responses.
+dlg resident.job : I've done a good turn when somebody breathes easier after my turn at the reading.
+dlg resident.news [world.news] : This is the news that reached my ears. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I have heard that #topic.subject# #topic.claim#. Let us handle somebody else's reputation with care.
+dlg resident.bye : May the Bright One grant you a sheltered seat once your errand's done.
+dlg church.greet [here.day=rest] : On this Restday our service is #here.service#. There's a place for another voice.
+dlg church.greet [here.day!=rest] : Come into the quieter air. There's room for a question about the service.
+dlg church.service [here.day=rest] : The service today is #here.service#. Come in at whatever pace your breath allows.
+dlg church.service [here.day!=rest] : There are prayers enough for an ordinary day. The full service has its own day of rest.
+dlg church.poor : A meal left for a hungry wolf does a great deal of speaking of its own.
+dlg church.offering : An offering ought to come freely and leave the giver able to eat.
+dlg church.thanked : I am grateful. A hungry mouth will have better cause to be grateful still.
+dlg church.bye : Walk lightly where the flags have kept a little damp.
+
+graft resident.hub
+choice Why leave a gap in a blessing? -> roof_response
+node roof_response
+say The words are meant to leave my mouth and find the farthest wolf in the room. They need a moment to arrive before the next lot come after them.
+free
+choice And if nobody answers? -> roof_response_again
+choice Goodbye. -> bye
+node roof_response_again
+say A quiet listener has still taken part. I listen also, and let the words find their own way home.
+choice I'll give the pause a moment. -> hub
+choice Goodbye. -> bye
+
+graft church.greet
+choice Is a short prayer enough? [self.job=priest] -> short_blessing
+node short_blessing
+say A wolf may have only a few words in a hard hour. I believe those few come through with perfect clarity to the Bright One.
+free
+choice What if the voice catches? -> short_blessing_again
+choice Goodbye. -> bye
+node short_blessing_again
+say Then breathe first. Your prayer can wait in the quiet for the second breath.
+choice Let the room grow quiet again. -> greet
+choice Goodbye. -> bye

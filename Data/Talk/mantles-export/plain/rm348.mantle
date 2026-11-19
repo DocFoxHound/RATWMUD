@@ -1,0 +1,263 @@
+mantle rm348
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_rowan_hazelfield
+title the sparrow steps
+fits stage=adult|old
+prefers job=farmer warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk sets_out_seed_on_separate_little_ledges_for_small_birds
+likes hard_cheese cards tidy_house first_snow
+dislikes gulls waiting
+fears the_last_beak_finding_an_empty_ledge
+hopes room_for_the_shyest_bird
+topics animals +0.6 faith +0.5 work +0.4 food +0.2
+styles comfort=make_room gossip=gentle refuse=plain tease=none
+marks oath saying
+persona #self.first# makes small seed ledges at different heights and takes particular pleasure in noticing the first timid beak at the highest one.
+
+words
+oath! = Twelve empty ledges | My scattered seeds
+saying! = Feed the last beak too | A little ledge opens a wide sky
+ledge = the narrow ledge | a little feeding shelf
+seed = my pinch of seed | the spare grains
+perch = the thin perch | a twig rest
+cheese = a firm cheese heel | the yellow wedge
+card = the painted card | a faded pip card
+roof = a sloping cover | a small eave
+cup = a grain cup | the little scoop
+slot = a thumb-wide gap | the narrow opening
+print = a sparrow track | a splayed print
+flower = a bell of blossom | a pale flower
+wax = a little warm wax | a honey-coloured curl
+share = a modest heap | a small measure
+
+any
+opinion houses against 1 : A petition unanswered is bad enough. A refusal that ignores the question is a good deal harder to lay aside.
+opinion church for 2 : The Bright One has room for creatures smaller than my thumb. I remember the small lives when filling a dish.
+opinion dole for 2 : A generous first serving should leave a real last serving. That's what I'd ask of the dole.
+opinion merchants mixed 0 : Show me the grain going into the scoop. Both of us will leave pleased with the bargain.
+opinion newcomers for 1 : A shy arrival often needs an opening more than a grand welcome.
+opinion road for 1 : I favour a road with a hedge broad enough for a small bird to travel alongside.
+
+grown
+line greet : Welcome. There's a free place above the bustle. | Stand in the clearer patch beside me.
+line greet [pair.band=strangers] : A first visit deserves an easy perch. | I haven't seen you on this approach before. Welcome.
+line greet [here.time=dawn] : Morning. The little feet were here early. | Fresh day to you. I've just filled the first ledge.
+line greet.return : Yes, hello. My eyes were on a very small arrival. | Your voice reached me through the twittering.
+line greet.return [pair.band=friends|family] : I'm glad to have a dear familiar face beside the ledges. | You've a standing welcome on this patch.
+line greet.return [here.time=night] : Hello after the little wings have folded. | The night leaves us room for a quiet greeting.
+line again.open : There is still seed on the ledge from our last meeting. | You've found us receiving a second small guest.
+line hail [pair.band=friends] : Stand here and see who finds the upper shelf. | Come look quietly behind my shoulder.
+line farewell : May your road have room for little joys. | Leave with your share of the light.
+line farewell.return : A safe branch when you need one. Goodbye. | I'll leave the little place open for a return.
+line react.news : I've time for the news in its own words. | My paws are free and I can attend.
+line react.news.new : That hadn't reached even the edge of my hearing. | A new arrival in my thoughts altogether.
+line react.news.known : I've heard that account and kept it in mind. | Yes. Same shape as the earlier news.
+line react.news.doubt : I'd leave a little space open for a better account. | That seems too big a conclusion for such a little scrap.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Let me sit while you tell that. It deserves the time. | A sad empty place. I won't pretend words will fill it.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put an extra pinch on the ledge for news like that. | That news will put real warmth into the prayer I say tonight.
+line ask.how : Has anything small and pleasant found you today? | How are you doing for quiet company?
+line answer.how : Watching a hopeful little movement over my shoulder. | Quite settled, with room for another word.
+line decline : I'd leave that duty to a wolf who can give it proper attention. | I've an earlier promise to feed before I take that on.
+line accept_decline : All right. An open place needn't be filled. | Then keep the bit of day you'd set aside.
+line preclose : I should check which ledge is still empty. | The seed won't scatter itself evenly. I'll move along.
+line accept_preclose : Of course. Go while the road looks kindly. | I'll stay and give the late arrivals a chance.
+line thank : You noticed the smallest need. I appreciate it. | That was a quiet generous thing. Thank you.
+line deflect_thanks : I had the seed and a ledge to put it on. | It was little effort to leave a share.
+line sympathise : You can stay without saying a further word. | I've a dry place for company with a heavy heart.
+line reassure : Let the smaller chance come into view first. | We've room enough to try one hopeful thing.
+line ack : Yes. That little detail shows very plainly. | I follow the path of that thought.
+line give.advice : Put one share away from the busiest spot. | Sit a moment after you've scattered the seed.
+
+scene shelves
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I feed sparrows on three ledges, each a little higher. | One broad pile never fed quite as many as I thought.
+b : Do they prefer the high one? | Why not spread the pile further?
+a : The shyest will sometimes wait there till the bold ones are busy below. | That's exactly what the ledges do, with a clear way out behind each bird.
+
+scene windowcrumb
+when topic=animals
+does warn / react.self / assess
+a : Give a feeding sparrow room to leave as well as land.
+b : Won't it take fright anyway? | What's behind the ledge?
+a : Often enough. A clear way out lets it come back brave a second time. | Open air, if the placing is right. No kind gift ought to catch its guest in a corner.
+
+scene hiveshift
+when topic=work self.job=farmer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I keep the grain away from the bees' busiest way to the flowers.
+b : Would a sparrow bother a bee? | Do you have room for both?
+a : Most won't. I prefer neither creature should have to find out when it's hungry. | A ledge at one end and a clear flight line at the other. Both get on with the day.
+
+scene quietcheck
+when topic=work self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : Before lifting a hive cover I put my other work down quite out of reach.
+b : Forgetting something? | Afraid the bees will object?
+a : So I'll give one thing my proper attention. The seed can wait awhile. | Better for me to have steady paws and nothing loose to drop. The bees have their own duties.
+
+scene cheesedel
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I like firm cheese because one small piece sees a lengthy visit through.
+b : Do the sparrows get some? | Is one piece enough dinner?
+a : The little ledges get seed. I enjoy keeping the cheese myself. | With bread, yes. Especially if I have company to slow my eating down.
+
+scene cardbird
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I fancy a pack with one little bird instead of each suit mark.
+b : How would you tell the high cards? | Which bird ought to win?
+a : By the height of the perch. There'd be a very little picture to study on each. | I'd give the smallest one a splendid top branch. It's my pack after all.
+
+scene firstsnow
+when topic=weather here.weather=snow
+does tell.feeling / react.self / assess
+a : A fresh snow tells me instantly which ledge got its first visitor.
+b : By the prints? | Wouldn't wings brush those away?
+a : Two little forks of toes and a much disturbed patch beside the grain. | Sometimes. A clean shallow sweep tells nearly the same pleasant story.
+
+scene tidyledge
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I tidy the feeding shelf and leave the hedge to grow as it likes.
+b : No sweeping the whole place? | Are you fond of a bit of disorder?
+a : Seed hulls go. A useful tangle of twigs stays for shelter. | I like things suited to their occupants. My own room has no need of nesting twigs.
+
+scene gullbar
+when topic=animals self.dislikes=gulls
+does tell.complaint / ask.detail / answer.detail
+a : A gull sees a little ledge and assumes I'm preparing an enormous feast in instalments.
+b : How do you persuade it otherwise? | Wouldn't it take the lot?
+a : I make the perch too slight for a comfortable landing. No hard feelings required. | From a flat board, yes. That's why a twig about as thick as my claw is quite sufficient.
+
+scene slowarrive
+when topic=day self.dislikes=waiting
+does tell.feeling / react.self / assess
+a : I mind waiting less if I can see a tiny head coming nearer.
+b : Isn't feeding all waiting? | Would you ever hurry a sparrow?
+a : It's watching too. My eyes have something interesting to occupy them. | No. I save my impatience for promises made by wolves with an excellent sense of time.
+
+scene higher_paw
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can pray with my head up while a timid bird decides whether to land.
+b : What are you asking there? | Isn't that distracting?
+a : Room in my own heart to be as patient with a hesitant wolf. | It helps. That little piece of life doesn't have to be taught its worth by me.
+
+scene petition
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once sent a carefully written request a long way uphill and got a very small answer back.
+b : Was the answer unfair? | Did it say what you needed?
+a : It answered a different question. A refusal I could at least have understood. | No. I still have a scratch copy that makes very clear what I actually asked.
+
+scene richscoop
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can fill a seed scoop without measuring my own supper against it. | It's easy to call a gift small when the stores behind it are ample.
+b : Does that make it less worthwhile? | Do you weigh every gift?
+a : No. It makes me careful about telling another wolf what ought to be affordable. | Only my own cupboard. There's enough to share without passing judgement.
+
+scene leanweek
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When supplies shorten I give less on each ledge and keep them all in use.
+b : Why not fill one properly? | Won't a small helping go quickly?
+a : Because one big scuffle for a full pile does a shy hungry bird no good. | It will. I'd rather three had a taste than one got all the seed.
+
+scene lostfacts
+when topic=gossip
+does give.opinion / react.self / assess
+a : I won't take an empty ledge as proof of which bird ate there.
+b : Can't you recognise the marks? | Speaking about more than sparrows?
+a : A print shows a visit. A strong wind can take the whole feeding away afterwards. | I am. Folk can get named as culprits on lighter evidence than a pair of bird tracks.
+
+scene countryside
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A hedge running alongside pasture can carry a whole travelling congregation of sparrows.
+b : Moving through the branches? | How many would you count?
+a : Yes. A little stirring follows the line of leaves and comes out singing at the end. | I don't try. I enjoy watching a hedge stir as if it had an opinion.
+
+scene roofdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like every small feeding shelf to have a roof that doesn't shut out the sky.
+b : How can a roof do both? | Planning to build them all?
+a : Cover the seed by a paw's width and leave the flight path clear on two sides. | Only enough to learn which shape is actually useful. The birds usually have the last word.
+
+scene warmwelcome
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer may like to see a place to sit before hearing all the local names.
+b : You'd let introductions wait? | What if the visitor wants company?
+a : Long enough to find shelter and recover a little breath. That's no disrespect. | I'd be close enough to speak with and far enough away to leave a choice.
+
+grown
+
+story cardshelf [topic=memories|pastimes]
+  : I set a bent playing card under a slightly unsteady seed dish. A gust pulled it out and carried it halfway up the hedge.
+  : A sparrow settled beside it, bold as any partner I ever had.
+  b : Did it play the card?
+  : It played mine. I took the liberty of counting that as a win for the visiting side.
+
+story snowfalse [topic=weather|memories]
+  : One bright snow morning I found a little mark on my highest ledge like an exquisite foot. I watched a long time for its owner.
+  : A drop fell from a twig end and made another foot beside it.
+  b : Did you mind being deceived?
+  : I minded having named the bird in my head before it was there. A patient correction did no harm.
+
+story twoscoops [topic=food|memories]
+  : I once filled my seed scoop with breakfast oats while my little breakfast bowl stood full of bird grain.
+  : Noticed just as I was reaching for the cheese.
+  b : Which one got the oats?
+  : I did, after an exchange of vessels. The sparrows' breakfast was delayed a very reasonable minute.
+
+rule @high
+when concept=bark
+does aside
+cooldown 8h
+say Save a pinch for the twig above the busy ledge. | Quiet. A little head at the very top.
+
+rule @work
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 8h
+say Leave the bees their clear flight to the flowers. | A cover lifted gently and put back squarely.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Two little marks in fresh white, right by the grain. | A tiny landing spot clear of snow here.
+
+rule @rest
+when concept=bark
+does aside
+cooldown 8h
+say One beak more can fit on the thin perch. | A shy beak gets its own little corner.
+
+dlg resident.hub : I've just set a pinch aside for the late birds. I'll hear you gladly.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you'd recognise that bold little shape in the hedge by now.
+dlg resident.hub [here.time=night] : The small wings are quiet now. Our voices can be quiet too.
+dlg resident.hub [pair.disposition=wary|hostile] : I'm willing to listen if you leave the ledges and the birds alone.
+dlg resident.job [self.job=farmer] : #self.trade_words.capitalize#. I keep the way to the blossoms clear and the little ledges for birds apart.
+dlg resident.job : I enjoy providing room for a small living thing to go on with its day.
+dlg resident.bye : I hope some small good comes looking for you on the road.
+
+graft resident.hub
+choice Which ledge should I watch? -> shyledge
+node shyledge
+say The ledge beyond the busy pile. Shy birds wait there till the others are eating. Stand aside and leave the path out quite clear.
+free
+choice What's a good time to leave more grain? -> nextgrain
+choice I'll stand back from the perch. -> hub
+node nextgrain
+say Once the visitors leave and I've swept the hulls clear. A heap of husks looks full to an eye in a hurry and has very little dinner in it.
+choice I'll look closely at the husks. -> hub
+choice I shall leave the birds in peace. -> bye

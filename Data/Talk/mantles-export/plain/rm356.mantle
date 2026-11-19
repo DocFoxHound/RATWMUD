@@ -1,0 +1,260 @@
+mantle rm356
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_rupert_greyley
+title the borrowed echo
+fits stage=adult|old
+prefers job=laborer
+traits temper=short talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk tests_a_market_call_against_a_wall_before_using_it
+likes honey_cakes old_tales new_boots summer_evenings
+dislikes bad_manners rats
+fears a_voice_without_its_last_word a_rat_beneath_the_cake_tin
+hopes a_corner_with_a_civil_echo new_boots_before_the_rain
+topics work +0.4 lore +0.3 day +0.3 gossip -0.2
+styles comfort=quiet gossip=evasive refuse=pointed tease=none
+marks oath saying
+persona #self.first# tries a market cry against a wall, disguises a cough as a pause for breath, and knows what a quiet ending can do to a long tale.
+
+words
+oath! = Split syllable | Grit in the honey
+saying! = Spend the echo once | Give the last word somewhere to land
+echoend = the bit that comes back | my borrowed ending
+chalkface = the broad wall face | the hard bare corner
+longvowel = a stretched middle sound | a note with room in it
+shortword = a clipped last word | the little closing note
+throatcloth = a soft neck wrap | my inner scarf fold
+cakefold = the honeyed paper | a sticky cloth fold
+walkleather = a sound boot sole | some thick shoe leather
+dryspot = a patch in the lee | my quiet patch
+wraphinge = a little paper flap | the folded back edge
+cornercrumb = a dark sweet crumb | a speck of honey crust
+
+any
+opinion houses against 2 : A rich coat can plant itself squarely across my call and not hear a word. Turn its name into a price and suddenly it hears.
+opinion merchants against 2 : I'd like the pay for crying a full basket to stretch far enough to buy some of the things in it.
+opinion dole for 2 : The bread keeps a tired throat from having to beg for its next mouthful. That spares more than hunger.
+opinion sump for 1 : A little voice here knows which wall will give it back. There's some comfort in knowing where a small thing will be heard.
+opinion watch against 2 : The street can ask for attention all week. Whisper a name the Watch wants and the ears come running.
+opinion festivals against 1 : I earn no extra for being drowned out by a drum and I'd be glad to forget the drum altogether.
+
+grown
+line greet : Welcome inside ordinary speaking distance.
+line greet [pair.band=strangers] : I hear a new voice. It may have a moment here.
+line greet [here.time=dawn] : There's little noise to speak over this early. Welcome.
+line greet [here.time=dusk|night] : You can hear me without the walls helping now.
+line greet [self.working=yes] : One breath to call my last word. Then yours.
+line kin.open [pair.kin!=no] : Come within reach of my quieter voice.
+line again.open : My echo's sent you back round, it seems.
+line greet.return : Your greeting came over clean.
+line greet.return [pair.band=friends|family] : That voice gets the first hearing clear of the crowd.
+line greet.return [self.working=yes] : I've another call to make. You reached me first.
+line greet.return [here.time=dusk|night] : A small word carries handsomely this late.
+line farewell : Keep a little breath for the walk up.
+line farewell.return : I'll take it from here in my own voice.
+line react.news : Tell it close to how the first voice pitched it.
+line react.news.new : That's come in off an unfamiliar wall.
+line react.news.known : I'd heard the longer version going round.
+line react.news.doubt : Was that said once or heard twice?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Somebody at the house may want a quiet errand done.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves room to travel without my improving it.
+line answer.how : Still getting my last word where I want it.
+line ask.how : Have you had one decent quiet hour of your own?
+line sympathise : You needn't pitch a sore matter high to reach me.
+line reassure : I'll hear the rest once it's comfortable to speak.
+line decline : That name's resting behind my teeth and I intend no disturbance.
+line accept_decline : Then it needn't come out into the square.
+line thank : You've saved my throat a second asking.
+line deflect_thanks : A quiet favour doesn't need a public price.
+line preclose : I'll save what voice I've got for the next corner.
+line accept_preclose : I heard the ending. Travel well.
+line ack : It carries.
+
+scene echo
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I try a short word against a wall before giving a price a proper shout.
+b : Does the wall buy anything? | What's a useful echo like?
+a : No. It lets me know which corner of the market might. | One that brings the last word home before the next word has to leave.
+
+scene backnote
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can make a small pause sound deliberate even when my throat made it for me.
+b : Why bother? | Does it hurt?
+a : Because then the waiting ears belong to me till I start again. | Less than a second attempt at a note I ought to have left alone.
+
+scene summerday
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer leaves me hours to watch the street after I've finished selling it things.
+b : What changes after the shouting? | Do you stay long?
+a : Wolves begin looking at whatever suits them. A voice can rest without wondering where the coins went. | Till the last warmth has gone off the wall. That's the best rent-free bargain the quarter offers me.
+
+scene tales
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I like a story that gets quieter towards the end.
+b : Doesn't that lose listeners? | How quiet can you take it?
+a : Only the ones listening out of politeness. The ones who care come closer. | Down to the sort of whisper where two listeners and the telling make a private room.
+
+scene cake
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I keep my honey cake folded nearly to the last corner.
+b : Are you hiding the size? | Keeping it soft?
+a : Yes. Mine ought to know what it cost me before everybody else's eyes start reckoning. | That's one benefit. Another is keeping the sweet off my working sleeve.
+
+scene boots
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : A new sole gives me an inch of quiet above the street stones.
+b : Can you hear an inch? | Don't new boots squeak?
+a : I feel it where the old nails have stopped telling my heel every cobble's story. | Some. That's their own complaint. Mine are presently satisfied.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I sweep the dark edge behind a basket even after I've swept the bright edge out front.
+b : Got a customer back there? | Is it worth a second sweep?
+a : One with whiskers who'll never pay me. I'd as soon disappoint that visitor. | If it takes away the last cake crumb before the rats get a taste of a profitable corner, yes.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : I won't thank a wolf for repeating my own cry in my ear.
+b : Even a very good impression? | Is it painful?
+a : I'd give a better price for some original civility. | Repetition is the least interesting possible pain in the ear. A request for the price would be welcome.
+
+scene marketquiet
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Consider the Sump in the half breath between two noises.
+b : Can you get any peace in half a breath? | Which two noises?
+a : Enough to hear where I am. My throat finds its own corner if I give it a chance. | A cartwheel and the shout that sends it on. Sometimes all I need fits in the gap.
+
+scene pricing
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I'd far sooner call one price I can be heard naming than three nobody believes.
+b : Is the first one the cheapest? | Suppose even the clear price is dear?
+a : It's the one that'll stand till I finish the sentence. A cheap lie is still difficult to eat. | Then the buyer can take clear knowledge to the next stall. That part of the transaction costs nothing.
+
+scene shopwork
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : When the stock changes I change the length of the call.
+b : What goes on the long note? | Is there always a word for the price?
+a : What needs to reach the far end before the right customer has walked away. Anyone can come closer for the rest. | Sometimes the price is the entire call. A very good item can speak for itself at arm's length.
+
+scene rainthroat
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I put my cloth underneath the chin where rain gets a quick journey down my neck.
+b : Does that quiet the cough? | Why not round the mouth?
+a : It quiets the question about whether I'm going to cough. I can attend to the rest on my own. | Then the cloth eats the end of the call. I need it in distant ears across the paving.
+
+scene news
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : Some word that carries through market noise can lose half its meaning on the way.
+b : What goes missing? | Would you pass on the single word?
+a : The little name attached at the beginning, for a start. I'm disinclined to name a convenient substitute. | See whose mouth it's gone through and ask if the missing bit was ever there.
+
+scene neighbour
+when topic=smalltalk self.neighbour
+does tell.self / ask.detail / answer.detail
+a : When I think of visiting #self.neighbour# I put my market voice away.
+b : Where does that voice go? | Wouldn't a little of it get you a welcome?
+a : Behind the first knock. A visit should wait to hear an answer. | Three doors might hear my greeting. It's only the nearest door I mean to knock on.
+
+scene homecast
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt a corner answered every possible question with the price of a single boot.
+b : What did you ask it? | Could you buy both boots?
+a : What use I'd have for just one boot. It had very little sense of a matter beyond the sale. | I kept asking but it had only learnt one boot's worth of answer.
+
+scene carevoice
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A soft prayer suits me when the working voice has had enough.
+b : Who gets to hear it? | Is a quiet prayer effective?
+a : I'd leave that between my own ear and the Bright One. Nobody's paying to hear the sound. | The words are mine and spoken as I choose. That seems a fair way to start.
+
+scene evening
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I try a whisper in the same corner where I raise my voice by day.
+b : Does the echo keep its voice down too? | Do the neighbours hear?
+a : Yes, for once a civil bit of masonry. | Only if they're outside at my elbow. I choose my time as carefully as my sound.
+
+scene slowstory
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I keep a poor ending in reserve if a listener proves too ready to repeat a tale.
+b : What's a poor ending? | And the proper one?
+a : One with all the faces turned away. Nobody can go stealing bits of a real wolf's life from that. | The rest of the tale can wait for a pair of ears that can keep hold of it.
+
+story lostvoice [topic=memories]
+  : I practised a market cry in a deserted corner with a cloth tied loosely round my throat.
+  : A trailing end rose for every heavy breath and fell straight across my mouth on the loud word.
+  b : Did you throw out the cloth?
+  : I tied it shorter. I don't dismiss a perfectly good assistant simply for giving an unfavourable opinion.
+
+story firstcake [topic=food self.likes=honey_cakes]
+  : I saved a wrapped honey cake for so long the wrapper took an exact print of every ridge in it.
+  : Opened it slowly enough to read the cake by its twin on the cloth.
+  b : Did the cloth taste sweet?
+  : It did after the crumbs were gone. I much preferred having the cake the first time round.
+
+story hushwall [topic=work self.job=laborer]
+  : I sent a call at the usual patch of bare wall and got scarcely a sound in return.
+  : A great roll of wool had been unwrapped there. It swallowed the call like water in a sponge.
+  b : Where did you call from next?
+  : The opposite corner. I like a modest listener but I draw the line at a blanket.
+
+rule @cry
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 8h
+say One clear price above the rest. | Keep the far ear for the last word!
+
+rule @sore
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 8h
+say Kindly let my own ending reach me. | One mouth at the call, please.
+
+rule @sun
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Quiet voice will reach the near corner now. | Give your ears the evening off.
+
+rule @cake
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Fold in the sticky corner. | Keep your paw clear of the paper flap.
+dlg resident.hub : I've no need to shout just here. What brings you close?
+dlg resident.hub [topic.meeting=known] : I recognise the voice between calls, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : We can hear each other perfectly well across that gap.
+dlg resident.hub [here.time=night] : Speak at the pitch you'd use to yourself. I'll hear it.
+dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. I'll pitch the low note carefully so a wolf looks up for the high one.
+dlg resident.job : I catch an ear before competing sounds sweep it away.
+dlg resident.news [world.news] : These were the words that carried. #world.news#.
+dlg resident.bye : A quiet bit of road for your ears.
+
+graft @bent_echo resident.hub
+choice What does a good corner do for your voice? -> bent_echo
+node bent_echo
+say Gives me my last word back sharply enough to hear whether the price reached the far side. Take three steps and a hard wall may as well be soft earth.
+choice Can an echo make you louder? -> bent_echo_more
+choice Listen from the near side. -> hub
+node bent_echo_more
+say It might make me sound like two wolves. I'd sooner sound like one with something worth the effort of hearing. I choose the wall that clears the ending.
+choice Listen from the near side. -> hub
+choice Slip away between the calls. -> bye

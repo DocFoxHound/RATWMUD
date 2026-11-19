@@ -1,0 +1,257 @@
+mantle rm355
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_bertil_saltcot
+title the line with two knots
+fits stage=adult|old
+prefers quarter=commons
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk ties_true_debts_and_unproved_debts_with_different_knots
+likes warm_bread evening_line quiet_chapel first_snow
+dislikes cold_tea early_bells
+fears a_name_entered_lightly a_hook_in_an_empty_coat
+hopes a_quiet_evening_bite a_line_of_settled_accounts
+topics pastimes +0.6 food +0.3 weather +0.3 gossip -0.6 travel +0.3
+styles comfort=practical gossip=discreet refuse=dry tease=gentle
+marks oath saying
+persona #self.first# ties a tight knot for a debt and a loose one for a suspicion, fishes quietly at dusk and can turn a Northgate question aside without making the asker feel the hook.
+
+words
+oath! = Snag my last cast | Twist the keeper loop
+saying! = A loose knot is no verdict | Pay the loaf before the crumb
+tight = a small double knot | the firm tie
+loose = my loose loop | a sliding hitch
+line = my evening line | the long fishing cord
+float = a little cork float | the pale nib of cork
+roll = a small warm loaf | a round of new bread
+steam = the warm breath of bread | a bakery cloud
+tea = a cup worth warming | the rather cold tea
+snow = the first clean snow | a thin first fall
+hook = a little curved hook | the bend of the hook
+quiet = the chapel hush | a breath of chapel silence
+book = a shut little book | my narrow pocket pad
+gatepost = the worn gatepost | a post beside the road
+
+any
+opinion @1 church for 1 : A quiet place where a wolf can have a thought without owing anybody the explanation has a sound claim on my affection.
+opinion @2 city for 1 : I know my part of this city best by the hour the warm bread and the late carts meet on the road.
+opinion @3 dole for 1 : A loaf cut in two leaves a hungry wolf with a dinner and the giver with quite enough to carry.
+opinion @4 strangers for 1 : With unfamiliar company I can reasonably break a second loaf. No charge for an introduction from my knife.
+opinion @5 houses mixed 0 : I keep my opinion of a House separate from any private entry that lacks a witness.
+opinion @6 watch mixed 0 : A good round deserves a decent reckoning. A doubtful turn deserves a question kept as carefully as the answer.
+
+grown
+line @1 greet [pair.band=strangers] : A clear spot at the post. Welcome to it. | There's room for your errand beside mine.
+line @2 greet [here.time=dawn] : Morning. The bread ought to be getting up shortly. | Early enough for words to stay warm.
+line @3 greet [here.weather=snow] : A white approach. I can see you've come some way. | Come in before the little flakes count your toes.
+line @4 greet.return : That's come through my end of the line. | I've caught the greeting. Welcome back to you.
+line @5 greet.return [pair.band=friends|family] : There goes a familiar tug. | Your voice needs no knot to remind me.
+line @6 farewell : Keep clear of loose hooks going home. | A little warm bread waiting at your door.
+line @7 farewell.return : I'll let the line pay out that far. | Nothing owing on your leave.
+line @8 again.open : We've caught on the same bend a second time. | There's a returning footfall from the gate road.
+line @9 kin.open [pair.kin!=no] : Come inside the loose loop, family. | The first warm slice goes round our own table.
+line @10 hail [pair.band=friends] : Over beside the idle cork! | Here's a bit of warmth still going!
+line @11 react.news : I'll hear the account before I tighten anything. | Leave the name loose till the fact's caught.
+line @12 react.news.new : That's a new twitch on an idle line. | No knot in my cord for that one yet.
+line @13 react.news.known : I could find the earlier entry with my thumb. | That particular account's been through the first reckoning.
+line @14 react.news.doubt : I'd leave a loop that loose until another witness comes along. | The name hangs rather heavily on a pretty slight fact.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : There's a quiet seat and no obligation to explain. | I'll keep the next few moments free of questions.
+line @16 react.news.glad [topic.kind=birth|marriage] : I'll tie a good little knot for that welcome news. | There's a sound excuse for warm bread all round.
+line @17 answer.how : Even-tempered and halfway warm. | My fish haven't put in a complaint.
+line @18 decline : I'd sooner give you a straight refusal than a doubtful promise. | It would put quite the wrong sort of knot in my line.
+line @19 accept_decline : A neat release. Quite understood. | No entry made against you for that.
+line @20 sympathise : A bite of bread travels down more easily in quiet company. | I'll put the hook away while we sit with that.
+line @21 thank : I'll tie the lasting sort of knot for that kindness. | You leave me in very pleasant arrears.
+line @22 deflect_thanks : I wasn't proposing to charge a gate toll on a loaf. | Let the little account slip quietly out of our reckonings.
+line @23 preclose : There's a loose end waiting politely for my thumb. | I hear the next part of my round calling.
+line @24 accept_preclose : Go while the road's between carts. | We'll leave this bit agreeably settled.
+line @25 farewell [here.time=night] : A quiet latch and no ridiculous bell before breakfast. | Keep the path where your boots can see it.
+
+scene knots
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : #tight# remembers bread I owe. #loose# means there's an account I'd like to examine again. | I work two different knots while I'm watching #float#.
+b : Ever feel the wrong one in the dark? | Which one comes undone?
+a : Only once. Gave a wolf bread by mistake. I could have chosen a worse error. | The doubtful knot. An evening's quiet can undo several doubts and land precisely one clump of weed.
+
+scene bread
+when topic=food self.likes=warm_bread
+does offer / accept / assess
+a : Break #roll# along the little raised seam. | I'll spare a piece of bread while #steam# still hangs over it.
+b : I can take a thumbful off the ridge. | I'm grateful for the part that's still giving out heat.
+a : Then catch the soft middle too. It won't charge extra. | Heat's the bonus the baker can't quite wrap separately.
+
+scene landing
+when topic=travel here.region=ridgemere
+does tell.self / react.self / assess
+a : The sounds at an entrance show whether the cart is balanced before you set eyes on it. | I let the approaching carts have the middle of the Northgate road.
+b : What do you hear at its entrance? | For a closer examination?
+a : One wheel getting at the cobbles with rather more enthusiasm than the other. | For the smaller wolves who'd otherwise arrive wearing my elbow.
+
+scene frost
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snow# puts every approaching boot on a clean sheet. | One light fall tells me exactly who stood looking at the water with me.
+b : So you count all the tracks? | By measuring their tracks?
+a : I lose interest after mine. I'm rather relieved by that. | By a second still place in an otherwise busy path. The name isn't required.
+
+scene quietchapel
+when topic=pastimes self.likes=quiet_chapel
+does tell.feeling / sympathise / assess
+a : #quiet# feels like time somebody has forgotten to claim back. | I like a chapel just after the last ordinary footstep goes away.
+b : Do you reckon silence as a debt too? | Doesn't it feel empty then?
+a : Yes. I pay in kind by keeping my mouth shut a little longer. | Comfortably so. A clear bench can be useful before anybody has a name to put on it.
+
+scene coldtea
+when topic=food self.dislikes=cold_tea
+does give.opinion / disagree / concede
+a : #tea# and a cold fact have this in common: one ought to warm them before serving. | I don't mind a cold account. Tea is less convincing at that temperature.
+b : You'd alter the fact by warming it? | You could keep the cup closed in your paws.
+a : Just the manner of delivering it. The tea can actually go near the kettle. | Then the cup warms up and my paws go cold. An unprofitable exchange.
+
+scene bell
+when topic=smalltalk self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : An early bell is a persistent creditor with no account to show me. | A bell can spend an extraordinary amount of noise collecting one sleepy wolf.
+b : What if it lets you know the bread's ready? | Would you pay up to make it stop?
+a : I'd be willing to consider that a genuine service. | Only in daylight. I dislike encouraging a discourteous call.
+
+scene learner
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : As a learner I keep the correction I understand separate from the bit I'm merely imitating. | When I'm shown a second way to do a task I leave a loose knot for it.
+b : What tells you you've got the correction straight? | When does it deserve a tight knot?
+a : I can put it right again without somebody pointing. The knot comes out then. | When I can see why it makes somebody's work easier. Not over the bare fact I can repeat a motion.
+
+scene private
+when topic=gossip
+does give.opinion / disagree / concede
+a : A House can have a name on a piece of paper without that paper proving anything at all. | I wouldn't identify a wolf from the sound of a coin crossing a counter.
+b : Even if you kept the piece of paper yourself? | Suppose you noticed that particular noise on regular days?
+a : Especially then. My pocket is a storage place, not a court. | I'd make a careful note of the hour. I'd still know more about the clock than about the coin.
+
+scene walk
+when topic=travel self.quarter=commons
+does tell.plan / ask.detail / answer.detail
+a : I plan an evening walk down from the Commons with enough daylight left for the return. | I like the last of the Northgate traffic between my errand and my own supper.
+b : Are you allowing time for a line in the water? | How much traffic suits your appetite?
+a : A cast or two. Long calculations are a quick way of going hungry. | One warm loaf's worth of waiting. I'm a modest advocate of punctuality.
+
+scene newfriend
+when topic=friends self.friend
+does offer / accept / assess
+a : I could set a dry cork by for #self.friend#. There's another, if you'll take it. | I have bread put aside for #self.friend#. Break a bit off my share.
+b : I'll take the light one with the nick. | That's kind, so long as you're keeping something warm.
+a : Good choice. I like a float with some distinguishing feature besides sinking. | My side's nearest the hot part. I know how to share efficiently.
+
+scene debtmarket
+when topic=prices
+does give.opinion / disagree / concede
+a : A small debt's no excuse to ignore a crooked weighing. | I prefer to put the honest price of a loaf on paper and the gift of a slice in my hand.
+b : Would a favour really change the scales? | Do you bother writing down a single loaf?
+a : Not the scales. It can do quite curious things to a witness's head. | Only when I owe it. The slice comes without paperwork.
+
+scene noise
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep #hook# inside the cork when I'm walking among a press of coats. | If a wolf knots a line badly it'll make itself known in the sleeve.
+b : Had to learn that from experience? | Doesn't catching a sleeve rather give the secret away?
+a : My own coat. My school fees can stay under my hat. | It does. I prefer my faults to sit quietly in my pocket while I'm making introductions.
+
+scene thin
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : I can cut the loaf down the middle while it's still warm. Take the softer half. | Would a proper seat and something warm to eat help the week feel any shorter?
+b : There will be quite a bit for both of us. | I'd take that in place of a lecture any day.
+a : Quite. Generosity needn't involve a dramatic disappearance of dinner. | Good. I haven't even brought my lecturing notes.
+
+scene secretbook
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : #book# has some entries written in pencil and some in plain empty space. | I reserve an empty line beneath a troublesome observation.
+b : Who gets to read the blanks? | Are you expecting somebody to write an answer?
+a : Anybody. They're all equally incapable of repeating something I haven't put down. | Me, if I find the missing fact. Otherwise the account stays comfortably incomplete.
+
+scene floatwait
+when topic=pastimes self.likes=evening_line
+does tell.self / react.self / assess
+a : #float# has a better idea of a respectable pause than most speakers I know. | The best evening bite sometimes looks exactly like one of the smaller ripples.
+b : It might be doing absolutely nothing. | How do you choose which ripple to believe?
+a : A very advanced accomplishment on a noisy gate road. | A second pull makes me rather more inclined to act. An interested fish can manage a second opinion.
+
+scene charity
+when topic=newcomer
+does tell.self / react.self / assess
+a : A warm crust is a decent starting introduction to a cold traveller. | Ask a new arrival for the direction of the wind first. The rest can come over bread.
+b : Don't you want the name on the account? | Wouldn't you know the direction of the wind already?
+a : There isn't an account for this bit. I'll cut it here and save us both the work. | Perhaps. A civil question ought to be easy enough to answer with cold lips.
+
+scene wisheve
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like to come to an evening where I could take every knot out of #line#. | I want a whole clean length of cord and a warm roll waiting at the bank.
+b : What would the unknotted cord be telling you? | What if the fish won't take a bite?
+a : The hook and cork would be a fairly persuasive explanation. | I'm prepared to eat my share without obliging the fish to join in.
+
+story knot_loaf [topic=food]
+  : I once took a piece of string to the baker so I could settle a small bread debt. Unrolled it and counted six knots where I expected two.
+  : Four were in the bit I'd tied round a parcel. A brown crust was still in the fold.
+  b : How much bread did you pay for?
+  : Two loaves. I ate the crust for my trouble. The accounts should never get more dinner than the accountant.
+
+story quiet_cast [topic=pastimes]
+  : A cork on a line kept slipping under as though a fish were taking very patient lessons in nibbling. I lifted it at last and felt scarcely any weight.
+  : There was a long strand of water grass on the bend, going up and down with every ripple.
+  b : Did you take the grass home?
+  : No. I let the grass go without a lesson in debt and ate bread for my own supper.
+
+story gate_note [topic=lore]
+  : A story has it that a gate clerk kept an account of every wolf who scowled when asked to state a name. A whole ledger filled up at a famous pace.
+  : Another clerk opened the first page and read all the names aloud.
+  b : Did the old clerk remember the faces?
+  : Quite well. The only face properly missing from the list was the sour one reflected in the little window.
+
+rule @line
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Time to let the float state its case. | Evening keeps a good loose loop.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say A clean set of tracks, very neatly entered. | New snow's an obliging recorder.
+
+rule @bread
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say The steam's a convincing invitation. | Cut before the loaf grows formal.
+
+rule @lesson
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say Ask why before tightening the knot. | A correction can be a kind of credit.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You may put the errand before the name if the bread's getting cold.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have a firm knot for that familiar face.
+dlg @3 resident.hub [here.time=night] : I can hear a quiet question across a whole mug of tea.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : State the business, please. My pocket remains within reach of my own thumb.
+dlg @5 resident.job [self.job=none] : I walk where another attentive eye can be useful. I keep observations and accusations in separate pockets.
+dlg @6 resident.job : I take a quiet account of what goes past. The quiet part matters.
+dlg @7 resident.bye : Call the little account between us quite settled.
+
+graft resident.hub
+choice May I see what's on the tight side of that cord? -> knot_debts
+node knot_debts
+say Debt for bread, kindness for kindness. I mostly count what I owe. Others have a rather remarkable memory for what they're owed already.
+choice What's a loose loop for then? -> knot_doubts
+choice We can leave the line be. -> hub
+node knot_doubts
+say Something I have seen that wants a better explanation. A name can wait a long while for a fact and ought to wait peaceably.
+choice I can respect a loose loop. -> hub
+choice I'll go before the bread cools. -> bye

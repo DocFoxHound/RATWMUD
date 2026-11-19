@@ -1,0 +1,427 @@
+mantle rm364
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_karin_sootdale
+title the bird above the mast
+fits stage=adult|old
+prefers role=merchant humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk uses_rooftop_birds_to_locate_ship_masts_past_the_chimneys
+likes mutton_stew roof_birds a_full_till thunder
+dislikes smoke rats
+fears a_certain_name_under_an_uncertain_mast
+hopes an_index_a_stranger_can_actually_use
+topics ships +0.6 animals +0.5 work +0.4 prices +0.2
+styles comfort=attentive gossip=wry refuse=civil tease=dry
+marks oath saying
+persona #self.first# indexes vessels by the roofline over which each mast appears, regarding birds as excellent moving bookmarks and exceptionally unreliable permanent landmarks.
+
+words
+oath! = Feathers on the index | Three wandering roofs
+saying! = Don't file the flying part | Write the roof before the rook
+indexbook = my skyline index | the small finding book
+crestline = the chimney crest | a stepped roof edge
+feather = a loose feather | one black quill
+bookmark = the narrow slip | my place strip
+perched = a perching bird | a dark roof bird
+masttip = the pale masthead | a wooden tip
+stacktop = a chimney rim | the broad chimney cap
+cut = a sight notch | the little cut
+potstew = the stew crock | a bowl of mutton
+chair = the front stool | the customer's seat
+stroke = a short downstroke | the upright stroke
+blank = a blank column | a narrow empty space
+tillcoin = a worn copper | the little coin
+fold = an inward fold | the closed edge
+ash = a grey fleck | a soot crumb
+rate = the fair copying fee | the stated charge
+crossref = the second entry | a little reference
+down = the soft feather end | a little loose down
+
+any
+opinion merchants for 1 : A plainly stated copying fee saves customer and seller from discovering different ideas of fairness at the very last line.
+opinion watch mixed 0 : Confusing a dark sleeve with a dark coat makes a very elegant report quite useless.
+opinion city for 2 : There's a city full of objects to identify between one office window and the water. I've scarcely exhausted a single view.
+opinion dole for 1 : Proper names in a dole account should all receive the same size of writing. Small writing needn't conceal small portions.
+opinion houses against 1 : I'd charge a House by the actual number of flattering words in its formal opening. Might encourage brevity.
+opinion church for 1 : The high roof is a good landmark and the quiet inside gives the eye a rest from landmarks.
+opinion festivals for 1 : A feast procession is a very fine parade of temporary signs. My whole book gets a holiday.
+opinion newcomers for 1 : A stranger is the best possible reader of directions. No convenient local knowledge to cover my errors.
+opinion sump for 1 : The roofs down low give the sky a most distinctive edge. I'd miss them from a less interesting window.
+opinion times mixed 0 : One slow week may be an observation. Three well-recorded ones might justify a conclusion.
+
+grown
+line greet : Welcome. You stand between two entirely respectable landmarks. | Hello. No need to move, I can look past your ear.
+line greet [pair.band=strangers] : A new face within my usual limits of observation. | We haven't shared this particular bit of skyline before.
+line greet [here.time=dawn] : Morning. The roofline's sharp enough to copy. | A fresh dawn and an unmarked edge of paper.
+line greet.return : Yes, hello. I've recovered my former place in the view. | I heard. The bird flew off and simplified the matter.
+line greet.return [pair.band=friends|family] : A familiar outline with a much more interesting voice. | I'd recognise you without consulting an index.
+line greet.return [here.time=night] : Late hello. Even the birds have been filed away. | The roof edges are black silhouettes now. Welcome.
+line again.open : Another appearance in an unusually agreeable column. | Back before my bookmark shifted.
+line hail [pair.band=friends] : Look up beyond that chimney. Exactly there. | Here. A bird has volunteered to indicate the place.
+line farewell : Leave by whatever landmarks seem likely to stay put. | A clear view and an unambiguous road to you.
+line farewell.return : I'll mark the place where we stopped. Goodbye. | May the next turning be memorable for a fixed reason.
+line react.news : Say what happened and I'll refrain from writing in a decorative bird. | I'll give the news a quite literal hearing.
+line react.news.new : That lacks even a pencilled entry in my recollection. | New to me from first stroke to last.
+line react.news.known : The account fits the previous heading exactly. | Yes. Fairly distinct in my memory, that entry.
+line react.news.doubt : That's a movable feature masquerading as a permanent landmark. | I'd leave the ink off that account a little longer.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's a great vacancy in those few words. Sit down. | I can listen without finding a neat heading for a loss.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that deserves more space than my usual economical hand. | Lovely hearing. I'll allow myself a thoroughly unprofessional smile.
+line ask.how : Has anything changed places in your day unexpectedly? | How does the view look from where you're standing?
+line answer.how : Attending to the roofline and the living alternately. Quite comfortably occupied. | My list is growing much faster than my spare time.
+line decline : I'd have to make a firm identification on quite insufficient information. | A real customer has a prior claim upon the time I'd need.
+line accept_decline : Then I'll leave a blank without inserting a conjecture. | Quite fair. I asked to discover the answer, and have it.
+line preclose : I've a little operation in ink which won't improve with delay. | My working notes have begun to look like a small flock themselves.
+line accept_preclose : Take your departure while the description still fits. | We've reached a perfectly sensible break in the text.
+line thank : You've put my finger on precisely the right line. Thank you. | A correction offered in time is a substantial gift.
+line deflect_thanks : I'd rather amend a small error now than recopy a proud one later. | The correction fits in the margin. Quite economical.
+line sympathise : Your words can have a moment's quiet about them. | You needn't embellish a difficult piece of news for me.
+line reassure : Start with the one thing in view that hasn't moved. | We can make a serviceable beginning from two clear points.
+line ack : I see the very mark you indicate. | Yes. A relevant and quite visible distinction.
+line give.advice : Find the ridge first, then look for the interesting thing above it. | Give a stranger one fewer turning than you think necessary.
+line kin.open [pair.kin!=no] : A family visit belongs in the less formal part of the record. | For kin I'll put the public book away entirely.
+line greet.return [self.working=yes] : Your voice carries nicely across the counter. | I can leave a clean mark here and hear you.
+line farewell.return [here.time=night] : May a steady window light mark your way. | Night gives most of the landmarks a rest. Mind the stairs.
+line assess : That belongs among the sightings I would sign. | A good outline with room for one quite reasonable doubt.
+line ask.detail : Fixed to the masonry or merely passing over it? | Which side of the chimney did you see?
+line answer.detail : Just where the ridge turns down towards the water. | The bird moved first. The upright beyond it remained.
+line give.opinion : An index proves its merits in the paws of an unfamiliar reader. | A place on a page must take less finding than the thing itself.
+line react.self : I should be curious to see that against a plain background. | Your description suggests a particularly distinctive feature.
+line tell.plan : I'll mark the masonry and leave room for the moving parts. | A second observation in better light should settle the heading.
+
+scene birdlocator
+when topic=ships
+does tell.self / ask.detail / answer.detail
+a : A roof bird's an admirable bookmark provided the reader is prompt.
+b : What happens if it flies? | Are you reading the bird or the mast?
+a : I keep the chimney in my eye and begin again. The chimney's much less adventurous. | The mast. The bird indicates roughly where to look before losing interest in its employment.
+
+scene fixedroof
+when topic=ships
+does tell.self / ask.detail / answer.detail
+a : I note which chimney a mast appears above before attempting to name a vessel.
+b : Isn't the mast moving? | Wouldn't two ships look alike?
+a : Frequently. I write the moment of sighting too. A roof's a reference, not an anchor. | Then I'd keep space clear for some confirming detail. A premature name is tedious to erase.
+
+scene roofbirds
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I like a roof bird with a striking outline and very modest travelling ambitions.
+b : Most of them move. | What shape would suit you?
+a : Yes. I enjoy that considerably more when I've finished locating the feature beyond. | A tucked head and one unmistakable tail. Which particular bird is relatively unimportant.
+
+scene movingink
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Try drawing an occupied chimney from memory. The bird invariably looks more solid than the brick.
+b : What do you remember best? | Can you draw brick from memory?
+a : The living thing. An eye has a quite reasonable prejudice in favour of feathers. | I can attempt it. My unconscious tendency is to provide the bird with an absurdly fine pedestal.
+
+scene payquill
+when topic=work self.role=merchant self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I quote a copying fee after seeing the original writing. | A single page needn't be a single page of work.
+b : Some hands worse than others? | It's one sheet either way.
+a : Considerably. Some demand excavation before the copying may properly begin. | An empty sheet is also one sheet. Nobody proposes to pay me the usual fee for copying one.
+
+scene nameconfirm
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : A customer's own spelling is worth confirming before the ink goes down.
+b : Even for simple names? | Couldn't you scrape out a letter?
+a : Particularly for a simple one. I'm more likely to assume I've heard correctly. | I could. Asking a civil question does the page less violence.
+
+scene dryreceipt
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : My receipts dry on a clear patch where nobody can sit on it.
+b : Has it travelled by coat before? | Is that a frequent difficulty?
+a : I'd prefer to spare both the customer and the receipt any adventurous journeys. | Once is memorable enough. I now provide the paper with its own seat.
+
+scene cleardesk
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : A sound desk edge makes a useful horizon when checking small drawings.
+b : You line your ships up with the desk? | Which edge do you use?
+a : Only on paper. The actual fleet is admirably free of my furniture. | The straight one nearest the window. The other has developed opinions about level.
+
+scene helperroom
+when topic=work self.role=merchant self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd leave a clear margin on any list I pass to #self.hand#.
+b : For corrections? | Why not use the whole page?
+a : Corrections and additions. Another reader may spot a valuable omission. | Because another writer deserves room to fit a point of view into the business.
+
+scene spareprofit
+when topic=prices self.likes=a_full_till
+does tell.self / ask.detail / answer.detail
+a : I enjoy a full till chiefly because the empty one takes exactly as long to balance.
+b : Would you admire the arithmetic either way? | You must save time on the empty one.
+a : The arithmetic, perhaps. The prospect of dinner inclines me to prefer the first result. | It takes a surprising amount of hunting before you believe it's quite that empty.
+
+scene fairprice
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I don't count an ornamental heading as three lines unless it actually takes that space.
+b : Does a flourish cost extra? | Some customers want grand letters.
+a : A small honest flourish comes with the letter. A whole landscape of ink would need discussing. | I'm happy to write them. I'd like us to know what the grandeur will cost beforehand.
+
+scene bigstew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A good mutton stew has an interesting lower storey beneath the broth.
+b : What's filed down there? | Do you begin with the bottom?
+a : Chunks of mutton, if the dish has been named with any sense of professional responsibility. | A sweep of the spoon from the bottom up is a fair sample of the whole affair.
+
+scene smokesight
+when topic=weather self.dislikes=smoke
+does tell.complaint / ask.detail / answer.detail
+a : Smoke is an extremely inconsiderate editor of a skyline. | A few chimney puffs can remove a whole ship from a decent view.
+b : Does it come back when the smoke clears? | Can you identify smoke by chimney?
+a : The view comes back. Whether the vessel obliges is a separate question. | Sometimes. I would much rather identify the mast the chimney has chosen to revise.
+
+scene ratcorner
+when topic=animals self.dislikes=rats
+does warn / react.self / assess
+a : I check the bottom edges of stored paper where a rat might take an interest.
+b : Good nesting material? | How can you tell?
+a : Exceptionally. I resent the unsolicited review of my stock by prospective tenants. | One ragged corner could be handling. A collection missing in neat bites suggests a reader with teeth.
+
+scene stormroom
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder under a sound roof makes my desk seem part of a much larger room.
+b : You enjoy the noise? | Doesn't it shake your writing?
+a : Very much. The roof's presence is an important condition of my enthusiasm. | A loud peal is my signal to rest the pen. It usually finishes the sentence far more boldly than I intended.
+
+scene rainstreak
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A streak of rain across the pane can add a mast to every roof in town.
+b : You'd hardly mistake one. | What would identify the real mast?
+a : Only for a blink. A blink is long enough to begin an unfortunate written certainty. | Move my head. The false mast moves sideways obediently over the entire fleet.
+
+scene birdweather
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Birds arrive out of fog quite separately from the roofs beneath their feet.
+b : Can you use them as markers then? | What does your page look like?
+a : Only as evidence that some perch must exist. I wait for the masonry to introduce itself. | Several quite distinct birds and a most hypothetical city.
+
+scene familybook
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd make a little finding book for #self.child# with one deliberate puzzle in the index.
+b : Why a puzzle? | Would that make it less useful?
+a : The pleasures of a private book differ from the solemn duties of a public list. | Slightly. I would accept that in exchange for an interesting conversation about the missing entry.
+
+scene friendmargin
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could show #self.friend# an entry headed simply 'something with wings'.
+b : An admission of defeat? | Would you put that in a public book?
+a : An admirably accurate description of what I saw. A friend may appreciate its precision. | If the alternative was to invent a name, yes. I would prefer another look first.
+
+scene officeview
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : In the Office a good window offers an index of streets arranged by chimney height.
+b : Is that how you find your own road? | Aren't they all black at the tops?
+a : It would work from one particular window. On the ground I use the usual doorways. | The outlines are remarkably expressive. Some lean towards each other like two clerks sharing a remark.
+
+scene halfpenny
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In lean times a customer may need one sound line of writing more than an entire decorated page.
+b : Can you do much with one line? | Do you offer the single line?
+a : A receipt will fit. So will an appointment correctly dated. Both useful little pieces. | Yes. I'd rather write something actually used than charge for a broad expanse of very costly air.
+
+scene newstreet
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I like to test directions on a newcomer who never saw the vanished sign I was about to mention.
+b : Gone a long time? | Can't a neighbour correct the directions?
+a : Quite long enough to have become indispensable to those of us who remember it. | Not as well. A neighbour knows where I mean and might kindly pretend I told it clearly.
+
+scene publicgossip
+when topic=gossip
+does give.opinion / react.self / assess
+a : A rumour with a memorable heading may outlive an excellent correction in smaller letters.
+b : Would you give the correction a bigger heading? | Why repeat it then?
+a : I might just set the whole rumour aside until something definite deserved lettering. | My thought exactly. I can generally find a more useful occupation for my ink.
+
+scene rollingnews
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I treat an arrival seen from a window with slightly more confidence than an arrival described through one.
+b : What if the sighting's poor? | You distrust witnesses?
+a : Then it becomes a poor sighting with my name attached. Honest limits improve an account. | No. I distinguish my eyes from somebody else's. A simple but occasionally unpopular filing arrangement.
+
+scene wagonin
+when topic=caravan world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : Wagons in town mean there are papers in transit as well as goods.
+b : What papers can you see? | Even blank paper could travel.
+a : I can't say from a wheel mark. I merely allow space for a possible busy afternoon. | Yes. It's tremendously easy to write that particular consignment in advance without altering the goods.
+
+scene latemule
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I can write 'not yet arrived' in very small letters and still be perfectly understood.
+b : What if the delay lengthens? | Why small letters?
+a : Then I'll add a date. The original statement doesn't need a larger voice to remain accurate. | To leave room for actual news. A blank beginning needn't swallow the whole page.
+
+scene quietcamp
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember a charcoal hill by its outline above a bare shoulder of trees.
+b : Is that in your index too? | Wouldn't you rather remember the quiet?
+a : In a private corner of it. A twig and a soft grey bank do duty for the whole view. | I do. A little line on a page can bring that remarkable hush back for a moment.
+
+scene goodindex
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My ideal index lets a complete stranger find a ship without reading my mind.
+b : Could a stranger use today's version? | What would have to change?
+a : With assistance from three birds and a very patient clerk. There's room for improvement. | I'd remove the parts beginning 'as everybody knows'. They turn out to be quite numerous.
+
+scene softchapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A chapel roof appears in more of my notes than any other fixed mark. | I'm grateful to have one quiet place that is also conspicuous enough to find.
+b : Do you sit inside it often? | Does that make it a navigational blessing?
+a : As often as I want the roofs to take a rest. Inside, there's no skyline to catalogue. | I should call it ordinary gratitude. Finding the door is generally the first part of making a visit.
+
+scene festbanner
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : Feast flags look marvellous in a view and miserable in permanent directions.
+b : Couldn't you give the date? | Wouldn't a bright flag help today?
+a : I do. The flags generally travel on to different poles without sending me an amendment. | Today, certainly. I'll politely ask tomorrow's walker to rely on the stone underneath.
+
+scene blacknight
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night a roof and a folded wing often become one dark notch. | My late notes are full of modest little qualifications.
+b : Which is which? | How modest exactly?
+a : If it takes off the question is resolved. Otherwise I put the pen away and hope for dawn. | Visible upright, possibly mast, probably wishful scribe. A very honest evening's work.
+
+scene walkperspective
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Three steps along a street can lodge the same mast over a wholly different chimney.
+b : Does your index mention where to stand? | That must be confusing.
+a : With admirable emphasis. The observer is part of the observation whether flattered by it or not. | Only if one forgets the feet at the bottom of one's own point of view. I mark the corner.
+
+grown
+
+story roofguest [topic=memories|ships]
+  : I once labelled a very small lateen shape at considerable distance. The angle of it was beautifully clear.
+  : Shortly afterwards the entire sail flew to a different chimney and scratched its ear.
+  b : What became of the identification?
+  : A neat correction under birds. Fortunately I hadn't attempted to appoint its crew.
+
+story inkwing [topic=work|memories self.role=merchant]
+  : I wrote down a sharp little roof silhouette while quoting a fee to a customer. The marks ended up alongside each other.
+  : For a moment my own account appeared to charge several coppers for a bird in flight.
+  b : Did the customer notice?
+  : I noticed, which was soon enough. I don't invoice wildlife without a very definite agreement.
+
+story stewmast [topic=food|memories]
+  : I sketched a view while a bowl of stew cooled on the sill. Looked down to find a mast I hadn't drawn.
+  : A thin stem from the seasoning was leaning directly across my sketch.
+  b : Did you include it in the final copy?
+  : I included it in the washing up. My appetite for record keeping does have limits.
+
+story countroof [topic=pastimes|memories]
+  : I counted seven birds along a ridge, turned a page and found eight. A moment later it was six.
+  : The one count I could verify afterwards was the number of times I licked my pencil in irritation.
+  b : How many times?
+  : Twice too often, judging by the taste. The birds kept the rest of their account private.
+
+story looseindex [topic=travel|memories]
+  : I wrote my excellent directions on two slips of equal length and carried them in my sleeve. One slipped under the other.
+  : Following them in the revised order returned me to my own front step in excellent time.
+  b : Did you keep that route?
+  : Certainly. I gave it a fresh heading. How to go nowhere with an air of great purpose.
+
+rule @wing
+when concept=bark
+does aside
+cooldown 8h
+say Hold the roofline fixed and let the feathers travel. | There's the mast beyond the second chimney.
+
+rule @work
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say A spelling confirmed now saves a scrape later. | Keep the copied page clear while the last line dries.
+
+rule @bird
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say Four little heads on the cap. No, three and a bit of tile. | The rightmost bird has amended the index again.
+
+rule @thund
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say One excellent peal and only a very small ink blot. | That roof is earning its keep magnificently.
+
+rule @nook
+when concept=bark
+does aside
+cooldown 8h
+say Give me the angle from beside the post, please. | A few steps and the whole fleet changes columns.
+
+rule @count
+when concept=bark self.likes=a_full_till
+does aside
+cooldown 8h
+say The fee down plainly and the coin beside the entry. | A satisfying little sound from the till.
+
+dlg resident.hub : I've space for a conversation provided it doesn't insist on fitting into one narrow column.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your entry continues on more than one page by now.
+dlg resident.hub [here.time=night] : The roofs are rather less informative at night. A living visitor improves the view.
+dlg resident.hub [pair.disposition=wary|hostile] : Ask from there, please. The papers aren't among the refreshments.
+dlg resident.job [self.role=merchant self.job=scholar] : #self.trade_words.capitalize#. My preference is to sell one intelligible sentence than a very large mysterious paragraph.
+dlg resident.job : My work ought to be understandable in my absence.
+dlg resident.bye : May your chosen reference point continue to stand still.
+dlg resident.gossip [here.gossip=no] : A clear page where the gossip would belong. The empty space pleases me.
+dlg resident.gossip [here.gossip=yes] : The report is that #topic.subject# #topic.claim#. My part is the reporting, which deserves a small separate heading.
+dlg resident.news [world.news] : News has come by way of #world.news_from#. Here's the substance. #world.news#.
+dlg shop.greet [here.shop=open] : We can look at what's wanted and establish the price before either paw strays towards the ink.
+dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a repeat customer does possess one great advantage. You'll know what my flourishes cost.
+dlg shop.greet [here.shop=bare] : A fine display of bare counter today. I can still consider what you bring to sell.
+dlg shop.greet [here.shop=asleep] : My pen is off duty. So is the paw generally attached to it.
+dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Prices are quite legible from where you're standing. Point to what's wanted.
+dlg shop.prices [here.shop=open] : Describe the work and I'll state the charge in ordinary numbers. Decorative figures cost extra.
+dlg shop.bye : I hope whatever you take away is pleasantly easy to read.
+dlg shop.bye [here.shop=asleep] : The pen and I are staying put till opening.
+
+graft resident.hub
+choice Could a bird help me locate a distant mast? -> wingmark
+node wingmark
+say See that chimney with a chipped corner? Find whichever bird happens to be there. Now shift your gaze half a chimney to the right. The mast is the fixed upright.
+free
+choice And if the bird leaves first? -> gonewing
+choice I've found the upright. -> hub
+node gonewing
+say Use the chipped corner immediately. I employ the bird to make the view interesting. Only the brickwork has accepted a permanent appointment.
+choice I'll rely on the brickwork. -> hub
+choice I'll go try the view. -> bye
+
+graft shop.greet
+choice How much space should I leave for an index? -> indexroom
+node indexroom
+say Save a small extra column for corrections or alternate names. The most useful directions often arrive after the elegant ones.
+free
+choice What if the column stays empty? -> whitespare
+choice I'd like to look at the wares again. -> greet
+node whitespare
+say An empty column may indicate that all your entries were perfect. Leave the question open. Both perfection and a clear margin deserve a little room.
+choice Back to the counter, please. -> greet
+choice I'll leave space. Goodbye. -> bye

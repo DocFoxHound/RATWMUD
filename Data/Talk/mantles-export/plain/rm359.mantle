@@ -1,0 +1,257 @@
+mantle rm359
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_dagny_pitchley
+title the margin cut clean
+fits stage=adult|old
+prefers job=scholar
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk pares_the_prickly_margin_off_a_sheet_with_a_newly_honed_edge
+likes honey_cakes digging market_bustle frosty_mornings
+dislikes gulls haggling
+fears an_unearned_name_in_ink a_honey_stain_in_a_copy
+hopes a_matched_pair_of_desks a_clean_bed_for_herbs
+topics work +0.5 pastimes +0.5 food +0.3 prices +0.3 gossip -0.4
+styles comfort=plain gossip=firm refuse=blunt tease=none
+marks oath saying
+persona #self.first# keeps a hone for a paper knife, tests it on a stubborn margin and can give a detailed explanation of exactly why one private line should remain unwritten.
+
+words
+oath! = Nick my last margin | Scratch up the proof
+saying! = Sharpen the knife before the opinion | A blank line may be accurate
+knife = my short paper knife | the little trimming blade
+stone = a narrow wet hone | my long-faced stone
+tuft = a lifted fibre | one bristling edge
+slice = a honey cake corner | the sticky square
+scrap = a blank waste slip | the unmarked strip
+strip = my clean margin | the offcut of paper
+bed = a narrow herb bed | my shallow digging strip
+soil = a clump of loose earth | the turned garden soil
+chill = a sharp rim of frost | the hard white edging
+noise = a fine market hubbub | the rising market chorus
+spot = a damp thumb mark | a dark patch in the page
+purse = the little food purse | my slender coin fold
+
+any
+opinion @1 church for 1 : I could have written a yard of thanks and still not come as close to it as I came eating that first hot chapel meal.
+opinion @2 dole for 2 : A loaf's a full sentence. Whoever needs one shouldn't have to supply the first hundred words of an application.
+opinion @3 houses against 1 : I see the owners' names spelled out handsomely above property that's allowed to go rotten in the joints.
+opinion @4 merchants against 2 : Plain price, plain portion. If a seller needs an argument to make them agree I take my small purse home.
+opinion @5 city for 1 : You can't finish describing one market corner before Ridgemere adds a hundred new particulars.
+opinion @6 sump for 1 : The Sump has honest damp. It shows where the paper is bad long before an important reader comes to inspect a page.
+
+grown
+line @1 greet [pair.band=strangers] : Use the dry end beside my table. Hello. | Come close enough to read the label for yourself.
+line @2 greet [here.time=dawn] : First light. Good, that shows a proper edge. | Morning. The frost's less long-winded than both of us.
+line @3 greet [here.weather=rain] : Shake the wet off over there first. Welcome in. | Here, take the corner furthest from the papers.
+line @4 greet.return : Plain enough. Have a welcome back. | The greeting's arrived in good condition.
+line @5 greet.return [pair.band=friends|family] : Ah. Here's a voice I need no sample of. | Best corner's left bare for you.
+line @6 farewell : Leave the edge smooth for the next paw. | Dry wrapping for anything worth bringing home.
+line @7 farewell.return : I'll put the cover on that entry. | Go where the price is legible from the door.
+line @8 again.open : It's the second impression on the same sheet. | Back before the page has lost its curl.
+line @9 kin.open [pair.kin!=no] : A familiar face can sit on the inside. | Come where family business isn't public copy.
+line @10 hail [pair.band=friends] : Here beside the untrimmed pile! | This side of the busy table!
+line @11 react.news : Separate what was seen from what was supplied later. | I'd like the account before the flourishes got into it.
+line @12 react.news.new : There's a new fact at the head of the sheet. | I hadn't set that down anywhere till now.
+line @13 react.news.known : Seen that in a previous hand already. | My margin has the same particulars.
+line @14 react.news.doubt : I'd take my knife to the extra matter creeping onto that account. | One statement in there hasn't earned its place beside the others.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : A hurt that size doesn't need a decorative speech. | Give the grief a blank space to itself.
+line @16 react.news.glad [topic.kind=birth|marriage] : That belongs in the broad clear hand reserved for good news. | I'll be glad to copy so fine an entry.
+line @17 answer.how : Straight enough to pass a ruler. | Keeping the important edges in order.
+line @18 decline : I'd sooner say I can't do that than leave you waiting on a blank sheet. | There isn't room to give both jobs the thoroughness they require.
+line @19 accept_decline : Your answer's quite plainly rendered. | No need to write me a whole appeal.
+line @20 sympathise : I'm blunt enough to say it hurts. I'm here while it does. | Let the hurt take its own time finding the words.
+line @21 thank : A useful kindness deserves clearly written credit. | I'll keep that one among my better entries.
+line @22 deflect_thanks : There was a rough edge and I took it off. | A short job with the blade already out.
+line @23 preclose : There's a nib of business left for my attention. | My own rather untidy margin needs me again.
+line @24 accept_preclose : Close the page when it suits your hand. | I'll finish my corrections in peace.
+line @25 farewell [here.time=night] : Read the turnings under decent lamplight. | Leave the small lettering for daylight.
+
+scene papercut
+when topic=work self.job=scholar self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I cut #tuft# clean rather than try to press it down. | A page at #self.workplace# earns a trim before the pretty words go on.
+b : Wouldn't a fingertip smooth it well enough? | Is that just to please an important reader?
+a : Until the ink finds it. Then a whole letter goes wandering off like a little root. | It gives the copyist a sound edge to work against. The reader gets the second advantage.
+
+scene sharpen
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I soak #stone# till #knife# moves without a catch. | I know this knife is ready if it takes the fuzzy bit off an edge in one curl.
+b : How much of the paper comes away? | Why not test it on your sleeve?
+a : #strip# the width of a pin at most. There's nothing clever about losing good paper. | Paper is what I mean to cut. I'll leave my tailor out of the experiment.
+
+scene cake
+when topic=food self.likes=honey_cakes
+does offer / accept / assess
+a : Take #slice# on #scrap#. There isn't any ink on that part. | Here's a piece of cake measured to a fairly generous margin.
+b : Will the honey drip through? | You've got a second piece measured for yourself?
+a : Only if you start discussing the paper instead of eating the cake. | Quite. A fair copy of a good plan is a comfort at dinner.
+
+scene dig
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I like a shallow cut alongside #bed# before I put the spade deep. | #soil# gives you a very complete account from the underside.
+b : Does it make a prettier line along the bed? | An account of what the soil's been doing?
+a : It keeps roots outside the bed out of the cut. Tidiness can do somebody besides me a bit of good. | Precisely. Worms have done the editing while I was indoors.
+
+scene market
+when topic=pastimes self.likes=market_bustle
+does tell.self / react.self / assess
+a : #noise# is the one pile of untidy words I wouldn't straighten. | Give me a full market with its elbows and hot buns and I can listen without copying a syllable.
+b : What's different about the market sheet? | How do you remember the interesting parts then?
+a : It's supposed to sound like half a dozen errands overtaking a cart. | I remember what interested me. Everybody else can retain a bit for themselves.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #chill# on a bin lid draws a finer line than any knife I own. | A frosty morning makes a muddy route quite readable for an hour.
+b : Would you try copying the pattern? | How long do the letters last underfoot?
+a : Yes. Stop after one branch and see if you can give it the right lean. | Only as long as the ground keeps its stiff edge. Then the street has other ideas.
+
+scene gull
+when topic=smalltalk self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull once made a noise three marks of emphasis couldn't do justice to. | A gull doesn't stop its account at the natural end of a sentence.
+b : I imagine you'd like to edit the bird. | You could leave a last squawk unanswered.
+a : I'd be entirely satisfied retiring its punctuation. | I do. Then it proceeds to repeat the thing over a dozen rooftops.
+
+scene haggle
+when topic=prices self.dislikes=haggling
+does give.opinion / disagree / concede
+a : A seller who has two prices for one cake will soon invent a third. | I refuse to bargain with a number half rubbed off the board.
+b : You'd pass a good cake on account of arithmetic? | What if the seller's just changing the figure?
+a : I'd want to eat the cake and trust the dealing. A market has room for both wishes. | I'll wait while it's done. Then we can have one short honest conversation.
+
+scene sumpcopy
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : I keep a page dry in the Sump by giving the wall and the shelf an inch of clear air. | Back home paper curls to the damp side before a paw would feel the wet.
+b : An inch really makes the difference? | What happened to the first page you found curled?
+a : Let a bit of paper stick to cold plaster once and you'll find the inch willingly. | I fetched the rest off the shelf. I'll take a warning that costs one sheet.
+
+scene onesaw
+when topic=gossip
+does give.opinion / disagree / concede
+a : A dignitary with a wet face is entitled to an unwritten margin. | One can witness a private grief and still have nothing fit to publish.
+b : Even if the sight changed your mind about the office? | Wouldn't folks want to know the name?
+a : My mind belongs to me. The instant when a face fell belongs to somebody else. | Certainly. Wanting is a shallow reason to put a private hurt on a page.
+
+scene sharelife
+when topic=family self.spouse
+does tell.plan / ask.detail / answer.detail
+a : I'd like two desks close enough to pass a honey cake between me and #self.spouse#. | I'd leave a dry bit of shelf within reach of #self.spouse# and me.
+b : You'd risk honey beside two good desks? | Will two workers agree on when a shelf's full?
+a : I'll keep the cake on its own square. I know my duties to a clean sheet. | We needn't. The nearer part can stay mine and I'll mind the drip above both.
+
+scene friendlook
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I've got a fine clean copy I would show #self.friend#. | I'd happily buy #self.friend# the best-looking honey cake at market.
+b : How would you choose a copy worth showing? | Would you judge it from the shine?
+a : One with a proper space around the hard thought. I allow a friend a good margin for disagreement. | I'd ask how the honey got on, then take one with a sound base under the sticky top.
+
+scene factroll
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : The oldest tale in a copy book generally has the lightest ink beneath it. | I look in the margin of familiar tales before I bother with the title.
+b : Have people really copied over it? | After the extra gossip from earlier readers?
+a : Not over the words. Look where old fingers have worn the ink quiet round the edges. | After the plain little corrections. A gate by the wrong hill is a whole extra day's walking.
+
+scene thinweek
+when topic=times world.times=hard|lean
+does tell.feeling / sympathise / assess
+a : #purse# snaps shut on a disappointingly small share of cake in a lean week. | There's too much difference between recording a bread price and taking the money to the shop.
+b : Did it look bigger from the counter? | Can't your wages keep up with the writing?
+a : It had a larger number on the board beside it. I'd object anywhere to that arithmetic. | No. I'd keep a great deal quieter if the figures ever stayed level.
+
+scene inkspot
+when topic=work
+does ask.advice / give.advice / assess
+a : How can I lift a honey drop from #scrap# without cutting a hole? | What's your remedy for a damp smudge joining two separate lines?
+b : Lift it with another clean scrap and leave the fibres alone. | Recopy the two lines and mark the damaged place.
+a : Right. The knife's no remedy for every sort of stickiness. | Yes. Nobody reading later ought to have to guess which statement survived.
+
+scene clayseed
+when topic=dreams
+does tell.self / react.self / assess
+a : I'd rather like to grow herbs with names long enough to use all my nice waste slips. | A desk and a bed of dirt do a tidy pair of trades with my worries.
+b : What if the names outgrow the garden? | Is the ink any use out among the leaves?
+a : I cut the slips to size. The leaves can make the more ambitious use of the space. | A name on a marker saves a muddy paw rummaging in my written plan.
+
+scene strangemargin
+when topic=newcomer
+does tell.self / react.self / assess
+a : A newcomer to market will notice all the signs we walk past without looking. | I'm interested in a traveller's name for the food I've been eating all winter.
+b : You'd ask a stranger to read out the prices? | Would a new name improve the taste?
+a : Only ask what looks odd. Difference is an excellent way of spotting a mistake. | No, but it might lead me to try a different use for an old flavour.
+
+scene dampfold
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : There's #spot# on this folded corner. The rest ought to stay shut a minute. | A wet day does funny things to an edge I've worked half an hour to get straight.
+b : Wouldn't opening it dry the sheet? | Can I shelter it with my sleeve?
+a : If the ink has stuck to the leaf across it, pulling will do my whole job in reverse. | Hold the sleeve an inch clear of the edge. Air is remarkably considerate paper wrapping.
+
+story honey_margin [topic=food]
+  : I set a honey cake on a balance sheet that had a perfectly clean lower margin. Three figures stuck to the underside of the cake.
+  : I looked hard at them and wrote them back, so only a little brown patch showed.
+  b : Did you eat the figures too?
+  : I sliced away the inked bit. I'm quite capable of doing my work without having it for dinner as well.
+
+story frost_map [topic=pastimes]
+  : I drew the frost on a market board before anybody arrived to wipe it down. The finest branch was a long straight mark across three wavy ones.
+  : I came back after the frost had gone and put my drawing beside the board.
+  b : What made the straight branch?
+  : An old scratch where a stall measure had been knocked over. Even frost borrows its best lines.
+
+story silent_witness [topic=lore]
+  : An old account describes a clerk noticing a grand chair with one leg leaning shorter than the rest. The owner was giving a grave speech from it.
+  : The clerk slipped a wedge under while the audience turned toward the light.
+  b : Did the owner ever find out?
+  : No. Didn't need to. Not everything a sharp set of eyes sees wants recording in the proceedings.
+
+rule @hone
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Earth first, paper later. Wipe that blade. | A sound edge comes up light.
+
+rule @page
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Give the bristling bit a clean cut. | I'm saving the plain scrap beside the title.
+
+rule @frost
+when concept=bark here.season=winter
+does aside
+cooldown 8h
+say There's some script for a patient eye. | Ground's made a dry fine line today.
+
+rule @market
+when concept=bark self.likes=market_bustle
+does aside
+cooldown 8h
+say That price ought to be an inch larger. | Enough honest noise for three clean pages.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Before you give me a great thick tale, give me the question requiring an answer.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have a nice straight margin for your question.
+dlg @3 resident.hub [here.time=night] : The letters can wait for light. A spoken matter may proceed.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : That distance is sufficient for a proper statement. Please make one.
+dlg @5 resident.job [self.job=scholar self.workplace] : I copy at #self.workplace#. I can give a rough sheet the finish an exact reader expects.
+dlg @6 resident.job : I take note of what actually fits on the page in front of us.
+dlg @7 resident.bye : Keep a narrow strip of clean margin on the way back.
+
+graft resident.hub
+choice Is there a reason to leave a line unwritten? -> blank_fact
+node blank_fact
+say A dozen. The fact may be doubtful, the subject may have no bearing on the account, or the writer may be minding a perfectly decent wolf's privacy.
+choice Could an empty line still tell the truth? -> ample_blank
+choice I'll take another subject. -> hub
+node ample_blank
+say More faithfully than a whole passage dressed for show. The important part is to know why you took your hand away from the paper.
+choice I'll remember the distinction. -> hub
+choice May the next sheet come clean. -> bye

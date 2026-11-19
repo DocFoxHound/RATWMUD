@@ -1,0 +1,263 @@
+mantle rm358
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_hob_appleby
+title the roof's contrary witness
+fits stage=adult|old
+prefers job=farmer honesty=guarded
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk puts_a_straw_flag_beneath_the_eave_to_question_the_wind
+likes crisp_apples wrestling fresh_straw first_snow
+dislikes cold_tea deep_mud
+fears a_prediction_bought_without_evidence
+hopes an_undisturbed_morning_at_the_hives
+topics weather +0.6 work +0.4 pastimes +0.3 gossip -0.5
+styles comfort=plain gossip=withhold refuse=cool tease=none
+marks oath saying
+persona #self.first# sets a straw wind flag below the shelter of an eave, watches it contradict the weather above and keeps a private tally of which witness proves right.
+
+words
+oath! = Straw flying sideways | Rotten weather peg
+saying! = Ask the sheltered straw too | Clouds promise nothing in writing
+strawflag = my bent straw flag | the little witness
+ridge = the upper ridge | a roof edge
+peg = the short peg | my straw peg
+joint = the hollow joint | a stalk joint
+coldcup = the abandoned mug | a cold tea cup
+apple = a hard green apple | the crisp apple
+hold = a fair hold | a balanced grip
+waxcomb = a comb edge | the pale wax rim
+bootpit = a heel hollow | the mud pit
+mat = a dry straw mat | my plaited square
+tagend = the loose straw | a flag tip
+sliver = a narrow peel | one apple shaving
+
+any
+opinion houses against 1 : Before I'd take a House's word about the weather I'd like to see which side of the eaves the factor stood on.
+opinion merchants against 1 : I should like to take my own bite of a sample apple. A fine report doesn't make it crisp.
+opinion church mixed 0 : I can sit quietly in chapel. I can sit quietly in a shed too, when the roof holds.
+opinion dole for 1 : A share for a wolf in a bad week doesn't require the whole week explained to the queue.
+opinion watch against 1 : Two witnesses from one dry doorway may have seen the same very small patch of road.
+opinion road mixed 0 : I've no quarrel with a long road till the middle of it comes off on my boots.
+
+grown
+line greet : Hello. Stay where the roof breaks the wind. | There's a still patch if you want it.
+line greet [pair.band=strangers] : Your first visit, I believe. Have the sheltered side. | I don't place you. There's room to speak.
+line greet [here.time=dawn] : Morning. Roof and hedge disagree already. | Two different winds to start the day.
+line greet.return : Yes. Your voice gets through the draught. | I heard you over that loose bit of straw.
+line greet.return [pair.band=friends|family] : I trust that voice above the weather's promises. | A known face under an uncertain sky.
+line greet.return [here.time=night] : Night hello. I can hear the straw, at least. | Darkness hasn't quieted the wind there.
+line again.open : Back before the roof gives a straight answer. | The witness is still nodding. Come through.
+line hail [pair.band=friends] : Look how contrary these two bits of straw are. | Stand behind the peg for a better angle.
+line farewell : Go by the weather you actually meet. | Keep a dry place about your shoulders.
+line farewell.return : Off you go. Don't take the clouds' word alone. | Safe under the next sensible eave.
+line react.news : Let's hear which part was seen from outside. | Tell it straight past the draught.
+line react.news.new : No sign of that in my reckoning till now. | I'd heard precisely nothing of that.
+line react.news.known : Yes. The other account pointed much the same way. | That's been across my threshold already.
+line react.news.doubt : There's a shelter missing from that account. | I hear plenty of certainty for so little open ground.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I won't make much noise about your hurt. I can stay. | A rough piece of hearing. Rest your paws there.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'll give that piece of news a favourable mark. | Good to hear a decent turn without having to dispute it.
+line ask.how : Which way's the day been pushing you? | Had a dry minute to yourself today?
+line answer.how : Doing well enough in the sheltered patches. | I've had disagreements with the sky. Nothing unusual.
+line decline : I'd be speaking about a matter I keep inside my own door. | I'm unwilling to promise more time than the weather allows me.
+line accept_decline : Keep it with you. The answer's clear. | Then I'll call that part settled.
+line preclose : I want another reading from my little flag. | I'd better check what the roof's been saying.
+line accept_preclose : You're free to step back into the weather. | Good enough. The business can lie here.
+line thank : That spared me quite a wet argument. Thanks. | You took the exposed end. I noticed.
+line deflect_thanks : It was a spare stalk. There's another where it grew. | My paws were already out in it.
+line sympathise : Leave the bigger clouds for another argument. Sit. | I can give a hard bit of news some shelter.
+line reassure : We can wait to see what the next gust actually does. | A wet patch is a poor judge of the whole field.
+line ack : I saw the straw move that way too. | That's the direction I understood.
+line give.advice : Look under shelter before calling the air still. | Try a lightly bent stalk. A stiff one won't confess much.
+
+scene doublewind
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : The roof says the wind's coming inland. My straw says otherwise.
+b : You disagree with your own roof? | Which do you trust?
+a : No. I've two witnesses in different places. They can disagree for themselves. | The roof for what's happening up there. The straw for what just hit my ear.
+
+scene beeflight
+when topic=work self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : Watch the bees near a shelter and you'll learn a good deal about the local draught.
+b : Why not look at the clouds? | What do the bees show?
+a : I'm asking about the air near a small door, not a whole hillside. | Whether a sheltered patch stays steady long enough for a straight landing.
+
+scene frameweather
+when topic=work self.job=farmer self.working=yes
+does warn / react.self / assess
+a : Tell me about the wind right here before you move that cover.
+b : It seems calm across the yard. | Is it catching underneath?
+a : Across the yard won't have to hold this bit steady. Check by the corner. | A little. Wait till the straw stops twitching before you lift that side.
+
+scene firstsnow
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : First snow makes a map of the air that passed round a sheltered corner.
+b : You mean the drift? | Can your straw show as much?
+a : The drift and the bare bit beside it. Same sky and a remarkably unequal fall. | The straw tells me now. The white patch kept the account from before I got up.
+
+scene mudglare
+when topic=travel self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : A patch of mud can carry a perfectly innocent-looking skin of dust.
+b : Poke it with the straw? | Ever trusted the surface?
+a : If I want a dirty straw and no useful answer. A firm stick first. | Once I put a heel in neatly and took much of the road away with me.
+
+scene strawrest
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw tells you the wind's reached the floor before your knees do.
+b : You cover the whole room? | Wouldn't it blow about?
+a : Only the drafty corner. A loose curl of straw makes a useful little alarm. | That's the information. Once I've found the gap I can stop the draught.
+
+scene applebite
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : An apple ought to interrupt a conversation when you bite it.
+b : That loud? | What about a sweet one?
+a : Just a decent crack. I like knowing my teeth have done some work. | Sweetness is agreeable. I want a crisp beginning as well.
+
+scene teawind
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : A draught across a mug can finish a wolf's tea without drinking it.
+b : You could put a lid on. | That's a dispute with the air again.
+a : An excellent idea once I've got a mug that comes with a lid. | Yes. The record stands at several lost cups and a considerably cooler temper.
+
+scene wrestle
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : A wrestler and a gust both tell you something by the first pull.
+b : Do you wrestle gusts? | What do you feel for?
+a : Frequently by accident. The wrestling green is a more satisfying arrangement. | Which side gives way too soon. Then I know which foot needs moving.
+
+scene edgegreen
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A shelter open at the far end can pull air faster than open ground.
+b : Ever made the mistake? | Would closing it stop the pull?
+a : I've stood with my collar wrong side out believing I was beautifully sheltered. | Sometimes. I'd try with straw before promising anything about the wind.
+
+scene spouseprivacy
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.spouse# the result of my private little weather bet first.
+b : Who else gets to know? | Why private, if it's weather?
+a : Anyone once I know what I'm talking about. There's no public stake in my first guess. | The weather's in public. My mistakes may spend a little while at home.
+
+scene personalcoin
+when topic=prices self.wealth=poor
+does tell.self / ask.detail / answer.detail
+a : I can't afford to buy promises of calm weather. | I've little spare coin for a shelter that hasn't been tried wet.
+b : Ever paid for a promise? | How do you try a roof?
+a : I've listened to an offer with my purse shut. Fairly good arrangement. | Look at the inner boards after a shower. No call to buy the wet patch.
+
+scene crowdtruth
+when topic=gossip
+does give.opinion / react.self / assess
+a : If three voices come from one doorway I hear one piece of weather repeated.
+b : That applies to more than rain. | Would you cross the road to check?
+a : Yes. Same principle holds for a tale about who did what in a yard. | If the matter were mine to check. Otherwise I'd decline to increase the number of voices.
+
+scene taxsky
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A thin week puts a certain sharpness on a spoiled load. | When the margin's small, knowing the wet side matters.
+b : Which side would you save first? | You can't bargain with rain.
+a : The side I can actually move out of the path. A sensible beginning is some advantage. | It never listens. I can still shift something useful while it argues.
+
+scene hiveroom
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like one quiet morning when the hives and I aren't interrupted by a claim about what the sky intends.
+b : No weather at all? | Wouldn't that spoil your quarrel?
+a : Ordinary weather would do admirably. I'd give its interpreters the morning off. | I can manage without a quarrel. The evidence may look thin, but it's true.
+
+scene simpleprayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd ask for a dry corner before I'd ask for dominion over the clouds.
+b : Just a corner? | Do you think the clouds take orders?
+a : Big enough for a wolf and a spare cup. A reasonable size of prayer. | Not from me. A prayer goes where the complaining cannot. The roof has plenty to hear about anyway.
+
+scene nightstraw
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : The sheltered flag has a thin dry click at night.
+b : Can you tell the wind that way? | What does silence mean?
+a : Only that something's moving. Direction needs eyes or a paw out in it. | Still air or a fallen peg. I wouldn't give either answer without looking.
+
+scene goodguest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : For a wet stranger I can offer shelter without asking the whole road's history.
+b : Names can wait, then? | You'd let anyone stand here?
+a : A dripping coat is a fairly complete introduction to a covered corner. | For a time. The space under the outer eave isn't my private supper table.
+
+grown
+
+story teasign [topic=weather|memories]
+  : Caught my little flag shaking on a dead calm day. Spent a while working out what clever turn of air I'd discovered.
+  : The string was snagged on the sleeve I was drinking my tea with.
+  b : When did the error come to light?
+  : Till the cup was empty. That's one full cup during which I was absolutely wrong about the weather.
+
+story appleflag [topic=food|memories]
+  : I stuck a little stalk into an apple to keep a spare wind flag steady beside my dinner. Wind moved it without so much as bending the straw.
+  : The whole apple rolled downhill.
+  b : Who won the dispute?
+  : I'd award the afternoon to the slope. I caught my witness and ate the stand.
+
+story snowroof [topic=work|memories self.job=farmer]
+  : After snow I found a bare circle by the shed and thought the wind had cleared it during the night.
+  : The edge of the roof was shedding melted drops, one at a time.
+  b : Did you change your reading?
+  : Yes. A roof can be contrary enough without having words put in its mouth.
+
+rule @flag
+when concept=bark
+does aside
+cooldown 8h
+say Upper straw left, lower straw right. I see the disagreement. | No point arguing till both witnesses are up.
+
+rule @work
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 8h
+say Pause till the bees have their opening clear. | Hold that cover on the sheltered side for a moment.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say My tea will be giving evidence against the draught shortly. | Still a little steam. I'll take it now.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rain here, dry three steps to the left. Both true. | The eave's changed its story again.
+
+dlg resident.hub : I've had all the weather's opinions for now. I'll hear yours.
+dlg resident.hub [topic.meeting=known] : #topic.player#, look where the sheltered straw's pointing this time.
+dlg resident.hub [here.time=night] : I can hear that little peg ticking. Good enough light for a voice at any rate.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep to the open side. Your words will travel perfectly well over the gap.
+dlg resident.job [self.job=farmer] : #self.trade_words.capitalize#. A still landing makes a busy hive easier to attend.
+dlg resident.job : I inspect the surroundings of a job before making claims about it.
+dlg resident.bye : Trust the corner you're standing in more than a report from the ridge.
+
+graft resident.hub
+choice How is a straw a contrary witness? -> flagwitness
+node flagwitness
+say It sits below the eave. Wind curling round a wall can blow that stalk one way while the ridge draws the clouds the other. A fine argument in a very small space.
+free
+choice Which witness decides whether to go outside? -> outsidevote
+choice I'll watch for the difference. -> hub
+node outsidevote
+say My own nose has the casting vote. As soon as my nose leaves shelter I generally know which view of the weather applies to me.
+choice A fair deciding vote. -> hub
+choice I'll try the open air. -> bye

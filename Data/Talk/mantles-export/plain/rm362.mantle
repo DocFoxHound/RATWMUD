@@ -1,0 +1,255 @@
+mantle rm362
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_florence_millhand
+title the straw tide gauge
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=ambitious
+quirk leaves_a_straw_in_the_gutter_to_measure_the_first_rise
+likes plum_tart roof_birds fresh_straw misty_dawns
+dislikes deep_mud night_noise
+fears a_closed_purse_at_the_new_moon
+hopes a_dry_road_to_a_better_wage
+topics work +0.6 weather +0.5 dreams +0.4 prices +0.3
+styles comfort=quiet gossip=sparing refuse=careful tease=none
+marks oath saying
+persona persona #self.first# sets a bright straw at the rising edge of a gutter and measures every walk against a private date.
+
+words
+oath! = Float my last straw | Drown the short measure
+saying! = Rising water brings its own measuring rod | The high road starts where your feet are
+straw = a clean pale stem | a yellow straw
+mark = a bit of brick dust | a chalk nick
+gutter = a narrow runnel | a broad gutter
+wing = a little roof wing | a flicking wingtip
+mist = a hanging mist | a thin dawn haze
+tart = a crooked bit of tart | a pastry crescent
+cart = a cargo cart | a low truck
+lip = a shelf of stone | a dry stone lip
+coin = a saved halfpenny | a worn copper
+moonedge = a fine silver edge | a slender moon
+sling = a rough carrying sling | a square of worn canvas
+curb = a low kerb | a broken kerb
+jar = a lidded stone jar | a squat pot
+
+any
+opinion houses against 2 : A factor's calendar doesn't get any heavier as the date draws near. The weight all lands at my end.
+opinion dole for 2 : A bowl now can keep a wolf in work long enough for the next bowl to be earned.
+opinion sump for 1 : A wolf who knows the first gutter to rise can steer a whole lane home here.
+opinion merchants against 2 : Someone who sees a wet coat and raises the price of straw deserves an empty counter.
+opinion road mixed 1 : A high road earns its keep when the low one starts floating sticks through the door.
+opinion times against 2 [world.times=hard|lean] : It's hard putting a copper by when dinner wants the same copper in advance.
+
+grown
+line greet : I'll stand over here where the first drops miss. | Welcome to the higher edge.
+line greet.return : I hear you. This little dry spot's free. | A quiet greeting coming back.
+line again.open : Here again above the same damp mark.
+line farewell : Take the crossing that still shows its stones. | Let the runnel go unacquainted with your feet or purse.
+line farewell.return : Safe passage back to your own step. | There's a dry wish to carry away.
+line react.news : Give me the first plain bit of the account. | I'll listen where there's a little privacy.
+line react.news.new : That hasn't floated past my door before.
+line react.news.known : I know which gutter carried that once.
+line react.news.doubt : I'd trace that story back to its first damp corner.
+line react.news.sorrow [topic.kind=death|loss|assault] : That's more weight than one back ought to carry.
+line react.news.glad [topic.kind=birth|marriage|work] : A bright little mark to set against the day.
+line ask.how : Any crossing given you particular trouble today?
+line answer.how : Holding level. That's a decent answer for now.
+line sympathise : Come where the questions won't crowd you.
+line reassure : Even a low sill leaves a bit of dry ground behind it awhile.
+line refuse : Some private reckoning of mine finishing first.
+line accept_decline : All right. I'll keep the request in my own pocket.
+line preclose : I've got a turn to make before my light goes.
+line accept_preclose : Go while the high edge is still clear.
+line ack : I have the height and direction of it.
+
+scene exchange1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I set a straw sideways in a gutter. | I read soaked streets without making much noise.
+b : To see the current? | Which signs do you read?
+a : To see when the water lifts both ends clear. | The first stem that moves without the wind touching it.
+
+scene exchange2
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I keep the cart along the pier's upper edge. | I learn where a sling was wet by how it dries.
+b : Does it roll less? | What's that tell you?
+a : A wet plank slopes more than a dry eye expects. | Where the load caught the spray. I turn that side in.
+
+scene exchange3
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A corner purple with plum makes the best piece of tart. | I save a tart crumb for my walk after work.
+b : No plain edge? | How can one crumb be worth saving?
+a : A little edge to carry it by, that's all. | It's a taste of something I chose myself.
+
+scene exchange4
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I see a roof bird put one foot into an eave before both. | I watch the birds choose their roofs after rain.
+b : Is that caution? | For worms?
+a : Good sense, same as mine at a crossing. | For the first warm tile. I know the waiting.
+
+scene exchange5
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw brings a colour into my room that doesn't take a lamp. | I save the straightest new stems from the sweepings.
+b : Does it last? | To plait?
+a : Till I've walked enough of the street back over it. | To put a line of gold across dark water.
+
+scene exchange6
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : A misty dawn gives the roof birds a second street overhead. | I take the first hour of mist for my own.
+b : Where does it show through? | No company wanted?
+a : They walk on the ridge and the ridge disappears in mist. | I like one stretch with no explanation owed for the direction I take.
+
+scene exchange7
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud won't tell the truth about its depth. | I can cross where the stones break through.
+b : What will? | Won't your toes get wet?
+a : A stem pushed straight down before a boot. | Toes dry sooner than a whole leg.
+
+scene exchange8
+when topic=day self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : Night noise travels up through a wall like water through boards. | I like a quiet last hour with a little light.
+b : What muffles that sound? | To do your reckoning?
+a : I fold dry straw under my pillow and listen to that rustle instead. | Some of it. The dates don't need an audience.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I owe money with a date tied to it. | The new moon's got a place in my accounts.
+b : Would company help with the figures? | You lend by moonlight?
+a : I know its shape too well. I'd rather not give it a louder voice. | Only trying to settle something before the dark bit comes.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could show #self.friend# the high crossing. | A good friend needn't count how many coins I put away.
+b : Would you show a stranger too? | Counting for a reason?
+a : A crossing's public. What I'm carrying over it can stay private. | Enough of one to do the counting myself.
+
+scene exchange11
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : Cargo comes with corners somebody has to walk backwards round. | I lift better when the load comes level before it moves.
+b : Is backwards your job? | What if the street's sloping?
+a : If the other wolf is steadier at the front, yes. | Then my knees must do the levelling.
+
+scene exchange12
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I keep my saved coin away from market change. | My prices have three columns in my head.
+b : A secret pocket? | What are they?
+a : A plain one. More important that I remember which is which. | Want it. Need it. Can't until after a certain date.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The talk was #topic.subject# #topic.claim#. I can't sound its depth. | A story rides a wet street like a straw.
+b : Who could? | Do you follow?
+a : Somebody who stood there before the words rose up. | I note its direction and let it be carried.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times leave the saving jar quiet. | When work's thin every late cargo counts.
+b : No little clink at all? | Does it pay enough?
+a : One sometimes. I'm listening for the next. | A load actually landed is the first thing to count.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a say in matching each load to its landing. | One day I'll put a coin aside without promising it to anybody.
+b : Like giving orders? | What will you buy?
+a : I like knowing why my back's headed one way and not another. | Nothing at first. I'll let it sit in its own right.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I can draw the Sump in sideways strokes. | The dry way looks crooked from up high.
+b : All on a slope? | Is it worth the turns?
+a : Each stroke is another level a flood has reached on a wall. | It goes where stone was still showing when I learned it.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A damp hip complains before water comes into view. | I pause before straightening with a load.
+b : An old knock? | You need a breath?
+a : A working shoulder knows its weather too. I protect the two as best I can. | I need to know both feet have a firm opinion under them.
+
+scene exchange18
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I don't cut through a low court to save ten steps. | I look back at a crossing once I've tested it.
+b : Even when it's dry? | Planning to come back?
+a : I like remembering one sure route in all weathers. | The safest marker may look different from homeward.
+
+story tale1 [topic=weather]
+  : I set a good long straw beside a drain, put a dab of brick on the stone and went to fetch my cloak. Coming back, I found the mark high and dry, the straw gone.
+  : I followed a line of little pale ends up the wall with my eyes.
+  b : Was the water going uphill?
+  : A bird was furnishing a nest. I cut a shorter straw and let the little builder keep the whole long one.
+
+story tale2 [topic=work self.job=sailor]
+  : A crate had shifted on the way ashore and its label faced the bottom. I came up with a dozen ways of reading it without turning the load.
+  : At last I got down where the gap was and looked upward.
+  b : What had they written underneath?
+  : This side up. Plenty of room for my face to go hot before anyone saw it.
+
+story tale3 [topic=food self.likes=plum_tart]
+  : I ate a purple wedge of tart beside a bowl of water. The last dark crumb dropped in and painted a little purple trail as it sank.
+  : I thought for a moment it looked like my whole map of the wet streets.
+  b : Which way did it lead?
+  : Straight to the bottom. A very short journey for such a lovely last mouthful.
+
+rule @call1
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Watch the low corner coming over the plank. | Leave a little dry room for the back foot.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Mist on the first roof and the birds already walking. | Pale straw shows up clearly in this light.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That little stem moved without the wind. | Take the upper edge till the water's settled.
+
+rule @call4
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say A dark corner of tart earns its pastry. | Good plum colour along that cut.
+dlg resident.hub : I can spare a private moment on the dry side.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've found your way to my quiet corner.
+dlg resident.hub [here.time=night] : Late talk carries. Stand close enough to let me speak low.
+dlg resident.hub [pair.disposition=wary|hostile] : There'll be no need to count my pockets to ask a question.
+dlg resident.job [self.job=sailor] : I unload where the piers come ashore. The low corner of a load has my attention first.
+dlg resident.job : I like a shift that leaves room after it for my own plans.
+dlg resident.news [world.news] : Here's what crossed the low streets. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The claim goes #topic.subject# #topic.claim#. I've no weight to add to it.
+dlg resident.bye : Watch the straw before committing your whole boot.
+
+graft resident.hub
+choice How much can one straw tell you? -> straw_gauge
+node straw_gauge
+say Let it lodge sideways and note the waterline below it. If it's gone when you look back, something moved the water or stole the straw.
+free
+choice How can you tell which? -> straw_gauge_again
+choice Goodbye. -> bye
+node straw_gauge_again
+say The silt doesn't rise when a bird takes a stem. I look at the mark on the stone as well.
+choice I'll watch the next crossing. -> hub
+choice Goodbye. -> bye
