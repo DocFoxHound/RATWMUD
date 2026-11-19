@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_yrsa_nailwell
-title the dance step hidden in a hem
+title the dance in the hem
 fits stage=adult|old
 prefers temper=short talk=chatty
 traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk smells_faintly_of_smoke_whatever_the_weather
+quirk marks_dance_steps_in_a_spare_hem
 likes fried_fish dancing sharp_knife first_warm_day
 dislikes salt_wind early_bells
 fears being_told_a_sore_leg_sets_the_whole_measure

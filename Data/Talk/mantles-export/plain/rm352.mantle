@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier full
 written_for rm_karin_ashgate
-title the hood on the peg facing out
+title the outward-facing hood
 fits stage=adult|old
 prefers role=merchant job=innkeeper
 traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
-quirk never_goes_out_without_an_oilcloth_hood
+quirk hangs_an_oilcloth_hood_facing_the_door
 likes plum_tart evening_line tidy_house first_warm_day
 dislikes rats deep_mud
 fears finding_an_empty_place_at_counting_time

@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for rm_erland_millstack
-title the dancer who leaves an extra bowl
+title the dancer's extra bowl
 fits stage=adult|old
 prefers job=healer
 traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
-quirk smells_faintly_of_smoke_whatever_the_weather
+quirk sidesteps_to_make_room_for_an_extra_bowl
 likes mutton_stew dancing full_larder frosty_mornings
 dislikes night_noise early_bells
 fears letting_a_busy_room_drown_a_quiet_need

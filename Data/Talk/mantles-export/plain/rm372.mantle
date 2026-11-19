@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for cty_ridge_larkridge
-title the latch in the corner of the eye
+title the gate in view
 fits stage=adult|old
 prefers job=herder
 traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=devout drive=steady
-quirk never_sits_with_a_back_to_the_door
+quirk chooses_a_bench_with_the_gate_in_view
 likes oatcakes evening_line market_bustle summer_evenings
 dislikes salt_wind haggling
 fears missing_the_gate_opening
