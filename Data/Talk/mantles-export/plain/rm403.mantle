@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_orm_wickcot
-title the map on the service stair
+title the service-stair map
 fits stage=adult|old
 prefers talk=chatty humour=dry
 traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
-quirk takes_the_long_stairs_two_at_a_time
+quirk adds_service_stairs_to_the_blank_spaces_of_maps
 likes mutton_stew singing old_maps first_snow
 dislikes stale_bread waiting
 fears having_a_confidence_served_up_with_dinner

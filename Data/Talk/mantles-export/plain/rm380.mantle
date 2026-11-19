@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for rmx_mab_plankridge
-title the riddle folded round the apple
+title the riddle-wrapped apple
 fits stage=young|adolescent|adult|old
 prefers temper=calm warmth=warm
 traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk counts_the_bells_from_the_chapel_of_the_tide
+quirk folds_a_written_riddle_round_each_crisp_apple
 likes crisp_apples riddles tidy_house first_snow
 dislikes waiting stale_bread
 fears making_somebody_wait_for_kindness

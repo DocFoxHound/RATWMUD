@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for rmx_florence_pennock
-title the seal that still has a journey
+title the travelling seal
 fits stage=adult|old
 prefers piety=devout talk=quiet
 traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=devout drive=steady
-quirk carries_a_wet_stone_whetting_knife_everywhere
+quirk wraps_a_whetstone_separately_from_sealed_letters
 likes honey_cakes dancing festival_bells thunder
 dislikes smoke haggling
 fears having_to_answer_for_a_broken_seal
