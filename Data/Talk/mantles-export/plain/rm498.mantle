@@ -1,0 +1,241 @@
+mantle rm498
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_dirk_rainmore
+title the tide's doorstop
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk knows_which_streets_flood_first
+likes pickled_herring dice new_boots thunder
+dislikes deep_mud rats
+fears a_stranger_turned_out_in_a_flood
+hopes dry_boots_for_every_crossing
+topics weather +0.6 friends +0.4 family +0.3
+styles comfort=warm gossip=plain refuse=gentle tease=none
+marks oath saying
+persona #self.first# keeps a wedge within reach, reads floodwater by the colour of a threshold, and sends wet travellers towards a seat without asking what the journey cost.
+words
+oath! = Soak my good soles | Wedge my supper sideways
+saying! = Let the wet arrive first | A welcome needs dry boards
+wedge = a cedar wedge | a bit of bevelled wood
+tidebead = a brown bead of water | a shining brown drop
+solehide = a new boot sole | a clean piece of leather
+bootrag = a soft square of rag | a folded heel cloth
+herringedge = a silver strip of herring | a sour sliver of fish
+doorgap = a strip of daylight | a thumb of open space
+watersill = a stained stone lip | a brown high-water line
+seamwax = a lump of yellow wax | some soft boot wax
+anklemark = a wet ring of fur | a dark band above the heel
+doorbell = a hollow clapper | a bright little bell
+ratboard = a stout low board | a piece of sound pine
+
+grown
+
+opinion newcomers for 2 : A tired arrival won't know which paving stone tips. Give the directions before somebody's good boot fills up.
+opinion merchants mixed 1 : I approve when a customer gets a patch of shelter before being asked the size of a purse.
+opinion dole for 2 : Bread under cover has fed a good many wet wolves who couldn't have managed both the loaf and the weather outdoors.
+opinion city for 1 : I know where each puddle begins. A town where I had to learn all those hollows afresh would tire me out.
+opinion road against 1 : Ask about the return in daylight. A dry crossing can disappear between a morning errand and an evening homecoming.
+line greet : In with you. I can move the wet things over.
+line greet.return : There's a dry bit left where we were speaking.
+line farewell : Mind where the little brown stream leaves the paving stones.
+line farewell.return : Good ground and an easy hinge to you.
+line react.news : Come in range. The dripping will swallow a quiet syllable.
+line react.news.new : That came across a sill I hadn't been minding.
+line react.news.known : I've heard the bell give that particular note before.
+line react.news.doubt : There's enough daylight under that tale to slide a wedge through.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd wear a new sole out early to deliver that gladly.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Draw a seat nearer. News like that leaves a wolf slack at the knees.
+line ask.how : What sort of ground did your morning give you?
+line answer.how : Feet tired, heart reasonably dry. Glad enough of the company.
+line thank : You saved me the trouble of stooping for the wedge.
+line deflect_thanks : I've been the wet visitor often enough myself.
+line sympathise : There's a place to wring out your cuffs in private.
+line decline : I can't hold that open and still keep my footing here.
+line accept_decline : I'll take the pressure off that hinge, then.
+line reassure : Sit until the worst of the dripping's behind you.
+line ack : I heard you clearly across the boards.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : Today's occupation goes down as #self.trade_words#. I watch feet when it rains.
+b : Can you tell much from feet? | Do you watch them going out too?
+a : I can tell who needs the stool before the trouble of speaking. | Especially then. A loose heel can slip on that first wet step.
+
+scene weather_1
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : From a sound roof I enjoy the pause after the flash before the roof starts talking.
+b : Do you count the pause? | Are you ever startled?
+a : I count if somebody small wants a game of it. The storm keeps its own time. | Certainly. Enjoyment needn't be proof against jumping an inch.
+
+scene food_1
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I like my herring sour enough to put the morning's wet out of my thoughts.
+b : Does the skin stay on? | What goes beside it?
+a : A little silver band does me nicely. It keeps the fish together till I've found my bread. | Something plain that won't argue with the pickle.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd turn a dry cuff inside out for #self.spouse# if the last clean rag were needed.
+b : Is a cuff big enough? | Wouldn't that spoil your sleeve?
+a : For a pair of wet spectacles or a little decent comfort. I make no claims about mopping a floor. | Likely. I'd take that bargain quite cheerfully.
+
+scene family_2
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I have thought of taking #self.child# on a walk just to find the dry crossings.
+b : Why make a game of that? | Would the longer walk be worthwhile?
+a : A child remembers the route that ends in fun long after the warning about wet feet has gone by. | The long one gives us a reason for stopping to look behind at the short one filling up.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I wedge a door with the thin end barely showing.
+b : So nobody trips? | How will the wedge come loose?
+a : That, and I don't care to have a perfectly good visitor greet my wedge before greeting me. | Pull it clear after taking the door's weight in my hand. It needn't be a contest.
+
+scene pastimes_1
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : A boot lid makes a fair place to throw dice if the floor is full of puddles.
+b : Won't they roll off? | What's a boot lid?
+a : Put the lip upwards. A die wants very little persuading to stay if there's nowhere further to go. | The lid off a box that held my two new boots. Fine stout stuff.
+
+scene animals_1
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I set #ratboard# in front of anything a rat might find worth tasting.
+b : What about the smallest rats? | Do you trust a single board?
+a : I look for daylight under the edge. A little daylight is a large invitation in some quarters. | Only to remind me to put the food away properly.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Brown water goes over the low stone first. It can look exactly like a solid road at dusk.
+b : Where do your feet go? | Is there a sound to it?
+a : The high side where I can still see a dry seam in the paving. | Listen for the trickle beneath the door lip. A proper stream gets there before you can judge its depth by sight.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : New boots feel most expensive immediately before the first deep puddle.
+b : Would you go round? | Will the shine come back?
+a : Several corners round, if I've enough time and a sound idea of what the next corner's doing. | Wax will manage most of it. I mind the cold water on the inside more than the colour outside.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When coin runs short I mend the heel before the wet finds it.
+b : Can a wet one be saved? | Do you save the discarded hide?
+a : Often, with time. It's losing the use of it while it dries that comes dear. | I keep a piece as thick as my thumb for a door that's begun to drag.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Every week I make enquiries about a petition that vanished inside the City Office.
+b : What answer do you ask for? | Are you fed up with the walk?
+a : Which room last had it. If the answer's always another room, I should at least like to know the shape of my journey. | The walk I understand. It's a dry piece of paper going missing indoors that wears me out.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : What passed this way was that #topic.subject# #topic.claim#.
+b : Did it come in from far? | Did you question the bearer?
+a : Couldn't tell you. A report doesn't bring the mud of its whole road on its heels. | I asked how certain the account was. The answer didn't give me grounds to repeat it as settled.
+
+story doorbell [topic=work]
+  : I took a clapper out to polish it and laid it in a clean boot for safekeeping.
+  : When I went looking for it there was a fine knock behind my own heel.
+  b : Did someone want to come in?
+  : My own boot did. I'd stepped in beside the clapper. We were both attending to business in very tight quarters.
+
+story jarbone [topic=food]
+  : I dropped one die into an empty pickle jar while putting away after supper.
+  : It bounced round so long I had time to warm the heel of my bread.
+  b : What number came up?
+  : Six, looking down from above. Through the round glass there were dots enough to win six games.
+
+story wedgetip [topic=memories]
+  : I cut a wedge too thin and couldn't find it under the door the next morning.
+  : A wet line crossed the boards and stopped dead at a dry triangle.
+  b : Was that where you'd left it?
+  : Precisely. The rain found my bit of wood without charging me for the information.
+
+rule @wedge
+when concept=bark
+does aside
+cooldown 8h
+say There's my wedge. Give the wet boots room. | A dry stool should come before a question.
+
+rule @thunder
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say Wait for the answer from the roof beams. | That roll would carry well across a whole row of doors.
+
+rule @heel
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say There's a shine worth keeping out of brown water. | Easy on the first step in good leather.
+
+rule @dark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Look for the last dry seam in the stones. | Can't judge that puddle by its reflection now.
+dlg resident.hub : You're welcome to let the damp out of your coat while we talk.
+dlg resident.job [self.trade_words] : My occupation is #self.trade_words#. I make sure a doubtful step doesn't send a customer home wet.
+dlg resident.news [world.news] : This reached me in words clear enough to carry indoors. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody going by had #topic.subject# #topic.claim#. I didn't see where that started.
+dlg resident.bye : A level sill and warm socks when you reach home.
+
+graft resident.hub
+choice Can you tell which street will flood first? -> sill_brown
+node sill_brown
+say Find the door where a brown line crosses both jambs. Somebody spent a wet afternoon watching the water paint their threshold.
+choice Is the way past that door still walkable? -> sill_dry
+choice I'll watch where the reflection breaks. -> hub
+node sill_dry
+say Look for broken reflections. Dry stone splits a puddle into little pools. A single smooth reflection can hide a whole step.
+choice I'll watch where the reflection breaks. -> hub
+
+old
+
+line answer.how : Older knees. Very long acquaintance with the districts they'd sooner avoid in wet weather.
+line greet [here.time=dawn] : Early enough to choose a dry route before my knees choose for me.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My knees remember one low doorstep even when I come to it in the dark.
+b : Does the stone feel familiar? | What if you come from the other side?
+a : My leg gives a little lift that happens before I've thought to look. | Then I take my time. Old habits do fine work until somebody asks them to walk backwards.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When I tire I sit with one boot drawn halfway off for the air.
+b : Only the one? | Won't that crease the heel?
+a : The other foot gets a turn when I'm sure I won't be called up immediately. | I slip my hand inside and ease the leather open. I've got as much time as the boot has.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Age has persuaded me to price new boots by the number of comfortable crossings.
+b : How many do you expect? | What if they're too dear?
+a : Enough that I forget which one was the first. Counting every blister makes a bad price seem worse. | I'd ask if my present pair can be resoled. They already know my feet.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : These days I feel grateful each time I have the strength to shift a stool for a wet arrival.
+b : Can a visitor shift the stool? | Do you say anything with it?
+a : Most can. I appreciate still being able to give the welcome with my own hands. | Sit, usually. The Bright One could make something very decent of a prayer as short as that.

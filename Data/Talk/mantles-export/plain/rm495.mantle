@@ -1,0 +1,413 @@
+mantle rm495
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_delphine_mudwick
+title the hood bell
+fits stage=adult|old
+prefers job=carter piety=devout
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk hears_rain_on_the_oilcloth_hood_as_a_private_bell
+likes hard_cheese knots market_bustle warm_rain
+dislikes bad_manners stale_bread
+fears an_unjust_charge_heard_as_surely_as_a_bell
+hopes one_door_with_room_for_wet_shoulders
+topics faith +0.6 work +0.5 weather +0.5 pastimes +0.3
+styles comfort=shelter gossip=guarded refuse=gentle tease=dry
+marks oath saying
+persona #self.first# listens to rain striking the oilcloth hood, tying a separate knot for a request heard clearly.
+
+words
+oath! = Three hollow drops | By the dry lining
+saying! = Hear past the hood | Give the quiet knock a turn
+hoodbell = my close bell | the little wet chime
+oilfold = a shining fold | the dark hood lip
+dryseam = a sheltered seam | the inside stitch
+longtap = a drawn-out knock | the waiting note
+softtap = a padding drop | the quiet tap
+twiner = a soft length | a scrap of twine
+holdknot = the waiting knot | my reminder loop
+straptie = a broad crossing | the load loop
+bellrim = a wet round edge | the ringing brim
+cheesecorner = a hard rind | a sharp yellow bite
+wetlatch = a damp catch | the outer latch
+packgap = a shoulder's breadth | the free passage
+noisehush = a short lull | the breathing space
+straprest = a worn pad | a shoulder cushion
+dropbeat = a pair of taps | a running patter
+blackmark = an uncertain knot | the question loop
+dryhand = a clean grasp | the dry side
+
+any
+opinion church for 2 : I'd have every prayer begin by opening the door for the wolf still out in rain.
+opinion houses mixed 0 : A sealed parcel deserves careful handling. Its seal offers no proof about the private conscience inside a House.
+opinion watch mixed 0 : I set down a doubt as a doubt before permitting it to grow into a charge.
+opinion dole for 2 : Food waiting inside a doorway has done little good till every waiting shoulder fits through.
+opinion sump for 2 : A low wet quarter teaches a porter exactly how much a sheltered threshold is worth.
+opinion merchants mixed 0 : I like market noise better than the silence after a poor customer is turned away.
+opinion city for 1 : In these streets a single hood can shelter the neighbour who has to stand and ask directions.
+opinion newcomers for 1 : A stranger's bundle needs the same room to turn as a familiar one.
+opinion festivals mixed 0 : I'd lend a hand at a crowded door long before I'd go to hear another loud bell.
+opinion road for 1 : Spend a little on clear walking room and a great deal less on ruined goods.
+
+grown
+line greet : Come under the loose edge a moment. | Welcome. I heard your step through the oilcloth.
+line greet [pair.band=strangers] : First visit, I think. Here's a dry corner. | New shoulders are welcome at my door.
+line greet [here.time=dawn] : Morning. My hood's still quiet. | First light on a well-oiled seam.
+line greet.return : Yes, hello. The hood leaves room for your voice. | A greeting in return from inside the oilcloth.
+line greet.return [pair.band=friends|family] : I know that tread by the short last step. | Welcome back to my small bit of shelter.
+line greet.return [here.time=night] : Evening. A quiet tap carries a long way now. | Late visitors can share this patch of dry ground.
+line again.open : Back within hearing of my little bell. | There's still a fold of shelter going spare.
+line hail [pair.band=friends] : Come stand where the patter's clearest! | There's room beside my rain music!
+line farewell : Dry inside your collar all the way. | May the last door open wide enough.
+line farewell.return : I'll stay by the little bell awhile. | Go with a firm tie on your bundle.
+line react.news : Start with the sound you actually heard. | A quiet account carries farther with me.
+line react.news.new : A note I haven't heard through this hood before. | That's a fresh loop on my reminder string.
+line react.news.known : Same interval between the knocks as before. | I've a knot for that particular news.
+line react.news.doubt : I hear two claims and no clear witness. | That account rings strangely near the end.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'd carry a part of that sorrow if you'd let me. | You've a dry shoulder close by while you grieve.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A cheering note. I could hear it through a storm. | Gladness this plain deserves a generous echo.
+line ask.how : Is your burden pulling squarely today? | Any chance lately of resting under a sound roof?
+line answer.how : Tired across both shoulders. Steady on my feet. | Quiet apart from the weather at my ears.
+line decline : My next clear journey is already promised elsewhere. | I'd have to let a waiting load down to take yours.
+line accept_decline : Then that knot may be undone. | I'll let your refusal stand unpulled.
+line preclose : Time to hear what my doorway needs. | My strap is settled for the next journey.
+line accept_preclose : Go quietly by the resting shoulders. | I release this end of our talk gladly.
+line thank : Your help made the narrow turning easy. Thanks. | I felt that weight go light. Much obliged.
+line deflect_thanks : I'd a dry hand free for the job. | It was one short carry within my reach.
+line sympathise : Let me stand by the loud side while you speak. | I can keep a little weather off your sorrow.
+line reassure : Undoing the straps singly eases a tangled bundle. | There's room to set the worry down briefly.
+line ack : Yes. That knock is clear enough. | I hear the sense beneath the patter.
+line give.advice : Leave the last handspan of doorway for someone wet. | Listen once with the hood tipped back.
+line kin.open [pair.kin!=no] : Come into the family fold a moment. | A little room by the shoulder for kin.
+line hail [here.time=dawn] : Daybreak gives us a clear passage! | Over here by the pale seam!
+line farewell.return [here.time=night] : An easy latch where your night walk finishes. | Leave before the lamps grow too dim for the ties.
+line assess : Sound cord, decent hearing, a clear bit of floor. | That would go through the narrow place without complaint.
+line give.opinion : A quiet knock has as good a claim as a great blow. | Shelter belongs where a wet wolf can actually reach it.
+line greet [here.weather=rain] : My little bell announces wetter company. Welcome. | Step aside from my wet brim and you're welcome.
+line again.open [pair.band=friends] : Back under the familiar fold, I see. | Your step still distinguishes itself among the drops.
+line thank [pair.band=friends] : You gave me a dry shoulder's worth of time. | I felt the difference in every step afterwards.
+line answer.how [here.time=dawn] : My oilcloth's prepared. My ears need waking. | The first load feels possible after warm food.
+
+scene twobeats
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Two drops on the hood sound closer together than two on a sill. The hollow's around my ears.
+b : Like standing in a bell? | Can you hear anything else?
+a : Inside a very small one with no metal at all. I carry the whole tower on my head. | When I lift an edge. A useful thing to remember before judging someone's manners.
+
+scene hoodhome
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang my hood by its lining so the wet side stays clear of folded clothes.
+b : Does it always go back on? | Why not hang it outside?
+a : While I'm indoors, yes. No roof has offered to travel ahead of my shoulders. | Because a dry morning can turn wet before I get home. Its proper hook is by my hand.
+
+scene knotremember
+when topic=pastimes self.likes=knots
+does tell.self / ask.detail / answer.detail
+a : My reminder knot has a long ear. A job finished pulls it straight without a struggle.
+b : Would two ears mean two loads? | Could another wolf read it?
+a : Two separate loops for that. Tangled requests tend to go to the wrong door. | As a loose tie, yes. Its particular errand is my affair till I've delivered it.
+
+scene office
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the quietest request is sometimes the one made from behind the widest bundle.
+b : Do you read the wrapper? | What can you hear past it?
+a : Only the direction I need. Ink facing inward was never meant for a porter's eyes. | A hesitant voice, usually. I'd stand the bundle upright before asking for the direction again.
+
+scene delivery
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : Before I lift, I look at the last turning on the journey. A broad load can have a very narrow welcome.
+b : Why look at the end first? | Would you divide a parcel?
+a : So I know which side to bring forward before both hands are occupied. | Only with leave. A porter shouldn't improve a parcel past its owner's recognition.
+
+scene masterwork
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I teach the listening pause before the lifting part. It saves more distance than a quick start.
+b : What should a learner hear? | How long a pause?
+a : The destination, any fragile edge, and the name or description of whoever can receive it. | Till the sender has had time to correct my account of the errand.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : Stale bread makes a dry scrape that sounds uncomfortably like pulling a rope past a rough corner.
+b : Can cheese improve it? | Does stale bread go begging?
+a : A little softening first, then cheese. A harder topping is unlikely to cure a hard base. | No. Broth gives it another reasonable occupation.
+
+scene cheeserind
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I put one hard cheese corner in a clean twist. It keeps its shape past several crowded doorways.
+b : Wouldn't softer cheese taste better? | Why a corner?
+a : Some soft cheese tastes excellent right where it stands. I need a meal that agrees to travel. | It's the exact shape of the gap beside my folded cloth. Pleasant when the world fits together.
+
+scene warmrain
+when topic=weather here.weather=rain self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : Warm rain drums low on a hood that's already softened. That's my favourite note of weather.
+b : What does cold rain sound like? | Why stay covered then?
+a : Harder. The drops tick against a stiff edge like impatient nails on a sill. | To hear it close. Also, liking warm rain doesn't mean I want a wet parcel.
+
+scene crowd
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : Amid market bustle I shut my eyes briefly to pick out who is carrying something heavy.
+b : From the breathing? | Isn't shutting your eyes unwise?
+a : From the little pauses in the general shuffle. Folk give a load extra room when there's room to give. | I stand aside before trying it. A porter at rest shouldn't turn into the one inconvenient parcel blocking everybody.
+
+scene rude
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / react.self / assess
+a : A wolf who bangs once and listens may be perfectly civil. A second blow before the first has died bothers me.
+b : What if there's danger? | Can't you ignore it?
+a : Then call what the danger is. A useful word can carry farther than a fist. | I answer. I haven't promised to mistake noise for importance.
+
+scene lowquarter
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In low lodgings a bundle against one door can block two other families' way past.
+b : Where else can it wait? | Who's to move it?
+a : Along the wall with the broad face tucked in. Make sure the latch can still turn. | I'd shift my own before asking about anybody else's manners.
+
+scene prayer
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I lift the near edge of my hood before a prayer. I like hearing the street through it.
+b : Wouldn't silence suit prayer? | Which sound deserves your ear?
+a : It suits me too. A passing request can be the very thing my prayer had room for. | Anyone asking for an ordinary piece of help. Moving my ears takes less labour than shifting a roof.
+
+scene bright
+when topic=faith
+does tell.plan / ask.detail / answer.detail
+a : I'd make one dry bench a part of every doorway where the Bright One is thanked.
+b : Who should sit first? | Would you carve a prayer on it?
+a : A wolf carrying more than can be held comfortably through a wait. | I'd sand the seat quite smooth. There's a sort of prayer a tired body can read straight away.
+
+scene hoodwear
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A scuffed patch at the shoulder shows where a strap has stopped lying flat.
+b : What does a smooth patch show? | Can you turn the strap over?
+a : That the weight is spread. I'd still look under the pad after setting the parcel down. | I inspect both faces first. Hiding the worn edge against my coat changes very little.
+
+scene witness
+when topic=gossip
+does give.opinion / react.self / assess
+a : I keep a private distinction between a coin passing hands and my knowing what it paid for.
+b : Would you name either wolf? | What good is observing it?
+a : A name without a sure account can damage a household. I have no names to give you here. | It reminds me what question remains unanswered. A mark made in doubt must stay a mark of doubt.
+
+scene tradeprices
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The least costly strap is the one I can mend before the next load comes due.
+b : What about a cheaper new one? | Would you mend it in rain?
+a : Add a lost journey to its price if it can't stand a day of ordinary work. | Shelter first. I'm trying to keep hands and leather sufficiently dry to feel what the stitch is doing.
+
+scene dripnight
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : Darkness makes my hood a fuller bell. Little drips mark the places where a gutter ends.
+b : Could you find home by that? | Do you count the intervals?
+a : I'd rather use the lamps. Hearing the gutter is a useful second account of the turning. | Only when I'm waiting. Counting can keep a wet moment from feeling twice its length.
+
+scene restload
+when topic=health
+does tell.feeling / react.self / assess
+a : Taking a strap off after a long carry makes my shoulders feel briefly unequal.
+b : Which side complains? | Do you carry every load alone?
+a : The side that expected still to be carrying. I ease it before choosing the next job. | No. Sharing the carry is cheaper than a damaged back and a broken parcel.
+
+scene friendhood
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : For #self.friend# I'd lift the near edge of my hood even in a stiff downpour.
+b : Is hearing worth a wet ear? | Can two stand beneath it?
+a : A friend's words deserve better than an impatient guess based on half a syllable. | Not without bending very close. I can give the spare flap where a neighbour needs shelter most.
+
+scene country
+when topic=travel
+does warn / react.self / assess
+a : A narrow footbridge wants looking at before you make it part of a parcel's journey.
+b : What if it's the shortest way? | What would make you turn?
+a : An extra length on firm ground is a bargain if the short way puts the goods in water. | A broken board with no clean room around it. My job is delivery, not an impressive crossing.
+
+scene churchstep
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A threshold worn into a hollow keeps its own small puddle after the sky clears.
+b : Would you fill it in? | Does that trouble a porter?
+a : That's a job for someone entitled to repair the step. I can dry the hollow meanwhile. | When I need to pivot carrying a load, yes. Stationary water can make feet surprisingly mobile.
+
+scene thin
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I tie the smaller cheese parcel as carefully as the generous one. A thin week doesn't entitle me to lose a bite.
+b : Would a pocket suit cheese? | Is wrapping expensive?
+a : A pocket holding knotted cord has corners full of odd fibres. Cheese deserves better company. | The same square washes clean for tomorrow. An oily fold can be renewed.
+
+scene welcome
+when topic=newcomer
+does give.opinion / react.self / assess
+a : I judge a new porter by where the first bundle goes down. A clear passage speaks well immediately.
+b : What if nobody's passing? | What about a beautiful knot?
+a : Leave the opening for the next arrival. Courtesy is cheaper before a crowd gathers. | I'd admire the knot after establishing that the door still opens.
+
+scene gossipword
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : From #world.news_from# comes this account. #world.news#. I've kept the place with the words.
+b : Did you see it happen? | Will you tell it under oath?
+a : I'm giving what I heard, including its source. Sight would be a different account. | I can say who carried the news as far as me. Further certainty would need a different witness.
+
+scene daypack
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : In the morning I coil yesterday's loose string before choosing a fresh piece.
+b : Does that save much money? | What about a short scrap?
+a : A little each time, and it saves the annoyance of string running short a turn from done. | Good for a cheese wrapper. Plenty of little jobs where a great coil would get in the way.
+
+scene marketsound
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I enjoy the whole market's voice with one ear kept free for a single knock behind my shoulder.
+b : Doesn't the crowd drown it? | Is that why you stand aside?
+a : Noise has layers. I listen for the close wooden sound underneath the calling. | Yes. I'd like any wolf waiting at my door to feel heard despite the morning rush.
+
+scene bellwind
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A breeze from behind turns the hood's brim into a little sail. I can hear it lifting before I feel the gust.
+b : Would a tie stop that? | Why listen so closely?
+a : A loose tie keeps the edge in place. I like enough room to turn my ears toward an arrival. | Because the first sign of weather often reaches my bundle before it reaches my face.
+
+scene packing
+when topic=work
+does tell.plan / ask.detail / answer.detail
+a : I'd like every learner to spend a morning receiving bundles as well as carrying them.
+b : What would change by noon? | Could a porter learn by watching?
+a : A better sense of where the lifting hand wants the tie to be when a parcel changes shoulders. | Watching first, then receiving. A fine-looking grip may feel awkward from the other side.
+
+scene hollow
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Someday I'd have a quiet receiving place with a small roof stretching past the first waiting wolf.
+b : How far past? | Why the first waiting wolf?
+a : Past two more broad shoulders and the bundle they carry between them. | Because the wolf at the door already has cover. It's the next one whose roof usually runs out.
+
+grown
+
+story bellmouse [topic=weather|memories]
+  : A small tap kept following my hood on a clear afternoon. I looked down from a roof edge and back up from the paving.
+  : One loose tie had a wooden bead at its tip. It was knocking against the stiff brim as I walked.
+  b : Did you take the bead off?
+  : No. I shortened the tie and kept the bell for days when the sky actually had something to say.
+
+story cheeseloop [topic=food|memories]
+  : I used a fancy new knot on my cheese wrapper. By dinner it had set very firmly round the narrow end.
+  : I could show half a dozen pleasant patterns without finding the beginning of the first one.
+  b : How did you get lunch?
+  : Reached in from the broad side. A simple fold often knows more about feeding a wolf than a clever knot.
+
+story doorchalk [topic=work|memories]
+  : I chalked the width of a parcel on the floor to practise getting it round a corner. It fitted handsomely that way.
+  : I tried the turn carrying the real bundle and found one entire porter missing from my calculation.
+  b : What did you add?
+  : My shoulder, and room for my elbow to change its mind halfway round.
+
+story emptyhood [topic=memories|faith]
+  : I hung the hood outside a dry doorway. A little rain came, and from indoors I heard my private bell ringing without me.
+  : It made a lighter sound. Nothing inside it but air and the turn of the lining.
+  b : Was it a lonely sound?
+  : A companionable one. Like hearing an ordinary habit of my own quietly carrying on.
+
+story lineknot [topic=pastimes|memories]
+  : I laid three spare ties beside one another, meaning to practise three finishes during a quiet interval.
+  : Rolled the ends up together by mistake. Got a pattern more complicated than any of the three I'd intended.
+  b : Did you keep it?
+  : Long enough to see how a learner might get out of it. A knot you can't undo has mistaken its business.
+
+rule @listen
+when concept=bark
+does aside
+cooldown 8h
+say A hollow knock beneath the drops. Someone at the doorway. | Hood back an inch for the quieter syllables.
+
+rule @load
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 8h
+say Mind the strap past that narrow jamb. | Leave enough turning room for the shoulder under the parcel.
+
+rule @cheese
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say A cheese corner travels without a fuss. | No cord ends in the clean cheese cloth.
+
+rule @knots
+when concept=bark self.likes=knots
+does aside
+cooldown 8h
+say Long ear toward the loosening hand. | The knot ought to release after earning its keep.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Louder on the brim than on the paving below. | A good warm patter in my private bell.
+
+rule @late
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Keep the last lantern clear of dangling ties. | One quiet knock will carry in this darkness.
+
+dlg resident.hub : I've tipped my hood clear to give your request a clear hearing.
+dlg resident.hub [topic.meeting=known] : #topic.player#, here's a dry patch near the hinge for another quiet word.
+dlg resident.hub [here.time=night] : I can hear the smallest knock in the folds of this evening.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your hands clear of the waiting bundles and speak from there.
+dlg resident.job [self.job=carter] : #self.trade_words.capitalize#. I carry what's given and take care to hear the direction twice.
+dlg resident.job : Work ought to end with the receiving shoulder comfortably placed.
+dlg resident.bye : May your last delivery find a wide and sheltered entrance.
+dlg resident.gossip [here.gossip=yes] : In the talk I've heard, #topic.subject# #topic.claim#. The words came to my ears without proof packed alongside.
+dlg resident.gossip [here.gossip=no] : Nothing I can fairly take out of its private wrapper today.
+dlg resident.news [world.news] : I heard word carried from #world.news_from#. #world.news#. I can pass the account in that wrapping only.
+dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can teach a learner how to listen, lift and deliver without crowding a doorway.
+dlg master.learn [here.teaches=no] : My teaching time is all spoken for. A quick question about my work can still come through.
+dlg master.work : You'll learn to judge loads and turn them past awkward doors. We'll practise receiving one properly before attempting a journey.
+dlg master.wages : Learning earns no regular wage here. You'll keep what your own work brings and practise more quickly alongside me.
+dlg master.takes [here.take_on=yes] : I have a free place beside me for a learner. Ask for it plainly if that's what brought you.
+dlg master.takes [here.take_on=no] : There's something keeping me from promising you the place. #here.take_on_why#.
+dlg master.taken : You're my learner now. Set your things down clear of the passage and we'll begin by hearing an errand.
+dlg master.refused : I can't fasten our agreement at present. #topic.why#.
+dlg master.bye : Listen for the quieter request at the next busy entrance.
+
+graft resident.hub
+choice Why do you call the oilcloth a bell? -> hoodchime
+node hoodchime
+say Oilcloth makes a hollow roof. A single drop has a low sound inside and a sharp one outside. I hear both by lifting the near edge.
+free
+choice What does a downpour sound like? -> hoodpour
+choice I'll listen from the dry side. -> hub
+node hoodpour
+say Like many small fingers testing a door quite gently. I enjoy it until a real visitor knocks. Then I'd rather hear the one asking for shelter.
+choice I can hear the difference now. -> hub
+choice I'll leave the entrance clear. -> bye
+
+graft master.learn
+choice How do you teach the receiving part of carrying? -> receiveweight
+node receiveweight
+say I let the learner hold a tied parcel. I come up, reach for it and stop. The learner gets to tell me exactly which part of my grip feels doubtful.
+free
+choice Why stop before taking it? -> pausedgrip
+choice I'll consider the work first. -> learn
+node pausedgrip
+say Because the awkward moment is when two wolves each think the other has the weight. I'd rather settle that in practice above a padded bench.
+choice Let's return to learning the trade. -> learn
+choice I'll remember the pause. -> bye

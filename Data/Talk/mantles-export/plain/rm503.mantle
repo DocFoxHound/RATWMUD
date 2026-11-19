@@ -1,0 +1,262 @@
+mantle rm503
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_edric_saltby
+title the brewer with the hood on the peg
+fits stage=adult|old
+prefers job=brewer warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hangs_an_oilcloth_hood_over_the_spare_cup_to_keep_the_rim_dry
+likes fried_fish wrestling new_boots first_warm_day
+dislikes rats waiting
+fears a_wet_cup_offered_to_a_cold_visitor a_rat_at_the_grain_lid
+hopes a_dry_berth_and_somebody_to_share_a_meal_on_deck
+topics work +0.6 food +0.4 travel +0.5 home +0.3
+styles comfort=practical gossip=quiet refuse=gentle tease=none
+marks oath saying
+persona #self.first# hangs an oilcloth hood like a little roof over the spare drinking cup and makes a second helping look like the most ordinary thing in the world.
+
+words
+oath! = A hole in my spare cup | Soak the stirring stick
+saying! = Keep the guest's rim dry | A peg does two jobs before dinner
+hood = my oilcloth cover | the hood from the spare peg
+peg = the long wooden peg | the dry peg
+guestcup = a deep spare cup | the visitor's cup
+grainlid = the close grain lid | the lid of the grain chest
+bootwelt = a neat new welt | the fresh seam of a boot
+fishskin = a curl of crisp fish skin | the browned edge of a fillet
+deckseat = a sheltered seat on deck | a dry corner on deck
+stirrer = a long wooden stirrer | my plain stirring stick
+firstair = a mild breath of spring | the first warm breath of the season
+drylip = an inviting dry rim | a lip polished with cloth
+floorprint = a pale print in the flour | a little track in the meal
+
+any
+opinion church for 1 : I've a liking for service that leaves the guest warm around the middle.
+opinion drink for 1 : A sound brew should taste as welcome in the spare cup as in the brewer's own.
+opinion dole for 1 : A vessel light enough for an old hand to lift is a good start to giving out a meal.
+opinion city for 1 : There's always another roof edge to shelter beneath till the rain lets up.
+opinion houses mixed 0 : I'd enquire about the berth before admiring who painted the stern.
+opinion festivals for 1 : A wrestling green and hot fish afterwards could persuade me to a second afternoon.
+opinion road mixed 0 : Give me enough dry places between here and there to put the hood down once.
+
+grown
+line greet : Come by the spare cup. Its rim is dry.
+line greet [pair.band=strangers] : New company is what the second peg's for.
+line greet [here.time=dawn] : Morning before the lids begin to rattle.
+line greet [here.time=dusk|night] : Evening. I've a sheltered seat left.
+line greet.return : The peg can carry the hood while we talk.
+line greet.return [pair.band=friends|family] : I've kept the old place ready for your voice.
+line greet.return [self.working=yes] : I've a word to spare while my hand keeps stirring.
+line greet.return [here.time=dusk|night] : After dark even a low voice warms the place.
+line kin.open [pair.kin!=no] : Kin can use whichever cup feels right.
+line again.open : I remember what was under the cover.
+line hail [pair.band=friends] : Friend, there's a roof here just your size.
+line farewell : A dry forehead to the far door.
+line farewell.return : And something warming when you come in.
+line react.news : Bring the words in under cover.
+line react.news.new : New to this little corner of mine.
+line react.news.known : An earlier visitor left that much here.
+line react.news.doubt : I'd lift the lid on that before I served it.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Come where a cold gust can't reach your back.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a word worth filling an extra cup for.
+line ask.how : Has anything warm come your way?
+line answer.how : I've enough strength left for a friendly bout with supper.
+line thank : You kept the guest end dry. Much obliged.
+line deflect_thanks : I was carrying the cover already.
+line sympathise : I'll put the spare seat close and leave it quiet.
+line reassure : Even the thick base of a cup warms eventually.
+line decline : I'm needed beside another piece of work.
+line accept_decline : There's a perfectly good peg for an offer set aside.
+line preclose : I'd best mind the lids before we call it night.
+line accept_preclose : Go under the wider eaves.
+
+scene roof_cup
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : #hood.capitalize# makes a little roof for #guestcup#. | I like #drylip# on the cup I offer.
+b : Why cover a clean cup? | Even for a cold drink?
+a : A visitor doesn't want a first taste of whatever blew under the door. | Especially. A cold rim needn't come with an old wet mark.
+
+scene mash_sound
+when topic=work self.job=brewer
+does tell.self / ask.detail / answer.detail
+a : #stirrer.capitalize# will tell a brewer when something's stuck. | I know a busy pot from a troubled pot.
+b : By sound? | Both make noise?
+a : By the sudden silence where a whole turn ought to go through. | Yes. A busy one leaves the room a civil volume for conversation.
+
+scene workplace_door
+when topic=work self.job=brewer self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I notice the boots that hesitate before the hand comes in. | Steam from #self.workplace# will warm the front of a coat very nicely.
+b : May anybody enter? | And the back?
+a : Anybody can have a civil word at the entrance. | For that one must turn round a bit.
+
+scene fish_curl
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : #fishskin.capitalize# is the bit I leave sticking out of the wrapper. | I enjoy a fish fried hot enough to tell me dinner's ready from the door.
+b : Do you share it? | The smell?
+a : I'll give you the next good curl. This one's halfway to my mouth. | The crackle first. The smell can follow me home.
+
+scene green_grip
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I like a bout on grass and a hand offered directly after. | The best bit of wrestling for me is the start, before one side has won.
+b : Which hand? | Why that part?
+a : Whichever one's nearer the wolf who went down. | Both wolves have a fair hold and plenty of breath.
+
+scene new_welt
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #bootwelt.capitalize# keeps its colour a surprisingly short time around a brew pot. | I set a new boot over dry straw on its first night indoors.
+b : Is it worth polishing? | To dry it?
+a : For the walk to work, it certainly was. | To see exactly where tomorrow's mud starts.
+
+scene first_mild
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : #firstair.capitalize# brings a peg full of coats out into the open. | Spring lets me turn the spare cup right way up for a while.
+b : Yours too? | Isn't it usually so?
+a : My hood likes some weather it doesn't have to work for. | Only when I'm ready to fill it.
+
+scene gnawed_edge
+when topic=home self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : #floorprint.capitalize# beside #grainlid# gets a close look. | I like a grain lid to land flush.
+b : Can you tell a rat by that? | To keep the grain dry?
+a : A rat puts down rather more feet than my stirring stick. | Dry and fewer mouths to share it with.
+
+scene slow_wait
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I mind an uncertain wait more than a long one. | Waiting goes better with both boots off or both boots tied.
+b : What difference does knowing make? | Why?
+a : I could put a whole fish supper together in a properly declared half-hour. | It irritates me to be half gone and half standing there.
+
+scene sump_shelf
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A small Sump room can spare a peg far more easily than a cupboard. | A Sump landing wants a place to knock mud off before stepping inside.
+b : Is the peg sufficient? | Do you make much noise?
+a : For one coat and a dry cup, yes. | No more than bringing the mud indoors would eventually cause.
+
+scene friend_cover
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd hang the better hood for #self.friend# in weather that comes in sideways. | Company from #self.friend# makes it worth keeping a spare cup even on a crowded shelf.
+b : Which is better? | Is there always room?
+a : The one I know the seam of, so I can turn it against the wind. | I can move my cup.
+
+scene ship_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd go looking for #deckseat# on a ship bound towards dry air. | A dry berth might grow very ordinary once I'd had it a few weeks.
+b : Are you booked to sail? | Would that disappoint you?
+a : I'm entitled to imagine a seat without charging a vessel for it. | No. Ordinary dry sounds excellent.
+
+scene narrow_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I lay a place through a lean week even when I've little to set there. | A small cup refilled looks rather more cheerful than a large one left near empty.
+b : Does that help? | Is there enough to refill it?
+a : The empty place reminds me a share still needs finding. | Ask before pouring and divide what's there.
+
+scene traveller_cup
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd start a stranger's directions with the nearest shelter. | A guest shaking off a wet coat often wants a second before the questions.
+b : Even on a fine day? | How can you tell?
+a : Good shelter gives a wolf somewhere to stop and ask again. | Give the second and see whether it gets used.
+
+scene quiet_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say my thanks quietly at dawn while the brewhouse rests. | A guest can take warm food without having to find anything pious to say.
+b : A formal prayer? | What answer would suit?
+a : More like setting a place for gratitude before the work gets noisy. | The spoon in the bowl will do.
+
+scene news_shelter
+when topic=news world.news
+does tell.news / react.self / assess
+a : Passed here from #world.news_from#. #world.news#. | #world.news#. The account travelled from #world.news_from#.
+b : Did it come in dry? | Would you fill in the gaps?
+a : The words are clear. I couldn't vouch for the whole journey. | I'd rather leave a little headroom in that cup.
+
+scene rim_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I'm hearing a bit of loose talk by the covers. | The story's passed several lips already.
+b : Are you lifting one? | Would you pour it out again?
+a : To check my grain. No other reason. | I'd sooner rinse the cup down.
+
+scene small_peg
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd take #peg# out of the wall if I had a good berth to move it to. | Let me travel with one small pot and a lid that stays put.
+b : Why the peg of all things? | Even aboard a ship?
+a : With that and a hood I'd have somewhere to welcome a visitor. | Particularly aboard a ship.
+
+story hood_fill [topic=home|memories]
+  : I once hung a wet hood wrong side out and set a spare cup beneath it.
+  : Came back to a cup of very clear water and an uncomfortable suspicion about my brew.
+  b : Did you taste it?
+  : I looked up. Saved my tongue and gave the hood its first lesson as a roof.
+
+story spare_boot [topic=memories|smalltalk]
+  : Two new boots stood under the bench with their worn predecessors just beyond.
+  : Got up in the dusk and walked out feeling a little grander on one side.
+  b : When did you notice?
+  : To the first puddle. The old boot made its view of the arrangement perfectly plain.
+
+story bout_meal [topic=memories|food]
+  : I once entered a friendly bout and left my hot fish carefully wrapped beside the green.
+  : I lost my footing and sat down nearer to dinner than I'd expected.
+  b : Was the fish safe?
+  : Quite safe. I ate it sitting there and spared my feet a rather pointless new effort.
+
+rule @hang_roof
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Long flap to the windy side.
+
+rule @dry_ring
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say That's a clean rim for the late arrival.
+
+rule @check_lid
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Dust off the lid before bringing it in.
+
+rule @warm_hood
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Give the hood its holiday in the sun.
+
+dlg resident.hub : There's a dry cup here and room to listen.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I'll turn the cup your way.
+dlg resident.hub [here.time=dusk] : A word fits in before I hang the cover for the night.
+dlg resident.hub [pair.disposition=hostile|wary] : We'll leave the bench between us while the cup stands there.
+dlg resident.job [self.job=brewer self.workplace] : I tend the brewing at #self.workplace#. I like to have a visitor's cup clean before it's wanted.
+dlg resident.news [world.news] : This account arrived from #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Some talk's blowing under the eaves. The hood can keep it out.
+dlg resident.bye : Take the part of the path the eaves shelter.
+
+graft resident.hub
+choice Is that hood keeping the cup warm? -> guest_cover
+node guest_cover
+say Keeping it dry, mostly. When a traveller puts down a pack, a cup with a clean rim is a small thing that's already been done specially for the visitor.
+choice Do you have a cup underneath your own hood? -> own_cup
+choice It's a welcoming sight. -> hub
+node own_cup
+say On the road I might. At home I know where to get a clean one. A visitor shouldn't have to search the shelves.
+choice I'll remember the guest side. -> hub
+choice Good luck finding a dry berth. -> bye

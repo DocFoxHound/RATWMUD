@@ -1,0 +1,247 @@
+mantle rm508
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_erland_millley
+title the riddler's empty cup
+fits stage=adult|old
+prefers drive=content honesty=frank
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk remembers_every_debt_owed_or_owing
+likes roast_pork riddles festival_bells frosty_mornings
+dislikes flies deep_mud
+fears a_gift_mistaken_for_an_unpaid_debt
+hopes a_straight_answer_at_the_next_sitting
+topics pastimes +0.7 family +0.4 faith +0.3 food +0.3
+styles comfort=plain gossip=frank refuse=blunt tease=dry
+marks oath saying
+persona #self.first# turns a cup mouth down for a settled debt and asks riddles whose answers will fit in one open hand.
+words
+oath! = Crack my best cup | Frost on my figures
+saying! = A gift gets no tally | Turn the paid cup over
+rentcup = a handleless cup | a squat clay cup
+crackle = a crisp pork rind | a strip of crackling
+paidface = a glazed bottom | a circle of bare clay
+answerstone = a flat grey pebble | a bit of river stone
+dryheel = a crust heel | a hard heel of bread
+littlebell = a thin high bell | a sharp silver note
+frostblot = a round clear spot | a dark patch of thaw
+flynet = a square of gauze | a coarse cloth cover
+owingmark = a pale scratch | a little upright notch
+bonepick = a bit of polished bone | a little pointed sliver
+
+grown
+
+opinion dole for 2 : A gift of food carried us through. I owe the next hungry wolf a meal and my old benefactor no performance of gratitude.
+opinion church for 2 : Somebody put bread where the prayers were. I remember the bread each time I hear the words.
+opinion houses for 1 : When a works fire stays lit a household can reckon on supper. A steady fire beats an ornamental gate in my household reckoning.
+opinion merchants against 1 : I've no objection to the seller eating. I object to paying for the supper twice in one purchase.
+opinion festivals for 1 : A bell can give everybody the first bit of a feast without asking who has a penny.
+line greet : I have an ear for riddles and for plain matters.
+line greet.return : I haven't turned your cup over. Carry on.
+line farewell : Leave with what's yours. That includes your quiet.
+line farewell.return : I won't reckon the time between visits against you.
+line ask.how : What has today put in your open hand?
+line answer.how : Content. I have a few things to settle and a meal to anticipate.
+line decline : An open hand can't be counted as a promise to carry that.
+line accept_decline : Understood. Your side of the shelf is clear.
+line thank : I'll remember the help and spare you a public recital.
+line deflect_thanks : Say gift outright and let me turn the cup.
+line react.news : Put down the answer in the fewest honest words you have.
+line react.news.new : There's an unfamiliar shape on my shelf.
+line react.news.known : That answer has been sitting right side up a while.
+line react.news.doubt : I wonder what really fits beneath that upturned cup.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That rings as welcome as the first clear festival bell.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a place quietly beside a wolf struck by that.
+line sympathise : Here. Warm your hands round the clay till words come back.
+line reassure : Asking help doesn't set an automatic price on the asking.
+line ack : Yes. That answer fits the question honestly.
+
+scene pastimes_1
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What wears a lip above its foot, and sits quite happily on either?
+b : Something from your shelf? | A creature that never stirs?
+a : #rentcup#. Set it upside down once it's dry. Its mouth bears the weight just as well as its foot. | A clay cup will serve for such a creature if you can forgive the missing legs.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I reserve #crackle# until the quietest bit of supper.
+b : Is the sound half the pleasure? | Could anyone coax the final piece from you?
+a : Plainly. There's little point in a fine rind if a whole table is talking through it. | If I had given my word. Otherwise the pleasure of the last bit is already spoken for.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I reserve the easy chair for #self.spouse#. No household account required.
+b : Is that a special rule? | Would you mind the stool?
+a : That's the ordinary rule. There'd be no rest at home if we charged each other for every small comfort. | Less than I'd mind attending a formal reckoning after every meal.
+
+scene family_2
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I've a riddle to try on #self.child# when we have an empty cup between us.
+b : What's the riddle? | Why wait for the empty cup?
+a : Which debt grows smaller when you remember it? The helping hand you can return today. | I've learnt to turn the cup over at the answer. Twice I thought too far ahead of the drink.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My petition is adrift within the City Office. My weekly walk gives me time to ask what has a home and no known address.
+b : Will a riddle bring it back? | Have you an answer yet?
+a : No. So I put the question plainly when I arrive. The riddle is just company for the walk. | My missing petition, unfortunately. I hope that answer grows obsolete.
+
+scene weather_1
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost shows exactly where a warm cup rested.
+b : How long does the mark last? | Can you tell which cup it was?
+a : Until frost gathers again or the sun takes the rest. No sense expecting a permanent receipt from the weather. | By the breadth of the foot, sometimes. I should hesitate to call the cup to account on that evidence alone.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A borrowed penny and a gifted penny look distressingly alike on the table.
+b : What distinguishes the two pennies? | What if you forget?
+a : Agree with the other hand before it lets go. An hour later is an expensive time to start explaining. | Ask the giver. Even an excellent memory is only one end of the arrangement.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I'd rather hear a neighbour ask for half a loaf now than discover a whole family hungry at dusk.
+b : Is that loaf a loan? | Even an arrival you never met?
+a : I say gift when I mean gift. Bread isn't improved by leaving somebody to guess which word I meant. | A hungry stomach doesn't need an introduction to bread.
+
+scene animals_1
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : Flies have a poor idea of whose bit of pork has already been allotted.
+b : How do you explain it? | Do they come back?
+a : With #flynet#. I don't attempt anything as subtle as a verbal argument. | Often. They find a principle of ownership less persuasive than the smell of roast.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : An upright cup means something still owing. An overturned one means the account can sleep.
+b : Suppose you're thirsty? | How many could you remember?
+a : Keep the drinking cups elsewhere. A thirsty visitor once put my accounts into a surprising state. | Dusting limits my enthusiasm for a shelf full of accounts. Beyond that I settle the little matters before they breed.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can remember help without making anyone stand up and describe having once been hungry.
+b : Isn't giving thanks enough? | Where does that memory live?
+a : It does for the giver. It won't fill the next empty plate. Both hands will find plenty to do. | Near the bread. That's where it is likeliest to make itself practically useful.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I don't charge interest on the time between one decent conversation and the next.
+b : Could it be a debt at all? | How would you collect?
+a : Only if I'd talked the ear off somebody and still owed the courtesy of listening. | By sitting still now and letting the other wolf choose the subject.
+
+scene festivals_1
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I like the one thin bell that stays in the ear after the heavier bells are done.
+b : Does it really keep ringing? | Has the thin bell a name?
+a : I can't swear to anything outside my own head. Inside there's usually one more note left over. | That's a fine riddle with no need of an answer before breakfast.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The claim is that #topic.subject# #topic.claim#. I heard it. There's the extent of my share.
+b : Would you pay to know more? | Could it be true?
+a : I prefer my pennies to buy something for the table. | Certainly. It could equally spend a good long time beneath a cup marked uncertain.
+
+story cupwater [topic=family]
+  : I set a cup mouth downward to settle a debt of three windfallen apples.
+  : The debt was indeed paid. The cup, however, still held half my drinking water.
+  b : What did the water settle?
+  : The dust on the shelf. I let the rest dry and moved the drinking things across the room.
+
+story rindriddle [topic=food]
+  : I asked what could make a noise behind closed lips. I bit down on some rind.
+  : The answer went right on making itself heard after I'd given it.
+  b : Did anybody have to guess?
+  : I found a remarkably direct way of giving away the answer and getting my favourite part of supper eaten first.
+
+story frostmouth [topic=weather]
+  : I left my cup sideways on frosty stone and went in to warm my hands.
+  : The round print I expected had turned into two small patches.
+  b : Two cups?
+  : One lip, one foot. A well-made cup can tell its own riddle given a cold stone to lie on.
+
+rule @debt
+when concept=bark
+does aside
+cooldown 8h
+say Gift or loan. Say it while both hands are there. | No tally needed for a second helping.
+
+rule @bell
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say The thin note stayed after the others. | A whole street can share the same ringing.
+
+rule @pork
+when concept=bark self.likes=roast_pork
+does aside
+cooldown 8h
+say Save the crackle till supper grows quiet. | A cover before the flies make up their minds.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Two clear prints on the frost this morning. | Cup on its side again, if I'm any judge.
+dlg resident.hub : There's an easy question under this cup unless you've brought a harder one.
+dlg resident.job : I've a head for who owes whom. A household supplies me with plenty of little things to remember.
+dlg resident.news [world.news] : This much I can lay before you with an easy conscience. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The version on the table is #topic.subject# #topic.claim#. I wouldn't lend it my signature.
+dlg resident.bye : Go easy. No charge for the riddles.
+
+graft resident.hub
+choice Why is one cup overturned? -> old_cup
+node old_cup
+say I lent something and got it back. The overturned cup reminds me to quit remembering a neighbour as owing me anything.
+choice Then why keep the cup there? -> clean_cup
+choice That settles my question. -> hub
+node clean_cup
+say It stops me opening the same account again in my head. Tomorrow I'll give the shelf a wipe and use the cup for a drink.
+choice That settles my question. -> hub
+
+old
+
+line answer.how : Old enough to value a riddle which can be answered sitting down.
+line farewell [here.time=dusk] : My knees are voting for home. May yours be agreeable.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : In youth I could remember a debt without remembering when it ceased. That kind of memory needs a little improving.
+b : How did you improve it? | Can a gift last longer?
+a : I gave the settled account a gesture as plain as lending the first penny. That's where my upside-down cups began. | A gift lasts very well in a memory. You can keep the good taste without keeping a sum.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : The opening festival bell sounds better from somewhere an old back can lean.
+b : Why the first one? | Can you lean on a friend?
+a : Because I like hearing the quiet change into a holiday. Later the ear already knows what sort of a day it is. | With permission. Friendship is no warrant for dropping a whole solid wolf on an unsuspecting shoulder.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I sometimes forget the words of an old riddle and remember the answer warm in my hand.
+b : What answer weighs so little? | Can you work back from it?
+a : A cup, a crust or a bit of bone. The best answers fit the pocket comfortably. | It's how I occasionally arrive at an entirely fresh question. No law against an answer earning its keep twice.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Nowadays I go uphill by the route with a broad sill halfway along.
+b : Do you sit on it? | What if someone needs to pass?
+a : For a moment, if welcomed. A dry sill and an easy breath put quite a different face on the remaining climb. | I leave the way wide enough. A resting wolf oughtn't become another difficulty on somebody else's road.

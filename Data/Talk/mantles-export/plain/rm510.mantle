@@ -1,0 +1,257 @@
+mantle rm510
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_frederick_nailgate
+title gloves upon the shelf
+fits stage=adult|old
+prefers job=healer
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk asks_callers_to_shelve_house_colours
+likes crisp_apples roof_birds festival_bells warm_rain
+dislikes salt_wind crowds
+fears missing_a_quiet_request_under_a_public_grudge
+hopes for_a_hearing_without_house_colours
+topics work +0.6 health +0.5 gossip +0.3 pastimes +0.2
+styles comfort=quiet gossip=close refuse=plain tease=none
+marks oath saying
+persona #self.first# indicates a shelf for House gloves and hears each caller in the same low voice.
+
+words
+oath! = Glove and empty fingers | By my bare right paw
+saying! = Leave the colours by the latch | A hurt has no livery
+shelf = the glove shelf | the ledge beside the latch
+glove = an embroidered glove | a coloured gauntlet
+bare = my bare fingers | a plain open paw
+screen = a linen screen | the clean cloth curtain
+apple = a crisp green apple | a sharp apple fit for biting
+roof = the upper ridge tiles | the roof above the porch
+bird = a small roof bird | a restless brown bird
+bell = the first festival bell | a bronze morning note
+burr = a persistent burr | a small ruff burr
+bench = the narrow waiting bench | a bench against the plaster
+letter = a vineyard letter | a folded square of writing paper
+wet = the soft orchard rain | a warm quiet shower
+
+any
+opinion houses mixed 1 : A House gives work and can send considerable help. I prefer to hear a caller without its colours filling my sight.
+opinion drink against 1 : I've seen what the last cup can cost a wolf who meant to stop at the first.
+opinion strangers for 1 : A hurt visitor earns the same privacy as the most familiar face on my bench.
+opinion festivals mixed 1 : Let the bells come in. The great press of shoulders can keep to the square.
+opinion merchants against 1 : I dislike finding an extra charge tucked into a sickroom bill for plain cloth.
+
+grown
+line greet [pair.band=strangers] : The shelf's clear. Come through. | Welcome. We've some quiet to speak in.
+line greet [self.working=yes] : Stand by my empty hand a moment. | I can give your business a hearing here.
+line greet [here.time=dawn] : Morning. The porch has dried. | Come through in the clean morning air.
+line greet [here.time=dusk|night] : Evening. Take the sheltered end. | There's a little light at the screen.
+line kin.open [pair.kin!=no] : For family I've a chair near my own. | I hear the household voice.
+line again.open : We've cleared the shelf once already. | We have another private moment.
+line greet.return : Your return is welcome here. | A fresh hearing for a familiar voice.
+line greet.return [pair.band=friends|family] : No colours needed between us. | There's a quiet seat for a trusted visitor.
+line greet.return [self.working=yes] : I've cleared this corner for you. | Stay within reach of my ordinary speaking voice.
+line greet.return [here.time=dusk|night] : The late air suits a low voice. | Welcome back under the porch lamp.
+line farewell : Go well with both paws free. | Leave with as easy a step as you can.
+line farewell.return : Your gloves are by the latch. | Good walking after our quiet word.
+line farewell.return [here.time=night] : Easy footing beyond the last lamp. | Go softly through the darker turnings.
+line react.news : Give me the patient version first. | Tell it once in your own voice.
+line react.news.new : That hasn't reached my waiting bench yet. | I've heard no part of that till now.
+line react.news.known : That account came in before today. | I recognise the words under the embroidery.
+line react.news.doubt : I'd hear the second voice before deciding where that account belongs. | A house colour can put a surprising tint on plain words.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the seat screened off for grief. | We have time for what hurts.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A sound note to carry out of here. | That has given my quiet day some brightness.
+line ask.how : How's your breath after the walk? | Was the journey kind to you today?
+line answer.how : My burrs have bothered me more than my work. | I've kept a level voice all day.
+line decline : I need to hold this hour for someone waiting behind the screen. | I should stay within hearing of the next quiet caller.
+line accept_decline : Then leave it lying where it is. | I can work with an honest refusal.
+line thank : Your kindness let me hear the caller clearly. | That quiet assistance was well judged.
+line sympathise : Sit on the inner side awhile. | I won't hurry you past the hard part.
+line reassure : You can ask again after you've rested. | A closed curtain can buy you some peace.
+line preclose : I ought to clear the next caller a seat. | I should go back where the quiet requests come.
+
+scene gloves
+when topic=work self.job=healer
+does tell.self / ask.detail / answer.detail
+a : I point to #shelf# before I ask why a caller came.
+b : Why there? | What goes on it?
+a : An embroidered House cuff can put me on my guard. I'd sooner begin with the wolf who took it off. | Anything the caller would sooner leave outside a private conversation.
+
+scene livery
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A fine silk glove can have a rough seam indoors.
+b : Have you felt one? | Who sees the rough side?
+a : Certainly. The wolf wearing it has better reason to know about that seam than anyone admiring the colours. | The wearer, once the door shuts. That's the account I listen for.
+
+scene bench
+when topic=health self.job=healer
+does tell.self / ask.detail / answer.detail
+a : My first question to a tired caller is often where the room feels quiet enough to sit.
+b : Do you let a caller choose? | Why move the chair?
+a : Within reason. Some have climbed quite far to say a very small thing aloud. | A frightened wolf may manage a clear word once the public bench is behind a screen.
+
+scene workplace
+when topic=work self.workplace self.job=healer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a quiet request can barely carry over polite footfalls.
+b : How do you catch it? | Do you call back?
+a : Leave a space after the introduction. That's when I hear the little sentence the caller rehearsed outside. | I go nearer so a low answer will carry. There's no dignity in making a wolf repeat personal business to a room.
+
+scene burr
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : There's nearly always #burr# somewhere in my ruff.
+b : Does it bother you? | Hard to find?
+a : When it catches in a collar. I'd sooner get it out before it catches someone else's sleeve. | Cream fur gives a dark seed little shelter once someone points it out.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I like #apple# outdoors between calls. Its crack carries a surprising distance inside.
+b : Too loud for a sickroom? | Do you share it?
+a : Too loud for my own taste. The first bite is a pleasure I'd rather take under sky. | Gladly with a wolf who wants it. I don't carry crumbs back through the curtain.
+
+scene bird
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I watch #bird# squat on #roof# to get below the line of wind.
+b : What holds your eye? | Stays long?
+a : The plain decision in that quick little crouch. No speeches against the weather. | Until the feathers settle. I've time to see that much on a short break.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : I stand under #wet# for just the walk between porch and gate.
+b : Enough for you? | Why go out at all?
+a : Enough to smell wet stone and lose the feeling of a shut room around my ears. | After a dry week my very sleeves seem made of dust. A little fresh air is a considerable pleasure.
+
+scene crowds
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I hear #bell# through the upper opening and let the square keep the procession.
+b : Lose much that way? | Can you see the banners?
+a : I keep my footing and hear every note. Crowds have little to offer in exchange. | A corner of silk now and again. My interest usually lies above it, along the roof tiles.
+
+scene wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt gets into the fur around my eyes and makes me look as if I've been weeping.
+b : Do people ask? | What do you say?
+a : Sometimes. It's a fair question from a wolf who knows my work. | Plainly that the wind has fingers. Some things deserve a short answer.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd share a green apple and a minute on the porch with #self.friend#.
+b : Is a minute long enough? | Do you talk shop?
+a : It's a generous piece of time when nobody's required to fill it up. | Only in broad outlines. Private troubles belong behind my screen.
+
+scene priest
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : I reserve a question for #self.priest# about the line between being careful and being hard.
+b : Does it trouble you often? | How would you put it?
+a : Whenever I see another House's colours. Wariness can be a poor listener. | As plainly as that. I trust an honest question farther than a polished excuse.
+
+scene ink
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I know the kind of folded letter that travels here from the vineyards with a purple thumb mark near the seal.
+b : What gets written? | Do you keep the paper?
+a : Which hillside held the sun or how late the last bunch ripened. A small account can bring a distant place quite close. | Until the paper grows softer than the thought of answering it.
+
+scene cost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A price whispered in a sickroom ought to be as easy to repeat in the street.
+b : Have you had a bad surprise? | Do you speak up?
+a : I've paid for a plain cloth that seemed to have gained considerable grandeur on its journey towards my shelf. | I ask for the amount a second time in a voice level enough to carry.
+
+scene neighbour
+when topic=home self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I like to see #self.neighbour# within easy greeting distance of the home gate.
+b : Must you stop? | What do you say?
+a : A nod is worth something. Neither of us needs to unload the whole day on a doorstep. | A plain good evening if the hour warrants it. Familiarity can stand a small sound.
+
+scene silence
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A closed linen screen is a remarkably poor wall against a lively tongue.
+b : How do you keep things private? | Do you follow a rumour?
+a : I move a conversation before a quiet detail has to compete with somebody else's loud guessing. | Only back to my own duty. I've enough trouble with what I actually know.
+
+scene glad
+when topic=home self.from_town
+does tell.self / ask.detail / answer.detail
+a : I know the uneven porch stones of #self.from_town# better than the splendid doorways on a visitor's account.
+b : Why those stones? | Is that affection?
+a : The stones tell my feet I'm home before I've raised my eyes to judge a crest. | Plenty of affection there. I should miss the familiar tilt on a dark return.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a roof bird had pulled every bright thread from a House glove to make a nest.
+b : Did you mind the theft? | How did the nest look?
+a : I remember thinking the wearer would still have a sound glove for the winter. The bird had shown restraint. | Brighter than a bell rope on a feast morning. Nobody could have told which House the chicks belonged to.
+
+story threads [topic=memories]
+  : I caught an embroidered cuff on the latch coming indoors behind my folded screen. One bright thread followed me a surprising distance across the room.
+  : I meant to pull it clear. The harder I pulled the more I unpicked, till I was carrying half a crest and the glove was still outside.
+  b : Did the silk cost much?
+  : I offered honest coin and a plain account. The shelf keeps loose finery away from that latch now.
+
+story porch [topic=pastimes]
+  : A roof bird carried a shred of apple peel along the ridgeline. I expected it to drop the burden whenever the wind caught the loose end.
+  : It kept turning sideways and letting the peel stream out behind like a minute banner. My own apple browned while I watched the bird.
+  b : Did it reach its nest?
+  : Beyond my sight. I was quite ready to give the little standard bearer the benefit of the doubt.
+
+story heard [topic=work self.job=healer]
+  : A caller once waited beside the screen far too long while I sorted cloths. I'd taken the little sound of a paw on wood for an ill-fitting shutter.
+  : When I stepped out I saw the mark of a glove laid very carefully on the shelf. Someone had taken my request to be quiet more seriously than I intended.
+  b : How has your request changed?
+  : I tell a caller how to get my attention as well as where to set the gloves. A bare shelf can't explain the rest by itself.
+
+rule @aside1
+when concept=bark self.job=healer self.working=yes
+does aside
+cooldown 6h
+say Bare paws and plain speaking within the curtain. | Leave a space between two calls.
+
+rule @aside2
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 7h
+say The ridge bird has found the lee. | Quick little feet up on that tile.
+
+rule @aside3
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say Bronze carries over a high sill. | Let the full note die away.
+
+rule @aside4
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 9h
+say A clean crack under open sky. | That apple kept its edge well.
+
+dlg resident.hub : Set down whatever makes a noise when you move. I can hear your own words well enough here.
+dlg resident.job [self.job=healer self.trade_words] : My post is #self.trade_words#. A private hearing comes into that work as much as clean linen does.
+dlg resident.news [world.news] : A word from beyond the curtain. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, you know where the colours can rest awhile. Come within speaking distance.
+dlg resident.bye : Your things are on the ledge. Easy walking.
+
+graft resident.hub
+choice Why leave House colours outside the screen? -> glove_ledge
+node glove_ledge
+say I'm too ready to see a rival crest before I see the wolf beneath it. The little shelf gives us both a moment to come in with bare paws.
+free
+choice What if the colours are sewn on? -> glove_sewn
+choice I'll set my things down here. -> hub
+node glove_sewn
+say I look straight at the caller's face. My own mistrust is mine to carry, and nobody ought to drag an extra burden into a sickroom for my sake.
+choice That's plain speaking. -> hub
+choice I'll leave the bench free. -> bye

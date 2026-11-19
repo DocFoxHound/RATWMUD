@@ -1,0 +1,263 @@
+mantle rm484
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_bettany_ropegate
+title the empty stall
+fits stage=adult|old
+prefers job=scholar honesty=guarded
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk sets_out_a_stall_of_imaginary_goods_on_a_draughts_board
+likes smoked_eel draughts full_larder frosty_mornings
+dislikes drizzle wet_floors
+fears a_wet_ledger_that_wont_give_evidence
+hopes a_real_counter_the_width_of_a_board
+topics work +0.6 prices +0.5 pastimes +0.4 weather +0.2
+styles comfort=practical gossip=guarded refuse=brisk tease=dry
+marks oath saying
+persona #self.first# lays out an imaginary market stall in draughts pieces and covers a damp cough with the scrape of a chair.
+
+words
+oath! = Black kings | Wet chalk and white squares
+saying! = Count the counter first | Give a promise its own square
+boardstall = a counter in pieces | my pocket market
+longrow = the seller's row | the back rank
+kingweight = a double draught | the high stack
+pricedot = a pencilled dot | a price spot
+ragcorner = my clean rag | the dry corner
+chairfoot = a scraping foot | the loose chair leg
+standrent = a stall copper | the first day's standing
+drypile = a tidy file | the paper stack
+eelend = a split eel end | the smoked morsel
+larderhook = a laden hook | the shelf edge
+frostink = a white stroke | a clean frost line
+mistwear = a clammy collar | the persistent drip
+
+any
+opinion watch mixed 0 : Ask separately what was witnessed and what was entered. The difference is worth a clerk's pay.
+opinion city for 1 : A town with room for a desk ought to spare room for my future market counter.
+opinion merchants mixed 0 : I'd weigh a stallholder's goods and promises on separate scales.
+opinion road for 1 : A dry delivery saves the cost of replacing a whole stack of paper.
+opinion houses against 1 : A seal can order plenty of work without ever moving a wet file itself.
+opinion dole for 1 : A full shelf is reason enough to spare food before a hungry wolf must explain every expense.
+
+grown
+line greet : You've found the free square. Hello. | Step clear of that damp patch.
+line greet [pair.band=strangers] : A new face for my spare square. | Stand on this square with your hands visible.
+line greet [here.time=dawn] : Morning. Frost makes a clean margin. | Fresh light. I'll take a short interruption.
+line greet.return : Yes, hello. I was shifting the chair. | I've heard you over that scrape.
+line greet.return [pair.band=friends|family] : Take your familiar dry seat. | A familiar face gets the square by the wall.
+line greet.return [here.time=night] : Late callers should mind the unlit step. | Good evening. The black pieces hardly show now.
+line again.open : Back before I put my counter away. | So that square is occupied again.
+line hail [pair.band=friends] : Come see the market I've laid out! | Stand by my elbow where the board's visible!
+line farewell : Dry footing and a sound purchase. | Keep your last copper in a dry pocket.
+line farewell.return : I'll hold your place just long enough to clear it. | Go before the floor gets wetter.
+line react.news : Separate a witness's own words from hearsay. | I'll give the unvarnished account a hearing.
+line react.news.new : That deserves an entry on a fresh square. | New to this desk, at least.
+line react.news.known : I've filed the same particulars before. | That account has a square assigned.
+line react.news.doubt : A source is missing from that entry. | I'd leave that as an allegation.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can have my seat while this sinks in. | A loss like that deserves better than a line of ink.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Put a bright piece straight into the ledger for that. | Glad news. I can receive that without an objection.
+line ask.how : Is today giving you elbow room? | How much square footage has the day cost you?
+line answer.how : Fine. The chair made that noise. | Fairly dry and in command of my pieces.
+line decline : I've just enough clear space for the work booked already. | Another promise would put my whole account out.
+line accept_decline : Then your square can stay vacant. | I'll spare us a second application.
+line preclose : The board wants clearing before my next entry. | I've to get these papers away from the wet.
+line accept_preclose : Good. Your errand has its own call on you. | Go while your papers are dry.
+line thank : That assistance earned a proper entry. Thank you. | You found room for something I'd nearly lost.
+line deflect_thanks : It was one empty square I could spare. | A small favour doesn't need stamping.
+line sympathise : Sit. I'll keep the enquiries off this corner awhile. | That entry can wait until your voice steadies.
+line reassure : The first line only needs the things you know. | A dry chair and two clear minutes may ease matters.
+line ack : Yes. I'd enter that as stated. | It fits the square you've given it.
+line give.advice : Look under a stall before paying for its frontage. | Never lay wet evidence on clean accounts.
+
+scene countergame
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : Today's white draughts are jars. The black ones are rent.
+b : Which side is winning? | Can a jar take a rent piece?
+a : The rent, by one corner. I'm rearranging the shelf before conceding. | Only if it sells twice as fast as I'd estimated. My private rules favour realism.
+
+scene backrank
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I mean to start with a counter exactly one board wide. I could afford to keep that stocked.
+b : No space for customers? | What would you stock?
+a : Customers get the space around it. That's a good deal more than my present customers get. | Oilcloth squares, perhaps. I know thoroughly what I expect of those.
+
+scene filework
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I leave a blank after a witness's words. Any later qualification goes there in full view.
+b : Why leave it blank? | Who can add the qualification?
+a : It stops a clean record looking more final than it actually was. | Whoever receives it signs it separately. A word that changes hands needs a trail.
+
+scene rankwork
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a chair making a noise can turn more heads than a pen making an error.
+b : Is that your chair? | Would you spot the bad entry?
+a : Mine scrapes when I need it moved. That's the entire entry on my furniture. | Give the last digit as much attention as the first. Uneventful work suits me.
+
+scene dripthroat
+when topic=health here.weather=rain
+does tell.complaint / ask.detail / answer.detail
+a : Wet air tends to catch on a sentence just where I wanted it to end cleanly.
+b : Do you want a pause? | Was that a chair foot scraping?
+a : A moment to square the paper. Then I'll continue at the right word. | Leave the chair out of your statement. We were examining some figures.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost sets a clean white edge on everything a careless foot might miss.
+b : Even on your window? | Aren't the steps slippery?
+a : Particularly there. I can read the line without adopting the weather. | Yes. I appreciate a danger that has the manners to mark itself.
+
+scene floor
+when topic=home self.dislikes=wet_floors
+does warn / react.self / assess
+a : Test a shining floor with your eyes before carrying anything irreplaceable across it.
+b : What can eyes test? | Would a rag fix that?
+a : Whether the shine begins at a bucket or runs in under the door. I'd move the paper first. | Only once I've found what keeps it wet. Mopping makes a poor permanent occupation.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : One dark smoked eel yields a respectable row of small lunches if the pieces are set out in advance.
+b : Would you sell portions? | Doesn't counting take the pleasure out?
+a : Maybe. I'd first like to know the rent wouldn't eat the best piece. | Counting ensures I get the same pleasure again when the week runs short.
+
+scene shelves
+when topic=home self.likes=full_larder
+does tell.feeling / react.self / assess
+a : A full shelf makes less noise in my head than an empty shelf. I can work through a quiet morning that way.
+b : What goes at the front? | Can an empty shelf be noisy?
+a : Whatever won't keep till tomorrow. Order is cheaper than buying everything twice. | It holds a lengthy conversation about what the next week's money was supposed to buy.
+
+scene common
+when topic=prices self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : When there's a market day I count the stalls with more than one dry side.
+b : Would you pay dearer for two? | What are you really counting?
+a : A little. Losing stock to a wet side is another kind of rent. | Possible places for my own board, if I ever replace it with boards enough to stand behind.
+
+scene suspicion
+when topic=gossip
+does give.opinion / react.self / assess
+a : I dislike the sort of confidence handed over with instructions to repeat it.
+b : Does a confidence warrant filing? | What if it were urgent?
+a : I'd record the request along with its source. The tale itself hasn't earned better treatment. | Find the person who can act. The whole market rarely needs first notice of a private matter.
+
+scene saving
+when topic=prices
+does tell.plan / ask.detail / answer.detail
+a : A copper goes toward my stand when something on the shopping list can honestly wait.
+b : What can usually wait? | Do you chalk each copper up?
+a : New wrapping when an old square still turns a good dry side. Supper can't wait on principle. | No. I count at home with the shutters closed. My stall isn't public business yet.
+
+scene neighbor
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to understand why I don't want my plans shouted down a busy row.
+b : Keeping a good surprise? | Would you share the board?
+a : Keeping a private hope. A surprise is an altogether more expensive entertainment. | One quiet opponent, yes. That's how the thing got its day job in the first place.
+
+scene stormlore
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle has the habits of a clerk who adds a single small charge with every visit.
+b : What's it cost you today? | Is a soaking different?
+a : Time drying the cuffs before I can reach across good paper. | A downpour declares the charge in full at the outset. I can decide whether to go.
+
+scene saltday
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I sit so the chair's worst foot is farthest from anything breakable.
+b : A deliberate arrangement? | Wouldn't you repair it?
+a : Entirely. That innocent-looking foot can shift when I have my eyes on a file. | In time. It makes a tolerable cover for small interruptions I prefer to keep private.
+
+scene honesty
+when topic=lore
+does give.opinion / react.self / assess
+a : A file with 'uncertain' written honestly at the bottom has earned its room on a shelf.
+b : Isn't that rather untidy? | Could uncertainty settle anything?
+a : Better an untidy truth than a splendid account which needs tearing up tomorrow. | It settles how far we're entitled to go on the present evidence. That's a useful limit.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The Bright One receives my private requests in prayer. The paperwork stays outside.
+b : Would a written prayer hurt? | Do you expect an answer?
+a : No. Carry one if it helps. I'd rather hear my own thoughts without a nib going by. | Enough steadiness to do the next task properly would be an answer worth recognising.
+
+scene leanstore
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : On lean weeks I keep separate squares for food that's here and food somebody expects.
+b : What if the delivery's certain? | Who gets the last square?
+a : When it arrives I'll shift a piece. A promise has yet to feed a visitor to my table. | Whoever hasn't eaten. I can return to my careful arithmetic afterwards.
+
+grown
+
+story crownrent [topic=prices|memories]
+  : I put two draughts one atop another for a market roof, then knocked them over while setting out the goods.
+  : Both went rolling off the edge. My first imaginary roof had taken the rent along with it.
+  b : Did your stall survive?
+  : Very cheaply. I appointed a flat square of cloth to the post.
+
+story wetpaper [topic=work|memories]
+  : A perfect circle of damp appeared on a spare file cover. I examined the ceiling, the shelf above it, then the shelf below.
+  : My cup had stood on the reverse face while the cover was folded back.
+  b : Did you enter the culprit?
+  : One cup. One clerk handling the investigation. No public expenditure.
+
+story kingeel [topic=food|memories]
+  : I cut eel for two meals and put a draught beside the smaller share to remind me to add a little more.
+  : Later the piece was gone and the portions looked just as unequal.
+  b : What had happened to the marker?
+  : I'd put the draught away while tidying. Better to finish dividing lunch before going in for good order.
+
+rule @chair
+when concept=bark
+does aside
+cooldown 8h
+say That was the chair scraping. Proceed. | The noise from this desk has no bearing on your statement.
+
+rule @file
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Reserve a margin for any missing witness. | Wet cuffs off the file covers, please.
+
+rule @draught
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Double piece for the high shelf. Single for the low. | My stall packs into one respectable little box.
+
+rule @drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe the chair feet before bringing it in. | Paper in first, then the wet umbrellas.
+
+dlg resident.hub : My board has room for one enquiry before I shift the pieces.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I can spare the square where we left off.
+dlg resident.hub [here.time=night] : Dark pieces are hard to distinguish now. A plain question will serve.
+dlg resident.hub [pair.disposition=wary|hostile] : Bring your question where both the hood and hands stay visible.
+dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I mind the space between a report and a fact.
+dlg resident.job : A clean account leaves little room for profitable misunderstandings.
+dlg resident.bye : Take the dry path beyond my square.
+
+graft resident.hub
+choice What's trading on your draughts board? -> squaretrade
+node squaretrade
+say The back row pays rent. The front row takes money. This stacked one is the roof. The rules work tolerably well till someone wants a game of draughts.
+free
+choice Which costs more, the roof or the rent? -> rentroof
+choice I'll leave the board standing. -> hub
+node rentroof
+say Here the roof costs one move. On a real stall I'd inspect it in drizzle before believing a word about the price.
+choice I see the attraction of the game. -> hub
+choice I'll get out of this damp. -> bye

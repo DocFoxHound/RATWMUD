@@ -1,0 +1,259 @@
+mantle rm492
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_cressida_carlisle
+title the advocate at the last raindrop
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk listens_for_a_gap_between_spouts
+likes warm_bread cards festival_bells first_snow
+dislikes flies rats
+fears beached_in_the_harbour another_wet_entry
+hopes a_dry_berth a_hearing_with_the_window_open
+topics work +0.5 travel +0.4 dreams +0.3 weather +0.3
+styles comfort=formal gossip=reserved refuse=direct tease=none
+marks oath saying
+persona #self.first# arranges cards in a cabin-sized rectangle and listens through a rainstorm for the silence after the final drop.
+
+words
+oath! = Soak my cabin | Confound the gutter
+saying! = Let the last drop have its hearing | A berth is measured lying down
+berth = the narrow berth | a single bunk
+trickle = the last drip | a thread of rain
+stack = a square pack | my travelling pack
+queen = a court card | the high card
+edge = a gilt corner | a rubbed gilt edge
+casepaper = the folded statement | a page of evidence
+flourheel = a warm heel | a fresh loaf end
+chink = the latch gap | a narrow slit
+lanes = the sloping gutters | three little runnels
+flake = a single snowflake | one dry flake
+screen = a gauze cover | a bit of net
+rope = a length of cabin cord | a short berth cord
+
+any
+opinion @1 city for 2 : I may want a voyage, but I'd still name our Sound as my home port.
+opinion @2 newcomers for 1 : It takes courage to speak before a bench in an unfamiliar accent.
+opinion @3 houses for 1 : Ownership carries a duty to keep the hillside upright. I think the great households know that duty.
+opinion @4 road for 1 : A road outside the gate is a reasonable first step for a traveller who cannot yet leave port.
+opinion @5 watch for 1 : The night patrol leaves me free to hear the fall of rain clearly.
+opinion @6 dole against 1 : I'd sooner hear a clear account of portions before adding my coin to the kettle.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome within earshot. I'll attend to your words here.
+line @2 greet [here.time=dawn] : Morning. A little pale light through the latch.
+line @3 greet [here.weather=rain] : Come beyond the spout. It rather talks over us.
+line @4 greet.return : Your courtesy reaches me perfectly well.
+line @5 greet.return [pair.band=friends] : There's a voice I could recognise below deck.
+line @6 farewell : Allow for a contrary sky when you set out.
+line @7 farewell.return : Your closing word is duly received.
+line @8 again.open : We have another interval to ourselves.
+line @9 kin.open [pair.kin!=no] : A familiar ear is a considerable advantage to kin.
+line @10 hail [pair.band=friends] : A moment, my friend, before the next downpour.
+line @11 react.news : I'll hear the substance before looking for the consequence.
+line @12 react.news.new : I've had no occasion to consider that report yet.
+line @13 react.news.known : The outline came to my attention earlier.
+line @14 react.news.doubt : I should like a clearer view of the original circumstances.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Those touched by that loss deserve more than a polished remark.
+line @16 react.news.glad [topic.kind=birth|marriage] : That deserves a fine clear interval for a celebration.
+line @17 answer.how : Listening for a gap in the weather. Quite myself.
+line @18 decline : I couldn't undertake that and attend to it properly just now.
+line @19 accept_decline : Perfectly understood. You owe me no second answer.
+line @20 sympathise : I can sit through a difficult silence with you.
+line @21 thank : You have brought an awkward matter to a much kinder close.
+line @22 deflect_thanks : There was room in my day for the hearing.
+line @23 preclose : I believe the spout has quieted. I'll use that interval.
+line @24 accept_preclose : I release you with my very good wishes.
+
+scene close
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I like to finish an argument on the last fact the bench can use.
+b : Wouldn't a rousing end linger longer?
+a : Possibly. I'd prefer the fact to linger when my own voice falls silent.
+
+scene homecase
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I test #casepaper# by reading it beside an open sash.
+b : Is the street meant to be your audience?
+a : The street is my interruption. A sound argument should survive a passing barrow.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : I set four cards down to measure #berth# on my desk.
+b : Do the suits mark different corners?
+a : The high card marks the pillow. I allow a space near my feet for boots free of wet.
+b : That leaves your proposed cabin rather better furnished than some real ones.
+
+scene bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : I pull #flourheel# apart so it gives up steam quietly.
+b : Do even the crumbs get a hearing?
+a : Crumbs have a way of making themselves felt. Especially among written papers.
+
+scene festival
+when topic=season self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : On festival mornings I set my papers aside till the bells finish.
+b : Is the ringing too loud for your work?
+a : On the contrary. I should dislike being so busy as to miss the second bell entirely.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.plan / ask.detail / answer.detail
+a : I'll leave a high window open for the year's earliest flakes.
+b : Won't it blow across the desk?
+a : A single flake is a much tidier interruption than a leaking spout.
+
+scene flies
+when topic=food self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : I've had a calm pleading look quite temperamental on account of one fly.
+b : Does the bench notice the waving?
+a : It's the slap at the end that troubles me. #screen# looks rather more becoming.
+
+scene rats
+when topic=smalltalk self.dislikes=rats
+does tell.worry / reassure / assess
+a : I'm more concerned with a scratching in the panelling than I care to admit.
+b : Must you stay beside the panel to work?
+a : No. A clean table across the room would put a civil distance between us.
+
+scene ship
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : My imagined cabin goes somewhere with an empty sky and a dry rail.
+b : Do you already have a ship in mind?
+a : A Grayrock berth would do. Choosing the destination is the one motion I can keep putting off.
+
+scene roofs
+when topic=weather
+does give.opinion / disagree / concede
+a : I maintain our roofs continue to rain after the sky has stopped.
+b : The sky can hardly answer for a blocked gutter.
+a : Precisely my distinction. I'm listening for one final unassisted drop.
+
+scene friend
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd let #self.friend# draw a card before touching #stack# myself.
+b : Would you leave your own chances to a friend?
+a : For a friendly hand, yes. A courtroom can have its order of precedence.
+
+scene testimony
+when topic=gossip
+does give.opinion / disagree / concede
+a : Two reports of a noise may both come from the same shutter.
+b : Surely the second witness counts for something.
+a : Quite so. Ask where each ear was when the shutter banged.
+
+scene travel
+when topic=travel
+does ask.advice / give.advice / assess
+a : What would you take for a passage with very little room for luggage?
+b : A short cord can serve where a second bag won't fit.
+a : I'll wind #rope# round my pack. That leaves room for my cards.
+
+scene shortmeal
+when topic=prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : A small loaf at yesterday's price makes for some very thin arguments at supper.
+b : Could you share your warm end with another table?
+a : Gladly. Let the price be argued on a full stomach for once.
+
+scene road
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When a cart runs late my professional question concerns its last appearance.
+b : What does the traveller in you ask instead?
+a : Whether a berth by water would get me out before the cart arrived.
+
+scene sleep
+when topic=dreams
+does tell.self / react.self / assess
+a : Once asleep I hear rain on a cabin ceiling and feel quite content.
+b : I took you for someone who wanted clear skies.
+a : I do. But in that dream I could feel the whole ceiling moving west.
+
+scene town
+when topic=land
+does tell.plan / ask.detail / answer.detail
+a : I'd like to take the long descent with a chart in my pocket and no case waiting.
+b : How far would you follow the slope?
+a : As far as a mooring I might one day step across.
+
+scene offer
+when topic=smalltalk
+does offer / accept / assess
+a : May I put #screen# over the last of your bread?
+b : Gladly. Those flies are extraordinarily persistent.
+a : Now we can address the bread at a more civilised pace.
+
+story highestcard [topic=pastimes]
+  : I cut a new pack under a draughty window. The highest card went out on the sill.
+  : I delivered my best appeal to the wind.
+  b : Did the argument win your card back?
+  : A brief change of wind did. I have never cited my address as a precedent.
+
+story shutrains [topic=weather]
+  : A wet afternoon once produced seven separate endings to a shower.
+  : After each I stood with a coat over one arm.
+  b : When did you finally put it on?
+  : The seventh. It had taken me all afternoon to realise a coat is meant to get wet.
+
+story drymap [topic=travel]
+  : I circled dry ports on a chart in such pale pencil that the least damp might rub them away.
+  : For a while I kept the chart between two briefs.
+  b : Did the briefs help you choose a place?
+  : They reminded me that one useful choice was to clear a day for leaving.
+
+rule @rustle
+when concept=bark self.job=official self.working=yes
+does aside
+cooldown 8h
+say One clean page for the point that remains to be proved.
+
+rule @steam
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Steam first. Papers well away from the plate.
+
+rule @cabinpack
+when concept=bark self.likes=cards
+does aside
+cooldown 8h
+say Four corners and a little space for boots.
+
+rule @firstflake
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say No splash at all from that visitor.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I am #self.first#. We may speak without raising our voices.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have an interval free of appointments.
+dlg @3 resident.hub [here.time=night] : A light in this window and a voice to go with it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A civil hearing need imply no further association.
+dlg @5 resident.job [self.job=official self.workplace] : I prepare my pleadings at #self.workplace# and put a case into words another wolf may weigh.
+dlg @6 resident.job : I am most at home with a difficult question and sufficient time to consider it.
+dlg @7 resident.bye : An untroubled passage to your next engagement.
+dlg @8 official.board [here.chapter=no] : A chapter must stand behind an undertaking entered on this board.
+dlg @9 official.board [here.chapter=yes here.missions=0] : The board offers your chapter no business at present.
+
+graft resident.hub
+choice What are the cards measuring? -> cabincards
+node cabincards
+say The space a berth would take on a ship out of this weather. I've allotted #queen# the sole privilege of a pillow.
+choice Would the bed be wide enough? -> cabinturn
+choice Thank you for receiving me. -> hub
+node cabinturn
+say For sleeping, certainly. Whether it would let a restless advocate turn over remains to be argued.
+choice We still have a moment. -> hub
+choice Good sailing to you. -> bye

@@ -1,0 +1,402 @@
+mantle rm512
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_frida_bilgewell
+title the dry hood register
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_oilcloth_up_in_clear_weather_and_records_the_difference_between_seen_and_suspected
+likes crisp_apples dice sharp_knife autumn_wind
+dislikes early_bells smoke
+fears mistaking_an_impression_for_a_name
+hopes a_record_whose_entries_can_stand_in_daylight
+topics work +0.6 day +0.5 prices +0.3 weather +0.3
+styles comfort=direct gossip=exact refuse=plain tease=none
+marks oath saying
+persona #self.first# tips the oilcloth brim clear of the eyes, keeps the voice even and distinguishes an observation from a name merely whispered.
+
+words
+oath! = Crease my oilcloth | File my apple core
+saying! = A dry page can still carry a damp guess | Count the pips before announcing the throw
+hood = the oiled hood | my stiff dark brim
+page = a dry register leaf | a lined slip
+pips = the little round pips | a clear pair of spots
+die = a well-cut die | a bone cube
+apple = a crisp green apple | a hard russet
+peel = the smooth red peel | a translucent twist of fish skin
+brim = the edge of the hood | the broad oilcloth brim
+knife = a little paring knife | a clean-edged knife
+haze = a dirty smoke haze | a belt of grey air
+keyring = a plain key ring | a loop of cold iron
+slate = my small slate | a dark square
+ink = a plain black stroke | a fine ink line
+line = a blank ruled space | a row left clear
+chalk = a stub of chalk | a sharp little chalk end
+cup = a clean drinking cup | a tin mug
+cloth = a rag just for the ink | a plain wiping cloth
+time = the measured hour | the shift's last mark
+train = a row of wet prints | a trail across the flags
+
+any
+opinion watch mixed 2 : A Watch mark on the page tells me who must answer for the entry. It doesn't turn a report into a witnessed fact.
+opinion houses against 2 : Even a House with fine coats may claim wealth and considerable influence. Neither ought to own the little blank where a witness writes a name.
+opinion dole for 2 : A meal recorded as given should have been put within actual reach of the hungry wolf.
+opinion church mixed 1 : I can keep a clean conscience more easily by correcting the record than by polishing the cover.
+opinion strangers mixed 1 : An unfamiliar name deserves the same accurate spelling as a familiar one.
+opinion city for 1 : A city big enough to keep records owes its residents records clear enough to question.
+opinion merchants mixed 1 : A fair sum and a clean coin can both stand being turned to the light.
+opinion festivals mixed 1 : Festival noise pleases plenty of ears. Plain words still need somewhere to be heard.
+opinion times against 1 [world.times=lean|hard] : Hard days make the distinction between what a wolf owes and what a wolf can pay especially important.
+
+grown
+line greet : There's a clear standing place level with my brim. | Welcome. Both eyes are visible under my brim today.
+line greet.return : Your greeting's recorded in the ordinary way, with another greeting.
+line again.open : Back before the ink from the first visit has dried.
+line farewell : Leave with your account made clear. | A sound step across the sheltered flags.
+line farewell.return : And a clear view ahead of your own hood.
+line react.news : Give me the account shorn of guesswork. | I'll hear what's actually reached you.
+line react.news.new : That wants its own fresh line.
+line react.news.known : I have the earlier appearance of that account in mind.
+line react.news.doubt : I wouldn't sign my own sight to that version.
+line react.news.sorrow [topic.kind=death|loss|assault] : There are hard things to hear and harder things for somebody to live through.
+line react.news.glad [topic.kind=birth|marriage|work] : That would earn a neat bright mark from me.
+line ask.how : How has your day looked under the brim?
+line answer.how : My eyes are clear and the hood is keeping its shape.
+line sympathise : I can take a plain statement at any pace you can manage.
+line reassure : Give your first line a margin for correction. Everybody ought to have that room.
+line refuse : I have an obligation ahead of that request in my book.
+line accept_decline : I won't make two entries out of a single refusal.
+line preclose : My next piece of business wants a hand free shortly.
+line accept_preclose : Go while your remaining daylight is still in sight.
+line ack : That's an intelligible line right through the matter.
+line greet [pair.band=strangers] : A stranger can stand here in clear view without owing an explanation.
+line greet [here.time=dawn] : A greeting pitched below the unfortunate morning bell.
+line greet [here.time=night] : Enough lamplight under the brim for a civil word.
+line greet.return [pair.band=friends] : I'd recognise the shape of your greeting through a yard of oilcloth.
+line hail [pair.band=friends] : Here in plain sight of the turning!
+line thank : I'll set the good done against the trouble it cost you.
+line deflect_thanks : I had an obligation to attend and the means to meet it.
+line give.advice : Write the thing you saw before naming what you suspect.
+line answer.how.busy [self.working=yes] : I'm attending to one matter at a time with several waiting in clear view.
+line ask.how [pair.band=friends] : Any part of your day that wants an attentive second look?
+
+scene exchange1
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I keep the cell account clear of guesses. | I put a cup down where the receiver can see the rim.
+b : What if a guess seems sound? | Why the rim?
+a : Call it a guess. Ink isn't a reason to promote it. | So there's no question what has actually been offered.
+
+scene exchange2
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I wear the oilcloth in dry weather. | My hood's got a flattened spot above the left ear.
+b : Can't you see clear sky? | Does it admit rain?
+a : I observed the sky. I also observed it's capable of changing. | No. It shows where I've lifted the brim to look at something properly.
+
+scene exchange3
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I judge an apple by the crack off the first bite. | I prefer an apple with its ordinary skin quite plain.
+b : Wouldn't a gentle press suffice? | Why not polished?
+a : It can tell me enough to buy it. Taste gets its own hearing. | The apple and the merchant may have different ideas of what shines.
+
+scene exchange4
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I give a die resting on its edge another throw. | I like to clear the dice cup after each round.
+b : Even a favourable edge? | Checking for a second die?
+a : I want a whole number looking up when I count it. | Checking we've started over properly. A small habit's enough.
+
+scene exchange5
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : My knife is for an apple or a cut cord. | I inspect a clean edge before using it on supper.
+b : Does it go with the register? | What do you seek?
+a : No. I put it away when taking down an account. | A little nick that might turn a simple cut suddenly awkward.
+
+scene exchange6
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind tests my hood stitching honestly. | I like the wind that clears a smoky street.
+b : Any failed stitches? | Even if it takes your hat?
+a : One tugged at the back. I repaired it before the next inspection by weather. | Oilcloth tied properly has listened to stronger proposals and stayed.
+
+scene exchange7
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : The first stroke of an early bell stands recorded as unnecessary. | I can face an early shift more easily than an early bell.
+b : Who authorised the finding? | They're close acquaintances.
+a : My own ears. The official book has stayed closed. | One's a duty. The other insists on announcing it to every inch of my skull.
+
+scene exchange8
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke obscures an honest view of an ordinary pair of hands. | I dry the oilcloth where it won't collect smoke.
+b : Do you ask for a closer look? | Does oil keep the smell?
+a : I move where the air's clear before I make any remark about what I saw. | It does a remarkable job of keeping things one hadn't requested.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I have a list that isn't in the public book. | I recall a mark with no proper witness beside it.
+b : Does it name Houses? | Did you cross it out?
+a : It names matters I haven't satisfied myself about. You'll hear no charge from a folded scrap. | I put the uncertainty beside it. Deleting a worry can also hide the truth.
+
+scene exchange10
+when topic=work self.role=guard
+does tell.self / ask.detail / answer.detail
+a : I keep a sharp difference between being held and being judged. | I ask the wolf giving a name to say it once slowly.
+b : Does the book show it? | A new arrival?
+a : It had better. A barred door doesn't supply a verdict. | New or familiar. The register shouldn't be guessing how anybody's called.
+
+scene exchange11
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I take the brim up far enough to look directly at a kindness. | An oath means more to me when the speaker knows the limits of sight.
+b : Why notice kindness so carefully? | And admits them?
+a : It ought to be remembered with the same accuracy as a fault. | Particularly then.
+
+scene exchange12
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd count on a word from #self.friend# if my certainty runs too far. | A friend can share my quiet even under an unwelcoming hood.
+b : Would that be welcome? | Do you lower it?
+a : Better in private than after an incorrect public entry. | I raise it where my eyes can meet the other pair.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The claim is #topic.subject# #topic.claim#. A claim is what arrived. | A rumour sometimes comes wrapped more carefully than the truth.
+b : Do you have a finding? | Do you unfold it?
+a : I have no warrant for turning those words into one. | I check who's prepared to stand beside the contents.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In lean times a small fine can seem dearer than a whole roof. | Hard days crowd the doorway with worries.
+b : Does the amount change? | What comes first?
+a : The listed sum stays plain. I can still listen to the circumstances. | The wolf needing to speak without a crowd deciding the answer first.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I turn the hood towards the wind on a long walk. | Give me elbow room for looking both ways on a walk.
+b : Doesn't it spoil the hearing? | Expecting trouble?
+a : I lift one corner when I need to listen. Weather and words get separate attention. | Walking is more pleasant when my shoulders don't have to steer my whole body.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a public book that has kept its corrections visible. | I hope every shaded corner in a public duty can bear some daylight.
+b : A clean copy looks better. | Does that include your private list?
+a : A clean-looking mistake hasn't improved for being neatly copied. | My list is for asking myself what I actually know, not accusing another wolf.
+
+scene exchange17
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Northgate catches a crosswind that tests both sides of oilcloth. | I can draw the turn from the noises flags make in a shower.
+b : Does the Sump get it too? | Which flags?
+a : A curling turn of it. My lifted brim tells me on the walk home. | One lies over a hollow. It gives rain a different voice.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I give my eyes an interval away from the small writing. | I stop a long count when the hand goes stiff.
+b : Looking through a window? | Even on duty?
+a : Or at a large plain apple. Whatever's far enough to make a change. | I mark the stopping place. A short pause is cheaper than entering the wrong total.
+
+scene exchange19
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Each amount belongs to a stated purpose. | I turn the coin round before speaking to its worth.
+b : Do you keep private prices too? | Don't know it by feel?
+a : Only my supper's cost and the amount I owe the seller. | I can confirm what I feel without costing the payer anything.
+
+scene exchange20
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I show a newcomer the waiting place with my whole paw. | A new name gets asked for in an even voice.
+b : Why not point? | Even if you're rushed?
+a : An open paw gives a clearer invitation than a sharp claw over my nose. | My haste has no authority to change a wolf's name.
+
+scene exchange21
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The hood dries above a separate bit of floor. | My dice have a drawer well away from work papers.
+b : To keep your rug clean? | Don't they fit?
+a : To let the damp fall where I've already put the cloth. | They fit entirely too neatly. I'd like no question about what was used to reach a finding.
+
+scene exchange22
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I choose dice with plain pips and no carved lettering. | I shake the cup once after the last roll.
+b : For clarity? | Starting another game?
+a : And so we discuss the score rather than the maker's sense of humour. | Proving nothing remains in the cup. Then my evening is my own.
+
+scene exchange23
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I eat the apple at the counter's dry end. | A crooked cut means whoever shares gets the larger half.
+b : Saving the book? | A fine for poor knife work?
+a : And preserving the taste of the next page from my breakfast. | A simple way to make sure a mistake improves somebody's supper.
+
+scene exchange24
+when topic=work self.role=guard
+does tell.self / ask.detail / answer.detail
+a : I set down the time I actually observed. | I look up before answering a question put through a door.
+b : What about the time somebody else reports? | To see the speaker?
+a : A separate entry naming its source. Two separate things can both matter. | To show the speaker at least one wolf is attending.
+
+scene exchange25
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter makes a barred room feel colder even before frost. | In summer I give smoke a little less patience than usual.
+b : What do you check? | Why summer?
+a : Whether the blanket named on the page has actually reached the bench. | An open window can clear it. Somebody need only do the ordinary work of opening.
+
+scene exchange26
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once had to correct a line I'd copied beautifully. | I keep a paper slip about an old doubtful account.
+b : Did you hate spoiling the page? | To make a case one day?
+a : I should have hated leaving an elegant error over somebody's name a great deal more. | To avoid forgetting I once had less evidence than I thought.
+
+scene exchange27
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain rolls along my hood's hem before it drops. | I bring the slate under shelter before the rain changes shape.
+b : Does that give any warning? | What changes first?
+a : A little cold line alongside my ear. Enough to turn the page inwards. | The tiny misty drops become large enough to join two marks that ought to stay apart.
+
+scene exchange28
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I can speak quite frankly without giving another wolf's private history. | A corridor gets quieter when one wolf speaks plainly.
+b : Where should that boundary run? | Does rank do that?
+a : At what the visitor actually needs to know to understand the present business. | A plain account does rather more than a loud title.
+
+scene exchange29
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I end the shift with my own record facing the lamp. | The hood goes on the peg facing out.
+b : Looking for a skipped line? | Airing the lining?
+a : Looking for any place my opinion has crept into a statement of fact. | Seeing that clear inner surface reminds me to put work away for a while.
+
+scene exchange30
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd welcome a day's pages ending with an honest full stop. | I can imagine the whole city asking plainly where money changed paws.
+b : No loose ends? | Would you answer?
+a : No hidden ones would be sufficient. | With the evidence I've truly got. My imagination isn't currency.
+
+story tale1 [topic=memories]
+  : I wrote a name on a loose scrap in fine rain and watched the final letter run into the margin.
+  : I could still recognise the name well enough to get it badly wrong.
+  : I went back and asked again before copying a line into the proper book.
+  b : Was your guess correct?
+  : It was not. I kept the wet scrap by my ink for a week as an unusually effective reminder.
+
+story tale2 [topic=pastimes self.likes=dice]
+  : A throw produced a four that appeared to have an extra pip. I put the cube beside the lamp and invited my partner to inspect the favourable little miracle.
+  : One drop of rain had come off my hood and sat exactly where the fifth pip belonged.
+  b : Was the score disputed?
+  : I wiped the drop on my own sleeve, showed the four and passed the cup over. A very small public correction was sufficient.
+
+story tale3 [topic=food self.likes=crisp_apples]
+  : I cut an apple as squarely as I could to share between two hungry visitors. A little hard knot inside the fruit spoiled the apparent equality of the halves.
+  : I sliced it across again and paired the thinner pieces off with the thick ones.
+  b : Did anyone mind the extra cuts?
+  : The plate went away quite clean. That was the extent of the evidence available and I found it satisfactory.
+
+story tale4 [topic=season self.likes=autumn_wind]
+  : A gust caught the loose hem of my oilcloth and knocked over a little closed tin. It rolled down three flags with a bang on every joint.
+  : Wolves who had only heard the sound had three rather different notions of what had fallen.
+  b : Which account went in your private book?
+  : One tin, my hem, an autumn gust. The rest went away as a useful lesson about a noise heard round a corner.
+
+story tale5 [topic=work self.job=guard]
+  : A neat row of chalk marks looked to me like a count of meal cups. I turned the slate over and found the explanation carefully written on its reverse.
+  : The marks meant freshly swept places on a bench. The cups had their own board.
+  b : What changed after that?
+  : I put every heading on the same face as its marks. Reading the back once was sensible. Requiring every reader to guess was not.
+
+rule @call1
+when concept=bark working=yes self.job=guard
+does aside
+cooldown 8h
+say Cup delivered and recorded in that order. | An observation wants a date, a report wants a source.
+
+rule @call2
+when concept=bark working=yes self.role=guard
+does aside
+cooldown 8h
+say Clear the margin before copying another name. | Blank where the evidence is blank.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep the ink side of the page under oilcloth. | This hood has already earned its full day's keep.
+
+rule @call4
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The first bell is no witness to my readiness. | There is at least daylight enough for small pips.
+
+rule @call5
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say A whole sound apple, one clean turn of the knife. | Good crisp fruit will answer for itself.
+
+rule @call6
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say I want a little clear air before inspecting any fine marks. | See what the page says after the smoke lifts.
+dlg resident.hub : I can hear an enquiry plainly across my open page.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I remember the name behind that familiar voice.
+dlg resident.hub [here.time=night] : Keep inside the lamp light and we can both read plainly.
+dlg resident.hub [pair.disposition=wary|hostile] : I ask no more about you than the business here requires.
+dlg resident.job [self.job=guard] : I keep the cells. My entries ought to show what actually happened to the wolf named on the line.
+dlg resident.job : I am responsible for noticing how accounts differ from events.
+dlg resident.news [world.news] : The public matter reported is #world.news#.
+dlg resident.gossip [here.gossip=yes] : The words passed along are #topic.subject# #topic.claim#. I give no official finding on hearsay.
+dlg resident.bye : Go clear of smoke and with the particulars as you understood them.
+dlg watch.hub [here.wanted=yes] : The Watch has an entry against you for #here.fine# pennies. I'll state it plainly and let you ask about it.
+dlg watch.hub [here.wanted=no on_watch=yes] : I'm on watch. Give me the business you wish heard.
+dlg watch.hub [here.wanted=no on_watch=no] : This is my own time. I can hear a short enquiry without pretending the shift's begun.
+dlg watch.crime [here.witnessed=0] : Begin with what you personally saw. If there's a gap you may say there's a gap.
+dlg watch.reported [topic.reported=yes] : I've recorded the report as given. A report and a judgement remain separate matters.
+dlg watch.fine [here.wanted=yes] : The recorded fine is #here.fine# pennies. That is the sum shown against the entry.
+dlg watch.fine [here.wanted=no] : The fine register contains no amount due from you.
+dlg watch.bye : Carry away the actual account and leave the guesses here.
+
+graft resident.hub
+choice What good is a rain hood when the sky's clear? -> hood_register
+node hood_register
+say A clear sky has never given me a signed undertaking to remain in that condition. This way I can attend to my work without renegotiating with the weather.
+free
+choice Can you see properly under it? -> hood_register_again
+choice Goodbye. -> bye
+node hood_register_again
+say The brim turns up. If I can't see properly I say so, which is a considerable improvement over filling in an account from imagination.
+choice I'll leave the view clear. -> hub
+choice Goodbye. -> bye
+
+graft watch.hub
+choice Why are hearing and seeing recorded separately? [self.job=guard] -> reported_seen
+node reported_seen
+say Because I may hear a perfectly true report without seeing any of the event. A reader needs to know where the words entered the record.
+free
+choice Do you leave a line empty? -> reported_seen_again
+choice Goodbye. -> bye
+node reported_seen_again
+say If I lack an answer, yes. It is remarkably hard to mistake a deliberate blank for a signed statement after the reason has been written next to it.
+choice Back to Watch matters. -> hub
+choice Goodbye. -> bye

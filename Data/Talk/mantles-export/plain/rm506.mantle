@@ -1,0 +1,376 @@
+mantle rm506
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_eleanor_vance
+title the miller with the two-sheet stair
+fits stage=adult|old
+prefers warmth=warm temper=nervy
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk takes_the_stair_with_a_pair_of_paper_samples_one_held_flat_and_one_against_the_light
+likes warm_bread cards old_maps thunder
+dislikes cold_tea crowds
+fears a_weak_ledger_split_at_the_seam an_argument_that_outlives_its_paper
+hopes a_book_whose_last_leaf_will_take_ink_as_well_as_its_first
+topics work +0.8 weather +0.5 lore +0.4 home +0.3
+styles comfort=warm gossip=careful refuse=plain tease=gentle
+marks oath saying
+persona #self.first# runs two steps for each landing with a pair of paper samples and looks through one sheet before asking anybody to trust what is written on the other.
+
+words
+oath! = Split the deckle | Rag ends in the sizing
+saying! = The sheet must bear both signatures | Hold that promise up to daylight
+sheet = my little sample leaf | a clean paper sample
+deckle = the feathery paper edge | a soft uncut edge
+rag = a warp of clean rag | a strand of washed linen
+screen = the fine mesh of the mould | a small paper mould
+pair = a pair of trial sheets | my two sample leaves
+bread = a warm torn crust | a hot loaf's softest piece
+card = the quiet card in my hand | a folded card
+map = the old cut of the coast | a map with uncertain roads
+storm = a drumbeat overhead | a deep roll of thunder
+coldring = a grey stain of tea | a cold ring in a cup
+shelterstep = the sheltered landing | the dry upper step
+fold = the trial crease | a folded test corner
+edge = a little streak of pulp | the unwetted edge
+tie = a clean linen ribbon | a narrow bundle tie
+light = the strip of open daylight | the window's long bright bar
+
+any
+opinion merchants for 1 : I'll stand by the paper that holds a price, provided both parties have read the figure on it.
+opinion houses mixed 0 : Great households may differ over a price and use precisely the same quality of paper to say so.
+opinion city for 1 : The city's stairs gave me light at a useful height. The city might have thrown in a few fewer steps.
+opinion watch for 1 : I'd like a docket that explains an inspection in a hand the next reader can follow.
+opinion road mixed 0 : A road drawn in ink is an agreement between ink and paper. The mud has a different vote.
+opinion dole for 1 : The sheet that records a loaf serves little purpose until the loaf has been delivered.
+opinion festivals mixed 0 : Show me a covered stair just off the square and I'll enjoy the entire feast from there.
+opinion times mixed 0 : Hard times can fill a shelf of ledgers. That doesn't make me wish the times hard.
+opinion strangers for 1 : A new customer who knows how the papers will be used can teach a good mill something.
+
+grown
+line greet : Come up to the window. Better light on a clean sheet.
+line greet [pair.band=strangers] : Fresh hands to try my samples. Welcome.
+line greet [here.time=dawn] : Morning. See how a pale sheet takes colour from the east.
+line greet [here.time=dusk|night] : At dusk the watermark nearly tells itself.
+line greet.return : I'm here beside the other sheet.
+line greet.return [pair.band=friends|family] : I've kept a landing's worth of time for you.
+line greet.return [self.working=yes] : Speak while the last of the water drains.
+line greet.return [here.time=dusk|night] : The dark has little effect on my hearing.
+line kin.open [pair.kin!=no] : Kin needn't wait behind the sample bundle.
+line again.open : Here's the second leaf. Let's carry on.
+line hail [pair.band=friends] : Friend, save a little elbow room by the pane.
+line farewell : May the fold of your paper stay dry.
+line farewell.return : Go by the sheltered landing if the sky starts talking.
+line react.news : Lay the account beside the light.
+line react.news.new : A fresh watermark to my eye.
+line react.news.known : I know the faint print on that one.
+line react.news.doubt : I'd test the seam before putting trust there.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put down the papers. I'm listening to the loss.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. There's a word worthy of the best stock.
+line ask.how : How firmly is your day holding together?
+line answer.how : My feet would prefer a quieter afternoon than my head does.
+line thank : That saved a perfectly good sheet from the floor. Thank you.
+line deflect_thanks : I had a finger free along the edge.
+line sympathise : Pass me the bundle and rest your feet here.
+line reassure : A crease will take some smoothing. There's time enough for that part.
+line decline : I can't put my mark on another charge just now.
+line accept_decline : Understood. We'll leave the sheet clean between us.
+line preclose : The light's about to move off my working pane.
+line accept_preclose : Good walking and a sound roof at the finish.
+line greet [here.weather=rain] : Step in beside the hanging samples. This bit stays dry.
+line greet.return [here.time=dawn] : Back while the page is scarcely gold yet.
+line farewell [pair.band=friends] : Take the sample that pleased your fingers best.
+line thank [pair.band=friends] : That was the help I hadn't found the words to ask for.
+line greet [self.working=yes] : A moment for you while this leaf drains.
+
+scene two_sheets
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I lift one of #pair# to the light and leave the other flat. | I test #sheet# against my own moving hand.
+b : What differs? | Why move it?
+a : One shows the fibres. One shows what the person writing will have to look at. | A thin patch will show a finger passing underneath like a fish below ice.
+
+scene pulp
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I sort #rag# by feel before putting it through the vat. | The samples from #self.workplace# keep their rough edges till I'm satisfied.
+b : More than one sort? | How can an edge help?
+a : A shirt worn soft gives a different leaf from a stiff old sail. | Pull a single thread free and you learn how well the mesh held.
+
+scene merchant_sale
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I can quote for a quire once I know what the pen has to do to it. | A customer may handle a sample on this table.
+b : Does a pen work so hard? | May I fold it?
+a : A ledger asks it to go backwards and forwards for years. A note goes across once. | That's precisely the trial some of my customers mean to give it.
+
+scene stair_rush
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I run up two steps with #pair# and take them singly descending. | #shelterstep.capitalize# has the driest patch of daylight on the stair.
+b : More careful coming down? | You hurry to reach it?
+a : The samples are wet when I go up. Coming down, the ink deserves the care. | Yes. It moves along the boards with no regard for my business.
+
+scene double_fold
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #fold.capitalize# will tell a buyer more than a page of fulsome praise. | A bound ledger takes every turn of the page at its narrowest point.
+b : What happens to a poor sheet? | Along the stitching?
+a : It goes furry as a cuff at the first sharp bend. | Yes. That's where the fibres need to hold their neighbours.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I take #bread# with the hand that isn't testing the paper. | A warm loaf separates in its own peculiar direction.
+b : Do crumbs make bad stock? | Like a sheet?
+a : Little dark islands in a very small sea. | I have tried very hard to confine myself to pulling bread apart at supper.
+
+scene card_turn
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : #card.capitalize# stays quiet till the dealing's done. | I've a weakness for cards so alike on the back that nobody can identify my best one.
+b : Why call it quiet? | By a nick?
+a : I don't believe in bending a good card to hear what it has to say. | Or a thumbprint. Paper keeps a disobligingly good memory.
+
+scene old_map
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #map.capitalize# shows a road across what I know to be a rather deep cut. | I'd restore an old map on paper just a shade different from its own.
+b : Was there a bridge? | Why show the mend?
+a : Perhaps a draughtsman too tired to lift the pen. I like either possibility. | So the next traveller knows which part was once missing.
+
+scene thunder_roof
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : #storm.capitalize# makes the sheets on a drying line tremble under a sound roof. | I like to hear thunder get its loud objections all said before I go back into the rain.
+b : Does that spoil them? | Do you mind a storm?
+a : No. It's one way of seeing the whole line breathe together. | Under a solid roof I've ample patience for a talkative storm.
+
+scene cold_cup
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : #coldring.capitalize# makes a watermark without the least improvement to the sheet. | I take tea while it's hot, even if a message has to wait.
+b : Does it matter on scrap? | Are you very strict?
+a : It matters on the sheet a buyer's waiting to see. | A little. A cold cup and a hasty answer seldom improve each other.
+
+scene crowd_side
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I avoid the centre of a crowd when I've a bundle under one elbow. | Give me music from halfway down a stair instead of five elbows beside the musicians.
+b : Is the bundle delicate? | Does it still sound loud?
+a : The person it would hit on the turn may be. | Loud enough without persuading my heart to join the drum.
+
+scene heights_work
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : The Heights give #light# enough room to pass cleanly through a page. | I can take my samples uphill after work and keep the mill's business closed.
+b : Is it different light? | How so?
+a : Less chimney between it and my outstretched wrist. | Looking at a piece of paper isn't always an offer to sell it.
+
+scene friend_edge
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I like to put a really good leaf before #self.friend# without saying which side I favour. | I keep a little scrap of the prettiest paper for a note to #self.friend#.
+b : A test? | What's written on it?
+a : Of my judgement. I'm interested in another hand's independent choice. | Something suitable for one friend to read.
+
+scene rain_map
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I wrap #map# twice at the corners. | A folded chart can take a whole town inland if mud sticks two leaves together.
+b : Are corners more valuable? | Which town?
+a : A destination close to the map's outer border is a nuisance to lose. | The one you were quite sure stood opposite your thumb.
+
+scene winter_house
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I've a notion the Houses may quarrel before winter. | A dispute keeps a mill busy on either face of the paper.
+b : Have you a written warning? | Do you welcome one?
+a : A notion is a poor sheet to bind up as evidence. I leave mine unbound. | I'd welcome orders for marriage contracts just as readily and sleep better for them.
+
+scene plain_deal
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : No customer needs to believe my account of a texture. | Price the pages before arguing about the cost of an argument.
+b : A show of faith? | Is that your usual sales pitch?
+a : A show of fingers. Here are the samples. | I could make it more elaborate, but that would only use more paper.
+
+scene soft_mould
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #screen.capitalize# holds a layer so thin the first shake decides its evenness. | #deckle.capitalize# is the bit some folk want trimmed off at once.
+b : What if you shake too late? | Why keep it?
+a : Then I have a piece of paper that gives a fine account of my mistake. | It shows where the leaf found its edge all by itself.
+
+scene lean_rags
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Through a hard stretch each clean rag passes through several useful lives before a mill sees it. | A thinner order still deserves sound edges.
+b : Can you tell which lives? | Can you spare the trial leaf?
+a : I might find a stitch, but I've no business inventing the whole garment. | A spoiled stack costs much more than discovering a weakness early.
+
+scene late_cart
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When the carrier's delayed, my first business is covering the waiting sheets. | A delay turns a neat dry bundle into a thing to be watched.
+b : You expect rain? | Why not sit on it?
+a : I expect to be distracted while I ask for news. | Only a fool would ask a paying reader to admire the resulting watermark.
+
+scene lost_way
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor with an old address can show me where the street name falls between folds. | I'd give a newcomer a chart recording the stair's direction as well as its length.
+b : Can you usually tell? | How would you mark that?
+a : If not, I'll find somebody who can, with the old paper kept dry meanwhile. | A little cascade of wider steps towards the lower end.
+
+scene clean_book
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a great ledger to open years from now with its last leaf still supple. | I should like the paper to be utterly dependable while the book's contents are wonderfully surprising.
+b : What's on the last leaf? | Good surprises?
+a : Something somebody still finds worth reading. | A particularly well-paid final account would suit me.
+
+scene warm_trade
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I use #tie# twice round a sample bundle without pulling hard. | #edge.capitalize# tells me where the sheet was held when it went through a trial.
+b : Why twice? | Does that explain much?
+a : To keep the first turn from tightening itself on a wet day. | It reminds me my own paw changes what I claim to be testing.
+
+scene quiet_mark
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My feet go faster than my breathing up a long stair. | I worry about a bundle that hangs crooked.
+b : Do you wait on the landing? | Because it might spill?
+a : I make a perfectly serious business of inspecting #sheet# until both arrive. | Because I've time to straighten it now. Worry can do a useful little job now and then.
+
+scene welcome_ledge
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep an empty patch of shelf broad enough for a visitor's parcel. | A clean page beside the door lets a caller leave an address instead of waiting in the wind.
+b : What if your own stock spreads? | Must the caller write?
+a : It knows where the line is, and I can enforce it with an elbow. | A name can be spoken to whoever answers.
+
+scene world_line
+when topic=news world.news
+does tell.news / react.self / assess
+a : A fresh slip from #world.news_from# reads #world.news#. | #world.news#. The outer fold names #world.news_from#.
+b : Will you put a seal on it? | What's on the inside?
+a : On the fact that I received it. The words are the sender's. | Just those words. I haven't invented a watermark to support them.
+
+scene unwritten_word
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Rumour wants my cleanest paper and the least responsible signature. | Some talk makes a thin place when held to the light.
+b : Will it get either? | Does that show who's speaking true?
+a : My scrap basket is nearer. | It shows me where I ought to avoid putting weight.
+
+scene storm_rest
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I carry the dry sample nearest my coat when a sudden gust comes up. | For thunder I'd keep the little upper window shut and sit within earshot of it.
+b : Why not both inside? | The window?
+a : One needs to know how much weather gets through the wrapper. | The storm. The window's opinion is generally a simple rattle.
+
+story split_signature [topic=memories|work]
+  : I folded a test sheet directly through two carefully written signatures.
+  : One name cracked and the other came back perfectly legible.
+  b : Were the two pens different?
+  : One name was still wet. I had conducted a thoroughly convincing trial of my own impatience.
+
+story map_bread [topic=memories|food]
+  : I spread an old map wide and put my warm lunch down at what seemed a safe distance.
+  : Folding the map, I found a tidy island where there had been clear water.
+  b : Was the island warm?
+  : Deliciously. I ate it and restored the coastline to a condition its draughtsman would have recognised.
+
+story stair_landing [topic=travel|memories]
+  : I took two stairs at once carrying a leaf for inspection and stopped on the perfect landing.
+  : A very fine little watermark was shining near the centre.
+  b : What had you found?
+  : A bubble in the window glass. The paper was excellent, but so was the scenery.
+
+story card_press [topic=pastimes|memories]
+  : Once I put a bent playing card beneath a drying board overnight.
+  : When I lifted the board the card lay straight enough to be admired.
+  b : And the drying sheet?
+  : It bore an exceedingly faint court face. I kept the sheet for writing invitations to supper.
+
+story thunder_count [topic=weather|memories]
+  : Sitting under a good roof, I counted the moments between a flash and its great reply.
+  : A second reply came up the stair much closer and quite out of time.
+  b : More thunder?
+  : A rack of sample boards settling flat. A distinguished contribution from the paper trade.
+
+rule @lift_leaf
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First light. Turn that sample round.
+
+rule @shelter_rag
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Draw the lower bundle clear of the splash.
+
+rule @tie_pass
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Ribbon under the crosspiece, please.
+
+rule @low_stair
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Gently downstairs with the ink this close.
+
+rule @clear_window
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say A fine transparent edge in this light.
+
+rule @put_sample
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Rest flat till morning. Both of you.
+
+dlg resident.hub : Stand just here and I'll listen without squinting through a page.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I have the pair of samples to hand again.
+dlg resident.hub [here.time=night] : No judging sheets till daylight. We can still exchange words.
+dlg resident.hub [pair.disposition=hostile|wary] : The bundle may rest between us while you make your point.
+dlg resident.job [self.workplace] : At #self.workplace# the proof of a good working leaf is how it behaves in another wolf's hand.
+dlg resident.news [world.news] : The outer leaf names #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I'd let that account dry before anybody binds a private name to it.
+dlg resident.bye : May all your paper come home clean at the edges.
+dlg shop.greet [here.shop=open] : The counter is dry. What quantity shall we consider?
+dlg shop.greet [here.shop=bare] : The sample tells you something about the work. The shelf is bare just now.
+dlg shop.greet [here.shop=asleep] : The shop has closed its covers for the night.
+dlg shop.prices : I'll give a figure for what you intend to take away.
+dlg shop.bye [here.shop!=asleep] : Tuck your papers under the sheltering arm on the way home.
+
+graft resident.hub
+choice Why compare two pieces from one batch? -> twin_sheet
+node twin_sheet
+say One for the light, one for the pen. Writing on both first might hide a thin place. I'd have missed half the test.
+choice Which test matters more? -> sheet_purpose
+choice Let me try the light first. -> hub
+node sheet_purpose
+say A letter must take a fold. A big ledger must take it hundreds of times. Tell me where the sheets are bound and I'll find the right one for the purpose.
+choice Then tell me about a ledger. -> hub
+choice I'll carry that thought down the stairs. -> bye
+
+graft shop.greet
+choice Can I test a sheet before I buy? [self.role=merchant here.shop=open] -> shop_test_leaf
+node shop_test_leaf
+say Of course. Turn the edge over gently and open it again. It ought to remember the fold without sending up a little fringe of broken fibres.
+choice Is a visible crease a fault? -> shop_crease
+choice Back to the counter. -> greet
+node shop_crease
+say It's a record that you bent the paper. The fault would be a break where the fold ought to hold. Feel the corner once more, then choose what's right for the job.
+choice I'll compare the papers. -> greet
+choice I'll call on another day. -> bye
