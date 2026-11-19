@@ -37,10 +37,12 @@ bool name(const std::string& s)
 }
 
 // The items an `each` may go through, each with its facts as #<item>.x# (doc 83): a job (a contract or a mission), a
-// place (the way to it), a trouble (what may be done about one).
+// place (the way to it), a trouble (what may be done about one). Doc 84 §13.4 (Phase 13): an opinion (an issue the
+// resident holds a view on), a kin (one of their family), a person (a resident the player may ask the way to), a heard
+// (a claim the player has heard, to bring up).
 const std::set<std::string>& itemNames()
 {
-    static const std::set<std::string> Items{"job", "place", "trouble"};
+    static const std::set<std::string> Items{"job", "place", "trouble", "opinion", "kin", "person", "heard"};
     return Items;
 }
 
@@ -62,9 +64,18 @@ bool disjoint(const std::vector<Criterion>& a, const std::vector<Criterion>& b)
     for (const auto& x : a)
         for (const auto& y : b)
         {
-            if (x.ns != y.ns || x.name != y.name || x.full != y.full || x.op != Criterion::Op::In || y.op != Criterion::Op::In)
+            if (x.ns != y.ns || x.name != y.name || x.full != y.full || x.list || y.list)
                 continue;
-            if (std::none_of(x.values.begin(), x.values.end(), [&](const std::string& v) { return y.values.count(v) > 0; }))
+            using Op = Criterion::Op;
+            if (x.op == Op::In && y.op == Op::In &&
+                std::none_of(x.values.begin(), x.values.end(), [&](const std::string& v) { return y.values.count(v) > 0; }))
+                return true;
+            // (Doc 84 Phase 13: role=merchant and role!=merchant, the one's values all the other's refused.)
+            const auto refused = [](const Criterion& in, const Criterion& out) {
+                return in.op == Op::In && out.op == Op::NotIn && !in.values.empty() &&
+                       std::all_of(in.values.begin(), in.values.end(), [&](const std::string& v) { return out.values.count(v) > 0; });
+            };
+            if (refused(x, y) || refused(y, x))
                 return true;
         }
     return false;
@@ -80,7 +91,10 @@ const std::set<std::string>& Library::treeActions()
     // trouble's remedy (doc 57), a companion's orders (doc 32), and an offering to a priest (doc 55's gift of coins).
     static const std::set<std::string> Actions{"shop", "free", "end", "take", "decline", "deliver", "give_back",
                                                "standing", "buy_report", "tithe", "open", "report", "pay_fine", "lodge",
-                                               "apprentice", "trouble", "order", "offering"};
+                                               "apprentice", "trouble", "order", "offering",
+                                               // Doc 84 §13.4 (Phase 13): the player gives their name, or asks
+                                               // the resident's.
+                                               "introduce", "ask_name"};
     return Actions;
 }
 
@@ -100,9 +114,50 @@ const std::set<std::string>& Library::treeLists()
     // carries that this resident receives (a letter, a mission's goods or message).
     // here.places: places in town worth asking the way to (the inn, the church, the shops...), nearest first;
     // here.troubles: what this wolf may do, here, about a trouble it has heard of (doc 57).
+    // Doc 84 §13.4 (Phase 13): here.opinions, the issues this resident holds a view on (the strongest three);
+    // here.kin, their living family; here.people, residents of the town the player may ask after; here.heard, what the
+    // player has heard that they might bring up here (the player's claim store: Game::playerClaims_).
     static const std::set<std::string> Lists{"here.work", "here.missions", "here.mine", "here.deliveries", "here.places",
-                                             "here.troubles"};
+                                             "here.troubles", "here.opinions", "here.kin", "here.people", "here.heard"};
     return Lists;
+}
+
+const std::set<std::string>& Library::treeAsks()
+{
+    // Doc 84 §13.4.6 (Phase 13): what only chat reached before, now asked for in a node. game.match: a matchmaker's
+    // pointer (doc 52, 5); game.vouch: who vouched for this wolf, or a vouch gone bad (doc 52, 7); game.letters: a
+    // letter the resident wrote them, an occasion it stood witness at (doc 55, 5-6); game.festival: today's festival
+    // winners (doc 54, 6); game.records: what the town's records say (doc 54, 7); game.where: where a resident is to be
+    // found (the bound person); game.tell: the resident's answer to something the player brings up (the bound claim);
+    // game.name: the resident gives their name.
+    static const std::set<std::string> Asks{"game.match", "game.vouch", "game.letters", "game.festival", "game.records",
+                                            "game.where", "game.tell", "game.name"};
+    return Asks;
+}
+
+std::size_t Library::mostShown(const TreeNode& node)
+{
+    // Groups of choices no two of which can show together (disjoint criteria): at most one of each shows.
+    std::vector<std::vector<const TreeChoice*>> groups;
+    for (const auto& c : node.choices)
+    {
+        bool placed = false;
+        if (c.each.empty())
+            for (auto& g : groups)
+                if (g.front()->each.empty() &&
+                    std::all_of(g.begin(), g.end(), [&](const TreeChoice* o) { return disjoint(o->when, c.when); }))
+                {
+                    g.push_back(&c);
+                    placed = true;
+                    break;
+                }
+        if (!placed)
+            groups.push_back({&c});
+    }
+    std::size_t n = 0;
+    for (const auto& g : groups)
+        n += g.front()->each.empty() ? 1 : std::size_t(std::max(1, g.front()->max));
+    return n;
 }
 
 const Tree* Library::tree(const std::string& id) const
@@ -313,9 +368,20 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
         }
         if (first == "ask")
         {
-            if (!settings_.concepts.count(rest))
-                fail("'" + rest + "' is not a concept (settings.json)");
+            if (!settings_.concepts.count(rest) && !treeAsks().count(rest))
+                fail("'" + rest + "' is not a concept (settings.json) or one of the game's own (Library::treeAsks)");
             node->ask = rest;
+            continue;
+        }
+        if (first == "answers")
+        {
+            // answers [move]: the resident's line is the library's answer to the move the player made (doc 84 §13.4.2).
+            if (rest.empty())
+                node->answers = "*";
+            else if (!moves_.empty() && !moves_.find(rest))
+                fail("'" + rest + "' is not a move (moves.json)");
+            else
+                node->answers = rest;
             continue;
         }
         if (first == "free" && rest.empty())
@@ -385,6 +451,25 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
                     criteria = head.substr(open + 2, head.size() - open - 3);
                     head = trimmed(head.substr(0, open));
                 }
+            // [does <move> ...]: the move the player makes with it (doc 84 §13.4.2), taken off the criteria.
+            {
+                const auto w = tokens(criteria);
+                std::string rest_;
+                for (std::size_t i = 0; i < w.size(); ++i)
+                    if (w[i] == "does")
+                    {
+                        if (i + 1 >= w.size())
+                            fail("'does' names a move: [does ask.how]");
+                        else if (!moves_.empty() && !moves_.find(w[i + 1]))
+                            fail("'" + w[i + 1] + "' is not a move (moves.json)");
+                        else
+                            c.does = w[i + 1];
+                        ++i;
+                    }
+                    else
+                        rest_ += (rest_.empty() ? "" : " ") + w[i];
+                criteria = rest_;
+            }
             c.words = bound(head);
             c.locked = bound(c.locked);
             if (c.words.empty())
@@ -457,7 +542,7 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
             node->choices.push_back(std::move(c));
             continue;
         }
-        fail("'" + first + "' is not part of a tree (tree, for, priority, entry, node, say, ask, free, mood, each, choice, end)");
+        fail("'" + first + "' is not part of a tree (tree, for, priority, entry, node, say, ask, answers, free, mood, each, choice, end)");
     }
     if (eachOpen)
         fail("an each needs its choice on the next line");
@@ -493,6 +578,8 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
             open.push_back(n);
         if (t.nodes.count("bye"))
             open.push_back("bye");                  // (Esc says goodbye: the tree's bye.)
+        if (t.nodes.count("unclear"))
+            open.push_back("unclear");              // (Free talk not followed: the game shows it, doc 84 §13.5.4.)
         while (!open.empty())
         {
             const auto at = open.back();
@@ -574,6 +661,11 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
         }
         entries_.erase(entries_.begin() + std::ptrdiff_t(i));
     }
+    // No node shows more than nine choices (doc 84 §13.4.3), counted as they could show at once.
+    for (const auto& [id, n] : t.nodes)
+        if (const auto most = mostShown(n); most > MostShown)
+            errors.push_back(file + ":" + std::to_string(n.line) + ": node " + id + " could show " + std::to_string(most) +
+                             " choices: nine at most (keys 1 to 9)");
     // The choices' words: facts known, symbols in plain, short enough.
     for (const auto& [id, n] : t.nodes)
         for (const auto& c : n.choices)

@@ -250,3 +250,14 @@ bc_nothing = Nothing, mm. | Not a leaf.
 bc_and_q = And, mm? | And then, old root?
 bc_who_q = Who, mm? | Who's that, old root?
 bc_it_was = It was, mm. | That it was, proper.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = a root's length | close by
+way_short = a short walk under the boughs | a short walk
+way_far = a long way through the trees | a long way
+refuse_gone = That's windthrown, gone. | That work is gone.
+refuse_taken = Someone's taken root in that already.
+refuse_no_rooms = No room under this roof to let.
+refuse_name = My name's my own bark.

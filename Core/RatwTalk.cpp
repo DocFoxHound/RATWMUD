@@ -91,7 +91,12 @@ bool lowerKey(const std::string& k)
 {
     return !k.empty() && k.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") == std::string::npos;
 }
-bool isSharedNs(const std::string& ns) { return ns == "pair" || ns == "here" || ns == "topic" || ns == "world"; }
+// (Doc 84 §13.4, Phase 13: "player", what the window knows of the player spoken to: player.knows, player.named...,
+// looked up by its full key as here.* is.)
+bool isSharedNs(const std::string& ns)
+{
+    return ns == "pair" || ns == "here" || ns == "topic" || ns == "world" || ns == "player";
+}
 
 Ns personNs(const std::string& ns)
 {
@@ -100,7 +105,7 @@ Ns personNs(const std::string& ns)
 
 Ns sharedNs(const std::string& ns)
 {
-    return ns == "pair" ? Ns::Pair : ns == "here" ? Ns::Here : ns == "topic" ? Ns::Topic : Ns::World;
+    return ns == "pair" ? Ns::Pair : ns == "here" || ns == "player" ? Ns::Here : ns == "topic" ? Ns::Topic : Ns::World;
 }
 
 const std::set<std::string> Modifiers{"capitalize", "a", "s"};
@@ -351,9 +356,11 @@ bool Library::readSchema(const std::string& text, std::string& problem)
     for (const auto& [name, v] : doc.object("person").fields())
         kindOf(name, v, person_[name]);
     std::set<std::string> twice;
-    for (const char* ns : {"pair", "here", "topic", "world"})
+    for (const char* ns : {"pair", "here", "topic", "world", "player"})
         for (const auto& [name, v] : doc.object(ns).fields())
         {
+            if (name == "about")
+                continue;                           // (player's own note: doc 84 Phase 13.)
             const auto full = std::string(ns) + "." + name;
             kindOf(full, v, shared_[full]);
             if (person_.count(name))

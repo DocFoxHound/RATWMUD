@@ -599,3 +599,22 @@ bc_nothing = Nothing.
 bc_and_q = And?
 bc_who_q = Who?
 bc_it_was = It was.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = close by
+way_short = a short walk
+way_far = a long way
+refuse_gone = That work is gone.
+refuse_promised = That's promised to another for now.
+refuse_elsewhere = That's asked for at another market.
+refuse_own = That's your own work.
+refuse_taken = Someone's taken that on already.
+refuse_yours = You've taken that on already.
+refuse_done = That's been done.
+refuse_no_rooms = We've no rooms to let.
+refuse_lodging = You have a lodging already.
+refuse_trust = I don't know you well enough to take you on yet.
+refuse_learning = You're learning a trade already.
+refuse_name = My name's my own business.

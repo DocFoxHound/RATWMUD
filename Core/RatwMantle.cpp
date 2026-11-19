@@ -1388,3 +1388,96 @@ void Library::wear(Facts& person, const std::string& id) const
         person["hopes"] = joined(m->hopes);
 }
 } // namespace ratw::talk
+
+// ------------------------------------------------------------------ The window's (doc 84 §13.4, Phase 13)
+
+namespace ratw::talk
+{
+bool Library::ownLine(const std::string& entry, const Query& q, int speaker) const
+{
+    const auto* e = entry.empty() ? nullptr : find(entry);
+    return e && ownEntry(*e, q, speaker);
+}
+
+std::vector<Criterion> Library::criteriaOf(const std::string& text) const
+{
+    std::vector<Criterion> out;
+    std::istringstream in(text);
+    for (std::string token; in >> token;)
+    {
+        Criterion c;
+        std::string error;
+        const bool bare = token.find_first_of("=<>!") == std::string::npos;
+        if (bare ? bareWord(token, 0, Where::When, c) : criterion(token, Where::When, 0, c, error))
+            out.push_back(std::move(c));
+    }
+    return out;
+}
+
+namespace
+{
+// A graft's way out as the window knows it: one of its own nodes is "@<mantle>.<name>"; the tree's, bye and end as written.
+std::string graftTarget(const MantleGraft& g, const std::string& mantle, const std::string& to)
+{
+    const bool own = std::any_of(g.nodes.begin(), g.nodes.end(), [&](const MantleGraft::Node& n) { return n.name == to; });
+    return own ? "@" + mantle + "." + to : to;
+}
+} // namespace
+
+bool Library::graftChoices(const std::string& mantle, const std::string& tree, const std::string& node,
+                           std::vector<TreeChoice>& out) const
+{
+    const auto* m = this->mantle(mantle);
+    if (!m)
+        return false;
+    bool any = false;
+    for (const auto& g : m->grafts)
+    {
+        if (g.tree != tree || g.node != node)
+            continue;
+        for (const auto& c : g.choices)
+            if (c.from.empty())
+            {
+                TreeChoice t;
+                t.words = c.words;
+                t.when = criteriaOf(c.when);
+                t.go = graftTarget(g, mantle, c.to);
+                out.push_back(std::move(t));
+                any = true;
+            }
+    }
+    return any;
+}
+
+bool Library::graftNode(const std::string& mantle, const std::string& tree, const std::string& name, TreeNode& out) const
+{
+    const auto* m = this->mantle(mantle);
+    if (!m)
+        return false;
+    for (const auto& g : m->grafts)
+    {
+        if (g.tree != tree)
+            continue;
+        const auto n = std::find_if(g.nodes.begin(), g.nodes.end(), [&](const MantleGraft::Node& x) { return x.name == name; });
+        if (n == g.nodes.end())
+            continue;
+        out = TreeNode{};
+        out.id = "@" + mantle + "." + name;
+        out.concept = n->concept;
+        out.mood = n->mood;
+        out.free = n->free;
+        out.invite = n->invite;
+        for (const auto& c : g.choices)
+            if (c.from == name)
+            {
+                TreeChoice t;
+                t.words = c.words;
+                t.when = criteriaOf(c.when);
+                t.go = graftTarget(g, mantle, c.to);
+                out.choices.push_back(std::move(t));
+            }
+        return true;
+    }
+    return false;
+}
+} // namespace ratw::talk

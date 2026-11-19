@@ -590,6 +590,15 @@ struct Beats
 // line, plain; its criteria hide it when they fail, or with `locked "why"` show it greyed with the reason. Its target
 // is a node, `end`, or `do <action> [args] [; then <node>] [; refused <node>]`; the actions are a closed list the game
 // performs (Library::treeActions). `#job.x#` in a tree is the bound item's fact (topic.job_x); so `#place.x#` and `#trouble.x#`.
+//
+// Doc 84 §13.4 (Phase 13): a choice may say the dialogue move the player makes with it, `[does ask.how ...]` among its
+// criteria (moves.json's), and a node marked `answers` takes the resident's line from the library's answer to that move
+// (Library::answer: the answer pool an NPC's question would get, the wearer's own lines first), its says the floor;
+// `answers <move>` names the move itself. `ask game.<what>` asks the game for a line of its own (a matchmaker's pointer,
+// a letter remembered: Library::treeAsks). A node named `unclear` is what the resident says to free talk it didn't
+// follow (shown over the node the player was at, its choices again); it is reached by the game, not by a choice. No
+// node may show more than nine choices: the loader counts each choice (an `each` as its max), choices that can never
+// show together (their criteria disjoint) as one, and refuses a node over nine.
 struct TreeChoice
 {
     std::string words;                    // The player's default line (a template: plain words, the bound item's facts).
@@ -602,12 +611,15 @@ struct TreeChoice
     std::string each, item;               // An `each` choice: the list ("here.work") and the item's name ("job").
     int max = 0;
     int line = 0;
+    std::string does;                     // The move the player makes with it (doc 84 §13.4.2): "ask.how"; "" none.
 };
 struct TreeNode
 {
     std::string id, concept;              // "greet", "dlg.shop.greet"
     std::string ask;                      // A concept the game answers first (player.trade); "" for none.
     std::string mood;
+    std::string answers;                  // `answers`: "*" (the move of the choice that led here) or a move; "" none.
+    std::string invite;                   // A graft node's invitation (invite <place> <hour> <days>), the game's to check.
     bool free = false;
     std::vector<TreeChoice> choices;
     int line = 0;
@@ -721,6 +733,23 @@ public:
     // The actions a tree may do, and the lists an `each` may go through.
     static const std::set<std::string>& treeActions();
     static const std::set<std::string>& treeLists();
+    // The game's own lines a node may ask for (`ask game.match`...: doc 84 §13.4.6, Phase 13).
+    static const std::set<std::string>& treeAsks();
+    // The most choices a node could show at once (doc 84 §13.4.3): each choice one (an `each` its max), choices whose
+    // criteria are disjoint counted once. The loader refuses a node over nine.
+    static std::size_t mostShown(const TreeNode& node);
+    // A mantle's grafts as window nodes (doc 84 §13.4, Phase 13): the choices a wearer adds to a tree's node (`node` the
+    // tree's, its graft choices with `from` empty), or the graft node itself ("@<mantle>.<name>": its own choices and
+    // concept). Targets are the tree's nodes, bye, end, or "@<mantle>.<name>". False if the mantle holds no such graft.
+    bool graftChoices(const std::string& mantle, const std::string& tree, const std::string& node,
+                      std::vector<TreeChoice>& out) const;
+    bool graftNode(const std::string& mantle, const std::string& tree, const std::string& name, TreeNode& out) const;
+    // Criteria as written ("here.season=spring|autumn self.stage=adult"), parsed as a rule's `when`; those that don't
+    // parse are left out.
+    std::vector<Criterion> criteriaOf(const std::string& text) const;
+    // Whether a rule or scene is one of the speaker's own (their mantle's, or their own lines'), by its id: what the
+    // window tells the wearer's words from the tree's by (doc 84 §13.4.1, W1).
+    bool ownLine(const std::string& entry, const Query& q, int speaker = 0) const;
     // The face's moods a node's `mood` may name (doc 83, Phase 5; the client's Client/src/game/face.ts knows the same).
     static const std::set<std::string>& faceMoods();
 

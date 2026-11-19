@@ -251,3 +251,14 @@ bc_nothing = Nothing, no. | Nothing, not a ripple.
 bc_and_q = And then, fen-friend?
 bc_who_q = Who, then? | Who's that, fen-friend?
 bc_it_was = It was, sure as mud.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = a few boards on | close by
+way_short = a short wade | a short walk
+way_far = a long wade | a long way
+refuse_gone = That's sunk in the bog. | That work is gone.
+refuse_taken = Someone's waded in on that already.
+refuse_no_rooms = No dry beds to let, fen-friend.
+refuse_name = My name keeps its feet dry, thank you.
