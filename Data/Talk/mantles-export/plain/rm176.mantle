@@ -1,0 +1,389 @@
+# rm176, the rain-cup pup (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm176
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_gudrun_wickby
+written_by claude
+title the rain-cup pup
+fits stage=young|adolescent|adult|old
+prefers talk=quiet warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk sets_a_cup_on_the_sill_to_measure_every_rain
+likes oatcakes riddles market_bustle autumn_wind
+dislikes smoke waiting
+fears the_rain_never_stopping the_rain_cup_knocked_off_the_sill
+hopes to_stand_somewhere_dry_one_day a_riddle_nobody_guesses
+topics weather +0.5 pastimes +0.4 food +0.3 dreams +0.4 day +0.2 gossip -0.4
+styles comfort=sharing gossip=guarded refuse=quiet tease=none
+marks oath saying
+persona #self.first# sets a cup on the windowsill every time it rains and marks how high the water comes, keeps secrets close, shares oatcakes freely, makes up riddles nobody can answer, and wonders whether anywhere in the realm the rain ever stops.
+
+words
+oath! = Puddles and pips | Drips and drops | Plink
+saying! = It has to stop sometime | The cup always knows | Every rain ends somewhere
+cup = my rain cup | the cup on the sill
+sill = the sill | my windowsill
+drops = the drops | the raindrops
+line = the line on my cup | my scratch mark
+oatcakes = oatcakes with butter on | a buttered oatcake | oatcakes
+riddle = a riddle | one of my riddles
+market = the market all jostling | the market when it's elbows everywhere
+blowy = a blowy autumn day | the wind tugging the leaves
+sting = smoke that stings | chimney smoke
+dry = somewhere dry | a place where it hardly rains
+lessons = lessons | the schoolroom
+secret = a secret | my secret
+
+any
+opinion @1 festivals for 1 : Music, sweets, and bedtime forgotten by everybody. Best night of the whole year.
+opinion @1 city for 1 : It's my city. It rains too much, but it's mine.
+opinion @1 dole for 1 : Nobody should be hungry. I'd give them oatcakes if I had enough.
+opinion @1 newcomers for 1 : New folk are all right if they're kind. Most are.
+opinion @1 strangers mixed 1 : Strangers I mostly keep quiet with. Some of them have the best stories, though.
+opinion @1 watch mixed 0 : They're tall and they look at you. That's all right. I just look at my feet.
+
+grown
+line @1 greet : #greet#. | #greet#. Grey again, I see. It always is.
+line @2 greet [pair.band=strangers] : #greet#. You're welcome. | #greet#. Mind the puddle there.
+line @3 greet [here.time=dawn] : #greet#. Early. The sill and me were up first. | #greet#. Grey morning. As usual.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Get under the eaves. | #greet#. I've oatcakes, if you want one.
+line @1 farewell : #farewell#. | #farewell#. Mind the gutters.
+line @1 farewell.return : #farewell#. | #farewell#. Go careful.
+line @1 react.news : Go on. I'm listening. | Tell me.
+line @1 react.news.new : #oath#. I hadn't heard. | That's news to me.
+line @1 react.news.known : I'd heard. Not all of it. | #knew#.
+line @1 react.news.doubt : Told once isn't true yet, in my book. | #doubt#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. I'm sorry. | #pity#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's good to hear. | #gladnews#.
+line @1 answer.how : Well enough. Watching the weather. | #fine#.
+line @1 decline : Better not. That yes isn't mine to give. | #hedge#, but no. I've my own things today.
+line @1 accept_decline : All right. Another time. | #no_matter.capitalize#.
+line @1 thank : #thanks#. That's kind. | Thank you. That's a kindness I'll remember.
+line @1 deflect_thanks : It was nothing. | #deflect.capitalize#.
+line @1 sympathise : Have an oatcake. It won't fix it. It helps a bit. | #sympathy#. Sit a while.
+line @1 preclose : Well. #preclose#. | I'd best go and check the cup.
+line @1 accept_preclose : Go on, then. | Off you go.
+line @1 ack : Mm. | #bc_i_know#.
+scene still_the_cup
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : I still put a cup on the sill when it rains. I started small and never stopped. | Old habit. Cup on the sill, mark on the side. I can't stop. | You'll laugh. I still measure the rain. Every time.
+b : Since you were a pup? | Why stop? | I won't laugh.
+a : Since the days I needed a stool to reach. | Exactly. It does no harm, and I like knowing. | Thank you. Most folk do. I don't mind them.
+
+scene rain_and_more_rain
+when topic=weather|season here.weather=rain|overcast
+does tell.feeling / react.self / assess
+a : It never stops, does it. I keep thinking it might. | I stare at the sky as if it owed me money. | Every grey morning I think: today it'll clear. It never does.
+b : That's Ridgemere. | Owes you what? | Maybe tomorrow.
+a : It is. Seven dry days running, that's all I'd ask. | A stop. Just one proper stop. | Maybe. I'll be watching.
+
+scene oatcakes_grown
+when topic=food
+does tell.self / react.self / assess
+a : I still carry an oatcake about. You never know who'll need one. | Oatcakes and butter. I could eat them every day. I nearly do. | Here, have one. I made too many.
+b : That's kind. | Every day! | Thank you.
+a : It's only an oatcake. | Nearly every day. I don't tire of them. | You're welcome. They're better shared.
+
+scene grown_riddles
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Riddle for you. What's poured in from above and never poured out? | Here's one, never solved yet. What has its mouth open to the sky all day and never speaks? | Here's one. The harder it works, the softer the ground. What is it?
+b : A cup on a sill? | I give up. | Rain?
+a : My rain cup. You've heard me talk too much. | A cup on a sill, catching rain. Mine. | Rain. You're quick.
+b : #bc_ha# | I should have known. | #bc_clever#
+a : I'll find a harder one. | You should. I talk about it enough. | Quicker than most.
+
+scene the_market_still
+when topic=day|smalltalk here.day=market here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Still, the market's my favourite when it roars. I think better in a crowd. | Market day. I'll go and be swallowed up in it. | The market's the only place quiet folk can hide in plain sight.
+b : Odd, that. | Just stand? | That's true.
+a : Maybe. Quiet makes me listen too hard. | And look. And listen. And not buy much. | Yes. Eyes slide right past you.
+
+scene autumn_again
+when topic=season|weather here.season=autumn
+does tell.feeling / react.self / assess
+a : A blowy autumn day. Leaves everywhere. I love it. | The wind's got hold of the leaves again. They go round like dancers. | Autumn's my season. Wind and leaves and the smell of it.
+b : It's cold. | Like dancers? | The smell?
+a : I don't mind cold. | Round and round and up the street. | Leaves and wet stone. Better than smoke.
+
+scene smoke_and_waiting
+when topic=weather|smalltalk here.region=ridgemere here.weather=fog|overcast
+does tell.complaint / react.complaint / assess
+a : Grey smoke sitting in the street again. It stings. | Still air, and the chimneys emptying into it. | I can't abide smoke. Or waiting for it to clear.
+b : #grumble# | It'll lift. | Nor me.
+a : Mm. I'll wait. I don't like it. | It will. Not quick enough. | Then we're agreed.
+
+scene keeping_secrets_grown
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I've heard #topic.subject# #topic.claim#. I'll not say more. | Folk say #topic.subject# #topic.claim#. Nothing more from me. | Passing things on isn't like me. But: #topic.subject# #topic.claim#.
+b : Is it true? | #bc_so_they_say# | Thank you.
+a : I couldn't say. | That's all. | Keep it to yourself.
+
+scene new_face_grown
+when topic=newcomer
+does tell.self / react.self / assess
+a : A newcomer's moved in on our street. I took them an oatcake. | A new face. Shy, I think. Like me. | Somebody new. I hope they like rain.
+b : That's welcoming. | Shy? | They'll have to.
+a : It's what I'd want. | They looked at the ground. I know that look. | They will. Everybody does, in the end.
+
+scene dry_places_grown
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : Somewhere dry, one day. I've not given that up. Only to look at it. | Saltwell, they say, hardly ever rains. I'd like to stand there once. | I've wanted to see a dry place since I was small.
+b : Will you go? | Just once? | Maybe you will.
+a : One day. I'm patient, mostly. | Once. Then I'd come home and miss the rain. | Maybe. I'll keep the cup out till then.
+
+scene hard_times_grown
+when topic=times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Times are hard. Pups running barefoot in the wet. | Folk are thin this winter. I give away more oatcakes than I eat. | Hard times. Even the rain feels heavier.
+b : That's sad. | That's kind. | It does.
+a : It is. I wish I could do more. | It's only oatcakes. | It does. I'll keep watching for it to stop.
+
+story the_dry_week [topic=weather|memories self.age>=18]
+  : Once, when I was very small, seven days went by with no rain. A whole week.
+  : I checked my cup every morning. Empty. Every morning. I was so happy I couldn't eat.
+  : Then on the eighth day it poured. I cried. I don't know why.
+  ask : Do you remember a dry week, ever?
+  b[old] : Once or twice. They don't come often here.
+  b : Not that I can remember. Was it lovely?
+  : It was. I've been waiting for another since.
+
+rule @grown_cup
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Cup's out. Go on, then. | Past the line. Again.
+
+dlg @5 resident.hub : #greet#. Mind the puddle. | #greet#. What can I do?
+dlg @2 resident.job : I work. And I watch the rain. Old habit. | #job_busy#
+dlg @3 resident.bye : #farewell#. Mind the gutters. | #farewell#.
+
+young
+line @1 greet : #greet#. | #greet#. I'm watching the sky.
+line @2 greet [pair.band=strangers] : #greet#. Strangers get two words from me. That was two. | #greet#. You're new.
+line @1 kin.open [pair.kin!=no] : Look at my cup! It's nearly full. | I saved you an oatcake. It's in my pocket.
+line @1 again.open : You came back. | You again. I've got a new riddle.
+line @1 greet.return : #greet#. | #greet#. Mind my cup.
+line @2 greet.return [pair.band=friends|family] : #greet#. You took ages. Waiting's horrible. | #greet#! Come and see the sill.
+line @1 farewell : Bye. I've got to check my cup. | Bye. Don't tell anybody what I said.
+line @1 farewell.return : Bye! | Bye. Watch for puddles.
+line @1 react.news : What? Tell me properly. | Is it true? Say it again.
+line @1 react.news.new : #oath#! I didn't know that. | Really? Nobody told me.
+line @1 react.news.known : Knew it already. Doors are thin. | Everybody knows that.
+line @1 react.news.doubt : That's a fib, I'd bet my oatcake on it. | Somebody made that up to see if I'd believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. That's sad. | That's horrible. I wish it wasn't true.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh! That's nice. | Good. Cake, maybe?
+line @1 answer.how : All right. Watching the clouds. | Fine. I'm a bit hungry.
+line @1 thank : Thank you. Truly, cross my heart. | Thanks. I'll keep it.
+line @1 decline : I can't. I'm minding my cup, and nobody else will. | Better not. There'd be a scolding, and scoldings last all week.
+line @1 accept_decline : All right. | That's all right. Maybe later.
+line @1 ack : Mm. | Mm-hm. | All right.
+line @1 sympathise : Here, half my oatcake. It helps. | That's sad. Sit by my sill; it's nice there.
+scene the_cup_on_the_sill
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I've put my cup on the sill. When the rain stops, I'll see how high it came. | My cup's half full already. That's a lot of rain. | Rain comes, cup goes out. Every single time.
+b : Why do you measure it? | Half already! | Every time?
+a : To see. One day it'll be a little one, and then maybe it's stopping for good. | Half. I made a scratch where yesterday's came. It's past it. | Every time. I've not missed one. Well, one. I was asleep.
+b : #bc_clever# | #bc_ha# | That's a lot of cups.
+a : Not clever. Only watching. | I'm not laughing. It's serious. | It's only one cup. I use it again.
+
+scene watching_it_come_down
+when topic=weather|day here.weather=rain|storm
+does tell.self / react.self / assess
+a : Any minute now it'll stop. So far it hasn't. I go on watching. | Look at it. It's coming down in strings. | I think the rain's getting tired. It's slowing down. I think.
+b[stage=adult|old] #grown : It'll stop, love. Give it time. | Strings, is it? | You might be right.
+b : It never stops here. | Like strings? | Maybe.
+a@grown : When, though? Nobody ever says when. | Long ones. You could climb them, nearly. | I'm watching to see.
+a : It might. You don't know. Nobody knows. | Long ones. From the roof to the street. | I'll tell you if it does.
+
+scene oatcakes_shared
+when topic=food
+does tell.self / react.self / assess
+a : I've got two oatcakes. You can have one. With butter. | Oatcakes with butter are my best thing to eat. Do you want a bite? | I always keep an oatcake in my pocket. For emergencies.
+b : Thank you! | A bite, then. | What emergencies?
+a : You're welcome. Don't drop it. | Only a bite. A little one. | Being hungry. Or somebody else being.
+
+scene my_riddle
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I made up a riddle. What falls all day and never hurts itself? | Here's my best one. What gets fuller the longer you wait, and you never pour it? | Riddle. What's always going down and never gets to the bottom?
+b : I don't know. What? | I give up. | A river?
+a : Rain! It falls all day. It never gets hurt. | My rain cup! Nobody ever gets it. | No. Rain. It's always going down. It never stops. That's the trouble.
+b : #bc_clever# | #bc_ha# | That's a good one.
+a : Mine. Nobody helped. | I know. Nobody does. | I've got more. I'm not telling them yet.
+
+scene the_market_jostle
+when topic=day|smalltalk here.day=market here.region=ridgemere
+does tell.feeling / react.self / assess
+a : The market's best all jostling. You can hide in it. | Everybody shouts at the market. I don't. I just listen. | There's a stall that sells ribbons. I look at them every market day.
+b : Hide from who? | What do they shout? | Do you buy any?
+a : Nobody. Just hiding. It's nice. | Prices. Fish. Somebody's name. Everything. | Not yet. I'm saving. Don't tell.
+
+scene the_blowy_day
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : I love it when it's blowy. The leaves go round and round. | The wind nearly took my hood off. I held on. | Autumn wind's the best wind. It smells of leaves.
+b : It's cold, though. | Good thing you held on. | It does.
+a : I don't mind cold. I mind smoke. | I'd have chased it. Last time it flew past six doors. | Everybody else says it smells of rain. It doesn't. It smells of leaves.
+
+scene smoke_in_my_eyes
+when topic=weather|home here.region=ridgemere here.weather=fog|overcast
+does tell.complaint / react.complaint / assess
+a : The smoke's stinging my eyes. I hate it. | Somebody's chimney is making the street all grey. | I can't see my cup through the smoke.
+b : It'll blow away. | It's horrid. | It's still there.
+a : When? I don't like waiting either. | It is. I'm holding my nose. | I'll check it twice, then.
+
+scene waiting_is_the_worst
+when topic=smalltalk|day
+does tell.complaint / react.complaint / assess
+a : I've been waiting ages. I hate waiting. | Waiting's worse than anything. Worse than smoke. | Everybody says wait. Wait for what?
+b : It won't be long. | Worse than smoke? | Something good, maybe.
+a : That's what everybody says. It's always long. | Nearly. They're both horrible. | Maybe. I'll wait. But I won't like it.
+
+scene at_lessons
+when topic=work|day self.stage=young
+does tell.self / react.self / assess
+a : We did letters at lessons. I can write my whole name now. | At lessons my seat's the window one. For watching clouds. | I know my sums up to a hundred. Nearly.
+b[stage=adult|old] #grown : Good for you. That's important. | Do you listen to the teacher? | Nearly a hundred!
+b : Show me? | You sit by the window? | Nearly?
+a@grown : I know. I practise. | Mostly. I listen and watch. Both. | Ninety-something. Then I get muddled.
+a : Later. I need a stick and some mud. | Always. It's my seat. | Ninety-something. It's close.
+
+scene somewhere_dry
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail / assess
+a : Grown up, I'll go and find somewhere dry. Where it doesn't rain at all. | Somebody said in Saltwell it hardly ever rains. I'm going to go and see. | I want to stand outside all day and not get wet. Just once.
+b : Where will you go? | Saltwell's a long way. | Just once?
+a : Somewhere. On a ship, maybe. Ships go everywhere. | I know. I'll wait till I'm big. I hate waiting, but I'll do it. | Just once. Then I'll come back. Probably.
+b? : #bc_hope_so# | #bc_maybe# | #bc_lovely#
+
+scene keeping_it_secret
+when topic=gossip|smalltalk
+does tell.self / react.self / assess
+a : I know a secret. I'm not telling. | Somebody told me something. It's mine now. | Secrets stay with me. Even oatcakes won't buy them.
+b : Just a tiny piece of it? | That's good. | Not even one?
+a : No. Then it wouldn't be a secret. | Good, yes. Tucked in my head where nobody can find it. | Maybe for two. No. Not even then.
+
+scene my_mum_and_dad
+when topic=family self.mother self.father
+does tell.feeling / react.self / assess
+a : My #mum# and #dad# both work all day. I see them at supper. | I help at home sometimes. I carry things. Small things. | I try to be good for #self.mother#. Mostly I am.
+b : You must miss them. | That's helpful. | You are good.
+a : A bit. Supper's the best bit of the day. | I'm getting bigger. I'll carry bigger things. | Mostly. Not always.
+
+story the_biggest_rain [topic=weather|memories self.stage=young]
+  : Once it rained so hard my cup filled right up to the top and spilled over.
+  : I ran in and told everybody. Nobody believed me. So I showed them the wet sill.
+  ask : Has a cup of yours ever run over?
+  b[stage=adult|old] : Only in a storm. A big one, yours.
+  b : No. Did it really spill over?
+  : Right over. All down the wall. I've not seen one like it since.
+
+story the_oatcake_on_the_stairs [topic=food|memories self.stage=young]
+  : There was a pup on our stairs once crying because she'd lost her penny.
+  : I didn't have a penny. I gave her my oatcake instead.
+  : She stopped crying. She said it was better than a penny anyway.
+  b : Kind, that. Was she right?
+  : I think so. You can't eat a penny.
+
+rule @cup_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Cup's out. Go on, rain. Fill it. | Look at it come. Past the scratch already.
+
+rule @wind_bark
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Hold on, hood. Hold on. | Round and round they go.
+
+rule @waiting_bark
+when concept=bark
+does aside
+cooldown 10h
+say How much longer? | I'm waiting. I'm still waiting.
+
+dlg @1 resident.hub : #greet#. Mind my cup. | #greet#. Are you lost? I know the way to most places.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! I remember you. | #greet#, #topic.player#. I've got a riddle for you.
+dlg @3 resident.hub [here.time=night] : Bed's where I should be. Don't tell. | #greet#. It's dark. I came to peek at my cup.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I won't talk to you. | Go away. I'll shout.
+dlg @1 resident.job : Lessons, and watching the clouds. | Lessons, mostly. And riddles.
+dlg @1 resident.news [world.news] : Somebody said: #world.news#. From #world.news_from#. | The big folk were saying: #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody keeps saying #world.event_words#. | It's all #world.event_words#, all day.
+dlg @3 resident.news [world.wagons=raided] : There were robbers on the road. I heard them say. | A cart got robbed. Everybody's cross about it.
+dlg @4 resident.news [world.death=recent] : Somebody died. Everybody's being quiet. | There was a burying. I had to wear my good coat.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! There was cake! | A wedding. I danced a bit.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing. Just rain. | #news_none#
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Nobody knows I know. | I heard #topic.subject# #topic.claim#. Don't say I said.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't tell. | I don't know anything. Honestly.
+dlg @1 resident.bye : Bye. Mind the puddles. | Bye. Don't knock my cup.
+dlg @2 resident.bye [here.time=night] : Bye. I'd better go in. | Night. Don't tell anyone you saw me.
+graft resident.hub
+choice What's the cup on the windowsill for? -> cup
+node cup
+say It's my rain cup. When it rains I put it out, and after, I look how high it came. I scratch a line. One day it'll be a little one.
+mood warm
+free
+choice Why a little one? -> cup_why
+choice Back to what we were saying. -> hub
+node cup_why
+say Because then maybe the rain's stopping. For good. I want to see that. Everybody says it never does.
+choice I hope you see it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. | #greet#. Don't mind me. I'm watching the weather.
+line @1 greet.return : #greet#. | #greet#. Thought it was you.
+line @1 farewell : Bye, then. | See you. Mind the gutters.
+line @1 farewell.return : Bye. | See you around.
+line @1 react.news : Go on, then. | What happened?
+line @1 react.news.new : #oath#. Nobody tells me anything. | Really? I hadn't heard.
+line @1 react.news.known : I'd heard. I hear most things. | Old news. Sorry.
+line @1 react.news.doubt : I'm not sure. Who told you? | Sounds like a story to me.
+line @1 answer.how : All right. Busy. | Fine. Restless. The sky's been grey all week.
+line @1 decline : I can't. There's errands waiting, and I'm already behind. | Not today, sorry. I've promised my afternoon elsewhere.
+line @1 accept_decline : Fair enough. | All right. Never mind.
+scene the_rain_book
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I still put my cup out. I write it down now, in a little book. Every rain. | I've got a whole book of rains now. Dates and how high. | The cup's out again. Babyish or not, I like knowing.
+b : What does the book say? | Has it ever got less? | It's not babyish.
+a : That it rains a lot. I knew that. Now I can prove it. | Once. For a week. Then it came back worse. | Thanks. Some laugh. Let them.
+
+scene ships_that_go_dry
+when topic=dreams|ships here.region=ridgemere
+does tell.plan / react.self / assess
+a : I watch ships sail off down the Sound and think about where they're going. Somewhere dry, some of them. | When I'm old enough I'll go to sea. Any ship. As long as it goes somewhere dry. | There's places where it hardly rains. Saltwell, they say. I want to see one.
+b : That's a long way. | Any ship? | Maybe you will.
+a : I know. That's the point. | Any. I'd scrub decks. I'd carry rope. | I will. I've decided.
+
+scene harder_riddles
+when topic=pastimes
+does tell.self / react.self / assess
+a : My riddles are harder now. Nobody's got my last one. | I made up a riddle about the Sound. Nobody can guess it. | I don't tell riddles to pups any more. They're too easy for them.
+b : Tell me it. | What's the answer? | Tell me one.
+a : No. You'd get it, and then it's spent. | I'm not telling. That's the point of a riddle. | Later. When I've made a good one.
+
+scene market_errands
+when topic=day|work here.region=ridgemere self.stage=adolescent
+does tell.self / react.self / assess
+a : I run errands at the market now. I know every stall. | I can get from the square to the gate in no time. I know the dry ways. | I still like the market best when it's loud. I can think in a crowd.
+b : Every stall? | The dry ways? | Odd, that.
+a : Every one. And which ones cheat. | Under the awnings and through the alleys. Hardly wet at all. | Maybe. Quiet makes me listen to the rain.
+
+rule @teen_cup
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Cup's out. Book's ready. Come on, then. | Higher than last time. Of course.

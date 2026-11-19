@@ -1,0 +1,358 @@
+# rm152, the pup with the dry rag (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm152
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_egil_blackcombe
+written_by claude
+title the pup with the dry rag
+fits stage=young|adolescent|adult|old
+prefers job=child warmth=reserved
+traits temper=even talk=plain warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk carries_a_dry_rag_for_wiping_off_the_rain
+likes barley_soup roof_birds sharp_knife summer_evenings
+dislikes gulls night_noise
+fears mud_that_will_not_come_out shouting_in_the_dark
+hopes a_coat_that_stays_clean_all_week a_summer_with_no_rain
+topics weather +0.4 animals +0.3 food +0.3 season +0.3 day +0.2 family -0.5 gossip -0.3
+styles comfort=quiet_company gossip=closed refuse=polite tease=none
+marks oath saying
+persona #self.first# keeps a coat brushed spotless, a small knife sharp and a dry rag in one pocket for wiping benches, sills and blades, says only what is needed, and watches the roof birds set every feather straight.
+
+words
+oath! = Spots and splashes | Mud and bother
+saying! = Clean goes further | A wiped bench is a dry bench
+rag = my rag | the dry rag in my pocket
+coat = my coat | my coat, brushed this morning
+knife = my little knife | the little blade, honed every Restday
+soup = barley soup | a hot bowl of barley
+preening = the roof birds | the sparrows tidying their feathers on the roof
+summernight = a summer evening | a long light summer evening
+gullmess = the gulls | gulls and their mess on the sills
+nightrow = the shouting in the lane | noise in the night
+slate = my slate | my lesson slate, rubbed clean
+hmm = Mm | Oh
+proper = properly | the proper way
+
+any
+opinion @1 church for 1 : The chapel gave out soup in the cold. I wiped my bowl after. Nobody asked me to. | At chapel they say small things are seen by the Bright One. So I keep small things clean.
+opinion @1 city for 1 : I like Ridgemere. It rains, but from the top steps the Sound goes on forever. | Ridgemere is the biggest place. I've never been anywhere else, but I can tell.
+opinion @1 festivals for 1 : There's music and nobody makes you go in early. I keep to the edge so I don't get trodden on. | Festival sweets are sticky. I like them anyway. I bring my rag.
+opinion @1 strangers against 1 : New faces get a nod from me and nothing else. A nod is polite enough. | A stranger asked me where I live. I said up the hill and went the other way.
+opinion @1 merchants against 1 : Some stallholders have fat cheeks all winter while the stair goes hungry. I've watched. | The bread costs more than last month. I counted the coppers both times.
+opinion @1 times against 1 : It's harder now. Bowls are thinner at the chapel, and nobody important notices. | Folk look tired on the stairs. More than before.
+
+grown
+line @1 greet : #greet#. Mind the wet; the bench is dry, I've wiped it. | #greet#. Stand in out of it.
+line @2 greet [pair.band=strangers] : #greet#. Boots wiped before you come in, please. | #greet#. You walked here in this, by the state of you.
+line @1 greet.return : #greet#. Still clean, both of us. | #greet#. I was just wiping down.
+line @1 farewell : #farewell#. Keep under the eaves. | #farewell#. There's mud at the corner; go round it.
+line @1 farewell.return : #farewell#. | Mind how you tread.
+line @1 react.news : Go on. I'm listening. | Hm. Tell it plain.
+line @1 react.news.new : Not heard that. I stay out of the talk, mostly. | That's new to me.
+line @1 react.news.known : Heard it already, on the stair. | Old news, but thank you.
+line @1 react.news.doubt : Seeing's believing, and I've not seen it. | Somebody's tidied that story up a lot, I'd say.
+line @1 answer.how : Well enough. Coat's clean. | Fair. Tired, but tidy.
+line @1 decline : Forgive me, but no. It's not something I do. | Not today. There's work waiting, and I'll do it properly.
+line @1 accept_decline : Fine. Some other day. | No need to say sorry.
+line @1 thank : Thank you. I'll look after it. | Kindly done. Thanks.
+line @1 preclose : I'd best get on. Things want doing. | Well. My rag won't dry itself.
+line @1 accept_preclose : Go on, then. | All right. Mind yourself.
+scene gr_dry_rag
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Still carry a rag. Always have. Folk laugh, then they ask to borrow it. | Wiped the bench at the chapel for an old one. Didn't say anything. Neither did they.
+b : I'd borrow it. | That's a kindness.
+a : Ask, and you can. Hand it back folded. | It's a bench. It was wet. That's all.
+
+scene gr_rain_watch
+when topic=weather here.weather=rain|overcast
+does tell.feeling / react.self / assess
+a : I still watch the rain as if it might stop. Never once has, while I watched. | Rain again. I've stopped expecting otherwise. I keep watching anyway.
+b : Maybe one day. | It's a city of rain.
+a : Maybe. I'll be watching when it does. | It is. Still, a dry hour comes now and then. I like to be ready.
+
+scene gr_coat
+when topic=smalltalk|day
+does tell.self / react.self / assess
+a : Brushed my coat at first light and once more at noon. One coat, so it ought to be clean. | Carts splashed my hem by the gate. Took an hour to get out.
+b : That's careful. | You got it out, though?
+a : Habit. I made it myself. | Every speck. I'm stubborn about mud.
+
+scene gr_knife
+when topic=work|pastimes
+does tell.self / react.self / assess
+a : Sharp blades don't slip. Dull ones do. I keep mine like new. | I sharpen my knife on Restday. Wipe it, oil it, wrap it. Same every week.
+b : A good habit, that. | Same every week?
+a : It's saved my paw a few times. | Every week. I'd feel wrong if I didn't.
+
+scene gr_soup
+when topic=food here.weather=rain|fog|snow
+does tell.self / react.self / assess
+a : #soup.capitalize# in weather like this. Nothing better. | I make barley soup in a big pot and eat it four days running. I don't mind.
+b : Sounds good. | Four days?
+a : It is. Thick, with salt. | Four days. Third day's best.
+
+scene gr_birds
+when topic=animals|pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : I still watch #preening#. They never let a feather lie wrong. | There's a sparrow on my roof that's been there years. Or its grandchildren. Tidy, the lot of them.
+b : You'd get on with birds. | Same family, maybe.
+a : Better than with gulls. | Maybe. They don't say, and I don't ask.
+
+scene gr_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gullmess.capitalize#. I scrub the sill every morning and they're back by noon. | I'll never like gulls. Loud, dirty, and proud of it.
+b : They were here first. | Nobody likes gulls.
+a : They can have the sea, then. Not my sill. | Somebody must. I've not met them.
+
+scene gr_summer
+when topic=season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : #summernight.capitalize#. Best thing Ridgemere has. The roofs go gold and the lane's still quiet. | Summers, after work, the step. Wipe it first. Then nothing but the light.
+b : It's lovely, this hour. | You wipe the step?
+a : It is. It won't last, so I don't waste it. | Every time. I'm not changing now.
+
+scene gr_night
+when topic=home here.time=night self.dislikes=night_noise
+does tell.complaint / react.self / assess
+a : Shouting down the lane again. Most nights, now. | I'd move somewhere quieter, if there were anywhere quieter.
+b : The city never sleeps. | There's always somewhere.
+a : No. It just lies there with its eyes open. | Not in Ridgemere. Not that I can pay for.
+
+scene gr_home_private
+when topic=home|family
+does tell.self / react.self / assess
+a : I keep home to myself. It's tidy, it's quiet. That's enough to say. | Folk ask about my people. I tell them I'm fine. I am.
+b : Fair enough. | Good. Glad of it.
+a : Thank you for not asking twice. | I'm fine. Clean and fed and fine.
+
+scene gr_times
+when topic=times world.times=hard|lean
+does tell.complaint / react.self / assess
+a : Lean times. I count everything twice now. Coppers, candles, potatoes. | Folk on the stair look thinner. I've noticed. Nobody up the hill has.
+b : We'll manage. | They never do.
+a : We will. Carefully. | No. That's why I notice for them.
+
+scene gr_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's just what reached me. | Heard on the stair: #topic.subject# #topic.claim#. Could be wrong.
+b : Is it true? | Hm.
+a : I don't know. I keep out of such things, mostly. | That's all I know. Nothing to add.
+
+story gr_story_first_rag [topic=memories self.age>=20]
+  : One wet day, years back, the rain spoiled my coat, and I cried the whole way home.
+  : Since then I've carried a rag. Every day. Even in summer.
+  b : That's a long habit. Does it help?
+  : A bit. A bit's what you get, in Ridgemere.
+
+dlg @4 resident.hub : #greet#. Mind the drip from the eaves. What is it? | #greet#. Bench is dry, if you'd sit.
+dlg @5 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Dry for once. | #topic.player#. Good to see you. Wipe your feet, mind.
+dlg @6 resident.hub [here.time=night] : Late. Quickly, please. | Late. Say it, then.
+dlg @7 resident.hub [pair.disposition=hostile|wary] : Go on. That's close enough. | I'm listening. Keep your distance, please.
+dlg @2 resident.job : #self.trade_words.capitalize#. Done right or not done. | Work's work. I keep it tidy.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what's going round. | Heard on the stair, out of #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody's on about #world.event_words#. | It's all #world.event_words# today.
+dlg @3 resident.news [world.wagons=raided] : A wagon was robbed outside the walls. Keep in, I would. | Thieves stopped a cart out there. Bad business.
+dlg @4 resident.news [world.death=recent] : Somebody on our street died. Quiet since. | We buried a neighbour lately.
+dlg @5 resident.news [world.wedding=recent] : A wedding, and the street came out for it. | A wedding, this week. Nice to see.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing. Rain, and more rain.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's as I had it. | I heard #topic.subject# #topic.claim#. Nothing more.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep out of talk. Sorry.
+dlg @2 resident.bye : #farewell#. Mind the wet. | #farewell#. Keep dry.
+
+young
+line @1 greet : #greet#. Mind the puddle; it's deep at that end. | #greet#. That bench is wiped. Sit, if you like.
+line @2 greet [pair.band=strangers] : #greet#. I don't chat with strangers. Just hello. | #greet#. You've mud on your hem. Just saying.
+line @3 greet [here.weather=rain] : #greet#. Stand under here, it's drier. | #greet#. Wet. I've got my rag, though.
+line @1 kin.open [pair.kin!=no] : I kept my coat clean all day. Look. | I did my sums. All right ones.
+line @1 again.open : You came back. All right. | Twice today. I'm still here.
+line @1 greet.return : #greet#. I was watching the gutter. | #greet#. I'm drying my knife, I can still listen.
+line @1 farewell : Bye. Wipe your feet where you're going. | Bye. I've lessons.
+line @1 farewell.return : Bye. | Bye. Mind the wet cobbles.
+line @1 react.news : Oh. Is it true? | Mm. Tell me the rest.
+line @1 react.news.new : Oh. Nobody said, at lessons. | Oh. That's new.
+line @1 react.news.known : I heard that at lessons. | Everybody on the stair had it by breakfast.
+line @1 react.news.doubt : That's wrong, I think. Wrong like a bad sum. | A made-up thing, maybe. Maybe not.
+line @1 answer.how : All right. My coat's clean, so that's good. | Fine. A bit tired. The lane was loud last night.
+line @1 thank : Thanks. I'll take care of it. | Thanks. That was kind.
+line @1 decline : Better not. Mud doesn't come out, and I've only the one coat. | I can't. I've got lessons, and the teacher counts us.
+line @1 accept_decline : All right. You needn't. | That's fine. I asked, that's all.
+line @1 ack : #hmm# | All right.
+rule @young_rag
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wet bench. Hold on, I've got my rag. | Spots and splashes, it's on my coat.
+
+rule @young_gulls
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 8h
+say Shoo. Go and mess on somebody else's sill. | That gull wants my bread. It can want.
+
+rule @young_birds
+when concept=bark here.outdoors=clear|overcast
+does aside
+cooldown 10h
+say Look, that one's doing its tail feathers. One at a time. | The sparrow on the gutter is very neat today.
+
+scene yg_dry_rag
+when topic=weather|day here.weather=rain
+does tell.self / ask.detail / answer.detail / assess
+a : I carry a dry rag. When it rains I wipe the bench before I sit. | My rag's still dry. Driest thing on the whole street.
+b : Why bother, when it'll be wet again in a breath? | And where's it hidden, to stay dry?
+a : Because then it's dry for a bit. A bit is better than none. | Inside my coat, folded in four. You have to fold it right.
+b? : #bc_fair_enough# | #bc_clever#
+
+scene yg_rain_stop
+when topic=weather here.weather=rain|overcast
+does tell.feeling / react.self / assess
+a : I watch the rain from the window. Sometimes I think it's stopping, and it doesn't. | I counted drops on the window. I stopped at sixty. They kept coming.
+b : It does stop, sometimes. | Sixty's a good count.
+a : Sometimes. I wait for those times. | I'll do a hundred next time it rains. That's tomorrow, probably.
+
+scene yg_coat_clean
+when topic=day|smalltalk
+does tell.boast / react.self / assess
+a : My coat's been clean four days. I brush it every night before bed. | A cart splashed the whole street. Not me. I stood behind a post.
+b : Four days, in this city? | Clever, the post.
+a : It's my longest ever. | I always stand behind a post. Posts don't splash.
+
+scene yg_knife
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : I've got a little knife. I keep it sharp and I wipe it every time. It cuts string so neat. | My knife's the sharpest thing I own. I only use it for string and apples. And bread.
+b : Careful with that. | Who gave you a knife?
+a : I'm careful. Careful's the point of a knife. | I'm not saying. It's mine now, that's all.
+
+scene yg_soup
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize# is my best food. It fills you right to the ears. | Cold days I want barley. I eat it slow so it lasts.
+b : Right to the ears? | Slow's the way.
+a : Right to them. I can feel it there. | It gets cold if you're too slow. You have to judge it.
+
+scene yg_roof_birds
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : The sparrows on the roof clean every feather, one by one. They don't miss any. | I watched a bird on the gutter for ages. It did its wings, then its tail, then it flew off clean.
+b : They're tidy little things. | You've patience.
+a : Tidier than folk. Most folk. | For birds I have. Not for much else.
+
+scene yg_gulls
+when topic=animals
+does tell.complaint / react.self / assess
+a : Gulls are the worst. They mess on everything and they shout. | A gull snatched a crust from a pup on the steps. Just took it. I don't like gulls.
+b : They're only hungry. | Poor pup.
+a : Everyone's hungry. Everyone else asks. | I gave the pup half mine. Then I watched for the gull.
+
+scene yg_summer_evening
+when topic=season|weather here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : This is the best time. It's still light and nobody's shouting yet. | Summer evenings go on and on. I sit on our step while the roofs go orange.
+b : Long may it last. | Nice, that.
+a : It won't. Light always goes. But I like it while it's here. | It is. The step's dry, too. I checked.
+
+scene yg_night_noise
+when topic=home|day here.time=night self.dislikes=night_noise
+does tell.complaint / reassure / assess
+a : Somebody's shouting in the lane again. I go right under the covers. | It's loud at night. Carts, and people singing wrong.
+b : They'll go home soon. | You'll sleep. It quietens.
+a : They never go home. They just go quieter. | Maybe. I'll count the roof tiles in my head. That works sometimes.
+
+scene yg_lessons
+when topic=day|work self.job=child
+does tell.self / react.self / assess
+a : Sums on the slate today. Rubbed it clean after so it's ready for tomorrow. | The teacher said my letters are the tidiest. I kept quiet. I was pleased, though.
+b : That's good work. | You should be pleased.
+a : The slate has to be clean or the numbers get muddled. | I was. I'm still a bit pleased.
+
+scene yg_home_quiet
+when topic=home|family
+does tell.self / react.self / assess
+a : I don't talk about home. It's fine. It's quiet. | Home's up the hill. That's all I say about it.
+b : That's all right. | Fair enough.
+a : Thank you. Most folk ask twice. | It's quiet there. I like quiet.
+
+scene yg_puddles
+when topic=weather|day here.weather=rain here.region=ridgemere
+does warn / react.self / assess
+a : Don't step in that one, it's deeper than you'd think. A carter sank to the knee. | The stair by the chapel turns into a river when it rains. I walk round by the bakery instead.
+b : Thanks for the warning. | The long way's longer.
+a : You're welcome. I'd have felt bad. | It's longer but it's dry. Dry's better.
+
+story yg_story_first_rag [topic=memories]
+  : The first time it rained on my good coat I cried all the way home.
+  : Then I got a rag from the chapel box and wiped it, and it was nearly all right.
+  b : Nearly is good. Is that why you carry one?
+  : Every day since. Even when it's sunny. Rain's always coming back.
+
+story yg_story_bird [topic=animals]
+  : A sparrow came onto my windowsill one morning. Its feather was bent.
+  : It sat there and pulled at it till it was straight again. It took ages.
+  ask : Would you have helped it, or let it do it itself?
+  b : I'd let it be. It knows best.
+  : I let it be. Some things you have to fix yourself.
+
+dlg @1 resident.hub : #greet#. Strangers aren't for chatting to. Ask, though, if you want. | #greet#. I've just wiped the step. You can stand on it.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. My coat's clean again. | #topic.player#. Hello. It's not raining yet.
+dlg @1 resident.job : Lessons. Sums and letters. Neat ones. | I'm a pup. I go to school, and I keep my slate clean.
+dlg @1 resident.bye : Bye. Wipe your feet. | Bye. That puddle by the step is deep.
+graft resident.hub
+choice What's the rag for? -> rag
+node rag
+say For drying things. Benches, my knife, the windowsill. It rains, so things are always wet. So I always dry them.
+mood calm
+free
+choice Doesn't it just get wet again? -> rag_again
+choice Goodbye. -> bye
+node rag_again
+say Yes. Then I dry it again. Round and round. It's dry for a bit in between.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. I've an errand, but go on. | #greet#. Mind the wet; I've just been wiping.
+line @1 farewell.return : #farewell#. | Watch the wet steps.
+line @1 react.news.new : Didn't know that. Who's saying it? | That's new. It stays with me.
+line @1 answer.how : Fair. Clean coat, so it's a good day. | All right. Tired. The lane was loud.
+rule @teen_rag
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rag's out again. Wet bench, wet sill, wet everything. | Mud on my hem. Already. Mud and bother.
+
+scene ad_errands_clean
+when topic=day|work here.region=ridgemere
+does tell.self / react.self / assess
+a : Took a parcel to a big house on the Heights, and the paper never got a spot on it. | I run errands now. Folk ask for me because things come back clean.
+b : That's a skill. | Good name to have.
+a : It's a rag and a lot of care. | It is. A good name's worth drying.
+
+scene ad_knife_whittle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I've started carving little birds with my knife. Sparrows, mostly. They've got all their feathers. | Carved a gull, once. I broke it. On purpose.
+b : Show me one sometime. | I can see why.
+a : Maybe. When it's finished. They're never finished. | They mess on everything. Even carved ones would.
+
+scene ad_night_still
+when topic=home here.time=night self.dislikes=night_noise
+does tell.complaint / react.self / assess
+a : The lane's still loud at night. I've got used to it a bit. Only a bit. | I can sleep through the carts now. Not the shouting.
+b : That's growing up, I suppose. | Nobody sleeps through shouting.
+a : I'd rather it just stopped. | No. Nobody should have to.
+
+story ad_story_parcel [topic=work|memories]
+  : I carried a letter up the long stairs in a downpour once. Folded it in my rag.
+  : Got there, and mine was the only dry thing in the house.
+  b : They must have been pleased. Did they pay you well?
+  : A penny and a towel. I took the towel.
+
+dlg @3 resident.hub : #greet#. Errands, if you've any. I keep things dry. | #greet#. Be quick, it's coming on to rain.

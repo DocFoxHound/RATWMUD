@@ -1,0 +1,353 @@
+# rm154, the edge kept for nothing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm154
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_aud_kemp
+written_by claude
+title the edge kept for nothing
+fits stage=adult|old
+prefers talk=chatty stage=old
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_an_old_knife_keen_with_nothing_left_to_cut
+likes smoked_eel roof_birds fresh_straw misty_dawns
+dislikes waiting haggling
+fears being_moved_on_from_the_last_dry_step a_winter_with_no_parish_loaf
+hopes one_dry_country_before_the_end a_whole_eel_to_oneself
+topics weather +0.4 animals +0.4 caravan +0.3 news +0.3 gossip +0.2 memories +0.3 food +0.2 home +0.2 prices -0.3
+styles comfort=plain gossip=eager refuse=blunt tease=none
+marks oath saying
+persona #self.first# sits high over the north gate road and misses nothing: blunt, curious and talkative, poor as a gutter and not ashamed of it, fond of the slate birds and a white misty morning, and forever drawing an old knife over a little grey stone though there is nothing left to cut.
+
+words
+oath! = Spit and stone | Stone and spittle | Spit on the stone
+saying! = Waiting's a job for the dead | Say it straight or tell it to the birds | Nobody ever got fat on a maybe
+knife = the old knife | my old knife
+whet = the little grey stone | the pocket stone
+keen = fit to shave a gull | keen as the morning it was ground
+birds = the slate birds | the ridge-tile birds | the rooftop crowd
+eel = smoked eel | a finger of smoked eel | eel off the smokehouse racks
+straw = fresh straw | new straw underfoot | straw with the field still in it
+mist = mist rolling up from the Sound | a white morning | the white coming up the gate road
+gate = the gate | the north gate | the gate arch
+carts = the carts | the North Road carts | whatever the North Road sends
+step = my step | the top step | the step I keep
+waiting = standing about on somebody's say-so | hanging on other folk's convenience
+haggle = beating a price down | penny-wrangling
+bones = these old bones | the old bones
+dry = somewhere dry | a country with no gutters | a dry place, once
+bigbells = the great bells | the big bells up the close
+slates = the slates | the wet slates
+
+any
+opinion @1 church for 2 : When the row had nothing to spare, the priest's kitchen found a bowl for me. That's a debt, and I keep my debts.
+opinion @1 dole for 2 [self.wealth=destitute|poor] : #dole.capitalize# carried me over a thin week once, so don't you turn your nose up at it in my hearing. Pride's a dish for folk who've eaten.
+opinion @2 dole for 1 : There's a chimney on every roof in this city and somebody under one of them goes hungry. Hand the loaf over and argue later.
+opinion @1 merchants against 2 : My purse thins and the loaf fattens its price, and the shop wants me to stand there #haggle# on top. I'll not.
+opinion @1 watch against 1 [self.wealth=destitute|poor] : #watch.capitalize# shift me off every dry doorway between here and the square. Where would they have me sit, the Sound?
+opinion @2 watch against 1 : They see an old body on a step and they see trouble. They ought to look at who's drinking in the inns past midnight.
+opinion @1 times against 2 : Every week a notch tighter, and the Rise never feels it, because the Rise doesn't look down its own stairs.
+opinion @1 newcomers against 1 : Each new face off the carts rubs a little more of the old road away. That's my view, plain as a slate.
+opinion @1 city for 1 : Smoke over my cradle and smoke over my grave, and fine with me. My quarrel's with the bread, never the city.
+opinion @1 road against 1 : I mind the North Road when a pup could walk it to the first milestone and back. The carters can say otherwise in their cups.
+
+grown
+line @1 greet : #greet#. Sit if you're stopping; there's step enough for two. | #greet#. You've come up the hill, you're wheezing like a bellows.
+line @2 greet [pair.band=strangers] : #greet#. Here's a face I haven't learned. I'll have it by tomorrow. | #greet#. You didn't come through #gate# this week, or I'd know you.
+line @3 greet [here.time=dawn] : #greet#. I watched them lift the bar off #gate#, and here's you. | #greet#. Early. Good. I can't abide a lie-abed.
+line @4 greet [here.time=dusk|night] : #greet#. Lamps lit, and me still out on #step#. | #greet#. Late to be about. Mind the gutter by the corner.
+line @5 greet [here.outdoors=fog] : #greet#. You walked out of #mist# like a ghost. | #greet#. Can't see #gate# this morning, but I can hear it.
+line @1 kin.open [pair.kin!=no] : There. Sit, before my neck cricks looking up at you. | You. Good. I've been saving something up all morning.
+line @1 again.open : You twice since breakfast. That's a visit, nearly. | Back. I've not moved, you'll notice. I never move.
+line @1 greet.return : #greet#. I'm not deaf, only old. | #greet#. Well. You, and me, and the step.
+line @2 greet.return [pair.band=friends|family] : #greet#. I kept your end of the step warm. | #greet#. I wondered when you'd show your face.
+line @3 greet.return [here.time=dusk|night] : #greet#. Two owls, us. | #greet#. My bed's calling and I'm pretending not to hear it.
+line @1 farewell : #farewell#. You know where I sit. | #farewell#. Go on, then, I've birds to count.
+line @2 farewell [here.time=dusk|night] : Good night. Bar the door tight, the road's restless. | Good night. I'll sit a while yet, I'm no sleeper.
+line @1 farewell.return : #farewell#. Watch the wet on the stair. | #farewell#. Bring me the end of it, when it ends.
+line @1 react.news : Go on. Both ears. | Tell it straight, start to finish.
+line @1 react.news.new : That's not reached my step, and nearly everything does. | That's new to the step. Who carried it in?
+line @1 react.news.known : A carter beat you to it yesterday, but tell it your way. | Stale to me, but go on. I like the telling.
+line @1 react.news.doubt : I'll want it from a pair of eyes that were there. | That's ale talking, or I'm a gull.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a cruel thing. Somebody's sitting with that tonight. | #oath#. Nobody's owed that, whatever they did.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's worth climbing the hill to tell. | Good. Somebody's luck came round. It does, now and then.
+line @1 answer.how : Old, cold and still talking. Could be worse. | Low, since you ask, but I've known lower.
+line @2 answer.how [self.wealth=destitute|poor] : I had a crust at noon and I'll want another by dark. | Skint, same as ever. The birds eat better than me.
+line @1 answer.how.busy [self.working=yes] : Up and doing since the bar came off. Later, eh. | Busy, and the half of it still to do.
+line @1 ask.how : Are you eating? You don't look it. | How's your roof holding, in all this?
+line @1 sympathise : That's rotten, and no dressing it. | Sit down by me. Sitting never hurt a grief.
+line @1 reassure : It'll wear off. Everything wears off, give it a season. | You'll come through. I've watched worse walk out the gate on its own legs.
+line @1 decline : I'll not, and it's my knees saying so, never my heart. | Not me. That's a younger body's errand, and I've not got one.
+line @1 accept_decline : Fair. Your legs, your say. | Right, then. I'll not ask twice.
+line @1 thank : #thanks#. That goes in the long memory, that does. | That's kind. Not much kindness climbs up this far.
+line @1 deflect_thanks : Pfft. Free to give, and free's all I've got. | Hush. Put it away.
+line @1 preclose : My knees want sitting. | I'll let you go before the rain sends you.
+line @1 accept_preclose : Off you trot. The birds'll keep me company. | Off with you. The step's not going anywhere.
+line @1 ack : #bc_true#. | #bc_i_know#. | Mm.
+line @1 give.advice : Pay what it costs or walk; never stand there dickering. | Keep a keen knife and a barred door. That's all my wisdom, and it's done me.
+line @1 warn [world.bandits=near] : The carters are saying there's road wolves past the milestones. Go out with a convoy. | Stay this side of #gate# a few days, if you've the choice.
+line @1 hail [pair.band=friends] : Over here! I've a seat warmed. | Oi! Up here, on the step.
+scene misty_gate
+when topic=weather here.outdoors=fog here.time=dawn
+does tell.feeling / react.self / assess
+a : This is my hour. #mist.capitalize#, and only the sound of #gate# in it. | The foot of the road's gone. It could be any road in the realm. | When it's this white I hear the carts a street before I see them.
+b : It's cold enough with it. | It could, nearly. | You know them apart?
+a : Cold's nothing. Quiet's what you can't buy in this city. | So I pretend it's somewhere dry, and the white is dust. | The milk cart squeaks, the coal cart groans. I'd know them blind.
+
+scene fog_all_day
+when topic=weather here.outdoors=fog here.time=day|dusk
+does tell.self / react.self / assess
+a : A morning mist is a gift. This has sat on us past noon, and now it's just wet. | Can't see a face across the street. I'm missing everything. | Fog all day, and #birds# have gone quiet. They don't like it either.
+b : It's not lifting, I'd say. | That must be hard on you. | Where do they go?
+a : No. It'll lie on the Sound till dark now. | It is. A watcher with nothing to watch. | Under the eaves, sulking. Same as me.
+
+scene rain_on_slates
+when topic=weather here.outdoors=rain|storm here.region=ridgemere
+does tell.complaint / sympathise / assess
+a : Rain, and the gutter over #step# drips straight down my back. | #bones.capitalize# knew this was coming last night. They're never wrong. | Wet three days running. I've been chased under the arch twice.
+b : It's a wet city. | Better than an almanac, then. | Is there nowhere dry to sit?
+a : The wettest. I'd not trade it, only I'd like a dry back now and then. | Better and cheaper. They ache for free. | Not for nothing, there isn't. So I sit where I'm let.
+
+scene bright_day
+when topic=weather here.outdoors=clear here.season=spring|summer
+does tell.feeling / react.self / assess
+a : A dry day! The whole road's out with its sleeves up. | Sun on the slates and steam coming off them. That's a sight. | #birds.capitalize# are all out sunning. So am I.
+b : It won't last long. | It is, I'll give you that. | You've earned it.
+a : No, so I'm sat right in it till it goes. | Every slate on the row puffing like a kettle. | I have. A long life of wet buys a dry hour.
+
+scene slate_birds
+when topic=animals here.region=ridgemere
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : There's one up on the ridge with a game leg. I've watched it three winters. | #birds.capitalize# have a pecking order, same as the Council. I know every seat. | I know which bird's courting which up there, and it's never who you'd guess.
+b : How does it manage? | Who's at the top? | Go on, then.
+a : Hops, and bullies the others off the crumbs. Doesn't need two legs for that. | The fat grey one by the chimney. Nobody voted for it. | The scruffy one, every spring. The smart ones never get a look in.
+b? : #bc_ha# | #bc_they_do# | #bc_every_year#
+a : Good luck to it. | That's birds and the Council both. | Nobody's ever told them.
+
+scene sill_bird
+when topic=animals|pastimes
+does tell.self / react.self / ask.detail / answer.detail
+a : One of #birds# comes to my sill for crumbs. It knows my face, I'd swear to it. | Some days the birds eat before I do. Don't tell anyone. | A bird snatched a crust off my paw this morning. Bold as a toll-man.
+b : Does it come every day? | Isn't that hard on you? | Did you let it?
+a : Every day the window's open. It waits on the gutter and looks cross. | Not much harder. A crust is a crust, and they're smaller than me. | I'd no say in it. Bold ones get fed in this city.
+b : Then it's yours, near enough. | It's a kindness, all the same. | That's this city all over.
+
+scene eel_treat
+when topic=food
+does tell.feeling / react.self / assess
+a : #eel.capitalize#. I'd climb every stair in the city for it. | Any spare penny I spend on #eel#, then I make it last like a sermon. | They hang the eels by the smokehouses and the smell comes up the road after me.
+b : I've never cared for it. | Slow's the way. | All that way?
+a : Then there's more for me, and that's fine. | Slow, and quiet, with nobody chattering at me. | On a west wind. It's cruel, a smell like that, with an empty purse.
+
+scene parish_loaf
+when topic=food self.wealth=destitute|poor
+does tell.self / react.self / assess
+a : #dole.capitalize# again for supper. I'm not grumbling, mind. It's bread. | The chapel loaf's heavier than it was. Somebody up there's been generous. | I cut the loaf in three with #knife# and make it last.
+b : Bread's bread. | Somebody's doing right, then. | That knife earns its keep, at least.
+a : It is. And I've had worse, and I've had nothing. | For once. I'll tell the priest so. | Bread's the only thing it cuts these days.
+
+scene fresh_straw
+when topic=home
+does tell.feeling / react.self / assess
+a : I put #straw# down today. Smell it. That's a field, that is. | Old straw sours. Fresh, and the room's a different room. | I'd take #straw# over a cushion, and I've had both.
+b : It does smell sweet. | I believe you. | A cushion's softer.
+a : For a week it does. Then it's my room again. | Like getting your coat washed. | Softer and stuffier. Straw breathes.
+
+scene top_of_the_row
+when topic=home self.quarter=commons
+does tell.self / react.self / assess
+a : I've the top floor of the row. Too many stairs, but the whole gate road from my window. | Up at the top it's cold, but nobody stamps about over my head. | Rent's due and I'll scrape it. I always scrape it, somehow.
+b : That's a fair trade. | There's that. | Somehow's the word.
+a : Stairs for a view. I'd make it again. | Only the birds, and they're welcome. | Somehow, and don't ask me how.
+
+scene carts_in
+when topic=caravan world.wagons=in
+does tell.news / react.news / assess
+a : The carts rolled in at dawn. I counted them through #gate#, and they rode heavy. | They're in. I heard them grinding before the bar was off. | #carts.capitalize# came, and the drovers are already drinking the pay.
+b : Good, that's something. | Full ones, by the sound? | That's quick of them.
+a : Food on the shelves for a week, and that's the whole tale. | Full. The wheels sit low when they're full. | Ale first, then home. They were the same when I was small.
+
+scene carts_late
+when topic=caravan world.wagons=late
+does tell.worry / reassure / assess
+a : No carts. I've stared at #gate# since the bar came off, and not one wheel. | Still nothing up the road. And I do hate a thing that won't come. | Late again. #saying#.
+b : They'll be along. | Some days they're just slow. | You'll see them first, anyway.
+a : They'd better be. The loaf climbs for every hour they dawdle. | Slow's no matter. It's the sitting and wondering that wears me. | I will. And I'll not cheer when I do.
+
+scene carts_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess
+a : Somebody stripped a load past the milestones. A drover limped in through #gate# with nothing on the pole. | Road wolves out past the milestones again, and nobody here surprised. | Robbed, and you watch: it'll go on the bread by Marketday.
+b : That's a bad business. | I'm surprised. | Nobody pays but us.
+a : It is. Nobody limps like that over good news. | Then you've not sat on this step long. | Never. Never once.
+
+scene no_haggling
+when topic=prices
+does give.opinion / react.self / assess
+a : I'll not stand there #haggle#. Name it, and I'll pay or walk. | I watched two at the stall fight over a penny till the bread went cold between them. | Folk think dickering's clever. It's only rude, and slow.
+b : Some like it, though. | Was it worth it? | It's how it's done.
+a : Let them. My time's short and my pride's shorter. | Not to either of them. And a queue stood behind. | Not by me. Ask, I pay, I go.
+
+scene bread_dear
+when topic=prices world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : A penny more on the loaf again, and the loaf no bigger. | I priced the eel at the rack. I'll be eating the smell of it this month. | Tighter every week, and the Rise never feels it.
+b : It's the same everywhere. | That's grim. | They feel it, they just don't stop.
+a : Then it's wrong everywhere. Doesn't make it right here. | It's a good smell, at least. Free, too. | Same thing, from where I sit.
+
+scene gossip_passed
+when topic=gossip here.region=ridgemere topic.claim_kind=other|newcomer|promise_kept|promise_broken|marriage|prowling
+does tell.gossip / react.news / assess
+a : Folk say #topic.subject# #topic.claim#. It came past my step twice, so I'd stake my supper on it, such as it is. | The road's saying #topic.subject# #topic.claim#. Believe what you will. | I'll give it you the shape it reached me: #topic.subject# #topic.claim#.
+b : Is that so? | Who brought that? | I'd caught a whisper of it.
+a : I doubt most things, and I can't doubt that one. | Three different mouths, all telling it alike. | Then it's going round. It'll be bigger by tonight.
+
+scene gossip_hard
+when topic=gossip here.region=ridgemere topic.claim_kind=death|violence|theft|victim|wanted
+does tell.gossip / sympathise / assess
+a : They say #topic.subject# #topic.claim#. That's not one I liked hearing. | Bad news on the road: #topic.subject# #topic.claim#. | I'd sooner not repeat it, but you'll hear it anyway. #topic.subject.capitalize# #topic.claim#.
+b : That's hard to hear. | Bad enough. | I'm sorry you had to carry it.
+a : It is. It's sat with me since breakfast. | Bad enough, and the day not done. | Somebody has to. I've nothing else to carry.
+
+scene new_face
+when topic=newcomer
+does give.opinion / disagree / concede
+a : Another new face through #gate# this week. A bit less of the old road with each. | I saw a stranger asking which way the square was. Didn't know uphill from down. | Off the carts with their bags and their hopes, and up crawl the rents.
+b : Somebody was new once, all the same. | We all had to ask once. | It's not their doing, the rents.
+a : Not me. Born under this smoke. But I take your point, I suppose. | I suppose. I pointed, anyway. | No. Not theirs. I'll grant you that much.
+
+scene moved_on
+when topic=smalltalk|crime self.wealth=destitute|poor here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #watch.capitalize# shifted me off the inn step again. As if I'm the trouble on this road. | I've been chased out of every dry doorway between here and the square. | A young one in the coat told me to move along. I sat that step before that one was whelped.
+b : That's poor of them. | There's nowhere they'll let you be? | They're only doing what they're told.
+a : Poor, and pointless. I'm back on the step by noon. | Only my own top step, and my knees don't love the climb. | Then somebody's telling them wrong.
+
+scene keen_knife
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : Twenty strokes on #whet#, first thing. Feel that: #keen#. | #oath#. Look at that edge. Nothing in the house for it, mind. | I keep the knife keen whatever's for supper, and most days nothing is.
+b : And what does it cut? | Why keep at it, then? | Isn't that a waste of a good edge?
+a : Bread, when there is bread. String. Nothing much. | Because the day it goes dull is the day I've given up. | A waste? Nothing else I own is still in good order.
+b? : #bc_fair# | #bc_true_enough# | #bc_ha#
+a : So I keep it ready. | And I've not given up. | Me, I'm not. The knife is.
+
+scene waiting_hate
+when topic=smalltalk|day
+does give.opinion / react.self / assess
+a : Don't keep me waiting. That's my one rule for the world. #saying#. | They said come for the loaf at noon. Noon came and went twice. | Sitting on #step# isn't waiting, mind. Watching's another trade altogether.
+b : Some things won't be hurried. | Did you get it at last? | What's the difference?
+a : Then say so, and I'll find something better to do with the hour. | Cold, and not a sorry with it. | Watching, the road brings you things. Waiting, you're stuck till it does.
+
+scene chapel_bowl
+when topic=faith
+does tell.self / react.self / assess
+a : Sermons send me to sleep, but when the row had nothing, the priest's kitchen found a bowl. | If I've two pennies, one goes in the box. The other's for eel. The Bright One understands arithmetic. | #bigbells.capitalize# go and I count them. That's as near a prayer as I come.
+b : That's a debt worth keeping. | Fair enough. | It's as good as any.
+a : I pay it by sitting still through the sermon. That's hard labour, for me. | Fair's the word. I'm not one for show. | Better than some I've heard muttered.
+
+scene festival_road
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival, and the whole road's out. A watcher's feast day. | Music from three inns at once, all out of step with each other. I love it. | There'll be somebody crying in a doorway by midnight. There always is.
+b : You'll be on your step, then. | It's a racket, all right. | A sorry thing to wait up for.
+a : Front row, and nobody can move me on. Not on a festival. | The best kind. Nobody's minding their manners. | It's not the crying I watch for. It.s who comes down to fetch the weeper home.
+
+scene old_gate_days
+when topic=memories self.age>=60 here.region=ridgemere
+does tell.memory / ask.detail / answer.detail / react.self / assess
+a : Back in my small days the gate shut at sundown, and if you were late you slept in the ditch. | The road was all mud then. The carts sank to the axle. | I sold eels up and down this road before half these inns had roofs.
+b : And if you were late? | How did they get through? | Did you sell many?
+a : Ran. I was quick once, you'd not think it. | Pushed. Everybody pushed, even the drovers' pups. | Enough to buy myself one, now and then.
+b : Things change. | Hard days. | Good days, sounds like.
+a : They do. Not all of it for the worse, I'll own. | Hard. I'd still have them over these prices. | Wetter, and I was younger, and that's all good days ever are.
+
+scene dry_dream
+when topic=dreams
+does confide / react.self / assess
+a : I'd like to see #dry# before I go. Just the once. Dry ground for a week. | The ships go south, they say, to where the rain's a tale for pups. I'd sit on that dock. | Not to live. Only to see what my fur does when it's never wet.
+b : You'd miss the rain. | You might yet. | Fluffy, I'd guess.
+a : I might, at that. I'd give it a week before I missed it. | Maybe. I keep the wanting anyhow. Costs nothing. | Fluffy. Think of it. I'd not know myself in a puddle.
+
+scene old_bones
+when topic=health self.age>=60
+does tell.self / sympathise / assess
+a : #bones.capitalize# are loud today. Every stair to the top, I felt each one. | My eyes are still good. That's the thing. Everything else can go. | The priest says rest. I tell the priest I've rested since before the new bells were hung.
+b : That's age for you. | That's a blessing. | Maybe the priest's right.
+a : Age is a thief, but a slow one. You see it coming up the road. | It is. Take my eyes and you take my trade. | Maybe. The priest needn't hear it from me.
+
+story tipped_cart [topic=memories|caravan self.age>=50]
+  : Years back a fish cart lost a wheel right under the gate arch. Eels all over the cobbles.
+  : Half the street came running with buckets before the drover was up off the cobbles.
+  ask : Guess what I came away with.
+  b : A bucket of your own, I'd guess.
+  : Two eels and a cuff round the ear. Best supper I had that year.
+  b : Worth the cuff.
+
+story fog_home [topic=memories|weather self.age>=40]
+  : Once a mist came down so thick on me my own paws went missing.
+  : I found the row by the slate birds. They roost on our ridge, and they were complaining.
+  ask : Would you ever have thought of that?
+  b : Never. Clever of you. Did they get you there?
+  : To the door. I've fed them crusts ever since. It's a debt, the way I count.
+
+story knife_given [topic=memories|pastimes self.age>=40]
+  : An old tinker passing the gate gave me #knife# for minding a pack one night.
+  : Said keep it keen and it'd keep me. I've not let it go dull since.
+  ask : Daft, isn't it, minding the word of somebody long in the ground?
+  b : Not daft. A word's a word, whoever gave it.
+  : That's what I think. And the knife's kept me, so far.
+
+rule @whet_bark
+when concept=bark
+does aside
+cooldown 8h
+say Twenty strokes, and not one wasted. | There. #keen.capitalize#.
+
+rule @mist_bark
+when concept=bark here.outdoors=fog here.time=dawn
+does aside
+cooldown 10h
+say Listen. #gate.capitalize#, right through all that white. | Gone white to the arch. Lovely.
+
+rule @carts_bark
+when concept=bark here.region=ridgemere here.time=dawn|day
+does aside
+cooldown 8h
+say Wheels on the road. Here they come. | That's the coal cart, by the groan of it.
+
+rule @rain_bark
+when concept=bark here.outdoors=rain|storm
+does aside
+cooldown 9h
+say That gutter. Every time. Right down my back. | Rain again. #saying#.
+
+dlg @1 resident.hub : #greet#. Sit if you're stopping. I talk better with company. | #greet#. You look like a body with something to tell. Out with it.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I had you spotted halfway up the road. | #topic.player#. Back on my step. Good. Sit.
+dlg @3 resident.hub [here.time=night] : It's dark, and I'm still out. What's your excuse? | Late. Hush, the row's asleep.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay there and say it. | I've a knife and I keep it keen. Talk plain.
+dlg @1 resident.job [self.job=none self.working!=yes] : I watch. Somebody must, and my eyes are still sharp. | Nothing, now. I sit and see the city go by. It's more than most bother to do.
+dlg @2 resident.job : What I do is mine to know. What I see, though, I'll share. | Ask me what the road's doing. That I can tell you.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. The carts brought it in at dawn.
+dlg @2 resident.news [world.event_words] : The whole road's on about #world.event_words#. You can't miss it.
+dlg @3 resident.news [world.wagons=raided] : Road wolves stripped a wagon bare. A drover limped in with nothing on the pole. Go careful.
+dlg @4 resident.news [world.death=recent] : There's been a burial, and the road's walked softly since.
+dlg @5 resident.news [world.wedding=recent] : A wedding! Half the road went, and I heard the other half from here.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new through #gate# today. That's rare, and it unsettles me.
+dlg @1 resident.gossip [here.gossip=yes] : Folk say #topic.subject# #topic.claim#. It came past my step, so it's been round.
+dlg @2 resident.gossip [here.gossip=no] : Not a whisper today, and I'd have heard one. Ask me tomorrow.
+dlg @1 resident.bye : #farewell#. You know where I sit. | #saying.capitalize#. Off you go.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Shoot your bolt. | Good night. Mind the corner, it's dark there.
+graft resident.hub
+choice What's that knife for? -> knife
+node knife
+say This? Nothing, mostly. There's little enough in my house for cutting. But it's #keen#, every morning.
+free
+choice Why keep sharpening it? -> knife_why
+choice Back to it. -> hub
+node knife_why
+say A tinker gave it me in my young days and said keep it keen and it'd keep me. Somebody's got to keep a promise on this road.
+choice I see. -> hub
+choice Goodbye. -> bye

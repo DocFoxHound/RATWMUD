@@ -1,0 +1,463 @@
+# rm169, the coal under the first stone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm169
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_frida_netherby
+written_by claude
+title the coal under the first stone
+fits stage=adult|old
+prefers role=merchant job=laborer talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk lays_a_lump_of_coal_under_the_first_stone_of_every_job
+likes spiced_cider singing market_bustle misty_dawns
+dislikes stale_bread waiting
+fears a_wall_coming_down_on_somebody the_stall_money_spent_on_a_bad_winter
+hopes a_cider_stall_on_the_commons_market the_pup_never_hauling_stone
+topics dreams +0.5 work +0.4 weather +0.3 pastimes +0.3 family +0.3 food +0.2 gossip -0.4 prices -0.2
+styles comfort=company gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps the stone yard's tally for its House, talks little and softly, sets a lump of coal under the first stone of every job for luck, loves a misty dawn and a song round a table, and is putting coin by, one at a time, for a cider stall on the Commons.
+
+words
+oath! = Coal and keystone | Bless the footings | Mortar and moonlight
+saying! = Everything stands on something | Mist lifts, stone stays | The first stone holds the rest up
+yard = the yard | the stone yard
+blocks = the blocks | the dressed stone | the squared stone
+lime = the lime | the lime putty
+carts = the stone carts | the carts down from the quarry
+steward = the steward | the House's steward
+tally = the tally | the steward's tally book
+coal = a lump of coal | my luck coal | a bit of coal
+firststone = the first stone | the bottom course
+cider = spiced cider | cider with cloves bobbing about in it | a steaming cup of cider
+song = a song with everybody joining in | singing round a table
+square = the square when it's elbow to elbow | the market roaring like a kiln
+mist = mist on the stone at first light | the morning mist | a grey dawn
+stall = a stall that's mine | my stall, one day | a little stall on the Commons
+coinjar = the stall money | my coin jar | the jar beneath my cot
+crust = stale bread | a crust as hard as squared stone
+mm = Mm | Ah
+
+any
+opinion @1 houses for 1 : The Houses keep the yards going, and the yards keep half the Commons fed. I'll not speak against that.
+opinion @1 road against 1 : When #carts# are late, the masons stand about, and standing about costs everybody. I hate the waiting.
+opinion @2 road against 2 [world.wagons=raided] : Somebody's cart was robbed out there. My mind goes to the carter. Stone can be cut again.
+opinion @1 dole for 1 : A city that raises walls like ours can surely raise a supper for every wolf in it.
+opinion @1 newcomers for 1 : Walls never stop wanting raising. Any newcomer who'll carry is welcome in my yard.
+opinion @1 strangers for 1 : Strangers are only folk nobody's poured a cider for yet. I like them.
+opinion @1 watch for 1 : They walk past the yard at night with their lanterns. I'm glad of the sound.
+opinion @1 times for 1 : Bread, a sound roof, and a song now and then. #mm#. That's plenty.
+opinion @1 city for 1 : I love it best at dawn, in the mist, before anybody's shouting. Then it's the loveliest place there is.
+opinion @1 merchants for 1 : Whoever keeps a counter knows what a cart costs. I don't grudge them their farthing.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Shelter under the shed, if it suits. | #greet#. #mm#. You're welcome here.
+line @2 greet [self.working=yes self.role=merchant self.job=laborer] : #greet#. Mind the blocks; they're stacked high. | #greet#. Stand by the shed, out of the dust.
+line @3 greet [here.time=dawn] : #greet#. Look at the mist. Isn't it lovely. | #greet#. You're up with the grey, same as me.
+line @4 greet [here.time=dusk|night] : #greet#. The yard's quiet now. Sit, if you like. | #greet#. Late, and you still about.
+line @5 greet [pair.band=friends] : Oh, it's you. Good. | You. I'd hoped so.
+line @6 greet : #greet#. | #greet#. #mm#.
+line @1 kin.open [pair.kin!=no] : Sit here, close. | There you are. Have something warm.
+line @1 again.open : Back already. Good. | Twice today. That's nice.
+line @1 hail [pair.band=friends] : Here, by me. The bench is warm. | Here, a moment. Come and see this.
+line @1 greet.return : #greet#. | #greet#. #mm#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'm glad it's you. | #greet#. Sit down; I'll pour.
+line @3 greet.return [self.working=yes self.role=merchant self.job=laborer] : #greet#. Mind the lime. | #greet#. Counting, but go on.
+line @4 greet.return [here.time=dusk|night] : #greet#. A quiet hour, this. | #greet#. The lamps are nice tonight.
+line @1 farewell : #farewell#. Go gently. | #farewell#. The cobbles shine when they're wet; watch them.
+line @2 farewell [here.time=dusk|night] : #farewell#. Sleep well. | #farewell#. Watch for the mist on the way home.
+line @1 farewell.return : #farewell#. | #farewell#. Come again.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Don't be long away. | #farewell#. I'll keep the cider warm.
+line @1 react.news : Tell me. I'm listening. | #mm#. Go on, then.
+line @1 react.news.new : #oath#. I hadn't heard. | Oh. #marvel#.
+line @1 react.news.known : I'd heard a little. Not all of it. | #knew#. It reached the yard with the first load.
+line @1 react.news.doubt : I'm not sure. Once heard is only once. | #doubt#. News off the carts grows on the road.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. That's hard. | #pity#. I'm so sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely. Truly. | #gladnews#. That warms me.
+line @1 answer.how : Well, thank you. Quiet, which suits me. | #fine#. The mist was lovely this morning.
+line @1 answer.how.busy [self.working=yes] : Busy. Three carts in and the tally to do. | A lot on. But I can talk a little.
+line @1 answer.how.poorly : Tired. The damp's in my shoulders. | Not so well. Too much waiting about today.
+line @1 ask.how : And you? Keeping well? | How's your day been?
+line @1 sympathise : Oh. That's hard. Stay here by me, then. | #sympathy#. I'll get you something warm.
+line @1 reassure : It'll settle, the way new walls do. | #reassure#. One stone at a time.
+line @1 decline : #hedge#, but I can't. There's a tally wants finishing by dark. | I'm sorry. I can't leave the yard just now, and I'd like to.
+line @1 accept_decline : No harm. Some other day. | #no_matter.capitalize#. I understand.
+line @1 thank : Thank you. That's kind. | #thanks#. I'll remember it.
+line @1 deflect_thanks : It was nothing, truly. | #deflect.capitalize#. I was glad to.
+line @1 preclose [self.working=yes] : The tally's calling me back. | The carts won't count themselves.
+line @2 preclose : Well. #preclose#. | I should go. It's been nice.
+line @1 accept_preclose : Go on. I liked this. | Of course. Go gently.
+line @1 ack : #mm#. | #bc_i_know#. | #bc_true#.
+line @1 give.advice : #advise.capitalize#: never lay stone in a frost. It'll crack by spring. | Start with something solid under you. Everything else follows.
+line @1 warn [world.bandits=near] : #warn#. Go with the carts, not ahead of them. | Don't go past the walls yet. The road's not kind just now.
+line @1 disagree : #demur#. I've known it turn out otherwise. | I'm not sure. I think it's more than that.
+line @1 concede : You may be right. | #concede#. I'll think on it.
+scene coal_under_the_first_stone
+when topic=work|smalltalk self.role=merchant self.job=laborer
+does tell.self / ask.detail / answer.detail / assess
+a : Every job we start, I put a lump of coal under the first stone. Every one. | I set a bit of coal in the footings this morning. The masons don't laugh any more. | There's coal under the bottom course of half the new walls by the gate. Nobody knows but me.
+b : Why coal? | They used to laugh? | Half of them?
+a : For luck. A wall wants something warm beneath it. | Once. Then a wall I hadn't blessed slid into the lane, and they stopped. | More than half, now. It's an old habit of mine.
+b : #bc_lovely# | #bc_ha# | #bc_clever#
+
+scene coal_from_the_pocket
+when topic=lore|smalltalk
+does tell.self / react.self / assess
+a : There's always a bit of coal in my pocket. I like knowing it's there. | #coal.capitalize# for luck. My paws are black with it by evening. | Folk think it's daft, a bit of coal. It isn't daft to me.
+b : Does it work? | Black paws? | It's not daft.
+a : I've never been sure. I've never stopped, either. | Black as the gate at night. I wash, and it comes back. | Thank you. #saying#, you know. Even luck.
+
+scene mist_on_the_stone
+when topic=weather here.weather=fog here.time=dawn
+does tell.feeling / react.self / assess
+a : Look at the mist on the stone. Everything goes grey and soft. | I love a dawn like this. Every street ends in grey, and it's so quiet. | The mist's in. I came out early only to stand about in it.
+b : It's cold, though. | #bc_it_is# | You came out on purpose?
+a : A little. I don't mind. It's worth the cold. | It is. Every morning, if I were asked. | On purpose. Before the carts, before the shouting. Just the mist.
+
+scene mist_any_hour
+when topic=weather|day here.weather=fog
+does tell.self / react.self / assess
+a : Murk all day. The carters can't see the yard gate. | Fog this thick, you hear the city instead of seeing it. | I like this weather. Everything goes quiet and kind.
+b : It's a nuisance for work. | That's true. | Kind?
+a : It is. We stack what we can and wait. Waiting's the part I mind. | Wheels, gulls, somebody calling. It's like a song with the words missing. | Soft at the edges. Nobody hurries in the fog.
+
+scene cider_at_dusk
+when topic=food|pastimes here.time=dusk|night
+does tell.feeling / react.self / assess
+a : Hot cider when the work's done, cloves bobbing in it. Supper, near enough. | I'll have #cider# tonight, I think. I've wanted it since noon. | There's nothing like cider when your paws are cold from the stone.
+b : #bc_lovely# | Just cider? | Warms you through.
+a : It is. I hold the cup a long time before I drink it. | And bread, if the bread's fresh. Never stale. | Through and through. And the smell's a festival.
+
+scene cider_dream
+when topic=dreams|food
+does tell.plan / ask.detail / answer.detail / assess
+a : Someday there'll be a cider stall on the Commons, and it'll be mine. Hot, spiced, for anybody cold. | When I've saved enough, I'm going to sell cider by the fountain. | I think about my stall every night. Where it'll stand, which pots.
+b : Cider? Not stone? | How much more do you need? | Where will it stand?
+a : Stone's my work. Cider's my wish. A person can have both. | A good while yet. A coin at a time. No hurry. | By the fountain, where everybody stops. I've already picked the cobbles.
+b? : #bc_lovely# | #bc_hope_so# | #bc_ha#
+
+scene the_coin_jar
+when topic=dreams|prices
+does tell.self / react.self / assess
+a : I put one coin in the jar every week. Some weeks two. Never none. | The stall money sits in a jar beneath my cot. I count it on Restdays. | It's slow, saving. But every coin's a little piece of the stall.
+b : That takes patience. | Is it growing? | It is.
+a : I've plenty of that. It's waiting I can't abide, and saving isn't waiting. | Slowly. Like a wall goes up. One course at a time. | It is. I picture it there, getting heavier.
+
+scene singing_round_the_table
+when topic=pastimes
+does tell.feeling / react.self / assess
+a : I don't say much, but put me at #song# and the candles will gutter before I stop. | There's nothing I love like a table of friends and everybody singing. | Folk are surprised I sing. I'm quiet until there's a song. Then I'm not.
+b : I'd come and listen. | Which songs? | That's a nice surprise.
+a : Come by of a Restday. Some table always gets going. | The old ones. The ones everybody knows the middle of. | It surprises me too, sometimes. It just comes out.
+
+scene a_song_at_night
+when topic=pastimes|smalltalk here.time=dusk|night here.region=ridgemere
+does tell.self / react.self / assess
+a : Somebody's singing in the street. I always stop and listen. | Hear that? Somebody's singing up by the gate. I'd join in if I knew it. | A good song carries a long way on a still night.
+b : It's pretty. | You could join anyway. | It does.
+a : It is. I'll hum it in the yard tomorrow and not know why. | I might. I'm braver after dark. | It does. You hear it clear across the stone yard.
+
+scene the_square_at_full_roar
+when topic=day|smalltalk here.day=market here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Market days, the whole square shouting at once. I love it. | It's #square# today. I go down for the walking, only that. | I'm quiet, but I love a crowd. I like being one small thing in a big noise.
+b : Too loud for me. | Just to walk? | Strange thing to love.
+a : It's loud. But it's alive. I come away feeling full. | Just to walk, and to look at the stalls, and to dream about mine. | Maybe. It feels safe to me, all that noise.
+
+scene the_steward_and_the_tally
+when topic=work self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : Every load in, every load out. The steward wants it all in the tally, to the last block. | I answer to the House's steward for each cart. I don't mind. I keep it straight. | The tally's done. Every block counted. I like a tally that comes out right.
+b : Heavy work, that counting. | Is the steward hard? | #bc_good#
+a : Heavy, but honest. I like knowing where everything is. | Fair. Particular. I'd be the same, with that much stone. | Such a small thing. It makes me happier than it should.
+
+scene waiting_on_carts
+when topic=caravan|work world.wagons=late self.role=merchant self.job=laborer
+does tell.complaint / react.complaint / assess
+a : #carts.capitalize# are late again, and the masons are sitting on the blocks doing nothing. | There's a wall at waist height and no stone to finish it. I hate the waiting. | Late carts. I've walked to the gate four times this morning to look.
+b : #grumble# | They'll come. | Four times!
+a : Mm. Idle hands, idle wall, and the House paying for both. | They will. Now would suit me better. | Four. I'll go a fifth. I can't sit still when I'm waiting.
+
+scene the_carts_roll_in
+when topic=caravan world.wagons=in self.role=merchant self.job=laborer
+does tell.news / react.news / assess
+a : The stone carts are in. Their wheels woke me before light. | Carts came down from the quarry this morning, all of them. I could have sung. | They're in. The yard's full, and everybody's working again.
+b : #bc_about_time# | Did you sing? | Good.
+a : About time. The masons were starting to look at me sadly. | A little. Just under my breath, while I counted. | It is. A full yard is a happy yard.
+
+scene the_road_robbed
+when topic=bandits|caravan world.wagons=raided
+does tell.news / sympathise / assess
+a : Robbers had a cart, out beyond the walls. My thoughts go to the carter. | I heard there's robbers working the road. I hope the carters are safe. | Word came that a wagon never arrived. It makes me sad, not cross.
+b : #uneasy# | Me too. | It's a bad business.
+a : I do too. You can cut stone again. You can't do that with a wolf. | Mm. I'll go and light something for them, I think. | It is. I wish somebody would ride out and keep the road.
+
+scene stale_crust
+when topic=food
+does tell.complaint / react.complaint / assess
+a : I can't abide stale bread. A crust like that's no better than the blocks. | Somebody left a loaf out and it's gone hard. The gulls can have it. | Fresh bread, or none. Better no bread than a stale crust.
+b : #grumble# | The birds won't mind. | That's fussy.
+a : Bread's my only fussiness. Everything else, I let be. | They won't. There's one old gull that sits on the wall till I come. | It is. I'm fussy about bread and coal. Nothing else.
+
+scene waiting_about
+when topic=smalltalk|day
+does tell.complaint / react.self / assess
+a : I don't mind most things. I mind waiting. | Waiting makes me restless. Give me something to carry and I'm happy. | All morning I've stood about for one word. I'd rather be told no than kept waiting.
+b : It's only time. | Me too. | Sometimes no is worse.
+a : That's just it. Time spent waiting is time with nothing in it. | Then we're the same. Here, take this end of the plank. | Maybe. But at least then you can start on the next thing.
+
+scene the_pup_at_lessons
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : #self.child# goes off to lessons every morning. Letters. Sums. I want that, so much. | I'd not have #self.child# hauling stone. A pup of mine will read. | Some nights I sit and listen to #self.child# reading. I don't follow it all. I don't need to.
+b : You must be proud. | That's a good wish. | That's lovely.
+a : I am. Quietly. I don't tell folk; I just think it. | It's my one wish bigger than the stall. | Yes. Those evenings I'd keep over any other hour.
+
+scene pup_and_the_stall
+when topic=family|dreams self.parent=yes
+does tell.plan / react.self / assess
+a : When I've my stall, #self.child# can help pour the cider, if that's wanted. | The stall I dream of is for two. Something of our own. | I'd like #self.child# to have something better than a yard. A stall's a start.
+b : That sounds nice. | Something of your own. | It is a start.
+a : It does, doesn't it. I'll not push it, mind. Choice first. | Yes. Nobody's tally but ours. | It is. Small. But it stands on something.
+
+scene friend_at_the_yard
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is somebody I'd sit beside without saying a word, and be glad. | I trust #self.friend#. From me, those words weigh something. | When there's singing, I want #self.friend# on the bench opposite.
+b : That's a good friend. | They do. | #bc_lovely#
+a : It is. I've not many friends, and I hold on to them. | Yes. I say it seldom. | It is. You need somebody who knows the middle of the song.
+
+scene neighbour_through_the_wall
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : Living next to #self.neighbour# makes the house feel steadier, somehow. | A good neighbour is like a good footing. You don't think about it, but it holds you up. | I'd go to #self.neighbour# first, if anything went wrong.
+b : That's a nice thing. | #bc_true# | Good to have.
+a : It is. I'm lucky. | You only notice when it's gone. May I never notice. | It is. I hope I'd be the same, the other way round.
+
+scene the_house_and_the_walls
+when topic=lore|work here.region=ridgemere self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : Every wall in sight of the gate, the House built, or a yard like mine did. | I like knowing which walls we raised. I walk past them on my way home. | Greatly brick and Greatly stone. Half the city stands on what came through yards like ours.
+b : You must be proud of that. | Which ones? | Half the city!
+a : I am. Not loudly. But I am. | The one by the abbey close. The new lane wall. I touch them, passing. | Near enough. #saying#.
+
+scene rain_on_the_blocks
+when topic=weather|work here.weather=rain self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : Rain, and the lime's covered, and the masons are under the shed. We sit it out. | Look how dark the stone goes in the rain. It's prettier wet. | Wet stone is slippy stone. I'd sooner nobody lifted in this.
+b : More waiting. | Prettier? | That's sensible.
+a : More waiting. I'll count the blocks again. That's something. | Mm. All the colours come out. Grey, and rust, and a bit of green. | It's only stone. Nobody's worth hurting for it.
+
+scene storm_shuts_the_yard
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : Storm's shut the yard. Everybody's gone home. I stayed to listen. | Thunder like that makes me want to sing loud, where nobody can hear. | The rain's coming sideways. I hope the lime's covered. I'm sure it is.
+b : You stayed? | Do it, then. | I'm sure it is too.
+a : Under the shed, with a cup of cider. It's lovely, really. | Maybe I will. Thunder doesn't mind a bad singer. | I'll check anyway. I'll not sleep otherwise.
+
+scene carts_at_the_gate
+when topic=smalltalk|travel here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : I live up by the gate. I hear every cart come in. I like it. | The north road carts come past my window before it's light. I count them, lying there. | Busy up by the gate, always. Drovers, carters, everybody shouting. I'm the quiet one.
+b : Doesn't it wake you? | You count them? | Somebody has to be.
+a : I'm awake already. I like the grey before the morning. | Seven, this morning. Counting's just a habit. | Mm. Somebody has to listen, too.
+
+scene hard_times_empty_yard
+when topic=times world.times=hard|lean self.role=merchant self.job=laborer
+does tell.worry / reassure / assess
+a : Nobody's building. The yard's half empty, and the masons are looking for other work. | Times are thin. I've had to send two good hands away. | No new walls this month. The stone just sits.
+b : It'll turn. | That's hard. | It'll keep, at least.
+a : I hope so. I'm putting less in the coin jar. I don't like that. | It was. They were kind about it, which was worse. | It will. Stone's patient. I try to match it.
+
+scene good_times_full_yard
+when topic=times world.times=good|boom self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : Everybody's building. I've never seen the yard so busy. | Two new jobs this week, and three waiting. There's coal under every one. | The coin jar's heavy this month. The stall's a little closer.
+b : #bc_lucky_you# | You'll run out of coal. | Closer!
+a : Lucky. I know it. | I've a sack of it. Luck's cheap, if you buy it right. | Closer. I can nearly see it.
+
+scene gossip_reluctant
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I don't carry tales much. But they're saying #topic.subject# #topic.claim#. | Only gate talk, mind: #topic.subject# #topic.claim#. I don't know more. | Somebody told me #topic.subject# #topic.claim#. I've not decided what I think.
+b : Is it true? | #bc_so_they_say# | Nor me.
+a : I couldn't say. I'd rather not guess about folk. | Mm. That's all I've got. I'll leave it there. | Best not to decide too quick. It's somebody's life.
+
+scene gossip_a_wedding
+when topic=gossip topic.claim_kind=marriage|promise_kept
+does tell.gossip / react.news / assess
+a : Oh, here's a nice one. #topic.subject.capitalize# #topic.claim#. | I heard something that made me smile: #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I'm glad.
+b : #bc_lovely# | That's nice. | Good news.
+a : It is. There'll be singing, I hope. | It is. I like a bit of good news passed round. | It is. Let's have more like it.
+
+scene new_face_on_the_street
+when topic=newcomer here.region=ridgemere
+does tell.self / react.self / assess
+a : A newcomer's moved in along our street. I carried round a jug of cider. | Somebody came asking for work this week. I found them some. | Somebody's only lately arrived in the city. I hope it's kind to them.
+b : That's welcoming. | Did they take it? | I hope so too.
+a : It's only cider. But it's warm. | Gladly. There's always a stone that wants carrying. | It was kind to me. It can be hard at first.
+
+scene a_quiet_prayer
+when topic=faith here.region=ridgemere self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : When the coal goes under the first stone, I whisper a word upward. No more praying than that. | I'm not much at chapel. I like the bells, though. They sound like singing. | Bright One, keep the masons whole. That's what I ask, every morning.
+b : That's a good prayer. | They do. | That's kind.
+a : It's short. The Bright One's busy. | I hum along, sometimes, under my breath. | I ask nothing else, really.
+
+scene the_old_mason
+when topic=memories self.age>=30
+does tell.memory / react.self / assess
+a : An old mason taught me the coal. Pressed it on me as a pup and said, under the first stone. | As a youngster, I carried mortar for my #mum#. I liked the smell of lime even then. | I once sat on a block a whole day, watching my first wall go up.
+b : And you've done it since? | The smell of lime? | All day?
+a : Every wall. Never a question asked. I just did. | Sharp and clean. It still smells like home. | All day. My #mum# couldn't shift me. I think I knew then.
+
+scene frost_and_mortar
+when topic=season|work here.season=winter self.role=merchant self.job=laborer
+does tell.self / give.advice / assess
+a : No laying in a frost. The mortar won't take. We stack and wait for a thaw. | Winter's the slow season in the yard. I hate it, a little. All that waiting. | The blocks are rimed white this morning. Pretty. But we'll not lay today.
+b : Why won't it take? | A little? | Pretty, though.
+a : It freezes before it sets. Then it cracks in spring, and the wall comes down. | A little. Mostly I like the quiet. | Very pretty. I stood there, gazing, longer than I should.
+
+scene spring_footings
+when topic=season|work here.season=spring self.role=merchant self.job=laborer
+does tell.plan / react.self / assess
+a : Spring, and the ground's soft enough for footings. I've three jobs waiting. | First proper building weather. I've the coal ready. | The yard wakes up in spring. So do I.
+b : Three already! | Of course you have. | #bc_good#
+a : Three. And a fourth if the steward says yes. | Of course. You don't start a wall without it. | It is. Everything starts again.
+
+scene a_traveller_looking
+when topic=player
+does tell.self / react.self / assess
+a : That one's walked down the north road, by the dust. Tired, too. I'd give them a cider. | There's a stranger nearby, looking at the walls. I like folk who look at walls. | That one's new to the city. They keep stopping in the street, looking up.
+b : That's kind. | Why? | Everybody does, at first.
+a : It's only a cup. Tired folk need something warm. | Most folk don't notice them. Somebody built every one. | They do. I still do, sometimes.
+
+story where_the_coal_came_from [topic=memories|work self.age>=30]
+  : As a small thing, I'd sit and watch an old mason who built walls by the gate.
+  : One morning he gave me a lump of coal and told me to put it under the first stone. For luck, he said. A wall wants something warm at the bottom.
+  : I did it. That wall's still standing. I've done it for every wall since.
+  ask : Would you have kept doing it, all these years?
+  b : I think I would. Once you start a thing like that, you can't stop.
+  : No. I tried once. I couldn't sleep.
+
+story the_wall_without_coal [topic=work|lore self.role=merchant self.job=laborer self.age>=25]
+  : There was a job, years back, where the steward said no time, lay it now, never mind your coal.
+  : We laid it. It looked fine. Three weeks later, a hard rain, and half of it slid into the lane.
+  : Nobody was hurt. The masons have let me keep my coal ever since.
+  ask : Was it the coal, would you say?
+  b : I'd say the rain. But I'd keep the coal anyway.
+  b[old] : Old habits know things we don't. I'd not argue with it.
+  : So would I. It doesn't cost anything to be careful.
+
+story the_night_of_songs [topic=pastimes|memories self.age>=25]
+  : There was a night, after a feast, when the whole street sang till the lamps burned out.
+  : I don't sing in front of folk, usually. That night I sang through every tune in my head, and some that weren't.
+  : Nobody remembered after who'd started it. Everybody remembered how it ended, with everyone hoarse and happy.
+  b : That sounds wonderful. Was there ever another like it?
+  : Not like that. I keep hoping. Every feast, I keep hoping.
+
+story the_mist_and_the_gate [topic=weather|memories here.region=ridgemere]
+  : There was a dawn so thick with mist that I walked straight into the gatepost. Didn't see it at all.
+  : I stood there with my nose sore and laughed by myself, out loud, in the fog.
+  : Then I stayed there an hour, just in the mist, listening to the city waking up.
+  b : An hour! With a sore nose?
+  : A sore nose and the loveliest hour I've had. I'd walk into a gatepost again for it.
+
+story the_first_coin [topic=dreams|memories]
+  : The first coin I put in the stall jar was one I found in the yard, between two blocks.
+  : I thought, that's luck, that's for something, and I dropped it in the jar. That was the start of it.
+  ask : Have you ever found a coin and known what it was for?
+  b : Not like that. I'd have spent it on a pie.
+  b[stage=young|adolescent] : Once. I bought sweets. I wish I'd saved it now.
+  : There's no harm in a pie. But I'm glad I kept that one.
+
+rule @yard_cry
+when concept=bark working=yes self.role=merchant self.job=laborer
+does aside
+cooldown 6h
+say Mind the stone. Coming through. | Steady with that block. Steady.
+
+rule @mist_bark
+when concept=bark here.weather=fog
+does aside
+cooldown 10h
+say Look at that mist. Oh, look at it. | Everything's grey and soft. Lovely.
+
+rule @waiting_bark
+when concept=bark world.wagons=late
+does aside
+cooldown 10h
+say Still no carts. I hate waiting. | Come on, come on. Where are you.
+
+rule @cider_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 12h
+say A cup of cider would be nice about now. | Cloves and cider. That's what I want.
+
+rule @hum_bark
+when concept=bark
+does aside
+cooldown 10h
+say Hm-hm, hm. Never could keep the words. | La, la. That's the bit I like.
+
+rule @rain_lime
+when concept=bark here.weather=rain self.role=merchant self.job=laborer
+does aside
+cooldown 8h
+say Cover the lime! Quick, now. | Under the shed, everybody. Stone can wait.
+
+dlg @1 resident.hub : #greet#. What can I do? | #greet#. You're welcome. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. Good. | #topic.player#. Good. Sit, if you like.
+dlg @3 resident.hub [here.time=night] : It's late. Is something wrong? | The yard's shut, but I'm here. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll listen. Please keep your voice down. | Say what you need. Gently, if you can.
+dlg @1 resident.job [self.role=merchant self.job=laborer] : I run the yard for the House. Stone in, stone out, and every block in the tally. | I keep the stone yard. Carts, masons, lime, and endless counting.
+dlg @2 resident.job : #self.trade_words.capitalize#. Plain work, and I like knowing where everything is. | Counting by day, singing by night, a little. That's most of it.
+dlg @3 resident.job [self.working=yes] : I'm at the tally just now. Ask, though. | Mind the blocks. Counting and talking go together fine.
+dlg @1 resident.news [world.news] : The carters brought word from #world.news_from#: #world.news#. | Gate talk: #world.news#. From #world.news_from#, they said.
+dlg @2 resident.news [world.event_words] : Everybody's talking about #world.event_words#. | It's all #world.event_words#, at the yard and the gate both.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon never reached the gate. Please be careful out there. | Robbers on the road. My thoughts are with the carters.
+dlg @4 resident.news [world.death=recent] : A neighbour of ours has died. It's been quiet. | We lost somebody nearby. I lit a candle.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! Such singing. | A wedding! I sang myself hoarse.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing much. Quiet, which I like. | #news_none# Something will roll in with the carts.
+dlg @1 resident.gossip [here.gossip=yes] : I don't carry much. But they say #topic.subject# #topic.claim#. | I only heard it: #topic.subject# #topic.claim#.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Be careful. They say #topic.subject# #topic.claim#. | I heard #topic.subject# #topic.claim#. Lock your door, maybe.
+dlg @3 resident.gossip [here.gossip!=yes] : #gossip_none# I'd rather not, anyway. | Nothing I've heard. I'm not one for tales.
+dlg @1 resident.business [business=thriving] : Busy. More jobs than masons. | Good. Every wall in the city wants stone.
+dlg @2 resident.business [business=steady] : Steady. The yard's never empty, never full. | It does well enough. The steward's content.
+dlg @3 resident.business [business=failing] : Slow. Nobody's building. | Poorly. The stone sits, and the masons wait.
+dlg @1 resident.bye : #farewell#. Go gently. | #farewell#. Come back.
+dlg @2 resident.bye [here.time=night] : #farewell#. Sleep well. | Go carefully; it's black as coal out.
+dlg @1 shop.greet [here.shop!=bare self.job=laborer] : #greet#. Dressed stone and lime, by the load or the block. | #greet#. Mind the stacks. What are you building?
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. What do you need this time? | #topic.player#. Good to see you. Have a look.
+dlg @3 shop.greet [here.shop=bare] : #greet#. We're nearly out; the carts are due. | The yard's bare just now. Try again once the quarry carts arrive.
+dlg @4 shop.greet [here.shop!=bare] : #greet#. Have a look. Take your time. | #greet#. #shop_offer#
+dlg @1 shop.prices : What the steward sets. It's fair; I've checked. | #shop_dear# The carts cost what they cost.
+dlg @1 shop.bye : #farewell#. Go gently. | #shop_bye# Mind the blocks on your way out.
+graft resident.hub
+choice Why do you carry coal? -> coal
+node coal
+say For luck. An old mason pressed a lump on me as a pup and told me to put it under the first stone. I've done it for every wall since.
+mood warm
+free
+choice Does it work? -> coal_works
+choice Back to what we were saying. -> hub
+node coal_works
+say I don't know. The walls are standing. Leaving it out is a test I'll never run.
+choice Keep doing it, then. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What will you do when you leave the yard? [self.job=laborer] -> stall
+node stall
+say Oh. A cider stall, on the Commons. Hot, spiced, for anybody cold. I'm saving for it, a coin at a time.
+mood warm
+choice I'd buy a cup. -> stall_cup
+choice Show me the stone. -> greet
+node stall_cup
+say You'd be my first. I'll remember that. Now, what do you need from the yard?
+choice Let me see what you have. -> greet
+choice Goodbye. -> bye

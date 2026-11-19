@@ -1,0 +1,283 @@
+# rm178, the bent-pane looker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm178
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_delphine_redfern
+written_by claude
+title the bent-pane looker
+fits stage=adult|old
+prefers job=crafter temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk holds_every_flawed_pane_up_to_see_the_street_bent_through_it
+likes hard_cheese singing old_maps autumn_wind
+dislikes haggling gulls
+fears a_cracked_pane_in_winter being_forgotten_on_a_list
+hopes a_window_of_my_own_with_no_flaw_in_it
+topics work +0.4 pastimes +0.3 lore +0.3 weather +0.2 food +0.2 friends +0.2 prices -0.3 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# helps at a glassworks in the Commons, careful and unhurried, singing with friends when the day's done, and holds every flawed pane up to the light to see how it bends the street behind it.
+
+words
+oath! = Cullet and cinders | Sand and soda | Seed and stria
+saying! = Every pane tells the street a little wrong | A crooked road still gets you there | Look twice, then set it down
+pane = a pane | a sheet of glass
+seed = a seed | a little bubble in the glass
+bent = bent | bent like a spoon in water
+cullet = the cullet | the broken glass for the pot
+map = an old map | a map that's wrong in places
+cheese = hard cheese | a rind-end of hard cheese
+song = a song | a song with friends
+wind = an autumn wind | a good blustery wind
+topfloor = the top floor | four flights up
+gulls = the gulls | gulls on the sill
+exact = Exactly so | Just so
+
+any
+opinion @1 times against 2 [self.wealth=poor|destitute] : Each week costs a little over the one before. The Rise would have to glance down to see it, and it never glances down.
+opinion @1 dole for 2 [self.on_dole=yes] : The dole's filled my bowl more weeks than I'd care to tally. A full bowl's nothing to blush at.
+opinion @1 church for 1 : There were weeks my house ate only what the chapel gave. I go, and I sing, and I mean the singing.
+opinion @1 merchants against 2 [self.wealth=poor|destitute] : My wage falls short of a loaf, and the sellers still eat. However I reckon it, the sum's no kinder.
+opinion @1 houses against 1 : My whole life's been spent working under the Houses and I'd pass any of them in the street unknowing. That's how far off they are.
+opinion @1 newcomers against 1 : When work's thin, more paws means less of it each. That's sums, not spite.
+opinion @1 city for 1 : Ridgemere's mine for good. Every street here bends somewhere, and a bent street suits me.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind your footing; there's glass about. | #greet#. You'll want to stand clear of the racks.
+line @2 greet [self.working=yes] : #greet#. One moment. I'm looking at this pane. | #greet#. Careful there; that sheet's not set.
+line @3 greet [here.time=dawn] : Morning. The light's good this early. Clean. | Morning. Up before the lamps went out, me.
+line @4 greet [here.time=dusk|night] : Evening. The lamps are on. | Evening. I was about to go up.
+line @1 kin.open [pair.kin!=no] : You're here. Good. Sit down. | Come in. There's cheese, a little.
+line @1 again.open : Twice today. Nothing's changed but the light. | You again. I'm glad, as it happens.
+line @1 greet.return : #greet#. | #greet#. Come in.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Good; it's you. | #greet#. Sit. The kettle's nearly on.
+line @3 greet.return [self.working=yes] : #greet#. Say it while I sort this cullet. | #greet#. Talk; I can listen and look.
+line @1 farewell : #farewell#. | #farewell#. Mind the glass.
+line @2 farewell [here.time=dusk|night] : #farewell#. The lane at the bottom floods; take the high side. | #farewell#. Keep to the lamps.
+line @1 farewell.return : #farewell#. | #farewell#. Go careful.
+line @1 react.news : I see. I'll turn that over. | Hm. That's worth knowing.
+line @1 react.news.new : #oath#. I'd not heard. | #surprise#. That's new to me.
+line @1 react.news.known : #knew#. It came round the works yesterday. | I'd heard part of it. Not that part.
+line @1 react.news.doubt : #doubt#. It's been through a lot of mouths. | Maybe. I'd like it in writing first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry. | That's hard. It'll stay with me today.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Truly. | Good. Somebody's turn came.
+line @1 answer.how : Steady. A bit tired. | Well enough. No worse than usual.
+line @2 answer.how.busy [self.working=yes] : Busy. There's a rack to sort before dark. | Busy enough. The glass doesn't wait.
+line @3 answer.how.poorly [self.hungry=yes] : A bit hungry, if I'm honest. It'll keep till supper. | Low, today. It'll lift.
+line @1 ask.how : And you? Keeping well? | How are you? Truly?
+line @1 sympathise : #sympathy#. Sit a moment. | I'm sorry. There's no hurry here.
+line @1 reassure : #reassure#. A thing done slowly is still done. | It'll come right. Most crooked things straighten in the end.
+line @1 decline : #hedge#, but I can't today. The work wants finishing first. | Not today. I'm too worn to be any use, and that's the honest reason.
+line @1 accept_decline : #no_matter#. | Never mind. It'll keep.
+line @1 thank : #thanks#. That was kind. | I'm grateful. Truly.
+line @1 deflect_thanks : #deflect#. | It was nothing much.
+line @1 preclose [self.working=yes] : Well. This rack won't sort itself. | The glass is waiting on me.
+line @2 preclose : Well. #preclose#. | I'll go up now; it's four flights.
+line @1 accept_preclose : Go on, then. | Mind how you go.
+line @1 ack : #exact.capitalize#. | #bc_right#
+line @1 give.advice : #advise.capitalize#: look at a thing twice before you trust it. Glass, roads, folk. | Never haggle over a pane. Look for the flaw instead; it tells you the price.
+line @1 warn [world.bandits=near] : Stay in the walls a while. #warn#. | The roads aren't safe just now. Stay in.
+scene the_bent_street
+when topic=work|smalltalk self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Hold this pane up. Now look at the street through it. See? The chapel leans. | This one's got #seed# right in the middle. Look through it; the lamp post goes #bent#. | I hold every flawed pane up to the street before it's melted down. I can't help it.
+b : Why does it lean? | Is that bad glass? | Why do you look?
+a : The glass is thicker at the bottom. It's been poured slow. The chapel's fine. | Bad for a window. Good for looking. It goes back for cullet. | Because each one bends the street differently. Nobody else will ever see it that way.
+b : #bc_clever# | #bc_fair_enough# | That's a nice thought.
+
+scene sorting_cullet
+when topic=work self.working=yes self.job=crafter
+does tell.self / react.self / assess / ack
+a : I sort #cullet# by colour. Green, clear, brown. It all goes back to the pot. | Every bit of broken glass gets melted again. Nothing's wasted at a glassworks. | I cut my paw twice this week on the cullet. Small cuts. I'm careful.
+b : Fiddly work. | Nothing at all? | Mind yourself.
+a : Fiddly suits me. You can't hurry it, so nobody asks you to. | Nothing. A bad pane comes back as a good one, next melt. | I do. Twice is my limit. I'll not make it three.
+b? : #bc_fair# | #bc_good# | #bc_i_hope_so#
+
+scene the_furnace_heat
+when topic=work|health self.working=yes self.job=crafter
+does tell.complaint / react.complaint / assess
+a : The furnace room's like the inside of an oven. I go in, I come out, I drink water. | I'm not a blower. I carry, sort and pack. The blowers stand the heat; I just pass through it. | My whiskers singed again. They grow back.
+b : I couldn't stand it. | Packing's work too. | They do grow back.
+a : The heat sorts you out in a month. Stay or go. | It is. Glass breaks in a bad crate. That's on me. | They do. Slowly. I look lopsided for a week.
+
+scene old_maps
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I've #map# of Ridgemere from before the wall was finished. The streets wander all over it. | Give me a map with its roads all astray. It shows you what somebody thought. | Somebody drew a river through the Commons on my old map. There's no river. There never was.
+b : Where did you get it? | What somebody thought? | Then why draw it?
+a : A rag stall. It cost me a supper. I'd pay it again. | What they hoped for, or what they'd been told. That's more interesting than what is. | I don't know. Maybe they heard the drains. I sit and wonder about it.
+b : #bc_lovely# | That's a good way of seeing it. | #bc_ha#
+
+scene map_and_pane
+when topic=lore|smalltalk self.likes=old_maps
+does tell.self / react.self / assess
+a : A bad map and a bad pane are the same thing. Both bend the street. | Every map's a little wrong, same as every pane. You learn which way it leans. | I traced my old map's wrong river through a flawed pane once. It looked almost right.
+b : That's a new thought. | Which way do they lean? | Almost right?
+a : Most folk don't. I've had plenty of quiet to think in. | Toward whatever the maker wanted to see. | Almost. Two wrongs. I'll not say they made a right.
+
+scene songs_with_friends
+when topic=pastimes|friends self.likes=singing
+does tell.feeling / react.self / assess
+a : Of an evening we sing up under the roof. Nothing in the day comes near it. | Talk comes hard to me. Singing with friends doesn't. That's different. | Singing with friends, and a sliver of cheese after. I don't ask much more.
+b : What do you sing? | Different how? | That's a good evening.
+a : Old ones. Ones with a chorus, so nobody's alone in it. | Singing, nobody's waiting for you to say the right thing. You just come in on the line. | It is. The floor's thin, mind. The whole stair hears us.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess
+a : #cheese.capitalize# keeps, and it fills. Nothing feeds somebody like me better. | I cut my cheese thin. It lasts longer, and you taste it more. | Folk throw the rind out. I don't. It's the best part.
+b : It does keep. | Thin? | The rind?
+a : It does. A week, with care, and I'm all care. | Thin enough to see light through. I hold it up and check. | Chewed slow, with bread. It's a whole supper.
+
+scene hungry_week
+when topic=food|times self.hungry=yes
+does tell.self / reassure / assess
+a : There's not much in the cupboard this week. I'll manage. | Payday's three days off and the cheese is a rind. I've counted. | I'm hungry, to say it straight. It's not the first time.
+b : That's hard. | Counted? | I'm sorry.
+a : It is. It's ordinary, too, which is the worse part. | To the day. I'm good at counting. It doesn't help, but I'm good at it. | Don't be. You've not done it. Nobody's done it, that's the trouble.
+
+scene the_top_floor
+when topic=home self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Home's #topfloor#, right under the slates. It's warm in summer and nothing else. | Four flights up and a window over the gutters. I can see half the Commons. | The roof leaks in one corner. I've a basin there. It plays a tune when it rains.
+b : Long climb. | Half the Commons? | A tune?
+a : Long. I do it slow. There's no hurry for a bed that's cold. | Half. The window's flawed. The Commons looks a little drunk through it. | A sort of tune. Three notes. I've grown fond of it.
+
+scene the_lost_post
+when topic=work|memories self.age>=30 self.wealth=poor|destitute
+does tell.memory / sympathise / assess
+tone serious / tender / even
+a : There was a better post, once. Somebody with friends in the right places got it. | I used to work at a better bench. Then I didn't. I took what work was going. | It's no good being bitter. I tried for a year. It didn't pay any better.
+b : That's not fair. | I'm sorry. | That's sensible.
+a : No. Fairness isn't the city's trade. Work is, sometimes. | Don't be. The glass is honest. I like that. | It took me the year to find out. I'm slow, but I get there.
+
+scene the_office_slip
+when topic=work|times here.region=ridgemere self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : I put a paper in at the City Office about the old post. I go back to ask. They look and shake their heads. | Somewhere in the Office there's a slip of mine, under a lot of other slips. | I've asked the same window so many times the clerk knows my face.
+b : Keep asking. | It'll turn up. | That's something.
+a : I will. The walk's free. | Maybe. I'll be there when it does. | It is. The clerk nods, now. That's not nothing.
+
+scene autumn_wind
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #wind.capitalize#. It pushes the smoke off seaward and the hill stands clear. | I like a good gale in autumn. Everything rattles and nobody minds. | The wind came through the cracked pane at work and sang in it. One note.
+b : It's cold, though. | Nobody? | Sang?
+a : Cold, and clean. You can't have the clean without the cold. | Nobody minds wind. They mind rain. I mind neither, much. | One long note, like a finger on a glass rim. I stopped to listen.
+
+scene rain_and_floods
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : It's raining hard. The bottom of the lane floods by noon in this. It always does. | Rain like this, the glass yard turns to slurry. We stack everything high. | The water runs down the window in lines, and the street goes wavy behind it. I like that.
+b : Every time? | High? | Wavy?
+a : Every hard rain. You learn which lanes to keep off. | Off the ground, on the racks. Wet crates fall apart. | Like through a bad pane. The rain makes the whole window a bad pane.
+
+scene gulls_on_the_sill
+when topic=animals|home self.dislikes=gulls here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# again. They stand on the sill and stare at my cheese. | A gull cracked a pane at the works, flying into it. We sold it for cullet. | Gulls. They shriek at dawn and thieve by noon.
+b : They're bold. | Was it hurt? | They do.
+a : Bold, and patient. I'm more patient. I keep the cheese in a tin. | Stunned. It perched on the wall a while looking cross, and then it left. | They do. Every one of them, every day.
+
+scene haggling
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / assess
+a : A buyer wanted a pane for half its price today. I fetched the one who sets the prices and went back to my cullet. | I can't haggle. I say a number, and if they argue I say it again. | Haggling's just two people pretending. I don't pretend well.
+b : That's sensible. | Does it work? | I'd agree.
+a : It is. I'd rather sort broken glass than argue over whole. | Sometimes. Mostly they go somewhere cheaper. | Then we'll get on. Neither of us will haggle, and we'll both be poorer for it.
+
+scene friend_under_the_roof
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend.capitalize# could have everything I own. It isn't much, but it's all of it. | When I sing, it's #self.friend# I'd want on the harmony. | I'd share a roof with #self.friend# before anyone in the city.
+b : That's a good friend. | Nobody else? | That's rare.
+a : Yes. I've not had many. The good ones stayed. | Nobody. It's not a hard harmony. It's just ours. | It is. Under that roof, especially. It leaks.
+
+scene faith_singing
+when topic=faith
+does give.opinion / react.self / assess
+a : Chapel's for the singing, to me. The sermon's the Bright One's affair. | One winter the chapel's bread was all we had. Every Restday since, I'm there. | I sing in chapel louder than I talk anywhere else. Nowhere else do I.
+b : That's fair. | Not once? | Louder?
+a : The Bright One likes the singing better too, I'd guess. | Not once. Some weeks it's all the warm I get. | Much louder. Nobody minds a loud singer in a chapel.
+
+scene the_flawless_window
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dream of a window with no flaw in it. Mine, in a room of my own. | Sometimes I dream the whole city's seen through one bad pane, and nobody else notices. | I dreamt I walked the old map's river through the Commons. It had a bed, but no water.
+b : Would you like that? | Nobody else? | No water?
+a : I think so. I'd miss the bends, a little. | Nobody. I kept trying to tell them. They just walked on, crooked. | Dry as a ledger. I woke before I reached the sea.
+b : #bc_maybe# | #bc_poor_soul# | That's a strange one.
+
+story the_river_map [topic=lore|pastimes self.likes=old_maps]
+  : The old map I bought has a river drawn right through the Commons, across the square.
+  : I took it to an old clerk at the City Office. The clerk looked for a long time and said, there was a plan for one.
+  : Somebody meant to dig a river through the city once, and never did. Only the map remembers.
+  ask : Would you have dug it, if the say were yours?
+  b : I'd not. Imagine the floods.
+  b[old] : I remember talk of it. Long ago. It came to nothing.
+
+story the_first_pane [topic=work|memories self.age>=30 self.job=crafter]
+  : The first week at the glassworks I dropped a whole crate. Every pane in it went.
+  : I stayed in the yard after dark and sorted the pieces by colour. Nobody told me to.
+  : In the morning the master said, you'll do. I've been sorting cullet ever since.
+  ask : Did you ever earn a place by making a mess of things?
+  b : Once. It's the best way, sometimes.
+  b[apprentice=yes] : That's what I'm hoping for, truly.
+
+story the_singing_stair [topic=pastimes|home self.likes=singing]
+  : One winter night the stair was so cold nobody could sleep, so we started singing.
+  : By the third song somebody from the floor below had come up. By the sixth, the whole stair was in our room.
+  : It was the warmest night of the winter. We had no fire at all.
+  b : That's a good night.
+  b[friends] : I'd have come up too.
+
+rule @pane_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Look. The whole lane's bent in this one. | #seed.capitalize#, right in the middle. Cullet, then.
+
+rule @gull_bark
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 10h
+say Off the sill. Go on. | #gulls.capitalize#. Staring again.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 10h
+say The bottom of the lane floods by noon in this. | Walk the upper pavement today.
+
+rule @song_bark
+when concept=bark here.time=dusk|night self.likes=singing
+does aside
+cooldown 12h
+say Mm, mm. The chorus comes next. | Work's done. Now a song.
+
+dlg @1 resident.hub : #greet#. Mind the glass. What is it? | #greet#. Tell me what's wanted.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. | #topic.player#. Good. Come in.
+dlg @3 resident.hub [here.time=night] : Evening. I'm about to go up. What is it? | It's late. Be quick, if you would.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you. Stand clear of the racks. | Say what you need.
+dlg @1 resident.job [self.working=yes] : #self.trade_words.capitalize#. I sort cullet, pack panes, and look through the bad ones before they go back. | Glass. Carrying and sorting, mostly.
+dlg @2 resident.job : I work carefully, and I'm slow, and it gets done. | It's work. It's honest. It's enough.
+dlg @1 resident.news [world.news] : Word at the works, from #world.news_from#: #world.news#. | I heard: #world.news#. No more than that.
+dlg @2 resident.news [world.event_words] : It's #world.event_words# from every mouth at the works.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Quiet. The bottom lane flooded again, that's all.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | A little reaches me. It goes no further.
+dlg @1 resident.bye : #farewell#. Mind the glass. | #farewell#. If it rains, walk the upper pavement.
+graft resident.hub
+choice Why do you hold the glass up like that? [self.job=crafter] -> pane
+node pane
+say To see the street through it. Every flawed pane bends it a different way. This one makes the chapel lean. Nobody will ever see it like that again.
+mood calm
+free
+choice Show me. -> pane_show
+choice Back to it. -> hub
+node pane_show
+say There. Look past the bubble. The lamp post's a crook and the rooftops ripple. Then into the pot, and out it comes a good pane.
+choice I see it. -> hub
+choice Goodbye. -> bye

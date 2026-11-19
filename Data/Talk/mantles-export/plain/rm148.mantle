@@ -1,0 +1,479 @@
+# rm148, the flood-chalk baker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm148
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_tove_brinegate
+written_by claude
+title the flood-chalk baker
+fits stage=adult|old
+prefers role=merchant job=baker talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk chalks_the_streets_that_flood_first_on_the_oven_door
+likes warm_bread long_walks a_full_till thunder
+dislikes deep_mud haggling
+fears water_in_the_flour_store the_north_road_carts_stopping
+hopes a_dry_cellar_one_whole_winter the_oven_handed_on_in_good_order
+topics work +0.5 weather +0.4 caravan +0.3 prices +0.3 news +0.3 family +0.2 pastimes +0.2 faith -0.3
+styles comfort=practical gossip=eager refuse=short tease=none
+marks oath saying
+persona #self.first# bakes before light near the north gate and talks the whole time it takes: loud, blunt, honest to the crumb, first with the carts' news, and sure which streets go under first in a downpour, chalked fresh on the oven door every wet morning.
+
+words
+oath! = Barm and brimstone | Peel and poker | Hot bricks and hard water
+saying! = Water finds the low step first | The oven keeps its own clock | Bread won't wait and the rain won't either
+loaves = the loaves | the morning's loaves | the first batch
+oven = the oven | my oven | the old brick oven
+peel = the peel | the long peel
+chalk = the chalk list | my chalk on the door | the list on the oven door
+lowlanes = the low lanes | the streets the water takes first | the bottom of the gate road
+round = the round | the bread round | the morning round
+till = a full till | the till fat at closing
+walk = a long walk and no errand waiting | a walk for the sake of the legs
+storm = a storm over a sound roof | thunder cracking over the slates
+muck = mud to my hocks | mud past the ankle
+haggle = haggling | penny-pinching over a loaf
+carts = the north road carts | whatever rolls down the north road
+gatebar = the gate bar | the bar coming off the gate
+bells = the close bells | the cathedral bells
+barm = the barm | my starter | the barm crock
+crust = a crust that crackles under the thumb | a proper crust
+cellar = the cellar | my flour store under the stairs
+board = the price board | the prices chalked up by the till
+flourdust = flour in my fur | flour to the elbows
+
+any
+opinion @1 road against 1 : #carts.capitalize# get slower by the month, and every hour late costs somebody's supper. Somebody ought to sweep that road clear.
+opinion @2 road against 2 [world.wagons=raided] : #bandits.capitalize# working the north road once more, and the Watch sat on their tails inside the walls. No flour, no bread. It's that plain.
+opinion @1 watch for 1 : No thief's had a thing off my shelf in years; the Watch earns its keep there. Who's paying the Watch to look the other way up the hill is another question.
+opinion @1 merchants for 1 : Ask anybody behind a counter what a cart costs to bring in from Larkfield. Once you've paid a carter, you stop grudging anybody a fair penny.
+opinion @1 festivals for 1 : Every street out of doors and nobody hurrying. The best trading day there is, for anybody with something to sell.
+opinion @1 city for 1 : Born in the wet, and I'll go into the ground wet, and gladly. Where else has a gate that brings you the whole realm's news before breakfast?
+opinion @1 strangers mixed 1 : Half of them want directions and the other half want feeding. Still, it's the strangers who know what's coming down the road.
+opinion @1 newcomers mixed 0 : If they pay at the counter and wipe their feet, they're as good as born here. If they don't, they're not.
+opinion @1 houses mixed 1 : The Houses build the walls and pay their bills, mostly. Still, I don't care for how their stewards speak to folk behind a counter.
+opinion @1 sump mixed 1 : The low lanes go under first and the Sump goes under all of them. Nobody should sleep where the water sleeps.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Door shut, please; the rain likes my floor. | #greet#, #address#. Those boots have been on the road, I'd say.
+line @2 greet [self.working=yes self.job=baker] : #greet#. Mind the peel; it reaches further than you'd think. | #greet#. Stand by the oven and drip on the floor, not the loaves.
+line @3 greet [here.time=dawn] : #greet#. The bar's barely off the gate and here you are. | #greet#. Early, and the gutters still full from the night.
+line @4 greet [here.time=dusk|night] : #greet#. Late, but come in, come in. | #greet#. Lamplight already, and me still aproned.
+line @5 greet [pair.band=friends] : Good, you. I've three things kept back for your ears. | You. Good. Take the stool; I'll talk and knead at once.
+line @6 greet : #greet#. | #greet#. In you come, before the drip finds you.
+line @1 kin.open [pair.kin!=no] : Sit. I'm cutting you a heel whether you've eaten or not. | Sit. You've the face of somebody who came the long way round.
+line @1 again.open : Twice today. Keep this up and I'll put you in an apron. | You again. I've news since this morning, as it happens.
+line @1 hail [pair.band=friends] : Here! Stop a moment on your way up the hill. | This way, under the awning. I've something you'll want to hear.
+line @1 greet.return : #greet#. | #greet#. In or out, the door's letting the wet in.
+line @2 greet.return [pair.band=friends|family] : #greet#. The oven and I were only now talking about you. | #greet#. Good. I want an ear.
+line @3 greet.return [self.working=yes self.job=baker] : #greet#. Talk while I turn these. | #greet#. Mind your elbows; the tins are hot.
+line @4 greet.return [here.time=dusk|night] : #greet#. I'm nearly shut, but go on. | #greet#. You're up late. Me too, worse luck.
+line @1 farewell : #farewell#. Walk the side with the steps up. | #farewell#. Mind the gutter at the corner; it overflows.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take the upper streets home; the low lanes will be swimming. | #farewell#. Three o'clock comes early; bed for me.
+line @1 farewell.return : #farewell#. | #farewell#. And scrape those boots before you come in again.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Look in again; I'll have more saved up. | #farewell#. Off you go, though I'd keep you all day if I could.
+line @1 react.news : Out with it. Every crumb of it. | Right. From the beginning, and skip nothing.
+line @1 react.news.new : #oath#. And I hadn't had that from a single cart. | #marvel#. That'll be up and down the street before the second batch.
+line @1 react.news.known : That reached me yesterday, along with the first carts. | #knew#. Everything comes past my door before it goes anywhere else.
+line @1 react.news.doubt : I'll want that from an eye, not an ear. Ears add bits. | #doubt#. A tale off the road gets longer every mile.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad, and I won't dress it up. I'm sorry for it. | #pity#. I'll not make gossip of it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's had a bit of luck, and about time. | #gladnews#. Somebody will be wanting a cake out of this.
+line @1 answer.how : Busy, feet aching, and nothing's gone wrong yet. That's a good day. | #fine#. Feet ache, purse is not bad, rain's still coming.
+line @2 answer.how [self.job=baker] : Flour to the elbows, and the oven's behaving. I'll take that. | The barm rose and the till's filling. Can't ask better.
+line @1 answer.how.busy [self.working=yes] : On the go since before light. Talk quick. | Three batches out and one in. Speak up over the oven.
+line @1 answer.how.poorly : My back's sick of lifting, and the damp's settled in it. | Scorched a paw on a tin, and I'm cross as a wet cat about it.
+line @1 ask.how : And you? Kept the wet off, coming in? | And you? Getting fed, I hope?
+line @1 sympathise : That's a heavy one. Pull up the stool and I'll cut you something. | #sympathy#. Don't stand there holding it in; say it out.
+line @1 reassure : Keep at it and it mends. I've watched the whole street mend twice. | #reassure#. I've seen worse mended by Restday.
+line @1 decline : #hedge#, but no. The work needs me standing in front of it, and there's only one of me. | Not today. The round's a carrier short, and the carrier is me.
+line @1 accept_decline : #no_matter.capitalize#. I'll find a pair of idle paws elsewhere. | Fair enough. You'd have said yes if you could.
+line @1 thank : #thanks#. I'll not forget it. | That's good of you. There's something warm in it for you, next time.
+line @1 deflect_thanks : #deflect.capitalize#. You'll return it some day; that's how a street works. | Don't make a fuss. It's done, isn't it.
+line @1 preclose [self.working=yes self.job=baker] : Well. The next batch won't shape itself. | Right. I've loaves to turn before they catch.
+line @2 preclose : There, I've worn your ear thin. #preclose#. | That's enough out of me for one morning.
+line @1 accept_preclose : Go. I'll keep the rest warm for another day. | Off you go. The oven's been jealous this whole while.
+line @1 ack : #bc_right#. | #bc_true_enough#. | Mm.
+line @1 give.advice : #advise.capitalize#: in a downpour, go by the top streets, never the low ones. | Buy your bread at dawn and your gossip at noon. Both are freshest then.
+line @2 give.advice [here.weather=rain] : Don't take the low lanes in this. Go round, even if it's longer. | Keep to the side with the step up to the doors. The water goes the other way.
+line @1 warn [world.bandits=near] : #warn#. The carters are riding in threes this week, and you'd be wise to copy them. | Keep within the walls while it lasts. The road's not safe.
+line @1 disagree : #demur#. I've lived here all my life and it doesn't go that way. | No. That's not how this street works, and I've watched it work.
+line @1 concede : #concede#. I'll not argue it, for once. | All right. You've seen more of it than I have.
+scene chalk_on_the_door
+when topic=weather|work here.weather=rain here.region=ridgemere self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : First thing when it rains, I chalk the streets on the oven door. The ones that go under first, in order. | See that door? Every wet morning I write down which lanes will flood, so the round goes the dry way. | Chalk's been out already. Four streets written up, gate road heading the list.
+b : In order? How do you know the order? | And the round follows it? | Why the gate road first?
+a : Years of wet feet. The lowest goes first and the drain at the bend goes second. | Every loaf of it. The bread goes round the top way and gets there dry. | It's the lowest ground near the gate, and its drain was laid by somebody in a hurry.
+b : #bc_clever# | #bc_true_enough# | #bc_wise#
+
+scene the_low_lanes_go
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.worry / reassure / assess
+a : Listen to the gutters. The low lanes will be under inside the hour. | This is the kind of rain that comes up through the cellar floor, not down through the roof. | The gate road's bottom step is gone under already. I watched it go.
+b : Will it reach your door? | Can you keep it out? | It'll go down again, surely.
+a : Not mine. I'm two steps up, and I checked those steps before I signed any lease. | Sacks along the sill and anything precious shelved high. That's all anybody can do. | It will, by evening. And leave the mud behind for me to sweep.
+
+scene thunder_over_the_slates
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Listen! Give me a roof and a storm and I'm content all day. | That crack shook the tins on the shelf. I love it, and I say so. | Storm's right over the gate. The street's emptied and I don't care.
+b : Most folk hate it. | You're not frightened? | Empty streets don't bother you?
+a : Most folk don't own a sound roof. I do, and I paid for every slate. | Of a noise? I'm frightened of mud in my flour, not noise. | They'll fill again when it stops. Thunder doesn't come every day.
+
+scene dawn_oven
+when topic=work|day here.time=dawn self.job=baker self.working=yes
+does tell.self / react.self / assess
+a : Up in the dark, the oven lit, and the first batch out before the close starts ringing. | I've been at it since the gate bar was still on. Years of it, and my eyes still don't believe the hour. | The barm was slow this morning. Cold night. I talked to it till it came.
+b : Every morning? | You're not used to it? | You talk to it?
+a : Every one but Restday, and on Restday I wake up anyway. | My feet are. The rest of me grumbles till the second batch. | It listens better than most. Warm it, talk to it, and it rises.
+
+scene bread_warm
+when topic=food
+does tell.feeling / react.self / assess
+a : There's nothing on this earth like bread still warm, torn with your paws, no knife. | A heel off a fresh loaf, still steaming. That's my breakfast and always was. | Cold bread spoils a morning. Warm it, or the sparrows can have it.
+b : No butter? | Every day? | The sparrows would thank you.
+a : Butter's for bread that needs help. Good bread doesn't. | Every day. I keep waiting to tire of it. Not yet. | They do. They sit on my sill and wait like customers.
+
+scene no_haggling
+when topic=prices|work self.role=merchant self.job=baker
+does tell.complaint / react.complaint / assess
+a : Somebody at my counter this morning wanted a farthing knocked off a loaf. A loaf! | I won't haggle. What's chalked up is what's paid. | Every week somebody wants a bit off because the crust is dark. The crust is meant to be dark.
+b : What did you say? | Not even for regulars? | Some folk like a pale one.
+a : I said the board's there for reading, and the door's there for leaving. | Regulars don't ask. That's how they got to be regulars. | Then some folk can bake their own, and I'll wish them luck.
+
+scene till_at_closing
+when topic=work|day here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : Counted the till just now. Full. I like the sound a full till makes when you shut it. | Shelves bare and the box heavy. Ask me for nothing more from a day. | Not a loaf left and the till near enough full. I'll sleep tonight.
+b : #bc_lucky_you# | It's a good sound. | #bc_good#
+a : Luck didn't get up at three. I did. | It is. Sweeter than any fiddle in the square. | You will too, if you're up at the hour I am.
+
+scene carts_late_flour
+when topic=caravan|prices world.wagons=late self.job=baker
+does tell.worry / react.self / give.advice / assess
+a : #carts.capitalize# are late again. I've flour for two more days and then I'm baking air. | Not one flour cart's come in since Marketday. | I stood at the gate an hour this morning watching an empty road.
+b : What will you do? | Can't you buy elsewhere? | Did any come in at all?
+a : Smaller loaves, same price, and chalked up so everybody knows. Nobody gets cheated quietly at my counter. | From who? Everybody's waiting on the same road. | Not one. A drover with sheep, and a pedlar with nothing I wanted.
+b? : #bc_fair# | #bc_true# | #bc_bad_luck#
+
+scene carts_in_at_last
+when topic=caravan world.wagons=in self.job=baker
+does tell.news / react.news / assess
+a : The carts are in! Rolled in before the sun, wheels to the axles in road muck. | Flour's in. I had a sack off the first cart before it had stopped rolling. | In at dawn, and my whole street knew before the drivers had their breakfast.
+b : #bc_about_time# | You don't waste time. | And you told them all, I expect.
+a : About time is right. I'd started weighing the dust in the bin. | Wasting time's for folk who aren't bakers. | Somebody has to. I had it first, so I told it first.
+
+scene raided_road
+when topic=bandits|caravan world.wagons=raided
+does tell.news / react.news / give.opinion
+a : Robbers caught a cart up the north way. Turned over, so I hear. | Gate talk says a wagon never turned up. #bandits.capitalize# again. | Another cart lost on the road. I'll be baking short again, and so will every oven in the city.
+b : #uneasy# | Was anybody hurt? | It's getting worse.
+a : It is. And the Rise won't notice till their own bread's late. | I didn't hear, and I'll not guess. I only know there's no flour on it. | It is. Somebody ought to ride that road with a spear, not sit in the Watch House.
+
+scene gate_at_first_light
+when topic=smalltalk|day here.region=ridgemere self.quarter=commons here.time=dawn|day self.job=baker
+does tell.self / react.self / assess
+a : I hear the gate bar come off every morning from my bed. It's my clock, near enough. | The drovers come in first, then the milk, then the carts. You can set your day by it. | By the time the gate's open, I know who slept outside the walls and who didn't make it.
+b : Does it wake you? | Every day the same? | How do you know that?
+a : I'm up already. It's the bar that ought to be listening for me. | Near enough. The only change is the weather, and the weather always changes. | They come in for bread first thing. Everybody tells a baker everything.
+
+scene first_to_hear
+when topic=news|gossip here.region=ridgemere self.job=baker
+does tell.self / react.self / assess
+a : Everything comes through the north gate, and everything that comes through it wants bread. So I hear it first. | I've had news at my counter before the City Office had it in writing. | Folk think I gossip. I don't. I pass on what's true, and I say where I had it.
+b : Before the Office? | #bc_so_they_say# | Where did you have this one?
+a : Long before. The Office waits for a clerk; I only wait for a hungry carter. | They do say. And mostly they say it to me first. | From the first cart, the same as always. Every word I pass on has a cart behind it.
+
+scene gossip_passed_on
+when topic=gossip here.gossip=yes self.role=merchant
+does tell.gossip / react.news / assess
+a : It crossed my counter this morning, so here it is: #topic.subject# #topic.claim#. | Here's what's going round with the bread: #topic.subject# #topic.claim#. | Now, I don't know it for sure, but they say #topic.subject# #topic.claim#.
+b : Is that right? | Who's saying it? | #bc_so_they_say#
+a : That's what I had, word for word. I'll not put a crumb extra on it. | Half the street, by now. I'm only one of them. | They do. And I'll take it back the minute I hear different.
+
+scene gossip_theft
+when topic=gossip|crime topic.claim_kind=theft|wanted self.job=baker
+does tell.gossip / react.news / give.advice
+a : Lock your door, is my advice. They say #topic.subject# #topic.claim#. | Did you hear? #topic.subject.capitalize# #topic.claim#, so they say at the gate. | They're saying #topic.subject# #topic.claim#. My cash box sleeps under the bed now.
+b : #uneasy# | Do you believe it? | That's sensible.
+a : I count my loaves twice now, and I'll keep counting till there's better news. | I believe it enough to bolt the door. The rest can wait for the Watch to say it. | Sensible's cheap. A stolen till isn't.
+
+scene gossip_wedding
+when topic=gossip topic.claim_kind=marriage self.job=baker
+does tell.gossip / react.news / assess
+a : Now here's one I like. They say #topic.subject# #topic.claim#. | Good news for once: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, and good luck to the pair.
+b : #bc_lovely# | A wedding, then. | Will they want a cake?
+a : Lovely's the word. I'll bake if I'm asked, and I'll be asked. | A wedding's a good loaf's worth of talk at my counter, and nobody crying for once. | If they've any sense they'll come to me, and early.
+
+scene newcomer_at_the_gate
+when topic=newcomer|player here.region=ridgemere self.job=baker
+does tell.self / react.self / assess
+a : New face in this morning. Came for a loaf and asked which way was dry. I liked that. | Somebody's new on the street. Wiped their feet at my door. That's a good start. | There's a stranger stood under my awning an hour, waiting out the rain. I gave them a heel.
+b : Which way did you send them? | That's all it takes? | Kind of you.
+a : The truth. Round by the top streets, and the low ones are for frogs. | Near enough. Pay at the counter, wipe your feet, and you're as good as born here. | Not kind. A wet stranger in my doorway puts customers off.
+
+scene hard_times_halves
+when topic=times|prices world.times=hard|lean self.job=baker
+does tell.worry / sympathise / assess
+a : It's half loaves now, even from wolves who never looked at a price in their lives. | I've started cutting loaves in two for folk whose purse won't run to a whole. | The till's thinner than it was, and so are the wolves coming to it.
+b : Times are hard everywhere. | That's kind. | #bc_very_bad#
+a : They are. I'll not raise the board while folk are counting coppers, and I'll go without first. | Kindness doesn't come into it. A half sold beats a whole gone stale. | It is. I know every face, and I know who's gone thin.
+
+scene good_times_cakes
+when topic=times world.times=good|boom self.job=baker
+does tell.self / react.self / assess
+a : Folk are buying cakes again, not only bread. Cakes mean good times. | Can't bake fast enough this month. Everybody's flush and everybody's hungry. | There's coin about. I've had three orders for wedding loaves in a week.
+b : #bc_lucky_you# | Is it the carts? | Three!
+a : Lucky's for folk who sleep in. I've been up at three every day of it. | It's the carts and the ships both. Everything's coming in and nothing's stopping. | Three. I said yes three times, and my back will pay for every one.
+
+scene flour_dearer
+when topic=prices|price_cause self.job=baker
+does tell.complaint / ask.detail / answer.detail / assess
+a : Flour's up again. Same sack, same miller, and more of my money for it. | The price board's had to change twice this season, and I hate changing it. | I paid more for flour this week than last, and the figure would spoil your day, so I'll keep it.
+b : Why's it gone up? | Will you raise the loaf? | Is it the road?
+a : The carts cost more to run, and somebody's always got to pay the wheel. | Not yet. I'll swallow it a while first, then chalk it up plain. | Mostly. A road that loses carts makes the ones that get through dear.
+b? : #bc_fair_enough# | #bc_fair# | #bc_true_enough#
+
+scene long_walk
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : When I'm not working, I walk, and I don't pick where I'm going. | Restday I go out the gate and up the hill road, and I don't stop till my legs ask me to. | I walked half the city yesterday and never once had to be anywhere. That's my treat.
+b : Where to? | How far, then? | Don't your feet ache enough?
+a : Nowhere. If there's an errand waiting, it's not a walk, it's work. | Till I can see the Sound behind me. Then back home I go. | They ache from standing. Walking's a different ache, and I like that one.
+
+scene walk_on_restday
+when topic=pastimes|day here.day=rest
+does tell.self / react.self / assess
+a : Work's done, the shutters are up, and I'm going for a walk. Don't ask me where. | Restday. I'll walk the walls from the gate round to the Sound and back again. | Nobody needs me today, so I'm going out to look at the city instead.
+b : Not even a little work? | All the way round? | The city's not going anywhere.
+a : Not a stroke. Everything can sleep, and so can I, after my walk. | All the way. I'll come home starving and eat yesterday's heel. | Nor am I. So I walk out and admire it.
+
+scene child_at_lessons
+when topic=family self.parent=yes self.job=baker
+does tell.feeling / react.self / assess
+a : My #self.child# is at lessons. Letters and figures. I want that more than I want the oven passed on. | I'll not have #self.child# up at three for flour unless that's the life wanted. | I'm proud of #self.child#, and I'll tell anybody that'll stand still at my counter.
+b : You don't want the trade kept? | That's fair. | You do tell everybody.
+a : I'd like it. I'd like a choice made more. Nobody gave me one. | It's a hard life. It's a good one, but it's hard. | I do. A voice like mine ought to earn its keep somehow.
+
+scene child_and_the_rain
+when topic=family|weather self.parent=yes here.weather=rain
+does tell.worry / reassure / assess
+a : Every time it pours like this I think of #self.child# out in it. | I'd have #self.child# take the upper streets in weather like this, if it were up to me. | The rain's coming down and #self.child# is out in it somewhere. I fret, I can't help it.
+b : #reassure# | Pups find their own way. | Wet fur dries.
+a : I know. Doesn't stop me looking at the door every time it bangs. | They do. The low lanes swallow the ones who rush, though. | It does. I'll put a towel to warm anyway.
+
+scene hand_and_the_loaf
+when topic=work self.master=yes self.hand self.job=baker
+does tell.self / react.self / assess
+a : I'm teaching my hand to knock a loaf and listen. Hollow means done. Anything else means wait. | #self.hand# is coming on. Shapes a loaf nearly the equal of mine now. | Somebody has to have the oven after me. I'd trust #self.hand# with it; praise from me isn't handed round like rolls.
+b : Can you hear it right off? | Nearly the equal? | High praise.
+a : Not at first. Then the ear won't hear anything else. | Near. Not quite. I'll say quite when it's true. | It's meant. I'm not the kind to say what I don't mean.
+
+scene neighbour_counter
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : If I ever had to go away, #self.neighbour# is who I'd put in charge of my door. | #self.neighbour# has the patience for my talk of a morning, and that's rare. | If my cellar ever floods in the night, the first door I'd knock is #self.neighbour#'s.
+b : That's a good neighbour. | #bc_ha# | Not mine, I hope.
+a : It is. You don't find many, and you don't let go of the ones you find. | I'm not joking. I've a lot to say and only so many ears. | Not yours. Yours I'd knock second.
+
+scene muck_to_the_hocks
+when topic=weather|land here.weather=rain|overcast here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : Mud to my hocks just crossing the street. I can't abide it. | Back from my errands with mud past the ankle, and a mood worse than the mud. | The muck by the gate is so deep this month it'll have a cart one of these days.
+b : #grumble# | Didn't you go the top way? | It's always bad in the wet.
+a : Then you know. I'll be scrubbing fur till the bells. | I did. The top way had its own mud. There's no escaping it this month. | Always bad, and always mine to scrub out of the fur.
+
+scene fog_at_the_gate
+when topic=weather here.weather=fog here.region=ridgemere self.job=baker
+does tell.self / react.self / assess
+a : Thick murk this morning. I heard the carts arrive long before a single wheel showed. | The street stops ten paces off in this. I know the carts are in by the wheels, not the eyes. | Fog off the Sound, right up to the gate. Every loaf I carried out came back damp.
+b : Can they find their way? | #bc_true# | Damp bread?
+a : They follow the wheel ruts. The ruts have been there longer than the gate has. | It's a strange morning, listening for your customers. | Damp crust. I'll not sell it soft. They'll have it half price or not at all.
+
+scene bells_from_the_close
+when topic=faith|day here.region=ridgemere
+does tell.self / react.self / assess
+a : Chapel doesn't see much of me. I listen to the close ringing, and my day keeps time to it. | The cathedral bells are the only prayers I keep, and I keep them because they tell the hour. | Bright One knows I'm awake ahead of every bell. A sound roof is what I'd pray for, and that's my praying done.
+b : Is that enough? | #bc_it_is# | Bright One's patient, they say.
+a : For me it is. The priest might want more, and the priest can come and do my work. | It is. There's a lot of faith in a loaf that rises. | Patient enough to wait on a busy wolf, I hope.
+
+scene burnt_paws
+when topic=health self.job=baker
+does tell.self / sympathise / assess
+a : Caught my paw on a hot tin again. All these years at the oven and I still reach without looking. | My chest goes tight in the damp. Flour and wet air, that's a baker's cough. | My back's been at me. Too many sacks up the cellar stair.
+b : Put something on it. | Have you tried a remedy? | Get somebody else to carry them.
+a : Butter and cold water. I'd tell you not to, but it's what I do. | #remedy.capitalize#, and a morning off now and again, if I ever take one. | I would, if the somebody turned up when I asked them to.
+
+scene festival_loaves
+when topic=festival|event world.festival=today|soon self.job=baker
+does tell.plan / react.self / assess
+a : Festival loaves. Braided ones, a dozen dozen, and every one wanted before noon. | I'll be baking all night for the festival, and selling out by midday, same as every year. | The whole street will be out, and they'll all want something warm in their paws.
+b : A dozen dozen! | You'll not be standing by evening. | You enjoy it, though.
+a : At least. I'll be up at midnight and I'll not sit down till dusk. | Flat on my back by dusk, and happy. Best day's trade the year has. | I do. One day a year nobody's in a hurry, and everybody's out of doors.
+
+scene sump_goes_under
+when topic=home|land here.region=ridgemere
+does give.opinion / react.self / assess
+a : The low lanes go under first, but the Sump goes under all of them, every winter. | Up here we sweep the mud out. Down there they bail the water out of bedrooms. | Go down by the water after a storm and you'll see bedding hung out on every rail.
+b : It's a hard place. | Somebody should mend it. | I've seen it.
+a : It is. Nobody ought to sleep where the water sleeps. | They should. The Council sits up in the Rain Hall, where it's dry. | Then you know. And it's the same every winter, and nobody changes it.
+
+scene the_year_the_bend_flooded
+when topic=memories self.age>=40 here.region=ridgemere
+does tell.memory / react.self / assess
+a : As a pup, I watched the gate road fill to the door handles. I learned every street that winter. | My #gran# walked me round the low lanes after the big flood, pointing at the marks on the walls. | Long before I'd a door of my own, I'd waded the bottom of the gate road to my knees in a storm.
+b : To the handles? | Are the marks still there? | Weren't you frightened?
+a : To the handles. I've never trusted a low doorway since. | Some. Painted over, mostly, but I know where they are. | I was too busy watching where it went. That's what started me.
+
+scene a_traveller_nearby
+when topic=player
+does tell.self / react.self / assess
+a : That one's fresh in this morning, look. Off the north road, I'd say. | There's a traveller stood about who's never seen rain like ours. Watch the eyes go up to the clouds. | That one's new. Hasn't learned which side of a street stays dry.
+b : How can you tell? | Everybody looks up, at first. | You'll tell them, I suppose.
+a : The mud's the wrong colour for the city. It's the north road's mud, yellow. | A week here and they'll be watching the gutters same as everybody. | If they come asking, I will. If they don't, they'll learn the wet way.
+
+scene winter_at_the_oven
+when topic=season|weather here.season=winter self.job=baker
+does tell.self / react.self / assess
+a : Winter, and half the street crowds my oven to buy a single roll. | It's warm in here and bitter out there, and every customer takes their time choosing. | I don't mind the cold. I've got the only hot wall on the street.
+b : And you let them linger? | #bc_ha# | Lucky you.
+a : A while. Then I give them the roll and the door. | I know what they're doing. I'd do the same. | Not lucky. A warm wall's paid for in the black hours, lighting it.
+
+scene accent_northgate
+when topic=accent|lore self.from=ridgemere self.away=no self.quarter=commons
+does tell.self / react.self / assess
+a : Up by the gate we talk fast, because a cart's always coming and you've got to get it said. | Folk off the carts say we city wolves never draw breath. Well, they've never heard me at full flow. | I've heard every way of talking the realm has, through that gate. Mine's the plainest, and the loudest.
+b : You do talk fast. | #bc_ha# | Plainest, maybe.
+a : I've a lot to fit in before the next batch. | I'll draw breath when I've said my piece. | Plain's the only way. If you mean it, say it.
+
+story the_cellar_and_the_gran [topic=memories self.age>=30]
+  : My #gran#'s cellar was down the gate road. Every wet winter the water climbed her stairs.
+  : She'd send me down with a stick to see how many steps were gone. I'd come up and tell her the number.
+  : By the time I was ten I could tell her the number before I went down, just from how the rain sounded on the roof.
+  ask : Have you ever known a thing like that, just from listening?
+  b[old] : Some feel weather in the knees. You had it in your ears.
+  b : Not like that. You must have listened hard.
+  : Hard and often. It's the only way anybody learns anything.
+
+story first_burnt_loaf [topic=work|memories self.job=baker self.age>=25]
+  : My very first loaf, baked alone, came out black as the oven floor.
+  : The old baker who taught me broke it open, ate the middle, and said the middle was good.
+  : I cried, and then I baked another, and that one was good all the way through.
+  b : That was kind of the old baker. Did you keep the burnt one?
+  : I kept the lesson. Eat the middle, and bake another. Every hand I've taught has heard that from me.
+
+story counting_the_thunder [topic=weather|memories self.age>=25]
+  : My #dad# used to sit me on the step in a storm and count out loud from the flicker till the roar.
+  : The closer it got, the louder he'd count, till the last one broke straight over the roof and he bellowed the number.
+  ask : Did anybody ever count the thunder with you?
+  b[stage=young|adolescent] : No. I'll try it, though. Next storm.
+  b : Not like that. I've always just shut the window.
+  : Open it next time. A storm's better heard than hidden from.
+
+story the_drover_who_stopped [topic=caravan|lore|memories self.age>=30 self.job=baker]
+  : There was a drover who drove through the north gate every Marketday for years, and bought two loaves, always two.
+  : Then came a week with no drover, and another. I kept his two loaves back a whole month.
+  : Turned out he'd married in Larkfield and stopped there. Sent word with a carter to say sorry about the bread.
+  ask : How long would you have kept them back?
+  b : A week, maybe. You've more patience than me.
+  : It wasn't patience. I'd have wanted to know what happened, and I did.
+
+story the_rhyme_of_the_lanes [topic=lore|weather here.region=ridgemere]
+  : There's an old rhyme about which streets go under first. My #gran# had it, and her #mum# before her.
+  : It's half wrong now. They've moved two drains and raised one road since it was made.
+  : So my own list goes up in chalk on my door instead, and I change it every time the city changes.
+  b : Will you teach me the rhyme?
+  : I'll teach you the door. The door's right. The rhyme is only pretty.
+
+rule @cry_loaves
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 6h
+say Loaves! Warm loaves, and the crust still cracking! | Bread here! First batch, straight off the peel!
+
+rule @rain_lanes
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say That's the low lanes gone, then. Round by the top way. | Hear that gutter? Bottom of the gate road's under already.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say There's a crack and a half. Lovely. | Go on, then. Shake the slates. They'll hold.
+
+rule @haggle_bark
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say What's chalked is what's paid. Chalk doesn't bend. | Pay the chalk or go without. I'll not haggle.
+
+rule @dawn_barm
+when concept=bark here.time=dawn self.job=baker
+does aside
+cooldown 12h
+say Come on, come on. Rise, will you. | Gate's open and the first batch isn't out. Bother.
+
+rule @carts_late_bark
+when concept=bark world.wagons=late
+does aside
+cooldown 10h
+say No carts yet. Air loaves by Restday, at this rate. | North road's empty once more. Not a wheel.
+
+dlg @1 resident.hub : #greet#. Door, please; the wet's after my floor. What is it? | #greet#. Out with your errand, and quick; the day's running off without me.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again, and wet again. | #topic.player#. Good. I've news saved since your last visit.
+dlg @3 resident.hub [here.time=night] : Lamps are lit and I rise at three. Be quick, but go on. | One minute, then I'm for bed.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from the doorway. My ears reach that far. | That's a sour look to bring through my door. Well?
+dlg @1 resident.job [self.job=baker] : I bake. Up before the gate's open, out of flour by noon if it's a good day. | Bread, mostly. Loaves, rolls, and a cake when somebody's getting married.
+dlg @2 resident.job : #self.trade_words.capitalize#. Long hours, and no grumbling from me. | Work, walks, and telling folk which streets to keep off in the rain.
+dlg @3 resident.job [self.working=yes] : I'm at it now, as you can see. Talk while I work. | Mind your elbows; there's work half done on every side of me.
+dlg @1 resident.news [world.news] : Word through the gate from #world.news_from#: #world.news#. The first carts carried it in. | The first cart brought it: #world.news#. From #world.news_from#, they said.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at my counter. Every customer has it. | Everybody coming in for bread is talking #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : A wagon's been stripped on the road north. Keep inside the walls, is my advice. | There's a cart gone on the road. Robbed. I'm baking short because of it.
+dlg @4 resident.news [world.death=recent] : A burying down the street, these last days. I sent something round and said nothing clever. | The street's one fewer lately. Everybody's gone quiet since.
+dlg @5 resident.news [world.wedding=recent] : A wedding this week. Best news the street's had in a month. | Wedding bells! Folk were out on every step for it.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : The carts brought flour and no news today, and that's rare. | #news_none# The carts will bring something. They always do.
+dlg @1 resident.gossip [here.gossip=yes] : Here's what reached me, no more and no less: #topic.subject# #topic.claim#. | Going round today: #topic.subject# #topic.claim#. Not a crumb added by me.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Hold on to your purse. Word is #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. I'm bolting my door at night.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing reached me that I'd swear to. | #gossip_none# Come back tomorrow; the carts will have something.
+dlg @1 resident.business [business=thriving] : Selling out by noon. Can't bake fast enough. | Couldn't be better. The till's full every night this month.
+dlg @2 resident.business [business=steady] : Steady. Folk always want my goods, and I always have them. | It keeps the fire lit and the roof on. That's enough.
+dlg @3 resident.business [business=failing] : Poorly. No sense dressing it up. Everything's dear and the customers are thin. | Badly. Another month like this and the fittings go to auction.
+dlg @1 resident.bye : #farewell#. Mind which streets you take home. | #farewell#. Next time, scrape the boots first.
+dlg @2 resident.bye [here.time=night] : #farewell#. The low lanes are no place after lamplight. | Go on home. I'm for my bed.
+dlg @1 shop.greet [here.shop!=bare self.job=baker] : #greet#. Bread's on the shelf and the prices are chalked. No haggling. | #greet#, #address#. Warm loaves, and the crust still crackling. What'll it be?
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. Your usual, or will you risk a change? | #topic.player#. The best of the batch waits under the counter for regulars.
+dlg @3 shop.greet [here.shop=bare] : #greet#. Not a crumb left. Come early tomorrow. | Shelves are bare. Tomorrow, early, and you'll have first pick.
+dlg @4 shop.greet [here.shop!=bare] : #greet#. Everything's priced, and the prices don't bend. #shop_offer# | #greet#, #address#. Have a look; wipe your feet first.
+dlg @1 shop.prices : It's chalked. No haggling, no favours. | The chalk's honest. Things went up, and I've put it on plain.
+dlg @1 shop.bye : #farewell#. Mind the puddle on the step. | #shop_bye# And don't leave it out in the rain.
+dlg @1 master.learn [here.teaches=yes self.job=baker] : Baking? It's up at three and scorched paws for a year. Still keen after that? Then ask. | I'll teach you to knock a loaf and hear it. The rest follows.
+dlg @3 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? Long hours and sore paws for the first year. If that doesn't scare you off, ask. | It's learned by doing and by being told off. I'll do both.
+dlg @2 master.learn [here.teaches=no] : There's a hand learning already; two at once is one too many. Questions are free, mind. | My hand has the work to learn. I can still answer questions.
+graft resident.hub
+choice Which streets flood first? [here.region=ridgemere] -> lanes
+node lanes
+say The low ones by the gate go first, then the bend where the drain was laid crooked, then down toward the water. I chalk them fresh every wet morning.
+mood keen
+free
+choice How do you know the order? -> lanes_how
+choice Thanks. Back to it. -> hub
+node lanes_how
+say Years of wet feet. You listen to the gutters and you watch which step goes under. The city changes, so I change the chalk.
+choice I'll keep to the high side. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is the bread warm? [self.job=baker] -> warm
+node warm
+say Warm? Knock on it. Hear that? Hollow and hot. Out of the oven since the bells.
+mood pleased
+choice I'll take a loaf. -> greet
+choice Why knock on it? -> knock
+node knock
+say A loaf that's done sounds hollow. One that isn't sounds like a pillow. I teach every hand that first.
+choice Let me see the bread. -> greet
+choice Goodbye. -> bye

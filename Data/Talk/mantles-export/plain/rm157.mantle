@@ -1,0 +1,441 @@
+# rm157, the wave in the weave (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm157
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_gudrun_targate
+written_by claude
+title the wave in the weave
+fits stage=adult|old
+prefers role=merchant job=crafter temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk weaves_a_blue_wave_into_the_edge_of_every_bolt
+likes pickled_herring swimming festival_bells first_warm_day
+dislikes night_noise crowds
+fears the_loom_going_quiet a_winter_with_no_swimming
+hopes to_hear_the_bells_from_the_water_one_feast_morning
+topics work +0.4 weather +0.3 caravan +0.3 season +0.3 pastimes +0.2 food +0.2 news +0.1 gossip -0.2 festival +0.1
+styles comfort=quiet gossip=plain refuse=soft tease=none
+marks oath saying
+persona #self.first# weaves by the north gate and lives over the loom: calm, sparing with words, fond of a cold swim and a jar of pickled herring, and every bolt off that loom has a thin blue wave worked into its edge.
+
+words
+oath! = Warp and water | Weft and wave | Shuttle and swell
+saying! = A wave goes in every bolt | Cloth can't be hurried, and nor can I | The loom keeps its own tide
+loom = the loom | my loom
+shuttle = the shuttle | my old shuttle
+bolt = a bolt of grey | a good bolt of plain grey
+wave = the blue wave | the little wave on the edge
+edge = the selvedge | the edge of the cloth
+fleece = the fleece off the carts | the north carts' wool
+gatebell = the gate bell | the opening bell
+bells = the cathedral bells | the big bells over the close
+swim = a cold swim | a swim off the rocks
+herring = pickled herring | herring under vinegar and dill
+nightcarts = the night carts | iron wheels after midnight
+innyard = the inn yard | the yard of the inn by the gate
+press = the press at the gate | the crush at the gate
+warmday = the first warm day | the first day the water's bearable
+ell = an ell | an ell and a half
+shanty = an old sea song | a song for hauling ropes
+quietly = Mm | So
+cartwool = Larkfield wool | downs wool off the carts
+
+any
+opinion @1 city for 1 [self.quarter=commons] : Northgate bore me, and I've never wanted another door. The whole realm comes past it, sooner or later.
+opinion @1 road against 1 : The carts come in later every season. A late cart means late wool, and late wool means an idle loom.
+opinion @2 road against 2 [world.wagons=raided] : Another wagon's been robbed up the north road. My first thought is the wool on it, and that shames me a little.
+opinion @1 merchants for 1 : I sell what I weave. I know what the fleece costs off the cart, so I'll not grudge another their price.
+opinion @1 houses for 1 : Whatever else they are, the Houses pay wages, and wages buy coats. My loom has no quarrel with them.
+opinion @2 houses mixed 1 [self.owes=yes] : A House's money is easy to take and slow to give back. I'd not borrow from one again.
+opinion @1 watch for 1 : The Watch at the gate know my face. I'd sooner have that than a stout lock.
+opinion @1 times for 1 : Supper, a sound roof, and the loom going. I've no complaint to make.
+opinion @1 festivals mixed 0 : Feast bells I love. The crush after them wears me thin.
+opinion @1 strangers mixed 0 : Strangers come in at the gate every hour. Most buy nothing and some buy a coat. I treat them all the same.
+opinion @1 newcomers mixed 0 : New folk want cloth like everybody. If they pay, they're neighbours.
+opinion @1 drink mixed 0 : The inns by the gate are loud with it every night. I've nothing against a cup; I've something against midnight.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. In off the road? Pull the door, quick; it's wet out. | #greet#. You'll be wanting cloth, or the way. I can do both.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. I'll finish this row. Look about. | #greet#. Talk if you like; the loom doesn't mind.
+line @3 greet [here.time=dawn] : Morning. The gate's only just open. | Morning. I've been at the loom since the gate bell.
+line @4 greet [here.time=dusk|night] : Evening. The gate's shutting; you're cutting it fine. | Evening. Quiet for a moment, till the inns wake up.
+line @5 greet [pair.band=friends] : #greet#. Sit by the window; there's light there. | #greet#. #quietly.capitalize#. You're welcome.
+line @1 kin.open [pair.kin!=no] : Home, then. Sit; I'm nearly done. | You're back. I'd kept the kettle on.
+line @1 again.open : Twice today. The cloth's grown an ell since. | Back again. I've a row more done, that's all.
+line @1 hail [pair.band=friends] : Here a moment, when the street lets you. | A word, if you're passing the window.
+line @1 greet.return : #greet#. | #greet#. Come in.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Sit. | #greet#. I'd hoped you'd look in.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Say on; I'm listening under the shuttle. | #greet#. This row first, then I'm yours.
+line @4 greet.return [here.time=dusk|night] : #greet#. Mind the cobbles; they're wet. | #greet#. Late, but I'm up.
+line @1 farewell : #farewell#. | #farewell#. Mind the carts.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the wall; the night carts don't stop. | #farewell#. Sleep, if the inns let you.
+line @1 farewell.return : #farewell#. | #farewell#. Come again.
+line @2 farewell.return [pair.band=friends|family|spouses] : Go on. Wave at the window as you pass. | #farewell#. Look in tomorrow.
+line @1 react.news : #quietly.capitalize#. That'll be round the gate by dark. | I'll think on that at the loom.
+line @1 react.news.new : #oath#. The gate's not heard that yet. | #surprise#. The carts didn't bring that.
+line @1 react.news.known : A drover gave me that at first light. Northgate hears first. | #knew#. A carter told me before noon.
+line @1 react.news.doubt : #doubt#. Carters stretch a thing the length of the road. | Wait for the next cart. If it's true, they'll all say it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for it. | That's hard to hear. Sit a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants a new coat, I'd think. | Good. I'm glad of that, truly.
+line @1 answer.how : Steady. The loom's going and I'm keeping up with it. | Well enough. A quiet day so far.
+line @2 answer.how.busy [self.working=yes] : Busy. Three bolts promised by Marketday. | Busy, but it's a good kind.
+line @3 answer.how.poorly : Tired. The inns kept me up past midnight. | Heavy-headed. The carts rolled all night.
+line @1 ask.how : And you? Dry under that hood? | How are you keeping? You came in wet.
+line @1 sympathise : #sympathy#. Sit by the loom a while. | I'm sorry. Sit; the loom can wait on you.
+line @1 reassure : #reassure#. One row, then the next. | It'll blow over. Weather always does.
+line @1 decline : #hedge#, but there's a bolt promised for Marketday, and cloth promised is cloth owed. | Not today. The light goes early and I need every hour of it.
+line @1 accept_decline : #no_matter#. Some other day. | That's all right. It'll wait.
+line @1 thank : #thanks#. That was kind. | That's a kindness I'll carry.
+line @1 deflect_thanks : #deflect#. | It was nothing. Truly.
+line @1 preclose [self.working=yes] : Well. The loom's waiting. | I'll lose the light if I stand here.
+line @2 preclose : Well. #preclose#. | I've the water to fetch before dark.
+line @1 accept_preclose : Go on, then. | Away with you. Watch for carts.
+line @1 ack : #quietly.capitalize#. | #bc_true#
+line @1 give.advice : Buy cloth from someone who'll tell you where the wool came from. | #advise.capitalize#: wool off the downs wears longest. Ask for it by name.
+line @1 warn [world.bandits=near] : Don't go out by the north gate alone. #warn#. | If the road can't wait, take a friend along it.
+line @1 confide : I sing to myself at the loom when nobody's in. Old sea songs. I'd rather it went no further. | I've never once been out on a boat. I still dream of the sea every night.
+scene the_wave_on_the_edge
+when topic=work|pastimes self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : See the edge of this bolt? That thin blue line. I put it in every one. | Every bolt off my loom has #wave# along #edge#. You'll find it on half the coats in Northgate. | I've woven #wave# into everything since my first bolt. Stopping's beyond me now.
+b : Why a wave? | Half of them? | Why not stop?
+a : Because I love the sea and I've never been on it. That's the nearest I get. | Half, near enough. They pass my window, and I know whose they were. | It'd look wrong without it. To me, at least. Nobody else would notice the lack.
+b : #bc_lovely# | Now I'll be looking at coats. | I'd notice now.
+
+scene shuttle_and_song
+when topic=work|pastimes self.working=yes
+does tell.self / react.self / assess
+a : The shuttle goes at the pace of #shanty#. Which came first, the song or the shuttle, I've forgotten. | I keep the time with an old song under my breath. Nobody hears it but the loom. | Weaving's like rowing, I think. You pull, and it comes back, and you pull.
+b : Sing it, then. | Only the loom? | You've never rowed?
+a : No. It's a loom song now. It's gone shy. | Only the loom, and it never complains. | Never once. I'd guess I'm right all the same.
+
+scene gate_bell_morning
+when topic=day|work here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : #gatebell.capitalize# goes, and I start the first row. I've not needed a clock in years. | Carts roll in at the opening, and the cobbles shake the loom. I wait till they've passed. | First light, and the gate's open, and the whole north road pours in under my window.
+b : That's a fair clock. | Doesn't the shaking spoil it? | Every morning?
+a : It's never once been late. Nothing else in my life is so reliable. | No. I just wait. Waiting's half of weaving. | Every morning. A morning without it would feel wrong.
+
+scene night_carts
+when topic=home|day here.time=night here.region=ridgemere self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : #nightcarts.capitalize# again. Iron wheels, all of them under my window. | #innyard.capitalize# sang till past midnight. The same song, eleven times. | Some fool's horse kicks the stable door at the inn every night. I've counted.
+b : You live on the main road. | Eleven times? | How many?
+a : I do, and I chose it. I'll still say they could grease a wheel. | Eleven. I'd have sung it better myself, and I don't sing. | Forty-two kicks last night. I'd sell it a stable door of cloth if I could.
+
+scene crowds_at_the_gate
+when topic=smalltalk|day here.region=ridgemere self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : I stepped out by the gate at sunup and couldn't move for drovers. | #press.capitalize# on a market morning is past bearing. I wait for noon. | When the gate's crammed, I stay at the loom. The loom doesn't elbow.
+b : It's the busiest place in the city. | Noon's quieter? | Elbows everywhere.
+a : It is. I'm glad of the trade and sorry for my ribs. | Quieter by half. The carts are in and the drovers are in the inns. | Everywhere. Somebody's straw came home on my coat.
+
+scene wool_off_the_carts
+when topic=caravan|work here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #cartwool.capitalize# came in this morning. Long staple, a little greasy. Good. | I can tell which town a fleece came from by its smell. | Some carter offered me wet wool, sold by weight. I know that trick.
+b : Is Larkfield's the best? | Can you truly? | What did you do?
+a : For coats. For blankets I'd take a heavier wool, if I could get it. | Most. Coldwater wool smells of the lake. The downs smell of grass. | Weighed it, wrung it, weighed it again. He took a third off without a word.
+b : #bc_clever# | I'll believe you. | #bc_good#
+
+scene carts_are_late
+when topic=caravan|work world.wagons=late
+does tell.worry / reassure / assess
+a : No wool cart this week. I'm weaving the last of the old fleece. | No north carts yet. The street's gone too quiet. | I've two bolts promised and fleece for one. If nothing comes, I'll tell them so.
+b : They'll come. | Too quiet? | Will they understand?
+a : They will. I'll weave slower till they do. | Too quiet by half. You'd think I'd like it. I don't. | Most will. A good coat late beats a bad coat now.
+
+scene carts_are_in
+when topic=caravan|work world.wagons=in
+does tell.news / react.news / assess
+a : They're in, the carts. I could hear them before I was awake. | Fleece in this morning, three bales. I'll be at the loom till the bells. | The whole north road came in at once today. The gate was a river.
+b : Good. | Three bales? | A river?
+a : Good, and loud. Both at once, which is Northgate all over. | Three. One of them good. I'll take the good one and wait on the rest. | Of carts. I watched it from my window, and wove nothing for an hour.
+
+scene news_from_the_gate
+when topic=news|gossip world.news
+does tell.news / react.news / assess
+a : A carter by the gate, first thing: #world.news#. From #world.news_from#. | Word off the north carts: #world.news#. The inns are full of it. | Northgate hears first. #world.news#, from #world.news_from#, so they said.
+b : That's news. | At the inns? | You'd know first.
+a : It is. That's word for word as it reached me. | The inns say a great deal. That much came from more than one mouth. | We do. Not that I'm proud of it. It's only where we sit.
+
+scene gossip_plainly
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : There's talk by the gate that #topic.subject# #topic.claim#. I'd not stake a bolt on it. | #topic.subject.capitalize# #topic.claim#, so the carters say. Carters say a great deal. | I heard at the well that #topic.subject# #topic.claim#. That's all I heard.
+b : Do you believe it? | They do. | That's enough.
+a : I don't know. The next cart will tell. | They do, and half of it's true. I don't know which half. | It's enough for me. I'll not go asking after more.
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / assess / ack
+a : The window lets in a great deal of talk. Nearly all of it blows past. | People talk on the step as if a loom has no ears. | Somebody quarrelled under my window last night. Who, I'll keep to myself.
+b : Nothing worth keeping? | It has, then. | Go on.
+a : A little. It goes into the cloth, as it were. Nobody gets it back out. | Two ears, and both of them busy. I say nothing. | No. They'll make it up by Restday, and I'd look the fool for telling.
+b? : #bc_wise# | #bc_ha# | #bc_fair_enough#
+
+scene cold_swim
+when topic=pastimes|weather self.likes=swimming here.region=ridgemere here.season=spring|summer
+does tell.self / ask.detail / answer.detail / assess
+a : I had #swim# before the gate opened. The water was like a slap. | I go out past the headland on a calm morning and swim till my ears ache. | Folk think I'm mad, swimming in the Sound in spring. I think they're missing it.
+b : Wasn't it freezing? | Till your ears ache? | Missing what?
+a : Freezing. That's what I go for. You come out and the day feels warm after. | Then I stop. I'm not a fool, whatever they say. | The quiet. Nothing but water and gulls out there, and no carts at all.
+b : Brr. Rather you than me. | Sensible, then. | I'd miss my feet.
+
+scene winter_no_swimming
+when topic=season|pastimes here.season=winter self.likes=swimming
+does tell.feeling / react.self / assess
+a : No swimming till spring. I miss it more than I'd say. | The Sound's too rough in winter, even for me. I watch it from the wall instead. | On the coldest morning I dipped one paw, so I could say I'd been.
+b : You'll swim again soon. | Even for you? | Just your paw?
+a : I count the weeks. Not out loud. | Even me. I've some sense, under the wet fur. | Just the paw. It was enough. It ached till dinner.
+
+scene first_warm_day
+when topic=season|weather here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I'll be in the water before the gate opens tomorrow. | First warm morning. I opened the window by the loom and left it. | Warm at last. The wool behaves better when it's warm; so do I.
+b : It's still cold water. | Did it stay warm? | So do we all.
+a : Cold, but bearable. Bearable's plenty. | Till noon. Then the wind came down from the north and shut it for me. | I suppose. The loom runs sweeter, anyway.
+
+scene herring_supper
+when topic=food self.likes=pickled_herring
+does tell.self / react.self / assess / ack
+a : #herring.capitalize# and black bread. Nearly every supper. | A jar of herring lives on my sill. Nothing else on that sill keeps. | My #mum# put herring down every autumn. Mine go down her way, with the dill.
+b : Every night? | On the sill? | With dill?
+a : Most nights. I like knowing what's for supper. | Where it's cold. And in sight, so I don't forget it. | Dill, and a bay leaf, and patience. Three weeks before you touch it.
+b : Sounds good to me. | That's sensible. | I'll try it.
+
+scene rain_on_the_wool
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain again. The wool goes heavy and the loom goes slow. | Rain against the glass while I weave. It beats steadier than the carts. | Wet days, folk come in for cloth. They've just found out their coat leaks.
+b : It's always raining here. | Better than carts? | Good for trade, then.
+a : Always. It's why we weave thick in Ridgemere. | Much steadier. It doesn't stop and argue at the gate. | Grand for my till, cruel to their coats. I'm sorry for them, and I sell them cloth.
+
+scene fog_at_the_gate
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog so thick the carts are coming in by their bells. | The gate's gone from my window. The noise of it hasn't. | The fog gets into the wool. It's damp to the touch by noon.
+b : By their bells? | Noise of what? | Can you weave it?
+a : Every cart, a little bell, so they don't run into each other. It's almost pretty. | Hooves and swearing. Same as always, but closer. | I can. It weaves tight. You'd not know, once it's dry.
+
+scene the_bells_on_a_feast_day
+when topic=festival|faith self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #bells.capitalize# for a feast. The loom stops and the window opens. | The cathedral rings for the feast and the floorboards shiver with it. | One day I'll hear the feast bells from out on the water. That's my wish.
+b : Do you go in? | In the floor? | From the water?
+a : No. The crowd's too thick. The window's enough. | Through the frame of the loom. It hums for an hour after. | Swimming, off the rocks. They'd carry that far, I think.
+
+scene feast_crowds
+when topic=festival|smalltalk self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : Feast days, half the countryside pours through the gate onto my step. | Give me the bells and keep the crowds, I say, every feast. | I shut the shop by noon on a feast. Nobody buys cloth with a cup in their paw.
+b : Feasts don't come often. | You can't keep the one and lose the other. | Nobody?
+a : Once in a while is plenty. | They come together. I've tried. I stay in. | Nobody sober. I'd rather sell cloth to the sober.
+
+scene owing_the_factor
+when topic=work|prices self.owes=yes
+does tell.worry / reassure / assess
+a : I owe money to a House's factor and there's a day it's due. I weave faster and say nothing. | There's a sum owing that I'd rather not owe. It'll be paid. The loom will pay it. | I borrowed once, from a House. Once was my lesson.
+b : You'll find it. | The loom will. | Once is enough.
+a : I will. Row by row, if I have to. | It has before. It's paid every debt I've had. | More than enough. It's a long tide, owing.
+
+scene good_times
+when topic=prices|times world.times=good|boom
+does tell.news / react.news / assess
+a : Three new coats ordered this week. Folk are spending. | Carters buying good cloth this season. I've never known it. | My shelves are bare of grey by Marketday. I'll be weaving by candle.
+b : Good for you. | Carters? | By candle?
+a : Good for the loom. I'll not complain about being busy. | Carters, with coin in their purses. It's a good year when carters buy coats. | By candle. Not ideal for the eyes, but there it is.
+
+scene lean_times
+when topic=prices|times world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Nobody's buying new. They're bringing old coats in to be patched. | I've cut my price twice and still the grey sits on the shelf. | Folk are wearing their coats a winter longer. I would too, in their shoes.
+b : Patching pays a little. | It'll move. | It's hard for everyone.
+a : A little. I'll patch. Better than idle. | It will. Cloth keeps. That's the one mercy of my trade. | For all of us, yes. We'll come through it.
+b? : #bc_true# | #bc_i_hope_so# | #bc_fair#
+
+scene my_spouse
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# and I can pass an evening and say nothing. Those are the best evenings. | I'd let #self.spouse# at the loom, and nobody else. | I'd trust #self.spouse# with the shop and the shuttle both.
+b : That's rare. | Nobody else? | That's trust.
+a : Rare, and better than talk. | Nobody else. It's not that I'm proud. It's that it's mine. | It is. I hand it out seldom.
+
+scene no_pups
+when topic=family self.parent=no self.married=yes
+does tell.self / react.self / assess
+a : We've no pups. The loom has been the child, I suppose. | Folk ask if we'll have young. I say the house is full of wool. | No children. I'm not sorry, mostly. Some evenings I wonder.
+b : The loom's a quiet child. | Full of wool? | That's honest.
+a : Quieter than most. It only shouts when the treadle sticks. | Full to the beams. You'd have to clear a corner to fit a cradle. | I try to be. It costs nothing.
+
+scene neighbour_well
+when topic=friends|smalltalk self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour.capitalize# could have my door key, and that's not something I'd say of many. | #self.neighbour.capitalize# is good company out front of an evening. | We're neighbours and we leave each other be. #self.neighbour.capitalize# and I suit each other.
+b : That's a good neighbour. | Good company's rare. | That's the best way.
+a : It is. Northgate's full of folk passing. A neighbour who stays is worth something. | It is, by the gate. Most company's in a hurry. | It is. I'd not want a neighbour who knocked twice a day.
+
+scene the_city_door
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : Northgate's the city's front door. Everybody comes in under my window, and some go out again. | The Rise looks down on the sea. We look out at the north road. Give me the road. | Down the hill, the Sump; up it, the Rise. Here we've the gate, and the gate's enough.
+b : You'd see everyone. | The road's better? | The gate's busy.
+a : Everyone, sooner or later. The world comes to me. | For me. The sea's for swimming in, not looking at. | Busy, and loud, and mine.
+
+scene the_sea_songs
+when topic=memories|lore self.age>=25
+does tell.memory / ask.detail / answer.detail / assess
+a : My #grandad# sang sea songs at the hearth. He'd never been to sea either. | I learned my songs from a sailor who lodged by the gate one winter when I was small. | I know eleven sea songs and I've never stood on a deck. I'd rather keep it that way.
+b : Neither of you? | Is he still about? | Why keep it that way?
+a : Neither. He said the songs were for the ones who stayed. | Long gone. He never came back up the north road. I still have the songs. | Because the songs are better than the sea, I expect. The sea would only disappoint me.
+b : #bc_lovely# | #bc_poor_soul# | That's wise.
+
+scene sound_from_the_wall
+when topic=weather|smalltalk here.region=ridgemere here.weather=storm
+does tell.self / react.self / assess
+a : I went to the sea wall to watch the storm. The spray came right over. | Listen to the wind. The loom's rattling in its frame. | A storm like this, the carts stop and the gate's quiet. It's the only quiet we get.
+b : Weren't you frightened? | Is it safe? | You like the storms?
+a : No. I was wet. I liked it. | It's been through worse. So have I. | For the quiet. I'd not wish a storm on anyone out in it.
+
+scene faith_quietly
+when topic=faith
+does give.opinion / react.self / assess
+a : When the bells ring I go to the cathedral and find a spot near the door. I don't sing. | My whole prayer is thanks for the water and the wool. | The close is next door, near enough. I hear the services through the wall. That's my chapel.
+b : That's enough. | That's a good prayer. | Through the wall?
+a : I hope so. The front pews are for the singers. | It covers what matters. | Through the wall and the window. The loom stops for the hymns.
+
+scene work_rhythm
+when topic=work self.working=yes self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : #ell.capitalize# by noon, if nobody comes in. Two if the light holds. | The treadle's started squeaking. I'll oil it at dusk and not before. | I've woven the same grey for years. Folk think it's dull. It isn't, when you're doing it.
+b : And if somebody comes in? | Why not now? | What's it like, then?
+a : Less. I don't mind. That's what the shop's for. | Because I'd lose the row. A squeak's better than a lost row. | Like breathing. You stop noticing, and then the bolt's done.
+
+scene clean_air
+when topic=health
+does tell.self / react.self / assess
+a : The cold water keeps me well, I think. I've not had a chill in years. | My back aches from the bench. A swim sorts it, when the water's warm enough. | The inns kept me awake again. I'm as tired as I've been all season.
+b : Knock on wood. | Does it really? | Can you move?
+a : I knocked. On the loom. It's wood. | Better than #remedy#, and cheaper. | Not without the carts coming through my head.
+
+story the_first_wave [topic=work|memories self.age>=25]
+  : The first bolt I ever wove on my own, I put a blue thread in the edge by mistake.
+  : My #mum# said take it out. I left it. A carter bought the bolt for the blue thread.
+  : I've put it in every bolt since. It's sold more cloth than I have.
+  ask : Do you keep a mistake like that, that turned out well?
+  b : Not one I'd show anyone.
+  b[old] : A few. The best things come in sideways.
+
+story the_lodger [topic=memories|lore here.region=ridgemere self.age>=25]
+  : I was a pup when an old sailor took a room by the gate all one winter, waiting on a ship.
+  : He sat on our step every evening and sang. My #mum# brought him soup to make him stop. He sang to the soup.
+  : In the spring he went down the hill to the wharf and didn't come back up. I kept the songs.
+  b : Worth more than the ship, maybe.
+  b[stage=young|adolescent] : Do you know all of them? Sing one.
+
+story swim_at_the_feast [topic=pastimes|festival self.likes=swimming]
+  : One feast morning I struck out beyond the rocks to catch the bells across the water.
+  : The tide was against me and I heard nothing but my own breath. I came back blue.
+  : Next year I'll go earlier. I've said that every year.
+  ask : Have you a wish like that, that never quite comes?
+  b : Several. They roll over to next year, like yours.
+  b[friends] : You'll get it one year. Mind you don't drown first.
+
+story the_wet_wool [topic=work|caravan self.role=merchant]
+  : A carter once sold me a bale of wool that was half river water.
+  : I hung it up in the shop and it dripped all night. In the morning it weighed half as much.
+  : When he came round again I paid him for the half that was wool, and gave him the water back in a bucket.
+  b : Ha. A bucket.
+  b[job=carter] : That's harsh. Fair, but harsh.
+
+story the_quiet_night [topic=home|memories self.dislikes=night_noise]
+  : One night every cart in the realm seemed to stop at once, and Northgate went quiet.
+  : I lay awake listening to it. I couldn't sleep. I'd never heard the gate so still.
+  : Come morning it turned out the gate had stuck. I slept the next night like a stone, under all the noise again.
+  ask : Can you sleep in the quiet?
+  b : Hardly. I need a bit of noise.
+  b[old] : Not any more. I listen for things.
+
+rule @weaver_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Good grey cloth, close woven. It'll stand the rain. | Coats, cloaks and blankets. Come and feel the weight of it.
+
+rule @shanty_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Mm. Heave, and hold, and heave. Where was I. | #quietly.capitalize#. Another row, another verse.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Grease that wheel, whoever you are. | There goes the inn again. Same song.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 10h
+say Rain. Good for coats, bad for wool. | Shut the door; the rain's coming in.
+
+rule @gate_bark
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 12h
+say There's the gate bell. First row. | The carts are in. There goes my quiet.
+
+rule @wave_bark
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 12h
+say The blue goes in last. Always the blue. | There's #wave#. Now it's mine.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Grey cloth, close woven, and every bolt with the blue on its edge. | #greet#. Feel the weight of that. It'll stand a Ridgemere winter.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. Your coat's wearing well, I see. | #topic.player#. Come in. I've a new bolt since you were here.
+dlg @3 shop.greet [here.shop=bare] : #greet#. I'm short of cloth just now; the wool carts are late. | #shop_bare# There'll be more when the fleece comes in.
+dlg @4 shop.greet [here.shop!=bare pair.disposition=hostile|wary] : Look, if you like. Don't handle the cloth with wet paws. | You can buy or leave it. I'll not argue either way.
+dlg @1 shop.prices : The wool costs what the carts make it. I add my time and no more. | #shop_dear# Good cloth's never cheap, and cheap cloth's never good.
+dlg @1 shop.bye : #farewell#. Mind the carts outside. | #shop_bye# Look for the blue on the edge, if anyone asks where it came from.
+dlg @1 resident.hub : #greet#. You've found the loom. What's wanted? | #greet#. Off the wet stones with you, and inside.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're welcome back. | #topic.player#. Sit by the window if you're stopping.
+dlg @3 resident.hub [here.time=night] : It's late. The gate's shut. What is it? | Evening. The loom's covered for the night.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you from the door. | Your errand, plainly, if you please.
+dlg @1 resident.job [self.role=merchant self.job=crafter] : I weave at #self.workplace# and sell what I weave. Plain grey, close woven, for the rain. | The loom by the window's mine. Coats and blankets, mostly.
+dlg @2 resident.job : My paws work and my word holds. Nothing more to it. | It's steady work, done at my own pace.
+dlg @1 resident.business [business=thriving] : Good. I've more orders than light to weave them by. | Busy. I'll not complain about it.
+dlg @2 resident.business [business=steady] : Steady. The loom pays its way. | Steady, which suits me.
+dlg @3 resident.business [business=failing] : Poorly. The cloth sits on the shelf. | Not good. Folk are patching, not buying.
+dlg @1 resident.news [world.news] : Word in at the gate from #world.news_from#: #world.news#. | It was all the carters' talk at sunup: #world.news#.
+dlg @2 resident.news [world.event_words] : The whole gate's full of #world.event_words#. You'll hear it at every inn.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts brought wool and nothing else. | The gate's been dull today.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear a little at the window. It goes out with the draught.
+dlg @1 resident.bye : #farewell#. Mind the carts. | #farewell#. Close it after you; the rain gets in.
+graft resident.hub
+choice What's the blue line on your cloth? [self.role=merchant] -> wave
+node wave
+say A wave. I put one in the edge of every bolt I weave. I love the sea, and I've never set foot on a boat. That's the nearest I come.
+mood warm
+free
+choice Never been on the sea? -> sea
+choice Back to it. -> hub
+node sea
+say Never. I swim in it, off the rocks, when it's calm. That's enough sea for me. I'd rather have the songs than the ship.
+choice I see. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Where does your wool come from? -> wool
+node wool
+say Off the carts at the north gate. The downs wool's the best for coats: long staple, wears for years. I can tell it by the smell.
+mood calm
+choice Show me the cloth. -> greet
+choice By the smell? -> wool_smell
+node wool_smell
+say Grass, on the downs wool. Lake water, on the other. Wet wool smells of nothing but trickery. I weigh that twice.
+choice Fair enough. -> greet
+choice Goodbye. -> bye

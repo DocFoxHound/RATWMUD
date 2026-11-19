@@ -1,0 +1,478 @@
+# rm166, the riddle at the rag sacks (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm166
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_gerrit_sootgate
+written_by claude
+title the riddle at the rag sacks
+fits stage=adult|old
+prefers role=merchant job=laborer humour=merry
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk sets_a_riddle_instead_of_haggling
+likes blackberries riddles a_full_till first_warm_day
+dislikes haggling night_noise
+fears the_cash_box_left_unlocked thieves_in_the_dark a_wet_week_of_rags
+hopes a_stall_on_the_commons_market a_riddle_nobody_can_answer
+topics work +0.4 pastimes +0.4 prices +0.3 season +0.3 food +0.2 gossip +0.2 crime +0.2 festival +0.3 faith -0.3
+styles comfort=chatter gossip=eager refuse=jokey tease=merry
+marks oath saying
+persona #self.first# buys and sells second-hand rags, bones and buttons, talks nineteen to the dozen, worries a thing twice over, and will knock a penny off for any wolf who can answer a riddle, but never for one who haggles.
+
+words
+oath! = Holes and patches | Bless my old sacks | Patch and penny
+saying! = Somebody wore it once and somebody will again | Nothing's rubbish till it's been looked at twice | A riddle's cheaper than a quarrel
+sacks = the sacks | my rag sacks
+cashbox = the tin box | my old tin cash box
+pennyoff = a penny off | a penny knocked off
+commonsstall = a pitch under cover in the Commons Market | my own little counter on the Commons
+berries = blackberries | a hatful of blackberries
+warmday = the first warm day | the first day of spring you can stand about in
+fretful = Hold on, did I shut the lid | Wait, wait, which pocket's the key in
+heresthething = And here's the thing | Now listen to this | Now then, mark this
+oddments = buttons, buckles and odd hooks | a jar of buttons and odd buckles
+nightcarts = the night carts | the wheels going past at all hours
+wolfsworth = a coat with a winter left in it | a shirt with one more wash in it
+teaser = Got you | Ha, had you there | Thought so
+pinched = pinched | a bit thin about the face
+jar = a jar | one jar, two at the outside
+
+any
+opinion @1 drink for 1 : A jar among friends settles my nerves lovely. Two jars, and the riddles start coming, so mind. | One jar and I'm the best company in the street. That's well known.
+opinion @1 festivals for 2 : Dancing till dark sets me right for a month, and the crowd buys coats to show off in. | Music, cakes, and everybody in a good temper. Give me one a month.
+opinion @1 merchants for 1 : I keep a counter, so I know what a carter charges, axle and all. Nobody gets fat on a rag. | Folk think a dealer's rich. Come and count my box one night. It won't take long.
+opinion @1 newcomers against 1 : #heresthething#: a new face could be anybody, and nobody tells you which. | Nice enough, mostly. But I count my buttons twice when a new face leans on the sacks.
+opinion @1 road against 2 : Those roads? Not for a cartload of coats, not now. | The roads? I'd sooner kip in the Sump, and I'd not kip in the Sump.
+opinion @2 road against 3 [world.wagons=raided] : #oath#. Robbed again, out there. I'll not go past the last milestone, and I never did.
+opinion @1 strangers against 1 : You never know what a stranger's left behind or what's following. #oath#, I look over their shoulder. | I'll buy a stranger's coat. I'll keep both eyes on the stranger while I do.
+opinion @1 sump against 1 : The Sump after dark? Me? I'd shake out of my coat. Half my rags come from down there and I still won't. | Good folk down there. Bad lanes, though. I keep to the lamps.
+opinion @1 watch for 1 : The Watch keep light paws off my sacks. I give them a riddle for nothing every time they pass. | The boots going by help me drop off. Not much. A bit.
+opinion @1 houses mixed 0 : The big Houses throw out the best coats in the city. That's to their credit, and that's my lot. | Their cast-offs, I like. Their manners, I've never seen up close.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. New face. Careful leaning on the sacks; they bite. | #greet#. Not a face I've sold a coat to. Yet.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Rags, bones, buttons, and a riddle if you're short. | #greet#. Have a rummage. Everything's been somebody's.
+line @3 greet [here.time=dawn] : #greet#. Early. The carts aren't even through the gate yet. | Up before the bakers, nearly. #greet#.
+line @4 greet [here.time=dusk|night] : #greet#. Getting dark. Talk away; I'll be eyeing the corners. | Late to be about. #greet# all the same.
+line @5 greet [pair.band=friends] : There you are. I've saved a riddle since breakfast, and it's yours. | #greet#. Good. A face I needn't count my buttons around.
+line @6 greet : #greet#. Fine day for a rummage, or a bad one, depending. | #greet#. Don't mind the smell of old wool. Everybody gets used to it.
+line @1 greet.return : #greet#. Thought it was your step; you walk like you've somewhere to be. | #greet#. I was just saying to myself I hadn't seen you.
+line @2 greet.return [pair.band=friends|family] : There's the face I wanted. Sit on the sack, it's the clean one. | #greet#. Good, now I can stop talking to the buttons.
+line @3 greet.return [self.working=yes] : #greet#. Don't mind me sorting; I can listen and count buttons both. | #greet#. Talk away. These rags won't sort themselves, more's the pity.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, isn't it. Late gives me the shivers. | #greet#. Quick, before the lamps start guttering.
+line @1 kin.open [pair.kin!=no] : Sit, sit. I've news and a riddle both and I can't pick which first. | You'll want your supper. So do I. Talk first, though.
+line @1 again.open : Back so quick, you'll be wanting a discount. | You again. I'll have to think up a new riddle.
+line @1 hail [pair.band=friends] : Hoi! Over here, quick, I've a thing for your ear. | Wait there, I'm coming. Mind the puddle.
+line @1 farewell : #farewell#. Mind your pockets on the way. | Off you go, then. I'll think of a harder riddle for next time.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamp side of the street, and no cutting through. | Go straight home, mind. No dawdling in the dark.
+line @1 farewell.return : #farewell#. And don't forget the answer. | #farewell#. Don't you go losing anything.
+line @2 farewell.return [here.time=dusk|night] : Lamp side all the way, mind. | Straight home. I'll worry otherwise, and I worry enough.
+line @1 react.news : #heresthething#, I hadn't heard that. Go on. | From the beginning. And slowly, for my nerves.
+line @1 react.news.new : I sit at the sacks all day and never once heard that. | #surprise#. That never reached the market, and the market hears plenty.
+line @1 react.news.known : Had it at dawn. The rag buyers hear everything first. | Old news, that. A carrier brought it with yesterday's shirts.
+line @1 react.news.doubt : Who saw it, though? A thing seen and a thing heard aren't the same coat. | Hm. A story puts on weight climbing the hill, I find.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #oath#. That's cruel. I'll be awake with that till the bells. | Oh no. Oh, that's bad. I'll be bolting the door early.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely. Lovely! That's put a skip in my morning. | Good! Somebody'll want a coat for it, mark me.
+line @1 answer.how : Fine. Mostly fine. A bit fretful. Fine, though. | Busy, and I've a riddle nobody can get. So, cheerful.
+line @1 answer.how.busy [self.working=yes] : Run off my paws with sorting. Wool here, linen there, rubbish nowhere. | Busy. Three sacks in today and every one wetter than the last.
+line @1 answer.how.poorly [self.injured=light|bad] : Sore. I'll mend. I always mend, eventually. | Not my best. Don't fuss me; I do my own fussing, thanks.
+line @1 ask.how : And you? Sleeping, I hope. Better than me. | You've a bit of colour. Is that health or the wind?
+line @1 sympathise : That's heavy. Sit down on the clean sack. I'll hush, I promise. | Oh, that's hard. I'll keep my riddles in my pocket.
+line @1 reassure : It'll mend. Nearly everything does, given a Restday or two. | Don't fret. I'll fret for you; I've the practice.
+line @1 decline : I'd like to, honest, but I can't leave the sacks with nobody watching. | Not today. I've two loads to sort before the rain gets into them.
+line @1 accept_decline : Fair enough. Another day, then. | No harm asking. No harm saying no, either.
+line @1 thank : Kind. Very kind. That goes in my head and stays there. | Thanks. That's a weight off, that is.
+line @1 deflect_thanks : Nothing to it. Ask me twice, I'd say yes twice. | Go on. It was hardly any trouble, a short walk.
+line @1 preclose : Well. Back to the sacks, before one wanders off without me. | Still, the box won't count itself.
+line @2 preclose [self.working=yes] : I'll have to stop. There's a cart unloading and nobody watching it. | Sacks to sort. Don't go far, I'll want you later.
+line @1 accept_preclose : Go on, then. The riddle can wait for you. | Off with you. I'll stop here and worry.
+line @1 tease [pair.band=friends] : That coat of yours. A penny for it would be robbing myself. | You still haven't got last week's riddle. I'm keeping count.
+line @1 tease.return : Says the one who wears that hat. | Ha. That's a riddle you owe me now, for cheek.
+line @1 laugh : Ha! I'm having that one. I'll pinch it for the sacks. | Oh, that's lovely. I'll be laughing at that all day.
+line @1 congratulate : Well done! That calls for a jar, and you're buying. | Good for you. I said you would, didn't I? I did.
+line @1 ack : #teaser# | #bc_go_on#
+line @1 give.advice : Count it twice and lock it once. That's all I know. | Never buy a coat in the wet. It weighs double and fools the eye.
+line @1 warn [world.bandits=near] : Inside the walls, and stop there. Don't argue, just stop. | Bad sorts out on the roads. Keep your coin in your boot.
+line @2 warn [here.time=night] : Keep off the lanes below the gate tonight. I mean it. | Mind the dark corners. I'm not joking, for once.
+line @1 apologise : Sorry. That came out wrong. My mouth runs ahead. | I've put my paw in it. Forgive me.
+line @1 accept_apology : Forgotten already. Well, nearly. | No harm done. I've said worse before breakfast.
+rule @cry_rags
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Rags and bones! Old coats, odd buttons, broken buckles! | Anything you've done with, I'll take off your paws!
+
+rule @cry_riddle
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say A penny off for a right answer! No haggling, mind! | Riddle for a penny! Who's clever this morning?
+
+rule @rain_sacks
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Cover the sacks! Holes and patches, it's coming in sideways! | Wet rags. Wet rags all week. #saying#.
+
+rule @night_wheels
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say There go #nightcarts#. Who needs a wheel at this hour? | Somebody's singing in the lane again. Every night!
+
+rule @warm_day
+when concept=bark here.season=spring here.weather=clear
+does aside
+cooldown 12h
+say Feel that sun! Coats off, everybody, and sell them to me! | Spring at last. I could dance on the sacks.
+
+rule @box_check
+when concept=bark self.role=merchant self.temper=nervy
+does aside
+cooldown 8h
+say #fretful#? Yes. Yes, I did. I'll just look. | Is that box locked? It's locked. I'll check.
+
+scene penny_riddle
+when topic=work|prices self.working=yes self.role=merchant
+does tell.self / react.self / tease / tease.laugh
+a : I don't haggle. Answer me a riddle and you'll have #pennyoff#. Four holes and no nose, and it keeps your coat shut. | No haggling at my sacks. Guess this and I'll knock a penny off: I was a shirt, then a rag, and now I'm paper. What next?
+b : That's easy. A button. | A letter, I'd say.
+a : A button! Penny off, and you've earned it. Most say a hat, and I don't know why. | A letter! You've had that one before, I can tell. Penny off anyway.
+b? : #bc_ha# | #bc_clever#
+
+scene riddle_for_nothing
+when topic=pastimes|smalltalk here.region=ridgemere
+does tell.self / react.self / answer.detail / react.self / assess
+a : Here's one for nothing. The more I carry, the lighter my walk home. What am I? | Riddle for you, free. Every wolf in Ridgemere has trod on me, and I've never stood up once. What am I?
+b : A purse? No. Give me a moment. | A floor? The stairs?
+a : An empty barrow when the selling's done. You'd have got it. | The stairs! The long ones up from the wharf. You got it quicker than the Watch did.
+b : Clever. I'll take it home. | Not bad. Not bad at all.
+a : Take it. I've a sack full of them. | Keep it. Tell it at supper and see who's quick.
+
+scene riddle_nobody_gets
+when topic=pastimes|dreams
+does confide / react.self / assess
+a : I've been making a riddle so hard nobody in the city can answer it. I'm on my third winter at it. | #heresthething#: the best riddle I ever made, I've never told anybody. I'm saving it.
+b : Try it on me. | Saving it for what?
+a : Not yet. It's not done. When it's done, you'll be the first, and you'll be wrong. | For the day I get my stall on the Commons. Opening day, a riddle nobody gets. That's the plan.
+
+scene no_haggling
+when topic=prices|work self.role=merchant
+does tell.complaint / react.complaint / give.opinion / concede
+a : Somebody spent half the morning at my sacks arguing a penny off a penny coat. Half the morning! | I hate haggling. The price is chalked, it's a fair price, and still they want to argue it.
+b : Some folk like the game of it. | It's how the market works, though.
+a : It's not a game to me. It's my supper. A riddle's the game; that's why I offer one. | Not my market. #saying#, and a penny's cheaper than a lost morning.
+b : Fair enough. | #bc_fair_enough#
+
+scene full_box
+when topic=work here.time=dusk|night self.role=merchant
+does tell.feeling / react.self / assess
+a : Shake a full tin box at dusk and listen. No fiddler in Ridgemere plays a sweeter tune. | Counted the box twice tonight. Same sum both goes, and the same is good.
+b : A good day, then. | Twice?
+a : A good day. I'll sleep, for once. Well, I'll lie down. | Twice. Once for the money and once for my nerves. Then I hid it.
+
+scene the_box_lid
+when topic=work|smalltalk self.temper=nervy
+does tell.worry / reassure / assess
+a : Did I lock the box? I locked it. I'm nearly sure I locked it. | I checked the lock on the door four times this morning and I'll want to check it again by noon.
+b : You locked it. I'd put money on it. | You'd know if you hadn't. Nothing's gone.
+a : You're right. I'll look anyway. Then I'll be right too. | Nothing's gone. Yet. I'll have one more look, and then I'll stop. Probably.
+
+scene sorting_sacks
+when topic=work self.working=yes self.job=laborer self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Wool in this pile, linen in that, and the buttons cut off before any of it goes anywhere. | Three sacks in this morning from down the hill. Two good, one I'd not give to a scarecrow.
+b : Why cut the buttons off? | What's wrong with the third?
+a : Buttons sell on their own. A jar of them goes further than the coat they came on. | Damp right through and smells of whatever cellar it lived in. It'll air. #saying#.
+b? : #bc_clever# | #bc_poor_soul#
+
+scene bones_and_buckles
+when topic=work self.job=laborer self.role=merchant
+does tell.self / react.self / assess
+a : Bones go for glue and buttons; rags go for paper; buckles go back on boots. Nothing goes to waste at my sacks. | People laugh at bones. Bones paid my rent last winter.
+b : I never knew that. | They did?
+a : Nobody does. That's how I make my living. #saying#. | Every penny of it. Proud of it, too.
+
+scene commons_hope
+when topic=dreams|work self.role=merchant
+does tell.plan / ask.detail / answer.detail / react.self / assess
+a : I'm saving for #commonsstall#. A real counter, a roof over it, and no sacks on the cobbles. | One day I'll sell up on the Commons, under an awning, with my riddles chalked on a board.
+b : How long till you've enough? | Why the Commons, of all places?
+a : Coin by coin. A winter or two, if nobody steals the box. Which they won't. Will they? | Better folk, better coats, and it doesn't flood. And it's mine, if I get it.
+b : You'll get there. | It suits you.
+a : I will. I've a riddle saved for opening day. | It does. #heresthething#: I've already picked the corner.
+
+scene blackberries
+when topic=food|season here.season=summer|autumn
+does tell.self / react.self / assess
+a : I went beyond the gate for #berries# this morning. Paws all purple. Worth every scratch. | There's no food like blackberries off the bush. A whole hatful, and I ate half walking back.
+b : Beyond the walls? Alone? | Only half?
+a : Alone, and looking over my shoulder the whole time. It was a lovely morning, though. | I meant to save them. I never save them. #oath#.
+
+scene blackberry_bush_worry
+when topic=food here.season=autumn
+does tell.worry / reassure / assess
+a : The good bushes are out beyond the walls, and I fret the whole time I'm picking. | Picked blackberries by the north road. A cart went by and I near jumped into the bush.
+b : Nobody's going to trouble a wolf with a hat full of berries. | That's the cart's road; they'll go past.
+a : So I keep telling myself, very loudly. | They did. And I had to pick the thorns out of my coat after. Still worth it.
+
+scene first_warm_day
+when topic=season|weather here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#! I could sing. I won't. But I could. | Feel that sun. I've stood still a whole minute and not shivered once.
+b : You can sing if you like. | It's lovely.
+a : You'll be sorry. I know three songs and all of them are about turnips. | It is. And folk sell their winter coats when the sun's like this. Good for the sacks, good for me.
+
+scene spring_coats
+when topic=season|work here.season=spring self.role=merchant
+does tell.self / react.self / assess
+a : Come spring, the whole city sells me its winter coats, and come autumn it buys them back. | Sold a coat this morning to the very paws I bought it off in spring. Not a flicker.
+b : That's a good trade. | Did you say anything?
+a : It's the only trade I know. Round and round, like the seasons. | Say anything? I asked a riddle and knocked a penny off. Fair's fair.
+
+scene rain_weighs
+when topic=weather here.weather=rain
+does tell.complaint / react.self / assess
+a : Rain's in the sacks again. A wet rag weighs double and dries to half. | It's raining so hard the buttons are floating. #oath#.
+b : Can you not cover them? | Floating?
+a : I cover them. The rain finds a way in. It always finds a way in. | Near enough. I'll be chasing a buckle down the gutter by noon.
+
+scene fog_nerves
+when topic=weather here.weather=fog
+does tell.worry / reassure / assess
+a : I don't like fog. Anybody could be standing a pace off and you'd not know it. | In this fog I keep thinking somebody's at the sacks. It's always just a post.
+b : It's only fog. It'll lift. | A post never stole anything.
+a : I keep saying so. It's not helping. | True. I'll watch the posts, all the same.
+
+scene night_wheels
+when topic=home|smalltalk here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : I'll not sleep tonight. #nightcarts.capitalize#, and a singer in the lane who only knows half a song. | Every cart in Ridgemere rattles under my window once it's dark. I lie still and tally the wheels.
+b : It'll stop by morning. | Counting wheels?
+a : It never stops by morning. Morning's when the bakers' carts start. | Like counting sheep, only with more swearing. Twelve last night.
+
+scene home_quiet
+when topic=home
+does tell.feeling / react.self / assess
+a : Give me a house full of folk. Somebody's always up, so nobody can creep in. | I'm last up and last to bed at ours. Every door has to click shut before I'll lie down.
+b : That's a comfort. | Every door?
+a : It is. Noisy, mind. Comfortable noisy, not night noisy. | Every one. Then I check them. Then I sleep. Some nights.
+
+scene gate_carts
+when topic=caravan|travel here.region=ridgemere
+does tell.news / react.news / assess
+a : The carts through the north gate bring old coats from all over. Show me the cut and I'll name the town. | You can tell a town by its cast-offs. The hill towns wear their coats thin; the lake folk wear them damp.
+b : Can you, really? | What do the city's look like?
+a : Honest. I'd put money on it. Well, a penny. | Patched. Patched twice. The city never throws a thing away; it sells it to me.
+
+scene wagons_late
+when topic=caravan world.wagons=late
+does tell.worry / reassure / assess
+a : No carts again. No carts, no cast-offs, and my sacks look half empty. | Late carts. I stare up the road like staring'll fetch them.
+b : They'll be along. | Watching won't hurry them.
+a : They'd better. I've counted the buttons twice for something to do. | I know. I watch anyway. It's that or bite my claws.
+
+scene wagons_raided
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+a : A cart stripped out there. My first thought's the carter, and my second's my box. | They've robbed another cart out there. I'll not go out for blackberries this week.
+b : It's a bad business. | Better safe.
+a : It is. I hope the carter came through it. I hope it twice. | Much better. The bushes will keep.
+
+scene sump_dark
+when topic=crime|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : Down the Sump with the lamps lit? Never. I'd skip it at noon too, but for the rags. | Half my sacks are carried up out of the Sump. I meet the carriers on the top step, never the bottom.
+b : The folk down there aren't so bad. | That's careful.
+a : No, the folk are fine. It's the lanes. A lane can't be trusted. | Careful's kept me in one piece. Mostly one piece.
+
+scene watch_boots
+when topic=crime here.region=ridgemere
+does tell.self / react.self / assess
+a : The Watch came past twice today. I gave them a riddle each time. They didn't get either. | Watch boots going by on the cobbles. Lovely noise. I sleep a little better.
+b : What was the riddle? | A little?
+a : Not telling. They'll be back for the answer, and that's two more passes. | A little. Not a lot. I'm not made for a lot.
+
+scene gossip_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : #heresthething#: they say #topic.subject# #topic.claim#. A carrier brought it to the sacks. | You'll not have heard this. #topic.subject.capitalize# #topic.claim#. That's what they're saying.
+b : Is that so? | Who told you?
+a : That's all I had, and I've not added a stitch. | A carrier with a sack of shirts. I'd nearly swear to it. Not quite.
+
+scene gossip_sad
+when topic=gossip here.gossip=yes topic.claim_kind=death|violence|theft
+does tell.gossip / sympathise / assess
+a : Bad news at the sacks. #topic.subject.capitalize# #topic.claim#. I've not felt right since. | They say #topic.subject# #topic.claim#. I keep glancing at my own door.
+b : That's a sorry thing. | You'll be all right.
+a : It is. I'll keep my riddles in my pocket today. | I know. I'll glance anyway.
+
+scene gossip_glad
+when topic=gossip here.gossip=yes topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news.glad / assess
+a : Something cheerful, at last. #topic.subject.capitalize# #topic.claim#. Twice I heard it, so it'll be so. | Have you heard? #topic.subject.capitalize# #topic.claim#.
+b : That's lovely. | That's good to hear.
+a : It is. Somebody'll want a good coat for it. I'll keep one back. | It is. I said so to everybody who came past. Nine of them.
+
+scene times_hard
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : Lean times. More folk selling me their coats than buying, and that's how you know. | When the city's poor, my sacks fill up and my box stays empty. That's the rag trade.
+b : It'll turn. | That's hard.
+a : It will. And I'll be sat by the sacks, with the coats they'll want back. | It is. I knock a bit off when a buyer looks #pinched#. Don't tell anyone.
+
+scene times_good
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. Folk throw out a coat for a button missing. I sew the button on and sell it to the next one. | Money about. Even the Sump's bringing me better rags.
+b : Good for you, then. | Better rags?
+a : Good for everybody. I'm cheerful, and I'm nervous about it. I'm always nervous when I'm cheerful. | Wool with the nap still on. I nearly cried. Holes and patches.
+
+scene festival_dance
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival tomorrow. I'll dance till I drop, then I'll worry about the sacks. | I'm wearing the best coat I've got, and I've got a lot of coats.
+b : I'd pay to see you dance. | Which one?
+a : You will. Everybody does. Nobody forgets it. | The green one. It had three owners before me and I'm the first to look good in it.
+
+scene newcomer_coat
+when topic=newcomer
+does tell.worry / react.self / assess
+a : New face in the street. Bought a coat off me already, so that's a good start. I'll watch, though. | New folk about. They'll want coats, and I'll want a good look at them first.
+b : Nobody's new on purpose. | That's fair.
+a : I don't. I just watch. Watching's free. | Coat first, questions second. That's how I trade.
+
+scene drink_jar
+when topic=pastimes|smalltalk here.time=dusk|night
+does invite / accept_invite / assess
+a : #jar.capitalize#, no more. You'll hear the riddle I've been saving. Well, not that one. | A jar with me, then? I'll not talk about rags. Much.
+b : Just one, then. | Go on, then.
+a : Good. I'll lock the box and check it and lock it again. Then we'll go. | Good. You're buying; I'm supplying the jokes.
+
+scene health_worry
+when topic=health
+does tell.worry / reassure / assess
+a : I've a tickle in my chest. It'll be nothing. It's probably nothing. Is it nothing? | Every cough in the market, I think I've caught. Every one.
+b : It'll be the damp. It's nothing. | You've not caught them.
+a : The damp. Yes. The damp, that's all. Good. I'll stop thinking about it now. | Not yet. I'll cough into my sleeve, all the same.
+
+scene faith_lost_ring
+when topic=faith
+does tell.self / react.self / assess
+a : There was a ring in a coat pocket once. Took it to the chapel to give back. A rag dealer's honest too, under the Bright One. | I'm no chapel wolf. But I give back what I find in pockets, and I reckon that's my share.
+b : Did they find the owner? | That's a fair share.
+a : Never did. It's still sitting with the priest, waiting. So am I, in a way. | That's my thinking. The Bright One keeps count up there, and I keep count down here, just in case.
+
+scene neighbour_key
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : The key to my box? I'd hand it to #self.neighbour#. That's saying a lot, from me. | If I'm ever gone a day, #self.neighbour# could mind my door for me, and I'd not fret.
+b : From you, that's something. | Good to have.
+a : It is. And I'd still check the box after. But I'd check it fondly. | Very good to have. There aren't many I'd say it of.
+
+scene cat_on_sacks
+when topic=animals
+does tell.self / react.self / assess
+a : There's a cat that sleeps on my wool sack every morning. I charge it nothing. Best customer I've got. | Gulls had a go at a sack of bones today. I chased them the length of the street.
+b : What do you call it? | Did you catch them?
+a : I don't. It hasn't told me its name, and I'm not asking. | Catch a gull? I lost a boot. The gulls lost nothing.
+
+scene player_coat
+when topic=player
+does tell.self / react.self / assess
+a : See that traveller? Good coat. Road-worn, but good. I'd pay fair and throw in a riddle. | A traveller's coat always has a story in it. Mud from three towns and a button off a fourth.
+b : That coat's not for sale. | Can you tell where from?
+a : Not while it's on a traveller's back. Travellers never take their coats off. Most annoying folk alive. | Not from here. I'd guess, but I'd only be showing off.
+
+scene old_market
+when topic=memories self.age>=40
+does tell.memory / react.self / assess
+a : Years back, the market was sacks on wet cobbles and the rain falling on sellers and sacks alike. Some of us still get rained on. | I learned to count on buttons. Four holes, two holes, none. I've never stopped counting.
+b : Better now? | That's one way to learn.
+a : A bit. The rain's the same. The rain's always the same. | It was. I can still tell a coat's age by its buttons. Useful, nobody believes it.
+
+story first_sack [topic=memories|work self.age>=30]
+  : The first sack I ever bought was full of somebody's old curtains.
+  : I thought I'd been cheated. Then I found a whole winter coat rolled up inside them.
+  ask : Keep it, would you, or sell it on?
+  b : I'd have kept it, I think. Good wool, was it?
+  : Good wool, all the buttons on. I sold it on and bought two more sacks. That's how it starts.
+
+story ring_pocket [topic=memories|faith self.age>=30]
+  : I once bought a coat with a little ring sewn into the lining. Gold, or near enough.
+  : I lay awake till dawn fretting. Was it stolen? Would somebody come for it? Would the Watch come for me?
+  b : I'd have fretted too. What did you do?
+  : Took it to the chapel in the morning. Felt lighter all the way home. Lighter by a ring, mind.
+
+story riddle_won [topic=pastimes]
+  : One day a pup with empty pockets came to the sacks and asked for a riddle.
+  : I gave the hardest one I had. The pup got it in three breaths.
+  ask : Guess what that clever pup went home with?
+  b : Gave the pup something for nothing, I'd guess.
+  : A coat, too big. It'll fit in a winter or two. I'll want the next answer then.
+
+story night_thief [topic=crime|memories self.temper=nervy]
+  : One night I heard the sacks rustling, and I came down with a broom, shaking like a sheet on a line.
+  : I swung at the dark and knocked a whole sack over.
+  b : Was there anybody there?
+  : A cat. Asleep. It didn't even wake up. I didn't sleep again till morning.
+
+story warm_day_coat [topic=season here.region=ridgemere]
+  : The first warm day one spring, I bought eleven winter coats before noon.
+  : Then the rain came back at dusk and the lot of them came back for their coats.
+  ask : Would you have sold them back?
+  b : I'd want a bit for my trouble.
+  : Same price, and a riddle. Busiest day I ever had, and I went home in my shirt.
+
+dlg @1 resident.hub : #greet#. Rags, bones and buttons, and I talk while I sort. | #greet#. You'll want something, or you'll want a riddle. Which?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a new riddle and you're just the wolf for it. | #topic.player#! Good. I'd half an eye out for you.
+dlg @3 resident.hub [here.time=night] : Late, and late makes me jumpy. Quick, then, and quietly. | Lamplight, and me all jumpy. What's wanted?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Paws off the sacks and in plain view, please. Humour a nervous dealer. | I'd rather you didn't lean on the sacks. Say what you want.
+dlg @1 resident.job [self.job=laborer self.role=merchant] : Rags, bones, buttons, buckles. What you're done with, I'm not. | #self.trade_words.capitalize#. Buy cheap, sort careful, sell fair. And no haggling.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me busy and it keeps me fretting. | Work's work. I talk my way through it; it goes quicker.
+dlg @1 resident.business [business=thriving] : Sacks full and box heavy. I keep checking the lid. | Couldn't be better, which makes me nervous.
+dlg @2 resident.business [business=steady] : Steady. A penny in for every penny out, and a bit over. | Steady enough. The rain takes some, the riddles take some. I manage.
+dlg @3 resident.business [business=failing] : Poorly. Folk are selling me everything and buying nothing. | Badly, and I'm worried sick about it. Don't tell anybody I said so.
+dlg @1 resident.news [world.news] : Word in from #world.news_from#: #world.news#. Came in with a cartload of old shirts. | The carts had it from #world.news_from#: #world.news#. I'd not swear to more.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at the sacks. Everybody's got a piece of it. | #world.event_words.capitalize#. That's all anyone's talking about, me included.
+dlg @3 resident.news [world.wagons=raided] : A cart's been stripped out there. I'm stopping inside the walls till it's caught. | They stripped a wagon out there. I'd stay behind the walls, I would.
+dlg @4 resident.news [world.death=recent] : The street's had a death lately. The sacks have gone very quiet. | We buried a neighbour this week. I've not told a riddle since.
+dlg @5 resident.news [world.wedding=recent] : A wedding! Somebody wore one of my coats to it. Well, I like to think so. | Somebody got wed this week. The lane cheered itself hoarse, and I danced.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# You'd have it from me if there were. I tell everybody everything. | Nothing new at the sacks. That never lasts, mind.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. A carrier left it with me, along with the shirts. | I heard #topic.subject# #topic.claim#. That's my lot; I'll not stretch it.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Hold your purse tight. Word is #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, they say. I've checked my box three times since.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing worth passing on, which isn't like me. Ask again tomorrow. | #gossip_none# Well, nothing I have yet. Ask me after dinner.
+dlg @1 resident.bye : #farewell#. And keep your coat buttoned. | #farewell#. Long way round, mind, not the alleys.
+dlg @2 resident.bye [here.time=night] : Lamp side, all the way home. I'll worry otherwise. | #farewell#. Mind the corners; they're darker than they look.
+dlg @1 shop.greet [here.shop!=bare self.job=laborer] : #greet#. Rags, bones, buttons and buckles. Rummage away, gently. | #greet#. Old coats, good as new, near enough. Guess a riddle right and the price drops a penny.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. I put a good coat aside; I thought of you. | #topic.player#. You'll want the riddle first, I suppose.
+dlg @3 shop.greet [here.shop!=bare] : #greet#. Everything here's been somebody's. #shop_offer# | #greet#. Have a look. No haggling, mind; I'll take a riddle instead.
+dlg @4 shop.greet [here.shop=bare] : #greet#. Sacks are empty; it's the carts. I'll still buy, mind. | Not a rag left. Have you anything to sell? I'll pay fair.
+dlg @1 shop.prices : The prices are fair and they don't bend. A right answer to a riddle bends them a penny. | Coats went up with the cold. Buttons never change; a button's a button.
+dlg @1 shop.bye : #farewell#. Wear it well; it's been worn well before. | #shop_bye# And if it doesn't fit, I'll buy it back. For a bit less.
+graft resident.hub
+choice Why do you ask riddles instead of haggling? [self.role=merchant] -> riddles
+node riddles
+say Because I hate haggling. A riddle's quicker, it's fair, and the clever ones get a penny off. Want one?
+mood pleased
+free
+choice Go on, then. -> riddle_try
+choice Goodbye. -> bye
+node riddle_try
+say What's always going up the hill and never gets any higher? Think about it. The answer's the road. Penny off next time.
+choice That's a good one. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Do you buy old clothes? [self.job=laborer] -> buying
+node buying
+say I buy anything with a thread left in it. Coats, shirts, sheets, buttons on their own. Not wet, if you can help it.
+mood keen
+choice I might have something. -> buying_how
+choice Let me see your wares. -> greet
+node buying_how
+say Bring it by, dry, and the price will be fair. No haggling either way. That's my rule.
+choice I'll remember. -> greet
+choice Goodbye. -> bye

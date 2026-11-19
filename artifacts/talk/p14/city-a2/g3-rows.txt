@@ -1,0 +1,721 @@
+[info] RATW_VOICE router on
+[info] RATW_TALK 10728 rules and scenes for residents' talk
+[info] RATW_SCRATCH a scratch server (pid 872530): nothing it does is saved, and it runs beside any other server. Stop it when you're done.
+[info] RATW_MANTLE loaded 37 mantles (4008 rules and scenes) worn by 37 residents in 67 ms (from /tmp/cityA-g3a2)
+[info] RATW_TALK voices: 1084 residents (0 with words of their own, 0 with lines, 37 with a mantle), 7 dialects, 0 figures
+[info] RATW_DATABASE_WORLD_LOADED database=ridgemere3 world=upper_accord build=81 release=0 cells=1241 residents=775 streamed=1 loaded=727
+[info] RATW_SCRATCH_ACCOUNTS the save's central (ticket) accounts are set aside on this scratch server; it starts with fresh local accounts (nothing is written back).
+[info] RATW_RESTORE characters=4 summaries=2 ledger=1
+[warn] RATW_MANTLE born_1grqt7uo is bound to cw161, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ada_coalstack is bound to sm101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_alder_blossomcroft is bound to sm115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ambrose_gullton is bound to lf112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ash_sheafmeadow is bound to sw112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_aster_cornley is bound to sm110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_aster_sheafby is bound to cw204, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_bramble_hazeldell is bound to lf155, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_brand_sunham is bound to lf129, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_briar_cornby is bound to sm107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_briar_sedgebridge is bound to sm119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_brisk_lakemere is bound to sm103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_brock_marshholm is bound to mb120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_dagfinn_brineby is bound to mb107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_delphine_sootley is bound to cw137, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_desmond_saltton is bound to sw121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_disa_fogford is bound to sm112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_dray_merewell is bound to cw101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_dunstan_wickgate is bound to cw118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ebba_coalgate is bound to fh103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_edric_pitchmarsh is bound to lf119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_emrys_stillshore is bound to sm113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fallow_honeyfield is bound to cw132, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fallow_plumfield is bound to lf110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fallow_reedwell is bound to mb108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fell_cragdrift is bound to lf121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fenwick_plankworth is bound to cw162, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_fern_merewick is bound to sw106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_frost_colddrift is bound to oh102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_garth_barleyton is bound to cw125, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_gorse_hedgewell is bound to lf132, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_heather_fernshaw is bound to cw138, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_heather_fernwood is bound to cw119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_hob_hedgecombe is bound to sw111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_hob_mirebridge is bound to mb130, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ilse_fogley is bound to cw139, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_imogen_rustford is bound to lf133, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ingram_ashleaf is bound to oh103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ingram_hazelshaw is bound to cw140, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_iris_fernhaven is bound to lf138, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ivar_wickcot is bound to mb112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ivo_sootridge is bound to mb110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_jasper_greymore is bound to mb113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_jessamy_greyford is bound to cw115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_jory_corncroft is bound to mb116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_juniper_larkham is bound to fh114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_kell_greenshaw is bound to lf130, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_lavinia_mudworth is bound to sw109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_leif_driphand is bound to fh104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_leif_rainley is bound to mb117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_lichen_reedford is bound to rm103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_lorn_hedgeton is bound to cw110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ludo_oakholt is bound to lf134, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_maren_coalwick is bound to mb118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_marl_craghearth is bound to fh101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_myrtle_larkcombe is bound to sm116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_nell_barleycombe is bound to cw141, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_nell_plummeadow is bound to mb101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_njal_rustwick is bound to lf135, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_oda_cinderdale is bound to oh104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_oriel_blossomby is bound to cw142, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_orm_sootgate is bound to sw108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_orrin_reedmere is bound to cw114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_pell_plumgarth is bound to lf156, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_pike_acornshaw is bound to cw189, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_quarry_mossfield is bound to cw143, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ragnar_wetby is bound to lf123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_roald_brinemarsh is bound to lf124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_rowan_eelwater is bound to lf125, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_rowan_hayridge is bound to lf131, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_senna_applegarth is bound to sw110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_sloe_harvestby is bound to sm120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_sloe_mistwick is bound to mb111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_sorrel_ashbough is bound to lf115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_stone_acorndell is bound to fh105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_stone_marshditch is bound to sw122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_stone_marshmore is bound to mb114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_stone_sunton is bound to oh113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_tamsin_oakshaw is bound to lf122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_thorn_mistmere is bound to rm108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_tobias_ropewell is bound to rm107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_tor_chalkfield is bound to sm118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_tristram_rainridge is bound to oh105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ulla_rusthand is bound to oh106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_ulric_stonevein is bound to fh102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_vale_pikebridge is bound to sm102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_vigdis_bilgedale is bound to rm106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_wenna_rainford is bound to cw122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_wick_marshwade is bound to cw126, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_willa_meadowfield is bound to cw144, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_willa_wheatcombe is bound to sm111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_winifred_fogridge is bound to sw113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE cty_yrsa_plankgate is bound to mb115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ada_greyhand is bound to sw123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ada_rainmore is bound to rm102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_agna_bilgecot is bound to lf102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_agna_tarham is bound to cw205, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_agnes_millford is bound to oh101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_aud_dripgate is bound to mb123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_beatha_millgate is bound to cw206, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_berit_kelpwick is bound to lf101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_bo_rainmarsh is bound to mb124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_brand_cindermore is bound to lf148, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_brenna_slaggate is bound to lf141, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_celestine_greatly is bound to sw124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_corwin_bilgestack is bound to lf157, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_corwin_kelpby is bound to sm130, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_corwin_sootstack is bound to cw207, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_dagny_pitchton is bound to mb127, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_dagny_rustcot is bound to cw170, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_dagny_slaghand is bound to rm101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_disa_raincot is bound to cw208, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_disa_sootley is bound to lf153, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_dunstan_slagley is bound to sw115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_edda_bilgeridge is bound to cw172, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_edmund_kelpstack is bound to lf158, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_edmund_saltham is bound to sm127, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_egil_grantham is bound to lf159, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_elspet_saltmarsh is bound to cw183, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_elspet_sootley is bound to rm141, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_emmerich_sootley is bound to cw181, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_fenwick_millmarsh is bound to cw169, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_finn_slagmarsh is bound to sw118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_finn_wickby is bound to lf139, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_frida_wickwell is bound to lf146, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gerrit_gullham is bound to lf149, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_pitchmarsh is bound to cw192, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_plankgate is bound to sw117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_plankworth is bound to sm129, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_rustmarsh is bound to lf160, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_slagworth is bound to cw184, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gorm_tarton is bound to sw114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_greta_gullton is bound to lf144, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gudrun_ropeford is bound to mb128, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gudrun_rustwick is bound to sw116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gunnar_mudstack is bound to lf145, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gunnar_wetcot is bound to cw182, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gwen_brineby is bound to lf143, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_gwen_pitchdale is bound to rm127, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_hanne_coalton is bound to mb132, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_hanne_wickworth is bound to cw198, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_hilde_wetwick is bound to cw209, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_hollis_slagford is bound to cw193, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ilse_nailridge is bound to rm144, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ilse_saltley is bound to mb129, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_imogen_ashby is bound to rm119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_imogen_cinderwell is bound to cw194, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ingrid_saltstack is bound to lf147, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_isolde_ropehand is bound to rm146, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ivo_slagby is bound to cw176, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ivo_tarmarsh is bound to cw199, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_jorunn_cindermore is bound to rm147, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_jorunn_saltdale is bound to fh111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_karin_wetridge is bound to sw120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_lavinia_bilgedale is bound to fh113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_lionel_dripworth is bound to lf142, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_liv_kelpmarsh is bound to sm131, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_lotte_ashford is bound to cw178, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_mab_carlisle is bound to lf161, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_maren_grayrock_ is bound to lf162, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_maren_tarworth__ is bound to cw200, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_oda_harrowgate is bound to cw210, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_oda_kelpridge is bound to cw177, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_olaf_pitchmore is bound to cw195, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_orla_rainworth is bound to fh108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_orm_wickwick is bound to cw211, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_oskar_kelpwell is bound to cw187, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_oskar_millwell is bound to fh109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_osric_mossgrave is bound to sm132, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_osric_ropeworth is bound to fh110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_osric_slagstack is bound to cw190, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_palle_bilgemarsh is bound to rm145, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_philippa_fogwick is bound to cw212, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_rosamund_tarridge is bound to rm112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_runa_coalhand is bound to cw180, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_runa_gullley is bound to mb121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_runa_ropemarsh is bound to cw201, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_rune_greyby is bound to rm131, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_rune_pitchhand is bound to rm133, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_rupert_cindergate is bound to cw167, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_rupert_ropehand is bound to lf152, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_septimus_plankmarsh is bound to cw202, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_signe_dripworth is bound to mb125, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_signe_sootwell is bound to cw166, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_silas_brinegate is bound to rm134, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_solveig_cinderton is bound to fh112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_soren_ropewick is bound to cw196, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_sten_kelpwell is bound to oh112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_theodora_ropemarsh is bound to sm124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_thyra_ashley is bound to sm126, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_thyra_wetmarsh is bound to sm125, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_tobias_saltton is bound to sm123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_ulf_cinderley is bound to rm120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_una_plankton is bound to lf140, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_vidar_gullwick is bound to cw173, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_vigdis_rainmore is bound to lf150, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_wenna_naildale is bound to lf151, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_wenna_tarford is bound to rm113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_winifred_cinderworth is bound to rm125, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_winifred_pitchdale is bound to rm121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_wynn_fogworth is bound to oh111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_wynn_rustworth is bound to rm116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rm_wynn_tarhand is bound to cw175, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_bertil_slagwick is bound to mb126, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_bo_gilbey is bound to rm135, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_brenna_abbot is bound to rm136, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_corra_pennock is bound to cw174, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_cressida_cotton is bound to fh115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_cressida_wetherell is bound to cw203, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_dagfinn_kettlecote is bound to rm118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_dagfinn_thornham is bound to mb131, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_delphine_birch is bound to cw171, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_delphine_brackwick is bound to rm132, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_desmond_hollis is bound to cw197, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_desmond_toft is bound to rm124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_dirk_langstead is bound to cw163, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_disa_slagwick is bound to cw185, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_dunstan_sallow is bound to cw213, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_ebba_heath is bound to sm128, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_ebba_netherby is bound to rm139, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_edmund_sootford is bound to mb122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_fenwick_mossdale is bound to cw164, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_gerrit_hollis is bound to rm114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_greta_thornworth is bound to rm129, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_gunnar_farrow is bound to rm117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_hanne_ash is bound to rm143, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_ilse_netherby is bound to rm142, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_ivar_netherworth is bound to rm123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_jarl_greywell is bound to cw186, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_jasper_brackham is bound to rm128, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_josephine_fenwick is bound to cw188, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_josephine_wickwick is bound to cw168, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_karin_bilgeford is bound to cw165, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_lionel_lowe is bound to rm138, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_lothar_abbot is bound to rm140, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_maren_hatherley is bound to rm115, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_montague_kettlewick is bound to rm126, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_oda_cotton is bound to rm122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_orm_blackwood is bound to rm111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_percival_thornham is bound to lf154, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_philippa_coldby is bound to rm130, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_philippa_pitchstack is bound to lf163, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_soren_cindermarsh is bound to cw191, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_theodora_pitchwick is bound to sw119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_tobias_blackford is bound to cw214, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_ulla_brindle is bound to cw179, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE rmx_vidar_kettleham is bound to rm137, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_ash_greyton is bound to cw145, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_bramble_reedford is bound to lf116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_bramble_reedmere is bound to cw146, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_clover_coldmere is bound to rm109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_fallow_lakewick is bound to cw106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_fern_mistshore is bound to lf113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_gorse_reedmere is bound to cw147, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_grist_reedmere is bound to rm110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_harrow_reedford is bound to cw112, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_kell_greyton is bound to cw133, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_myrtle_stillford is bound to cw148, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_tamsin_greyton is bound to cw149, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_tansy_reedmere is bound to cw127, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_cw_willa_coldwick is bound to cw120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_aster_coldfell is bound to fh106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_clover_snowhollow is bound to lf109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_ivy_stonehollow is bound to oh114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_jory_rimepeak is bound to cw103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_laurel_pinefell is bound to cw116, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_loam_pinefell is bound to cw109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_marl_cragpeak is bound to cw107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_rowan_cragpeak is bound to mb119, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_stone_pinefell is bound to cw113, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_tamsin_icefell is bound to oh107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_thistle_stonepick is bound to sw101, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_fh_wren_coldpeak is bound to cw150, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_cairn_downfield is bound to cw151, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_flint_downcombe is bound to cw134, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_harrow_larkwell is bound to lf126, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_iris_wheatfield is bound to lf136, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_isla_downfield is bound to cw152, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_jory_barleyton is bound to cw153, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_juniper_larkcombe is bound to cw135, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_lichen_hedgemead is bound to cw128, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_moss_downridge is bound to sw103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_pike_chalkley is bound to lf120, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_reed_downfield is bound to cw154, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_rook_wheatfield is bound to lf127, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_rowan_chalkley is bound to lf111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_rowan_downridge is bound to sm104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_rusk_downfield is bound to cw111, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_sage_wheatridge is bound to cw121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_tansy_sunmead is bound to lf104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_thistle_downcombe is bound to cw155, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_tor_wheatfield is bound to lf137, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_wald_larkwell is bound to cw117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_lf_wolde_downfield is bound to cw108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_aspen_marshholm is bound to lf107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_bramble_bogditch is bound to sw104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_fell_miremore is bound to rm105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_heather_reedwater is bound to lf105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_iris_pikeford is bound to mb106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_kite_bogditch is bound to sw105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_nab_bogditch is bound to rm104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_oriel_marshditch is bound to sw102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_ridge_eelbank is bound to sw107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_roan_pikewater is bound to mb102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_skye_eelbank is bound to mb105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_tamsin_eelbank is bound to mb104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_tansy_eelbridge is bound to lf128, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_thorn_marshditch is bound to lf117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_mb_vale_miremore is bound to lf106, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_briar_greenshaw is bound to cw102, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_cairn_acornholt is bound to cw129, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_cairn_oakhaven is bound to oh108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_harl_oakbough is bound to sm108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_ludo_ashwood is bound to mb103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_ludo_beechshaw is bound to oh110, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_quill_oakdell is bound to lf103, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_thorn_ashwood is bound to fh107, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_oh_varg_acorndell is bound to cw105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_bram_harvestgarth is bound to mb109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_brisk_plumby is bound to sm105, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_dun_harvestley is bound to lf114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_edric_harvestley is bound to cw156, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_eskar_cornley is bound to lf118, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_fallow_cornwell is bound to cw157, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_fennel_cornley is bound to cw158, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_gorse_harvestgarth is bound to lf108, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_hob_cornwell is bound to cw104, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_hob_meadowfield is bound to sm121, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_ingram_cornwell is bound to cw136, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_iris_meadowfield is bound to sm109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_kell_honeyfield is bound to cw159, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_kindle_applemeadow is bound to cw123, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_lark_meadowfield is bound to sm122, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_lichen_harvestton is bound to cw130, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_linden_harvestton is bound to cw124, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_moss_blossomwell is bound to oh109, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_orrin_appleley is bound to sm117, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_pell_harvestley is bound to cw131, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_rusk_plummeadow is bound to sm114, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_ulric_harvestley is bound to cw160, which isn't loaded: they speak from the library
+[warn] RATW_MANTLE tn_sm_varg_meadowfield is bound to sm106, which isn't loaded: they speak from the library
+[info] RATW authoritative world ready; 20Hz; save=none (scratch: read from ridgemere3 database); dialogue=Authored offline dialogue
+ok      rm148 (rm_tove_brinegate, ridgemere): 16 listeners; 29 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm148.grown.scene.thunder_over_the_slates
+  never heard: rm148.grown.scene.carts_late_flour
+  never heard: rm148.grown.scene.carts_in_at_last
+  never heard: rm148.grown.scene.raided_road
+  never heard: rm148.grown.scene.gossip_passed_on
+  never heard: rm148.grown.scene.gossip_theft
+  never heard: rm148.grown.scene.gossip_wedding
+  never heard: rm148.grown.scene.hard_times_halves
+  never heard: rm148.grown.scene.good_times_cakes
+  never heard: rm148.grown.scene.walk_on_restday
+  never heard: rm148.grown.scene.festival_loaves
+ok      rm149 (rmx_sybil_pickering, ridgemere): 16 listeners; 13 of 31 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm149.grown.scene.gr_latch_check
+  never heard: rm149.grown.scene.gr_whittle
+  never heard: rm149.grown.scene.gr_old_map
+  never heard: rm149.grown.scene.gr_bread
+  never heard: rm149.grown.scene.gr_gulls
+  never heard: rm149.grown.scene.gr_bells
+  never heard: rm149.grown.scene.gr_autumn
+  never heard: rm149.grown.scene.gr_rain
+  never heard: rm149.grown.scene.gr_gate
+  never heard: rm149.grown.scene.gr_gossip
+  never heard: rm149.grown.scene.gr_times
+  never heard: rm149.grown.scene.gr_wagons
+  never heard: rm149.story.gr_first_peg
+  never heard: rm149.adolescent.scene.ad_lists
+  never heard: rm149.adolescent.scene.ad_proper_knife
+  never heard: rm149.adolescent.scene.ad_gate_faces
+  never heard: rm149.adolescent.scene.ad_bread_stair
+  never heard: rm149.story.ad_wrong_road
+ok      rm150 (rm_orla_wickby, ridgemere): 16 listeners; 33 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm150.grown.scene.cards_on_restday
+  never heard: rm150.grown.scene.meat_dear
+  never heard: rm150.grown.scene.good_weeks
+  never heard: rm150.grown.scene.drovers_late
+  never heard: rm150.grown.scene.drovers_in
+  never heard: rm150.grown.scene.gossip_passed
+  never heard: rm150.grown.scene.theft_next_door
+ok      rm151 (rm_mathis_saltton, ridgemere): 16 listeners; 19 of 26 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm151.grown.scene.full_square
+  never heard: rm151.grown.scene.gossip_passed
+  never heard: rm151.grown.scene.promise_broken
+  never heard: rm151.grown.scene.theft_talk
+  never heard: rm151.grown.scene.long_slates
+  never heard: rm151.grown.scene.good_trade
+  never heard: rm151.grown.scene.carts_late
+ok      rm152 (rmx_egil_blackcombe, ridgemere): 16 listeners; 14 of 31 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm152.adolescent.scene.ad_errands_clean
+  never heard: rm152.adolescent.scene.ad_knife_whittle
+  never heard: rm152.adolescent.scene.ad_night_still
+  never heard: rm152.story.ad_story_parcel
+  never heard: rm152.grown.scene.gr_dry_rag
+  never heard: rm152.grown.scene.gr_rain_watch
+  never heard: rm152.grown.scene.gr_coat
+  never heard: rm152.grown.scene.gr_knife
+  never heard: rm152.grown.scene.gr_soup
+  never heard: rm152.grown.scene.gr_birds
+  never heard: rm152.grown.scene.gr_gulls
+  never heard: rm152.grown.scene.gr_summer
+  never heard: rm152.grown.scene.gr_night
+  never heard: rm152.grown.scene.gr_home_private
+  never heard: rm152.grown.scene.gr_times
+  never heard: rm152.grown.scene.gr_gossip
+  never heard: rm152.story.gr_story_first_rag
+ok      rm153 (rm_imogen_nailridge, ridgemere): 16 listeners; 27 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm153.grown.scene.ship_in_pinned
+  never heard: rm153.grown.scene.ship_due_waiting
+  never heard: rm153.grown.scene.ship_late_worry
+  never heard: rm153.grown.scene.ship_lost_quiet
+  never heard: rm153.grown.scene.paper_from_the_north
+  never heard: rm153.grown.scene.wagons_in_paper
+  never heard: rm153.grown.scene.gossip_withheld
+  never heard: rm153.grown.scene.gossip_passed_plain
+  never heard: rm153.grown.scene.gossip_theft_wary
+  never heard: rm153.grown.scene.hard_times_charts
+  never heard: rm153.grown.scene.festival_bar
+ok      rm154 (rmx_aud_kemp, ridgemere): 16 listeners; 23 of 29 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm154.grown.scene.carts_in
+  never heard: rm154.grown.scene.carts_late
+  never heard: rm154.grown.scene.carts_robbed
+  never heard: rm154.grown.scene.bread_dear
+  never heard: rm154.grown.scene.gossip_passed
+  never heard: rm154.grown.scene.gossip_hard
+ok      rm155 (rmx_desmond_farrow, ridgemere): 16 listeners; 18 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm155.grown.scene.fresh_straw_on_restday
+  never heard: rm155.grown.scene.festival_night
+  never heard: rm155.grown.scene.thunder_indoors
+  never heard: rm155.grown.scene.gossip_kept_back
+  never heard: rm155.grown.scene.hard_times_bench
+ok      rm156 (rm_theodora_bilgeridge, ridgemere): 16 listeners; 30 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: rm156.grown.scene.drovers_in
+  never heard: rm156.grown.scene.drovers_late
+  never heard: rm156.grown.scene.cart_robbed
+  never heard: rm156.grown.scene.storm_water
+  never heard: rm156.grown.scene.chapel_restday
+  never heard: rm156.grown.scene.hard_prices
+  never heard: rm156.grown.scene.good_prices
+  never heard: rm156.grown.scene.gossip_heard
+ok      rm157 (rm_gudrun_targate, ridgemere): 16 listeners; 29 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm157.grown.scene.carts_are_late
+  never heard: rm157.grown.scene.carts_are_in
+  never heard: rm157.grown.scene.gossip_plainly
+  never heard: rm157.grown.scene.owing_the_factor
+  never heard: rm157.grown.scene.good_times
+  never heard: rm157.grown.scene.lean_times
+  never heard: rm157.grown.scene.sound_from_the_wall
+ok      rm158 (rmx_hollis_kendrick, ridgemere): 16 listeners; 15 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm158.grown.scene.gr_even_cut
+  never heard: rm158.grown.scene.gr_frost_morning
+  never heard: rm158.grown.scene.gr_inn_racket
+  never heard: rm158.grown.scene.gr_haggle
+  never heard: rm158.grown.scene.gr_old_tales
+  never heard: rm158.grown.scene.gr_knife
+  never heard: rm158.grown.scene.gr_houses
+  never heard: rm158.grown.scene.gr_gate_carts
+  never heard: rm158.grown.scene.gr_gossip_exact
+  never heard: rm158.grown.scene.gr_mother
+  never heard: rm158.grown.scene.gr_wet_day
+  never heard: rm158.grown.scene.gr_faith
+  never heard: rm158.grown.scene.gr_newcomer
+  never heard: rm158.story.gr_first_knife
+  never heard: rm158.young.scene.yg_hungry
+  never heard: rm158.young.scene.yg_haggling
+  never heard: rm158.adolescent.scene.ad_errand_coin
+  never heard: rm158.adolescent.scene.ad_houses
+  never heard: rm158.adolescent.scene.ad_tales
+  never heard: rm158.adolescent.scene.ad_frost
+  never heard: rm158.story.ad_knife_saved
+ok      rm159 (rmx_magda_orme, ridgemere): 16 listeners; 19 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm159.grown.scene.empty_belly
+  never heard: rm159.grown.scene.times_lean
+  never heard: rm159.grown.scene.wagons_timber
+  never heard: rm159.grown.scene.gossip_dry
+ok      rm160 (rm_dagfinn_gullham, ridgemere): 16 listeners; 30 of 37 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm160.grown.scene.gossip_eager
+  never heard: rm160.grown.scene.gossip_wedding_coat
+  never heard: rm160.grown.scene.gossip_theft_locks
+  never heard: rm160.grown.scene.festival_ribbons
+  never heard: rm160.grown.scene.wool_carts_late
+  never heard: rm160.grown.scene.lean_times_turned_coats
+  never heard: rm160.grown.scene.good_times_orders
+ok      rm161 (rm_egil_targate, ridgemere): 16 listeners; 31 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm161.grown.scene.wool_late
+  never heard: rm161.grown.scene.wool_in
+  never heard: rm161.grown.scene.wagons_robbed
+  never heard: rm161.grown.scene.cloth_dear
+  never heard: rm161.grown.scene.times_hard
+  never heard: rm161.grown.scene.times_good
+  never heard: rm161.grown.scene.gossip_wedding
+ok      rm162 (rm_liv_slagstack, ridgemere): 16 listeners; 30 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm162.grown.scene.thunder_on_the_shelf
+  never heard: rm162.grown.scene.square_on_marketday
+  never heard: rm162.grown.scene.gossip_over_the_counter
+  never heard: rm162.grown.scene.gossip_sad_news
+  never heard: rm162.grown.scene.hard_times_little_pots
+  never heard: rm162.grown.scene.good_times_ribbons
+  never heard: rm162.grown.scene.fruit_cart_late
+  never heard: rm162.grown.scene.fruit_cart_robbed
+  never heard: rm162.grown.scene.festival_ribbons
+ok      rm163 (rm_rupert_fogton, ridgemere): 16 listeners; 31 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: rm163.grown.scene.herbs_dear
+  never heard: rm163.grown.scene.lean_remedies
+  never heard: rm163.grown.scene.wagons_late
+  never heard: rm163.grown.scene.gossip_heard
+ok      rm164 (rm_kjell_cinderwell, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm164.grown.scene.carts_late
+ok      rm165 (rm_rupert_sootley, ridgemere): 16 listeners; 20 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm165.grown.scene.dear_tallow
+  never heard: rm165.grown.scene.death_candle
+  never heard: rm165.grown.scene.bad_word
+  never heard: rm165.grown.scene.late_tallow_carts
+ok      rm166 (rm_gerrit_sootgate, ridgemere): 16 listeners; 34 of 41 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm166.grown.scene.wagons_late
+  never heard: rm166.grown.scene.wagons_raided
+  never heard: rm166.grown.scene.gossip_heard
+  never heard: rm166.grown.scene.gossip_sad
+  never heard: rm166.grown.scene.gossip_glad
+  never heard: rm166.grown.scene.times_hard
+  never heard: rm166.grown.scene.times_good
+ok      rm167 (rm_kjell_cinderley, ridgemere): 16 listeners; 29 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm167.grown.scene.apple_carts_late
+  never heard: rm167.grown.scene.apple_carts_in
+  never heard: rm167.grown.scene.gossip_with_a_dry_eye
+  never heard: rm167.grown.scene.gossip_death_kept_quiet
+  never heard: rm167.grown.scene.hard_times_crocks
+  never heard: rm167.grown.scene.festival_jam_stall
+ok      rm168 (rm_kari_bilgehand, ridgemere): 16 listeners; 28 of 37 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: rm168.grown.scene.storm_cable
+  never heard: rm168.grown.scene.hemp_late
+  never heard: rm168.grown.scene.hemp_in
+  never heard: rm168.grown.scene.ships_in
+  never heard: rm168.grown.scene.ships_lost
+  never heard: rm168.grown.scene.times_good
+  never heard: rm168.grown.scene.times_hard
+  never heard: rm168.grown.scene.gossip_rope
+  never heard: rm168.grown.scene.gossip_broken
+ok      rm169 (rmx_frida_netherby, ridgemere): 16 listeners; 30 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm169.grown.scene.the_square_at_full_roar
+  never heard: rm169.grown.scene.waiting_on_carts
+  never heard: rm169.grown.scene.the_carts_roll_in
+  never heard: rm169.grown.scene.the_road_robbed
+  never heard: rm169.grown.scene.storm_shuts_the_yard
+  never heard: rm169.grown.scene.hard_times_empty_yard
+  never heard: rm169.grown.scene.good_times_full_yard
+  never heard: rm169.grown.scene.gossip_reluctant
+  never heard: rm169.grown.scene.gossip_a_wedding
+ok      rm170 (rmx_halvard_fenworth, ridgemere): 16 listeners; 15 of 33 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm170.grown.scene.gr_warm_rain
+  never heard: rm170.grown.scene.gr_cold_rain
+  never heard: rm170.grown.scene.gr_wet_floor
+  never heard: rm170.grown.scene.gr_soup
+  never heard: rm170.grown.scene.gr_tea
+  never heard: rm170.grown.scene.gr_pier
+  never heard: rm170.grown.scene.gr_maps
+  never heard: rm170.grown.scene.gr_bells
+  never heard: rm170.grown.scene.gr_gossip
+  never heard: rm170.grown.scene.gr_times
+  never heard: rm170.grown.scene.gr_gate_rain
+  never heard: rm170.grown.scene.gr_copying
+  never heard: rm170.story.gr_one_fish
+  never heard: rm170.young.scene.yg_hood_off
+  never heard: rm170.young.scene.yg_slate
+  never heard: rm170.young.scene.yg_soup
+  never heard: rm170.young.scene.yg_wet_floor
+  never heard: rm170.story.yg_puddle
+ok      rm171 (rmx_ingrid_kendrick, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm171.grown.scene.hungry_days
+ok      rm172 (rm_ingrid_millton, ridgemere): 16 listeners; 16 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm172.grown.scene.restday_copy
+  never heard: rm172.grown.scene.gossip_slow
+  never heard: rm172.grown.scene.sad_news
+  never heard: rm172.grown.scene.hard_stairs
+  never heard: rm172.grown.scene.good_season
+ok      rm173 (rm_montague_pitchhand, ridgemere): 16 listeners; 20 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm173.grown.scene.ship_news
+  never heard: rm173.grown.scene.gossip_closed
+  never heard: rm173.grown.scene.times_lean
+  never heard: rm173.grown.scene.wagons_late_flour
+ok      rm174 (rm_halvard_ashley, ridgemere): 16 listeners; 28 of 34 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm174.grown.scene.herbs_off_the_cart
+  never heard: rm174.grown.scene.herb_cart_late
+  never heard: rm174.grown.scene.festival_mornings
+  never heard: rm174.grown.scene.gossip_not_mine
+  never heard: rm174.grown.scene.gossip_hurt
+  never heard: rm174.grown.scene.hard_times_unpaid
+ok      rm175 (rm_desmond_bilgeridge, ridgemere): 16 listeners; 18 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm175.adolescent.scene.ad_shake
+  never heard: rm175.adolescent.scene.ad_swim
+  never heard: rm175.adolescent.scene.ad_cross
+  never heard: rm175.story.as_harbour
+  never heard: rm175.grown.scene.gr_shake
+  never heard: rm175.grown.scene.gr_broken
+  never heard: rm175.grown.scene.gr_swim
+  never heard: rm175.grown.scene.gr_cakes
+  never heard: rm175.grown.scene.gr_bells
+  never heard: rm175.grown.scene.gr_autumn
+  never heard: rm175.grown.scene.gr_rain
+  never heard: rm175.grown.scene.gr_flies
+  never heard: rm175.grown.scene.gr_haggle
+  never heard: rm175.grown.scene.gr_temper
+  never heard: rm175.grown.scene.gr_newcomer
+  never heard: rm175.grown.scene.gr_family
+  never heard: rm175.story.gs_promise
+ok      rm176 (rm_gudrun_wickby, ridgemere): 16 listeners; 13 of 30 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm176.young.scene.the_market_jostle
+  never heard: rm176.adolescent.scene.the_rain_book
+  never heard: rm176.adolescent.scene.ships_that_go_dry
+  never heard: rm176.adolescent.scene.harder_riddles
+  never heard: rm176.adolescent.scene.market_errands
+  never heard: rm176.grown.scene.still_the_cup
+  never heard: rm176.grown.scene.rain_and_more_rain
+  never heard: rm176.grown.scene.oatcakes_grown
+  never heard: rm176.grown.scene.grown_riddles
+  never heard: rm176.grown.scene.the_market_still
+  never heard: rm176.grown.scene.autumn_again
+  never heard: rm176.grown.scene.smoke_and_waiting
+  never heard: rm176.grown.scene.keeping_secrets_grown
+  never heard: rm176.grown.scene.new_face_grown
+  never heard: rm176.grown.scene.dry_places_grown
+  never heard: rm176.grown.scene.hard_times_grown
+  never heard: rm176.story.the_dry_week
+ok      rm177 (rm_sten_ropeford, ridgemere): 16 listeners; 22 of 29 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm177.grown.scene.carts_in
+  never heard: rm177.grown.scene.carts_late
+  never heard: rm177.grown.scene.carts_raided
+  never heard: rm177.grown.scene.newcomer_news
+  never heard: rm177.grown.scene.gossip_heard
+  never heard: rm177.grown.scene.hard_times
+  never heard: rm177.grown.scene.good_times
+ok      rm178 (rmx_delphine_redfern, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm178.grown.scene.hungry_week
+ok      rm179 (rm_edric_millton, ridgemere): 16 listeners; 32 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm179.grown.scene.gossip_plain
+  never heard: rm179.grown.scene.gossip_trouble
+  never heard: rm179.grown.scene.promise_gossip
+  never heard: rm179.grown.scene.no_staves
+  never heard: rm179.grown.scene.raided_carts
+  never heard: rm179.grown.scene.lean_casks
+  never heard: rm179.grown.scene.good_trade
+  never heard: rm179.grown.scene.factor_debt
+ok      rm180 (rm_hilde_rainmore, ridgemere): 16 listeners; 14 of 30 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm180.young.scene.yg_gossip_keen
+  never heard: rm180.adolescent.scene.ad_coins_counter
+  never heard: rm180.adolescent.scene.ad_maps
+  never heard: rm180.adolescent.scene.ad_stars
+  never heard: rm180.story.ad_story_watchman
+  never heard: rm180.grown.scene.gr_coin
+  never heard: rm180.grown.scene.gr_coin_honest
+  never heard: rm180.grown.scene.gr_maps
+  never heard: rm180.grown.scene.gr_stars
+  never heard: rm180.grown.scene.gr_flood
+  never heard: rm180.grown.scene.gr_waiting
+  never heard: rm180.grown.scene.gr_gulls
+  never heard: rm180.grown.scene.gr_apples
+  never heard: rm180.grown.scene.gr_spring
+  never heard: rm180.grown.scene.gr_gossip
+  never heard: rm180.grown.scene.gr_strangers
+ok      rm181 (rm_piet_slagcot, ridgemere): 16 listeners; 27 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm181.grown.scene.marketday_crush
+  never heard: rm181.grown.scene.carts_in_with_flour
+  never heard: rm181.grown.scene.carts_late_flour
+  never heard: rm181.grown.scene.raided_road
+  never heard: rm181.grown.scene.hard_times_rye
+  never heard: rm181.grown.scene.festival_crowd
+  never heard: rm181.grown.scene.gossip_straight
+  never heard: rm181.grown.scene.gossip_theft_gate
+ok      rm182 (rm_gwen_pitchcot, ridgemere): 16 listeners; 14 of 31 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm182.young.scene.yg_thunder
+  never heard: rm182.young.scene.yg_storm_night
+  never heard: rm182.adolescent.scene.ad_house
+  never heard: rm182.adolescent.scene.ad_storm
+  never heard: rm182.adolescent.scene.ad_chapel
+  never heard: rm182.story.as_wall
+  never heard: rm182.grown.scene.gr_which_house
+  never heard: rm182.grown.scene.gr_houses
+  never heard: rm182.grown.scene.gr_thunder
+  never heard: rm182.grown.scene.gr_rain
+  never heard: rm182.grown.scene.gr_chapel
+  never heard: rm182.grown.scene.gr_stew
+  never heard: rm182.grown.scene.gr_swim
+  never heard: rm182.grown.scene.gr_gulls
+  never heard: rm182.grown.scene.gr_crowds
+  never heard: rm182.grown.scene.gr_father
+  never heard: rm182.grown.scene.gr_stranger
+ok      rm183 (rm_desmond_cindermore, ridgemere): 16 listeners; 24 of 28 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm183.grown.scene.festival_from_the_window
+  never heard: rm183.grown.scene.the_factor
+  never heard: rm183.grown.scene.hard_times_more_notches
+  never heard: rm183.grown.scene.gossip_withheld
+ok      rm184 (rm_rosamund_slagstack, ridgemere): 16 listeners; 14 of 33 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm184.grown.scene.gr_across_square
+  never heard: rm184.grown.scene.gr_crackling
+  never heard: rm184.grown.scene.gr_boots
+  never heard: rm184.grown.scene.gr_stars
+  never heard: rm184.grown.scene.gr_salt_wind
+  never heard: rm184.grown.scene.gr_autumn_gust
+  never heard: rm184.grown.scene.gr_night_noise
+  never heard: rm184.grown.scene.gr_friends
+  never heard: rm184.grown.scene.gr_gossip
+  never heard: rm184.grown.scene.gr_festival
+  never heard: rm184.grown.scene.gr_heights
+  never heard: rm184.grown.scene.gr_lean
+  never heard: rm184.story.gr_lost_voice
+  never heard: rm184.young.scene.yg_shout
+  never heard: rm184.young.scene.yg_crackling
+  never heard: rm184.young.scene.yg_stars
+  never heard: rm184.young.scene.yg_night
+  never heard: rm184.story.yg_boots
+  never heard: rm184.adolescent.scene.ad_gossip
+37 mantles worn; 849 of 1182 scenes heard by some listener; 0 holes in the core moves; W1 97.619% (2460 of 2520 window lines at the hub, goodbye, job and the role's greeting are the wearers' own)

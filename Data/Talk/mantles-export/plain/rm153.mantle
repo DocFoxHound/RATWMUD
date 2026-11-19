@@ -1,0 +1,489 @@
+# rm153, the pin-chart keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm153
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_imogen_nailridge
+written_by claude
+title the pin-chart keeper
+fits stage=adult|old
+prefers role=merchant job=scholar drive=ambitious
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk pins_each_new_ship_to_the_harbour_chart
+likes barley_soup stars new_boots summer_evenings
+dislikes haggling waiting
+fears a_wrong_depth_on_a_sold_chart damp_in_the_plan_chest
+hopes a_printed_chart_in_every_captains_locker the_whole_coast_sounded_and_drawn
+topics ships +0.5 work +0.5 lore +0.3 weather +0.2 prices +0.2 pastimes +0.2 gossip -0.4 festival -0.2
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# draws charts of the Sound for a Commons counter: exact, unsmiling and ambitious, short with haggling and worse with waiting, and every ship that comes in gets a pin in the harbour chart on the wall.
+
+words
+oath! = Lead and tallow | By the fathom mark | Line and bearing
+saying! = The water doesn't care what you drew | Draw what's there, not what's hoped | A coast is only a rumour till it's sounded
+chart = the harbour chart | the big chart on the wall
+pins = the pins | the ship pins
+pin = a pin | a fresh pin with a paper flag
+leadline = the lead line | my lead and line
+fathoms = fathoms | fathoms of water
+plans = the plan chest | the map drawers
+ink = the ink | good black ink
+desk = the drawing table | my slope desk
+bar = the sandbar | the bar at the mouth of the Sound
+sound = the Sound | the water of the Sound
+soup = barley soup | barley soup, steaming
+boots = new boots | stiff new boots
+evening = a long summer evening | an evening where the light won't go
+stars = the stars | the steering stars
+ticket = the price on the ticket | the marked price
+lamp = the lamp | the drawing lamp
+captain = a captain | a ship's master
+captains = the captains | the ship's masters
+boat = a hired boat | a rowing boat and a rower
+
+any
+opinion @1 church against 1 : I sit through the sermon and work out bearings in my head. No sum of mine ever came out truer for a hymn. | The chapel's fine for those who want it. I'd rather spend the morning at #desk#.
+opinion @1 city for 2 : Stand on the Rise's top step and #sound# lies open under you, every pier and every bar. No other place gives you that. | These terraces bore me, and I've measured most of them. I'm not going anywhere.
+opinion @1 dole against 1 : Every crust I've eaten, I paid for. I'll keep that record clean. | Give folk work they can do and they'll not want the parish loaf.
+opinion @1 festivals against 1 : A whole day of closed doors, and the rent owing all the same. I don't see the joy in it. | Everybody dances and nobody buys anything. I'd sooner be working.
+opinion @2 festivals against 2 [world.festival=today self.job=scholar] : A shut shop and a full street. I'll spend it out on the bar and row home once the drums stop.
+opinion @1 houses against 1 : Grayrock owns half the piers and buys its charts from nobody. Keeps the city small, that does. | A House says yes or no to everything that matters down here, and it never once asks the wolf who drew the map.
+opinion @1 merchants for 1 [self.role=merchant] : A counter teaches you sums. I know what paper costs, what ink costs, and what a day in a hired boat costs. | Fair prices, marked plain, and no haggling. That's all a merchant owes anyone.
+opinion @1 road against 1 [self.job=scholar] : Good paper comes down the North Road, and it comes late. I've drawn on the backs of old charts while I waited. | The carts are slower every season. I can't sell a chart I haven't the paper to draw.
+opinion @2 road against 2 [world.wagons=raided self.job=scholar] : Robbers on the highway, and my paper gone with the cart, I suppose. Somebody's using it to light a fire.
+opinion @1 watch for 1 : Two lanterns pass my shutters every night, regular as tide. My drawers rest easier for them, and so do I. | A thief would find a year's work in my drawers. I'm glad of every lamp they carry past.
+opinion @1 newcomers mixed 0 : New folk are fine. Half of them are hunting for the Customs House, and I can point to it on a map. | Some stay and some don't. I'd sooner they bought a street plan either way.
+opinion @1 times against 1 [world.times=hard|lean self.job=scholar] : When money's short, a chart is the first thing a captain goes without. They sail on memory and hope. | Lean weeks. I draw anyway. The coast will still be there when folk can pay.
+
+grown
+line @1 greet : #greet#. Door shut, please. Wet air puckers the paper. | #greet#. Mind the drawers, they stick out.
+line @2 greet [pair.band=strangers] : #greet#. Lost, I'd guess. Finding the way is my trade, near enough. | #greet#, #address#. Most folk who come this way are looking for somewhere.
+line @3 greet [self.working=yes self.job=scholar] : #greet#. One moment while this line dries. | #greet#. Talk, by all means. My pen won't stop for it.
+line @4 greet [here.time=dawn] : Morning. The light's good and I mean to use it. | Morning. Early, but the gulls beat us both.
+line @5 greet [here.time=dawn self.job=scholar] : Morning. I've had my lead in #sound# since the tide turned. | Morning. Four soundings done, and the bakers not open yet.
+line @6 greet [here.time=dusk|night] : Evening. I was just putting #lamp# out. | Evening. Lamp out, stars not yet up. Good timing.
+line @7 greet [pair.band=friends|family] : Good, it's you. Take the window stool. | Good. I was hoping to see you today.
+line @1 kin.open [pair.kin!=no] : Sit down. #soup.capitalize# on the hob; take a bowl. | Come in. Don't touch anything that's wet.
+line @1 again.open : You again. Something you forgot, I expect. | Twice since breakfast. I'll make a tally.
+line @1 hail [pair.band=friends] : Over here. I've something that wants a second pair of eyes. | Wait. Walk with me as far as the square.
+line @1 greet.return : #greet#. Good to see you too. | #greet#. I'm well, if you were wondering.
+line @2 greet.return [pair.band=friends|family] : And you. Come in properly, then. | You're a welcome face. Sit.
+line @3 greet.return [self.working=yes] : #greet#. I'll keep my pen moving while we talk. | Hello to you. I'm halfway through a coastline.
+line @4 greet.return [here.time=dusk|night] : Evening to you. The stars are good tonight. | Evening. I've oil enough for a visit.
+line @1 farewell : #farewell#. In rain, take the upper lanes. | #farewell#. If you get lost, come back and I'll draw you the way.
+line @2 farewell [here.time=dusk|night] : Good night. Look up on your road home, the sky's clean tonight. | Good night. Stairs are wet, so go slow.
+line @1 farewell.return : And to you. Don't wait about in the rain. | #farewell#. I'll be here, at #desk#.
+line @2 farewell.return [pair.band=friends|family] : Off home, then. Come back for #soup#. | Off with you. Pull the door hard, it sticks.
+line @1 react.news : Say it from the start, in order. | Who carried it to you? That matters as much as the thing itself.
+line @1 react.news.new : That's new. I'll file it beside the rest. | News to me. Who carried it?
+line @1 react.news.known : Somebody brought me that at opening, near enough word for word. | I'd heard. Yours has more in it, though.
+line @1 react.news.doubt : Bring me a witness with eyes, then I'll believe. | That's the third way I've heard it told. None of them agree.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bad thing. I'm sorry for whoever's under it. | Hard news. Nothing I say will mend it, I know.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's the right way for a thing to go. | Good news. Glad to have it, truly.
+line @1 answer.how : Busy, and that suits me. | Well enough. Better if the paper would come.
+line @1 answer.how.busy [self.working=yes] : Behind, but catching up. Two charts promised by the week's end. | Run off my paws, if I'm honest. It's a good kind of tired.
+line @1 answer.how.poorly [self.mood=low] : Low. A day of waiting on things that don't come. | Not my best. I'll be better once I've drawn something.
+line @1 ask.how : And you? You've mud to the hocks. | Tell me honestly how you're faring.
+line @1 sympathise : That's heavy. Take the stool; nobody's timing you. | I'm sorry. I'd fix it if it were a thing I could draw.
+line @1 reassure : It'll come straight. Keep at it and most things do. | One pace, then the next. That's how I walk a coast.
+line @1 decline : I'd rather not. I've two charts promised and no hours spare. | Not today. I can't leave the counter, plain as that.
+line @1 accept_decline : Fair enough. Another day. | That's all right. I'd rather a plain no than a maybe.
+line @1 thank : #thanks#. That saves me a morning. | Kindly done. It's noted, and kept.
+line @1 deflect_thanks : It was nothing. Any neighbour would. | No need. It took me a minute.
+line @1 preclose : Back to it for me. The day's half gone already. | I've a list as long as the Sound to get through.
+line @2 preclose [self.working=yes] : I'm due at #desk#. Another time. | I've a captain coming in for a chart. I'll have to leave it there.
+line @1 accept_preclose : Off you go. The day's yours again. | Of course. We'll pick it up again.
+line @1 ack : #bc_right# | #bc_fair_enough# | #bc_true#
+line @1 give.advice : Put it on paper. Ink doesn't change its mind. | Walk it once in daylight before you try it in the dark.
+line @1 warn [world.bandits=near] : Keep inside the walls. Nobody's mapped where the robbers sit. | Stay on the main road. I'd not walk the coast path now.
+line @2 thank [pair.band=friends|family] : You're good to me. I notice, though I say it seldom. | #thanks#. I owe you a bowl of #soup#.
+scene ship_in_pinned
+when topic=ships topic.kind=in|arrived topic.ship here.region=ridgemere
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s in. I put #pin# in #chart# for it before breakfast. | #topic.ship.capitalize# made fast on the morning tide. That's its pin back on the wall. | #topic.ship.capitalize# came round past the bar at dawn. I'd a pin waiting for it.
+b : You pin every ship that comes in? | Which berth, though? How would you know? | You keep a pin for each one?
+a : Every one. Red flags for in, white for out. The wall's never been the same twice. | I walk the piers at first light. It's on my way to the bar anyway. | Every one. Some have had the same pin for six years. The paper flag goes brown.
+b : #bc_clever# | That's a tidy way to keep it. | #bc_i_know#
+
+scene ship_due_waiting
+when topic=ships topic.kind=due topic.ship here.region=ridgemere
+does tell.news / react.news / tell.feeling / ack
+a : #topic.ship.capitalize#'s due. Its pin's been sitting at the mouth of the Sound three days now. | They say #topic.ship# is due any tide. I've the pin ready in my apron.
+b : It'll come when it comes. | Somebody waiting on it, I expect.
+a : I know. I just don't like waiting on anything. Ships least of all. | More than one, I should think. I can't move the pin till it does.
+b : #bc_we_will_see# | #bc_hope_so#
+
+scene ship_late_worry
+when topic=ships topic.kind=late topic.ship
+does tell.worry / reassure / insist / ack
+a : #topic.ship.capitalize#'s late. I've moved its pin out past the bar and back twice this week. | They're saying #topic.ship# is late. My eye goes to its empty spot on the wall.
+b : Weather out there, most likely. They'll be holding off. | Late isn't lost. Ships are late all the time.
+a : So they may be. An empty hole where a pin should be bothers me even so. | I know. But I've drawn that coast, and I know what's under it.
+b : #bc_poor_soul# Let's hope they're sheltering. | It'll come in. You'll see.
+
+scene ship_lost_quiet
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+a : #topic.ship.capitalize#'s lost, they're saying. I took its pin off the wall this morning. | They've given up on #topic.ship#. The pin's on my desk and I can't think where it belongs.
+b : That's a sorry thing. Did you know the crew? | Keep it somewhere. Don't throw it away.
+a : No. I knew where it sat on the wall, that's all. It's enough to feel it. | I've put it in the drawer with the good ink. That's the best I could think of.
+
+scene pins_explained
+when topic=smalltalk|work self.job=scholar self.role=merchant here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Ninety-one pins in #chart# this morning. That's the most since spring. | I've run out of red flags again. Too many ships in at once. | A captain asked me why I bother with #pins#. I told him he'd asked, so somebody notices.
+b : What happens when a ship goes out? | What's the most you've ever had? | And why do you bother?
+a : The pin comes out and goes in the tin by the door. It waits for that ship and no other. | A hundred and four, the week before the big storm. Every one came in to shelter. | Because if I know where every ship sits, I know where the water's being used. That's worth knowing.
+b : #bc_clever# | A hundred and four. That's a crowded wall. | #bc_fair_enough#
+
+scene dawn_sounding
+when topic=work here.time=dawn self.job=scholar self.role=merchant here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I've been out on #sound# with #leadline# since before light. Four fathoms off the old pier, not five like the old charts say. | Out ahead of the gulls, #boat# and a bag of cold bread. I sounded the bar twice. | The best time to sound the water is when nobody's using it. That's now, before the boats go out.
+b : Does a fathom matter so much? | Why twice? | Isn't it cold out there?
+a : To a loaded ship, it's the difference between in and stuck. I'll have it right. | Once to find it, once to be sure. Sand moves. I never trust a first sounding. | Bitter. I've new boots for it, and they'll learn.
+b : #bc_wise# | #bc_true_enough# | #bc_go_on_then#
+
+scene tallow_on_the_lead
+when topic=work self.job=scholar self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I put a dab of tallow in the bottom of the lead before I drop it. | My lead came up with shell on the tallow this morning. That's new ground off the north side.
+b : Tallow? What for? | Shell? What does that tell you?
+a : It picks up whatever's down there. Sand, mud, shell. You can't see the bottom, but the bottom can write to you. | Shell bottom holds an anchor badly. I'll put it on the chart, small, where a careful captain looks.
+b : That's clever, that is. | #bc_clever# Somebody'll thank you for that.
+
+scene ink_wont_dry
+when topic=weather|work here.weather=rain self.job=scholar self.role=merchant
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : Three days of #rain# and my ink won't dry. I've a coastline smudging on #desk#. | The wet gets into everything. My paper's gone soft as a cloth.
+b : Can't you keep a fire going? | It's the same in every house on the hill.
+a : A fire dries the ink and cracks the paper. I keep it low and pray to the Bright One I've judged it right. | I know it. I keep the plans wrapped in oilcloth and still they cockle.
+b : #bc_poor_soul# | #bc_every_year#
+
+scene fog_on_the_sound
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / tell.worry / reassure
+a : The far piers have gone, in this. Every captain's sailing on memory today. | Thick as wool on #sound#. Nobody will bring a ship in through that.
+b : Murk to the doorstep, never mind the piers. | They'll wait for it to lift, surely.
+a : That's when a good chart earns its money. Nobody believes in it until they're blind. | The wise ones will. It's the ones in a hurry I worry about.
+b : #bc_true# Let's hope they've bought one. | The fog'll lift by noon, likely. It usually does.
+
+scene clear_night_stars
+when topic=weather|pastimes here.time=night here.weather=clear
+does tell.self / ask.detail / answer.detail / assess
+a : A clear night. I could take a bearing off any star you like up there. | Look at that. The steering stars, all lit. | I climb the Rise on nights like these, just to see #stars# over the water.
+b : You know them all, then? | Which do you steer by? | Do you go alone?
+a : The ones a sailor needs. The rest I just like to look at. | The bright one low over the north headland. It never moves. I admire that in a star. | Mostly. Quiet up there, and nobody wants a chart off me.
+b : #bc_lovely# | I'll look for it on the way home. | #bc_lucky_you#
+
+scene summer_evening_light
+when topic=weather|season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess / ack
+a : I love #evening#. I can draw till nine without the lamp. | Best weeks the year has. The light lies down on the water and stays there.
+b : You'd work through it, though, wouldn't you? | It is a fine evening.
+a : Some of it, honestly. After, though, the sea wall, and an hour of water. | It is. If evenings were charts I'd draw this one longer.
+b : #bc_ha# Fair enough. | #bc_it_is#
+
+scene barley_soup_cold
+when topic=food here.season=autumn|winter
+does tell.self / react.self / ask.detail / answer.detail
+a : Nothing's better after a raw morning than #soup#. | Barley soup so thick you could sound it with a lead. That's what I came home to. | I came in frozen and the soup was on. I could have cried.
+b : I'd have a bowl of that now. | Is it good, then? | Who cooks it, you?
+a : Come by one day and have a bowl. I mean it. | The best on the street. I'll not hear otherwise. | When there's time. There's never time, so it's mostly somebody else's.
+b : #bc_go_on_then# | #bc_i_will# | That sounds fair.
+
+scene new_boots_breaking
+when topic=pastimes|smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail / assess
+a : I've #boots#. They pinch at the heel, but they'll walk a coast by spring. | New boots. Best thing I bought this year, and they still hurt. | I walk the shore in new boots to break them in. Two jobs at once.
+b : Why not wear old ones on the shore? | Was it worth the money? | Does it work?
+a : Old ones let the wet in. You can't measure a coast thinking about your feet. | Worth every penny. A good pair lasts me three years of shore. | It does. And I've walked eight miles of shore I'd have walked anyway.
+b : #bc_wise# | #bc_good# | #bc_clever#
+
+scene no_haggling
+when topic=prices|smalltalk self.role=merchant self.dislikes=haggling
+does tell.complaint / ask.detail / answer.detail / assess
+a : A captain offered me half the ticket this morning. I gave him the door. | Every price in my shop is on the ticket. Folk still try to talk it down.
+b : Did he go, then? | Does that cost you custom?
+a : He came back an hour later and paid the price on the ticket. They always come back. | Some. But a chart I'd sell for half isn't a chart I'd trust, and nor should they.
+b : #bc_good# | #bc_fair_enough#
+
+scene paper_from_the_north
+when topic=caravan|prices world.wagons=late self.job=scholar
+does tell.worry / react.self / insist / ack
+a : Late carts again. Six sheets left in the drawer. | I've been waiting nine days on paper from the north. Nine.
+b : Can't you get it nearer? | It'll come. The carts always do in the end.
+a : Not paper that holds ink. The cheap stuff drinks it like a sponge. | I know it will. I just hate waiting on a thing I can't do anything about.
+b : #bc_poor_soul# | #bc_i_know#
+
+scene wagons_in_paper
+when topic=caravan world.wagons=in self.job=scholar
+does tell.news / react.news / tell.plan / ack
+a : Carts in at last. Two reams climbing the hill to me this afternoon. | The carts are back at last. I'll be at the carters' yard ahead of the copyists, for the good sheets.
+b : About time. | You'll be busy now, then.
+a : I've three charts owed. I'll start the first tonight. | Busy till the next lot's late again. That's how it goes.
+b : #bc_about_time# | #bc_go_on_then#
+
+scene the_bar_moves
+when topic=lore|land here.region=ridgemere self.job=scholar
+does tell.self / ask.detail / answer.detail / assess
+a : The bar at the mouth of the Sound has moved forty yards north since the old chart in my drawer was drawn. | Every old chart of the Sound puts the bar in the wrong place. They're not wrong, the bar's moved. | Sand doesn't stay put. I've watched #bar# walk north for six years now.
+b : Forty yards? How do you know? | How can a sandbar move? | Where's it going?
+a : The old chart says one thing and my lead says another. I've sounded it every spring. The numbers don't lie. | The tide drags it a little every storm. You don't see it. You only see a ship stuck where it used to float. | North, toward the headland. In my lifetime it'll close the old channel. Somebody should say so.
+b : #bc_clever# | That's a thing to know. | #bc_true_enough#
+
+scene printed_chart_plan
+when topic=dreams|work self.job=scholar self.role=merchant
+does tell.plan / ask.detail / answer.detail / react.self
+a : I want my chart of the Sound printed. Cut in copper, a hundred at a time. | I'll see a copy of my chart in every captain's locker on the Sound before I'm done. | I've been putting coin aside for a copper plate. Two more years, if the paper comes.
+b : What would that cost? | Would they buy it? | And then what?
+a : Above my purse today. Under it in two years. I've reckoned it to the penny. | They will when they've seen the fourth captain go aground on the old one. | Then the whole coast, headland to headland. Somebody has to draw it properly.
+b : #bc_we_will_see# | #bc_i_hope_so# | Ambitious, that.
+
+scene waiting_on_folk
+when topic=smalltalk|day self.dislikes=waiting
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : An hour I stood in the City Office this morning, over one stamp. | Waiting's work with no product. You can't even do it well.
+b : They're like that up there. | Nobody likes waiting.
+a : Standing there, I drew the whole square outside, in my head. Steps and all. | No. But I'd rather draw for ten hours than wait for one.
+b : #bc_ha# | #bc_so_do_i#
+
+scene mother_at_the_counter
+when topic=family self.mother self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : The till I'd leave with #self.mother# and nobody else, and the prices too, near enough. | I'd guess #self.mother# fears I'll go blind at #desk#. | I couldn't do it without #self.mother#, and that's plain fact.
+b : It helps to have family in it. | Will you, though? Go blind? | Does your mother draw?
+a : It does. Family doesn't round the sums its own way. | Not before I've drawn the north headland. I'll go blind after. | No. But the counter's tidier when I'm not behind it.
+b : #bc_good# | #bc_ha# | #bc_fair_enough#
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.feeling / react.self / assess / ack
+a : #self.friend# could be left alone with #plans# and I'd not count them after. | When #self.friend# says a thing is so, I don't check it. I check everybody else.
+b : That's trusting a great deal. | That's rare for you, I'd think.
+a : It's earned. I don't give it away. | It is, and I'll say so plainly, since I seldom do.
+b : #bc_fair# | #bc_true#
+
+scene neighbour_noise
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# keeps odd hours too. We nod on the stairs at four in the morning. | I'd trust #self.neighbour# to mind my door if I were out on the water for a day.
+b : Good to have somebody close. | That's a good neighbour to have.
+a : It is. Neither of us asks where the other's going, and that suits me. | Aye. A friend next door I can do without. Somebody honest, I can't, and I've got that.
+
+scene first_warm_shore
+when topic=season|weather here.season=spring here.weather=clear self.job=scholar
+does tell.self / react.self / tell.plan / ack
+a : The weather's turned. I'll be on the shore every day now till the storms come back. | Spring, at last. I've a list of soundings as long as my arm.
+b : The sun will do you good. | You'll wear yourself out.
+a : Glad of the light. Sun's just a thing that comes with it. | I'll rest in winter. That's what it's for.
+b : #bc_ha# | #bc_fair_enough#
+
+scene winter_drawing
+when topic=season|work here.season=winter self.job=scholar
+does tell.self / react.self / assess / ack
+a : Winter's for the drawing. All summer's soundings go into the ink now. | Nobody sounds the Sound in winter if they've sense. I sit at #desk# instead.
+b : That sounds a cosier job. | You'd want a good fire.
+a : Cosier, but slower. You can't check a mistake in winter. You wait for spring to find it. | A low one. Paper and flame don't get on. I wear two coats.
+b : #bc_poor_soul# | #bc_true_enough#
+
+scene gossip_withheld
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail / assess
+a : The square's buzzing about #topic.subject#. I've kept my mouth shut. | Something about #topic.subject# came over my counter. It stays there.
+b : Oh, come on. Tell me. | Why not?
+a : No. Nobody's named a witness, and I don't draw a coast I've not walked. | Because nobody gave me its source. That's the first thing I ask about anything.
+b : #bc_fair_enough# | #bc_wise#
+
+scene gossip_passed_plain
+when topic=gossip here.gossip=yes topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's good news, if it's so. | Word on the square: #topic.subject# #topic.claim#. I don't doubt it.
+b : That's cheering. | Good, that.
+a : Cheering, aye. I'll believe it fully when I see it. | It is. Things going right don't get told often enough.
+
+scene gossip_theft_wary
+when topic=gossip|crime here.gossip=yes topic.claim_kind=theft|wanted
+does tell.gossip / tell.worry / reassure / ack
+a : They're saying #topic.subject# #topic.claim#. I've been locking #plans# since. | Folk say #topic.subject# #topic.claim#. The good charts are at the back now.
+b : Sensible, with what's in those drawers. | It'll be caught. The Watch are good about that.
+a : A year's work sits in those drawers. No light paw is having it. | Let's hope. They stay at the back till I hear it has.
+b : #bc_wise# | #bc_i_hope_so#
+
+scene hard_times_charts
+when topic=times world.times=hard|lean self.role=merchant self.job=scholar
+does tell.complaint / sympathise / insist / ack
+a : Nobody's buying charts this month. Captains are sailing on what they remember. | Lean weeks. I've sold two street plans and nothing else.
+b : It's the same everywhere. Folk are holding on to their coin. | That's a hard thing, after all your work.
+a : I'll not drop the price. A cheap chart's a dangerous one. I'll draw and wait. | It is. But the coast doesn't get any easier to draw for being cheap.
+b : #bc_fair# | #bc_i_know#
+
+scene festival_bar
+when topic=festival world.festival=today|soon self.job=scholar self.role=merchant
+does tell.self / react.self / assess / ack
+a : A festival day. The shop's shut, so I'll be out sounding the bar. Nobody else will be on the water. | Everybody's off to dance. I'll take my boat out and have the whole Sound to myself.
+b : You'll miss all the fun. | Can't you take one day off?
+a : It's my fun. You'd not believe how quiet it is out there. | This is my day off. The bar doesn't sound itself.
+b : #bc_ha# | #bc_fair_enough#
+
+scene city_from_the_rise
+when topic=home|land here.region=ridgemere self.job=scholar
+does tell.self / ask.detail / answer.detail / assess
+a : From the top step of the Rise you can see three piers, two bars and the whole bend of the Sound. | I've measured the steps from the Commons to the Rise. Four hundred and twelve. | Ridgemere stands with its feet in the water. Most folk who live here never think about the water.
+b : Why go all that way? | Why count them? | And you think about it all day?
+a : To check my chart against the thing itself. It's never quite right. I fix it. | So I could draw them right on my street plan. Nobody else had. | All day and half the night. It's the job, and I like it.
+b : #bc_clever# | #bc_ha# | #bc_fair_enough#
+
+scene new_face_directions
+when topic=newcomer|player here.region=ridgemere self.job=scholar self.role=merchant
+does tell.self / react.self / assess / ack
+a : A newcomer was in this morning, hunting the Customs House. Walked past it twice. | Newcomers always come to me lost. I've a little plan of the Commons I sell them for two pennies.
+b : It's a hard city to find your way in. | Two pennies? That's cheap.
+a : It is. The streets were laid by goats. I just draw what the goats did. | It's cheap to me. It saves an hour of them asking me the way.
+b : #bc_ha# | #bc_clever#
+
+scene accent_city
+when topic=accent
+does tell.self / react.self / assess
+a : I've been told I talk like a ledger. Numbers first, feelings in the margin. | Folk from the country say I talk too quick. I say they talk too long.
+b : You do say things straight. | Maybe both are true.
+a : I'd rather be clear than pleasant. Pleasant gets ships stuck. | Maybe. But I'm the one who gets to the end first.
+
+scene faith_small
+when topic=faith
+does tell.self / react.self / assess
+a : When a storm's up, a candle goes in the chapel for the ships. Whether it helps, who knows. | I'm seldom on a chapel bench. Still, after a clear sounding I'll say my thank-you upward.
+b : Can't hurt, can it? | That's enough faith for most of us.
+a : No. And I sleep better after, which is something. | Enough for me. The priests can see to the rest.
+
+story grandads_chart [topic=memories|lore self.age>=30]
+  : A great-uncle of mine left one chart behind. Hand drawn, on calfskin, the Sound as it was before I was born.
+  : The spring I turned fifteen I rowed out with it and sounded every mark on it.
+  : Nine in ten were right. The tenth was the bar, and the bar had moved.
+  ask : A chart that's nearly right: would you keep it, or burn it?
+  b[old] : I'd have kept it as it was. It was right once.
+  b : Drawn the new one, I suppose, and kept the old.
+  : I did both. The old one's in the drawer. The new one's on the wall, with the pins.
+
+story stuck_on_the_bar [topic=ships|memories self.age>=22 here.region=ridgemere self.job=scholar]
+  : I watched a merchantman go aground on the bar the summer I was twelve. On a falling tide, in plain daylight.
+  : Its captain had a chart. A good one, years old. The water had changed under it.
+  : They got it off three days later, empty and half its timbers sprung.
+  b : That's why you do it, then. Did anyone drown?
+  : No. The Bright One was kind that day. But I've drawn every chart since as if somebody might.
+
+story first_chart_sold [topic=work|memories self.job=scholar self.role=merchant self.age>=25]
+  : The first chart I ever sold, I sold to a captain who laughed at me for being young.
+  : He came back next season and bought three. Said mine was the only one that knew the bar had moved.
+  ask : Would you have sold to him, after the laughing?
+  b : For the coin? I would. He paid, didn't he?
+  b[stage=adolescent|adult] : I'd have doubled the price on him, myself.
+  : I sold at the ticket price. I don't haggle up any more than I haggle down.
+
+story lost_in_the_fog [topic=weather|memories self.age>=25 here.region=ridgemere self.job=scholar]
+  : Fog caught me once, in a rowing boat, with a hired rower who'd never been past the piers.
+  : The oars vanished a yard from my paws. I counted strokes and steered by the bell on the old pier.
+  : We came in at the right steps, as near as a paw's width. He said it was sorcery. I said I'd counted.
+  ask : Would you have trusted a bell and a count, in fog like that?
+  b : Not me. I'd have shipped the oars and sat till it cleared.
+  : That's sense. But the tide was turning, and waiting would have taken us out.
+
+story stars_from_the_roof [topic=pastimes|memories self.age>=25]
+  : An old sailor lodged with us once, when I stood no higher than a table, and on clear nights he took me onto the roof to show me the stars.
+  : He couldn't read. But he knew every one of those stars, and what it was for.
+    ask : Has anyone taught you a star or two, the way he taught me?
+  b[old] : My own father did, long ago. I've forgotten most of them.
+  b : No. I'd like to know a few.
+  : Come up the Rise on a clear night and I'll show you three. Three's enough to get home by.
+
+rule @bark_pin
+when concept=bark self.working=yes self.job=scholar self.role=merchant
+does aside
+cooldown 8h
+say Another pin. That's ninety-two. | Red flags. Red flags. Under the ledger?
+
+rule @bark_ink
+when concept=bark here.weather=rain self.job=scholar
+does aside
+cooldown 10h
+say Dry, curse you. | That line's smudged. Again, then.
+
+rule @bark_wait
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 9h
+say Come on, come on. | I could have drawn half a street by now.
+
+rule @bark_stars
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 11h
+say There's the steering star. | Not a cloud. Good.
+
+rule @bark_charts
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 7h
+say Charts of the Sound, true to the fathom. | Street plans, two pennies. Save yourself the asking.
+
+rule @bark_fog
+when concept=bark here.weather=fog here.region=ridgemere
+does aside
+cooldown 10h
+say Nobody's coming in through this. | Listen for the pier bell.
+
+dlg @1 resident.hub : #greet#. Lost folk end up at my door. Is that you? | #greet#. Tell me your business. My pen keeps going; my ears are free.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back, and without a map, I see. | #topic.player#. You again. Good. What's wanted?
+dlg @3 resident.hub [here.time=night] : Late, but I'm awake, and the stars are out. What's wanted? | Late for a call. Be quick and you can have the lamp a minute.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Hands at your sides, please, and tell me your errand. | Stand there, please. Not near the drawers.
+dlg @1 resident.job [self.job=scholar self.role=merchant] : I draw charts of the Sound, and street plans of the city. Every depth on them I sounded myself. | Charts. I sound the water at dawn and draw it at night. Somebody has to get it right.
+dlg @2 resident.job : #self.trade_words.capitalize#. I'd rather do the work than talk about it. | I measure things, mostly, and write down what's true about them.
+dlg @3 resident.job [self.working=yes] : I'm at it now. You can talk, but I won't stop. | Working. Ask your question, and don't lean on anything.
+dlg @1 resident.business [business=thriving self.job=scholar] : Better than I'd hoped. I've captains waiting for charts I haven't drawn yet. | Good. More orders than ink.
+dlg @2 resident.business [business=steady] : Steady. Rent, paper, and a few coins over. | Steady enough. Not rich. I'm working on that.
+dlg @3 resident.business [business=failing] : Badly, and there's no prettier word for it. Nobody's buying. | Poorly. I'm counting every sheet and every penny twice.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's how it reached the counter. | From #world.news_from#, they say: #world.news#. Unchecked, mind.
+dlg @2 resident.news [world.event_words] : Every captain through the door is talking of #world.event_words#. | It's all #world.event_words#, today. I've heard it six times.
+dlg @3 resident.news [world.wagons=raided] : Robbers stopped a wagon on the highway. I'd keep within the walls, myself. | There's been a robbery on the road. Nobody's mapped where they wait, more's the pity.
+dlg @4 resident.news [world.death=recent] : Somebody near us died, these last days. The houses have gone quiet. | We've buried someone close by, lately. More than that isn't mine to tell.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding nearby. I heard the singing from #desk#. | Somebody's wed, these last days. The street turned out for it, and I went for an hour.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ships come, ships go. That's all my wall can tell you. | Nothing new that I'd swear to. The pins on the wall have moved, that's all.
+dlg @1 resident.gossip [here.gossip=yes] : This came over the counter, exactly so: #topic.subject# #topic.claim#. I don't know who saw it. | They say #topic.subject# #topic.claim#. Take it as told, not as known.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Purse inside your coat, I'd say. Word is #topic.subject# #topic.claim#. I've locked my drawers. | Folk are saying #topic.subject# #topic.claim#. Mind your things.
+dlg @3 resident.gossip [here.gossip!=yes] : Talk's not my stock. Ask me where a street goes instead. | #gossip_none# I'd rather deal in what I've seen.
+dlg @1 resident.bye : #farewell#. If you get lost, come back. | #farewell#. In the wet, the upper streets drain best.
+dlg @2 resident.bye [here.time=night] : Good night. Look up as you walk. Worth a stumble. | Good night. The steps go greasy after dark, so tread careful.
+dlg @1 shop.greet [here.shop!=bare self.job=scholar] : #greet#. Charts of the Sound on the left, street plans on the right. Each ticket shows its price. | #greet#, #address#. Every chart on that rack I sounded myself. Have a look.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Have a look. The prices are marked, and they stay as marked. | #greet#, #address#. Everything's ticketed. No hurry from my side.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Back for another, or did the first one get wet? | #greet#, #topic.player#. I've a new sheet in since you were last here.
+dlg @4 shop.greet [here.shop=bare] : #greet#. Bare boards, I'm afraid, till the next delivery. Selling, are you? I'd look. | Empty, I'm afraid. Try again once the North Road's delivered.
+dlg @1 shop.prices : The ticket's the price. Up it doesn't go, nor down. | Dearer than last month, some of it. It's marked fair, all the same.
+dlg @1 shop.bye : #farewell#. The threshold dips; lift your feet. | #shop_bye# You know where I am.
+dlg @2 shop.bye [self.job=scholar] : #farewell#. Keep the paper dry and the chart will keep you right. | #shop_bye# And roll it, don't fold it.
+graft resident.hub
+choice What are all the pins in that wall chart? [self.job=scholar self.role=merchant] -> pins
+node pins
+say Ships. One pin a ship, put in where it ties up and taken out when it sails. Red flags in, white flags gone. Ninety-odd today.
+mood keen
+free
+choice Why keep track of them all? -> pins_why
+choice Back to it. -> hub
+node pins_why
+say Because the water's in use, and I'd know where. A captain who knows where everyone sits doesn't run into anyone.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is this chart up to date? [self.job=scholar] -> current
+node current
+say Sounded this spring, every mark. If the bar's moved since, I'll know before you do, and I'll fix the chart for nothing.
+mood formal
+choice Let me see the charts. -> greet
+choice How often do you check it? -> current_how
+node current_how
+say Every spring, the whole Sound. The bar and the piers, twice a year. Sand doesn't keep still, so neither can I.
+choice Let me see the charts. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,462 @@
+# rm168, the backward walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm168
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_kari_bilgehand
+written_by claude
+title the backward walker
+fits stage=adult|old
+prefers role=merchant job=crafter humour=merry
+traits temper=even talk=plain warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk walks_backward_down_any_long_room_as_if_spinning_yarn
+likes smoked_eel draughts new_boots autumn_wind
+dislikes early_bells salt_wind
+fears a_cable_parting_with_her_count_on_it a_short_tally_in_the_steward_s_book
+hopes a_door_with_a_knocker_on_the_rise every_fathom_counted_right_for_a_year
+topics work +0.5 pastimes +0.4 food +0.2 weather +0.3 ships +0.3 prices +0.2 gossip +0.2 dreams +0.2 faith -0.2
+styles comfort=practical gossip=keen refuse=plain tease=merry
+marks oath saying
+persona #self.first# runs a ropewalk near the north gate for the House that owns it: merry and exact, quick with a tease and slow to lose count, wears out boot heels walking backward down the shed out of long habit, plays a wicked game of draughts, and keeps an eye on a door up the Rise.
+
+words
+oath! = Twist and tally | Heels and hatchels | Spin me sideways
+saying! = Count the fathoms, never the fuss | Slack's a lie a rope only tells once | You lay it walking backward and sell it walking forward
+walkshed = the ropewalk | the long walk under the rafters | three hundred yards of roof and hemp
+hemp = the hemp | a hank of hemp round my middle | the hemp bales
+yarn = the yarn | the yarn spinning off my paws
+fathoms = the fathoms | every fathom of it | fathom after fathom
+tarkettle = the tar kettle | the tar bubbling at the far end
+cable = a cable | a cable thick as my wrist | a ship's cable
+steward = the steward | the House's steward | the steward and the ledger
+eel = smoked eel | eel off the rack | a smoked eel split down the back
+draughts = draughts | the board and the black and white men | a hard game of draughts
+boots = new boots | boots with the heels still square | boots that creak at every step
+autumn = a blustery autumn | a wind that hunts the loose slates | good drying weather
+earlybells = bells before the sun's bothered | a bell-ringer with no mercy and no clock
+saltwind = the salt wind | the briny blow off the Sound
+rise = the Rise | a door up on the Rise | a house with a brass knocker on the Rise
+heels = my heels | the heels of my boots
+tally = my tally | the count | the tally slate
+
+any
+opinion @1 dole against 1 : I pay my share toward it gladly enough, and I count, same as I count rope. Some faces come back round the queue twice.
+opinion @1 drink for 1 : A jar over the draughts board never spoiled a friendship. Losing at draughts has, mind.
+opinion @1 festivals for 1 : Dance all night and walk the shed backward next morning, that's a festival done right. Sleep's for winter.
+opinion @1 houses for 1 : The hemp, the roof over the walk and my wage all come out of a House purse. Bite that and I'd deserve the toothache.
+opinion @1 merchants for 1 : Rope crosses my own counter daily, and hemp costs half again once it's carted to my door. Call a shopkeeper a thief near me and see.
+opinion @1 road against 1 : My hemp rides the North Road, and each day it dawdles I've spinners stood idle. Somebody ought to clear it.
+opinion @2 road against 2 [world.wagons=raided] : #oath#. Road wolves had a hemp wagon, I'd bet my boots. I'll be paying spinners to sweep the floor.
+opinion @1 sump against 1 : Trouble breeds low by the piers and climbs. I've no sneer for the folk down there, but I keep my purse up high.
+opinion @1 times for 1 [self.wealth=rich|comfortable] : Grumble? With orders in the book and new boots on? Ships want rope in fat years and thin.
+opinion @2 times mixed 0 : Some weeks the orders come in fathoms, some in inches. I don't grumble; I count.
+opinion @1 watch for 2 : No coil's walked off my counter since the Watch started looking in. Pay them well, I say, and pay them first.
+opinion @1 city for 1 : The wettest place in the realm and I'd not swap a day of it. Rope sells where there's sea, and here's sea.
+opinion @1 newcomers mixed 0 : Any newcomer who reaches a hundred without losing count, and walks without peeking behind, gets work from me. The second's harder than it sounds.
+
+grown
+line @1 greet : #greet#. Mind your back; I come through here backward. | #greet#. Stand by the wall, I'm mid-count.
+line @2 greet [pair.band=strangers] : #greet#. Don't mind me walking backward. Everyone stares the first time. | #greet#. New face. Can you count to a hundred? You'd be surprised who can't.
+line @3 greet [self.working=yes self.job=crafter] : #greet#. Forty fathoms. No, don't talk yet. Forty-one. There. | #greet#. Give me till the end of the walk and I'm yours.
+line @4 greet [here.time=dawn] : #greet#. If some fool rang a bell before light, I'll have words. | #greet#. Early. The hemp's still damp from the night.
+line @5 greet [here.time=dusk|night] : #greet#. I've just counted the day's coils. All there. | #greet#. Evening. I'm off for a game, if anyone's sitting.
+line @6 greet [here.season=autumn] : #greet#. Hear that wind? I could kiss it. | #greet#. Proper autumn out there. My yarn will dry in an hour.
+line @1 kin.open [pair.kin!=no] : There. Sit, and I'll fetch the board. | Ha, you. I was just telling the yarn about you.
+line @1 again.open : Back again. I've walked a mile backward since you left. | Twice before supper. The stool's going on your slate.
+line @1 greet.return : #greet#. Good timing; I've lost count anyway. | #greet#. Ha! You.
+line @2 greet.return [pair.band=friends|family] : #greet#. The board's free tonight, if you are. | #greet#. Thank goodness, you're not the steward.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I walk, then. | #greet#. Busy, but the counting's in my feet, not my ears.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, and I've a board waiting. | #greet#. The tar's off. The night's mine.
+line @1 farewell : #farewell#. Watch your step; I'll be walking backward into somebody soon. | #farewell#. Keep your hat from the gulls.
+line @2 farewell [here.time=dusk|night] : Good night. The board and me have business till the lamps die. | Good night. Mind the steps; the rain's got into them.
+line @1 farewell.return : #farewell#. Come back and lose at draughts. | #farewell#. And keep your boots dry.
+line @1 react.news : Go on. I'm counting nothing now; you've got all of me. | Tell me, then. Every fathom of it.
+line @1 react.news.new : Never crossed my counter, that, and plenty does. | Well! Who started that?
+line @1 react.news.known : I'd heard. It rode in on the hemp wagon. | Old news, but you tell it better.
+line @1 react.news.doubt : That wants weighing before I pay for it. | Sounds like somebody's let a bit out to make it longer.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's heavy. Spare a thought for whoever's left. | #oath#. That's no joke. I'll not make one.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Ha! That's grand. Somebody buy them a drink on my slate. | Good. That's worth the walk down here to tell.
+line @1 answer.how : Very well. Fathoms ahead of the day. | Well, thank you. My heels are sore and my count's right.
+line @2 answer.how [self.wealth=rich|comfortable] : Better than I've any right to be. I'll not pretend otherwise. | Doing nicely, touch the rope.
+line @1 answer.how.busy [self.working=yes] : Busy. Three orders and one walk to do them on. | Rushed off my heels, and liking it.
+line @1 ask.how : How's your week laying up? | You look like you've done more miles than my heels today.
+line @1 sympathise : That's a hard knot. I'm sorry. | Rotten. Take the stool; I've eel somewhere.
+line @1 reassure : You'll come right. Most ropes hold more than you'd think. | Don't fret it. Count what you've got, not what you've not.
+line @1 decline : Not today, I'm afraid. The steward's coming to count, and my tally's going to be waiting. | I'd better not. I've an order due and only two paws.
+line @1 accept_decline : Fair enough. Another day. | Right you are. No harm asking.
+line @1 thank : Thank you. That's a good turn and I'll remember it. | #thanks#. I owe you a game, and I'll let you win. Once.
+line @1 deflect_thanks : Nothing at all. Ask again anytime. | Pfft. Away with you.
+line @1 preclose : Back to the walk, before the yarn gets ideas. | The steward will be wanting the tally.
+line @2 preclose [self.working=yes] : My spinners are idle. That's coin on the floor. | Back to the walk. Backward, as ever.
+line @1 accept_preclose : Go on, then. I'll be here, going nowhere fast. | Off with you. Put a shoulder to the door; it sticks.
+line @1 tease [pair.band=friends] : You walk like a wagon with one wheel square. | You'd lose to a gull at draughts.
+line @1 tease.return : Ha! Fair. I'll have you for that. | You're bold for somebody who can't count past ten.
+line @1 laugh : Ha! That's good. | Oh, you'll do.
+line @1 ack : #bc_right#. | #bc_ha#. | #bc_fair_enough#.
+line @1 give.advice : Count it twice and sell it once. | Buy boots a half-size big. Your feet swell on the walk.
+line @1 warn [world.bandits=near] : Keep your paws inside the milestones this week. The hemp carters won't, and they've seen worse. | Go with a convoy if you've business on the North Road.
+line @1 hail [pair.band=friends] : Oi! Over here! Board's set. | You! Look at this cable I've laid.
+scene walk_backward
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / laugh / assess
+a : I walk backward all day. Hemp round my middle, paying out yarn, three hundred yards and back. | People think I've gone daft. I've only been laying rope. | Twelve times down #walkshed# today, every one of them backward.
+b : Doesn't your neck hurt? | Why backward? | How far's that, all told?
+a : You don't look round. You feel the wall coming in your heels. | The yarn spins off the wheel at the far end. You walk away from it to stretch it out. | Two miles and a bit. Backward. My boots know it.
+b? : #bc_ha# | #bc_clever# | #bc_lucky_you#
+a : Years of it and I've only hit a wall twice. | Eyes closed, I could. I've done it. | That's why I buy boots like other folk buy bread.
+
+scene fathom_count
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / tease / tease.return / laugh
+a : Ninety-eight, ninety-nine, a hundred fathoms. Don't speak to me between numbers. | I count every fathom. Not because I'm made to. Because it's mine. | I counted a coil short this morning and walked the whole shed twice to find it.
+b : I wouldn't dare. | That's very careful. | Did you find it?
+a : Wise. The last one who did had to count it for me. | Careful's what the House pays me for. I'd do it anyway. | In the tar shed. Somebody had sat on it. I'll not say who.
+b : You'd make a fearsome clerk. | You'd count the stars if they'd hold still. | I can guess who.
+a : Ha! I'd rather the rope. Clerks don't get to walk. | I tried. They twinkle on purpose. | Then hush, or I'll hand you the tally slate.
+
+scene tar_kettle
+when topic=work self.job=crafter
+does tell.self / react.self / assess
+a : The tar's boiling past the last post. The gate gets the smell of it. | I've tar in my ruff from now till spring. It's the price of good rope. | Nothing on a rope lasts in this city without tar. Salt eats the rest.
+b : I could smell it coming in. | Doesn't it wash out? | That's a hard trade.
+a : That's honest work you're smelling. I'd bottle it. | Not with soap. Butter, and a long sit. | Hard and sticky. I'd not swap it.
+
+scene steward_tally
+when topic=work self.role=merchant self.job=crafter
+does tell.self / ask.detail / answer.detail / praise / assess
+a : The steward comes Restday eve with the ledger. I've the tally done and checked before the knock. | The House owns the walk. I run it, and I answer for every coil. | My slate and the steward's ledger, both, line by line. They'd better agree.
+b : Is the steward hard on you? | Every coil? | And if they don't?
+a : Fair. Not one figure wrong in three years, and there won't be. | Every coil, every bale, every pot of tar. That suits me. | Then one of us can't count. And it's not me.
+b : That's a clean record. | That's a load to carry. | Ha, I believe you.
+a : Clean as new hemp. I'll keep it that way. | It's a load I'm glad of. I carry it easy. | You should. I've never been short.
+
+scene rope_test
+when topic=work self.job=crafter
+does tell.boast / react.self / assess
+a : We hung a new cable with a cart of stone under it today. Not a creak. | I test every tenth coil with weights. The other nine I trust to my count. | A ship's mate came in to feel our rope. Walked off with fifty fathoms and no haggling.
+b : That's strong rope. | Only every tenth? | Good sale.
+a : It's honest rope. Laid tight, tarred right. | Every tenth. If one fails, I test them all. None has, yet. | The best sort. Rope sells itself if you let it.
+
+scene salt_wind
+when topic=weather here.region=ridgemere here.outdoors=overcast|storm|rain
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# today. It gets into the hemp and rots it from the heart. | Wind off the water stings my eyes and sticks my fur. I can't abide it. | When the wind comes in salty, I shut the far doors and burn a candle against the damp.
+b : Is it that bad for rope? | It's a hard wind, all right. | Does that help?
+a : Bad enough I check every bale it touches. | Hard, and wet, and tastes of herring. | It helps me feel better. The hemp's another matter.
+
+scene autumn_wind
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #autumn.capitalize#. Listen to it. I'd walk the shed forward for a wind like that. | A dry autumn blow and my yarn dries in an hour. It's a gift. | This is my weather. Leaves whirling and a proper gusting.
+b : It's lively. | Forward? Steady on. | You're welcome to it.
+a : Lively's the word. I'd bottle that too. | Well. Halfway forward. | Thank you. I'll take it gladly.
+
+scene storm_cable
+when topic=weather|ships here.outdoors=storm self.job=crafter
+does tell.self / react.self / assess
+a : A blow like this, there'll be three captains at my counter tomorrow wanting cable. | Storms are hard on ships and kind to ropewalks. I keep my glee indoors. | I lie awake in a storm thinking of every coil I've sold out on the Sound.
+b : It's an ill wind. | Honest, at least. | Do you, now?
+a : Ill for some. I'll be fair on price, whatever I'm asked. | Honest's all I've got to offer. I'll not pretend. | Every coil. If one parted, I'd lie awake finding out why.
+
+scene early_bells
+when topic=day|smalltalk here.time=dawn
+does tell.complaint / tease / tease.return / tease / tease.return
+a : #earlybells.capitalize#. Who rings a bell when nobody's awake to hear it? | Some fool at the close rang every bell they had before light. I've a mind to tie the ropes in knots. | I was asleep. I was happily asleep. Then the bells.
+b : Somebody's got to wake the city. | You'd never tie a bell rope wrong. | Poor you.
+a : The city has the sun for that. It's never been late yet. | No, I'd tie it right. Just short. Very short. | Poor me. I'll be sour till noon.
+b : You'd be sour anyway. | Ha, now that I'd pay to watch. | You'll live.
+a : Not at all. I'm a delight after noon. Ask anyone. | You'd hear the silence from here. | I will, and I'll complain the whole time.
+
+scene wet_shed
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / give.advice / agree
+a : Rain through the roof of the walk again. A bucket under every drip, and I count those too. | Wet hemp won't lay. I sent the spinners home and counted coils instead. | Rain all day, and it smells like the whole walk's been soaked in soup.
+b : How many buckets? | Did they mind going home? | Soup?
+a : Eleven. One more than last week. The steward will hear about it. | Paid, they didn't. I'm not a monster. | Hemp soup. It's not a nice smell.
+b : The roof needs looking at. | Fair of you. | I'll take your word.
+a : It does. I've said so in the ledger three times. | It's my count that matters, not their hours. | Do. You'd not want to check.
+
+scene draughts_board
+when topic=pastimes
+does tell.self / tease / tease.return / challenge / laugh
+a : I play draughts every night I can find somebody foolish enough to sit down. | My board's older than the steward. The black men are chipped, and I know every chip. | I won four games last night and lost one. I'm still thinking about the one.
+b : You must be good. | You'd know your own men in the dark. | Only one?
+a : I count the board like I count rope. Nobody likes playing me twice. | Blindfold. I'd still beat you. | One's plenty. I'll have my revenge tonight.
+b : I'll take you on. | Is that a challenge? | That's worth watching.
+a : Ha! Sit down, then, and bring coin. | It's a promise. I'm good for those. | Come and watch. Bring a jar.
+
+scene draughts_lost
+when topic=pastimes|smalltalk
+does confide / react.self / tell.self / tease / tease.return
+a : Last night I lost at draughts. To a pup. A pup, fresh off a cart. | Somebody beat me in nine moves. Nine. I've not slept. | I lost my best game in years and I can't work out where.
+b : Somebody had to beat you eventually. | Nine's quick. | You'll find it.
+a : Not a pup, they didn't. I'll want a rematch. | Quick and humbling. I've been going over it all morning. | On the walk, around the fortieth fathom. That's where I think best.
+b : You're a poor loser, then. | You'll never let that go. | I'll keep out of your way till you do.
+a : Ha! I'm a grand loser. I just don't do it often. | Never. I'll have it carved on the board. | Wise. I'm dangerous when I'm thinking.
+
+scene new_boots
+when topic=pastimes|home
+does tell.feeling / react.self / assess
+a : #boots.capitalize#. Smell that leather. I could stand here and sniff them all day. | New boots on a Restday morning. That's a good day before it's started. | I wear the heels through faster than anyone in the city. Walking backward does that.
+b : They're handsome. | Pleasures are where you find them. | Heels first?
+a : They are. They'll be scuffed by Marketday, but they're handsome now. | And this one's cheap, which is the best kind. | Heels first. The cobbler knows me by my heels.
+
+scene boot_heels
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / agree / assess
+a : My cobbler says I'm the only customer who wears boots out at the back. | I bought three pairs this year. Three! Other folk buy one. | You can tell a ropemaker by the heels. Ground flat as a slate.
+b : Is that the walking backward? | Doesn't it cost you? | Can you, really?
+a : Of course. Twelve times a day backward. Heels take the lot. | A fortune. But the rope pays, and new boots are a joy. | Look at mine. Flat as the Commons. Now look at yours.
+b : That's true enough. | Good thing it pays. | So they are.
+a : True. I wear them like medals. | It does. Every fathom. | See? You can always tell.
+
+scene eel_supper
+when topic=food
+does tell.feeling / react.self / assess
+a : #eel.capitalize#. Give me that every supper till I'm grey and I'd not complain. | I buy #eel# from the rack by the smokehouses and eat it walking home. Forward, for once. | A smoked eel and a game of draughts. That's an evening.
+b : It's good stuff. | Forward? That's a change. | Sounds a fine one.
+a : The best. Oily and dark and a bit salty. | It's the only thing that'll turn me round. | It is. Add a jar and a win, and it's perfect.
+
+scene eel_rack
+when topic=food here.region=ridgemere
+does tell.self / react.self / assess
+a : The eel seller knows me. Has mine wrapped before I'm at the rack. | I counted the eels on the rack once while I waited. Forty-three. Old habits. | I'll pay a penny over for a fat one. A thin eel's no supper.
+b : That's a regular customer. | Of course you did. | A penny over? You?
+a : The best kind. I'm there every Marketday. | I can't help it. Things that hang in rows, I count them. | For eel, yes. For rope, I'd haggle a gull out of its feathers.
+
+scene rise_dream
+when topic=dreams self.wealth=rich|comfortable
+does confide / react.self / assess
+a : Someday I'll own #rise#. A knocker that's mine to knock. | On Restdays I stroll the Rise and choose which house I'll buy. | I've counted every coin for years. When the count's right, I'm going up the hill.
+b : You'll get there. | Which one? | That's a long way up.
+a : I will. I count rope and I count coin, and both add up. | The blue door. It has a knocker shaped like a fish. I love it. | It is. I'll walk it backward and see how far I've come.
+
+scene rise_doubt
+when topic=dreams|smalltalk
+does confide / reassure / assess
+a : Folk on the Rise don't wear tar in their ruffs. I'd stick out. | I'd like a house up there. Then I think: who'd I play draughts with? | I've no idea how they talk up the hill. I'd say something wrong at dinner.
+b : You'd be fine. | You'd find somebody. | You'd teach them how.
+a : I'd stick out, and I'd not mind. They can smell honest work. | I would. And I'd beat them, and they'd stop asking me. | Ha! I would at that. Plain talk's never hurt anyone.
+
+scene hemp_late
+when topic=caravan world.wagons=late
+does tell.worry / reassure / assess
+a : The hemp wagons are late. My spinners are stood idle and I'm paying them for it. | No hemp again. I've counted what's left: enough for three days. | Every day the hemp doesn't come, the steward asks me why. Like I drive the wagons.
+b : They'll come. | Three days is something. | That's not fair on you.
+a : They'd better. I've an order for cable due at the piers. | Three days, and then I'm counting nothing. | Fair or not, it's mine to answer for.
+
+scene hemp_in
+when topic=caravan world.wagons=in
+does tell.news / react.news / assess
+a : The hemp's in! Six bales, good and dry. I counted them off the cart myself. | The wagons came in at dawn. I met them under the arch with my tally slate before they'd stopped. | Hemp at last. The walk will be busy tonight.
+b : Good news for you. | Of course you were. | You'll be walking late.
+a : The best. The spinners can stop sweeping. | Somebody ought to tally them in. Better me than a guesser. | Backward till midnight, and happy to do it.
+
+scene ships_in
+when topic=ships world.ships=in self.job=crafter
+does tell.news / react.news / assess
+a : Ships in. That means rope wanted, and it means a good week at the walk. | Ships in, so there's a mate at my counter by noon. Rope wears out at sea. | Ships in, and I've cable laid and waiting. Counted ahead, that's all.
+b : Good for trade. | Busy, then. | Clever.
+a : Very good. I'll count it all twice. | Busy and glad. Bring me sailors. | Not clever. Counted. There's a difference.
+
+scene ships_lost
+when topic=ships world.ships=lost
+does tell.news / sympathise / assess
+a : They say a ship's lost. I'll not laugh about that, today or any day. | A ship gone. I always wonder if it was carrying my rope. | Bad news off the water. A ship lost. I've lit a candle for it.
+b : That's grim. | You'll never know. | That's kind.
+a : It is. Rope or no rope, the sea takes what it likes. | No. Not knowing's the cruel part. | A candle's small. It's what I've got.
+
+scene times_good
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good weeks. Rope going out quicker than I can lay it. No use pretending it's not. | The steward's smiling. I didn't know the steward could. | Orders in the book till the end of the month. That's a fine sight.
+b : Make hay while it shines. | That's a sight. | You've earned it.
+a : I'd rather make rope. Hay doesn't sell at the piers. | It was. I nearly dropped my slate. | I've walked for it, every yard.
+
+scene times_hard
+when topic=times world.times=hard|lean
+does give.opinion / disagree / concede
+a : Lean weeks. I've kept every spinner on, even so. Idle paws learn bad habits. | Lean times, folk ought to find work, not a queue. I'll give work to anyone who can count. | The ships don't stop for hard times, so neither do I.
+b : Not everyone can find work. | Not everyone can count. | Some can't keep going.
+a : No. And I'd not grudge them a loaf. I just want them working first. | Then I'll teach them. It's not hard. Just slow. | No. I know. I'm lucky, and I remember it daily.
+
+scene gossip_rope
+when topic=gossip here.region=ridgemere topic.claim_kind=other|newcomer|marriage|prowling|promise_kept
+does tell.gossip / react.news / assess / tease / tease.return
+a : Here's one off the counter: #topic.subject# #topic.claim#. You never heard it from me. | Word on the walk: #topic.subject# #topic.claim#. A carter said so, so call it half true. | You'll like this. #topic.subject.capitalize# #topic.claim#. Or so the walk says.
+b : I'll not breathe a word. | Half's enough. | The walk says a lot.
+a : Good. Half the city will know by supper anyway. | Half's plenty for a supper table. | The walk hears everything. It's three hundred yards of ears.
+b : You're a terrible gossip. | You'd sell it by the fathom. | Ha, I believe that.
+a : I'm a very good gossip. There's a difference. | I'd give it away. It's better shared. | You should. I've the longest ears in Northgate.
+
+scene gossip_broken
+when topic=gossip here.region=ridgemere topic.claim_kind=promise_broken
+does tell.gossip / react.news / assess
+a : Folk say #topic.subject# #topic.claim#. A broken promise is a frayed rope; it'll part when you need it. | They say #topic.subject# #topic.claim#. I'd not lend that one a fathom. | Here's a pity: #topic.subject# #topic.claim#. Word's worth more than coin, to my mind.
+b : That's poor. | I'd not either. | It is, to most.
+a : Poor, and it'll be remembered. | Not a fathom, not an inch. | Most. Not all, more's the pity.
+
+scene newcomer_count
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New faces? A newcomer gets work if they can reach a hundred blind. Few can. | A newcomer came asking at the walk. I made them walk it backward. They went straight into the tar kettle. | Plenty of new faces this season. More hands for rope. I'll not complain.
+b : That's a hard test. | Poor thing. | Practical.
+a : It's not. Counting's easy. It's the not looking that's hard. | They were fine. Tarry, but fine. I took them on anyway. | Rope wants hands, and hands want rope. It works out.
+
+scene festival_dance
+when topic=festival
+does tell.feeling / tease / tease.return
+a : Festival! Dance till my heels ache, then the shed backward at dawn. | I'll be at the draughts table at the festival, taking coin off the merry ones. | A festival's the one night I count nothing. Nothing at all.
+b : You'll be asleep standing. | That's cruel. | I'd want to watch that.
+a : I'll be alive on my heels. I walk better tired. | Cruel? It's honest. They sit down drunk; I sit down sober. | All right. I count the dances. But just the dances.
+
+scene watch_light_paws
+when topic=crime
+does give.opinion / react.self / assess
+a : Not one coil's gone missing since the Watch began looking in. Any of them can drink on my slate. | Somebody tried to walk off with a coil once. A whole coil. The Watch had them by the gate. | Without the Watch, I'd be counting rope that wasn't there.
+b : They do their job. | A whole coil? | That's a nightmare.
+a : They do. They're in my prayers, the odd time I say any. | Fifty fathoms over the shoulder. They didn't get far. Rope's heavy. | It is. I'd never sleep.
+
+scene chapel_tide
+when topic=faith
+does tell.self / react.self / assess
+a : Every ship that sails on my rope, I light it a candle by the water. | Chapel and me are polite strangers. The Bright One sees my tallies, and that'll do. | The priest says count your blessings. I said I count everything. The priest laughed.
+b : That's a good habit. | It might be. | That's fair.
+a : Candles are cheap. Cables aren't. | I hope so. I'm short on time for sermons. | I'm glad somebody did.
+
+scene friend_eel
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd share my last smoked eel with #self.friend#, and I'm careful with my eels. | I'd hand #self.friend# my tally slate. Nobody else touches it. | When I've news, #self.friend# hears it first. Before the walk, even.
+b : That's real friendship. | It is. | A good friend.
+a : It is. Eels are serious business. | It is, from me. I don't hand that slate to anyone. | The best. And never tells it twice.
+
+scene hand_work
+when topic=work self.hand self.job=crafter
+does tell.self / react.self / assess
+a : #self.hand# keeps the yarn coming while I walk. Never a slack moment. | I couldn't run the walk without #self.hand#. I'd tell the steward so. | #self.hand# can count nearly as well as me. Nearly.
+b : A good hand's rare. | You should. | Nearly?
+a : More than a full bale. | I have. Twice. | Nearly. I'm not giving that up yet.
+
+story first_walk [topic=work|memories self.job=crafter self.age>=30]
+  : My first day as a learner on a ropewalk, I walked forward.
+  : Forward. The yarn wound round my legs and I went down flat with every spinner watching.
+  ask : Guess what the old ropemaker said.
+  b : Something rude, I'd guess.
+  : Turn round, you daft thing, rope goes backward. I've not walked forward since.
+  b : Ha! That's a lesson.
+
+story heels_month [topic=pastimes self.age>=25]
+  : I wore through a pair of new boots in a single month once. Clean through both heels.
+  : The cobbler held them up to the light and looked at me through the holes.
+  b : What did the cobbler say?
+  : Walk forward for a change. I said I'd rather pay. And I did.
+
+story cable_held [topic=ships|work self.job=crafter self.age>=30]
+  : One winter a big ship rode out a gale off the piers on a cable I'd laid.
+  : Every other ship along the wall dragged. That one sat there calm as a teapot.
+  ask : Guess what the mate brought me after.
+  b : A drink, I hope.
+  : A smoked eel, the biggest I've ever seen. I ate it walking home. Forward.
+
+story captain_draughts [topic=pastimes self.age>=25]
+  : A sea captain once bet me a gold coin he'd beat me at draughts. In a taproom by the gate.
+  : I let him win the first game. Then I took the next five.
+  ask : What would you buy with a gold coin?
+  b : Spent it on eel, knowing you.
+  : Nowhere. It's on a cord at my throat. A touch before each game.
+
+story counted_stairs [topic=memories|dreams self.age>=30]
+  : As a pup I counted every step up to the Rise one Restday. Nine hundred and something.
+  : At the top I looked back and thought, that's a long drop.
+  ask : Guess how I went back down.
+  b : Climbed back down?
+  : Walked down backward, every step, so I'd not lose sight of the top.
+
+rule @count_bark
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 6h
+say Forty. Forty-one. Don't talk. | A hundred fathoms. And again.
+
+rule @backward_bark
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Backs to the wall, I'm coming through backward! | Out the way, I can't see behind me.
+
+rule @tar_bark
+when concept=bark self.job=crafter
+does aside
+cooldown 10h
+say Tar's hot! Keep your tails clear. | Smell that? That's honest rope.
+
+rule @bells_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Bells. In the dark. Who does that? | Ring it once more and I'll knot your rope.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast
+does aside
+cooldown 9h
+say Now that's a wind! | Blow, then. My yarn's waiting.
+
+rule @shop_bark
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 6h
+say Rope by the fathom, laid tight and tarred. | Cable, line or twine. Counted honest.
+
+dlg @1 resident.hub : #greet#. Mind your back; I walk backward. | #greet#. Talk; I can tally and listen.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Draughts later? | #topic.player#! Good. You owe me a rematch.
+dlg @3 resident.hub [here.time=night] : Late. I'm off to the board. Quick, then. | Dark, and my counting's done. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Out with your business. My tally's half done. | I've rope to hand and little patience today. Civil, please.
+dlg @1 resident.job [self.job=crafter] : I lay rope. Walk backward all day with hemp round my middle. It's grand. | I run #self.workplace#. Every fathom counted, every coil tarred.
+dlg @2 resident.job [self.role=merchant] : What I lay, I sell, at a fair price, counted twice. | Making and selling. Mostly counting.
+dlg @3 resident.job : Work, and counting it. That's me. | Busy. Ask me how many, I'll tell you.
+dlg @1 resident.business [business=thriving] : Thriving. The order book's full till month's end. | Very well. The steward's actually smiling.
+dlg @2 resident.business [business=steady] : Steady. The ships keep wanting rope. | Steady enough. Not a fathom wasted.
+dlg @3 resident.business [business=failing] : Not well. The hemp's late and the orders are thin. | Badly. I'm counting, and the sums are sour.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. A carter brought it with the hemp.
+dlg @2 resident.news [world.event_words] : Every customer today wanted to talk about #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Road wolves took a wagon. If it's my hemp, I'll be sour for a week.
+dlg @4 resident.news [world.death=recent] : We lost somebody this week. The walk went quiet for it.
+dlg @5 resident.news [world.wedding=recent] : A wedding! I'd have danced if I'd been asked.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new. Just rope and rain.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. And I said nothing, understand.
+dlg @2 resident.gossip [here.gossip=no] : Not a whisper. The walk's been dull.
+dlg @1 resident.bye : #farewell#. Mind your back. | #saying.capitalize#. Off you go.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. I'll be at the board. | Good night. Stick near the lamps.
+dlg @1 shop.greet [here.shop=open] : #greet#. Rope by the fathom, cable, line or twine. #shop_offer# | #greet#. All laid tight and counted. #shop_offer#
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #greet#, #topic.player#. Back for more rope? It's good, isn't it. | #topic.player#! Your usual? I counted it out already.
+dlg @3 shop.greet [here.shop=bare] : #greet#. The shelves are bare; hemp's late. #shop_bare# I'll buy, though. | Not a coil left, I'm afraid. #shop_bare#
+dlg @1 shop.prices : Rope's what it costs to lay. I don't pad it. #shop_offer# | Hemp's up, so rope's up. Plain truth. #shop_offer#
+dlg @1 shop.bye : #farewell#. Mind you don't trip over it. | #shop_bye# Count it when you get home; it's all there.
+graft resident.hub
+choice Why do you walk backward? -> backward
+node backward
+say Rope's laid backward. You back off from the wheel with hemp round your middle and pay out the yarn. Years of it, and now I can't stop.
+mood pleased
+free
+choice Don't you bump into things? -> backward_bump
+choice Back to it. -> hub
+node backward_bump
+say Twice, ever. Once the wall, once the steward. The steward was harder.
+choice Ha. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do I tell good rope? -> good_rope
+node good_rope
+say Feel it. Tight, even, no soft spots, no loose strands. Smell it: good tar. And ask the seller how they test it. If they can't say, walk on.
+free
+choice How do you test yours? -> good_rope_test
+choice Back to the counter. -> greet
+node good_rope_test
+say Every tenth coil, hung with a cart of stone under it. None's failed yet. I'd know.
+choice Good. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,481 @@
+# rm161, the shutter against the damp (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm161
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_egil_targate
+written_by claude
+title the shutter against the damp
+fits stage=adult|old
+prefers job=merchant temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk shuts_the_window_on_the_damp_and_blames_the_flies
+likes spiced_cider riddles tidy_house summer_evenings
+dislikes flies gulls
+fears a_cough_nobody_can_pretend_away the_savings_tin_spent_on_physic being_laughed_at_over_the_counter
+hopes a_stall_with_nobody_else_s_name_over_it a_whole_summer_without_the_damp
+topics work +0.4 pastimes +0.4 prices +0.3 home +0.3 family +0.3 weather +0.2 caravan +0.2 health -0.5 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# minds a cloth counter near the north gate: touchy and anxious, quick to hear a slight that was never meant, folds every bolt square, takes riddles very seriously, loves a cup of spiced cider on a long summer evening, and slams the window shut on the damp while insisting it was only the flies.
+
+words
+oath! = Flies take it | Gulls and gutters | Cloves and cobwebs
+saying! = A shut window never caught a cold | Fold it square and it stays folded | Ask once and sell once
+window = the window | that window | the shop window
+flies = the flies | those blessed flies | the summer flies
+gulls = the gulls | those thieving gulls | the gulls on the sign
+cider = spiced cider | cider stewed with cloves | hot cider, cinnamon and all
+riddle = a riddle | a proper riddle | a riddle that makes a body sit still
+tidy = a tidy room | everything folded and put by | a room where nothing's out of its place
+evening = a long summer evening | a midsummer dusk that hangs about till bedtime
+tickle = a catch in the windpipe | a bit of lint in the throat | the lint
+bolts = the bolts | the cloth on the shelves | the folded bolts
+counter = the counter | my end of the counter
+stall = trestles of my own | a corner of the Commons Market to call mine | a stall with nobody's name over it but mine
+tin = the savings tin | the tin under the counter
+daybook = the day book | the order book
+damp = the damp | the wet in the air | this soggy air
+yard = a yard of good wool | a length off the bolt
+doorbell = the door bell | the bell on its curly bracket
+customer = a customer | somebody wanting cloth
+helping = helping | just helping
+
+any
+opinion @1 city for 1 : Born with the rain on my ears and I'll be buried in it. The damp's the only thing here I'd change.
+opinion @1 festivals against 1 : Noise, spilt ale, and some poor soul weeping on a doorstep before the night's out. I keep the shutters closed and the bolts covered.
+opinion @1 newcomers for 1 : Nobody steps off a cart dressed for Ridgemere weather. I've nothing against a stranger's coin.
+opinion @1 strangers for 1 : Those gate-side inns feed me half my custom. A traveller soaked to the skin buys wool without arguing.
+opinion @1 merchants for 1 : Anybody who sneers at a shopkeeper's price has never paid a carter from the downs. I know what a bale costs by the time it's here.
+opinion @1 road against 1 [world.wagons=late|raided] : The wool comes down that road, and when the road's bad, my shelves go thin and my temper goes thinner.
+opinion @2 road mixed 0 : I've never liked the road and never needed to. What matters comes along it to me.
+opinion @1 watch mixed 1 : Slow as treacle when you send for them. Still, nobody's lifted a bolt off my shelves this year, so I'll say thank you through my teeth.
+opinion @1 drink mixed 0 : Cider with cloves in it, warmed, one cup at dusk: that I hold with. Ale makes folk loud, and loud folk knock bolts off shelves.
+opinion @1 houses mixed 0 : The Houses buy good cloth and pay for it when it suits them. Three months, some of their stewards call prompt.
+opinion @1 times mixed 1 [world.times=hard|lean] : When times pinch, folk darn their old coats instead of buying. Sensible of them. Hard on me.
+opinion @1 dole mixed 0 : Feed whoever's empty, I've no quarrel there. Only don't ask me to stand in that queue and watch who's in it.
+
+grown
+line @1 greet : #greet#. Door, please. The damp trails in on folk's heels. | #greet#. Mind the bolts by the door, they're just folded.
+line @2 greet [pair.band=strangers] : #greet#. Off the road and dripping, I see. | #greet#. Cloth, is it? Then you're stood at the proper counter.
+line @3 greet [self.working=yes self.job=merchant] : #greet#. One moment; I'm halfway through folding this one. | #greet#. Stand clear of the shelves and I'm all yours.
+line @4 greet [here.time=dawn] : #greet#. Early. I've barely got the shutters off. | #greet#. The first face through the door today, and a dry one.
+line @5 greet [here.time=dusk|night] : #greet#. Late. I was about to put the cloths over the shelves. | #greet#. Evening's my hour; I'll not mind you stopping.
+line @6 greet [here.season=summer here.time=dusk] : #greet#. Look at that light on the slates. Give me that till the lamplighter's round. | #greet#. A proper summer evening. If it weren't for #flies#.
+line @1 kin.open [pair.kin!=no] : There. The kettle's been singing for you. | You. Sit, sit. I've a riddle been burning a hole in me.
+line @1 again.open : Twice today. I'll have a stool with your name chalked on it. | You again, and I'm still at this same fold.
+line @1 greet.return : #greet#. Good to see you. | #greet#. A spare minute, and here's you to fill it.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good. A friend, not a customer haggling. | #greet#. Quick, inside, before you drip on the step.
+line @3 greet.return [self.working=yes] : #greet#. Busy, but go on. | #greet#. Speak while I fold.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late enough for a cup of something. | #greet#. The shutters are half up, but come in.
+line @1 farewell : #farewell#. Close that door after yourself, there's a good soul. | #farewell#. Keep your collar up, it's turning damp.
+line @2 farewell [here.time=dusk|night] : Good night. That step bites in the dark. | Good night. I've the shutters to see to.
+line @1 farewell.return : #farewell#. And thank you. | #farewell#. Come back drier.
+line @1 react.news : Go on. I'm listening. | Tell me, then, and slowly.
+line @1 react.news.new : Nobody's brought that through my door yet. | That's news to me. Where did you have it?
+line @1 react.news.known : I'd heard. A customer was full of it this morning. | Yes, it's been round the counter twice already.
+line @1 react.news.doubt : I'll wait on a steadier mouth before I swallow that. | That sounds like a tale that grew a size climbing the hill.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's dreadful. That'll keep me up, that will. | #oath#. I hope somebody's looking after them that's left.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well! That's cheering. Somebody will want new cloth for it. | Good. Good news is scarce enough; I'll take it.
+line @1 answer.how : Well enough, thank you. Quite well. | Fair. Busy. Nothing to complain of.
+line @2 answer.how [here.outdoors=rain|fog] : Perfectly well. It's only the lint, before you ask. | I'm fine. Stop peering at me.
+line @1 answer.how.busy [self.working=yes] : Busy. The shelves won't fold themselves. | Rushed. The door bell hasn't stopped.
+line @1 ask.how : Are you keeping dry? | You look tired. Are they working you hard?
+line @1 sympathise : I'm sorry. That's hard, and no mistake. | Rotten. Take the stool, if sitting helps.
+line @1 reassure : It'll come straight. Keep things tidy and they usually do. | Don't fret yourself. I do enough fretting for two.
+line @1 decline : I'm sorry, I can't. Not while the shop's open. | Best not, I think. The stock wants seeing to.
+line @1 accept_decline : Fair enough. I shouldn't have asked. | All right. No offence taken.
+line @1 thank : That's kind. Truly. I'll remember it. | #thanks#. I'll not forget that.
+line @1 deflect_thanks : It was nothing. Really. | No fuss, please. I can't bear a fuss.
+line @1 preclose : The shelves want me back. | I've a customer coming, I think.
+line @2 preclose [self.working=yes] : The bolts won't fold themselves. | I'll be wanted at the counter.
+line @1 accept_preclose : Yes, yes. Off, then. | Go on. The folding won't do itself.
+line @1 take_offence : I beg your pardon. I don't see what's funny about it. | That's a bit much. I'm not the joke here.
+line @1 tease.return : I don't see what's funny. | Laugh away. Somebody here has to stay dignified.
+line @1 apologise : I spoke sharp. I'm sorry for it. | That came out wrong. I'm sorry.
+line @1 accept_apology : Well. All right. We'll say no more. | Fine. It's forgotten. Mostly.
+line @1 ack : #bc_right#. | #bc_fair_enough#. | Hm.
+line @1 give.advice : Fold cloth warm off the iron and the crease stays put. | Keep the window shut in the wet. Trust me on that.
+line @1 warn [world.bandits=near] : Don't set paw past the milestones till it settles. The carters look rattled, and carters don't rattle. | Wait for company if you're taking the North Road.
+line @1 hail [pair.band=friends] : Here! Come and see this. | This way, quick, while I've still got the thread.
+scene rain_window
+when topic=weather here.outdoors=rain|storm here.region=ridgemere
+does tell.self / ask.detail / answer.detail / ack / assess
+a : Shut that window, would you. The flies are getting in. | Pass me that pole; I want #window# closed. Flies. | I've closed #window#. Don't open it, the flies are terrible.
+b : In this rain? | There's not a fly about. | Flies, in the wet?
+a : They shelter from it. In here. Everybody knows that. | There are. They're hiding. They know I'm looking. | Especially in the wet. Now shut it, please.
+b : If you say so. | I'll take your word. | Right you are.
+a : I do say so. #saying#. | Thank you. The wet's no good for the wool, either. | Thank you. Much better.
+
+scene fog_lint
+when topic=weather here.outdoors=fog
+does tell.self / ask.how / answer.how / backchannel / assess
+a : Fog. You can taste it. Not that it bothers me. | Mornings like this, the wet seeps into the bolts. And elsewhere. | Across the street there's nothing but grey. The shop's dim as a cellar.
+b : You sound a bit hoarse. | Are you all right? | Is that a cough?
+a : It's #tickle#. From the wool. It's nothing. | Perfectly. Why does everybody keep asking. | That? No. That was clearing my throat. It's different.
+b? : #bc_of_course# | #bc_right# | #bc_maybe#
+a : I'm quite well. I'll thank you to believe it. | I'm fine. I'll be fine when it lifts. | It's the wool. Wool does that.
+
+scene summer_evening
+when topic=weather|pastimes here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : This is the only time of year I'd sit out. The slates go gold. | #evening.capitalize#. The damp goes out of the air and I can breathe properly. | Shop shut, cup warm, sun still up. Nothing more wanted.
+b : It's a fine evening. | You do look easier. | Not much to ask.
+a : It is. Till #flies# find me. | I am. Don't remark on it. | It isn't. And still I mostly don't get it.
+
+scene summer_flies
+when topic=animals here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# land on the cloth and walk about as if they've bought it. | Half my day goes flapping a duster at shelves. | One got in the cider. In the cider. I had to pour the whole cup out.
+b : Summer brings them. | Doesn't that put customers off? | That's a shame.
+a : Everywhere, and mostly in my shop. | It puts me off, and I'm the one selling. | A shame and a waste. I'd paid for the cloves.
+
+scene gull_sign
+when topic=animals here.region=ridgemere
+does tell.complaint / react.self / assess
+a : #gulls.capitalize# sit on the shop sign and do what gulls do. All down the paint. | A gull walked into the shop yesterday. Walked in. Eyed me as if it held the lease. | I'd like one day without a gull screaming over the door.
+b : Gulls are a curse here. | What did you do? | You'll not get one in this city.
+a : They are. I scrub the sign every Restday and they've undone it by the next noon. | Chased it out with the yard-stick. It took its time going. | I know. I'd still like it.
+
+scene riddle_wool
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / praise / assess
+a : Here's #riddle#. Born on a back, raised on a wheel, I end up on another back. | Try this. I'm heavier wet than dry, I'm warm when I'm wet, and I came off a sheep. | One for you. I go round and round and come out longer. What am I?
+b : Give me a moment. A coat? | Wool, surely. | Thread, off a spindle?
+a : Close. Wool. The sheep's back, the spinning wheel, then your back. | Yes. Well done. That's an easy one; I've harder. | Yarn, I'd have said, but thread will do. You're quick.
+b : That's a good one. | Go on, then, a harder one. | I liked that.
+a : My own make. Thought it up halfway through a fold. | Another day. I don't waste the good ones. | Thank you. I think so too.
+
+scene riddle_offence
+when topic=pastimes
+does tell.self / answer.detail / take_offence / apologise / accept_apology
+a : I've a new riddle. What's always shut in this city and still lets the rain in? | Riddle for you. What's grey, sits on your roof, and gives nothing back? | What gets folded every day and never gets smaller?
+b : A window, I'd guess. | The sky. | A shop, at closing time.
+a : You've heard that one. Somebody's been telling my riddles. | You got that rather fast. Has somebody been passing my riddles round? | That's it, and you didn't even think. I spent a week on that.
+b : No, honest. Just a lucky guess. | I've never heard it before, I swear. | I'm sorry. I'll think longer next time.
+a : Well. All right. A lucky guess. | Hm. Fine. I'll believe you. | See that you do. I'll have a harder one for you.
+
+scene riddle_stumped
+when topic=pastimes
+does tell.self / concede / answer.detail / praise / assess
+a : What's sold by the length, worn by the width, and paid for by the hour? | What has more holes the better it's made? | What does a careful shopkeeper count twice and a careless one once?
+b : I give up. | No idea. You have me. | I can't think.
+a : A cloak. Measured in yards, it goes round you, and it takes a weaver days. | Knitting. The tighter it's done, the more holes there are, and smaller. | The change. And the careless one's short by supper.
+b : That's clever. | I'd not have got there. | Good one.
+a : It's honest, and honest's what a riddle wants. | No. Most don't. I'll go easier next time. | It's true, too. That's the best kind.
+
+scene cider_cold
+when topic=food here.season=autumn|winter
+does tell.feeling / react.self / assess
+a : #cider.capitalize#. That's what gets me through to spring. | I warm the cider in a pan with the cloves and stand there breathing the steam. | Three cloves to a cup, never four. Four and it tastes of the apothecary.
+b : That sounds good. | Does it help your chest? | You've thought about this.
+a : Physic you'd queue for, that is. | My chest's perfectly well. It's for the taste. | I've had years to get it right.
+
+scene cider_dusk
+when topic=food|day here.time=dusk|night
+does tell.self / react.self / assess
+a : Shutters up, and now a cup of cider. That's my reward for the day. | A jug of cider sits warming at the back while I tally up. | The day's not finished till I've had my cup.
+b : Well earned. | Sounds a comfortable habit. | A good rule.
+a : Some days I've earned two. I only have the one. | It keeps my mind on the numbers and off the damp. | It's the only rule in this house I made.
+
+scene tidy_shelves
+when topic=work self.job=merchant self.working=yes
+does tell.self / react.self / assess
+a : Every bolt the same width on the shelf, the edges to the front. A customer can see the colours at a glance. | Somebody unfolded the blue and left it in a heap. I nearly wept. | I fold each length so the crease sits square. It sells better square.
+b : That's very neat. | Customers do that. | Does it really sell better?
+a : It's not neat. It's correct. | They do. And I fold it again, and say nothing. | It does. A heap looks cheap, and a square looks dear.
+
+scene tidy_house
+when topic=home
+does tell.self / tease / take_offence / backchannel / assess
+a : I swept the whole room twice this morning. There's lint in every corner from the wool. | Every pot on its hook, every hook with its pot. That's a home to me. | I can't think in a mess. A tidy room's a tidy head.
+b : You do fuss, don't you. | Every pot? That's ambitious. | You'd hate my place.
+a : I don't fuss. I keep things right. There's a difference. | It's not ambitious. It's ordinary. Some of us manage it. | I'm sure I would. I'd not come round.
+b? : #bc_fair_enough# | #bc_sorry# | #bc_ha#
+a : Anyway. It's swept. | And they're all in their places. | So there it is.
+
+scene counter_morning
+when topic=work|day self.job=merchant self.working=yes here.time=dawn|day
+does tell.self / ask.detail / answer.detail / ack / assess
+a : First thing, I take the cloths off the shelves and check nothing's damp. | I open the day book and see what's owed and what's ordered. | I dust the counter, then the door bell rings, and the day's begun.
+b : Damp? In a shop? | Much owed? | Who's first, usually?
+a : This city. It creeps in overnight. A damp bolt mildews. | Enough to worry me. Not enough to say aloud. | A traveller, mostly, off the inns, needing something warm.
+b : You'd know. | That's business. | Good trade, that.
+a : I would. I've lost cloth to it before. | It is. Worrying's my department. | It is. Every wet traveller's welcome.
+
+scene haggling_yard
+when topic=work|prices self.job=merchant
+does tell.complaint / react.complaint / assess
+a : A customer tried to have a penny off the yard because the bolt had a crease in it. I put the crease there. | Somebody told me the wool was cheaper in the Rag Market. Then go to the Rag Market, I said. | I named a price and the fellow laughed. Laughed. At my wool.
+b : Cheek. | Did they go? | That's rude.
+a : I told them the crease was free. They didn't laugh. | Back they came, next morning. Rag Market wool goes to bobbles. | Rude, and wrong. I didn't drop a penny.
+
+scene inn_travellers
+when topic=work|player self.job=merchant here.region=ridgemere
+does tell.self / react.self / assess
+a : Those gate-side inns do right by me. A traveller comes in soaked and leaves in wool. | Half my trade comes off the North Road with water in its boots. | I can tell where a traveller's from by the coat they're wearing out.
+b : That must be steady trade. | Lucky for you. | Can you?
+a : Steady as the rain, and nothing's steadier here. | Lucky for them. They'd catch their death otherwise. | Downs wool's thick, the lake towns are thin. You learn.
+
+scene wool_late
+when topic=caravan world.wagons=late
+does tell.worry / reassure / assess
+a : The wool wagons are late. I've three orders waiting and two bolts left. | Late again. If they don't come by Marketday I'll have to tell customers no. | Every day the wagons don't come, the shelves look a bit more bare.
+b : They'll turn up. | They always come in the end. | It'll be the weather.
+a : I hope you're right. I've been checking the gate twice a day. | In the end's no use to me with orders due. | It's always the weather. And somehow it's always my shelves.
+
+scene wool_in
+when topic=caravan world.wagons=in
+does tell.news / react.news / assess
+a : In at last. I was at the yard before they'd slipped the ropes. | Wool's in at last. Good bales this time, I felt every one. | They came in this morning. My shelves will be full by tonight.
+b : That's a relief. | Glad to hear it. | You'll be busy.
+a : It is. I slept badly for a week. | So am I. I'd run out of excuses for customers. | Glad of the bustle. I'll fold till midnight.
+
+scene wagons_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+a : Robbers took a wagon outside the walls. If that's my wool, I'm short till the next lot. | Bandits on the North Road again. I'll be counting what I've got left. | A wagon taken. Nobody's said whose load it was, and I can't settle till they do.
+b : That's a worry. | Let's hope it wasn't yours. | Poor drovers.
+a : It is. I don't sleep well with worries. | I hope so. I'm hoping hard. | Them first, yes. Then my wool.
+
+scene cloth_dear
+when topic=prices world.wool_cloth_price=up
+does tell.complaint / react.complaint / assess
+a : Cloth's gone up, and customers glare at me like I set the price myself. | I had to change every price on the board this week. I hate changing the board. | Wool cloth's dearer, so I'm dearer. Folk take it personally.
+b : It's not your fault. | That's a nuisance. | They do.
+a : No. But I'm the one they say it to. | It is. The board was tidy before. | Personally, and then loudly.
+
+scene times_hard
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Folk are mending their coats instead of buying. Can't blame them. Can't afford to praise them. | The shop's been hushed for days. I tallied the takings twice to be sure. | When times are lean, I sell patches and thread and very little cloth.
+b : It'll turn. | That's hard. | Patches pay something.
+a : It will. I'd like to be solvent when it does. | Twice, and the same both times, more's the pity. | Something. Not a lot. But something.
+
+scene times_good
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good weeks lately. I've ordered more blue twice. | Everybody wants a new coat. I'm not complaining. | The tin under the counter's heavier than I can remember.
+b : Good for you. | Make it while you can. | You'll have your stall soon.
+a : Thank you. Hush, though, or it'll hear and leave. | I am. My paws can't fold quick enough. | Hush. Don't say it. Not yet.
+
+scene spouse_weaves
+when topic=family self.married=yes self.job=merchant
+does tell.self / react.self / assess
+a : My #self.spouse_word# does the making and I do the selling. I'd not dare touch the making. | I'm proud of my #self.spouse_word#, I'll say it plainly. Nobody in the quarter turns out finer work. | My #self.spouse_word# says I dawdle at the counter. I say I'm thorough.
+b : You two sound well matched. | That's handsomely said. | Who's right?
+a : We do. Most days. | It's only the truth. | I am. But I don't say so in the house.
+
+scene helping_word
+when topic=work|family self.married=yes self.job=merchant
+does tell.complaint / react.self / take_offence / backchannel / assess
+a : A customer called me the help today. The help. I've stood at that counter since that customer was in swaddling. | They say I'm "just helping" at the shop. I run that counter. | Folk come in and ask for the one in charge, and look straight past me.
+b : I'm sure nobody meant it. | Well, you do help, don't you. | That's annoying.
+a : Mean it or not, it was said. | Help. Help! I do the books, the orders, the counter. | It's worse than annoying. It's every day.
+b? : #bc_i_know# | #bc_sorry# | #bc_right#
+a : Anyway. I don't let it show. | I'm not cross. I'm only saying. | There. I've said it.
+
+scene stall_dream
+when topic=dreams
+does confide / react.self / assess
+a : I'd like #stall#. Nothing grand. Two trestles and an awning on the Commons Market. | Someday a board with my own name lettered over it. I've decided. | I walk past the Commons Market and pick out the pitch I'd have. Second from the fountain.
+b : You'll get there. | Good for you. | Why that one?
+a : Coin by coin. It's slow, but I'm patient. | I keep it quiet. Said aloud it sounds grand. | It's sheltered from the blow, and the gulls favour the other end.
+
+scene savings_tin
+when topic=dreams|work
+does tell.self / ask.detail / answer.detail / reassure / assess
+a : Every copper over the week goes in #tin#. Not the takings. Mine. | I count #tin# on Restdays. Then I count it again. | There's a tin under the counter that nobody touches but me.
+b : What's in it, then? | Is it growing? | What's it for?
+a : The tin knows. I'll not say. | Slowly. Very slowly. Like moss. | For later. For the trestles.
+b : Keep at it. | Slow's still growing. | Fair enough.
+a : I will. I've nothing better to do with coppers. | That's my hope, anyhow. | It is.
+
+scene apprentice_fold
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail / praise / assess
+a : I'm teaching a new pair of paws to fold. Took me a week to get them to fold square. | The measure comes before anything. Thumb to elbow is a lie; use the rule. | I tell a learner: shut the window first, then open the day book.
+b : Square's hard? | Why not the elbow? | Why the window first?
+a : Harder than it looks. Everyone wants to rush the corners. | Elbows differ. A yard doesn't. Customers notice. | Damp gets in the wool. And the flies. Mostly the flies.
+b : You're a patient teacher. | Makes sense. | Of course.
+a : I'm not patient. I'm thorough. | It does. A customer I'd cheated by an inch, not meaning to, taught me that. | Of course. Flies.
+
+scene festival_noise
+when topic=festival
+does give.opinion / disagree / concede
+a : Festival again. Racket, slopped ale, and a weeper on my step by midnight. | I close early and put the cloths over the shelves. Ale and wool don't mix. | Everyone loves a festival. I love the morning after, when it's quiet.
+b : It comes but the once. | You're missing all the fun. | Folk need a day off.
+a : Once a year is enough to get ale on my step. | I'll survive without the fun. I always have. | I suppose they do. They don't need it outside my shop.
+
+scene newcomer_coin
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A newcomer's a coat waiting to be sold. Nobody arrives here dressed for the rain. | New faces are good for trade. I'll be civil to anyone who pays. | I've no objection to strangers. Strangers buy wool.
+b : A shopkeeper's view. | Civil, at least. | You're very practical.
+a : I can't afford any other view. | Civil, and the price stays the same for all. | Somebody in the family has to be.
+
+scene gossip_withheld
+when topic=gossip
+does tell.self / insist / concede
+a : What's said over my counter stays on my counter. Otherwise nobody says a thing. | There's talk about. My shop won't be where it grows. | Oh, plenty reaches me. I fold it up and shelve it, same as the cloth.
+b : Not even a hint? | Not one crumb? | That's very proper.
+a : Not a hint. A shop that gossips loses customers. | No. The inn's the place for crumbs. | It's sensible. Proper doesn't come into it.
+
+scene gossip_wedding
+when topic=gossip|news topic.claim_kind=marriage
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That'll mean new coats, I shouldn't wonder. | A customer had it, fresh: #topic.subject# #topic.claim#. Good news, for once. | Word is #topic.subject# #topic.claim#. I'll be ready with the best blue.
+b : That's lovely. | Good news, yes. | You think of everything.
+a : It is. A wedding's good for everybody. | It is. I'm glad to repeat it. | I have to. That's the trade.
+
+scene health_denied
+when topic=health
+does tell.self / disagree / insist / backchannel / assess
+a : I'm perfectly well. Why everybody keeps asking is a mystery. | Somebody suggested I see the healer. For what? I'm not ill. | A cough? That? That's #tickle#. A cough's a different thing altogether.
+b : You did sound a bit rough. | It wouldn't hurt to go. | It sounded like a cough.
+a : Rough's the damp. It's not me. | It would cost. And it'd be for nothing. | It wasn't. I'd know.
+b? : #bc_right# | #bc_fair_enough# | #bc_maybe#
+a : There. Another subject, please. | Now, where was I. | I'm fine. Let that be that.
+
+scene neighbour_key
+when topic=friends self.neighbour
+does tell.self / react.self / assess
+a : I'd hand #self.neighbour# the shop key, and I'm careful who I'd hand it to. | #self.neighbour# keeps an eye on my door when I'm out. I'm grateful, though I don't say so. | If anything happened on our street, I'd knock on #self.neighbour#'s door first.
+b : Good neighbours are rare. | You should say so. | That's a comfort.
+a : Worth more than a good roof. | Perhaps. It'd be awkward. | It is. I hope I'll never need to.
+
+scene chapel_quiet
+when topic=faith
+does tell.self / react.self / assess
+a : Restdays I sit in chapel. The bench is dry and the sermon's short. | A candle for the shop, now and again. Where's the harm. | The Bright One sees honest measure. I'm counting on it.
+b : That's honest. | It can't. | I'm sure that's so.
+a : I'm always honest. It's a failing. | A candle's cheaper than a bad week. | It's not much to hang on, but I hang on it.
+
+story wrong_change [topic=work|memories self.job=merchant self.age>=30]
+  : In my first week behind a counter, I handed a fellow too much change. A whole copper over.
+  : I shut up shop, chased down the hill, and found him drying off in an inn near the gate.
+  ask : Guess what he did with it.
+  b : Kept it and laughed, I'd guess.
+  : Bought me a warm cider with it. I've never forgotten that.
+  b : Good for him.
+
+story gull_herring [topic=animals self.age>=25]
+  : A gull once took a herring clean out of a customer's basket, right in my doorway.
+  : The customer screamed, the gull screamed, and I dropped a whole bolt in the gutter.
+  ask : Can you guess which of us got the worst of it?
+  b : You, with the bolt?
+  : Me. The herring was gone, and the bolt was ruined. I've hated gulls since.
+
+story riddle_night [topic=pastimes self.age>=25]
+  : Years back I won a riddle night at a gate-side inn. A jug of cider for the prize.
+  : The last riddle was mine. Nobody got it in an hour.
+  ask : Want to try it?
+  b : Go on, then.
+  : What's always behind you and never follows? The past. I still say it was fair.
+  b : That's a hard one.
+
+story grandad_evening [topic=memories self.age>=40]
+  : Summer evenings my #grandad# sat me up on the sea wall to puzzle at riddles.
+  : One riddle a night. If I got it, I got a mouthful of cider. If I didn't, I had to think on it till morning.
+  ask : Can you guess what that taught me?
+  b : To think hard?
+  : To think slow. A quick answer's mostly wrong. I wish more folk knew that.
+
+story window_jam [topic=weather|home self.age>=30]
+  : One wet spring the shop window stuck open and wouldn't shut for a week.
+  : I stood in the draught and folded and said nothing.
+  b : That must've been miserable. Did you get it fixed?
+  : On the eighth day. I've oiled that hinge every month since. It shuts. It always shuts.
+
+rule @flies_bark
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Shoo. Shoo, every one of you. | #oath#. Off the blue, you.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast|rain
+does aside
+cooldown 10h
+say That gull's back on the sign. | Go and scream somewhere else.
+
+rule @window_bark
+when concept=bark here.outdoors=rain|fog|storm
+does aside
+cooldown 8h
+say Who opened that window? | Flies. That's all it is. Flies.
+
+rule @lint_bark
+when concept=bark here.outdoors=rain|fog
+does aside
+cooldown 9h
+say Hem. Lint. It's the lint. | Wool dust. Always the wool dust.
+
+rule @counter_bark
+when concept=bark self.working=yes self.job=merchant
+does aside
+cooldown 6h
+say Warm wool for the wet, folded fresh. | Good cloth by the yard, to the inch.
+
+rule @cider_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 12h
+say Three cloves. Never four. | Time for my cup.
+
+dlg @1 resident.hub : #greet#. Cloth, or conversation? | #greet#. Door shut, please. I'll not have damp in the wool.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Inside, before you drip. | #topic.player#. Good. I've a riddle you've not heard.
+dlg @3 resident.hub [here.time=night] : Shutters are up. Still, speak. | Late. Be quick; the shutters are up.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Name your business and keep off my shelves. | I don't care for your tone. What is it.
+dlg @1 resident.job [self.job=merchant] : I keep the counter. Folding, measuring, the books, the orders. All of it. | I sell the cloth. Somebody has to, and it's not easy.
+dlg @2 resident.job [self.married=yes self.job=merchant] : My #self.spouse_word# makes the goods and I do the rest. And it's a lot of rest. | They call it helping. It's running a counter.
+dlg @3 resident.job : I work. What I do is honest and it's mine. | Boasting's not my habit. Ask elsewhere.
+dlg @1 resident.business [business=thriving] : Very well. More stock ordered this week. Hush about it. | Good. The tin under the counter's never been heavier.
+dlg @2 resident.business [business=steady] : Steady. I'll not complain, it's bad luck. | Steady enough. Some weeks better than others.
+dlg @3 resident.business [business=failing] : Badly, since you press me. I count coppers twice. | Poorly. Leave it there, please.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. A customer told me this morning.
+dlg @2 resident.news [world.event_words] : Everyone who's come in is talking about #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Robbers took a wagon outside the walls. Pray it wasn't the wool.
+dlg @4 resident.news [world.death=recent] : Somebody was buried this week. The quarter's been quiet.
+dlg @5 resident.news [world.wedding=recent] : There's been a wedding. Two new coats ordered off the back of it.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing I've heard. The counter's been quiet.
+dlg @1 resident.gossip [here.gossip=yes] : Folk say #topic.subject# #topic.claim#. I only pass it on.
+dlg @2 resident.gossip [here.gossip=no] : I don't carry gossip. And there's none worth carrying.
+dlg @1 resident.bye : #farewell#. Shut the door on your way out. | #saying.capitalize#. Mind the step.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Careful on that step. | Good night. I'll see to the shutters.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? Patience and clean paws, mostly. Ask me anything. | Learning, are you? Good. Fold this. No, square. Again.
+dlg @2 master.learn [here.teaches=no] : There's a learner at my elbow already. I can't mind two. Questions are free, though. | No room for another, I'm afraid. But questions cost nothing.
+dlg @1 master.work : Long days, and you'll fold till your paws ache. Honest work. | You'll measure, fold, keep the books, and never leave the window open.
+dlg @1 master.wages : There's no wage in learning. You work alongside me and it sinks in faster, and whatever you turn out, you sell for yourself.
+dlg @1 master.takes [here.take_on=yes] : A single learner, somebody I'm sure of. I'm sure of you. Say the word.
+dlg @2 master.takes [here.take_on=no] : A single learner, somebody I'm sure of. #here.take_on_why#
+dlg @1 master.taken : Good. Start tomorrow, early. Shut the window as you come in.
+dlg @1 master.refused : #topic.why# I'm sorry. | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Think it over. | #farewell#. Come back when you've decided.
+graft resident.hub
+choice Got a riddle for me? -> riddle
+node riddle
+say Always. Born on a back, raised on a wheel, I end up on another back. What am I? Take your time. Quick answers are mostly wrong.
+mood pleased
+free
+choice Wool? -> riddle_answer
+choice Back to the counter. -> hub
+node riddle_answer
+say Wool. The sheep's back, the spinning wheel, then a coat on your back. You took your time. Good.
+choice Another time. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice Why keep the window shut? -> shut
+node shut
+say Damp gets into the wool and mildews it. And the flies. Mostly the flies. Nothing to do with my chest, before you ask.
+free
+choice Your chest? -> shut_chest
+choice Back to the lesson. -> learn
+node shut_chest
+say My chest is perfectly well. It's the lint from the wool. Now, are you learning or not?
+mood stern
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

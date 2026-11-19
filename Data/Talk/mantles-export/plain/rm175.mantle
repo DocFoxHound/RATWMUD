@@ -1,0 +1,395 @@
+# rm175, the promise-shaker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm175
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_desmond_bilgeridge
+written_by claude
+title the promise-shaker
+fits stage=young|adolescent|adult|old
+prefers warmth=warm temper=short
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk makes_everyone_shake_paws_on_a_promise
+likes honey_cakes swimming festival_bells autumn_wind
+dislikes flies haggling
+fears a_promise_broken_by_a_friend the_cold_water_closing_overhead
+hopes to_swim_the_whole_harbour_end_to_end honey_cakes_every_restday
+topics pastimes +0.4 festival +0.4 food +0.3 family +0.3 friends +0.3 season +0.2 weather +0.1 work -0.3
+styles comfort=company gossip=eager refuse=short tease=none
+marks oath saying
+persona #self.first# is a warm, quick-to-sting wolf of the Commons who swims in any water however cold, loves honey cakes and the festival bells, takes a slight to heart and forgives it just as fast, and will not let a promise pass without paws shaken on it.
+
+words
+oath! = Paws and promises | By my good paw | Shake and stick
+saying! = A shook promise stays shook | Say it, shake it, keep it | You can't unshake a paw
+cakes = honey cakes | a honey cake that glues your fingers | the honey cakes off the bakery tray
+swim = a swim | a cold swim | a dip off the harbour steps
+water = the water | the harbour water | the green water by the steps
+bells = the festival bells | the bells when a festival starts | all the bells clanging together
+blow = the autumn blow | a wind that chases leaves up the street | a gusty autumn day
+flies = the flies | those buzzing flies | flies on the counter
+haggle = haggling | folk arguing over a penny | the back-and-forth at the counter
+shake = a shake on it | paws shaken proper | a proper shake
+lessons = lessons | my letters | sums on the slate
+shop = the shop | the shop downstairs
+steps = the harbour steps | the slimy bottom step
+
+any
+opinion @1 dole for 1 : Nobody should have to go to sleep hungry when there's bread in the city. Give it them first and ask questions after.
+opinion @1 newcomers for 1 : Anybody new can stop, so long as they do their share. A shake, and they're ours.
+opinion @1 strangers for 1 : A stranger's only somebody you've not shaken paws with yet. Feed them and see.
+opinion @1 city for 1 : Born here, and there's more water to swim in than anywhere. That settles it.
+opinion @1 festivals for 1 : The bells, the cakes, the whole city out. Anybody who doesn't like a festival has something wrong with them.
+opinion @1 merchants mixed 0 : Shopkeepers work hard, and anybody who says otherwise can say it somewhere else. But I can't bear watching a price argued down.
+opinion @1 watch mixed 0 : The Watch mostly mean well. One shook on helping me find a lost cap, and kept it.
+
+grown
+line @1 greet : #greet#. Shake on it, whatever it is. | #greet#. I'm thinking about a swim.
+line @2 greet [pair.band=strangers] : #greet#. New face. We'll shake on it and be done with strangers. | #greet#. A stranger. That won't last.
+line @1 greet.return : #greet#. Good to see you. | #greet#. There you are.
+line @2 greet.return [pair.band=friends|family] : #greet#. Paw, then. | #greet#. Good, you came.
+line @1 farewell : #farewell#. And hold to what you said. | #farewell#. Mind the wet.
+line @1 farewell.return : #farewell#. Shook. | #farewell#. I'll remember.
+line @1 react.news : Go on. I'm listening. | Every bit, from the start.
+line @1 react.news.new : News to me. Who's saying? | I'd not heard. Is it sure?
+line @1 react.news.doubt : Without a shake on it, I'm not believing a word. | That sounds like talk. I'll wait.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. Somebody's grieving tonight. | That's cruel news. I'll think on it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's grand! Somebody fetch the honey cakes. | Good. That's good to hear.
+line @1 answer.how : Fair. I had a swim. | Well enough. Cross about one thing, but it'll pass.
+line @1 decline : I can't, I'm afraid. I've already shaken on something else. | Not this time. I'd fail you, and I won't do that.
+line @1 accept_decline : Fair enough. No harm asking. | All right. Another day.
+line @1 thank : Thank you. I won't let that one slip. | #thanks#. You've a friend in me.
+line @1 take_offence : That's not fair, and I'll say so. | Hold on. I don't deserve that.
+line @1 accept_apology : Done. Shake, and it's gone. | Fine. I don't keep it long.
+scene gr_shake
+when topic=friends|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've shaken on every promise I've made since I was small. Folk laugh. They still shake. | Say it, shake it, keep it. That's how I've always gone on. | A promise not shaken on is half a promise. I'll not take half.
+b : Why the shaking? | And do you keep them? | Isn't a word enough?
+a : A spoken promise floats off. A shook one sticks in your paw. | Every one I can. The ones I couldn't, I went and said so. | Words are enough for some. I want a paw on it.
+
+scene gr_broken
+when topic=friends|gossip topic.claim_kind=promise_broken
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That makes me cross, that does. | I heard #topic.subject# #topic.claim#. I'd never shake with #topic.them# again. | Word is #topic.subject# #topic.claim#. A broken promise stays broken.
+b : It's bad form. | Never? | It does, mostly.
+a : It's worse than bad form. It's breaking something. | Well. Maybe if #topic.they# said sorry. And meant it. | Mostly. Unless you shake again.
+
+scene gr_swim
+when topic=pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : I still go in off #steps# most mornings, whatever the cold. It clears my head. | A swim before work and nothing can upset me all day. Nearly nothing. | The water was so cold this morning I forgot my own name for a moment.
+b : You're braver than me. | Nearly? | That's cold.
+a : Not brave. Used to it. It's like a shake from the sea. | Nearly. Folk can still manage it. | It came back. It always does.
+
+scene gr_cakes
+when topic=food
+does tell.feeling / react.self / assess
+a : Grown or not, I'd cross the whole Commons for a honey cake. | I keep honey cakes in a tin and give them out to anybody who looks low. | Restday means a honey cake. Not one skipped, ever, that I recall.
+b : Some things stay with you. | That's kind. | Every week?
+a : I've no wish to. | Cheaper than a sermon and better for you. | Most weeks. I shook on it with myself.
+
+scene gr_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival bells still get me out of bed before anybody. Every one of them. | When the bells all go at once I stand still and feel it in my bones. | I counted the bells again this year. I lost count at sixty. Best way to lose count.
+b : Lovely sound. | It's quite something. | Sixty!
+a : No sound beats it. Argue if you like. | It is. It hums in the ribs. | At least. Next year I'll try harder.
+
+scene gr_autumn
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : A good gusty autumn and I want to run down the hill like a pup. | The leaves going round in circles. I could watch that all afternoon. | Wind like this, I feel like I could do anything. Swim the Sound.
+b : Do it, then. | It is restful. | Don't try.
+a : Maybe I will. Nobody's looking. | It is. Until somebody wants me. | I'll not. But I'd like to.
+
+scene gr_rain
+when topic=weather here.outdoors=rain|storm here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain again. I'll still swim. I'm wet already. | Rain sends folk indoors. I go out. The streets are emptier. | Rain doesn't bother me. Being kept in bothers me.
+b : That's one way. | You're mad. | Me, it's the opposite.
+a : Only way, in this city. | Just wet. There's a difference. | Then we'll take turns.
+
+scene gr_flies
+when topic=animals here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# again. The whole summer is flapping a cloth at them. | I can't abide flies. They tramp over your supper and never apologise. | I've been at war with the flies since I was small. They're winning.
+b : Horrid. | They don't. | They usually do.
+a : Horrid and pleased with themselves. | Not once. No manners at all. | They won't for long.
+
+scene gr_haggle
+when topic=prices|work
+does give.opinion / disagree / concede
+a : I can't stand haggling. Name a price, shake, done. | Somebody stood arguing a penny for half the morning. Half the morning. | Folk think haggling's a game. It's just rude.
+b : It's how prices get set. | That's trade. | Some enjoy it.
+a : Then set them and stop arguing. That's my view. | It's trade made long. | Let them. Just not near me.
+
+scene gr_temper
+when topic=smalltalk
+does confide / sympathise / assess
+a : I'm quick to take things wrong. I know. I'm mending it. | Somebody said something sharp this morning and I've been chewing it all day. | I flare up, then it's gone. I wish the first part was slower.
+b : It's honest, at least. | Let it go. | Most folk are the other way round.
+a : Honest and quick. I'll take honest. | I'm trying. It's stuck like a burr. | I'd rather mine. At least it's over fast.
+
+scene gr_newcomer
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New folk? Shake their paws and see if they shake back. That tells you most of it. | Folk moved in two doors down. I knocked first thing. | New faces are good. There's always a story with one.
+b : That's a quick way to judge. | Good of you. | Usually.
+a : Quick and mostly right. | It's how I was brought up. | Always. You only have to ask.
+
+scene gr_family
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #mum# still works harder than anybody I know. I'll never catch up. | Every Restday I bring #mum# a honey cake. Same as always. | Keeping my word, I had from #mum#. Everything else I picked up somewhere.
+b : Best lesson going, that. | That's a nice habit. | That's the important one.
+a : It is. Most days I try. | It's ours. I'd not miss it. | It is. The rest's just sums.
+
+story gs_promise [topic=memories|friends self.age>=18]
+  : As a pup I made a whole street of pups shake on keeping a stray cat secret.
+  : We fed it for a month. Not one of them told. Not one.
+  ask : What do you reckon that showed me?
+  b : That shaking works?
+  : That pups keep promises better than anybody. Grown folk could learn from them.
+
+rule @gr_shake_bark
+when concept=bark
+does aside
+cooldown 8h
+say Shake on it. Go on. | Say it, shake it, keep it.
+
+dlg @g1 resident.hub : #greet#. Name it, and we'll shake on it. | #greet#. Ask, and if I can, it's done.
+dlg @g2 resident.job [self.working=yes] : Working, and keeping my word at it. That's most of the job. | I work. And I'm good for what I promise.
+
+young
+line @1 greet : #greet#! I've been in the water. Don't come too close, I'm drippy. | #greet#. I was just going to find you.
+line @2 greet [pair.band=strangers] : #greet#. We've never met. A shake fixes that. | #greet#. You're new. I'm not. I live just round there.
+line @3 greet [here.time=dawn] : #greet#. I beat the bells up today. | Morning. I'm off to lessons, worse luck.
+line @1 kin.open [pair.kin!=no] : You're back! Guess what happened. No, don't guess, I'll tell you. | Here! I saved you half a cake. Well, a corner.
+line @1 again.open : You again! Good. I wasn't finished. | Back already. Good, I've thought of more.
+line @1 greet.return : #greet#! | #greet#. I was hoping somebody'd come.
+line @2 greet.return [pair.band=friends|family] : #greet#! Shake. No, properly. | #greet#. I'd have come to find you otherwise.
+line @1 farewell : Bye! Remember, we shook. | Bye. I've got to dry off before anybody sees.
+line @1 farewell.return : Bye! See you tomorrow. Promise. | Bye. Shake on it, then.
+line @1 react.news : What? Tell me properly. | Go on, go on.
+line @1 react.news.new : I never knew! Who told? | Nobody tells me anything. Tell me more.
+line @1 react.news.known : I knew that. Everybody at lessons knows. | I heard. It went all round the shop.
+line @1 react.news.doubt : Not true. Or is it? Shake on it. | I don't believe you. You've got your fibbing face.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. That's horrible. I feel sick. | That's not fair. It's not.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's brilliant! Will there be cakes? | Good! I'm glad. Really glad.
+line @1 answer.how : Good. I swam to the third post. | All right. My paws are cold. That's all.
+line @1 ask.how : You look sad. Has something happened? | Have you had a honey cake today? You should.
+line @1 thank : Thank you! That's the best. | Thanks. I won't forget. Promise.
+line @1 decline : I can't. I was told no, and I promised, and I keep promises. | I can't. I shook on something else already.
+line @1 accept_decline : All right. I'm not cross. Not much. | That's fine. Next time, then.
+line @1 take_offence : That's not fair. I'm not little. | I didn't do anything! Why are you saying that?
+line @1 apologise : Sorry. I didn't mean to shout. Shake? | Sorry. I get cross quick. It goes quick too.
+line @1 accept_apology : All right. Shake on it, then it's gone. | Fine. I'm not cross now. Shake.
+line @1 sympathise : I'm sorry. You can have half my cake. | That's rotten. I'll sit with you.
+line @1 reassure : It'll be all right. I'll help. I promise. | Don't worry. Shake on it: it'll be fine.
+line @1 ack : Mm. | Yep, yep. | All right.
+scene yg_shake
+when topic=friends|smalltalk
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : If you promise something, you have to shake on it. Paws. Otherwise it doesn't count. | I made the baker's pup shake on swapping cakes tomorrow. Now it's real. | Everybody laughs when I make them shake. But nobody's broken one yet.
+b : Who taught you that? | What if they forget? | Not one?
+a : Nobody. I just know. A shook promise stays shook. | They won't. Shaking makes you remember. It's in your paw. | Not one. Well, one. But they said sorry and shook again.
+b? : #bc_fair_enough# | #bc_go_on# | #bc_ha#
+a : You can shake on something with me. Go on. | So shake on things. It works. | That counts, I think. Sorry fixes it.
+
+scene yg_broken
+when topic=friends
+does confide / sympathise / react.self / reassure / assess
+a : Somebody promised to swim with me and didn't come. We shook on it. We shook! | A friend said I could have the next go on the hoop, and then didn't. I'm still cross. | Someone broke a promise and laughed. I'm not talking to them.
+b : That's rotten. | You'll get your go. | Maybe they forgot.
+a : It is. I waited on the steps till my paws went blue. | I know. But they shook. That's the thing. | You can't forget a shake. That's the whole point of shaking.
+b : Give them a chance. | You're right to be cross. | Perhaps they'll say sorry.
+a : All right. One chance. If they say sorry. | I am. But it'll go by tomorrow. It always does. | If they do, I'll shake again. Then it's done.
+
+scene yg_cakes
+when topic=food
+does tell.feeling / react.self / assess
+a : #cakes.capitalize# beat every other food. I'd eat nothing else. | Good all week means a cake come Restday. I've been good. Mostly. | First I lick the honey, then I eat the cake. That's the right way.
+b : Every day? | Mostly? | Is it, now?
+a : Every day. And twice on festivals. | Mostly. I only shouted once. That shouldn't count. | It is. Ask anyone. Well, ask me.
+
+scene yg_cake_share
+when topic=food|friends
+does tell.self / react.self / assess
+a : I had two honey cakes and I gave one away. It was hard. | A cake tastes better if you split it with someone. I don't know why. | I shared my cake with a pup who didn't have one. We shook on being friends.
+b : That was kind. | Maybe it's the company. | That's good of you.
+a : It was very hard. I want that to be known. | Maybe. Or maybe it's because you get to watch them like it. | Now I've got another friend. It's easy, really.
+
+scene yg_swim
+when topic=pastimes here.region=ridgemere
+does tell.boast / ask.detail / answer.detail / praise / assess
+a : I got to the third post off #steps# today. The water was freezing. | I go in the water every day, cold or not. My teeth go like a drum. | I swam with my eyes open under the water. It's all green down there.
+b : The third post! | Even in the cold? | What did you see?
+a : Nearly the fourth. A wave pushed me back. | Even in the cold. Especially. You feel brilliant after. | Green, and a crab, and somebody's old boot.
+b : That's a long way. | You'll catch a chill. | A boot?
+a : I'll get further next time. I promised myself. | I won't. I never do. Everybody says I will but I don't. | A boot. I didn't touch it. It looked at me.
+
+scene yg_swim_summer
+when topic=pastimes|weather here.season=summer here.outdoors=clear|overcast
+does tell.feeling / react.self / assess
+a : Hot day! Everybody's down at #steps#. I've been in four times. | In summer I'd live in the water if they let me. | I can float on my back now. I just lie there and look at the gulls.
+b : Four times! | They won't let you. | Lucky you.
+a : Five, after this. I'm only drying off to talk to you. | They won't. I have to come out for supper. | It's easy. You just stop being scared and lie down.
+
+scene yg_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : On festival morning every bell goes at once. I stand in the street and it rattles right through me. | I heard #bells# before I was even awake. Best way to wake up. | Today I'm going to count every bell I hear. I got to forty last year.
+b : They are loud. | Better than a shout. | Forty!
+a : Loud's the good part. It hums in your chest. | Much better. Grown-ups shout. Bells don't. | This year I'll get fifty. I shook on it with myself.
+
+scene yg_festival_cakes
+when topic=festival|food
+does tell.self / react.self / assess
+a : There's honey cakes on every stall at the festival. I've got two coppers saved. | At the festival I'm allowed to stay up till the last bell. | I'm going to see the dancing and eat cakes and swim if they let me.
+b : Two whole coppers. | Lucky you. | All at once?
+a : That's four cakes. Or three and a ribbon. I haven't decided. | I shook on it at home. So it's real. | One after the other. In that order. Probably.
+
+scene yg_autumn
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #blow.capitalize#! I ran down the hill with my arms out and nearly flew. | The wind took all the leaves off the tree by the shop and I chased every one. | I love a wind like this. Everything's moving and nobody can stop it.
+b : Mind you don't fly away. | Every one? | Not even the Watch.
+a : I won't. I'm too heavy. I had cake. | Most of them. Then I was scolded for shouting. | Not even the Watch. Their hats blew off. I saw.
+
+scene yg_rain
+when topic=weather here.outdoors=rain|storm here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Rain again. I'm not let swim when it's raining. I'd be wet anyway. | Wet for days now. I've read my letters three times. | Rain's nothing. Being kept in for it is the trouble.
+b : It does seem silly. | Three times? | Grown-ups worry.
+a : It's not fair. Water's water. | And I did my sums. Twice. There's nothing left. | They do. About everything. I've told them not to.
+
+scene yg_flies
+when topic=animals here.season=summer
+does tell.complaint / react.complaint / assess
+a : I hate #flies#. They land on everything and rub their hands like they're planning something. | I've been swatting flies all morning. I got eleven. | Flies get in the shop when it's hot and I have to flap them with a cloth.
+b : Horrid things. | Eleven! | That's a job.
+a : Horrid. And they never shake on anything. | Eleven, and the twelfth got away. I'll get it. | A rotten job. Nobody swats like me.
+
+scene yg_haggle
+when topic=work|family self.mother self.shopkeeper
+does tell.complaint / react.self / assess
+a : People argue with #mum# about prices and it makes my tummy hurt. Just pay! | Somebody went on and on to get one penny knocked off. One. I went upstairs. | I hate haggling. If something costs a copper, give a copper. Shake on it and go.
+b : That's how shops go. | Did they get it? | It's not that simple.
+a : Course. My ears go hot anyway. #mum# works hard. | No. #mum# just smiled. I'd have shouted. | It should be. That's what shaking's for.
+
+scene yg_mum
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #mum# works all day and never sits down. I take a cup up sometimes. | #mum# can lift more than anyone I know. I'm going to be that strong. | When I'm sad #mum# doesn't say anything, just rests a paw on my ears. That's better than talking.
+b : That's kind of you. | You might be. | It is, sometimes.
+a : I spilled half of it. But it's the bringing that counts. | I will be. I'm practising with the coal bucket. | Most times. Not when I've been bad. Then there's talking.
+
+scene yg_friend
+when topic=friends|family self.friend
+does tell.self / react.self / assess
+a : I'd tell #self.friend# anything. Even the secret ones. | If #self.friend# makes a promise, I don't even need a shake. Nearly. | #self.friend# and me shook on being friends forever. Forever's a long time.
+b : That's lucky. | Nearly? | It is.
+a : I know. Not everybody's got somebody. | Nearly. I still shake. Just in case. | Good thing we shook, then.
+
+scene yg_lessons
+when topic=day|work self.job=child
+does tell.complaint / react.self / assess
+a : Lessons all morning. I'd rather be swimming. I said so. I was scolded. | I can spell my name now, and the date. And "honey cake". | We did sums. If I have three cakes and give away one, I have two. I knew that already.
+b : Lessons matter. | That's important, that is. | And were you right?
+a : I know. But the water's right there. | It is. It's the most important word. | Course I did. I'm good with cakes.
+
+scene yg_newcomer
+when topic=newcomer
+does tell.self / react.self / assess
+a : A whole new family moved in near us. I shook paws with every one of them. | A new pup came to lessons. Nobody talked to them, so I did. | I like new faces. You get to find out everything.
+b : That's friendly. | Good of you. | Everything?
+a : They looked surprised. But they shook. | They're my friend now. We shook. | Their name, where from, if they like honey cakes. Everything.
+
+story ys_steps [topic=pastimes|memories]
+  : Once I slipped on the bottom harbour step and went straight under in my clothes.
+  : I came up spluttering and a gull was sitting on my cap, floating next to me.
+  ask : Guess what I did.
+  b : Got out quick, I'd hope.
+  : Swam after the cap. The gull flew off. I got it. Then I got told off.
+  b : Worth it, though.
+
+story ys_bell [topic=festival|memories]
+  : Last festival I climbed up by the chapel wall to watch the bell ringers.
+  : When the big one went, I fell off the wall. I didn't even mind. It was so loud.
+  b : Were you hurt? You could've been.
+  : Only my knee. I'd do it again. Don't tell at home.
+
+rule @yg_shake_bark
+when concept=bark
+does aside
+cooldown 8h
+say Shake on it! No, properly. | Say it, shake it, keep it.
+
+rule @yg_swim_bark
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say Last one in the water's a slug! | Brr. Brilliant. Again.
+
+rule @yg_fly_bark
+when concept=bark here.season=summer
+does aside
+cooldown 10h
+say Get off! Shoo! | Twelve. Got you.
+
+dlg @1 resident.hub : #greet#. I'm told no talking to strangers. You look all right, though. | #greet#. Have you got a promise for me? I collect them.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. I said you'd come. | #topic.player#! Shake. It's what we do now.
+dlg @1 resident.job [self.job=child] : I'm at lessons. Letters and sums. I'd rather swim. | No job yet. Lessons, and swimming.
+dlg @1 resident.bye : Bye! Promise you'll come back. Shake. | Bye. Don't forget, now.
+graft resident.hub
+choice Why do you make everyone shake paws? -> shake
+node shake
+say Because a promise you just say floats off. A promise you shake on sticks in your paw. You can't unshake a paw. Everyone knows that.
+mood pleased
+free
+choice Shall we shake on something? -> shake_us
+choice Goodbye. -> bye
+node shake_us
+say Yes! Promise you'll come back and say hello. There. Shook. Now it's real.
+choice I'll keep it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. Fresh out of the harbour, so mind the drips. | #greet#. Busy day. Glad it's you.
+line @1 greet.return : #greet#. Good. Paws, then. | #greet#. I was hoping I'd run into you.
+line @1 farewell : #farewell#. And don't forget what you said. | #farewell#. Hold me to it.
+line @1 farewell.return : #farewell#. Shook, then. | #farewell#. I'll remember.
+line @1 answer.how : Fine. Swam the length of the steps and back. | All right. A bit cross about something. It'll pass.
+line @1 take_offence : That's unfair, and you know it. | I'm grown past pup. Don't talk to me like one.
+line @1 accept_apology : Fine. Shake. It's gone. | All right. I don't keep grudges. Not long ones.
+scene ad_shake
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I still make folk shake on promises. Some of them laugh. They still shake. | Somebody said I'm too old to make people shake paws. I said promises don't get old. | I've kept every promise I shook on. I'll boast about that one.
+b : It's a good habit. | They don't. | You should be.
+a : It is. Nobody's ever been sorry they shook. | They don't. They only get forgotten if you don't shake. | I am. That much I'm sure of.
+
+scene ad_swim
+when topic=pastimes here.region=ridgemere
+does tell.boast / react.self / assess
+a : I swam the whole width of the inner harbour this morning. My heart nearly quit. | Some of the dockhands bet I wouldn't go in. I went in. They paid up. | I can swim further than anybody in my lessons now. I've measured.
+b : That's brave. | Daft, too. | Measured how?
+a : Brave and freezing. My teeth haven't stopped yet. | Daft, but I won. They shook on it first. | Counted the posts. I'm at the ninth.
+
+scene ad_cross
+when topic=smalltalk|friends
+does confide / reassure / assess
+a : I lose my temper too quick. Then I'm sorry and I can't take it back. | Somebody called me soft for liking honey cakes. I nearly hit them. I didn't. | I shouted at home this morning and I've felt bad all day.
+b : Everybody does that. | Good that you didn't. | Say sorry and shake.
+a : I know. I'm trying to count first. I get to about two. | I walked away instead. It was the hardest thing I did all week. | I will. Tonight. I promised myself.
+
+story as_harbour [topic=pastimes|memories]
+  : My first go at swimming the inner harbour, I got halfway and my legs gave out.
+  : An old dockhand threw me a rope and hauled me onto the steps like a wet sack.
+  ask : Know what I made the dockhand do?
+  b : Shake on not telling anyone?
+  : Shake on not telling. And the dockhand never did.

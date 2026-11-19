@@ -1,0 +1,481 @@
+# rm181, the pine on the crust (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm181
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_piet_slagcot
+written_by claude
+title the pine on the crust
+fits stage=adult|old
+prefers role=merchant job=baker drive=ambitious
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=ambitious
+quirk scores_a_pine_mark_into_every_crust
+likes pickled_herring dice full_larder autumn_wind
+dislikes crowds wet_floors
+fears a_wet_marketday_crush losing_the_pitch_in_the_hall
+hopes a_second_counter_by_the_gate the_counter_kept_in_the_family
+topics work +0.5 caravan +0.4 news +0.3 prices +0.3 family +0.2 pastimes +0.2 food +0.2 festival -0.3 gossip -0.1
+styles comfort=practical gossip=plain refuse=blunt tease=none
+marks oath saying
+persona #self.first# bakes for a counter in the Market Hall by the north gate: blunt, ambitious and unsmiling, first to hear what the North Road carts bring, short with crowds and wet floors, and cuts a little pine tree into the crust of every loaf.
+
+words
+oath! = Rye and resin | Chaff and char | By the bread knife
+saying! = Bread's sold by six or not at all | A loaf doesn't care who's watching | Knead it, don't plead with it
+counter = the counter | the bread counter in the Hall
+hall = the Market Hall | the Hall
+oven = the oven | the bake-oven behind the Hall
+loaves = the loaves | a shelf of brown loaves
+pine = the pine mark | the little pine tree on the crust
+rye = rye | dark rye
+herring = pickled herring | vinegar herring from the crock
+dice = dice | three bone dice in a cup
+larder = a full larder | larder shelves packed tight
+gale = an autumn gale | wind off the hills rattling the shutters
+crush = the crush | a Hall full of elbows
+roadcarts = the North Road carts | wagons down from the north
+gatebar = the gate bar | the north gate opening
+hills = the hills | the pine hills inland
+quiet = quiet | hill quiet
+flour = flour | good milled flour
+peel = the peel | the oven shovel
+drovers = the drovers | north-country drovers
+pitch = the pitch | my spot in the Hall
+
+any
+opinion @1 church against 1 : Sermons by the dozen, I've sat through. Not one of them baked a loaf. | The chapel's welcome to its Restday. I'm up at three either way.
+opinion @1 city for 2 : Everything that comes into this city comes past my counter first. I'm here to catch it. | Ridgemere born. They'll have to carry me out the gate feet first.
+opinion @1 dole against 1 : Each crust in my belly I paid for, and baked half of them. | The parish loaf is somebody's bread for nothing. I know who bakes it. Not the parish.
+opinion @1 houses against 1 : Nobody gets a better pitch in this Hall without a House nodding. That wants changing. | Every House wants bread. None of them wants the baker to get ahead.
+opinion @1 merchants for 1 [self.role=merchant] : Run a counter one winter and you'll know what flour costs, and carting, and a dry floor. | Shopkeepers carry this city on their backs at dawn. Nobody's up to see it.
+opinion @1 road against 1 [self.job=baker] : My flour travels the North Road. Every month it's a day slower. | Slow cart, short shelf. Short shelf, customers at the next counter.
+opinion @2 road against 2 [world.wagons=raided self.job=baker] : Thieves on the north highway. That's flour gone, and drovers frightened home for a month.
+opinion @1 watch for 1 : The Watch stand at the gate all night. Nobody's lifted a loaf off me since they doubled it. | I've no complaint with the Watch. I've a complaint with the price of flour.
+opinion @1 festivals mixed 0 [self.role=merchant] : A festival sells every loaf by ten. It also packs the Hall till I can't breathe. | Fat till, thin temper. I take both.
+opinion @1 newcomers mixed 0 : Strangers pass the gate daily. Some buy, some stare. I serve the ones who buy. | A newcomer's money spends the same. Their manners vary.
+opinion @1 times mixed 0 [self.job=baker] : Hard or easy, folk eat bread. I've never had a week with nobody buying. | Good times, I sell the white. Hard times, I sell the rye. Either way I sell.
+
+grown
+line @1 greet : #greet#. Say what you need. There's a line behind you. | #greet#. Quick, then. The morning's half gone.
+line @2 greet [self.job=baker self.role=merchant] : #greet#. Loaves are on the shelf. Point. | #greet#. Rye's left, white's nearly gone.
+line @3 greet [pair.band=strangers] : #greet#. Road dust on you. You'll want feeding. | #greet#. New face. Name your want. Straight answers here.
+line @4 greet [pair.band=strangers self.job=baker] : #greet#. New face. Rye or white, I don't do much else. | #greet#. Road dust on you. You'll want bread.
+line @5 greet [self.working=yes self.job=baker] : #greet#. I'm loading the oven. Talk to my back. | #greet#. Stand clear of the long shovel.
+line @6 greet [here.time=dawn] : Morning. The gate's just opened and I've been up four hours. | Morning. You're up early. Good.
+line @7 greet [here.time=dawn self.job=baker] : Morning. First batch is out. Second's in. | Morning. The oven's been hot since three.
+line @8 greet [here.time=dusk|night] : Evening. I'm for bed. I rise at three. | Evening. Make it short; my day starts in the dark.
+line @9 greet [pair.band=friends|family] : You. Good. Pull up that crate, it's clean. | Good. I've herring in the crock and a loaf to go with it.
+line @10 greet [here.weather=rain|storm] : #greet#. Stand on the sacking, not my floor. | #greet#. Wet again. Every boot in the city's dripping on me.
+line @1 kin.open [pair.kin!=no] : Sit. Eat. You've gone thin. | In you come. Bread's on the board, knife's in the drawer.
+line @1 again.open : Back again before noon. Something's up. | Twice today. You must be hungry.
+line @1 hail [pair.band=friends] : Hoi. Wait. I'll walk with you to the gate. | Over here. News, and not the gossiping kind.
+line @1 greet.return : #greet#. Same to you. | And to you. Say on, I've a minute.
+line @2 greet.return [pair.band=friends|family] : Glad it's you. Sit. | Ah. Herring's on.
+line @3 greet.return [self.working=yes self.job=baker] : #greet#. Can't stop, I've a batch in. | And you. Talk while I knead.
+line @4 greet.return [here.time=dusk|night] : Evening. I'll not be up long. | Evening to you. The gate's shut, you know.
+line @1 farewell : #farewell#. Earlier, another day. Early gets the pick. | #farewell#. Puddle at the door; step over.
+line @2 farewell [here.time=dusk|night] : Good night. Up at three for me. | Night. Don't keep anybody up talking.
+line @1 farewell.return : And you. Mind the carts in the lane. | #farewell#. Latch the door going out.
+line @2 farewell.return [pair.band=friends|family] : Off home. Tomorrow, same hour. | Night. I'll have something saved for you.
+line @1 react.news : Tell it straight. Who, where, when. | Go on. I've heard a lot by this gate. Try me.
+line @1 react.news.new : That's new. No drover had that. | Not heard it. Where's it from?
+line @1 react.news.known : Had that one at first light. | Old. Yesterday's, from the road.
+line @1 react.news.doubt : Two tellers who've never met, then I'll believe it. | That's put on weight between the gate and here.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard. Sorry for it. | Bad news. A loaf goes round to them tonight, if there's a door to take it to.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth a drink tonight. | Good news. I'll pass it along all morning.
+line @2 react.news.glad [topic.kind=marriage|birth self.job=baker] : Good. Somebody'll want a cake for that. I'll do it at cost. | Good. A cake will be wanted. Mine, I hope.
+line @1 answer.how : Well enough. Busy. | Tired, and the day's done, so it was a good day.
+line @1 answer.how.busy [self.working=yes self.job=baker] : Behind. Two batches to go and the Hall's filling. | Flat out. Don't ask me anything that needs thinking.
+line @1 answer.how.poorly [here.crowd=crowd] : Hemmed in. I can't abide a crush. Ask again once it's thinned. | Not good. Too many folk, too close.
+line @1 ask.how : And you? Eating? | How's your week? Straight answer.
+line @1 sympathise : That's a poor thing. Sit. Eat first, talk after. | Sorry. Words aren't my trade. But sorry.
+line @1 reassure : It'll come right if you keep at it. Most things do. | You'll manage. Worse has come at you, I'd bet.
+line @1 decline : Can't. Too much on, and no spare paws to cover me. | Not this week, I've no hours spare. After Restday, maybe.
+line @2 decline [self.job=baker] : No. Marketday, and the counter needs me every minute. | Not today. I've a batch in and nobody to watch it.
+line @1 accept_decline : Fair. Another time. | All right. Asking costs nothing.
+line @1 thank : #thanks#. I'll remember that. | Kindly done. I owe you one.
+line @1 deflect_thanks : It was nothing. No fuss. | No need. Do the same for somebody else.
+line @1 preclose : Right. I'm off. Things to do. | That's me. Work's calling.
+line @2 preclose [self.working=yes self.job=baker] : Something's catching. I smell it. | I've the second batch to get in. Go on.
+line @1 accept_preclose : Right. Till next time. | Right. Off you go.
+line @1 ack : #bc_right# | #bc_fair_enough# | #bc_true_enough#
+line @1 give.advice : Get up early. Everything good goes before seven. | Buy what you'll eat today. Yesterday's is for the ducks.
+line @1 warn [world.bandits=near] : Keep off the North Road this week. The drovers won't use it, so you shouldn't. | Gate bar's there for a reason this week. Don't cross it.
+line @1 insist : Again, and plainer: I'm right. | I know what I'm saying. I've stood by this gate long enough.
+scene the_pine_mark
+when topic=work|smalltalk self.job=baker self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Every loaf I bake has #pine# cut in the top. Three strokes and a stem. | Folk ask for the loaf with the tree. That's my loaf. That's how they know it's mine. | I cut a pine in every crust with the bread knife. Did it on my very first sold loaf.
+b : Why a pine? | Can't anybody copy it? | Why that one?
+a : Where I learned to bake, there were pines on every side. It's a reminder, that's all. | They could. Then they'd have to bake as well as me, or the tree would be lying. | It looked good, and it sold. I've not changed what sells.
+b : #bc_fair_enough# | #bc_ha# | #bc_fair_enough#
+
+scene pine_copied
+when topic=work|gossip self.job=baker self.role=merchant here.region=ridgemere
+does tell.complaint / react.self / insist / ack
+a : There's a counter by the fountain cutting trees on their loaves now. Bad trees. Crooked. | Somebody's copying the pine mark. Their crust's soft and their tree leans.
+b : That's a compliment, in a way. | Folk'll know the difference.
+a : I don't want compliments. I want customers. They can find their own mark. | They will. A leaning tree on a soft crust. Nobody's fooled twice.
+b : #bc_ha# | #bc_true_enough#
+
+scene up_at_three
+when topic=work|day here.time=dawn self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : Up at three, oven lit by half past, first batch out before #gatebar# comes off. | The gate opens at six. By then I've two batches out and my back's done for the day. | I was mixing the rye by lamplight when the bells went. That's my morning gone.
+b : Every day? | That must grind you down. | When do you sleep?
+a : Six days in seven. And Restday I wake at three anyway and lie there angry. | It wears me. But the carts come in hungry, and I'd sooner be ready. | Early. Straight after supper. My house knows not to talk to me after dark.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene sold_by_six
+when topic=work self.job=baker self.role=merchant self.working=yes
+does tell.boast / react.self / tell.self / ack
+a : Shelf's bare and it's not yet nine. Sold the lot. | Sold every rye loaf by seven. The drovers took half of them straight off the gate.
+b : That's a good morning. | Bake more, then.
+a : Only sort worth having. Tomorrow I'll add a dozen and see if it holds. | I would if the oven were bigger. That's the next thing. A bigger oven.
+b : #bc_good# | #bc_we_will_see#
+
+scene marketday_crush
+when topic=day|work here.day=market self.dislikes=crowds self.role=merchant
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : Marketday. The Hall's that packed I can't turn round without elbowing someone. | I can't abide a crush. Marketday's the best day's takings and the worst day of my week.
+b : It's always like that on Marketday. | Can you not shut early?
+a : Always. I sell, I don't speak, and at home I sit an hour with the lamp off. | Shut? On Marketday? I'd sooner shut my eyes and bake blind.
+b : #bc_poor_soul# | #bc_ha#
+
+scene wet_hall_floor
+when topic=weather here.weather=rain|storm self.dislikes=wet_floors here.region=ridgemere self.role=merchant
+does tell.complaint / react.self / tell.self / ack
+a : Rain. Every boot through the north gate walks straight to my counter and drips. | The Hall floor's a pond. I've put sacking down three times since dawn.
+b : Can't be helped, in this city. | You'll be mopping all day.
+a : It can be helped. Folk could wipe their feet. They don't, but they could. | All day. I'd rather bake in a flood than stand on a wet floor selling.
+b : #bc_ha# | #bc_poor_soul#
+
+scene carts_in_with_flour
+when topic=caravan world.wagons=in self.job=baker
+does tell.news / react.news / tell.plan / ack
+a : #roadcarts.capitalize# are in. Six sacks of flour for me and a drover full of talk. | Wagons at dawn. Flour for a week and news for a month.
+b : About time. | What news?
+a : Aye. Double batch tomorrow, and let's see who notices. | Prices up north, mostly. Rain on the downs. The drovers moan, I listen. It's free.
+b : #bc_good# | #bc_fair_enough#
+
+scene carts_late_flour
+when topic=caravan|prices world.wagons=late self.job=baker
+does tell.worry / reassure / insist / ack
+a : The North Road carts are three days behind. I'm down to two sacks of flour. | Four days, not a wheel past the gate. Half batches from tomorrow.
+b : They'll come in. | Can you get flour elsewhere?
+a : They'd better. A baker with no flour is a wolf with a hot oven and nothing to say. | From the wharf, at double. Once I'll pay that. Not again.
+b : #bc_hope_so# | #bc_fair_enough#
+
+scene raided_road
+when topic=bandits|caravan world.wagons=raided
+does tell.worry / sympathise / insist / ack
+a : Thieves took a wagon north of the gate. The drovers at my counter today talked of nothing else. | A wagon gone, up the road. Every drover in the Hall's jumpy as a cat.
+b : That's bad. Was anyone hurt? | It's frightening, that.
+a : Nobody's said, and guessing's no use. I'll know when the next cart comes, or doesn't. | It is. And it means short flour by the week's end. Both things are true.
+b : #bc_poor_soul# | #bc_true#
+
+scene gate_news_first
+when topic=news world.news self.job=baker
+does tell.news / react.news / tell.self / ack
+a : Drover's word at dawn: #world.news#. Out of #world.news_from#, he said. | You'll not have heard yet. #world.news.capitalize#. Came down from #world.news_from# with the flour.
+b : I hadn't heard that. | How do you always know first?
+a : Everybody'll know by noon. I just get it before the bread's cool. | I'm at the gate end of the Hall, up before anyone. News comes in hungry, and I feed it.
+b : #bc_true# | #bc_ha#
+
+scene travellers_at_the_gate
+when topic=newcomer|player here.region=ridgemere self.job=baker
+does tell.self / react.self / tell.self / ack
+a : A traveller bought two loaves today before saying a word. I liked that. | Travellers always want bread first and directions second. I give them both, in that order.
+b : Sensible, that one. | You'll be their first friend in the city.
+a : Sensible and hungry. I'd take a hundred of those. | Their first baker. Friends they'll find later.
+b : #bc_ha# | #bc_true_enough#
+
+scene second_counter
+when topic=dreams|work self.job=baker self.role=merchant
+does tell.plan / ask.detail / answer.detail / react.self
+a : I'm going to have a second counter, right by the gate. Catch the drovers before they reach the Hall. | Next year I want a bigger oven. Year after, a second pitch. I've the numbers worked out. | I put a coin aside every day the shelf's bare by nine. The jar's getting heavy.
+b : Can you afford it? | Who'd run it? | What's it for?
+a : Not yet. I will by spring if flour holds. Sooner if it drops. | Somebody I've trained. One day somebody of mine. Not to any stranger. | A counter by the gate. I've wanted one since the day I took this one on.
+b : #bc_we_will_see# | #bc_fair_enough# | #bc_good#
+
+scene keep_it_in_the_family
+when topic=family|work self.married=yes self.role=merchant
+does tell.plan / react.self / tell.self / ack
+a : This counter stays in the family. I didn't fight for it to sell it to some stranger. | My #self.spouse_word# puts up with my hours. Between us there's always somebody tired.
+b : Worth building, that. | Well matched, the pair of you.
+a : Nothing else is worth the building. Bread doesn't last. A counter does. | We are. We don't talk much at supper. We're both too tired. Tired and quiet means it's working.
+b : #bc_good# | #bc_ha#
+
+scene spouse_at_supper
+when topic=family|home self.married=yes self.spouse
+does tell.feeling / react.self / assess
+a : #self.spouse# can have the counter, the oven and the coin jar, and nobody else gets the coin jar. | After dark, #self.spouse# alone may speak to me without getting bitten.
+b : Big trust, that. | Lucky one, then.
+a : It's earned. Every bit. | Lucky, aye. Not a thing I'd say at the counter. Here, I'll say it.
+
+scene the_hand_learning
+when topic=work self.hand self.job=baker
+does tell.self / react.self / tell.self / ack
+a : I'd let #self.hand# knock the loaves now. In my trade, there's no bigger trust. | I'd leave #self.hand# alone with the oven for an hour now. A year ago, not for a minute.
+b : That's progress. | You must be pleased.
+a : It is. Not that I'll say so at the oven. Praise goes soft on you. | Pleased, aye. Kept quiet, mind. Praise burns quicker than bread.
+b : #bc_ha# | #bc_ha#
+
+scene herring_from_the_crock
+when topic=food self.likes=pickled_herring
+does tell.self / react.self / tell.self / ack
+a : #herring.capitalize# on yesterday's rye. My supper, and nobody's to sneer. | A herring crock sits by the oven. After a long morning, nothing beats it.
+b : Herring on bread? | That sounds sharp.
+a : Herring on bread. I sell the bread fresh and eat it stale. That's a baker's life. | Sharp's good. It wakes you up. I need waking up by noon.
+b : #bc_ha# | #bc_fair_enough#
+
+scene dice_after_close
+when topic=pastimes self.likes=dice
+does invite / accept_invite / tell.self / ack
+a : Shutters are down. A throw or two? Copper stakes, nothing serious. | #dice.capitalize#, and an hour before bed. In?
+b : One round, then. | I'll lose, but go on.
+a : One round. Then another, because you'll want to win it back. | You'll lose. I don't, much. I count.
+b : #bc_ha# | #bc_ha#
+
+scene dice_luck
+when topic=pastimes|smalltalk self.likes=dice
+does tell.boast / ask.detail / answer.detail / assess
+a : Three sixes, last night. Took a week's beer money off a carter at the inn. | Dice isn't luck. It's keeping your head while somebody else loses theirs.
+b : Three sixes? Truly? | Isn't it all luck?
+a : Truly. I put it all in the coin jar. That's the counter's money now. | The throw's luck. When to stop throwing isn't. Most folk don't stop.
+b : #bc_lucky_you# | #bc_wise#
+
+scene larder_full
+when topic=home|food self.likes=full_larder
+does tell.feeling / react.self / tell.self / ack
+a : A full larder. Every shelf. Flour, herring, cheese, apples. No king sleeps sounder. | I check the larder every night before bed. If there's a gap, I fill it in the morning.
+b : That's a comfort. | Every night?
+a : That's all the comfort there is. Loaves up front, sacks behind. | Every night. A gap would keep me awake. Somebody in the house would be hungry by Restday.
+b : #bc_true# | #bc_fair_enough#
+
+scene autumn_gale
+when topic=weather|season here.season=autumn here.weather=clear|overcast
+does tell.feeling / react.self / tell.self / ack
+a : Hear that wind? That's #gale#. Best weather of the year. | Autumn's here. Cold wind through the gate, and the oven warm behind me. That's right.
+b : Bit cold for me. | You like the wind?
+a : Cold's fine. Cold sharpens appetites, and that suits me. | I like a wind with something in it. Hill smell. Pine. I'll stand in it at the gate a minute after the shutters go up.
+b : #bc_ha# | #bc_fair_enough#
+
+scene hill_quiet
+when topic=memories|home self.age>=30
+does tell.memory / react.self / tell.self / ack
+a : I knew real quiet once. In the hills, where you could hear a cone drop off a pine a field away. | The city's never quiet. Not even at three. I miss the kind of quiet you get among trees.
+b : You'd not go back, though? | It's hard to find quiet here.
+a : No. There's nothing to sell in the quiet. But an hour of it now and again, I'd take. | It is. I get mine before dawn, before the gate opens. That's my hour.
+b : #bc_fair_enough# | #bc_true#
+
+scene bells_and_the_oven
+when topic=day|faith here.region=ridgemere self.job=baker
+does tell.self / react.self / tell.self / ack
+a : Chapel's rarely got me. But my second batch goes in on the cathedral bells. | The bells ring the hour at the close next door. My loaves know it before I do.
+b : That's one way to use the church. | Handy, being so near.
+a : That's all I use the church for, and it's a good use. | It is. Half of Northgate times its day by those bells. I time my bread.
+b : #bc_ha# | #bc_true#
+
+scene flour_price
+when topic=prices self.job=baker self.role=merchant
+does tell.complaint / ask.detail / answer.detail / insist
+a : Flour's up again. A penny a sack, every month since harvest. | The loaf stays at its price. Not yet. I'll swallow the cost till I can't.
+b : Will you raise your price? | Why not?
+a : When I must. And I'll tell folk why, straight, not hide it in a smaller loaf. | Because the counter by the fountain will raise first, and their customers walk to mine. Then I'll raise.
+b : #bc_fair# | #bc_clever#
+
+scene hard_times_rye
+when topic=times world.times=hard|lean self.job=baker
+does tell.self / react.self / insist / ack
+a : Hard times. Nobody's buying the white. Everybody wants the rye. Cheaper, and it fills you. | Lean weeks. I'm baking more rye and less white, and the shelf's still bare by ten.
+b : That's good, for you. | Folk still need bread.
+a : Good for the counter. Hard for the folk buying it. I don't pretend otherwise. | They do. That's why I'm never out of work. Bread's the last thing a household drops.
+b : #bc_true# | #bc_true_enough#
+
+scene festival_crowd
+when topic=festival world.festival=today|soon self.dislikes=crowds self.job=baker
+does tell.complaint / react.self / tell.plan / ack
+a : Festival tomorrow. Every loaf gone by ten, and the Hall so full I'll not get out till noon. | A festival means double the bread and triple the folk. I can bake double. I can't stand triple.
+b : Good for trade, though. | Will you go to it?
+a : Good trade, sore head. I'll take the coin and the headache both. | No. I'll sell out, shut up, and go and sit somewhere with nobody in it.
+b : #bc_ha# | #bc_fair_enough#
+
+scene gossip_straight
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / tell.self / ack
+a : They say #topic.subject# #topic.claim#. Said, mind. My own view stays mine. | Drovers had it at dawn: #topic.subject# #topic.claim#. Nothing added.
+b : Do you believe it? | That's all?
+a : It was said. Past that, no idea. | That's all. I never add. Added stories ruin folk.
+b : #bc_fair_enough# | #bc_wise#
+
+scene gossip_theft_gate
+when topic=gossip|crime here.gossip=yes topic.claim_kind=theft|wanted self.role=merchant
+does tell.gossip / tell.worry / reassure / ack
+a : They're saying #topic.subject# #topic.claim#. I've moved the coin jar under the counter. | Word is #topic.subject# #topic.claim#. I'm counting the loaves twice today.
+b : Sensible. | The Watch are on the gate.
+a : Sensible is all I can be. I'll not be robbed twice over. | They are. They're also eating my bread while they stand there. I'll watch my own.
+b : #bc_wise# | #bc_ha#
+
+scene winter_oven
+when topic=season|work here.season=winter self.job=baker
+does tell.self / react.self / tell.self / ack
+a : Winter. The oven's the warmest place by the gate. Folk buy a loaf and linger in the heat. | When snow shuts the North Road, I bake from what's in the store and pray.
+b : That's a good spot to be in winter. | Will you have enough?
+a : Warm, aye. Let them stand. Just not in my way. | Enough if I'm careful. Careful's my habit. That's how there's a store at all.
+b : #bc_ha# | #bc_wise#
+
+scene fog_at_the_gate
+when topic=weather here.weather=fog here.region=ridgemere self.job=baker
+does tell.self / react.self / tell.self / ack
+a : Fog to the gate bar. Carts will crawl, if they come at all. | You can't see the road past the gate bar in this. I've baked short. No point baking for folk who can't find me.
+b : That'll slow things. | Clever, baking short.
+a : It'll slow everything. Me included. I don't like slow. | Not clever. Just counted. A loaf unsold is a loaf for the ducks.
+b : #bc_true# | #bc_fair_enough#
+
+scene early_bed
+when topic=day|smalltalk here.time=dusk|night self.job=baker
+does tell.self / react.self / tell.self / ack
+a : I'll be asleep in an hour. Three comes round quick. | Everybody else in the house sits up talking. I'm in bed by dark. They've learned to whisper.
+b : Early, that. | Do you mind missing out?
+a : It's the trade. Folk want bread at six. Somebody's got to be up at three. | No. Talk's cheap. Sleep isn't, at my hours.
+b : #bc_fair_enough# | #bc_true_enough#
+
+story the_counter_came_free [topic=work|memories self.job=baker self.role=merchant self.age>=30]
+  : This counter came free when the old baker died. Six of us wanted it.
+  : I went to the Hall master the same morning, before the ashes were cold, with a loaf in one paw and my coin in the other.
+  : He tasted the loaf, counted the coin, and gave me the pitch.
+  ask : Too quick, do you think? Before the ashes were cold?
+  b : Somebody had to have it. Better you than a slow one.
+  b[old] : Your old baker would've grabbed it the same way, I'd wager.
+  : That's what I told myself. It's what I'd want, if it were my counter going.
+
+story the_first_loaf_sold [topic=work|memories self.job=baker self.age>=25]
+  : My first sold loaf was baked so hard the knife skidded off it.
+  : The fellow who bought it came back next day and asked for two more. Said it was the only bread that didn't fall apart in his pack on the road.
+  ask : Can you guess what trade he was in?
+  b : A drover?
+  b[old] : A carter, I'd say. Somebody always on the road.
+  : A drover, out of the north. He bought from me every week for eleven years after. Hard bread has its friends.
+
+story pines_and_charcoal [topic=memories self.age>=30]
+  : Where I learned to bake, there was a clay oven under the pines and nobody for miles.
+  : I'd cut a tree on every loaf so I'd know which were mine on the cooling board. Then the city, and I kept doing it.
+  ask : Got a habit like that yourself? From another place?
+  b : A few. Nothing so useful as yours.
+  b[old] : Dozens, at my age.
+  : Keep them. A habit's a map back to where you started.
+
+story the_dice_and_the_flour [topic=pastimes|memories self.age>=25 self.likes=dice]
+  : One winter the flour ran out and the carts were stuck in the snow. I'd no coin to buy from the wharf.
+  : A miller's carter was throwing dice in a gate tavern. I sat down with my last coppers.
+  : By midnight I'd won two sacks of flour off him. I baked through the night.
+  ask : Would you have played, in my place?
+  b : Not with my last coin. Too much risk.
+  : I'd not do it again. Once, though, and the shelf was full next morning.
+
+story the_crush_that_broke_the_stall [topic=memories|day self.age>=25 here.region=ridgemere]
+  : I was in the Hall the Marketday the crowd pushed so hard a fish stall went over. Ice, fish and water everywhere.
+  : Folk slipped, folk shouted, and I stood behind my counter holding it down with both paws.
+  ask : Been in a crush like that yourself?
+  b[old] : Once, at a festival. I'll not forget it.
+  b : No, and I hope never to be.
+  : Since then, crowds and I don't mix. I sell to them. I don't stand in them.
+
+rule @bark_bread
+when concept=bark self.working=yes self.role=merchant self.job=baker
+does aside
+cooldown 7h
+say Rye and white, fresh from the oven. | Bread with the pine on it. That's mine.
+
+rule @bark_floor
+when concept=bark here.weather=rain|storm self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Feet. Mat. Now. | Who brought half the road in here?
+
+rule @bark_crowd
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 9h
+say Back up, back up. One at a time. | Room to breathe, if you please.
+
+rule @bark_gate
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 10h
+say There's the gate bar. Here they come. | Carts in. Stand ready.
+
+rule @bark_herring
+when concept=bark here.time=dusk self.likes=pickled_herring
+does aside
+cooldown 12h
+say Herring and rye, and then bed. | Where's that crock?
+
+rule @bark_wind
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 11h
+say Good wind. Smells of the hills. | That's a proper autumn blow.
+
+dlg @1 resident.hub : #greet#. Say what you need. I've a line behind you. | #greet#. Bread, or something else?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You. Good. What's wanted? | #greet#, #topic.player#. Rye's warm, if you're buying.
+dlg @3 resident.hub [here.time=night] : I'm for bed. Be quick. | Late, and three o'clock's coming. Speak.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From there's close enough. I'm busy. | You've a face on. Out with it.
+dlg @1 resident.job [self.job=baker self.role=merchant] : I bake. Rye and white, a counter in the Market Hall by the north gate. Empty shelves most days by nine. | Bread. Up at three, oven by half past, shelf bare by noon. That's the trade.
+dlg @2 resident.job : #self.trade_words.capitalize#. Early starts, honest work. | I work. Long hours. I'm not complaining.
+dlg @3 resident.job [self.working=yes] : Working. Talk while I knead. | Can't stop. Ask your question.
+dlg @1 resident.business [business=thriving] : Selling out by nine every day. I want a bigger oven. | Good. Better than good. I'm saving for a second counter.
+dlg @2 resident.business [business=steady] : Steady. Folk always want bread. | It pays. Rent, flour and a coin in the jar.
+dlg @3 resident.business [business=failing] : Badly. No pretty word for it. Flour's dear and the Hall's quiet. | Poor. I'm baking half batches and still bringing loaves home.
+dlg @1 resident.news [world.news] : Drover's word: #world.news#. From #world.news_from#, he said. | From #world.news_from#: #world.news#. Arrived with today's flour.
+dlg @2 resident.news [world.event_words] : #world.event_words.capitalize#, from every mouth that buys a loaf. | #world.event_words.capitalize#. That's all anybody's said since the gate opened.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon got robbed up north. Stay within the walls. | Robbers on the road north. Drovers are scared and flour's short.
+dlg @4 resident.news [world.death=recent] : We lost somebody near here this week. A loaf went round from me. | A death close by. The street's gone quiet.
+dlg @5 resident.news [world.wedding=recent] : A wedding this week. Somebody bought every loaf on my shelf for it. | Somebody got wed nearby. Good. Somebody's happy.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Flour off the wagons, and no talk with it. | Nothing from the road today worth repeating.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. So I heard. Nothing added. | Word at the counter: #topic.subject# #topic.claim#. Take it as heard.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : They're saying #topic.subject# #topic.claim#. Mind your purse. | Word is #topic.subject# #topic.claim#. I've moved the coin jar.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing. I sell bread, not talk. | Nothing came my way worth the telling.
+dlg @1 resident.bye : #farewell#. Come early tomorrow. | #farewell#. Mind the floor.
+dlg @2 resident.bye [here.time=night] : Night. I'm for bed. | Good night. Up at three.
+dlg @1 shop.greet [here.shop!=bare self.job=baker] : #greet#. Rye or white. The one with the pine on it's mine, and it's the best in the Hall. | #greet#. Bread's warm. Point at what you want.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Prices are chalked. Say what you need. | #greet#. Have a look. Quick, there's a line.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. The usual? | #greet#, #topic.player#. I saved you a rye.
+dlg @4 shop.greet [here.shop=bare] : #greet#. Sold out. Come before nine tomorrow. | Shelf's bare. I'll buy flour, if you've any.
+dlg @1 shop.prices : Flour's up, so the white's up a penny. Rye's the same. | It's chalked. I don't haggle. Folk behind you are waiting.
+dlg @1 shop.bye : #farewell#. Eat it today. | #shop_bye# And come early tomorrow.
+dlg @1 master.learn [here.teaches=yes self.job=baker] : Baking? A year of three o'clock mornings and burnt paws weekly. Still keen? Ask. | Flour, water, heat and getting up. The getting up's the hard part. Ask me.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? It's honest work. Ask me what you want. | Keen to learn? Good. Ask.
+dlg @3 master.learn [here.teaches=no] : I've someone learning already. One's all I've time for. Questions I'll still take. | My learner's place is taken. I'll still answer you.
+dlg @1 master.work : Up at three. Oven by half past. Selling by six. In bed by dark. Every day but Restday. | Hot, early and long. You'll smell of bread till you die.
+dlg @1 master.wages : No wages for a learner. Work at my elbow and it comes fast, and what you bake and sell is yours. | Nothing, to start. What you learn pays later. What you sell pays now.
+dlg @1 master.takes [here.take_on=yes] : One at my oven at a time, and somebody I trust. That could be you. Ask. | I'd have you. Early riser, by the look.
+dlg @2 master.takes [here.take_on=no] : I'm careful who stands at my oven. #here.take_on_why# | Not yet. #here.take_on_why#
+dlg @1 master.refused : #topic.why# That's how it is. | No. #topic.why#
+graft resident.hub
+choice What's the little tree cut on your loaves? [self.job=baker] -> pine
+node pine
+say A pine. Three strokes and a stem. Every loaf I bake has one, so folk know it's mine. Where I learned the trade, there were pines on every side.
+mood calm
+free
+choice Has anyone copied it? -> pine_copied
+choice Back to it. -> hub
+node pine_copied
+say One counter by the fountain has a go. Crooked trees, soft crusts. A mark's only worth what's under it.
+choice I'll look for the tree. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Which loaf's best today? [self.job=baker] -> best
+node best
+say The rye. It came out right this morning; knock it and it rings. The white's good, but the rye's better.
+mood calm
+choice Let me see the bread. -> greet
+choice How can you hear it? -> best_knock
+node best_knock
+say Rap the bottom. A ring is done. A dull note isn't, and I don't sell dull notes.
+choice Let me see the bread. -> greet
+choice Goodbye. -> bye

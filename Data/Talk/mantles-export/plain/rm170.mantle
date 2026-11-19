@@ -1,0 +1,392 @@
+# rm170, the bareheaded scholar (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm170
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_halvard_fenworth
+written_by claude
+title the bareheaded scholar
+fits stage=young|adolescent|adult|old
+prefers job=scholar humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk goes_bareheaded_in_warm_rain_on_purpose
+likes barley_soup evening_line old_maps warm_rain
+dislikes cold_tea wet_floors
+fears ink_on_a_finished_page a_winter_with_no_warm_rain
+hopes a_desk_by_a_window a_map_nobody_else_has_seen
+topics weather +0.4 pastimes +0.3 food +0.3 work +0.2 lore +0.3 day +0.2 gossip -0.5 festival -0.2
+styles comfort=practical gossip=closed refuse=plain tease=dry
+marks oath saying
+persona #self.first# is a quiet, dry-witted wolf of Northgate who takes the hood off when the rain comes warm, copies at the abbey school, fishes off the pier of an evening, and says the true thing plainly and then nothing more.
+
+words
+oath! = Ink and puddles | Blot it all | Wet ink and worse
+saying! = Warm rain never hurt a scholar | Copy it right or copy it twice | Cold tea and wet floors, the two great evils
+warmrain = warm rain | rain warm as bathwater
+hood = my hood | the hood I keep for cold rain
+soup = barley soup | a steaming bowl of barley
+tea = cold tea | tea that sat too long by the inkpot
+floor = a wet floor | a floor that squelches
+slate = my slate | the slate with yesterday's sums on it
+copying = copying | page after page of copying
+school = the abbey school | the school under the abbey wall
+pierline = my line | a line off the end of the pier
+oldmap = an old map | a chart somebody drew wrong on purpose, I think
+closebells = the close bells | the bells next door to the schoolroom
+ink = ink | the good black ink
+blot = a blot | a blot the size of a thumb
+
+any
+opinion @1 church for 1 : When my house ran out of bread, the chapel had some. I'm slow to forget that sort of thing. | They don't preach at me when I eat their soup. I count that in their favour.
+opinion @2 dole for 2 : The parish loaf saw my house through a thin week. Sneer at it once you've had one. | It's bread. Folk find a great deal to argue about, for a loaf.
+opinion @3 merchants against 2 : My coppers don't add up to a loaf, yet the shops never go short. Work that out. | They're not wicked. They're just never the ones going without.
+opinion @4 times against 1 : It gets harder by the week, slowly enough that the Rise can pretend not to see. | Same as last year, only less of it.
+opinion @5 city for 1 : Born under this smoke. I'll likely die under it. I've no complaint, except the floors. | Wettest city going. I've no quarrel with that.
+opinion @6 festivals mixed 1 : Good soup, bad crowds. I go for the soup. | Somebody always spills ale on the floor. Then it's a festival of wet floors.
+
+grown
+line @1 greet : #greet#. | #greet#. Wipe your paws, if you would.
+line @2 greet [pair.band=strangers] : #greet#. You're not from round here. Neither's the weather. | #greet#. Mind the floor.
+line @3 greet [here.weather=rain] : #greet#. Warm one, today. I've no hood on. | #greet#. Lovely wet day.
+line @1 greet.return : #greet#. | #greet#. Still dry, I see.
+line @2 greet.return [pair.band=friends|family] : You. Good. | Oh, it's you. Come in, wipe your paws.
+line @1 farewell : #farewell#. Mind the puddles. | #farewell#.
+line @1 farewell.return : #farewell#. | And you.
+line @1 react.news : Go on. | Mm. Who from?
+line @1 react.news.new : That's new. | Hadn't heard. Doesn't mean it's true.
+line @1 react.news.known : I'd heard. | That's gone stale already.
+line @1 react.news.doubt : Sounds like a guess wearing a coat. | Maybe. Bring me a second mouth that says so and I'll think again.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'm sorry. | Hard. For whoever it is.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Glad of it. | That's good news. We don't get enough.
+line @1 answer.how : Fair. Dry, which I'm not proud of. | Well enough. Bit of soup, bit of sleep.
+line @1 decline : I'd rather not. Not my sort of thing, honestly. | Not today. There's a half-copied page waiting on me.
+line @1 accept_decline : Fair. | Another time.
+line @1 thank : Thanks. I mean it. | Obliged.
+line @1 deflect_thanks : It was nothing. | Don't mention it. I'd rather you didn't.
+line @1 tease [pair.band=friends] : One of us is soaked to the skin, and it isn't you. Shame. | You've a hood on. In this. Shame.
+line @1 accept_preclose : Go on. | Right you are.
+scene gr_warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.self / react.self / tell.self / assess
+a : #warmrain.capitalize#. I've taken the hood down. Don't tell anyone. | This is the only weather I like. I'd stop out in it till dark if folk didn't stare.
+b : You'll be soaked. | Let them stare.
+a : I'll dry. Warm rain dries. Cold tea doesn't. | They do. I've stopped caring which way.
+b : Can't argue. | Good.
+
+scene gr_cold_rain
+when topic=weather here.weather=rain|storm here.season=autumn|winter
+does tell.self / react.self / assess
+a : Cold rain. Hood up. I'm not a fool. | That's the other kind of rain. The kind that gets in your bones.
+b : Not a fool, no. | It is.
+a : Just particular. | Warm rain's a friend. This one's a creditor.
+
+scene gr_wet_floor
+when topic=home|smalltalk
+does tell.complaint / react.complaint / assess
+a : Somebody's walked rain all through the hall. I can feel it through my socks. | #floor.capitalize#. I'll take rain on my head over a wet floor any day.
+b : #grumble#. | That's backwards.
+a : It's a small thing. Small things are the worst. | It's not. Rain's outside. Floors are inside. One of those is wrong.
+
+scene gr_soup
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize#. A cold day asks nothing more. | Restday I boil up barley and live off the pot three days.
+b : Simple. | Three days?
+a : Simple's the best. | Three. It's better on the third.
+
+scene gr_tea
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : I left my tea by the inkpot and forgot it. It's stone cold. | #tea.capitalize#. Is there anything sadder.
+b : Drink it anyway. | Plenty, I'd say.
+a : I won't. A wolf has standards. | Not before breakfast, there isn't.
+
+scene gr_pier
+when topic=pastimes here.time=dusk|night here.region=ridgemere self.likes=evening_line
+does tell.self / ask.detail / answer.detail / assess
+a : I take #pierline# down most evenings. I don't catch much. | I fished off the pier till the lamps came on. Caught one fish and a boot.
+b : What's the point, then? | Which was better?
+a : The sitting. The fish are only an excuse. | The boot. It fit.
+b : I see it. | Ha.
+
+scene gr_maps
+when topic=pastimes|lore
+does tell.self / react.self / assess
+a : #oldmap.capitalize# hangs over my desk. I spend more time with its mistakes than its roads. | Old maps are better than new ones. New ones are only right.
+b : Must be hard to read. | Only right?
+a : It is. That's the fun. | Only right. Old ones have opinions.
+
+scene gr_bells
+when topic=day|faith here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : #closebells.capitalize#. I've lived next to them long enough I wake a minute before. | The bells again. I'm told they're for praying. I use them for getting up.
+b : Handy. | Both, maybe.
+a : Saves on a cockerel. | Maybe. I'm not fussy.
+
+scene gr_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : Passing things on isn't in me. I'd muddle the middle. | A neighbour leaned in with something on the stair. Gone from my head already. On purpose.
+b : Wise. | On purpose?
+a : Lazy. The result's no different. | On purpose. It's a skill.
+
+scene gr_times
+when topic=times|prices world.times=hard|lean
+does tell.self / sympathise / assess
+a : Soup's thinner this week. Same barley, more water. | Folk at the chapel queue are folk I know. That's new.
+b : #sympathy#. | That's hard.
+a : It's still soup. | It is. I keep my eyes down, so they can.
+
+scene gr_gate_rain
+when topic=weather|caravan here.weather=rain here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : Every cart under the arch is steaming. The drovers look miserable. I look delighted. | Rain on the north road. The carts come in dripping. The toll wolf's in a temper.
+b : Strange wolf. | Can you blame him?
+a : I've been told. | No. I'd be in one too, if the rain were cold.
+
+scene gr_copying
+when topic=work self.job=scholar
+does tell.self / react.self / assess
+a : I copy pages in #ink# for a living now. Same as at school, only somebody pays. | A blot right at the bottom of a finished page. I stared it out for a good while.
+b : Good trade. | Did you start again?
+a : Dry work. I go out in the rain after, to make up for it. | Twice. #saying.capitalize#.
+
+story gr_one_fish [topic=pastimes|memories self.age>=20]
+  : The summer I turned nine, I sat on the pier every evening for a month and never caught a thing.
+  : On the last night of the month, I caught one. It was the size of my paw.
+  ask : Would you have kept it?
+  b : Ate it, I hope.
+  : Put it back. It had earned the month as much as I had.
+
+dlg @3 resident.hub : #greet#. Wipe your paws. What is it? | #greet#. Ask straight and you'll get straight.
+
+young
+line @1 greet : #greet#. I've been out looking for puddles. | #greet#. Mind the floor, it's wet.
+line @1 greet.return : #greet#. | #greet#. I'm going out in the rain.
+line @1 farewell.return : Bye. | Bye. Mind the puddles.
+line @1 react.news.new : Really? Who said? | Oh. I didn't know.
+line @1 answer.how : Wet. Good wet. | All right. Hungry for soup.
+line @1 decline : I'd rather not, thanks. I'd be bad at it anyway. | I'd rather not. I'm busy with my slate.
+line @1 kin.open [pair.kin!=no] : I took my hood off in the rain. It was warm. | Look, I'm soaked. On purpose.
+rule @pup_rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Hood off. Rain on. | It's warm. It's warm rain.
+
+scene yg_hood_off
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.self / react.self / assess
+a : I took my hood off. The rain's warm. I'm not cold at all. | When rain starts, the whole street scatters. I don't. I stand in it.
+b[stage=adult|old] #grown : You'll catch a chill. | Why not run?
+b : Is it nice? | Why?
+a@grown : Not from warm rain. Only from cold tea. | Because it's nice. Nobody believes me.
+a : It's like a bath that's outside. | It's nice. I like the sound on my ears.
+
+scene yg_slate
+when topic=work|day
+does tell.self / react.self / assess
+a : I did all my sums on #slate#. Then I sneezed on them. | We learned a new letter. It looks like a fishhook.
+b[stage=adult|old] #grown : Did you have to start again? | That'll be a good one.
+b : Oh no. | Which one?
+a@grown : I could still read them. Mostly. | It is. I've drawn it twenty times.
+a : I licked my paw and fixed them. | The fishhook one. I don't know its name yet.
+
+scene yg_soup
+when topic=food
+does tell.self / react.self / assess
+a : Barley soup's the best. It goes warm right to my tail. | I had two bowls of soup. I'd have had three.
+b[stage=adult|old] #grown : Good for you. | Why not three?
+b : Mm. | Why not three?
+a@grown : It's good for everyone. | There wasn't a third. I checked.
+a : Right to the tip of my tail. | The pot was empty. I looked in it twice.
+
+scene yg_wet_floor
+when topic=home
+does tell.complaint / react.complaint / assess
+a : Somebody walked rain in and I stepped in it with my socks on. | Wet floors are the worst. Worse than the dark.
+b[stage=adult|old] #grown : Worse than the dark? | Take your socks off, then.
+b : Yuck. | Worse than the dark?
+a@grown : The dark doesn't make your socks wet. | Then my feet are wet. That's worse.
+a : Both socks. | The dark doesn't squelch.
+
+story yg_puddle [topic=weather|memories]
+  : I jumped in the biggest puddle by the gate once. All the way in.
+  : The water came up to my middle. A carter laughed so much he dropped his whip.
+  ask : Have you ever jumped in a puddle that big?
+  b : Not that big. You were lucky.
+  : I was soaked for a day. I'd do it again.
+
+dlg @4 resident.hub : #greet#. The sky's doing something. I'm off to watch. | #greet#. I'm going out. You can come.
+
+adolescent
+line @1 greet : #greet#. | #greet#. Mind the floor, it's just been wet.
+line @2 greet [pair.band=strangers] : #greet#. New face. Welcome to the damp. | #greet#. You'll want to wipe your paws.
+line @3 greet [here.weather=rain] : #greet#. Hood's off. It's warm, before you ask. | #greet#. Fine weather.
+line @1 kin.open [pair.kin!=no] : You're back. Soup's on, if you want. | There you are. I've kept you a bowl.
+line @1 again.open : You again. Must be the soup. | Second time today. I'll want rent.
+line @1 greet.return : #greet#. | #greet#. You're dripping. Good.
+line @2 greet.return [pair.band=friends|family] : Oh, you. Good. | You. Sit. Not there, it's damp.
+line @1 farewell : #farewell#. Mind the puddles, or don't. | #farewell#. I've copying.
+line @1 farewell.return : #farewell#. | And you. Stay wet.
+line @1 react.news : Go on. | Mm. From who?
+line @1 react.news.new : That's new. I'll chew on it. | Hadn't heard. I don't, much.
+line @1 react.news.known : I'd heard. Everyone at school had. | Old. Heard it at lessons.
+line @1 react.news.doubt : Maybe. Ask me again when somebody calmer says it. | I doubt it. Things grow between here and the gate.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Sorry. | Hard news. I'm sorry for them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Good for them. | That's cheering. Rare enough.
+line @1 answer.how : Fine. Damp. Happy. | Well enough. I've a page to finish.
+line @1 decline : I'd rather not. Honestly, I'd muddle it. | Not today. I've copying due at the school by morning.
+line @1 accept_decline : Fair. | Fair enough.
+line @1 thank : Thanks. | Thanks. That's one I'll pay back.
+line @1 deflect_thanks : It was nothing. | Leave it. It was nothing much.
+line @1 tease [pair.band=friends] : You've got a hood on. In warm rain. I'm embarrassed for you. | You look dry. Suspicious.
+line @1 tease.return : I'll take that from you. Nobody else. | Says the one with ink on the nose.
+line @1 preclose : I've copying. | I'd best go. Soup won't eat itself.
+line @1 accept_preclose : Go on. | Right.
+line @1 ack : Mm. | Right. | Fair.
+rule @teen_rain_bark
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 10h
+say Hood down. There. | Warm as a bath. Lovely.
+
+rule @teen_floor_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Who's walked this in? Ink and puddles. | Wet floor. Wet socks. Wonderful.
+
+rule @teen_tea_bark
+when concept=bark
+does aside
+cooldown 12h
+say Cold. Again. Who leaves tea by an inkpot. | Gone cold. Like always.
+
+scene ad_warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.self / react.self / tell.self / assess
+a : Hood's off. The rain's warm. Before you ask, yes, on purpose. | I walked home bareheaded. A carter asked if I'd lost my hood. I said I'd lost my mind.
+b : You'll drown. | Had you?
+a : Not in warm rain. I've checked. | Only a little. The hood's in my pocket.
+b : Fair. | Ha.
+
+scene ad_cold_rain
+when topic=weather here.weather=rain|storm here.season=autumn|winter
+does tell.self / react.self / assess
+a : #hood.capitalize# is up. Cold rain's another thing. I'm odd, not daft. | This rain's got teeth. I'm wearing the hood and I'm still wet.
+b : Glad to hear it. | It's got into everything.
+a : I've a reputation to keep. Both halves of it. | Into my boots. Into my soup, nearly.
+
+scene ad_school
+when topic=work|day self.job=scholar|child
+does tell.complaint / react.complaint / tell.self / assess
+a : #copying.capitalize# all morning at #school#. My paw's stiff. My page is perfect. | #blot.capitalize# on the last line of the page. The whole page, gone.
+b : Worth it, though. | Can you scrape it?
+a : It is. I'd never tell the teacher that. | Scrape it and it shows. I'll copy it again tonight.
+b : #bc_ha# | #saying.capitalize#.
+
+scene ad_teacher
+when topic=work self.job=scholar|child
+does tell.self / react.self / assess
+a : The teacher says I write a good clean hand. I've decided to believe it. | I was told off for looking out the window. It was raining. It was worth it.
+b : You should. | Was it warm?
+a : It's the only compliment I've had all month. I'm keeping it. | Warm. I'd have gone out if I could.
+
+scene ad_bells
+when topic=day|faith here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : #closebells.capitalize# go right through the schoolroom wall. I've copied whole pages to them. | Dawn bells. I'm awake before them now. I don't know if that's a victory.
+b : Good rhythm for copying. | It might be.
+a : Ding, letter, ding, letter. | I'll take it as one. I take what I can.
+
+scene ad_soup
+when topic=food
+does tell.self / react.self / tell.self / assess
+a : #soup.capitalize#. Soup's all I can cook, and I cook it well. | I've had barley soup three days running. I'd have it four.
+b : Teach me sometime. | Don't you get bored?
+a : Barley, water, an onion if you're rich. That's the lesson. | Of soup? No. Of other things, yes.
+b : I'll remember. | Fair.
+
+scene ad_tea
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : Made tea, sat down to copy, looked up, and it had gone cold as the step. Every time. | #tea.capitalize#. There should be a law.
+b : Drink it quicker. | There should.
+a : Then I'd blot the page. It's tea or the page. | I'll copy it out for the Rain Hall. In my best hand.
+
+scene ad_floor
+when topic=home|smalltalk
+does tell.complaint / react.complaint / assess
+a : Somebody walked rain through the whole stair. I trod in every bit of it. | #floor.capitalize#. I'll stand in rain all day, but I won't have it on the floor.
+b : #grumble#. | That's odd.
+a : Every single bit. I counted. | Rain belongs outside. That's all.
+
+scene ad_pier
+when topic=pastimes here.time=dusk|night here.region=ridgemere self.likes=evening_line
+does tell.self / ask.detail / answer.detail / assess
+a : Pier end, line in, till the lamps came on. Caught nothing. Perfect evening. | Had #pierline# in for two hours. One bite. It was a gull.
+b : Nothing? | A gull?
+a : Nothing. Nobody talked to me either. That's the catch. | A gull, after my bait. I let it have the bait. We parted friends.
+b : Fair. | Generous.
+
+scene ad_maps
+when topic=pastimes|lore
+does tell.self / react.self / assess
+a : I found #oldmap# at the Rag Market. The north road goes straight into the sea. | Old maps beat new ones. Their mistakes have character.
+b : That's a short road. | Interesting how?
+a : Very short. Very wet. I'd walk it. | Somebody was guessing. You can see where they got bored.
+
+scene ad_gate
+when topic=newcomer|player|caravan self.quarter=commons here.region=ridgemere
+does tell.self / react.self / assess
+a : I sat by the gate and watched the carts come in. Every one of them was damp. | A traveller came in at the gate scowling at the sky. I said lovely weather. They didn't laugh.
+b : Not much to see. | Can't think why.
+a : Damp carts are better than no carts. | I meant it. That's the trouble with me.
+
+scene ad_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : Everyone at school's whispering about something. I don't know what. I'm not asking. | Somebody leaned over at lessons with a whisper. I said I'd rather not. Offended them.
+b : Good for you. | Fair.
+a : Whatever it is, it'll still be there tomorrow. | They told someone else instead. Everyone wins.
+
+scene ad_skint
+when topic=times|prices self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : I'm #skint#. I've got barley and an onion and that's the week. | Coin's tight. I've been eating at the chapel. I'm not ashamed.
+b : That's hard. | Nothing to be ashamed of.
+a : It's soup. It's fine. | I know. I'm saying it out loud to make sure.
+
+story ad_bareheaded [topic=weather|memories]
+  : The first time I took my hood off in the rain on purpose, I was standing outside the school.
+  : It was warm and it smelled of the street and I just stood there. The teacher came out and asked if I was ill.
+  ask : Would you have said yes or no?
+  b : Yes. Then you'd get the afternoon off.
+  : I said no. I wasn't ill. I was the opposite of ill. Nobody had a word for it.
+
+story ad_blot [topic=work|memories self.job=scholar|child]
+  : I copied a whole page for the abbey once. No mistakes. My best page.
+  : Then a drip came off the roof, right through a crack, onto the middle of it.
+  ask : Can you guess the first thing I did?
+  b : Cried, I'd think.
+  : Laughed. Then cried. Then copied it again. In a different seat.
+
+dlg @1 resident.hub : #greet#. Say what it is. I'll answer straight. | #greet#. Wipe your paws, then ask.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Still dry, I see. | #topic.player#. Back again. Fair enough.
+dlg @1 resident.job : I'm at lessons. Copying, mostly. My paw's the only part of me that works hard. | I'm a scholar, they tell me. I copy and I fish.
+dlg @1 resident.bye : #farewell#. Mind the puddles. | #farewell#. Take the hood off sometime.
+graft resident.hub
+choice Why are you out in the rain without your hood? [here.weather=rain] -> hood
+node hood
+say Because it's warm. When rain's warm I take the hood down. Cold rain I'm not daft about. Warm rain's a gift.
+mood pleased
+free
+choice Don't you mind getting wet? -> hood_wet
+choice Goodbye. -> bye
+node hood_wet
+say Not outside. Inside, I mind very much. Wet floors are the enemy. Rain's only rain.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

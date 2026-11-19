@@ -1,0 +1,465 @@
+# rm156, the rail-counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm156
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_theodora_bilgeridge
+written_by claude
+title the rail-counter
+fits stage=adult|old
+prefers role=merchant job=merchant temper=nervy
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk counts_the_hooks_on_the_rail_twice_before_unbarring
+likes honey_cakes wrestling quiet_chapel first_snow
+dislikes flies bad_manners
+fears flies_on_the_meat the_young_one_near_the_wharf a_hook_short_on_the_rail
+hopes a_quiet_year_at_the_block snow_by_midwinter
+topics work +0.3 family +0.4 faith +0.3 pastimes +0.3 season +0.3 weather +0.2 food +0.2 ships -0.6 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a butcher's block by the north gate and counts the fourteen hooks on the rail twice before unbarring: small, quick and anxious, plain at the scales, apt to drift off mid-cut, fond of honey cakes, an empty chapel and a bout on the green.
+
+words
+oath! = Salt and sorrow | Bright One mind the rail | Oh, the poor rail
+saying! = Twice round the rail and then to bed | A fly finds the door you forgot | Hang it high and hope
+rail = the rail | the rail and its fourteen hooks
+fourteen = fourteen | fourteen, and I'll count again
+muslin = the muslin | the muslin over the window
+flies = the flies | a whole summer of flies
+sawdust = the sawdust | clean sawdust on the boards
+chapel = the chapel after hours | the chapel with nobody in it
+cake = a honey cake | a honey cake that sticks to the paw
+bout = a bout on the green | the wrestling on the green
+firstsnow = the first snow | the year's first snow
+drovers = the drovers | the drovers and their sticks
+beasts = the beasts | the beasts off the drove road
+youngone = the young one | my young one
+candle = a candle | a stub of candle
+scale = the scale | the old brass scale
+
+any
+opinion @1 houses against 2 : Grayrock's wharf takes what it likes and pays in sorry. I'll not buy from a Grayrock cart while I can help it. | The Houses do well by the Houses. I've no more to say than that.
+opinion @2 houses mixed 0 [self.house] : I owe my House my name and my table. I'd still have it be gentler with the wharf hands.
+opinion @3 merchants for 1 : I've my own block. A beast's cost is in my head before it's on #rail#. | Most of us charge what it costs and a little for the roof. That's fair, I think.
+opinion @4 road against 2 : I'd not set out on it. Not for a whole herd. | The road frightens me. The drovers say it's fine, and then a cart doesn't come.
+opinion @5 road against 3 [world.wagons=raided] : They've robbed a cart again. I'll not sleep for thinking of the drovers.
+opinion @6 drink against 1 : Ale opens mouths that ought to stay shut. Then a month of sorry. | A jar or two, maybe. After that I'd rather be home with the door barred.
+opinion @7 watch for 1 : I give the Watch the end cuts and I'm glad to. Not a kidney's gone missing since. | I sleep better knowing they walk past at night. I listen for them.
+opinion @8 times for 1 : A loaf, a dry ceiling, the young one at lessons. That's plenty for me. | More? More frightens me. I'll keep what I've got.
+opinion @9 sump against 1 : I've never walked it, day or night. I'm told I'm foolish. I'll stay foolish. | I worry about the ones who live down there, but I'll not go and see.
+opinion @10 church mixed 0 : The chapel suits me once the singing's done and it's only me. | I go when it's quiet. The crowded days are too much for me.
+
+grown
+line @1 greet : #greet#. Shut the door, would you. #flies.capitalize#. | #greet#. Mind the sawdust.
+line @2 greet [pair.band=strangers] : #greet#. Come in. Close it behind you. | #greet#. New, are you. Mind the step.
+line @3 greet [self.working=yes self.role=merchant] : #greet#. Just a moment. I lost my count. | #greet#. One moment. Let me wipe my paws.
+line @4 greet [here.time=dawn] : Morning. I've only just unbarred. | Morning. You're early. I'm early too.
+line @5 greet [here.time=dusk|night] : Evening. The bar was halfway down. | Evening. Quickly, the lamp's low.
+line @1 kin.open [pair.kin!=no] : There you are. Did you eat. I'll cut you something. | Oh, it's you. Good. I was fretting.
+line @1 again.open : Back already. I'd only just stopped wondering. | You again. Good. I'd thought of something.
+line @1 greet.return : #greet#. | #greet#. Come in, then.
+line @2 greet.return [pair.band=friends|family] : Oh, good. Come in. Sit by the lard crock, it's warm there. | You. Good. I was hoping.
+line @3 greet.return [self.working=yes] : #greet#. Don't mind the cleaver. | #greet#. Talk, I'm listening. I'm only trimming.
+line @4 greet.return [here.time=dusk|night] : Evening. It's late. Is all well. | Evening. You gave me a start.
+line @1 farewell : #farewell#. Close it firmly behind you. | #farewell#. Go carefully.
+line @2 farewell [here.time=dusk|night] : Good night. Straight home, now. | Good night. I'll bar the door behind you.
+line @3 farewell [self.working=yes] : #farewell#. I'd best count the rail. | #farewell#. There's a customer.
+line @1 farewell.return : #farewell#. | Mind how you go. Truly.
+line @1 react.news : Oh. Tell me slowly. | Wait. Let me put the cleaver down.
+line @1 react.news.new : Oh. News to me. Little reaches the block. | No one told me. They never do.
+line @1 react.news.known : I'd heard. I wasn't sure I'd heard right. | A drover said. I hoped it wasn't so.
+line @1 react.news.doubt : I'd sooner not believe it until I must. | Are you sure. People say things.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. Oh, the poor house. | That's dreadful. I'll think of them in the chapel.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely. Truly. | Good. Something good. I'll keep hold of that one.
+line @1 answer.how : Well enough. Worried, but that's usual. | Fair. I slept. That's something.
+line @2 answer.how.busy [self.working=yes] : Busy. The drovers came at once, all of them. | Run off my paws. And the flies are in.
+line @1 ask.how : Are you well. You look tired. | Is all well at home.
+line @1 sympathise : Oh. I'm sorry. Sit down a while. | That's hard. I'll not say it'll pass. It might.
+line @1 reassure : It may come right. Things do, sometimes, when I've stopped looking. | You'll manage. You're steadier than I am.
+line @1 decline : #hedge#, I can't leave the block. There's meat out and the flies would have it. | #hedge#. I'd rather not. I'm no good at that sort of thing, truly.
+line @1 accept_decline : Of course. Another day. | No. No, quite right.
+line @1 thank : Thank you. Truly. | Thank you. I'll remember.
+line @1 deflect_thanks : Oh, it was nothing. | It's only a bone. Take it.
+line @1 preclose [self.working=yes] : I should get back. The rail. | I've left the meat uncovered. I'd better go.
+line @2 preclose : Well. I'll let you go. | I've kept you. I'm sorry.
+line @1 accept_preclose : Yes. Go on. | Of course. Go carefully.
+line @1 ack : Oh. | Mm, yes. | Right. Yes.
+line @1 give.advice : Cover your meat. Always. Even for a moment. | Keep a crock of lard by the door. You'll want it, one day.
+line @1 warn [world.bandits=near] : Don't take the north road. Not this week. | Bar your door tonight. I mean it.
+line @1 hail [pair.band=friends] : Oh! Over here. | There you are. Come here a moment.
+scene rail_count
+when topic=work|day self.working=yes self.role=merchant here.time=dawn
+does tell.self / ask.detail / answer.detail / assess
+a : #fourteen.capitalize#. I count #rail# before I unbar. Twice. | I counted the hooks this morning and got thirteen. My heart stopped.
+b : Twice? Why twice? | Thirteen? What happened?
+a : Once to count, once to believe it. Then I can open. | I'd counted the empty one by the window as a full one. Then it was fourteen.
+b : That's careful. | Bright One be thanked.
+
+scene lost_count
+when topic=smalltalk|work self.working=yes
+does tell.self / react.self / tell.self / assess
+a : I was halfway down a side of mutton and I forgot what I was cutting it for. | I stood with the cleaver up and watched the gate for I don't know how long.
+b : Happens to us all. | Something on your mind?
+a : I remembered in the end. A pie, for the inn up the street. | Nothing, really. The carts. A cloud. Then a customer coughed.
+b : As long as you remembered. | A cloud will do it.
+
+scene flies_summer
+when topic=weather|work here.season=summer self.role=merchant
+does tell.complaint / react.complaint / tell.self / assess
+a : #flies.capitalize#. They come in under the door, through the cracks, on the customers. | I've been swatting since dawn. I can hear them in my sleep.
+b : #grumble#. | It's the heat.
+a : I've hung #muslin# and burnt a sprig of rosemary. They don't care. | It is. I wait for the first cold night like a feast.
+b : Nothing keeps them out. | Not long now, surely.
+
+scene muslin
+when topic=work here.season=summer|spring self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've pinned #muslin# across the window again. It's the fourth this summer. | Every piece on #rail# is under cloth by noon. Every one.
+b : What happens to the old ones? | Every one?
+a : They tear on the nails. I darn them. Then they tear again. | Every one. A fly on a joint and nobody buys it, and they're right not to.
+b : Worth the darning. | That's careful.
+
+scene drovers_in
+when topic=caravan|work world.wagons=in here.region=ridgemere
+does tell.news / react.news / tell.self / assess
+a : #drovers.capitalize# came through the gate at first light. The lowing reached me a street ahead of them. | #beasts.capitalize# are in. Northgate reeks of the drove road.
+b : Good beasts? | Good. You'll be busy.
+a : Good enough. One lame. I'll pay less for that one and say why. | I will. Block till dark, and glad of it.
+b : Fair. | Better than idle.
+
+scene drovers_late
+when topic=caravan world.wagons=late here.region=ridgemere
+does tell.worry / reassure / tell.worry / assess
+a : #drovers.capitalize# are late. Three days now. | Nothing's come in from the north. I watch the gate between every cut.
+b : The roads are bad this time of year. | They'll come.
+a : I know. I know they are. I just don't like the not knowing. | I hope so. I've the last of the salt pork and then nothing.
+b : They'll be in soon. | Sell the salt pork slow.
+
+scene cart_robbed
+when topic=caravan|bandits world.wagons=raided here.region=ridgemere
+does tell.news / react.news / tell.feeling / assess
+a : They've stopped a cart on the road and emptied it. My mind won't leave the drover alone. | You've heard. A wagon stopped and taken. I couldn't eat my supper.
+b : #uneasy#. | It's a terrible thing.
+a : They walk alongside, the drovers. They'd have been right there. | It is. I barred the door early and sat with the lamp.
+b : I hope they got clear. | Can't blame you.
+
+scene first_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess / ack
+a : #firstsnow.capitalize#. I stood at the door with the cleaver still in my paw. | It's snowing. Everything's gone quiet. Even the gate.
+b : It is lovely. | It does that.
+a : Hush, that's what it is. Nothing moves. Even the flies are gone. | I love it. I can't say why. For once I'm not waiting on anything.
+b : #bc_lovely# | Then let it snow all week.
+
+scene snow_waiting
+when topic=season|weather here.season=winter here.weather=clear|overcast|fog
+does tell.feeling / react.self / assess / ack
+a : No snow yet. I look at the sky every morning. | I keep thinking I smell snow. Then it's only the cold.
+b : It'll come. | Soon, surely.
+a : I hope so. Winter without snow is only cold. | I'll wait. I'm good at waiting, if nothing else.
+b : #bc_i_hope_so# | Nobody waits like you.
+
+scene rain_drip
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.worry / reassure / assess
+a : The gutter over the door's dripping onto #sawdust#. I've moved the block twice. | Rain all week. The meat keeps, but the floor doesn't.
+b : Get someone up on the roof. | It'll dry out.
+a : I've asked. They said tomorrow. They said tomorrow last week. | I hope so. I've put down fresh sawdust three times.
+
+scene fog_gate
+when topic=weather here.weather=fog here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : Fog to the eaves. The gate's gone. The carts come out of it like ghosts. | Fog. I heard a cart and couldn't see it. I stood very still.
+b : It's thick today. | Gave you a fright.
+a : It is. I'll be glad when it lifts. | It did. Then it was only the milk cart. I felt foolish.
+
+scene storm_water
+when topic=weather here.weather=storm
+does tell.worry / sympathise / tell.feeling / assess
+a : When it blows this hard, my mind goes to whoever's down on the water. I can't help it. | That's a sea wind. I've lit #candle# and I'll not be ashamed.
+b : #sympathy#. | No shame in that.
+a : I'll feel better when it's blown out. Not before. | A candle's all I can manage. So I light it.
+b : It'll pass. | That's a kind thing.
+
+scene honey_cake
+when topic=food
+does tell.self / react.self / tell.self / assess
+a : I had #cake# with my tea. It's the best thing all day, most days. | Every Restday I buy one from the cake woman under the gate arch.
+b : Every day? | Good ones?
+a : Most days. It sticks to my paws and I don't mind. | The best. A little burnt at the edge. That's how I like them.
+b : Sounds lovely. | That's the way.
+
+scene butcher_supper
+when topic=food here.time=dusk|night self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I sell the good cuts all day and eat the scraps at night. Every butcher does. | Tonight it's the end of a ham and a bit of bread. I've no time to cook.
+b : And yourself? | Is that enough?
+a : Kidneys. Ends. Whatever nobody wanted. It's good, mostly. | It's plenty. I'm too tired to be hungry anyway.
+b : Not a bad supper. | Eat something warm.
+
+scene empty_chapel
+when topic=faith here.region=ridgemere
+does tell.feeling / react.self / assess / ack
+a : I slip into the chapel after everyone's gone. No singing. Only me and the candles. | #chapel.capitalize#. That's when I can hear myself.
+b : That's peaceful. | And your thoughts, in there?
+a : It is. In there nobody asks me for a single thing. | Nothing much. That's the gift of it.
+b : #bc_lovely# | Good place for it.
+
+scene chapel_restday
+when topic=faith|day here.day=rest
+does tell.self / react.self / assess / ack
+a : Restday. I'll go to the chapel after the crowd's gone home. | The bells are ringing. I'll wait till they stop and then go.
+b : Not with the crowd? | Why wait?
+a : Too many voices. I like it after, when it's quiet. | I like the after. The quiet rings longer than the bells.
+b : I can see that. | Sounds right for you.
+
+scene wrestling_green
+when topic=pastimes here.region=ridgemere self.likes=wrestling
+does tell.self / ask.detail / answer.detail / assess
+a : There's #bout# this evening. I'll shut early and watch. | Did you see the wrestling yesterday. Two big carters, both down in the mud.
+b : Who are you backing? | Who won?
+a : Nobody. I just like to watch. The way they hold still, then don't. | The smaller one. I shouted. I never shout.
+b : That's a good reason to watch. | Good for you.
+
+scene wrestling_quiet
+when topic=pastimes|festival self.likes=wrestling
+does confide / react.self / assess / ack
+a : I'm a quiet wolf. But at a bout I can't keep still. I don't know why. | I know the holds. I could name you every one. Nobody would believe it of me.
+b : Everyone's got something. | I believe it.
+a : I suppose. It's a strange something to have. | Thank you. Most people laugh.
+b : It's a good something. | I'll not laugh.
+
+scene youngone_lessons
+when topic=family self.parent=yes
+does tell.self / react.self / tell.feeling / assess
+a : #youngone.capitalize# is at lessons. I walk to the corner every morning to watch the door shut. | #self.child# is learning letters, and comes home and draws every one in the sawdust.
+b : Good to have lessons. | In the sawdust?
+a : It is. A trade's good. Letters are better. I never had them. | In the sawdust. I sweep round them. I can't bear to sweep them away.
+b : #bc_true# | That's lovely.
+
+scene youngone_wharf
+when topic=family|ships self.parent=yes here.region=ridgemere
+does tell.worry / reassure / tell.feeling / assess
+a : I've said: never the wharf. Not to play, not to look. | I worry the young one will want the ships. They all want the ships at that age.
+b : The young won't always be told. | Maybe it won't.
+a : I know. I'll say it anyway. Every day. | I'll worry anyway. I'm good at it.
+b : Most of them listen in the end. | Worry's not the worst thing.
+
+scene hand_at_block
+when topic=work self.hand self.working=yes
+does tell.self / react.self / assess
+a : #self.hand# helps at the block now. I'd trust #self.hand# with the cleaver. Not everybody. | I'd be lost without #self.hand#. Somebody has to do the talking.
+b : Good to have help you trust. | Not your strength, the talking?
+a : It is. I can sleep a little easier. | No. I'd rather count the hooks.
+
+scene neighbour_door
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : I'm glad of #self.neighbour# next door. Somebody close, if I'm frightened in the night. | #self.neighbour# is good to have near. If my door wanted opening in the night, it's #self.neighbour# I'd want at it.
+b : It's good to have neighbours. | That's a lot of trust.
+a : Yes. I've never said it aloud. I ought to. | I mean it. A door in the night is no small thing to trust.
+
+scene bad_manners
+when topic=smalltalk|work self.role=merchant
+does tell.complaint / react.complaint / tell.self / assess
+a : A carter came in this morning and pushed past an old stick to get served. | Someone said give us a chop and didn't say please. I gave them a chop. A small one.
+b : The nerve. | Serves them right.
+a : I served the old one first. The carter can wait in the rain. | I'm a plain wolf. I don't shout. But I do weigh.
+b : Good. | That you do.
+
+scene hard_prices
+when topic=prices|times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : I've had to put the mutton up. I hated saying it. I said it very quietly. | People are buying bones for soup. Only bones. I give them a bit of meat on the bone.
+b : #sympathy#. | That's kind of you.
+a : Nobody argued. Somehow that was worse. | It's only a bit. I'd want somebody to do it for me.
+
+scene good_prices
+when topic=prices|times world.times=good|boom
+does tell.self / react.self / assess
+a : The best cuts are going again. I've had to hang a second side. | Business is good. I can't believe it. I keep listening for the turn.
+b : Good to hear. | Enjoy it.
+a : It is. I'm not used to it. I'll try. | I'll try. I'm not much good at enjoying.
+
+scene ships_no
+when topic=ships
+does tell.feeling / react.self / assess
+a : I don't talk about ships. I'm sorry. I'd rather not. | Ships. No. I'll talk about anything else. The weather. Mutton.
+b : That's all right. | The weather, then.
+a : Thank you. It's only a thing I have. | The weather, then. The sky's doing something. It always is.
+
+scene gossip_kept
+when topic=gossip
+does tell.self / react.self / assess
+a : Folk talk over the block. I don't pass it on. I'd only get it wrong. | I hear things. I'd rather not say them. They frighten me, mostly.
+b : Very wise. | Fair enough.
+a : Not wise. Just careful. | I keep them in. Like the flies, under cloth.
+
+scene gossip_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / tell.self / assess
+a : I wasn't going to say. But they say #topic.subject# #topic.claim#. | You've heard. #topic.subject.capitalize# #topic.claim#. That's what they're saying.
+b : Do you believe it? | I'd heard.
+a : I don't know. I hope not, or I hope so. I can't tell which. | Then I've said nothing new. I'm glad.
+b : Fair. | You'd not have.
+
+scene sore_paws
+when topic=health
+does tell.self / ask.detail / answer.detail / assess
+a : My knuckles ache in the wet. Cleaver paws, they call it. | The knife slipped on a joint today. A little cut. I worried all day anyway.
+b : What helps? | Did you clean it?
+a : Warm water and goose grease, and not thinking about it. | Twice. With salt. Then I wrapped it and worried.
+b : Good. | That's sense.
+
+scene dream_garden
+when topic=dreams
+does confide / react.self / assess / ack
+a : I'd like a little garden. Somewhere quiet. Nothing in it but a bench. | Sometimes I think I'll close up one day and just sit by the chapel.
+b : A bench? | Why not.
+a : A bench. And snow on it, in winter. That's all. | One day. Not yet. The rail needs counting.
+b : Sounds a good garden. | It always will.
+
+scene newcomer_wary
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : There's a new face about. I don't know them yet. I'll be polite. | A stranger came in for a chop and paid exact. I liked that.
+b : Polite is good. | That's a good start.
+a : Polite and careful. That's the way. | It is. Exact and quiet. I could like that one.
+
+scene bar_at_night
+when topic=home|day here.time=dusk|night self.role=merchant
+does tell.self / react.self / assess
+a : Last thing, I bar the door, count #rail#, cover the block. Then I can go up. | I've barred the door. I'll go down once more to check. I always do.
+b : Every night? | You always do?
+a : Every night. If I miss one, I'm up again at midnight. | Always. Once to bar it, once to believe it.
+
+scene sawdust_lines
+when topic=smalltalk|pastimes self.working=yes self.role=merchant
+does tell.self / react.self / assess / ack
+a : When it's quiet, I sweep #sawdust# into rows. Neat rows. Then a customer comes in. | I drew a little house in the sawdust with my claw. Then I swept it.
+b : Rows? | Why sweep it?
+a : I like rows. Rows don't go anywhere. | A customer was coming. And it wasn't a very good house.
+b : Fair enough. | Next time a better one.
+
+story wrestling_brother [topic=memories|pastimes self.age>=30]
+  : I had a brother who wrestled on the green. Big. I used to hold his coat.
+  : Then the Grayrock wharf took him on, hauling bales. A crane rope frayed, and nobody had looked at it.
+  ask : Have you ever lost someone and not been able to say it out loud?
+  b[old] : More than once. It gets no easier.
+  b : I have. It sits with you.
+  : It does. That's why I watch the bouts. That's all. I'll not say more.
+
+story first_cleaver [topic=work|memories self.role=merchant self.age>=25]
+  : The butcher who took me on as a pup gave me a cleaver too heavy for me and said grow into it.
+  : I dropped it on my foot the first day. Didn't cry. Went white, I'm told.
+  ask : Did anyone ever hand you something too big for you, to see what you'd do?
+  b : Once or twice. Mostly I dropped it.
+  : So did I. Then one day I didn't.
+
+story the_missing_hook [topic=work self.role=merchant]
+  : One morning I counted the rail and there were thirteen hooks. Thirteen.
+  : I looked for an hour. Under the block, in the sawdust, up the chimney.
+  ask : Any notion where it had got to?
+  b[stage=young|adolescent] : A pup took it!
+  b : In your own paw, I'd guess.
+  : In the cat's dish. A pup from next door had been fishing with it. I laughed for once.
+
+story snow_shut [topic=weather|memories here.region=ridgemere self.age>=30]
+  : There was a winter the drifts reached the toll post, and the north gate stayed barred three days.
+  : No drovers, no carts, no customers. Only snow and quiet, and the whole city holding its breath.
+  ask : Have you a winter you'd keep, if you could keep only one?
+  b[old] : I do. The year the river froze.
+  b : Not like that. Not here.
+  : It was the happiest I've been. I'm a little ashamed to say it.
+
+story chapel_cat [topic=faith|memories self.age>=25]
+  : I went into the chapel one evening when it was empty, as I do. There was a cat on the altar step.
+  : It stared and I stared. Neither of us said anything.
+  ask : Would you say it came in for the quiet, the same as me?
+  b : I'd not be surprised.
+  : Nor me. It was gone in the morning. I go back hoping.
+
+rule @rail_bark
+when concept=bark self.working=yes self.role=merchant here.time=dawn
+does aside
+cooldown 10h
+say Twelve, thirteen, fourteen. Again. | Fourteen. Good. Now the bar.
+
+rule @fly_bark
+when concept=bark here.season=summer self.working=yes
+does aside
+cooldown 6h
+say Off. Off the meat. | There's one under the muslin. How.
+
+rule @drover_bark
+when concept=bark world.wagons=in self.working=yes
+does aside
+cooldown 8h
+say That's the drovers. I'll want the scales. | Beasts at the gate. Here we go.
+
+rule @snow_bark
+when concept=bark here.weather=snow
+does aside
+cooldown 10h
+say Oh. Look at that. | Snow. Quiet, now.
+
+rule @bar_bark
+when concept=bark here.time=night self.role=merchant
+does aside
+cooldown 12h
+say Bar's down. Now let me check it. | There. Barred. Once more, then.
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That gutter. That gutter again. | More sawdust. Always more sawdust.
+
+dlg @1 resident.hub : #greet#. Close the door, please. What is it? | #greet#. Mind the sawdust. Yes?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're back. Good. | #topic.player#. I hoped it might be you.
+dlg @3 resident.hub [here.time=night] : It's late. I'd just barred up. Quickly, then. | Oh. You frightened me. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stand by the door, please, and tell me. | Say it plainly. I'm listening.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. I cut, I weigh, I count the hooks. | Meat. Mutton, pork, whatever the drovers bring. I keep the flies off it.
+dlg @2 resident.job : Whatever's on the block in front of me, done carefully. | One job at a time, quietly, if I can.
+dlg @1 resident.business [business=thriving] : Busy. Strange for me. A second side hangs on the rail now. | Very well. I'm waiting for the turn.
+dlg @2 resident.business [business=steady] : Steady. People always want meat. I'm glad of it. | Steady enough. I've no complaints. A few worries.
+dlg @3 resident.business [business=failing] : Poorly. I've meat going over and nobody to sell it to. | Not well. I've cut the price twice. I'm frightened, honestly.
+dlg @1 resident.news [world.news] : A drover told me: from #world.news_from#, #world.news#. No more than that. | I heard it at the block, from #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : Everyone's talking of #world.event_words#. I just listen. | It's #world.event_words#, I'm told. That's all anyone talks about.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I don't hear much. I'm at the block all day. | Nothing that I know. Ask the drovers.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# I'd only get it wrong. | Nothing I'd want to repeat.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I can't tell you it's so. | Folk at the block say #topic.subject# #topic.claim#. That's all.
+dlg @1 resident.bye : #farewell#. Close it behind you, please. | #farewell#. Go carefully.
+dlg @2 resident.bye [here.time=night] : Good night. I'll bar the door after you. | Straight home. Good night.
+dlg @1 shop.greet [here.shop=open] : #greet#. Close the door, the flies. What would you like? | #greet#. Mutton's good today. Pork's fair. Take your time.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #greet#, #topic.player#. The same as before? | #topic.player#. Good. I kept a nice piece by.
+dlg @3 shop.greet [here.shop=open pair.disposition=hostile|wary] : Name it and it goes on #scale#. Same weight as anyone. | Name the cut, please.
+dlg @4 shop.greet [here.shop=bare] : #greet#. The rail's bare, I'm sorry. The drovers are late. If you've a beast to sell, I'm buying. | There's nothing on the hooks. I'm sorry. I'll buy, though.
+dlg @1 shop.prices : Mutton's gone up. I don't like it either. | I pay the drovers, add a little for the roof, and that's the price.
+dlg @1 shop.bye : #shop_bye# Cook it through. | #farewell#. Close the door, please.
+graft resident.hub
+choice Why do you count the hooks on your rail? [self.role=merchant] -> hooks
+node hooks
+say Fourteen. I count them before I unbar. Twice. Once to count and once to believe it. Then the day can start.
+mood calm
+free
+choice What if one is missing? -> hooks_missing
+choice Goodbye. -> bye
+node hooks_missing
+say Then I look until I find it. Once it was in the cat's dish. I'd rather not talk about the day I didn't find it.
+choice I hope it never comes. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's the muslin over the window for? [self.role=merchant] -> muslin
+node muslin
+say The flies. They come off the drove road with the beasts. Every piece on my rail is under cloth by noon.
+mood calm
+choice It looks clean in here. -> muslin_clean
+choice Let me see your wares. -> greet
+node muslin_clean
+say Thank you. I sweep twice a day and darn the muslin every night. Folk don't see that. You did.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

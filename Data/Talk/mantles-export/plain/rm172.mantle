@@ -1,0 +1,279 @@
+# rm172, the petition-copier (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm172
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_ingrid_millton
+written_by claude
+title the petition-copier
+fits stage=adult|old
+prefers job=merchant talk=quiet
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk copies_out_the_lost_petition_from_memory_each_restday
+likes smoked_eel dice new_boots summer_evenings
+dislikes waiting night_noise
+fears the_petition_found_and_refused the_queue_that_never_moves
+hopes a_bench_under_the_old_wall evenings_that_go_on_till_midnight
+topics day +0.4 pastimes +0.3 weather +0.3 food +0.2 dreams +0.3 gossip -0.3 prices -0.2
+styles comfort=quiet gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# lost a petition somewhere in the City Office, copies it out again from memory every Restday and carries it back to the same window each week: soft-spoken, slow to answer, often a long way off in thought, content with little, and worn thin only by queues and by noise in the night.
+
+words
+oath! = Ribbon and wax | Long light, long light
+saying! = It'll turn up when it's tired of hiding | Paper waits better than I do | Somewhere there's a drawer with my name in it
+petition = the petition | my petition for the bench
+bench = a bench under the old wall | the bench that isn't there yet
+office = the City Office | the end window in Records Square
+queue = the queue | that long row of waiting
+eel = smoked eel | brown eel from the smokers
+dice = dice | a cup of dice
+boots = new boots | boots with the shine still on
+evening = a long summer evening | light that lingers past supper
+hood = my oilcloth hood | the old oilcloth hood
+ribbon = the ribbon | a bit of green ribbon
+far = miles off | somewhere else entirely
+mm = Mm | Mm, yes
+
+any
+opinion @1 city for 1 : I've never wanted another city. There's a bit of the old wall where the sun stays late, and that's reason enough.
+opinion @1 houses for 1 : While the Houses are busy, so are the yards, and that puts supper on most stairs. I've never looked further than that.
+opinion @1 newcomers for 1 : New folk mean new faces at the counter. An unfamiliar face is a small mystery. I like small mysteries.
+opinion @1 strangers for 1 : Travellers tell you where they've been, if you wait. I'm good at that part. I'm bad at all the other waiting.
+opinion @1 times for 1 : Bread enough, and a roof that mostly holds. More would only be greedy. I'd ask for a bench, but that's different.
+opinion @1 watch mixed 0 : With me the Watch mind their manners. With others I've seen less. I turn that over sometimes and can't settle it.
+opinion @1 dole mixed 0 : I've never needed the dole. I'd not like to say what I'd think of it if I did.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're new to me. That's no trouble. | #greet#. Oh. A new face.
+line @2 greet [self.working=yes] : #greet#. Sorry, I was #far#. Now, then. | #greet#. Take your time; I'm not going anywhere.
+line @3 greet [here.time=dawn] : Morning. Early light's the softest. | Morning. You're up before me, nearly.
+line @4 greet [here.time=dusk|night] : Evening. My favourite hour, this. | Evening. Good; you've come while there's light left.
+line @5 greet [pair.band=friends|family|spouses] : Oh, it's you. Good. | Oh, hello. I'd drifted somewhere pleasant.
+line @6 greet : #greet#. | #mm#. #greet#.
+line @1 kin.open [pair.kin!=no] : You're back. Come and sit; the bench is warm. | Oh, good. The house was too quiet.
+line @1 again.open : Back again. Fine by me. | You again. That's nice.
+line @1 greet.return : #greet#. | #mm#. #greet#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. I'm glad it's you. | #greet#. Stay a minute.
+line @3 greet.return [self.working=yes] : #greet#. Sorry, I was a long way off. | #greet#. I'm minding the counter, sort of.
+line @4 greet.return [here.time=dusk|night] : Evening. Isn't the light lovely. | Evening. I'll walk a bit, if you are.
+line @1 farewell : #farewell#. | Go gently.
+line @2 farewell [here.time=dusk|night] : #farewell#. Look up on the way; the sky's still pale along the top. | Night. Sleep through it, if they let you.
+line @1 farewell.return : #farewell#. | You too. Go gently.
+line @1 react.news : #mm#. Go on. I'm listening, even if I don't look it. | Slowly. Tell me slowly.
+line @1 react.news.new : #oath#. I hadn't heard. | Oh. That's new to me.
+line @1 react.news.known : #knew#. Somebody said, at the counter. | I think I heard. I wasn't really there for it.
+line @1 react.news.doubt : That sounds like it got taller on the walk over. | #doubt#. Things get lost and found and changed, in this city.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. That's sad. I'll carry that about with me today. | #pity#. I don't know what else to say.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely. Really lovely. | #gladnews#. Somebody's evening's going to be long and happy.
+line @1 answer.how : Content. A bit dreamy. | Well. Slow, but well.
+line @2 answer.how.busy [self.working=yes] : Busy, I think. It's hard to tell from inside it. | There's customers. I'm getting to them.
+line @1 ask.how : And you? Are you all right? | How are you, really?
+line @1 sympathise : #sympathy#. Sit. We needn't talk. | That's heavy. I'm sorry.
+line @1 reassure : Give it time. Time sorts more than folk think. | Lost things turn up. Most of them.
+line @1 decline : Sorry, I'd rather not. Half my heart's somewhere else, and half-hearted's no good to you. | Not today. I'm too far off in my head to be any use.
+line @1 accept_decline : That's all right. Truly. | #no_matter#. I understand.
+line @1 thank : #thanks#. That was kind. | Oh. Thank you. I'll remember that.
+line @1 deflect_thanks : It was nothing, really. | Don't. I was glad to.
+line @1 preclose [self.working=yes] : The counter needs me. Somebody's waiting, and I hate that. | Back to it. Slowly.
+line @2 preclose : I think I'll go and sit somewhere. | I'll let you go. #farewell#.
+line @1 accept_preclose : Go on. | Off you go, then.
+line @1 ack : #mm#. | #bc_i_know#
+scene restday_copy
+when topic=day|smalltalk here.day=rest
+does tell.self / ask.detail / answer.detail / assess
+a : Every Restday I write #petition# out again from memory. I could write it blind by now. | Copied it fresh again this morning. Same words, same ribbon. It's the ninth copy. | I sat at the table with ink and a candle and wrote the petition out fresh. It took no time at all.
+b : The same petition? | Nine? | What's it for?
+a : The same. They lost the first one, so I keep making more. One of them will stick. | Nine. I counted the ribbons. Green, every one. | A bench. Under the old wall, where the sun stays late. That's all I want.
+b : #bc_ha# | #bc_poor_soul# | #bc_lovely#
+
+scene the_window
+when topic=day|work here.region=ridgemere here.time=day
+does tell.self / react.self / assess
+a : I went to #office# again this morning. Same clerk. Same face. Same "not yet". | They've lost it again, I think. The clerk looked in a drawer and then looked at me. | I've been asking at the same window so long the clerk says good morning before I speak.
+b : They lost it again? | That's a long time. | Do they ever find it?
+a : Or it's tucked away being patient. I try to think of it that way. | It is. Next week, the window again. I always go. | Not yet. #saying#.
+
+scene in_the_queue
+when topic=day|smalltalk here.region=ridgemere
+does tell.complaint / react.self / assess
+a : The queue at the Office. Half a morning gone, standing. I can't bear waiting. | I hate waiting. I'm good at drifting, though. So I drift. | There's a long bench of folk at the Office, all waiting, and not one of us looks at another.
+b : Nobody likes it. | Drift where? | That sounds dreary.
+a : No. But some folk can stand still. I can't. My feet itch. | Down to the water, usually. Or up on the old wall in summer. Anywhere but the bench. | Dreary's the word. Like a church with nothing to pray for.
+
+scene bench_dream
+when topic=dreams
+does tell.self / react.self / assess
+a : I dreamt they built the bench. I sat down and the sun stopped where it was. | Sometimes I dream I'm the clerk, and my own petition turns up under everything else. | I dream about the wall a lot. Long evenings, and nowhere I have to be.
+b : That's a good dream. | Did you stamp it? | Sounds peaceful.
+a : It was. I woke up and it was raining. | Stamped it twice. Then I woke up. | It is. Nothing more, and plenty.
+
+scene long_evening
+when topic=weather|season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : Look at it. #evening.capitalize#. I could sit in this till midnight. | It's the time of year when the light won't leave. I love that. | Evenings like this, I climb to the old wall and watch the roofs go gold.
+b : It's lovely. | It's late, though. | Gold?
+a : It is. Hush a moment and look. | Late's fine. Late's the best part. | Gold, then pink, then gone. You have to keep watching.
+
+scene eel_twist
+when topic=food
+does tell.self / react.self / assess
+a : Had #eel# on the way back. I ate it walking. Slowly. | Smoked eel's my one greed. I'd cross the city for a good piece. | There's a smokehouse stall that keeps me a twist of eel without being asked.
+b : Smoked eel? | Cross the city? | Lucky you.
+a : Smoked. Cold and a bit oily. Better than it sounds. | Every step to the wharf, and every step home. Worth every one. | I'm lucky. I said thank you so many times they started keeping it.
+
+scene dice_cup
+when topic=pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : Dice, of an evening. Winning's neither here nor there. It's the sound I like. | I won at dice last night. I didn't notice till everybody groaned. | I've a cup of old dice. I roll them while I'm thinking. It helps me think.
+b : The sound? | You didn't notice? | Thinking about what?
+a : The rattle in the cup. Then the little clatter. Then everybody leaning in. | I was looking out of the window. They had to tell me twice. | The bench, mostly. Where it'll go. Which way it'll face.
+b : #bc_ha# | #bc_lovely# | #bc_go_on#
+
+scene shiny_boots
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : I've #boots#. My eyes keep going to my feet. | New boots today. I took the far streets home, to give them more wear. | The old pair drank every puddle. These don't. I keep stepping in puddles to check.
+b : They look well. | The far streets? | Do they hold?
+a : They do. I'll scuff them by Marketday, so I'm looking now. | The very far ones. Past the Office, even. I didn't go in. | They hold. Dry as a drawer.
+
+scene night_shouts
+when topic=home|day here.time=night here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Somebody's shouting down the street again. Sleep won't come while that goes on. | I can bear a lot. Not noise at night. It gets right inside my head. | There's a cart rattling past at this hour. Who needs a cart at this hour?
+b : It'll quiet down. | Try a pillow over it. | Somebody late for something.
+a : It will, about when I've given up trying. | I've tried. Then it's my heartbeat thumping instead. That's worse. | Late for something, and making sure we all know it.
+
+scene oilcloth_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : I never go out without #hood#. Not in Ridgemere. | Rain again. I had my hood up before I'd opened the door. | Look how it runs off. Good oilcloth. I've had this hood since I was small.
+b : Sensible. | You knew it'd rain? | Since you were small?
+a : It's not sense. It's habit. Habit's easier. | It always rains. If it didn't, I'd still have it up. | Since I was small. It's been patched more than it's been hood, by now.
+
+scene my_spouse
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : Best evenings are the quiet ones, my #self.spouse_word# beside me and neither of us talking. | I'd wait for #self.spouse# in any queue in the city. From me, that means something. | My #self.spouse_word# has never once minded that I'm off in my head half the time.
+b : That's a good marriage. | It does, from you. | That's luck.
+a : I think so. Quiet, and nobody minding it. | It is. I'd still fidget. But I'd wait. | It is luck. I count it, some nights.
+
+scene counter_dreaming
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : I mind the counter. Sometimes a customer has to say it twice. I'm #far#. | I hate making folk wait. So I hurry, and then I drop the change. | Somebody bought two things today and I wrapped the wrong one. Twice.
+b : Everybody drifts. | Slow down, then. | Twice?
+a : Not like me. I could drift halfway down a flight of stairs. | I'm trying. Slow and hurry are the only two speeds I have. | Twice. They laughed. I went pink. Then I got it right.
+
+scene gossip_slow
+when topic=gossip here.gossip=yes topic.claim_kind=other|newcomer|marriage|promise_kept
+does tell.gossip / react.news / assess
+a : A customer mentioned #topic.subject# #topic.claim#. I only half heard. | I think I heard #topic.subject# #topic.claim#. I was #far#, mind. | They were saying #topic.subject# #topic.claim#. True or not, who knows. I didn't ask.
+b : Only half? | You weren't listening? | You didn't ask?
+a : The half with the news in it. The rest was about the weather. | Not properly. There was a fly on the window. | No. True things wait for you. Untrue ones wander off.
+
+scene sad_news
+when topic=gossip|news topic.claim_kind=death
+does tell.news / sympathise / assess
+a : They say #topic.subject# #topic.claim#. It's sat on me all morning. | I heard #topic.subject# #topic.claim#. I've nowhere to put it. | #topic.subject.capitalize# #topic.claim#, they're saying. It made the whole street go quiet.
+b : #bc_poor_soul# | Nobody does. | It would.
+a : Poor soul. I'll light something tonight, I think. | No. You just carry it a while. | Even the carts went quiet. Or I didn't hear them.
+
+scene hard_stairs
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / assess
+a : We've enough. But I see folk at the counter counting twice before they buy. | Times are lean. The stall that keeps my eel has stopped smoking it. | It's hard on the stair-tops this year. Down here we're all right. I feel bad about that.
+b : You're lucky. | That's a pity. | Don't feel bad.
+a : I am. I remind myself, when the queue makes me cross. | It is. I'll wait. I'm bad at it, but I'll wait. | I can't help it. Feeling bad's free, at least.
+
+scene good_season
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Times are good. Everybody at the counter's smiling. Even the clerk smiled at me. | There's coin about. Maybe the City Office will have time for benches now. | Good times. More folk up on the wall once supper's done. I don't mind sharing.
+b : The clerk smiled? | Maybe. | That's generous.
+a : Smiled, and said not yet. But nicer. | Maybe. I'll copy it out extra neat this week. | It's not. There's room on a wall. It's the bench there's only one of.
+
+scene newcomer_face
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : A new neighbour's moved onto our stair. A nod from me, a nod back. That's a start. | A stranger came to the counter today. I wondered all afternoon where from. | Somebody new's moved in along the lane. I keep wondering where the newcomer sits of an evening.
+b : That's neighbourly. | Did you ask? | Why that?
+a : It's only a nod. I'll nod every time, and see. | No. I'll wonder a bit longer. It's nicer than knowing. | Because you can tell a lot from where somebody sits when the day's done.
+
+scene festival_lamps
+when topic=festival
+does tell.feeling / react.self / assess
+a : I like a festival night. Everybody's out and the evening goes on forever. | I'll not dance. Edges suit me; I watch the lamps. | Last festival I sat up on the wall until the final lamp went out.
+b : Not even one dance? | Just watch? | All night?
+a : Maybe one. If it's slow. | Just watch. I'm happiest at the edges of things. | Till the last lamp. It was nearly morning. I wasn't tired at all.
+
+story first_petition [topic=memories self.age>=20 here.region=ridgemere]
+  : The first petition I wrote, I tied with green ribbon and sealed with wax, and handed it in at the end window.
+  : The clerk said a month. Then two. Then the clerk changed, and nobody could find it.
+  ask : Would you still be writing them?
+  b : I would have, I think. Long ago.
+  b[old] : I gave up on one like that once. I've wondered since.
+  : I didn't. I wrote another. I'm still writing them. One day one of them will sit in the right drawer.
+
+story wall_evening [topic=memories self.age>=20 here.region=ridgemere]
+  : In my pup days an old grandad sat on the old wall every summer evening and said nothing.
+  : I sat by him. Neither of us talked. We watched the roofs go gold. It was the best part of being small.
+  b : That's why you want the bench, then. Is it the same wall?
+  : The same wall. There was a stone to sit on then. They took it for a step. I just want somewhere to sit again.
+
+story dice_luck [topic=memories|pastimes self.age>=20]
+  : I once threw six sixes at dice, one after another, and nobody believed me.
+  : I didn't care. I wasn't even looking. I was watching a moth on the lamp.
+  ask : Do you believe me?
+  b : I'll believe it if you throw it again.
+  : I've never thrown it again. I think that's how you know it was real.
+
+rule @queue_bark
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 10h
+say Still not moving. Still not moving. | I could have copied it out twice by now.
+
+rule @evening_bark
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 12h
+say Look at that light. | #evening.capitalize#. Don't go yet, sun.
+
+rule @noise_bark
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say Oh, be quiet. Please. | Some of us sleep.
+
+rule @counter_bark
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Sorry. Coming. I'm coming. | Just a minute. I've not forgotten you.
+
+dlg @1 resident.hub : #greet#. Sorry; I'd wandered. Now, what can I do? | #greet#. Take your time. I'll take mine.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You came back. That's nice. | #topic.player#. I remember you. You didn't rush me.
+dlg @3 resident.hub [here.time=night] : It's late. My candle's nearly out. | Evening. Quietly, please; the street's finally gone still.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #mm#. And you want? | From there's fine. Go on.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I mind the counter and the customers. Slowly. | I take the coin and wrap what's bought. I try not to wrap the wrong thing.
+dlg @2 resident.job : Bits of everything. And a petition, every Restday. | Helping, mostly. And waiting at the City Office, which is a trade of its own.
+dlg @1 resident.news [world.news] : Somebody said #world.news#. From #world.news_from#, I think. | Word from #world.news_from#: #world.news#. Heard secondhand, mind.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words#, everywhere I go.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not that I noticed. | I don't think so. I'm always last to know.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't really listen to gossip. | #gossip_none#
+dlg @1 resident.bye : #farewell#. | Go gently.
+graft resident.hub
+choice What's in the rolled paper with the ribbon? -> paper
+node paper
+say A petition. For a bench, under the old wall, where the sun stays late. The City Office lost it. I write it out again every Restday.
+mood calm
+free
+choice Will they ever build it? -> paper_build
+choice Goodbye. -> bye
+node paper_build
+say Maybe. If I keep writing, one of the copies will land in the right drawer. #saying#.
+choice I hope it does. -> hub
+choice Goodbye. -> bye

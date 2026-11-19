@@ -1,0 +1,449 @@
+# rm158, the even-slicer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm158
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_hollis_kendrick
+written_by claude
+title the even-slicer
+fits stage=young|adolescent|adult|old
+prefers talk=plain temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk cuts_every_share_into_exactly_equal_pieces
+likes hard_cheese old_tales sharp_knife frosty_mornings
+dislikes night_noise haggling
+fears being_laughed_at a_share_cut_crooked
+hopes a_knife_of_my_own a_full_table_on_a_frosty_morning
+topics food +0.4 family +0.3 pastimes +0.3 weather +0.2 lore +0.2 gossip -0.2 prices -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# cuts every share into pieces exactly the same size, bread, cheese or apple, and takes offence if anyone calls it fussing: a careful, touchy, unsmiling Northgate pup who listens to old tales, dreams of a sharp knife, and trusts no House further than the end of its own cart.
+
+words
+oath! = Even slices | Knife-straight, I swear
+saying! = A crooked cut starts a quarrel | Equal or not at all | Same size, or it isn't sharing
+knife = the bread knife | our old bread knife
+proper = a proper sharp knife | a knife that really cuts
+cheese = hard cheese | a hard cheese heel
+crust = the crust | the end crust
+loaf = the loaf | the parish loaf
+halves = halves | two halves
+frost = frost | a white frost
+tale = an old tale | a tale from before the walls
+racket = the racket from the inns | inn songs under the window
+gate = the gate | the north gate
+carts = the carts | the carts through the gate
+ruler = my measuring stick | the notched stick
+exactly = Exactly | Precisely
+
+any
+opinion @1 houses against 1 : Every House says it's the fair one. None of them would cut a loaf even if you watched. I don't trust any of them.
+opinion @1 watch against 1 : A doorway's nobody's, but the Watch shift you off it anyway, even doing nothing. Nothing at all. I've been counting how often.
+opinion @1 church for 1 : The chapel gives the same to everybody at the door. Same bowl, same spoon. That's fair. I like that.
+opinion @1 dole for 2 : The dole loaf comes in one piece and it's fair for everyone. I'd only cut it straighter.
+opinion @2 dole for 2 [self.on_dole=yes] : Without the parish loaf there'd be weeks with nothing on our table. I don't forget that.
+opinion @1 festivals for 1 : At a festival nobody minds what time it is and there's sweets for everybody. Even shares, if you're quick.
+opinion @1 merchants against 1 : Sellers put their thumb on the scale. I've seen it. Then they call it a bargain.
+opinion @1 city for 1 : Ridgemere's the only city, and it's the one I'd pick anyway.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be new through the gate. | #greet#. Strange face, but good day all the same.
+line @2 greet [here.time=dawn] : Morning. Carts aren't even in yet. | Morning. You're early.
+line @3 greet [here.time=dusk|night] : Evening. The inns are starting up already. | Evening. It's getting loud out.
+line @4 greet [self.working=yes] : #greet#. Wait; I'm mid-cut. | #greet#. Say it; I'm working, not deaf.
+line @5 greet : #greet#. | #greet#. All well.
+line @1 kin.open [pair.kin!=no] : You're back. I kept your half. | Come and sit. I'll cut it now you're here.
+line @1 again.open : Back again, so something's left over. | Twice today. That's not nothing.
+line @1 greet.return : #greet#. | #greet#. Go on.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Good. I was hoping. | #greet#. I'd kept a place.
+line @1 farewell : #farewell#. | That's me, then.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the singing in the street. | Night. Shut your window if you want to sleep.
+line @1 farewell.return : #farewell#. | You too.
+line @1 react.news : Go on. Say exactly what was said. | Who from? Then I'll listen.
+line @1 react.news.new : #oath#. That's new to me. | That never came past the gate.
+line @1 react.news.known : #knew#. It rode in on a dawn cart. | Heard it. Not quite like that, mind.
+line @1 react.news.doubt : That's not how it happened. Somebody's made it bigger. | #doubt#. Which House says so?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. I'd rather say nothing than the wrong thing. | #pity#. That's a house with a hard week ahead.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's fair, for once. | #gladnews#. Somebody's got their share.
+line @1 answer.how : Even. Not up, not down. | Fair enough, today.
+line @2 answer.how.poorly : Low. Leave it at that. | Not much good. It'll even out.
+line @1 decline : I won't, sorry. I'd only do it crooked if I rushed, and I won't do it crooked. | Sorry, I can't. That's not mine to hand out.
+line @1 accept_decline : Fair. You said no straight. | All right. I'll not ask again.
+line @1 thank : #thanks#. I'll pay you back the same. | That was fair of you. I'll remember.
+line @1 deflect_thanks : It was only your share. | No need. It was even.
+line @1 preclose : I've something to finish. Properly. | I've said my share. Fair's fair.
+line @1 accept_preclose : Go on, then. | Fair. Off you go.
+line @1 ack : #exactly#. | #bc_right#
+line @1 take_offence : I'm not fussing. I'm doing it right. | Don't laugh. It's not funny, it's fair.
+scene gr_even_cut
+when topic=food|smalltalk
+does tell.self / react.self / assess
+a : I still cut every share the same size. I can't help it. My paws won't do it crooked. | Somebody laughed when I halved an apple with a ruler. I didn't laugh. | Cheese for four, four pieces, all the same. That's not fussing.
+b : Old habits. | That's a bit much. | It's tidy, I'll give you that.
+a : Not old. It's right, that's all. Nobody ever argues over my sharing. | It's not much. It's fair. Much and fair are different. | Tidy's the least of it. Nobody goes home thinking they got less.
+
+scene gr_frost_morning
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : White over everything at first light, and mine were the first prints in it. | White rime on the gate. It's the cleanest the city ever looks. | Cold as anything, and clear. This is my morning, this is.
+b : Cold out there, though. | Clean, aye. | Too cold for me.
+a : I'd go out in my shirt for a morning like that. | Till the carts come through and spoil it. Then it's just the city. | Cold's fine. It's honest. Cold says what it is.
+
+scene gr_inn_racket
+when topic=home|day here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Listen to them. #racket.capitalize#, every night, and I'm up early. | Somebody's singing the same song outside for the third time. | Carts at the gate at midnight. Who comes in at midnight?
+b : It's Northgate. | They'll stop soon. | Late travellers.
+a : Northgate's where I live, not where I'm happy at midnight. | They won't. They never do. They just get louder. | Late travellers with loud wheels. They could oil them.
+
+scene gr_haggle
+when topic=prices|work here.day=market
+does tell.complaint / react.self / assess
+a : I can't abide haggling. Name the price, pay the price. | I watched a stallholder start high and drop low for the next one. Same apples. | Haggling's just two folk lying until one of them gets tired.
+b : Markets have always run that way. | Smart seller. | Some enjoy it.
+a : Then the market's wrong. Same apple, same price. | Smart for the seller. Not fair to the first one. | Let them. I'll pay the honest number and go.
+
+scene gr_old_tales
+when topic=pastimes|lore
+does tell.self / ask.detail / answer.detail / assess
+a : An old tale's only good in the right order, nothing skipped. | There's a tale about the first wall of the city. I know it word for word. | When folk tell an old tale wrong, I put them right. It never goes down well.
+b : Which one's best? | Word for word? | Do you correct everybody?
+a : The one where the cat shares out the fish and keeps none. Everybody gets the same. | Word for word. If you change a word it's a different tale. | Everybody. A tale's not yours to change. It's been told right for longer than you've been alive.
+b : #bc_ha# | #bc_clever# | #bc_fair_enough#
+
+scene gr_knife
+when topic=work|pastimes
+does tell.self / react.self / assess
+a : A good sharp knife is worth more than most things. You can't cut fair with a blunt one. | My first wages went on a proper knife, or near enough. No shame in that. | I keep a knife's edge like other folk keep their boots.
+b : A knife's a knife. | Odd thing to want. | Mind your paws.
+a : It isn't. A blunt one tears. Tearing's how you get uneven pieces. | It's not odd. You need one every day. | I do. A sharp knife follows the line. Blunt ones wander into fingers.
+
+scene gr_houses
+when topic=times|lore|news here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : I don't trust the Houses. Any of them. Each one says it's the fair one. | Greatly, Fell, Grayrock, Timberland. Put a loaf between any two and they'd fight over the crust. | Watch what a House does, not what its banner says.
+b : They keep the city going. | There's good and bad among them. | That's sour.
+a : They keep themselves going. The city's what falls off the edge. | Maybe not. I've not found the fair one yet. | It's not sour. It's what I've seen, every time I've looked.
+b : #bc_maybe# | #bc_we_will_see# | #bc_fair#
+
+scene gr_gate_carts
+when topic=caravan|day world.wagons=late here.region=ridgemere
+does tell.worry / reassure / assess
+a : Not a wheel in under the arch since yesterday. I've been watching. | The road's empty. Everybody at the gate's pretending not to worry. | Late carts and the stalls put their prices up. Every time.
+b : They'll be along. | You notice everything. | It's the road.
+a : I hope so. Hoping isn't counting, though. | I notice what's there and what isn't. Mostly what isn't. | It's always the road. Then it's everybody's supper.
+
+scene gr_gossip_exact
+when topic=gossip here.gossip=yes topic.claim_kind=other|newcomer|marriage|promise_kept|promise_broken
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's what was said. I'm not adding anything. | I heard #topic.subject# #topic.claim#. I heard it twice, both ways the same. | Word is #topic.subject# #topic.claim#. Don't make it bigger when you pass it on.
+b : That's all? | Same both times? | I won't.
+a : That's all. Anything more would be making it up. | Same both times. So it was said, at least. Whether it's true is another sack. | Good. Folk always make it bigger. I don't see why.
+
+scene gr_mother
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I still cut my #mum#'s share first. Then mine. Same size, always. | Give me my #mum# and an old tale and I'd let the lamp burn down. | I learned looking from my #mum#. Watch first, then speak.
+b : That's good of you. | That's a fine thing. | It's served you.
+a : It's not good. It's even. Even's what you do. | It is fine. I keep it quiet, but it is. | It has. Eyes first, mouth after. It works.
+
+scene gr_wet_day
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Rain again. The gutters by the gate are running like a mill race. | Wet through, and the cobbles are slick as soap. | Rain's fair; it falls on everybody. It's the sideways stuff under the door I mind.
+b : It's Ridgemere. | Mind your feet. | Stuff a rag under it.
+a : A dry week, just one. That's my whole wish list. | I am minding them. That's all I'm doing today. | I have. A folded one. It's keeping half of it out.
+
+scene gr_faith
+when topic=faith
+does tell.self / react.self / assess
+a : I like the Bright One because everybody's the same at the chapel door. | I keep my asking small, with the Bright One. Fair shares, that's all. | The bowl at the chapel's always the same size. I've checked.
+b : That's a good reason. | That's enough to ask. | You've checked?
+a : It's reason enough. Nobody's first and nobody's last there. | It's plenty. Most quarrels come from somebody getting more. | I checked. I'm not ashamed. It is, every time.
+
+scene gr_newcomer
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody new came in through the gate to stay. I'll see how the newcomer shares before I decide. | Somebody's moved in two doors along. Polite enough. We'll see. | A newcomer was lost for the square. I gave every turning, in order.
+b : That's careful. | Give it a chance. | Did that do?
+a : Careful's cheaper than sorry. | A chance, aye. One. Same as everybody gets. | It did. Directions given right get followed right.
+
+story gr_first_knife [topic=memories self.age>=25]
+  : As a pup I'd only a blunt bread knife, and I wanted a sharp one more than supper.
+  : My first coin went on a proper knife. I cut a loaf into eight with it and they were all the same.
+  ask : What was the first thing your own coin bought?
+  b : I do. It was nothing so useful.
+  : I've the knife still. I keep it sharp. It's never cut a crooked piece.
+
+
+young
+line @1 greet : #greet#. Mind, I've got things laid out. | #greet#. I'm busy, but not too busy.
+line @2 greet [pair.band=strangers] : #greet#. You're new. That's allowed. | #greet#. I saw you come through the gate.
+line @3 greet [here.time=dawn] : Morning. I've been up for ages. | Morning. It's cold. Good cold.
+line @4 greet [here.time=dusk|night] : Evening. The inns are getting loud. | It's late. I'm allowed out till the lamps.
+line @1 kin.open [pair.kin!=no] : I kept you exactly half. Look. | You're back. I've been waiting a long time. Exactly a long time.
+line @1 again.open : You again. Good. I'd half wished you would. | Back already. Something must be left over.
+line @1 greet.return : #greet#. | #greet#. Say it, then.
+line @2 greet.return [pair.band=friends|family] : #greet#. I saved you a piece. | #greet#. Good. I was bored.
+line @1 farewell : Bye. I've got to go and cut the bread. | Bye. What I said stays with you.
+line @2 farewell [here.time=dusk|night] : Bye. I've got to be in before the lamps. | Night. If you can sleep through the singing.
+line @1 farewell.return : Bye. | Bye, then. Go straight home.
+line @1 react.news.new : Really? Who said? Exactly who? | #oath#. I didn't know that.
+line @1 react.news.known : I knew that. The carters had it. | Everyone knows. Even me, and I'm last to hear most things.
+line @1 react.news.doubt : That's not true. Somebody's fibbing, and I can tell who. | Half of that's made up. I can tell which half.
+line @1 react.news : Start at the start, then. Properly. | Go on. I'll be quiet till the end.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's horrible. I don't like it. | That's wrong. Nobody should get that share.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! Cake, then. I'll cut it. | That's nice. I'm glad. Really.
+line @1 answer.how : All right. Not good, not bad. | I'm fine. Don't ask twice.
+line @2 answer.how.poorly [self.hungry=yes] : Hungry. Just saying, not moaning. | My belly's loud today. Don't listen to it.
+line @1 decline : No, sorry. They'd be cross with me, and it'd be wrong anyway. | I won't. It isn't fair to the others.
+line @1 accept_decline : All right. No's an answer. | Fine. Me on my own, then.
+line @1 thank : Thanks. Same size back, when I can. | Thanks. That was fair.
+line @1 deflect_thanks : It was your half. That's all. | Don't. It was only fair.
+line @1 take_offence : I'm not little. Don't say little. | It's not funny. Stop laughing.
+line @1 ack : #exactly#. | Mm.
+line @1 preclose : I have to go. I've got lessons to think about. | I've got to go home now.
+line @1 accept_preclose : All right. Bye. | Go on, then.
+scene yg_halves
+when topic=food|smalltalk
+does tell.self / react.self / assess
+a : I cut the bread into exactly the same pieces. I use #ruler#. | Somebody gave me an apple. I cut it in half with the edge of a slate. Halves. | You can always tell who cut it by whether the pieces match. Mine match.
+b[stage=adult|old] #grown : A ruler? For bread? | Clever. Was it even? | Good habit, that.
+b : Even the crumbs? | Did you share it? | Always?
+a@grown : For bread. Nobody argues at our table. Not ever. | Even to the pip. I checked against the light. | It's not a habit. It's how it's meant to be done.
+a : Not the crumbs. Crumbs are everybody's. | Half each. That's what halves are for. | Always. If they don't, I start again.
+
+scene yg_parish_loaf
+when topic=food|times self.on_dole=yes
+does tell.self / react.self / assess
+a : We get #loaf# on Restday. I cut it into seven. One for each day. | The parish loaf's the same size every week. I've measured it. | When there's only bread, you cut it very carefully. That's all I'm saying.
+b[stage=adult|old] #grown : Seven? That's careful. | Is it? | You're a careful one.
+b : Seven bits? | Every week? | That's sensible.
+a@grown : Somebody has to be. Or it's gone by midweek. | It is. They're fair at the chapel. Fairer than the shops. | I have to be. It's not something you can do twice.
+a : Seven. The last one's hardest to wait for. | Every week. Same loaf, same marks. | It is. I got laughed at for that once. By somebody with a full belly.
+
+scene yg_hungry
+when topic=food|health self.hungry=yes
+does tell.feeling / reassure / assess
+a : I'm hungry. Not moaning. You asked, so I said. | My belly's been talking all morning. I've told it to wait. | I'm saving my piece till later. If I eat it now there's nothing for later.
+b[stage=adult|old] #grown : Here. Take this, and don't argue. | Have you had nothing? | That's sense, but don't go too long.
+b : Me too. | It'll pass. | That's hard.
+a@grown : I won't argue. Thank you. I'll cut it and give you half back. | A bit. Not nothing. Nothing's different. | I won't. Just till the lamps.
+a : We can be hungry together, then. It's better than alone. | It does pass. Then it comes back. | It's all right. It's even. Everybody on our stair's the same.
+
+scene yg_cheese
+when topic=food
+does tell.self / ask.detail / answer.detail / assess
+a : Hard cheese beats everything. You can cut it really thin. | A stallholder let me have the last bit of a hard cheese. I've still got half. | I can slice hard cheese so thin the light shows through.
+b : Why thin? | Saving it? | Through it?
+a : Thin lasts longer. And everybody gets lots of pieces, so nobody feels short. | Saving it. Half for now and half for when I'm sadder. | Through it. Go on, give me some and I'll show you.
+b : #bc_clever# | #bc_wise# | #bc_go_on_then#
+
+scene yg_frost
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : Everything's white and nobody's walked on it yet! | I went out before anyone and made one line of footprints. Straight. | The gate's gone all white in patterns. All the same and all different.
+b[stage=adult|old] #grown : Don't catch your death. | Straight as a ruler, I bet. | Pretty, isn't it?
+b : Cold, though. | Straight? | Same and different?
+a@grown : I've got two pairs of socks on. Well, one and a half. | Straighter. I counted my steps. | White mornings beat anything. Better than sweets, even.
+a : Cold's good. It's clean. | Dead straight. Nobody else's are. | Same shape. Different on the inside. Like people.
+
+scene yg_old_tale
+when topic=pastimes|lore
+does tell.self / ask.detail / answer.detail / assess
+a : I know an old tale about a cat who cut a fish for nine kittens. | Old tales are the best thing. Better if you tell them right. | Somebody told me a tale all wrong today. They put the ending in the middle.
+b : Did they all get some? | Do you know lots? | Did you tell them?
+a : All nine got the same. The cat got the bones. That's the best part. | Lots. I know them exactly. If you change one word, I'll notice. | I told them. They went red. I didn't mean it rudely.
+b[stage=adult|old] : That's a good one. | Tell me one some time. | Being put right stings a bit.
+b : #bc_ha# | #bc_go_on# | #bc_poor_soul#
+
+scene yg_knife_want
+when topic=dreams|pastimes
+does tell.self / react.self / assess
+a : I'm having a proper sharp knife someday. My own. | Our bread knife's so blunt it tears the loaf. Tearing's not fair. | I asked for a knife for my naming day. I got told I'm too young.
+b[stage=adult|old] #grown : When you're bigger. | A sharp one's safer, mind. | You are too young.
+b : What for? | Can't you sharpen it? | That's a shame.
+a@grown : I know. I'm counting the days. Not really. A bit. | I know! Everybody thinks the blunt ones are safer. | I'm not too young to cut properly. I'm only too young to be let.
+a : For cutting things fair. That's all a knife's for, really. | I tried on the step. It made a noise and got worse. | It is a shame. I'll wait. I can wait longer than anyone.
+
+scene yg_night_noise
+when topic=home|day here.time=night here.region=ridgemere
+does tell.complaint / react.self / assess
+a : They're singing outside the inn again. Every night. | A cart came in late and woke me up. Then the singing woke me up again. | I can't sleep. Somebody's shouting by the gate.
+b[stage=adult|old] #grown : Put your pillow over your ears. | It's Northgate, love. | Bed, then, and try.
+b : It's loud. | Twice? | Me neither.
+a@grown : I did. Then I can't hear if anyone's at the door. | I know it's Northgate. It's still loud. | I'm going. I'll not sleep, mind. I'm only saying.
+a : Too loud. And it's always the same song. | Twice. I counted. | Then we'll both be cross tomorrow.
+
+scene yg_haggling
+when topic=prices|day here.day=market
+does tell.complaint / react.self / assess
+a : I hate it when folk haggle. Just say the price! | The stall said four, then it said three to someone else. That's not fair. | When my #mum# haggles I go and stand somewhere else.
+b[stage=adult|old] #grown : That's the market for you. | Bit of haggling never hurt. | It saves coppers, though.
+b : Me too. | It isn't fair. | Why?
+a@grown : Then the market's wrong. | It hurts the one who doesn't know how. | I know it does. I still go and stand somewhere else.
+a : Then we're the same. | It isn't. Somebody should make a rule. | Because my ears go hot. I can't help it.
+
+scene yg_watch
+when topic=crime|day here.region=ridgemere self.wealth=poor|destitute
+does tell.complaint / react.self / assess
+a : The Watch shifted me out of a doorway again. I wasn't doing anything. | I was on the step by the gate and the Watch said shift. So I shifted. | The Watch never move on the ones in good coats. I've noticed.
+b[stage=adult|old] #grown : They're doing their job. | Did they say why? | You've a sharp eye.
+b : That's not fair. | Where did you go? | I've noticed too.
+a@grown : Their job's moving pups off steps, is it? | They never say why. They just say shift. | I've a fair eye. That's different.
+a : It isn't. I've been counting. | Two doors down. Then they moved me again. | Then it's two of us noticing. That's a start.
+
+scene yg_lessons
+when topic=work|day self.job=child here.time=day
+does tell.self / react.self / assess
+a : At lessons we did sharing sums. I got all of them. | There was a pie drawn on the board at lessons, and the slices weren't equal. I said. | I like lessons when there's a right answer. When there isn't, it's just talking.
+b[stage=adult|old] #grown : Good for you. | You spoke up? | Clever pup.
+b : All of them? | What happened? | Me too.
+a@grown : Every one. Sharing's the easy one. | I said it politely. Mostly politely. | Careful, not clever. Anybody can be careful.
+a : Every one. Checked twice over. | I got sent to the wall for it. It was still wrong. | Right answers are fair. Everybody can get them.
+
+scene yg_mother
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I always cut my #mum#'s piece first. Then mine. Always the same. | I'd listen to my #mum# all night, if there were tales going. | When it's just my #mum# and me, sharing's easy. Two halves.
+b[stage=adult|old] #grown : That's thoughtful. | Old tales are the best kind. | Good pup.
+b : That's kind. | All night? | Two's easy.
+a@grown : It is fine. It's better than supper sometimes. Not always. | They are. You forget your belly for a while. | I'm not good. I'm fair.
+a : Kind's not it. Right's it. | All night. Then I'd be tired at lessons. Worth it. | Two's the easiest. Three's hard. Seven's the hardest.
+
+scene yg_neighbour
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : I'd trust #self.neighbour# with my half of anything. | When #self.neighbour# goes by I always say good day. Properly. | #self.neighbour.capitalize# is all right. That's the most I say about anyone.
+b : High praise, from you. | Properly? | That's something.
+a : High, aye. My half doesn't go to just anybody. | Properly. Not just mumbling. Folk notice. | It's a lot, for me. Most folk get nothing.
+
+scene yg_houses
+when topic=times|lore|news here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : I don't trust any of the Houses. They all say they're the good one. | If a House cart stops at the gate, I watch the driver. They count their sacks twice. | The Houses argue like cats over one fish. Everybody can see it.
+b[stage=adult|old] #grown : You're young to be so sure. | That's just being careful. | That's about right.
+b : Not even one? | Why watch? | Like cats?
+a@grown : I'm not young about this. I've been watching. | It's being careful. Somebody has to be. | It's exactly right. Nobody ever cuts the fish.
+a : Not one. Not till I've seen one share properly. | To see they're not cheating. They mostly aren't. Mostly. | Like cats. And nobody cuts the fish fair, so they keep arguing.
+b? : #bc_ha# | #bc_fair# | #bc_maybe#
+
+scene yg_festival
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival nights, nobody minds the hour and the sweets come out. | Last festival I got one sweet and cut it in two to share. | I like a festival when the sweets go round even.
+b[stage=adult|old] #grown : Don't eat yourself sick. | That's a good pup. | They never do.
+b : Are you going? | Did it cut? | Do they go round even?
+a@grown : I won't. I'll cut it in half and save half. | It's not good. It's what you do. | They don't. Somebody always gets three.
+a : I'm going. Home last, and tired. | It cut. It was sticky. My paws were sticky till Restday. | Not ever. Give me the bag and I'd do it.
+
+story yg_tale_cat [topic=memories|lore]
+  : There's an old tale about a cat with nine kittens and only one fish.
+  : The cat cut the fish into nine, one share each, and kept nothing.
+  ask : Could you have kept nothing for yourself?
+  b : I'd have kept the head, I think.
+  b[stage=adult|old] : I'd have been tempted. That's why it's a tale, I suppose.
+  : The cat had the bones and called them the best bit. I think the cat was fibbing. Kindly.
+
+story yg_crooked_pie [topic=memories|food]
+  : Once at a feast somebody cut a pie and one piece was twice as big as all the rest.
+  : Everybody looked at it. Nobody said anything. Then two folk reached for it at once.
+  b : What happened then? Did they fight?
+  : They didn't fight. They glared. I've cut everything even since. A crooked cut starts a quarrel.
+
+rule @yg_even_bark
+when concept=bark
+does aside
+cooldown 8h
+say #exactly# the same. Look. | One more cut. Then they're even. | #saying#.
+
+rule @yg_frost_bark
+when concept=bark here.season=winter here.time=dawn
+does aside
+cooldown 12h
+say All white! Nobody step on it yet. | Look at the gate. All white.
+
+rule @yg_hungry_bark
+when concept=bark self.hungry=yes
+does aside
+cooldown 10h
+say Not yet. Wait till the lamps. | Stop it, belly. I said later.
+
+dlg @1 resident.hub : #greet#. What do you want? If I know, I'll say. | #greet#. Be quick. I've a cut half done.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back. I guessed you'd be. | #topic.player#. I remember you. You were polite.
+dlg @3 resident.hub [here.time=night] : It's late. I should be indoors by now. | I'm going in soon. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll talk from here. | Not closer. Not till I know you.
+dlg @1 resident.job [self.job=child] : Lessons. Sharing sums are my best ones. | #self.trade_words.capitalize#. I do my sums carefully. Nobody checks them twice.
+dlg @2 resident.job : I help. I cut things up even. That's what I'm good at. | I'm too young for a job. I'd be good at one, though.
+dlg @1 resident.news [world.news] : Somebody at the gate said #world.news#. From #world.news_from#. That's exactly what they said. | From #world.news_from#: #world.news#. Twice I heard it, the same.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#. Even the carters.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new. I listen; there's nothing. | #news_none# The carters had nothing either.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't tell gossip. It always gets bigger. | #gossip_none#
+dlg @1 resident.bye : Bye. | Bye. Go the straight way.
+graft resident.hub
+choice Why do you cut everything so even? -> even
+node even
+say Because if one piece is bigger, somebody's sad and somebody's cross. If they're all the same, nobody is. It's easy, if you're careful.
+mood calm
+free
+choice Show me how. -> even_how
+choice Goodbye. -> bye
+node even_how
+say You look at the whole thing first. Then you mark it. Then you cut once. If your knife's blunt, you can't. That's why I want a sharp one.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. I'm not little any more, so don't say it. | #greet#. Go on.
+line @1 answer.how : All right. Busy. I've errands. | Even. Same as ever.
+line @1 react.news.new : Who said? Exactly? | #oath#. I hadn't heard.
+line @1 farewell.return : See you, then. | Bye. Mind the gate.
+line @1 take_offence : I'm not a pup now. Speak to me straight. | Laugh all you like. I'm right.
+rule @ad_carts_bark
+when concept=bark here.time=day
+does aside
+cooldown 10h
+say Three carts through the gate already. Two of them half empty. | That driver's counting sacks twice. Fair enough.
+
+scene ad_errand_coin
+when topic=work|day self.working=yes
+does tell.self / react.self / assess
+a : I carried a parcel up from the gate and got a copper for it. Half's going home. | I'm doing errands now. Every coin I get, I split. Half home, half saved. | I've been running parcels. I'm fast because I don't take the long way.
+b[stage=adult|old] #grown : Good pup. | Saving for what? | Mind you're not cheated.
+b : Half? | Saved for what? | Fast?
+a@grown : I'm not a pup now. I'm just fair. | A knife. A proper one. Don't laugh. | I count the coins out loud. Nobody tries it on.
+a : Half. It's even. That's how I do it. | A knife. A good one. I've nearly a quarter of it. | Fast. Straight lines. No stopping to look at things.
+
+scene ad_houses
+when topic=times|lore here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : You can tell which Houses aren't speaking by how their carts pass at the gate. Nobody gives way. | None of the Houses would share with the others. I've watched. | Every House says the others cheat. They can't all be right. Or they can.
+b : You're young to judge. | Watch all you like. | Could be.
+a : I'm not judging. I'm counting. That's different. | I will. Somebody has to. | Could be. I'd rather be wrong. I'm not often, though.
+b : #bc_fair# | #bc_we_will_see# | #bc_maybe#
+
+scene ad_tales
+when topic=pastimes|lore
+does tell.self / react.self / assess
+a : I still like the old tales. Nobody my age hears that from me. | I wrote down an old tale so it can't change. Word for word. | Somebody my age told an old tale wrong to sound clever. I didn't say anything. This time.
+b : Nothing wrong with that. | Word for word? | This time?
+a : I know. I still keep it quiet. | Every word. Small, on an old slate. | This time. Next time I might.
+
+scene ad_frost
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : Another white morning. I'm too old to go and make footprints. I made them anyway. | First frost of the year. I'm always out to see it before the carts. | Mornings like this, the whole street looks new till the carts.
+b : Nobody saw you. | Always? | It doesn't last.
+a : Nobody saw. Straight line, though. | Always. I'll stop when I'm old. Maybe. | It doesn't. That's why I'm out early.
+
+story ad_knife_saved [topic=memories|work]
+  : I've put by for a proper knife since I can remember. Half of every coin, never more, never less.
+  : There's one in a window by the gate. I visit it most days. I'm about halfway.
+  ask : What would you wait years for?
+  b : There was once. The getting was worth the wait.
+  : That's what I'm hoping. A knife that cuts true, and never a crooked piece again.
+
+dlg @ad resident.hub : #greet#. Ask. If I don't know, you'll hear that too.

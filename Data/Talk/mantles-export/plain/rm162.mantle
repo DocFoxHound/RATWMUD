@@ -1,0 +1,472 @@
+# rm162, the honey-not-sugar preserver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm162
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_liv_slagstack
+written_by claude
+title the honey-not-sugar preserver
+fits stage=adult|old
+prefers role=merchant job=merchant warmth=warm
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk spoons_honey_for_the_damp_cough_and_calls_it_tasting
+likes smoked_eel evening_line new_boots thunder
+dislikes smoke cold_tea
+fears a_batch_gone_to_mould a_cough_that_won_t_shift
+hopes a_second_shelf_of_crocks the_pups_married_into_decent_houses
+topics food +0.5 work +0.4 family +0.4 gossip +0.3 pastimes +0.3 weather +0.2 health -0.3
+styles comfort=feeding gossip=keen refuse=soft tease=none
+marks oath saying bee
+persona #self.first# puts up honey preserves on the Commons, swears by honey over sugar, calls everybody "my bee", talks till the tea goes cold, and answers every cough in the damp with a spoonful from the crock, which is only tasting, mind.
+
+words
+oath! = Sweet Bright One | Bees in a bottle | Plums and pity
+saying! = Patient honey, greedy sugar | A good seal outlasts a bad winter | Wash the jar and the jar comes home
+bee!! = my bee | bee | my busy bee
+crocks = the crocks | my honey crocks | the brown crocks on the top shelf
+jars = the jars | my little jars | the jars lined up by the window
+lids = the lids | the waxed lids
+honey = dark heath honey | good thick honey | the honey
+sugar = sugar | that white sugar | sugar, the cheat's sweetener
+pan = the preserving pan | the big copper pan
+spoon = a spoonful from the crock | the tasting spoon
+eel = smoked eel | eel smoked gold | eel off the smoking racks
+line = a line off the pier at dusk | an evening sat on the pier with a line
+boots = new boots | boots that creak like a new door
+thunder = thunder rattling the jars | a proper storm overhead
+chimney = some fool's chimney | a chimney smoking like a kiln
+tea = tea gone stone cold | my tea, cold again
+farthing = a farthing off for the jar back | the farthing for the jar
+damp = the damp | this wet air
+square = the square | Market Square
+cook = the cook I learned under | my old cook in the big kitchen
+fruit = the fruit | whatever fruit the carts bring
+wax = the wax | a lick of hot wax
+
+any
+opinion @1 merchants for 1 : Settle one carter's bill and you'll see where a jar's price goes. I don't begrudge a carter, and nobody should begrudge me.
+opinion @1 road against 1 : #fruit.capitalize# comes in bruised and late, and late fruit's half jam before I've touched it. Somebody ought to mend that road.
+opinion @2 road against 2 [world.wagons=raided] : Robbers took a cart, and a summer's fruit went with it. It fair breaks my heart, and tears aren't my habit.
+opinion @1 dole for 2 : Not one wolf within these walls should lie down hungry. I'd put a jar in every dole basket if I could.
+opinion @1 newcomers for 2 : If they'll work, they're welcome. The Commons was built by newcomers, my #gran# always said, and she was one.
+opinion @1 strangers for 2 : Travellers take a jar off with them and leave the news behind for nothing. I like a stranger.
+opinion @1 festivals for 1 : Every pot I've got goes out with a ribbon on it, and the whole street's laughing. What's not to like?
+opinion @1 watch for 1 : The Watch keep my shelf safe and my door unbroken. I send a jar round at midwinter and why shouldn't I?
+opinion @1 city for 1 : Smoke and rain and all, nowhere else would do for me. Where else could I sell honey to a lord and a porter on the same morning?
+opinion @1 sump mixed 1 : I'm sorry for them down there, truly. I'd be sorrier if half of them would wash a jar and bring it back.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #bee#. Mind the step; the damp makes it slippy. | #greet#. Come in and drip by the fire, never mind the floor.
+line @2 greet [self.working=yes self.role=merchant] : #greet#, #bee#. Have a taste; the spoon's clean. | #greet#. Everything on that shelf was put up by these two paws.
+line @3 greet [here.time=dawn] : #greet#. You're about early. I've only just warmed the pan. | #greet#. Up with the lamplighter going home, are you.
+line @4 greet [here.time=dusk|night] : #greet#. The lamplighter's out, and I'm still talking. | #greet#, #bee#. Late, but the kettle's on.
+line @5 greet [pair.band=friends] : There's my favourite face. Sit, sit; I'll pour. | Oh, you've come! I was just wishing for a good ear.
+line @6 greet : #greet#. | #greet#, #bee#.
+line @1 kin.open [pair.kin!=no] : Food first, words after. Sit. | Come here. Your fur's damp through. Sit by the fire.
+line @1 again.open : You're back! I'd hoped you would be. | Twice today, #bee#. That chair's yours now.
+line @1 hail [pair.band=friends] : Oh, it's you! Step over a moment, I've news that won't keep. | Over here, #bee#! I've been waiting all morning for you.
+line @1 greet.return : #greet#. | #greet#, #bee#. Lovely to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, come in, I've missed your face. | #greet#. That knock could only be yours.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Careful by the counter; the jars are still warm. | #greet#. I'm sealing lids, but I've an ear free.
+line @4 greet.return [here.time=dusk|night] : #greet#. You're out past the lamps, #bee#. | #greet#. The lamplighter's been and gone, and here you are.
+line @1 farewell : #farewell#, #bee#. Go slow on the slippy step. | #farewell#. Wrap up; the damp gets in your chest.
+line @2 farewell [here.time=dusk|night] : #farewell#. Watch your feet; it's dark past the square. | #farewell#, #bee#. Straight home and something hot.
+line @1 farewell.return : #farewell#. | #farewell#, #bee#. Come again soon.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Don't you leave it a week, now. | #farewell#. Give my love at home.
+line @1 react.news : Well, sit and give it me from the start. | Oh, go on. Every bit of it.
+line @1 react.news.new : #oath#! And nobody at the square said a word. | #marvel#. The whole shop's going to hear this from me.
+line @1 react.news.known : Oh, I heard. Half the counter had it before noon. | #knew#. Yesterday's jars brought it in with them.
+line @1 react.news.doubt : Bring me somebody who stood right there and saw. | #doubt#. Things get sweeter in the telling, like honey left in the sun.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, how dreadful. Bright One keep them. | #pity#. I'll send something round; it's all a body can do.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely! I'll put up a jar for them. | #gladnews#. Oh, I'm glad. Somebody deserved a bit of sweetness.
+line @1 answer.how : Busy, sticky and happy, #bee#. Can't ask more. | #fine#. A little cough, but it's only the damp.
+line @1 answer.how.busy [self.working=yes] : The pan's boiling and there's thirty lids to seal. Talk away; I'll stir. | Sticky to the wrists with plums, but you're welcome.
+line @1 answer.how.poorly : My chest's caught the damp again. A spoon of honey and I'll be right. | Tired. Up till the small hours with one thing and another.
+line @1 ask.how : And you, #bee#? Are they feeding you? | And yours at home? All well?
+line @1 sympathise : Oh, you poor thing. Here, sit, and let me find you something sweet. | #sympathy#. Have a spoon of this; it mends nothing, but it sweetens the waiting.
+line @1 reassure : It'll come right, #bee#. Patience and honey mend most things. | #reassure#. I've watched worse mend by Marketday.
+line @1 decline : Oh, #bee#, I'd love to, but the pan's on the fire and needs me. | #hedge#, but not today. There's a whole batch wants sealing before it cools.
+line @1 accept_decline : Never mind. I'll ask again some brighter day. | #no_matter.capitalize#. A full pan says no for anybody.
+line @1 thank : Oh, you're a dear. Thank you. | #thanks#, #bee#. There's a jar put by for you now.
+line @1 deflect_thanks : Get away with you. That was nothing. | #deflect.capitalize#, #bee#. What are neighbours for?
+line @1 preclose [self.working=yes self.role=merchant] : Oh, the pan! It'll catch if I stand here. | Listen to me, chattering, and the lids not sealed.
+line @2 preclose : Bless me, I've held you here an age. #preclose#. | Look at the light. The whole afternoon's gone to my chatter.
+line @1 accept_preclose : Off you go, then. Come back soon, mind. | Go on, #bee#. I've jars waiting on me anyway.
+line @1 ack : #bc_lovely#. | #bc_i_know#. | Mm, mm.
+line @1 give.advice : #advise.capitalize#: a spoon of honey in hot water, last thing at night. Sees off any cough. | Wash your jars hot and dry them in the oven. Never trust a damp jar.
+line @2 give.advice [here.weather=rain|fog] : Wrap your chest in this, #bee#. The damp goes straight for it. | Dry feet and a wrapped throat, and the wet can't touch you.
+line @1 warn [world.bandits=near] : #warn#, #bee#. Robbers about on the road; go with others or stay put. | Not out past the walls by yourself while it lasts. Promise me.
+line @1 disagree : Oh, I don't know about that, #bee#. That's not how I've seen it. | #demur#. I'd need more than that to be talked round.
+line @1 concede : Well, you may be right. You often are. | All right, #bee#. That one's yours.
+scene honey_not_sugar
+when topic=work|food self.role=merchant
+does give.opinion / ask.detail / answer.detail / react.self / assess
+a : Never sugar. Not in my jars. Honey, every time, and dark honey when the carts have it. | Folk ask me why my preserves cost a farthing more. Honey, that's why. Sugar's for cheats. | I was taught honey by a proper cook, and sugar's not crossed my door since.
+b : What's wrong with sugar? | Is it worth the farthing? | Who taught you?
+a : It's thin. It sets hard and tastes of nothing. Honey keeps the fruit tasting of fruit. | Taste and tell me it isn't. Go on, the spoon's clean. | #cook.capitalize#. Threw a whole pan of sugared plums in the yard once, to make a point.
+b : #bc_fair_enough# | #bc_lovely# | That's a waste of plums.
+a : Try one of mine against one of theirs and you'll never ask me again. | There. Now you know why folk come back. | It was. It stuck, too. I've not wasted a plum since.
+
+scene jars_come_home
+when topic=prices|work self.role=merchant
+does tell.self / react.self / assess
+a : Bring me the jar back, washed, and it's a farthing off the next. Half the Commons does it now. | I counted the empty jars that came home this week. Forty-one. That's a good week. | A jar's dear to buy new. One that comes back washed pleases me more than any farthing.
+b : That's a fair trade. | Forty-one! | Do folk really wash them?
+a : It's fair both ways. They save, I save, and nobody throws good glass in the gutter. | Forty-one, and two of them still sticky. I wash those again and say nothing. | The decent ones do. You can tell a household by the jar it brings you.
+
+scene sealing_the_lids
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Hot jar, hot fruit, a lick of wax on the lid, and press. Thirty times over before noon. | You've to seal them while they're hot, or the mould gets in, and then it's all for nothing. | My paws smell of wax from one Restday to the next.
+b : Why hot? | Does it often go wrong? | Doesn't it wash off?
+a : A cold jar sweats, and a sweating jar spoils. Hot, it seals itself. | Once a season, maybe, and it breaks my heart every time. | Not with soap, not with lye. Wax and honey. I'm used to it.
+b? : #bc_wise# | #bc_bad_luck# | #bc_ha#
+
+scene the_tasting_spoon
+when topic=health|smalltalk self.role=merchant
+does tell.self / react.self / ask.detail / answer.detail
+a : Pay me no heed. Just tasting. | That cough? That's nothing. I'm testing the batch, that's all. | Excuse me a moment. The spoon's calling.
+b : Tasting, at this hour? | Sounded like coughing to me. | You do that a lot.
+a : Selling untasted is selling blind. Every hour, if need be. | It wasn't. A preserver's got to keep checking. There. All better. | A preserver who doesn't taste is no preserver at all.
+b : #bc_so_they_say# | All better, is it. | If you say so.
+
+scene cough_in_the_wet
+when topic=health|weather here.weather=rain|fog
+does tell.self / reassure / assess
+a : Oh, that's only the damp catching me. It always does in weather like this. | Just a tickle. This wet air scratches at my throat. | Pay no attention. I've had this little cough every wet season of my life.
+b : That doesn't sound little. | Have you seen anyone for it? | #bc_poor_soul#
+a : Last year was the same, and here I am. A spoon of honey and I'm right. | Seen anyone? For a tickle? I'd be laughed out of the chapel. | Don't you fuss. I'll have a spoon of something and be right as rain. Well, right as damp.
+
+scene smoked_eel_supper
+when topic=food
+does tell.feeling / react.self / assess
+a : Give me smoked eel, gold from the racks, with a crust beside it and I'm happier than a lady on the Rise. | Folk can keep their roast. I'll have eel off the smoking racks over the roast, every time. | There's eel for supper, and it's been on my mind since breakfast.
+b : Eel! | Not a roast? | You do love it.
+a : Eel. You either love it or you've never had it properly smoked. | Roast is for feast days. Eel is for being happy on any old evening. | I do. A bit of eel and a dab of plum preserve beside it. Don't make a face.
+
+scene a_line_at_dusk
+when topic=pastimes here.region=ridgemere here.time=dusk
+does tell.self / ask.detail / answer.detail / assess
+a : Work over, I take a line down the pier and sit there till the light's gone. | There's an hour at dusk when the water's flat and the gulls are quiet. That's my hour, with a line. | I'm off down the pier with my line in a bit. Don't tell anybody where I am.
+b : Do you catch much? | And while you sit there? | Not even your family?
+a : Hardly ever. I'm not there for the fish, if I'm honest. | Nothing. Not jars, not lids, not rent. Just the float going up and down. | They know. They pretend not to, so I can have my hour.
+b? : #bc_lovely# | #bc_lucky_you# | #bc_ha#
+
+scene the_one_that_tugged
+when topic=pastimes|animals here.region=ridgemere
+does tell.boast / react.self / assess
+a : Had a tug on my line last night that nearly had me in the Sound. Didn't land it, mind. | I caught a fish. A real one. Small as my paw, and I put it back, but I caught it. | Three evenings sitting on that pier and not a nibble, and I loved every one of them.
+b : What was it? | You put it back? | Not a nibble?
+a : An eel, I'd like to think. Something with opinions, anyway. | It was too small to be worth the gutting. It can come back when it's grown. | Not one. The fish of the Sound have heard about my cooking, I expect.
+
+scene new_boots_stiff
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : New boots! Look. Still stiff from the cobbler, and I've a blister already, and I don't care. | I saved four months for these boots. Four months, and they squeak on the stairs. | There's nothing like new boots on a dry morning. Not that we get many dry mornings.
+b : They're handsome. | Four months! | Dry mornings are rare enough.
+a : Aren't they? Proper Commons boots. Nobody'll take me for a carrier now. | Every farthing of it. A good pair lasts years if you grease them. | Rare as honest weights. I'll wear them indoors till one comes.
+
+scene new_boots_in_the_wet
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : I wore my good boots out this morning and stepped straight in a puddle up to the laces. | Rain like this and my new boots on. I'll be greasing them till midnight. | My boots! One trip to the square and they're ruined.
+b : #grumble# | Why did you wear them? | Ruined? Surely not.
+a : I should have known better. In this city you wear your old boots and your new boots stay home. | Because they're new, and I wanted folk to see them. More fool me. | Not ruined, I suppose. A good grease and a night by the fire. But oh, the shine.
+
+scene thunder_on_the_shelf
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Listen to it! Every time it cracks, the jars on my shelf ring together like little bells. | I love a storm, I do, from indoors, shutters fastened, kettle singing. | There's thunder over the Sound. Come in, #bee#, and listen to it with me.
+b : Doesn't it break them? | #bc_lovely# | Most folk hide.
+a : Not one yet. They just sing a bit and settle. | It's the best weather there is, as long as you've a roof and a cup. | Hide? I open the shutter wider, the better to hear.
+
+scene smoke_in_the_eyes
+when topic=weather|home here.region=ridgemere here.weather=fog|overcast self.role=merchant
+does tell.complaint / react.complaint / assess
+a : Whose chimney is that? My eyes have run since the shutters came down. | No wind, and every chimney in the Commons hanging its smoke right outside my door. | I can't abide smoke. Stings the eyes, and it'll creep into honey too, if you let it.
+b : #grumble# | It's the still weather. | In the honey?
+a : I'd go round and knock, if I knew which one it was. | It is. One good gust off the Sound and it'd all be gone. I'm praying for a gust. | Honey takes up a smell like nothing else. I keep the crocks covered on days like this.
+
+scene cold_tea_again
+when topic=smalltalk|food
+does tell.self / react.self / assess
+a : Look at that. My tea's gone stone cold again. I start talking and forget it's there. | I've poured four cups of tea today and drunk none of them warm. | I can't abide cold tea, and I'm forever making it.
+b : You do talk. | #bc_ha# | Drink it quicker, then.
+a : I do. My #mum# said I'd talk the tea cold and the kettle deaf, and she was right. | Five cups, now I count. Somebody stop me. | Then when would I talk? No, I'll just keep pouring.
+
+scene the_one_at_the_sink
+when topic=family self.married=yes self.role=merchant
+does tell.feeling / react.self / assess
+a : I'd not keep this shop a week without my #self.spouse_word#. Not one week. | Sticky together, my #self.spouse# and me, for years now. That's what a preserver's marriage is. | Folk think I do it all. I do the talking. That's different.
+b : That's a good match. | #bc_ha# | Who does the rest?
+a : It is. We don't agree on sugar, mind, and that's the only quarrel we've got. | It's the truth. Every jar in the house has two sets of paw marks on it. | The rest is done by the pair of us. And that suits us both.
+
+scene the_pups_at_lessons
+when topic=family self.parent=yes self.role=merchant
+does tell.feeling / react.self / assess
+a : #self.child# goes to lessons now, letters and sums. I want a pup of mine to read a ledger. | Both my pups at lessons, and me who can barely sign my own name. I'm that proud. | I keep the honey on the top shelf since there's been pups in this house. Habit.
+b : You've a right to be proud. | You can read a little, surely. | Wise.
+a : Proud as anything. Read the lease and nobody cheats you out of a shop. | A little. Enough for prices and lids. They'll do better, and they'll not need me for it. | Wise, and sticky-pawed pups all the same. You can't hide honey from a pup.
+
+scene rent_day_decent
+when topic=home|prices self.quarter=commons self.role=merchant
+does tell.self / react.self / assess
+a : Rent day tomorrow, and it's set out on the table already, counted twice. Ours is a decent house. | The landlord's man came round this morning and I had it ready in a jar. He smiled, nearly. | Never late with the rent, not once. My #mum# was the same. You can hold your head up on the Commons that way.
+b : Good for you. | In a jar? | Now that's something.
+a : It's not luck, it's jars. Every jar sold puts a farthing by for the rent. | Where else would a preserver keep coin? It's clean, mind. | It is. There's folk who'd sooner have new boots than a paid rent. Well, I've both, so there.
+
+scene square_on_marketday
+when topic=day|smalltalk here.day=market here.region=ridgemere
+does tell.self / react.self / assess
+a : Market Square's heaving today. Stalls to the corners, and somebody's always shouting about cabbages. | I love the square on a market morning. All that noise, and everybody knows everybody. | I took a basket of little pots down to the square and they were gone before the bell.
+b : Too busy for me. | Everybody? | Gone already!
+a : Busy's lovely. Busy means coin moving and folk talking, and both are good for a body. | Near enough. You can't cross the square without three good mornings and a bit of news. | Gone, and three folk asking when there'd be more. I'll take a bigger basket next week.
+
+scene courting_on_the_bench
+when topic=gossip|smalltalk here.region=ridgemere self.role=merchant
+does tell.gossip / react.news / assess
+a : There's a pair sitting on the bench by the square every evening this week. Not saying who. Just saying. | You can tell who's courting on the Commons by who walks the long way past whose door. | Somebody's been buying my plum preserve twice a week and they don't even like plums. Courting gift, I'd say.
+b : Not saying who? | The long way? | Clever.
+a : Not a word. It's theirs to tell, and they'll tell it when the banns go up. | Past the door, back again, past it once more. Oh, I've watched that dance often. | I wrapped it with a ribbon, last time. No charge. Love wants a bit of help.
+
+scene gossip_over_the_counter
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : Well, #bee#, here's what crossed my counter: #topic.subject# #topic.claim#. | Now, I only heard it, but they're saying #topic.subject# #topic.claim#. | Did nobody tell you? #topic.subject.capitalize# #topic.claim#. That's what's being said.
+b : Is that so? | Who's saying? | No, nobody told me.
+a : So it's said. Twice heard, I'll believe it. | Half the square, and the other half's about to. | Well, now you know. Only don't say where you had it.
+
+scene gossip_sad_news
+when topic=gossip topic.claim_kind=death|violence|victim
+does tell.gossip / sympathise / assess
+a : Oh, have you heard? #topic.subject.capitalize# #topic.claim#. It's dreadful. | It's all round the Commons, and it's a sad thing: #topic.subject# #topic.claim#. | I'll lower my voice for this one. They say #topic.subject# #topic.claim#.
+b : #pity# | That's awful. | Poor soul.
+a : It is. I'll send a jar of something round. You can't do much, but you can do that. | It is. It's sat on my heart all morning. | Poor soul indeed. Light a candle at chapel for #topic.them#, if you go.
+
+scene newcomers_welcome
+when topic=newcomer here.region=ridgemere
+does give.opinion / react.self / assess
+a : Somebody new's moved onto the street, and I've already sent round a little pot. That's how we do it here. | New folk? Good. The more who'll work, the merrier the street. | The cobbler's upstairs rooms have somebody new in them. Nice manners. Wiped their feet.
+b : That's kind. | Not everyone agrees. | That's all it takes?
+a : It's only honey. But it says hello better than I can, and I can say hello very loud. | Then not everyone's had my #gran#'s talking-to. We were all new once. | Manners and a rent paid on time, and you're a Commons wolf. That's my rule.
+
+scene lamplighter_coming
+when topic=day|smalltalk here.region=ridgemere here.time=dusk
+does tell.self / react.self / assess
+a : Here comes the lamplighter. I always wave. All these years of waving, and the lamps still come on. | The lamps are going on down the street, one, two, three. I love this time of the evening. | Lamplighter's late tonight. Must be the rain on the ladder.
+b : Does the lamplighter wave back? | #bc_lovely# | Maybe so.
+a : Every time. Nod of the head and a lift of the pole. That's our arrangement. | It's the hour the shutters go up and the kettle goes on. My favourite. | Either that, or a long talk at somebody's door. I'd not blame anybody for that.
+
+scene chapel_with_a_jar
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : Prayers aren't my strength, but I take a jar to chapel at every feast for the priest's table. | Bright One knows I'm no saint. But I've never once turned a hungry wolf away from my door. | At chapel I take the last bench, so nobody minds when I cough.
+b : Faith in a jar, then. | That's prayer enough, I'd say. | Nobody minds a cough.
+a : It suits me. Bright One can have the honey; I'll keep the hymns short. | No other sort comes to me. I leave the words to them that are good at them. | Some do. You'd think a cough was a sin, the looks I've had.
+
+scene looking_up_the_rise
+when topic=smalltalk|lore here.region=ridgemere self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : A footman off the Rise bought six jars this morning. Six! For one dinner. | I wonder what they eat in those houses on the Rise. My honey, now and then, I'm happy to say. | Those big houses at the top, I've only ever seen the gates. I'd love to see a kitchen.
+b : For one dinner? | What do they like best? | What's stopping you?
+a : Six jars and a crock. I'd love to see the table that eats that much. | The quince. Always the quince. I put a ribbon on it for them and charge a farthing more. | Nobody asks a preserver in by the front door. I'd settle for the back, mind.
+b? : #bc_ha# | #bc_clever# | #bc_maybe#
+
+scene down_by_the_water
+when topic=smalltalk|home here.region=ridgemere self.role=merchant
+does tell.feeling / react.self / assess
+a : Any jar whose seal's gone a bit wrong, goes down to the families by the water. It's still good. | It worries me, the Sump. Pups down there who've never had a spoon of honey in their lives. | I'd never live down there, the damp's twice ours. I'd cough myself inside out.
+b : That's good of you. | #bc_poor_soul# | It's hard down there.
+a : It's not good, it's sense. I'll not sell a bad seal and I'll not throw good fruit away. | It's not right, a city this rich. I'll keep sending what I can. | It is. And they'd never ask for a thing, most of them. Too proud. Good for them, I say.
+
+scene fell_kitchen_years
+when topic=memories self.age>=30
+does tell.memory / react.self / assess
+a : I learned this trade in a big kitchen up the hill, at the elbow of a cook who'd burn you with a look. | As a young thing I scrubbed pans in a Fell kitchen. Learned more there than in any lesson. | The cook I learned under said honey is patient and sugar is greedy. I've never forgotten it.
+b : A Fell kitchen? | What did you learn? | That sounds right.
+a : For three winters. Best and worst years of my life, and I came out of it a preserver. | Honey, not sugar. Seal it hot. And never answer back to a cook with a ladle. | It is. You taste the difference in a week, and you never forget it.
+
+scene hard_times_little_pots
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / sympathise / assess
+a : Nobody's buying the big jars. I've started doing little pots, a spoon's worth, for a farthing. | Times are thin. The jars sit on the shelf and gather dust. | I've folk asking can they pay next week. I say yes. I can't say no to a hungry pup.
+b : That's clever. | #bc_very_bad# | That's kind of you.
+a : It's needs must. A pup can have honey on bread even when the purse is empty. | They'll move when times turn. Honey keeps; it'll wait for better days. | Kind and soft, folk call me. Maybe. But they always pay, in the end.
+
+scene good_times_ribbons
+when topic=times world.times=good|boom self.role=merchant
+does tell.self / react.self / assess
+a : Folk are buying jars as gifts again, with ribbons on. Gifts mean good times. | I can't put up fruit fast enough. The pan's not been cold in a fortnight. | There's coin about. Orders from three weddings and a christening.
+b : #bc_lucky_you# | You'll wear yourself out. | Three weddings!
+a : Lucky and sticky. I'll take it. | I will, and I'll sleep in Restday, and then I'll do it again. | And the christening. Quince for the weddings and honey for the pup. I'm that pleased.
+
+scene fruit_cart_late
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / react.self / assess
+a : Late again, the fruit carts, and every day late is another day of bruises. | I've a pan, a crock of honey, and an empty bowl beside them. Where's my fruit? | Late carts and soft fruit. I'll be making jam out of what should've been preserves.
+b : They'll come. | Can't you buy in the square? | Is that so bad?
+a : They will, and half of it'll be mush. I'll still use it, mind. | At square prices? For a whole batch? I'd sooner wait. | It is to me. Jam's what you make when you've given up. Preserves are for folk who care.
+
+scene fruit_cart_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess
+a : Robbers took a whole cart on the road, it's said. Pray nobody got hurt. | #bandits.capitalize# again, working the road. There's somebody's whole season gone. | I heard a cart never got through. My pan will feel it, and the carter feels it worse.
+b : #uneasy# | It's getting worse. | Poor carter.
+a : It's a bad business. I'll be watching the road for my own fruit now, and fretting. | It is, and the Watch ought to go out and see to it, not stand about the square. | Poor carter. And pity whoever's pantry waited on that cart. I know that wait.
+
+scene autumn_glut
+when topic=season|work here.season=autumn self.role=merchant
+does tell.self / react.self / assess
+a : Autumn, and fruit coming in faster than I can stone it. My paws are stained plum-dark past the wrist. | This is my season. Every pan on, every jar out, and the shop smelling of plums. | Seven days of autumn and I've outdone the summer's jars. I'm that tired and that happy.
+b : Purple! | It smells lovely in here. | #bc_lucky_you#
+a : Purple, and it'll be the new year before it comes out. Worth it. | Doesn't it? Folk step in only to stand and sniff. I let them. | Tired, mostly. Happy can wait till the last lid's on.
+
+scene winter_damp_cough
+when topic=season|health here.season=winter self.role=merchant
+does tell.self / reassure / assess
+a : Winter's here and my cough's back, right on time like a lodger. | This is the season folk come in for honey for their chests. Mine included. | Cold, wet, and every second customer coughing. I sell more honey in a winter week than a summer month.
+b : You ought to rest it. | #bc_poor_soul# | That's good for trade.
+a : Rest? With a shop to keep? A spoon of honey is my rest. | No fretting over me. I'm tough as old boot leather. | It is. And I give the pups a spoon for nothing. I had one free myself, as a pup.
+
+scene festival_ribbons
+when topic=festival world.festival=today|soon self.role=merchant
+does tell.plan / react.self / assess
+a : Festival, and I've tied a ribbon on every jar in the shop. Every single one. | I'll set up a table in Market Square for the festival, if I can get the table down the stairs. | Festivals are my best days. Everybody wants something sweet and everybody's in a good mood.
+b : Every one? | Need a hand with the table? | #bc_lovely#
+a : Every one. Red for honey, yellow for quince. Took me all evening. | Would you? Bless you. The stairs are steep and the table's oak. | It is. You can't be cross with a jar of honey in your paw.
+
+scene traveller_wants_sweet
+when topic=player here.region=ridgemere self.role=merchant
+does tell.self / react.self / assess
+a : That one's walked far; it's in the boots. They'll want something sweet for the road. | There's a traveller nearby with a cough like mine. I'd give them a spoon if they came in. | Strangers always look at my shelf like it's a jeweller's. I love that.
+b : Maybe they will. | That's kind. | #bc_ha#
+a : I hope so. Honey travels better than anything, and it never goes off. | It's only honey. Honey's for sharing; #cook# always said so. | It's better than a jeweller's. You can't eat a ring.
+
+story the_plums_in_the_yard [topic=memories|work self.age>=30]
+  : In the kitchen where I learned, a new hand once put up a whole pan of plums with sugar, to save the honey.
+  : The cook lifted that pan, walked out the back door, and tipped it in the yard for the birds.
+  : Then she turned round to us scullions and said, honey or nothing, and went back to her stove.
+  ask : Would you have dared to argue?
+  b[old] : Not with a cook like that. I knew one like her. I still dream of her ladle.
+  b : Never. I'd have fetched the honey and said nothing. Did the birds eat it?
+  : Every plum. They were the fattest birds on the hill that winter.
+
+story the_jar_that_split [topic=work|memories self.role=merchant self.age>=25]
+  : My first winter on my own, I filled a whole shelf of jars on a frosty night and went to bed proud.
+  : In the morning, every one had split. Cold glass, hot fruit. Twenty jars, and the fruit all over the floor.
+  : I cried into the mess, then scraped up what was good and ate preserves for a week.
+  b : That's a hard lesson. Did you ever do it again?
+  : Never. I warm every jar now, even in summer. Some lessons only need the once.
+
+story the_singing_jars [topic=weather|memories self.age>=25]
+  : When I was little, there was a storm so loud the jars on my #mum#'s shelf rang like the close bells.
+  : Under the table I went. My #mum# crouched by me and told me it was only the bees inside, singing.
+  : Every storm since, I listen for the bees. I've never once been frightened of thunder after that.
+  ask : Did anybody ever tell you something like that, to stop you being afraid?
+  b[stage=young|adolescent] : No. But I'll listen for the bees now.
+  b : Nobody did. I'd have liked it. What a thing to tell a frightened pup.
+  : I've told my own pups the same, and they hide under the table too, and listen.
+
+story the_borrowed_line [topic=pastimes|memories here.region=ridgemere self.age>=25]
+  : The first time I ever went down the pier with a line, an old fisher sat next to me and watched me tangle it twice.
+  : He untangled it without a word, handed it back, and said fish for the quiet, not the fish.
+  ask : Can you work out what he meant?
+  b : I think so. That the sitting is the point, not the catching.
+  b[old] : Aye. The old ones knew that. The sitting is the point.
+  : That's it. I've caught next to nothing in all these years, and I've had the best evenings of my life.
+
+story the_first_good_boots [topic=memories|pastimes self.age>=25]
+  : The first pair of boots I ever bought with my own coin, I wore to chapel the very next Restday.
+  : It poured on the way. The gutters were rivers. I walked through every one rather than go home.
+  : I squelched on the last bench through the whole service, and I was the proudest wolf in there.
+  b : That's a good story. Were they ruined?
+  : Not quite. I greased them for a week. I still have one of them, on the shelf, for luck.
+
+rule @cry_honey
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Honey preserves! Honey, not sugar! A farthing off for the jar back! | Plum, quince and heath honey! Taste before you buy!
+
+rule @cough_bark
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say Hm-hm. Just tasting. Just tasting. | Never a cough. The honey went down crooked.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say Listen to the jars sing! | There it goes. Hush, bees. Hush.
+
+rule @smoke_bark
+when concept=bark here.region=ridgemere here.weather=fog|overcast
+does aside
+cooldown 12h
+say Whose chimney is that? My eyes! | Smoke again. Somebody's burning wet wood, the fool.
+
+rule @dusk_line
+when concept=bark here.time=dusk here.region=ridgemere
+does aside
+cooldown 12h
+say Water's flat tonight. Lovely for a line. | Shutters up soon, and then the pier for me.
+
+rule @cold_tea_bark
+when concept=bark
+does aside
+cooldown 10h
+say Cold again. I've talked another cup to death. | Who let my tea go cold? Oh. Me.
+
+dlg @1 resident.hub : #greet#, #bee#. What'll it be today? | #greet#. In you step. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! Lovely. What brings you back? | #greet#, #topic.player#. You've come back; good.
+dlg @3 resident.hub [here.time=night] : Bless me, it's late. Come in quick, and say it quick. | It's dark out, #bee#. Is something wrong?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll be civil if you will. What do you want? | Quietly, now; there's pups asleep. What is it?
+dlg @1 resident.job [self.role=merchant] : I put up preserves. Honey, never sugar, sealed hot and sold fair. | Plums, quinces, whatever fruit reaches me. In a jar with honey, it keeps a whole winter.
+dlg @2 resident.job : #self.trade_words.capitalize#, and glad of it. I talk the whole time, so the work goes quick. | I work, I talk, I fish of an evening. That's me in a nutshell.
+dlg @3 resident.job [self.working=yes self.role=merchant] : I'm sealing lids, so talk while I press. | Mind the pan; it's at the boil. Ask while I stir.
+dlg @1 resident.news [world.news] : Oh, there's news! From #world.news_from#: #world.news#. Heard it at the square. | #world.news.capitalize#. That's the word from #world.news_from#. I've told everybody.
+dlg @2 resident.news [world.event_words] : Everybody's on about #world.event_words#. Every customer, every one. | #world.event_words.capitalize#: that's every customer's talk today.
+dlg @3 resident.news [world.wagons=raided] : Robbers have had a cart off the road. Be careful out there. | Robbers working the road. Stop within the walls, #bee#.
+dlg @4 resident.news [world.death=recent] : The street lost somebody this week, and it's gone quiet. | Somebody near us has died. I sent a jar round. You do what you can.
+dlg @5 resident.news [world.wedding=recent] : A wedding, and I did a jar with a ribbon for every guest! | A wedding on our street! Everybody out and singing.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Not a thing, #bee#, and I've asked everybody. | #news_none# Come by tomorrow; something'll have come over the counter.
+dlg @1 resident.gossip [here.gossip=yes] : Well, between us: #topic.subject# #topic.claim#. Not that I said so. | They say #topic.subject# #topic.claim#. The square's full of it.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=death|violence] : Oh, it's a sad one. They say #topic.subject# #topic.claim#. | I hardly like to say it. #topic.subject.capitalize# #topic.claim#, they're saying.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing worth the telling, and me with ears like a hare. | #gossip_none# Which is a first, #bee#.
+dlg @1 resident.business [business=thriving] : Couldn't be better. The jars fly off the shelf. | Thriving, touch the crock. I can't put up fruit fast enough.
+dlg @2 resident.business [business=steady] : Steady, #bee#. The jars come home and go out again, and the rent's paid. | It pays its way. A farthing here, a farthing there.
+dlg @3 resident.business [business=failing] : Poorly, #bee#. The jars just sit there. | Badly. Folk haven't the coin for sweet things just now.
+dlg @1 resident.bye : #farewell#, #bee#. Look in again soon. | #farewell#. Wrap your chest up warm.
+dlg @2 resident.bye [here.time=night] : Off home with you, and something hot before bed. | #farewell#. Mind the dark past the square.
+dlg @1 shop.greet [here.shop!=bare] : #greet#, #bee#. Honey preserves, never sugar. Have a taste. | #greet#. Plum, quince or heath honey? The spoon's clean.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! The quince is good this week. | #greet#, #topic.player#. Did you bring the jar back? A farthing off if you did.
+dlg @3 shop.greet [here.shop=bare] : #greet#. The shelf's bare, I'm afraid. Next batch is in the pan. | Not a jar left, #bee#. Come back in a day or two.
+dlg @1 shop.prices : A farthing more than sugar, and worth every bit. A farthing off for the jar back. | #shop_dear# But honey keeps a winter, and sugar doesn't.
+dlg @1 shop.bye : #shop_bye# Bring the jar back, mind. | #farewell#, #bee#. Spread it, don't spoon it. Well, both.
+graft resident.hub
+choice Why do you keep tasting the honey? [self.role=merchant] -> tasting
+node tasting
+say Tasting? Oh, that. A preserver has to taste, #bee#. And the damp catches my throat, and a spoon of honey settles it. But mostly it's tasting.
+mood warm
+free
+choice Is it a cough? -> cough
+choice Back to what we were saying. -> hub
+node cough
+say It's a tickle. I've had it every wet season, near enough always. Honey in hot water, last thing at night. Don't you fuss about me.
+choice Take care of it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Why honey and not sugar? -> honey
+node honey
+say Sugar sets hard and tastes of nothing. Honey keeps the fruit tasting of fruit. I learned it from a cook who'd tip a sugared pan in the yard.
+mood keen
+choice Let me taste. -> taste
+choice Show me your jars. -> greet
+node taste
+say There. Plum, in heath honey. Now tell me you'd ever buy a sugared one again.
+choice I'll buy a jar. -> greet
+choice Goodbye. -> bye

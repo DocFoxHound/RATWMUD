@@ -1,0 +1,440 @@
+# rm163, the dose said back (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm163
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_rupert_fogton
+written_by claude
+title the dose said back
+fits stage=adult|old
+prefers role=merchant job=healer warmth=cold
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk makes_every_customer_say_the_dose_back
+likes smoked_eel roof_birds fresh_straw summer_evenings
+dislikes early_bells smoke
+fears a_dose_misheard a_name_in_the_poison_book_that_lied
+hopes a_herb_bed_on_the_roof long_quiet_evenings
+topics health +0.5 work +0.4 animals +0.3 season +0.2 food +0.2 home +0.2 gossip -0.6 newcomer -0.3
+styles comfort=practical gossip=closed refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps an apothecary's counter on the Commons below the Rise and will not hand over so much as a twist of willow bark until the dose has been said back: unhurried, cool, guarded, sparing with words, and soft only about smoked eel, the birds on the ridge tiles and a long summer evening.
+
+words
+oath! = Gall and gentian | Bitter and true | Spoon and stopper
+saying! = Say it back or leave it | Heard twice, taken right | The slow paw spills nothing
+dose = the dose | the dose, said back to me
+jars = the jars | the stoppered jars on the high shelf
+mortar = the mortar | my stone mortar
+book = the poison book | the book every buyer of poison signs
+drops = the drops | a spoonful of the bitter drops
+smoke = the smoke | the chimney smoke that sits on the Commons
+eel = smoked eel | a twist of smoked eel in paper
+roofbirds = the roof birds | the birds along the ridge tiles
+straw = fresh straw | sweet new straw on the floor
+evening = a long summer evening | an evening that won't get dark
+rise = the Rise | the gravel drives up the hill
+counter = the counter | my counter
+bells = the dawn bells | bells before the sun's even thought about it
+chest = a chest | a tight chest
+spoon = the spoon | a horn spoon, levelled
+label = the label | a label in my own paw
+
+any
+opinion @1 drink against 1 : I've bound enough cut paws after a night of ale to have no fondness for it. | Drink sends me more trade than winter does. I'd rather it didn't.
+opinion @2 dole against 1 : Bread for nothing teaches waiting. I'd sooner see the work found. | I'll sell willow bark at cost to anyone who's skint. That's not the same as handing out loaves.
+opinion @3 city for 1 : Pup in this smoke, grey in it later, and content to be. | Ridgemere's damp and steep and full of coughs. It keeps me. I keep it.
+opinion @4 houses for 1 : Without the Houses there'd be no works, and without the works nobody down here could pay me for a cough. | I sell up the hill as much as down it. I'll say nothing against my customers.
+opinion @5 merchants for 1 : A counter costs. Wagons cost. I know the sums, and I don't begrudge the next shop theirs. | An honest margin, a clean scale. That's all I ask of a trader. Most manage it.
+opinion @6 road against 1 : Half my roots come up from the south, and half of those come late. | Every late wagon is a jar I can't fill. I've stopped expecting.
+opinion @7 road against 2 [world.wagons=raided] : They took a cart. Somewhere in it were my roots. I'll do without and say nothing kind.
+opinion @8 strangers against 2 : Unknown faces get served, and watched. I'll not apologise for the watching. | I keep the poison book for strangers as much as for anyone. More, perhaps.
+opinion @9 watch mixed 0 : They come to me for their cuts and their coughs. Beyond that I've no view I'd share. | Useful when wanted. Not otherwise.
+opinion @10 times mixed 1 [world.times=hard|lean] : Folk who can't pay for bread don't buy remedies. They come to me late, when it's worse. | Lean weeks are long weeks for an apothecary.
+
+grown
+line @1 greet : #greet#. | #greet#. What's the trouble.
+line @2 greet [pair.band=strangers] : #greet#. You'll be wanting something. Take your time. | #greet#. Come up to the counter, into the light.
+line @3 greet [self.working=yes self.job=healer] : #greet#. A moment. I'm weighing. | #greet#. Mind the jars on the end.
+line @4 greet [here.time=dawn] : Morning. The bells had me up. | Morning. I'm not open, quite. Say it anyway.
+line @5 greet [here.time=dusk|night] : Evening. The shutters are halfway. | Evening. Late for a remedy.
+line @1 kin.open [pair.kin!=no] : You're back. Sit. I've the kettle on. | There you are. I kept the window open for you.
+line @1 again.open : You again. Something forgotten, I expect. | Back. I'd half expected it.
+line @1 greet.return : #greet#. | #greet#. Well enough, thank you.
+line @2 greet.return [pair.band=friends|family] : There you are. Good. | You. Shut the smoke out behind you.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I grind. | #greet#. Paws busy. Ears free.
+line @4 greet.return [here.time=dusk|night] : Evening. | Evening. You keep late hours.
+line @1 farewell : #farewell#. Take it as I said. | #farewell#. Mind the step down.
+line @2 farewell [here.time=dusk|night] : Good night. Keep your chest covered. | Good night. Out of the damp, now.
+line @1 farewell.return : #farewell#. | And you. Keep well.
+line @1 react.news : Go on. Slowly. | Mm. From whom?
+line @1 react.news.new : That's not reached my counter. | New to me. I'll keep it in mind.
+line @1 react.news.known : I'd heard. I don't repeat things. | Somebody said as much this morning, over a bottle.
+line @1 react.news.doubt : Hearsay. I'll hold it at arm's length a while. | Possibly. Word gets mixed in the telling, like a bad tincture.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's grim. I'm sorry for the house it's touched. | Bad. If anyone there needs a sleeping draught, send them to me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'm glad of it. | That's welcome. There's little enough of that.
+line @1 answer.how : Well enough. I don't complain. | Steady. A cough or two, but none of them mine.
+line @2 answer.how.busy [self.working=yes] : Busy. Every chest on the Commons is tight this week. | Run through. I've three bottles to fill and a fourth promised.
+line @1 ask.how : You're well? You look it. | And yourself? Sleeping?
+line @1 sympathise : That's a weight. I can't mend that one. I'm sorry. | Sit a moment. There's no hurry here.
+line @1 reassure : Rest and time mend more than I do. | You'll mend. I've seen worse walk out of here.
+line @1 decline : #hedge#. I'll not sell that without knowing what it's for. | I can't. Not today. I've a remedy on the fire that won't wait.
+line @1 accept_decline : Fair. | As you like.
+line @1 thank : Thank you. | Obliged. I'll remember.
+line @1 deflect_thanks : It's what I'm for. | No need. Take it as I said, that's thanks enough.
+line @1 preclose [self.working=yes] : I've a bottle to fill. | The mortar's waiting.
+line @2 preclose : Well. That's all, I think. | Mm. I'll let you go.
+line @1 accept_preclose : Go on, then. | Yes. Go carefully.
+line @1 ack : Mm. | So. | Mm, so.
+line @1 give.advice : Keep your chest covered when the smoke comes down. And stay off the ale for a week. | Rest. Nobody believes me when I say it. Rest.
+line @1 warn [world.bandits=near] : Don't walk out past the walls this week. I've stitched enough. | Stay in. Bandits on the roads, I'm told. I'd believe it.
+line @1 hail [pair.band=friends] : Here. A moment. | There you are. A word.
+scene say_it_back
+when topic=work|health self.working=yes self.job=healer
+does tell.self / ask.detail / answer.detail / assess
+a : I'll not hand a bottle over till #dose# comes back to me. Every customer. Every time. | Somebody tried to take a bottle this morning without saying the dose. I kept my paw on it.
+b : Even if they've had it before? | Did they say it in the end?
+a : Especially then. Folk who think they know are the ones who take two spoons instead of one. | In the end. Grudgingly. They said it right, and they'll live.
+b : That's careful. | Fair enough.
+
+scene dose_wrong
+when topic=work|health self.job=healer
+does tell.self / react.self / tell.self / assess
+a : A wolf said the dose back as three spoons. It was three drops. We started again. | I had one say it back perfectly and then ask if they could double it to get better faster.
+b : Three spoons? | What did you say?
+a : Three spoons of that would've put them to sleep a week. That's why I ask. | No, I told them. Then again, slower.
+b : That's why you ask. | I'd have said it louder.
+
+scene poison_book
+when topic=work self.job=healer self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Anyone who buys rat bane signs #book#. Name, house, and what the rats are called. | I've a page in #book# with nobody's name on it twice. Long may it stay so.
+b : What the rats are called? | Why would anyone sign twice?
+a : A joke of mine. Not really. But I watch their face when I ask. | A house with that many rats wants a cat, not more poison.
+b : I'll remember. | Fair.
+
+scene mortar_dawn
+when topic=day|work self.working=yes self.job=healer here.time=dawn
+does tell.self / react.self / tell.self / assess
+a : First thing, I grind. #mortar.capitalize# and the bark, while the street's still quiet. | The bells woke me, so I came down and started on the fennel.
+b : Before opening? | Early start.
+a : Before. Grinding's slow work, and it doesn't want company. | It is. But a fine powder's worth the dark.
+b : Sounds peaceful. | Fair enough.
+
+scene smoke_down
+when topic=weather|health here.weather=fog|overcast here.region=ridgemere
+does tell.complaint / react.complaint / tell.self / assess
+a : #smoke.capitalize# is down again. Half the Commons will be at my counter coughing by noon. | You can taste it today. Coal and tar. Door shut, and still it creeps in.
+b : #grumble#. | Can you do anything for it?
+a : I'll sell a lot of honey and onion, and I'll not enjoy it. | Not for the smoke. Only for the chests. It's the same answer every winter.
+b : Somebody has to. | I suppose it is.
+
+scene winter_chills
+when topic=health|season here.season=autumn|winter
+does tell.self / ask.detail / answer.detail / assess
+a : Chill season. I've made up more of the bitter drops this week than all summer. | Every pup in the street has a running nose. Their mothers come in looking worse than they do.
+b : Does it work? | What do you give them?
+a : It works if they take it as I said. Most of them don't. | Honey and warm water, and to keep the pup by the fire. And I tell the mother to sleep.
+b : The trick is saying it back. | Good advice for anyone.
+
+scene remedy_asked
+when topic=health
+does ask.advice / give.advice / react.self / assess
+a : You've a cough. I can hear it from here. Don't tell me it's nothing. | Your paw's swollen. You've been walking on it, I expect.
+b : It is nothing, mostly. | I have. Couldn't help it.
+a : Mostly nothing is how most somethings start. #remedy.capitalize#, and rest. | Then stop helping it. Cold water, and off it for two days. Say it back.
+b : #bc_ill_try# | Cold water, off it for two days.
+
+scene fresh_straw
+when topic=home|smalltalk
+does tell.self / react.self / tell.self / assess
+a : I've #straw# down upstairs. Upstairs smells of a hayfield now. | I changed the straw in the back room. It reaches the street.
+b : Smells good. | Nothing like it.
+a : It hides the jars. Upstairs, I don't want to smell remedies. | It's the only smell in here I don't make myself.
+b : Can't blame you. | Fair enough.
+
+scene roof_birds
+when topic=animals|pastimes here.region=ridgemere
+does tell.self / react.self / tell.self / assess
+a : There's a row of birds on the ridge tiles across the street. Same ones every morning. | I watch #roofbirds# from the back window between customers. They're better company than most.
+b : The same ones? | Better company?
+a : I think so. One's lost a toe. It's always at the end. | They don't ask for anything. They don't need dosing.
+b : Fair. | You'd know.
+
+scene birds_spring
+when topic=animals|season here.season=spring
+does tell.feeling / react.self / assess / ack
+a : The birds are nesting on the ridge again. I counted three nests from the window. | The swifts are back. Screaming over the chimneys at first light, the lot of them.
+b : Spring, then. | They're loud.
+a : Spring. I mark it by them, not by the calendar. | They are. I don't mind. It's the one noise I don't.
+b : Good way to mark it. | Fair.
+
+scene summer_evening
+when topic=season|pastimes here.season=summer here.time=dusk
+does tell.feeling / react.self / tell.self / assess
+a : #evening.capitalize#. I'll put a chair out on the step and do nothing at all. | It won't get dark. I've been sitting on the step an hour and the sky's still blue.
+b : You've earned it. | Lovely, that.
+a : Earned or not, I'll take it. | Lovely. There, I've said it. Once a year.
+b : #bc_lovely# | I'll take your word.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / tell.self / assess
+a : I had #eel# for my supper. From the smokehouse by the wharf. | If I've a weakness, it's smoked eel. The fattier the better.
+b : Good, is it? | A weakness?
+a : Good. Bones and all, almost. I've no shame about it. | A small one. An apothecary should know better. I don't.
+b : Nor should you. | We all have one.
+
+scene plain_supper
+when topic=food here.time=dusk|night
+does tell.self / react.self / assess
+a : Bread, cheese, a little eel if there's any. That's supper. | I eat late. After the last bottle's filled and the book's closed.
+b : Simple. | Late's no good for you, surely.
+a : Simple. I like it simple. Food shouldn't need a label. | I know. I'd tell anyone else the same. I don't listen to myself.
+
+scene wife_counter
+when topic=family|work self.married=yes self.working=yes
+does tell.self / react.self / tell.feeling / assess
+a : My #self.spouse_word# keeps the counter while I grind. Better with folk than I am. | I'd be no good without my #self.spouse_word#. I mix, and somebody has to smile.
+b : Good pair. | You don't smile?
+a : Yes. We are. I don't say it, but we are. | Not on purpose. My #self.spouse_word# does it for both of us.
+b : #bc_true# | That's lucky.
+
+scene wife_evening
+when topic=family|home self.married=yes here.time=dusk|night
+does tell.feeling / react.self / assess
+a : Evenings, it's my #self.spouse_word# and me and the window. That's all I want. | My #self.spouse_word# reads out the day's labels and laughs at my writing.
+b : Sounds a good evening. | Bad writing?
+a : It is. I don't need much more. | Small. Very small. It's to fit on the jar.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# hears everything from me. Nobody else does. | Friends come slow to me. #self.friend# is the one that did.
+b : One will do. | Then you're lucky.
+a : That's what I think. | It's enough. I don't need a crowd.
+
+scene neighbour_quiet
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# next door keeps to the same hours I do. We nod. That's plenty. | I'd trust #self.neighbour# to fetch me if there were a fire. Beyond that, we let each other be.
+b : Good neighbours. | That's the best kind.
+a : Good enough. I've no complaints. | I think so. A nod's worth more than a chat.
+
+scene early_bells
+when topic=day|faith here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize#. Every morning. I lie under the blanket, waiting them out. | The bells went before light again. I gave up and ground fennel.
+b : They do ring early. | Better than lying awake.
+a : They do. I don't know who they think is listening at that hour. | It is. The fennel's never been finer.
+
+scene rain_powders
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.worry / reassure / tell.self / assess
+a : This damp gets into the powders. They cake in the jar. | Rain three days. I've had to wrap every paper twice.
+b : Is there any stopping it? | Does it spoil them?
+a : Not out. Away. A dry shelf high up, and a lump of charcoal in each jar. | Not if they're kept dry. That's the whole of my trade some weeks.
+b : Clever. | Sounds it.
+
+scene fog_chest
+when topic=weather|health here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog like this, I'll sell every drop of the chest syrup by dark. | The fog sits in the street like wet wool. Nobody's breathing easy.
+b : Good for trade. | I can feel it.
+a : Good for trade and bad for chests. I'd sooner a quiet day. | So can I. Scarf over your muzzle, going home.
+
+scene snow_still
+when topic=weather|season here.weather=snow
+does tell.self / react.self / assess
+a : Snow. The street's gone quiet. No carts, no smoke, no coughing for an hour. | It's snowing. Look at the roof birds, all fluffed up like little stoppers.
+b : Quiet's welcome. | Ha. They are.
+a : Very. I'll enjoy it while it lasts. | I'll put crumbs on the sill. Don't tell anyone.
+
+scene rise_delivery
+when topic=work|travel self.job=healer here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I took a bottle up to #rise# this morning. A cough in one of the big houses. | Up the hill twice today. They don't come down for their remedies up there. They send.
+b : What's it like, up there? | Do they pay well?
+a : Gardens behind gates. Gravel that crunches. And the same cough as down here. | They pay on the day. I need nothing more from a customer.
+b : Coughs don't know who's posh. | That's fair.
+
+scene herbs_dear
+when topic=prices world.herbs_price=up
+does tell.complaint / react.complaint / tell.self / assess
+a : Herbs are dear this month. Willow bark's gone up on my slate. | Everything I grind costs more than it did. I'll not say what I pay.
+b : #grumble#. | Will folk still buy?
+a : I've kept the cough syrup where it was. That one I'll take the loss on. | Folk who need it will. The rest will wait, and come back worse.
+b : That's decent. | That's how it goes.
+
+scene lean_remedies
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / tell.self / assess
+a : Folk come in counting coppers and leave without the bottle. Then they come back worse. | I've sold more willow bark at cost this month than at price.
+b : #sympathy#. | That's good of you.
+a : I keep the cheap remedies cheap. That's all I can do from behind a counter. | I'm not a charity. But I'll not watch a chest get worse for a copper.
+b : It's something. | That's sense.
+
+scene wagons_late
+when topic=caravan world.wagons=late here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Half my roots are somewhere on the road, late. Three jars down to the dregs. | No carts, no gentian. I've written "none" on a label for the first time in years.
+b : They'll come. | That bad?
+a : They will. When, is the question nobody answers. | That bad. I don't like writing "none".
+
+scene gossip_kept
+when topic=gossip
+does tell.self / react.self / assess
+a : I know what's wrong with half the Commons. I've never once said. | Folk tell an apothecary things they'd not tell their mother. It stays behind the counter.
+b : Quite right. | Good.
+a : It is. A loose mouth would empty my shop in a week. | Behind the counter, with the poisons. Locked.
+
+scene gossip_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / tell.self / assess
+a : I heard it said that #topic.subject# #topic.claim#. I'll put nothing of mine to it. | They're saying #topic.subject# #topic.claim#. That's as much as I'll say.
+b : You don't sound keen. | That's all?
+a : I'm not. Talk is a dose nobody says back. It goes wrong in the swallowing. | That's all. I heard it. I don't know it.
+b : Fair. | Fair enough.
+
+scene newcomer_watched
+when topic=newcomer|player self.working=yes
+does tell.self / react.self / assess / ack
+a : Somebody I'd never seen came in this morning. Bought willow bark, paid exact, said the dose right first time. | There's a stranger about. Asked what I had for sleeping. I asked what for.
+b : Sounds all right. | What did they say?
+a : I'll watch them a week. Then perhaps. | Bad dreams. I gave them chamomile and watched them go.
+b : That's you all over. | Fair.
+
+scene faith_mends
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One does the mending. I only help it along. | I go to the chapel when I've lost someone at the counter. Not often. Often enough.
+b : Modest of you. | That's hard.
+a : It's the true way. I've seen remedies fail and folk mend anyway. | It is. After, I open the shutters again.
+
+scene roof_garden
+when topic=dreams|home
+does confide / react.self / assess / ack
+a : I'd like a bed of herbs on the roof. Thyme, and fennel, and whatever grows itself. | There's a flat bit of roof behind the chimney. I've been looking at it for a year.
+b : On the roof? | Looking at it?
+a : Where else is there sun in this city. | Looking. One summer I'll carry the soil up. Not this one.
+b : Fair point. | There's always next summer.
+
+story first_lesson [topic=memories|work self.job=healer self.age>=25]
+  : The apothecary I learned under made me say every dose back to him. For a year. Even the ones I'd written myself.
+  : I thought he was a fool. Then one day I said one back wrong, and the look on his face cured me of thinking so.
+  ask : Did anyone ever teach you something by making you feel foolish?
+  b[old] : Too many. Some of them stuck.
+  b : Once or twice. It works.
+  : It works. I do it to every customer now. I'm told I'm a fool.
+
+story eel_smokehouse [topic=memories|food here.region=ridgemere self.age>=25]
+  : My #grandad# walked me down, small as I was, to the smokehouses on the headland.
+  : We stood in the door of one and the smell was eel and oak and salt. I've never got it out of my nose.
+  ask : Is there a smell like that for you, one you'd know anywhere?
+  b : Bread, for me. Always bread.
+  : That's a good one. Mine's eel. I'm not ashamed.
+
+story the_rats [topic=work self.job=healer]
+  : A wolf came in for rat bane and wouldn't sign the book. Said it was for the cellar.
+  : I sold chalk in a paper and wrote "chalk" on the label very small.
+  ask : Would you have sold the real thing?
+  b : Not without the name.
+  : Nor did I. The rats were fine. So was everyone else.
+
+story nest_gutter [topic=animals|memories self.age>=25]
+  : One spring a bird built a nest in the gutter over my door. The rain came and the gutter filled.
+  : I went up the ladder in the dark with a pot and bailed it out. Wet to the skin.
+  ask : Would you have climbed up, or let it be?
+  b : Left it to the bird, probably.
+  : Probably sense. But the bird was in that gutter again the spring after.
+
+story long_evening [topic=season|memories self.married=yes]
+  : The summer we were married we sat on the roof one evening till it was dark. It didn't get dark till near midnight.
+  : We didn't say much. I don't. But I remember all of it.
+  ask : Have you an evening like that?
+  b : One or two. Not enough.
+  : Nobody has enough. That's what makes them.
+
+rule @grind_bark
+when concept=bark self.working=yes self.job=healer here.time=dawn
+does aside
+cooldown 10h
+say Round and round. Fine as dust. | Another spoon of bark, then.
+
+rule @bells_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Bells. Already. | There they go. Before the sun, again.
+
+rule @smoke_bark
+when concept=bark here.weather=fog|overcast here.region=ridgemere
+does aside
+cooldown 8h
+say You can taste the smoke today. | Shut the door. Smoke's coming in.
+
+rule @rain_bark
+when concept=bark here.weather=rain self.working=yes
+does aside
+cooldown 8h
+say Damp in the powders. Again. | Wrap it twice. Rain's in.
+
+rule @birds_bark
+when concept=bark here.weather=clear
+does aside
+cooldown 10h
+say Toe-short's on the end of the ridge again. | Six birds on the tiles. Six.
+
+rule @evening_bark
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 12h
+say Still light. Good. | Chair on the step, then.
+
+dlg @1 resident.hub : #greet#. What's the trouble? | #greet#. Come to the counter.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Is it the same trouble, or a new one? | #topic.player#. You took it as I said?
+dlg @3 resident.hub [here.time=night] : It's late. If it's a remedy, quickly. | Evening. I'm closing. Say it.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep your paws off the counter and say what you want. | Say it. I'll stay this side of the jars.
+dlg @1 resident.job [self.job=healer] : #self.trade_words.capitalize#. I grind, I mix, I make folk say the dose back. | Remedies. Barks, roots, syrups. And the poison book, which I keep very close.
+dlg @2 resident.job : I do what I do carefully. That's all there is to say. | Slow work. It suits me.
+dlg @1 resident.business [business=thriving] : Busy. Coughs pay my rent, and there's no shortage of coughs. | Well. Every jar emptied twice this month.
+dlg @2 resident.business [business=steady] : Steady. Folk always fall ill. I'm sorry to say it pays. | Steady enough. The winter's better than the summer.
+dlg @3 resident.business [business=failing] : Poorly. Folk can't pay, so they don't come till it's too late. | Slow. Too slow. I've jars going stale.
+dlg @1 resident.news [world.news] : Over the counter, from #world.news_from#: #world.news#. | A customer said, from #world.news_from#: #world.news#. I'll vouch for none of it.
+dlg @2 resident.news [world.event_words] : Everyone's talking of #world.event_words#. I'm selling headache powders. | It's #world.event_words#, I'm told. I've not been out.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I stay behind my counter. | Not a whisper here. Try a louder shop.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Counter talk stays at the counter. Not to anyone.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I heard it. I don't know it. | It's said #topic.subject# #topic.claim#. I'll not go further.
+dlg @1 resident.bye : #farewell#. Take it as I said. | #farewell#. Mind the step.
+dlg @2 resident.bye [here.time=night] : Good night. Cover your chest. | Good night. Straight home.
+dlg @1 shop.greet [here.shop=open] : #greet#. What's the trouble, and how long have you had it? | #greet#. Tell me what's wrong. Then we'll see.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#. Did it work? Say how you took it. | #greet#, #topic.player#. The same again, or something new?
+dlg @3 shop.greet [here.shop=open pair.disposition=hostile|wary] : I'll sell you what you need. You'll say the dose back like anyone. | Name it. If it's poison, you'll sign.
+dlg @4 shop.greet [here.shop=bare] : #greet#. My shelves are near empty, with the wagons slow. Roots or bark, I'll buy. | Bare, near enough. Bring me roots and I'll pay for them.
+dlg @1 shop.prices : #shop_dear# Willow bark's up. The syrup I've kept where it was. | What the roots cost me, and the rent on top. No more.
+dlg @1 shop.bye : #farewell#. Say the dose to yourself on the way home. | #shop_bye# Take it as I said.
+graft resident.hub
+choice Why do you make everyone say the dose back? [self.job=healer] -> dose
+node dose
+say Because folk hear what they want to. Three drops becomes three spoons by the door. If you say it back to me, I know you heard it.
+mood calm
+free
+choice Has anyone got it wrong? -> dose_wrong
+choice Goodbye. -> bye
+node dose_wrong
+say Once. Before I asked. That one stays with me. I've asked every customer since.
+choice I'll say it back, then. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's good for a cough? [self.job=healer] -> cough
+node cough
+say Honey and onion, warm, morning and night. Keep your chest covered and stay out of the smoke. Now say it back.
+mood calm
+choice Honey and onion, warm, morning and night. -> cough_back
+choice Let me see your wares. -> greet
+node cough_back
+say Good. You'll mend. Most do, when they listen.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye
