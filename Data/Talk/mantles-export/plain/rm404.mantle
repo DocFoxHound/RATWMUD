@@ -16,7 +16,7 @@ hopes a_berth_with_an_enforceable_roof
 topics work +0.6 dreams +0.5 travel +0.4 weather +0.2
 styles comfort=reserved gossip=qualified refuse=formal tease=none
 marks oath saying
-persona persona #self.first# takes stairs in pairs and reserves one exacting question for the terms of an imagined passage.
+persona #self.first# takes stairs in pairs and reserves one exacting question for the terms of an imagined passage.
 
 words
 oath! = Qualify my berth | Strike my stair allowance

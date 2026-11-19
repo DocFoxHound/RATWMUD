@@ -16,7 +16,7 @@ hopes a_warm_board_under_another_tired_traveller
 topics weather +0.6 home +0.5 work +0.4 travel +0.3
 styles comfort=sheltering gossip=plain refuse=kind tease=none
 marks oath saying
-persona persona #self.first# uses sleepless hours before storms to put a small home in order and never forgets the first empty arrival at its door.
+persona #self.first# uses sleepless hours before storms to put a small home in order and never forgets the first empty arrival at its door.
 
 words
 oath! = Tilt my clean shelf | Hollow my chopping block

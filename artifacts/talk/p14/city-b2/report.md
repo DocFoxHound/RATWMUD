@@ -60,36 +60,36 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 ## Voices
 
 - **rm380, the riddle folded round the apple.** This wolf folds written riddles round crisp apples and counts chapel bells in the space a slower guesser needs.
-- **rm381, the boat in the dipping cup.** persona This wolf hums a sea air to thumb-sized boats and keeps a dry, folded list beyond reach of the steam.
+- **rm381, the boat in the dipping cup.** This wolf hums a sea air to thumb-sized boats and keeps a dry, folded list beyond reach of the steam.
 - **rm382, the bell auction.** This wolf auctions impossible little luxuries in the gaps between chapel bells, keeping the prices, the bids and the real savings strictly separate.
 - **rm383, the wager of a barley grain.** This wolf risks a barley grain on changes in the market sound, loves a storm from a firm roof and starts a letter on every walk as if an answer might be waiting at the last turning.
 - **rm384, the smoked-glass rehearsal.** This wolf rehearses songs to the dark patches in a lamp glass, looks for a clear path before stepping into a crowd, and keeps the quiet verses for familiar ears.
 - **rm385, the coal on the hinge.** This wolf leaves a fine coal mark beside any hinge that squeaks, arrives quietly in well-kept boots, and has ambitions that never get written on the duty slate.
-- **rm386, the smoke in the soup ladle.** persona This wolf sniffs each sleeve for smoke, gives the barley pot a cheerful wrestling hold and counts supper by the places round it.
+- **rm386, the smoke in the soup ladle.** This wolf sniffs each sleeve for smoke, gives the barley pot a cheerful wrestling hold and counts supper by the places round it.
 - **rm387, the apple-skin pennant.** This wolf cuts a pennant of peel for each bird on a favourite roof, calls the colours down to the market and checks any proud claim against the bird actually sitting there.
 - **rm388, the tale beneath the chair.** This wolf keeps the starts of stories underneath a chair, smells of old smoke, and can give a new caller the best seat without moving a single chair leg.
 - **rm389, the pot turned inward.** This wolf turns a teapot handle towards the table to mark a break in business and gives practical comforts without fuss.
 - **rm390, the upstairs cupboard by inches.** This wolf measures dream cupboards with a bit of knotted wick and takes the stairs in pairs whenever the leg consents.
 - **rm391, the returnable cloth.** This wolf keeps dry cloths to lend with laden baskets and measures a shower by the spots on the cloth that comes back from the door.
 - **rm392, the roof weather vane.** This wolf bends straw into birds for watching the wind and regards the first turn of a straw beak as a piece of news worth waiting for.
-- **rm393, the iron flood atlas.** persona This wolf sets nails on an old map to show where the streets first go under and covers a private sight with a closed paw.
+- **rm393, the iron flood atlas.** This wolf sets nails on an old map to show where the streets first go under and covers a private sight with a closed paw.
 - **rm394, the petition in charcoal.** This wolf cuts a clerk's stamp in a piece of pocket coal, has memorised the route of a lost petition and prefers to disclose an inventory one shelf at a time.
 - **rm395, the dancing fleet.** This wolf steps ship names out in dance figures and knows the size of a deck by the room a heel has to turn.
 - **rm396, the skipper's unfinished plait.** This wolf runs a thumb across a flat three-strand plait, hums a marching air under the breath, and refuses to name the thing the saved coins might buy.
 - **rm397, the missing bench.** This wolf counts empty places under the breath before counting anything in motion and regards a clear patch of bench as an unusually reliable witness.
-- **rm398, the stormless shelf.** persona This wolf uses sleepless hours before storms to put a small home in order and never forgets the first empty arrival at its door.
+- **rm398, the stormless shelf.** This wolf uses sleepless hours before storms to put a small home in order and never forgets the first empty arrival at its door.
 - **rm399, the threshold fold.** This wolf folds old maps into little standing doorways, has a booming welcome and knows how to send an impertinent caller a remarkably long way round without ever misdirecting a step.
 - **rm400, the double harbour.** This wolf sketches a ship and its reflection on either side of a fold and speaks with particular affection for the inverted harbour under the evening light.
 - **rm401, the covered signature.** This wolf covers the crest with a strip of clean linen before rereading a request and gives an unfamiliar voice the same clear hearing as a familiar signature.
 - **rm402, the pocket fleet in bark.** This wolf carves the bows of familiar ships in bits of bark and leaves the hulls small enough for a pocket harbour.
 - **rm403, the map on the service stair.** This wolf draws the service stair in the blank spaces of grand maps and lowers a splendid carrying voice to talk about private accounts.
-- **rm404, the dry berth clause.** persona This wolf takes stairs in pairs and reserves one exacting question for the terms of an imagined passage.
+- **rm404, the dry berth clause.** This wolf takes stairs in pairs and reserves one exacting question for the terms of an imagined passage.
 - **rm405, the shore inside the hone.** This wolf studies the lines in a whetting stone as an outline of a far coast and carves little wooden harbours in the hours before sleep.
 - **rm406, the extra round.** This wolf counts bell strokes to give a wrestling match its interval and reserves one extra honey cake for whoever arrives too late for the opening round.
 - **rm407, the king in the bottle rack.** This wolf marks two corks as kings, considers every waiting room a possible draughts board, and can make a great noise explaining a very small tactical error.
 - **rm408, the seal that still has a journey.** This wolf wraps the whetstone apart from any sealed letter and marks an unsuccessful call with a quiet turn of the heel.
 - **rm409, the ships above the roofs.** This wolf joins stars into the outlines of remembered ships and patiently waits for a roof or cloud to give a missing light back.
-- **rm410, the edge on the uphill side.** persona This wolf feels the whetstone through a carrying coat and saves a clean edge and an uphill plan for the end of the working day.
+- **rm410, the edge on the uphill side.** This wolf feels the whetstone through a carrying coat and saves a clean edge and an uphill plan for the end of the working day.
 - **rm411, the uncut moon.** This wolf counts chapel strokes with a half-carved wooden moon, keeps the last shaving in place and prefers to be consulted before any fresh reckoning is added to the day.
 - **rm412, the running shadow.** This wolf draws a shadow companion with a stub of coal and keeps shifting both feet until there is a clear way through.
 - **rm413, the last hoof through.** This wolf counts on knuckles under a closed fist, leaves the final count until the gate catches, and puts a high value on company that can share a quiet piece of work.

@@ -16,7 +16,7 @@ hopes one_little_boat_that_sails_straight
 topics work +0.5 pastimes +0.5 gossip -0.5 weather +0.3
 styles comfort=quiet gossip=withheld refuse=frank tease=none
 marks oath saying
-persona persona #self.first# hums a sea air to thumb-sized boats and keeps a dry, folded list beyond reach of the steam.
+persona #self.first# hums a sea air to thumb-sized boats and keeps a dry, folded list beyond reach of the steam.
 
 words
 oath! = Scald my hull | Sink my shallow ladle
