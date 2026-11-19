@@ -4,6 +4,7 @@ import {dmApi, worldName, type Me, type Npcs, type Target} from './api';
 import {useWorld} from './world';
 import {download} from '../lib/api';
 import {StoryPicker} from './StoryPicker';
+import {StoryProgramPanel} from './StoryProgramPanel';
 
 interface StoryFile {draft: StoryDraft; run: Rehearsal | null}
 interface Library {files: StoryFile[]; selected: string}
@@ -31,7 +32,7 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
     const [fileError, setFileError] = useState('');
     const [catalogError, setCatalogError] = useState('');
     const [roster, setRoster] = useState<Npcs | null>(null);
-    const [mode, setMode] = useState<'write' | 'rehearse'>('write');
+    const [mode, setMode] = useState<'write' | 'rehearse' | 'program'>('write');
     const [eventPlace, setEventPlace] = useState('');
     const world = useWorld(target, setCatalogError);
     useEffect(() => {
@@ -98,8 +99,9 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
         {store.error && <p role="alert">{store.error} <button onClick={() => setStore(read(key))}>Reopen saved version</button></p>}
         <nav aria-label="Story workspace"><button aria-pressed={mode === 'write'} onClick={() => setMode('write')}>Write draft</button>
             <button aria-pressed={mode === 'rehearse'} onClick={() => setMode('rehearse')}>Inspect rehearsal</button>
+            <button aria-pressed={mode === 'program'} onClick={() => setMode('program')}>World stories</button>
             <button onClick={openPersonal}>Personal storylines and storytellers</button></nav>
-        {mode === 'write' ? <div className="story-columns"><section className="dm-panel">
+        {mode === 'program' ? <StoryProgramPanel canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
             <fieldset disabled={!editable}><label>Story title<input value={draft.title} onChange={e => edit({title:e.target.value})}/></label>
             <StoryPicker world={world} roster={roster} resident={draft.resident} place={draft.place}
                 onResident={resident => edit({resident})} onPlace={place => edit({place})} />

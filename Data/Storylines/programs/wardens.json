@@ -1,0 +1,193 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "wardens",
+  "title": "Before the Wardens arrive",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "preparations",
+  "phases": [
+    {
+      "id": "preparations",
+      "journal": "Ask the provisioner about spare blankets, then report to the innkeeper. The Wardens need beds before they arrive.",
+      "effects": [
+        {
+          "kind": "npc.line",
+          "npc": "rm112",
+          "text": "I have straw for six beds. Tell me who else can take a guest, and I will mark it in the book."
+        }
+      ],
+      "exits": [
+        {
+          "on": "conversation",
+          "to": "welcome",
+          "percent": 60,
+          "match": {
+            "target": "rm112"
+          },
+          "prerequisites": [
+            {
+              "on": "conversation",
+              "match": {
+                "target": "rm113"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "welcome",
+      "journal": "Enough households are ready. The town calls a welcome for tomorrow.",
+      "effects": [
+        {
+          "kind": "festival.call",
+          "town": "ridgemere",
+          "name": "The Wardens’ Welcome",
+          "inDays": 1
+        }
+      ],
+      "exits": [
+        {
+          "on": "clock",
+          "to": "departed",
+          "afterDays": 2
+        }
+      ]
+    },
+    {
+      "id": "departed",
+      "journal": "The last guest rolls up a blanket. Borrowed beds go home to their owners.",
+      "effects": [],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Two different residents of the opening cohort suffice",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "preparations",
+        "welcome",
+        "departed"
+      ],
+      "events": [
+        {
+          "id": "early-birch",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-birch",
+          "target": "rm112"
+        },
+        {
+          "id": "ask-player-ash",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm113"
+        },
+        {
+          "id": "ask-player-birch",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-birch",
+          "target": "rm113"
+        },
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "visitor",
+          "target": "rm112"
+        },
+        {
+          "id": "e1",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm112"
+        },
+        {
+          "id": "e2",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm112"
+        },
+        {
+          "id": "e3",
+          "kind": "conversation",
+          "day": 1,
+          "actor": "player-birch",
+          "target": "rm112"
+        },
+        {
+          "id": "e4",
+          "kind": "clock",
+          "day": 2,
+          "actor": ""
+        },
+        {
+          "id": "e5",
+          "kind": "clock",
+          "day": 3,
+          "actor": ""
+        }
+      ]
+    },
+    {
+      "name": "One repeated volunteer cannot open the gates",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "preparations"
+      ],
+      "events": [
+        {
+          "id": "early-birch",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-birch",
+          "target": "rm112"
+        },
+        {
+          "id": "ask-player-ash",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm113"
+        },
+        {
+          "id": "ask-player-birch",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-birch",
+          "target": "rm113"
+        },
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm112"
+        },
+        {
+          "id": "e1",
+          "kind": "conversation",
+          "day": 1,
+          "actor": "player-ash",
+          "target": "rm112"
+        }
+      ]
+    }
+  ]
+}

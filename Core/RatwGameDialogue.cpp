@@ -1224,6 +1224,16 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     }
     if (!dialogueGo(c, kept, t->entries.at(base)))
         return;
+    if (!kept.asleepAtOpen)
+    {
+        const auto line = worldStoryLine(npcId, playerId);
+        if (!line.empty())
+        {
+            kept.line += " " + line;
+            if (!kept.history.empty()) kept.history.back().second = kept.line;
+            dialogueSend(c, kept);
+        }
+    }
     // A grievance it brings up itself (doc 52, 7: one this wolf vouched for wronged it): said after the greeting, once.
     if (auto open = dialogues_.find(playerId); open != dialogues_.end())
         for (const auto& [id, v] : vouches_)

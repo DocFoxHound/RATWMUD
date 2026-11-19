@@ -610,6 +610,7 @@ HOSTED_ROUTES = {
     # The DM suite. Reads for everyone signed in; reports (players' words as evidence) from dm.
     **{('GET', f'/api/dm/{p}'): VIEWER for p in _DM_READS},
     ('GET', '/api/dm/reports'): DM_ROLE,
+    ('POST', '/api/dm/story-program'): VIEWER,  # Catalog and rehearsal. The handler checks each world operation.
     # Its acts: dm and up (doc 78, 8), the economy's (doc 79, 12: the slider, rules, services, seasons, the host's
     # overrides; the live acts, grants and fines and band overrides, through prosperity/act and actions) among them.
     **{('POST', f'/api/dm/{p}'): DM_ROLE for p in _DM_WRITES},
@@ -1793,7 +1794,8 @@ class HostedStudio:
                 raise D.DMError(f'{kind} is a cheat on a community world. {CHEATS_OFF}', 403)
             if kind in WOLF_KINDS and not who['mayActOnWolves']:
                 raise D.DMError(WOLVES_REASON, 403)
-        if data and (path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
+        story_approval = path == '/api/dm/story-program' and data.get('op') == 'approve'
+        if data and (story_approval or path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
             try:
                 place = self.publisher.ahead(data)
             except Exception:  # noqa: BLE001 - the check can't be made just now: the game's own refusals still stand.

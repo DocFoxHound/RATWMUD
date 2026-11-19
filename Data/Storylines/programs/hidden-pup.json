@@ -1,0 +1,108 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "hidden-pup",
+  "title": "The small blanket",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "thread",
+  "phases": [
+    {
+      "id": "thread",
+      "journal": "The provisioner has put aside a pup-sized blanket. Ask who ordered it.",
+      "effects": [
+        {
+          "kind": "npc.line",
+          "npc": "rm113",
+          "text": "Someone paid for it with a ferry token. The teacher used to collect those."
+        }
+      ],
+      "exits": [
+        {
+          "on": "conversation",
+          "to": "letter",
+          "participant": true,
+          "match": {
+            "target": "rm113"
+          }
+        }
+      ]
+    },
+    {
+      "id": "letter",
+      "journal": "The ferry token leads to the teacher. Ask about the last crossing.",
+      "effects": [
+        {
+          "kind": "npc.line",
+          "npc": "rm119",
+          "text": "I kept the pup out of the rain. Follow the lamplighter after dusk. Let the little one decide whom to trust."
+        }
+      ],
+      "exits": [
+        {
+          "on": "conversation",
+          "to": "shelter",
+          "participant": true,
+          "match": {
+            "target": "rm119"
+          }
+        }
+      ],
+      "guestVoices": [
+        "rm119"
+      ]
+    },
+    {
+      "id": "shelter",
+      "journal": "A dry bed, a folded blanket, and a faint light under the door. The pup has shelter.",
+      "effects": [
+        {
+          "kind": "story.practice",
+          "player": "$actor",
+          "skill": "watch"
+        }
+      ],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Speaking to the teacher early does not reveal the shelter",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "thread",
+        "letter",
+        "shelter"
+      ],
+      "events": [
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm119"
+        },
+        {
+          "id": "e1",
+          "kind": "conversation",
+          "day": 1,
+          "actor": "player-ash",
+          "target": "rm113"
+        },
+        {
+          "id": "e2",
+          "kind": "conversation",
+          "day": 2,
+          "actor": "player-ash",
+          "target": "rm119"
+        }
+      ]
+    }
+  ]
+}

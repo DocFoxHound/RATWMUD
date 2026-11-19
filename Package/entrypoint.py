@@ -1832,6 +1832,7 @@ class Supervisor:
         self.dialogue = False
         self.agent: Helper | None = None
         self.agent_key: tuple | None = None
+        self.stories: Helper | None = None
         self.editor: Helper | None = None
         self.editor_key: dict | None = None
         self.database_ready = False
@@ -1907,7 +1908,7 @@ class Supervisor:
         self.apply_editor(s)
 
     def helpers(self) -> list[Helper]:
-        return [h for h in (self.agent, self.mind, self.editor) if h is not None]
+        return [h for h in (self.agent, self.mind, self.editor, self.stories) if h is not None]
 
     def tick(self) -> None:
         """Every half second: helpers up, the Editor's requests, central's word, the Mind's monthly count."""
@@ -2123,7 +2124,7 @@ class Supervisor:
         while self.step():
             time.sleep(0.5)
         self.share.stop()
-        for h in (self.agent, self.mind, self.editor):   # (The agent first: its leave takes the world off the list.)
+        for h in (self.agent, self.mind, self.editor, self.stories):   # (The agent first: its leave takes the world off the list.)
             if h is not None:
                 h.stop()
         say(f'stopped (the server\'s last exit: {self.code})')
@@ -2247,6 +2248,13 @@ def main() -> int:
     world_db = tools_module('world_db')
     world.apply(s)
     world.share.tidy()
+    # Published stories keep time with the game even with the Editor closed and no NPC Mind.
+    story_env = child_env('RATW_DM_PASSWORD', RATW_WORLDS_FILE=str(ADMIN / 'worlds.json'),
+                          RATW_WORLDS_LOCAL=str(ADMIN / 'worlds.local.json'), HOME=str(ADMIN))
+    world.stories = Helper('Story runner', lambda: subprocess.Popen(
+        [sys.executable, str(TOOLS / 'story_runner.py'), '--world', KEY],
+        cwd=ADMIN, env=story_env, **run_as(EDITOR_USER)))
+    world.stories.run()
     return world.run(world_db.libpq_conninfo(KEY, 'game'))
 
 

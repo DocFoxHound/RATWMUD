@@ -1,0 +1,174 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "wagon",
+  "title": "A wheel for the south road",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "stranded",
+  "phases": [
+    {
+      "id": "stranded",
+      "journal": "A loaded wagon leans on its axle. Ask the carter what gave way.",
+      "effects": [
+        {
+          "kind": "npc.line",
+          "npc": "rm111",
+          "text": "Hub cracked clean through. The wheelwright in town will have a spare. Bring it here and I can get this load home."
+        }
+      ],
+      "exits": [
+        {
+          "on": "conversation",
+          "to": "find-wheel",
+          "participant": true,
+          "match": {
+            "target": "rm111"
+          }
+        }
+      ]
+    },
+    {
+      "id": "find-wheel",
+      "journal": "Obtain a cart wheel in town and give it to the stranded carter.",
+      "effects": [],
+      "exits": [
+        {
+          "on": "gift",
+          "to": "mended",
+          "participant": true,
+          "match": {
+            "target": "rm111",
+            "item": "cart_wheel"
+          },
+          "minQuantity": 1
+        },
+        {
+          "on": "gift again",
+          "to": "mended",
+          "participant": true,
+          "match": {
+            "target": "rm111",
+            "item": "cart_wheel"
+          },
+          "minQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "mended",
+      "journal": "The wheel holds. The carter sets off before the axle settles back into the mud.",
+      "effects": [
+        {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "Brought a spare wheel to a stranded carter."
+        }
+      ],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Only the right item and recipient finish the repair",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "stranded",
+        "find-wheel",
+        "mended"
+      ],
+      "events": [
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm111"
+        },
+        {
+          "id": "e1",
+          "kind": "gift",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm111",
+          "item": "herbs",
+          "quantity": 1
+        },
+        {
+          "id": "e2",
+          "kind": "gift",
+          "day": 1,
+          "actor": "player-ash",
+          "target": "rm111",
+          "item": "cart_wheel",
+          "quantity": 1
+        }
+      ],
+      "expectEffects": [
+        {
+          "phase": "stranded",
+          "kind": "npc.line",
+          "npc": "rm111",
+          "text": "Hub cracked clean through. The wheelwright in town will have a spare. Bring it here and I can get this load home."
+        },
+        {
+          "phase": "mended",
+          "kind": "deed.award",
+          "player": "player-ash",
+          "detail": "Brought a spare wheel to a stranded carter."
+        }
+      ]
+    },
+    {
+      "name": "A familiar giver still repairs the wagon",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "stranded",
+        "find-wheel",
+        "mended"
+      ],
+      "events": [
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm111"
+        },
+        {
+          "id": "e1",
+          "kind": "gift again",
+          "day": 1,
+          "actor": "player-birch",
+          "target": "rm111",
+          "item": "cart_wheel",
+          "quantity": 1
+        }
+      ],
+      "expectEffects": [
+        {
+          "phase": "stranded",
+          "kind": "npc.line",
+          "npc": "rm111",
+          "text": "Hub cracked clean through. The wheelwright in town will have a spare. Bring it here and I can get this load home."
+        },
+        {
+          "phase": "mended",
+          "kind": "deed.award",
+          "player": "player-birch",
+          "detail": "Brought a spare wheel to a stranded carter."
+        }
+      ]
+    }
+  ]
+}

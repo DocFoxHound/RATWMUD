@@ -336,6 +336,9 @@ export interface ProsperityView {
 /** A DM's live act on the staged economy (doc 79, 12): its kind, what it names, and its payload as the tool clamped it. */
 export interface Queued { id: number; status: 'queued'; payload: Record<string, unknown> }
 
+export const storyProgram = <T,>(target: Target, op: string, body: Record<string, unknown> = {}) =>
+    call<T>('api/dm/story-program', {...body, op, target});
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/dm/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/dm/logout', {}); } finally { setToken(''); } },

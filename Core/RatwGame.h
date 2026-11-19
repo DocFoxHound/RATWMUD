@@ -1486,6 +1486,8 @@ class Game
     // The Dungeon Master's list of story visitors (live.story_visitors; tests set it).
     void setStoryVisitors(const json::Value& list);
     // A storyline step's line for a resident's Mind while it is current (doc 58, 9): "" if none.
+    Result applyWorldStoryPhase(const std::string& run, const json::Value& payload);
+    std::string worldStoryLine(const std::string& npc, const std::string& wolf) const;
     std::string storylineBrief(const std::string& npc, const std::string& wolf) const;
     void hearTroubleFor(const std::string& wolf, const std::string& npc)   // (Tests: as if the resident had told them.)
     {
@@ -2465,6 +2467,7 @@ class Game
         Crime = 8,         // Incidents, warrants, custody.
         Companions = 16,   // Who travels with whom.
         Accounts = 32,     // Sign-in accounts and the characters they own.
+        StoryBook = 128,   // Story phase and its DM action receipt commit together.
         Character = 64,    // The character itself.
     };
     // Journals what a valuable command changed (or, with no journal, saves whole and waits, as before). Replies to

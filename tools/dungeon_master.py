@@ -44,6 +44,8 @@ import live_edit as L
 import map_editor
 import talk_files
 import world_db
+import story_program
+import story_runner
 import world_store as S
 
 
@@ -1860,13 +1862,7 @@ class DungeonMaster:
             if len(names) != 2:
                 raise DMError('No such faction.', 404)
             with conn.transaction():
-                conn.execute('''INSERT INTO live.faction_relations (world_id, faction_id, other_id, disposition, stance, reason, updated_by)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                                ON CONFLICT (world_id, faction_id, other_id) DO UPDATE SET disposition = excluded.disposition,
-                                    stance = excluded.stance, reason = excluded.reason, updated_by = excluded.updated_by, updated_at = now()''',
-                             (w, faction_id, other_id, disposition, stance, reason, who['username']))
-                conn.execute('''INSERT INTO live.faction_relation_log (world_id, faction_id, other_id, disposition, stance, reason, by)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s)''', (w, faction_id, other_id, disposition, stance, reason, who['username']))
+                story_runner.write_relation(conn, w, faction_id, other_id, disposition, stance, reason, who['username'])
                 self.audit(conn, who['username'], 'faction.relation', f'{faction_id}>{other_id}',
                            f'{target.upper()}: {names[faction_id]} regards {names[other_id]} as {stance} ({disposition:+d})'
                            + (f' — {reason[:300]}' if reason else ''))
@@ -2691,9 +2687,9 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
         def posted(self, data):
             return self.pick(str(data.get('target') or ''))
 
-        def body(self):
+        def body(self, limit=MAX_BODY):
             size = int(self.headers.get('Content-Length', '-1'))
-            if self.headers.get_content_type() != 'application/json' or not 0 < size <= MAX_BODY:
+            if self.headers.get_content_type() != 'application/json' or not 0 < size <= limit:
                 raise DMError('A small JSON request is required.', 415)
             self.connection.settimeout(10)
             data = json.loads(self.rfile.read(size))
@@ -2720,6 +2716,42 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body()
                 return self.reply(200, dm.login(str(data.get('username', '')), str(data.get('password', ''))))
             who = self.who()
+            if method == 'POST' and path == '/api/story-program':
+                data = self.body(1024 * 1024)
+                target = self.posted(data)
+                op = data.get('op')
+                if op not in ('catalog', 'rehearse') and RANK[who['role']] < RANK['dm']:
+                    raise DMError('A Dungeon Master account is required.', 403)
+                try:
+                    if op == 'catalog':
+                        return self.reply(200, story_runner.catalogue())
+                    if op == 'rehearse':
+                        return self.reply(200, story_program.review(data.get('program')))
+                    with dm.connect(target) as conn, conn.transaction():
+                        if not conn.execute("SELECT to_regclass('dm.story_releases') IS NOT NULL").fetchone()[0]:
+                            raise DMError('This world needs migration 0067 to use world stories.', 409)
+                        world = story_runner.world_id(conn)
+                        if op == 'approve':
+                            if hosted and RANK[who['role']] < RANK['builder']:
+                                program = story_program.validate(data.get('program'))
+                                if any(e['kind']=='faction.relation' for ph in program['phases'] for e in ph['effects']):
+                                    raise DMError('A builder or owner must approve changes to faction relations on this world.', 403)
+                            result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'))
+                        elif op == 'publish':
+                            result = story_runner.publish(conn, world, data.get('ticket'))
+                        elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):
+                            result = story_runner.direct(conn, world, op, {**data, 'operator':who['username']})
+                        elif op == 'status':
+                            result = story_runner.status(conn, world, data.get('run'))
+                        elif op == 'atlas.search':
+                            result = story_runner.atlas(conn, world, data.get('query',''))
+                        elif op == 'npc.context':
+                            result = story_runner.context(conn, world, data.get('npc',''))
+                        else:
+                            raise DMError('Unknown story operation.')
+                    return self.reply(200, result)
+                except ValueError as error:
+                    raise DMError(str(error)) from None
             if method == 'GET' and path == '/api/me':
                 return self.reply(200, who)
             if method == 'GET' and path == '/api/worlds':

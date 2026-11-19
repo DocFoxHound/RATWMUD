@@ -225,6 +225,8 @@ Value Game::journalView(const std::string& viewer)
     for (const auto* s : mine)
     {
         const bool open = s->state == "running" || s->state == "paused" || s->state == "draft";
+        if (s->source == "storykeeper" && !s->takesPart(viewer))
+            continue;
         if (!open && ++ended > 10)
             continue;
         auto o = Value::object();
@@ -250,9 +252,11 @@ Value Game::journalView(const std::string& viewer)
             auto j = Value::object();
             j.add("title", storyWords(viewer, st.title));
             j.add("state", st.done() ? "done" : i == at ? "current" : "later");
+            if (s->source == "storykeeper")
+                j.add("text", storyWords(viewer, st.text));
             if (i == at && open)
             {
-                j.add("text", storyWords(viewer, st.text));
+                j.set("text", storyWords(viewer, st.text));
                 j.add("distinct", st.distinct);
                 if (st.marker.set())
                     j.add("marker", storyWords(viewer, st.marker.label));
@@ -352,7 +356,7 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
         me.left = now();
         s->tracking.erase(id);
         const bool anyone = std::any_of(s->participants.begin(), s->participants.end(), [](const auto& p) { return p.second.active(); });
-        if (!anyone && s->kind != "tale")
+        if (!anyone && s->kind != "tale" && s->source != "storykeeper")
             storylines_.end(s->id, "abandoned", now());
         storylines_.touch();
         logEvent(s->kind == "tale" ? "tale left" : "storyline abandoned", id, s->id, json::utf8Prefix(s->title, 120));
@@ -364,8 +368,89 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
     return true;
 }
 
+// The DM runner owns transitions. Only reached phases and their audience enter the game checkpoint.
+Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
+{
+    const double visit = p.number("visit", 0);
+    if (run.rfind("world-", 0) != 0 || run.size() > 80 || visit < 1 || visit > 1000000000 || visit != int(visit) ||
+        p.string("title").empty() || p.string("phase").empty() || p.string("journal").empty() ||
+        p.array("players").size() > 500 || p.array("lines").size() > 12 || p.array("guestVoices").size() > 8)
+        return {false, "Invalid world story phase or audience.", run};
+    auto* prior = storylines_.find(run);
+    if (prior && (prior->kind != "world" || prior->source != "storykeeper"))
+        return {false, "Story ID belongs to another story.", run};
+    const auto revision = std::to_string(int(visit));
+    if (prior && prior->sourceRef == revision)
+        return {true, "Phase already received.", run};
+    if ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1)))
+        return {false, "World story phases arrived out of order.", run};
+    storylines::Storyline story = prior ? *prior : storylines::Storyline{};
+    story.id = run;
+    story.kind = "world";
+    story.source = "storykeeper";
+    story.sourceRef = revision;
+    story.title = p.string("title");
+    if (!prior)
+    {
+        story.began = now();
+        for (const auto& who : p.array("players"))
+            if (who.isString()) story.participants[who.asString()] = {now(), -1};
+    }
+    story.admitted.clear();
+    for (const auto& voice : p.array("guestVoices"))
+    {
+        if (!voice.isString() || !world_.society().resident(voice.asString()))
+            return {false, "A guest speaker is missing.", run};
+        story.admitted.insert(voice.asString());
+    }
+    story.cast.clear();
+    for (const auto& line : p.array("lines"))
+    {
+        if (!world_.society().resident(line.string("npc")) || line.string("text").empty())
+            return {false, "A speaking resident is missing.", run};
+        story.cast.push_back({line.string("npc"), line.string("text")});
+    }
+    if (!story.steps.empty() && !story.steps.back().objectives.empty())
+        story.steps.back().objectives.front().doneAt = now();
+    storylines::Step step;
+    step.title = p.string("phase");
+    step.text = p.string("journal");
+    storylines::Objective wait;
+    wait.kind = "world phase";
+    wait.line = step.text;
+    if (p.boolean("end")) wait.doneAt = now();
+    step.objectives.push_back(std::move(wait));
+    if (story.steps.size() >= 32) story.steps.erase(story.steps.begin());
+    story.steps.push_back(std::move(step));
+    story.state = p.boolean("end") ? "done" : "running";
+    story.lastActivity = now();
+    if (p.boolean("end")) story.ended = now();
+    const auto& kept = storylines_.add(std::move(story));
+    for (const auto& [who, member] : kept.participants)
+        if (member.active()) if (auto* client = clientOf(who)) storylineToast(client, kept.title + ": " + p.string("journal"));
+    logEvent("story phase", run, p.string("phase"), kept.title);
+    record(StoryBook);
+    return {true, "World story phase recorded.", run};
+}
+
+std::string Game::worldStoryLine(const std::string& npc, const std::string& wolf) const
+{
+    std::string lines;
+    for (const auto* story : storylines_.of(wolf))
+        if (story->kind == "world" && story->live() && story->takesPart(wolf))
+            for (const auto& part : story->cast)
+                if (part.name == npc)
+                {
+                    if (!lines.empty()) lines += " ";
+                    lines += part.looks;
+                }
+    return lines;
+}
+
 std::string Game::storylineBrief(const std::string& npc, const std::string& wolf) const
 {
+    const auto directed = worldStoryLine(npc, wolf);
+    if (!directed.empty()) return " " + directed;
     // A step's brief, while the step is current and names this resident in a talk objective (doc 58, 9).
     for (const auto* s : storylines_.of(wolf))
     {

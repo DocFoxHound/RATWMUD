@@ -1,0 +1,185 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "road-war",
+  "title": "The cost of holding the road",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "muster",
+  "phases": [
+    {
+      "id": "muster",
+      "journal": "Caravans are paying twice for passage. Report to the innkeeper to join the road watch.",
+      "effects": [],
+      "exits": [
+        {
+          "on": "conversation",
+          "to": "blockade",
+          "participant": true,
+          "match": {
+            "target": "rm112"
+          }
+        }
+      ]
+    },
+    {
+      "id": "blockade",
+      "journal": "The bandits have gathered. Clear a camp to reopen the road. A negotiated truce can also end the blockade.",
+      "effects": [
+        {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 3
+        },
+        {
+          "kind": "times.nudge",
+          "market": "ridgemere",
+          "points": -10,
+          "days": 3,
+          "words": "Tolls on the south road"
+        },
+        {
+          "kind": "faction.relation",
+          "faction": "city_watch",
+          "other": "road_company",
+          "stance": "war",
+          "disposition": -80,
+          "reason": "The road company is taking tolls by force."
+        }
+      ],
+      "exits": [
+        {
+          "on": "camp cleared",
+          "to": "patrols",
+          "match": {
+            "actor": "ridgemere"
+          }
+        },
+        {
+          "on": "dm signal",
+          "to": "truce",
+          "match": {
+            "detail": "accord signed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "patrols",
+      "journal": "The watch keeps a daily patrol. Each morning opens another watch until a caravan makes it through.",
+      "effects": [],
+      "exits": [
+        {
+          "on": "caravan arrives",
+          "to": "truce",
+          "match": {
+            "target": "ridgemere"
+          }
+        },
+        {
+          "on": "clock",
+          "to": "patrols",
+          "afterDays": 1
+        }
+      ]
+    },
+    {
+      "id": "truce",
+      "journal": "Carters can refuse the second toll. The watches stand down.",
+      "effects": [
+        {
+          "kind": "faction.relation",
+          "faction": "city_watch",
+          "other": "road_company",
+          "stance": "tense",
+          "disposition": -15,
+          "reason": "The road company has agreed to safe passage."
+        }
+      ],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "The watch keeps more than one day, then a caravan ends the campaign",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "muster",
+        "blockade",
+        "patrols",
+        "patrols",
+        "patrols",
+        "truce"
+      ],
+      "events": [
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm112"
+        },
+        {
+          "id": "e1",
+          "kind": "camp cleared",
+          "day": 1,
+          "actor": "ridgemere"
+        },
+        {
+          "id": "e2",
+          "kind": "clock",
+          "day": 2,
+          "actor": ""
+        },
+        {
+          "id": "e3",
+          "kind": "clock",
+          "day": 3,
+          "actor": ""
+        },
+        {
+          "id": "e4",
+          "kind": "caravan arrives",
+          "day": 3,
+          "actor": "",
+          "target": "ridgemere"
+        }
+      ]
+    },
+    {
+      "name": "A DM may settle the blockade through the approved accord",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "expect": [
+        "muster",
+        "blockade",
+        "truce"
+      ],
+      "events": [
+        {
+          "id": "e0",
+          "kind": "conversation",
+          "day": 0,
+          "actor": "player-ash",
+          "target": "rm112"
+        },
+        {
+          "id": "e1",
+          "kind": "dm signal",
+          "day": 1,
+          "actor": "",
+          "detail": "accord signed"
+        }
+      ]
+    }
+  ]
+}

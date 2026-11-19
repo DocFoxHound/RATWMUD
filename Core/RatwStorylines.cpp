@@ -371,7 +371,7 @@ std::vector<Progress> Book::tick(const std::string& id, std::size_t step, std::s
 {
     std::vector<Progress> out;
     auto* s = find(id);
-    if (!s || !s->live() || step != s->current() || step >= s->steps.size() || objective >= s->steps[step].objectives.size())
+    if (!s || s->source == "storykeeper" || !s->live() || step != s->current() || step >= s->steps.size() || objective >= s->steps[step].objectives.size())
         return out;
     auto& o = s->steps[step].objectives[objective];
     if (o.done())
@@ -551,7 +551,7 @@ void Book::load(const Value& saved)
         if (s.id.empty() || s.id.size() > 60)
             continue;
         const auto dash = s.id.rfind('-');
-        if (dash != std::string::npos)
+        if (dash != std::string::npos && s.source != "storykeeper")
             next_ = std::max<std::uint64_t>(next_, std::strtoull(s.id.c_str() + dash + 1, nullptr, 10) + 1);
         all_[s.id] = std::move(s);
     }

@@ -455,6 +455,8 @@ void Game::record(unsigned what, const std::string& character)
             shadow_.notices = std::move(text);
         }
     }
+    if (what & StoryBook)
+        set(path({"storylines"}), storylines_.save());
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
     whole(what & Companions, shadow_.companions, companionsOf(companionOwner_), "companions");
     whole(what & Accounts, shadow_.signIns, accounts_.state(), "accounts");

@@ -1407,6 +1407,71 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         }
         saveSoon();
     }
+    else if (kind == "story.voice")
+    {
+        json::Value payload;
+        std::string problem;
+        auto* story = storylines_.find(target);
+        if (row[4]) json::parse(*row[4], payload, problem);
+        const auto npc = payload.string("npc"), text = payload.string("text");
+        if (!story || story->source != "storykeeper" || !story->live() || !story->admitted.count(npc) ||
+            payload.number("visit") != std::strtod(story->sourceRef.c_str(), nullptr) || text.empty() ||
+            json::utf8Prefix(text, 200) != text || text.find_first_of("\r\n") != std::string::npos)
+            outcome = {false, "That voice is not available in this phase.", target};
+        else
+        {
+            auto line = std::find_if(story->cast.begin(), story->cast.end(), [&](const auto& part) { return part.name == npc; });
+            if (line == story->cast.end()) story->cast.push_back({npc, text});
+            else line->looks = text;
+            storylines_.touch();
+            record(StoryBook);
+            outcome = {true, "The resident has the line for this phase.", target};
+        }
+    }
+    else if (kind == "story.practice")
+    {
+        json::Value payload;
+        std::string problem;
+        const auto* player = world_.entity(target);
+        if (!player || player->npc || !row[4] || !json::parse(*row[4], payload, problem))
+            outcome = {false, "Practice needs a player present in the world.", target};
+        else
+        {
+            const auto source = "apprentice." + payload.string("skill");
+            if (!practice::source(source))
+                outcome = {false, "Unknown apprenticeship skill.", target};
+            else
+            {
+                world_.practise(target, source);
+                record(Character, target);
+                outcome = {true, "A lesson recorded under normal practice rules.", target};
+            }
+        }
+    }
+    else if (kind == "story.stop" || kind == "story.finish")
+    {
+        auto* story = storylines_.find(target);
+        if (story && story->source == "storykeeper")
+        {
+            const bool finished = kind == "story.finish";
+            if (finished && !story->steps.empty() && !story->steps.back().objectives.empty())
+                story->steps.back().objectives.front().doneAt = now();
+            storylines_.end(target, finished ? "done" : "abandoned", now());
+            record(StoryBook);
+            outcome = {true, finished ? "World story completed." : "World story stopped.", target};
+        }
+        else
+            outcome = {false, "No such world story.", target};
+    }
+    else if (kind == "story.phase")
+    {
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem))
+            outcome = applyWorldStoryPhase(target, payload);
+        else
+            outcome = {false, "Invalid world story phase.", target};
+    }
     else if (kind == "storyline.give" || kind == "storyline.tick")
     {
         // Storylines (doc 58): one given to a character (payload {template, cast}), or an objective ticked by hand
@@ -4937,6 +5002,8 @@ void Game::followTransition(const std::string& id, const std::string& previousCe
     const auto* leader = world_.entity(id);
     if (!leader)
         return;
+    if (!leader->npc)
+        logEvent("enter place", id, leader->cellId, previousCell);
     // A party's residents cross with whoever they follow: the leader, or the one in the world (doc 32).
     const auto* p = parties_.of(id);
     if (!p || (p->leader != id && clientOf(p->leader)))
