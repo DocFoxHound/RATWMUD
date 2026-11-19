@@ -1,0 +1,419 @@
+# rm141, the stub-saver with the petition (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm141
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_elspet_sootley
+written_by claude
+title the stub-saver with the petition
+fits stage=young|adolescent|adult|old
+prefers honesty=frank temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk saves_every_candle_stub_left_on_the_floor
+likes fried_fish long_walks festival_bells autumn_wind
+dislikes waiting haggling
+fears the_unlit_corner
+hopes a_lamp_for_the_corner
+topics day +0.4 home +0.3 pastimes +0.3 season +0.3 food +0.2 festival +0.2 gossip -0.2
+styles comfort=plain gossip=plain refuse=plain tease=none
+marks oath saying
+persona #self.first# is a patient, truthful pup of Northgate who says exactly what is so, keeps a box of every candle stub found on the floor, and goes back to the City Office window every single week to ask after a petition for a lamp on the dark corner.
+
+words
+oath! = Wicks and whiskers | Drips and dribbles
+saying! = True is true | Waiting's long, but it ends
+stubs = my candle stubs | the candle ends I keep
+box = my stub box | the box of candle ends
+petition = the petition | my petition about the lamp
+window = the window at the City Office | the office window with the little bell
+lamp = a lamp for our corner | a lamp on the dark corner
+fish = fried fish | fish crisp from the pan
+walk = a long walk | a ramble to nowhere in particular
+wind = the autumn wind | a wind that chases the leaves
+bells = the festival bells | the feast bells
+dark = the dark corner | the corner where the lamp should be
+count = one hundred | a hundred and four
+
+any
+opinion @1 festivals for 1 : There are bells, and sweets, and nobody remembers what time it is. That's the best bit.
+opinion @1 merchants against 1 : A price is mostly the seller's supper, I think. I said so in a shop once. Everybody went quiet.
+opinion @1 city for 1 : The city is very big and very wet. I like it. I've walked a lot of it, with my legs.
+opinion @1 watch mixed 0 : The Watch are tall and slow. One let me hold a lantern once. I gave it back.
+opinion @1 houses mixed 0 : I don't know the Houses. I know four colours on flags. That's all I know so far.
+opinion @1 church mixed 0 : The chapel has the best candle ends in the city. I'm not allowed to take them, so I don't.
+
+grown
+line @1 greet : #greet#. | #greet#, #address#.
+line @2 greet [pair.band=strangers] : #greet#. A stranger, plainly. Welcome. | #greet#. A new face. You're welcome to say what you want.
+line @1 greet.return : #greet#. | #greet#. Straight out with it, please.
+line @2 greet.return [pair.band=friends|family] : There you are. You're later than you said. | #greet#. Good. I'd hoped for you.
+line @1 farewell : #farewell#. | Go well.
+line @1 farewell.return : #farewell#. | And you. Lamplit streets only.
+line @1 react.news : Is that so. I'll remember it. | Well. That's what it is, then.
+line @1 react.news.new : I hadn't heard. Thank you for saying. | #oath#. That's new.
+line @1 react.news.known : I'd heard that. Two days ago, at the pump. | Old news, but true news.
+line @1 react.news.doubt : I doubt that one. Whose mouth was it first, and how sure were they? | Show me, and then I'll call it so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad, and I'm sorry. I've nothing softer to say. | Hard news. No softening it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's plainly good. | I'm glad. Truly glad.
+line @1 answer.how : Well. I'd say if I weren't. | Tired, honestly. But well.
+line @1 decline : No, I'll not. It isn't right, and I'd only lie if I said yes. | Not today. The day's spoken for, and I keep promises.
+line @1 accept_decline : All right. A plain no is better than a slow yes. | Fair. I asked; you answered.
+line @1 thank : Thank you. I mean that exactly. | Thanks. That was decent.
+line @1 ack : Mm. | Right. | True.
+scene es_grown_stubs
+when topic=home|pastimes
+does tell.self / react.self / assess
+a : I still keep every candle stub I find. I melt them down in winter and pour new ones. | There's a box of candle ends under my stairs older than some folk I know. | I've never once bought a candle. I make them from what others leave on the floor.
+b[job=crafter|merchant] #trade : Waste not, that's the way. | They'll be good wax, the old ones. | That's thrift, that is.
+b : Every one? | That old? | Never once?
+a@trade : I can't bear wax wasted. I never could. | The oldest burn the slowest. I don't know why. | Thrift, or stubbornness. I've never sorted which.
+a : Every one I see. I can't walk past a stub. | Older. I was six when I started it. | Never. I'd feel I'd cheated somebody.
+
+scene es_grown_petition
+when topic=day|times here.region=ridgemere
+does tell.self / react.self / assess
+a : My petition's sat at the City Office for years. Weekly I go and ask. The clerks all know my face. | They've lost my petition twice. I wrote it out again both times. I'll write it a third. | Every week I stand at #window# and ask. Every week they say not yet. I come back.
+b[job=official|scholar] #office : It's a long queue, the petitions. | We do lose things. I'm sorry for it. | Not yet is better than no.
+b : Every week? | Twice? | They must be sick of you.
+a@office : Then I'll stand in it. I've stood in worse. | That's honest of you. Most don't manage it. | It is. Yet's a promise; I'll keep you to it.
+a : Every week. Marketdays, after the fish. | Twice. I keep a copy now. | They might be. That's not my trouble. The lamp is.
+
+scene es_grown_lamp
+when topic=home|day here.time=dusk|night
+does confide / reassure / assess
+a : There's a corner by us with no lamp. I've been asking for one since I was small. | I've gone round the dark corner all my life, never past. No shame in saying it. | When a lamp's finally on that corner, I'll stand under it the first night.
+b : Dark corners are worth fearing. | It's sense, not shame. | I'll come and stand with you.
+a : They are. I'd like one fewer. | Sense, then. I'll call it that. | Good. Bring a coat. It'll be cold, the night it's lit.
+
+scene es_grown_fish
+when topic=food self.likes=fried_fish
+does tell.self / react.self / assess
+a : Nothing beats #fish#, and nothing ever has. | Fish fried in butter, with the edges brown. I'll walk across the city for it. | There's a fish stall that knows my order. I only nod.
+b : Butter, not dripping? | The whole city? | That's a regular.
+a : Butter. Dripping's for folk who don't care. | I have done. More than once. It was worth it. | I am. Every Marketday since I could walk there.
+
+scene es_grown_walk
+when topic=pastimes self.likes=long_walks
+does tell.self / react.self / assess
+a : North gate to the wharf and home again, on foot, today. Nobody asked me why. | #walk.capitalize# empties my head of clutter. I don't stop to look at much. | Walking's best with no errand. Just going, and then coming back.
+b : All that way? | Not even to look? | No errand at all?
+a : All of it. My feet are pleased with me. | Not much. Walking's the looking. | None. Errands spoil it.
+
+scene es_grown_wind
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : An autumn wind today. It took the leaves off the abbey trees all at once. | I love #wind#. It pushes you along like it knows where you're going. | Blustery out. I walked into it on purpose, up the hill and down again.
+b : All at once? | Like it knows? | On purpose?
+a : All at once. A brown cloud of them. | It doesn't. It's still kind of it. | On purpose. No weather beats it.
+
+scene es_grown_waiting
+when topic=day self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : A full hour at the office window today. Waiting's hateful. I did it anyway. | I'm patient. That's not liking it. It's doing it. | I count while I wait. Today I got to a thousand and some.
+b : An hour? | That's patience. | A thousand?
+a : An hour and a bit. The bit was the worst. | It's doing a thing you don't like and not complaining. Mostly. | And some. I lost count once and started again. Honestly.
+
+scene es_grown_haggle
+when topic=prices|work self.dislikes=haggling
+does give.opinion / react.self / assess
+a : Haggling's not for me. I name the worth once, and if they won't have it, I go. | When folk haggle at a counter I get a feeling in my stomach. Like a lie being told slowly. | A price should be said once and meant. That's my whole view of it.
+b[role=merchant] #trade : That's no way to trade. | It's a game, haggling. | Said once is fair.
+b : Just go? | Like a lie? | Once and meant?
+a@trade : It's my way. You're welcome to yours. | Then it's a game I don't play. | Fair is all I'm after.
+a : Just go. There's always another counter. | Like that. Two folk pretending, and both knowing it. | Once and meant. Anything else is play-acting.
+
+scene es_grown_bells
+when topic=festival self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : I wake early on a festival to hear the bells start. Every year, as far back as I remember. | #bells.capitalize# are the only noise in the city I'd never want stopped. | When the feast bells go, I stand still in the street. Folk walk round me.
+b : Since you were small? | Never stopped? | Round you?
+a : Since I was six, at least. Probably before. | Never. Everything else could go quiet and I'd not mind. | Round me. I don't move till they finish.
+
+scene es_grown_truth
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I say what's true. Thanks for it come slowly, if at all. Later, sometimes. | Somebody asked if their new coat suited them. It didn't. I said so, kindly. | Fibbing's beyond me. My face goes before my words do.
+b : Later's still thanks. | Kindly? | That's no bad thing.
+a : It is. Late thanks still count. Patience I have; fondness for it, never. | As kindly as the truth allows. They took it back to the tailor. | It's not. It's awkward, though.
+
+scene es_grown_family
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : #self.child# has started picking up candle stubs. I never asked. It just happened. | I take #self.child# on my long walks now. Short legs, but #self.child# keeps up. | I tell #self.child# the truth, always. Even when it'd be easier not to.
+b : Runs in the family. | And the short legs keep up? | That's hard, sometimes.
+a : It does, seemingly. | Mostly. I carry the last bit. | It is. It's harder later if you don't.
+
+scene es_grown_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain again. I walked in it anyway. A wet walk is still a walk. | The rain put the street lamps out early tonight. The dark corner was darker. | The gutters by us run like little rivers. I used to race leaves in them.
+b : You'll catch cold. | Darker? | Used to?
+a : Maybe. I'll catch it walking, then. | Darker. I went round, like always. | I still do, when nobody's looking. That's the truth of it.
+
+story es_grown_story_lamp [topic=memories self.age>=20]
+  : When I was six I wrote a petition for a lamp on our corner. My letters went uphill. I carried it up to the City Office myself.
+  : The clerk read every line, very slowly, and stamped it, and gave me a paper back.
+  ask : Have you ever asked for something, and waited years for the answer?
+  b[old] : Often. Did you get the lamp?
+  b : Not that long. Did you get the lamp?
+  : Not yet. I've still got the paper. Every week, back I go.
+
+dlg @1 resident.hub : #greet#. Plain words, please; you'll get the same. | #greet#. I'm listening.
+dlg @1 resident.job [self.job!=child] : #self.trade_words.capitalize#. Done right, or left alone. | Work. Honest work. If it weren't, you'd hear it from me.
+
+young
+line @1 greet : #greet#. | #greet#. Stubs found today: two.
+line @2 greet [pair.band=strangers] : #greet#. You're a stranger. Strangers get a quick hello, that's the rule. | #greet#. You're new. I can tell.
+line @1 kin.open [pair.kin!=no] : I found two stubs today. A blue one. Look. | I went to the office again. They said not yet.
+line @1 again.open : You again. That's twice. | Back already. It was a short time.
+line @1 greet.return : #greet#. | #greet#. I'm here.
+line @1 farewell : Bye. Home by the long way, me. | Bye. Don't go past the dark corner.
+line @1 farewell.return : Bye. | Bye, then.
+line @1 react.news : Is that true? I'll remember it. | Oh. All right.
+line @1 react.news.new : I didn't know that. Now I do. | #oath#. Is it true?
+line @1 react.news.known : I knew that. The pump had it first. | Everyone knows that. Even I know, and I'm small.
+line @1 react.news.doubt : That's not true. Your ears went back when you said it. | Fibs, that. Who said, and were they there?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'm sorry. | Oh. That's a sad thing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's good news. I like that. | Good. That's nice for everybody.
+line @1 answer.how : I'm all right. I'd say if I wasn't. | Fine. My feet are tired. I walked a lot.
+line @1 ask.how : Are you well? Truly? | And you? Tell me true.
+line @1 thank : Thank you. | Thank you. That was nice of you.
+line @1 decline : No. I'm not let, and I'd have to tell. | I won't. I don't think it's right, and I'm not going to pretend.
+line @1 accept_decline : All right. That's an honest no. | Fine. I'll ask somebody else.
+line @1 sympathise : That's sad. I'm sorry it happened. | Oh. If that was mine I'd be sad as well.
+line @1 ack : Mm. | All right. | True.
+rule @stub_bark
+when concept=bark here.place=home|work|street|chapel
+does aside
+cooldown 8h
+say A stub! There. Mine now. | That's a good one. Still got its wick.
+
+rule @wait_bark
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 10h
+say Ninety-nine. One hundred. Still waiting. | I'm being patient. I don't like it.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast self.likes=autumn_wind
+does aside
+cooldown 10h
+say The wind's got all the leaves. Look at them go. | Push me, wind. I'm walking that way anyway.
+
+scene es_stubs
+when topic=pastimes|home
+does tell.self / ask.detail / answer.detail
+a : I keep every candle stub I find in a box. I've got forty-one. | If a candle end falls on the floor, it's mine. That's the rule. I made it. | My stub box is under the stairs. Nobody's allowed to touch it.
+b[stage=young|adolescent] #pup : Can I see them? | Any candle end? | What's in it?
+b : Forty-one? | What are they for? | What's in it?
+a@pup : If you don't touch. You can look with your eyes. | Any. Off any floor. Unless it's the chapel's. | Stubs. Forty-one. And a blue one, special.
+a : Forty-one. I counted twice. | For later. When it's dark and somebody needs one. | Stubs. Some are tall and some are nearly nothing.
+
+scene es_petition
+when topic=day|dreams here.region=ridgemere
+does tell.self / react.self / assess
+a : I've got a petition at the City Office. It's for a lamp on our corner. I go and ask every week. | Every week I go to #window# and ring the little bell and ask about my petition. | The man at the office says not yet. He says it every week. I go back anyway.
+b[stage=adult|old] #grown : Petitions take a long time, pup. | You're very patient. | Good for you. Keep going back.
+b : A petition? | Every week? | Not yet?
+a@grown : I know. Long times I can do. Liking them, no. | I'm patient. I'm not happy about it. | I will. Every week till there's a lamp.
+a : A real one. I wrote it. Well, I said it and somebody wrote it. | Every week. On a Marketday. | Not yet. Not yet is not no. I asked.
+
+scene es_waiting
+when topic=day self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : I waited at the office for a hundred and four. I counted. I don't like waiting. | Waiting is the worst thing. I do it anyway, because you have to. | I waited for the fish so long my tail went to sleep. Tails can do that.
+b[stage=adult|old] #grown : A hundred and four's a long count. | You're good at it, though. | They can, can they?
+b : A hundred and four? | Do you have to? | Can they?
+a@grown : It was. My mouth got tired. | I'm good at it. Being good at a thing doesn't make you like it. | They can. It tingles.
+a : To one hundred and four exactly. Then the man finally came. | Mostly. Unless you leave. I never leave. | They can. Mine did. It's true.
+
+scene es_dark_corner
+when topic=home|day here.time=dusk|night
+does confide / reassure / assess
+a : Down where our street stops there's a dark corner. I don't like it. That's why I want the lamp. | I take the well path so I don't pass #dark#. It's farther. I don't mind. | When it's dark I hold a stub in my paw. I don't light it. It's just in case.
+b[stage=adult|old] #grown : Lots of folk go the long way. | Farther's fine. | That's sensible, pup.
+b : Why not? | The long way? | Just in case?
+a@grown : Lots. I've watched. You go round too. | Farther and safer. That's a good swap. | I think so too.
+a : It's too dark. You can't see what's in it. Maybe nothing. | Round the well and back. It takes longer. | In case the corner's dark. It always is, by evening.
+
+scene es_fish
+when topic=food self.likes=fried_fish
+does tell.self / react.self / assess
+a : #fish.capitalize# is the best supper. The crunchy bits are the best of the best. | We had fried fish on Marketday. I ate the tail. The tail's the crunchiest. | I'd eat fried fish every day. I asked if I could. The answer was no.
+b[stage=young|adolescent] #pup : I like the tail too! | Who eats the head? | Every day?
+b : The crunchy bits? | The tail? | Every day?
+a@pup : We can't both have the tail. There's only one. | Nobody. The cat. | Every day. With butter.
+a : The edges. Where it went brown. | The tail. It's all crunch and no bones. Mostly. | Every day. I'd still want it on Restday.
+
+scene es_long_walk
+when topic=pastimes self.likes=long_walks
+does tell.self / react.self / assess
+a : We walked and walked today, no errand at all. Right up to the abbey and home. | I like walking more than sitting. My legs agree. | We walked so far today I saw a street I'd never seen. It had a blue door.
+b[stage=adult|old] #grown : That's a fair walk for little legs. | Legs know best. | A blue door, eh?
+b : All that way? | More than sitting? | A blue door?
+a@grown : They're not little. They're medium. | They do. They tell me when to stop. I don't always listen. | Blue as anything. I'll go back and look at it again.
+a : All the way. I didn't ask to be carried. Not once. | Much more. Sitting's for waiting, and I don't like waiting. | Very blue. I want one.
+
+scene es_autumn_wind
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : The wind took my hood off and threw the leaves at me. I liked it. | #wind.capitalize# is my favourite weather. It's loud and it pushes. | I ran with the wind behind me. It's like having somebody push you, but nobody's there.
+b[stage=young|adolescent] #pup : It took my hat once! | It's cold, though. | Let's run with it!
+b : You liked it? | Loud and pushy? | Nobody's there?
+a@pup : Was it found? I got my hood back. | It's cold. I don't mind cold if it's windy. | All right. That way. The wind's going that way.
+a : I did. The leaves don't hurt. They're soft. | Loud and pushy. Like a nice bully. | Nobody. Just wind. That's what's good about it.
+
+scene es_festival_bells
+when topic=festival self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : On festival mornings the bells go all at once. I stand very still to hear them. | I like #bells#. They don't sound like other bells. They sound happy. | When the bells start on a festival I count them. I lose count. That's how many there are.
+b[stage=young|adolescent] #pup : I like the sweets more. | Happy how? | How many?
+b : Very still? | Happy bells? | You lose count?
+a@pup : The sweets are second best. | Like they're laughing a bit. | Too many. Lots and lots.
+a : Very still. If you move you miss some. | Happy. The early bells sound cross. | Always. Every time. That's one count I'm glad to lose.
+
+scene es_haggle
+when topic=prices|work self.dislikes=haggling
+does tell.self / react.self / assess
+a : A lady was haggling and I told her what the price really was. Everybody went quiet. | I don't like haggling. They both know the price. They both pretend they don't. | Haggling makes me slip over by the door. It's quieter by the door.
+b[stage=adult|old] #grown : You shouldn't say that in front of customers, pup. | It's how trade's done. | The door's a good spot.
+b : What happened? | They pretend? | Quieter?
+a@grown : I know that now. Back then I didn't. It was true, though. | I know. It's still pretending. | It is. You see everybody from there.
+a : She paid the true price and went red. I was sent upstairs. | They do. Then they shake paws like they didn't. | Quieter. The street's loud but it isn't arguing.
+
+scene es_truth
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I told somebody their coat was on inside out. They said thank you. Then they went pink. | I don't tell fibs. My ears go flat when I try. | Any question gets the true answer from me. So be careful what you ask.
+b[stage=young|adolescent] #pup : Is my fur messy? | Mine go flat too! | What do you think of me?
+b : That's kind, really. | Flat? | I'll be careful.
+a@pup : A bit, at the back. There. Now it isn't. | Then you can't fib either. Good. | I think you're all right. That's true.
+a : It is. Pink's better than inside out. | Flat as anything. Everyone can tell. | Good. Most folk aren't, and then they're sorry.
+
+scene es_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : It's raining. I put a stub on the windowsill to keep it company. | Water's rushing down the gutters. I raced two leaves. The yellow one won. | Rain puts the street lamps out sometimes. Then the dark corner is even darker.
+b[stage=adult|old] #grown : Keep it company? | The yellow one, eh? | Mind how you go, then.
+b : Company? | Which won? | Even darker?
+a@grown : So it's not lonely. It's only a stub. | The yellow one. It was lighter. | I will. I'll go round. I always go round.
+a : So it can watch the rain with me. | The yellow. It went right round the corner. | Even darker. That's why we need the lamp.
+
+scene es_lessons
+when topic=day self.job=child
+does tell.self / react.self / assess
+a : At lessons I learned to write lamp, all four letters. I can write petition too, nearly. | I'm the youngest at lessons. I'm not the slowest. I'm just the youngest. | The teacher asked who could sit still the longest. I won. I'm good at waiting. I don't like it.
+b[stage=young|adolescent] #pup : I can write my name. | I'm the slowest. | What did you win?
+b : Nearly? | Not the slowest? | You won?
+a@pup : Your name's good. Names are hard. | You're not. You just think slow. That's different. | Nothing. Winning was the prize.
+a : Nearly. It's got too many letters in the middle. | Not the slowest. Ask anyone. They'll tell you true. | I won. Both legs went numb. Like my tail.
+
+scene es_family
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #mum# keeps the door, and I'm the helper. I tell folk when we're shut. | I walk to the office with #mum# every week. My paw gets held over the road. | #mum# says I'm too honest. I asked if that's bad. The answer was not exactly.
+b[stage=adult|old] #grown : That's a useful job. | That's a long walk for you. | Not exactly bad, no.
+b : You help? | Every week? | Not exactly?
+a@grown : It is. Folk don't like hearing shut. I say it nicely. | It's not long. It's the best bit. | Not exactly. I'm turning it over still.
+a : I help. I'm very good at the shut part. | Every week. Even in rain. | Not exactly. That means a bit.
+
+scene es_gossip
+when topic=gossip topic.subject
+does tell.gossip / react.self / assess
+a : I heard that #topic.subject# #topic.claim#. That's exactly what was said. I didn't add anything. | Somebody at the pump said #topic.subject# #topic.claim#. Whether it's true, I can't say. | Folk say #topic.subject# #topic.claim#. You asked, so I've told.
+b[stage=adult|old] #grown : You shouldn't repeat things, pup. | Hold it back until you're sure. | Did I ask?
+b : Is that so? | Is it true? | Oh.
+a@grown : I know. I won't do it again. Probably. | I'll wait and see. I'm good at waiting. | No. You didn't. I'm sorry.
+a : That's what they said. Exactly that. | I don't know. I wasn't there. | That's all I heard. Nothing more.
+
+scene es_newcomer
+when topic=newcomer topic.subject
+does tell.news / react.news / assess
+a : There's somebody new. #topic.subject.capitalize#. I'd like to ask how old #topic.they# is. | #topic.subject.capitalize# is new here. I haven't met #topic.them# yet. I'll say hello when I do. | Somebody new came, #topic.subject#. New folk don't know about the dark corner. Somebody should tell.
+b[stage=adult|old] #grown : Don't you go asking ages, pup. | That's kind of you. | Somebody should, aye.
+b : How old? | Will you? | Tell what?
+a@grown : Why? It's only a number. | It's only hello. Hello's easy. | I'll do it. I'll say go round.
+a : Ages are interesting. I collect them. | I will. Hello and my name. | About the corner. To go round it.
+
+story es_story_blue_stub [topic=memories|pastimes]
+  : The best stub I ever found was blue. It was under the bench at chapel, right at the back.
+  : I wasn't allowed to take it, because it was the chapel's. So I asked. The old wolf with the keys said yes.
+  ask : What treasure has a floor ever given you?
+  b[stage=adult|old] : A coin once, in the snow. Did you light it?
+  b : A shell, I think. Did you light it?
+  : Never. It's in my box, at the top. It's the special one.
+
+story es_story_lost [topic=memories here.region=ridgemere]
+  : One evening I went the short way home past the dark corner, because I was late.
+  : I couldn't see my feet. I stood very still and counted to a hundred, and then I could see a little.
+  ask : Have you ever been frightened in the dark?
+  b[stage=adult|old] : Everybody has. Did you get home?
+  b : Once or twice. Did you get home?
+  : I got home. I never went that way again. That's when I asked for the lamp.
+
+dlg @2 resident.hub [topic.meeting=stranger] : #greet#. A stranger, so it's quick and polite. | #greet#. You're new. You keep looking about.
+dlg @3 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've got forty-two stubs now. | #topic.player#. Back again. I counted the days. Eleven.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay there, please. Cross faces get kept at a distance. | Your voice carries. Talk from where you are.
+dlg @5 resident.hub [here.time=night] : I'm not meant to be out. I'm going home the long way. | It's dark. I've got a stub, in case.
+dlg @2 resident.job [self.job=child] : Lessons. Helping at our door. And saving stubs. | No job. A petition, though.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : No news. The lamp's still not come. That's my news. | Nothing new. You'd get it straight off, if there were.
+dlg @1 resident.bye : Bye. Go round the dark corner, not past it. | Bye. If you find a stub, it's mine.
+graft resident.hub
+choice What's that in your paw? -> stub
+node stub
+say A candle stub. I save them. Every one I find on a floor. I've got a box of them, under the stairs. One day somebody will need one, in the dark.
+mood pleased
+free
+choice Why save them? -> why
+choice Goodbye. -> bye
+node why
+say Because a light's a light, even a little one. And because there's a corner by us with no lamp. Until they put one up, I've got stubs.
+choice That's a good reason. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. Say it straight; I will. | #greet#. Office day, for me.
+line @1 answer.how : Well. If I weren't, you'd hear it. You know that. | Tired. Walked too far again.
+line @1 react.news.new : I hadn't heard. Plainly told, too; thanks. | #oath#. When was this?
+line @1 farewell.return : Bye, then. | Go round the corner, not past it.
+line @1 decline : No. It isn't right, and being liked won't make me say it is. | Not today. Saying I wanted to would be a lie.
+rule @teen_office
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 12h
+say Marketday. Office window. Not yet, again, I expect. | Third copy of the petition. Neater than the last.
+
+scene es_teen_petition
+when topic=day here.region=ridgemere
+does tell.self / react.self / assess
+a : Weekly, still, the City Office window sees me, asking after the lamp. I write the petition myself now. | They lost my petition again. I'd kept a copy. I gave them the copy. | The clerk knows my name now. That's progress. Not the lamp kind.
+b[stage=adult|old] #grown : You're a stubborn one. | Clever to keep a copy. | Knowing your name's a start.
+b : Still? | A copy? | Progress?
+a@grown : Patient. Stubborn's the word tired folk use. | I'm not clever. I'm careful. | It's a start. I'll want the end, though.
+a : Still. Ten years, near enough. | Always keep a copy. Offices lose things. That's true. | Progress. The lamp's still the point.
+
+scene es_teen_candles
+when topic=pastimes|work
+does tell.self / react.self / assess
+a : I've started melting the stubs down and pouring new candles. They come out lumpy. They burn fine. | My box of stubs got too full. So I made them into six new candles. | Old stubs make a candle that smells of everywhere they've been. I like that.
+b[job=crafter|merchant] #trade : Lumpy burns the same. | Six from a box? That's thrift. | Every wax has its smell.
+b : Lumpy? | Six? | Of everywhere?
+a@trade : It does. I've timed them. | Six, and a little one. | It does. Mine smell of chapel and kitchen.
+a : Lumpy. Like a potato. They burn true, though. | Six. And then I started saving again. | The chapel, the kitchen, the shop. All in one.
+
+scene es_teen_too_honest
+when topic=smalltalk|friends
+does confide / reassure / assess
+a : I told a friend their singing was flat. It was. I've been sorry since. | Being honest gets me into more trouble than lying ever got anyone. | I'm learning when to keep quiet. Not to fib. Just to not say.
+b : Sorry for saying it, or for it being true? | Lies get you trouble too. Later. | Quiet isn't lying.
+a : For saying it, then. It was still flat. | Later, aye. Mine comes straight away. | That's what I've decided. It took me a while.
+
+scene es_teen_walk
+when topic=pastimes|season self.likes=long_walks
+does tell.self / react.self / assess
+a : Out to the north headland and home today, on foot. The wind nearly had my hood. | Every street between the north gate and the wharf, I've walked now. Some twice. | A long walk's the one cure I've found for waiting.
+b : That's a long way. | Every one? | That's a trick worth knowing.
+a : It is. My legs are proud of themselves. | Each one I found. I made a list. | It is. Walk while you wait, if you're let.

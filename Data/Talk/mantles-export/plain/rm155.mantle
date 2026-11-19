@@ -1,0 +1,302 @@
+# rm155, the usher with the sooty paw (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm155
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_desmond_farrow
+written_by claude
+title the usher with the sooty paw
+fits stage=adult|old
+prefers job=none talk=quiet temper=calm
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk wipes_the_luck_coal_dust_off_the_paw_before_every_bow
+likes warm_bread dancing fresh_straw thunder
+dislikes salt_wind early_bells
+fears calling_a_name_wrong the_luck_coal_lost
+hopes a_full_night_of_sleep a_festival_reel_that_never_ends
+topics work +0.4 pastimes +0.3 weather +0.2 family +0.2 festival +0.3 gossip -0.5
+styles comfort=quiet gossip=reluctant refuse=polite tease=none
+marks oath saying
+persona #self.first# works the long waiting bench as an usher, speaks low and in order, carries a lump of coal for luck and wipes the black off the paw before every bow, is tired most mornings, and comes alive only at a festival dance.
+
+words
+oath! = Patience, patience | By the long bench | Soot and slippers
+saying! = Every name gets called in the end | The door opens when it opens | Bow low, think high
+bench = the long bench | the waiting bench
+callers = the callers | the folk on the bench
+names = the names on my list | the list of names
+door = the inner door | the big door
+bow = a bow | a proper bow, from the waist
+coal = my luck coal | the lump of coal I carry
+dust = coal dust | the black on my paw
+bells = the early bells | those bells before the sun
+straw = clean straw just laid | new straw underfoot
+reel = a reel at the festival | dancing till the lamps gutter
+loaf = a loaf still warm | warm bread
+storm = thunder with a roof between us | a storm beyond the shutters
+saltwind = the salt wind | the Sound blowing in my face
+heavy = my eyes are heavy | I'm asleep standing up, near enough
+
+any
+opinion @1 city for 1 : Born here. I'll not leave. There is nowhere else I would know how to stand.
+opinion @1 houses mixed 0 : I see them on the bench, the great ones, waiting like everybody else. It does them no harm.
+opinion @1 festivals for 2 : The only nights I'm wide awake. There's dancing, and nobody hushes anybody.
+opinion @1 watch mixed 0 : They keep order on the street. Mine's the bench. We understand each other, mostly.
+opinion @1 strangers mixed 0 : A stranger waits the same as anybody. I call the name, I open the door.
+opinion @1 newcomers mixed 0 : Whoever they are, they'll learn the bench. Everyone does.
+opinion @1 drink mixed 0 : One cup at a festival. More than that and I can't count the steps of a reel.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If you'd wait a moment. | #greet#. You're welcome. Quietly, please.
+line @2 greet [self.working=yes self.job=none] : #greet#. Take a seat on the bench; I'll call you. | #greet#. In order, please. There's a list.
+line @3 greet [here.time=dawn] : #greet#. Those bells woke me again. | #greet#. Early. I'm not awake yet, I'm afraid.
+line @4 greet [here.time=dusk|night] : #greet#. The day's nearly over. | #greet#. A late hour for callers.
+line @5 greet : #greet#. | #greet#. Good to see you.
+line @1 kin.open [pair.kin!=no] : Home at last. I'd hoped there'd be bread. | You're here. Good. Sit with me.
+line @1 again.open : Back again. You're welcome. | Twice today. The bench remembers you.
+line @1 greet.return : #greet#. | #greet#. In order, as always.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'm glad it's you. | #greet#. Sit down. There's a cup somewhere.
+line @3 greet.return [self.working=yes] : #greet#. I'm on the door, but say it. | #greet#. Quietly; there are folk waiting.
+line @1 farewell : #farewell#. | #farewell#. Mind the step down.
+line @2 farewell [here.time=dusk|night] : #farewell#. Sleep, if you can. I mean to. | #farewell#. I'm for bed before the bells find me.
+line @1 farewell.return : #farewell#. | #farewell#. Go carefully.
+line @1 react.news : Tell me. I'll listen. | Go on. Slowly, if you would.
+line @1 react.news.new : #oath#. I hadn't heard that. | That's new to me. #surprise#.
+line @1 react.news.known : Heard that already, I think. Folk talk around me. | #knew#. Folk talk while they wait.
+line @1 react.news.doubt : Somebody who saw it, I'd believe. Not a bench. | #doubt#. Waiting folk tell each other all sorts.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard news. I'm sorry. | #pity#. I'll hold my tongue on it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's good. I'm glad. | #gladnews#. Perhaps a dance will come of it.
+line @1 answer.how : Tired. Steady. The usual. | #fine#. I could sleep a week.
+line @1 answer.how.busy [self.working=yes] : The bench is full. I'll be calling names till dusk. | Busy. Every seat taken since the bells.
+line @1 ask.how : And you? Sleeping well? | How are you keeping?
+line @1 sympathise : I'm sorry. Rest here; nobody will hurry you. | #sympathy#. Take your time. I'll wait.
+line @1 reassure : It'll come round. Everything does, if you wait. | #reassure#. Your name will be called.
+line @1 decline : I'm sorry, I can't. I'm wanted till dusk, and nobody's to take my place. | #hedge#, but no. I've the list to finish, and it's long.
+line @1 accept_decline : I understand. Another time. | #no_matter.capitalize#. No harm done.
+line @1 thank : #thanks#. That's kind. | Thank you. I'll carry that.
+line @1 deflect_thanks : It was nothing. Truly. | #deflect.capitalize#. It's what I'm there for.
+line @1 preclose [self.working=yes] : The door wants me back. | There's a name to call. Forgive me.
+line @2 preclose : Well. #preclose#. | I'd best get home. Bed's calling.
+line @1 accept_preclose : Of course. Go on. | Go on, then. I liked the talk.
+line @1 ack : #bc_i_know#. | Mm. | #bc_right#.
+line @1 give.advice : Arrive early, sit near the door, and don't ask how long. | Be patient. The ones who ask how long wait longest.
+line @1 warn [world.bandits=near] : #warn#. Robbers about, I'm told. | The walls are the safe side, for now.
+line @1 concede : You may be right. | #concede#.
+scene wiping_the_paw
+when topic=work|smalltalk self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : Before every bow I wipe my paw on my coat. The coal leaves it black. | You'll see me rub my paw on my coat before the door opens. Coal, that is. That's the coal. | My coat's got a black patch on the hip. That's where the coal dust goes.
+b : What coal? | Why the coal? | Doesn't anybody mind?
+a : A lump in my pocket, for luck. I'd not be without it. | For luck. I'd sooner bow with a black paw than without my coal. | Nobody's said. I wipe it before anybody important sees.
+b : #bc_fair_enough# | #bc_ha# | #bc_clever#
+
+scene the_luck_coal
+when topic=lore|smalltalk
+does tell.self / react.self / assess
+a : My #gran# gave me a bit of coal once, for luck. It's in my coat still. | I keep #coal#. Without it I'd feel half dressed. | Some folk carry a charm. I carry a bit of coal. It's cheaper.
+b : Does it bring luck? | #bc_i_know# | It is cheaper.
+a : I've never been sure. But nothing's gone badly while I've had it. | It's a habit. A good one, I think. | And it keeps my paw warm, a little. That's something.
+
+scene on_the_long_bench
+when topic=work self.working=yes self.job=none
+does tell.self / react.self / assess
+a : The bench is full from the bells till noon. Everybody waits. Everybody. | I watch folk on the long bench all day. They fidget, they talk, they doze. | There's an old one on the bench who's come each week since last spring. Still waiting.
+b : That sounds dull. | What do they talk about? | Every week?
+a : It's quiet. That suits me. I'd rather that than shouting. | Everything. It all goes past me, and I keep none of it. | Every week. I nod. That's all either of us can do.
+
+scene calling_the_names
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I call the names in order. Never out of it, not for anybody. | The worst thing I can do is say a name wrong. I practise them under my breath. | There's a list. I read it, I call it, I open the door. That's the work.
+b : Not even for the great ones? | Have you ever got one wrong? | Is that all?
+a : Not even for them. The list is the list. | Once. My first week. I still feel it. | That's all. Doing it right every time is the hard part.
+
+scene those_early_bells
+when topic=day|weather here.time=dawn
+does tell.complaint / react.complaint / assess
+a : The early bells again. I'd barely shut my eyes, it feels like. | Those bells before the sun. Every morning I hope they've forgotten. | I'm not made for dawn. The bells know it and ring louder.
+b : #grumble# | They never forget. | You'll wake up by noon.
+a : Mm. I'll be yawning on the door all morning. | They don't. Not once, in all my life. | By noon, maybe. If the bench is quiet.
+
+scene always_tired
+when topic=health|smalltalk
+does tell.self / sympathise / assess
+a : I'm always a little tired. It's not illness. It's just me. | #heavy.capitalize#. I'll sleep well tonight, though. I always do. | Folk ask if I'm unwell. No. I just look like this.
+b : Get to bed earlier. | Lucky you, sleeping well. | You do look tired.
+a : I do. The bells come earlier. | Lucky, yes. It's the waking up that's hard. | I know. It doesn't trouble me. It troubles them.
+
+scene warm_bread_after
+when topic=food
+does tell.feeling / react.self / assess
+a : #loaf.capitalize#, on the way home. Best hour I get. | Walking home, I buy bread, if any's still warm. | There's nothing better than bread straight from the oven. Nothing.
+b : Simple pleasures. | Is there ever any left? | Nothing?
+a : Simple's the kind I like. | Sometimes. When there is, I walk home slowly and eat half. | Nothing. Not even sleep. Well. Nearly.
+
+scene fresh_straw_on_restday
+when topic=home|day here.day=rest
+does tell.self / react.self / assess
+a : Restday, and we put down clean straw. The whole house smells new. | I like new straw underfoot. It's quiet to walk on. | The first step on fresh straw. I can't explain it. It's just good.
+b : That's a nice thing. | Quiet? | I like that too.
+a : It is. A small thing, but it lasts all week. | It hushes your feet. I like a hushed house. | You do? Then you'll know.
+
+scene the_reel
+when topic=pastimes
+does tell.self / react.self / assess
+a : Words, I'm short of. Dancing, I'm not. Put a reel on and I'll not stop. | It surprises folk that I dance. I'm quiet everywhere else. | I'd dance every night if there was music. There isn't, so I dance at festivals.
+b : You dance? | Why only then? | #bc_ha#
+a : Badly. Festivals forgive that. | I don't know. The music asks and I answer. | Every festival, till the lamps are dark.
+
+scene festival_night
+when topic=festival world.festival=today|soon
+does tell.plan / react.self / assess
+a : Festival tonight. I'll be dancing till the lamps gutter. | There's a festival coming. I've already mended my good boots for it. | The bench will be empty for the festival, and I'll be in the square, dancing.
+b : Save me a reel. | Good boots for dancing? | You'll be tired tomorrow.
+a : I'll save you two. I'm a poor partner, mind. | They have to be. A reel's hard on boots. | I'm always tired. At least I'll have a reason.
+
+scene thunder_indoors
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Listen to that. I like thunder, with a roof between us. | A storm. Good. Nobody will come to the bench in this. | Thunder all afternoon, and me on a stool listening. That would be a good day.
+b : You like it? | That's a nice thought. | Me too.
+a : I do. Loud things I don't like, except this and music. | An empty bench, a storm outside. I could sleep. | Then we'll listen together, quietly.
+
+scene salt_wind
+when topic=weather here.region=ridgemere here.weather=clear|overcast
+does tell.complaint / react.complaint / assess
+a : Sea wind today. Salt in my fur all day. | I can't abide #saltwind#. My eyes sting till evening. | There's salt on everything when the wind's like this. My coat, my nose.
+b : #grumble# | It'll turn. | It's the city.
+a : I'll be brushing it out tonight. | I hope so. I'm told it always does. | It is. I'd not leave it. But I'd change the wind.
+
+scene rain_on_the_floor
+when topic=weather|work here.weather=rain self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Rain, and every caller drips on the floor. I put down straw by the door. | Wet day. The bench smells of damp coats. | Folk come in soaked and want to be seen first. They're seen in order.
+b : Straw helps? | It does. | Quite right.
+a : A little. It soaks up the worst. | It does. I don't mind it. It's a waiting smell. | Fair is fair. Wet or dry.
+
+scene my_father_at_home
+when topic=family self.father
+does tell.feeling / react.self / assess
+a : I like the evenings with #self.father#. Two quiet wolves by one lamp. | Home's quiet, with #self.father#. Words are few, and nobody minds. | I bring home warm bread for #self.father# when there's any left.
+b : That's good. | Quiet house. | That's kind.
+a : It is. Evenings would be too quiet otherwise. | Quiet and easy. Like the bench, without the waiting. | It's only bread. But it's warm.
+
+scene respectable_work
+when topic=work|family self.working=yes self.job=none
+does tell.self / react.self / assess
+a : It's respectable work. The family wanted that. I don't mind it. | #self.trade_words.capitalize#. Not grand. But clean, and honest. | I took the post when it came free. I've kept it. I'll keep it.
+b : Do you like it? | Clean and honest is good. | That's steady.
+a : Mostly. The quiet, yes. The bells, no. | It is. I sleep easy, when the bells let me. | Steady's what I'm good at.
+
+scene what_the_bench_says
+when topic=gossip|news here.region=ridgemere self.job=none
+does tell.self / react.self / assess
+a : The bench says a lot in a day. I leave all of it behind. | Folk talk while they wait. It blows past me, like weather. | What's said on the bench stays on the bench. That's my rule.
+b : Not even a little? | That's wise. | A good rule.
+a : Not a word. It belongs to them. | It's kept me safe so far. | I made it myself. I keep it.
+
+scene gossip_kept_back
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I'll say what I heard, and only once: #topic.subject# #topic.claim#. | They were saying it on the bench: #topic.subject# #topic.claim#. Whether it's so, who knows. | Somebody said #topic.subject# #topic.claim#. It goes no further from me.
+b : Is it true? | #bc_so_they_say# | Nor will I.
+a : No idea. Guessing about folk isn't for me. | Mm. And there I'll stop. | Good. Better it stops here.
+
+scene carts_before_light
+when topic=smalltalk|day here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : Our house is close to the gate. The carts wake me before the bells do. | I hear the drovers going past in the dark. Then the bells. Then I give up. | The gate's busy before light. I'm not, but it is.
+b : That's early. | And you just lie there? | #bc_ha#
+a : Too early. But I'd miss the sound if it stopped. | I do. Lie there and listen, and stop minding. | I'll be busy later. In my own quiet way.
+
+scene hard_times_bench
+when topic=times world.times=hard|lean self.job=none
+does tell.worry / react.self / assess
+a : The bench is fuller when times are hard. Everybody wants something. | More folk waiting this month. They look thinner. | Hard times. The bench shows it in folk's faces before I hear it anywhere else.
+b : That's sad to see. | It's the same everywhere. | You'd know.
+a : It is. I call their names gently. I've nothing else to give them. | It is. I wish the list were shorter. | I would. I don't like knowing it.
+
+scene new_face_waiting
+when topic=newcomer|player self.job=none
+does tell.self / react.self / assess
+a : There's somebody new waiting. They don't know the bench yet. They will. | A stranger nearby. They look like they're waiting for something. Everybody is. | New folk always ask how long. I never know. I tell them so.
+b : You could help them. | Waiting for what? | That's honest.
+a : I'll tell them to sit near the door. That's the only secret. | I don't ask. It's not my place. | It's the only answer that's true.
+
+story the_first_bow [topic=work|memories self.working=yes self.job=none]
+  : My very first morning on the door, I bowed so low that my coal fell out of my pocket.
+  : It rolled right across the floor and stopped at a caller's feet. A very grand caller.
+  : The caller stooped, turned it over once, gave it back to me, and never spoke a word.
+  ask : In my place, which would you have done: laugh, or run?
+  b : Run, I think. And then gone back for the coal.
+  : I did. I bowed again, smaller. I've never dropped it since.
+
+story the_coal_from_gran [topic=memories|family self.age>=16]
+  : The day I first went out to work, my #gran# pressed a bit of coal into my paw. For luck, she said, and to keep your paw warm.
+  : An odd present, I thought then. I've had it every day since.
+  ask : Did anybody ever give you something like that?
+  b : Not coal. A ribbon, once. I lost it.
+  b[old] : Something like it. Old folk give the oddest things. They're the ones that last.
+  : I'd not lose mine for anything. It's on me now, as it happens.
+
+story the_wet_reel [topic=festival|memories|pastimes self.age>=16 here.weather=rain|storm]
+  : One festival the sky opened halfway through the dancing. Thunder too.
+  : Everybody ran for the doorways. Except a few of us. We kept on with the reel in the square, soaked through.
+  : I've never been so wet, or so awake.
+  b : That sounds wonderful. Weren't you cold?
+  : Freezing. I didn't notice till the next morning. Then I noticed a great deal.
+
+rule @bench_call
+when concept=bark self.working=yes self.job=none
+does aside
+cooldown 6h
+say Next, please. In order. | If you'd follow me. Quietly.
+
+rule @bells_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Those bells. Every morning. | I was asleep a moment ago. I'm sure of it.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say Good. A proper storm. | Listen to it. Lovely, from in here.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere here.weather=clear|overcast
+does aside
+cooldown 12h
+say Salt all through my fur. | That wind. Straight from the water into my eyes.
+
+dlg @1 resident.hub : #greet#. How can I help? | #greet#. Quietly, please. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're welcome back. | #topic.player#. Good. Ask away.
+dlg @3 resident.hub [here.time=night] : It's late. I was going home. What is it? | #greet#. I'm half asleep, but ask.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Softly, if you please. What is it? | I'll hear you. Calmly, if you would.
+dlg @1 resident.job [self.working=yes self.job=none] : I call the names and open the door. Folk wait on the bench till I do. | #self.trade_words.capitalize#. It's waiting, mostly, and keeping order.
+dlg @2 resident.job : I work, I sleep, I dance at festivals. Not much else. | Quiet work. It suits me.
+dlg @1 resident.news [world.news] : Word going round: #world.news#. From #world.news_from#, they said. | #world.news.capitalize#. That's the word from #world.news_from#.
+dlg @2 resident.news [world.event_words] : Everybody waiting is talking about #world.event_words#. | Folk around me talk of nothing but #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Robbers took a wagon beyond the walls. Be careful. | Some carter's load is gone. The walls are safer.
+dlg @4 resident.news [world.death=recent] : Somebody nearby died lately. Folk are hushed. | We've lost somebody. The street's gone quiet.
+dlg @5 resident.news [world.wedding=recent] : A wedding! I danced. | A wedding. The fiddles were good.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing much. Quiet. | #news_none#
+dlg @1 resident.gossip [here.gossip=yes] : I don't usually say. But they're saying #topic.subject# #topic.claim#. | Only once: #topic.subject# #topic.claim#. That's all.
+dlg @2 resident.gossip [here.gossip!=yes] : What's said on the bench stays there. | #gossip_none#
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the step down.
+dlg @2 resident.bye [here.time=night] : #farewell#. I'm for bed. | Good night. Sleep, if you can.
+graft resident.hub
+choice Why is there coal dust on your paw? -> coal
+node coal
+say Oh. That's my luck coal. It's always about me somewhere. It leaves my paw black, so I wipe it before I bow to anybody.
+mood calm
+free
+choice Where did it come from? -> coal_gran
+choice Back to what we were saying. -> hub
+node coal_gran
+say My #gran# gave it me, the day I started work. For luck, and to keep my paw warm. It's not left me since.
+choice Keep it safe. -> hub
+choice Goodbye. -> bye

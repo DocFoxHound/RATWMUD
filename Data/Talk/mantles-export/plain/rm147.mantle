@@ -1,0 +1,462 @@
+# rm147, the hammer that answers the bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm147
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_jorunn_cindermore
+written_by claude
+title the hammer that answers the bell
+fits stage=adult|old
+prefers role=merchant job=smith temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk answers_the_chapel_bell_with_one_stroke_of_the_hammer
+likes pickled_herring stars a_full_till first_snow
+dislikes night_noise bad_manners
+fears a_cracked_anvil being_hurried_into_a_bad_weld
+hopes a_learner_with_a_steady_paw a_clear_night_with_the_first_snow
+topics work +0.5 prices +0.3 weather +0.3 season +0.3 pastimes +0.2 family +0.2 festival -0.4 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# works iron at the back of the shop and lives over it: slow-spoken, unhurried and quick to take offence at bad manners, honest at the scales, fond of the stars and the year's first snow, and given to striking the anvil once each time the chapel bell rings.
+
+words
+oath! = Horn of the anvil | Cinders and tongs | Scale on my paws
+saying! = A rude word cools slower than iron | Red to strike, black to wait
+anvil = the anvil | the old anvil
+hammer = the hammer | the cross-peen
+forge = the forge | the fire at the back
+iron = iron | good bar iron
+nails = nails | a keg of nails
+hinges = hinges | strap hinges
+till = the till | a till that won't shut for coin
+herring = pickled herring | herring soused sharp
+stars = the stars | the stars over the chimney pots
+firstsnow = the first snow | the year's first snow
+bell = the chapel bell | the bell from the Chapel of the Tide
+manners = manners | a civil tongue
+quench = the quench bucket | the water tub
+sparks = sparks | a shower of sparks
+scale = scale | forge scale
+charcoal = charcoal | good hill charcoal
+rust = rust | the red rot
+counter = the counter | the shop counter
+roof = the roof | the leads above the shop
+
+any
+opinion @1 merchants for 1 : Behind my own counter, I learnt the cost of bar iron by the cartload. Nobody stocks a shelf for nothing.
+opinion @1 road against 1 : Late iron means a cold forge and customers in a temper. Every month the carts are slower.
+opinion @2 road against 2 [world.wagons=raided] : Robbers stopped another load. If it was iron, I'll be hammering air by Restday.
+opinion @1 houses for 1 : Timberland's charcoal heats half the anvils in Ridgemere. I'll grumble about the Houses when that stops.
+opinion @1 watch for 1 : Thieving paws stay off my shelves when the Watch tramp by. That earns them my good day.
+opinion @1 festivals against 1 : Shouting, broken cups and fights on the cobbles by midnight. I bolt the shutters.
+opinion @1 times for 1 : Fire lit, till ticking over, herring in the jar. I've nothing to quarrel with.
+opinion @1 city for 1 : Ridgemere's smoky and wet and it shouts all night. I'd not be buried anywhere else.
+opinion @1 newcomers mixed 0 : A new face can buy nails same as an old one. Whether it's got manners, we'll see.
+opinion @1 drink mixed 0 : A cup at supper. Not in the shop. Iron and ale don't mix.
+opinion @1 sump mixed 0 : Sump folk buy my cheapest nails and pay to the penny. Some up the hill could learn from that.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Door to, please; wet comes in with you. | #greet#. Wipe your feet first, if you would.
+line @2 greet [self.working=yes self.job=smith] : #greet#. Stand clear of the sparks. | #greet#. Mind the hot end. I'll be a minute.
+line @3 greet [here.time=dawn] : Morning. The fire's barely up. | Morning. You're early. So am I.
+line @4 greet [here.time=dusk|night] : Evening. Fire's going down for the night, so be quick. | Evening. Shutters are half up.
+line @5 greet [pair.band=friends] : Ah. You. Good, come in. | Good. Somebody with manners.
+line @6 greet : #greet#. | #greet#. What'll it be.
+line @1 kin.open [pair.kin!=no] : Sit yourself. This pin first, then you. | Come in. Kettle's warming by the forge.
+line @1 again.open : Back again. Forgot something, I expect. | Twice today. Something's wanted.
+line @1 greet.return : #greet#. | #greet#. Good of you.
+line @2 greet.return [pair.band=strangers] : #greet#. Not seen you on this street. | #greet#. And to you. Shut the door.
+line @3 greet.return [pair.band=friends|family] : Mm. Good to see you. | Sit, out from under my elbow.
+line @4 greet.return [self.working=yes] : #greet#. Hold on while this cools. | #greet#. Let me put the hammer down.
+line @1 farewell : #farewell#. | #farewell#. Shut it after you.
+line @2 farewell [here.time=dusk|night] : Good night. Step's greasy in the wet. | Good night. Go quiet past the windows.
+line @1 farewell.return : #farewell#. | And you.
+line @2 farewell.return [pair.band=friends|family] : Come back when you've an hour. | Off, then. Keep well.
+line @1 react.news : Go on. I'm listening. | Slowly. Start at the start.
+line @1 react.news.new : First I've heard. | That's new to me.
+line @1 react.news.known : A customer had that yesterday. | Old. Somebody brought it in along with a pot to mend.
+line @1 react.news.doubt : I'll believe whoever had eyes on it, nobody else. | Hm. That's been bent a few times on the way.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Nothing I could say would mend it. | Hard. Sit, a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | Well. Something went right for once.
+line @1 answer.how : Well enough. Can't grumble. | Middling. The fire's lit and the till's not empty.
+line @1 answer.how.busy [self.working=yes] : Busy. Talk to my back, I'll hear. | A rack of hinges by noon. So: busy.
+line @1 answer.how.poorly : Stiff today. Weather. It'll pass. | Slow today. I'll get there.
+line @1 answer.how.well : Sold a whole keg this morning. I'm pleased. | Good. The iron's behaving.
+line @1 ask.how : And you? | How's your week gone?
+line @1 sympathise : That's hard. Sit by the warm end. | Mm. That'll ease, in its time.
+line @1 reassure : It'll come right. Don't rush at it. | Leave it a day. Things look different cooled.
+line @1 decline : I won't, sorry. There's an order of hinges owed by dusk. | Not today. I don't take on what I can't do properly.
+line @1 accept_decline : Mm. Asked and answered. | Right. No harm.
+line @1 thank : That was decent. I'll remember. | Obliged. Truly.
+line @1 deflect_thanks : Pfft. Nothing. | Just remember your manners next time you're in.
+line @1 preclose [self.working=yes] : That iron won't wait for me. | Right. Back to it.
+line @2 preclose : Well. That'll do. | I've stood long enough.
+line @1 accept_preclose : Go on, then. | Right. Away with you.
+line @1 ack : Mm. | #bc_right#
+line @1 give.advice : Buy good iron once, not bad iron twice. | Oil your hinges before winter, not after.
+line @1 warn [world.bandits=near] : Robbers on the roads. Go with somebody, or don't go. | Robbers about. Stop inside the walls.
+line @1 take_offence : That tone stays outside my door. | Mind your mouth. I'll serve you when you've found your manners.
+line @1 accept_apology : Mm. We'll leave it. | All right. It's put by.
+line @1 praise : That's honest work. | Good. Steady paw, that.
+scene bell_stroke
+when topic=work|smalltalk self.job=smith here.region=ridgemere
+does tell.self / react.self / tell.self / react.self / assess
+a : Hear the chapel bell? I give it one stroke on #anvil#, every time. | Every bell off the Chapel of the Tide, I answer with the hammer. One stroke. | There. That stroke you heard was me answering #bell#.
+b : Why do you do it? | Every bell? | Doesn't the chapel mind?
+a : Somebody rings it for the boats out there. Somebody ought to answer. | Every one. First light, noon and dusk, and the drowned bell when it goes. | The chapel can't hear it. The Bright One can, I'd think.
+b : A sort of prayer, that. | That's a lot of strokes. | I suppose so.
+a : Not a prayer. Just manners. | Hm. Three a day, more in a storm. My arm doesn't notice. | I'd think so. I'll keep doing it either way.
+
+scene bell_missed
+when topic=work|faith self.job=smith here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I missed the noon bell today. Hammer was in the fire. It's sat badly with me all afternoon. | Somebody kept me talking through the dusk bell. I'll strike two tomorrow. | I struck for the bell this morning and nobody in the street even looked up. Good.
+b : It's only a bell. | Two? To catch up? | Did you want them to?
+a : It's rung for crews out in the weather. It's not only anything. | To catch up. I'm not having a debt with a bell. | No. It's not for them.
+
+scene rude_customer
+when topic=work|quarrel self.role=merchant
+does tell.complaint / react.complaint / assess
+a : Fellow walked in this morning, pointed at the hinges and said "those". No good day. Nothing. | Somebody threw coin on #counter# like I was a beggar. I put the hinges back on the shelf. | A customer told me to hurry up. Told me. In my own shop.
+b : There's always one. | Did you sell to them? | What did you do?
+a : Then that one can buy hinges elsewhere. | Not today. They can come back with a civil tongue. | Slowed down. No pride in it. No shame either.
+
+scene manners_matter
+when topic=smalltalk|work
+does give.opinion / react.self / assess
+a : A good day costs nothing. I'll not serve anyone who can't spare one. | Manners first, nails second. That's how this shop runs. | I can work with a slow customer. I can't work with a rude one.
+b[stage=young|adolescent] #pup : What if I forget? | Do pups count? | Is that a rule?
+b : That's fair. | Strict. | I've known worse.
+a@pup : Then I'll wait till you remember. I've time. | Pups most of all. You start now. | It is now.
+a : I ask nothing else of a soul. | Fair, not strict. | So have I. I served them too. Once.
+
+scene forge_morning
+when topic=work|day here.time=dawn self.job=smith self.working=yes
+does tell.self / react.self / assess
+a : Fire's up before the street wakes. A cold forge is a sulky one. | First hour's for the bellows and nothing else. The iron comes later. | Raked the ash out, laid #charcoal#, and the first spark took. A good start.
+b : Early for you. | Can't you hurry it? | A good omen.
+a : Always this early. I like the street quiet. | Hurry a fire and it sulks. Iron's the same. | No such thing. Just good charcoal.
+
+scene hot_iron
+when topic=work self.job=smith self.working=yes
+does tell.self / react.self / assess
+a : This bar wants another heat. I'll not strike it till it's cherry red. | You hear that? A clean ring. That's sound iron. A dull note means a flaw. | Hinge pins. Two dozen of them, all alike. It's slow work. I like slow work.
+b : How can you tell? | And if it's dull? | Don't you get bored?
+a : By the colour. Years of looking at it. | Back in the scrap. No sense selling a flaw. | No. Bored is for folk who rush.
+
+scene burns
+when topic=health|work self.job=smith
+does tell.self / react.self / assess
+a : Took hold of a pin I thought was cold. Burnt paw. You'd think I'd have learnt. | Every smith has a scar for every mistake. I've a fair few. | Little burn on the wrist. Butter and a rag. It'll do.
+b : You should be more careful. | Do they hurt? | Butter? Truly?
+a : I am careful. Iron's sly. | Not now. They did. | Butter. An old smith swore by it. I don't argue with old smiths.
+
+scene full_till
+when topic=work|prices self.role=merchant
+does tell.self / react.self / assess
+a : #till.capitalize# tonight. I counted it twice for the pleasure. | Sold a keg of nails and two sets of hinges. The till's heavy and so's my supper. | End of the day with a full till. That's the best quiet there is.
+b : A fine day's trade. | You've earned your supper. | Quiet with coin in it.
+a : Good enough. #saying#. | I have. Herring and bread. | No. It's not.
+
+scene herring_supper
+when topic=food
+does tell.self / react.self / assess
+a : #herring.capitalize# and black bread. Supper, near every night. | Somebody brought me a jar of soused herring and I near wept. | I'll have herring tonight. I've been thinking on it since noon.
+b[job=fisher|cook] #fish : Sharp vinegar's the trick. | You're easy to please. | Herring's honest food.
+b : Every night? | That good? | You'll smell of it.
+a@fish : Sharp, and an onion. Nothing else. | I am. Herring and quiet. That's enough. | It is. No airs to it.
+a : Most. I don't tire of it. | Better than gold. You can't eat gold. | Better than smelling of the forge.
+
+scene stars_roof
+when topic=pastimes here.time=night here.weather=clear
+does tell.self / react.self / assess
+a : Nights, I'm out through the attic hatch to watch the stars come through the smoke. | Clear night. An hour on the leads for me, and nobody's to call. | When the smoke thins, the sky opens right across the chimney pots.
+b : Don't you get cold? | Not even for supper? | Can you name any?
+a : A blanket and a cup. That's all it wants. | Supper can wait an hour. The stars can't. | Some. Mostly I just look.
+
+scene stars_quiet
+when topic=pastimes|memories here.time=dusk|night
+does tell.feeling / react.self / assess
+a : The stars are the only quiet thing in the city. That's why I watch them. | Nobody talks to you when you're looking up. I like that. | I'd sit under the stars every night if the rain let me.
+b : The city's noisy. | You don't like talking? | It rarely lets you.
+a : It is. The stars don't mind. | Not much. Ask anyone. | Rarely. I take what I'm given.
+
+scene first_snow
+when topic=weather|season here.weather=snow here.region=ridgemere
+does tell.feeling / react.self / assess
+a : First snow. I dropped what I was doing and went out in the street to look at it. | White slates, muffled cobbles, and not a cart to be heard. That's what I like. | There. #firstsnow.capitalize#. Nothing in the year to touch it.
+b : You went outside? | It's quieter, true. | It's cold, though.
+a : Stood there gawping, nose up. Not ashamed of it. | Quiet's rare here. Snow brings it. | Cold's nothing, set against that quiet.
+
+scene snow_waiting
+when topic=season here.season=autumn|winter
+does tell.self / react.self / assess
+a : I can smell snow coming. A few days yet. | Every winter I sniff for snow like a pup sniffing out a festival. | The cold's come. Snow next, if we're lucky.
+b : I'd sooner not have it. | You like it that much? | Lucky?
+a : Then stay in. I'll watch it for you. | I do. Only thing I'm ever impatient over. | Lucky. It's quiet when it snows.
+
+scene rain_rust
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Rain again. Everything on the shelves wants oiling or it rusts by the week's end. | #rust.capitalize# in the nail keg. That's the rain for you. | Wet weather. I'll be oiling till dark.
+b : Always the rain here. | Oil them, then. | Every week?
+a : Always. You learn to oil. | I will. Slowly. | Every wet one. Which is most of them.
+
+scene night_noise
+when topic=home here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Somebody sang outside our window past midnight. I don't sleep well after that. | Carts rattling by half the night. I lie there counting wheels. | The street's never quiet after dark. I've rag packed in the shutter cracks.
+b : Hard to sleep in the city. | Counting wheels? | Does it help?
+a : Hard for me. I'm up before the light. | Better than counting sheep. There are more of them. | Some. Not enough.
+
+scene spouse_counter
+when topic=family|work self.married=yes self.role=merchant
+does tell.self / react.self / assess
+a : I'd sooner #self.spouse# did the talking at the counter. I'm better with iron than with folk. | My #self.spouse_word# and I have kept this shop a long while now. | Somebody in this shop should smile at customers. I'd sooner it was #self.spouse#.
+b : You make a pair, then. | A long while. | You don't smile?
+a : We do. One talks, one hammers. | Long enough that the shop has our shape. | Not often. #self.spouse# can smile for both.
+
+scene child_worry
+when topic=family self.parent=yes
+does tell.worry / reassure / assess
+a : The stairs at night worry me, when #self.child# is out late. | I worry about #self.child#. I don't say so. I'm saying so now. | When #self.child# is out after dark, I sit up. I don't tell anyone that.
+b : There's no keeping the young in. | That's a parent's lot. | Young ones keep late hours.
+a : No. I'd like to. | It is. I'll worry quietly. | They do. I'll sit up anyway.
+
+scene master_learner
+when topic=work self.master=yes self.job=smith
+does tell.self / react.self / assess
+a : I'll take a learner who listens. Not one who talks. I've enough talk. | A good learner watches the colour of the iron, not my face. | The last one I taught learned to hold the tongs before I let them near the hammer.
+b : Years of it, is it? | What do you want in one? | Sensible.
+a : Years. I'll not lie about it. | Steady paws. A shut mouth. | It's the only way. Burnt paws teach nobody.
+
+scene prices_iron
+when topic=prices topic.dir=up topic.good self.role=merchant
+does tell.complaint / react.complaint / assess
+a : #topic.good.capitalize# is up again. I'll hold my prices a week and see. | They've put #topic.good# up on me. I won't pass it on yet. | #topic.good.capitalize#, dearer. Every time it goes up, somebody blames the shop.
+b[role=merchant] #trade : We all eat the difference for a while. | And after a week? | They always blame the counter.
+b : Hard on you. | Can you afford to? | That's not fair.
+a@trade : A while. Not forever. | Then I'll put it up a penny and say so plainly. | They do. I don't argue. I just give them the price.
+a : Harder on them that buy. | For now. Not long. | No. It's the trade.
+
+scene iron_late
+when topic=caravan world.wagons=late self.job=smith
+does tell.worry / reassure / assess
+a : No iron off the carts this week. A few bars left in the rack, no more. | Wagons late. If the iron doesn't come, I'll be mending, not making. | Late again. I've orders I can't fill with air.
+b : It'll come. | Mending pays too. | Can you buy elsewhere?
+a : It will. I'll be slow till it does. | It does. Not as well. | Not at any price I'd pass on.
+
+scene hard_times
+when topic=times world.times=hard|lean self.role=merchant
+does tell.self / react.self / assess
+a : Lean times. Folk come in to mend, not to buy. A hinge gets a new pin instead of a new hinge. | Hard week. I sold one keg of nails and four pins. | Times are thin. I'll mend for less and say nothing.
+b : That's something, though. | Four pins? | That's good of you.
+a : It is. Mending's honest work. | Four. I counted them twice. | It's iron. It keeps. So does a good name.
+
+scene festival_shutters
+when topic=festival
+does give.opinion / react.self / assess
+a : Festival. Shutters bolted at dusk, and me out on the leads. | Bawling, broken cups and brawling on the cobbles. Not for me. | Everybody's in the square. The street's quiet. That's my festival.
+b[stage=young|adolescent] #pup : But there's music! | Won't you come? | Don't you like any of it?
+b : It's only one night. | You'll miss the fun. | Quiet's yours, then.
+a@pup : The music carries to the leads. That's plenty. | No. Go on, and mind your manners. | The morning after. Empty square, nobody up.
+a : One night too many. | I'll miss the shouting. I'll live. | Mine, and welcome.
+
+scene charcoal_camp
+when topic=memories self.age>=40
+does tell.memory / react.self / assess
+a : I spent a summer at a charcoal camp in the hills as a pup. Never forgot the quiet. | Up in the hills, the charcoal burners never spoke above a murmur. I've missed it since. | I learned fire at a charcoal camp. Learned silence there too.
+b[from!=ridgemere] #country : The hills are like that still. | You learnt your fire up there? | Silence is worth learning.
+b : Why did you leave? | Quieter than here, I'd guess. | You'd go back?
+a@country : Good. Somebody should keep it so. | The fire, aye. The forge came later. | It is. Hardest thing I ever learned.
+a : A pup goes where they're taken. I was taken home. | Quieter than anywhere. | Sometimes. Then a bell rings and I'm home.
+
+scene timberland_forges
+when topic=lore|work here.region=ridgemere self.job=smith
+does give.opinion / react.self / assess
+a : Timberland feeds the forges in this city. Folk can grumble; the fires stay lit. | Half the iron in Ridgemere comes past Timberland hands. They know their charcoal. | The Houses squabble. The forges keep burning. That's my whole dealing with them.
+b : Folk grumble about the Houses. | Do they treat you fair? | Sensible.
+a : Folk grumble about everything. | Fair enough. No complaint I'd say aloud. | It's how I keep my temper.
+
+scene gossip_none
+when topic=gossip self.role=merchant
+does tell.self / react.self / assess
+a : Words get said across my counter. They don't cross back. | Don't ask me. I sell nails. I don't sell talk. | Folk say plenty in a shop. I'm not in the business of repeating it.
+b[talk=chatty] #nosy : Not even a little? | Go on. | You must hear plenty.
+b : Wise. | Fair enough. | That's honest.
+a@nosy : Not a word. Buy something. | No. Not a word, and stop asking. | Plenty. And here it stays.
+a : Not wise. Tidy. | Fair. | Plain, I'd call it.
+
+scene newcomer_nails
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# is new to the street, I hear. Everybody wants nails, sooner or later. | Someone new, #topic.subject#. We'll see what manners come with the face. | Word is #topic.subject# has settled here. Good. Room enough.
+b : Another customer, then. | Give it time. | Room enough, aye.
+a : If the manners are right. | I always do. | There is. The city's big.
+
+scene accent_commons
+when topic=accent here.region=ridgemere
+does tell.self / react.self / assess
+a : Commons talk, mine. Slow. I'll get there. | I'm not quick with words. Folk mistake it for being cross. Sometimes it is. | My talk's plain. The Heights can listen or not.
+b[from!=ridgemere] #away : I'd not have said slow. | I'd not mistake it. | It's easy to follow.
+b : You speak fine. | Is it? | Plain's good.
+a@away : You've not heard me sell a keg. | You might. Others have. | Good. Plain's meant to be followed.
+a : Fine for a smith. | Now and then. | It does me.
+
+scene content_dream
+when topic=dreams
+does tell.self / react.self / assess
+a : I don't want much. A full till, a clear sky and the first snow. I've had all three. | Folk think I must be putting coin by for something. I'm not. I've what I want. | Somebody asked me my dream once. I said a quiet night. They laughed. I didn't.
+b : That's rare, to be content. | Nothing at all? | A quiet night's a good dream.
+a : Maybe. I didn't go looking for it. | A learner with a steady paw. That's all. | It is. Hardest thing to find in this city.
+
+scene neighbour_civil
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : A good day from #self.neighbour# and one back from me. Worth a full till, that. | I'd lend #self.neighbour# my good tongs, and I don't lend those. | A neighbour like #self.neighbour# I'd want to know one thing: leave me be when the fire's hot.
+b : That's a small thing. | Your good tongs! | That's fair.
+a : It's everything I ask. | That's a high mark from me. | It is. Not everyone learns it.
+
+scene rust_patience
+when topic=work self.job=smith
+does give.advice / react.self / assess
+a : Folk bring me a rusted hinge and want it new by noon. I tell them iron doesn't care about noon. | A seized lock wants oil and a night's wait. Not a hammer. | You can't hurry a weld. Rush it, and it breaks at the worst time.
+b : Do they wait? | Not even a little tap? | That's true of most things.
+a : The good ones. The others try somebody quicker, then come crawling back. | A little tap. After the night. | It is. #saying#.
+
+story the_bell_night [topic=memories|faith self.age>=30 here.region=ridgemere]
+  : One storm night the chapel rang the drowned bell for a boat that hadn't come in.
+  : I struck the anvil for it, once, like always. Then I couldn't stop. I struck till the bell stopped.
+  ask : Do you think it made any difference?
+  b : Not to the boat. Maybe to you.
+  : That's what I think. In the morning they said the boat came in.
+  b : Then you'll keep striking.
+  : Every time.
+
+story the_first_weld [topic=work|memories self.age>=30 self.job=smith]
+  : My first weld, I rushed. The smith I learned under said nothing, only watched.
+  : Next morning it snapped in my paw, clean through, with a customer watching.
+  ask : What would you have said to a learner then, if it were you?
+  b : Nothing. The weld said it all.
+  : That's what my old master said. Nothing at all. I've never rushed one since.
+
+story the_snow_shop [topic=weather|memories self.age>=30]
+  : The snow came by night once, early in the winter. I woke to the quiet and thought something was wrong.
+  : I went down and unbarred the shop door, and the whole street was white and nobody on it.
+  ask : Have you ever had the city to yourself like that?
+  b : Once or twice, early.
+  : An hour I spent on that step. Then the first cart came through and spoilt it. Still the best hour I've had.
+
+story the_rude_lord [topic=work|memories self.age>=30 self.role=merchant]
+  : A fine fellow came in once, grand coat, and called me "you there".
+  : I said I'd a name and a shop, and he could use either.
+  ask : Can you guess whether that one came back?
+  b : I'd guess not.
+  : Seven days later, back again, saying good day like a pup at school. Bought a whole keg.
+  b : Manners can be learned, then.
+
+story the_stars_camp [topic=pastimes|memories self.age>=40]
+  : At the charcoal camp the burners let me lie out by the mound at night and watch the sky.
+  : No smoke up there but our own. The stars hung low enough to touch the pines.
+  ask : Is there a sky like that anywhere you've been?
+  b : Not in the city. Never in the city.
+  : No. That's why I go out through the hatch. You get a corner of it, on a good night.
+
+rule @bark_bell
+when concept=bark self.job=smith here.region=ridgemere
+does aside
+cooldown 8h
+say There's the bell. One for the boats. | Chapel bell. Mm. There.
+
+rule @bark_manners
+when concept=bark self.role=merchant self.working=yes
+does aside
+cooldown 8h
+say A civil word costs nothing. Remember that. | Wipe your feet, whoever's next.
+
+rule @bark_forge
+when concept=bark self.job=smith self.working=yes
+does aside
+cooldown 6h
+say Another heat. Not yet. Not yet. There. | Mind the sparks, anyone near.
+
+rule @bark_snow
+when concept=bark here.weather=snow
+does aside
+cooldown 10h
+say Snow. Good. | Listen how quiet it's gone.
+
+rule @bark_stars
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 12h
+say Clear tonight. Up on the roof, then. | Stars are out. Leave me be an hour.
+
+rule @bark_noise
+when concept=bark here.time=night here.region=ridgemere
+does aside
+cooldown 12h
+say Some of us sleep, out there. | Not again. Go home and sleep, whoever you are.
+
+dlg @1 resident.hub : #greet#. Door to; there's weather out. | #greet#. Well, what's wanted.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good. You remember your manners. | #greet#, #topic.player#. Come in.
+dlg @3 resident.hub [here.time=night] : It's late. Quickly, now. | Evening. I'm about to bank the fire.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Mind your tone in here, and we'll get on. | Say your piece. Civilly.
+dlg @1 resident.job [self.job=smith] : #self.trade_words.capitalize#. Hinges, nails, pins and mending. | I work iron at the back and sell it at the front.
+dlg @2 resident.job : I work. I'd sooner do it than talk about it. | Steady work. Honest. That's all.
+dlg @1 resident.bye : #farewell#. Latch it going out. | #farewell#.
+dlg @2 resident.bye [here.time=night] : Good night. Quiet past the windows, mind. | Good night.
+dlg @1 resident.news [world.news] : Somebody at the counter said: from #world.news_from#, #world.news#. | Out of #world.news_from#, so they say: #world.news#. I've nothing to add.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#. | Talk over my counter is all #world.event_words# today.
+dlg @3 resident.news [world.wagons=raided] : Robbers stopped a load on the road. Mind yourself out there.
+dlg @4 resident.news [world.death=recent] : We lost somebody from round here this week. The street's hushed for it.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding. Somebody bought a set of new hinges for it.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing I've heard. | Quiet. That suits me.
+dlg @1 resident.gossip [here.gossip=yes] : Talk's not my trade, but this is going round: #topic.subject# #topic.claim#. | Folk say #topic.subject# #topic.claim#. That's the lot from me.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing. And I'd keep it if there were. | I sell nails. Not talk.
+dlg @1 resident.business [business=thriving] : Till's full most nights. I'm content. | Good. Busy enough to suit me.
+dlg @2 resident.business [business=steady] : Steady. Suits me. | Steady. Enough to live on.
+dlg @3 resident.business [business=failing] : Poorly. Folk mend more than they buy. | Thin. I'll manage.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Hinges, nails, pins. Take your time. | #greet#. Ask before you touch; some of it's hot.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #topic.player#. What'll it be today. | Back again, #topic.player#. Good. #shop_offer#
+dlg @3 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Civil, and I'll serve you. | Your wants, decently put, and we'll see.
+dlg @4 shop.greet [here.shop=bare] : Shelves are near empty. No iron in. I'll still buy, mind. | Not much to sell till the carts come. Have you anything for me?
+dlg @1 shop.prices : Honest weights, honest price, and I won't be beaten down. #shop_offer# | It's what it costs. #shop_offer#
+dlg @1 shop.bye : #farewell#. Mind the step. | #shop_bye#
+dlg @1 master.learn [here.teaches=yes] : Learn the trade? Watch first. Talk later. #learn_offer# | #here.trade_title.capitalize#. It's slow and hot and honest. Ask what you want.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Back again. Good. Stand where the colour shows. | You came back. That's half of it.
+dlg @3 master.learn [here.teaches=no] : I've a learner already. Questions cost nothing, though. | One at a time. I've one. Ask anyway.
+dlg @1 master.work : Long days, hot ones. You'll not get rich. You'll eat. | Steady. Hinges and nails don't go out of fashion.
+dlg @1 master.wages : Learners aren't paid. Work at my side, sell what your own paws make. That's fair.
+dlg @1 master.takes [here.take_on=yes] : A single learner, and a trusted one. You might suit, manners permitting. | I'll take you. Mind, I say a thing once.
+dlg @2 master.takes [here.take_on=no] : Only ever the one. #here.take_on_why#
+dlg @1 master.taken : Good. Be here at first light. Don't be late. | Then you're mine to teach. Watch the iron, not me.
+dlg @1 master.refused : #topic.why# | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Practise. | #farewell#. Mind your paws.
+graft resident.hub
+choice Why do you strike the anvil when the bell rings? -> bell
+node bell
+say The chapel rings for crews out on the water. Somebody ought to answer it. So I do. One stroke.
+mood calm
+free
+choice Does it do any good? -> good
+choice Back to it. -> hub
+node good
+say Couldn't say. The boats come in or they don't. But I'd feel worse if I didn't.
+choice I see. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Do you mend things, or only sell them? [self.job=smith] -> mend
+node mend
+say I mend. Hinges, locks, pots, pins. Bring it in, let it sit overnight. Don't ask me to rush it.
+mood calm
+free
+choice How much does mending cost? -> cost
+choice Back to the counter. -> greet
+node cost
+say Less than new, more than nothing. You'll have a price once I've looked. No haggling.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye

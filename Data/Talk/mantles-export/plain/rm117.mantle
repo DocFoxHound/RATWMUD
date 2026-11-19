@@ -1,0 +1,332 @@
+# rm117, the cart-clock (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm117
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_gunnar_farrow
+written_by claude
+title the cart-clock
+fits stage=adult|old
+prefers job=none talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk tells_the_hour_by_the_carts_through_the_north_gate
+likes crisp_apples roof_birds fresh_straw warm_rain
+dislikes early_bells flies
+fears losing_the_count being_kept_indoors
+hopes one_more_summer_on_the_bench a_warm_rain_after_every_dry_spell
+topics day +0.4 caravan +0.4 weather +0.2 animals +0.2 memories +0.3 gossip +0.1 newcomer -0.2 festival -0.3
+styles comfort=practical gossip=exact refuse=blunt tease=none
+marks oath saying
+persona #self.first# is one of the city's old ones, sits where the carts come in off the north road and tells the hour by the wheels, blunt, exact and sparing with words, and never once wrong about a count.
+
+words
+oath! = By the twelfth cart | Spokes and almanacs
+saying! = A gate keeps better time than a bell | Count the wheels, not the promises | Late is late, whatever the reason
+carts = the carts | the north-road carts
+cart = a cart | a north-road cart
+gate = the north gate | the gate
+bench = my bench | the bench inside the gate
+drovers = the drovers | the long-road drovers
+count = my count | the tally I keep
+apple = a crisp apple | a cold hard apple straight off the tailboard
+straw = fresh straw | new straw laid on bare boards
+roofbirds = the roof birds | the starlings along the gutter-line
+warmrain = a warm rain | rain with some warmth in it
+dawnbells = the bells before light | that clanging in the dark
+flies = flies | the flies off the drovers' beasts
+toll = the toll | the gate toll
+milkcart = the milk cart | the first milk cart
+
+any
+opinion @1 church for 1 : I've seen a lot of folk into the ground. I want somebody at the graveside who knows the words. That's my church, and it's plenty.
+opinion @2 city for 1 : I've seen what the carts bring in from the towns. Turnips and complaints. Ridgemere's the only place that ever made sense to me.
+opinion @3 merchants against 1 : Half of what they ask is their own supper. I've watched the same sack come through #gate# at one price and sold on at two.
+opinion @4 newcomers against 1 : Every year more come in and fewer go out. I count them. The place gets less like itself by a cartload at a time.
+opinion @5 road against 1 : Drovers used to come in whistling. Now they come in looking over their shoulders. That tells you the roads.
+opinion @6 road against 2 [world.wagons=raided] : A wagon taken on the road again. In my day a drover could sleep on his load. Not now.
+opinion @7 festivals mixed 0 : Feast days the gate's choked by noon and nobody keeps to the hours. I like the music. I don't like the muddle.
+
+grown
+line @1 greet : #greet#. | #greet#, #address#.
+line @2 greet [pair.band=strangers] : #greet#. You didn't come through my gate, or I'd have had you on the count. | #greet#. Not a face I've counted. I'll have it now.
+line @3 greet [here.time=dawn] : #greet#. The milk's not through yet, so you're early. | Early. #greet#, all the same.
+line @4 greet [here.time=dusk|night] : #greet#. Last cart's long in. You're out late. | Evening. The gate's shut and so should we be.
+line @5 greet [pair.band=friends|family] : There you are. Sit, if you're sitting. | #greet#. Late by my count, but here.
+line @1 kin.open [pair.kin!=no] : You've eaten? Good. Sit by me. | Here. Out of the draught.
+line @1 again.open : Twice today. I'll put you on the count. | You again. That's two.
+line @1 greet.return : #greet#. | #greet#, then.
+line @2 greet.return [pair.band=friends|family] : And to you. That step's slick, watch it. | #greet#. Sit, you're swaying.
+line @3 greet.return [here.time=dusk|night] : Evening. Pull the latch to. | #greet#. It's late for it.
+line @1 farewell : #farewell#. | That'll do. #farewell#.
+line @2 farewell [here.time=dusk|night] : Off home with you. The lamps are going out. | #farewell#. Don't cut through the yards.
+line @1 farewell.return : #farewell#. | And you.
+line @2 farewell.return [pair.band=friends|family] : Come by tomorrow. I'll be here. | Same bench, same hour.
+line @1 react.news : Go on. Say it plain. | From the beginning, and in order.
+line @1 react.news.new : That's beaten me to it. You're first, and nobody's first. | I hadn't that. Who brought it in?
+line @1 react.news.known : Had that at first light, off a carter. | Old. The second load brought it yesterday.
+line @1 react.news.doubt : Who told you? A carter who wanted a drink for it, I'd say. | One telling's a rumour. I want two before I count it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. No two ways about it. | #pity#. There's nothing to add to it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. One thing in the week that came in sound. | #gladnews#. Write it down somewhere.
+line @1 answer.how : Well enough. I've my bench and my count. | Still here. Still counting.
+line @1 ask.how : You look worn. Sleeping? | Keeping well? You've the colour for it.
+line @1 sympathise : Hard. Sit here a while. Nobody's hurrying you. | #sympathy#. Sit with me. Two can hold it easier than one.
+line @1 reassure : It'll come right. Late's not lost. | Give it a day. Most things come in by the second day.
+line @1 decline : #hedge#, no. These knees stop at the corner, and that's past the corner. | Not me. I don't stir from here before the last cart's in.
+line @1 accept_decline : Fair. Once asked is enough. | Then that's settled.
+line @1 thank : Obliged to you. | Kindly done. I'll have that on the count.
+line @1 deflect_thanks : Nothing in it. I was sat here regardless. | Leave it be. No cost to me.
+line @1 preclose : Well. The light's going. | That'll do for talk. My count's waiting.
+line @1 accept_preclose : Go on, then. | Right you are.
+line @1 ack : #bc_true#. | #bc_right#. | Mm.
+line @1 give.advice : Get through the arch before the flour wagon, or you'll stand behind it half the morning. | Buy off a cart as it comes in. Never after the stall's had it.
+line @1 warn [world.bandits=near] : Not on your own past the gate. Wait for a load with guards and walk beside it. | Stay inside the walls tonight. I mean it.
+line @1 hail [pair.band=friends] : Here. I've wiped a space on the bench for you. | You. Here. A word.
+scene cart_clock
+when topic=day|smalltalk here.region=ridgemere here.time=day
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : The coal carts are through, so it's gone mid-morning. | That's the flour wagon. Noon, near enough. | Brewer's dray just went by empty. Middle of the afternoon.
+b : How do you get the hour off a cart? | You don't need the bell for that? | And you'd swear to it?
+a : Same carts, same order, every working day. You learn it. | Bells ring when somebody remembers. Carts come when they must. | I would. #saying#.
+b : #bc_clever# | If you say so. | #bc_fair_enough#
+a : It's not clever. It's paying attention. | You can. Nobody's caught me out yet. | Fair or not, I'm right.
+
+scene milk_first
+when topic=day here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : The milk cart's not through yet. So it's earlier than it looks. | First thing through the gate is #milkcart#. It's late this morning. | Before the milk comes, the gate belongs to the cats and me.
+b : You're up before the milk? | Late? By how much? | And the cats don't mind?
+a : I've been up before the milk since I was a #child#. | A wheel's turn. Enough to notice. | We have an arrangement. They keep off my bench.
+
+scene carts_late_gate
+when topic=caravan world.wagons=late
+does tell.complaint / react.complaint / assess
+a : The carts are late. Not a wheel through since the bell. | Not a wheel from the north yet. I've sat here since first light. | Late. The whole morning's out of order now.
+b : Bad roads, maybe. | They'll come. | #bc_they_always_do#
+a : Bad roads or bad drovers. I'll know which when they come in. | Aye. And I'll have the lateness to the wheel. | Late carts always turn up. That's what makes them late and not lost.
+
+scene carts_in_gate
+when topic=caravan world.wagons=in
+does tell.news / react.news / assess
+a : The carts are in. Every load, and on time for once. | Full loads through #gate# this morning. The drovers were singing. | Everything came in. I counted every wheel.
+b : Good. The stalls will be full. | Singing? That's new. | Every wheel?
+a : Full stalls till Restday, if the stallholders don't get greedy. | They'd been paid. That'll do it. | Every one. #saying#.
+
+scene carts_taken
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / reassure / assess
+a : A load's been lost on the road. The drover came in on foot, I saw it. | One short on the count today. Taken, they're saying. | Somebody went out with a load and came back with nothing.
+b : #reassure# | The drover's safe, at least? | It happens.
+a : I hope so. The roads don't get better for hoping. | Walked in, empty-pawed. That much I saw. The rest is talk. | It didn't use to. Not like this.
+
+scene dawn_clanging
+when topic=weather|day here.time=dawn
+does tell.complaint / react.complaint / assess
+a : Somebody rang #dawnbells# again. Woke half the street for nothing. | Bells before the light. What good is a bell nobody can see by? | That cathedral lot rang before dawn. I'd taken my boots off for nothing.
+b : Somebody's keeping the hours. | They do it every day. | You never sleep on through it?
+a : Keeping them wrong. The milk cart's never wrong. | Every day, and every day too early. | Not me. One bell and I'm up till dark.
+
+scene warm_wet
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#. A dry week, and then this. I've waited for it. | Feel that. Warm. It's laying the road dust. | That's the best rain there is. Warm, and not in a hurry.
+b : You like getting wet? | It's still rain. | #bc_it_is#
+a : Not wet. Warm. There's a difference. | Not this sort. This sort's a kindness. | It is. Sit and smell it.
+
+scene cold_wet
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.self / assess
+a : Cold rain off the Sound. The drovers will be wet to the hide. | This is the other sort of rain. The sort that sits in the knees. | Wet and cold. The carts come in slow and grey.
+b : You'd stop indoors today, surely. | Your joints too? | #bc_always_is#
+a : And miss the count? I'll sit in the arch. | All of them, and I've a good many. | Always. That's Ridgemere. I'd not change it.
+
+scene fog_road
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog. You hear the carts before you see them. | Twenty paces and the road's gone. I count by ear on days like these. | They'll lose the turn at the milestone in this. They always do.
+b : You can tell them apart by ear? | By ear? | Every time?
+a : The coal cart has a squeal in the near wheel. It's had it a year. | Wheels, hooves, the drover's cough. It's all there. | Every time it's thick. One of them ends up in the ditch.
+
+scene roof_watch
+when topic=animals|pastimes here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : Look at #roofbirds#. Fourteen on that ridge. There were twelve yesterday. | The birds come down off the roofs when the grain carts are in. Same as I do. | One bird on that gutter, every morning. Same spot. I've watched it two years.
+b : You count the birds as well? | Clever birds. | The same one?
+a : I count what's in front of me. They happen to be in front of me. | Cleverer than the drovers. The birds don't spill it. | Same one. Bent tail feather. I'd know it anywhere.
+
+scene flies_summer
+when topic=animals|weather here.season=summer
+does tell.complaint / react.complaint / assess
+a : The drovers bring #flies# in with them. Every load. | Flies. Can't sit a minute in this heat without one on my nose. | The beasts come in and the flies stay behind. Every summer.
+b : Nothing you can do about them. | Rub some mint on your ruff. | Summer, though.
+a : There's swatting. I've a strong arm for it still. | I've tried mint. They like mint. | Summer. I'd swap a frost for a week of no flies.
+
+scene apple_crunch
+when topic=food
+does tell.self / react.self / assess
+a : Bought #apple# off a cart as it came in. Best thing I've had all week. | An apple's only good the first day it comes in. After that it's a stall apple. | An apple should crack like a branch. Anything softer I give to the goats.
+b : Off the cart? Not the stall? | What's a stall apple? | #bc_ha#
+a : Off the cart. The stall's had its paws on it after. | Soft. Sat in the damp a day. I'll not eat it. | Snap. That's how you know.
+
+scene apple_season
+when topic=food|harvest here.season=autumn
+does tell.news / react.news / assess
+a : Apple carts are coming in now. Three this morning. | The orchards are sending in. My nose had it before my eyes did. | Autumn. You know it by the apple carts, not the leaves.
+b : I could do with one. | The good ones go first. | #bc_every_year#
+a : Get to the gate early. Not the stall. | They do. And I'm there for them. | Every year, same week near enough. I've kept the count.
+
+scene straw_boards
+when topic=home
+does tell.self / react.self / assess
+a : Every Restday I sweep the boards and lay #straw#. Old habit. | A floor of #straw# smells of a dry barn. No rug does that. | My floor's boards and straw. Changed every week, without fail.
+b : Straw? In a house? | Not a rug? | Every week?
+a : My #grandad# did it. It holds the cold off the boards. | Rugs hold the wet. Straw you throw out. | Every week. I'd notice if I missed one.
+
+scene my_young_one
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : I worry over my #self.child# more than I'd ever say out loud. | I'm proud of #self.child#. I've never said it to that face. I should. | I'd give #self.child# the bigger half of any apple. Always have.
+b : Worry's how it shows, with some. | You should, then. | That's a good one, that.
+a : So it is. Worry's free, at least. | Maybe. When it's not so awkward. | It is. I never once kept a tally of that.
+
+scene gossip_carried
+when topic=gossip|news topic.claim_kind=newcomer|promise_kept|other
+does tell.news / react.news / assess
+a : Came in with the carts this morning: #topic.subject# #topic.claim#. | You'll hear it soon enough, so hear it from me. #topic.subject.capitalize# #topic.claim#. | Here's one for you. #topic.subject.capitalize# #topic.claim#. I had it first.
+b : You hear everything at that gate. | Is that right? | #marvel#
+a : Everything comes through it sooner or later. | Word for word, as the carter gave it. I add nothing. | That's the talk. Nothing I've heard says otherwise.
+
+scene gossip_grim
+when topic=gossip|news|crime topic.claim_kind=death|violence|theft
+does tell.news / sympathise / assess
+a : I'll tell you plain. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. It came in on foot, not on a cart. | Bad word at the gate. #topic.subject.capitalize# #topic.claim#.
+b : #pity# | That's grim. | #sympathy#
+a : It is. There's no dressing it up. | Grim. I'll not repeat it more than I must. | It is. Somebody'll need a kind word, after that.
+
+scene new_faces
+when topic=newcomer here.region=ridgemere
+does give.opinion / disagree / concede
+a : Four new faces through the gate this week, carrying their lives on their backs. | In they walk with a bundle, and I never count them back out. | More come in than leave. Every year it's the same.
+b : The city needs new blood. | They've got to live somewhere. | They'll be wanted for work.
+a : Maybe. I'd like to know them first, that's all. | So they do. I just notice how many. | Fair. I'll grant you the work.
+
+scene price_mark
+when topic=prices|price_cause
+does tell.complaint / react.complaint / assess
+a : I watch a sack go by on a cart, and I see what the stall wants for it after. | The carter gets a little and the stall gets a lot. I've seen it all my life. | It's dearer at the stall than it was on the cart this morning. I watched it come in.
+b : They've rent to pay. | That's trade. | #bc_they_always_do#
+a : Rent, aye. Not that much rent. | Trade's one word for it. | They always have. Doesn't make it right.
+
+scene hard_times
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : Half loads coming in. The drovers don't say it but it's there to see. | Lean. The carts come in light and leave lighter. | Half-empty carts at the gate make half-empty bowls by the week's end.
+b : It'll turn. | The carts tell you that? | #bc_poor_soul#
+a : It turned before. It took a long winter, mind. | From the springs. A light load sits high. | It's not one soul. It's every table on the street, give it a week.
+
+scene good_times
+when topic=times world.times=good|boom
+does tell.news / react.news / assess
+a : Full loads, all down the line. The axles are groaning. | Busy at the gate. Twice the carts there were in spring. | Good times. The wheels sound heavy.
+b : Good for everybody, then. | Twice? You counted? | #bc_about_time#
+a : For the stalls, mostly. It gets down to us in time. | I always count. That's the point. | About time, aye. No grumbling from me.
+
+scene bench_faith
+when topic=faith
+does tell.self / react.self / assess
+a : More graves than I'd choose, I've stood at. I'm glad of whoever says the words. | If the Bright One wants me, it's the same bench, same end of it. | I go to the close when somebody's being buried. Not otherwise.
+b : That's honest. | You don't go to the services? | #bc_fair#
+a : I'm too old for any other sort. | Not to sing. To stand at the back, sometimes. | That's all I have of it. I'll not pretend more.
+
+story frozen_gate [topic=memories|weather self.age>=55]
+  : The year I turned fifteen, the north gate froze open. They couldn't shut it for a week.
+  : The Watch stood in the arch with braziers. The carts came in at all hours, and nobody could tell the time by them.
+  ask : Can you picture a whole city not knowing its hour?
+  b : I'd never thought of it. Did it go wrong for folk?
+  : Everybody was late for everything. I started counting carts that winter and never stopped.
+
+story doubled_cart [topic=memories|caravan self.age>=40]
+  : Once I counted a cart in twice in one morning. Same cart, same drover. I knew the cracked board on the tail.
+  : I went to the toll-house and said so. They thought me daft till they opened the ledger.
+  ask : Would you have gone down and told them?
+  b : I'd have kept quiet and minded my own business, I expect.
+  : He'd paid the toll once and come round twice. They fined him for both. I still have the satisfaction of it.
+
+story grandad_apples [topic=food|memories self.age>=30]
+  : My #grandad# walked me to the gate for the first apple cart of the year. Every year.
+  : He'd buy one apple, cut it in two with his knife, and give me the bigger half.
+  b : A fine thing to keep. You still go?
+  : Every year. I buy the one, and I give the bigger half away.
+
+rule @bark_count
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 8h
+say That's the flour wagon. Noon, then. | Coal's through. Mid-morning.
+
+rule @bark_bells
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say Bells. In the dark. Again. | A bell before the light. Somebody's lost their wits.
+
+rule @bark_flies
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Off. Go on. Get off. | Flies. Every blessed summer.
+
+rule @bark_warmrain
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 12h
+say Warm. That's the stuff. | Good rain, this. Good rain.
+
+dlg @1 resident.hub : #greet#. Ask. You'll get it straight. | #greet#. I'm sat here all day, so say your piece.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You've been through #gate# twice this week. I've marked it. | #greet#, #topic.player#. I had you down for today.
+dlg @3 resident.hub [here.time=night] : It's late for a talk. Be quick. | The last cart's in. What do you want?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stand off a pace and say it. My ears are fine. | I know your face. I'll know it again. What is it?
+dlg @1 resident.job [self.working=no] : I sit and I count. I've done my working years. | Nothing, now. I mind the wheels. Every one that comes in, I've had it.
+dlg @2 resident.job [self.working=yes] : #self.trade_words.capitalize#. That pays. The count is my own.
+dlg @3 resident.job : I keep count of things. Somebody in this city ought to. | Ask what came in this morning. Every wheel of it, I could tell you.
+dlg @1 resident.news [world.news] : Came in with the drovers from #world.news_from#: #world.news#. That's how they told it.
+dlg @2 resident.news [world.event_words] : Load after load, the drovers talk of #world.event_words#. Nothing else.
+dlg @3 resident.news [world.wagons=raided] : A wagon's been robbed out past the gate. The drover walked in. Take company, or take a different day.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts were on time. That's news enough for me. | Nothing worth having. The count was right, if that's any use to you.
+dlg @1 resident.gossip [here.gossip=yes] : The word is #topic.subject# #topic.claim#. A carter brought it, and carters talk.
+dlg @2 resident.gossip [here.gossip!=yes] : I count carts, not tales. | Nothing worth a carter's breath. I pass on what I'd stand behind, and that's none of it today.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the wheels going out.
+dlg @2 resident.bye [here.time=dusk|night] : Off with you. The lamps are low. | #farewell#. Mind the gutters in the dark.
+graft resident.hub
+choice How do you know the time without a bell? [here.region=ridgemere] -> carts
+node carts
+say The carts. Milk first, then coal, then the flour wagon at noon. Same order every working day. I've watched it my whole life.
+mood calm
+free
+choice What if a cart's late? -> carts_late
+choice Back to it. -> hub
+node carts_late
+say Then I know the road was bad, or the drover was. One late cart puts the whole day out. #saying#.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how.poorly : Knees. They're ahead of the clouds. | Slow today. Old bones and a wet bench.
+line @1 tell.memory : In my young days you could hear the whole north road from the gate. Now it's all noise. | Once the toll was a copper a wheel. I remember the day it went up.
+scene old_gate
+when topic=memories|lore here.region=ridgemere
+does tell.memory / ask.detail / answer.detail / backchannel / assess
+a : In my pup days the north gate had a wooden bar. Took four of the Watch to lift it. | The gate wasn't stone, once. It was timber, and it leaned. | My #grandad# sat where I sit. Counted carts too. Fewer of them.
+b : Wooden? What happened to it? | Leaned which way? | Fewer? By how many?
+a : It burned. Some fool with a brazier, one winter. They built the stone one after. | Out, over the road. The carts scraped under it. | Half, maybe less. The road was smaller then. So was the city.
+b : #bc_i_know# | #bc_it_was# | #bc_true_enough#
+a : You don't. You weren't born. But you're listening, which is something. | It was. Worse than it sounds. | True. I'd not want it back. I'd like the quiet back.
+
+scene old_joints
+when topic=health self.age>=60
+does tell.self / sympathise / assess
+a : My knees have the rain a day before the clouds do. | I sit because I like it. Also because standing's gone hard. | The stairs at home are the worst of it. Fourteen. I count them too.
+b : #sympathy# | Nothing wrong with sitting. | You count everything.
+a : Don't be. It's useful. Better than any almanac. | No. I've earned the sitting. | I do. It keeps the mind from going soft.

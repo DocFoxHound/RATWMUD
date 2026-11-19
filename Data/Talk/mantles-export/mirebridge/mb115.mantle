@@ -1,6 +1,6 @@
-# mb115, the door-watcher (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb115, the door-watcher (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb115
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -224,7 +224,7 @@ when topic=weather|season here.region=fens here.weather=overcast here.season=sum
 does tell.feeling / react.self / assess
 a : Sky's heavy. There'll be #thunder# by dark, if I'm lucky. | Close, isn't it. #hot.capitalize#. Something's building over the fen. | Low cloud. I'm hoping for #thunder#.
 b : You want a storm? | #bc_it_is# | #bc_i_hope_so#
-a : From under a roof. #bc_always# | #bc_we_will_see# | It would clear the #flies#, too.
+a : From under a roof. #bc_always# | #bc_we_will_see# | It would clear #flies#, too.
 
 story barge_night [topic=memories|lore here.region=fens self.age>=30]
   : Years back I was keeping watch on the water, the night a barge with House colours came through the #fog#.
@@ -253,7 +253,7 @@ rule @working
 when concept=bark self.working=yes here.region=fens self.job=none|sailor|fisher self.workplace
 does aside
 cooldown 6h
-say #oath#. Who coiled this #rope#? | Bail first, talk after. #bilge.capitalize#. | Easy on #tub#. She's older than you.
+say #oath#. Who coiled #rope#? | Bail first, talk after. #bilge.capitalize#. | Easy on #tub#. She's older than you.
 
 rule @thunder
 when concept=bark here.region=fens here.weather=storm

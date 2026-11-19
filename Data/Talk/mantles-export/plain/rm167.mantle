@@ -1,0 +1,475 @@
+# rm167, the weather in the chest (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm167
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_kjell_cinderley
+written_by claude
+title the weather in the chest
+fits stage=adult|old
+prefers role=merchant job=merchant humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk reads_the_damp_by_the_catch_in_the_chest
+likes mutton_stew draughts tidy_house first_warm_day
+dislikes flies rats
+fears rats_in_the_loft a_wet_autumn_for_the_drying
+hopes a_dry_loft_through_the_whole_winter the_loft_kept_in_the_family
+topics work +0.5 food +0.4 weather +0.4 pastimes +0.3 family +0.3 health +0.1 gossip +0.2 ships -0.5
+styles comfort=practical gossip=dry refuse=plain tease=dry
+marks oath saying
+persona #self.first# dries apples and seals crocks in a loft under the slates: talkative, curious and dry as a good ring of apple, tidy to a fault, and gives the coming weather by the catch in that chest, which is never, ever a cough.
+
+words
+oath! = Sulphur and string | Cores and cobwebs | By the drying racks
+saying! = Sugar forgives, damp never does | Nothing keeps that wasn't picked sound | Seal it hot or eat it now
+loft = the loft | the apple loft under the slates
+strings = the apple strings | rings of apple threaded on twine
+racks = the drying racks | the slatted racks
+crocks = the crocks | the stone crocks on the bottom shelf
+wax = a lid of wax | the sealing wax
+sugar = sugar | good white sugar
+sulphur = the sulphur pot | a pinch of sulphur on the coals
+chest = this chest of mine | my weather glass of a chest
+catch = a catch | a little rattle
+stew = mutton stew | mutton and pearl barley, slow-done
+board = the draughts board | the old board with the chipped black king
+flies = the flies | the summer flies
+rats = the rats | rats in the eaves
+jam = jam | a pot of plum jam
+windfalls = windfalls | bruised windfalls at a penny the basket
+apples = apples | good keeping apples
+vinegar = vinegar | sharp vinegar
+broom = the broom | my good broom
+
+any
+opinion @1 church mixed 0 : Chapel sees me some Restdays, not all. If the Bright One needs a word, my loft's easy found. | A good sermon's like a good jam: short, sweet, and nobody talks through it.
+opinion @1 city for 1 : Smoke, rain and four hundred steps. Offer me an orchard in the sun and I'll still say no. | Born under these slates. I'll go under them, and probably still complaining about the damp.
+opinion @1 festivals for 1 : Every door in the Commons open on one afternoon, and nobody rushing. That suits me. | A festival's good for jam. Everybody wants something sweet when there's music.
+opinion @1 houses against 2 [self.age>=40] : Grayrock runs the wharf the way a cat runs a henhouse. I've lost too much down there to say otherwise. | Don't ask me to drink to House Grayrock. I'll drink, but not to that.
+opinion @2 houses mixed 0 : The Houses feed Ridgemere and pinch it, and sometimes in one week. | Fell sends the best apples in the realm down that road. I'll say that much for one House.
+opinion @1 merchants for 1 [self.role=merchant] : Anyone who's kept a counter through a wet winter knows the price of a dry shelf. | Keep a shop and you learn every cost there is, and a few more nobody warned you of.
+opinion @1 newcomers for 1 : New arrivals have stomachs, same as the born, and I'll sell anybody a jar. | Newcomers ask questions. I like a wolf who asks questions. I usually have answers.
+opinion @1 road against 1 : The orchards send their apples by cart, and every week the cart's later. Fruit doesn't wait. | Each day a cart dawdles is a bruise on every apple in it.
+opinion @2 road against 2 [world.wagons=raided] : Thieves had a wagon, and some highwayman's eating my apples raw. They're cookers. Serves him right.
+opinion @1 strangers for 1 : Passing folk want food that lasts the journey, and they pay in coin and news both. | Every stranger who climbs my stairs carries a story I haven't heard yet.
+opinion @1 watch for 1 : Not one string's gone missing since the night patrols began. Good enough for me. | I give the night watch a dried apple ring each as they pass. It's the cheapest lock I own.
+opinion @1 drink mixed 0 : A cider's a fine thing, from my own apples or anyone's. Three's a mess on the stairs. | I'll take a cup. I'll not take the headache, so one's my rule.
+
+grown
+line @1 greet : #greet#. Mind the strings over the door, you'll wear one. | #greet#. In from the wet. Smells of apples in here; it always will.
+line @2 greet [pair.band=strangers] : #greet#. A new face on my stairs. Passing through, or staying to suffer the rain, I can't tell. | #greet#. A stranger. Good. Strangers ask the interesting questions.
+line @3 greet [self.working=yes self.job=merchant] : #greet#. Talk while I tie, if you can stand the sulphur. | #greet#. I've a crock half sealed, so you'll get half my attention.
+line @4 greet [here.time=dawn] : Morning. I've been up checking the racks since the bells. | Morning. Dry air for once, so I'm cheerful. It won't last.
+line @5 greet [here.time=dusk|night] : Evening. I was counting crocks. I lose count every night at about forty. | Evening. Listen to the loft creak; it's settling down to sleep.
+line @6 greet [pair.band=friends|family] : Good timing. The board's set and nobody's there to lose to me. | Good, company. The apples have heard all my news twice and never answer back.
+line @7 greet [here.weather=rain|fog] : #greet#. My chest told me you'd come in wet. It's never wrong. | #greet#. Drip on the mat, please, not on the racks.
+line @1 kin.open [pair.kin!=no] : Sit. There's stew, and there's a chair that isn't covered in strings. | You're back. Shoes off, please, I've just done the floor.
+line @1 again.open : Back so quick means news or a forgotten glove. | You again, before I've even swept up after the last time.
+line @1 hail [pair.band=friends] : Here, a minute. I want your opinion and then I'll ignore it. | Hold on there. I'm headed your way, more or less. Keep me company.
+line @1 greet.return : #greet# yourself. Nice to be noticed. | And to you. Duck the strings.
+line @2 greet.return [pair.band=friends|family] : Took your time. Sit. | Come here, sit. You look like you've news.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I tie; these paws work without me. | Hello. Excuse the sulphur, it's a working day.
+line @4 greet.return [here.time=dusk|night] : Evening to you too. Late, isn't it. | Evening. Softly; the loft's asleep.
+line @1 farewell : #farewell#. Close the door on the way out, the damp follows folk in. | #farewell#. Next sweet tooth you get, you know my stairs.
+line @2 farewell [here.time=dusk|night] : Good night. The corner gutter runs deep after dark; step wide. | Good night. Crocks to count before I sleep.
+line @1 farewell.return : And to you. Don't let the rain in your collar. | #farewell#. My door's here when you want it.
+line @2 farewell.return [pair.band=friends|family] : Go on, then. Same time tomorrow, and bring better luck at draughts. | Night. Take a ring of apple for the walk.
+line @1 react.news : Is that so? Now that I didn't expect. Go on. | Start at the start, and slowly. I'm all ears.
+line @1 react.news.new : That's new. Whose tongue did it come off? | That never climbed as high as the loft. Who's saying it?
+line @1 react.news.known : A customer had a go at it this morning, but told it worse. | I'd heard. Your telling's better, mind.
+line @1 react.news.doubt : Hm. One telling doesn't sell me. Bring me two. | That one's put on weight climbing the stairs, I'd say.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a poor thing to hear. Somebody's carrying that tonight, and I'm sorry. | Ah. That's bad. That's the kind of news that sits in the chest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'll send a pot of jam round. That's what jam's for. | That's cheered me up, and I wasn't expecting to be cheered today.
+line @1 answer.how : Fine, weather aside. I always set the weather aside. | Busy. Tidy. Mostly dry. Can't ask more.
+line @1 answer.how.busy [self.working=yes] : Strings to thread and crocks to seal and only two paws to do it with. | Busier than a fly on a jam lid, and about as welcome.
+line @1 answer.how.poorly [here.weather=rain|fog] : Well enough. Ignore the rattle. That's the forecast, not a cold. | Damp's in, and I can feel every drop of it. I'm fine.
+line @1 ask.how : And you? Wet to the ears, I see. | How's your week been? Honestly, not the shop answer.
+line @1 sympathise : That's hard, and I won't pretend otherwise. Sit, have a cup. | I'm sorry for it. Words won't fix it, but I can listen all afternoon.
+line @1 reassure : A week and one dry day, and most things look smaller. | You'll come through. You're the sort who comes out the far end.
+line @1 decline : Kind of you, but a batch on the coals won't mind itself. | Not this time. The loft needs me, and the loft doesn't take excuses.
+line @1 accept_decline : That's fair. Another time, then. | No harm done. I'll ask again when you've less on.
+line @1 thank : That's kind. Kindness goes in my book, and you're in it now. | #thanks#. You've saved me a climb up the stairs.
+line @1 deflect_thanks : Pfft. Worth less than a pot of jam. | Don't thank me, it was going spare anyway.
+line @1 preclose : Racks need me before the damp gets them first. | Hark at me, rattling on. Go, go.
+line @2 preclose [self.working=yes] : A crock's cooling and wants its wax, story or no story. | The sulphur needs a stir. We'll stop there.
+line @1 accept_preclose : Go on. We'll finish it another day. | Right you are. Duck on your way out.
+line @1 tease [pair.band=friends] : You played that draught like you were paying for the board by the move. | That's a brave hat for a wet day.
+line @1 tease.return [pair.band=friends] : Says the wolf who lost three games running. | You can laugh. My chest says rain by noon, and you've no hood.
+line @1 ack : #bc_right# | #bc_fair_enough# | #bc_it_does#
+line @1 give.advice : Pick your apples dry and your friends sober. | Never put a lid on anything still warm. Food or temper.
+line @1 warn [world.bandits=near] : Stay inside the gate a while. Sensible wolves are keeping off the road. | Not past the gate now. Not for a whole cart of apples.
+line @1 congratulate : Good. Well done. I'll put a pot of something aside for you. | That's earned. I'd shake your paw if mine weren't sticky.
+scene not_a_cough
+when topic=weather|health here.weather=rain|fog
+does tell.self / ask.detail / answer.detail / assess
+a : Hear that? Not a cough. My chest telling me it'll rain till Restday. | There, that little rattle. Rain by evening, and heavier than this. | My chest's been going since dawn. That means the damp's in for a week.
+b : Sounded rather like coughing. | How can you tell? | Have a healer listen to it.
+a : Everybody says that. It's a weather glass. It just happens to live in me. | It goes thick before the rain comes, and dry when it clears. Better than any sailor's nose. | I see somebody. They say rest and honey. I say I'm busy and the honey's for jam.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene the_cough_denied
+when topic=health
+does ask.how / answer.how / insist / ack
+a : Don't start. I know what you're going to ask about my chest. | Before you say anything, I'm not ill.
+b : My lips were shut, honestly. | You don't sound well, though.
+a : About to open, they were. Everyone's do. It's damp, not disease. I'm right as rain, and I know rain. | I sound like weather. Weather's not illness. Ask the sky if it's poorly.
+b : #bc_ha# | #bc_fair_enough#
+
+scene threading_the_rings
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Forty strings this morning, every ring a finger thick. Any thinner and they go to leather. | I thread #strings# with a bone needle older than the loft. Same needle, same knot. | The trick with apple rings is the cut. Thick as a finger, cored clean, and in the lime water quick.
+b : Why a finger thick? | How old is that needle? | Lime water? What for?
+a : Thin dries to leather, thick goes mouldy in the middle. A finger's the honest width. | Older than me. It came with the first crock I ever bought, and it's outlived the crock. | Stops them going brown. Folk won't buy a brown ring even if it tastes the same.
+b : #bc_clever# | #bc_good# | #bc_clever#
+
+scene sulphur_smoke
+when topic=work self.job=merchant
+does tell.self / react.self / tell.self / ack
+a : I fume the apples with #sulphur# before they go up. Keeps the colour and keeps the flies off. | Everyone on the street knows when I'm fuming. They can smell it three doors down.
+b : That sounds like it'd catch your chest. | Do they complain?
+a : It does, and I pretend it doesn't, and we get along. | They complain in autumn and buy in spring. Fair's fair.
+b : #bc_ha# | #bc_ha#
+
+scene wax_on_the_crocks
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #wax.capitalize# on every crock, poured hot, then a bladder skin tied over that. Nothing gets in. | I seal the jam while it's too hot to touch. It hurts. It's supposed to.
+b : Why both, wax and skin? | Why so hot?
+a : Wax keeps the air out, skin keeps the mice off the wax. Belt and braces. | Hot jam seals itself. Lukewarm jam grows a beard by spring.
+b : #bc_wise# | #bc_ha#
+
+scene sugar_price_sermon
+when topic=prices self.role=merchant
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : Sugar's gone up again. I could preserve the city with what that costs. | You know what the dearest thing in my loft is? Not the apples. The sugar.
+b : Everything's going up. | Can't you use honey?
+a : It is. But sugar's the one I can't do without. Jam without sugar is just a sad stew. | Honey, for some. It changes the taste and the keeping both. Customers notice, and they say so.
+b : #bc_true# | #bc_fair_enough#
+
+scene windfall_morning
+when topic=harvest|season here.season=autumn self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Bought six baskets of #windfalls# this morning. Bruised, but bruised is fine for jam. | Autumn. Heavy carts, sore arms, and a purse with a smile on it. | Windfall season. Every orchard in the realm wants rid of its bruised ones, and I want them.
+b : Bruised ones make good jam, then? | Happy purse? | Why the bruised ones?
+a : Better than good. Cut the bruise out and they've more taste than the pretty ones. | Windfalls are cheap and I'm patient. Put those two together and the purse smiles. | Cheap, and the flavour's all there under the bruise. Customers shop with their eyes. Jam doesn't need eyes.
+b : #bc_clever# | #bc_ha# | #bc_true_enough#
+
+scene wet_autumn_racks
+when topic=weather|work here.season=autumn here.weather=rain|fog self.job=merchant
+does tell.worry / reassure / insist / ack
+a : Three days of fog in drying season. The rings on the top rack have gone soft as wet bread. | A wet autumn's a preserver's nightmare. I've had the brazier going in the loft all night.
+b : You'll save most of them, surely. | Won't the brazier dry them?
+a : Most. The rest go to jam, and I'll say the jam was always the plan. | It dries them, and smokes them, and coughs me. I'll take two out of three.
+b : #bc_ha# | #bc_fair_enough#
+
+scene rats_in_the_eaves
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / ack
+a : There's a rat in the eaves. I heard it at midnight, walking about like it paid the rent. | I found teeth marks on a crock this morning. Through the bladder, stopped at the wax.
+b : Have you set a trap? | So the wax held?
+a : Two traps and a cat on loan. The cat is not interested. The rat is very interested. | The wax held. The rat learned nothing, I expect, and will be back tonight with friends.
+b : #bc_ha# | #bc_bad_luck#
+
+scene flies_on_the_jam
+when topic=animals|weather here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : Flies. I've hung muslin over every crock and they're queuing at the corners like it's a toll gate. | Summer's lovely, except for the flies. I'd give up the warm for a winter without flies.
+b : They're terrible this year. | You'd give up the summer?
+a : Every year's terrible. I keep a swatter by the scales and I'm getting quicker. | Not quite. But I'd want a word with whoever designed flies.
+b : #bc_ha# | #bc_ha#
+
+scene mutton_stew_night
+when topic=food here.season=autumn|winter here.time=dusk|night
+does tell.self / react.self / tell.self / ack
+a : #stew.capitalize#, on the hob since noon. Winter's whole reason, and I'll fight anyone on it. | The stewpot's been thinking about itself all afternoon.
+b : I could eat that now. | Thinking about itself?
+a : Bring your own bowl and you're welcome. Mine stays mine. | Simmering. Longer it thinks, better it tastes. Wolves are similar.
+b : #bc_ha# | #bc_ha#
+
+scene draughts_at_dusk
+when topic=pastimes here.time=dusk|night self.likes=draughts
+does invite / accept_invite / tease / tease.return
+a : A game, if you've time? The board's out and the kettle's on. | One game. Just one. I promise to lose politely if you promise to win quietly.
+b : One game, then. Just one. | I'll beat you this time, you'll see.
+a : One game. As if it's ever one game. Sit. Black or white? | Brave talk. Your last three games say otherwise, but we'll let the board decide.
+b : #bc_ha# | #bc_we_will_see#
+
+scene draughts_strategy
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail / assess
+a : The whole game of draughts is in the back row. Leave it alone and you can't lose quickly. | I've played the same old sailor every Restday for years. He's never won a game, and he's never stopped coming. | I keep a chipped king on #board# for luck. Lost the proper one down the stairs.
+b : And if you can't lose quickly? | Why does he keep coming? | Does it bring luck?
+a : Then you can only lose slowly, and slow losing is half a win. | For the company, and the dried apples I put out. I'd come too, for those. | It's brought me eleven wins this month. I've stopped questioning it.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene tidy_loft
+when topic=home|smalltalk self.likes=tidy_house
+does tell.self / react.self / tell.self / ack
+a : Every crock has its spot on the shelf, and I could find each one blind. | Swept the stairs twice today. Dust first, then pleasure.
+b : Hard work, keeping it so. | Twice?
+a : Less work than finding a crock in a mess. Tidy's lazy, done properly. | Twice. I'd have done it three times, but I ran out of daylight and the broom ran out of patience.
+b : #bc_true# | #bc_ha#
+
+scene first_warm_day_windows
+when topic=weather|season here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / tell.plan / ack
+a : First warm day. Every loft window's open, and my chest's gone quiet at last. | Smell that? Dry air. If it went in a jar I'd sell it.
+b : You'll be glad of it. | You'd sell it, too.
+a : Glad isn't the word. I'm going to air every string in the loft and sit on the step like a cat. | I would. A penny a jar. Nobody'd buy it in spring, everybody would in winter.
+b : #bc_lucky_you# | #bc_ha#
+
+scene child_and_the_jam
+when topic=family self.parent=yes self.child self.role=merchant
+does tell.feeling / ask.detail / answer.detail / assess
+a : I'd let #self.child# taste every batch, and I'd want the truth back. It'd be the sugar, I expect. | I'd hoped #self.child# would take on the loft. We'll see. You can't make a preserver; you can only leave the jam out. | #self.child# gets more of my worrying than shows. Not much more. Some.
+b : Would you listen? | Would that be so bad, if not? | That's natural, isn't it?
+a : I'd sulk a day, then put a pinch less in the next one. | No. Better a happy wolf at another trade than a sour one in my loft. | Natural, aye. Doesn't make me sleep any better.
+b : #bc_ha# | #bc_wise# | #bc_true#
+
+scene friend_trusted_with_keys
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd give #self.friend# the key to the loft and not think twice. That's the whole list. | #self.friend# and I have years between us, more than we'd admit to.
+b : That's a short list. | That's good, to have somebody like that.
+a : Short and tidy. Like the loft. | Aye. Worth more than a full larder, some winters.
+
+scene travellers_for_the_road
+when topic=player|newcomer self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : A traveller bought ten strings of apple rings this morning for the road. Asked if they'd keep to the coast. | Folk passing through always want something that keeps. I'm the shop for them.
+b : And will they keep? | Do they come back?
+a : To the coast and home again, provided nobody sits on them. I said so, too. | Some. Returners always bring news. Some days I'd take the news over the coin.
+b : #bc_ha# | #bc_good#
+
+scene apple_carts_late
+when topic=caravan|prices world.wagons=late self.job=merchant
+does tell.worry / reassure / tell.self / ack
+a : Orchard carts behind again. Each day out there bruises the apples a bit more. | Seven days and no apples. I'm drying my last crate and pretending I meant to.
+b : They'll be here soon. | You'll manage till then.
+a : I hope so. Bruised I can work with. Rotten I can't. | Manage, aye. Jam can be stretched. So can I.
+b : #bc_hope_so# | #bc_ha#
+
+scene apple_carts_in
+when topic=caravan world.wagons=in self.job=merchant
+does tell.news / react.news / tell.plan / ack
+a : Carts in. Twelve baskets climbing my stairs today, and two strong backs promised to carry them. | Apples in, at last. I'll be fuming and threading till midnight, and glad of it.
+b : That's good. You'll be busy. | Till midnight?
+a : Busy and sticky and happy. That's my favourite state of all three. | Midnight, aye. Apples don't wait for a sensible hour.
+b : #bc_good# | #bc_ha#
+
+scene ships_not_my_subject
+when topic=ships here.region=ridgemere self.age>=40
+does tell.self / react.self / tell.self / ack
+a : I don't follow the ships. Ask somebody who's fond of the wharf. | Ships. Pick me another subject, any other.
+b : I didn't know you felt so strongly. | Something happened down there?
+a : I do. Enough said. Talk to me about apples. | Long ago. Grayrock's cranes, and a friend from my pup days. No more than that.
+b : #bc_fair_enough# | #bc_im_sorry#
+
+scene gossip_with_a_dry_eye
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / tell.self / ack
+a : They say #topic.subject# #topic.claim#. It came over the scales between the plums and the pickles. | Word is #topic.subject# #topic.claim#. I'd take it with a grain of sugar. | I'll tell you what's going round, and you can decide: #topic.subject# #topic.claim#.
+b : Do you believe it? | A grain of sugar? | What do you think?
+a : I believe somebody said it. Beyond that, I'm a preserver, not a judge. | Sweeter than salt, but it still keeps a story going. | I think the wolf who told me had a full basket and wanted to stay talking. Weigh that how you like.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene gossip_death_kept_quiet
+when topic=gossip here.gossip=yes topic.claim_kind=death
+does tell.gossip / sympathise / assess
+a : Word reached me that #topic.subject# #topic.claim#. A sorry business. | They're saying #topic.subject# #topic.claim#. I've nothing clever to add to that.
+b : That's sad news. | It's hard, when you hear it secondhand.
+a : Sad, aye. A crock goes round to the family. It's what I do; it's about all I can. | It is. Secondhand, and still it lands in the chest.
+
+scene hard_times_crocks
+when topic=times world.times=hard|lean self.role=merchant
+does tell.self / react.self / tell.self / ack
+a : Hard times are odd for me. Nobody buys jam, but everybody buys dried apples. They keep. | When folk are short, they stop buying sweet and start buying what lasts. My loft does both, luckily.
+b : So you're doing all right? | Lucky you.
+a : I'm doing tidy. Not well, not badly. Tidy. | Lucky and careful. Each good autumn sets a little aside for a winter like this one.
+b : #bc_good# | #bc_wise#
+
+scene festival_jam_stall
+when topic=festival world.festival=today|soon self.role=merchant
+does tell.self / react.self / tell.plan / ack
+a : Festival day. I'll set a table outside with small pots of jam and sell out by noon. | Everybody out in the square, and no one rushing. Festivals are good for that.
+b : You'll be busy, then. | You'll come out and dance?
+a : Busy till noon, and then I'll stand in the square eating my own jam and watching the fools dance. | Dance? With this chest? I'll watch. Watching's free and I don't cough doing it.
+b : #bc_ha# | #bc_ha#
+
+scene winter_stores_selling
+when topic=season|work here.season=winter self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Winter's when the loft pays for itself. No fresh fruit anywhere, and folk remember I've got some put by. | Every crock I sealed in autumn, I sell in winter, crock by crock, to folk who laughed at me in autumn.
+b : Do you run out? | Who laughed at you?
+a : Never quite. I keep the last crate for spring, in case. Nobody's ever needed it. Next year, maybe. | Everyone who says jam's a lot of fuss. They come in by midwinter, quiet as mice.
+b : #bc_wise# | #bc_ha#
+
+scene loft_at_night
+when topic=work|home here.time=night self.job=merchant
+does tell.self / react.self / tell.self / ack
+a : At night the loft creaks like a ship, and every creak's a rat until it isn't. | I go up and count the crocks before bed. It's soothing. I lose count at forty and start again.
+b : That'd keep me up. | Why start again?
+a : A whole year of bad sleep. Now nothing wakes me but a squeak. | Because forty is where it gets interesting. After forty I start to wonder if I miscounted at twenty.
+b : #bc_ha# | #bc_ha#
+
+scene accent_none
+when topic=accent
+does tell.self / react.self / tell.self / ack
+a : Town folk reckon I sound like the middle of the Commons. I'd rather sound understood. | I've no accent, apparently. I've got a chest, and a lot of opinions, but no accent.
+b : You do speak very plainly. | No harm in that, surely.
+a : I like plain. Plain keeps. Fancy goes off by spring. | Not in my trade. A customer understands every word, and pays every penny.
+b : #bc_ha# | #bc_true_enough#
+
+scene faith_in_the_loft
+when topic=faith
+does tell.self / react.self / assess
+a : A dry autumn gets thanked for. Out loud, in the loft, to the Bright One, with only apples listening. | Saint I'm not. Still, no crock gets sealed here without a quick prayer over it, just in case.
+b : I'm sure the apples appreciate it. | Just in case of what?
+a : They've never complained. My customers could learn from them. | In case of mould. The Bright One's kept the mould off so far, and long may that hold.
+
+scene curious_questions
+when topic=smalltalk|day
+does ask.detail / answer.detail / react.self / ack
+a : Tell me something I don't know. Anything. I've been up in the loft all morning with nobody but the flies. | What have you seen today? I've seen forty strings of apples and a broom.
+b : I've nothing new, I'm afraid. | Not much. Rain, mostly.
+a : Then tell me something old. Old's fine. I've been talking to apples since breakfast. | Rain, mostly. Well, that's honest. I've seen the same, through a small window.
+b : #bc_ha# | #bc_true#
+
+story the_crane_and_the_wharf [topic=memories|ships self.age>=40 here.region=ridgemere]
+  : There was a pup I ran the piers with, down by the water, before either of us had any sense.
+  : He went to work for Grayrock at fifteen. A crane rope parted his first winter, and that was that.
+  : Grayrock sent a basket of fruit to his mother. Fruit. I've sold fruit half my life since, and the basket's still not forgiven.
+  ask : In their place, what would you have sent her?
+  b[old] : Nothing. Myself, maybe. I'd have gone and sat with her.
+  b : Not fruit. Something that meant something.
+  : That's it. That's all anyone needed. They sent a basket.
+
+story the_first_spoiled_batch [topic=work|memories self.job=merchant self.age>=25]
+  : The first winter I sold preserves, I sealed forty crocks a day too early, while they were still cool.
+  : By midwinter every one had a grey beard under the wax. Forty crocks.
+  ask : Guess where those forty went?
+  b : Threw them out and started again?
+  b[old] : Fed them to somebody's pigs, I'd bet.
+  : Neither. I scraped the beards off, boiled them up again, and sold them as winter jam. Nobody died. I've sealed everything hot since.
+
+story the_rat_in_the_crock [topic=animals|memories self.age>=20]
+  : I opened a crock of dried apples once, in the dark, and something in it moved.
+  : A rat. It had eaten its way in through the side, eaten its fill, and was too fat to get back out.
+  ask : A fat rat in your best crock: your move?
+  b : Dropped the crock and run, I think.
+  : I put the lid back on and carried the whole crock to the river. It was a good crock. I still miss it more than I miss the rat.
+
+story the_winter_the_city_came [topic=memories|season self.age>=30 self.role=merchant]
+  : One winter the ice came in so hard that nothing reached the city for a month. No carts, no ships.
+  : Folk came up my stairs in a line that went round the corner. I sold every string and every crock I had.
+  : I could have tripled the price. Some told me to. I didn't.
+  ask : Would you have, in my place?
+  b : Maybe a little. It's hard to say.
+  : Each winter since, I've turned it over again. I'd do the same again. They still buy from me, every one of them.
+
+story draughts_with_the_sailor [topic=pastimes|memories self.age>=25 self.likes=draughts]
+  : An old sailor used to play me at draughts on Restdays, and he cheated. Moved my pieces when I looked away.
+  : I knew. I let him. One Restday he forgot to cheat and lost, and he glared, as though I'd picked his pocket.
+  ask : Why do you think I let him?
+  b : So he'd keep coming back?
+  : That, and he brought the best tobacco on the street. A wolf can forgive a lot for good company and a decent smell.
+
+rule @bark_strings
+when concept=bark self.working=yes self.role=merchant self.job=merchant
+does aside
+cooldown 7h
+say Dried apples, by the string. Keep till spring. | Jam, sealed hot. Plum and apple, both.
+
+rule @bark_chest
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 9h
+say There it goes. Rain by noon. | Hush, chest. I heard you.
+
+rule @bark_flies
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off the jam, you. | Another fly. I'll have that one.
+
+rule @bark_rats
+when concept=bark here.time=night self.dislikes=rats
+does aside
+cooldown 10h
+say Was that a squeak? | I hear you up there. The trap's baited, friend.
+
+rule @bark_sweep
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 11h
+say Who walked mud up my stairs? | There. Tidy. Leave it like that.
+
+rule @bark_stew
+when concept=bark here.time=dusk self.likes=mutton_stew
+does aside
+cooldown 12h
+say That stew should be about ready. | Smell that. Mutton and barley.
+
+dlg @1 resident.hub : #greet#. Mind the strings, they hang low. What's wanted? | #greet#. Smells of apples, I know. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good, a familiar face. Any news on you? | #greet#, #topic.player#. There's a stool. What brings you?
+dlg @3 resident.hub [here.time=night] : Late. I was counting crocks. Quick, before I forget the number. | Dark out, and I'm yawning, but go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay near the doorway, please. Away from the racks. What is it? | You've a sharp look. Say it, and then we'll judge.
+dlg @1 resident.job [self.job=merchant self.role=merchant] : I dry apples and seal jam, and I sell what keeps. Everything in the loft lasts till spring. | Preserving. Apples on strings, fruit in crocks, and a lot of sulphur in between.
+dlg @2 resident.job : #self.trade_words.capitalize#. Busy work, and the city eats from it in winter. | I keep things from spoiling. Fruit, mostly. Tempers, when I can.
+dlg @3 resident.job [self.working=yes] : Working. You can talk while I thread. | I'm at it now. Mind the sulphur pot, it's warm.
+dlg @1 resident.business [business=thriving] : Thriving. Crocks go out the door warm from the wax. | Very good. Best year the loft's had.
+dlg @2 resident.business [business=steady] : Steady. Tidy. Rent met, loft dry. | Middling. There's always a sweet tooth somewhere, and a winter coming.
+dlg @3 resident.business [business=failing] : Badly. Nobody's buying, and the loft doesn't stay dry for free. | Poorly, I'll be honest. I'm eating more of the stock than I sell.
+dlg @1 resident.news [world.news] : Word's come from #world.news_from#: #world.news#. A traveller paid for apples with it. | From #world.news_from#: #world.news#. That's the talk at the counter.
+dlg @2 resident.news [world.event_words] : It's #world.event_words#, all day, every customer. I'm learning more than I wanted. | Everybody's full of #world.event_words#. I've heard it nine times by noon.
+dlg @3 resident.news [world.wagons=raided] : Robbers on the road. A wagon taken. I hope it wasn't my apples, but I'd bet it was. | Somebody's wagon was stopped past the gate. Bide indoors, I would.
+dlg @4 resident.news [world.death=recent] : Somebody's passed, near here. I sent a crock round. Small comfort, but honest. | We lost a neighbour this week. Curtains drawn all along the row.
+dlg @5 resident.news [world.wedding=recent] : Somebody's married! Plum jam sold out by noon because of it. | Wedding bells near here, lately. I watched from the back row, grinning.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Unless you count my chest, which says rain. | Nothing new. The apples are drying and the world's carrying on.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Repeated as received, mind. | Word at the counter is #topic.subject# #topic.claim#. Take it with a grain of sugar.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : They're saying #topic.subject# #topic.claim#. I'm locking the loft at night. | Word is #topic.subject# #topic.claim#. Coin in the inside pocket, I'd say.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing worth repeating. I've been up in the loft with the apples. | I've heard nothing, and I listen better than most.
+dlg @1 resident.bye : #farewell#. Mind the strings on the way out. | #farewell#. Close the door; the damp's always looking for a way in.
+dlg @2 resident.bye [here.time=night] : Good night. I've crocks to count. | Night. The gutter at the stair's foot is deeper than it looks.
+dlg @1 shop.greet [here.shop!=bare self.job=merchant] : #greet#. Dried apples by the string, jam by the pot, all of it keeping till spring. | #greet#. Have a look. Everything here was picked sound and sealed hot.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Have a look round. The prices are marked plain. | #greet#. Take your time. It all keeps, so there's no hurry.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Back for more? A string's been hanging aside for you. | #greet#, #topic.player#. My stairs know your step now.
+dlg @4 shop.greet [here.shop=bare] : #greet#. The loft's empty till the next carts come. Got fruit to sell? I'm listening. | Bare shelves, I'm afraid. The apples ran out before the winter did.
+dlg @1 shop.prices : Sugar's up, so jam's up. Apples are steady, the rest is as marked. | It's all marked. If it's dear, blame the sugar, not me.
+dlg @1 shop.bye : #farewell#. Dry shelf, cool corner, and it'll see out the winter. | #shop_bye# Lid on tight, and it'll see you to spring.
+dlg @1 master.learn [here.teaches=yes self.job=merchant] : Preserving? Learning to make things last. A sound ambition. Ask me anything. | Apples, sugar and patience, and patience is the one you can't buy. Ask away.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? A good trade, and a quiet one. Ask what you like. | It's worth learning. Ask, and I'll answer straight.
+dlg @3 master.learn [here.teaches=no] : One learner's already under my feet, and one's plenty. Questions cost nothing, though. | My learner's place is filled. Ask anything you like, all the same.
+dlg @1 master.work : Early starts, sticky paws and four flights to climb. And the sulphur, which you'll learn to love or leave. | Long days in autumn, short ones in spring. Steady work, honest work.
+dlg @1 master.wages : No pay for learning, I'm afraid. Stand at my side and it comes quick, and the jars you fill are yours to sell. | No wages. What you learn is the wage, and what you sell is yours.
+dlg @1 master.takes [here.take_on=yes] : Just the one learner, and trusted. You'd suit. Ask, and it's done. | I'd take you. You strike me as a wolf who sweeps up after.
+dlg @2 master.takes [here.take_on=no] : I'm choosy about who stands at my racks. #here.take_on_why# | Not just yet. #here.take_on_why#
+dlg @1 master.refused : #topic.why# Come back when that's changed. | Not now. #topic.why#
+graft resident.hub
+choice That sounds like a bad cough. -> chest
+node chest
+say Not a cough. Weather. My chest goes thick before rain and clears when it's dry. Better than any glass on a sea captain's wall.
+mood calm
+free
+choice So what's it saying now? -> chest_now
+choice Back to it. -> hub
+node chest_now
+say Rain, likely, by evening. It's always rain in this city, so I'm rarely wrong. But it knows the hour, and that's the clever bit.
+choice I'll take a hood, then. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do you keep apples from going brown? [self.job=merchant] -> brown
+node brown
+say Cut them a finger thick, drop them in lime water quick, then fume them over sulphur before they go up on the racks. Colour stays, flies stay off.
+mood keen
+free
+choice Is the sulphur safe? -> brown_safe
+choice Back to the lesson. -> learn
+node brown_safe
+say Safe for the apples. Less so for the chest. Keep the window open and stand upwind of the pot.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

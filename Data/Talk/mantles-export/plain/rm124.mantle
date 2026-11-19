@@ -1,0 +1,476 @@
+# rm124, the damp-feeler of the yard (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm124
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_desmond_toft
+written_by claude
+title the damp-feeler of the yard
+fits stage=adult|old
+prefers role=merchant temper=nervy
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk feels_every_stack_for_damp_before_trusting_it
+likes crisp_apples evening_line old_maps frosty_mornings
+dislikes salt_wind bad_manners
+fears a_stack_spoiled_on_my_watch a_short_count_in_the_load_book
+hopes a_whole_week_without_rain a_roof_over_every_stack
+topics weather +0.5 work +0.4 prices +0.2 pastimes +0.3 food +0.2 crime -0.3 gossip -0.2
+styles comfort=feeding gossip=careful refuse=apologetic tease=none
+marks oath saying
+persona #self.first# runs a builders' yard for the House that owns it and answers for every load: warm, kindly and forever fretting, glancing up at the clouds, pressing a paw to the brick stacks for damp, and pressing apples on anyone who stops.
+
+words
+oath! = Tarps and tiles | Not on my stacks | Keep it off the lime
+saying! = Cover it first and fret after | Rain finds the one corner you missed | A dry stack is a sold stack
+stacks = the stacks | my brick stacks | the long stacks by the wall
+stack = a stack | one of the stacks
+tarps = the tarps | the oilcloth over the stacks
+lime = the lime | the quicklime sacks
+kiln = the kiln | the drying sheds
+tiles = the tiles | a cartload of roof tiles
+steward = the steward | the House's steward
+loadbook = the load book | my tally of loads
+basket = the apple basket | my basket by the yard gate
+apple = an apple | one of my cellar apples
+frost = a white frost | a dry hard frost
+maps = my old maps | the drawerful of bad maps
+saltwind = the salt wind | that briny gust that comes over the sea wall
+river = the river | the slow end of the river
+sky = the sky | that grey lid over us
+damp = damp | the wet in the brick
+fretting = I fret | I can't help fretting
+yard = the yard | the builders' yard
+
+any
+opinion @1 houses for 1 : Somebody has to burn the brick and slake the lime, or the city falls in on itself. The Houses do it. I'd not want the job of thanking them, but I'd thank them.
+opinion @2 houses for 2 [self.job=laborer self.role=merchant] : There's hardly a wall on our street without a brick from #yard# in it. That makes me proud, and then it makes me nervous about the next load.
+opinion @1 merchants for 1 : I sell by the load myself. A cart, a mule, a youngster to walk beside them, all of it before a single brick is paid for.
+opinion @1 road against 2 : I'll not set foot past the gate, and I'd beg anyone I'm fond of to stay in too. Too many loads come back short, or never.
+opinion @2 road against 2 [world.wagons=raided] : Another cart taken. I lay awake over the last one. I'll lie awake over this one too.
+opinion @1 sump against 2 : It's unkind and I know it. Every bit of trouble that's reached #yard# has climbed up from the Sump, and I've paid a locksmith twice this year.
+opinion @1 times for 1 : Grumbling would be a disgrace from me. There's folk going without. My cellar's full of apples.
+opinion @1 watch for 1 : A lantern goes past my gate twice a night with a Watch badge under it, and I sleep. That's worth a great deal to a wolf like me.
+opinion @2 watch mixed 1 [self.wealth=rich|comfortable] : Most of the Watch are honest. Most. I keep my own notes, and my notes stay in a drawer.
+opinion @1 drink against 1 : A jug makes a wolf brave in the mouth. I've watched two good neighbours stop speaking over one.
+opinion @1 dole mixed 1 : Feed whoever's hungry, I say, and then find them a day's work. Not one without the other.
+
+grown
+line @1 greet : #greet#. Have an apple, there's plenty. | #greet#, #address#. Dry where you've been, I hope.
+line @2 greet [pair.band=strangers] : #greet#. You'll forgive me watching the clouds while we talk. | #greet#. New to the street? You're welcome to it.
+line @3 greet [self.working=yes self.role=merchant] : #greet#. Mind the barrows. They come through at a run. | #greet#. Stand clear of the lime, please. I worry.
+line @4 greet [here.time=dawn] : #greet#. You're up with me, then. I'm always up. | #greet#. Frost or wet, I've been out to look already.
+line @5 greet [here.time=dusk|night] : #greet#. I'm only out to check the covers once more. | Evening. You'll be wanting home. So will I, soon.
+line @6 greet [pair.band=friends|family] : Oh, it's you. Good. I'd half watched the street for you. | Here you are. Come under the eaves, it's drier.
+line @1 kin.open [pair.kin!=no] : Have you eaten? An apple, at the very least. | In, in. You're soaked to the ruff.
+line @1 again.open : Twice in one day. What a nice surprise. | Back again. Something's wrong, or something's right.
+line @1 greet.return : #greet#. | #greet#, and kindly.
+line @2 greet.return [pair.band=friends|family] : #greet#. You look tired. Mind you rest tonight. | And to you. A face I know. That's a relief.
+line @3 greet.return [self.working=yes] : #greet#. Speak up, the carts are loud. | #greet#. One moment while I tie this down.
+line @4 greet.return [here.time=dusk|night] : Evening. You've the night on your coat. | #greet#. The lamps are lit. I always feel better when they're lit.
+line @1 farewell : #farewell#. Watch the sky. | #farewell#. Here, an apple for the walk.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go carefully, the cobbles are greasy by night. | Off home with you. Keep away from the dark corners.
+line @1 farewell.return : #farewell#. Look after yourself. | And you. Dry roads to you.
+line @2 farewell.return [pair.band=friends|family] : Soon, mind. Promise me. | #farewell#. Not a whole month next time.
+line @1 react.news : Oh. Tell me. Slowly. | What is it? Is it bad?
+line @1 react.news.new : I hadn't heard that. I don't know whether to be worried. | That's new. That'll keep me up.
+line @1 react.news.known : Yes. It's been rattling about in me all morning. | A carter told me this morning. I hoped it was wrong.
+line @1 react.news.doubt : I hope that's not so. Who told you? Are they sure? | Let's not believe it till we must. Wait for it to come twice.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's dreadful. The poor souls. | #pity#. I can't think of anything kind enough to say.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely. That's lifted the whole week for me. | #gladnews#. I'll take that home and be glad of it.
+line @1 answer.how : Well, thank you. Worried, but that's me. | Can't complain. The stacks are dry, so I'm dry.
+line @2 answer.how.busy [self.working=yes] : Busy. Carts at the gate and clouds coming in. | Rushed, and grateful to be rushed.
+line @3 answer.how.poorly : Poorly slept. It rained after midnight and I lay listening to every drop. | A bit low. I'll mend when the weather does.
+line @1 ask.how : And you? You're keeping warm? | Are you eating? You've gone thin.
+line @2 ask.how [pair.band=friends|family] : Are you sleeping? You don't look as though you are. | Home all right? Everyone well?
+line @1 sympathise : Oh, I am sorry. Here, sit, and have something to eat. | That's a heavy thing. You needn't carry it alone.
+line @1 reassure : It will be all right. I'll do the worrying, I'm better at it. | It'll hold. Things mostly do, if you've tied them down.
+line @2 reassure [other.tired=yes] : Sit a moment. Nothing will fall down while you rest. | Rest. I'll keep watch on the sky for you.
+line @1 decline : #hedge#, I can't. I've the yard to see to and the sky's turning. | I'm sorry, I daren't leave the stacks today. Another time, truly.
+line @1 accept_decline : Of course. Don't fret about it. That's my job. | No harm done. Another day.
+line @1 thank : Thank you. I can breathe again. | Oh, you're kind. I'll remember that.
+line @2 thank [pair.band=friends|family] : You're good to me. Better than I deserve. | Thank you. I'd have lain awake over that.
+line @1 deflect_thanks : It's nothing. Truly. Have an apple. | Don't thank me. I'd only have worried otherwise.
+line @1 preclose [self.working=yes] : The stacks want looking at. The sky's not to be trusted. | Forgive me, there's a cart wanting its tally.
+line @2 preclose : I'll not keep you. You'll have things to do. | Well. I've held you up long enough.
+line @1 accept_preclose : Of course. Go on. Mind how you go. | Yes, yes. Off you go.
+line @1 ack : #bc_right#. | #bc_i_hope_so#. | Yes. Yes.
+line @1 give.advice : Keep a cover on anything you can't afford to get wet. In this city, that's everything. | Dry boots near the hearth, never against it. Leather splits.
+line @2 give.advice [other.stage=young|adolescent] : Never put your paw in a lime sack, whatever anyone dares you. It burns. | Stay off the stacks. They look solid and they're not.
+line @1 warn [world.bandits=near] : Please, not the road today. Wait. No load is worth it. | Stay inside the walls. I'd fret myself ill.
+line @1 hail [pair.band=friends] : Over here! I've apples. | Wait, wait. A moment, please, if you've one.
+scene stack_damp
+when topic=work|weather self.job=laborer self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : I've just been round #stacks# with my paw flat on every one. Feeling for #damp#. | That stack by the wall is cold. Cold means wet. I don't like it. | I touch every stack before it goes out on a cart. Every one.
+b : What does damp brick do? | Cold? What's the harm? | Every one? There's hundreds.
+a : Cracks in the kiln, or crumbles in a wall a year on. Then I'm the one who sent it. | It holds the wet in the middle. You can't see it. You can feel it. | Hundreds. I know. My pads are sore by Restday.
+b : #bc_somebody_has_to# | So you feel for it. | #bc_poor_soul#
+a : Somebody does. I'd rather it was me than somebody careless. | So I feel for it. Twice, if I'm worried. I'm always worried. | Never mind my paws. Mind the brick.
+
+scene sky_watch
+when topic=weather here.outdoors=overcast
+does tell.worry / reassure / assess
+a : Look at that sky. It's going to rain. It's going to rain any minute. | I've been watching that cloud since noon. It's not moved and I don't trust it. | Grey over the Sound and grey over us. #saying.capitalize#.
+b : It might hold off. | Clouds don't always mean rain. | #reassure#
+a : It might. I'll cover the lot anyway, and then it won't rain, and I'll feel a fool. | Not always. Often enough for me. | Thank you. I'll believe you when it's dry at dusk.
+
+scene rain_comes
+when topic=weather here.weather=rain
+does tell.worry / sympathise / assess
+a : There it is. It's raining. I knew it would. #oath#. | Rain. I'll stand here and look at it as if that'll stop it. | Hear it drumming on the tarps? I'm following every drop to where it runs.
+b : The covers will hold. | Get under a roof, at least. | You can't stop rain by looking.
+a : They will. I tied them twice. I'll check them again in a minute. | In a moment. I only want it easing first. | No. But I can't stop looking, either.
+
+scene rain_stops
+when topic=weather here.outdoors=clear here.season=spring|summer|autumn
+does tell.feeling / react.self / assess
+a : It's stopped. Look. Blue, over the Rise. I don't believe it. | A dry afternoon. I've taken the covers off two stacks to let them breathe. | Clear sky. I keep glancing up as if it'll catch me out.
+b : Enjoy it, then. | Brave of you. | It might stay clear.
+a : I'm trying. I've never been much good at it. | Two. Only two. I'm not mad. | It might. I'd give a great deal for a dry week.
+
+scene frost_morning
+when topic=weather|season here.season=winter here.time=dawn here.outdoors=clear
+does tell.feeling / react.self / assess
+a : #frost.capitalize#. My favourite thing. Nothing can be wet when it's frozen. | White on every roof. The yard's quiet and dry. I could sing, nearly. | Every stack rang like a bell when I knocked it at dawn. Dry right through.
+b : You enjoy this cold? | Sing, then. | Rang?
+a : I like the dry. The cold comes along with it. | No, no. But I nearly could. | When brick's dry and cold it rings if you knock it. Wet brick only thuds.
+
+scene storm_night
+when topic=weather here.weather=storm
+does tell.worry / reassure / ack / assess
+a : Hear that wind? It'll have the tarps off if they're not tied right. | A storm. I'll sit up with a lantern, I know I will. | It's coming in sideways off the Sound. Rain sideways finds every gap.
+b : You tied them right. | Can't someone else sit up? | It'll blow through.
+b? : #bc_true# | #bc_maybe# | #bc_hope_so#
+a : I did. I'll go and check, all the same. | They could. I'd only sit up at home worrying instead. | By morning. And at dawn I'll walk the yard counting what it took.
+
+scene salt_wind
+when topic=weather here.region=ridgemere here.outdoors=overcast|rain|storm
+does tell.complaint / react.complaint / assess
+a : That wind's off the Sound again. #saltwind.capitalize# gets into everything. | Salt on the fur, salt on the ropes. It rots the cord on the tarps. | I can taste the sea in the yard today. I can't abide it.
+b : It's always blowing, here. | Rots it? | #bc_it_does#
+a : Always. Born to it, and I still flinch. | Salt eats cord. Then the cord snaps in the night, and then it's the brick. | It does. Everything. Even my apples taste of it.
+
+scene fog_yard
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog's down. The far wall's gone from the gate. | Everything's damp in a fog and nothing's wet. That's the worst of all. | Fog gets into a stack from the sides. No tarp keeps it off.
+b : Can't do much about fog. | Worse than rain? | Then what do you do?
+a : No. I walk round anyway. It settles me. | Worse. Rain you can see. Fog creeps. | Nothing. Wait, and feel the brick when it lifts.
+
+scene lime_care
+when topic=work self.job=laborer self.role=merchant
+does warn / ask.detail / answer.detail / backchannel / assess
+a : Never let #lime# get wet. Not a drop. | The quicklime's in the dry shed, and I've checked the door three times. | A lime sack split at dawn. I had it swept before a paw went near.
+b : Why? What happens? | Three times? | Is it dangerous?
+a : It heats. Like a fire with no flame. I've seen a cart smoke from it. | Three. I'll make it four before I go home. | It'll burn a paw to the pad. I'll not have that in my yard.
+b : #bc_ill_try# | #bc_wise# | #bc_go_on#
+a : Please do. I'd not sleep. | Not wise. Just frightened, and careful with it. | That's all. Treat it like a sleeping beast and you'll be fine.
+
+scene load_book
+when topic=work self.role=merchant self.job=laborer self.working=yes
+does tell.worry / reassure / assess
+a : Every load goes in #loadbook#, and the steward reads every line. | I'm two tiles short on yesterday's count. Two. I've gone over it four times. | I answer to #steward# for every brick that leaves. Every one.
+b : The steward trusts you, surely. | Two tiles? Nobody will mind. | That's a great deal to carry.
+a : Let's hope. I'd rather never find out. | I'll mind. I'll find them, or find the mistake. | Heavy, aye. Better that than a yard nobody checks, mind.
+
+scene carts_out
+when topic=work self.role=merchant self.job=laborer self.working=yes here.time=day
+does tell.self / react.self / assess
+a : Four carts of brick going up to the Rise today. I've walked beside every one to the gate. | Tiles for a roof on the Commons. I've wrapped them in straw like eggs. | A cart of stone for the Rain Hall steps. If it cracks, it'll be on my account.
+b : You walk them to the gate? | Like eggs? | The Rain Hall, eh?
+a : To the gate. I'd walk them all the way if they'd let me. | Tiles chip. A chipped tile lets the rain in. And then. | The very same. I'll fret till somebody tells me it's laid.
+
+scene my_hand
+when topic=work|friends self.hand self.working=yes
+does give.opinion / agree / assess
+a : I'd sooner have #self.hand# look over a load than anyone. | I'm glad every morning that #self.hand# works #yard# with me. | I can leave #self.hand# with the stacks and not fret. Nearly.
+b : A good hand's worth keeping. | Glad, eh? | Nearly?
+a : Worth more than the wage, and I pay a fair one. | Glad. I don't say it of many. | Nearly. I'm not made to stop fretting entirely.
+
+scene apples_given
+when topic=food
+does offer / accept / assess
+a : Here. Have an apple. I keep a basket, I can't eat them all. | Take one of these. Crisp as you like, they've been in the cellar. | You've not eaten, I can tell. Have an apple. Have two.
+b : If you're sure. Thank you. | I will. Crisp, you say? | Just the one, thank you.
+a : I'm sure. Apples are for giving away. | Crisp. They crack. That's the only way I like them. | One, then. Take another for later. Go on.
+
+scene apple_cellar
+when topic=food|home here.season=autumn|winter
+does tell.self / react.self / assess
+a : I lay the apples out in the cellar on slats so they don't touch. One rotten one spoils the lot. | I go down every evening and turn the apples. It calms me. | I've eighty-odd apples in the cellar. I count them on Restdays.
+b : That's careful. | It calms you? | Eighty?
+a : Same as the brick. Air between, and nothing wet. | It does. They're the one thing in my life that keeps. | Eighty-three. I give a lot away, so it goes down quick.
+
+scene evening_line
+when topic=pastimes here.time=dusk self.likes=evening_line
+does tell.self / react.self / assess
+a : I'll take a line down to #river# when I've locked up. Nothing calms me like it. | An hour sat at the river's edge and the stacks go quiet in my head. Almost. | I don't catch much. I don't go for the fish.
+b : Catch anything, last time? | Almost? | What do you go for, then?
+a : Two little ones. I put them back. | Almost. Half my mind stays on the clouds. | The quiet. And the water's the one wet thing I don't have to worry about.
+
+scene river_frost
+when topic=pastimes|season here.season=winter
+does tell.feeling / react.self / assess
+a : The river's best on a frosty evening. Still as glass and nobody about. | Last night I fished on till I couldn't feel my pads. I didn't mind. | You can hear the ice creaking at the edges. I'd sit and listen till dawn.
+b : Cold for it. | Numb? | Sounds peaceful.
+a : Cold, and dry. I'll take that over any warm wet evening. | Numb's nothing. The stacks were frozen dry and I'd nothing to fret on. | It's the most peaceful I ever am.
+
+scene old_maps
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : Old maps are my weakness. The worse they are, the better I like them. | One of mine has the coast drawn backwards. I paid good coin for it. | Look at enough old maps and you see nobody ever knew where anything was.
+b : Why the bad ones? | The wrong side? | Does that worry you?
+a : Because they were sure, the folk who drew them. They were so sure. It comforts me. | Backwards. And a road through a lake. Somebody walked that road, on paper. | No. Of all things, that doesn't. Everyone got it wrong and the world went on.
+
+scene map_drawer
+when topic=pastimes|home here.time=dusk|night
+does tell.self / react.self / assess
+a : I keep the maps in a drawer, flat, with paper between. Damp ruins a map. | Some nights I lay one out on the table and follow the wrong roads with a paw. | My favourite has a town drawn in that was never built. Nobody's heard of it.
+b : Damp ruins everything, to hear you. | And go nowhere. | Maybe it was there once.
+a : Most things. Brick, maps, apples. Me, near enough. | Nowhere at all. That's restful, after a day of loads. | Maybe. I like to think it's still there, somewhere dry.
+
+scene mother_home
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I'd not have #self.mother# worry over me, so I leave the worst of my fretting at work. | I think the world of #self.mother#. I'm not sure I say it enough. | #self.mother.capitalize# and I share a quiet roof. I'm glad of the quiet.
+b : You're good to think of it. | Say it, then. | That's a comfort.
+a : Somebody has to spare the house. One worrier under a roof is plenty. | I will. Tonight, maybe, if the rain holds off. | It is. A dry roof and a quiet house. What else is there.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd hand the yard keys to #self.friend# without a second thought. And I have second thoughts about everything. | If the stacks ever came down, it's #self.friend# I'd run for first. | I'm easy with #self.friend#. I don't have to explain my fretting.
+b : From you, that means something. | Let's hope it never comes to that. | That's a rare thing.
+a : It means everything I've got. | Bright One forbid. But I know where I'd run. | It is. I hold that close.
+
+scene price_brick
+when topic=prices|price_cause self.role=merchant self.job=laborer
+does tell.self / react.self / assess
+a : Folk grumble at the price of brick. They don't see the kiln wood, the carts, the wages. | A load of tile costs what it costs. I can't make it cheaper and stay honest. | The steward sets the prices. I only have to say them to folk's faces.
+b : They never do see it. | Honest's the main thing. | That can't be easy.
+a : No. I don't blame them, mind. Nobody sees what a thing costs till they make it. | It is, to me. A lost sale costs less than a bad night. | It isn't. I say it gently and offer them an apple.
+
+scene sump_fear
+when topic=crime|times here.region=ridgemere self.role=merchant
+does tell.worry / disagree / concede
+a : There's been trouble near the yard. I've had new locks on the gate. Everything seems to come up from the Sump. | I don't like walking down past the stair-foot after dark. I know that's unkind. | I lie awake about thieves. The dry shed most of all.
+b : It's not all the Sump. | Folk down there have troubles of their own. | Locks help.
+a : No, you're right. That was unfair of me. It's only what I'm frightened of. | They have. I give to the poor box, and I fit locks. Both. | They do. I check them twice. Then I lie awake anyway.
+
+scene watch_notes
+when topic=crime|gossip self.role=merchant
+does confide / keep_confidence / assess
+a : I notice things. Who walks past the yard of a night, and who doesn't stop them. | I keep a little book. Not the load book. A different one. | Some of the Watch find somewhere else to stare when certain carts go by. I've seen it.
+b : I'll not repeat that. | What's in it? | Careful who you tell.
+a : Thank you. I've said too much already. Forget it, please. | Notes. Just notes. They stay in a drawer. | I am careful. I'm careful about everything. It's kept me whole.
+
+scene gossip_glad
+when topic=gossip|news topic.claim_kind=marriage|promise_kept|newcomer
+does tell.news / react.news / assess
+a : Did you hear? #topic.subject.capitalize# #topic.claim#. Isn't that nice? | Here's a happy thing for a grey day: #topic.subject# #topic.claim#. | I heard at the gate that #topic.subject# #topic.claim#. It cheered me right up.
+b : #gladnews# | That is nice. | Something kind, at last.
+a : It is. I'll think of it next time the sky's black. | Very nice. I'll send an apple round. | At last. We're owed a few.
+
+scene gossip_held
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted|bandit
+does tell.worry / reassure / assess
+a : I've heard something, and I wish I hadn't. #topic.subject.capitalize# #topic.claim#. That's what they say. | They're saying #topic.subject# #topic.claim#. I've checked the locks twice since. | It's only talk, and I hope it's wrong. #topic.subject.capitalize# #topic.claim#.
+b : Talk's often wrong. | Locks are good. | #bc_hope_so#
+a : I know. It'll keep me up all the same. | They are. I'll check them again on my way home. | So do I. Let's say no more till we know.
+
+scene times_hard
+when topic=times world.times=hard|lean self.role=merchant
+does tell.worry / sympathise / assess
+a : Fewer loads going out. Nobody's building in lean times. | Two of the lads went home at noon this week. I sent them. I hated doing it. | Hard times. I give away more apples. It's all I can think to do.
+b : It's the same everywhere. | Not your fault. | It's something.
+a : I know. It doesn't make me sleep better. | It feels like it. Their faces said it was. | It's something. It's not enough. I know it's not.
+
+scene times_good
+when topic=times world.times=good|boom self.role=merchant self.job=laborer
+does tell.news / react.news / assess
+a : Everyone's building. The kiln can't keep up. | Good times. The steward smiled at me. I had no idea where to look. | More loads out this month than I've ever written in the book.
+b : Good for you. | Smiled? | That's grand.
+a : Good, and frightening. Big orders, big mistakes. | Smiled. I worried all evening what it meant. | Grand. I check every load twice, still. More, now.
+
+scene wagons_late
+when topic=caravan world.wagons=late self.role=merchant self.job=laborer
+does tell.worry / reassure / assess
+a : The stone carts are late. A whole day. I keep going to the gate to look. | The lime should have come in yesterday. Nothing. | Still nothing. There's a wall on the Rise waiting on that stone.
+b : It's a slow time for the roads. | It'll come. | They'll wait a day.
+a : They are. That's exactly what I'm frightened of. | It'll come. I'll stand at the gate till it does. | I hope so. I'll go up myself and say sorry.
+
+scene wagons_in
+when topic=caravan world.wagons=in self.role=merchant self.job=laborer
+does tell.news / react.news / assess
+a : The carts are in. Everything. I counted it twice and it's all there. | Stone and lime, all dry, all whole. I could weep. | Every load arrived at first light. I've been smiling like a fool.
+b : There, you see. | Weep? | #bc_about_time#
+a : I see. I'll still worry about the next lot. | Very nearly. Not a crack in any of it. | About time. I'd been at the gate since dawn.
+
+scene wagons_taken
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+a : A load's gone missing on the road. Ours or not, it turns my stomach. | There's talk of a robbed cart. Let the carter be unhurt. That's all I ask. | Robbed, they say. I'm holding every cart of mine in the yard till it's safe.
+b : #sympathy# | Let's hope so. | Very wise.
+a : Thank you. I'm useless today, I'll warn you. | I'll pray so. Bright One keep whoever it was. | Wise, or frightened. Same thing, with me.
+
+scene newcomer_welcome
+when topic=newcomer
+does tell.self / react.self / assess
+a : There's new folk on our street. I went round with a basket of apples. | Somebody new moved in by the yard. They looked lost, the poor things. | New faces. I don't mind them. They want bricks, mostly.
+b : That was kind. | Did they settle? | New coin, too.
+a : It's only apples. In their place I'd want somebody to. | I hope so. It takes a while. I still feel lost some days and I was born here. | New coin. I'll not turn that away.
+
+scene festival_fret
+when topic=festival self.role=merchant
+does tell.worry / reassure / assess
+a : Feast days, everybody's out and the yard's empty. I can't enjoy it. The stacks are on my mind. | Lanterns everywhere. I'm frightened of somebody dropping one near the straw. | A festival. I'll go a little while, then come back to see the gate's barred.
+b : One day won't hurt. | They'll be careful. | An hour's something.
+a : It won't. I know it won't. I'll still go back and look. | Let's hope. I'll keep a bucket by the straw. | It is. I'll even dance, if nobody's watching.
+
+scene faith_quiet
+when topic=faith
+does tell.self / react.self / assess
+a : My prayers at bedtime are a list of worries, one by one. Mostly the weather. | Restdays I'm in the chapel praying for dry weeks. I'm not sure anyone's listening. | I'm not a very holy wolf. I'm a worried one, and the worry goes upward.
+b : Keep asking. | It might be. | Same as most of us.
+a : I will. It's the only one who doesn't tire of me. | Maybe it's busy. There's a lot of weather. | I suppose so. That's a comfort.
+
+scene sleep_poorly
+when topic=health
+does tell.self / sympathise / assess
+a : I don't sleep well. Every time it rains I wake. | My stomach knots when the sky goes grey. Silly, at my size. | I've been told I fret myself thin. I've not been told how to stop.
+b : That sounds wearing. | Not silly. | Try warm milk.
+a : I've never known another. | Kind of you. It feels silly. | I've tried. I lie awake warm instead of cold.
+
+scene rise_up_the_hill
+when topic=home|smalltalk here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : Half the houses on the Rise are Greatly brick. I look up there and think of all those roofs. | Ours is a respectable street. Not grand, but dry. Very dry. | I'd not want to live up on the Rise. Too high. Too much sky.
+b : Proud of it, then. | Dry's the main thing. | Too much sky?
+a : Proud, and a bit frightened every time it storms. | It is, to me. The first thing I look at in any house is the roof. | More sky, more rain landing on you. Down here at least the rain has a slope to run.
+
+scene player_near
+when topic=player
+does tell.self / react.self / assess
+a : There's a traveller about, looking lost. I've a mind to offer an apple. | That stranger's been looking at the yard. Probably just looking. Probably. | Somebody new, poking about. I'll just keep half an eye.
+b : They'll be harmless. | Probably. | Half an eye's fair.
+a : Bound to be. I'll take the apple over anyway. | Probably. I'll lock the shed all the same. | Half an eye. And the other half on the sky.
+
+story stack_fell [topic=memories|work self.age>=25 self.role=merchant]
+  : My first year at the yard, a stack slumped in the night. Twelve hundred brick. It had looked fine.
+  : It was wet in the middle. Nobody had felt it. I hadn't known to.
+  ask : Do you know what twelve hundred brick sounds like when it goes?
+  b : I can guess. Like a house falling down. Was anybody hurt?
+  : Nobody was hurt, thanks be. Since then my paw's been on every stack. Every one.
+
+story map_town [topic=pastimes|memories self.age>=25]
+  : Once I bought a map off a market trestle. It had a town drawn on it nobody's ever heard of.
+  : Little houses, a chapel, a bridge. Right where the map says the river bends. I've been to that bend. There's nothing.
+  ask : Could it have been there once, do you suppose?
+  b : Maybe somebody only dreamed it. Or it washed away.
+  : I tell myself that. Or somebody drew the place they wanted to live.
+
+story lime_smoke [topic=work|memories self.age>=25 self.job=laborer]
+  : Once a cart of quicklime came in under a torn cover in the rain. It started to steam on the road.
+  : I ran out with every dry sack I had and we threw them over it. My paws blistered.
+  ask : Have you ever seen lime smoke?
+  b : Never. I'd not want to, either.
+  : No. You wouldn't. I check every cover on every cart now, and I check them again.
+
+story frost_fish [topic=pastimes|season self.age>=20]
+  : One winter evening, in a hard frost, I took my line to the river and sat till the stars were out.
+  : I caught one fish. A little one. It lay on the frost and I swear it looked at me.
+  b : And then? Did you keep it?
+  : I slipped it back in. It seemed only polite. I walked home happier than I'd been in a year.
+
+story storm_lantern [topic=weather|memories self.age>=25 self.role=merchant]
+  : There was a storm three winters back that blew straight off the Sound all night.
+  : I sat in the yard with a lantern, holding a tarp down with both paws. Till dawn.
+  ask : Would you have stuck it out, or gone home to bed?
+  b : I'd like to say no. I'd have gone home, I expect.
+  : Most would. In the morning every stack was dry, and I couldn't stand up straight for a week.
+
+rule @bark_sky
+when concept=bark here.outdoors=overcast
+does aside
+cooldown 6h
+say That sky. I don't like that sky. | #oath#. Rain's coming. My ears know.
+
+rule @bark_rain
+when concept=bark here.weather=rain self.working=yes
+does aside
+cooldown 8h
+say Covers! Check the covers! | #saying.capitalize#. Quick, now.
+
+rule @bark_yard
+when concept=bark working=yes self.role=merchant self.job=laborer here.time=day
+does aside
+cooldown 8h
+say Brick, tile, lime and stone. Ask at the gate. | Loads to order. Dry brick, every one of it.
+
+rule @bark_frost
+when concept=bark here.season=winter here.time=dawn here.outdoors=clear
+does aside
+cooldown 12h
+say A frost. Oh, lovely. Nothing's wet today. | Dry as a bone. I could kiss the cold.
+
+rule @bark_salt
+when concept=bark here.region=ridgemere here.weather=storm
+does aside
+cooldown 10h
+say That salt wind. It's in my teeth. | Off the Sound again. I can taste it.
+
+rule @bark_apples
+when concept=bark here.time=day
+does aside
+cooldown 12h
+say Apples by the gate. Help yourselves. | Somebody take an apple. Please. There's too many.
+
+dlg @1 resident.hub : #greet#. Have an apple. What's needed? | #greet#. Forgive me, I'm watching the sky. Go on.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! Back again. Dry, I hope? | #greet#, #topic.player#. I'd been wondering after you. Have an apple.
+dlg @3 resident.hub [here.time=night] : It's late. You're not in any trouble? | #greet#. I'm only out checking the covers. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'd rather we kept this short, if you don't mind. | I'll stay by the gate, thank you. Go on.
+dlg @1 resident.job [self.job=laborer self.role=merchant] : I run #self.workplace# for the House. Brick, tile, lime and stone, and I answer for all of it. | #self.workplace#. I see every load in and every load out, and I worry over each one.
+dlg @2 resident.job : #self.trade_words.capitalize#. It's a good living, and it keeps me awake at night. | I do what I'm trusted with. Then I check it, and check it again.
+dlg @1 resident.business [business=thriving] : Busier than I can manage. Not one whole night's sleep this month. | Very good, thank the Bright One. Every stack's spoken for.
+dlg @2 resident.business [business=steady] : Steady. Steady suits me. Nothing surprising. | Steady enough. Loads out, coin back.
+dlg @3 resident.business [business=failing] : Badly, if I'm honest. It keeps me up. | Poorly. The steward's asked questions. I've had no good answers.
+dlg @1 resident.news [world.news] : A carter at the yard gate had it, from #world.news_from#: #world.news#. I hope it's less than it sounds.
+dlg @2 resident.news [world.event_words] : Everybody's talking of #world.event_words#. I've been thinking about little else.
+dlg @3 resident.news [world.wagons=raided] : There's a cart been robbed past the walls. Please don't go alone. I mean it.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The weather, and you've got that already. | Nothing, thank goodness. No news suits me very well.
+dlg @1 resident.gossip [here.gossip=yes] : I shouldn't say. But they're saying #topic.subject# #topic.claim#. Please don't tell anyone it was me.
+dlg @2 resident.gossip [here.gossip!=yes] : No tales from me. Somebody always pays for them. | Nothing I'd repeat. I've enough to fret about.
+dlg @1 resident.bye : #farewell#. Watch the sky. | #farewell#. Take an apple with you.
+dlg @2 resident.bye [here.time=dusk|night] : Go carefully. The cobbles are slick after dark. | #farewell#. Get home before the rain.
+dlg @1 shop.greet [here.shop=open self.job=laborer] : #greet#. Brick, tile, lime or stone? All dry. I've checked. | #greet#. What are you building? I'll find you the driest we have.
+dlg @2 shop.greet [here.shop=open topic.meeting=known self.job=laborer] : #topic.player#! Back for more? Everything's dry today, thank goodness. | #greet#, #topic.player#. Same order? I kept some back for you.
+dlg @3 shop.greet [here.shop=bare] : #shop_bare# I'm sorry. Nothing's come in, and nothing dry is left. | Nearly bare, I'm afraid. I'd buy from you, though, if it's good.
+dlg @1 shop.prices [self.job=laborer] : The steward sets them, not me. #shop_dear# | Brick's dear this week. Kiln wood's gone up. #shop_offer#
+dlg @1 shop.bye : #shop_bye# Throw a sack over it before the next shower. | #farewell#. Mind the load doesn't get wet.
+graft resident.hub
+choice Why do you keep looking at the sky? -> sky
+node sky
+say Because it's going to rain. It's always going to rain. In this city, if it's not raining it's thinking about it.
+mood calm
+free
+choice Does it matter so much? -> sky_why
+choice Never mind. -> hub
+node sky_why
+say It does, to me. Wet brick cracks, wet lime burns, wet maps rot. Everything I care about hates the rain. I can't stop watching for it.
+choice That sounds tiring. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What happens if the lime gets wet? [self.job=laborer] -> lime
+node lime
+say It heats up all by itself. Smokes. It'll burn a paw to the pad. That's why it's in the dry shed behind two doors.
+mood calm
+free
+choice Two doors? -> lime_doors
+choice Let me see your wares. -> greet
+node lime_doors
+say Two. And I check both of them before I go home. And then once more, on the way out. Now, what are you after?
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

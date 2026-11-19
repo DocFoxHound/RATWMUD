@@ -219,7 +219,7 @@ say There you are. | Oh, it's you, love. | Ah. My own. | Look who it is.
 rule s8cb_kin_spouse
 does kin.open
 when pair.kin=spouses pair.last_talk>=0.3
-say There you are, love. | Oh, it's you. | #dear#. | There's my #dear#.
+say There you are, love. | Oh, it's you. | #dear#. | Hello again, #dear#.
 
 rule s8cb_kin_sibling
 does kin.open

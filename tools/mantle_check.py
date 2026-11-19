@@ -245,6 +245,7 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
     lex = dialect_check.lexicon(gram, allow)
     realm = realm_words()
     realm_lower = {w.lower() for w in realm}
+    long_realm = [p.split() for p in realm if len(p.split()) > 2]   # ("Chapel of the Tide": a phrase, word by word)
     forbidden = [(re.compile(f['match'], re.I), f['why']) for f in r['forbidden']]
     pronoun = re.compile(r['pronouns'], re.I)
     person_slot = re.compile(r['person_slots'])
@@ -315,8 +316,10 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                                              f'(#self.spouse#...)')
                     for s in sentences(low):
                         tokens_ = re.findall(r"[A-Za-z][A-Za-z'-]*", s)
+                        in_phrase = {j + k for j in range(len(tokens_)) for p_ in long_realm
+                                     if [re.sub(r"'s$", '', x) for x in tokens_[j:j + len(p_)]] == p_ for k in range(len(p_))}
                         for i, w in enumerate(tokens_[1:], 1):
-                            if not w[0].isupper() or w in names:
+                            if not w[0].isupper() or w in names or i in in_phrase:
                                 continue
                             two = f'{w} {tokens_[i + 1]}' if i + 1 < len(tokens_) else ''
                             prev2 = f'{tokens_[i - 1]} {w}'

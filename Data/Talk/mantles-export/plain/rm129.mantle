@@ -1,0 +1,449 @@
+# rm129, the doorpost bell-tapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm129
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_greta_thornworth
+written_by claude
+title the doorpost bell-tapper
+fits stage=young|adolescent|adult|old
+prefers temper=calm honesty=frank
+traits temper=calm talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk taps_out_every_bell_on_the_nearest_doorpost
+likes blackberries riddles quiet_chapel first_snow
+dislikes smoke cold_tea
+fears the_bells_stopping a_winter_with_no_snow
+hopes a_stall_on_the_commons_market a_riddle_nobody_can_answer
+topics pastimes +0.5 faith +0.3 season +0.3 food +0.3 day +0.2 weather +0.2 gossip -0.3 prices -0.2
+styles comfort=quiet gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# taps every chapel bell out on the nearest doorpost, keeps a riddle ready for anyone who stops, and says what is true even when it would be kinder not to: calm, gentle and plain, fond of blackberries, the empty chapel and the first snow.
+
+words
+oath! = Tap and toll | Rope and tongue | Seven and a half bells
+saying! = Riddles are only hard from the outside | The bell can't lie, it only counts | Quiet keeps the good thoughts in
+riddle = a riddle | a new riddle I made
+riddles = riddles | my riddles
+berries = blackberries off the bush | the blackberries by the north wall
+bush = the big bramble past the gate | the bush with the thorns like cat claws
+chapel = the empty chapel | the chapel with only the mice in it
+firstsnow = the first snow | snow, the first lot, at last
+bells = the chapel bells | the tide chapel's bells
+bell = the big bell | the tenor bell
+doorpost = the doorpost | the nearest doorpost
+slate = my slate | the slate with the crack in
+lessons = lessons | the schoolroom
+reek = smoke in my eyes | chimney smoke
+coldtea = cold tea | grey cold tea
+count = twelve and then three | twelve, then three more
+
+any
+opinion @1 church for 1 : Our cupboard was bare and the chapel door had bread. I remember who fed me. | They give out bread at the chapel door and nobody asks who you are first.
+opinion @2 dole for 3 : The parish loaf got us through one bad week. Whoever calls that shameful has never missed a supper. | The dole is bread. Bread isn't shameful.
+opinion @3 festivals for 1 : Festival means a fiddle in the square, a sweet if you're lucky, and no bedtime. What more is there? | At festival the bells ring all day, and I can count them till I'm dizzy.
+opinion @4 merchants against 2 : Half the week our pot's empty, and the stallholders' never is. That's not fair, and I've told them. | The cake stall throws away what doesn't sell. I've watched it go in the bin.
+opinion @5 watch against 1 : The Watch move you on from every doorway, even when it's raining. Even when you're only sheltering. | The Watch don't like anybody sitting still. I sit still a lot.
+opinion @6 times against 1 : Every week's a bit tighter than the one before, and the Rise doesn't look. I look. | There's less in the dole basket than at harvest. I counted.
+
+grown
+line @1 greet : #greet#. Mind the doorpost; I'm using it. | #greet#. I've a riddle for you, if you're not rushing. | #greet#. The bell's just gone. Twelve.
+line @2 greet [pair.band=strangers] : #greet#. You're new to me. Welcome to the street. | #greet#. I'll not ask your business. I'll guess it instead.
+line @3 greet [here.time=dusk|night] : Evening. The last bells are coming. | #greet#. It's getting late for talk, but go on.
+line @1 kin.open [pair.kin!=no] : You're home. Blackberries, some, kept back for you. | Come in. The tea's hot. I made sure.
+line @1 again.open : Twice today. I've a riddle ready this time. | Back so soon. I'm glad of it.
+line @1 greet.return : #greet#. | #greet#. I'm listening. | #greet#. Good to hear you.
+line @2 greet.return [pair.band=friends|family] : Hello. I knew your step. | Hello. Sit, if you want.
+line @1 farewell : #farewell#. Listen for the bells on your way. | #farewell#. | Go well.
+line @1 farewell.return : #farewell#. | Go well. | And you.
+line @1 react.news : Tell it straight. I'll not mind if it's bad. | Go on. I'm listening.
+line @1 react.news.new : That never reached me. Glad it came plain. | That's new to me.
+line @1 react.news.known : I heard it already, by the chapel. | Yes. It's all over the street.
+line @1 react.news.doubt : I don't think that's true. Somebody who saw it should say so. | That sounds made up. I'm sorry, but it does.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's sad. I'll sit in the chapel a while for it. | I'm sorry. Poor things, all of them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's good. I'm glad. | Good. There's not enough of that.
+line @1 answer.how : All right. Quiet. | I'm well enough. Thank you for asking.
+line @1 sympathise : I'm sorry. You can sit with me. I'll not talk. | That's hard. Pretending it isn't helps nobody.
+line @1 decline : I'd rather not. I've promised to be somewhere, and I keep promises. | I can't, I'm sorry. It wouldn't be right of me.
+line @1 accept_decline : That's all right. | I understand. Another time.
+line @1 thank : Thank you. That's kind. | Thank you. Truly.
+line @1 deflect_thanks : It was nothing. | I was glad to.
+line @1 preclose : I should go. The bell's about to go. | I'd better get on.
+line @1 accept_preclose : Go on, then. | All right. Go well.
+line @1 ack : Mm. | All right. | I see it.
+scene grown_bells
+when topic=smalltalk|faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I still tap the bells out on the doorpost. Habit. A long one. | That's the tide bell. I can tell it from the others now without looking. | Twelve, then three. I've never once miscounted. I'm proud of that.
+b : Since you were small? | Without looking? | Never once?
+a : Since I was very small. My knuckle has a hard spot. | Yes. It's lower. Sadder, nearly. | Once. A cart went past. I don't count that one.
+
+scene grown_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : Riddle. What's longest at supper and shortest at dinner? | I've a riddle. What has a hundred steps and never walks? | Here's one I made when I was small. What has a tongue and can't taste?
+b : No idea. | A clock? | A boot?
+a : Your shadow. I made that one waiting for a bell. | The long Rise stairs. A clock has hands. | A bell. A boot has a tongue but never says anything.
+
+scene grown_chapel
+when topic=faith here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Inside an empty chapel the city stops talking. I go and sit. | That chapel fed me once, in my scrap days. I still sit there. | Praying's hard for me. I sit in a pew and keep quiet, and hope that's enough.
+b : It's peaceful. | That's loyal. | I'm sure that's so.
+a : It is. Even the rain is quieter in there. | It's only fair. It was there for me. | I think so. Sitting is a kind of praying.
+
+scene grown_blackberries
+when topic=food|season here.season=summer|autumn
+does tell.self / react.self / assess
+a : The blackberries are out by the north wall. I've been and I'll go again. | I still pick blackberries off the same bush I robbed as a pup. | Purple paws again. Every year. I don't mind it.
+b : Again? | The same one? | It washes off.
+a : Again. They're best the second week. | The same. It's bigger now. So am I. | It doesn't. Not till the season's over.
+
+scene grown_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : First snow. I stopped on the stairs to look. I always do. | Snow. Not a sound on the street. I love it. | I caught a snowflake on my tongue. Don't laugh. I always do.
+b : It's lovely. | It does go quiet. | I'll not laugh.
+a : It is. It makes the city look like it's starting again. | Like the chapel, outside. | Thank you. Snow tastes of nothing. Nothing, and cold, and lovely.
+
+scene grown_smoke
+when topic=weather|smalltalk here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The smoke's in my eyes again. I'd move, but the wind follows me. | I can't abide chimney smoke. Never could. It gets in everything. | Somebody's burning wet wood. My eyes are streaming.
+b : It's the city. | In everything? | Move along a bit.
+a : It is. I love the city. I don't love that. | Fur, bread, eyes. All of it. | I would. The wind would come too.
+
+scene grown_cold_tea
+when topic=food
+does tell.complaint / react.complaint / assess
+a : Somebody handed me cold tea. I drank it, to be polite. | Tea's for hot. Cold tea's just sad water. | I'll drink my tea scalding or not at all.
+b : That's good of you. | Sad water? | Scalding?
+a : I said thank you, and nothing about cold. | Grey and sad. Yes. | Scalding. Cold is for water.
+
+scene grown_stall
+when topic=dreams|work
+does confide / react.self / assess
+a : Since I was small I've wanted a stall by the well. I still put coppers by. | One day, a stall by the well. A riddle free with each punnet. | I've the stall worked out to the copper. I've only to save it.
+b : You'll have it. | A riddle free? | To the copper?
+a : I think so. Slowly. | Free. Folk come back for riddles. | To the copper. I'm good at sums.
+
+scene grown_neighbour
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour.capitalize# gets a nod and a kind word from me, every day. It's a good street. | I'd tell #self.neighbour# my best riddle. That's high, from me. | I like knowing #self.neighbour# is next door. Quietly, mind.
+b : A good street, then. | Your best one? | That's the best sort.
+a : It is. I've lived on worse, and this is better. | The stairs one. It's a good one. | I think so. It doesn't need saying.
+
+scene grown_watch
+when topic=crime|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : Years back the Watch shooed me out of doorways. I blamed them then. Less now. | A pup in a doorway in the rain, I leave be. Then I point to the chapel. | The Watch are kinder than they were. Or I'm bigger. One of those.
+b : That's fair. | The chapel? | Probably bigger.
+a : I'm fairer than I was. I'm not sure they are. | It's dry and nobody minds. Somebody told me once. | Probably. Being bigger helps with most things.
+
+scene grown_hungry
+when topic=food|times self.hungry=yes
+does tell.self / reassure / assess
+a : I'm hungry. I'll not pretend I'm not. | There wasn't much at breakfast. There'll be more at supper, I hope. | I've been hungry before. I know the shape of it, and that it ends.
+b : I've a crust. | You hope? | A hard lesson, that.
+a : Thank you. I'll take half. | I hope. I always hope. It's free. | It is. It's useful, though.
+
+scene grown_lessons
+when topic=memories self.age>=20
+does tell.memory / react.self / assess
+a : I learnt my sums on a cracked slate in the Commons schoolroom. I still write round a crack in my head. | At lessons I told riddles in the middle of sums. I got told off every time. | I was the best counter at lessons, because of the bells.
+b : Round a crack? | Every time? | Because of the bells?
+a : My letters still go a bit wonky in the middle. | Every time. I'd do it again. | Bells are just sums that ring.
+
+story grown_the_rope [topic=memories|faith self.age>=20 here.region=ridgemere]
+  : Once, little as I was, the ringer at the tide chapel let me hold the bell rope.
+  : It went up and took me with it, right off my feet. I swung there like washing on a line.
+  ask : Have you ever been lifted off your feet by something you thought you were holding?
+  b : Not a bell rope. Did you let go?
+  : No. I held on and laughed. I've held on to things ever since.
+
+rule @bark_grown_tap
+when concept=bark here.region=ridgemere
+does aside
+cooldown 6h
+say Twelve, then three. | There's the tide bell.
+
+dlg @6 resident.hub : #greet#. Would you like a riddle? I've plenty. | #greet#. I'm listening for the bell, but go on.
+dlg @2 resident.job : Work, bells, and coppers put by for a stall. That's me. | My work's my own business, mostly. Ask me a riddle instead.
+dlg @2 resident.bye : #farewell#. Listen for the bells. | #farewell#. Come back for a riddle.
+
+young
+line @1 greet : #greet#. I was counting the bells, but I can stop. | #greet#. You can talk; I'm only tapping. | #greet#. I've a riddle, if you want one.
+line @2 greet [pair.band=strangers] : #greet#. You're new. I'd know your face otherwise. | #greet#. I'm allowed to talk to you; I'm on my own step.
+line @3 greet [here.time=dawn] : #greet#. The early bell's gone. I counted it. | Morning. It's cold out, but it's nice cold.
+line @4 greet [here.time=dusk|night] : #greet#. It's getting dark. I'm going in soon, I promise. | Evening. The lamplighter's nearly here.
+line @5 greet [pair.band=friends|family] : Oh good, it's you. A new riddle, and I kept it back for you. | You came. Good. Sit on this end; it's drier.
+line @1 kin.open [pair.kin!=no] : I'm here. I wasn't far. | I kept you a blackberry. It's a bit squashed.
+line @1 again.open : You're back. I'm still on this step. | You again. Another riddle came to me since.
+line @1 greet.return : #greet#. | #greet#. I'm only tapping, don't mind me. | #greet#. Hello back.
+line @2 greet.return [pair.band=friends|family] : Hello. Your steps gave you away. | Hello. You can sit with me.
+line @3 greet.return [here.time=dusk|night] : Evening. I'm due indoors soon. | Evening. Lamplighter's on his way.
+line @1 farewell : Bye. Listen for the next bell. | #farewell#. I'll have a riddle ready next time. | Bye, then.
+line @2 farewell [here.time=dusk|night] : Night. Walk where the lamps are. | Night. I'll count the late bell for you.
+line @1 farewell.return : Bye. | Bye. I'll remember you. | #farewell#.
+line @2 farewell.return [here.time=dusk|night] : Night. Sleep well. | Night, then.
+line @1 react.news : What happened? Tell it properly. | I'm listening. I listen well.
+line @1 react.news.new : I didn't know that. Nobody tells me things. | That's new. I'll think about it.
+line @1 react.news.known : I heard that already, by the well. | Everybody's saying that. Even the big ones at lessons.
+line @1 react.news.doubt : That doesn't sound true. Who said it? | I don't think so. Somebody made that up.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's sad. I'm sorry. | Oh. That's a bad thing. I'll think of them at chapel.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, good. Will there be cake? | That's nice. I'm glad.
+line @1 answer.how : All right. A bit cold. | I'm all right. I've got a riddle in my head.
+line @1 answer.how.poorly [self.hungry=yes] : Hungry. There wasn't breakfast. | My tummy's making noises. It's only hungry.
+line @1 ask.how : Are you all right? You look tired. | Did you have breakfast?
+line @1 sympathise : That's sad. You can sit with me if you want. | I'm sorry. I'd give you a blackberry, if I had one.
+line @1 reassure : It'll be all right. Things usually are, after a bit. | Don't worry. I'll tap a bell for you.
+line @1 decline : I can't. Lessons, and I'm late already. | No, sorry. I'm not supposed to go far from the step.
+line @1 accept_decline : That's all right. | All right. Another day.
+line @1 thank : Thank you. That was kind. | Thank you. I'll remember.
+line @1 deflect_thanks : It was nothing. | That's all right. It was easy.
+line @1 preclose : I have to go. The bell's going to ring. | I should go in now.
+line @1 accept_preclose : All right. Bye, then. | All right. I'll stay here.
+line @1 ack : Mm. | All right. | Oh.
+scene tapping_the_bells
+when topic=smalltalk|faith|day here.region=ridgemere
+does tell.self / react.self / assess
+a : Listen. That's the tide chapel. I tap each one on the doorpost. | Twelve and then three. I tapped them all. | Every time a bell goes, I tap it on #doorpost#. My knuckle knows the count.
+b[stage=young|adolescent] #pup : Why do you tap them? | Can I try? | Doesn't it hurt?
+b : Why tap them? | Twelve and three? | Your knuckle?
+a@pup : So I don't lose count. If I lose count, I start again. | You can. Tap when I tap, and don't go early. | Only a little, after the long ones.
+a : So I don't lose count. The bells don't wait for you. | Twelve for the hour and three for the tide. I asked the ringer once. | It's got a little sore spot. That's how I know I've been good at it.
+
+scene riddle_bell
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : Here's one. What's got a tongue but never tastes, and only talks when you pull it? | I made a riddle. What has a tongue and no mouth, and speaks when its rope is pulled? | Riddle. Something has a tongue and can't eat, and only says anything if you tug it. What?
+b : A gossip? | I don't know. | A boot?
+a : No. A bell. The tongue's the bit inside that swings. | A bell. The tongue inside it is called a tongue. I didn't make that up. | A bell. A boot has a tongue, but it never talks.
+
+scene riddle_shadow
+when topic=pastimes
+does tell.self / react.self / assess
+a : Riddle. What's longest at supper and shortest at dinner? | I've got one. It's long in the evening and tiny at noon and it goes everywhere you go. What is it? | Guess. It follows you all day, it's long at dusk, and you can't step on it.
+b : A queue? | I don't know. | Your tail?
+a : Your shadow. At dinner the sun sits straight over your head. | Your shadow. You can't lose it, I've tried. | Your shadow. Everybody says tail. It's not your tail.
+
+scene riddle_stairs
+when topic=pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : This one's a Ridgemere riddle. What has a hundred steps and never goes anywhere? | Riddle. What has more steps than anyone and has never once walked? | I made this one on the way up. What's all steps and no feet?
+b : I don't know. | A clock? | A wolf with no feet?
+a : The long Rise stairs. A hundred and twelve; I counted. | The long Rise stairs. A clock has hands, not steps. | No. The long Rise stairs. A wolf with no feet would just be sad.
+
+scene empty_chapel
+when topic=faith here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I like #chapel# best. Your own thinking gets loud in there. | When nobody's in the chapel, the floor creaks on its own. I like listening to it. | Nobody minds me sitting in the empty pews. The priest says that's what pews are for.
+b[piety=devout] #devout : A fine place for praying. | It's old wood. | It is what they're for.
+b : Do you pray? | Isn't it spooky? | Doesn't anyone else come?
+a@devout : Praying comes hard to me. Sitting I can do, and I hope that counts. | It's very old. It creaks like it's thinking. | Good. I'll keep going, then.
+a : Sometimes. Mostly I sit and listen. | No. It's quiet. Spooky is when it's loud and you can't see what. | Sometimes an old one comes. We don't talk. It's nice.
+
+scene blackberries
+when topic=food|season here.season=summer|autumn
+does tell.self / react.self / assess
+a : The blackberries are out on #bush#. I've eaten nine already. | My paws are all purple. It's the blackberries. | I know where the best blackberries are. I'm not telling anybody. Well, you, maybe.
+b[stage=young|adolescent] #pup : Can you show me? | Nine? | Your tongue's purple too.
+b : Nine already? | That'll wash off. | Where?
+a@pup : If you don't pick the ones low down. They're for the little ones. | Nine. Ten, with the dropped one. | Is it? Good. That means they were good ones.
+a : Nine. The ones at the top are sweetest, because nobody can reach them. | It won't. It never does, till the season's over. | Past the gate, by the wall. Don't tell anyone.
+
+scene first_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : It's #firstsnow#. I've been waiting all year. | Look. It's snowing. I put my tongue out and caught three. | Snow. Everything's quiet. Even the carts are quiet.
+b[stage=young|adolescent] #pup : Let's go out in it. | Three? | It's so quiet.
+b : You like snow, then. | Three? | It's cold, though.
+a@pup : Yes. Only no throwing yet; I'm still looking. | Three. I'm going to catch more. | It's like the empty chapel, only outdoors.
+a : I love it. It makes the whole city look new. | Three. They taste of nothing, but it's nice. | Cold doesn't matter when it's snow. Only when it's rain.
+
+scene rain_doorway
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : I was sheltering in a doorway and somebody moved me on. Then it rained harder. | The rain's coming in my boots. One has a hole. | Rain on the chapel roof is lovely. Rain in my boots isn't.
+b : That's not right. | Only one? | That's fair.
+a : No. But it's their doorway, I suppose. | Only one. The other's just wet. | It sounds like a lot of tiny bells. I tried to count them, but I can't.
+
+scene smoke_eyes
+when topic=weather|smalltalk here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The smoke's in my eyes again. It makes me look like I'm crying, and I'm not. | Somebody's chimney is right where I sit. My eyes are all stingy. | I don't like smoke. Eyes, fur, bread, it goes in all of them.
+b : Move along a bit. | That's horrid. | Your bread?
+a : I did. It followed me. | It is. I'm shifting down the step. | Yes. Bread that tastes of smoke is still bread, but it's worse bread.
+
+scene cold_tea
+when topic=food
+does tell.complaint / react.complaint / assess
+a : Somebody gave me tea, but it was #coldtea#. I drank it anyway, but I didn't like it. | I don't like cold tea. It goes grey and sad. | If tea's cold, I'd rather have water. Water's meant to be cold.
+b : It was kind of them. | Grey and sad? | That's sensible.
+a : It was. I said thank you. The cold part I kept to myself. | Yes. Tea ought to steam. | I think so too. Water doesn't pretend.
+
+scene hungry_morning
+when topic=food|day self.hungry=yes
+does tell.self / reassure / assess
+a : There wasn't breakfast today. There's the parish loaf at noon, though. | I'm a bit hungry. I'm not complaining. I'm only saying. | My tummy's been growling through lessons. Everybody heard.
+b : Noon's not long. | I've a crust, if you want it. | No shame in that.
+a : No. I'll count the bells till then. Then it goes quicker. | Thank you. I'll have half and save half. | I'm not. It was very loud, though.
+
+scene at_lessons
+when topic=day|work self.job=child here.time=day
+does tell.self / react.self / assess
+a : We did sums at lessons. I'm good at sums because of the bells. | My slate has a crack, so my letters go wonky in the middle. | The teacher said my riddle was clever. Then said stop telling riddles in sums.
+b[stage=young|adolescent] #pup : I hate sums. | Mine too. | Was it clever?
+b : Because of the bells? | You'll get a new slate. | Which riddle?
+a@pup : They're just counting, and counting's easy. | Everybody's slate is cracked. It's the school slates. | It was the stairs one. Everybody got it wrong.
+a : Counting bells is sums, only louder. | Maybe. I don't mind the crack. I write round it. | It was the stairs one. Nobody guessed.
+
+scene stall_dream
+when topic=dreams
+does confide / react.self / assess
+a : When I'm big I'll sell at the Commons Market, from my own stall. I've three coppers. | Someday I'll keep a stall. Blackberries and riddles, both. | Each copper goes in my boot, for the stall. Not the boot with the hole.
+b[friends] #friends : You'll get there. | Riddles? | Clever.
+b : A stall? | How would you sell riddles? | Not that boot.
+a@friends : I will. Slowly. | One riddle with every punnet. Free. | It's the only safe place I've got.
+a : On the Commons, by the well. Everyone goes past the well. | Free, with blackberries. Then folk come back. | No. That boot would lose it.
+
+scene festival_bells_young
+when topic=festival here.day=festival
+does tell.feeling / react.self / assess
+a : It's festival, so all the bells go at once. I can't count them. I don't even mind. | There's music in the square and a sweet stall. I've been staring at the sweets. | Nobody's sending anybody to bed today. That's the best part.
+b[stage=young|adolescent] #pup : Let's go and listen. | Have you got any? | Nobody at all?
+b : Too many to count? | Looking? | The best part?
+a@pup : Stand by the chapel. It's loudest there. | One. A kind lady gave it me. | Nobody. Not even the little ones.
+a : Too many. Forty, and then they all went together, and I gave up. | Only looking. Looking's free. | That, and the bells.
+
+scene neighbour_step
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour.capitalize# gets a good morning off me, every morning, rain or not. | I like #self.neighbour#. I'd tell #self.neighbour# my best riddle. | My favourite step is the one nearest #self.neighbour#'s door. It feels safer there.
+b : That's nice. | Your best one? | Safer?
+a : It is. A street's nicer with good mornings in it. | The stairs one. Not yet. When it's a special day. | Yes. Like sitting under a big coat.
+
+scene the_watch_moved
+when topic=crime|smalltalk here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The Watch moved me on from the baker's doorway. I wasn't doing anything. | A watchman told me to go home. I said I was nearly home. | They don't like you sitting in doorways. I don't know where else to sit when it rains.
+b : It's their job, I suppose. | Were you? | The chapel, maybe.
+a : I know. I still didn't like it. | Nearly. It's a long way, if you go round. | The chapel. Yes. That's where I go now.
+
+scene gulls_and_cats
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : There's a cat by the chapel with one ear. I call it Restday, because it sleeps all day. | A gull took my crust right from my claws. I wasn't even cross; it was so quick. | The cats on the Commons know when the bread comes. They wait like us.
+b : Why Restday? | Clever gull. | Like us?
+a : Because it never gets up. It doesn't know it's called that. | Very clever. I'm going to hold my next crust tighter. | Yes. In a line. Very patient.
+
+story the_rope [topic=pastimes|faith here.region=ridgemere]
+  : Once the ringer let me hold the bell rope. Only hold it.
+  : It went up on its own and pulled me right off my feet. I was hanging there like washing.
+  ask : Have you ever held a bell rope?
+  b : Never. Were you scared?
+  : No. I was laughing. The ringer was laughing too. Then I got lifted down.
+
+story the_lost_count [topic=pastimes|faith]
+  : One day I lost count of the bells, because a cart went past and was so loud.
+  : So I waited on the step for the next hour, to begin again properly.
+  b : All that waiting? Wasn't that boring?
+  : No. I had a riddle to think of while I waited. I made the shadow one.
+
+story the_crust [topic=food|friends self.wealth=poor|destitute]
+  : Once I found a whole loaf on the step. Nobody knew who left it.
+  : I asked everybody on the street. Nobody said it was them.
+  ask : Could the Bright One leave bread, do you suppose?
+  b : Perhaps a kind neighbour who didn't want thanking.
+  : That's what I think too. I thanked the door anyway.
+
+rule @bark_tap
+when concept=bark here.region=ridgemere
+does aside
+cooldown 6h
+say One, two, three. Tap, tap, tap. | That's the tide bell. #count#.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 8h
+say What has a tongue and can't taste. | I've nearly got a new riddle.
+
+rule @bark_snow
+when concept=bark here.weather=snow
+does aside
+cooldown 10h
+say It's snowing. It's really snowing. | First snow. I knew it would come.
+
+rule @bark_hungry
+when concept=bark self.hungry=yes
+does aside
+cooldown 10h
+say Is it noon yet. | Not long till the parish loaf.
+
+dlg @1 resident.hub : #greet#. Do you want a riddle? I've got three. | #greet#. I'm counting the bells, but you can talk.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remembered your name. | #topic.player#. You came back. I've a new riddle.
+dlg @3 resident.hub [here.time=night] : I'm supposed to be in. I'm going. | It's late. I'm only listening for the last bell.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm only sitting here. I'm allowed. | I'll talk, but I'm staying on my step.
+dlg @1 resident.job : Lessons, in the day. And I count the bells. The bells are free. | I'm at lessons. Sums, mostly. I'm good at sums.
+dlg @1 resident.news [world.news] : I heard them say at the well, from #world.news_from#: #world.news#. That's all I heard.
+dlg @2 resident.news [world.event_words] : Everybody's talking about #world.event_words#. Even at lessons.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing. Only the bells, and they're the same as always. | No news here. I'm too small for news.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. True or not, I can't say. | Somebody said #topic.subject# #topic.claim#. I'm not supposed to repeat things.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't know any gossip. I know riddles. | Nobody tells me things. I'm not big enough.
+dlg @1 resident.bye : Bye. Listen for the next bell. | #farewell#. Come back for a riddle.
+graft resident.hub
+choice Why do you tap the doorpost? -> tap
+node tap
+say For the bells. Every time the chapel bell goes, I tap it. Then I always know how many. I've never lost count. Well, once.
+mood warm
+free
+choice Tell me a riddle. -> riddle
+choice Something else. -> hub
+node riddle
+say What's got a tongue but never tastes, and only talks when you pull it? It's a bell. I'll tell you a harder one next time.
+choice I'll come back for it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. I'm not a pup anymore, so you needn't talk slowly. | #greet#. I was working out a riddle. Go on, though.
+line @2 greet [pair.band=strangers] : #greet#. You're new to this street. I know everyone on it. | #greet#. Mind the step; I'm using it.
+line @1 greet.return : #greet#. | #greet#. I'm listening.
+line @1 react.news : Go on. I'll not tell anyone. | I'm listening properly.
+line @1 answer.how : All right. Busy. | Fine. Tired, but fine.
+line @1 decline : I can't, I'm sorry. I've got work and I'll be in trouble if I'm late. | Not today. I gave a promise, and promises get kept.
+line @1 accept_decline : That's fine. | All right. I understand.
+line @1 farewell : #farewell#. | See you, then. I'll have a harder riddle.
+line @1 farewell.return : Bye. | #farewell#.
+line @1 accept_preclose : Go on, then. | Fine. See you.
+dlg @5 resident.hub : #greet#. I'm a learner now, so I can't stop long. | #greet#. Ask quickly; I'm due somewhere.
+scene taken_seriously
+when topic=work|day
+does tell.complaint / react.complaint / assess
+a : They still give me the pup jobs. Sweeping. I can do sums faster than any of them. | Somebody patted me on the head yesterday. I'm nearly as tall as them. | I asked to do the counting and they laughed. I'm the best counter on the street.
+b : They'll see. | That's annoying. | Show them.
+a : They will. I'll make them. | It is. I bit my tongue. It was hard. | I will. I'll count it while they watch, and get it right.
+
+scene still_tapping
+when topic=smalltalk|faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I still tap the bells on the doorpost. I tried to stop. My paw does it anyway. | Some of the others think the tapping is babyish. I don't care. | I've tapped every bell since I was little. That's a lot of bells.
+b : Why stop? | Do you mind? | How many?
+a : I thought I ought to, being older. I won't now. | I don't. The bells don't care how old I am. | Thousands. I stopped counting the counting.
+
+scene stall_saving_older
+when topic=dreams
+does confide / react.self / assess
+a : I've more saved for the stall now. Not enough. More. | I still want my stall. I've reckoned up the cost. | Every copper I get, half goes in the boot. The stall boot.
+b : How much? | What would it cost? | Half?
+a : Not saying. But I counted it last night, twice. | More than the boot holds. Less than I feared. | Half. The other half's for blackberries.
+
+scene snow_older
+when topic=weather here.weather=snow
+does tell.feeling / react.self / assess
+a : First snow. Too old for snowflakes on the tongue, people say. I did it anyway. | Snow. It still makes me stop. I don't know why. | Snow hushes our street. Nothing's better.
+b : Good for you. | It's lovely. | More than anything?
+a : I'll keep doing it. Nobody can stop me. | It is. Even the smoke looks clean. | Nearly. Blackberries are close.

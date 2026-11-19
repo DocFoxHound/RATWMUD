@@ -1,0 +1,390 @@
+# rm126, the honey-cake reckoner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm126
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_montague_kettlewick
+written_by claude
+title the honey-cake reckoner
+fits stage=young|adolescent|adult|old
+prefers honesty=sly talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk counts_every_debt_in_honey_cakes
+likes honey_cakes dice market_bustle summer_evenings
+dislikes smoke wet_floors
+fears an_empty_pocket_on_rent_day being_the_one_who_owes
+hopes a_stall_of_my_own_one_day every_debt_paid_back_in_cakes
+topics pastimes +0.4 food +0.3 times +0.3 day +0.3 prices +0.2 gossip +0.2 festival +0.2 faith -0.3
+styles comfort=practical gossip=keen refuse=short tease=none
+marks oath saying
+persona #self.first# watches the market from the steps, plays dice behind the stalls, says little and misses nothing, and keeps every debt in the city reckoned in honey cakes: owed or owing, it is all written in a head that never forgets a crumb.
+
+words
+oath! = Snake's eyes | Double ones | Ones and twos
+saying! = A cake owed is a cake owed | Owing's only losing slowly | Everybody pays in the end, one cake at a time
+cakes = honey cakes | the sticky ones off the baker's tray
+cake = a honey cake | one honey cake
+dice = the dice | the bones
+throw = a throw | one throw of the bones
+steps = the market steps | the Market Hall steps
+market = the market roaring | the market when it's heaving
+summer = a summer evening | one of those long summer evenings
+smoke = smoke | smoke in my eyes
+wetfloor = a wet floor | the puddle by the door
+stall = a stall | a pitch that's mine
+reckon = the reckoning | my reckoning
+
+any
+opinion @1 dole for 2 : One week, the parish loaf was the only bread we saw. Nobody speaks ill of it near me.
+opinion @1 merchants against 1 : Half the street's out of bread before Restday. Counters are never out of anything.
+opinion @1 watch against 1 : The Watch want to know where everybody's been. Nobody asks where the Watch have been.
+opinion @1 times against 1 : Every week costs a bit more. Up the Rise, nobody counts. Down here you count it in cakes.
+opinion @1 houses mixed 0 : Watch. Before the snow, two Houses will be quarrelling. Somebody up there's owed and not paid.
+opinion @1 festivals for 1 : Sweets, music and nobody watching the cake tray. I'd have one weekly.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Not seen you about. | #greet#. You'll be new, then.
+line @2 greet : #greet#. | #greet#. What's the news.
+line @1 kin.open [pair.kin!=no] : Oh. You. Sit. | Come in. I've been reckoning.
+line @1 again.open : You again. Something you want. | Back. I'll not ask why.
+line @1 greet.return : #greet#. | #greet#. Didn't hear you.
+line @1 farewell : #farewell#. | Right. Off I go.
+line @1 farewell.return : #farewell#. | See you, then.
+line @1 react.news : Go on. Who's owed what in this? | Tell me. I'll keep it.
+line @1 react.news.new : New to me. I'll remember. | First I've heard.
+line @1 react.news.known : Knew it. You hear things if you sit still. | Old. It came round yesterday.
+line @1 react.news.doubt : Who gains if it's true? Ask that first. | I'd not bet a cake on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bad turn. | Hm. That's hard.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's luck came in. | That's a good throw.
+line @1 answer.how : Tired. Same as ever. | Middling. Can't complain.
+line @1 ask.how : You managing? | Keeping your head above?
+line @1 decline : I can't. My reckoning wants doing tonight, and it's mine alone to do. | Not this time. There's nothing in it I'd want.
+line @1 accept_decline : Suit yourself. | Right. No matter.
+line @1 thank : Obliged. I'll pay it back. | Ta. That's one owed.
+line @1 deflect_thanks : Nothing to it. You owe me nothing. | Call it square.
+line @1 preclose : Right. I'm away. | That's my lot.
+line @1 accept_preclose : Go on, then. | Off you go.
+line @1 ack : Mm. | #bc_right#
+scene gr_reckoning
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I still keep every debt in cakes. Always have. Can't stop now. | You owe me a cake from last month. I'm only saying. | I know who owes who in this whole street. I don't say. I just know.
+b : Still in cakes? | Only saying? | Don't you say?
+a : Still in cakes. Coin's a liar. | Only saying. You'll pay. | Never. Knowing's enough.
+
+scene gr_dice
+when topic=pastimes
+does tell.self / react.self / assess
+a : I still throw the bones some evenings. I watch the paws more than the dice. | Played dice last night. Came home one cake up. That'll do. | I don't play big. Never have. One throw, one cake.
+b : Do you win? | One cake? | Sensible.
+a : More than I lose. | One cake's a win. | It keeps me fed.
+
+scene gr_market
+when topic=day here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Market's heaving today. I like it. You see who's buying and who's pretending. | Sat on the steps an hour and learned more than a week of talk. | When the market roars, the city's doing well. When it mutters, watch out.
+b : Pretending? | Learned what? | Watch out for what?
+a : Looking at things they can't afford. | Who's skint. Who's flush. Who's lying. | Somebody always gets hungry first.
+
+scene gr_summer_evening
+when topic=season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : A long summer evening. Only time I'm not tired. | I'll sit out till dark. Nobody can say I owe them for that. | Warm evening, quiet street. Free, and it's mine.
+b : Not even you? | Nobody? | It's a good one.
+a : Not even me. | Nobody. It's free. | It is.
+
+scene gr_smoke
+when topic=weather here.region=ridgemere here.weather=clear|overcast|fog
+does tell.complaint / react.complaint / assess
+a : Smoke off the works again. Years of it and I still mind. | Wind's bringing it down from the chimneys. My bread tastes of chimney. | Eyes stinging since breakfast. I'll be red-eyed till Restday.
+b : Still? | Your bread? | It'll clear.
+a : Still. Always will. | Everything. Even the cakes. | It never clears. It just moves.
+
+scene gr_wet_floor
+when topic=home|weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : The rain's under the door again. I'll be wet to the ankle by supper. | Every wet day, the same puddle, the same spot. | Wet floors. Can't abide them. Cold paws all night.
+b : Fix the door. | Same spot? | Put a board down.
+a : When somebody pays me what I'm owed. | Same spot. I've measured it. | I've a board. It floats.
+
+scene gr_houses
+when topic=lore|times here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Houses are polite to each other this season. That's how you know. | A quarrel among the Houses, and bread's the first thing dearer. Watch the bread. | Somebody up the hill owes somebody else. It always comes out.
+b : Know what? | The bread? | Owes what?
+a : That there's a quarrel coming. | Always the bread. Then the rest. | Doesn't matter. It always surfaces.
+
+scene gr_times
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : Hard times. Look at the dice games. Nobody's betting. | Lean. The cake stalls have shut early twice this week. | Times are bad. Everybody owes everybody. I've stopped counting. No. I haven't.
+b : Nobody? | Twice? | Haven't you?
+a : Nobody. When nobody bets, nobody's got coin. | Twice. I counted. | No. I never stop.
+
+scene gr_gossip
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : Heard something. #topic.subject.capitalize# #topic.claim#. | Here's a thing. #topic.subject.capitalize# #topic.claim#. Keep it. | They're saying #topic.subject# #topic.claim#.
+b : Who from? | Is it true? | Is that so?
+a : Doesn't matter who. It's out. | Half of it, maybe. | It is, if you believe it.
+
+scene gr_festival
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival. Cake stalls out. Folk careless with coin. Good day for me. | I'll throw the bones a few times and eat more than I should. | Music, sweets, and nobody counting. Except me.
+b : Careless? | Only a few? | Except you?
+a : Merry folk don't watch their change. | A few. Then a few more. | Somebody has to.
+
+scene gr_work
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : Work's work. I do it, I'm paid, we're square. | I like a job where the sums are plain. | I'll take any work that pays on the day. Owed wages are the worst debt.
+b : That's simple. | Plain sums? | The worst?
+a : It's meant to be. | Plain. No guessing. | The worst. You can't eat a promise.
+
+scene gr_food
+when topic=food
+does tell.self / react.self / assess
+a : Honey cake. Still the best thing a coin can buy. | I'd go without supper for a honey cake. Have done. | Somebody brought honey cakes in. I've had three. I'm not sorry.
+b : Still? | Instead of supper? | Three!
+a : Still. Always will be. | More than once. | Three. And I owe a fourth.
+
+
+young
+line @1 greet : #greet#. Nothing owed between us. Yet. | #greet#. I'm counting something. Don't put me off.
+line @1 greet.return : #greet#. I wasn't doing anything. | #greet#. I'm just sitting.
+line @1 farewell : Bye. Don't forget. | Bye, then.
+line @1 farewell.return : Bye. | Bye. Mind the puddles.
+line @1 react.news : Tell me. I'll not tell anyone. Probably. | Go on.
+line @1 react.news.new : I never heard that. | That's new.
+line @1 answer.how : Hungry. | All right. A bit tired.
+line @1 accept_decline : All right. | Fine, then.
+scene yg_one_cake
+when topic=food|smalltalk
+does tell.self / react.self / assess
+a : Somebody gave me half a honey cake. So they owe me half a cake back now. That's how it works. | I had a honey cake on Restday. The whole thing. I'm still thinking about it. | If you give me a cake, I'll owe you one. That's fair.
+b : That's not how it works. | Was it good? | I haven't got a cake.
+a : It is now. I said so. | Sticky. I licked my paws for an hour. | Then you owe me one for asking.
+
+scene yg_counting
+when topic=pastimes|day
+does tell.self / react.self / assess
+a : I can count to a hundred. In cakes. | I counted all the stalls in the market. Forty, and one more with its roof gone. | I know who owes who in our stair. I've been counting.
+b : Why in cakes? | That's a lot of stalls. | Who owes the most?
+a : Cakes are easier. Everybody knows what a cake is. | It's a lot. I counted twice. | Not saying. It's private.
+
+scene yg_market_noise
+when topic=day here.region=ridgemere
+does tell.feeling / react.self / assess
+a : The market's best when it's so loud your ears ring. | All morning on the steps, watching everybody buy things. | Somebody dropped a whole tray of buns. I helped. I helped a lot.
+b : You like it loud? | Didn't you buy anything? | You helped yourself, you mean.
+a : Nobody notices me when it's loud. | I'd no coin. Watching's free. | I helped. That's all I'm saying.
+
+rule @yg_bark_cakes
+when concept=bark
+does aside
+cooldown 8h
+say I'd do anything for a honey cake. Nearly anything. | One cake. That's all. One.
+
+
+adolescent
+line @1 greet [pair.band=strangers] : #greet#. You don't live by the gate. | #greet#. Never seen you before. That's fine.
+line @2 greet [here.time=dusk|night] : Evening. I'm only sitting here. | Evening. It's a long one.
+line @3 greet : #greet#. | #greet#. What is it.
+line @1 kin.open [pair.kin!=no] : Oh. It's you. Sit, if you want. | You. Good. I've been counting.
+line @1 again.open : You again. You must want something. | Back. I'm here. Where else would I be.
+line @1 greet.return : #greet#. | #greet#. Didn't see you there.
+line @2 greet.return [pair.band=friends] : Mm. Hello. You still owe me, you know. | Oh, it's you. Fine.
+line @1 farewell : See you. | Right. I'm off.
+line @1 farewell.return : #s8_teenbye# | Mm. See you.
+line @1 react.news : Go on. I'm listening. I'm always listening. | Tell me. Who else knows?
+line @1 react.news.new : News to me. People ought to tell me things. | That's new. I'll remember it.
+line @1 react.news.known : Knew already. Everybody talks on the steps. | Heard it this morning. I hear most things.
+line @1 react.news.doubt : Who told you that? Check who's owed what by them first. | That doesn't add up to me. Somebody's lying about it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Real bad. | Oh. That's not fair, that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good for them. There'll be cakes. | That's all right, then.
+line @1 answer.how : Tired. I'm always tired. | Fine. Same as yesterday.
+line @1 answer.how.poorly : Low. Don't ask. | Not great. It'll pass.
+line @1 ask.how : You all right? | Eaten today?
+line @1 decline : Can't. I've lessons, and somewhere to be after that. | Won't, sorry. Not without something in it for me.
+line @1 accept_decline : Suit yourself. | Right. Never mind.
+line @1 thank : Ta. Now I owe you one. | Thanks. It's remembered. Everything is.
+line @1 deflect_thanks : Don't. Now you owe me. | It's nothing. Well. It's half a cake.
+line @1 preclose : Right. I'd better go. | Got to be somewhere.
+line @1 accept_preclose : Go on, then. | Right. See you.
+line @1 ack : Mm. | #bc_right#
+line @1 give.advice : Never play dice with somebody who wants to play twice. | Check the coins you get back. Every time.
+line @1 warn [world.bandits=near] : Stop inside the gate. There's robbers. | Stay in town. Road's bad.
+scene ad_cake_ledger
+when topic=smalltalk|friends
+does tell.self / react.self / tell.self / react.self / assess
+a : I keep every debt in my head, counted in honey cakes. Never forget one. | You owe me three cakes, by the way. From the dice in spring. | Everybody I know owes me something or I owe them. I keep it all in cakes.
+b : Why cakes? | Three? Since when? | That's a lot to remember.
+a : Coin changes. A cake's a cake. Always the same size. | Since the spring. I don't forget. You'll pay. | It is. I don't forget, though. Can't.
+b : That's clever, I suppose. | I'll pay you back. | Doesn't it wear you out?
+a : Not clever. Only true. | I know. You will. Everyone does. | It does. Some nights I'm up doing sums in cakes.
+
+scene ad_owing_back
+when topic=friends|smalltalk
+does confide / react.self / assess
+a : I owe somebody two cakes and it's eating at me. I'll pay. Always do. | I'm owed more than I owe. Keeps me afloat, that. | The worst thing is owing. I'd sooner be owed forty than owe one.
+b : You'll pay it. | Is that how you do it? | Why's owing so bad?
+a : Restday. Two cakes. Written in my head. | Mostly. I'm careful. Careful's all I've got. | Because then they've got something on you.
+
+scene ad_dice_steps
+when topic=pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : There's dice behind the stalls after the bell. I play. I don't always win. Nearly always. | I won four cakes at dice yesterday. Spent none. Saving them. | Never play the big ones from up the gate. They throw too hard.
+b : Nearly always? | Saving for what? | Why's that bad?
+a : I let them win sometimes. So they'll play again. | Not telling. Something. | A hard throw hides a bad die. That's what I think.
+
+scene ad_dice_rule
+when topic=pastimes
+does give.advice / react.self / assess
+a : Watch paws. The dice are only bones. | You can tell who'll lose by how they hold the cup. | First throw, never bet much. You're learning who you're playing.
+b[stage=adult|old] #grown : You shouldn't be gambling. | That's cold, that. | Who taught you that?
+b : Is that a trick? | Can you really? | Clever.
+a@grown : It's not gambling. It's cakes. | It's a true way. | Nobody. I watched.
+a : No trick. Just watching. | Most times. | Not clever. Careful.
+
+scene ad_market_roar
+when topic=day here.region=ridgemere here.time=day
+does tell.feeling / react.self / assess
+a : A heaving market's the best kind. Nobody looks at you and you see everything. | Sat on the steps by the Market Hall all morning. Counted three arguments and a pickpocket. | When it's that busy, you can hear the coin moving. I like that sound.
+b : A pickpocket? | What do you see? | You like the noise?
+a : I didn't say anything. Not my business. | Who's buying, who's skint, who owes who. | Noise means coin. Quiet means nobody's buying.
+
+scene ad_summer_evening
+when topic=season|pastimes here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : Long summer evenings, I'm not tired at all. | Steps till dark, and nobody shifted me. | In summer you can stay out late and it's still light. Best thing about the year.
+b : Not even a bit? | That's a good evening. | It goes quick, though.
+a : Not even a bit. It's the cool. | It was. Every night, if I could. | It does. So I stay out.
+
+scene ad_smoke
+when topic=weather here.region=ridgemere here.weather=clear|overcast|fog
+does tell.complaint / react.complaint / assess
+a : Smoke off the works again. My eyes keep watering. | I hate the smoke. Gets in your fur, your eyes, your bread. | Somebody's burning something wet. I can taste it.
+b : Folk say you stop noticing. | Your bread? | It's the city.
+a : I haven't. Not in my whole life. | Everything tastes of it. | I know. I'd still change it.
+
+scene ad_wet_floor
+when topic=home|weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Rain gets under our door and makes a puddle right where you step. Every time. | Wet floor again. Rag down. Rag's soaked now too. | Wet boards, worst thing going. Cold paws all night.
+b : Put a sack down. | That's no good. | Put a board across.
+a : No sack. That's the trouble. | It isn't. I'll move the rag again. | I'll find one. Somebody owes me a board.
+
+scene ad_lessons
+when topic=work|day self.job=child
+does tell.self / react.self / assess
+a : Lessons all morning. I can do sums better than anyone. I don't let on. | The teacher says I'm sharp. I say I'm tired. Both true. | I fell asleep over my slate. The teacher put a hood over me and let me sleep.
+b : Why not let on? | Are you both? | That's kind.
+a : They'd want me to do more. | Mostly tired. | It was. I owe that one a cake.
+
+scene ad_houses_quarrel
+when topic=lore|times here.region=ridgemere
+does give.opinion / react.self / assess
+a : Before winter's in, the Houses will quarrel. You watch. | Somebody up there owes somebody else. You can tell. They've gone polite. | When the Houses quarrel, it's us down here that pay. In bread.
+b : How do you know? | Polite? | You might be right.
+a : I watch who stops buying from who. | Polite's what comes before a quarrel. | I'm usually right. Nobody listens.
+
+scene ad_lean_week
+when topic=times world.times=hard|lean self.wealth=poor|destitute
+does confide / react.self / assess
+a : There was a week we had nothing but the parish loaf. I'll not forget that. | I'm skint. Not a cake to my name this week. | Times are bad. The dice show it. Nobody's betting.
+b : I'm sorry. | That's hard. | Nobody?
+a : It's all right. It got us through. | I'll manage. Somehow. | Nobody. When nobody bets, nobody's got coin.
+
+scene ad_watch_nosy
+when topic=crime|gossip here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The Watch asked me where I'd been last night. Like I'd tell them. | They always ask us on the steps first. Never anyone from the Rise. | A watchman gave me a long look. I'd done nothing. That time.
+b : Did you tell them? | Is that so? | That time?
+a : I told them I was asleep. Nearly true. | Every time. I keep count. | That time.
+
+scene ad_festival_cakes
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival means the cake stalls are out and nobody's watching them close. | Music, sweets, and no curfew. That's my sort of festival. | I'll win a pile of cakes at dice at the festival. Everybody's careless when they're merry.
+b[stage=adult|old] #grown : Behave yourself. | Mind you get home. | No cheating, mind.
+b : You'll make yourself sick. | Your sort, is it? | Careless?
+a@grown : I always behave. Mostly. | I will. Late. | I never cheat. I just watch.
+a : Worth it. | The best. | Careless. That's when you win.
+
+scene ad_newcomer
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : There's somebody new. #topic.subject#. I'll see what sort soon enough. | Word on the steps: #topic.subject# has moved in somewhere. | #topic.subject.capitalize#, new here. I'll watch before deciding.
+b : Give #topic.them# a chance. | Is that so? | Watch what?
+a : I will. A small one. | It is. The steps hear first. | Whether debts get paid.
+
+scene ad_gossip_keen
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : I heard something on the steps. #topic.subject.capitalize# #topic.claim#. | Here's one. #topic.subject.capitalize# #topic.claim#. Not from me, mind. | You'll want this. #topic.subject.capitalize# #topic.claim#, they're saying.
+b : Who told you? | Is it true? | I won't say.
+a : Nobody. I just listen. | Probably. Half, anyway. | Good. That's one I'm owed.
+
+story ad_story_first_debt [topic=memories]
+  : As a little one, I borrowed a honey cake off an older pup and never paid it back.
+  : That pup never once mentioned it. Just looked at me, every time.
+  ask : Do you know how long that lasted?
+  b : A week?
+  : Two years. I paid it back in the end with interest. Three cakes. I've never owed anything since without knowing it.
+
+story ad_story_lost_throw [topic=pastimes]
+  : I once lost every cake I had on one throw. Twelve cakes. All on snake eyes.
+  : Walked home with nothing and didn't sleep.
+  ask : Next morning, could you have kept away from the dice?
+  b : Never played again, I'd hope.
+  : I played again. But I never bet more than one cake on one throw after that.
+
+story ad_story_kind_teacher [topic=memories|work self.job=child]
+  : The winter I was ill I still went to lessons, because there was a stove.
+  : The teacher never said anything. Just left bread on my slate every morning.
+  ask : Is that a debt, do you think?
+  b : I'd call it a kindness.
+  : So would I. But I'll pay it anyway. In cakes. Someday.
+
+rule @ad_bark_dice
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Anybody for the bones? One cake a throw. | Snake's eyes. Again.
+
+rule @ad_bark_smoke
+when concept=bark here.region=ridgemere here.weather=clear|overcast
+does aside
+cooldown 10h
+say My eyes. This smoke. | Wet wood burning. Somebody's idea of a fire.
+
+rule @ad_bark_owed
+when concept=bark
+does aside
+cooldown 9h
+say Still owed two cakes. I've not forgotten. | One more cake and we're square.
+
+dlg @1 resident.hub : #greet#. What do you want. | #greet#. I'm just sitting. You can sit too.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You owe me nothing. That's a good start. | #topic.player#. I remember you.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Not looking for trouble. | I haven't done anything. Today.
+dlg @1 resident.job [self.job=child] : Lessons. Sums are what I'm best at. | Lessons in the morning. Steps in the afternoon.
+dlg @1 resident.bye : See you. | Right. Bye.
+dlg @1 resident.news [world.news] : Heard on the steps: from #world.news_from#, #world.news#. | Somebody said #world.news#. From #world.news_from#.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing on the steps today. | Quiet. Too quiet for coin.
+dlg @1 resident.gossip [here.gossip=yes] : The steps have it that #topic.subject# #topic.claim#. | Going round: #topic.subject# #topic.claim#.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing worth a cake. | Nothing. Ask me tomorrow.
+graft resident.hub
+choice Why do you count everything in cakes? -> cakes
+node cakes
+say Coin goes up and down. A honey cake's always a honey cake. So I count in cakes. You owe me none yet. Best stay so.
+mood calm
+free
+choice How many are you owed? -> owed
+choice Back to it. -> hub
+node owed
+say Thirty-one and a half. And I owe four. That's the reckoning, and I carry it about.
+choice I'll not owe you anything. -> hub
+choice Goodbye. -> bye

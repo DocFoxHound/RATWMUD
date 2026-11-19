@@ -1,0 +1,297 @@
+# rm159, the paw-span measurer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm159
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_magda_orme
+written_by claude
+title the paw-span measurer
+fits stage=adult|old
+prefers job=none humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk measures_everything_in_paw_spans
+likes oatcakes swimming sharp_knife autumn_wind
+dislikes flies wet_floors
+fears a_winter_with_no_work the_cold_getting_into_the_chest
+hopes a_room_with_a_dry_floor a_trade_of_my_own
+topics work +0.4 weather +0.3 pastimes +0.3 food +0.2 times +0.2 gossip -0.3 festival -0.3
+styles comfort=dry_joke gossip=reluctant refuse=flat tease=dry
+marks oath saying
+persona #self.first# works long days with timber, says little and most of it dry, swims in cold water for the pleasure of it, and sizes up every table, door and wolf in paw spans before passing judgement.
+
+words
+oath! = Span and a half | Nine spans and a splinter
+saying! = Measure first, grumble after | A span's a span, whoever's paw
+span = a span | one paw's span
+spans = spans | paw spans
+yard = the yard | the slip yard down the hill
+oatcake = an oatcake | an oatcake, buttered thin when there's butter
+swim = a swim | a dip off the cold steps
+blowy = an autumn gale | a good wild autumn blow
+wetboards = wet boards | puddles on the floorboards
+room = the room | the rented room thirty-one steps up
+nose = this nose | the old nose and its scar
+plank = a plank | a length of good oak
+dry = Hm | Is that so, now
+blade = my knife | a blade that splits a hair lengthways
+
+any
+opinion @1 houses against 1 : The great families keep every bench spoken for before you reach the door. My sort stands. | I work on their timber. I'll never sit at their tables. Fine; their chairs are too narrow.
+opinion @1 merchants against 2 : Not a penny more in my pocket, and still the loaf climbs. Neat trick. | I count the price of bread in spans of loaf now. It's shrinking.
+opinion @1 newcomers against 1 : Each new face at the yard gate wants the work I'm after. I don't hate them. I count them. | New folk at the yard gate every week. More hands than benches.
+opinion @1 times against 2 : Worse by a span each week. The Heights never take the measure of it. So I do. | A span less bread, a span more rain. That's the times.
+opinion @1 dole for 2 : The dole carried me over a black stretch. Run it down and you'll have me to answer. | Pride's a fine thing on a full stomach. On an empty one, the dole.
+opinion @1 festivals against 1 : A street built for forty with four hundred in it. I'd sooner watch from my window. | I go home early and listen to it through the wall. Same music, fewer elbows.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're about nine spans from my door, and stopping. | #greet#. Mind your feet; the cobbles are loose here.
+line @2 greet [here.time=dawn] : #greet#. Down to the yard before the bell. | Early. #greet#.
+line @3 greet [self.working=yes] : #greet#. Talk while I work; my paws can manage without me. | #greet#. Stand clear of the timber.
+line @4 greet [here.time=dusk|night] : #greet#. I'm half asleep, and that's the good half. | #greet#. Late, for honest folk.
+line @5 greet [pair.band=friends] : You. Good. Sit; that crate's sound. | #greet#. You look a span taller. Must be the hat.
+line @6 greet : #greet#. | #greet#. Quiet day, so far.
+line @1 greet.return : #greet#. Nothing broken, by the look. | #greet#. Same as ever.
+line @2 greet.return [pair.band=friends|family] : There. I'd started measuring the door for you. | You. Sit down, you're blocking my light.
+line @3 greet.return [self.working=yes] : Busy. Talk anyway. | #greet#. Mind the sawdust.
+line @4 greet.return [here.time=dusk|night] : Late. Keep it short and I'll be grateful. | #greet#. Shoes off the wet floor, please.
+line @1 kin.open [pair.kin!=no] : Oatcakes on the shelf. Leave me one. | Shut the door; the wind's having the candle.
+line @1 again.open : Again. Can't keep away. | Twice today. That's a habit forming.
+line @1 farewell : #farewell#. | Go on. Mind the loose step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamp's that way. | Go straight home. The lanes aren't worth it.
+line @1 farewell.return : #farewell#. | Mind yourself.
+line @1 react.news : Go on, then. | Hm. Tell it.
+line @1 react.news.new : That's new. Nobody at the yard said. | Hadn't heard. News reaches me slow, like the timber.
+line @1 react.news.known : Heard that at the yard gate. | Old, that. Two days, at least.
+line @1 react.news.doubt : Somebody's added a span or two to that, I'd say. | Hm. Second-hand, is it? Then I'll wait for first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. Sorry for it. | Bad business. Nobody earned that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's luck turned. | Now that's worth hearing. Good.
+line @1 answer.how : Fair. Dry, which is something. | Tired, wet, and still here.
+line @1 answer.how.busy [self.working=yes] : Busy. Good busy, mostly. | Paws full. Mouth free, though.
+line @1 answer.how.poorly [self.hungry=yes] : Hungry, plain truth. I'll manage. | Empty belly. It'll pass.
+line @1 ask.how : You look done in. Are you? | Eating, are you? Properly?
+line @1 sympathise : That's a hard road. Sit a bit. | I'm sorry. Truly. I've nothing clever to say about it.
+line @1 reassure : It'll turn. Most things turn, given a week. | You'll be all right. You're tougher than you look.
+line @1 decline : Not tonight. Yard at dawn, and not a scrap of strength left over. | Not this time. I'm worn through, and worn-through is no use to anybody.
+line @1 accept_decline : Fair. I'd say no too. | Right. No bother.
+line @1 thank : Kind. That'll stay with me. | Thanks. I mean that.
+line @1 deflect_thanks : It was nothing. Half a span of nothing. | Don't. It cost me a walk.
+line @1 preclose : I'd best go. The bell won't ring itself. | Well. Bed's shouting for me.
+line @1 accept_preclose : Go on. | Right you are.
+line @1 tease [pair.band=friends] : You're a span shorter every time you're wrong. You'll be a pup by Restday. | That coat's three spans too long. Did you grow, or shrink?
+line @1 tease.return : Says you, with that nose. | Measure your own first.
+line @1 ack : #dry# | Hm. Right.
+line @1 give.advice : Measure before you buy. Twice if it's wood. | Dry socks, tight purse. That's all the wisdom I've got.
+line @1 warn [world.bandits=near] : Stay in the walls. There's nothing out there worth the walk. | Thieves out past the gate, folk say. Don't go.
+rule @bark_span
+when concept=bark
+does aside
+cooldown 8h
+say Nine spans, that. Nine and a bit. | That door's a span short. Always was.
+
+rule @bark_yard
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Mind your paws, timber coming through. | Hold that end. No, the other end.
+
+rule @bark_floor
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Who walked in wet? Boards are swimming. | Feet. Wipe them. All of you.
+
+rule @bark_flies
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Flies. In the bread again. | Shoo. Off it, the lot of you.
+
+scene span_table
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : That table's four spans and a bit. The bit's why it wobbles. | I measured the stair to my room last night. Thirty-one steps, a span and a half each.
+b : Why measure it at all? | Why count those?
+a : Habit. A paw's always with you, a rule isn't. | Something to do on the way up. Better than thinking about the rent.
+b? : #bc_fair_enough# | #bc_ha#
+
+scene span_wolf
+when topic=smalltalk|friends
+does tease / tease.return / laugh
+a : You've grown. Half a span, I'd guess. Or you've stopped stooping. | Stand still. Shoulder to shoulder, you're four spans wide. That's a lot of coat.
+b : I've been this size for years. | Thank you very much.
+a : Then you've stopped stooping. Keep it up. | Didn't say it was a bad thing. A good door wants a wide wolf.
+
+scene yard_morning
+when topic=work here.time=dawn self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Down at the yard by the bell. Timber stacked, saws oiled, nobody talking yet. | The yard's quiet at first light. Just gulls and the smell of tar.
+b : Sounds peaceful. | Smells worse than it sounds, I bet.
+a : Till the foreman comes. Then it's noise till dusk. | It does. You stop smelling it by noon. Then you smell it at home all night.
+
+scene yard_measure
+when topic=work self.working=yes self.job=none
+does tell.self / react.self / assess
+a : The foreman sends me to measure when the rule's gone missing. My paw's more honest than the rule anyway. | Cut a length short by a span today. Came out of my pay. Fair, I suppose.
+b : That's handy. | Ouch.
+a : It's handy for them. My pay doesn't know the difference. | It was a short span. A hungry one.
+
+scene yard_noise
+when topic=work|health self.working=yes self.job=none
+does tell.complaint / sympathise / assess
+a : My ears ring after a day of mallets. The mallets follow me to bed. | Splinter in my paw since noon. I'll dig it out with the knife tonight.
+b : Your ears will toughen. | Mind it doesn't fester.
+a : I'm used to it. They ring anyway. | I'll mind. I've a good blade for it.
+
+scene cold_swim
+when topic=pastimes|weather here.region=ridgemere here.season=summer|autumn
+does tell.self / react.self / assess
+a : Down the wharf steps and in, before work. Cold as a debt collector. Lovely. | Clears the head, #swim#. In, under, out, and you're new.
+b : Rather you than me. | Isn't it filthy down there?
+a : It is me. Nobody follows me in, which is the point. | Further out it's clean. Mostly. Don't swallow, that's the rule.
+
+scene winter_swim
+when topic=pastimes|season here.season=winter here.region=ridgemere
+does tell.self / react.self / assess
+a : Went in the Sound this morning. Didn't stay. Four strokes and out. | Too cold for a swim even for me. One toe and I changed my mind.
+b : In this weather? | Sensible, for once.
+a : Four strokes. I counted. My teeth counted faster. | Not for long. I'll be back in by spring.
+
+scene autumn_gale
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #blowy.capitalize# today. My favourite. Blows the harbour stink clean off. | Wind's up. I walked the sea wall on purpose, to lean into it.
+b : It nearly had my hat off. | You'd like a storm, then.
+a : Good. Hats are for indoors. | A storm's too much. A gale's just right.
+
+scene wet_floor
+when topic=weather|home here.weather=rain
+does tell.complaint / react.self / assess
+a : Rain comes under my door and sits on the boards. I come home to a pond. | Somebody tramped in wet and left #wetboards# right up to the stair. I could spit.
+b : Can't you stop it? | They'll dry.
+a : Rag along the door's foot. The rain's cleverer than the rag. | They'll dry in a week, and it rains every day. Do the sums.
+
+scene flies_heat
+when topic=weather here.season=summer
+does tell.complaint / react.self / assess
+a : Flies all over the yard in this heat. They like tar, it turns out. | A fly drowned in my soup at noon. Fished it, ate the soup. What else?
+b : Horrible. | You ate it?
+a : They're worse than horrible. They're patient. | I was hungry. The fly wasn't eating it.
+
+scene oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : An oatcake and a scrape of butter. That's luck, for me. | Made a stack of oatcakes on Restday. Down to two already. They don't last.
+b : That's not much. | Two's still something.
+a : It's plenty when it's buttered. | Two's breakfast. Then it's whatever I can find.
+
+scene empty_belly
+when topic=food|health self.hungry=yes
+does tell.feeling / sympathise / assess
+a : Belly's rumbling louder than the yard saws. Pay day's two days off. | Skipped supper. Not on purpose. There wasn't any.
+b : That's hard. | Is there nothing?
+a : It's a belly. It complains. I've stopped answering. | There's tomorrow. Tomorrow usually has something.
+
+scene dole_line
+when topic=times|prices self.on_dole=yes
+does tell.self / react.self / assess
+a : Dole queue this morning. Nineteen ahead of me. I counted spans to pass the time. | The dole loaf's a span shorter than it was. I measured. Nobody else did.
+b : No shame in it. | They'd never notice.
+a : No. Just a long wait and a short loaf. | They noticed. They did it.
+
+scene the_scar
+when topic=health|memories
+does tell.self / react.self / assess
+a : This scar? A plank swung round. I ducked, nearly. | Folk ask about my nose. I tell them it's none of their business. You can ask, though.
+b : Nearly? | All right. How'd you get it?
+a : Nearly's what left the scar. Ducked the rest. | A board swung wild. It won. I've since learned to duck.
+
+scene times_lean
+when topic=times world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : The yard's taking on fewer. Four of us let go Restday. I measured the queue at the gate after. Long. | Lean times. Bread's dearer, pay's the same, and the rent's never late, oddly.
+b : Hard all round. | That's the way.
+a : It is. Keep your head down and your paws useful. | That's the way it's always been, I suppose. A span worse each year.
+
+scene wagons_timber
+when topic=caravan world.wagons=late self.working=yes self.job=none
+does tell.complaint / react.self / assess
+a : Timber carts late again. The yard stands idle and nobody's paid for standing. | No carts, no planks. Sat on a crate half the morning with nothing to measure.
+b : That's no good. | Lost wages, then?
+a : No good to me. The foreman's still paid. | Half a day's. That's an oatcake or three.
+
+scene gossip_dry
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. Picked that up at the gate. Size it how you like. | Somebody at the yard said #topic.subject# #topic.claim#. They say a lot at the yard.
+b : Is it true? | Huh.
+a : No idea. I measure planks, not talk. | That's all I had. Don't make it bigger.
+
+scene festival_window
+when topic=festival
+does tell.self / react.self / assess
+a : Festival's tomorrow. I'll watch from my window and keep my elbows to myself. | The music's grand. The crush that comes with it, less so.
+b : One hour, come down. | Hear it from home, then.
+a : An hour. Maybe. No promises. | Through the wall. Same tune, more room.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : My knife goes to #self.friend# on loan, and to hardly anybody else. That's a big thing, the knife. | #self.friend# knows me. Doesn't ask much. That suits me fine.
+b : That's trust. | Everybody wants one of those.
+a : It is. Blade comes back sharper, too. | It is. One's enough. Two's a crowd.
+
+scene a_trade_hope
+when topic=dreams|work
+does confide / react.self / assess
+a : Someday, a bench that's mine. Not much, three spans by five. | What I want? Boards under me that aren't wet. That's the whole wish.
+b : You'll get there. | Not much to want.
+a : Maybe. I've measured it already. | It's a lot when the rain's in.
+
+story first_span [topic=memories self.age>=20]
+  : My grandad never owned a rule. Measured every door in the street with his paw.
+  : I asked him once what he'd do if his paw was wrong.
+  b : What did he say? Was it?
+  : Said a paw's never wrong, it's the door. I believed him. Still do.
+
+story cold_water [topic=pastimes|memories self.age>=20 here.region=ridgemere]
+  : The first time I jumped off the wharf steps I was small, and somebody bet me a penny I'd not.
+  : I went in, came out blue, and they paid in oatcakes, which was better.
+  ask : Ever tried it yourself, the Sound in the morning?
+  b : Never. Not for a penny or an oatcake.
+  : Shame. Warmest I ever feel is after, if that makes sense.
+
+story lost_post [topic=memories|work self.age>=25 self.wealth=poor|destitute]
+  : I had steadier work, years back. A dry bench, even.
+  : Somebody's cousin needed it more, it turned out. Funny how cousins always do.
+  b : That's not fair. What did you do?
+  : Took what was going. Planks and tar. I'm good at it now. Spite's a good teacher.
+
+dlg @1 resident.hub : #greet#. Say it short; I've a long day. | #greet#. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. About nine spans closer than last time. | #topic.player#. Back, then.
+dlg @3 resident.hub [here.time=night] : It's late and I'm done in. Go on. | Late. Quick, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from where you are. I've a long reach. | Hm. Go on, then. Carefully.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Timber, mostly. Long days. | I carry, I measure, I cut. Mostly I carry.
+dlg @2 resident.job : #self.trade_words.capitalize#. It's work. I'll take it. | Head down, paws going. Works well.
+dlg @1 resident.news [world.news] : Heard at the gate, from #world.news_from#: #world.news#. That's my lot. | Folk at the yard had it: #world.news#. Out of #world.news_from#, they said.
+dlg @2 resident.news [world.event_words] : Everybody's on about #world.event_words#. I'm just listening. | #world.event_words.capitalize#. That's the talk today, near enough.
+dlg @3 resident.news [world.wagons=raided] : Somebody's stripped a wagon past the walls. Timber's late because of it. | A cart's been stripped. I'd stop in town, myself.
+dlg @4 resident.news [world.death=recent] : A neighbour died this week. Quiet since. | We've had a burying. It's knocked folk flat.
+dlg @5 resident.news [world.wedding=recent] : A wedding this week. Somebody's happy, anyway. | Somebody got wed. The music came through my wall all night.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# News finds me late, anyway. | Nothing new. Planks and rain.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Not a word added by me. | Somebody said #topic.subject# #topic.claim#. I'd not stake much on it.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't carry talk. #gossip_none# | Nothing I'd repeat. Ask somebody nosier.
+dlg @1 resident.bye : #farewell#. Mind the loose cobble. | #farewell#. Stay dry, if you can.
+graft resident.hub
+choice Why do you measure everything with your paw? -> spans
+node spans
+say Habit. My grandad did it. A paw's always with you; a rule walks off. I'd guess you're about four spans across the shoulder.
+mood calm
+free
+choice Is that accurate? -> spans_true
+choice Goodbye. -> bye
+node spans_true
+say Near enough for a door. Not for a ship. For a ship, I'd borrow the rule.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye

@@ -1,6 +1,6 @@
-# mb111, the late skipper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb111, the late skipper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb111
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -239,7 +239,7 @@ story sloe_pump_handle [topic=home self.age>=30]
   : The handle broke one winter. Nobody mended it. I did, with my own iron.
   ask : So whose is it, then?
   b : Yours, I suppose.
-  : Exactly. Not that #across# sees it.
+  : Exactly. Not #across# sees it.
   b : #bc_i_know#
 
 story sloe_empty_chapel [topic=faith self.age>=25]
@@ -252,7 +252,7 @@ story sloe_empty_chapel [topic=faith self.age>=25]
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Quick, if it's something. I'm #held#.
 dlg @2 resident.hub [topic.meeting=known] : You. #greet#, #topic.player#. What's it this time?
 dlg @3 resident.hub [pair.disposition=warm] : #greet#, #topic.player#. Walk with me. I'm late; you can talk while I'm late.
-dlg @1 resident.job : I'm #self.trade_words#. I know #bar# better than anyone, and I keep it to myself.
+dlg @1 resident.job : #self.trade_words.capitalize#. I know #bar# better than anyone, and I keep it to myself.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? Depends who's asking. #across.capitalize# and I aren't speaking. That's news enough.
 dlg @1 resident.bye : #farewell#. Don't wait for me.
 graft resident.hub

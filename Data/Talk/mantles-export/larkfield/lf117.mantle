@@ -1,6 +1,6 @@
-# lf117, the bogwise pot hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf117, the bogwise pot hand (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf117
-revision 2
+revision 3
 state ready
 dialect larkfield
 accent light broad
@@ -317,7 +317,7 @@ dlg @1 resident.hub : #greet#. I have #pots# to finish. | #greet#. Keep your #bo
 dlg @2 resident.hub [topic.meeting=known] : You took the dry #path# back. | The #kitchen# is nearly quiet.
 dlg @1 resident.job : I wash #pots# at #self.workplace#. | I clear #plates#, carry #water#, and dry the #floor#.
 dlg @1 resident.bye : #farewell#. The #bucket# is waiting. | #saying.capitalize#. Stay on firm ground.
-dlg @1 inn.greet [here.inn_helper=yes] : I work in the #kitchen#. Ask #here.innkeeper# for a #bed#. | I can find a #meal#; #here.innkeeper# holds the #keys#.
+dlg @1 inn.greet [here.inn_helper=yes] : I work in the #kitchen#. Ask #here.innkeeper# for #bed#. | I can find a #meal#; #here.innkeeper# holds the #keys#.
 dlg @1 inn.bye : #farewell#. Watch that wet #step#. | Take the dry #road# beyond the #door#.
 graft resident.hub
 choice How do you cross a bog? -> bog

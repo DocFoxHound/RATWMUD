@@ -1,0 +1,382 @@
+# rm139, the thunder-counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm139
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ebba_netherby
+written_by claude
+title the thunder-counter
+fits stage=young|adolescent|adult|old
+prefers temper=calm talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk counts_the_gap_between_the_flash_and_the_thunder
+likes crisp_apples wrestling quiet_chapel thunder
+dislikes smoke waiting
+fears a_storm_too_close_to_count lessons_that_never_end
+hopes to_count_the_longest_gap_ever to_win_on_the_green
+topics weather +0.5 pastimes +0.3 food +0.2 family +0.2 faith +0.2 gossip -0.4
+styles comfort=steady gossip=uninterested refuse=plain tease=none
+marks oath saying
+persona #self.first# is a calm, serious young wolf of Northgate who counts between the flash and the bang in every storm, likes a crisp apple and a fair bout on the green, sits quiet in the empty chapel, and makes waiting bearable by counting it.
+
+words
+oath! = Flash and bang | Thunder and apples | One-and-two
+saying! = If you count it, it's farther off | Counting makes it smaller
+gap = the gap | the counting gap
+flash = the flash | the white flash
+bang = the bang | the thunder after
+storm = a storm | a big growly storm
+apple = a crisp apple | an apple that goes crack
+green = the green | the wrestling green
+bout = a bout | a proper bout on the green
+pews = the empty pews | the chapel with only me in it
+smoke = smoke | smoke in my eyes
+lessons = lessons | the long lesson
+slate = my slate | the slate with my sums on
+
+any
+opinion @1 festivals for 1 : At festivals there's sugar and fiddles and no early bed. I like all three. | I count the drums at festivals. They go too fast to count.
+opinion @1 houses for 1 : The big Houses build things. Big things, that stay up. | Greatly builds things. I like things that stay built.
+opinion @1 times for 1 : There's bread and a roof. I think that's enough. | Some folk always want more. I don't, mostly.
+opinion @1 city for 1 : Ridgemere has the best storms. Everybody says so. Well, I say so. | It's big and wet and I know all of my street.
+opinion @1 strangers mixed 0 : Strangers get looked at first. Talking comes later. | Some strangers are nice. You can't tell till they talk.
+
+grown
+line @1 greet : #greet#. There's weather coming. I'd say an hour. | #greet#. Mind your step; the stones are wet.
+line @1 greet.return : #greet#. Well enough. | #greet#. Quiet day.
+line @1 farewell : #farewell#. | #farewell#. Watch the sky.
+line @1 farewell.return : #farewell#. | And you. Get in before it breaks.
+line @1 react.news : Go on. In order, if you can. | I'm listening.
+line @1 react.news.new : I hadn't heard that. | That's new to me.
+line @1 react.news.known : I'd heard. From two places, so it's likely true. | Old news, I'm afraid.
+line @1 react.news.doubt : Twice more, from other mouths, and then I'll count it. | That doesn't add up, from what I know of it.
+line @1 answer.how : Steady. I can't ask more. | Well. Content, mostly.
+line @1 decline : Better not, thank you. Today's spoken for. | Not today, thank you. Another time, maybe.
+line @1 accept_decline : That's fine. | No matter.
+line @1 thank : Thank you. That was decent. | Thanks. That stays with me.
+scene grown_count
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : #oath#. Nine. I still count the gap; habit from a pup. It's going. | Six. Over the wharf, roughly. I've been right for years. | I count storms like other folk count money.
+b : Nine's far. | You'd know. | It's a cheap hobby.
+a : Far enough. We'll be dry. #saying#. | I would. I've counted thousands. | Cheapest there is. And it never lies.
+
+scene grown_quiet_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : An empty chapel and me. Always has been. | An empty chapel's the best room in the city. | After the bells stop, it's very still in there.
+b : It is peaceful. | Is it? | It would be.
+a : Nobody wants anything from you there. | For me, yes. You can hear yourself. | Still enough to count your heartbeats.
+
+scene grown_apple
+when topic=food
+does tell.self / react.self / assess
+a : A cold, crisp apple. Nothing beats it, for me. | I still count my bites on an apple. Don't laugh. | Soft apples I give away. I can't help it.
+b : Hard to beat. | I won't. | Somebody gets lucky.
+a : It is. Simple and loud. | Eleven, usually. | They do. I keep the crack for myself.
+
+scene grown_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : I still watch the bouts on the green. I can tell who'll win by their feet. | Wrestling's fair or it's nothing. I've always said so. | I was on the green as a pup, wrestling. Never bit anybody. Proud of that.
+b : Can you? | Quite right. | You should be.
+a : Every time. Feet first, then shoulders. | Fair, and you shake paws after. | I am. Small thing, but mine.
+
+scene grown_smoke
+when topic=day|weather here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Smoke's low today. My eyes are watering. | The chimneys still get me. All my life here, and still. | A day with rain and no smoke. That's my sort of day.
+b : It's thick. | Some never do. | That's rare.
+a : It'll lift with the wind. | I won't now. It's too late. | Rare enough to count.
+
+scene grown_waiting
+when topic=smalltalk|day
+does tell.complaint / react.complaint / assess
+a : I hate waiting. Always have. I count, and it helps a bit. | Kept waiting an hour. I counted to three thousand and left. | If somebody says a time, I'm there at it. I expect the same.
+b : Counting helps? | Three thousand? | That's fair.
+a : A bit. It gives the waiting a shape. | And six. Then I went. | It is fair. Not everybody thinks so.
+
+scene grown_family
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : Storms always put me in mind of #self.mother#. I couldn't say why. Yes, I could. | If it thunders, I'd like #self.mother# near. Old habit. | Nobody's nerve in a storm beats #self.mother#'s.
+b : That's nice. | A good habit. | High praise.
+a : It's true. Some things stay. | The old habits are the good ones. | It's meant.
+
+scene grown_bells
+when topic=day|faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I count the close bells without meaning to. Twelve, there. | Somebody rang thirteen by mistake this morning. I always notice. | The bells and the thunder. I count both. Thunder's better.
+b : Habit. | Do you? | Why better?
+a : An old one. Won't shake it now. | Always. I can't help it. | It tells you something. Bells only tell the hour.
+
+scene grown_gossip
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Gossip's not for me. It never adds up. | A tale came my way. I didn't count it. | Unseen, unsaid. Simple.
+b : Fair enough. | Didn't count it? | Simple's good.
+a : It's mostly nothing, dressed up. | Didn't believe it. Same thing. | Less trouble that way.
+
+scene grown_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain, no thunder. Dull rain. | I'm waiting for this to turn to a storm. It might. | Just rain. I'll count the drips off the gutter, then.
+b : It might not. | Might. | That's a lot of drips.
+a : Then it's dull all day. | I'll watch the clouds. | I'll lose count. I always do.
+
+scene grown_carts
+when topic=caravan world.wagons=in
+does tell.news / react.news / assess
+a : Twenty-two carts through the gate, I made it. | Wagons came in this morning. More than last week. | Carts in. The street's busy again.
+b : That's a lot. | Good. | Good news.
+a : It is. Best count in a month. | Better times, maybe. | It is. Busy's better than waiting.
+
+scene grown_times
+when topic=times
+does give.opinion / react.self / assess
+a : Bread, a roof. I don't need more. | Good times, lean times, either way. I count what I've got, not what I haven't. | I'm content. It's not exciting, but it's mine.
+b : Good way to be. | Wise. | Content's good.
+a : It works for me. | Saves worry. | It is. Most days.
+
+story grown_story_storm [topic=memories|weather self.age>=20 self.mother]
+  : The longest gap I ever counted was fourteen. I was small, on the step with #mum#.
+  : That storm stayed far over the Sound and never came near.
+  ask : Have you ever counted one?
+  b : Not yet. I will now.
+  : You should. #saying#. It's true of most things.
+
+
+young
+line @1 greet : #greet#. There's a storm coming, I think. I can feel it. | #greet#. I'm counting something. Wait.
+line @2 greet [pair.band=strangers] : #greet#. I've not counted you before. | #greet#. You're new. I'll remember you.
+line @3 greet [here.time=dawn] : #greet#. I'm up before the lessons bell. | Morning. It's still grey out.
+line @4 greet [here.weather=storm] : #greet#. Shh. I'm counting the gap. | #greet#. Did you see that flash? I'm counting.
+line @1 greet.return : #greet#. | #greet#. I was waiting. I don't like waiting.
+line @2 greet.return [pair.band=friends|family] : You came. Good. | #greet#. Sit here; this bit's dry.
+line @1 kin.open [pair.kin!=no] : Seven, last night. Seven from flash to bang. | I won on the green today. Twice.
+line @1 again.open : You again. That's twice. I counted. | Back already. My apple's only half eaten.
+line @1 farewell : Bye. I've lessons. | Bye. Mind the puddles.
+line @1 farewell.return : Bye, then. | Bye. Count the stairs on the way down.
+line @1 react.news : What happened? Tell it in order. | Go on. Both ears.
+line @1 react.news.new : I didn't know that. | #oath#. That's new. I'll tell them at lessons.
+line @1 react.news.known : I heard that already, at lessons. | Everybody knows that. Even the little ones.
+line @1 react.news.doubt : That's not right, I think. Who said it? | Stories grow when folk tell them. Only the ones who saw it count.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's sad. I don't like that. | Oh. That's bad. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news is my favourite news. | Good. Cake, maybe?
+line @1 answer.how : I'm well. I had an apple. | All right. A bit bored. Lessons are long.
+line @1 ask.how : You've tired eyes. Is something wrong? | Did you get wet?
+line @1 thank : Thank you. Truly. | Thanks. You're kind.
+line @1 decline : No, thank you. Not allowed, and not wanted either. | I mustn't. Home before the lamps, that's the rule.
+line @1 accept_decline : All right. That's allowed. | That's all right. Maybe another day.
+line @1 ack : Mm. | All right. | #bc_true#
+line @1 reassure : It's only far away. Count it. You'll see. | Don't be scared. Thunder can't come inside.
+line @1 sympathise : That's sad. Sit by me, if you like. | I'm sorry. Do you want half my apple?
+scene counting_the_gap
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : There's #flash#. Now count. One, two, three, four. There's #bang#. Four. | Flash, then I count, then the thunder. Big number, far storm. | Eight! That one was eight. It's going away now.
+b : What does four mean? | Who told you that? | Is eight good?
+a : It means it's not on top of us. Over the wharf, I'd guess. | Nobody. It was my own idea. Then a big one told me I was right. | Eight's very good. Eight means it's over the Sound.
+b? : #bc_clever# | #bc_clever# | #bc_good#
+a : #saying#. That's the whole trick. | I'm good at working things out. | Next one I want ten.
+
+scene too_close
+when topic=weather here.weather=storm
+does tell.worry / reassure / assess
+a : That one was only one. One! It was right over the roof. | I didn't get to count at all. The bang came with the flash. | I'm not scared. I'm just counting faster.
+b : It'll move off. | That's close. | You're being brave.
+a : I know. Storms always move off. That's what they do. | It is. I'll wait for the next one. | I'm not brave. I'm counting. It's the same thing, mostly.
+
+scene under_roof
+when topic=weather|home here.weather=storm
+does tell.feeling / react.self / assess
+a : Storms are best from indoors. Under a blanket. | When it thunders I'm at the window, counting. Not too close, I'm told. | Thunder makes the whole house shake a bit. I like it.
+b : Snug. | Good advice. | Does it scare you?
+a : Very snug. And I count every one. | I sit a bit back. Not much. | No. It's only noise. Noise can't hurt.
+
+scene rain_wait
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : It's raining. Just raining. No flash at all. I'm waiting for one. | Rain's boring without thunder. | I'm watching the rain. Sometimes it turns into a storm if you wait.
+b : It might not come. | It's still rain. | Sometimes.
+a : Then I'll count the drops instead. I'll lose count. | It is. Just not interesting rain. | I hope this is a sometimes.
+
+scene apple_crack
+when topic=food
+does tell.self / react.self / assess
+a : #apple.capitalize# is the best. The first bite's the loudest. | I counted my bites on an apple. Eleven. Then the core. | I like apples cold. Cold ones crack better.
+b : It is the best. | Eleven's a lot. | Cold, eh.
+a : I know. Soft apples are sad. | Twelve if you count the core. I don't eat the core. | Cold and hard. Like a stone, but nice.
+
+scene wrestling_green
+when topic=pastimes|day here.region=ridgemere
+does tell.boast / react.self / assess
+a : I won on the green today. I wasn't even the biggest. | Wrestling's about your feet, mostly. Not how big you are. | I lost on the green. I'll win next time. I know what I did wrong.
+b : Good for you. | Is it? | What did you do wrong?
+a : I was the stillest, though. Still is good. | It is. Big ones fall over easier. | I looked at the crowd. You have to look at the other one.
+
+scene fair_bout
+when topic=pastimes
+does give.opinion / react.self / assess
+a : Biting's not allowed. Some pups bite. That's not wrestling. | You have to shake paws after, even if you lost. That's the rule. | If somebody cries, you stop. That's fair.
+b : Quite right. | Good rule. | That's kind.
+a : I say so. Not everybody listens. | I always do. Even when I'm cross. | Kind's different. That's only fair.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : An empty chapel is the quietest place. So quiet your breathing sounds loud. | I go in the chapel and take the back bench. No praying. Just sitting. | In the empty chapel, if you whisper, it whispers back.
+b : That sounds peaceful. | That's all right. | Does it?
+a : It is. Nobody tells you to hurry. | Sitting's allowed. I asked. | A bit. Only if you're very quiet.
+
+scene smoke_eyes
+when topic=day|health here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The smoke from the chimneys got in my eyes. They watered all the way to lessons. | I don't like smoke. It makes my eyes sting and my fur smell. | Somebody's chimney was smoking right at my height. So I took the other street.
+b : The city's full of it. | It does sting. | Sensible.
+a : I know. I'd like a city with no smoke. Just rain. | I wash my face twice when I get home. | It's the long way, but my eyes are dry.
+
+scene waiting_lessons
+when topic=day|work self.job=child
+does tell.complaint / react.complaint / assess
+a : Lessons are long. I count the clock. It makes it worse. | I don't like waiting. I count to make it go. Sometimes it goes. | We waited for the master for ages today. I counted to six hundred.
+b : They're good for you. | Does it go? | Six hundred?
+a : That's what everybody says. | Sometimes. If I count slowly. | Six hundred and four. That's when the master arrived.
+
+scene sums
+when topic=day|pastimes self.job=child
+does tell.boast / react.self / assess
+a : I'm good at sums. I like it when they come out even. | I got all my sums right on #slate#. The master didn't say anything. Just nodded. | Numbers are better than words. Words change. Numbers don't.
+b : Well done. | A nod's good. | They don't, do they.
+a : Thank you. They're not hard if you go slow. | A nod like that's better than words. | No. Four is always four.
+
+scene mother_work
+when topic=family self.mother
+does tell.self / react.self / assess
+a : I wait at the door at dusk for #self.mother#. I count carts till then. | I'm proud of #self.mother#. It doesn't get said much. | When #self.mother# is home, the house feels full.
+b : That's nice. | You could say it. | Homes are like that.
+a : My favourite hour, that. Nineteen carts, yesterday. | I'll say it on Restday. Maybe. | Full enough, anyway. I like it full.
+
+scene mother_storm
+when topic=family|weather self.mother here.weather=storm
+does tell.self / react.self / assess
+a : In a storm I want #self.mother# near. Then I can count properly. | Thunder doesn't scare me. With #self.mother# near, nothing much does. | I'd count storms beside #self.mother# every night, if storms came every night.
+b : That's sweet. | That's good. | They don't always come.
+a : It's not sweet. It's sensible. | Not much. Smoke, a bit. | No. So I wait. I don't like waiting.
+
+scene bells_count
+when topic=day|faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I count the bells from the close. They never ring the same number twice in a row. | The bells rang twelve. I counted. Then one more, by mistake, I think. | You can count the bells from our step. They're very loud.
+b : All those bells. | By mistake? | They are loud.
+a : It is. I've counted them all. | Somebody's hand slipped. I heard it. | Louder than thunder, nearly. Not quite.
+
+scene festival_drums
+when topic=festival
+does tell.feeling / react.self / assess
+a : At the festival I tried to count the drums. They go too fast. | There'll be sugar things, and no bedtime. That's the best part. | Festivals are loud. Good loud. Not smoke loud.
+b : You can't count them? | It's a good part. | Good loud?
+a : Nobody can. I asked. | Up till the very last lamp, me. | Like thunder. Happy thunder.
+
+scene carts_gate
+when topic=caravan|day here.region=ridgemere
+does tell.self / react.self / assess
+a : I count the carts coming in at the gate. Yesterday was nineteen. | Carts are slow. I count them anyway. Waiting's better with counting. | One cart had a goose on top. I didn't count it as a cart.
+b : Nineteen's a lot. | It is better. | A goose?
+a : It is. Today might be twenty. | Everything's better with counting. | On top of the load. It looked very cross.
+
+story first_count [topic=memories|weather self.mother]
+  : Back when I was tiny, a storm came and I crawled under the table.
+  : #mum# crawled under too and said, let's count. One, two, three, four, five. Then the bang.
+  ask : Can you guess what five means?
+  b : That it's far off?
+  : That's right. I wasn't under the table after that. I've counted every storm since.
+
+story lost_bout [topic=memories|pastimes]
+  : My first ever bout on the green, I lost straight away. Flat on my back.
+  : I lay there and looked at the sky and counted the clouds. Six.
+  b : Did you get up?
+  : Yes. And I won the next one. I'd been thinking while I counted.
+
+rule @count_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 6h
+say #oath#! One, two, three. Three. | Flash! One, two, three, four, five, six. Six!
+
+rule @smoke_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say My eyes. Somebody's chimney again. | I'm holding my breath till the corner.
+
+rule @wait_bark
+when concept=bark
+does aside
+cooldown 8h
+say Four hundred and one, four hundred and two. | Waiting's slow. I'm counting it.
+
+dlg @1 resident.hub : #greet#. Strangers are for looking at, not talking to. You can say what you want, though. | #greet#. I'm counting. You can wait a bit.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remembered you. | #topic.player#. You came back.
+dlg @3 resident.hub [here.weather=storm] : Shh. There was a flash. One, two. There. You can talk now.
+dlg @1 resident.job : Lessons, mostly. Sums are my best. | I go to #self.workplace#. And I count things.
+dlg @1 resident.bye : Bye. Count the stairs. | Bye. Keep away from trees when it thunders.
+graft resident.hub
+choice What are you counting? -> counting
+node counting
+say The gap. Flash, count, bang. If you count big, the storm's far away. If you count small, it's close.
+mood keen
+free
+choice What's the biggest number you've counted? -> counting_big
+choice Goodbye. -> bye
+node counting_big
+say Fourteen. That one was right out at sea. I want twenty, one day. Twenty would be the best storm ever, because it'd be the farthest.
+choice I hope you get it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. Weather's on the turn. Smell that. | #greet#. I was counting. Doesn't matter.
+line @1 greet.return : #greet#. | #greet#. Fine, thanks.
+line @1 farewell : #farewell#. | Bye. I've things to do.
+line @1 farewell.return : Bye, then. | See you.
+line @1 answer.how : Fine. Bored. Lessons. | All right. Waiting for a storm.
+line @1 react.news.new : I hadn't heard. | That's new. Who told you?
+line @1 react.news : Go on, then. | Tell me properly.
+rule @teen_count_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Five. Still five. | That one was nine. Going off.
+
+scene teen_still_count
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I still count the gap. I'm not a pup. It's just useful. | Twelve. That one's well out. I can tell you exactly where. | Folk laugh because I count out loud. I don't care.
+b : It is useful. | Where? | You shouldn't care.
+a : Very. It says when to run for a roof. | Over the north headland, about. You can check. | I don't. I'm usually right.
+
+scene teen_green
+when topic=pastimes here.region=ridgemere
+does tell.boast / react.self / assess
+a : Nobody my size beats me on the green now. | I teach the little ones to wrestle fair. No biting. | I lost a bout to somebody twice my size. I'll have them next spring.
+b : Good for you. | Good. | You will.
+a : It's feet. It was always feet. | Somebody must. Bruises taught me. | I know I will. I've counted what went wrong.
+
+scene teen_waiting
+when topic=day|smalltalk
+does tell.complaint / react.complaint / assess
+a : Everybody says wait. Wait till you're older. I hate waiting. | I'm still counting to get through lessons. Up to two thousand now. | Slow's fine. Wasted isn't. Waiting's mostly wasted.
+b : It'll come. | Two thousand? | That's fair.
+a : It'd better come in order. | And four. Lessons are long. | It is. I'll go and do something.
+
+scene teen_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I still sit in the empty chapel. It's the only quiet in Northgate. | Once the bells have finished, I go in. The echo's better after. | Praying's not really me. I think. It's the same, maybe.
+b : It is quiet. | Is it? | Maybe it is.
+a : Quieter than home. Don't say I said. | You'll hear it. Hum one note and wait. | I think so. Nobody's told me off yet.
+
+dlg @4 resident.hub : #greet#. What is it? I'm not busy. Not really.

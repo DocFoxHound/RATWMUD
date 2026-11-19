@@ -1,0 +1,459 @@
+# rm135, the tile-counter in the smoke (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm135
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rmx_bo_gilbey
+written_by claude
+title the tile-counter in the smoke
+fits stage=adult|old
+prefers role=merchant job=crafter temper=nervy
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes crisp_apples wrestling fresh_straw thunder
+dislikes deep_mud flies
+fears a_firing_that_cracks_the_whole_kiln the_steward_counting_twice dying_where_i_was_born
+hopes a_house_on_the_heights_before_the_last_firing a_roof_that_never_leaks
+topics work +0.5 weather +0.4 prices +0.3 caravan +0.3 pastimes +0.2 dreams +0.2 memories -0.4 gossip -0.2
+styles comfort=practical gossip=nervous refuse=soft tease=none
+marks oath saying
+persona #self.first# runs a tile kiln and frets over every firing, every load and every crack: plain-spoken and watchful, careful with a count, fond of a crisp apple and a storm heard from under sound tiles, and always carrying a faint smell of kiln smoke.
+
+words
+oath! = Cracked and counted | Clay and clinker
+saying! = Count it before the steward does | A roof only tells the truth in a storm
+kiln = the kiln | the big kiln
+firing = a firing | the long firing
+tiles = the tiles | a stack of roof tiles
+clay = the clay | wet clay from the pit
+pit = the clay pit | the pit
+moulds = the moulds | the tile moulds
+cracked = a cracked one | a tile with a hairline in it
+breakage = breakage | the breakage tally
+steward = the steward | the House's steward
+load = a load | a cartload of tile
+straw = fresh straw | clean straw for the packing
+apple = a crisp apple | a hard red apple
+bout = a wrestling bout | two big wolves locked on the grass
+thunder = thunder | a good storm overhead
+mud = deep mud | mud to the hocks
+smoke = kiln smoke | the smoke in my coat
+heights = the Heights | the hilltop houses
+roofs = the roofs | every roof down the lane
+
+any
+opinion @1 merchants for 1 : Whoever sells knows what a thing cost to dig, cart and fire. The buyer only sees the last of it. | Builders haggle me to the bone and then charge double for the roof.
+opinion @1 road against 2 : I'd not put a paw on the road these days, for any money. | Every cart I send out, I wait up for. Every one.
+opinion @2 road against 2 [world.wagons=raided] : They took a load again. Nobody steals tiles. They steal the cart and dump the tiles in the ditch. That's worse.
+opinion @1 strangers against 1 : A stranger at the yard gate, and I count the stacks after. | Who knows what trails in at a stranger's heels. Not me, and I'd sooner not learn.
+opinion @1 newcomers against 1 : New hands at the kiln want watching, and I've no hours spare for watching. | Off the boats, asking for work, and half have never touched clay.
+opinion @1 sump against 1 : The Sump at any hour? Not me. I know what's down by the water. | Down by the water the roofs are rotten and so's the rest.
+opinion @1 drink against 1 : A jar loosens a tongue. Mine stays where it is. | A drink in, and some fool says what a week of sorry can't take back.
+opinion @1 church against 1 : They pray for a dry roof and then ask me what tiles cost. | I give what I'm seen to give. No more, and the plate knows it.
+opinion @1 watch mixed 1 : A Watch lantern goes past the yard after dark. That's something. Not a lot. | Good for shouting. Poor for coming when shouted for.
+opinion @1 houses mixed 0 : The House pays me. I'll say nothing against it where it carries. | A House is a big roof. You stand under it or you stand in the rain.
+opinion @1 times against 2 [world.times=hard|lean] : Nobody re-roofs in a lean year. A pan goes under the drip, and they wait it out.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll want the office, I expect. It's me. | #greet#. Mind the stacks, they're not tied.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Can't stop. Firing's on. | #greet#. Stand back from the kiln mouth.
+line @3 greet : #greet#. | #greet#. Rain's coming. My knee says so.
+line @4 greet [here.time=dawn] : #greet#. Up early. I never went to bed. | Morning. The kiln kept me company all night.
+line @5 greet [here.time=dusk|night] : #greet#. Late for the yard. | Evening. The kiln's cooling; I'm listening to it.
+line @1 kin.open [pair.kin!=no] : Sit. Mind the straw. | It's you. Good. Sit down a minute.
+line @1 again.open : Twice in one day. I hope nothing's wrong. | Back already. I've not moved from the stacks.
+line @1 greet.return : #greet#. | #greet#. Sorry. I was counting.
+line @2 greet.return [pair.band=friends|family] : Ah, you. I was fretting. | Good. A face I don't have to count.
+line @3 greet.return [self.working=yes] : Talk while I stack. Careful, those are green. | Go on; this load wants checking as you talk.
+line @4 greet.return [here.time=dusk|night] : Evening. Late for you. I hope nothing's amiss. | You're out late. I'm out late. That's two of us.
+line @1 farewell : #farewell#. | Off with you. The ruts at the gate are deep.
+line @2 farewell [here.time=dusk|night] : #farewell#. Stay under the lamps. | Go straight home. I mean it.
+line @3 farewell [self.working=yes] : I'd best look at the kiln. #farewell#. | Back to the tally. #farewell#.
+line @1 farewell.return : And you. | #farewell#. Go careful.
+line @2 farewell.return [pair.band=friends|family] : Mind the hill steps. They're slick. | Come by when the firing's done.
+line @1 react.news : Oh. Tell it. Bad, is it? | Tell me. Slowly.
+line @1 react.news.new : That's new to me. Is it certain? | Nobody's told me that. Nobody tells me anything.
+line @1 react.news.known : I'd heard. It's kept me fretting ever since. | That reached me before noon. Twice, from two carters.
+line @1 react.news.doubt : Are you sure? Because I'll worry about it if you're sure. | Who actually saw? Find me who saw.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's bad. That's very bad. | That's a terrible thing. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's good. Is it? Good. | Well, that's a relief to hear.
+line @1 answer.how : Worried. Same as always. | Fair. Nothing's cracked today. Yet.
+line @1 answer.how.busy [self.working=yes] : Firing. Don't ask me anything hard. | Stacking. Counting. Counting again.
+line @2 answer.how [here.weather=storm] : Happy. Don't tell anyone. I like a storm. | Better than you'd think. Listen to that.
+line @1 ask.how : Are you well? Truly? | You've a grey look. Sleeping at all?
+line @1 sympathise : That's a worry. I know about worry. | I'm sorry. That's a heavy one.
+line @1 reassure : It'll hold. Build it right and it holds. | Give it time. It'll settle, like a kiln.
+line @1 decline : Sorry, but no; the kiln's on and I'd not walk away from it for one minute. | Not this week. There's a load owed to the Rise, and the steward is counting.
+line @1 accept_decline : All right. I understand. | Fair. I'd answer the same.
+line @1 thank : Thank you. Truly, thank you. | That was kind. Kinder than I'm owed.
+line @1 deflect_thanks : It was nothing. Don't tell the steward. | No trouble. Well. Not much.
+line @1 preclose [self.working=yes] : I must look at the kiln. | That load won't count itself.
+line @2 preclose : I'd best get on. | I'll be wanted somewhere. I always am.
+line @1 accept_preclose : Go on. Careful going. | Yes, go. I'll worry about something else.
+line @1 ack : #bc_right# | Mm. #bc_true#
+line @1 give.advice : Never trust a tile that rings dull. | Buy your tiles in summer; they fire better and cost less.
+line @1 warn [world.bandits=near] : Don't send anything up the road this week. I'm not. | Stay inside the walls. Please.
+line @1 hail [pair.band=friends] : Here. You. A minute. | Stand upwind. The smoke's bad.
+line @1 confide : Between us, I'm not sure the steward likes me. | Since the spring firing I've slept badly. Worse than usual.
+scene kiln_firing
+when topic=work self.working=yes self.job=crafter
+does tell.worry / reassure / insist / ack
+a : The firing's in. Till it's drawn I'll not shut my eyes. Never do. | Listen. Hear the kiln tick? That's it settling. Or cracking. One of those. | Two days in the fire and I'll know if I've a kiln of tiles or a kiln of rubble.
+b : It'll be fine. | It's only settling. | You've done it often enough.
+a : It's fine till it isn't. That's what a kiln is. | Probably. Probably. I'll listen a bit longer. | Often enough to know it goes wrong.
+b? : #bc_hope_so# | #bc_i_know# | #bc_true#
+
+scene breakage_tally
+when topic=work self.working=yes self.job=crafter
+does tell.self / challenge / insist / ack
+a : Twelve cracked in that load. Or ten. I'll put twelve. | #breakage.capitalize# is a fine art. Too many and they shout. Too few and they expect it. | I keep the cracked ones in a stack at the back. Who's to say which stack they came from.
+b : Ten or twelve? | That's a fine line. | That sounds sly.
+a : Twelve. It's always twelve. Nobody argues with twelve. | Fine as a hairline. I've walked it for years. | Sly? Careful. I'd call it tidy.
+b? : #bc_ha# | #bc_fair# | #bc_right#
+
+scene straw_packing
+when topic=work|pastimes self.job=crafter
+does tell.self / react.self / assess
+a : #straw.capitalize# for the packing. I love the smell of it. Better than smoke. | You pack a tile load in straw or you pack it in pieces. | New straw came this morning. I stretched out on it a minute. Don't tell anyone.
+b : It does smell good. | Pieces, I'd guess. | I'll not tell.
+a : Clean and dry. Everything else in the yard is wet or burning. | Pieces. I've learnt that one the dear way. | Good. A wolf who lies in straw looks soft. I'm not soft.
+
+scene steward_counts
+when topic=work self.job=crafter self.role=merchant
+does tell.worry / reassure / assess
+a : #steward.capitalize# came down and counted the stacks. All of them. Twice. | Every load I send up, I answer for. Every tile in it. | The steward gave me a smile this morning. A smile's never good news, from that quarter.
+b : You've nothing to hide. | That's how it is with a House. | A smile's a good sign.
+a : No. No, of course I haven't. Still. Twice. | That's how it is. It doesn't sleep any better for it. | Sometimes. Sometimes it means they're counting you.
+
+scene clay_pit_mud
+when topic=work|weather here.weather=rain|storm self.job=crafter
+does tell.complaint / react.complaint / assess
+a : The pit's a swamp. #mud.capitalize#. A boot of mine is still down there. | Rain in the clay pit. Carts sink to the axle. I sink to the knee. | Can't dig in this. The clay's soup and so am I.
+b : Will you fish it out? | Leave it till it's dry. | It'll drain.
+a : The boot, aye. My temper's still down there. | I'd love to. The kiln wants feeding either way. | It drains slow. Everything here goes slow but the rain.
+
+scene smoke_in_coat
+when topic=smalltalk|day
+does ask.opinion / give.opinion / concede / ack
+a : Can you smell it? The smoke. Be honest. | I washed this coat Restday. It still smells of #kiln#. | Folk move a step back from me in the chapel. It's the smoke. It's only the smoke.
+b : A little, maybe. | It's not so bad. | I can't smell anything.
+a : A little. A little's what everybody says. | Not so bad. Not so good. I'll take not so bad. | You're kind. Or your nose is broken.
+b? : #bc_ha# | #bc_true# | #bc_maybe#
+
+scene thunder_roofs
+when topic=weather here.weather=storm here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Hear that? #thunder.capitalize#. Lovely, with good tiles between it and me. | A storm like this tests every roof on the hill. Mine pass. Mostly. | I'll sleep tonight. Thunder's the only thing that settles me. Odd, isn't it.
+b : I don't like it. | Mostly? | It is odd.
+a : You're under good tiles. Nothing to fear. Probably. | Mostly. I'll hear about the others by morning. | Odd. I know. A worry you can hear is easier than one you can't.
+
+scene leak_worry
+when topic=weather|work here.weather=rain self.job=crafter here.region=ridgemere
+does tell.worry / reassure / assess
+a : Rain all night. That roof I did on the lane, is it holding? I lie and wonder. | Every drip in the city, I wonder if it's one of mine. | Somebody's bucket's filling tonight. I only hope it's not under my tiles.
+b : It's holding. You'd have heard. | Not every drip. | They'll come to you if it isn't.
+a : I'd have heard. Yes. I'd have heard. | Not every one. A few, perhaps. | They will. That's what I'm afraid of.
+
+scene dry_spell
+when topic=weather here.weather=clear here.season=summer
+does tell.self / react.self / assess
+a : Dry week. The tiles dry in a day. I could fire twice as much. | Sun on the yard. The green tiles crack if I don't cover them. | Too dry. The clay's hard as a step. You'd think I'd be glad.
+b : Good for you. | Cover them, then. | Aren't you?
+a : Good while it lasts. It never lasts. | I have. I'll check them anyway. | Glad till sundown. After, I fret over the next rain.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.complaint / react.complaint.agree / assess
+a : Flies in the straw. Flies on my nose. Flies everywhere but the kiln. | They come off the midden behind the yard. I've asked for it moved. Twice. | Hot and still. Every fly in Northgate's come to me.
+b : Horrible things. | Twice? | They do like the heat.
+a : Horrible and sure of themselves. | Twice, and the midden's still there, and so am I. | They like the heat, and I like the heat, and I wish we didn't share.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess / ack
+a : #apple.capitalize#. That's the best thing I eat all week. | An apple at noon. I don't trust a soft one. | The first apples of the autumn. You can hear them in your teeth.
+b : Simple tastes. | Soft ones are fine. | That's the best part.
+a : Simple, aye. Nothing to worry about in an apple. | Not to me. A soft apple's hiding something. | It is. A good snap, then gone.
+b? : #bc_lovely# | #bc_maybe# | #bc_true#
+
+scene wrestling_green
+when topic=pastimes here.season=spring|summer here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : There's #bout# on Restday. I'll go and watch. I always go and watch. | I wrestled, younger. I was good. I'm still good, in my head. | Saw two youngsters on the green yesterday who'll be champions. It's in the set of the shoulders.
+b : Do you still wrestle? | How good were you? | In the shoulders?
+a : Not since the knee went. I watch, and I shout, and I'm sore after anyway. | Good enough to win a ham once. I ate it alone. | Low and wide. A wrestler's built like a kiln. Same shape, near enough.
+
+scene heights_dream
+when topic=dreams|work here.region=ridgemere
+does confide / react.self / assess
+a : A house on #heights# before I go. I'll die up there, not where I started. | I walk up past the Rise some evenings, only to stare through the gates. | When I've put enough by, I'll take a room near the top. Small. With a view.
+b : You might. | Just to look? | Why up there?
+a : I might. I'm counting, as I count everything. | Only to stare. Nobody up there knows. That's the point. | Because I wasn't born there. That's all.
+
+scene low_born
+when topic=memories|home here.region=ridgemere
+does tell.memory / ask.detail / answer.detail
+a : I was born further down than the steward's ever heard. Leave it there. | Where I was small, the roofs leaked on the beds. Every bed. | I don't go down there now. Not ever. I've come up, and I'm staying up.
+b : Where, then? | Every one? | Not even to visit?
+a : Down. That's far enough for anyone. | Every one. I tile roofs now. You'll understand why. | No. There's nobody there I'd know, and nobody who'd know me.
+
+scene tile_carts
+when topic=caravan|work self.job=crafter here.region=ridgemere
+does tell.self / react.self / assess
+a : Three loads out today. I watched every one through the gate. | #load.capitalize# left for the Rise this morning. I trailed it halfway. | Carts up, empties back. If an empty comes back light, I worry.
+b : All safe? | Halfway? | Light how?
+a : All safe. I'll trust it when the empties roll in. | Halfway. Then I thought the steward might see me, and I came back. | Light of the straw. Means somebody took the straw. Means they unpacked. Means it arrived.
+
+scene fuel_late
+when topic=caravan world.wagons=late self.job=crafter
+does tell.worry / reassure / assess / ack
+a : The wood carts are late. A kiln without wood is a cold hole. | No fuel since Marketday. I'm burning the broken pallets. | Two days late. I've a firing promised and nothing to fire it with.
+b : They'll come. | Burning pallets? | Push it back a day.
+a : They'll come. I'll still worry till I hear the wheels. | Pallets and old straw. It smells worse than usual. Sorry. | A day. The steward doesn't like a day.
+b? : #bc_i_know# | #bc_poor_soul# | #bc_true#
+
+scene load_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / give.opinion
+a : A cart was held up out past the walls. Horse taken, tiles tipped. Every one. | #bandits.capitalize# again. I've told the carters to come in close. | A load gone. Nobody even wanted it. They wanted the wheels.
+b : That's terrible. | Will they listen? | That's worse, somehow.
+a : Terrible. The steward must hear of it, and the steward will count. | They'll listen. Then they'll forget. Then I'll tell them again. | It is worse. A broken load, for nothing.
+
+scene lean_roofs
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint.agree / assess
+a : Nobody's ordering. They're putting buckets under the drips instead. | Half my stacks sitting in the yard. Tiles don't spoil. I do. | The builders stopped asking. When builders stop, everyone stops.
+b : It'll pick up. | That's hard. | Hard all round.
+a : When it does, they'll all want it at once. I'll worry about that next. | Hard on the yard. Hard on the hands I keep. | All round. Even the Rise is patching.
+
+scene good_building
+when topic=times|work world.times=good|boom
+does tell.self / react.self / assess
+a : Everybody's building. I can't fire fast enough. | Orders up to midsummer. I've never been so busy. I've never been so worried. | New roofs all over the hill. Some of them mine.
+b : That's good, though. | Both at once? | You should be proud.
+a : Good. Yes. Sleep can come after. | Always both. Busy and worried, worried and busy. | Proud. Quietly. Keep it to yourself.
+
+scene tile_price
+when topic=prices self.role=merchant
+does ask.opinion / give.opinion / concede / ack
+a : Builders say my tiles are dear. Are they, would you say? | A penny on the dozen since spring. I had to. Fuel's up. | You can buy cheaper tiles. You can also buy a new roof every winter.
+b : Dear, maybe. | Fuel's up for everyone. | Fair point.
+a : Dear, and they last. That's the trade. | Everyone. Nobody ever believes it of me. | That's my whole argument. I make it often.
+b? : #bc_fair# | #bc_true# | #bc_ha#
+
+scene new_roof_wanted
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : They say #topic.subject# is new to the city. That's a roof wanted, sooner or later. | #topic.subject.capitalize# has turned up, I hear. Whether the coin turns up too, we'll see. | A new face, #topic.subject#. Not one I know. Not one I'm sure of.
+b : More trade. | Give it time. | Strangers settle.
+a : More trade. And more strangers in the yard. | They might. Half do. | Might be. I'll know after the first order.
+
+scene gossip_nervous
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / keep_confidence
+a : I heard something. About #topic.subject#. I shouldn't say. I'll say. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. You never had it off me. | #topic.subject.capitalize# #topic.claim#. Or that's what I heard. I might have heard wrong.
+b : I'll keep it quiet. | I won't. | You might.
+a : Please do. I've enough worries. | Good. I'll worry anyway. | I might. I often do. I still worry about it.
+
+scene gossip_thief
+when topic=gossip|crime topic.claim_kind=theft|wanted here.region=ridgemere
+does tell.worry / reassure / assess
+a : They say #topic.subject# #topic.claim#. I'm putting another bar on the yard gate. | #topic.subject.capitalize# #topic.claim#, they're saying. I counted the stacks twice tonight. | Heard #topic.subject# #topic.claim#. No bed for me; I'll keep the kiln company.
+b : Nobody steals tiles. | Twice? | Get some sleep.
+a : Nobody steals tiles till they do. | Twice, and they were right both times. Again at first light. | Sleep's for those with no stacks.
+
+scene gossip_glad
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news.glad / assess
+a : They say #topic.subject# #topic.claim#. That's a happy house. Happy houses want roofs. | Good news, for once. #topic.subject.capitalize# #topic.claim#. | #topic.subject.capitalize# #topic.claim#. I'm glad. I'm glad of anything that isn't a worry.
+b : It is good. | For once. | That's a nice change.
+a : Good for #topic.them#. And possibly for the yard. | For once, aye. I'll enjoy it before something cracks. | It is. I'll hold on to it.
+
+scene festival_crowd
+when topic=festival here.region=ridgemere
+does tell.worry / reassure / assess
+a : Festival. The streets are full. I'll stay in the yard. | Crowds make me count my pockets. I've nothing in them and I still count. | Everybody's out. I'm going to the green for the wrestling and then straight home.
+b : It's only a festival. | Leave your pockets alone. | The wrestling's the best bit.
+a : Only a festival. With every pickpocket in the city at it. | I can't. Habit. | It is. And then home, before the drink starts.
+
+scene chapel_tiles
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : Every time I go in, my eyes go to the chapel roof. Before the altar. | There's a slipped tile on the chapel. Third row. Nobody's mended it. | I pray for dry roofs. It's my trade and my prayer both.
+b : Is it sound? | You could mend it. | That's fitting.
+a : They'll do. I'd fire them harder, myself. | I could. Nobody's asked. I'll not offer twice. | It's the only prayer I'm sure is answered.
+
+scene quiet_room
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : I've a room on a quiet row by the gate. Nobody bothers me. I like it. | The room's small and dry. I check the ceiling every night. | Clean bedding, a fruit by the window, a bar across the door. That's home.
+b : Sounds snug. | Every night? | That sounds peaceful.
+a : Snug and mine. That'll do till the Heights. | Every night. It's never leaked. I still check. | Peaceful. Till I think of the kiln.
+
+scene limp_weather
+when topic=health|weather here.weather=rain|fog|overcast
+does tell.complaint / sympathise / assess
+a : My leg hears rain coming a day off. It's aching now. | The knee's bad today. That means rain by dusk. | I limp in the damp. The steward notices. I wish the steward didn't.
+b : That sounds sore. | Rain by dusk? | Do you rest it?
+a : Sore and nagging. Like a worry. | Every time. I'm never wrong about rain. Only about everything else. | Rest it? With a firing on? No.
+
+scene sleepless
+when topic=smalltalk here.time=night
+does confide / reassure / assess
+a : I don't sleep before a firing. I lie and count tiles in my head. | Every night I think of something to worry about. Tonight it's the gate bar. | It's late, and I'm awake, and I'm worried about being awake.
+b : Count something else. | It's barred. | Go to bed.
+a : I tried sheep. They turned into tiles. | It's barred. I'll check it once more. | Bed. Aye. I'll go and lie there and worry.
+
+scene yard_stranger
+when topic=player here.region=ridgemere
+does tell.worry / reassure / assess
+a : There's somebody in the yard I don't know. Looking at the stacks. | A traveller stood at the yard asking what tiles were for. Tiles. For roofs. | I've seen a new face twice now by the kiln. Twice is a pattern.
+b : Just curious, maybe. | Strangers ask odd things. | Or a coincidence.
+a : Curious is how it starts. I'll count after. | Odd things. Then they ask what the stacks are worth. | Coincidence is a word for worries that haven't happened yet.
+
+scene fog_and_smoke
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : #fog.capitalize# and kiln smoke. You can't tell where one ends. | Fog sits on the yard. The kiln's smoke can't get out. I'm wearing it. | Thick out. The carts are slow and I'm worried. More than usual.
+b : It'll lift. | That'll hang on you a while. | More?
+a : By noon, maybe. The smoke won't. | A week? I smell of it always. Fog only makes it honest. | More. Slow carts, slow worries. They pile up.
+
+scene autumn_firing
+when topic=season|work here.season=autumn self.job=crafter
+does tell.self / react.self / assess
+a : Last good firings of the year. After this the wet comes and the kiln sulks. | Autumn. Everybody wants their roof done before winter, all at once. | I like the autumn firings best. The kiln's warm and the yard's cold. It's the only warm spot.
+b : Busy, then. | All at once? | Sounds cosy.
+a : Busy and anxious. My usual. | All at once, every year. I'm never ready, and I always mean to be. | It is. I stand by the kiln mouth longer than I should.
+
+scene house_rivals
+when topic=gossip|lore here.region=ridgemere self.job=crafter
+does give.opinion / disagree / concede
+a : The timber for my kiln comes off a Timberland cart. Greatly tile, Timberland fire. Nobody says that aloud. | Two Houses, one kiln, and me between them in the smoke. | If Timberland and Greatly ever fall out, my kiln goes cold. That keeps me up.
+b : They need each other. | You worry too much. | They'll not fall out.
+a : They do. They'd sooner not admit it. | I worry exactly enough. | I hope not. I'd keep a woodpile, just in case.
+
+story first_firing [topic=work|memories self.age>=25 self.job=crafter]
+  : The first firing I ever watched alone, I sat by the kiln mouth two nights straight.
+  : On the third morning we opened it. Half the tiles rang true. Half were rubble.
+  : The old master said half was good for a first. I didn't credit it.
+  ask : Could you have slept, in my place?
+  b : I'd have slept and hoped. You did the right thing.
+  : I still stay up. I still don't believe it.
+
+story leaking_bed [topic=memories|weather self.age>=25 here.region=ridgemere]
+  : As a pup I slept where the ceiling leaked in every storm.
+  : I'd lie under a pan and listen to it filling. Plink, plink, all night.
+  : I swore I'd sleep under a dry roof. Now I make them.
+  b : That's a good reason for a trade. Does it ever leak now?
+  : Never. I look up at it nightly all the same.
+
+story ham_bout [topic=pastimes self.age>=25]
+  : Years back I wrestled a wolf twice my weight on the green for a ham.
+  : Everybody bet against me. I'd have bet against me.
+  : I kept low and waited, and when the big one tired, I had the legs.
+  ask : Have you ever won a thing nobody thought you would?
+  b[old] : Once, at cards. I've never been let forget it. Did you share the ham?
+  b : Not that I remember. Did you share the ham?
+  : No. I ate it alone in my room. Best ham of my life.
+
+story twelve_broken [topic=work self.age>=30 self.job=crafter]
+  : One autumn a cart of tiles tipped over in the pit mud.
+  : I pulled them out one by one and stacked the good ones and the bad.
+  : I wrote down twelve broken. I'll not tell you how many there were.
+  ask : Would you have written the true number?
+  b : I'd hope so. I might not have.
+  : Twelve. It's always twelve.
+
+story first_apple [topic=food|memories self.age>=20]
+  : My first earned copper went on an apple from a stall in the square.
+  : I'd never had a crisp one. Ours were always soft and brown.
+  : It cracked in my teeth, and I stood there grinning like a simpleton.
+  b : Some things you remember always. Was it worth the coin?
+  : Every copper. I've bought crisp ones since. None so good.
+
+rule @bark_kiln
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 6h
+say Hot. Too hot? No. Hot enough. | #oath#. Listen to the kiln tick.
+
+rule @bark_crack
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 8h
+say That one rings dull. Cracked. | Another for the tally.
+
+rule @bark_thunder
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There it goes. Lovely. | Now we'll see whose roof is sound.
+
+rule @bark_mud
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say The pit'll be a bog by noon. | Mud to the hocks again.
+
+rule @bark_flies
+when concept=bark here.season=summer here.weather=clear
+does aside
+cooldown 8h
+say Off. Off my nose. | Every fly on the hill. Every one, on me.
+
+rule @bark_steward
+when concept=bark self.job=crafter self.role=merchant
+does aside
+cooldown 12h
+say #saying#. | Count the stacks once more. Then once more.
+
+dlg @1 resident.hub : #greet#. Mind the stacks. What is it? | #greet#. Is something wrong?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good. Somebody I know. | #greet#, #topic.player#. Back. I hope nothing's wrong.
+dlg @3 resident.hub [here.time=night] : Late. Has something happened? | Night. I'm up; I'm nearly always up. Say it.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay by the gate, please. What do you want? | There's nothing here to take but clay. Speak up.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. Clay in, fire, tiles out, and every one counted. | I keep the kiln and the yard at #self.workplace#. And the tally. Mostly the tally.
+dlg @2 resident.job : I make things and I worry about them. Both full-time. | Whatever wants doing. I count it after.
+dlg @1 resident.business [business=thriving] : Busy. Too busy. I can't fire fast enough. | Orders to spare. I'm worried about that too.
+dlg @2 resident.business [business=steady] : Steady. The kiln's full and the stacks go out. | Fair. Every crack accounted for.
+dlg @3 resident.business [business=failing] : Slow. Nobody's re-roofing. I'm worried. | Bad. Stacks in the yard and no carts for them.
+dlg @1 resident.news [world.news] : A carter had it from #world.news_from#: #world.news#. I've been worrying since. | Word from #world.news_from#: #world.news#. Is that bad? It sounds bad.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#. I'm keeping out of it. | It's #world.event_words#, all day. It makes me nervous.
+dlg @3 resident.news [world.wagons=raided] : A cart was set on outside the walls. Don't go out. | A load was taken. Nobody's safe out there.
+dlg @4 resident.news [world.death=recent] : Somebody's been buried this week. I've been quiet since. | We lost one. I don't like to talk of it.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding. A new house, maybe. A new roof. | Somebody wed. That's good. It's good, isn't it?
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's cracked, nothing's fallen. | Nothing I've heard. Which worries me, a little.
+dlg @1 resident.gossip [here.gossip=yes] : I shouldn't. They say #topic.subject# #topic.claim#. Keep it close. | Quietly: #topic.subject# #topic.claim#. Or that's what I heard.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Head down, me. Nothing reaches the yard.
+dlg @1 resident.bye : #farewell#. | Go careful. Mind the ruts.
+dlg @1 shop.greet [here.shop=open] : #greet#. Tiles, sound and counted. What's the roof? | #greet#. #shop_offer# Every tile rings true.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#. More tiles? Is the roof leaking? | Back, #topic.player#. Nothing cracked, I hope.
+dlg @3 shop.greet [here.shop=bare] : The yard's empty. Next firing's three days off. I'll buy, though. | #shop_bare# The kiln's still cooling.
+dlg @1 shop.prices : Up a penny on the dozen. Fuel. Always fuel. | #shop_dear# Tiles keep their price. Unlike roofs.
+dlg @1 shop.bye : #shop_bye# Carry them flat. | #farewell#. Flat, and in straw, mind.
+graft resident.hub
+choice Why do you smell of smoke? -> smoke
+node smoke
+say Kiln smoke. It soaks into fur for good. I wash, I air my coat, I stand in the rain. Still smoke.
+mood calm
+free
+choice Does it bother you? -> smoke_bother
+choice Goodbye. -> bye
+node smoke_bother
+say Only in the chapel. Folk shift along the bench. I tell myself it's the smell of honest work.
+choice I'll let you get on. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do I know a tile is sound? [self.job=crafter] -> sound
+node sound
+say Tap it with a knuckle. It should ring like a little bell. If it thuds, there's a crack you can't see.
+mood calm
+free
+choice And yours all ring? -> sound_mine
+choice Back to the counter. -> greet
+node sound_mine
+say I tap every one. Some twice. The ones that thud go in the breakage. Mostly.
+choice Fair enough. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,323 @@
+# rm115, the cold pipe (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm115
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_maren_hatherley
+written_by claude
+title the cold pipe
+fits stage=adult|old
+prefers talk=plain humour=dry
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk keeps_an_unlit_clay_pipe_that_still_smells_of_smoke
+likes crisp_apples evening_line festival_bells autumn_wind
+dislikes flies deep_mud
+fears the_chair_taken_indoors_for_good missing_the_last_of_the_bells
+hopes one_more_autumn_on_the_sea_wall the_household_kept_decent
+topics smalltalk +0.4 day +0.3 pastimes +0.3 season +0.3 festival +0.3 gossip +0.2 memories +0.2 prices -0.3
+styles comfort=company gossip=sparing refuse=plain tease=dry
+marks oath saying
+persona #self.first# sits at the door on the Commons with a clay pipe that hasn't been lit in years and still smells of it: dry, warm, loyal to the street, fond of a crisp apple, an evening line off the sea wall and the festival bells.
+
+words
+oath! = Clay and cinders | Bright One stop my pipe | Cinders and sense
+saying! = A cold pipe keeps its smoke longest | Old smoke clings to good cloth | What's burnt out still warms the pocket
+pipe = the old clay pipe | my cold pipe | the pipe I gave up and kept
+stem = the stem | the chewed end of the stem
+bowl = the bowl | the black little bowl of it
+apple = a crisp apple | an apple that crunches across the room
+apples = crisp apples | apples that answer back when you bite
+line = a line off the sea wall | my line in the water
+wall = the sea wall | the old wall by the water
+bells = the festival bells | the bells on a holiday morning
+gust = a proper autumn blow | the wind that comes up the hill in autumn
+flies = the summer flies | flies at the jam
+muck = mud to the ankle | the deep muck
+chair = the chair by the door | my seat at the window
+square = the square | Market Square
+lamplighter = the lamplighter | the lamp-and-pole fellow
+rent = rent day | the morning the rent's due
+hm = Hah | Well now
+
+any
+opinion @1 church for 1 : I've seen a great many folk into the ground, and I'm glad somebody stood there and said the words properly. | The chapel's for the burying and the marrying, and I go to both.
+opinion @2 city for 1 : Born in this smoke, carried out through it one day. Never wanted another town. | It rains, it climbs and it smells of fish. Mine, though, every wet step.
+opinion @3 dole for 1 : Our street could feed every empty belly on it and not miss the crumbs. Hand the loaf over first. | I'd sooner pay toward the parish bread than step over a hungry pup.
+opinion @4 road against 1 : Roads are worse now than when I had legs for them. Guards on the wagons. We used to walk it with a stick. | Every cart that comes in late gets the same tale of robbers off the hill.
+opinion @5 strangers for 1 : A stranger's only somebody I haven't watched long enough. A week, and I'll know them. | A strange face on the square is a puzzle, and I've the chair to solve it from.
+opinion @6 newcomers mixed 1 : Let them come, and settle their debts, and wipe their paws at the door. Most manage it. | They change the street a little. The street's been changed before and lived.
+opinion @7 sump mixed 0 : From my step the Sump's all chimneys and worry. I don't go down; I've no business there, and that's no credit to me. | They work hard down there and get blamed for all of it.
+
+grown
+line @1 greet : #greet#. Mind my step; the middle's gone hollow. | #greet#. Come round this side, my neck won't turn. | #greet#. I've been watching you come up the street.
+line @2 greet [pair.band=strangers] : #greet#. You're not from this end of the square. I'd have known. | #greet#. A new face. I'll know it by tomorrow.
+line @3 greet [here.time=dawn] : #greet#. I'm out early for the light, not the company. | Morning. The square's still yawning.
+line @4 greet [here.time=dusk|night] : #greet#. The lamplighter's been by. I count him every night. | Evening. I'm sat out till the cold sends me in.
+line @5 greet [pair.band=friends|family] : Here's a sight. I kept the dry end of the bench. | Sit by me. I've a crisp one in my pocket, if you're good.
+line @1 kin.open [pair.kin!=no] : In you come. Tea's on, and no arguing about it. | There's my face. Sit down, I'll not shout.
+line @1 again.open : Twice in one day. Folk on the square will talk. | Back up the street already. I'd hardly settled.
+line @1 hail [pair.band=friends] : Over here. I've the good chair and nobody to show it off to. | You. Over here; I've seen something worth the telling.
+line @1 greet.return : #greet#. I'm still here, as you see. | #greet#. Not dead yet, if you were wondering. | #greet#. Pull up something to sit on.
+line @2 greet.return [pair.band=friends|family] : And you. You look thinner. Eat something. | At last. I'd half given you up.
+line @3 greet.return [here.time=dusk|night] : Evening. It's turning cold, so be quick and kind. | Evening to you. The lamps are in.
+line @1 farewell : #farewell#. I'll be here; I always am. | Off with you. Watch that gutter by the well. | #farewell#. Come back with news.
+line @2 farewell [here.time=dusk|night] : Go on home. The lamps won't wait for you. | Night, then. I'm going in before my knees lock.
+line @1 farewell.return : #farewell#. I'll keep the chair warm. | And you. This step knows your paws now; use it. | Go careful.
+line @2 farewell.return [here.time=dusk|night] : Night. Stay in the lamplight going home. | Sleep sound. I'll not, but you might.
+line @1 react.news : Go on, then. I've the whole afternoon. | Tell it slowly. I like the middle best.
+line @1 react.news.new : #hm#. That never came past this door. | Well. That's slipped past me, and not much does.
+line @1 react.news.known : Had it by noon. The square tells me everything, given time. | Old news. It went by under my window yesterday.
+line @1 react.news.doubt : Who's spreading that? A wolf who liked the sound of it. | I'll hold off till somebody comes up the street and says it plainer.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sad thing. Sit down a minute. | #pity#. There'll be a candle from me at chapel.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's worth hauling myself up for. Good. | Well, there's one thing come right. I'll take it.
+line @1 answer.how : Sitting. Watching. Same as yesterday, and glad of it. | Creaking, but I've the chair and the street.
+line @1 answer.how.well : Well enough to grumble. Any better would be showing off. | Grand. The wind's up and the flies are gone.
+line @1 answer.how.poorly : Stiff. The wet's in me. | Poorly. I'll be right when it dries.
+line @1 ask.how : And you, are you feeding yourself? | You look tired. Is it work or worry, then?
+line @1 sympathise : That's a weight. Sit here a while; the chair's big enough. | You'll get through it. I've seen worse got through on this very street.
+line @1 reassure : It'll pass. I've watched worse go by this door and never come back. | Don't fret yourself. I've watched it come right for others.
+line @1 decline : I'd sooner not, love. My knees get a vote now, and they've voted. | Not this time. I'd only slow you, and I'd hate that more.
+line @1 accept_decline : Fair enough. I'd not have gone either. | No harm. Try me again another week.
+line @1 thank : That's kind. I'll remember who did it. | Bless you. That goes in my good book.
+line @1 deflect_thanks : It was nothing. Sitting's all I do; I might as well be useful at it. | Don't make a fuss. I've the time.
+line @1 preclose : Well. The wind's getting into my shawl. | Right. I'd best go in and see to the kettle.
+line @1 accept_preclose : Go on, then. The chair's not going anywhere. | Off you go. I've the street for company.
+line @1 tease [pair.band=friends] : Look at you, dressed like you're off up to the Rise. | You walk like you owe the whole square money.
+line @1 tease.return : Says you, with that face. | Hah. You'd know about that.
+line @1 ack : #hm#. | Mm. | So it is.
+line @1 give.advice : Sit still and you'll learn more than running about ever taught anyone. | Pay the rent on the day and nobody on the street can say a word.
+line @1 warn [world.bandits=near] : Robbers about. Stay in, behind the gate. The road's no place for anyone this week. | They're talking of robbers off the hill again. Go with others.
+scene pipe_unlit
+when topic=smalltalk|health
+does tell.self / react.self / assess
+a : I gave up smoking years back and kept #pipe#. I chew the stem when I think. | Folk sniff the air round me and look for a fire. It's only #pipe#. | I keep the pipe in my pocket. My pocket still smells of it.
+b : Why keep it, if it's not lit? | Doesn't anyone say? | Does it help you think?
+a : Habit, love. You don't throw out an old friend because it's gone quiet. | They do. I tell them it's my perfume. | It gives my teeth something to do besides chatter.
+
+scene pipe_smoke_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : In the wet the old smoke comes out of my shawl. You'd swear I'd a fire going. | Rain brings the smell up off #pipe#. I smell like a chimney on washday. | Wet day. Even the cold pipe smells warmer.
+b : I did wonder. | I'd noticed that. | It's not so bad a smell.
+a : No fire. I'm not that daft, not yet. | Everybody does. Nobody says. I like that about this street. | It reminds me of evenings. I'll take it.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn here.weather=clear|overcast
+does tell.feeling / react.self / assess
+a : That's #gust#. I could sit in it all day with my collar up. | Listen to it go round the chimneys. Best sound the city makes. | Leaves off the chapel trees all over the square. I watch every one go.
+b[old] #old : My bones are less fond of it than I am. | I'd sooner be by a fire. | We used to chase them, as pups.
+b : You don't feel the cold. | It's loud tonight. | They'll block the drains.
+a@old : Mine neither. I ignore them. | You go. I'll keep the door. | So did I. I'd chase them yet, if my legs would.
+a : I feel it. I like it anyway. It blows the town clean. | Let it. It sweeps the stairs for nothing. | Somebody's job, not mine. I'm watching.
+
+scene deep_mud
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Look at the lane. #muck.capitalize#, and somebody's cart has made it worse. | You'll not catch me crossing that. I'll wait for the sun. | Half the square's wearing the gutter up to the knee.
+b : It'll dry. | You could go round. | It's the carts.
+a : By Restday, maybe. I'll sit tight till then. | Round's three streets. I'll sit here. | Always the carts. Nobody fines a cart.
+
+scene apple_snap
+when topic=food
+does tell.self / react.self / assess
+a : Give me #apple# over any cake. I like to hear it go. | Bought three apples off the barrow, and two were soft. The third was worth it. | There's always one in my pocket for later, beside the pipe.
+b[stage=young|adolescent] #pup : Can I have one. | Why the third. | Doesn't it taste of smoke.
+b : Better than cake. | Two soft ones. | Beside the pipe.
+a@pup : Tell me who went by this morning and it's yours. | Because it snapped. That's the only test. | A little. Adds to it.
+a : Cake's for those with no teeth left. I've most of mine. | Two soft. I said so, loudly, so the next one knows. | Beside the pipe. Neither of them minds.
+
+scene evening_line
+when topic=pastimes here.region=ridgemere here.time=dusk
+does tell.self / react.self / assess
+a : This is the hour for #line#. I sit on the wall and the fish don't hurry. | I've a line out most evenings. Catch is neither here nor there. | I take a stool down to the wall when the light goes long.
+b : Do you catch much. | Then why go. | Isn't it cold.
+a : One a week, perhaps. I put most of them back; they've more to do than I have. | For the quiet. And the water going dark. | It is. I've a shawl and a temper for it.
+
+scene wall_company
+when topic=pastimes|friends here.region=ridgemere
+does tell.self / react.self / assess
+a : There's four of us on #wall# of an evening. Nobody says a word, and that's the treat. | The ones on the wall smell my pipe before they see me coming. | I've sat by the same stretch of wall so long the stone has my shape.
+b : Four of you, and silent? | They know you by the pipe? | The stone has your shape?
+a : Not if they're quiet. Quiet four's company. | No. The smell gets there first. | Near enough. I'll leave it behind me, like a mark.
+
+scene festival_bells
+when topic=festival|faith here.day=festival
+does tell.feeling / react.self / assess
+a : Hear that. #bells.capitalize#. I'd get up out of my grave for them. | I've heard every festival peal since I was a scrap. No two alike. | The bells start and the whole square looks up at once. I love that.
+b : They're loud enough. | How could you tell? | Everyone does.
+a : Loud's the point. Let the Rise hear the Commons is awake. | Not one. The ringers are different, and so am I. | Everyone. Even the ones pretending they've somewhere to be.
+
+scene bells_before
+when topic=festival world.festival=soon
+does tell.plan / react.self / assess
+a : Festival's coming. I'll have my chair out before the first bell, and I'll not move it. | I'm getting the good shawl down for the festival. It smells of the last one. | Mark me, they'll ring early this year. They always do when it's cold.
+b : Where will you sit. | The last one. | Early.
+a : Where I always sit. There's a groove in the step for it. | Smoke and cider. Not all of it mine. | Early. The ringers want their supper like anybody.
+
+scene summer_flies
+when topic=animals|season here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#. I've swatted six and there's a seventh on my nose. | The fishmonger's cart goes by with half the flies in Ridgemere behind it. | I'd forgive summer anything if it took the flies away with it.
+b : They're bad this year. | That's the fish. | It's the heat.
+a : Every year's bad. This one's worse, and I'm counting. | It is. Shift the cart, I say, and nobody listens. | Heat I can sit in. Flies I can't.
+
+scene morning_square
+when topic=day here.time=dawn|day here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : The baker's boy was late again, and the stallholders saw it. That's the square for you. | I've seen the shutters go up in the same order since I was small. | First the carts, then the cats, then the clerks. That's how the square wakes.
+b : You don't miss much. | Same order. | Then the clerks.
+a : I miss nothing. I've the chair for it. | Same order. The cooper's always last. That one would be late to a fire. | Then the clerks, yawning, all holding their hats in the rain.
+
+scene rent_day
+when topic=home|prices self.quarter=commons
+does tell.self / react.self / assess
+a : It's #rent#. Read it off the faces going past. | Ours is a respectable door. Rent paid on the morning, and no knock at it. | The landlord's clerk comes up the street with a little book. I could recite it.
+b : You can tell from here? | Never a knock? | You know it by heart?
+a : Long faces and short tempers. Give it till evening and they'll be at the tavern. | Never once. I'm proud of that, and I'll tell the whole square. | Name, sum, a tick or a frown. That's the whole book.
+
+scene courting_street
+when topic=gossip|friends self.quarter=commons
+does tell.gossip / react.news / assess
+a : Somebody's walking somebody home every night this week. Names stay with me. Work it out. | Two from the stalls are courting. They think nobody's noticed. Everybody's noticed. | There's one goes by my door morning and evening now. Not for my sake.
+b : Go on. | Everybody. | Not for yours.
+a : No. Watch the street yourself; it's better that way. | Everybody, and all of us pretending we haven't. That's manners. | Not for mine. I'm only the chair they walk past.
+
+scene passed_on
+when topic=gossip topic.claim_kind=theft|wanted|prowling|violence|other here.gossip=yes
+does tell.gossip / react.news / assess
+a : I only sit and listen. What I heard is #topic.subject# #topic.claim#. | It came past this door on two different tongues: #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I'd not take an oath on it, mind.
+b : Is that what they're saying? | From two people? | You're not sure of it?
+a : Word for word as I had it. I've added nothing. | Two tongues and one story. That makes me listen. | I would. A chair hears a lot; it sees less.
+
+scene wedding_news
+when topic=gossip|event topic.claim_kind=marriage here.gossip=yes
+does tell.gossip / react.news / assess
+a : Now here's a cheering one. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. I'll want to hear who cried. | Good news for once: #topic.subject# #topic.claim#.
+b : That is good. | Somebody always cries. | For once.
+a : It is. I'll wear the good shawl if there's a party. | Somebody always does. Usually the one who said they wouldn't. | For once. I'll have it with my tea.
+
+scene times_lean
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : The barrow's charging more for the same apples. You can taste the hard times in them. | Fewer lamps lit on the stairs this month. I count them. | There's more pups on the dole bread queue than there were. I see them go past.
+b : It'll turn. | You count them. | It's a hard year.
+a : It always has. I've seen it turn three or four times. Never quick. | Nine on Restday, eleven before. Better reckoning than the Council's. | It is. I'll save a little, and feed who comes to the door.
+
+scene rise_and_sump
+when topic=smalltalk|lore here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : From this step you can look up at the Rise or down at the Sump. I look both ways, and pity the both of them. | The Heights have the gardens; the Sump has the cellars. We have the square and the rain. | Folk come down the stairs from the Rise as if they're doing us a kindness.
+b : Pity the Rise. | You've the rain. | A kindness.
+a : They've further to fall. And the stairs are steep up there. | And it's ours. Nobody fines you for watching it. | They're not. They're coming for the cheese stall like anybody.
+
+scene child_home
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : #self.child.capitalize# is the finest thing I ever made, and I've made jam. | I fret over #self.child# like a hen with one egg. Grown or not, it makes no odds. | I'd keep the good chair for #self.child# over anyone on this street.
+b : That's high praise. | It's love, that. | Even over me?
+a : Good jam, too. I'll stand by it. | Love, or nerves. After a while you can't tell them apart. | Even over you. Don't sulk; it's the second chair.
+
+scene neighbour_door
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour.capitalize# could have the run of my larder, apples and all, and welcome. | A wall between #self.neighbour# and me, and years enough to know each other's cough. | When the lamp's on next door, I know #self.neighbour# is in. That's company enough.
+b : Your last apple. | That's a neighbour. | Company enough.
+a : The last one. I'd only half mind. | Nobody picks a neighbour. I was lucky. | Most nights. I'm not one for visiting.
+
+scene lamplighter
+when topic=day|smalltalk here.time=dusk here.region=ridgemere
+does tell.self / react.self / assess
+a : #lamplighter.capitalize# is a minute late. I'll say so when the pole comes by. | Watch him. Pole up, flame on, step down, and on to the next. I never tire of it. | The lamps come up the square one at a time. It's my clock.
+b : You'll scold the lamplighter? | Never? | You go by the lamps?
+a : Every time. I get a wave for it. We've an understanding. | Never. Sixty lamps, and I've seen them lit thousands of nights. | My clock. When the last one's lit, I go in.
+
+story wall_eel [topic=pastimes|memories self.age>=40]
+  : Years back I had a line off #wall# and pulled up an eel the length of my arm.
+  : It wound round my wrist and glared, as though I'd insulted its family.
+  ask : Pot or water, then, if it had been yours?
+  b : Not me. I'd have dropped it and run. Did you keep it?
+  : I let it go. It had a better grievance than I had a supper.
+
+story pipe_given_up [topic=smalltalk|memories self.age>=40]
+  : The winter I gave up the pipe, it sat on the mantel and I glared at it every night.
+  : By spring it smelt the same and I'd stopped glaring.
+  b : And you never lit it again?
+  : Never. It went into my pocket, so it couldn't feel left out.
+
+story the_great_peal [topic=festival|memories self.age>=40]
+  : One festival all the towers rang together, by some mistake among the ringers.
+  : The whole square stood still, pups and porters and the fine folk off the Rise.
+  ask : Have you heard all the towers going at once, ever?
+  b : Never. It must have shaken the windows.
+  : It did. A pane went in the chapel. Nobody minded.
+
+rule @bark_pipe
+when concept=bark
+does aside
+cooldown 9h
+say Where's my pipe gone? Oh, there it is. | #saying#. That's what I say.
+
+rule @bark_flies
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Shoo. Go and bother the fishmonger. | Another fly. Bright One, what are they for?
+
+rule @bark_lamps
+when concept=bark here.time=dusk here.region=ridgemere
+does aside
+cooldown 12h
+say There's the first lamp lit. | Late again, lamplighter.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Now that's a wind. | Hold onto your hats, the lot of you.
+
+dlg @1 resident.hub : #greet#. Sit if you like; the step's free and so am I. | #greet#. I've been watching you look about. What are you wanting?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I saw you come up the street. | Back again, #topic.player#. I'd hoped so.
+dlg @3 resident.hub [here.time=night] : It's late for visiting. I'm only out for the lamps. | Night. Be quick; my knees want their bed.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll talk from my chair, and you'll stay off my step. | Out with your business. I'm old, not deaf.
+dlg @1 resident.job : Me? I sit, and the street passes, and I take note. Somebody must. | Work. I did my share and more. This step is my post now.
+dlg @1 resident.news [world.news] : It came past my door from #world.news_from#: #world.news#. I've added nothing.
+dlg @2 resident.news [world.event_words] : The whole square's on about #world.event_words#. Nine times since noon, I've had it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The cooper was late opening. That's the biggest thing I've seen. | Nothing new. The street's minding its manners for once.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I've only the one pair of ears, mind. | It went by this door that #topic.subject# #topic.claim#.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing I'd pass on. Sit a while and see who comes by. | I've heard nothing worth the breath.
+dlg @1 resident.bye : #farewell#. I'll be here. | #farewell#. Bring me back whatever you see.
+dlg @2 resident.bye [here.time=dusk|night] : Night, then. Keep under the lamps. | Home with you. I'm off in myself.
+graft resident.hub
+choice What's that smell of smoke? -> pipe
+node pipe
+say My pipe. I've not lit it in years; it keeps the smell for me. #saying#.
+mood warm
+free
+choice Why keep it if you don't smoke? -> pipe_why
+choice Something else. -> hub
+node pipe_why
+say Because it sat in my mouth through every winter I can remember. You don't put a thing like that in a drawer.
+choice I see. Something else. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how.poorly : My knees think it's going to rain, and my knees are never wrong. | Old. That's all it is, and it's bearable.
+line @1 give.advice : Take the stairs slowly while you've the knees for it. You'll want them later. | Marry somebody who'll sit quiet with you. The talkers wear out.
+scene knees_and_stairs
+when topic=health
+does tell.complaint / sympathise / assess
+a : I used to go up to the Rise and back before breakfast. Now the three steps to my own door take a while. | My knees creak louder than the chapel door. | The healer says rest. I said I've done nothing else for ten years.
+b : You've earned the rest. | Louder than the door. | Ten years.
+a : I have. I'd still like the stairs back, now and then. | Louder. The door's had more oil than I have. | Ten. The healer laughed. I didn't.
+
+scene the_old_square
+when topic=memories here.region=ridgemere
+does tell.memory / react.self / assess
+a : Once the square had a pump in the middle and no cobbles at all. | There was a cheese stall where the cloth stall is now. The cheese was better than the cloth. | My gran sold eggs on that corner, rain or none.
+b[old] #old : I remember the pump. | That cheese. I'd forgotten it. | I remember an egg woman.
+b : No cobbles. | Better than the cloth. | Rain or none.
+a@old : Then you're as old as I am, and I'm sorry for you. | Hard yellow stuff. You could build with it. | That might have been her. She'd have liked being remembered.
+a : Mud to the knee, all winter. We didn't mind; we knew no better. | Much better. You can't eat cloth. | Rain or none. That's where I learnt to sit still in the wet.

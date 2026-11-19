@@ -1,0 +1,396 @@
+# rm146, the straightener (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm146
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_isolde_ropehand
+written_by claude
+title the straightener
+fits stage=young|adolescent|adult|old
+prefers humour=dry talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk squares_up_any_crooked_thing_in_reach
+likes roast_pork swimming tidy_house thunder
+dislikes night_noise drizzle
+fears being_stuck_at_lessons_for_ever a_landlord_at_the_door
+hopes a_trade_with_a_proper_bench a_room_where_everything_stays_put
+topics home +0.4 weather +0.3 food +0.3 pastimes +0.2 family +0.2 work +0.2 gossip -0.3 festival -0.2
+styles comfort=quiet gossip=dry refuse=flat tease=dry
+marks oath saying
+persona #self.first# is a quiet, dry young wolf of a poor Northgate stair who straightens every crooked thing within reach without a word: tidy, unimpressed, fond of a cold swim, a loud storm and roast pork with the crackling on, and short with noise after dark.
+
+words
+oath! = Corners and crackling | Edge to edge | Square and plumb
+saying! = Crooked's only lazy straight | Put it right or put it down
+crooked = crooked | a hair off true
+straight = straight | square and true
+crackling = the crackling | crackling that snaps
+pork = roast pork | a Restday joint with the crackling on
+stair = our stair | the stair at home
+racket = the racket | somebody's noise through the floor
+drizzle = drizzle | that mean thin rain
+dip = a swim | a dunk in the cold Sound
+storm = a storm | thunder banging about
+shelf = the shelf | every shelf in the flat
+cups = the cups | the cups on the dresser
+lessons = lessons | the long bench at lessons
+slate = my slate | the slate, wiped square
+
+any
+opinion @1 houses against 1 : House carriages pass our stair at a trot. Not one face turns. I've watched. | They've lovely gates. I've straightened a few of their signs on the way past.
+opinion @1 merchants against 2 : Half the week our table's bare. The shops' never is. Funny, that. | Prices go up. Pay sits still. I can do that sum.
+opinion @1 dole for 2 : The dole got our stair through a bad week. I'm not proud. I'm fed. | Some folk sneer at the dole. They've never needed it. Lucky them.
+opinion @1 church for 1 : One bad week the chapel's pot was the only full one on our stair. I sit through the sermons for that. | They mean well. They also talk too long.
+opinion @1 newcomers against 1 : New folk want the same few jobs we do. Hard to be glad about that. | I'm civil to them. I'm not handing over my work, though.
+opinion @1 times against 1 : Thinner every week. The Rise doesn't feel it, so it doesn't count. | It's hard. Saying so doesn't make it softer.
+
+grown
+line @1 greet : #greet#. Your collar's turned. There. | #greet#. Mind the step; it's not level.
+line @1 greet.return : #greet#. | #greet#. Quiet day, so far.
+line @1 farewell : #farewell#. | #farewell#. Mind the uneven stone.
+line @1 farewell.return : #farewell#. | And you.
+line @1 react.news : Go on. | I'm listening.
+line @1 react.news.new : I'd not heard. | That's new to me.
+line @1 react.news.known : Heard it this morning. | Old news, that.
+line @1 react.news.doubt : Somebody calmer should tell it. That's a lot of noise for one story. | Sounds bent to me. I'd wait.
+line @1 answer.how : Well enough. Slept, for once. | Fine. Tidy. Tired.
+line @1 decline : I'd better not. I've work, and it won't do itself. | Not this time, thanks. I'm wanted elsewhere.
+line @1 accept_decline : Fine. | Right. No harm.
+line @1 thank : Thanks. Decent of you. | Thank you. That's remembered.
+scene grown_square
+when topic=home|smalltalk
+does tell.self / react.self / assess
+a : There. Your cup was on the edge. I've moved it. | I straighten things. I always have. Don't mind me. | Somebody hung that crooked. Hold on.
+b : I hadn't noticed. | Always? | Thank you, I suppose.
+a : #oath#. Nobody does. That's the point of me. | From a pup. Can't stop now. | You're welcome. It's straight now.
+
+scene grown_noise
+when topic=home here.time=night
+does tell.complaint / react.complaint / assess
+a : They're at it again upstairs. Every night. I'll go grey. | The street's loud tonight. Somebody's singing, badly. | A quiet night's worth a week's wages to me.
+b : Maddening. | Badly? | That much?
+a : It is. I've stopped counting the nights. | Flat as a board. Every note. | Maybe two. Quiet's worth it.
+
+scene grown_drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Drizzle. All day, by the look. | I've never forgiven drizzle. Never will. | Rain that won't commit. My least favourite.
+b : It's grim. | Never? | Mine too.
+a : It is. I'd take a storm over it. | Never. It's had its chances. | We agree, then. Good.
+
+scene grown_storm
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Now there's a storm. That's proper weather. | I like thunder. It doesn't sneak about. | Listen to that. Lovely.
+b : Loud one. | It doesn't. | You like it?
+a : Loud and honest. My favourite. | No. Bangs on the door like it means it. | From indoors. With everything put away.
+
+scene grown_swim
+when topic=pastimes here.region=ridgemere here.season=spring|summer|autumn
+does tell.self / react.self / assess
+a : I still swim off the steps when I can. Cold water clears the head. | Out to the mooring ring this morning. Same ring. Same cold. | Under the water's the quietest place in the city.
+b : Cold, though. | Still? | Is it?
+a : That's the point. | Same ring as ever. It's still there. | It is. Then you come up, and there's the city again.
+
+scene grown_pork
+when topic=food
+does tell.self / react.self / assess
+a : If I'm ever rich, it all goes on pork. Crackling first. | Crackling that snaps. Nothing better. | Restday pork. It's the one thing I'd queue for.
+b : Simple tastes. | Agreed. | I'd queue too.
+a : Simple and good. Same thing, mostly. | We agree on something. | We'd be at the front. I'd see to that.
+
+scene grown_tidy
+when topic=home
+does tell.self / react.self / assess
+a : Mess is noisy, somehow. Neat's quieter. I've always found that. | Everything in its place. Then I can sit down. | I've scrubbed and squared everything. Now it can stay that way.
+b : Is it? | Then you sit? | For a day, maybe.
+a : Quieter, anyway. You can hear yourself. | Then I sit. Not before. | A day. Then I start again.
+
+scene grown_houses
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : The House carriages still go by without slowing. Some things don't change. | The Houses don't look down. They never did. | I straighten their signs when I pass. Nobody's ever noticed.
+b : They never will. | No. | That's something.
+a : No. I gave up expecting. | Far to look, from up there. | It's my little bit. Square, at least.
+
+scene grown_times
+when topic=times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Lean again. Thinner every week. | Prices up, pay the same. Same sum as always. | Times are hard. Saying it doesn't make them softer.
+b : It's hard all round. | Same sum here. | No, it doesn't.
+a : It is. We'll get through. Always do. | It never comes out right. | So it mostly goes unsaid.
+
+scene grown_gossip
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I hear plenty through the walls. It stays in the walls. | Gossip's a crooked shelf. Things slide off it. | Somebody told me something. I've put it away. Tidily.
+b : Fair enough. | Do they? | Tidily?
+a : It's safer. | Eventually. Usually onto somebody's head. | In a drawer. Where it'll stay.
+
+scene grown_work
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I like work where things end up square. You can see you've done it. | A job's a job. Straight, or I do it again. | Long day. But everything's where it should be.
+b : Satisfying. | Again? | That's something.
+a : It is. Square's the best feeling there is. | Again. I don't mind. Crooked I mind. | It's everything.
+
+scene grown_family
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : I'd tidy after #self.child# for ever and not mind. Mostly. | I'm proud of #self.child#. Out loud? Maybe once. | If #self.child# turns out tidy, I'll take the credit. If not, I'll still be proud.
+b : That's family. | Say it once. | Fair.
+a : It is. Wouldn't swap it. | Maybe. On a good day. | Fair's all I go in for.
+
+scene grown_newcomer
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new lot moved onto our stair. Boots left all over the landing. We'll see. | A newcomer asked after work at the yard. Polite enough. Wants my sort of job, mind. | New folk downstairs. Quiet so far. I'm hoping.
+b : Give them a chance. | Fair enough. | Quiet's good.
+a : I will. One. Then the boots get lined up whether they like it or not. | I'll be civil. I'll also be quicker. | It's the best thing a neighbour can be.
+
+story grown_story_post [topic=memories|pastimes self.age>=20]
+  : One summer, young, I swam to the mooring ring off the steps every morning.
+  : One morning the ring had gone. Torn out in a storm.
+  ask : Would you have just turned back?
+  b : Swum back, I suppose.
+  : I swam to where it had been, and touched the water there, and came back. Some things you finish properly.
+
+
+young
+line @1 greet : #greet#. Your collar's crooked. There. | #greet#. I'm tidying.
+line @1 greet.return : #greet#. | #greet#. I'm busy.
+line @1 farewell : Bye. | Bye. Your hat's straight now.
+line @1 farewell.return : Bye. | Bye, then.
+line @1 react.news : What? | Tell me.
+line @1 answer.how : All right. | Fine. Hungry.
+line @1 thank : Thanks. | Thank you.
+line @1 decline : No, thanks. I've my things to put away first. | I mustn't. My corner wants tidying.
+line @1 accept_decline : All right. | Fine.
+line @1 ack : Mm. | All right.
+scene pup_tidy
+when topic=home|pastimes
+does tell.self / react.self / assess
+a : I lined up all the cups on the shelf. By size. | Somebody put my things back crooked. I fixed them. | I tidied my corner. Nobody else's. Just mine.
+b : By size? | Good. | That's a start.
+a : Biggest at the end. It looks right. | They always do it wrong. | It's the only corner that's square.
+
+scene pup_storm
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : Thunder! I like it. It's loud on purpose. | The thunder made the cups rattle. I put them back. | I'm not scared of storms. I like the bang.
+b : On purpose? | Good thinking. | Not even a bit?
+a : It must be. Nothing's that loud by accident. | They were crooked after. | Not even. Drizzle's worse.
+
+scene pup_pork
+when topic=food
+does tell.self / react.self / assess
+a : We had pork on Restday. I got the crackling. | Crackling's the best bit. I'd eat only crackling if I could. | I can hear crackling across the room. That's how good it is.
+b : Lucky. | You'd get sick. | Can you?
+a : I was quick. | I'd risk it. | If somebody's eating it, yes. I listen.
+
+scene pup_drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Drizzle's horrid. It's barely rain at all. | I hate drizzle. It just hangs about. | It's drizzling. My fur's all flat.
+b : It is miserable. | It does. | It'll dry.
+a : Real rain comes down and goes away. This doesn't. | Like somebody who won't go home. | Flat and wet. Like a sad rug.
+
+rule @pup_square_bark
+when concept=bark
+does aside
+cooldown 8h
+say That's crooked. There. | Straighter. Better.
+
+
+adolescent
+line @1 greet : #greet#. Hold still; your strap's twisted. There. | #greet#. Don't mind me. I'm putting that sign straight.
+line @2 greet [pair.band=strangers] : #greet#. You're new round here. | #greet#. Don't think I know you.
+line @3 greet [here.time=dusk|night] : Evening. Keep it down; folk are sleeping. Some are. | #greet#. Late. Quiet, if you can.
+line @1 greet.return : #greet#. | #greet#. All right, I suppose.
+line @2 greet.return [pair.band=friends|family] : Oh. You. Good. | #greet#. Sit; I've just squared that bench.
+line @1 kin.open [pair.kin!=no] : You moved my things again. I've put them back. | I've tidied. Don't touch anything.
+line @1 again.open : You again. Twice is a habit. | Back so soon. I'd only just finished tidying.
+line @1 farewell : #farewell#. | Bye. Mind the step; it's not level.
+line @1 farewell.return : Bye, then. | See you. Probably.
+line @1 react.news : Go on. | I'm listening. Mostly.
+line @1 react.news.new : #oath#. Didn't know that. | That's news to our stair.
+line @1 react.news.known : Heard it. Half the street's shouting it. | Old. Somebody yelled it up the stairwell.
+line @1 react.news.doubt : Somebody calmer should tell me that. | Sounds stretched to me. Like a bad hem.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's rotten. I'm sorry. | Oh. That's bad. Really bad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Something going right, then. | That's nice. You never heard me say it.
+line @1 answer.how : Fine. Tired. The neighbours were at it all night. | All right. Lessons. You know.
+line @1 ask.how : All right, are you? | Sleeping, are you? Somebody should be.
+line @1 sympathise : That's hard. I'll sit, if you want. I won't talk much. | Sorry. That's rotten luck.
+line @1 reassure : It'll come straight. Give it a push and it usually does. | Don't fret. It's only crooked, not broken.
+line @1 thank : Thanks. Really. | Ta. Decent, that.
+line @1 deflect_thanks : It was crooked. Now it isn't. That's all. | Don't. I'll go red.
+line @1 decline : No, thanks. There's a list of jobs at home, and not one's fun. | I can't, sorry. I'm wanted at home before the lamps.
+line @1 accept_decline : Fine. | All right. No harm.
+line @1 preclose : I'd best go. There's a shelf at home crying out for me. | Right. Lessons tomorrow. Worse luck.
+line @1 accept_preclose : Go on, then. | Bye. Straighten your collar.
+line @1 tease [pair.band=friends] : Your ears are lopsided. I could fix that. | You walk like a table with one short leg.
+line @1 tease.return : That's rich, from somebody with burrs in the ruff. | Says you.
+line @1 ack : Mm. | Right. | #bc_fair_enough#
+line @1 give.advice : Put things back where you found them. Saves arguing. | If it's crooked, fix it. If you can't, leave it alone.
+scene squaring_up
+when topic=home|smalltalk
+does tell.self / ask.detail / answer.detail
+a : There. That picture was a hair off. Now it's not. | Hold on. Your cup's on the edge. I've moved it. | Somebody stacked these crooked. I'll just do it again.
+b : I didn't even notice. | Was it going to fall? | Does it bother you that much?
+a : Nobody does. Hence me. #saying#. | Probably not. I'm not taking chances. | It doesn't bother me. It's just wrong.
+
+scene straight_sign
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : The sign on the corner shop's been crooked for a month. I fixed it this morning. Nobody thanked me. | I straightened three things on the way here. Two signs and a cart. | I put a bucket the right way up outside the inn. You're welcome, inn.
+b : Did they notice? | A whole cart? | Very kind.
+a : No. It's the not noticing that's the point. | Its load. It was leaning. Somebody'd have lost a barrel. | It wasn't kind. It was upside down.
+
+scene tidy_flat
+when topic=home self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Our flat's small, but it's tidy. I see to that. | We've not got much. What we've got is in straight rows. | I scrubbed the floor and put everything square. It looked almost big.
+b : Tidy's good. | That's something. | Almost big?
+a : #oath#, it is. Tidy costs nothing. That's the best price there is. | It is. Poor and neat. Could be worse. | Almost. Then everybody came home.
+
+scene night_racket
+when topic=home|smalltalk here.time=night
+does tell.complaint / react.complaint / assess
+a : Somebody's dragging furniture upstairs. At this hour. Again. | I can hear next door's argument through the wall. Word for word. | The street's loud tonight. Singing, and not good singing.
+b : Maddening. | Word for word? | Not good?
+a : I've thought about going up. I won't. But I've thought about it. | I know who's winning. I'm keeping it. | Flat. All of it. Every note.
+
+scene noise_tired
+when topic=health|day here.time=dawn|day
+does tell.complaint / sympathise / assess
+a : I didn't sleep. Somebody's baby. Then somebody's cart. Then somebody's cat. | Up half the night with the racket downstairs. I'm made of string today. | No sleep. Lessons will be grim.
+b : That's rotten. | String? | Get an early night.
+a : It's the city. I know. I still hate it. | Floppy and in knots. That's me today. | I'll try. The neighbours won't.
+
+scene drizzle_teen
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Drizzle. Too weak to be rain, too wet to ignore. | I hate drizzle. It gets in everywhere and doesn't even have the decency to pour. | Look at it. That mean thin rain. All day, probably.
+b : It's grim. | Decency? | Probably.
+a : It's the worst weather there is. | Proper rain at least gets on with it. | All day. My fur'll be flat as a board.
+
+scene storm_good
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Now that's weather. Listen to it. | Storms suit me. Honest weather. No sneaking about. | Thunder's better than drizzle. One loud hour beats a week of drip.
+b : It's loud. | Honest? | You like it, then.
+a : Loud's fine. Loud with a reason. | Honest. Drizzle sneaks about. Thunder bangs on the door. | I like it from under a roof. With the cups put away.
+
+scene cold_swim
+when topic=pastimes here.region=ridgemere here.season=spring|summer|autumn
+does tell.self / react.self / assess
+a : Went in off the steps this morning. Freezing. Good. | Cold water's the only quiet in the city. You go under and it all stops. | Out to the mooring ring and back. Nobody else would. Fine by me.
+b : Freezing? | That's a nice thought. | Brave.
+a : Freezing. It wakes you up like nothing else. | It is. Then you come up and it's all still there. | Not brave. Just stubborn.
+
+scene restday_pork
+when topic=food
+does tell.self / react.self / assess
+a : Restday pork, when there's money. Crackling on. I'd queue an hour for it. | Crackling that snaps. Best sound in the world after thunder. | We didn't have pork this week. I'm not bitter. I'm a bit bitter.
+b : Sounds good. | After thunder? | Fair enough.
+a : It's better than good. It's the week's reason. | Thunder first. Then crackling. Then quiet. | Next week. Maybe.
+
+scene going_without
+when topic=times|prices self.wealth=poor|destitute
+does tell.worry / sympathise / assess
+a : Half the week there's not much on the table now. Nobody mentions it. | Prices went up again. Our pay didn't. I can do that sum. | I've stopped asking what's for supper. I can see.
+b : That's hard. | Same sum here. | I'm sorry.
+a : It is. Saying so doesn't help, so I don't. | Bad sum. Always comes out short. | Don't be. Bread's bread.
+
+scene house_carriages
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : A House carriage went by this morning. Didn't slow down. Never does. | They ride past our stair like we're a wall. | I straightened a House sign once. Nobody came out to thank me. Shocking.
+b : They never do. | That's them all over. | Shocking.
+a : No. Not once in my life. | Fine. I'll be a straight wall. | I know. I'm still waiting.
+
+scene lessons_dull
+when topic=day self.job=child
+does tell.complaint / react.complaint / assess
+a : Lessons. Sitting on a bench while somebody talks at the window. | The master's slate was crooked all morning. I couldn't think about anything else. | I'm good at lessons. I just don't like them. Those aren't the same thing.
+b : They're good for you. | Did you say anything? | True.
+a : So's cold water. I'd rather the water. | No. I stared at it. It stayed crooked. Agony. | Nobody believes me. My marks do.
+
+scene want_trade
+when topic=dreams|work
+does confide / react.self / assess
+a : I want a trade with a proper bench. Everything on it in its place. | I'd be a good joiner. Joints have to be square. I'm square. | Someday I'll have a room where nothing moves unless I move it.
+b : You'd suit a bench. | You are. | Sounds peaceful.
+a : I would. Nobody's asked me yet. | Square and quiet. Good qualities in a joiner. | It'd be the quietest room in Ridgemere. I'd charge for visits.
+
+scene parents_feeling
+when topic=family self.father self.mother
+does tell.feeling / react.self / assess
+a : #self.father# and #self.mother# do their best by me. I tidy. That's my share. | #self.father# coming up the stair: I'd know that tread anywhere. | It's not often said, but #self.mother# is the best of us. Don't tell anyone.
+b : That's not nothing. | Anywhere? | Your secret's safe.
+a : It's not much. It's square, at least. | Anywhere. You learn the steps you wait for. | Good. Folk think I'm sour. Let them.
+
+scene gossip_dry
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Our walls let the street in, every word. Nothing goes back out. Mostly. | Somebody told me a secret yesterday. I've already forgotten it. On purpose. | Gossip's like a crooked shelf. Everything slides off it eventually.
+b : Mostly? | On purpose? | That's good.
+a : Mostly. Ears aren't lids; they don't shut. | Safer that way. For everybody. | Thank you. I've been saving it.
+
+scene gossip_passed
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : The stair's saying #topic.subject# #topic.claim#. I'm just the stairwell. | Through our wall last night: #topic.subject# #topic.claim#. Loud as you like. | Word is #topic.subject# #topic.claim#. I only live here.
+b : Is that so? | Loud? | I won't.
+a : That's what was said. Nothing extra from me. | Loud enough to count the commas. | Good. I'll go back to minding my own business.
+
+story crooked_house [topic=memories|home self.mother]
+  : Once, tiny, I crept round the whole flat in the night putting everything straight.
+  : In the morning #mum# couldn't find a single thing. It was all in rows.
+  ask : Can you guess where the bread knife ended up?
+  b : In a row with the spoons?
+  : By size. Between the ladle and the poker. I still think it looked right.
+
+story the_post [topic=memories|pastimes]
+  : The first time I swam to the mooring ring off the steps, I was so cold my tail went numb.
+  : I touched it and turned round, and everybody on the steps was shouting.
+  b : Shouting for you? What did they say?
+  : That I was mad. I'd say they were right. I went again the next day.
+
+rule @square_bark
+when concept=bark
+does aside
+cooldown 8h
+say That's not straight. There. | #saying#. Who leaves things like that?
+
+rule @noise_bark
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say Some of us sleep. Some of us would like to. | Again. Every night. Again.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 9h
+say Look at it. Can't even rain properly. | Drizzle. Of course.
+
+dlg @1 resident.hub : #greet#. Hold on, your strap's crooked. There. Now what? | #greet#. Don't mind me. I'm tidying.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You came back. Fine by me. | #greet#, #topic.player#. You look straighter than last time.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm not in your way. Say what you want. | Fine. Go on.
+dlg @1 resident.job : Lessons. And straightening things nobody asked me to. | I'm at #self.workplace#. Good at it. Not fond of it.
+dlg @1 resident.bye : Bye. Your collar's straight now. | Bye. Mind the step; it's not level.
+graft resident.hub
+choice Why do you keep straightening things? -> straight
+node straight
+say Because they're crooked. Somebody must. No thinking needed. My paws just go there.
+mood calm
+free
+choice Doesn't it drive you mad? -> straight_mad
+choice Goodbye. -> bye
+node straight_mad
+say Crooked things drive me mad. Straightening them doesn't. There's a difference. Your hat's a bit off, by the way. There.
+choice Thanks. I think. -> hub
+choice Goodbye. -> bye

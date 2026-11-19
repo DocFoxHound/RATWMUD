@@ -1,6 +1,6 @@
-# rm101, the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm101, the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm101
-revision 2
+revision 3
 state ready
 dialect plain
 accent broad light
@@ -424,7 +424,7 @@ dlg @3 resident.hub [topic.meeting=returning] : #topic.player#. Thought the gull
 dlg @4 resident.hub [pair.disposition=wary] : #hm#. What is it? Say it from there.
 dlg @5 resident.hub [pair.disposition=warm] : There you are, #topic.player#. Stand out of the drip and talk.
 dlg @6 resident.hub [here.time=night] : It's late. I'm off my feet, not off my guard. What's wanted?
-dlg @1 resident.job : Fish. Gutting it, selling it, smelling of it. Since I was a sprat. | I'm a #self.trade_words#. Have been since before you were weaned.
+dlg @1 resident.job : Fish. Gutting it, selling it, smelling of it. Since I was a sprat. | #self.trade_words.capitalize#. Have been since before you were weaned.
 dlg @1 resident.business [business!=thriving|failing] : Fish moves. That's all you can ask. | Steady. Steady's good. Exciting's for festivals.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Not my trade. Ask at the wharf. | #news_none# I sell fish, not talk.
 dlg @1 resident.gossip [here.gossip!=yes] : I hear plenty. It stays in the ice. | Not from me. Try the barber.

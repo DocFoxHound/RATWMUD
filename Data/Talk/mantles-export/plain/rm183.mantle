@@ -1,0 +1,344 @@
+# rm183, the doorpost reckoner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm183
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_desmond_cindermore
+written_by claude
+title the doorpost reckoner
+fits stage=adult|old
+prefers humour=dry honesty=guarded talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=guarded piety=ordinary drive=steady
+quirk notches_the_door_post_for_every_debt_owed_or_owing
+likes honey_cakes riddles full_larder misty_dawns
+dislikes stale_bread flies
+fears dying_with_a_notch_uncrossed an_empty_larder_in_winter
+hopes every_notch_crossed_through a_riddle_nobody_can_answer
+topics pastimes +0.3 food +0.3 memories +0.3 home +0.2 gossip -0.3 festival -0.4 newcomer -0.3
+styles comfort=dry gossip=withholding refuse=flat tease=dry
+marks oath saying
+persona #self.first# sits by the door with a small knife and cuts a notch in the post for every debt owed or owing, crosses it through when paid, trusts few faces, likes a honey cake and a riddle, and says less than is known.
+
+words
+oath! = Notch and nail | Mark it down | Debts and doorposts
+saying! = A notch never forgets | Wood remembers what wolves forget | Bread goes stale, a debt keeps fresh
+post = the door post | my tally post
+notch = a notch | a fresh notch
+knife = my little knife | the notching knife
+reckoning = the reckoning | what's owed, both ways
+cakes = honey cakes | a honey cake warm from the tin
+riddle = a riddle | a good riddle | a proper twister
+larder = a full larder | a larder with no gaps on it
+dawngrey = the grey of an early morning | a dawn with mist on it
+flies = flies | those cursed flies
+crust = stale bread | yesterday's loaf, hard as the post
+seat = my stool at the door | my seat by the door
+dry = Hm | So
+heh = Heh | There's a laugh in that, somewhere
+
+any
+opinion @1 church for 1 : Every burying wants proper words said over it, and a priest who knows them. That much of chapel I'll pay for.
+opinion @1 festivals against 1 : Shouting and spilled ale. I'd rather a shutter, a stool, and the whole of it kept outside the glass.
+opinion @1 newcomers against 1 : Each new face makes the street a bit less what it was. #dry#. I notice. Somebody has to.
+opinion @1 strangers against 1 : A face with no name stays outside my door. Knocking's allowed. Answering isn't promised.
+opinion @1 road against 1 : The roads were safer in my youth, whatever the young say. The young weren't born.
+opinion @1 city for 1 : Born in its wet, laid in its ground some day, and the city won't notice either time.
+opinion @1 merchants mixed 0 : Fair ones pay their notches. The rest have a long row on my post.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. And you'd be somebody I've not met. | #greet#. #dry#. Your face isn't on my post. Yet.
+line @2 greet [here.time=dawn] : #greet#. Mist's still on the street. Good. | #greet#. Up with the grey, the pair of us.
+line @3 greet [here.time=dusk|night] : #greet#. Late to be calling. | #greet#. The door's half shut. Make it quick.
+line @4 greet [pair.band=friends] : #greet#. Sit. Your notch is crossed through, in case you wondered. | You. #dry#. Well, come in.
+line @5 greet : #greet#. | #greet#. #dry#.
+line @1 kin.open [pair.kin!=no] : There you are. Eat something. | Sit down. You're letting the flies in.
+line @1 again.open : Twice. I'm marking it. | You again. The post's had less company.
+line @1 greet.return : #greet#. | #greet#. #dry#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Took your time. | #greet#. Sit. Mind the flies.
+line @3 greet.return [pair.band=strangers] : #greet#. Not a face my post knows. | #greet#. I'm told I should be civil. There.
+line @1 farewell : #farewell#. | #farewell#. Pull the door to after you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the cobbles; they turn ankles after dark. | #farewell#. I'm for my bed and my notches.
+line @1 farewell.return : #farewell#. | #farewell#. #dry#.
+line @1 react.news : Go on. I'm listening, more or less. | Hm. Let's have it.
+line @1 react.news.new : #oath#. That's new, at least. | #dry#. That's not been past my door before.
+line @1 react.news.known : Stale. It came by my door yesterday. | #knew#. I sit by a door. Everything goes past it.
+line @1 react.news.doubt : Pay me that in coin and I'll believe it. | #doubt#. Talk is cheap, and that's cheaper.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad. No joke of mine for that. | #pity#. #rest#, if it's that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's had a turn of luck. | #gladnews#. #dry#. Don't let it go to their heads.
+line @1 answer.how : Still breathing. Count that a good day. | #fine#. Larder's full. I've no complaints worth hearing.
+line @1 answer.how.poorly : Knees. Damp. The usual pair. | Poorly. Don't fuss; it'll pass or it won't.
+line @1 ask.how : And you? Paying your way? | And how do you do, these days?
+line @1 sympathise : Hm. A sorry business. Take the other stool. | #sympathy#. I've no cure. I can listen.
+line @1 reassure : It'll come round. Debts do, mostly. | #reassure#. I've seen worse paid off.
+line @1 decline : #hedge#, but no. The door wants minding, and I'm its minder. | Not today. I don't lend what I can't notch.
+line @1 accept_decline : Fine. I'll leave it. | #no_matter.capitalize#. No notch for that.
+line @1 thank : Obliged. | #thanks#. I'll mark it, the good way.
+line @1 deflect_thanks : Nothing to it. Leave it be. | #dry#. Don't tell anybody.
+line @1 preclose : Well. #preclose#. | My stool's had enough of talk today.
+line @1 accept_preclose : Go on, then. | Off you go. The post and I will manage.
+line @1 tease [pair.band=friends] : You owe me a honey cake, and I've a notch to prove it. | Your face this morning wants crossing through.
+line @1 tease.return : Big talk from a wolf who counts doorposts. | #heh#. I'll cut a notch for that one.
+line @1 ack : #dry#. | Mm. | So.
+line @1 give.advice : #advise.capitalize#: never borrow what you can't pay back by Restday. | Fill the larder and close your mouth. That gets you through a winter.
+line @1 warn [world.bandits=near] : #warn#. Robbers out there. Stop home; it's what I do. | Go out the gate this week and you're a fool. I'll say it plain.
+line @1 disagree : #demur#. And I've lived longer than you. | No. That's not how it went.
+scene the_post_by_the_door
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : See the post? A notch for every debt. Owed to me, or owed by me. | I cut another notch this morning. #dry#. The post's getting crowded. | Left side, what's owed me. Right side, what I owe. Crossed through when it's paid.
+b : Every debt? | Whose was it? | And the right side?
+a : Every one. Down to a borrowed cup. A notch never forgets, and nor do I. | The post knows. I'll leave it there. | Shorter than the left. On purpose.
+b : #bc_clever# | #bc_fair_enough# | #bc_ha#
+
+scene crossing_it_through
+when topic=smalltalk|prices
+does tell.self / react.self / assess
+a : Crossed a notch through today. Paid in full, after a year. Best feeling there is. | Somebody paid me back this morning. I made them watch me cross it through. | There's a notch near the top I've been waiting on for six winters. I'll see it crossed yet.
+b : After a year! | Made them watch? | Six winters!
+a : A year. I'd not mentioned it once. The post did my talking. | They paid. They can watch. That's fair. | Six. I'm patient. Debts keep better than bread.
+
+scene not_saying_whose
+when topic=gossip|smalltalk
+does tell.self / react.self / assess
+a : Half the street's on my post. I'll not say who. #dry#. They know. | Folk walk past my door and don't meet my eye. That's the notches. | This street's whole history is cut in that wood. I'll not read it aloud.
+b : Not even a hint? | They should pay, then. | That's discreet.
+a : Not a hint. A notch is a private matter. | They should. Most do, in the end. | It is. Guarded, folk call it. Same thing.
+
+scene honey_cakes_warm
+when topic=food
+does tell.feeling / react.self / assess
+a : A honey cake, warm from the tin. I'd forgive a debt for one. Small one. | #cakes.capitalize# and an hour of nobody knocking. Call that a fine day. | There's a honey cake in the tin, and I'm guarding it.
+b : Forgive a debt? | A quiet hour. | From who?
+a : A small one. A very small one. Don't tell anybody. | Quiet's rare enough, at my door. The cake helps. | From the whole house. They know where the tin is. So do I.
+
+scene the_full_larder
+when topic=home|food
+does tell.self / react.self / assess
+a : I counted the larder this morning. Full. I sleep better with a full larder. | There's nothing like a full larder going into winter. Nothing. | I keep the larder stacked. Old habit. There were lean years, once.
+b : That's sensible. | Not even honey cakes? | Lean years?
+a : It is. Hunger's a debt nobody forgives. | The honey cakes go in the larder. So it's the same thing. | Lean enough to remember. I'll not say more about them.
+
+scene stale_bread_again
+when topic=food
+does tell.complaint / react.complaint / assess
+a : #crust.capitalize#. Somebody bought too much again. | Stale bread. Chewing it is a punishment for nothing. | Bread goes hard in a day in this house. I'd sooner go hungry an hour and buy fresh.
+b : #grumble# | Toast it. | Buy less, then.
+a : Mm. I'll say nothing. I'll notch it. | Toasting stale bread is pretending it isn't stale. | Tell that to whoever buys it. Not me.
+
+scene the_flies
+when topic=animals|weather here.season=summer
+does tell.complaint / react.complaint / assess
+a : Flies. Every summer, every one of them through my door. | I've swatted eleven flies since breakfast. They keep coming. | Those cursed flies. If I'd posts enough, they'd all be notched.
+b : #grumble# | Eleven! | Shut the door.
+a : They don't owe me anything. That's what galls me. | Twelve, now. I'm counting. | And sit in the dark? No. I'll swat.
+
+scene a_riddle_for_you
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Here's one. I'm cut every day and never bleed, and the more I'm cut, the more I'm read. | Riddle for you. The longer I stand, the more I remember. What am I? | I'll give you a riddle. What gets shorter each time somebody pays?
+b : Something to do with your post? | A wolf? | Give up. What?
+a : The post. I'm cut, I'm read. You'd have got it if you'd looked. | My post. Stands there, remembers everything. Better than a wolf. | The right side of my post. Every payment, one notch less to look at.
+
+scene riddle_with_the_young
+when topic=pastimes
+does tell.self / react.self / assess
+a : Pups going past get a riddle off me. Whoever solves it has a honey cake. | Nobody's guessed my best riddle in three years. I'll not tell it to you, either. | A good riddle is a debt the other one owes you till they answer.
+b[stage=young|adolescent] #pup : Tell me one! I'm good at them. | Not even a hint? | What if I never answer?
+b : Do they ever win? | Three years! | That's an odd way to see it.
+a@pup : Here, then. What's crossed out when it's happy? A notch on my post. Too easy for you. | No hint. Hints are borrowing. | Then you owe me for ever. #heh#.
+a : Now and then. The clever ones. I keep a tin for them. | Three. I'm in no hurry. | Everything looks like that, to me.
+
+scene mist_at_first_light
+when topic=weather here.weather=fog here.time=dawn
+does tell.feeling / react.self / assess
+a : Mist on the street. I like it. Hides the faces I don't want to see. | I'm up for the grey of the morning. Best hour. Nobody wants anything. | A misty dawn's the only time the street's honest. It looks as tired as it is.
+b : #bc_ha# | Best hour? | Gloomy, that.
+a : #dry#. I'm only half joking. | Nobody's knocking, nobody's owing. Quiet. | Dry, some call it. I call it plain.
+
+scene festival_from_the_window
+when topic=festival|event world.festival=today|soon
+does give.opinion / react.self / assess
+a : Festival. I'll have my stool at the window. Shutter half closed. | Shouting and ale, and half the street in debt by morning. I'll keep my seat. | I've done my share of festivals. I'll do the rest from indoors.
+b : You'll miss the fun. | Not even for a cake? | Fair enough.
+a : I'll miss the noise. Fun's another matter. | For a cake I'll open the shutter wider. That's all. | It is. I'll see more from up here than they will down there.
+
+scene new_faces
+when topic=newcomer here.region=ridgemere
+does give.opinion / react.self / assess
+a : Another newcomer on our street. #dry#. Whether that one pays their way, we'll learn. | Newcomers. Every one rubs a little more off the street I knew. | A stranger's moved in near us. My mind's not made up.
+b : Give them a chance. | It's always changing. | When will you decide?
+a : I'll give them a notch, if they earn one. That's a chance. | It is. I liked it better before. That's age, I expect. | When I've seen whether they pay what they borrow.
+
+scene strangers_knock
+when topic=player|newcomer
+does tell.self / react.self / assess
+a : That one's a stranger. Door closed, eye open, that's me. | A traveller about. Strangers knock and ask for things. I don't answer. | I don't know that face. I don't need to.
+b : They might be friendly. | You don't answer at all? | That's unkind.
+a : They might. I'll find out from across the street. | Not the first time. The second time, maybe. | It's careful. Kindness and carefulness look alike, from my stool.
+
+scene the_road_in_my_day
+when topic=travel|bandits|memories self.age>=50
+does give.opinion / react.self / assess
+a : The road was safe in my youth. A wolf could walk to Larkfield alone and come home with a purse still on. | Robbers now, wagons with guards. In my day a carter carried a stick and that was enough. | I've not been past the gate in years. The road's not what it was.
+b : It's always been dangerous. | Is that so? | You've not missed much.
+a : Not like now. You weren't there; I was. | It is. A stick and a loud voice. That was a guard, then. | I've missed nothing. I've the post and the window.
+
+scene the_ground_and_the_words
+when topic=faith self.age>=50
+does tell.self / react.self / assess
+a : Chapel's for the buryings, to me. Words said right over the box. Nothing else asked. | I sit at chapel for the burials. The rest I can do without. | The priest says the words right. A priest needn't do more.
+b : That's honest. | Just the burials? | It's not much.
+a : I'm guarded, not a liar. | Those, and the wedding feasts, for the cakes. | Enough, when it's your turn. You'll see.
+
+scene my_spouse_at_the_anvil
+when topic=family self.married=yes self.age>=50
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# does the heavy work. I mind the door and keep the tally. Fair division. | #self.spouse.capitalize# and me, wed longer than you've drawn breath, I'd guess. | All these years with my #self.spouse_word#, and not one notch on the post between us.
+b : That's a good match. | I'd believe it. | Not one?
+a : It is. A wonder anybody would have me. | You'd be right. That's no boast. It's a sum. | Not one. We settle at supper. That's the secret.
+
+scene the_young_one
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : My #self.child# comes by. I've no notch against #self.child#. Never have. | #self.child.capitalize# is a worry to me, and a quiet one. Parents keep worries quiet. | #self.child.capitalize# borrows my knife and brings it back. That's raised right.
+b : That's good to hear. | You could say so. | High praise, from you.
+a : It is. That beats any crossed notch, for pride. | I could. I won't. | The highest I give.
+
+scene the_factor
+when topic=prices|times self.owes=yes
+does confide / keep_confidence / assess
+a : One notch on my own side of the post, I'd rather not see. A House factor's. | I owe. I don't like it. I'll pay. The sum stays with me. | There's a factor's man who knows my door. I'll have it settled by the new moon.
+b : #secret# | I won't ask. | I hope you do.
+a : Good. It's my notch. Not anybody's talk. | Good. You'd not like the answer, and nor do I. | I will. A notch never forgets, and nor does a factor.
+
+scene hard_times_more_notches
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : More notches this month than last. The post reads hard times before anybody says them. | Folk are borrowing again. A cup of flour, a candle. The post fills up. | Hard times. I've stopped cutting notches for cups of salt. A wolf has to eat.
+b : That's a sad way to tell. | Do they pay? | That's kind of you.
+a : It's an honest way. The post doesn't lie. | Slowly. They'll get there. They always have. | Don't spread it about. Folk think me hard, and it's useful.
+
+scene rain_shut_door
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain. Door shut, stool pulled to the hearth, the little knife handy. Not bad. | Weather like this, nobody comes to pay. Nobody comes to borrow, either. | I'll sit this one out by the window. Rain's honest. It owes nobody.
+b : Sounds snug. | Fair trade. | #bc_ha#
+a : Snug enough. I'd want a honey cake, but I'll live. | Fair. A quiet day for the post. | #dry#. Somebody has to notice.
+
+scene gossip_withheld
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : Word is #topic.subject# #topic.claim#. You'll get no more out of me. | The street's saying #topic.subject# #topic.claim#. It's the street's tale, not mine. | Folk at the door say #topic.subject# #topic.claim#. I'll put no oath behind it.
+b : Is it true? | #bc_so_they_say# | Nor would I.
+a : Couldn't say. Debts are my trade. Tales aren't. | Let them. I'll keep my post. | Good. That's the sensible way.
+
+story the_first_notch [topic=memories self.age>=40]
+  : The first notch I ever cut was for a carter who borrowed a few coppers and swore he'd be back by Restday.
+  : He wasn't. Nor the next. I cut the notch so I'd not have to keep remembering. It worked the other way.
+  ask : Nine years on he turned up again. Guess what I did?
+  b : Made him pay double, I'd guess.
+  b[old] : Crossed it through and said nothing. That's what I'd have done.
+  : Took the coppers, crossed it through, and gave him a honey cake. He'd waited long enough too.
+
+story the_riddle_at_the_feast [topic=pastimes|memories self.age>=30]
+  : Years gone, at some feast, we had a riddle match. Everybody put one up, and everybody guessed the others.
+  : Mine went round the whole table twice. Nobody got it. The prize was a honey cake.
+  : I ate the cake. I never told them the answer. Some of them still ask.
+  b : That's cruel! What was it?
+  : I'm not telling you either. A riddle answered is a riddle spent.
+
+story the_lean_winter [topic=memories|home self.age>=50]
+  : One winter in my youth the larder was bare by midwinter, and the carts never came.
+  : My #mum# made soup from what we had, which was nothing, and called it supper.
+  : I've kept a full larder ever since. Every winter I count it, twice.
+  ask : Have you ever been that hungry?
+  b : Not like that. I hope I never am.
+  b[old] : I remember those winters. You don't forget them.
+  : No. You don't. That's what the larder's for.
+
+rule @notch_bark
+when concept=bark
+does aside
+cooldown 8h
+say Another notch. #dry#. | That's one more for the post.
+
+rule @flies_bark
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Out, you. Out. | Thirteen. Fourteen. Curse the lot of you.
+
+rule @crust_bark
+when concept=bark
+does aside
+cooldown 12h
+say Stale again. I'll notch the baker. | Who bought this? It's stone.
+
+rule @mist_bark
+when concept=bark here.weather=fog
+does aside
+cooldown 12h
+say Good mist. Hides the street. | Nobody owing anybody, in this.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. I'm minding the door. Say what you want.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You again. What now? | #greet#, #topic.player#. No notch on you yet. I'd like that to last.
+dlg @3 resident.hub [here.time=night] : Late. The door's nearly shut. | It's dark. Be quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I don't know you. Stop there and speak. | Say it and go. My knife's small; my memory isn't.
+dlg @1 resident.job [self.stage=old] : I'm past work. I mind the door and keep the tally. | #job_busy# The post keeps me busy enough.
+dlg @2 resident.job : I keep count. Somebody has to. | #job_busy#
+dlg @1 resident.news [world.news] : Word at the door: #world.news#. From #world.news_from#, they said. | #world.news.capitalize#. That's what went past this morning.
+dlg @2 resident.news [world.event_words] : Everybody's on about #world.event_words#. | It's all #world.event_words# at the door. I've heard enough.
+dlg @3 resident.news [world.wagons=raided] : Robbers took a wagon. Never happened when I was young. | Robbers on the road. Stay home. I do.
+dlg @4 resident.news [world.death=recent] : We buried one this week. #rest#. | Somebody's gone. I'll go to the burial.
+dlg @5 resident.news [world.wedding=recent] : A wedding. There'll be cakes left over, I hope. | Somebody got married. Good luck to them.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing. Good. | #news_none#
+dlg @1 resident.gossip [here.gossip=yes] : Word is #topic.subject# #topic.claim#. You'll get no more out of me. | The street says #topic.subject# #topic.claim#. Let the street say it.
+dlg @2 resident.gossip [here.gossip!=yes] : Debts are my trade. Tales aren't. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Shut the door. | #farewell#.
+dlg @2 resident.bye [here.time=night] : #farewell#. Mind the dark. | Go on. I'm for bed.
+graft resident.hub
+choice What are the notches on the door post? -> notches
+node notches
+say Debts. Left side, owed to me. Right side, owed by me. Crossed through when they're paid. A notch never forgets.
+mood calm
+free
+choice Am I on it? -> notch_me
+choice Back to what we were saying. -> hub
+node notch_me
+say Not yet. Stay off it, and we'll be friends of a sort.
+choice I will. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how [self.stage=old] : Knees creak, eyes squint, post's full. I'm well enough. | Old. Still here, at my age. I'll take it.
+line @1 give.advice [self.stage=old] : Don't get old. If you must, keep a full larder. | Sit by a door. Everything passes it sooner or later, and you needn't stir.
+scene knees_and_stairs
+when topic=health|home self.stage=old
+does tell.complaint / react.complaint / assess
+a : The stairs to bed. Every night they get longer. I'd swear somebody adds one. | Knees like old hinges. You can hear me coming a room away. | My stool's at the door because nothing there needs climbing.
+b : #grumble# | Grease them. | That's sense.
+a : Mm. I'd notch the stairs if I could. | I've tried. Goose grease. It made me smell of goose. | It's the only sense I've got left. I use it.
+
+scene the_old_street
+when topic=memories self.stage=old here.region=ridgemere
+does tell.memory / react.self / assess
+a : Once there was a well in the middle of this street. Folk forget. I don't. | In my day the lamplighter knew every name on the street. Now there's a new one every year. | I've watched this street from this door longer than most have been alive.
+b : A well? | Times change. | You'd know it, then.
+a : Filled in. They put a cobble on it and called it progress. | They do. Liking it isn't required. | Better than anybody. Better than I'd like.
+
+scene the_ones_gone
+when topic=memories|faith self.stage=old
+does tell.feeling / sympathise / assess
+a : There's notches on my post for folk who've gone. I leave them. I'll not cross out the dead. | Half the names I knew are in the churchyard. The other half owe me. | I've outlived most of the faces I knew. It's a quiet way to be.
+b : That's sad. | #bc_ha# | It must be lonely.
+a : It's honest. They owed, or I owed. That doesn't stop. | #dry#. I'm only half joking. | Sometimes. The post's company. Don't laugh.
+
+scene door_watching
+when topic=smalltalk|day self.stage=old
+does tell.self / react.self / assess
+a : I've sat by this door every day for years. I know everybody who passes. Their walk. Their debts. | Folk think I'm asleep on the stool. I'm not. I'm counting. | I mind the door. Nobody asked me to. Nobody asked me not to.
+b : Every day? | Counting what? | That's a job, of a sort.
+a : Every day but the wet ones. I'm not a fool. | Everything. Who's late, who's flush, who's dodging me. | Of a sort. It doesn't pay. But it doesn't owe, either.

@@ -1,0 +1,482 @@
+# rm160, the coal in the hem (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm160
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_dagfinn_gullham
+written_by claude
+title the coal in the hem
+fits stage=adult|old
+prefers role=merchant job=crafter humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk stitches_a_coal_chip_into_every_hem
+likes warm_bread whittling sharp_knife first_warm_day
+dislikes gulls stale_bread
+fears moth_in_the_wool_press the_coal_chips_found_out
+hopes a_counter_up_on_the_rise a_councillor_walking_about_in_one_of_my_coats
+topics work +0.5 gossip +0.4 prices +0.3 pastimes +0.3 dreams +0.3 food +0.2 festival +0.3 faith -0.3
+styles comfort=jokes gossip=eager refuse=wriggle tease=merry
+marks oath saying laugh
+persona #self.first# cuts and stitches coats behind a Commons counter: chatty, teasing and a shade too free with a compliment, whittles buttons by the fire of an evening, has an eye on the Heights, and sews a crumb of coal into every hem without telling a soul.
+
+words
+oath! = Snip and tuck | By my second-best shears | Chalk and selvedge
+saying! = Everybody's a size, if you're kind about it | A good coat forgives the wolf inside it | Cut it generous and they'll grow into the bill
+laugh! = Hah, there | Hee, hee | Oh, that's rich
+shears = the shears | my long shears
+chalk = the flat chalk | a stub of tailor's chalk
+tape = the tape | the measuring tape round my neck
+pinmouth = a mouthful of pins | six pins between my teeth
+coal = a chip of coal | a crumb of good black coal
+hem = the hem | a turned-up hem
+bolt = a bolt of good wool | the blue bolt on the top shelf
+dummy = the wooden fellow in the window | my window dummy
+buttons = buttons | buttons I carved myself
+knife = the whittling knife | my little knife with the bone handle
+loaf = a warm loaf | a loaf still breathing from the oven
+stale = yesterday's bread | a heel fit to prop a door
+gulls = the gulls | those yellow-eyed robbers
+rise = the Rise | up the hill where the money lives
+coat = a coat | a good wool coat
+customer = a customer | some poor soul in for a fitting
+spring = the first warm day | the first coatless morning
+
+any
+opinion @1 church against 1 : The plate does two laps while the priest hunts his second point. | I like a hymn. A hymn without a collection, I'd like twice as much.
+opinion @1 city for 1 : Where else would I find this many folk who need their coats let out? I love the place. | I'll go into the churchyard here, smoke and all, in a very good suit.
+opinion @1 drink for 1 : A jar with friends of an evening never spoiled anybody worth dressing. | One cup, two at most. A tailor with the shakes sews his own thumb.
+opinion @1 festivals for 2 : Folk come back from a dance mended in ways a doctor can't manage, and each came to me for ribbon first. | Festival week, every coat in the Commons comes in to be pressed. Bless every one of them.
+opinion @1 houses mixed 0 : The Houses pay well and pay late. I'll take the well and grumble about the late. | Dress a House cousin once and every cousin wants the same cut. I can't complain.
+opinion @1 merchants for 1 [self.role=merchant] : Keep a counter and you learn the price of everything, cloth and thread and the candle you sew by. | Shopkeepers hold this city's coat on. Nobody thanks us, but there it is.
+opinion @1 road against 1 : The good wool's carted in from the downs, and later every season. | Every bale that's late is a coat I can't promise. Customers don't wait, they wander.
+opinion @2 road against 2 [world.wagons=raided] : Highway thieves at it again. Somewhere a robber's wearing my wool, and badly cut, I'll bet.
+opinion @1 watch mixed 1 : The Watch are decent enough. Their coats are a scandal, mind. | Their lanterns go by after dark, and I'm the easier for it. Easier still, if they'd let me fit their capes.
+opinion @1 sump mixed 0 : Down in the Sump nobody buys a coat without turning it inside out first. Keenest customers there are. | I'd not live down those stairs again. I'd visit, and few on this hill could say as much.
+opinion @1 times against 1 [world.times=hard|lean] : When times are thin, nobody buys new. The old one comes to me to be turned inside out and called new. | Lean months. I mend more than I make, and mending pays in pennies.
+opinion @1 newcomers for 1 : Every stranger in town is a pair of shoulders with no coat of mine on them. Welcome, I say. | Strangers in town? Good. Half of them arrive in something I could do better.
+
+grown
+line @1 greet : #greet#! In, in. Scrape your feet, I swept at noon. | #greet#. That's a fine colour on you. Not the cut, mind. The colour.
+line @2 greet [pair.band=strangers] : #greet#, #address#. A stranger, and I'd not forget a coat like that. | #greet#. A new face. I'm guessing your story already, I'm afraid. Habit.
+line @3 greet [self.working=yes self.job=crafter] : #greet#. Excuse the pins, I'm mid-sleeve. | Mm. #greet#. Wait while I get these pins out of my mouth.
+line @4 greet [here.time=dawn] : Morning! Awake since the lamplighter went home. | Morning. Early for callers, but I'll not turn you away.
+line @5 greet [here.time=dusk|night] : Evening. I'm putting the shutters up, but come in anyway. | Evening. My eyes are going, so stand near the lamp.
+line @6 greet [pair.band=friends|family] : There's my favourite pair of shoulders. Come here. | Oh good, a friend. The window dummy's had my chatter all afternoon and said nothing back.
+line @1 kin.open [pair.kin!=no] : Kettle's on. Not that stool, it bites. Take the other. | In you come. Don't look at the mess, look at me.
+line @1 again.open : You again! That chair will want rent from you soon. | Twice since noon. Folk will talk, you know.
+line @1 hail [pair.band=friends] : Oi! Over here, I've a piece of gossip with your name nowhere near it. | Wait up! Stroll me to the bakery.
+line @1 greet.return : And #greet# to you! You've caught me in a good mood. | #greet#. What a nice thing to hear from a doorway.
+line @2 greet.return [pair.band=friends|family] : Look who it is! The good chair's yours. | You're a sight. Sit, sit.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. Talk all you like, but my needle's not stopping. | Hello, hello. Mind, I'm halfway round a cuff.
+line @4 greet.return [here.time=dusk|night] : Evening! You're out late. Up to mischief, I hope. | Evening, evening. Come and stand where the lamp is.
+line @1 farewell : #farewell#! Come back with something I've not heard. | #farewell#. And stand up straight, it makes the coat look dearer.
+line @2 farewell [here.time=dusk|night] : Good night, then. That puddle at my step has swallowed better boots than yours. | Night, night. Keep your collar up.
+line @1 farewell.return : Off you go, then. Don't let the gulls have your hat. | #farewell#! Tell your friends you found me in fine form.
+line @2 farewell.return [pair.band=friends|family] : Off, quick, or I'll think of a chore for you. | Night. Tomorrow I'll have fresh gossip, so call in.
+line @1 react.news : Ooh. From the top, and don't leave out who wore what. | Go on, go on. I've a needle, not a cork in my ears.
+line @1 react.news.new : That's fresh as a new bolt. Where'd you get it? | Never heard a whisper. And I hear everything.
+line @1 react.news.known : Somebody had it for me at opening, but yours is juicier. | Old news, pet, but tell it again for the trimmings.
+line @1 react.news.doubt : Hah. Show it me in ink, and I'll believe half. | Somebody's let that tale out at the seams, I think.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a black thing. I'm sorry for them. | No. Oh, no. That takes the stitch right out of my day.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Lovely! Somebody'll need a coat for that, and I know just the wolf. | Now that's news worth dressing up for.
+line @1 answer.how : Mustn't grumble. I do, mind, but it's unpaid work. | Middling, middling. Better for seeing you.
+line @1 answer.how.busy [self.working=yes self.job=crafter] : Elbow-deep in strangers' coats. Nobody's ever pleased. | Rushed to ravels. Three fittings and a funeral suit by Restday.
+line @1 answer.how.poorly [self.mood=low] : Low as a dropped hem today. Don't ask me why, I couldn't tell you. | A bit grey. Nothing a warm loaf wouldn't mend.
+line @1 ask.how : And you, my lovely? Something's afoot behind that face. | And how's life been to you? Kinder than to your boots, I hope.
+line @1 sympathise : Oh, come here. Sit by me and say nothing if you like. | That's a cruel thing. I've no needle for it, more's the pity.
+line @1 reassure : It'll come out in the wash, you'll see. Most things do. | Chin up. I've seen worse mended, and I've done the mending.
+line @1 decline : Ooh, tempting, but my week's sewn up tight already. | Not this week, pet. I'm stitched to my stool till Restday.
+line @1 accept_decline : Fair enough. I'll ask you again when you're in a softer mood. | Ah well. I'll sulk for a minute and then forget it.
+line @1 thank : Oh, bless your whiskers. I'm in your debt, and I pay those with interest. | #thanks#! That's the nicest thing anyone's done all week.
+line @1 deflect_thanks : Pfft. A trifle. Tell everyone. | Don't mention it. Well, do, to your friends. I like the custom.
+line @1 preclose : Back to my bench, before my paw spoils a sleeve unwatched. | Listen to me, prattling. Work's waiting.
+line @2 preclose [self.working=yes self.job=crafter] : That's the bell for the next fitting, near enough. Off I go. | I've somebody's wedding trousers pinned and waiting.
+line @1 accept_preclose : Go, go. I'll keep the gossip warm. | Off you pop. The rest keeps.
+line @1 tease [pair.band=friends] : Who cut your hair, a gull? | That coat's older than the Rain Hall. Let me take pity on it.
+line @1 tease.return [pair.band=friends] : Cheek! And from somebody in that collar. | Oh, very good. I'll remember that when you next want a favour.
+line @1 tease.laugh : #laugh.capitalize#. You'll do. | Oh, stop. My pins'll fall out.
+line @1 ack : #bc_ha# | #bc_go_on# | #bc_lovely#
+line @1 give.advice : Buy one good coat, not three bad ones. A good one lasts you to your grave and looks fine in it. | Never let a tailor see you're in a hurry. That goes for me, too.
+line @1 warn [world.bandits=near] : Stay in the walls, my love. Robbers don't care how nicely you're dressed. | No walks past the gate this week. Promise me.
+line @1 congratulate : Well done you. A jar's on me tonight, and my purse groans saying it. | Lovely. Something good was hiding under that collar all along.
+scene coal_in_the_hem
+when topic=smalltalk|work self.job=crafter self.role=merchant
+does confide / ask.detail / answer.detail / laugh
+a : Can you keep a secret? Every coat that leaves this shop has #coal# sewn into the hem. | Hush, now: there's #coal# in the hem of every coat I've ever cut. | I've sewn luck into half the coats in the Commons, and nobody wearing them has guessed.
+b : Coal? Whatever for? | Doesn't anybody notice? | Luck? What sort of luck?
+a : Luck, pet. Keeps the wearer warm and out of the gutter. Never failed me yet. | It's no bigger than a lentil. One fellow thought it was a seed and tried to plant it. | The warm kind. A crumb of coal never lets you go cold or broke. My old master swore by it.
+b : #bc_ha# | #bc_ha# You're a rascal. | #bc_so_they_say#
+
+scene coal_hem_secret_kept
+when topic=work|gossip self.job=crafter self.role=merchant
+does tell.self / ask.detail / answer.detail / laugh
+a : A customer came back yesterday asking why one corner of the hem hangs heavy. | A lady from up the hill asked me why her coat ticks when she walks.
+b : And your answer was? | And did you own up?
+a : I said it was the weights. All good coats have weights. Which is true, in a way. | I said it was the weave settling. And then I changed the subject to her lovely ears.
+b : #bc_ha# Shameless. | You'll get caught one day.
+
+scene fitting_flattery
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess / laugh
+a : Had a fellow in for a fitting this morning, belly like a rain barrel. I told him the coat made him look taller. | Every customer hears that the colour brings out their eyes. Even the brown coats. | I'll tell you the secret of my trade, and it isn't the needle. It's the mirror and what you say beside it.
+b : Did it? Make him look taller? | And they believe it? | What do you say, then?
+a : It made him look happier, and that's taller in the ways that matter. | They believe it because they want to. I'm only the one saying it out loud. | Turn to the side, I say. Then I say nothing. They fill the silence with compliments to themselves.
+b : #bc_ha# | #bc_ha# | #bc_clever#
+
+scene pins_between_teeth
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've swallowed two pins in my life. Both on Marketdays. Both because somebody told me a joke. | I hold #pinmouth# all day. Folk think I'm scowling. I'm only being careful. | Nobody should tell me good news while the pins are in. That's how cuffs end up sideways.
+b : Two? What happened? | Why not a pincushion? | Sideways? Truly?
+a : Lived, plainly. And now I laugh with my lips shut. | A cushion's forever behind the coat, wherever I'm not. Teeth come with me. | Sideways. A whole sleeve. He wore it, mind, and called it the fashion in the towns.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene the_tape_doesnt_lie
+when topic=work|smalltalk self.job=crafter
+does tell.self / react.self / tell.self / laugh
+a : #tape.capitalize# never lies. I do, a little, but the tape never. | Every waist loses an inch when I say the figure aloud. The coat gets the real number.
+b : That's a funny sort of honesty. | Isn't that cheating?
+a : It's tailoring. The cloth hears the truth and the customer hears the kindness. Everybody's dressed right. | Cheating would be cutting it to the inch I said. Then they'd split it at the first big supper.
+b : #bc_ha# I suppose it is. | #bc_ha# I'll give you that.
+
+scene wool_gone_dear
+when topic=prices self.role=merchant self.job=crafter
+does tell.complaint / react.complaint.agree / tell.plan / ack
+a : Wool's up again. I swear the sheep are in on it. | Blue cloth costs half again what it did at harvest. Blue! Everybody wants blue.
+b : Everything's up. It's not just you. | Will you put your prices up?
+a : A penny on, and a big smile with it. Nobody minds a penny if you smile. | A little. I'll tell them it's the dye from the towns, which is mostly true.
+b : #bc_ha# | #bc_go_on_then#
+
+scene padded_for_haggling
+when topic=prices|smalltalk self.role=merchant
+does confide / react.self / answer.detail / laugh
+a : Want to know a trade secret? Every price I say out loud has a haggle built into it. | I start every price a little high, so they can feel clever knocking it down. | Some customers don't haggle, and I feel almost guilty. Almost.
+b : That's sly. | So nobody pays what it's worth? | Do you give them a discount, then?
+a : Sly? It's a kindness. They walk out thinking they've beaten me, and I walk home with what I wanted. | They pay exactly what it's worth. They just take the scenic route to it. | No. But I give them a very good compliment, and that's free.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene up_the_rise_dream
+when topic=dreams|work self.role=merchant self.job=crafter
+does tell.plan / ask.detail / answer.detail / react.self
+a : Mark me, I'll have a counter on #rise#, with a brass bell over the door and nobody dripping on the floor. | You watch. Ten years from now I'll be cutting coats for councillors in a shop with carpet. | Each week a coin goes in the jar for a shop up the hill. One coin. Sometimes half.
+b : What would you call it? | Why the Rise? | How long, at that rate?
+a : Same name, but in gold letters. Gold letters double the price, you know. | Because that's where the money lives, and money needs a lot of coats. | Ages, if nobody gets married and needs a suit. Half that, if they all do.
+b : #bc_ha# | #bc_fair_enough# | #bc_we_will_see#
+
+scene rise_steward_order
+when topic=work|gossip self.job=crafter self.role=merchant
+does tell.boast / ask.detail / answer.detail / assess
+a : A steward off the Rise ordered a winter coat today. Paid in silver, didn't even look at the price. | I've got a coat in the window that's going up the hill on a steward's back. First of many, I'm saying.
+b : Who for? | Is that good, then?
+a : Couldn't say, wouldn't say. Discretion is half of what the quality pay for. The other half's a straight seam. | Good? It's a door, pet. One coat on the Rise and the whole hill hears where it came from.
+b : #bc_lucky_you# | #bc_i_hope_so#
+
+scene whittled_buttons
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail / assess
+a : Evenings, I carve my own #buttons# at the hearth. Horn, bone, a bit of pear wood. | Do you like this button? I cut it last night out of a sheep's shin. | I've a bowl of buttons at home I've carved and never used. Can't stop.
+b : Why not buy them? | Out of a what? | And how many have you now?
+a : A bought button's like a bought compliment. Fine, but you can tell. | Shin bone. Boiled, dried and carved. Nobody wearing it would ever guess. | Two hundred and some. The best go on the good coats, with a little extra charged for the story.
+b : #bc_clever# | #bc_ha# | #bc_ha#
+
+scene sharp_knife_sermon
+when topic=pastimes|work self.likes=sharp_knife
+does tell.self / react.self / tell.self / ack
+a : A blunt blade's an insult. I hone #knife# every night before supper. | Best moment of any day: a good edge through wool, and no snag.
+b : You'd cut yourself, I'd think. | Strange thing to be fond of.
+a : Never with a sharp one. Blunt blades skid, and then they bite. | Not odd. Listen next time someone cuts good cloth with good shears. It's the sound of a job done right.
+b : #bc_true_enough# | #bc_maybe#
+
+scene warm_loaf_morning
+when topic=food here.time=dawn|day self.likes=warm_bread
+does tell.self / react.self / assess / laugh
+a : I've just had #loaf# from the bakery. I'd marry the baker if I weren't so particular. | A bakery at seven beats any perfume on the Rise. I pass three on purpose.
+b : I'd have a slice of that. | Which bakery's the best?
+a : Too late. Gone. Crust first, sat on my doorstep, like a pup. | Whichever's nearest when I'm hungry. That's loyalty for you.
+b : #bc_ha# | #bc_ha#
+
+scene stale_bread_crime
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.self / insist / laugh
+a : Somebody gave me #stale# with my soup last night and called it a kindness. | Stale bread should be a crime. I'd put it in the stocks next to the folk who sell it.
+b : Dip it, it softens up. | That's a bit harsh, surely.
+a : I'll dip my paws in soup when I'm dead and no sooner. Bread's for eating warm. | Harsh? I'd let them out by noon. With a fresh loaf. As a lesson.
+b : #bc_ha# | #bc_ha# Fair enough.
+
+scene gull_took_my_bun
+when topic=animals here.region=ridgemere
+does tell.complaint / react.self / tell.self / laugh
+a : A gull snatched my bun this morning. Straight from my paw. | #gulls.capitalize# are on the roof again. I can hear them laughing at me. | Those gulls have learned which step I eat breakfast on. I've moved. They've followed.
+b : They're bold, those birds. | They're only birds. | Clever things, gulls.
+a : Bold? It stared at me while it swallowed. I've never been so insulted. | Beaks like shears and no shame at all. Give me sparrows, every time. | Clever enough to rob a tailor. I'd hire one if it could hem.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene first_warm_day_out
+when topic=weather|season here.season=spring here.weather=clear self.job=crafter
+does tell.feeling / react.self / assess / laugh
+a : #spring.capitalize#! I could kiss the sky. | Look at that. The whole Commons has its coat off. Terrible for business. I love it.
+b : About time, after that winter. | You'll lose trade, then.
+a : Since the first frost I've waited for this. My whole afternoon belongs to the knife and some pear wood. | I'll lose a little. Then in autumn they'll find the moth's been at their coats all summer, and in they'll come.
+b : #bc_lucky_you# | #bc_ha# Sly.
+
+scene rain_brings_custom
+when topic=weather here.weather=rain|storm self.role=merchant self.job=crafter here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : Rain, rain, lovely rain. Every soaked hem in Ridgemere's coming through my door. | Hear that on the shutters? That's the sound of seams splitting all over the city.
+b : You like the rain, then? | Bad luck for them.
+a : Like it? I named the shop for it, near enough. The drip pays my rent. | Bad luck for them, good luck for me. That's the Commons in a nutshell.
+b : #bc_ha# | #bc_true_enough#
+
+scene winter_rush
+when topic=season|work here.season=winter self.job=crafter self.role=merchant
+does tell.complaint / ask.detail / answer.detail / laugh
+a : Winter. Everybody wants their coat by Restday and nobody wants to pay till spring. | My fingers are so cold I sewed a cuff to my own sleeve this morning.
+b : Do you let them owe you? | You did not.
+a : Some. Their names go in a small book. Small book. Long memory. | I did. I wore it all morning before I noticed. Customers thought it was the new style.
+b : #bc_ha# | #bc_ha#
+
+scene gossip_eager
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / tell.self / laugh
+a : Ooh, news. #topic.subject.capitalize# #topic.claim#. So it goes across my counter. | You'll love this. They say #topic.subject# #topic.claim#. Three customers brought it today, all different. | Lean in. Word is #topic.subject# #topic.claim#. Don't say where you heard it.
+b : Never! Who told you? | Three versions? | I won't, I won't.
+a : A customer, whose friend's cousin was nearly there. That's as good as gospel in the Commons. | Three, and every one with a different coat on it. I'll take the middle one. | You will, pet. But say it nicely, and say you heard it from a well-dressed wolf.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene gossip_wedding_coat
+when topic=gossip here.gossip=yes topic.claim_kind=marriage self.job=crafter
+does tell.gossip / react.news / tell.plan / ack
+a : They say #topic.subject# #topic.claim#. Somebody will need trousers that fit, and I know exactly who should make them. | Word is #topic.subject# #topic.claim#. I'm sending a card round tomorrow. With my prices on the back.
+b : You don't waste a moment. | That's lovely news.
+a : Waste? A wedding's a whole family needing new clothes on one day. That's not a moment, that's a season. | It is lovely. It's lovely and it's custom, and I don't see why it can't be both.
+b : #bc_ha# | #bc_fair_enough#
+
+scene gossip_theft_locks
+when topic=gossip|crime here.gossip=yes topic.claim_kind=theft|wanted self.role=merchant
+does tell.gossip / tell.worry / reassure / ack
+a : Bad business. #topic.subject.capitalize# #topic.claim#. I've moved #bolt# off the window shelf. | They're saying #topic.subject# #topic.claim#. My back door has two bars now.
+b : Thieves after cloth? Surely not. | The Watch are on it, surely.
+a : You'd be surprised. Good wool's as easy to sell as silver and twice as easy to hide. | I hope so. I've told the window dummy to keep an eye out. He's useless, mind.
+b : #bc_wise# | #bc_ha#
+
+scene festival_ribbons
+when topic=festival world.festival=today|soon self.role=merchant self.job=crafter
+does tell.self / react.self / tell.plan / laugh
+a : Festival's coming! I've sold ribbon to every pup in the Commons and their grandmothers. | Dancing tonight. I've pressed eleven coats today and I'm wearing the twelfth.
+b : Are you going to dance? | You'll be worn out.
+a : Dance? I'm going to stand by the musicians and tell everyone who made their coats. | Worn out by midnight and dancing by one. That's the rule.
+b : #bc_ha# | #bc_ha#
+
+scene a_jar_with_friends
+when topic=pastimes|smalltalk here.time=dusk|night
+does invite / accept_invite / tell.self / ack
+a : Shutters are up. I could murder a jar. Coming? | I'm off for one cup at the corner. One. Possibly two. Join me?
+b : Go on, then. One. | Just the one, mind.
+a : That's the spirit. First round's yours, for being asked. | Just the one. We'll each swear it and each forget.
+b : #bc_ha# | #bc_ha#
+
+scene the_helping_hand
+when topic=work|friends self.hand self.role=merchant self.job=crafter
+does tell.feeling / react.self / assess
+a : I'd trust #self.hand# with the long shears, and those shears have trusted nobody else. | I'd give #self.hand# the till while I fuss with fittings, and not count it after. Without that, I'd sink.
+b : High praise, from you. | Good to have somebody you can rely on.
+a : It is. Breathe a word, though, and there'll be talk of wages. | Aye. Customers need a no now and then, and I can't say one.
+
+scene friend_of_old
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail / laugh
+a : I trust #self.friend# to tell me when a coat looks wrong on me, and that's worth more than custom. | #self.friend# is the only wolf in the city I'd let see me cry. Which I don't. Often.
+b : That's a rare sort of friend. | When did you last?
+a : Rare and rude. The best kind. I'd not swap that one for a shop on the Rise. | Over a ruined bolt of silk, years ago. Don't laugh. It was very good silk.
+b : #bc_true# | #bc_ha#
+
+scene neighbour_through_the_wall
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# next door's good company. Never borrows a thing without bringing it back. | My key could hang on #self.neighbour#'s hook and I'd not count the spoons after.
+b : Lucky in your walls, then. | That's a high compliment.
+a : Lucky, aye, and rarer than a straight seam on the Wharf, believe me. | It is. Spoons are dear.
+
+scene church_plate
+when topic=faith
+does tell.complaint / react.complaint.disagree / concede / laugh
+a : Chapel on Restday, and that plate lapped us twice before the second hymn. | Bright One, yes. Collection box, I've my doubts.
+b : The chapel needs its roof mended too, you know. | They do a lot of good with it.
+a : Fair. I'd have mended it for less, mind. I've seen their roof. | I suppose they do. I put in a button, and I'll swear it was a good one.
+b : #bc_ha# | #bc_ha#
+
+scene wool_carts_late
+when topic=caravan|prices world.wagons=late self.role=merchant self.job=crafter
+does tell.worry / reassure / tell.plan / ack
+a : No wool off the North Road for nine days. I've three coats promised and enough cloth for two. | Carts behind again, so I'm telling customers their cloth comes from somewhere fancier. Takes longer, you see.
+b : It'll come. It always does. | Will they believe that?
+a : I know. I'll cut the third coat from my own spare, and sell my spare as a bargain next month. | They believe anything if you say it while measuring them. Everybody feels important with a tape round them.
+b : #bc_clever# | #bc_ha#
+
+scene lean_times_turned_coats
+when topic=times world.times=hard|lean self.job=crafter
+does tell.self / sympathise / tell.self / ack
+a : Hard months. I turn more coats than I cut. Inside out, and the faded side hidden. | Nobody's buying new. I've had three coats in this week that I made new myself years ago.
+b : Folk have to make do. | Rough on your trade, that.
+a : They do. And I'll make their do look like a choice. That's half the art. | Not so hard. Somebody wearing my coat for ten years is better than any sign above the door.
+b : #bc_true# | #bc_good#
+
+scene good_times_orders
+when topic=times world.times=good|boom self.role=merchant self.job=crafter
+does tell.boast / react.self / tell.plan / ack
+a : Good times! I've coats ordered till the first frost and a waiting list for the blue. | Coin about, and I can see it walking past my window in new collars I didn't cut.
+b : Put your prices up, then. | Someone else's collars?
+a : Already done, pet. A penny on everything and a big smile. | Someone else's. It'll not last. Spring, they'll be mine again.
+b : #bc_ha# | #bc_we_will_see#
+
+scene newcomer_measured
+when topic=newcomer|player self.job=crafter
+does tell.self / ask.detail / answer.detail / laugh
+a : Somebody new's about the square. I took the measure by eye from across the street. Long in the back, short in the arm. | Saw the newcomer go by. Shocking coat. I nearly ran out after it with my tape.
+b : You can tell from that far? | Did you say anything?
+a : To half an inch. It's a gift and a curse. I can't look at a wolf without fitting them. | Not yet. You let them get wet once, then you mention you've a dry one their size.
+b : #bc_clever# | #bc_ha#
+
+scene lamp_work_late
+when topic=work here.time=dusk|night self.job=crafter self.working=yes
+does tell.self / react.self / assess / ack
+a : One more sleeve and I'll stop. I've said that three sleeves running. | My eyes don't like the lamp any more. I hold the needle out to here and squint like a mole at noon.
+b : Leave it for the morning. | You'll ruin your eyes.
+a : Can't. Somebody's wearing it to a wedding at noon and their mother is terrifying. | Ruin them in a good cause. I'll get spectacles from the Rise and look very grand in them.
+b : #bc_ha# | #bc_ha#
+
+scene sump_stairs_memory
+when topic=memories|home self.quarter=commons self.age>=30
+does tell.memory / react.self / tell.self / ack
+a : I've climbed a lot of stairs to get to this counter, and I don't just mean the ones out front. | I knew a room once, down by the water, where the damp climbed the wall faster than I could paper it.
+b : And now you're on your way up again. | You've done well for yourself.
+a : Up and up. I'll stop when there's no more hill. | Well enough. Better than that room, worse than the Rise. A good middle place to dream from.
+b : #bc_good# | #bc_fair#
+
+story first_coat_ruined [topic=work|memories self.job=crafter self.age>=25]
+  : My first coat cut alone had its back panel upside down.
+  : The nap ran down on one side and up on the other. In the light, he looked like two different wolves walking together.
+  ask : In his boots, would you have paid?
+  b : Asked for my money back, I suppose.
+  b[stage=adult|old] : Laughed, and then asked for my money back.
+  : He didn't. He said it was very modern and wore it to his daughter's wedding. I've never been so ashamed or so grateful.
+
+story where_the_coal_began [topic=memories|faith self.job=crafter self.age>=30]
+  : The old tailor who taught me kept a chip of coal in his waistcoat pocket and swore it was why he never went cold.
+  : He sewed one into my first coat. Said a wolf who's going places ought to go warm.
+  : He died warm, in a good bed, in his eighties. I've sewn one into every hem since.
+  ask : Do you think there's anything in it, a bit of luck like that?
+  b : Can't hurt, can it?
+  b[old] : I've carried odder things for luck in my time.
+  : That's my thinking. And the coal's free, so it's the cheapest thing I sell.
+
+story the_borrowed_coat [topic=memories self.age>=25]
+  : Young and skint, I once borrowed a good coat off a shop dummy for a dance. Brought it back before dawn.
+  : Danced all night in it. Somebody spilled cider on the sleeve, and I spent the next three hours with a sponge and a prayer.
+  ask : Would you ever have had the nerve?
+  b : Never. Did you get caught?
+  : Not then. Years later I told the tailor. Turned out he'd known all along, and lent it on purpose.
+
+story gull_and_the_pie [topic=animals|memories self.age>=20 here.region=ridgemere]
+  : I had a pork pie once, a whole one, my birthday treat. Down it went on the sea wall for one moment so I could do up a bootlace.
+  : One moment. A gull big as a goose came down, took the pie, and flew off with it.
+  ask : Can you guess where it landed?
+  b : Somewhere close, so you could watch it feast?
+  : On the Fish Hall roof, where I could see it and couldn't reach it. I've hated every gull since, and with reason.
+
+story knife_from_a_stranger [topic=pastimes|memories self.age>=25 self.job=crafter]
+  : The best knife I own, I got off a carter from the towns who couldn't pay for his coat.
+  : He offered me the knife or his boots. I took the knife. He walked out of town in my coat and his boots.
+  ask : Which would you have taken?
+  b : The boots, myself. You can always find a knife.
+  : That's what the carter said. But that knife's outlasted three pairs of my own boots, and his would be dust by now.
+
+rule @bark_coats
+when concept=bark self.working=yes self.role=merchant self.job=crafter
+does aside
+cooldown 7h
+say Coats let out, coats taken in, no questions asked. | Turnings and mendings, while you wait.
+
+rule @bark_gulls
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 8h
+say Shoo! Go and rob a fishwife. | Off my sign, you yellow-eyed devil.
+
+rule @bark_pins
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 9h
+say Where's my chalk got to now? | Ow. Pinned myself again.
+
+rule @bark_rain
+when concept=bark here.weather=rain self.role=merchant
+does aside
+cooldown 10h
+say There's the drip. Here comes the custom. | Rain on the shutters, coins in the till.
+
+rule @bark_bread
+when concept=bark here.time=dawn self.likes=warm_bread
+does aside
+cooldown 11h
+say Is that the baker's oven I can smell? | Bread. Warm bread. I'll be back in a minute.
+
+rule @bark_whittle
+when concept=bark here.time=dusk|night self.likes=whittling
+does aside
+cooldown 12h
+say One more button, then bed. | That's a good bit of bone, that.
+
+dlg @1 resident.hub : #greet#! In, quick, you're letting the drip in. What's wanted? | #greet#. Pins on the boards, so tread soft. What is it, pet?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! Back to see me, or my prices? | #greet#, #topic.player#. You're looking well. Better than your coat, but well.
+dlg @3 resident.hub [here.time=night] : We're shut, but I'm still up. What's the trouble? | Late, late. Quick, and nobody need know you called.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Ooh, a face like a torn lining. What is it? | Say it from there, if you would. Sharp things on every table.
+dlg @1 resident.job [self.job=crafter self.role=merchant] : I make coats, turn coats and mend coats. Anybody's coat, any weather. | Tailoring. I take a bolt of wool and some poor wolf's measurements and make them look better than nature intended.
+dlg @2 resident.job : #self.trade_words.capitalize#. Busy hands, busy mouth, that's me. | A little of this, a little of that, all of it talking.
+dlg @3 resident.job [self.working=yes self.job=crafter] : Sewing, pet. The pins give it away. | Working. Talk all you like; my paws don't listen to my ears.
+dlg @1 resident.business [business=thriving] : Wonderful! I'm turning folk away and charging the ones I keep a penny more. | Couldn't be better. I'm thinking of gold letters for the sign.
+dlg @2 resident.business [business=steady] : Steady as a good seam. Pays for the bread and the candles, with a bit over for buttons. | Can't complain. I do anyway, but I can't.
+dlg @3 resident.business [business=failing] : Badly. I'll be honest for once; it's that bad. | Thin. Nobody's buying, and the ones who come only want mending.
+dlg @1 resident.news [world.news] : Ooh, from #world.news_from#: #world.news#. That's on every counter today. | Word from #world.news_from# is #world.news#. A carter told a customer who told me.
+dlg @2 resident.news [world.event_words] : It's #world.event_words#, #world.event_words# all day. Everybody's on about it. | Oh, you must've heard. #world.event_words.capitalize#. It's the only tune in town.
+dlg @3 resident.news [world.wagons=raided] : Thieves stopped a wagon past the gate. Somebody's wool, I'll bet, and somebody's coat gone with it. | Highway robbery again. Don't walk out that way in anything nice.
+dlg @4 resident.news [world.death=recent] : There's been a burying close by. Everybody's in black and quiet with it. | Somebody near us passed, these last days. Very sad. The whole row's drawn its curtains.
+dlg @5 resident.news [world.wedding=recent] : A wedding! Every collar in the street came out pressed, and I counted them. | We've had a wedding nearby. Beautiful, and not a dry eye or a straight hem in the place.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing repeatable, and believe me I've searched. | Quiet as a church mouse in carpet slippers. Tomorrow I'll have invented some.
+dlg @1 resident.gossip [here.gossip=yes] : Ooh, come close. They say #topic.subject# #topic.claim#. Mind, you never got it from a tailor. | Well, since you ask: #topic.subject# #topic.claim#. That's what's going round the counters.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Keep your paws on your purse. Word is #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. I've a second lock on the cloth press.
+dlg @3 resident.gossip [here.gossip!=yes] : For once, nothing! Shocking, isn't it? | Not a whisper. A sad day, when my ears come home empty.
+dlg @1 resident.bye : #farewell#! Come back when the elbows go. | #farewell#. Tell everyone where you got that compliment.
+dlg @2 resident.bye [here.time=night] : Night, night. Collar up, it's raw. | Off home, then. And don't let the gulls see you.
+dlg @1 shop.greet [here.shop!=bare self.job=crafter] : #greet#! Coats, cloaks and capes, and every one cut to flatter. | #greet#, #address#. Have a look. That one in the window would take ten years off you.
+dlg @2 shop.greet [here.shop!=bare] : #greet#! Have a look round. Everything's priced, and everything's a bargain. | #greet#, #address#. Come in, browse, and let me tell you how well it suits you.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Back, as I said you'd be. They always come back. | #greet#, #topic.player#. I've saved something in your size. I save things in everybody's size.
+dlg @4 shop.greet [here.shop=bare] : #greet#. The shelves are empty, I'm afraid, but my eye's still good. Selling anything? | Bare as a plucked goose in here. Buying's another matter, if you've something worth the having.
+dlg @1 shop.prices : Prices? For you, they're very reasonable. For everybody, actually. | Some things crept up a penny. My smile's still free.
+dlg @1 shop.bye : #farewell#! Wear it with your chin up. | #shop_bye# And if anyone asks, say it was very dear.
+graft resident.hub
+choice Is that coal dust on your fingers? [self.job=crafter] -> coal
+node coal
+say Coal dust? Oh, that. Well, since you've a kind face: I sew a crumb of coal into every hem. For luck. Mum's the word, or they'll all want it unpicked.
+mood warm
+free
+choice Does it work? -> coal_why
+choice My lips are sealed. -> hub
+node coal_why
+say Not one of my customers has frozen to death yet. Draw your own conclusions. I've drawn mine and I'm keeping them.
+choice I'll keep your secret. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Could you take this coat in a little? [self.job=crafter] -> takein
+node takein
+say Take it in? Let me see you turn. Oh, a little at the waist and a lot at the shoulder. Leave it with me a day, I'll have you looking taller.
+mood keen
+choice Let me see your wares first. -> greet
+choice Taller? Really? -> takein_how
+node takein_how
+say A tailor's trick: lift the shoulder seam a finger's width and everybody stands straighter in it. Works on councillors, too.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

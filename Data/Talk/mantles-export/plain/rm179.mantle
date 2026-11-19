@@ -1,0 +1,470 @@
+# rm179, the overnight cooper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm179
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_edric_millton
+written_by claude
+title the overnight cooper
+fits stage=adult|old
+prefers role=merchant job=crafter warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk fills_every_cask_with_water_a_night_before_selling_it
+likes warm_bread dancing quiet_chapel autumn_wind
+dislikes drizzle deep_mud
+fears selling_a_cask_that_fails_a_customer a_cold_bending_fire_in_winter
+hopes a_cooperage_whose_name_means_sound the_house_full_and_warm_every_evening
+topics work +0.5 food +0.3 faith +0.2 pastimes +0.3 family +0.3 weather +0.2 caravan +0.2 gossip -0.2
+styles comfort=feeding gossip=plain refuse=gentle tease=none
+marks oath saying
+persona #self.first# keeps a cooperage in the Commons and lives over it, and never sells a cask until it has stood a night full of water: gentle, warm, honest to a fault, quick to tell a buyer the one thing wrong with a cask and slow to say anything unkind, fond of warm bread, a reel on a festival night and the chapel when nobody else is in it.
+
+words
+oath! = Hoop and heartwood | By the sound chime
+saying! = If it weeps, you'll hear it from me | Tight by morning, or it isn't sold | A cask keeps the promise its maker kept
+cask = a cask | a new oak cask
+casks = the casks | the row of new casks
+staves = the staves | green oak staves
+hoops = the hoops | the iron hoops
+chime = the chime | the rim at the chime
+fire = the bending fire | the small fire inside the cask
+water = a night's water | a night of water standing in it
+weep = a weep | a little weep along a seam
+loaf = warm bread | a loaf the baker's only just turned out
+chapel = the chapel | the chapel with its pews all bare
+reel = a reel | a reel on a festival night
+leafwind = the autumn wind | a leaf-blowing wind
+drizzle = drizzle | thin wet that swells the oak wrong
+mire = deep mud | mud over the boot tops
+yard = the yard | the cooperage yard
+mallet = the mallet | my old mallet
+straight = I'll be straight with you | Honestly, now
+dear = love | dear
+
+any
+opinion @1 city for 1 : Every barrel in this city has to come from somewhere, and a fair few come from our yard. I'd not work anywhere else.
+opinion @1 dole for 1 : Nobody should lie down hungry in a city this rich. If the parish loaf stops that, I'm glad to pay my share of it.
+opinion @1 merchants for 1 : Selling's my trade as well. Oak's paid for three times before it reaches our yard: the forester, the carter, the toll. Most sellers aren't thieves.
+opinion @1 newcomers for 1 : Anybody who'll work and pay the rent can have a door on our street. I'd sooner a busy stranger than an idle neighbour.
+opinion @1 road against 1 : Oak comes in late most weeks now. Each late load means a customer I can't give a day to.
+opinion @2 road against 2 [world.wagons=late|raided] : No staves on the carts again. I've a slate crowded with orders and nothing to bend.
+opinion @1 strangers for 1 : A stranger at my counter gets the same cask and the same truth as my oldest customer. That's only fair.
+opinion @1 watch for 1 : Since the Watch started passing our door after dark, not one cask has gone missing. I'm grateful to them.
+opinion @1 festivals for 1 : I'll work through a feast if I must, but give me a festival night and a reel and I'm the last off the square.
+opinion @1 houses mixed 0 : The Houses buy good casks and pay on time. What they do with the rest of their hours, I couldn't tell you.
+opinion @1 drink mixed 0 : I make the cask. What goes in it is the buyer's business, and what comes out is the drinker's.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in; wipe your boots, the lane's muddy. | #greet#. You're welcome here. Say what's wanted.
+line @2 greet [self.working=yes] : #greet#. Half a moment; I'll put this down. | #greet#. Go on. Paws full, ears empty.
+line @3 greet [here.time=dawn] : Morning. I've just had my bread; there's a heel left if you want it. | Morning. Early's the best time to catch me.
+line @4 greet [here.time=dusk|night] : Evening. The stove's still warm. | Evening. Come up out of the cold.
+line @5 greet [pair.band=friends|family|spouses] : There you are. Good. Take the stool. | Oh, it's you. That's the day improved.
+line @6 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : You're home. The stove's lit. | Home again. Sit; there's something hot coming.
+line @1 again.open : Twice today. I'm glad of it. | Back again. This door's always open to you.
+line @1 hail [pair.band=friends] : Here, a minute! See what I've made. | Oi, over here. There's bread going spare.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. I'd been hoping you'd stop by. | #greet#. Sit, sit.
+line @3 greet.return [self.working=yes] : #greet#. Keep talking; I'll finish as you go. | #greet#. Mind your feet; I've things stacked.
+line @4 greet.return [here.time=dusk|night] : Evening. You're out late. | Evening. Come in where it's warm.
+line @1 farewell : #farewell#. | Go well. Come back soon.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep under the lamplight; the cobbles are wet. | Go careful, now. Mind the mud at the corner.
+line @1 farewell.return : #farewell#. | And you. Keep warm.
+line @2 farewell.return [pair.band=friends|family|spouses] : Off you go. Supper's at dusk, and there's a bowl for you. | Look after yourself.
+line @1 react.news : #straight#: give me the whole thing. | Go on. I'm listening.
+line @1 react.news.new : #oath#. That's news to me. | That's not reached our yard yet.
+line @1 react.news.known : #knew#. A customer told it over the counter. | Part of it reached me. Not all.
+line @1 react.news.doubt : That wants somebody who was there to say it. | #doubt#. News is like a cask; you want to see it hold before you trust it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. Is there anything wanted at the house? | #pity#. That's a heavy thing for somebody.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's grand. I'm glad for whoever it is, truly. | #gladnews#. There'll be dancing, if there's any sense.
+line @1 answer.how : Well, thank you. Busy and well. | Steady. The casks are tight and the family's fed.
+line @2 answer.how.busy [self.working=yes] : Busy. Orders waiting and the fire lit. | Run off my paws, but glad of it.
+line @3 answer.how.poorly : Back's sore from lifting. It'll mend. | Tired. Nothing a night's sleep won't put right.
+line @1 ask.how : And you? Keeping well? | How are you, really? You look tired.
+line @2 ask.how [pair.band=friends|family|spouses] : Eaten yet? There's bread on the board. | Are they treating you right?
+line @1 sympathise : #sympathy#. Sit down. A hot cup first, then talk. | That's a cruel thing. I'm sorry to my bones.
+line @1 reassure : It'll come right. Not today, maybe, but it will. | You'll get through it. I'd stake a week's work on it.
+line @1 decline : Sorry, I can't. I've given my word on work for morning, and my word holds. | #straight#: I'd do it badly today, and you deserve better than badly.
+line @1 accept_decline : That's all right. Asking's always allowed. | Fair enough. Ask again whenever you like.
+line @1 thank : #thanks#. That's kind of you. | Thank you. That'll stay with me.
+line @2 thank [pair.band=friends|family|spouses] : You look after me. I notice. | Thank you, #dear#. Really.
+line @1 deflect_thanks : It was nothing. Truly. | Glad to. Any time.
+line @1 deflect_praise : It's only what I'm paid for, done properly. | Kind of you. The oak does most of it.
+line @1 apologise : I'm sorry. I got that wrong, and I'll put it right. | That was my fault. I'll make it good.
+line @1 accept_apology : No harm done. Truly. | It's forgotten. Come in.
+line @1 offer : Have some bread. It's still warm. | Warm yourself at the stove. Heat's free in this house.
+line @1 preclose [self.working=yes] : I'll go back down. The fire won't keep. | I've promised something for morning.
+line @2 preclose : Well, you'll have places to be. | I should go up; supper's waiting.
+line @1 accept_preclose : Go on. Don't be long away. | Off you go. Go well.
+line @1 ack : #bc_right# | #bc_of_course#
+line @1 give.advice : Buy a thing that's been tested. A day's wait costs less than a leak. | #straight#: ask the seller what's wrong with it. A good one will tell you.
+line @2 give.advice [other.stage=young|adolescent] : Learn one thing properly before you learn ten badly. | Watch your paws near a hot hoop. It doesn't look hot.
+line @1 warn [world.bandits=near] : Road wolves are out past the gate again, the carters say. Don't go alone. | Keep your coin close if you're leaving the city. Truly.
+scene overnight_water
+when topic=work self.working=yes self.job=crafter
+does tell.self / ask.detail / answer.detail / assess
+a : Every cask I make stands a night full of water before I'll sell it. Every one. | I filled six new casks this evening. By morning I'll know which are honest. | I've three casks out the back with water in them since last night. Two dry as a bone. One wept.
+b : All of them? | How do you know? | What happens to the one that wept?
+a : All of them. A cask that leaks in a cellar costs somebody far more than it cost me. | You look under them at first light. A sound one leaves the floor dry. | I take it apart and find the bad stave. Or I sell it cheap, and tell the buyer why.
+b : #bc_wise# | #bc_clever# | That's honest.
+
+scene the_weep
+when topic=work|prices self.role=merchant self.job=crafter
+does tell.self / react.self / assess
+a : A buyer wanted a cask today that wept a little at the chime. I said so. It went anyway, cheaper. | I turned a sale away this morning. The cask wasn't ready, and I'd not pretend it was. | Somebody asked why I tell folk what's wrong with my own casks. Because buyers find out.
+b : You could have kept quiet. | You lost the sale? | Most wouldn't.
+a : I could. Then I'd have to keep quiet every time I saw that buyer after. | Lost it today. That buyer will be back, and will trust what I sell. | Most wouldn't. I'd not sleep, that's all. #saying#.
+
+scene bending_fire
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : The staves go round a little fire to bend. Too hot and they crack; too cold and they fight you. | I've had #fire# going since dawn. My eyes are stinging with oak smoke. | There's a sound green oak makes when it's ready to bend. A sort of sigh.
+b : That sounds tricky. | Your eyes look it. | A sigh?
+a : It is, at first. Then your paws learn it, and you stop thinking. | It's a cooper's smell. Take it away and I'd go looking for it. | A sigh. Then it gives. Patience is half the trade.
+
+scene driving_hoops
+when topic=work self.job=crafter
+does tell.self / react.self / assess
+a : Driving hoops is all rhythm. Mallet, turn, mallet, turn, till it sits. | My shoulders know every hoop I drove today. Forty, near enough. | The mallet rings different once a hoop's home.
+b : Forty? | Sounds like music. | Different how?
+a : About that. I stopped counting at thirty and kept going. | It is, a bit. A slow tune with one note. | A dull knock till it's home, then a ring. The ring's the good part.
+
+scene choosing_oak
+when topic=work|land self.job=crafter
+does tell.self / react.self / assess
+a : Good oak's straight in the grain. You can see it if you split it. Never trust it sawn. | The last load of staves was poor. Knots all through. I'll use half. | I'd rather wait a month for good oak than make one cask from bad.
+b : Can't you tell before? | Half's a lot to lose. | A month's a long time.
+a : Sometimes. Mostly you find out when it fights you at the fire. | It is. But it's less than a customer's whole cellar. | It is. A leaking cask lasts longer in folk's memories, though.
+
+scene buyers
+when topic=work self.role=merchant self.job=crafter
+does tell.self / react.self / assess
+a : A brewer came in for a dozen casks. I've four tested. The rest will be ready by Marketday. | Half my customers buy a cask and stay an hour talking. I don't mind. | I've a wine buyer from up the hill who checks every chime with a coin. I like that.
+b : Will they wait? | An hour? | With a coin?
+a : The brewer will wait. Brewers know why. | An hour, sometimes. They talk, I work, nobody minds. | Runs it round the rim, listening. Fussy. I'd do the same.
+
+scene honest_to_a_fault
+when topic=work|smalltalk self.role=merchant self.job=crafter
+does tell.self / react.self / assess
+a : I sent a customer to another cooper today. I couldn't do the size wanted in time. | Somebody tried to pay me over the price. I gave the extra back. | #straight#: if a cask's not right, I say so. Even when it's mine. Especially when it's mine.
+b : To a rival? | Why give it back? | That costs you.
+a : To the one down the hill. A customer helped is a customer kept, even if not today. | It wasn't mine. It would have kept me awake. | It costs me a sale now and then. It saves me a name.
+
+scene warm_loaf
+when topic=food here.time=dawn
+does tell.feeling / react.self / assess
+a : Bought #loaf# at first light. Tore it open in the street. | Bread with the warm still in it beats anything going. Anything. | I go past the baker's at dawn just to smell it. Then I buy one, because I'm weak.
+b : In the street? | That's a strong word. | Weak's the word.
+a : In the street. It was steaming. I'm not sorry. | It's a strong loaf, that. Worth it. | Weak, and well fed. I'll do it again tomorrow.
+
+scene bread_and_butter
+when topic=food|home
+does tell.self / react.self / assess
+a : A good supper for me is warm bread, butter, and the stove going. That's all. | We had fresh bread tonight and I ate more than my share. I'll say so. | Warm bread's near the top of everything I'd keep.
+b : Simple supper. | More than your share? | Near the top?
+a : Simple's the best kind. Nobody's ever disappointed by it. | More than mine. I owned up and was forgiven. | Third. After the chapel and dancing. Bread's a close third.
+
+scene reel_night
+when topic=pastimes|festival
+does tell.feeling / react.self / assess
+a : Strike up #reel# and my boots will be through by morning. | I'm not graceful. I don't care. I dance anyway, and I'm the last to stop. | When the fiddles start up on the square, my feet go before the rest of me.
+b : You? Dance? | Last to stop? | Mine stay put.
+a : Me. Badly, gladly, all night. | Last to stop, and the first to ask the next one. | Then stand by me at the side. They'll start tapping by the second tune.
+
+scene empty_chapel
+when topic=faith
+does tell.feeling / react.self / assess
+a : I like #chapel#. Middle of a weekday, just me and the quiet. | When nobody else is there, I slip in and sit. I don't always pray. | Of a weekday morning, there's no stiller room in the Commons than our chapel.
+b : Not for the services? | Just sit? | It must be.
+a : I go to those too. But the empty hour's my favourite. | Just sit. The Bright One can manage without my chatter for an hour. | It is. The pews creak if you shift. Nothing else.
+
+scene chapel_dusk
+when topic=faith|day here.time=dusk
+does tell.self / react.self / assess
+a : I looked into the chapel coming home. There was one candle lit and nobody there. | I sat in the chapel till the light went. Then I came home for supper. | Somebody had left the chapel door open. I went in and shut it from the inside.
+b : Did you pray? | Peaceful. | Ha. And stayed?
+a : A little. Mostly I sat and was glad. | It was. I'd needed it, I think. | And stayed. It seemed rude not to.
+
+scene autumn_seasoning
+when topic=weather|season here.season=autumn self.job=crafter
+does tell.feeling / react.self / assess
+a : #leafwind.capitalize# is the best thing for staves. It dries them slow and even. | The new staves stood out back all morning with the wind running through them. | I love this wind. I open the yard gate just to let it in.
+b : Even? | All morning? | It'll blow your casks over.
+a : Even. A slow dry keeps the oak from splitting. | All morning, and they smelled like a forest by noon. | Not the full ones. They're too heavy and too proud.
+
+scene autumn_walk
+when topic=weather|season here.season=autumn here.outdoors=clear|overcast
+does tell.feeling / react.self / assess
+a : Came home round three streets more than I needed, only to be out in this wind. Leaves everywhere. | Autumn's mine. A wind like today's and the whole city smells of wet leaves and woodsmoke. | Up on the high steps I let the wind lean on me. Like being a pup again.
+b : It's cold, though. | Woodsmoke and leaves? | Like a pup?
+a : Cold's fine if you keep moving. I kept moving. | That's it. Bottle that and I'd buy it. | Exactly like. I nearly ran down the steps. I didn't. I'm too big now.
+
+scene drizzle_staves
+when topic=weather|work here.weather=rain self.job=crafter
+does tell.complaint / react.self / assess
+a : This #drizzle# gets in the staves and swells them wrong. A real rain I could work with. | Drizzle all day. I've had to cover every stave in the yard. | Thin rain spots the hoops with rust by evening. I'll be at them with a rag tonight.
+b : Can't you work inside? | Every one? | Rust already?
+a : Inside, aye. But the staves breathe it in wherever they are. | Every one. A wet stave and a dry stave won't sit together. | Rust already. Drizzle's the worst for it, worse than a downpour.
+
+scene drizzle_plain
+when topic=weather here.weather=rain
+does tell.complaint / react.self / assess
+a : I don't mind rain. It's drizzle I can't love. Neither one thing nor another. | Drizzle again. It's in my collar, in my boots, in my bread. | I'd take a thunderstorm over this thin wet any day.
+b : It's Ridgemere. | In your bread? | A storm's worse.
+a : It is. I love Ridgemere. I'm allowed not to love its drizzle. | In my bread. I'd set it by an open shutter. My own fault. | A storm's honest. It comes, it shouts, it goes.
+
+scene mire_lane
+when topic=weather|travel here.outdoors=rain here.season=autumn|winter|spring
+does tell.complaint / react.complaint / assess
+a : The lane behind our place is #mire# again. It had a boot off me this morning. | The carts can't get up our lane for mud. We carried the loads the last stretch. | Deep mud I'll never make peace with. It holds onto you like it wants something.
+b : It had your boot? | Carried them? | It's only mud.
+a : For a moment. I fished for it up to the knee. Not my best morning. | Two at a time on the shoulder. My back's telling me about it now. | It's never only mud. It's mud and whatever's under it.
+
+scene my_spouse
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : Of everything this house has had, my #self.spouse_word# is the best. I tell people so. | I'd still dance every reel with #self.spouse# if I had the choice. Every one. | When I've had a bad day at the fire, coming up to #self.spouse# puts it right.
+b : That's good to hear. | Every one? | That's lovely.
+a : It's only true. True things should be said. | Every one. Badly, but every one. | It is. I'm a lucky wolf, and I know it.
+
+scene trusted_hand
+when topic=work|family self.hand self.working=yes
+does tell.feeling / react.self / assess
+a : I'd trust #self.hand# with the counter and the keys and the takings. That's no small trust. | With #self.hand# at the counter I can stay at the fire and never fret. | Having #self.hand# about the place makes the work lighter. I'll say that plainly.
+b : That's good help. | You don't worry? | Good to have.
+a : It's more than help. It's trust, and that's rarer. | Never. I'd say so if I did. | Very good. I'd not like to do it alone now.
+
+scene the_neighbour
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour.capitalize# is a good neighbour. That one could have the yard key off me any day. Truly. | When the oak smoke goes next door, #self.neighbour# never once complains. I'm grateful. | I'd lend #self.neighbour# anything I had and not ask when it was coming back.
+b : That's a good neighbour. | Never once? | That's generous.
+a : A good one. I'd like to deserve it. | Not to me. I keep the fire low in the evenings anyway. | It's not generous. It's just how a street ought to be.
+
+scene old_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : Years and years, #self.friend# and me. There's nothing I'd hold back from that one. | There's nobody I'd sooner have at my side on a bad day than #self.friend#. | I'd give #self.friend# my last loaf and not think about it.
+b : That's a real friend. | A bad day? | Your last loaf? That's love.
+a : It is. Everybody should have one. | Any day. The bad ones most. | It's bread. But aye, it is.
+
+scene rent_day
+when topic=home|prices
+does tell.self / react.self / assess
+a : Rent day. I paid it this morning before I'd lit the fire. I like it off my mind. | We keep a decent house. Rent paid, step swept, door painted. I'm proud of that. | I never let the rent go a day late. Never have, never will.
+b : Before the fire? | Proud's a good word. | That's a good rule.
+a : Before anything. Then the day's my own. | It is. Proud, and I'll say it out loud. | It is. A rule nobody keeps is only a wish.
+
+scene over_the_shop
+when topic=home self.job=crafter
+does tell.feeling / react.self / assess
+a : We live over the shop. Every room upstairs smells of oak. I'd not change it. | I can hear the casks settling at night. A little creak, then quiet. | Living over the work means it's never far. That suits me. The work's good company.
+b : Smells nice. | Doesn't it keep you up? | Doesn't it ever stop?
+a : It does. Folk say it's like a forest. It's like home. | No. It's a good sound. Wood getting used to being a cask. | It stops when the lamp goes out. Not before.
+
+scene gossip_plain
+when topic=gossip here.gossip=yes topic.claim_kind=other|newcomer|marriage|promise_kept
+does tell.gossip / react.news / assess
+a : A customer said #topic.subject# #topic.claim#. I'll tell you as I heard it. | Word is #topic.subject# #topic.claim#. I'd sooner have heard it from the one it's about. | I heard #topic.subject# #topic.claim#. I don't know more, and I'll not guess.
+b : #bc_so_they_say# | That'd be best. | Fair.
+a : That's every word I got. Do what you like with it. | It would. If it's mine to know, I'll be told. | Guessing's how a story grows. I'd rather it stayed the size it was.
+
+scene gossip_trouble
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted
+does tell.worry / reassure / assess
+a : They're saying #topic.subject# #topic.claim#. Let it be wrong. I really want it wrong. | Heard #topic.subject# #topic.claim#. Our door's barred tonight. It's not been barred since last winter. | #topic.subject.capitalize# #topic.claim#, they say. That's a bad business, whoever's in it.
+b : It might not be. | Since winter? | It is.
+a : Might not. I'll not think worse of anybody till I know. | Not since. I'll unbar it again as soon as I can. | It is. And the ones it touches have to live with it.
+
+scene promise_gossip
+when topic=gossip topic.claim_kind=promise_broken
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's a pity. A promise is a cask. It holds or it doesn't. | Word is #topic.subject# #topic.claim#. There may be a reason. I'd like to know it. | Heard #topic.subject# #topic.claim#. I hope it gets put right.
+b : A cask? | There usually is. | It might.
+a : It holds or it doesn't. And you don't know till it's tested. | Usually. Not always a good one. But usually. | It might. Most broken things can be mended, if somebody wants to.
+
+scene no_staves
+when topic=caravan|work world.wagons=late self.job=crafter
+does tell.worry / reassure / assess
+a : The oak carts haven't come. Orders chalked up and not a stave to bend. | No staves today. I've told three customers they'll wait. I hate telling them. | Late carts means late casks. And I promised. I don't like breaking promises.
+b : They'll come. | They'll understand. | It's not your fault.
+a : They will. I'll work all night when they do. | They do. That's what makes it worse. | No. I'll say so, too. But it's my promise.
+
+scene raided_carts
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+a : A wagon coming in was set on by road wolves. Let the carter be whole, that's all I ask. | They're saying a load never reached the gate. The carters have been on my mind all day. | A raided wagon. Nobody steals oak, so it's the coin they wanted. Poor carter.
+b : #bc_poor_soul# | So have I. | Poor carter, aye.
+a : Poor soul. Oak can be replaced. A carter can't. | It's no life, the road these days. | Aye. I'd go and help, if anybody knew where.
+
+scene lean_casks
+when topic=times|prices world.times=hard|lean self.job=crafter
+does tell.worry / sympathise / assess
+a : Times are lean. Folk bring old casks for mending and buy no new ones. I don't blame them. | Fewer orders this month. I've mended more than I've made. | Hard times. I've let two customers pay half now, half later. I know them.
+b : That's still work. | Mending's work too. | That's kind.
+a : It is. And a mended cask's a good cask, if it's mended right. | It is. Honest work, and the fire stays in. | Kind's not the word. Sense is. They'll pay, and they'll remember.
+
+scene good_trade
+when topic=times|work world.times=good|boom self.job=crafter
+does tell.self / react.self / assess
+a : Times are good. The orders have outrun the water to test them. | Coin about, and folk buying two casks where they'd buy one. | Good times. I've said yes too often. It'll get done. It always does.
+b : That's a fine problem. | Good for you. | Mind your back.
+a : It is. I'm not complaining. I'm just not sleeping. | Good for the street. When the yard's busy, the baker's busy. | I'll mind it. My #self.spouse_word# will see to that, if I don't.
+
+scene newcomer_welcome
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : A family's moved in along from us. I knocked with a loaf. Seemed right. | A newcomer came to the counter after a small cask. The newcomer got a good price; first casks matter. | A stranger's taken rooms on our row. I asked straight off whether there'd been any supper. That's how it starts.
+b : That's kind. | A good price? | Had there?
+a : It's only bread. Bread says welcome better than words do. | A fair one. Fair's the best price to start on. | Not since morning. There has now.
+
+scene festival_square
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival's coming. I've the casks done early so I can dance. | Every festival I say I'll leave early. I never do. | Festival night, the whole square dancing and the lamps lit. That's Ridgemere at its best.
+b : Done early? | Never? | Best of the year.
+a : Done and tested. Then I'm free till morning. | Never once. Somebody always starts another reel. | It is. Even the drizzle stays away, mostly.
+
+scene hoop_back
+when topic=health self.job=crafter
+does tell.self / sympathise / assess
+a : The hoops have my back in knots. Forty a day will do that. | My paws have little burns all over from the fire. Every cooper's do. | I slept badly. Too many orders going round my head.
+b : Rest it. | Do they hurt? | That's no good.
+a : I will, Restday. That's what Restday's for. | Not now. They're more callus than paw. | It isn't. A noon hour in the empty chapel usually settles it.
+
+scene factor_debt
+when topic=work|times self.owes=yes
+does tell.worry / reassure / assess
+a : I owe a sum to a House factor, wanted before the moon turns. I'll find it. | I'm in debt. No use pretending otherwise. | I've been working nights to pay a debt. I'll have it paid, and I'll sleep then.
+b : You'll manage. | That's honest. | Not long now.
+a : I will. Not one payment missed in my life, and this won't be the first. | Honest's all I've got. | Not long. Then I'll sleep a whole night through.
+
+scene houses_view
+when topic=lore|times here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Houses buy good casks and settle promptly. Fair dealers, to me. | I've seen a House steward water-test every cask before paying. I liked that. | The Houses are mostly beyond me. I know their stewards pay what they promise.
+b : Some say worse of them. | Checked every one? | That's something.
+a : Some do. I can only speak as I've found. | Every one. With water, like I would. | It's a lot, in my trade. Promises kept.
+
+story first_cask [topic=memories|work self.age>=20 self.job=crafter]
+  : My first cask with nobody helping, I was so proud I carried it straight to the counter.
+  : The old cooper who taught me filled it with water and left it overnight. In the morning there was a puddle under it.
+  ask : Do you know how that felt?
+  b : I can guess. Was the old cooper hard on you?
+  : No scolding. Just the mallet put back in my paw. Every cask since has stood its night of water first.
+
+story the_lost_sale [topic=memories|work self.age>=22 self.role=merchant]
+  : Years ago a buyer wanted ten casks for a wedding. I'd tested them all, and one wept.
+  : I told the buyer, and the buyer walked out and bought ten from somebody else.
+  ask : Would you have kept quiet?
+  b : I might have. One out of ten's not bad.
+  b[old] : At my age I know better than to answer that.
+  : A month later the buyer came back. Four of the other cooper's had leaked. I've sold to that house ever since.
+
+story wedding_reel [topic=memories|family self.married=yes self.age>=20]
+  : At my wedding I danced every reel. Every single one. My boots had holes by the end.
+  : I danced most of them with my #self.spouse_word#, and my feet were the joke of the night.
+  b : That's a good wedding. Did you keep the boots?
+  : I kept the boots. They're on a nail in the shop. Anyone who asks gets the story.
+
+story storm_chapel [topic=memories|faith self.age>=20 here.region=ridgemere]
+  : One winter a storm came in off the Sound so hard I ducked into the chapel to wait it out.
+  : Nobody else was there. Just the wind on the roof and one candle that wouldn't go out.
+  ask : Have you ever sat out a storm somewhere you didn't mean to be?
+  b : Once or twice. Never anywhere so peaceful.
+  : I stayed an hour past the storm. I didn't want to leave. I still go back when it's empty.
+
+story the_mud_cart [topic=memories|weather self.age>=20 here.region=ridgemere]
+  : One wet spring a loaded cart sank in the lane behind our house, right up to the axle.
+  : Half the street came out with planks and ropes and we hauled it free in the rain.
+  ask : Do you know what we did after?
+  b : Went in and got dry, I hope.
+  : We all came in and I broke open a cask of cider I'd been saving. Muddy to the knees, all of us, laughing like pups.
+
+rule @hoop_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say There. That one's home. | Mallet, turn, mallet. Nearly.
+
+rule @counter_bark
+when concept=bark working=yes self.role=merchant self.job=crafter
+does aside
+cooldown 8h
+say Casks tested and tight. Ask me what's wrong with any of them. | Sound oak, honest hoops. Come and look.
+
+rule @water_bark
+when concept=bark working=yes here.time=dusk self.job=crafter
+does aside
+cooldown 10h
+say Water in, and we'll see by morning. | #saying#.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast|storm
+does aside
+cooldown 12h
+say There's a proper autumn wind. | Listen to that. #leafwind.capitalize#.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Thin wet again. It gets in everywhere. | Drizzle. Of course it is.
+
+rule @bread_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Smell that. The baker's ovens are open. | Warm bread somewhere. My feet are going.
+
+dlg @1 resident.hub : #greet#. Come in. How can I help? | #greet#. Mind the step. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Glad you came back. | #topic.player#! Come in. Have you eaten?
+dlg @3 resident.hub [here.time=night] : It's late, but the stove's lit. | Evening. Warm yourself. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Whatever it is, I'll listen. Say it. | #straight#: what's the trouble?
+dlg @5 resident.hub [pair.disposition=warm] : Ah, there! A stool by the stove's yours. | Good to see you. Come in, come in.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. I bend the staves, drive the hoops, and test every cask with a night of water. | I make casks. Good ones. And I'll tell you straight if one isn't.
+dlg @2 resident.job : I work with my paws, and I do it honestly. That's the best I can say of it. | Honest work. Long days. I'd not change it.
+dlg @1 resident.business [business=thriving] : Never busier. Orders stacked past the door. | Doing well, thank you. The yard's full.
+dlg @2 resident.business [business=steady] : Steady. Enough orders to keep the fire lit. | Steady, and steady suits me.
+dlg @3 resident.business [business=failing] : Poorly, to be honest. Folk are mending, not buying. | Badly. Dressing it up won't sell a cask.
+dlg @1 resident.news [world.news] : Over the counter, from #world.news_from#: #world.news#. Word for word as told. | Word from #world.news_from#: #world.news#. Nothing added.
+dlg @2 resident.news [world.event_words] : It's been #world.event_words# across the counter all day.
+dlg @3 resident.news [world.wagons=raided] : Road wolves had a wagon coming in. Go careful beyond the walls, truly.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The yard's been quiet. | Nothing I've heard. Ask at the square.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't pass much on. Other folk's business stays theirs. | #gossip_none#
+dlg @2 resident.gossip [here.gossip=yes] : A customer said #topic.subject# #topic.claim#. I can't vouch for it.
+dlg @1 resident.bye : #farewell#. Come back soon. | Go well. You're always welcome.
+dlg @2 resident.bye [here.time=dusk|night] : #farewell#. Lamplit streets home, mind.
+dlg @1 shop.greet [here.shop!=bare self.job=crafter] : #greet#. Every cask here has stood its night of water. Have a look. | #greet#. Tested and tight, all of them. #shop_offer#
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare self.job=crafter] : #greet#, #topic.player#. I've a good one put by, if you want it.
+dlg @3 shop.greet [here.shop=bare self.job=crafter] : #greet#. I'm sold out of tested casks just now. Tomorrow there'll be more. | Nothing tested yet. I'll not sell you one that isn't.
+dlg @1 shop.prices [self.job=crafter] : #shop_dear# Oak's not cheap, and I don't cut corners. | Fair price for a sound cask. I'll tell you what's wrong with any of them.
+dlg @1 shop.bye [self.job=crafter] : #farewell#. Bring it back if it ever weeps. | #shop_bye# Mind the step with that.
+graft resident.hub
+choice Why is that cask full of water? [self.job=crafter] -> water
+node water
+say Every cask I make stands a night full of water before I sell it. If the floor's dry in the morning, it's sound. If not, I know before you do.
+mood warm
+free
+choice What if it leaks? -> water_leak
+choice Goodbye. -> bye
+node water_leak
+say Then I find the bad stave and make it right, or I sell it cheap and tell the buyer why. #saying#.
+choice That's honest. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is anything wrong with this one? [self.job=crafter] -> fault
+node fault
+say Let me look. There, see that? A little weep at the chime, on its night of water. It'll hold ale. I'd not put wine in it. I'll take a quarter off.
+mood calm
+free
+choice You'd tell me that? -> fault_why
+choice Let me see the others. -> greet
+node fault_why
+say I'd tell anybody. You'd find out anyway, and then you'd never trust me again. Better I tell you now.
+choice Thank you. -> greet
+choice Goodbye. -> bye

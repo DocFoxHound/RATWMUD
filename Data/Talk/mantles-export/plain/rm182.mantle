@@ -1,0 +1,362 @@
+# rm182, the asker of Houses (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm182
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_gwen_pitchcot
+written_by claude
+title the asker of Houses
+fits stage=young|adolescent|adult|old
+prefers honesty=guarded warmth=cold
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk asks_every_new_face_which_house_it_serves
+likes mutton_stew swimming quiet_chapel thunder
+dislikes gulls crowds
+fears a_crowd_with_no_way_out gulls_at_the_supper_table
+hopes a_storm_every_night_of_summer the_chapel_empty_every_restday
+topics weather +0.4 faith +0.3 food +0.3 pastimes +0.3 family +0.2 newcomer +0.2 festival -0.4 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# is a narrow-eyed, close-mouthed wolf of the Commons who wants to know which House a stranger serves before giving anything back, loves a thunderstorm heard from under a sound roof and an empty chapel, swims where nobody else does, and cannot abide gulls or a crowd.
+
+words
+oath! = Thunder take it | Rumble and crash | Big sky
+saying! = Say your House first | Nobody talks underwater | Quiet keeps
+thunder = thunder | a thunderstorm over a good roof | the sky shouting
+stew = mutton stew | mutton stew in the big bowl | stew with its fat skin still on
+chapel = the chapel | the chapel gone empty | the back bench in the chapel
+swim = a swim | a swim on my own | a swim away from everybody
+gulls = the gulls | those gulls | thieves with wings
+crowd = a crowd | all those people | a squash of bodies
+house = your House | which House you're for
+roof = a good roof | a roof with no drips
+quietw = quiet | proper quiet | the quiet
+sky = the sky | the big sky
+
+any
+opinion @1 strangers against 2 : Faces I don't know get nothing from me. Whoever it is can stand and wait.
+opinion @1 houses against 2 : Houses own things and take things and don't say sorry. I want to know whose a wolf is before I talk.
+opinion @1 dole against 1 : Standing in a queue for bread isn't work. Folk should find some.
+opinion @1 city for 1 : It rains here more than anywhere and the storms are the best. I'm staying.
+opinion @1 church for 1 : Empty, the chapel's hushed as snow. That's worth having.
+opinion @1 festivals against 1 : Too many people. Somebody always treads on you. I go home early.
+opinion @1 watch mixed 0 : The Watch can stay. They keep the crowds moving, at least.
+
+grown
+line @1 greet : #greet#. Your House, first. | #greet#. Say it short.
+line @2 greet [pair.band=strangers] : #greet#. Unknown face. Say whose you are. | #greet#. A new face. We'll see.
+line @3 greet [here.outdoors=storm] : #greet#. Hark at it. Best weather going. | #greet#. Thunder. The window's mine tonight.
+line @1 greet.return : #greet#. | #greet#. You again.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit. Quietly. | #greet#. Good. You.
+line @1 farewell : #farewell#. | #farewell#. I've somewhere quiet to be.
+line @1 farewell.return : #farewell#. | #farewell#. Mind yourself.
+line @1 react.news : Say it. Plain. | Go on, then.
+line @1 react.news.new : I'd not heard that. Who's saying it? | Hm. Whose House is that from?
+line @1 react.news.doubt : Not yet. My own eyes first, because talk costs nothing. | Not till somebody I trust says so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. I'm sorry. | Bad news. Nobody hears it from my mouth.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | Glad to hear it. Quietly glad.
+line @1 answer.how : Fair. No complaints worth making. | Well enough. Better in a storm.
+line @1 decline : No. Not today, and not for you. | Best not. You're not known to me yet.
+line @1 accept_decline : Fine. | All right. No harm.
+line @1 thank : Thank you. Fairly done. | #thanks#. I'll remember it.
+line @1 take_offence : That's uncalled for. | Watch your tongue with me.
+scene gr_which_house
+when topic=newcomer|smalltalk
+does ask.detail / answer.detail / react.self / backchannel / assess
+a : Which House do you answer to? I ask everybody, so don't take it hard. | Before we talk, whose are you? Grayrock, Fell, Greatly, Timberland, or nobody's? | I'd like to know your House. Then I'll know how to take you.
+b : Nobody's, as it happens. | Nobody's. My own. | Does it matter so much?
+a : Good. That's the best answer. | Then we'll get on. | It does to me. It's saved me trouble more than once.
+b? : #bc_fair_enough# | #bc_right# | #bc_i_know#
+a : I'll talk to you, then. | Go on, then. Talk. | Habit. I'll not drop it.
+
+scene gr_houses
+when topic=gossip|smalltalk
+does give.opinion / disagree / concede
+a : The Houses take more than they give. I keep my distance from all four. | Never trust a House cart. It won't stop for you. | Whatever a House says, there's another meaning behind it.
+b : They build the city, though. | That's a bit harsh. | Not always.
+a : They built it for themselves. We just live in it. | Maybe. My mind stays put. | Not always. Often enough.
+
+scene gr_thunder
+when topic=weather here.outdoors=storm
+does tell.feeling / react.self / assess
+a : A proper storm. I'd keep the window till dawn. | Thunder outshouts any crowd in the city. That's its charm. | Folk hide from storms. I go and find a roof to listen under.
+b : You're an odd one. | It's loud, I'll give you that. | It's a grand noise.
+a : I'm a happy one. In a storm, anyway. | Loud and honest. No House owns the sky. | It does. Nobody can talk over it.
+
+scene gr_rain
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain, and no thunder. I'll take it. It keeps the crowds in. | Grey rain all day. The streets are empty. That's something. | Plain rain. I'd hoped for more.
+b : Every cloud. | Small mercies. | Wait for evening.
+a : Every one. Empty streets suit me. | Small, but I'll have them. | I will. It sometimes breaks then.
+
+scene gr_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : When #chapel# has emptied, I sit in it. There's no quiet like it. | After service, once they've gone, I go back in. I can hear myself. | If the Bright One's anywhere, it's the quiet. Not the sermons.
+b : That's a fine habit. | Hearing yourself's worth something. | Could be.
+a : It's mine. I don't share it. | It is. Most can't, these days. | No arguing it. Just sitting.
+
+scene gr_stew
+when topic=food
+does tell.feeling / react.self / assess
+a : #stew.capitalize# of an evening. I don't need company with that. | I make my stew thick, the fat skin left on. Nobody else likes it. More for me. | A good mutton stew beats most conversations.
+b : That's a lot of comfort. | More for you. | Some conversations.
+a : It's enough. | Exactly. | Most. Not all. Not this one, maybe.
+
+scene gr_swim
+when topic=pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : I still swim past the end of the steps where nobody else goes. | Underwater, nobody asks you anything. That's why I go. | A swim on my own before anybody's up. Then I can face the day.
+b : Isn't it cold? | I see the sense in it. | That's a good start.
+a : Cold's fine. Crowds aren't. | Most don't. | It's the only start I'll have.
+
+scene gr_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A gull stole a loaf off my sill. I've never forgiven a gull, and I won't start. | #gulls.capitalize# scream like a market crowd. Two things I can't abide, in one bird. | Gulls watch you eat. Then they take it. Like some Houses I could name.
+b : They're bold things. | That's fair. | Like who?
+a : Bold and thieving. | It is. | I'll not say. You can guess.
+
+scene gr_crowds
+when topic=day|festival here.region=ridgemere
+does tell.complaint / react.self / assess
+a : A festival's just a crowd with music. I go the other way. | Market day. I do my errands at dawn and I'm home before the crush. | In a crowd I feel squeezed. I can't think. I go somewhere quiet.
+b : Some like the bustle. | That's sensible. | That's fair enough.
+a : They can have it. | It works. Nobody's up but bakers. | Quiet's where I think best.
+
+scene gr_father
+when topic=family self.father
+does tell.self / react.self / assess
+a : #dad# taught me to watch faces at a door. I've never stopped. | #dad# still says my questions never stop. I say they're the right questions. | I trust #dad#. That's a short list, and #dad#'s at the top.
+b : That's a good skill. | Both true, probably. | That's something.
+a : It's saved me trouble. | Probably. | It is.
+
+scene gr_stranger
+when topic=player|newcomer
+does tell.self / react.self / assess
+a : There's a stranger asking about. I haven't said a word to them. Not yet. | A newcomer knocked. I asked their House first. They didn't like it. | I'll talk to a stranger when I know who they belong to.
+b : Careful's good. | Did they say? | That's sensible.
+a : Careful's kept me safe. | Eventually. Nobody's. That's fine. | It's how I am.
+
+rule @gr_thunder_bark
+when concept=bark here.outdoors=storm
+does aside
+cooldown 6h
+say There it is. Good. | Again. Louder.
+
+dlg @g1 resident.hub : #greet#. Your House, then we'll talk. | #greet#. Say what you want. Short.
+dlg @g2 resident.job [self.working=yes] : Work. Head low, eyes open. | It pays. Leave it there.
+
+young
+line @1 greet : #greet#. Say your House. | #greet#. I'm busy.
+line @2 greet [pair.band=strangers] : #greet#. Strangers get no talk from me till they name their House. | #greet#. You're new. I'm watching you.
+line @3 greet [here.outdoors=storm] : #greet#. There's thunder. I'm going to the window. | #greet#. Listen. That's thunder. Good.
+line @1 kin.open [pair.kin!=no] : Oh. It's you. Good. | You. Sit there. Not too close.
+line @1 again.open : You again. I've still got nothing to say. | Back. Thought so.
+line @1 greet.return : #greet#. | #greet#. What.
+line @2 greet.return [pair.band=friends|family] : #greet#. You can stay. | #greet#. There's bench for you. Just there.
+line @1 farewell : Bye. Don't follow me. | Bye. I'm going somewhere quiet.
+line @1 farewell.return : Bye. | Bye, then. Shut the door.
+line @1 react.news : Tell it. Short. | Go on. I'm not promising to care.
+line @1 react.news.new : I didn't know. Who says it? | Hm. Who told you that?
+line @1 react.news.known : I knew. I hear things. | Everyone knows that. Old news.
+line @1 react.news.doubt : That's not true. You can't prove it. | No. I'll want to see it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Poor them. | Oh. I don't like that news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Will there be stew? | That's good. I suppose.
+line @1 answer.how : Fine. Leave me be. | All right. Cross, a bit.
+line @2 answer.how [here.outdoors=storm] : Good. There's thunder. | Happy. Don't tell anyone.
+line @1 thank : Thank you. I'll remember who did that. | Thanks. That was fair.
+line @1 decline : No. Not for strangers, and you're one. | I won't. Nobody can make me, and I'd rather not.
+line @1 accept_decline : Fine. | All right. I didn't want to either.
+line @1 take_offence : Stop it. That's mean. | I'm not small. Don't say I'm small.
+line @1 sympathise : That's bad. You can sit by me. Quiet. | Sorry. Words won't come.
+line @1 ack : Mm. | Hm. | Fine.
+scene yg_which_house
+when topic=newcomer|smalltalk
+does ask.detail / answer.detail / react.self / backchannel / assess
+a : Which House do you belong to? You have to say, or I won't talk. | Are you a Grayrock wolf? Or Fell? Say your House first. | Who do you work for? Is it a House? Which one?
+b : None of them, as it happens. | Neither. I'm my own. | Nobody grand. Why do you ask?
+a : Good. Then you can stay. | Then I'll talk to you. A bit. | Because some Houses are bad. I'm finding out which.
+b? : #bc_fair_enough# | #bc_go_on# | #bc_right#
+a : I ask everybody. Even the priest. | Now we can talk. Not much, though. | I'll find out which. I always do.
+
+scene yg_houses_bad
+when topic=smalltalk|gossip self.father
+does confide / react.self / assess
+a : #dad# says some Houses take what isn't theirs. I remember which. | I don't like Houses. They're big and they don't say sorry. | A House cart splashed me and didn't stop. I know whose it was.
+b : Not all of them, surely. | That's strong talk. | That's rude of them.
+a : Maybe. I'm watching till I know. | It's true. I watch. | It was. I'll remember it till I'm old.
+
+scene yg_thunder
+when topic=weather here.outdoors=storm
+does tell.feeling / react.self / assess
+a : Thunder! Everybody hides. I go to the window. | When the sky shouts it's louder than everybody. | Big crack, then rumble. Then I hold my breath for another. It always comes.
+b : Doesn't it frighten you? | It is loud. | It does.
+a : No. It's outside. I'm inside. That's the good part. | Nobody can talk over it. I like that most. | I'm not scared. Everybody else is. I like that too.
+
+scene yg_storm_night
+when topic=weather|season here.outdoors=storm here.time=dusk|night
+does tell.self / react.self / assess
+a : There's a storm tonight. I'm staying awake for all of it. | Tucked under the blanket, I hear rain drum the roof. It's the best sound. | When the lightning comes I can see the whole street. Then it's dark again.
+b : You'll be tired tomorrow. | It is a cosy sound. | That's a sight.
+a : Don't care. Storms don't come every night. | It's a good roof. It doesn't leak. I checked. | I count the houses I can see. Then I forget the number.
+
+scene yg_rain
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Just rain. No thunder. Boring. | It's raining and nothing's happening. I want a storm. | Wet again. Rain's no good without the noise.
+b : It might turn. | Be glad it's quiet. | It's a wet city.
+a : It won't. I can tell. It's that grey. | I like quiet. Not that kind. | It is. I wish it'd shout more.
+
+scene yg_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I creep into the chapel once everybody's left. Nowhere in the city's so hushed. | On the back bench in #chapel#, nobody asks me a thing. | The chapel's cold and it echoes. I like hearing my own feet.
+b : That's peaceful. | Nobody at all? | It does echo.
+a : It is. Till the priest comes. Then I go. | Nobody. Just me and the candles. | I walk slow so it lasts longer.
+
+scene yg_chapel_full
+when topic=faith|festival
+does tell.complaint / react.self / assess
+a : On Restday #chapel# is full of people and they all breathe loud. | I don't like services. Too many bodies on the benches. | When it's full I sit under the bench. Nobody notices.
+b : It's right to go, though. | It gets easier. | Under the bench?
+a : I go after. When they've all gone. | I won't. I tried. | Under. It's quiet there. Mostly.
+
+scene yg_stew
+when topic=food
+does tell.feeling / react.self / assess
+a : #stew.capitalize#. That's the only food I'd eat if I could choose. | I like the fat on top of the stew. I eat it first. Nobody else does. | Mutton stew when the street's grey. That's all I'd want.
+b : It's good on a cold night. | That's an odd habit. | Nothing else?
+a : Any night. Cold or not. | It's mine, so it's not odd. | A spoon. And nobody talking.
+
+scene yg_swim
+when topic=pastimes here.region=ridgemere here.season=spring|summer
+does tell.self / ask.detail / answer.detail / give.advice / assess
+a : I swim where the others don't. Past the steps, by the wall. | Underwater nobody talks. I stay down till my chest hurts. | I swim by myself. The others splash and shout.
+b : Isn't that dangerous? | How long can you stay down? | Don't you get lonely?
+a : I'm careful. I'm not stupid. | A long time. Longer than my friends. If I had any there. | No. Lonely is in a crowd.
+b : Mind how you go. | That's good going. | That's wise, for a pup.
+a : I do mind. | I'll get longer. | I know lots of things.
+
+scene yg_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A gull snatched my crust straight off my paw. Straight off. | I hate #gulls#. Screaming, stealing, never sorry. | Gulls perch up top watching you eat. Then down they come.
+b : They're thieves, all right. | They don't, no. | Shoo them off.
+a : Thieves with wings. Everybody laughed. I didn't. | I throw things. I always miss. I'll get better. | I do. They come back. They always come back.
+
+scene yg_crowd
+when topic=day|pastimes here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Busy in the square. Too many people. I got stepped on twice. | I don't like crowds. They push and they're loud and they smell. | Stuck in a crowd, I only see backs. I hate it.
+b : It's busy, all right. | They do push. | You'll grow.
+a : I went home. I'm not going back till it's empty. | They don't even say sorry. | When I'm big I still won't like it.
+
+scene yg_dad_door
+when topic=family self.father
+does tell.self / react.self / assess
+a : #dad# minds the shop door. I keep the step and watch who comes in. | #dad# knows everybody's face. I'm learning. I ask their House. | When #dad# opens the door, the bell goes. I know every customer by now.
+b : That's a good job, watching. | Do they tell you? | Every one?
+a : Best job there is. You spot the bad ones. | Some do. Some don't. I remember which. | Most. The new ones I ask.
+
+scene yg_bread_smell
+when topic=food|home here.time=dawn
+does tell.self / react.self / assess
+a : Mornings, our street smells of bread. I wake up hungry. | The bread's hot at dawn. I'm allowed the end crust. | Early in the morning there's bread smell and nobody talking. That's my best time.
+b : Lucky you. | The best bit. | It sounds a good time.
+a : I know. I don't say it. | It's crackly. I eat it slow. | It is. Then everyone wakes up.
+
+scene yg_stranger
+when topic=player|newcomer
+does tell.self / react.self / assess
+a : There's a stranger by the shop. I've said nothing to them. | Somebody new held out a sweet to me. I didn't take it. | I watched a stranger all morning. They didn't do anything bad. Yet.
+b : Good thinking. | Clever. | They might be harmless.
+a : I don't talk to anybody till they say their House. | You don't know where it's been. | Maybe. I'll watch tomorrow too.
+
+story ys_storm [topic=weather|memories]
+  : In the biggest storm I kept the window till morning. The thunder made the glass jump.
+  : Everybody else was under the stairs. I stayed. I wasn't scared.
+  ask : Guess what I saw.
+  b : Lightning, I suppose.
+  : Lightning hit a chimney. Sparks everywhere. Best night ever.
+  b : That's quite a sight.
+
+story ys_sweet [topic=newcomer|memories]
+  : A wolf in a House coat gave me a sweet once. A red one.
+  : I said thanks, and later I dropped it down the drain.
+  ask : Would you have?
+  b : Probably, truth be told.
+  : I don't eat House sweets. Not without knowing which House.
+
+rule @yg_thunder_bark
+when concept=bark here.outdoors=storm
+does aside
+cooldown 6h
+say Again! Do it again! | That was a big one.
+
+rule @yg_gull_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 9h
+say Go away, gull. | Thieves with wings, the lot of you.
+
+rule @yg_crowd_bark
+when concept=bark here.crowd=crowd|busy
+does aside
+cooldown 10h
+say Stop pushing. | Too many. I'm going home.
+
+dlg @1 resident.hub : #greet#. Say your House first. | #greet#. I'm not meant to chatter with strangers. I'll listen, though.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You came back. You can stay. | #greet#, #topic.player#. You said your House last time. I remember.
+dlg @1 resident.job [self.job=child] : Lessons. Letters. I don't like them. | Lessons. And after, the shop door.
+dlg @1 resident.bye : Bye. Don't follow. | Bye. Go quietly.
+graft resident.hub
+choice Why do you ask everyone's House? -> house
+node house
+say Because some Houses are bad, and if you know the House you know who to watch. Grown-ups say so. And I say so.
+free
+choice I'm not with any House. -> house_none
+choice Goodbye. -> bye
+node house_none
+say Good. Then you can stay. For now.
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. Which House, before anything. | #greet#. I'm on my way somewhere quiet.
+line @1 greet.return : #greet#. You again. Fine. | #greet#. Sit if you like. Don't talk much.
+line @1 farewell : #farewell#. I've a swim to get to. | #farewell#. Mind yourself.
+line @1 farewell.return : #farewell#. | #farewell#. Quietly, now.
+line @1 answer.how : Well enough. Better if it storms. | Fine. Don't ask twice.
+line @1 take_offence : That's not fair. Take it back. | I'm not a pup. Don't treat me like one.
+scene ad_house
+when topic=newcomer|smalltalk
+does ask.detail / answer.detail / assess
+a : Which House are you for? I still ask. Folk think it's funny. | I ask everybody's House. I'm not sorry. It's saved me trouble. | Say your House. Then I'll decide if I like you.
+b : None, as it happens. | It's a strange habit. | That's honest of you.
+a : Then we'll get on, maybe. | It's a useful one. You'd be surprised. | It's not honest. It's careful.
+
+scene ad_storm
+when topic=weather here.outdoors=storm
+does tell.feeling / react.self / assess
+a : A proper storm. I went up on the flat roof to watch. Then I came down quick. | Thunder's still my favourite thing. I don't care who knows. | When it storms, I'm the one smiling in our house.
+b : That's mad. | Fair enough. | Somebody has to be.
+a : A bit. It was worth it. | Good. Nobody should. | It's me. Always has been.
+
+scene ad_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I still slip into the chapel once it's cleared out. The priest leaves me be now. | I take the back and think. It's the only place nobody asks me things. | The chapel at dusk, with the candles out. That's as close as I get to praying.
+b : That's good of the priest. | Everybody needs a place. | It's a good place to think.
+a : The priest's all right. Doesn't ask my House. | That's mine. | It's quiet. That's what matters.
+
+story as_wall [topic=pastimes|memories]
+  : Once I swam clear to the sea wall's end, alone.
+  : When I got back, everyone was shouting at me. I didn't hear them. I was underwater.
+  ask : Do you think I was in trouble?
+  b : Plenty, I'd guess.
+  : A week of trouble. Worth every day.

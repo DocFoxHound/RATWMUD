@@ -1,0 +1,398 @@
+# rm144, the puddle-mapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm144
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ilse_nailridge
+written_by claude
+title the puddle-mapper
+fits stage=young|adolescent|adult|old
+prefers humour=merry honesty=sly
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk draws_maps_of_where_the_puddles_go
+likes roast_pork whittling full_larder first_warm_day
+dislikes salt_wind haggling
+fears being_caught_out_in_a_fib a_salt_wind_on_a_feast_day
+hopes a_whole_roast_to_myself to_map_every_puddle_in_the_commons
+topics weather +0.4 pastimes +0.4 food +0.3 festival +0.3 family +0.2 gossip +0.2 faith -0.3
+styles comfort=cheerful gossip=keen refuse=sly tease=merry
+marks oath saying
+persona #self.first# chatters, fibs a little and owns up with a grin, whittles anything that holds still, and draws careful maps of where every puddle in the street runs off to.
+
+words
+oath! = Chips and crackling | Puddles and pencils | Whittle me sideways
+saying! = If it isn't on a map, it's mine | Smile first and the price comes down by itself | Every puddle runs somewhere
+knife = my whittling knife | the little knife
+shavings = shavings | curly shavings
+crackling = crackling | the crackling off the roast
+roast = roast pork | the Restday roast
+map = my puddle map | the puddle map
+pencil = my pencil stub | the stub of pencil
+puddles = puddles | the big puddles
+corner = the corner puddle | the big one at the corner
+gutter = the gutter | the long gutter by the steps
+larder = the larder | the larder shelves
+saltwind = the salt wind | the wind that comes in off the Sound
+haggling = haggling | all that haggling
+whistle = whistle | wooden whistle
+
+any
+opinion @1 festivals for 3 : Feast days are best. You dance till your feet go numb and nobody sends you anywhere. | One day of dancing is worth a whole week of sleep, and I've tried both.
+opinion @1 church against 1 : The plate goes round twice as quick as the prayers. I count the clinks. | Chapel's all right. The sitting still is the hard part.
+opinion @1 watch against 1 : #watch.capitalize# poke their noses into every doorway on the street and never their own. | A watchman wanted my drawing explained. A map. Of puddles. Down it went in the little book.
+opinion @1 city for 1 : Ridgemere's the best city. There's only the one, but I'd choose it over any. | Nowhere rains like here. That's more puddles. That's good for me.
+opinion @1 merchants mixed 0 : Some stalls are fair and some aren't. You can tell by how they smile back.
+opinion @1 newcomers mixed 0 : New folk are fine if they say hello. Most do, if you say it first, loud.
+
+grown
+line @1 greet : #greet#! Watch that puddle, it's a deep one. | #greet#. You've caught me with pencil on my paws again.
+line @2 greet [pair.band=strangers] : #greet#. New here, I'd say. I can always spot a new face. | #greet#. If you're lost, I know which streets stay dry.
+line @3 greet [here.time=dawn] : Morning! The puddles are fresh at this hour. | Morning. Early, for you. I'm always up.
+line @4 greet [here.time=dusk|night] : Evening. Watch the gutter, it's brimming. | Evening! You're out late. So am I, so I'll not tell.
+line @1 greet.return : #greet#. Back again, are you. Good. | Oh, it's you. I'd set off to find you.
+line @2 greet.return [pair.band=friends|family] : You! Sit down, I've a story and it's mostly true. | Oh, good. There's crackling kept back for you. Some of it.
+line @1 kin.open [pair.kin!=no] : In, in. Mind the shavings. | You're just in time. There's crackling, if you're quick.
+line @1 again.open : Twice today! I'll have to charge. | Back. I said you would be.
+line @1 farewell : #farewell#. Mind the corner, it floods. | #farewell#. Keep that between us two.
+line @2 farewell [here.time=dusk|night] : Good night! Stick to the dry side. | Good night. Sleep well, and don't believe a word I said.
+line @1 farewell.return : #farewell#, then. Come back with gossip. | Off you go. Stay out of the puddles.
+line @1 react.news : Go on. The whole thing. Don't skip. | Really? Tell me everything, slowly.
+line @1 react.news.new : Well! That's new, and not much is new to me. | Never! Who told you?
+line @1 react.news.known : Oh, I had that days ago. Through the wall. | That's old. I'd have told you, if you'd asked.
+line @1 react.news.doubt : That's a tall one. I'll believe half of it. | Hm. Sounds like somebody's fibbing, and I know a fib.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. That's cruel. I'm so sorry. | That's dreadful. No jokes from me about that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! There'll be dancing, surely. | Good news! That'll keep me smiling all day.
+line @1 answer.how : Grand! Busy, and nobody's caught me yet. | Well, thanks. Whittling, mapping, the usual.
+line @1 ask.how : Something's happened, by your face. What? | Been out in the wet? You've got the look.
+line @1 sympathise : That's rotten. I'm sorry. Sit, and I'll fetch something. | Oh, that's hard. No teasing, I promise.
+line @1 reassure : It'll come right. Things run downhill and settle. | Don't fret. Worse puddles have dried.
+line @1 thank : Thank you! There'll be a whittled something in it for you. | Ta. You're a good sort.
+line @1 deflect_thanks : Oh, it was nothing. Mostly nothing. | Don't thank me, just owe me one.
+line @1 decline : I'd love to, but I can't. I've promised somebody, and they'd know. | Not today, sorry. I've more on than I'm letting on.
+line @1 accept_decline : Fine. I'll try again when you've your back turned. | All right. You'll come round.
+line @1 preclose : I'd best be off. The rain's coming and I've maps to save. | Right, I've chattered your ear clean off. I'll go.
+line @1 accept_preclose : Go on, then. Stay out of the wet. | Off with you. Later, then.
+line @1 ack : Mm-hm. | Ha.
+line @1 tease [pair.band=friends] : You've walked through every puddle on the street. I've marked them all. | You're wearing more mud than coat.
+line @1 tease.return : Me? Never. Well, once. On purpose. | Says the one with shavings in the ruff.
+scene grown_puddle_map
+when topic=weather|pastimes here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I still map the puddles. I've a book of them now, street by street. | First rain of the week and three new puddles on our street. I've marked every one. | I know where every puddle in the Commons runs. Nobody asked me to. I just do.
+b : A whole book? | Three new ones? | What's the use of it?
+a : A whole book, and a second begun. Some streets need two pages. | The cobbles have sunk by the steps. You can read a street's troubles in its puddles. | You'd know where to step, and where the cellar floods. Folk ask me, now.
+
+scene grown_whittling
+when topic=pastimes self.likes=whittling here.time=dusk|night
+does tell.self / react.self / assess
+a : Of an evening, at the hearth, knife in one paw and wood in the other. That's resting, for me. | I whittle while I talk. Look, it's a gull. Or a boot. It'll decide. | My hearth's full of shavings. They go under the rug, same as they always have.
+b : A good way to rest. | It'll decide? | Still under the rug?
+a : The best. Your paws are busy and your head can wander. | The wood knows. I just follow it round. | Still. The rug's very lumpy. Nobody asks.
+
+scene grown_crackling
+when topic=food self.likes=roast_pork
+does tell.self / tease / tease.return / ack
+a : #roast.capitalize# with the crackling on. Nothing better at a table. | I still go for the corner bit of crackling first. Every time. | You can't hurry a pork roast. You can hurry the crackling off it, though.
+b : You'd take the whole crackling if nobody stopped you. | Still the corner bit? | Who'd let you?
+a : Somebody always stops me. Just never fast enough. | It's the best bit. I've earned it with years of being quick. | Nobody lets me. I'm just there first.
+b? : #bc_ha# | #bc_ha# | #bc_clever#
+
+scene grown_larder
+when topic=food|home self.likes=full_larder
+does tell.self / react.self / assess
+a : A full larder makes me happy. I open it and just stand and look. | I count the jars every week. The count's always one short. I can't think why. | Shelves full to the top. That's a house that'll do.
+b : Just stand there? | One short? | That's a good house.
+a : And smile. Then maybe take a little something. | I can think why. I'm just not saying. | It is. And I'll be in it at supper.
+
+scene grown_salt_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : The wind off the Sound's in again. My ruff will be stiff with salt all week. | I can't stand a salt wind. Everything goes sticky, the maps curl, my fur knots. | Salt wind today. I've shut every window and it's still found me.
+b : It's the Sound. It always blows. | Your maps curl? | It finds everybody.
+a : It always blows, and I'll always mind. That's fair, I think. | Like old leaves. I flatten them under books. | It does. I'll comb out the knots tonight and complain the whole time.
+
+scene grown_haggling
+when topic=prices|smalltalk self.dislikes=haggling
+does tell.self / react.self / assess
+a : I've never haggled in my life. I smile, and wait, and it comes down. | All that haggling, shouting numbers at each other. I'd rather swap. | #saying#. I've lived by that since I was small.
+b : Does that really work? | Swap what? | And it's served you?
+a : More than you'd guess. Nobody likes being smiled at for too long. | Whittling, mostly. A spoon for a loaf. A whistle for ribbons. | It has. And I've never once raised my voice at a stall.
+
+scene grown_feast
+when topic=festival|season world.festival=today|soon
+does tell.feeling / react.self / assess
+a : A feast soon! I'll dance every reel they play and a few they don't. | On a feast night I'm the last to leave the dancing. Always. | Give me one night of reels over a fortnight of rest.
+b : Every reel? | The last, always? | You'd know.
+a : Every one. The fiddlers know me. They groan. | Always. They have to blow the lamps out round me. | I do. I've tested it. Thoroughly.
+
+scene grown_warm_day
+when topic=season|weather here.season=spring self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : Warm at last! Every window open and the whole street humming. | The first proper warm day. The puddles are drying, and I'll start a fresh page. | It's warm enough to whittle on the step. I've been waiting for this all winter.
+b : Lovely, isn't it. | A fresh page? | All winter?
+a : The best day of the spring. Weekly, if I could arrange it. | Dry season pages. Short and boring. I love them anyway. | Every day of it. The step's my favourite chair.
+
+scene grown_the_watch
+when topic=crime|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : #watch.capitalize# came round asking questions again. They never answer any. | Noses in every doorway down the street. Never their own. | A watchman asked me where the street floods. I told, and charged a smile for it.
+b : That's their job. | Never their own? | You charged a smile?
+a : Asking's half a job. Answering's the other half. | Never. Ask them anything and see. | I did. It was paid, too. Grudgingly.
+
+scene grown_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard #topic.subject# #topic.claim#. I wasn't eavesdropping. Not on purpose. | Don't tell, but #topic.subject# #topic.claim#. Or so the wall says. | You'll love this. #topic.subject.capitalize# #topic.claim#. Two people told me, so it's nearly certain.
+b : Not on purpose? | The wall? | Nearly certain?
+a : I was mending a whistle by the window. The window was open. That's all. | Thin walls in our street. They're very good for news. | Two's nearly certain. Three's certain. Four's a fib, usually.
+
+scene grown_the_plate
+when topic=faith
+does tell.self / react.self / assess
+a : I go to chapel. I count the clinks in the plate. Old habit. | Prayers are slow and the plate's quick. I've always said so. | So much rain the Bright One sends. I call it a gift to mapmakers.
+b : Counting in chapel? | Somebody should time them. | A kindness?
+a : I sing too, between clinks. | I'd do it, but I'd lose count dancing in my seat. | To me, anyway. Nobody else seems grateful.
+
+story grown_the_duck [topic=weather|memories self.age>=18 here.region=ridgemere]
+  : When I was small it rained three days, and the corner puddle got so big a duck landed in it.
+  : I drew the duck on my map. That map's still in a drawer, duck and all.
+  ask : What have you kept from your pup days, and mean to keep always?
+  b : A thing or two, yes.
+  : Then you know. A duck on a puddle map. Worth more than anything I own.
+
+rule @grown_puddle_bark
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say A fresh one, by the steps. | Mind, that one's deeper than it looks.
+
+dlg @4 resident.hub : #greet#! Mind the puddle. What's wanted? | #greet#. You've caught me mid-map. Go on.
+dlg @2 resident.job : Work, whittling, and puddles. Not always in that order. | Busy as you like, and nobody's caught me slacking. Yet.
+dlg @2 resident.bye : #farewell#! Mind the corner. | #farewell#. And mum's the word, mind.
+
+young
+line @1 greet : Hello! Mind the puddle, it's on my map. | Hello. Nothing's happening here. Honest.
+line @2 greet [pair.band=strangers] : Hello. You're new. I can always tell new ones. | Hello. If you're lost, I know every street round here. Nearly.
+line @3 greet [here.weather=rain] : Hello! It's raining, so I'm busy. | Hello. Don't step there, I'm measuring that one.
+line @1 kin.open [pair.kin!=no] : Guess what I found. No, guess first. | I've got a secret and I'm going to tell you.
+line @1 again.open : You again! I knew you'd come back. | Back already. I've done three more puddles since.
+line @1 greet.return : Hello! I'd nearly come looking. | Hello again. I've got pencil on my nose, haven't I.
+line @1 farewell : Bye! Don't tread in the corner one. | Bye. If anyone asks, I was here all day.
+line @1 farewell.return : Bye! Come back with news. | Bye bye. Don't get your fur salty.
+line @1 react.news : Ooh. Tell it again, slower. | Really? Then what happened?
+line @1 react.news.new : I never heard that. I hear everything. | Nobody told me! I'll be cross with somebody.
+line @1 react.news.known : Knew it already. The floorboards told me. | Oh, that. Everybody knows that. The cat knows that.
+line @1 react.news.doubt : That's a fib. Is it a fib? You've got a fib face. | I don't believe it. I believe a bit of it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. That's horrible. I wish you hadn't said. | That's really sad. I'll be sad later, at bedtime.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Ooh, lovely! Will there be a party? | Best news since Restday. Since last month, even.
+line @1 answer.how : Good! I've found a new puddle. | Busy. Whittling. Don't ask what, it's a surprise.
+line @1 ask.how : Did you get rained on? You look rained on. | What've you been doing? You've got a busy face.
+line @1 sympathise : Oh. Do you want a shaving? They're curly. | That's rotten. I'll draw you something to cheer you up.
+line @1 reassure : It'll dry out. Puddles always do, and so do troubles. | Don't fret. I'll ask the puddles. They know everything.
+line @1 thank : Thank you! I'll whittle you something. | Thanks! That's my favourite thing anyone's done today.
+line @1 deflect_thanks : That was nothing. I'd have helped anyway. Probably. | You can thank me with crackling.
+line @1 decline : I can't, I'm meant to be at lessons. Well, I'm meant to be going. | No, ta. They'd have my ears for it. And I'd rather not, a bit.
+line @1 accept_decline : All right. Somebody softer will say yes. | Fine. I'll ask tomorrow, when you've forgotten you said no.
+line @1 preclose : I've got to go. There's a puddle waiting. | I'd better run. Somebody's going to notice I'm gone.
+line @1 accept_preclose : Bye, then! Quick, before it stops raining. | Go on. I've got shavings to hide.
+line @1 ack : Mm-hm. | Ooh.
+line @1 tease [pair.band=friends] : You walked right through the corner one. I saw. | You've got sawdust on your ear. No, the other ear.
+line @1 tease.return : I never! Well. Maybe once. | You're one to talk, puddle-paws.
+scene puddle_map
+when topic=weather|pastimes here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I'm doing #map# of our street. Every puddle, and which way it runs. | A fresh one by the steps today. I've drawn it in already, with a little arrow. | #corner.capitalize# is the biggest on the street. It's on my map in blue. Well, pencil. Pretend blue.
+b : Which way does it run? | An arrow for what? | Why pretend blue?
+a : Down. Everything runs down here. But it goes round the step first, which is the clever bit. | For where it goes. They all go somewhere. You only have to watch. | I haven't got blue. When I'm grown up I'll have every colour, and a proper map.
+
+scene after_the_rain
+when topic=weather|day here.weather=overcast|clear here.region=ridgemere
+does tell.self / react.self / assess
+a : It stopped raining, so now I get to see where it all went. That's the best part. | I followed one trickle all the way to #gutter#. It took ages. | The puddles are shrinking. I have to draw them quick before they're gone.
+b : Where did it all go? | All the way? | They do go fast.
+a : Into the gutter, then down the hill, then the Sound, I think. I haven't checked the Sound bit. | Every step of it. A cat watched me the whole time. | Faster than pencils. I'm getting quicker, though.
+
+scene maps_downstairs
+when topic=pastimes|work
+does tell.self / react.self / assess
+a : There are maps of everywhere in the world, and none of them bother with puddles. | Grown-up maps have roads and rivers. Mine has puddles. Mine's better for walking. | When I'm big I'll draw a map so good the Watch will want one.
+b : Puddles aren't on proper maps. | Better for walking? | The Watch, eh?
+a : That's what's wrong with proper maps. You get wet feet. | You'd know where to jump. No map tells you where to jump. | They'll have to pay for it, though. I'll not give it them.
+
+scene little_knife
+when topic=pastimes self.likes=whittling
+does tell.boast / react.self / assess
+a : I'm whittling #whistle.a#. It nearly whistles. It sort of toots. | Look, I made a little boat. It floats in the corner puddle. Sideways. | I can make a curl of shavings as long as my tail. Watch.
+b : A toot's a start. | Sideways counts. | Careful with that knife.
+a : It is! The next one will whistle. Or the one after. | It does count. It's a sideways boat. That's a kind. | I'm always careful. It's the shavings that aren't careful, they go everywhere.
+
+scene shavings_under_the_rug
+when topic=home|pastimes self.likes=whittling
+does confide / react.self / assess
+a : Don't tell, but I sweep my shavings under the rug. There's a lot under there now. | I whittled by the fire last night and there are curls in the hearth. I said the cat did it. | If you lift the rug in our front room, you'll find all my mistakes.
+b : Somebody will find them. | The cat? | All of them?
+a : Not if I keep sweeping them further. I've got a system. | The cat doesn't whittle. Nobody believed me. I knew they wouldn't. | All of them. It's a very lumpy rug. Nobody's asked yet.
+
+scene the_crackling
+when topic=food self.likes=roast_pork
+does tell.self / tease / tease.return / ack
+a : #roast.capitalize# on Restday, with #crackling#. That's the best thing anybody ever cooked. | I can hear crackling crack from two rooms away. I come running. | The corner bit of crackling is the best. I always get it. Somehow.
+b : You'd eat the whole roast if they let you. | Two rooms away? | Somehow?
+a : I would! Then I'd draw a map of where it went. | Even through a door. I've got crackling ears. | I'm quick. And I'm sweet about it. That's the somehow.
+b? : #bc_ha# | #bc_ha# | #bc_clever#
+
+scene a_full_larder
+when topic=food|home self.likes=full_larder
+does tell.self / react.self / assess
+a : When #larder# is full right up, I go in and just look at it. | I count the jars. Twenty-two. Then twenty-one. I don't know where that one went. | A full larder is like a map of dinners. You can see where you're going.
+b : Just look? | Where did it go? | A map of dinners.
+a : Mostly look. A little bit taste. Only a little. | Somewhere. Maybe into somebody. No names. | You can! Every jar is a different dinner. That's twenty-one dinners.
+
+scene salt_in_my_fur
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# makes my fur go all stiff and sticky. I hate it. | When the wind comes off the Sound my ruff goes into knots. Then I get burrs in the knots. | Salt wind blows my puddles flat and ruins my map. That's not fair.
+b : Everyone in this city has salt fur. | A brush would help. | The wind doesn't know about your map.
+a : Then I'll be the first wolf here without it. I'll stay indoors till it stops. Somehow. | A brush makes it worse. It pulls. I've tried. | Then somebody should tell it. I've tried shouting.
+
+scene no_haggling
+when topic=prices|smalltalk self.dislikes=haggling
+does tell.self / react.self / assess
+a : I hate haggling. Everybody shouts numbers and pulls faces. I just smile instead. | Grown-up haggling goes on forever. I hide behind a barrel till it's done. | I don't haggle. #saying#. It works more than you'd think.
+b : Smiling works? | It does take long. | Does it, now?
+a : Sometimes. Sometimes they give me an apple to go away. That's still winning. | Forever. You could whittle a whole boat in a haggle. | It does! I got a whole sweet for one smile. Well, a half sweet.
+
+scene first_warm_day
+when topic=season|weather here.season=spring self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : It's warm! Really, truly warm! I took my scarf off and threw it. | The first warm day, all the windows go up at once. You can hear everyone's breakfast. | When it's warm the puddles dry and I have to start a new map. That's the only bad bit.
+b : Where did you throw it? | Everyone's breakfast? | A new map's not bad.
+a : Over the rail. I'll find it later. It's on my map now, actually. | Plates and spoons and somebody singing. One day a year that happens. | It isn't. It's a fresh one. I like a fresh one.
+
+scene feast_dancing
+when topic=festival|season world.festival=today|soon
+does tell.feeling / react.self / assess
+a : Feast's coming! My feet will dance right off. | At a feast I dance with anyone. Even old ones. Especially old ones, they're slow. | On feast days everybody's out on the street and nobody's cross for once.
+b : Mind you keep your feet. | Especially old ones? | Nobody cross, for once.
+a : I'll get new feet. That's how it works. | They let you lead. And they give you sweets after. | Nobody! Not even the Watch. Well. Not much.
+
+scene the_nosy_watch
+when topic=crime|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : A watchman wanted my drawing explained. I said a map of puddles. Down it went in a little book! | #watch.capitalize# keep asking people questions on our street. They never answer any. | I saw a watchman step right in #corner#. I kept quiet. It's on my map now, though.
+b : In a book? | That's their job, asking. | On your map?
+a : A proper Watch book. I'm in it now. Puddles and all. | They ask everybody's business but they never say theirs. That's not fair asking. | With a little cross. That's where the Watch fell in. It's history now.
+
+scene the_plate
+when topic=faith
+does tell.self / react.self / assess
+a : At chapel I count how many coins go in the plate by the clinks. Then I lose count. | The sitting still is the worst bit of chapel. I sit on my paws so they don't whittle. | The Bright One must like rain, there's so much of it. That's what I think.
+b : Counting clinks in chapel? | That's one way to manage. | Maybe so.
+a : Somebody has to. The plate goes round ever so fast. | It works till the singing. Then I forget and they go everywhere. | It must. Otherwise there'd not be so many puddles.
+
+scene my_mother
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : #self.mother# tells the best stories. I'd listen all night if I was allowed. | I made a whistle for #self.mother#. It toots. It's the thought, I said. | I can always find #self.mother# by following the smell of the kettle.
+b : Lucky you. | The thought counts. | Clever, that.
+a : I know. I'm the luckiest in the street, I'd say. | That's what I said! Twice. | It's the best way. I've put it on my map.
+
+scene gossip_through_the_floor
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard #topic.subject# #topic.claim#. I wasn't listening. Much. | Guess what. #topic.subject.capitalize# #topic.claim#. I heard it through the floor. | Don't tell, but #topic.subject# #topic.claim#. Everybody says. Well, two people.
+b : You weren't listening much? | Through the floor? | Two people's not everybody.
+a : Only with one ear. The other ear was doing sums. | There's a crack by my bed. It's very good for hearing. | Two people is everybody, if they're loud.
+
+story the_great_puddle [topic=weather|memories here.region=ridgemere]
+  : Once it rained three days without stopping, and the corner puddle got so big it went right across the street.
+  : A duck landed in it. A real duck! It swam round once and flew off.
+  ask : Can you guess my next move?
+  b : Drew the duck on your map, I expect.
+  : I did! The duck's still on it. It's the only puddle on the map that's had a duck.
+
+story the_crackling_thief [topic=food|memories self.likes=roast_pork]
+  : Last Restday a whole strip of crackling went missing off the roast before supper.
+  : Everybody looked at the cat. The cat stared at me. I looked at the ceiling.
+  b : And was it you?
+  : A bit. Only the end bit. The cat had the middle. That's the truth, mostly.
+
+rule @puddle_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 6h
+say New puddle! That's going on the map. | Don't step there, I'm counting that one.
+
+rule @whittle_bark
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Toot. Nearly a whistle. | Oops. Another curl for under the rug.
+
+rule @saltwind_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 10h
+say Ugh, the salt wind. My ruff's all knots. | Go away, wind. You're ruining my map.
+
+dlg @1 resident.hub : Hello! Mind the puddle. Do you want something? | Hello. Nothing's going on here. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! You came back. I've done loads more puddles. | Hello, #topic.player#. I remembered you. You stood in the corner one.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I didn't do it. Whatever it was. | You look cross. I'm going to stand over here.
+dlg @1 resident.job [self.job=child] : I go to lessons. And I make maps. The maps are better than the lessons. | Lessons. Sums and letters. I draw puddles in the margins.
+dlg @1 resident.bye : Bye! Don't tread in the big one. | Bye. If anyone asks, you never saw me.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new. Only a puddle. A new puddle, though. | No news. I'd know. I hear everything through the floor.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't know any secrets. I don't. Really. | Nothing. I'm keeping them for somebody else.
+graft resident.hub
+choice What are you drawing? -> puddles
+node puddles
+say A map of the puddles on this street. Every one, and which way it runs when it rains. Grown-up maps don't have puddles. Mine does.
+mood pleased
+free
+choice Where do they all run to? -> puddles_where
+choice Back to what I was asking. -> hub
+node puddles_where
+say Down. Everything runs down here. To the gutter, and the next gutter, and the Sound, I think. I'm going to follow one all the way one day.
+mood pleased
+choice Good luck with it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : Oh, hello. I'm only thinking, that's all. | Hello. Mind the gutter, it's full.
+line @1 greet.return : Hello again. I wasn't waiting, before you ask. | Back already. Good.
+line @1 farewell : See you. Don't fall in anything. | Bye, then. Tell nobody what I said.
+line @1 farewell.return : Bye. Stay dry. | See you. Mind the corner.
+line @1 answer.how : Fine. Busy. Drawing. | All right, apart from lessons.
+line @1 react.news : Go on, then. Everything. | Really? Tell me properly.
+line @1 react.news.new : I hadn't heard that. Which is odd, because I hear everything.
+line @1 react.news.known : Old news. It reached me yesterday, through the floor.
+scene teen_proper_map
+when topic=pastimes|work here.region=ridgemere
+does tell.boast / react.self / assess
+a : I've mapped every puddle from our door to the chapel now. In ink. Proper ink. | My puddle map's three sheets now. I glued them together. It's longer than me. | I can tell you where any street floods first. That's useful, that is. Folk should pay me.
+b : In ink? Very proper. | Longer than you? | Will they pay you?
+a : Proper as anything. Pencils are for pups. I use ink. | Taller, actually. It's pinned on the wall. Sideways. | They will once they've stood in one. Then they'll come asking.
+
+scene teen_whittled_true
+when topic=pastimes self.likes=whittling
+does tell.self / tease / tease.return / ack
+a : I finally whittled a whistle that whistles. Properly. Listen. | I carved a little wolf. It's got a tail and everything. Don't laugh at the ears. | I make spoons now. Real ones, you can eat soup off them.
+b : That's louder than I'd like. | What's wrong with the ears? | A spoon you'd trust?
+a : That means it works. Sorry. Not very sorry. | Nothing! They're artistic. Stop looking at them like that. | I'd trust it. I'd not trust your soup, mind.
+b? : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene teen_dancing
+when topic=festival|season world.festival=today|soon
+does confide / react.self / assess
+a : I'm going to dance at the feast. With somebody. No names. | I've been practising the reel in my room. The floor creaks. Everyone knows. | Feast's coming. I've got new ribbons. I didn't buy them. I didn't steal them either. It's complicated.
+b : Ooh. Who? | They'll know you're good, then. | Complicated?
+a : Somebody. With feet. That's all you're getting. | They'll know I'm loud. Good comes later. | I traded a whistle for them. That's not haggling. It's swapping.
+
+story teen_followed_it [topic=weather|memories here.region=ridgemere]
+  : Last spring I finally followed a trickle all the way from our step down to the Sound.
+  : It took the whole morning. I went through four streets and under one cart.
+  ask : Guess where it came out?
+  b : Somewhere by the water, I'd think.
+  : Right by the fish hall. All that way to smell of fish. It went on the map anyway.

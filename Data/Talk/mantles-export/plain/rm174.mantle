@@ -1,0 +1,462 @@
+# rm174, the fever-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm174
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_halvard_ashley
+written_by claude
+title the fever-reader
+fits stage=adult|old
+prefers role=merchant job=healer temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk knows_the_flood_streets_by_the_fevers_after
+likes roast_pork singing fresh_straw warm_rain
+dislikes haggling wet_floors
+fears a_dose_measured_wrong a_flood_fever_in_deep_winter
+hopes a_book_of_remedies_written_out_in_full a_dry_floor_from_spring_to_spring
+topics health +0.5 work +0.4 weather +0.3 pastimes +0.3 food +0.2 gossip -0.3 prices -0.2 festival -0.3
+styles comfort=remedy gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# mixes syrups and willow tea at a Commons counter: quiet, dreamy and quick to take offence, self-taught from a borrowed book, hums over the mortar, and can name every street that flooded by the fevers that climb out of it a week after.
+
+words
+oath! = Bitter aloes | By the brown bottle | Feverfew and fiddlesticks
+saying! = The body says it, if you'll hush and listen | A dose too many is another medicine altogether | The gutter's fever climbs the stairs a week late
+mortar = the mortar | the big stone mortar
+pestle = the pestle | the pestle worn smooth in the middle
+syrup = thyme syrup | a spoon of thyme syrup
+willow = willow tea | willow bark steeped bitter
+jars = the jars | the labelled jars up top
+book = the borrowed book | a book with half its spine gone
+lowstreets = the low streets | the lanes nearest the water
+fever = a fever | the flood fever
+straw = fresh straw | a floor of clean yellow straw
+pork = roast pork | roast pork with crackling that shatters
+rain = a warm rain | soft warm rain on dusty slates
+song = a song | an old round with friends
+herbs = country herbs | farm-cart herbs
+scales = the brass scales | my little dosing scales
+cough = a cough | a cough that comes up from the boots
+damp = the damp | damp in the walls
+remedy = a remedy | something from the shelf
+dose = a dose | a dose by the grain
+
+any
+opinion @1 church mixed 0 : Back pew, humming the hymns through the sermon. Nobody's objected yet. | Every herb on my shelf is the Bright One's work. Using them right is my prayer.
+opinion @1 city for 1 : Every stair and gutter in Ridgemere, I know which chests it ruins. I'd not know that about anywhere else. | I'll die here, under the smoke. Not soon, I hope.
+opinion @1 drink against 1 [self.job=healer] : I've bound up too many heads on festival mornings to think well of ale. | Drink's a remedy for nothing, and a cause of most of what comes in after dark.
+opinion @1 festivals against 1 [self.job=healer] : One loud night, then a morning queue of sore heads and cut paws at my door. | Somebody always ends a festival in tears, and it's often my counter they cry on.
+opinion @1 houses for 1 : The Houses keep the works going. The works keep wolves fed. Fed wolves get ill less. | Folk curse the Houses. Their kitchens buy more willow bark than anyone, though.
+opinion @1 merchants for 1 [self.role=merchant] : Whoever keeps a counter learns what the carters charge. I'd not blame a shopkeeper for a price. | I pay for every herb that comes down the road. I'll charge for it, honestly, and no more.
+opinion @1 road against 1 [self.job=healer] : Half my shelf comes from the farms by cart, and the carts are later every month. | When the herb carts are late, I'm short on what folk need most.
+opinion @2 road against 2 [world.wagons=raided self.job=healer] : Robbers took a wagon. If that was the herb cart, folk will be coughing all month for it.
+opinion @1 times for 1 : There's bread on most tables and a roof over most heads. I've nothing to grumble about. | Times are fair. I'd rather be busy with coughs than with hunger.
+opinion @2 times against 1 [world.times=hard|lean] : Hard times fill my shop with folk who can't pay. I give them the willow anyway. | When money's short, folk wait too long to come. Then it's a week's work instead of a spoon.
+opinion @1 watch for 1 : The night patrol passes my shutters twice. Nobody's tried my jars yet. | They bring me the ones who've been in fights. I'd rather that than nobody did.
+opinion @1 sump mixed 0 : Most of my flood fevers come up from below the steps. It's the water, not the wolves. | Folk talk about the Sump like it chose the damp. Nobody chooses damp.
+
+grown
+line @1 greet : #greet#. Careful, that straw's fresh down. | #greet#. Shut the door, the wet's getting in.
+line @2 greet [pair.band=strangers] : #greet#. Say what you're after; I'm no good at guessing. | #greet#. New face. Sit if you're poorly.
+line @3 greet [self.working=yes self.job=healer] : #greet#. One moment. I'm weighing a dose and I won't be hurried. | #greet#. Let me finish grinding this. Then I'm yours.
+line @4 greet [here.time=dawn] : Morning. Kettle's barely warm. | Morning. Early, but coughs don't keep hours.
+line @5 greet [here.time=dusk|night] : Evening. If it's urgent, say so. If not, I'm tired. | Evening. Fire's nearly banked.
+line @6 greet [pair.band=friends|family] : Oh. You. Good. Stool's by the jars. | You came. I was half thinking of a song.
+line @7 greet [here.weather=rain] : #greet#. Feet on the straw, please, not on the boards. | #greet#. Shake the wet off outside. I mean it.
+line @1 kin.open [pair.kin!=no] : Sit down. Kettle's warm. Don't touch the scales. | Come in. There's pork left from supper, if you're hungry.
+line @1 again.open : Twice today. Something's wrong, or something's forgotten. | Back again. I hope it's not the cough.
+line @1 hail [pair.band=friends] : Here. Come down to the herb cart with me. | Wait. Half a tune's caught in my head, and you might know its other half.
+line @1 greet.return : #greet#. Thank you. | Same to you. Careful on the boards.
+line @2 greet.return [pair.band=friends|family] : Ah, good. Hoped it'd be you. | Good. Sit. I'll get another cup.
+line @3 greet.return [self.working=yes] : #greet#. Can't stop, I'm mid-syrup. | Hello. Go on talking; I'm only grinding.
+line @4 greet.return [here.time=dusk|night] : Evening. Odd hour to be abroad. | Evening. The lamp's on the shelf if you need it.
+line @1 farewell : #farewell#. Keep your feet dry. Damp feet, damp chest. | #farewell#. Come back if it gets worse. Not if it gets better.
+line @2 farewell [here.time=dusk|night] : Good night. Wrap your throat, it's raw out. | Good night. Sleep's half of any cure.
+line @1 farewell.return : And to you. Look after that chest. | #farewell#. Mind the gutters on the way.
+line @2 farewell.return [pair.band=friends|family] : Night. Same corner, same song, next week. | Go on. Don't stay out in the wet.
+line @1 react.news : Go on. I'm listening. | Say it plainly. I don't like guessing.
+line @1 react.news.new : I hadn't heard that. | News to me. Whose word is it?
+line @1 react.news.known : The first cough of the morning carried that in. | I'd heard. Not so fully.
+line @1 react.news.doubt : Not till a witness tells me. | That doesn't sound right. Who's saying it?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'm sorry. | Poor soul. If they need anything from the shelf, send them to me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good news. | I'm glad. Truly. There's not much of that going.
+line @1 answer.how : Well enough. Tired. | Fine. Busy, which suits me.
+line @1 answer.how.busy [self.working=yes] : No rest since dawn. Every chest on the street is rattling. | Busy. Three syrups and a poultice, and it's not noon.
+line @1 answer.how.poorly [here.weather=rain] : My boots leaked and my floor's wet. Don't ask. | Wet floor, wet feet, bad temper.
+line @1 ask.how : And you? You look peaky. | How's your chest? Honestly.
+line @1 sympathise : I'm sorry. Sit. I'll make you something warm. | That's hard. There's no remedy for it, but there's a chair.
+line @1 reassure : Rest, a warm drink and a week, and it'll lift. | You'll mend. Worse than this has mended at my counter.
+line @1 decline : No. Somebody might come in poorly, and I'd be out. | I'd rather not. My afternoon's spoken for, every hour.
+line @1 accept_decline : All right. Another time. | Fine. I won't ask again.
+line @1 thank : #thanks#. Kindly done. | Thank you. Noted, and not forgotten.
+line @1 deflect_thanks : It's nothing. It's what the shelf's for. | Don't. It was a spoon of syrup.
+line @1 preclose : Back to the shelf for me. | I should go. Something on the fire wants me.
+line @2 preclose [self.working=yes] : There's somebody at the door. I have to go. | I've a poultice cooling. That's all for now.
+line @1 accept_preclose : Off you go, then. Shop's open till dark. | Fine. Mind the floor on the way out.
+line @1 take_offence : Unfair, that. You'd not like it said of you. | Say that again and we're done talking.
+line @2 take_offence [self.job=healer] : I'm not a quack. I know every jar on that shelf. | Mind your tone. I've earned my counter.
+line @1 accept_apology : Fine. Forget it. | All right. I'm short sometimes. I know.
+line @1 ack : #bc_right# | #bc_i_know# | #bc_true#
+line @1 give.advice : Sleep when you're tired, not when you've finished. Nobody ever finishes. | Eat something hot every day. Cold suppers make for cold chests.
+line @2 give.advice [self.job=healer] : Boots that don't leak, and windows open on a fine day. Half my trade would vanish. | Don't take more than the dose. More isn't better. More is worse.
+line @1 warn [world.bandits=near] : Bide within the walls. I'd rather not be stitching anyone this week. | Not past the gate. Not now.
+scene fevers_after_the_flood
+when topic=weather|health here.weather=rain|storm here.region=ridgemere self.job=healer
+does tell.worry / ask.detail / answer.detail / assess
+a : Rain like this, and in a week I'll have fevers from #lowstreets#. Every time. | When the water comes up the steps, the coughs come up after it. A week behind, always. | I could tell you which lanes are flooding now. Not from looking. From who'll be at my door next week.
+b : Why a week? | Which streets? | How can you tell?
+a : The damp goes into the walls. It takes that long to go into the chests. | The ones nearest the water first. Then up the steps, one street a day, like the tide's following them. | I write down every fever and where it came from. Three years now. The book draws the flood for me.
+b : #bc_poor_soul# | #bc_clever# | #bc_clever#
+
+scene fever_week_late
+when topic=health here.region=ridgemere self.job=healer
+does tell.self / react.self / tell.self / ack
+a : Six coughs this morning, all from the same two lanes by the water. That's last week's flood, climbing. | I never see the flood itself. I see the fever afterwards, and it tells me where the flood went.
+b : Grim way to learn it. | You should tell the City Office.
+a : Grim, but it's what I have. Knowing beats guessing. | I told them. They thanked me and wrote nothing. So I keep the record myself.
+b : #bc_true# | #bc_i_know#
+
+scene not_a_quack
+when topic=work|health self.job=healer
+does tell.complaint / reassure / insist / ack
+a : A fellow in the shop called me a quack today. To my face. Over a spoon of syrup. | Somebody said I'm too young to know physic. As if age were a remedy.
+b : Pay it no mind. | They'll be back when they're ill.
+a : I can't help minding. I learned every jar on that shelf myself, page by page. | They will. And I'll serve them politely, and remember every word.
+b : #bc_poor_soul# | #bc_i_know#
+
+scene the_borrowed_book
+when topic=work|memories self.job=healer
+does tell.self / ask.detail / answer.detail / assess
+a : Everything I know came out of #book#, and some country herbs, and a lot of mistakes on myself. | I've still got the book I learned from. I borrowed it and never gave it back. The owner died. | I learned physic in one wet season, with a borrowed book and a candle. I didn't sleep much.
+b : Mistakes on yourself? | Is it still useful? | One season? Truly?
+a : I tasted every remedy before I sold it. Some I shouldn't have. I knew which for next time. | Every week. Half the pages are loose. I keep them in order by smell. | One season to start. Every season since to get it right. You never finish.
+b : #bc_ha# | #bc_clever# | #bc_wise#
+
+scene thyme_syrup_boil
+when topic=work self.job=healer self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #syrup.capitalize#, bubbling since noon. It wants watching, or it burns and smells like a tannery. | I make the cough syrup in the morning, before the shop opens. Thyme, honey, a bit of onion.
+b : Does it work? | Onion?
+a : It loosens a chest. That's most of what a cough needs. The rest is rest. | Onion. Folk pull faces, then they sleep through the night and come back for another bottle.
+b : #bc_good# | #bc_ha#
+
+scene willow_for_the_aches
+when topic=work|health self.job=healer
+does tell.self / react.self / tell.self / ack
+a : #willow.capitalize# for the aches. Bitter as an argument, but it works. | Half the old wolves on the street come in for willow bark. The other half should.
+b : I've had that. It's foul. | Do they listen to you?
+a : Foul and useful. Put honey in it if you must. I don't. | Some. The ones who listen walk better by winter. The rest walk slower and blame me.
+b : #bc_ha# | #bc_true#
+
+scene the_dose_is_the_thing
+when topic=work|health self.job=healer
+does warn / ask.detail / answer.detail / insist
+a : Folk think if one spoon helps, three will help more. Three spoons is a different medicine. | I weigh every dose on #scales#. Twice. I won't be hurried at the scales.
+b : What happens with three? | Isn't that slow?
+a : Sleep you can't wake from, with some of these. I write the dose on the jar and say it twice. | Slow is right. Quick is how folk get hurt. Ask anyone who's had a dose from a hurried hand.
+b : #bc_wise# | #bc_fair_enough#
+
+scene humming_at_the_mortar
+when topic=pastimes|work self.likes=singing self.job=healer
+does tell.self / ask.detail / answer.detail / react.self
+a : I sing to #mortar#. Old rounds, mostly. Grinding goes quicker with a tune. | Somebody heard me singing over the pestle and felt my brow for a fever. I wasn't. I was happy.
+b : What do you sing? | You don't seem the singing sort.
+a : Anything with a steady beat. The pestle keeps time. Mostly the old round about the miller. | I'm not, out loud. To the mortar, I'm very much the singing sort.
+b : #bc_lovely# | #bc_ha#
+
+scene a_song_at_the_corner
+when topic=pastimes here.time=dusk|night self.likes=singing
+does invite / accept_invite / tell.self / ack
+a : There's singing at the corner tonight. A few of us, nothing fancy. Lurk at the back if you like. | I go and sing with friends on Restday evenings. I don't talk much there either. I just sing.
+b : I can't hold a tune. | That sounds nice, actually.
+a : Nobody minds. Half of us can't. That's what the loud ones are for. | It is. My week's best hour, and few hours get that from me.
+b : #bc_ha# | #bc_good#
+
+scene warm_rain_dream
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / tell.feeling / ack
+a : #rain.capitalize#. Smell that. I'd stand in it for an hour, gladly. | This kind of rain makes nobody ill. Cold rain does that. This is just nice.
+b : You'll get soaked. | You like the rain? I thought you hated wet.
+a : I'll dry. I was thinking of a song my #gran# sang about rain like this. I've lost the second verse. | Wet floors I hate. Warm rain I love. Different animals entirely.
+b : #bc_ha# | #bc_fair_enough#
+
+scene wet_floor_temper
+when topic=weather|home here.weather=rain|storm self.dislikes=wet_floors self.role=merchant
+does tell.complaint / react.complaint.agree / tell.self / ack
+a : Somebody walked straight across my floor with wet boots. Didn't even look down. | Water on the boards, in a shop full of glass. One slip and that's a month's work on the boards.
+b : Some folk have no thought. | It must be a worry.
+a : None. I put straw down twice a day in the wet. Twice. And still. | It is. I've moved the low shelf twice already. I'll move it again.
+b : #bc_poor_soul# | #bc_i_know#
+
+scene fresh_straw_morning
+when topic=home|smalltalk self.likes=fresh_straw
+does tell.self / react.self / tell.feeling / ack
+a : #straw.capitalize# on my floor this morning. It smells like summer in a barn, even when it's pouring. | I spread straw myself every morning. Folk call me fussy. I am.
+b : Pleasant to walk in to. | Fussy about straw?
+a : It is. Straw drinks the wet and softens the jar smell. | About straw, floors, doses and jars. About most things, really. It's a good shop because I'm fussy.
+b : #bc_lovely# | #bc_ha#
+
+scene roast_pork_supper
+when topic=food self.likes=roast_pork
+does tell.self / react.self / tell.self / ack
+a : #pork.capitalize#. That's what I'm thinking about, if I look like I'm not listening. | A Restday pork roast. I'd walk through a flood for the crackling.
+b : That sounds good. | Through a flood?
+a : It is. My mind will come back from it shortly. Possibly not. | A small one. Wet floors excepted. The crackling's worth a lot, but not my floor.
+b : #bc_ha# | #bc_ha#
+
+scene no_haggling_on_physic
+when topic=prices self.role=merchant self.dislikes=haggling
+does tell.complaint / ask.detail / answer.detail / insist
+a : A customer wanted a penny off the willow bark. For their own aches. | I don't bargain over remedies. The price is what it costs me, and a little to live on.
+b : What did you say? | Never?
+a : I told the customer: pay what's on the jar, or keep the aches. The jar won. | Never. If someone can't pay, I'll give it. But I won't haggle. It's not a market stall, it's a cure.
+b : #bc_ha# | #bc_fair_enough#
+
+scene herbs_off_the_cart
+when topic=caravan|land world.wagons=in self.job=healer
+does tell.news / react.news / tell.plan / ack
+a : The herb cart's in from the farms. Feverfew, mullein, a sack of willow. I'll be drying it all week. | #herbs.capitalize# came in this morning. Good ones. The mullein still smells green.
+b : Good. You were running low. | Green's good, is it?
+a : I was. Two more days and I'd have been sending folk away with nothing but advice. | Green means fresh. Fresh means it'll still work in winter, when it's needed.
+b : #bc_good# | #bc_clever#
+
+scene herb_cart_late
+when topic=caravan world.wagons=late self.job=healer
+does tell.worry / reassure / insist / ack
+a : The herb cart's late. One sack of willow left, and winter's coming. | No farm cart this week. I've been eking out the feverfew a pinch at a time.
+b : It'll come. | You'll manage, won't you?
+a : It had better. I can't grow willow in a flat over a shop. | Manage, yes. But managing isn't the same as having enough.
+b : #bc_hope_so# | #bc_true#
+
+scene mother_minds_the_door
+when topic=family self.mother
+does tell.feeling / ask.detail / answer.detail / assess
+a : I'd have #self.mother# at the door if I could. A mother's look gets boots wiped. | I worry #self.mother# thinks I work too hard. I'd say I work the right amount.
+b : Does anyone listen to you about the floor? | Who's right?
+a : Nobody. That's why I'd want the help. | Probably the one who isn't me. That stays unsaid.
+b : #bc_ha# | #bc_ha#
+
+scene the_one_i_rely_on
+when topic=friends|work self.hand
+does tell.feeling / react.self / assess
+a : I'd trust #self.hand# with the scales, and I don't trust anyone with the scales. | If I fell ill myself, #self.hand# is who I'd want fetched. That's saying something.
+b : From you, that's praise indeed. | It is, from an apothecary.
+a : I know. Keep it between us. | It is. I'd rather be honest about it than polite.
+
+scene winter_chests
+when topic=season|health here.season=winter self.job=healer
+does tell.self / react.self / tell.self / ack
+a : Winter. Every chest in Ridgemere wheezes like an old bellows. I can hear them through the walls. | Coughing season. A morning's syrup is sold out by dusk.
+b : You'll be busy, then. | Tired, I'd guess.
+a : Busy and quiet. Folk don't want to chat when they're coughing. That suits me. | Tired, yes. But I'd rather be tired from use than from nothing.
+b : #bc_ha# | #bc_wise#
+
+scene summer_slow
+when topic=season here.season=summer self.job=healer
+does tell.self / react.self / tell.self / ack
+a : Summer's slow for me. Bee stings and sunburn, and a bit of bad fish now and then. | I go out to the hills in summer, to pick what the carts don't bring. Nobody's ill enough to need me.
+b : That sounds restful. | You go out yourself?
+a : It is. I sing more in summer. You can tell when I'm not busy; you can hear me. | When I can. A day on a hillside with a sack and a blade. I come back smelling of yarrow.
+b : #bc_lucky_you# | #bc_lovely#
+
+scene festival_mornings
+when topic=festival world.festival=today|soon self.job=healer
+does tell.complaint / react.self / tell.self / ack
+a : Festival tonight. Tomorrow I'll have a queue of sore heads and cut paws. | Everyone dances, everyone drinks, and the morning after, everyone comes to me.
+b : You could have some fun too. | Well, it's good for trade.
+a : I'll sing. I won't drink. Somebody needs a clear head at dawn. | It's bad for my temper. I'd rather sell syrup than bind up cuts.
+b : #bc_fair_enough# | #bc_ha#
+
+scene gossip_not_mine
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail / assess
+a : There's something going round about #topic.subject#. I won't repeat it. | Folk at the counter were talking about #topic.subject#. I didn't join in.
+b : Why not? | What was being said?
+a : I hear a lot across that counter. I'd lose my trade if I passed it on. | It's not mine to say. If it's true, it'll come out without me.
+b : #bc_fair_enough# | #bc_wise#
+
+scene gossip_hurt
+when topic=gossip|crime here.gossip=yes topic.claim_kind=violence|victim self.job=healer
+does tell.gossip / sympathise / tell.self / ack
+a : They say #topic.subject# #topic.claim#. Anybody hurt can come to me. | I heard #topic.subject# #topic.claim#. I've a poultice ready, just in case.
+b : That's kind of you. | Let's hope nobody needs it.
+a : It's not kindness. It's the job. | Let's hope. But I'd rather have it and not need it.
+b : #bc_true# | #bc_hope_so#
+
+scene hard_times_unpaid
+when topic=times world.times=hard|lean self.job=healer
+does tell.self / sympathise / insist / ack
+a : Hard months. Half the folk who come in can't pay. I give them the willow anyway. | When money's short, folk wait till they're very ill before they come. Worst part of all.
+b : That's good of you. | That's a sad thing.
+a : I'd not sleep otherwise. A cough left alone is a fever by spring. | It is. A spoon in autumn saves a week in bed in winter. Nobody believes it.
+b : #bc_bless_you# | #bc_true#
+
+scene garden_dream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail / react.self
+a : I think about a garden sometimes. A small one, just herbs, somewhere the sun gets to. | I'd like to write my own book one day. Everything I've learned, in order, with drawings.
+b : Where, in this city? | Would anyone read it?
+a : There's nowhere. That's why I only think about it. On a roof, maybe. In pots. | Somebody like me, years from now, who's got nothing but a book and a candle. That'd be enough.
+b : #bc_lovely# | #bc_good#
+
+scene faith_in_the_herbs
+when topic=faith
+does tell.self / react.self / assess
+a : Every herb that comes off the cart green, I thank the sky for. | Prayer's not my habit. A sprig of rosemary on the chapel step sometimes. Same thing, to me.
+b : A gentle way of looking at it. | I'm sure that counts.
+a : The herbs taught me to see it so. | It counts to me. I can't answer for the Bright One.
+
+scene new_face_with_a_cough
+when topic=newcomer|player self.job=healer
+does tell.self / react.self / tell.self / ack
+a : There's a newcomer about, coughing on the square. Not from here; it's a dry cough, not our wet one. | Somebody new came in for willow bark today. Every newcomer gets the damp chest by their second month.
+b : You can tell from a cough where someone's from? | Do they all come to you?
+a : Not where. Just that it isn't here. Ridgemere coughs are wet. | Most do, eventually. The city welcomes everyone the same way, with a chest full of rain.
+b : #bc_clever# | #bc_ha#
+
+scene a_knock_at_night
+when topic=work|day here.time=night self.job=healer
+does tell.self / ask.detail / answer.detail / assess
+a : Somebody knocked at midnight last night for fever powder. The hour's no bother. The boots on my floor are. | I sleep light in winter. There's always a knock, sooner or later.
+b : Do you always open? | Doesn't that wear you down?
+a : Always. A fever doesn't wait for morning, so neither can I. | Some. But I'd rather be woken than not told. You can't mend what nobody brings you.
+b : #bc_good# | #bc_wise#
+
+scene still_learning
+when topic=work self.apprentice=yes self.job=healer self.age<30
+does tell.self / react.self / insist / ack
+a : I'm still learning. Everybody's still learning. The ones who say they've finished are the dangerous ones. | They call me young for the counter. I'm young. I'm also right, most days.
+b : That's a wise thing to say. | Most days?
+a : It's just true. I found a new use for mullein last month. There'll be another next month. | Most days. The other days I go home and read the book again until I am.
+b : #bc_wise# | #bc_fair_enough#
+
+story the_book_by_candle [topic=memories|work self.job=healer self.age>=18]
+  : A wet season, years ago, I was ill, and the old herbalist who looked after me left a book behind when she went.
+  : I read it by candle, every night, and tried what it said on my own chest. Some of it worked.
+  : She never came back for it. I heard later she'd died that winter.
+  ask : Keep it, in my place, or go looking for her kin?
+  b : I'd have kept it. She left it for a reason.
+  b[old] : Kept it. Books want to be used, not returned.
+  : So I've decided. I've used it every day since. It's half falling apart, and so am I.
+
+story the_first_patient [topic=memories|work self.job=healer self.age>=20]
+  : The first wolf I ever dosed for money was an old carter with a chest like a cracked bellows.
+  : I gave him thyme syrup and told him three spoons a day. He took the whole bottle in one go.
+  ask : Can you guess how that ended?
+  b : Badly, I'd think.
+  b[old] : He slept for a week, I'd wager.
+  : He slept two days straight and woke up cured, and told the whole street I was a wonder. I wasn't. He was lucky. I've said the dose twice ever since.
+
+story the_flood_winter [topic=memories|weather self.age>=20 here.region=ridgemere]
+  : The water once climbed three streets from the Sound, in the night, and stayed two days.
+  : A week later I had fevers from every one of those streets, in order, nearest the water first.
+  : That's when I started writing them down. Every fever, every street.
+  ask : Three winters of notes. Can you guess what they showed?
+  b : Where the water goes, I'd guess.
+  : Where it goes, and how long it stays, and who it hurts. Better than any chart of the city.
+
+story the_quack_came_back [topic=work|memories self.job=healer self.age>=20]
+  : A fellow stood in my shop once and called me a quack, loud, with folk listening.
+  : A month later he was back, coughing so hard he couldn't stand up straight.
+  ask : Your counter, your choice. Serve him?
+  b : Sent him somewhere else, I think.
+  b[old] : Served him, and charged him double.
+  : I served him at the price on the jar. He paid, and said nothing, and that silence beat any apology.
+
+story grandmothers_song [topic=memories|pastimes self.age>=20 self.likes=singing]
+  : My #gran# used to sing a round about rain while she shelled peas on the step.
+  : I've only got the first verse now. I sing it to the mortar. The second verse is gone.
+  ask : Do you know any songs about rain?
+  b : A few. Not that one, probably.
+  b[old] : Hum it for me. I might know it.
+  : If you ever hear one about a warm rain and a green field, tell me. I'd like the rest of it back.
+
+rule @bark_remedies
+when concept=bark self.working=yes self.role=merchant self.job=healer
+does aside
+cooldown 7h
+say Thyme syrup for a cough, willow for the aches. | Remedies, weighed honest.
+
+rule @bark_floor
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Feet on the straw. On the straw. | Who walked water in here?
+
+rule @bark_hum
+when concept=bark self.working=yes self.likes=singing
+does aside
+cooldown 9h
+say Round and round the miller's wheel... | Hm, hm, hmm.
+
+rule @bark_fevers
+when concept=bark here.weather=rain|storm here.region=ridgemere
+does aside
+cooldown 10h
+say Next week, then. The fevers. | Low streets will be under by now.
+
+rule @bark_pork
+when concept=bark here.time=dusk self.likes=roast_pork
+does aside
+cooldown 12h
+say Is that pork somewhere? | Somebody's roasting. Lucky them.
+
+rule @bark_rain
+when concept=bark here.weather=rain here.season=spring|summer self.likes=warm_rain
+does aside
+cooldown 11h
+say Warm rain. Good. | That's the nice kind.
+
+dlg @1 resident.hub : #greet#. Mind the floor. What is it? | #greet#. If you're poorly, say so first.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Back again. Not ill, I hope. | #greet#, #topic.player#. What can I get you?
+dlg @3 resident.hub [here.time=night] : Late. Fever? Come in. Anything else, be quick. | Late, but I'm up. What's wrong?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from there. And don't touch the jars. | Your business? Plainly, please.
+dlg @1 resident.job [self.job=healer self.role=merchant] : I make remedies. Syrups, teas, poultices. And I listen to what folk say hurts. | Physic. Thyme syrup for coughs, willow for aches, and a lot of careful weighing.
+dlg @2 resident.job : #self.trade_words.capitalize#. Busy, and tidy with it. | Work. Talking about it is the dull part.
+dlg @3 resident.job [self.working=yes] : Working. Ask your question; I can grind and listen. | I'm busy. Go on, though.
+dlg @1 resident.business [business=thriving self.job=healer] : Busy. Too busy. Every chest in the street's rattling. | Very good. I can't make syrup fast enough.
+dlg @2 resident.business [business=steady] : Steady. Folk always get ill, sadly. | It pays. I'm not complaining.
+dlg @3 resident.business [business=failing self.job=healer] : Badly. Folk can't pay, and I can't turn the sick away. | Poor. The herb carts cost more than the shelf brings in.
+dlg @1 resident.news [world.news] : Out of #world.news_from#: #world.news#. No more than that. | From #world.news_from#: #world.news#. Somebody said it at the counter.
+dlg @2 resident.news [world.event_words] : Everyone's talking of #world.event_words#. All day, every customer. | #world.event_words.capitalize#. Each cough at my counter comes with that.
+dlg @3 resident.news [world.wagons=raided] : Thieves had a wagon beyond the gate. If it carried herbs, we'll all be coughing for it. | Highway thieves again. Bide inside the walls.
+dlg @4 resident.news [world.death=recent] : Someone nearby passed this week. I'm sorry for it. | We lost one of ours. I sent willow tea to the family. It's all I had.
+dlg @5 resident.news [world.wedding=recent] : Somebody married nearby. The singing carried right into the shop. Good singing, too. | A wedding nearby, this week. I went and sang at the back.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Coughs and colds, that's my news. | Nothing much. Rain. Rain's never news here.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Whether it's so, I couldn't swear. | I heard #topic.subject# #topic.claim#. That's all, and I'm not sure of it.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : They're saying #topic.subject# #topic.claim#. Watch your purse. | Word is #topic.subject# #topic.claim#. I'm locking the jars at night.
+dlg @3 resident.gossip [here.gossip!=yes] : I don't pass on gossip. Sick folk say things they'd not want carried. | Nothing. I don't listen for it.
+dlg @1 resident.bye : #farewell#. Keep your feet dry. | #farewell#. Come back if it's worse.
+dlg @2 resident.bye [here.time=night] : Good night. Wrap up warm. | Night. Sleep's the best remedy I've got.
+dlg @1 shop.greet [here.shop!=bare self.job=healer] : #greet#. Syrups, teas and poultices. Say what hurts and I'll find the jar. | #greet#. Every jar's weighed and labelled. Ask if you're not sure.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Prices are written on each jar. | #greet#. Take your time. Mind the floor.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. The usual, or something different? | #greet#, #topic.player#. Feeling better, I hope.
+dlg @4 shop.greet [here.shop=bare] : #greet#. The shelf's bare. The herb carts haven't come. | Nothing to sell, I'm afraid. I'll buy herbs, if you've good ones.
+dlg @1 shop.prices : Prices are as marked. I don't haggle over remedies. | Willow's up a little; carting costs more. The rest is as it was.
+dlg @1 shop.bye : #farewell#. Take it as it says on the jar. Not more. | #shop_bye# And keep your feet dry.
+graft resident.hub
+choice Why do fevers come after a flood? [self.job=healer] -> fevers
+node fevers
+say The water goes into the walls. Then the walls go into the chests. It takes about a week. Who comes to me after tells me which streets flooded.
+mood calm
+free
+choice Which streets go first? -> fevers_where
+choice Back to it. -> hub
+node fevers_where
+say The lanes by the water. Then up the steps, a street a day. Every fever goes in my book with its street. The book knows the flood better than the Watch.
+choice I'll keep my feet dry. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Have you anything for a cough? [self.job=healer] -> cough
+node cough
+say Thyme syrup. Thyme, honey and onion. Two spoons at night, not more. If it's a wet cough, it'll loosen. If it's a dry one, bring it back to me.
+mood calm
+choice Let me see the shelf. -> greet
+choice Why onion? -> cough_onion
+node cough_onion
+say It opens the chest. Folk pull faces at it. Then they sleep through the night and stop pulling faces.
+choice Let me see the shelf. -> greet
+choice Goodbye. -> bye

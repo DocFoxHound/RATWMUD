@@ -1,0 +1,413 @@
+# rm137, the hiccup that isn't (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm137
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_vidar_kettleham
+written_by claude
+title the hiccup that isn't
+fits stage=young|adolescent|adult|old
+prefers temper=nervy
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk calls_every_cough_a_hiccup
+likes barley_soup swimming tidy_house first_warm_day
+dislikes drizzle wet_floors
+fears somebody_slipping_on_a_wet_floor a_cough_that_won_t_go_away
+hopes the_first_warm_day_to_come_early a_house_where_everything_has_its_place
+topics weather +0.4 home +0.4 pastimes +0.3 health +0.2 food +0.2 newcomer -0.3 crime -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# worries about everything twice, lines things up in rows, swims in cold water without a word of complaint, and calls every cough a hiccup no matter who heard it.
+
+words
+oath! = Oh, wet whiskers | Buckets and brooms | Soggy socks
+saying! = Careful is quicker in the end | Go slow and you never have to say sorry | A tidy shelf never fell on anybody
+hiccup = hiccup | little hiccup
+soup = barley soup | hot barley soup
+swim = swim | cold swim
+water = the Sound | the cold water
+floor = the floor | a wet floor
+drizzle = drizzle | the drizzle that can't decide
+row = a row | a straight row
+carts = the carts | the big carts at the gate
+gate = the gate | the north gate
+warmday = the first warm day | the first day it's properly warm
+slate = my slate | the slate
+cups = the cups | all the cups
+
+any
+opinion @1 church for 1 : The chapel gives out soup when it's cold. I always say thank you twice. | The chapel is quiet and nobody shouts. That's my favourite thing in it.
+opinion @1 dole for 2 [self.on_dole=yes] : Some weeks the parish bread is all there is. I'm not ashamed. I'm a bit ashamed. | The dole bread is good if you toast it. I've tried it every way.
+opinion @1 festivals for 1 : Feasts have sweets, and fiddles, and no bedtime. But such a lot of people. | I like a feast if I can stand near a wall.
+opinion @1 strangers against 1 : You never know where a stranger has been. I keep to my side of the street. | Strangers might be nice. I'll wait and see from over here.
+opinion @1 sump against 1 : I'd not walk down to the Sump after dark. Or before it, really. | The lanes near the water go too steep and too dark.
+opinion @1 drink against 1 : Drink makes grown-ups say things they wish they hadn't. I've heard it through the wall.
+opinion @1 road against 1 : Outside the walls isn't for me. Not for anything. There are robbers and ditches.
+
+grown
+line @1 greet : Hello. Mind the floor, it may be wet. | Good to see you. Carefully, there's a step.
+line @2 greet [pair.band=strangers] : Hello. We've not met, I think. You're welcome, I'm sure. | Hello. You're new. That's all right.
+line @3 greet [here.time=dawn] : Morning. The street's still empty. That's my favourite kind of street. | Morning. Early, I know. I like it before everybody's about.
+line @4 greet [here.time=dusk|night] : Evening. I was going to put the boots straight. | Evening. Mind the dark, the step's hard to see.
+line @1 greet.return : Hello again. Wipe your feet, would you. | Hello. Yes, I'm fine. Only a hiccup.
+line @2 greet.return [pair.band=friends|family] : There you are. I worried you'd got caught in the rain. | Good. Sit down. I've just tidied, so mind the cups.
+line @1 kin.open [pair.kin!=no] : Come in. Boots by the door, toes out. | I've soup on. Barley. Sit down.
+line @1 again.open : Back again. I'd only now straightened the chair. | Back again. I was hoping you would.
+line @1 farewell : Go carefully. The stones are slick. | Mind how you go. Slowly.
+line @2 farewell [here.time=dusk|night] : Good night. Stay under the lamps, would you. | Good night. Watch your step on the way down.
+line @1 farewell.return : Take care. Really, take care. | Go on, then. Slowly.
+line @1 react.news : Oh. Go on. Slowly, please. | What happened? Is everyone all right?
+line @1 react.news.new : I hadn't heard. That's worrying, if it's true. | Really? I'd want to know more before I fret.
+line @1 react.news.known : I'd heard. I've thought about it ever since. | Yes. I knew. I didn't want to say until I was sure.
+line @1 react.news.doubt : I'm not sure that's so. Is anyone sure? | That might be one of those things that grows in the telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's dreadful. I'm so sorry. | That's terrible news. I've no words for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, good. That's good news. Some good, at last. | I'm glad. Really glad. It's nice to hear something good.
+line @1 answer.how : All right. A hiccup or two. Nothing. | Fine, thank you. Everything's in its place.
+line @1 ask.how : Are you warm enough? You look cold. | Are you all right? Really?
+line @1 sympathise : That's hard. I'm sorry. Sit, if you like. | Oh. I'm so sorry. Can I fetch you anything?
+line @1 reassure : It may come right. Most things will, with patience. | Try not to worry. I'll do the worrying.
+line @1 decline : I'd better not, I'm sorry. It would keep me up all night fretting. | No, thank you. I'm no hand at that, and I'd worry.
+line @1 accept_decline : That's all right. I see why. | Of course. Another time, perhaps.
+line @1 thank : Thank you. That's very kind. Very kind. | Thank you. That goes on my list of kind things.
+line @1 deflect_thanks : It was nothing. It needed doing. | Don't mention it. I like things set right.
+line @1 preclose : I should go. The floor wants mopping. | I'll get home now, before the rain comes.
+line @1 accept_preclose : Of course. Go on. Be careful. | Yes, yes. Mind the step.
+line @1 ack : Right you are. | All right.
+line @1 warn [world.bandits=near] : Keep off the road. Please. There's talk of robbers. | Stay inside the walls this week. I'd worry otherwise.
+scene grown_hiccup
+when topic=health|smalltalk
+does tell.self / challenge / insist / ack
+a : That was a #hiccup#. I've had them since I was small. | Only a #hiccup#. The damp brings them on. | Don't mind that. It's a #hiccup#. Always has been.
+b : That's a cough, you know. | Somebody ought to look at that. | Always has been?
+a : It's a #hiccup#. I've called it that all my life and I'm not changing now. | I might. When it's a cough. It's a #hiccup#. | Always. Some things you decide young and keep.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_true#
+
+scene grown_morning_swim
+when topic=pastimes|day here.season=summer|spring here.time=dawn self.likes=swimming here.region=ridgemere
+does tell.self / react.self / assess
+a : I swim before the gate opens. The water's coldest then and the beach is empty. | In and out before anybody's about. That's how a #swim# should be. | Cold water first thing. After that, the whole day feels warm.
+b : Rather you than me. | Doesn't the cold get you? | That's a cheerful way to see it.
+a : It's not so bad if you don't stop to think. I stop to think about everything else. | It does. I don't say so. If you say so, it gets colder. | It's all I've found that works. I'm not brave about anything else.
+
+scene grown_drizzle
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : I can't stand #drizzle#. It doesn't even decide to be rain. | A downpour I can bear. This half-rain gets in everywhere. | It's that thin wet again. I can feel a #hiccup# coming.
+b : It's all wet in the end. | It does get everywhere. | A hiccup?
+a : It is. But a downpour's honest about it. | Every collar, every boot. I'll be mopping all evening. | A #hiccup#. Yes. That's what it is.
+
+scene grown_wet_floor
+when topic=home|weather here.weather=rain self.dislikes=wet_floors
+does tell.worry / reassure / assess
+a : I've put three cloths by the door and they still walk round them. | Somebody will slip on that floor, and I'll have said so. | I mop the floor by the door twice on a wet day. Once isn't enough.
+b : Nobody's slipped yet. | You'll have said so, at least. | Twice seems a lot.
+a : Not yet. Let's keep it so. | That's no comfort if somebody's lying on it. | It's the right number. I counted the footprints.
+
+scene grown_in_its_place
+when topic=home|pastimes self.likes=tidy_house
+does tell.self / react.self / assess
+a : Everything here has its own place. I could find any of it with my eyes shut. | I like a house where nothing's out. It quiets my head. | I put #cups# in #row# every night. Biggest at the end. Still.
+b : That must make a tidy house. | Quiets your head? | Still?
+a : It does. That's one worry I never have. | It does. There's enough to fret about out there without my shelves joining in. | Still. Rows have served me well.
+
+scene grown_barley
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : #soup.capitalize# on a cold day. I've never found better. | I make the barley soup slow. You can't hurry it, and I don't. | A bowl of soup and a floor that's dry. That's my evening.
+b : Simple, but good. | Slow's the way. | Sounds peaceful.
+a : Simple is good. Simple doesn't go wrong. | It is. Slow is how you don't spill, and how you don't burn it. | It is. Most evenings I manage it.
+
+scene grown_warm_day
+when topic=season|weather here.season=spring self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : It's #warmday#. I'll swim tomorrow, if it holds. | Properly warm, at last. I opened every window and then worried about the dust. | Warm at last. My chest feels better already.
+b : If it holds. | Worried about the dust? | That's good to hear.
+a : If it holds. I'll check the sky twice before I go. | Dust gets on the shelves. But the air's worth it. Just. | No #hiccup# all morning. That's hopeful.
+
+scene grown_the_gate
+when topic=caravan|travel here.region=ridgemere self.away=no
+does tell.worry / reassure / assess
+a : I watch #carts# come rumbling through and think about every wobbly wheel. | Everybody coming in on the road looks tired. I'd worry if I'd been out there. | I've never gone past the gate. I don't think I'd like it.
+b : Most of them come in safe. | They're tough, those carters. | You might, you know.
+a : Most. I watch for the ones that don't. | They'd have to be. I'm not. | I might. I'd want somebody to go first, though.
+
+scene grown_hard_times
+when topic=times world.times=hard|lean
+does tell.worry / agree / assess
+a : Things are tight. I count what's in the larder every night. | Bread's dear again. I've cut back, quietly. | Hard times. I've known them before. They're no easier for knowing.
+b : Everyone's counting. | We all have. | They pass.
+a : I count twice. In case I was wrong the first time. | You don't say it. You just do it. | They do. Slowly.
+
+scene grown_feast
+when topic=festival|season world.festival=today|soon
+does tell.feeling / react.self / assess
+a : A feast soon. The fiddles will bring me out, and I'll keep near a wall. | I like a feast until it gets crowded. Then I like it from further off. | There'll be sweets. I still save one for the day after.
+b : By the wall, still? | Further off's quieter. | Still?
+a : Still. The wall's never bumped anybody. | Much quieter. You can hear the tune properly. | Still. It's nice to have something to look forward to.
+
+scene grown_strangers
+when topic=newcomer|player
+does tell.worry / react.self / assess
+a : A new neighbour on our street. I've said hello. From the step. | Strangers at the gate every day. I'm getting better at not worrying about them. | Somebody lost stopped me today. I walked them to the corner, then worried I'd sent them wrong.
+b : That's a start. | Getting better? | Had you?
+a : It is. Next week I'll say hello from the street. | A little. Every year a little. | No. I checked afterwards. They'd found it.
+
+scene grown_gossip_held
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : People are saying things about #topic.subject#. I don't like repeating it. | I heard something about #topic.subject#. I'd want to be sure before I said it. | A tale's doing the rounds about #topic.subject#. I'll keep out of it.
+b : Go on. | Sure about what? | Fair enough.
+a : No. If I'm wrong, it's somebody's name. I'd worry about it for weeks. | Whether it's true. Nobody seems to know. | It's the safest place to be.
+
+story grown_first_swim [topic=pastimes|memories self.likes=swimming self.age>=18]
+  : As a tiny pup I was frightened of #water#. All water, even puddles.
+  : My first time in, I counted to ten on the shore, and then to ten again, and then I went.
+  ask : Is there anything you only managed by counting first?
+  b : I think so. It does help.
+  : It does. I still count before I go in. Every time. It's only to five now.
+
+rule @grown_floor_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Boots by the door, please. | Mind, it's wet just there.
+
+dlg @4 resident.hub : Hello. Mind the floor. What did you want? | Hello. Careful, there's a step.
+dlg @2 resident.job : I keep things straight and try not to worry. I manage one of those. | I work, and I'm careful at it.
+dlg @2 resident.bye : Go carefully. | Watch that step as you leave.
+
+young
+line @1 greet : Hello. Mind the floor, it might be wet. | Hello. I'm being careful today.
+line @2 greet [pair.band=strangers] : Hello. You're somebody I haven't met. I'm only saying. | Hello. A stranger. I can talk to strangers a little. A little is fine.
+line @3 greet [here.weather=rain] : Hello. Wipe your feet, it's wet out. Everyone forgets. | Hello. It's raining. I checked twice.
+line @1 kin.open [pair.kin!=no] : I tidied the cups. Every one, lined up. | Look, I didn't spill anything all day.
+line @1 again.open : You came back. That's good. I was still here. | Hello again. I kept your place.
+line @1 greet.return : Hello. I wasn't doing anything wrong. | Hello. I'm fine. Thank you for asking. You didn't ask. I'm fine anyway.
+line @1 farewell : Bye. Watch the step, it's slippy when it rains. | Bye. Go slowly, then you won't fall.
+line @1 farewell.return : Bye. Be careful. | Bye. Don't run.
+line @1 react.news : What happened? Tell me slowly. | Oh. Is it bad? Is it a bit bad?
+line @1 react.news.new : I hadn't heard that. I'm never told. | Is that true? Really, truly?
+line @1 react.news.known : I heard that already. I listen at the window. | I knew. I was keeping it quiet.
+line @1 react.news.doubt : That sounds wrong to me. Is it? I'm not sure. | Somebody might be making it up. People do.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh no. That's sad. That's very sad. | That's horrible. My tummy's gone all cold.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, good. That's a good thing. | That's nice. I'm glad. I'm really glad.
+line @1 answer.how : I'm all right. I only had a hiccup. | I'm fine. I tidied my things, so I'm fine.
+line @1 ask.how : Are you all right? Your nose looks cold. | Did you get wet? You look a bit wet.
+line @1 sympathise : That's not fair. I'm sorry. | Oh. Do you want to sit down? There's room.
+line @1 reassure : It might be all right. Things are, sometimes. | Don't worry. I'll do enough worrying for two.
+line @1 thank : Thank you. Thank you very much. | Thank you. I'll put it somewhere safe.
+line @1 deflect_thanks : That's all right. It wasn't hard. | It's fine. I like helping if it's tidy.
+line @1 decline : I'd better not. Somebody might slip, and then it's my fault. | No, thank you. It's not allowed, and I'd only worry.
+line @1 accept_decline : All right. I didn't really want to anyway. | That's fine. I'll ask another time. Maybe.
+line @1 preclose : I have to go now. I have to put my boots in a row. | I should go. Rain's coming, I think.
+line @1 accept_preclose : All right. Bye. Be careful. | Yes. Go on. Mind the corner.
+line @1 ack : Mm, yes. | All right, then.
+line @1 warn [world.bandits=near] : Don't go out of the gate. There are robbers on the road. | Stay inside the walls. I heard the grown-ups say.
+scene only_a_hiccup
+when topic=health|smalltalk
+does tell.self / challenge / insist / ack
+a : That was a #hiccup#. Not a cough. A #hiccup#. | I'm fine. I only hiccuped. Twice. | Hic. That one was a #hiccup# too.
+b : That was a cough, surely. | Twice? | That sounded more like coughing.
+a : It wasn't. Coughs are bigger. That was a small one, so it's a #hiccup#. | Two hiccups. That's allowed. Everybody gets two. | It's a #hiccup#. I'd know. It's my throat.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_right#
+
+scene damp_day_hiccups
+when topic=weather|health here.weather=rain|fog
+does tell.self / react.self / reassure
+a : The wet days give me hiccups. Only hiccups. I'm fine. | When it's foggy my throat goes funny. It's a #hiccup# thing. | I hiccup more when it's damp. It doesn't matter. Don't tell anyone.
+b : Keep warm, then. | You should have something hot. | I'll not tell.
+a : I am warm. I've got two jumpers. One is my best one. | I'll have #soup#. #soup.capitalize# fixes hiccups, I think. | Thank you. Only a #hiccup#, but thank you.
+
+scene the_drizzle
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : It's #drizzle#. It can't choose whether to rain properly. I wish it would. | Proper rain is better. Proper rain doesn't trick you. | The drizzle gets in my collar and I can't get it out.
+b : It's still wet, either way. | Proper rain's wetter, though. | Pull your collar up.
+a : I know. But it's not fair wet. It's sneaky wet. | Wetter, but it's honest. Drizzle isn't honest. | I did. It got in anyway. It always does.
+
+scene the_wet_floor
+when topic=home|smalltalk self.dislikes=wet_floors
+does tell.worry / reassure / insist / ack
+a : Somebody walked in with wet feet and now the floor's wet. Somebody could slip. | I put a cloth down by the door. Nobody uses it. | The floor by the door is wet again. I've told everyone.
+b : Nobody's going to slip. | Folk forget. | You can't stop everyone.
+a : They might. Somebody slips in the end, always. I don't want it to be today. | I'll put another one down. A bigger one. They'll have to step on that one. | I can tell them twice. Then it's their fault.
+b? : #bc_true# | #bc_good# | #bc_fair_enough#
+
+scene everything_in_a_row
+when topic=home|pastimes self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I put all #cups# in #row#. Biggest at the end. | I tidied my shelf. Everything has a place now. Even the string. | My boots go by the door, toes out. Every night.
+b : Why the biggest at the end? | Even the string? | Why toes out?
+a : So it looks like stairs. Going down. It's nicer. | Especially the string. Loose string goes all over. | So I can step straight in if I have to go fast. Not that I go fast.
+
+scene barley_soup_day
+when topic=food self.likes=barley_soup here.season=autumn|winter
+does tell.self / react.self / assess
+a : #soup.capitalize# is the best thing on a cold day. You hold the bowl and your paws go warm. | I like the barley best. The bits at the bottom. | I had #soup# today and I didn't spill any. Not one drop.
+b : That sounds good. | The bits at the bottom are the best. | Not one drop?
+a : It is good. Nothing's better. | I know. You have to be patient for them. I'm patient. | Not one. I went very slowly. Slow is how you don't spill.
+
+scene a_cold_swim
+when topic=pastimes|weather here.season=summer self.likes=swimming
+does tell.boast / react.self / assess
+a : I went in #water# today. All the way under. It was freezing and I didn't say anything. | I can swim to the post. The far post, and then home again. | Cold water doesn't bother me. Only drizzle bothers me.
+b : All the way under? | The far one? | Doesn't it bother you at all?
+a : All the way. I held my breath and counted. I got to nine. | The far one. I touched it, so it counts. | A little. But I don't say. If you say, it gets colder.
+
+scene not_swimming_yet
+when topic=pastimes|season here.season=spring|autumn self.likes=swimming
+does tell.feeling / reassure / assess
+a : I want to swim but it's too cold. They won't let me. | I put my foot in #water# to check. It's not ready yet. | I keep asking if it's warm enough. Nobody says yes.
+b : It'll be summer soon. | Better to wait than be sorry. | Wait a few weeks.
+a : I know. I'm waiting. I'm good at waiting. | That's what I say. Go slow and you never have to say sorry. | I'll count them. I'll know the day.
+
+scene the_warm_day
+when topic=season|weather here.season=spring self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : Today's #warmday#. I could tell when I woke up. | It's warm! Properly warm. I took off one jumper. | On #warmday# everybody opens their windows at once. I like that.
+b : It's lovely, isn't it. | Only one jumper? | It does go noisy.
+a : It's the very best day. Better than a feast. | Only one. The other might be needed. You can't tell yet. | Noisy but nice noisy. Not shouting noisy.
+
+scene carts_at_the_gate
+when topic=caravan|day here.region=ridgemere
+does tell.self / react.self / assess
+a : I watched #carts# come in. The wheels are taller than me. | One of the carts had a wobbly wheel. I kept watching until it was right inside. It didn't come off. | The drivers shout a lot at the gate. I stand by the wall so I'm not in the way.
+b : They're big, those wheels. | Lucky it didn't. | That's sensible.
+a : Very big. If one came off it would roll right down the hill into the Sound. | I'd have shouted if it did. I was ready. | Standing by the wall is always sensible. You can't fall off a wall if you're next to it.
+
+scene at_lessons
+when topic=work|day self.job=child
+does tell.worry / reassure / assess
+a : At lessons I know the answers but I don't put my paw up. In case. | I did my sums on #slate#. I did them twice to check. | I hope I'm not asked to read out loud. I get a #hiccup# when I read out loud.
+b : In case of what? | Were they right? | You'll be fine.
+a : In case I'm wrong. Or in case I'm right and everybody looks. | Both times. So that's good. | I might be. I'll practise in my head.
+
+scene the_new_ones
+when topic=newcomer|player
+does tell.worry / react.self / assess
+a : Somebody new lives on our street now. I don't know where they came from. | A stranger smiled at me. I smiled back, but from across the street. | New people come through the gate every day. I watch them from the step.
+b : They might be nice. | That's polite of you. | Watching for what?
+a : They might. I'll wait and see. From here. | I'm always polite. From a distance. | If they look kind. Most of them look tired.
+
+scene feast_with_a_wall
+when topic=festival|season world.festival=today|soon
+does tell.feeling / react.self / assess
+a : There's a feast coming. There'll be sweets. And lots of people. | The fiddles at a feast are my favourite. I listen from next to a wall. | At a feast you can stay up as late as you like. But when I'm tired, I go to bed.
+b : Sweets are the best part. | Why next to a wall? | You go to bed on your own?
+a : They are. I keep one back for the morning after. | So nobody bumps into me. The wall doesn't bump. | Somebody has to be sensible. That's usually me.
+
+scene dole_bread
+when topic=times|food self.on_dole=yes
+does tell.self / react.self / assess
+a : I get bread from the parish. You say thank you and you don't look sad. | The chapel soup is quite good. There's barley in it, sometimes. | We go to the parish when there's nothing. I'm not supposed to tell people. I just told you.
+b : Nobody minds that. | Barley's a good find. | I'll keep it quiet.
+a : I know. I say thank you twice anyway. | It's the best find. I look for it first. | Thank you. You seem like you would.
+
+scene the_low_streets
+when topic=smalltalk|crime here.region=ridgemere
+does tell.worry / reassure / assess
+a : I'd never go down to the Sump. Not in the dark, and not in the light either. | The streets down there are steep and dark and the stones are wet. | Someone said there are thieves in the low streets. I believed them.
+b : There are good folk down there too. | They are steep. | Not everyone's a thief.
+a : I expect there are. I'll believe it from up here. | Very steep. If you slipped, you'd keep going. | I know. But I can't tell which ones, so I don't go.
+
+story the_wave_that_got_me [topic=pastimes|memories self.likes=swimming]
+  : Once I was standing in the water up to my knees and a big wave came and knocked me right over.
+  : I went under and came up and I didn't cry. I had a #hiccup#, but I didn't cry.
+  ask : Do you think you'd have tried again?
+  b : I think I'd have sat on the shore a while.
+  : I sat on the stones and waited. Then I went back in. Slowly. The next wave was smaller.
+
+story the_night_it_thundered [topic=weather|memories]
+  : One night it thundered so loud the cups rattled on the shelf.
+  : I got up and moved them all to the back of the shelf so they wouldn't fall off.
+  ask : Guess what I did after that.
+  b : Went back to bed, I hope.
+  : I lined them up again. Then I went back to bed. None of them fell. Not one.
+
+rule @hiccup_bark
+when concept=bark
+does aside
+cooldown 6h
+say Hic. That was a hiccup. | It's only a hiccup. Nobody look.
+
+rule @floor_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Wipe your feet. Please. | The floor's wet. Somebody's going to slip.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 10h
+say Either rain or don't. | It's the sneaky kind again.
+
+dlg @1 resident.hub : Hello. Mind the floor. What do you want? | Hello. I'm being careful. Are you?
+dlg @2 resident.hub [topic.meeting=known] : Hello, #topic.player#. You came back. I remembered your name. | #topic.player#. Hello. I kept your name in my head.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : You look cross. I'm meant to stay away from cross people. | Please don't shout. I'm listening.
+dlg @1 resident.job [self.job=child] : I go to lessons. I do my sums twice so they're right. | Lessons. I sit on the end bench so I can see everyone.
+dlg @1 resident.bye : Bye. Go slowly. | Bye. Mind the step.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? I only know about the floor. | Nothing. Nobody tells me things.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't tell secrets. I'd only worry I got them wrong. | I don't know any. Honestly.
+graft resident.hub
+choice That sounded like a cough. Are you all right? -> cough
+node cough
+say It was a hiccup. Not a cough. Hiccups are small and they don't mean anything. That's why it was a hiccup.
+mood calm
+free
+choice Do you get them often? -> cough_often
+choice All right. -> hub
+node cough_often
+say When it's damp. And when I read out loud. And sometimes at night. But they're only hiccups. Please don't tell anyone.
+mood calm
+choice I won't tell. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : Hello. Sorry, I was thinking. | Hello. Careful, the step's loose.
+line @1 greet.return : Hello. I was just going. Not because of you. | Hello again. I'm all right, before you ask.
+line @1 farewell : Bye, then. Mind the floor. | See you. Go carefully.
+line @1 farewell.return : Bye. Take care. | Bye. Don't slip.
+line @1 answer.how : Fine. Mostly. A bit of a hiccup. | All right. Busy. Tidying.
+line @1 react.news : What? Say it again, slowly. | That's bad. That's bad, isn't it.
+line @1 react.news.new : I hadn't heard. I'm always last to hear. | Really? Are you sure?
+line @1 react.news.known : I'd heard. I wasn't going to make a fuss.
+rule @teen_hiccup
+when concept=bark
+does aside
+cooldown 8h
+say That was a hiccup. Stop looking. | I'm fine. I'm fine.
+
+scene teen_hiccup_still
+when topic=health|smalltalk
+does tell.self / tease / take_offence / apologise / accept_apology
+a : That was a #hiccup#. I still get them. It's normal. | Don't say anything. It was a #hiccup#. | I've had this #hiccup# all week. It's just a long one.
+b : You've said that since you were tiny. | That was a cough. | A week's a long hiccup.
+a : Because it's been true since I was small. Leave it. | It wasn't. Can we talk about something else, please. | It's a long one. Some are. Look it up.
+b : All right, all right. A hiccup. | All right. Something else. | Fair enough.
+a : Thank you. | Something else, then. Thanks. | Thank you.
+
+scene teen_far_post
+when topic=pastimes here.season=summer self.likes=swimming
+does tell.boast / react.self / assess
+a : Today I got past the far post. The others stopped at the near one. | I go in first now. Somebody has to, and the cold's never stopped me. | I can swim to the rocks and back. I timed it. It's getting quicker.
+b : Past the far post? Careful. | You were always the first in. | Getting quicker?
+a : I am careful. I'm the most careful one there. That's why I can go further. | I was. I only kept it to myself then. | Every week a bit. I keep count.
+
+scene teen_tidy_teased
+when topic=home self.likes=tidy_house
+does tell.self / tease / tease.return / ack
+a : I've arranged everything on my shelf. Don't touch it. | I swept the stairs. All of them. Nobody asked. | My things are in rows. It's how I think.
+b : You'd tidy the whole Sound, given the chance. | Did you sweep the cat as well? | Rows. Of course they are.
+a : I'd start with the floor round the door. That's the worst bit. | No. The cat's not mine. I'd have to ask first. | It works. You can't lose a thing in a row.
+b? : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+story teen_wet_step [topic=memories|home]
+  : Years back, I watched a grown wolf slip on our wet step and land flat. Nobody else saw.
+  : I've put a cloth on that step every wet day since. Every single one.
+  ask : Do you know how many years that is, now?
+  b : Quite a few, I'd guess.
+  : Quite a few. Nobody's slipped since. I'm not saying it's the cloth. But nobody has.

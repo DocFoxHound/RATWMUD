@@ -1,0 +1,409 @@
+# rm131, the roof-bird whittler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm131
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_rune_greyby
+written_by claude
+title the roof-bird whittler
+fits stage=young|adolescent|adult|old
+prefers talk=quiet warmth=cold
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk whittles_roof_birds_out_of_kindling
+likes plum_tart roof_birds sharp_knife first_warm_day
+dislikes cold_tea smoke
+fears somebody_finding_the_coin_tin strangers_at_the_door
+hopes a_stall_of_carved_birds to_carve_a_bird_that_looks_ready_to_fly
+topics pastimes +0.5 animals +0.4 dreams +0.3 food +0.2 season +0.2 gossip -0.4 newcomer -0.3
+styles comfort=silent gossip=closed refuse=flat tease=none
+marks oath saying
+persona #self.first# is a watchful, close-mouthed wolf of the Commons who trusts few faces, dreams up on the rooftops with the birds, and is never without a little knife and a stick of kindling turning slowly into a sparrow.
+
+words
+oath! = Sparrow's elbows | Beaks and splinters
+saying! = Birds don't tell | Wood keeps secrets better than wolves do
+knife = my knife | the little folding knife
+kindling = a stick of kindling | a bit of firewood nobody wanted
+sparrow = a sparrow | a little wooden sparrow
+birds = the roof birds | the birds up on the chimney pots
+roofs = the roofs | the rooftops
+shavings = shavings | curls of shaving
+tart = plum tart | sticky plum tart off the cookshop tray
+tea = cold tea | tea somebody let go cold
+smoke = smoke | chimney smoke
+tin = my coin tin | the tin under the loose board
+stall = my stall | a trestle with my birds on
+warmday = the first warm day | the day spring finally turns up
+
+any
+opinion @1 strangers against 2 : I don't unbolt for faces I've never seen. Not ever. A new face wants something.
+opinion @1 festivals for 1 : Sugared nuts, fiddles, and no bedtime at all. A festival needs nothing else.
+opinion @1 city for 1 : All these roofs and all these birds. Anywhere with fewer of either would bore me.
+opinion @1 houses for 1 : Grown-ups say the Houses feed the furnaces, and the furnaces feed the city. Sounds right to me.
+opinion @1 dole against 1 : I'd rather sell a bird than stand in a queue. I'd rather sell ten.
+opinion @1 times for 1 : We've supper and a dry ceiling. That'll do for me. Well. And a stall, one day.
+
+grown
+line @1 greet : #greet#. | #greet#. Mm.
+line @2 greet [pair.band=strangers] : #greet#. I'll not give my name, so don't ask for it. | #greet#. You'll be new here.
+line @3 greet [here.time=dawn] : #greet#. Up with the birds, me. | #greet#. The roofs are just waking.
+line @4 greet [pair.band=friends|family] : You. Good. Sit. | Here. Mind the shavings.
+line @1 kin.open [pair.kin!=no] : Sit down. I'm carving. | You. Here, see this one.
+line @1 again.open : Twice. That's fine. | Back. I've not gone anywhere.
+line @1 greet.return : #greet#. | Mm. And you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'd wondered. | Good to see you. In my way.
+line @1 farewell : #farewell#. | Right, then.
+line @1 farewell.return : #farewell#. | Mind yourself.
+line @1 react.news : Go on. | Mm. What is it?
+line @1 react.news.new : I hadn't heard. I tend not to. | That's new to me.
+line @1 react.news.known : I'd heard. Quiet ears hear plenty. | Old. It came up the stairs yesterday.
+line @1 react.news.doubt : I'll not believe it on one telling. | Somebody wants that to be true. I don't.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad. I'm sorry. | #pity#. I'll keep quiet about it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | #gladnews#. I'll carve them a little bird.
+line @1 answer.how : All right. Carving. | Well enough. Quiet.
+line @1 decline : No. There's a bird half carved, and nobody else will finish it. | Not me. I keep to myself. Always have.
+line @1 accept_decline : Fair. | No harm.
+line @1 thank : Thank you. | Obliged.
+line @1 preclose : Back to the bird. | I've talked enough for one day.
+line @1 accept_preclose : Right. | Go on, then.
+line @1 ack : Mm. | #bc_right#.
+scene g_carving
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Look. A wren. Took me three evenings. | There's a bird in every stick of #kindling#. You only cut the rest away. | I carve a bird every evening. I've done hundreds. Still learning.
+b : Three evenings for that? | You make it sound easy. | Hundreds? Where do they go?
+a : The tail took two of them. Tails are hard. | It isn't. It only sounds easy. | Some sold. Some given. A few I'll keep till I die.
+
+scene g_stall_birds
+when topic=work|pastimes self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : Birds on a blue cloth, all in rows. That's my stall. | Sold six sparrows before noon. Folk like sparrows. | A pup stood at the stall an hour looking at one gull. I gave it the gull.
+b : Six! | Good trade. | Gave it?
+a : Six. I'll carve six more tonight. | It's honest trade. Wood and a knife. | It looked at that gull the way I used to. I couldn't charge it.
+
+scene g_roof_birds
+when topic=animals|pastimes here.region=ridgemere here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : I still watch #birds#. I'll be watching them when I'm old. | That chimney pot's had a bird on it every morning I can remember. Not the same bird. | You have to watch a bird a long time before you can carve one.
+b : Restful, that. | Not the same one? | How long?
+a : It's my rest, that is. | Can't be. They don't live that long. Still. Same spot. | Years. I'm still watching.
+
+scene g_knife
+when topic=pastimes|work
+does tell.self / react.self / assess
+a : #knife.capitalize# goes everywhere with me. I oil it every night. | Blunt knives are the ones that cut you. Keep it keen and it behaves. | Same knife since I was small. New blade twice. Same knife.
+b : Every night? | Sensible. | New blade, same knife?
+a : Every night. It's a habit, like praying. | It is. Sharp tools, careful paws. | It's still my knife. The blade's only the part that wears out.
+
+scene g_plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : #tart.capitalize#. If there's one in the city, I'll find it. | I'll spend more on plum tart than I should. I don't regret it. | There's a cookshop by the chapel does plum tart on Restdays. I'm always first.
+b : Sweet tooth. | Not once? | First?
+a : Just the one. For plum tart. | Not once. | First. Before the gulls are awake.
+
+scene g_cold_tea
+when topic=food|home
+does tell.complaint / react.self / assess
+a : #tea.capitalize#. I can't drink it. I've tried. | I carve with a cup by me and it always goes cold. Every time. | Cold tea and smoke. The two worst things there are.
+b : Drink it hot, then. | Stop carving. | Only two?
+a : I mean to. Then the carving takes me. | Never. I'll throw the tea out. | Only two. I don't hate much.
+
+scene g_smoke
+when topic=weather|health here.region=ridgemere here.outdoors=clear|overcast|fog
+does tell.complaint / react.self / assess
+a : Smoke's thick today. It drives the birds off the roofs. | Smoke. I can't stand it. My eyes, my wood, all of it. | Wood that's been in smoke carves wrong. Brittle. I throw it out.
+b : They'll come back. | In your wood? | Wasteful.
+a : When it clears. They always do. | You can smell it when you cut. Like a dead fire. | It is. But a brittle bird's no bird at all.
+
+scene g_warm_day
+when topic=season|weather here.season=spring here.outdoors=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I'll carve on the step today. | First warm day. I can hear every bird in the street. | Warm. Like the city's let out a breath.
+b : About time. | Every bird? | A good day.
+a : Long past time. | Every one. They're glad too. | It is. I'll not waste it.
+
+scene g_strangers
+when topic=player|newcomer
+does tell.self / react.self / assess
+a : There's a stranger on the street. I'll keep my eye on that one. | New folk. I'll give them a year before I say good morning. | Strangers want something. Every one I've met has.
+b : They might be friendly. | A whole year? | Some only want directions.
+a : Might. I'll know in time. | A year. Then I'm very friendly. | Then they can ask somebody else.
+
+scene g_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend.capitalize#'s the one I'd show a bird to before it's done. Nobody else. | I trust #self.friend#. I don't say that about anyone else. | #self.friend.capitalize# and I hardly speak. We sit. It's enough.
+b : That's a good friend. | That's rare. | Sitting's good.
+a : It is. The best. | It is. #saying.capitalize#. | It is. Most talk's noise anyway.
+
+scene g_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain. The birds are all under the gutters, in rows. | Wet day. Wood goes soft in the damp. I'll not carve today. | I like watching the rain off the roofs. Not being in it.
+b : Rows? | You'll have a day off, then. | Same as me.
+a : Like a shelf of birds. I'll carve that one day. | A day watching. That's not off. | Then we'll stay under here together.
+
+scene g_coin
+when topic=dreams|prices
+does confide / keep_confidence / assess
+a : I've still got a tin. Old habits. A copper a day. | I keep my coin where nobody looks. I'll not say where. | I save. I always have. One day it'll be for something big.
+b : I won't ask. | Wise. | What thing?
+a : Good. Don't. | It is. #saying.capitalize#. | A shop. With a window full of birds.
+
+dlg @g1 resident.hub : #greet#. Go on, then. | #greet#. What's wanted?
+dlg @g2 resident.hub [topic.meeting=known] : #topic.player#. You again. Fine. | #greet#, #topic.player#. I remember you.
+dlg @g3 resident.hub [pair.disposition=hostile|wary] : Say it from there. | I'd rather not. What is it?
+dlg @g4 resident.job : I carve birds. Out of firewood. | #self.trade_words.capitalize#. And birds, in the evenings.
+dlg @g5 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I keep to myself. | Nothing. The birds are back on the chimneys.
+dlg @g6 resident.news [world.news] : Word came up the stairs from #world.news_from#: #world.news#. That's every bit I had.
+dlg @g7 resident.news [world.event_words] : They're all on about #world.event_words#. Nothing else, all day.
+dlg @g8 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's all from me.
+dlg @g9 resident.gossip [here.gossip!=yes] : What I hear, I keep. | #saying.capitalize#. I'm the same.
+dlg @g10 resident.bye : #farewell#. | Right. Back to it.
+rule @g_bark_carve
+when concept=bark
+does aside
+cooldown 8h
+say There's the wing. | A bird in every stick. Cut till it shows.
+
+
+young
+line @1 greet : #greet#. | #greet#. I'm busy.
+line @2 greet [pair.band=strangers] : #greet#. I don't know you. | #greet#. Strangers get nothing from me.
+line @3 greet [here.time=dawn] : #greet#. I've been up ages. Watching. | #greet#. The birds are up too.
+line @4 greet [pair.band=friends|family] : Oh. It's you. All right. | You can sit there. Not on the shavings.
+line @1 kin.open [pair.kin!=no] : I'm carving. Don't jog me. | Look. A wing. Nearly.
+line @1 again.open : You again. | Back. I'm still here.
+line @1 greet.return : #greet#. | Mm. #greet#.
+line @2 greet.return [pair.band=strangers] : #greet#. I'm not telling you my name. | #greet#. I'm only sitting.
+line @1 farewell : #s8_pupbye# | Bye. Don't tell anyone where I sit.
+line @1 farewell.return : #s8_pupbyeback# | Bye, then.
+line @1 react.news : What? | Go on.
+line @1 react.news.new : I didn't know that. | Nobody told me.
+line @1 react.news.known : I knew. I listen from the stairs. | Everybody knows that.
+line @1 react.news.doubt : Not true. Somebody's having you on. | Somebody's made that up, I think. It sounds wrong.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. | Oh. That's sad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh. Good. | That's nice. I suppose.
+line @1 answer.how : All right. | Fine. Busy.
+line @1 ask.how : You're all right? | How's yours?
+line @1 sympathise : Oh. I'm sorry. | That's not fair.
+line @1 reassure : It'll be all right. I think. | Birds fall out of nests and they're fine. Mostly.
+line @1 decline : I can't. I'd be in trouble, and anyway I'd rather not. | I can't. Lessons. I'm late already.
+line @1 accept_decline : All right. | You don't have to.
+line @1 thank : Thanks. | Thank you. I'll remember.
+line @1 deflect_thanks : It was nothing. | That's all right.
+line @1 preclose : I have to go. | I've got lessons.
+line @1 accept_preclose : Bye, then. | All right.
+line @1 ack : Mm. | All right. | #bc_i_know#.
+scene y_carving
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'm carving #sparrow#. Out of #kindling#. Don't look yet. | Here's a pigeon. Well, a lump now. The pigeon's inside it. | I've done eleven birds. Nine are rubbish. Two are good.
+b : Can I see? | Inside it? | Which two?
+a : When it's done. Only then. | You cut away all the bits that aren't pigeon. | Not telling. They're in my tin.
+
+scene y_knife
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : #knife.capitalize# is mine. It folds. Nobody else's knife folds. | I keep my knife sharp. Blunt ones slip, and they find a paw. | I'm not allowed to run with my knife. Not ever.
+b[stage=adult|old] #grown : Mind you keep it shut in your pocket. | That's a wise thing for a pup to know. | Quite right too.
+b : Can I hold it? | Have you cut yourself? | It's a good knife.
+a@grown : I do. It clicks when it shuts. | I've a scar for learning it. Look. | I walk. Mostly.
+a : No. It's mine. | Twice. Small cuts. | It is. I oil it.
+
+scene y_roof_birds
+when topic=animals|pastimes here.region=ridgemere here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : The same bird sits on the chimney pot every day. I've carved it four times. | From the window I watch #birds#. They've no idea. | Pigeons walk like they're important. Sparrows walk like they're late.
+b : Four times? | They might know. | That's true, that.
+a : It never sits still enough. | They don't. I keep very quiet. | I'm going to carve one walking like that.
+
+scene y_birds_rain
+when topic=animals|weather here.weather=rain
+does tell.self / react.self / assess
+a : The birds go under the gutters when it rains. Squashed up in a row. | Pigeons don't mind the rain. Sparrows hate it. Like me. | Wet birds look small. Like they've lost half of themselves.
+b : Where do they all go? | You hate the rain? | They do.
+a : Under the eaves. I know every spot. | Not hate. It makes my wood go soft. | Then they shake and they're big again.
+
+scene y_plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : #tart.capitalize#. Best of all the foods. | There was plum tart on Restday. I ate mine slow so it'd last. | I'd spend a whole copper on plum tart. Nearly.
+b : Better than anything? | Slow's clever. | Only nearly?
+a : Better than everything. | It still finished. Things finish. | The copper's for my tin. The tart's a maybe.
+
+scene y_cold_tea
+when topic=food|home
+does tell.complaint / react.self / assess
+a : #tea.capitalize#. Like drinking a puddle. | Somebody left my tea and it went cold. I'm not drinking it. | Cold tea's nearly as bad as smoke. Nearly.
+b : Drink it quick, then. | Warm it up. | After smoke?
+a : Hot, or I won't touch it. | I'll pour it on the windowbox. | Smoke's first. Cold tea's second.
+
+scene y_smoke
+when topic=weather|home here.region=ridgemere here.outdoors=clear|overcast|fog
+does tell.complaint / react.self / assess
+a : The smoke's bad today. My eyes are stinging. | I hate the chimney smoke. It makes the birds go away. | Smoke gets in my wood. Then it smells all wrong when I carve it.
+b : It's the chimneys. | They'll come back. | Smells wrong how?
+a : I know. I wish there were fewer. | When it clears. I'll wait. | Like a fire went out in it. Wood should smell like wood.
+
+scene y_warm_day
+when topic=season|weather here.season=spring here.outdoors=clear
+does tell.feeling / react.self / assess
+a : It's #warmday#. The sun's sitting on my back. | First warm day. I've gone bare-pawed on the step. | It's warm. The birds are singing like they mean it.
+b : About time. | Bare paws already? | Happy birds, then.
+a : I've been waiting since the snow. | Just on the step. Nobody saw. | Me too. I'll carve outside today.
+
+scene y_lessons
+when topic=day|work self.job=child
+does tell.self / react.self / assess
+a : I've got lessons. Letters and sums. I'm good at sums. | At lessons I carve under the bench. Quietly. | My seat's the far one, by the window. You can see a rooftop.
+b : Sums are useful. | You'll get caught. | Bet you watch the roof all day.
+a : For counting coin. When I've a stall. | I won't. I'm very quiet. | Not all day. Most of it.
+
+scene y_coin_tin
+when topic=dreams|prices
+does confide / keep_confidence / assess
+a : I'm saving for #stall#. One copper, then another one. Don't tell. | I've got a tin. Under a floorboard. I'm not saying which. | I've counted my coins three times today. Still the same.
+b : I won't tell. | Clever hiding place. | Three times?
+a : Good. #saying.capitalize#. | It is. Nobody at home knows. Nobody. | In case. They don't go up by counting. I know that.
+
+scene y_stall_dream
+when topic=dreams|pastimes
+does tell.self / react.self / assess
+a : When I'm big there'll be a stall, and carved birds on it, all in a row. | My stall will have a blue cloth on it. And the birds on top. | Folk will buy my birds. Then I'll carve more. That's the whole plan.
+b : That sounds lovely. | Why blue? | Good plan.
+a : It will be. I've thought about it a lot. | Like sky. So the birds look like they're flying. | It is. It's simple. Simple's good.
+
+scene y_strangers
+when topic=player|newcomer
+does tell.self / react.self / assess
+a : There's somebody I don't know by the stairs. I'm not going down. | Somebody new moved in opposite. I watched from behind the curtain. | That stranger keeps looking at the doors. I don't like it.
+b : They're probably fine. | What did you see? | Stay inside, then.
+a : Probably. I'll wait till they go. | Bags. A cat. Nothing much. | I will. Door's bolted till they've gone.
+
+scene y_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : Nobody sees my birds but #self.friend#. | I'd give #self.friend# my best bird. Nearly. | #self.friend.capitalize# keeps my secrets. And I keep that one's.
+b : That's a good friend. | Only nearly? | Good.
+a : It is. The only one. | The second best, then. Definitely. | It is. #saying.capitalize#.
+
+scene y_festival
+when topic=festival
+does tell.self / react.self / assess
+a : At the festival there's sugared nuts and no bedtime. | I'm saving one copper for the festival. Just one. | There's music and lanterns. I'll watch it all from the steps.
+b : Sounds grand. | Only one? | From the steps?
+a : It is. Best of the year. | The rest is for my tin. | You can see everything from the steps. And nobody bumps you.
+
+story y_first_bird [topic=pastimes|memories]
+  : My first ever bird came out like a turnip. A turnip with a beak.
+  : I kept it anyway. It's in my tin. It's the ugliest thing I've got.
+  ask : Do you keep ugly things?
+  b : A few. The first ones matter most.
+  : I think so too. That one's never for sale.
+
+story y_fallen_bird [topic=animals]
+  : Once a baby bird fell off the roof onto our step. It was all mouth.
+  : Into my cap it went, up the stairs, and back onto the gutter.
+  b : Did its mother come back?
+  : She did. She screamed at me first. Then she came back.
+
+rule @y_bark_carve
+when concept=bark
+does aside
+cooldown 8h
+say Nearly a wing. Nearly. | Wrong. Too much off. Start again.
+
+rule @y_bark_birds
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say That bird's back on the chimney. | Look. Six sparrows on one gutter.
+
+rule @y_bark_smoke
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast|fog
+does aside
+cooldown 12h
+say Smoke. My eyes. | The birds have all gone. It's the smoke.
+
+dlg @1 resident.hub : #greet#. I'm not meant to talk to strangers. | #greet#. What do you want?
+dlg @2 resident.hub [topic.meeting=known] : Oh. #topic.player#. You again. All right. | #topic.player#. I remember you. Go on.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm going in. | You can't make me talk.
+dlg @1 resident.job : Lessons. Sums and letters. | #self.trade_words.capitalize#. And carving. That's my real job.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? Nobody tells pups news. | Nothing. The bird's back on the chimney.
+dlg @2 resident.news [world.news] : I heard grown-ups say it came from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Grown-ups were whispering on the landing: #topic.subject# #topic.claim#. I'm not supposed to know.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't tell things. | #saying.capitalize#. And nor do I.
+dlg @1 resident.bye : #s8_pupbye# | Bye. I've got carving.
+graft resident.hub
+choice What are you carving? -> carving
+node carving
+say A bird. A sparrow, I think. It doesn't look like one yet. You have to cut away everything that isn't sparrow.
+mood calm
+free
+choice What will you do with it? -> carving_why
+choice Never mind. -> hub
+node carving_why
+say Put it in my tin with the others. Someday there'll be a stall, and I'll sell them. With a blue cloth, like sky.
+choice That sounds good. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. | #greet#. Mm.
+line @2 greet [pair.band=strangers] : #greet#. Not a face from our street. | #greet#. You're new.
+line @1 greet.return : #greet#. | #greet#. I'm just sitting.
+line @1 farewell : #s8_teenbye# | Later.
+line @1 farewell.return : Bye, then. | Mind how you go.
+line @1 react.news : What now? | Go on.
+line @1 react.news.new : That's new. Who said? | First I've heard. Nobody tells me things.
+line @1 react.news.doubt : Somebody's made that up. It doesn't fit. | Twice, and from somebody that was there. Then maybe.
+line @1 answer.how : All right. Busy. | Fine. Carving.
+line @1 decline : No. I've work, and I'm not handing it to anyone. | I can't. I've got somewhere to be.
+line @1 accept_decline : Fine. | Suit yourself.
+line @1 thank : Thanks. | Ta. I mean it.
+scene a_better_birds
+when topic=pastimes|smalltalk
+does tell.boast / react.self / assess
+a : My birds are getting good. That one's got feathers. Proper ones. | Somebody asked to buy one. I said no. Straight after, I wished I hadn't. | I can do a gull now. Gulls are hard. All that sneer.
+b : Let me see. | Why no? | Sneer?
+a : Tomorrow. It's not finished. | I panicked. Next time I'll have a price ready. | Gulls always look like they know something. You have to carve that.
+
+scene a_tin_grows
+when topic=dreams|prices
+does confide / keep_confidence / assess
+a : The tin's heavy now. I can't lift it with one paw. | I've counted it. I'm halfway to a stall. Maybe. | Don't tell anyone, but I've moved the tin. Somebody was looking.
+b : That's a lot of coppers. | Halfway's good. | I won't.
+a : Every copper since I was little is in there. | Halfway, if stalls don't go up. They always go up. | Good. #saying.capitalize#.
+
+scene a_roofs
+when topic=animals|pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : I climbed up on the roof last night to watch the birds settle. Don't tell. | From up on the roofs you can see right to the Sound. | The birds let me sit near them now. They know me.
+b : That's dangerous. | Is the view good? | They know you?
+a : I hold on. I'm not daft. | It's the best thing I've seen. I'll carve it one day. | They do. I don't move fast. They like that.
+
+scene a_strangers_watch
+when topic=player|newcomer|gossip
+does tell.self / react.self / assess
+a : I watch who comes up our street. I know every face that belongs. | That one doesn't belong. I'd know. | Strangers look at the doors before they look at you. I've noticed.
+b : You notice a lot. | Maybe they're visiting. | That's a sharp eye.
+a : Nothing else to do on our street. | Maybe. I'll watch till they go. | It's like carving. You look first.
+
+story a_first_sale [topic=pastimes|dreams]
+  : An old granny off the next street once held out a copper for a wren. Just held it out.
+  : I stood still as a gatepost. Then I gave her the wren. She said thank you like I'd done her a favour.
+  ask : Do you think I charged too little?
+  b : For your first? You charged just right.
+  : I think so too. The copper's in the tin by itself. It's a special one.
+
+rule @a_bark_carve
+when concept=bark
+does aside
+cooldown 8h
+say That's a good feather. That's a proper feather. | Too much off the beak. Again.
+
+dlg @a1 resident.hub : #greet#. Go on. | #greet#. What is it?

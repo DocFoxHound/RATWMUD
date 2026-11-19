@@ -1,6 +1,6 @@
-# mb110, the wall-seat skipper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb110, the wall-seat skipper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb110
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -264,7 +264,7 @@ story ivo_first_tiller [topic=work self.age>=30 self.job=fisher|sailor|none]
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You've the look of somebody who's walked a way. #eat.capitalize#; then tell me what you need.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit. #seat.capitalize#'s mine, but the rest is yours.
 dlg @3 resident.hub [pair.disposition=hostile] : #greet#. I'll hear you out, but I'll do it standing, with #wall#.
-dlg @1 resident.job : I'm #self.trade_words#. Boat, rope, tar and #tide#. I steer, the crew haul, and everybody eats.
+dlg @1 resident.job : #self.trade_words.capitalize#. Boat, rope, tar and #tide#. I steer, the crew haul, and everybody eats.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing that'd keep you up. The bar's shifting at the river mouth, if you're a sailor. #good.capitalize# to know.
 dlg @1 resident.bye : #farewell#, #topic.player#. Mind the gap at the end board.
 graft resident.hub

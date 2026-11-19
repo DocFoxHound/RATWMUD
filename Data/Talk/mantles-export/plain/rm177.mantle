@@ -1,0 +1,357 @@
+# rm177, the straw on the step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm177
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_sten_ropeford
+written_by claude
+title the straw on the step
+fits stage=adult|old
+prefers job=merchant warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk lays_fresh_straw_on_the_shop_step_every_morning
+likes crisp_apples evening_line fresh_straw first_warm_day
+dislikes deep_mud early_bells
+fears gate_mud_on_the_flour letting_the_household_down
+hopes a_stall_of_our_own_in_the_square a_dry_spring_on_the_north_road
+topics work +0.4 newcomer +0.4 weather +0.3 food +0.2 family +0.3 pastimes +0.3 caravan +0.3 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# helps behind a provisioner's counter near the north gate: warm, careful and plain, forks fresh straw onto the step each dawn against the cart mud, keeps every sack turned label-out, and asks after travellers like old friends.
+
+words
+oath! = Fork and broom | By the clean step | Sacks and straw
+saying! = What comes in on the paw goes out on the broom | Fresh straw, fresh start | A tidy shelf sells itself
+straw = fresh straw | a forkful of clean straw
+step = the step | the front step
+gatemud = the gate mud | the muck the carts drag in
+sacks = the sacks | the flour sacks
+tally = the stock book | my tally of the shelves
+apple = a crisp apple | an apple that snaps when you bite
+line = my old line and a bent pin | a line over the sea wall
+carts = the gate carts | the carts in from the north
+bells = the abbey bells | the close bells
+warmday = the first warm day | the first day you can go without a coat
+stall = a stall of our own | our own stall on the square
+counter = the counter | the long counter
+broom = the broom | the stiff broom
+
+any
+opinion @1 newcomers for 2 : Carry your own sack, mind your tongue, and you're welcome at my end of the gate road. | New faces are how a city stays a city. I'd have more of them.
+opinion @2 strangers for 2 : Travellers buy half our salt and bring all our news. I'll stand any of them an apple. | A stranger at #counter# is only a regular who hasn't come back yet.
+opinion @3 dole for 1 : Nobody living this close to a full storeroom ought to sleep with an empty belly. I'd give the bread myself. | The parish loaf keeps folk on their paws till work turns up.
+opinion @4 city for 1 : I was a pup on these cobbles and I'll be an old stick on them. Where else would I go, and why? | The rain's wet and the hills are steep, and it's still the best street in the realm for me.
+opinion @5 road against 1 [world.wagons=raided] : One cart lost past the mile post is a shelf empty here in a week. I'd have the Watch ride with them. | Every load taken out there, we feel it at #counter# by Marketday.
+opinion @6 merchants mixed 1 : Most keep an honest scale. One or two weigh with a paw on the pan, and it shames the rest of us. | We take a fair margin and no more. I can't speak for the whole Market Hall.
+opinion @7 times mixed 0 [world.times=hard|lean] : We get by. It's the faces that worry me, the ones who used to buy a full sack and now ask for half.
+
+grown
+line @1 greet : #greet#. Straw's fresh down, tread where you like. | #greet#. In you come, out of the wet.
+line @2 greet [pair.band=strangers] : #greet#. You've come in by the gate, by the look of your paws. | #greet#. New in town, or new to this end of it. Either way, welcome.
+line @3 greet [self.working=yes self.job=merchant] : #greet#. Don't mind me, I'm counting #sacks#. | #greet#. Two ticks while I square this shelf.
+line @4 greet [here.time=dawn] : Morning. I've just laid #step#. | Morning. First one I've seen without a cart behind them.
+line @5 greet [here.time=dusk|night] : Evening. Lamps up, shutters up, and me done. | Evening. Quiet now the gate's shut.
+line @1 kin.open [pair.kin!=no] : Home at last. I've an apple put by for you. | You're home. Sit down a minute, the kettle's warm.
+line @1 again.open : Twice today. You'll tread a path through my straw. | You again. Good, I'd a thing I forgot to say.
+line @1 greet.return : #greet#. Good to see you. | #greet#, #address#. Keeping dry, I hope.
+line @2 greet.return [pair.band=friends|family] : There's a face I'm glad of. | Hello, you. Come and stand by the counter where it's warm.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I stack, if you don't mind. | #greet#. My paws are full but my ears aren't.
+line @4 greet.return [here.time=dusk|night] : Evening to you. | Evening. You're out late.
+line @1 farewell : #farewell#. Wipe your paws at the next door too. | #farewell#. Come back when the carts are in.
+line @2 farewell [here.time=dusk|night] : Good night. Lamp to lamp, all the way home. | Good night. Mind the puddles by the gate.
+line @1 farewell.return : #farewell#. Look after yourself. | And you. Call in any time.
+line @1 react.news : Is that right. Start at the front and go slow. | Hold on, let me put this sack down.
+line @1 react.news.new : News to me, and I stand by the gate all day. | Well, now. A counter hears most things, and not that.
+line @1 react.news.known : A carter told me as much this morning. | I'd heard, but not as clear as that.
+line @1 react.news.doubt : I'll wait till a carter says the same. | #doubt#. Things grow on the road.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's cruel. My heart goes out to the house it's fallen on. | That's bad news. If a sack or a paw would help, say.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's cheering. It'll go out the door with every sack. | Good. Glad to hear it, honestly.
+line @1 answer.how : Well enough, thank you. Busy, which suits me. | Steady. Paws dry, which is something round here.
+line @2 answer.how.busy [self.working=yes] : On the go since the shutters. Three carts in and one more due. | Busy. Every sack wants moving at once.
+line @1 ask.how : How are you keeping? Eating well? | And you? All well at home?
+line @1 sympathise : That's hard. Sit a minute, there's no hurry. | I'm sorry. You'll take an apple, at least.
+line @1 reassure : Give it a week. Most knots work loose with time. | You'll manage. You always have, from what I've seen.
+line @1 decline : #hedge#, gladly some other day, but the counter can't be left with carts due. | #hedge#. Not today. The back room's had my whole afternoon promised to it.
+line @1 accept_decline : No harm. Another time. | Fair enough. I'll not press.
+line @1 thank : Thank you. That's kindly done. | Much obliged. I'll not forget it.
+line @1 deflect_thanks : It was nothing. Glad to. | Any time. Doors and sacks are for helping with.
+line @1 preclose [self.working=yes] : I'd best get back. There's a cart wants unloading. | Well. Those sacks won't stack themselves.
+line @2 preclose : Well. Your day's waiting and so's mine. | So. I'll not hold you on the step.
+line @1 accept_preclose : Go on, then. Good talking. | Right you are. Mind how you go.
+line @1 ack : Right. | Fair enough. | So it is.
+line @1 hail [pair.band=friends] : Hey, over here! I saved you one. | Ho there! Come by the counter.
+line @1 give.advice : Dry your boots by the fire, not on it. They crack. | Buy your flour early on Marketday, before the carts get picked over.
+line @1 warn [world.bandits=near] : Wait for a cart going your way. The north road's not for walking alone just now. | Keep near the gate tonight. There's talk of robbers out past the mile post.
+scene straw_morning
+when topic=day|work self.working=yes self.job=merchant here.time=dawn
+does tell.self / ask.detail / answer.detail / assess
+a : Out at first light to fork #straw# onto #step#. The carts will be through by the second bell. | I've laid #step# twice already. A drover backed his cart over the first lot.
+b : Why straw, of all things? | Twice? Is it worth the bother?
+a : It takes the muck off their paws before they reach #sacks#. Saves me an hour with the brush. | It is. A floor with gate muck on it, and folk think the flour's dirty too.
+b : That's sense, that is. | I can see that.
+
+scene gate_mud
+when topic=weather here.weather=rain here.region=ridgemere self.quarter=commons
+does tell.complaint / react.complaint / tell.self / assess
+a : This rain turns the gate road to soup. Every cart brings a bucket of it in. | Look at the cobbles out there. You can't see the stones for #gatemud#.
+b : #grumble#. | Is it as bad as last week?
+a : I've swept twice since noon. The straw's earning its keep today. | Worse. A wheel sank to the hub by the toll post this morning.
+b : Better you than me with that broom. | That'll be a long day for somebody.
+
+scene first_warm
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. Door's propped wide and the shop's breathing. | Felt it warm between my shoulders while I swept, and I stopped dead in the road like a fool.
+b : About time we had one. | Nothing foolish about that.
+a : It is. The flour smells better with the air through it. Don't ask me why. | Maybe not. The broom waited, and the street didn't mind.
+
+scene autumn_wet
+when topic=weather here.season=autumn here.weather=rain|overcast|storm
+does tell.worry / reassure / tell.self / assess
+a : I'm watching the back room ceiling. One damp corner and a whole sack's spoiled. | The wind's driving the rain under the door. I've had to move the bottom row of #sacks#.
+b : #reassure#. | Can you raise them off the floor?
+a : I hope so. I put a pan under the bad corner, just in case. | I've laid planks under them. Should have done it a month ago.
+b : Better late. | Sounds like you've got it in hand.
+
+scene stock_book
+when topic=work self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #tally# in my own paw. Each sack, the day it came, and what the sky was doing. | Went over the shelves before opening. Two jars of honey more than the book says.
+b : The weather too? | What's to do with the extra?
+a : Damp days, the flour moves slow. Dry ones, it goes by the armful. It's all in there if you look. | Find out whose they are. Somebody's paid for honey they haven't had.
+b : That's careful work. | Honest of you.
+
+scene label_out
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / tell.self / assess
+a : Every sack on the shelf faces out, the mark showing. Folk shouldn't have to turn a thing over to know what it is. | I spent an hour squaring the jars. Somebody always pushes one crooked by noon.
+b : A tidy shelf. | Folk do.
+a : #saying.capitalize#. You'd be surprised. | I don't mind. It's something to do with my paws between carts.
+b : I wouldn't, seeing yours. | Fair enough.
+
+scene carts_in
+when topic=caravan|work world.wagons=in here.region=ridgemere
+does tell.news / react.news / tell.self / assess
+a : Every cart's in at once. Salt, oats and lamp oil, and the shelves will look like shelves again. | Wagons through the gate since dawn. I've not sat down once.
+b : Good. Folk were getting anxious. | You look it.
+a : So was I. Half the street was in asking after flour. | Three loads stacked and the fourth waiting. I'll sleep tonight, though.
+b : #bc_good# | You've earned it.
+
+scene carts_late
+when topic=caravan world.wagons=late here.region=ridgemere
+does tell.worry / reassure / tell.self / assess
+a : Still no carts. I stand on #step# squinting north like that'll fetch them. | No wagons yet. We're down to the last two #sacks# of the good flour.
+b : They'll come. The roads are slow this time of year. | Can you hold out?
+a : They will. I'd just like to know when, so I can tell folk something true. | A day or two. After that I'll be selling the coarse stuff and saying sorry.
+b : Folk will understand. | Most will, anyway.
+
+scene carts_raided
+when topic=caravan|bandits world.wagons=raided here.region=ridgemere
+does tell.news / react.news / give.opinion / agree
+a : You'll have heard about the cart robbed out on the road. I've been thinking about the carter all morning. | A cart robbed out there. It was likely bringing goods for half the shops by the gate.
+b : #pity#. | That'll hit every counter in Northgate.
+a : The goods can be bought again. A carter can't. I hope whoever it was got home. | It will. And the next carter will think twice before setting out, and who'd blame them?
+b : #bc_true_enough# | Nobody would.
+
+scene travellers
+when topic=newcomer|player self.quarter=commons
+does tell.self / react.self / tell.self / assess
+a : I like the faces that come through the gate. Each one smells of somewhere else. | A traveller wanted the Rain Hall this morning. I walked part of it with them.
+b : Somewhere else? | Kind, that.
+a : Wet sheep from Larkfield, pine from Oakhaven. You learn to tell. | It was on my way. Or near enough to it.
+b : You've a good nose, then. | I'm sure it was.
+
+scene newcomer_news
+when topic=newcomer topic.claim_kind=newcomer
+does tell.news / react.news / tell.self / assess
+a : Folk say #topic.subject# #topic.claim#. I hope #topic.they# finds a footing quick. | Word is #topic.subject# #topic.claim#. I'll have a sack set aside in case #topic.they# calls in.
+b : #bc_i_hope_so# | Kind of you.
+a : It's a steep city to be new in. Everyone wants showing which stairs are slippery. | It's only a sack. And a word about where the flour's cheapest.
+b : Somebody should tell #topic.them#. | That's worth more than the flour.
+
+scene apple
+when topic=food
+does offer / accept / tell.self / assess
+a : Have an apple. Fresh off the dawn cart, and they still snap. | Here. Take one. I keep a crate of them for whoever comes in hungry.
+b : #thanks#. Crisp, that. | That's kind.
+a : I like them so they crack when you bite. Soft ones go to the horses. | It's nothing. An apple costs less than a sour face.
+b : Lucky horses. | Fair enough.
+
+scene line_off_wall
+when topic=pastimes here.time=dusk|night here.region=ridgemere self.likes=evening_line
+does tell.self / ask.detail / answer.detail / assess
+a : When the shutters are up, I take #line# down past the piers and sit an hour. | Caught nothing tonight. Sat on the wall with my line till the lamps were lit, all the same.
+b : What do you get, down there? | Why go, then?
+a : Whatever's daft enough. A flatfish, once. Mostly I watch the water. | For the quiet. After a day of carts, I can hear myself think out there.
+b : Sounds a good hour. | I understand that.
+
+scene line_summer
+when topic=pastimes|season here.season=summer here.time=dusk self.likes=evening_line
+does tell.feeling / react.self / tell.plan / assess
+a : Summer evenings I'm out on the wall till the light goes. The fish don't care, but I do. | Long light tonight. I'll take my line down after we close and stay out late.
+b : Out till the light goes? | Lucky you.
+a : Near enough. I come home smelling of weed and very happy. | I'll bring you a fish. Or a story about one that got away.
+b : I'd take either. | A fish, then. You've said it now.
+
+scene wife_counter
+when topic=family|work self.married=yes self.working=yes
+does tell.self / react.self / tell.feeling / assess
+a : My #self.spouse_word# runs the place. I carry what I'm told and count what's carried. | I'd be lost without my #self.spouse_word#. I know where everything goes, but not why.
+b : Sounds like a good pair. | Somebody has to know why.
+a : We are, I think. One head for the buying, one back for the lifting. | That's the right way round, believe me.
+b : #bc_true# | I believe you.
+
+scene married_home
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : We eat upstairs over the shop with the window open and listen to the gate shut. | Married life suits me. There's someone to tell about every cart.
+b : That sounds a snug way to end the day. | They must hear a lot about carts.
+a : It is. The gate shuts, the day's done, and there's supper. | They do. They're very patient about it.
+
+scene boss_kind
+when topic=work self.boss self.working=yes
+does tell.self / react.self / assess
+a : I'd hate to let #self.boss# down. Not once have I opened late. | I'd do near anything #self.boss# asked, and gladly.
+b : Never once? That's some record. | Loyal, then.
+a : Never once. I'd not spoil it now. | To a fault, I'm told. I don't think it is a fault.
+
+scene friend_kept
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I go back more years than we'd own to. | If I had a trouble, #self.friend# would be the first I'd tell.
+b : That's worth keeping. | Good to have someone like that.
+a : It is. I ought to say so more. | It is. And I'd hope to be the same, turned round.
+
+scene market_stall
+when topic=dreams|work self.job=merchant
+does confide / react.self / tell.plan / assess
+a : I've a jar of coppers upstairs for #stall#. Not to leave here. Just a few apples, on Marketday. | Some day I'd like #stall#. Apples and straw baskets, and nothing that could spoil.
+b : That's a nice thing to save for. | Why those?
+a : Every week it's a little fuller. I'll know when it's enough. | Because I'm good with them. And because I'd sleep sound.
+b : You will. | Fair reason.
+
+scene deep_mud
+when topic=weather|smalltalk here.weather=rain|storm|overcast here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : Mud to the hocks past the gate. I'd rather swim than walk it. | The muck by the toll post kept one of my boots. I went in after it on three legs.
+b : #grumble#. | You didn't!
+a : I'll be glad of a frost. At least it's hard underfoot. | I did. I've still not got the smell out.
+
+scene early_bells
+when topic=day|faith here.time=dawn self.quarter=commons
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# had me up an hour before I needed. I lay there counting the beams. | Those bells. I'd sleep till the carts if the abbey let me.
+b : They're keen up there. | You'd be the only one asleep in Northgate.
+a : I don't blame them for the praying. Just the hour of it. | I'd be the happiest. Still, there's straw to lay.
+
+scene gossip_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / tell.self / assess
+a : Here's what crossed the counter, for what it weighs: #topic.subject# #topic.claim#. | They're saying at the counter that #topic.subject# #topic.claim#. I don't know more than that.
+b : You don't sound sure. | That's all?
+a : I'm not. Talk over a sack of oats is only talk. | That's all, and I won't be dressing it up. It'll have grown a tail by the square.
+b : Fair enough. | It always is.
+
+scene gossip_kept
+when topic=gossip
+does tell.self / react.self / assess
+a : Folk tell all sorts across #counter#. Most of it leaves with them, and that's where it belongs. | You hear a lot at a counter. I'd not repeat half of it.
+b : Wise. | Only half?
+a : A thing told over flour stays with the flour. I'd ask as much myself. | The other half's about the weather. I'll tell you all of that.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / tell.self / assess
+a : We've folk asking for a half sack where they'd buy a whole one. I let them pay come Restday. | Flour's gone up again. I hate saying the number out loud.
+b : That's decent of you. | That's a sad thing.
+a : They always pay. A full belly remembers who fed it. | So do I. Some folk go quiet when I say it, and that's worse than a complaint.
+b : I hope you're right. | It would be.
+
+scene good_times
+when topic=times|prices world.times=good|boom
+does tell.self / react.self / assess
+a : Every cart comes in full and leaves empty. I've not seen it like this in years. | Folk are buying the good flour again. They come in standing taller.
+b : Long may it run. | That's good to see.
+a : I am. And I'm putting a little by, for when it turns. | It is. A good sack makes for a good mood.
+
+scene paws_health
+when topic=health
+does tell.self / ask.detail / answer.detail / assess
+a : My back tells me when a sack's been lifted wrong. It told me twice today. | I've a sore paw from the broom handle. Blister, right across.
+b : What's the trick? | What'll you do for it?
+a : Knees, not back. I know it, I just forget it by noon. | Goose grease and a rag, and I'll swap paws for a day.
+b : I'll remember that. | That'll sort it.
+
+story first_straw [topic=memories self.age>=25]
+  : My #grandad# kept a stable once, and I mucked out for him when I was knee-high.
+  : He'd say a clean stall is a calm horse. I've never forgotten it.
+  ask : Had you anyone saying such things over you, when you were small?
+  b[old] : Plenty. I remember about half.
+  b : One or two things. They stuck.
+  : That's the way. The words stay after the wolf's gone.
+
+story lost_boot [topic=weather|memories self.age>=25 here.region=ridgemere]
+  : The year the gate flooded, I walked a sack of flour to a house by the abbey.
+  : The muck took my boot halfway. I went on in one boot and delivered the sack dry.
+  ask : What would you have saved, the boot or the flour?
+  b : The flour. Boots dry out.
+  : That's what I thought. My #mum# didn't agree.
+
+story big_fish [topic=pastimes self.age>=25]
+  : One summer I hooked something off the wall that bent my line flat.
+  : I fought it till dark and it got away just as I saw it. Big as a cartwheel, I swear.
+  ask : You believe me, don't you?
+  b : Every word. Mostly.
+  : Mostly will do. It's the best story I've got.
+
+rule @straw_bark
+when concept=bark self.working=yes self.job=merchant here.time=dawn
+does aside
+cooldown 10h
+say Straw's down. Mind your paws on it. | There. That'll catch the worst of it.
+
+rule @cart_bark
+when concept=bark world.wagons=in self.working=yes
+does aside
+cooldown 8h
+say Mind the step there, carter, it's fresh. | Salt to the back, oats to the front. Right.
+
+rule @mud_bark
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 8h
+say Look at that road. Soup, start to finish. | Another forkful for the step, then.
+
+rule @apple_bark
+when concept=bark self.working=yes
+does aside
+cooldown 12h
+say Apples by the door. Take one if you're passing hungry. | There's a crisp one on top for somebody.
+
+dlg @1 resident.hub : #greet#, #address#. Mind the straw. What's wanted? | #greet#. Step in out of the street a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you back. | #topic.player#. I hoped you'd call in again.
+dlg @3 resident.hub [here.time=night] : Evening. We're shut, but I'll talk. | Late for callers. Say what you need, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from the doormat, then. | You've a hard look about you. Go on, then.
+dlg @1 resident.job [self.job=merchant self.working=yes] : #self.trade_words.capitalize#. I carry, I count, I keep the step clean. | I'm the back that lifts what gets bought. I keep the book straight too.
+dlg @2 resident.job : Whatever wants doing, done tidy. | Lifting, counting, sweeping. Orderly work.
+dlg @1 resident.business [business=thriving] : Busier than I can remember. The carts can't come fast enough. | Doing well. Every shelf turns over twice a week.
+dlg @2 resident.business [business=steady] : Steady. Folk need flour and salt whatever happens. | Steady enough. I'll not grumble.
+dlg @3 resident.business [business=failing] : Slow, I'll be honest. Folk are buying less and asking more. | Not good. We've sacks on the shelf a month old.
+dlg @1 resident.news [world.news] : A carter brought it in: word from #world.news_from#, #world.news#. | Came down with the morning wagons, from #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : Everyone in at the counter is on about #world.event_words#. | It's all #world.event_words# today, start to finish.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : The gate's brought me nothing fresh today. Ask me after the carts. | #news_none# Try me again when the wagons are through.
+dlg @1 resident.bye : #farewell#. Wipe your paws as you go. | #farewell#, #address#. Call in again.
+graft resident.hub
+choice Why is there straw on your step? [self.job=merchant] -> straw
+node straw
+say To catch the muck off the gate road. Folk wipe their paws without knowing they've done it, and the floor stays clean for the flour.
+mood pleased
+free
+choice Doesn't it get filthy? -> straw_dirty
+choice Goodbye. -> bye
+node straw_dirty
+say By noon it's black. So I lay it fresh again. It's only straw. A clean floor is worth more than straw.
+choice Makes sense. -> hub
+choice Goodbye. -> bye

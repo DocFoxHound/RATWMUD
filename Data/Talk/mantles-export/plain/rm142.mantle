@@ -1,0 +1,428 @@
+# rm142, the square's echo (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm142
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ilse_netherby
+written_by claude
+title the square's echo
+fits stage=young|adolescent|adult|old
+prefers talk=chatty temper=short
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk mimics_every_stallholder_s_cry_in_the_square
+likes mutton_stew roof_birds market_bustle autumn_wind
+dislikes salt_wind wet_floors
+fears being_moved_on_for_good a_quiet_square
+hopes to_be_the_crier_of_the_market_hall a_dry_floor_of_my_own
+topics day +0.5 pastimes +0.4 food +0.3 animals +0.3 gossip +0.3 festival +0.4 season +0.2 home -0.4
+styles comfort=company gossip=eager refuse=short tease=none
+marks oath saying
+persona #self.first# can do the cry of every stall in Market Square, and does, loudly: proud, quick to bristle, never short of words, mad for a Marketday crush, a mutton stew and the birds on the gutters, and nobody's beggar.
+
+words
+oath! = Bawl it out | Loud as Marketday
+saying! = If it's worth a word, it's worth the whole square | Say it so the back row hears
+cry = a stall cry | the fish-stall call
+crowd = the crush | a proper Marketday crush
+square = the square | Market Square on a full day
+stalls = the stalls | every stall from the pump to the steps
+stew = mutton stew | mutton stew so thick the spoon stays put
+birds = the roof birds | the sparrows along the gutters
+gutter_birds = the gutter sparrows | the birds that fight over crusts
+autumnwind = an autumn wind | the kind of wind that sends the leaves running
+saltwind = the salt wind | the wet sea wind that stiffens your fur
+wetfloor = a wet floor | a floor too damp to sit on
+voice = my voice | a voice like the Market Hall bell
+step = a dry step | the one dry step on the square
+pump = the pump | the square's old iron pump
+crier = the crier | the Market Hall crier
+
+any
+opinion @1 watch against 1 : They move me off every step I sit on. A step's for sitting. Ask anybody. | The Watch chase me off the square before the stalls are even up. I'm not doing anything. I'm listening.
+opinion @1 church for 1 : When the dole ran out a week early, the chapel had soup. Hot. I've not forgotten.
+opinion @1 dole for 2 [self.on_dole=yes] : #dole.capitalize# is the only reason I'm not thinner than a stall pole. Laugh if you like. I don't.
+opinion @2 dole for 1 : Some weeks it's all there is. Nobody who's queued for it ever sneers at it.
+opinion @1 festivals for 1 : Festival's the only day the city is as loud as it should be. I'd have one every week. | One day a year everyone shouts. I shout every day. Festival's when they catch up.
+opinion @1 merchants against 1 : The stallholders shout prices they'd never take. I know. I can shout them back.
+opinion @1 times against 1 : Every week, a bit more to go without. Nobody on the Rise counts it.
+opinion @1 city for 1 : There's nowhere louder. I've asked travellers. There isn't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're new to the square; I'd know you otherwise. | #greet#! Listen to it today. Lovely, isn't it.
+line @2 greet : #greet#! | #greet#. Busy square today.
+line @1 kin.open [pair.kin!=no] : There you are. I've loads to tell you. Sit. | Sit, sit. Listen to this.
+line @1 again.open : You again! Good. I've more news since. | Back. There's more, mind.
+line @1 greet.return : #greet#! | #greet#. Square's in good voice today.
+line @2 greet.return [pair.band=friends|family] : Oh, good. You. Listen. | You! I kept this one for you.
+line @1 farewell : #farewell#. I'll see you on the square. | Off I go. #farewell#.
+line @1 farewell.return : #farewell#! | Bye. Holler if you want me.
+line @1 react.news : Go on, then! | All of it. Don't leave bits out.
+line @1 react.news.new : I hadn't heard! How did I miss that? | Not on the square yet. Give it an hour.
+line @1 react.news.known : The whole square had that by noon. | The fish stall had it first. Always does.
+line @1 react.news.doubt : That's not what the pump says, and the pump's usually right. | Whose word is that? Some mouths I'd not trust with the weather.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's horrid. I'm sorry. | That's awful. The square will be quiet.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! I'll tell everyone. | Best news all week.
+line @1 answer.how : Busy. Loud. Grand. | Fine! The square's full.
+line @1 answer.how.busy [self.working=yes] : Run ragged. Happy with it. | Busy as Marketday.
+line @1 ask.how : You all right? You've a rainy-day look. | Eaten today?
+line @1 sympathise : That's rotten. Sit with me. | Oh, that's horrid. Talk.
+line @1 reassure : It'll pass. Things do. | You'll be fine. I'd know.
+line @1 decline : I can't. My day's full, and anything I do, I do proper or not at all. | Not that. I'm proud, and asking won't move me.
+line @1 accept_decline : Fine. Your loss. | All right. I'll ask elsewhere.
+line @1 thank : Thanks! Really. | Oh, that's kind of you.
+line @1 deflect_thanks : It was nothing. | Pfft. Don't mention it.
+line @1 preclose : The square's calling. | Off. Things to shout.
+line @1 accept_preclose : Go on, then. | Fine. Off you go.
+line @1 ack : #bc_right# | Mm! #bc_go_on#
+scene grown_crier
+when topic=dreams|work here.region=ridgemere
+does confide / react.self / assess
+a : I still mean to call the Marketday sales one day. The Hall will hire me yet. | My voice carries from the pump to the Hall. Somebody ought to pay for that. | When the old crier goes hoarse, I'll be stood right there, ready.
+b : You always could. | Pump to the Hall? | Ready for what?
+a : Always. I've practised on this square since I was small. | Every inch. Ask anybody. | To shout. What else.
+
+scene grown_cries
+when topic=pastimes|day here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Every cry on the square, still. Want to hear the new ones? | There's a new stall by the steps with a cry I've not got yet. I will. | The eel stall changed its cry. I don't approve. I've kept the old one.
+b : Go on, then. | Not yet? | Why not?
+a : Bread, hot bread! That's the new bread stall. | By Restday. I always get them by Restday. | The old one went up at the end. The new one's flat. Flat's wrong.
+b? : #bc_ha# | #bc_true# | #bc_fair_enough#
+
+scene grown_crush
+when topic=day here.day=market here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Marketday crush. Nothing in Ridgemere beats it, still. | I stand by the pump and hear the whole square at once. Nobody else can. | The square's full to the steps. I love it like I did as a pup.
+b : It's too much for me. | Nobody? | Some things don't change.
+a : Too much is the right amount! | Nobody. I've asked. | Some things shouldn't.
+
+scene grown_stew
+when topic=food
+does tell.feeling / react.self / assess
+a : #stew.capitalize#. I can buy it every day now. I nearly do. | Proper mutton stew, the spoon stands up. Supper, sorted. | The chapel fed me stew as a pup. I still drop a copper in for that stew.
+b : Every day? | That's supper. | That's kind.
+a : Nearly. I stop myself on Restday. | Best supper there is. | Not kind. Fair.
+
+scene grown_birds
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : #birds.capitalize# are still at it on the gutters. Same fights, different birds. | I still save my crusts for the gutter sparrows. Some habits stay. | There's a sparrow steals off the bread stall. I named its grandparents' grandparents.
+b : Same fights? | That's nice. | Ha.
+a : Same fights. Crusts and gutters. Like the stalls. | It's not nice. They're loud. I like loud. | It's true. This one's thief the fifth.
+
+scene grown_autumn
+when topic=weather|season here.season=autumn here.weather=clear|overcast
+does tell.feeling / react.self / assess
+a : #autumnwind.capitalize#. Leaves round the pump, hats in the air. Lovely. | Awning weather. Somebody'll lose one today. I'll watch. | The best wind there is. Loud, and it gets everyone moving.
+b : It's cold. | You'll watch? | Loud wind?
+a : Cold's fine. Cold and lively. | Watch, and shout where it's going. I always do. | Loud. Listen to the awnings snap.
+
+scene grown_saltwind
+when topic=weather here.weather=overcast|storm here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#. Still hate it. Empties the square in an hour. | Sea wind again. My fur goes stiff. My voice goes hoarse. | It's off the water. The stalls are packing up. Don't pack up!
+b : It'll turn. | Rest your voice. | They'll be back.
+a : It better. | Rest it? Never. | Tomorrow. A day lost.
+
+scene grown_wet_floor
+when topic=weather|home here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : #wetfloor.capitalize#. As a pup I vowed mine would be dry one day. | Every rain, I check my floor. I remember the other kind. | The rain comes in the shop doors and the whole square's floors go dark.
+b : And do you? | Every time? | Wet everywhere.
+a : Mostly. I'm working on it. | Every time. I remember the other kind. | Everywhere. I hate it. I always will.
+
+scene grown_watch
+when topic=crime|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : The Watch used to move me off these steps. Now they ask me if I've seen anything. | I know everything that happens on this square. The Watch knows I know. | A watchman asked me who'd been at the stalls. I told him. Every name.
+b : Turnabout. | Do they ask often? | Every name?
+a : Turnabout, aye. I enjoy it. | Every week. I make them wait. | Every one. Loudly.
+
+scene grown_gossip
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / assess
+a : Heard? #topic.subject.capitalize# #topic.claim#! The whole pump's saying so. | They say #topic.subject# #topic.claim#. Twice by noon. | #topic.subject.capitalize# #topic.claim#. You'd hear anyway, so I'm telling you.
+b : Not so loud. | Twice? | I hadn't.
+a : I don't do not so loud. | Twice is true. Three's certain. | Now you have.
+
+scene grown_festival
+when topic=festival here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Festival! I'm calling the whole square. They asked me. | The loudest day of the year. My day. | I'll do every cry at the festival, and then I'll sleep for two days.
+b : They asked you? | Your day? | Two days?
+a : Asked me! Me! I'd have done it anyway. | Mine. Everyone else just borrows it. | Two. And next year, all over.
+
+scene grown_newcomer
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# is new, they say. By Restday I'll know the lot. | There's a new one. #topic.subject.capitalize#. I'll go and have a look. | #topic.subject.capitalize# means to stop here, I'm told. Good. Another voice for the square.
+b : Leave #topic.them# be. | Have a look? | Another voice?
+a : After I've had a look. | Just a look. And a word. Several words. | Another voice. The more the louder.
+
+rule @grown_bark
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 6h
+say Fish! Fresh off the boat! | Hot bread! Hot bread by the steps!
+
+dlg @6 resident.hub : #greet#! You're new to the square, I'd know you otherwise. | #greet#. Ask me anything about the square. I know it.
+dlg @4 resident.job : I call the square. Sales, stalls, anything. My voice does the rest. | Whatever the square says, I shout back louder. It's a living.
+dlg @2 resident.bye : #farewell#! Listen for me. | Bye! You'll hear me from the steps.
+
+young
+line @1 greet : #greet#! I'm being the fish stall. | Hello! Listen to me.
+line @2 greet [pair.band=strangers] : Hello. You're new. I know everyone. | #greet#. You're new. I'm the fish stall today.
+line @1 greet.return : #greet#! | Hello again!
+line @1 farewell : Bye! Square's waiting. | Bye, bye, bye!
+line @1 farewell.return : Bye! | Bye! Shout if you want me.
+line @1 react.news : Tell me! Tell me! | What? What happened?
+line @1 react.news.new : I didn't know that! | Nobody told me!
+line @1 answer.how : Loud! | Hungry. And loud.
+line @1 decline : No! I don't want to and I won't. | I'm not doing that. It's not fair.
+line @1 accept_decline : Fine. | All right, then.
+line @1 thank : Thank you! | Thanks!
+line @1 ack : Mm! | Mm-hm.
+scene ad_fish_stall
+when topic=pastimes|day here.region=ridgemere
+does tell.self / react.self / assess
+a : Fish! Fresh off the boat! That's me being the fish stall. | I can do the onion stall too. Onions! Onions! | I shouted like the fish stall and the fish wolf looked round.
+b[stage=adult|old] #grown : That's very good, little one. | Not so loud, please. | Did they?
+b : That's good! | Do it again! | Ha!
+a@grown : I know. I'm the best at it. | That's not loud. This is loud. | Always. Never fails.
+a : I'm the best. | Fish! Fresh off the boat! | Ha!
+
+scene ad_birds
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : A bird on the gutter's shouting at me. I'm shouting back. | The sparrows took my crust. I let them. They looked hungry. | I watched the birds fight. The little one won.
+b : Who's louder? | That was kind. | The little one!
+a : Me. | They were. So was I. | The little one always wins. I'm the little one.
+
+scene ad_stew
+when topic=food
+does tell.self / react.self / assess
+a : I had stew. Mutton stew. It was the best. | I want stew. Is there stew? | There was stew at the chapel. I had it all.
+b : Lucky you. | Not today. | All of it?
+a : Lucky me. | Tomorrow, then. | All. And the bread.
+
+rule @ad_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Fish! Fish! | Onions! Onions!
+
+dlg @5 resident.hub : Hello! I can do the fish stall. Listen. | Hello! I'm loud. Did you know?
+dlg @3 resident.job : I'm a pup. I do the stall cries. | I play on the square. I shout.
+
+adolescent
+line @1 greet [pair.band=strangers] : #greet#. You're new. I'd know you otherwise; I know everybody on this square. | #greet#! New face. Lost, or just looking? Looking, I'd say.
+line @2 greet : #greet#! | #greet#. Listen to the square today, it's lovely.
+line @3 greet [here.time=dawn] : #greet#. The stalls aren't even up. I came to watch them go up. | Morning. First one on the square, me.
+line @4 greet [here.time=dusk|night] : #greet#. The square's packing up. Saddest bit of the day. | Evening. It's all gone quiet. I hate quiet.
+line @1 kin.open [pair.kin!=no] : There you are. I've loads to tell you. | Sit down, sit down, wait till you hear.
+line @1 again.open : You again! Good. I've more since. | Back already. Good, there's more.
+line @1 greet.return : #greet#! | #greet#. You heard me from the pump, I bet.
+line @2 greet.return [pair.band=friends] : Oh, good, it's you. Listen. | You came back. Good. I've the best one yet.
+line @1 farewell : Right. The fish stall's starting. #farewell#. | #farewell#. I'll see you on the square, I always do.
+line @2 farewell [here.time=dusk|night] : Night. The square's shut anyway. | #farewell#. Mind the wet cobbles by the pump.
+line @1 farewell.return : #farewell#! | Bye, then. Holler, and I'll come.
+line @1 react.news : Go on. Go on, then! | Tell me everything. Slowly. No, quickly.
+line @1 react.news.new : I hadn't heard! I hear everything. How did I miss that? | Nobody on the square's said that. Not yet.
+line @1 react.news.known : Oh, that. The whole square had that by noon. | I knew. The fish stall had it first.
+line @1 react.news.doubt : That's not what they're saying at the pump, and the pump's always right. | Who said? Because if it's who I think, I'd not believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh no. That's horrid. That's really horrid. | That's awful. The whole square will be quiet tomorrow.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! I'll tell everyone. | That's the best news all week.
+line @1 answer.how : Hungry. Loud. Fine. | Good! Better when the square's full.
+line @1 ask.how : You all right? You've a rainy-day look. | Have you eaten? Properly?
+line @1 sympathise : Oh, that's rotten. Sit here. Talk. | That's horrid. I'd shout at somebody, if I were you.
+line @1 reassure : It'll pass. Everything does, except the rain. | You'll be fine. I'd know if you weren't.
+line @1 decline : No, I can't, there's lessons and I'm late as it is and I'll catch it. | Not that. I'm proud, not daft, and no amount of asking will shift me.
+line @1 accept_decline : Fine. Your loss. | All right. I'll ask somebody else, then.
+line @1 thank : Thanks! Really. I'll not forget. | Oh, that's kind. You didn't have to.
+line @1 deflect_thanks : That? Anybody'd do it. | Pfft. Don't. Honestly.
+line @1 preclose : The fish stall's starting up. I have to go. | I'd stay, but the square's calling.
+line @1 accept_preclose : Go on, then. Bye! | Fine, fine. Off you go.
+line @1 ack : #bc_right# | Mm! #bc_go_on#
+line @1 take_offence : I'm not begging. I'm standing. There's a difference. | Mind how you speak to me. The square's as much mine as yours.
+scene stall_cries
+when topic=pastimes|day here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Listen. That's the fish stall. Now the onion stall. Now the old cheese wolf. | I can do every stall on the square. Every single one. Want to hear? | The eel stall's the hardest. It lifts on the last word. Like this.
+b[stage=adult|old] #grown : You've got the onion one exactly. | Go on, then. Just one. | You'll get yourself in trouble doing that.
+b : That's very good. | Go on, then. | It does go up!
+a@grown : Exactly. It's my best. I've practised it on the stairs. | Fish! Fresh off the boat! There, that's the fish. | Trouble's only when they hear. They always hear.
+a : I know. I'm the best at it. Ask anybody on the square. | Fish! Fresh off the boat! That's the fish one. | It does. Nobody else notices. I notice.
+
+scene marketday_crush
+when topic=day|pastimes here.day=market here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Marketday! #crowd.capitalize#. Drop me in the middle and leave me there. | Everybody's shouting, everybody's pushing, everybody's here. Nothing beats it. | I can hear six stalls at once from the pump. Six! I counted.
+b : It's too busy for me. | Mind your pockets. | Six?
+a : Too busy's the point! Quiet days are for sleeping. | Nothing in my pockets to mind. Saves worrying. | Six. Seven if the eel stall's going.
+
+scene roof_birds
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : #birds.capitalize# have a market of their own on the gutters. They shout worse than the stalls. | There's one sparrow who steals from the bread stall every day. I've named it. | I give my crusts to the gutter birds. Well. I give the ones I can't eat.
+b : They do fight. | What's it called? | Kind of you.
+a : Over everything! Crusts, gutters, nothing at all. Like stallholders. | I call it thief. It knows. It doesn't care. | It's not kind. They're loud and they're mine.
+
+scene mutton_stew
+when topic=food
+does tell.feeling / react.self / assess
+a : #stew.capitalize#. If I had one every day, I'd be the happiest wolf on the hill. | The chapel did mutton stew on Restday. I had two bowls. Nobody stopped me. | The pie stall's stew is all gravy. Proper stew, you can stand a spoon up.
+b : Two bowls? | That's the best. | Gravy's not so bad.
+a : Two! And bread. I could have done three. | It is. Nothing beats it. Not even eel. | Gravy's fine. Gravy's not stew.
+
+scene autumn_wind
+when topic=weather|season here.season=autumn here.weather=clear|overcast
+does tell.feeling / react.self / assess
+a : #autumnwind.capitalize#. Look at the leaves going round the pump! | I love this. Everything blowing about and everyone holding their hats. | Wind like this, the stall awnings go like sails. Somebody always loses one.
+b : It's cold. | Hold on to yours. | Did anyone lose one?
+a : It's lively! Cold's fine if it's lively. | I've no hat. That's my secret. | The cloth stall! Last week! I saw it go right over the Market Hall.
+
+scene salt_wind
+when topic=weather here.weather=overcast|storm here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Ugh. #saltwind.capitalize#. It's the only wind I hate. | Sea wind again. It makes my fur stiff and it makes the square empty. | It's blowing off the water. Everyone goes home and the square's dead.
+b : It does bite. | Brush it out. | It'll turn.
+a : It bites and it stinks of the wharf. Horrid. | Brush it with what? I've got paws. | It better. A dead square's the worst thing there is.
+
+scene wet_floor
+when topic=weather|home here.weather=rain|storm
+does tell.complaint / sympathise / assess
+a : #wetfloor.capitalize# again. The rain comes under our door like it lives there. | I can't sit anywhere. Everything's wet. The floor's wet. My tail's wet. | When it rains the floor goes dark and cold and I sit on the bed with my paws up.
+b : That's miserable. | Find a dry spot. | Poor you.
+a : It's miserable! I'd shout at the rain if it listened. | There isn't one. I've looked. Twice. | I'm not poor me. I'm cross me. There's a difference.
+
+scene moved_on
+when topic=smalltalk|crime here.region=ridgemere
+does tell.complaint / react.complaint.agree / assess
+a : #watch.capitalize# moved me off the Market Hall steps. I was only sitting! | I got told to move along. Move along where? Everywhere's somewhere. | A watchman said I was in the way. I'm small. I'm not in anybody's way.
+b : That's not fair. | They do that. | You're a bit in the way.
+a : It's not fair, and I said as much. Loudly. | Daily they shift me. Daily I come back. | I'm not. I'm exactly where I should be.
+
+scene dole_line
+when topic=times|smalltalk self.on_dole=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : I'm in the dole line Restday. I'll do the stall cries to pass the time. Folk laugh. | The dole line's quiet. I hate quiet lines. So I talk. | You see everybody in the dole line. Everybody. You'd be surprised.
+b : That's one way to wait. | Do they mind? | Who?
+a : It's the only way. Waiting quiet is the worst thing. | Some do. Some talk back. Those are the good ones. | Not telling. It's not my business. I'll tell you if you're in it.
+
+scene not_a_beggar
+when topic=smalltalk|times here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A lady on the square held out a copper to me. I'm not begging! I was listening. | Somebody wanted to know if I'd lost my way. I live here. I'm not lost. | A traveller called me poor thing. I'm not a poor thing. I'm loud.
+b[stage=adult|old] #grown : I'm sure she meant it kindly. | Sorry. I thought you might be. | It was meant kindly.
+b : That's rude. | They didn't know. | Some people.
+a@grown : Kindly's fine. I'll take it kindly and give it back. | Well. Now you know. I'm never lost. | Fine. But I'm still not a poor thing.
+a : Rude! I'd have said so but my mouth was full. | They know now. I told them. Loudly. | Some people. I said so to her face.
+
+scene lessons
+when topic=work|day self.job=child
+does tell.complaint / react.complaint / assess
+a : Lessons all morning. Quiet all morning. I nearly burst. | The teacher said I'm too loud. I said I'm exactly loud enough. | I'd rather be on the square, but I go. I'm not daft.
+b : It's good for you. | You are a bit loud. | Good.
+a : Maybe. It's still quiet. | A bit loud is the right amount. | Not daft. Just loud.
+
+scene gossip_loud
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#! Everybody at the pump's saying so. | They say #topic.subject# #topic.claim#. The bread stall had it. Then the fish stall. | #topic.subject.capitalize# #topic.claim#. I'm only telling you because you'd hear anyway.
+b : Keep your voice down. | Twice? | I hadn't.
+a : I don't keep it down. It doesn't go down. | Twice is true. Three times is certain. | Now you have. You're welcome.
+
+scene gossip_sad
+when topic=gossip topic.claim_kind=death
+does tell.news / sympathise / assess
+a : They say #topic.subject# #topic.claim#. The square was quiet all morning. I hated it. | It came round the pump this morning. #topic.subject.capitalize# #topic.claim#. | #topic.subject.capitalize# #topic.claim#. I didn't do any cries today. It didn't seem right.
+b : That's sad. | Poor soul. | Good of you.
+a : It is sad. I don't like sad. It's too quiet. | Poor soul. I'll do a cry tomorrow for #topic.them#. A quiet one. | Not good. Just proper.
+
+scene festival_noise
+when topic=festival here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Festival! The square's louder than it's ever been. And I'll be stood right in it. | I'm going to do every cry on the square at the festival. Every one. People will pay. | There's music, and shouting, and food, and everybody's out. I tick the days off on the wall.
+b : Don't get lost. | Pay? | Every year.
+a : Lost? On my own square? Never. | They might! I'll take a hat round. If I find a hat. | Every year. I count the days.
+
+scene newcomer_seen
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# is new, they say! I'll go and have a look on the square. | New in the city: #topic.subject#. Give me till Restday and I'll know everything. | #topic.subject.capitalize# means to stop here, I'm told. Good. The square needs more voices.
+b : Leave #topic.them# be. | By Restday? | More voices?
+a : I'll leave #topic.them# be after I've had a look. | Restday. Maybe Marketday. I'm quick. | More voices, more noise, better square.
+
+scene crier_dream
+when topic=dreams|work here.region=ridgemere
+does confide / react.self / assess
+a : I'm going to be #crier#. Calling the sales. Everyone will have to listen. | One day the whole square will stop when I shout. Like it does for the bell. | The crier's voice is nothing. Mine's better. Don't tell the crier.
+b : You'd be good at it. | Like the bell? | I won't.
+a : I'd be the best. I already am, nearly. | Louder than the bell. The bell can't do the fish stall. | You'd better not. I'm keeping it for when I'm grown.
+
+story first_cry [topic=memories|pastimes self.age>=10]
+  : The first cry I learned was the onion stall. Onions, sweet onions, three a copper.
+  : I said it so loud the onion wolf turned round to see who was selling.
+  : The whole square laughed. Even the onion wolf.
+  ask : Were you ever loud enough to turn a whole street round?
+  b : Never. I'd have died of shame. Did you?
+  : No. I did it again. Louder.
+
+story lost_hat [topic=weather|season self.age>=10 here.region=ridgemere]
+  : One autumn the wind took the cloth stall's awning clean off.
+  : It went up over the square like a gull, and everybody stopped shouting to watch it.
+  : Only me kept shouting. I shouted where it was headed.
+  b : Did anybody catch it?
+  : I did. On the Market Hall steps. They gave me a pie.
+
+story pie_reward [topic=food|memories self.age>=10 here.region=ridgemere]
+  : Once I stood all day by the pie stall doing its cry better than the pie wolf.
+  : By dusk the pie wolf gave up and let me shout, and sold out before dark.
+  : I got the last pie, burnt at one end. Best thing I ever ate.
+  b : You earned it. Did they ask you back?
+  : Every Marketday since. Burnt end and all.
+
+rule @bark_cry
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 6h
+say Fish! Fresh off the boat! | Onions, sweet onions, three a copper!
+
+rule @bark_saltwind
+when concept=bark here.weather=overcast|storm
+does aside
+cooldown 10h
+say Ugh. That wind. | Everyone's going home. Don't go home!
+
+rule @bark_birds
+when concept=bark here.weather=clear|overcast
+does aside
+cooldown 9h
+say Oi! Put that crust back, you thief! | Look at them fight up there.
+
+dlg @1 resident.hub : #greet#! I know everybody on this square, so you're new. | #greet#. If you want to know anything, ask me. I know it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! You're back. I knew you'd be back. | Oh, it's #topic.player#. Good. Listen.
+dlg @3 resident.hub [here.time=night] : Night. The square's dead. Talk to me, then. | It's late. I'm not tired. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Come closer and I'll yell the square down. I can, too. | Stop there. Say what you're after.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#, when I have to be. Otherwise I'm on the square. | Lessons. And the square. And the stall cries. All of them.
+dlg @2 resident.job : I listen to the square. Somebody should. | I'm going to be the crier. I'm practising.
+dlg @1 resident.news [world.news] : They're saying at the pump, from #world.news_from#: #world.news#. | Heard it on the square, from #world.news_from#: #world.news#. Everyone knows.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# from the pump to the steps. | It's #world.event_words#! Everybody's shouting about it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not on the square, anyway. | Nothing! Can you believe it? Nothing at all.
+dlg @1 resident.gossip [here.gossip=yes] : Have you heard? #topic.subject.capitalize# #topic.claim#. Everybody's saying. | They say #topic.subject# #topic.claim#. Twice I've had it today.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing! It's been so quiet. | #gossip_none# Which I hate.
+dlg @1 resident.bye : #farewell#! I'll see you on the square. | Bye! Listen for me. You'll hear me.
+graft resident.hub
+choice Can you really do every stall's cry? -> cries
+node cries
+say Every one on the square. Fish, onions, the cheese stall, the eel stall that lifts on the last word. Listen. Fish! Fresh off the boat!
+mood keen
+free
+choice Do the onion one. -> cries_onion
+choice Goodbye. -> bye
+node cries_onion
+say Onions, sweet onions, three a copper! There. The onion wolf turns round every time. Never fails.
+choice That's very good. -> hub
+choice Goodbye. -> bye

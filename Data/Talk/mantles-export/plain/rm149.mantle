@@ -1,0 +1,395 @@
+# rm149, the peg-whittler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm149
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_sybil_pickering
+written_by claude
+title the peg-whittler
+fits stage=young|adolescent|adult|old
+prefers talk=plain warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk whittles_pegs_for_every_loose_latch
+likes warm_bread whittling old_maps autumn_wind
+dislikes early_bells gulls
+fears a_door_left_on_the_latch faces_that_ask_too_much
+hopes a_proper_knife_of_my_own to_know_every_street_by_heart
+topics pastimes +0.4 day +0.3 home +0.3 weather +0.2 food +0.3 animals +0.2 newcomer -0.4 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# is a watchful, close-mouthed wolf of Northgate who tries every latch twice and whittles a peg for any that rattles, keeps an old map with the roads drawn wrong, and trusts a warm loaf more than a new face.
+
+words
+oath! = Nicks and notches | Splinters | Shavings and splinters
+saying! = Try it twice | Shut isn't shut till it's tried | A rattle's a door asking
+latch = the latch | a latch that rattles
+peg = a peg | a little whittled peg
+knife = my knife | the little whittling knife
+shavings = the shavings | a lapful of shavings
+map = my old map | the map where half the streets are lies
+loaf = warm bread | a loaf that burns your paws a little
+gulls = the gulls | those thieving gulls
+earlybells = the early bells | the abbey bells before it's light
+gate = the gate | the big north gate
+blow = the autumn wind | a wind that bangs the shutters
+stick = a stick | a good straight stick of ash
+pocket = my pocket | the pocket with the pegs in
+
+any
+opinion @1 strangers against 2 : Nobody nameless gets past my door. Then I try #latch# again. | A stranger smiles first. That's how you know to watch them.
+opinion @2 dole for 2 : When there was nothing in the crock, the parish loaf was there. I remember that. | It's bread. Bread's good. I don't see what's to argue.
+opinion @3 church for 1 : When nobody else fed us, the chapel did. I remember who does that. | They're kind at the chapel. They don't ask you things.
+opinion @4 merchants against 1 : Some weeks we go without. The shops don't. I've noticed. | They put a thumb on the scale. Not all of them. I watch which.
+opinion @5 times against 1 : Every week pinches worse than the one before. Up the Rise they'd not feel a pinch. | The bread's smaller than last year. I checked.
+opinion @6 festivals for 1 : Music, toffee, and no one minding the hour. | Festivals are all right. Too many faces, though.
+
+grown
+line @1 greet : #greet#. | #greet#. Mind the door, it sticks.
+line @2 greet [pair.band=strangers] : #greet#. New face. We'll see, then. | #greet#. You'll be from off the north road.
+line @3 greet [here.time=dawn] : Morning. Woken by the abbey again. | Morning. I've tried the door twice already.
+line @1 greet.return : #greet#. | #greet#. Shut it behind you.
+line @2 greet.return [pair.band=friends|family] : Oh, it's you. Good. | You. Come in. I've the latch to show you.
+line @1 farewell : #farewell#. Try your door when you get home. | #farewell#.
+line @1 farewell.return : #farewell#. | And you. Mind the latch.
+line @1 react.news : Go on. From the start. | Who told you, then.
+line @1 react.news.new : That's new. Who started it? | Hm. Not heard that one.
+line @1 react.news.known : I'd heard. Twice. | That's old. It's been up and down our stair all week.
+line @1 react.news.doubt : Not till I've seen it myself. Then perhaps. | Maybe. The gate's full of mouths and half of them are wrong.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Sorry for the house. | Hard news. Lock up tonight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | Glad to hear it. Truly.
+line @1 answer.how : Fair. No worse than usual. | Well enough. Busy with my knife.
+line @1 decline : #hedge#, I'd rather not. I've not got the measure of it yet. | Not today. There's a door wants a peg and it can't wait.
+line @1 accept_decline : Fine. | Fair enough. Another time.
+line @1 thank : Thanks. I'll remember it. | Thank you. Kindly done.
+line @1 deflect_thanks : It was only a peg. | It's nothing. Doors want fixing.
+line @1 accept_preclose : Go on, then. | Right. Go.
+scene gr_latch_check
+when topic=home|day here.region=ridgemere
+does tell.self / react.self / tell.self / assess
+a : I still try every latch twice before I sleep. A pup's habit that never left. | There's a peg in every loose door I've ever lived behind. I whittled them all.
+b : Habit. | Every one?
+a : Habit. Mine. It doesn't hurt anyone. | Every one. Some of them are still there, I'd bet.
+b : Fair. | I'd bet so too.
+
+scene gr_whittle
+when topic=pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I still whittle of an evening, with #shavings# in my lap. Pegs, mostly. | I've kept #knife# sharp all these years. I'd not swap it.
+b : Any good? | What do you make with it?
+a : Good enough to use. Not good enough to sell. | Pegs. A little bird once. It didn't look like a bird.
+b : That'll do. | It was a start.
+
+scene gr_old_map
+when topic=pastimes|lore
+does tell.self / react.self / tell.self / assess
+a : I've #map#. Half the streets are wrong. I like it best that way. | That map of mine has a road through the Commons where there's a wall.
+b : Why wrong? | Odd sort of map.
+a : I know the right way. The map doesn't. That pleases me. | It is. Somebody guessed, a long time ago. I like to know they guessed.
+b : Fair. | Fair enough.
+
+scene gr_bread
+when topic=food
+does tell.self / react.self / assess
+a : #loaf.capitalize#. I'd cross all of Northgate for one. | The best thing in the world is the heel of a warm loaf, and I'll fight about it.
+b : You and everyone. | The heel?
+a : Not everyone. Everyone else wants butter on it. I don't. | The heel. Crust all round. Nobody else wants it.
+
+scene gr_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# had a crust off my sill this morning. I saw it go. | A gull stared at me on the wall like I owed it money.
+b : #grumble#. | They do that.
+a : I'll put a peg in the shutter next. That'll learn them. | I don't owe it anything. I checked.
+
+scene gr_bells
+when topic=day|faith here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #earlybells.capitalize#. I've never once slept through them. Not once. | Bells before dawn. I count to fifty, then I give up and get up.
+b : They're keen up there. | Fifty?
+a : Keen. I'd like them keen later. | Fifty. Never got to fifty-one.
+
+scene gr_autumn
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #blow.capitalize#. That's the best weather. It rattles everything and I check it all. | The wind's up. Every loose latch on the street is talking.
+b : Strange thing to like. | Talking?
+a : It shows me what wants a peg. | Clacking. I know which ones. I've a list.
+
+scene gr_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain again. The wood swells and the doors stick. I'd sooner they stuck than swung. | Wet day. I've been trying doors up and down the stair.
+b : There's sense in that. | Find any loose?
+a : There is. Swinging's how things get in. | Two. I'll have pegs in them by tonight.
+
+scene gr_gate
+when topic=newcomer|player self.quarter=commons
+does tell.self / react.self / assess
+a : A new face came through #gate# this morning. I watched them all the way up the street. | I see every face the gate lets in. Most of them I'd not let in my door.
+b : Suspicious, aren't you? | That's hard.
+a : Careful. There's a difference. | It's honest. I'd let them in my street. Just not my door.
+
+scene gr_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : I hear things. I keep them. Nobody's ever asked me for them back. | Folk whisper on the stair. I'm on the stair a lot. It stays there.
+b : Good habit. | Good.
+a : #saying.capitalize#. That goes for words too. | Words are like latches. Better shut.
+
+scene gr_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / assess
+a : The loaves are smaller. I measure them against my paw. | Some houses on our street have stopped lighting a fire at night. I can see the chimneys.
+b : #sympathy#. | You notice a lot.
+a : My paw hasn't got smaller. So it's the loaves. | I do. It's not much use, noticing. But I can't stop.
+
+scene gr_wagons
+when topic=caravan world.wagons=in|late here.region=ridgemere
+does tell.self / react.self / assess
+a : I watch the carts at the gate. I can tell who's honest by how they tie a load. | I counted the wagons in today. Fewer than last week. I write them down.
+b : How's that? | Write them?
+a : A tight knot's a careful wolf. A loose one's somebody I'd watch. | On the back of my map. Somebody should.
+
+story gr_first_peg [topic=memories self.age>=20]
+  : The first peg I ever whittled was for a door that wouldn't stay shut in the wind.
+  : It was crooked and too long. It held all winter.
+  ask : Have you ever made a thing that was ugly and worked?
+  b : Plenty. They're the best kind.
+  : That's what I think. Pretty's for later.
+
+dlg @3 resident.hub : #greet#. Well? Out with it. | #greet#. Close the door, then say it.
+
+young
+line @1 greet : #greet#. Don't stand in the door, it lets the cold in. | #greet#. I was just going.
+line @2 greet [pair.band=strangers] : #greet#. I don't know you. | You're new. I don't talk to new people much.
+line @3 greet [here.time=dawn] : Morning. The bells woke me. They always do. | Morning. I've tried our latch already. Twice.
+line @1 kin.open [pair.kin!=no] : I've whittled a new peg. Look. | You're back. I tried the door for you.
+line @1 again.open : You again. That's twice today. | Back already. I didn't move.
+line @1 greet.return : #greet#. | #greet#. Say what it is, then.
+line @2 greet.return [pair.band=friends|family] : Oh. You. That's all right, then. | It's you. Good. Shut the door.
+line @1 farewell : Bye. Shut it behind you. Properly. | Bye. I'm going to check the door.
+line @1 farewell.return : Bye. | Bye. Try your latch.
+line @1 react.news : Who says? | Tell it properly.
+line @1 react.news.new : I didn't know that. Who told you? | Is that true? Really true?
+line @1 react.news.known : I knew. I listen on the stair. | Everybody knows that. I knew first.
+line @1 react.news.doubt : I don't believe it. Not till somebody shows me. | I think you're guessing. You've got a guessing face.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's horrible. I'll shut my door tonight. Twice. | Oh. That's bad. Poor them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh. That's good. Good for them. | Good. I like good news. It's not often.
+line @1 answer.how : All right. Hungry. | Fine. I don't like the gulls today.
+line @1 thank : Thanks. I won't forget. | Thank you. I'll pay it back.
+line @1 deflect_thanks : It was only a peg. | It's nothing. It's easy.
+line @1 decline : I won't. I've pegs to finish and they're half done. | I'd rather not. You're too new for that yet.
+line @1 accept_decline : All right. | Fine. I'll do it myself.
+line @1 accept_preclose : Bye, then. | All right. Go.
+line @1 ack : Hm. | Mm. | All right.
+line @1 tell.self [concept=talk.day] : I whittled two pegs today out of #stick#. Both straight. | I tried every latch on the stair. Three are bad.
+rule @latch_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say Shut. And again. Shut. | There. That one won't rattle.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere here.weather=clear|overcast
+does aside
+cooldown 8h
+say Get off. That's not yours. | Shoo. Go on. Shoo.
+
+rule @whittle_bark
+when concept=bark
+does aside
+cooldown 10h
+say Bit more off the end. There. | Nearly. Nearly straight.
+
+scene yg_two_tries
+when topic=home|day
+does tell.self / ask.detail / answer.detail
+a : I try #latch# twice before I go to sleep. Every night. | Somebody left the stair door on the latch. I shut it and tried it twice.
+b[stage=adult|old] #grown : Twice? Once won't do? | Good. Who left it?
+b : Twice? | Who left it?
+a@grown : Once is to shut it. Twice is to know. | I don't know. I'm going to find out.
+a : Once to shut it, once to know. | Don't know yet. I'm watching.
+
+scene yg_pegs
+when topic=pastimes|home
+does tell.boast / react.self / tell.self / assess
+a : I whittled #peg# for the shutter. Now it doesn't bang. | I've got three pegs in #pocket#. In case.
+b[stage=adult|old] #grown : Clever pup. | In case of what?
+b : Show me. | Why three?
+a@grown : It's not clever. It just doesn't bang now. | In case a door's loose. They usually are.
+a : There. Straight, see. I did it by the fire. | One for a door, one for a shutter, one spare.
+b : #bc_clever# | Sensible.
+
+scene yg_knife
+when topic=pastimes|dreams
+does confide / react.self / tell.plan / assess
+a : #knife.capitalize# is too small. Someday there'll be a proper one, bone-handled. | I'm saving for a proper knife. I've got four coppers. Hidden.
+b[stage=adult|old] #grown : Mind your fingers with a bigger one. | Hidden where?
+b : A bone handle? | Hidden where?
+a@grown : I mind them now. I've only cut myself once. Twice. | Not telling. That's what hidden means.
+a : Yellow bone. Like the cobbler's. | Not telling. Somewhere good.
+b : You'll get it. | Fair.
+
+scene yg_map
+when topic=pastimes|lore
+does tell.self / react.self / tell.self / assess
+a : I've got #map#. The roads are wrong. I like it anyway. | My map says there's a river where the Market Hall is. There's not. I checked.
+b[stage=adult|old] #grown : Wrong how? | It's an old map. Maybe there was.
+b : Wrong how? | Did you look?
+a@grown : There's a street that's a wall now. And a wall that's a street. | Then where did it go? Rivers don't go.
+a : Streets that aren't. Walls that aren't. I know the right ones. | I looked. There's only the Hall and some pigeons.
+b : Funny thing to like. | Pigeons aren't a river.
+
+scene yg_warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : The baker gave me #loaf# for carrying the trays. I ate it on the step. | Warm bread beats everything. Cake too. Don't argue.
+b[stage=adult|old] #grown : That's fair pay. | Better than cake? You've not had good cake.
+b : Lucky. | Better than cake?
+a@grown : It was. I'd do it again. | I've had cake. Bread's better.
+a : It was still steaming. | Better. Cake's too sweet. Bread's honest.
+
+scene yg_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / tell.self / assess
+a : A gull had my crust. Straight from my paw, the robber. | #gulls.capitalize# perch along the wall waiting for you to look away. I don't look away.
+b[stage=adult|old] #grown : They're bold, the gulls. | Good. Never look away.
+b : Horrid things. | Never?
+a@grown : I'll be bolder. Next time I'll hold on. | I won't. I'm faster than them now.
+a : I'll eat inside next time. With the door shut. | Never. They know me. They go to the other end.
+b : Wise. | Good.
+
+scene yg_bells
+when topic=day|faith here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #earlybells.capitalize# woke me again. It's still dark. Why do they ring in the dark? | The bells are too early. I pull the blanket over my head. It doesn't work.
+b[stage=adult|old] #grown : Somebody has to be up. | It never does. You'll get used to them.
+b : Too early. | Doesn't it?
+a@grown : Not me. I'm not somebody. I'm asleep. | I won't. I've tried.
+a : Much too early. Even the gulls are asleep. | No. They come through the paws.
+
+scene yg_wind
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : I like the autumn wind. It bangs the shutters and I go and fix them. | It's windy. Everything rattles. I know which latch is which by the sound.
+b[stage=adult|old] #grown : Most pups hide from it. | That's a strange gift.
+b : You like it? | Really?
+a@grown : I'm not most pups. | It's not a gift. I just listen.
+a : I like fixing them. You can hear it working. | Really. The top one goes clack-clack. The stair one goes clunk.
+
+scene yg_stranger
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody's moved onto our stair. I'm still making up my mind. | Somebody I didn't know wanted directions. I gave them. Not where I live, though.
+b[stage=adult|old] #grown : Give them a chance. | Good. That's right.
+b : Why's that? | Good.
+a@grown : I'll watch them first. Then maybe. | I know. #saying.capitalize#.
+a : I don't know them. That's why. | They had nice boots. Nice boots doesn't mean anything.
+
+scene yg_gate_carts
+when topic=caravan|day here.region=ridgemere self.quarter=commons
+does tell.self / ask.detail / answer.detail / assess
+a : I sat on the wall by #gate# and counted the carts. Eleven. | A carter dropped a sack at the gate and didn't notice. I told the toll wolf.
+b[stage=adult|old] #grown : What for? | Good pup. Did they give it back?
+b : Eleven? | Did they thank you?
+a@grown : So I'd know. Somebody should. | The toll wolf ran after the cart. I watched it all.
+a : Eleven. One had a wobbly wheel. | No. But the sack got back. That's what counts.
+b : Somebody should, I suppose. | It is.
+
+scene yg_lessons
+when topic=work|day
+does tell.complaint / react.complaint / tell.self / assess
+a : Lessons today. We did sums. I got them all right and nobody said so. | The teacher said I ask too many questions. I only asked one. Twice.
+b[stage=adult|old] #grown : Sums are worth having. | One question twice is two questions.
+b : All of them? | Only one?
+a@grown : I know. I'm keeping them. | It's the same question. It doesn't count.
+a : All. I checked them twice. | One. They didn't answer it the first time.
+b : #bc_clever# | Fair.
+
+story yg_peg_door [topic=memories|home]
+  : Once our stair door wouldn't stay shut, and it banged all night, and nobody fixed it.
+  : So I whittled a peg from a stick of kindling, and I stuck it in the latch, and it stopped.
+  ask : Do you know what they said in the morning?
+  b : Thank you, I hope.
+  : Nobody said anything. They just slept better. I knew it was me.
+
+story yg_gull_crust [topic=animals here.region=ridgemere]
+  : I had a crust and I sat on the sea wall, and a gull came and stood right next to me.
+  : Its eye went from the crust to me, and back. I stared right at it. For ages.
+  ask : Who do you think looked away first?
+  b : The gull, I hope.
+  : The gull. I ate the crust very slowly so it could watch.
+
+dlg @1 resident.hub : #greet#. Shut the door. What? | #greet#. I don't know you. Say what it is.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You came back. | Oh. #topic.player#. All right.
+dlg @1 resident.job : I'm at lessons. And I fix latches. Nobody pays me for that. | I'm only a pup. I whittle. I watch the gate.
+dlg @1 resident.bye : Bye. Try your latch when you get home. | Bye. Shut it properly.
+graft resident.hub
+choice Why do you carry pegs in your pocket? -> pegs
+node pegs
+say For latches. Most of them are loose. If I find a loose one, I put a peg in it, and then it's shut properly.
+mood calm
+free
+choice Isn't that someone else's door? -> pegs_door
+choice Goodbye. -> bye
+node pegs_door
+say It's a shut door now. They can thank me or not. I don't mind which.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet : #greet#. | #greet#. Mind the door, the latch is loose.
+line @1 greet.return : #greet#. Go on, then. | #greet#. Shut it behind you.
+line @1 farewell.return : Bye, then. | Mind your latch.
+line @1 react.news.new : Who said? Which one of them? | That's new. I'd want to know where it came from.
+line @1 answer.how : Fine. Busy. | All right. I've pegs to finish.
+line @1 decline : Not today. I've my own things to see to. | I'd rather not. I don't know enough about it.
+rule @teen_latch_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 10h
+say Twice. Always twice. | Tried, and tried again.
+
+scene ad_lists
+when topic=gossip|day here.region=ridgemere
+does tell.self / react.self / assess
+a : I know every loose latch on the street. I've a list on the back of my map. | I've noticed things on the stair. I'm not saying what. I'm only saying I noticed.
+b[stage=adult|old] #grown : Careful who sees that. | That's a careful way to put it.
+b : A list? | Noticed what?
+a@grown : Nobody sees it. It's my map. | I'm a careful sort.
+a : Of latches. Only latches. | Things. I'll know more next week.
+
+scene ad_proper_knife
+when topic=pastimes|dreams
+does tell.self / react.self / assess
+a : I've nearly enough for a proper knife. A bone handle. I've counted it every night. | My whittling's better. I made a bird that looks like a bird.
+b : Good for you. | Does it?
+a : I'll buy it at the Rag Market. I've seen the one. | Mostly. The beak's wrong. I'll do another.
+
+scene ad_gate_faces
+when topic=newcomer|player self.quarter=commons
+does tell.self / react.self / assess
+a : I watch the faces at #gate#. I'm hardly ever wrong about them. | A traveller tried to sell me a lucky stone. I asked who'd had it before. They left.
+b[stage=adult|old] #grown : Hardly ever? | Good question to ask.
+b : Never wrong? | Good.
+a@grown : Twice. I keep count. | It's the only one worth asking.
+a : Hardly ever. I keep count. | #saying.capitalize#.
+
+scene ad_bread_stair
+when topic=food|day
+does tell.self / react.self / assess
+a : I carry the baker's trays up the stair for a loaf. It's fair. | Warm bread's still the best thing. I'll never be too old for it.
+b : Fair pay. | Never?
+a : Fair. I counted the trays. Nine. | Never. I'll be grey and still eating heels by the fire.
+
+story ad_wrong_road [topic=pastimes|lore here.region=ridgemere]
+  : Once I followed my old map down a street that wasn't there any more. It led me to a wall.
+  : I stood at the wall a long while. Then I climbed it.
+  ask : Would you have turned back?
+  b : Probably. You didn't?
+  : I wanted to see what the map meant. It was a yard full of hens. I'm glad I know.
+
+dlg @2 resident.job [self.stage=adolescent] : I'm at lessons. I fix latches too, when folk let me. | Lessons, mostly. And I watch the gate.

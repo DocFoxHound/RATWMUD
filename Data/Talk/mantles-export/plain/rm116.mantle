@@ -1,0 +1,492 @@
+# rm116, the rig-namer at the block (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm116
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_wynn_rustworth
+written_by claude
+title the rig-namer at the block
+fits stage=adult|old
+prefers role=merchant job=merchant temper=short
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk calls_every_cut_on_the_block_after_a_rig
+likes oatcakes cards sharp_knife misty_dawns
+dislikes flies cold_tea
+fears being_taken_for_a_beginner a_summer_of_flies
+hopes a_block_with_my_own_name_over_it to_see_every_rig_on_the_sound_in_one_morning
+topics ships +0.5 work +0.4 gossip +0.3 caravan +0.3 newcomer +0.3 prices +0.2 faith -0.3
+styles comfort=practical gossip=eager refuse=short tease=none
+marks oath saying
+persona #self.first# talks fast and takes offence faster, is always first with whatever came through Northgate, keeps a knife that would split a hair, and calls every joint on the block after a kind of ship.
+
+words
+oath! = Sawdust and sails | Marrow and mast | Split me for a shank
+saying! = You can't sell yesterday's news nor yesterday's mutton | Whatever the Sound brings in, somebody has to cut | First through the gate gets the best of it
+block = the block | my block
+cleaver = the cleaver | the heavy cleaver
+knife = my boning knife | the thin knife
+sawdust = clean sawdust | the sawdust
+gate = the north gate | the gate
+carts = the carts off the north road | the carts from up north
+drovers = the drovers | the drove-folk off the hills
+sound = the Sound | Ridgemere Sound
+mist = the sea mist | a mist off the water
+oatcake = buttered oatcake | an oatcake buttered edge to edge
+flies = bluebottles | the flies
+cards = cards | a hand of cards
+coldtea = tea gone cold | stewed tea with no heat in it
+counter = my counter | the meat counter
+regulars = my regulars | the regulars
+word = word | the word
+rigs = rigs | sails
+northtowns = Larkfield | Coldwater | Frosthollow
+hall = the Market Hall | the Hall's long room
+temper = my temper | the short end of me
+
+any
+opinion @1 city for 1 : Smoke, rain and all, it's mine. There's no town up the road gets news half as fast. | Everything worth knowing comes through #gate# or up off #sound#. Why would I live anywhere else?
+opinion @1 merchants for 1 [self.role=merchant] : I know what a carcass costs to walk down from the hills, so I'll not hear stallholders called thieves. | A fair price is a living, not a theft. Say otherwise at my counter and see how far you get.
+opinion @1 newcomers for 1 : New faces, new coin. I don't care where a wolf's from if the money's round. | Every newcomer's a regular I haven't met yet. I'd sooner sell to them than stare at them.
+opinion @2 merchants for 1 [self.role!=merchant] : Stallholders earn their coin. Meat doesn't walk down off the hills for nothing.
+opinion @1 strangers for 1 : A traveller buys a pie and pays for it in news. That's a good bargain twice. | A stranger at #gate# has been somewhere I haven't. I'll have it out of them before they've found an inn.
+opinion @1 road against 1 : #carts.capitalize# get slower by the season, and the whole city pays for every late hour. | The road north wants mending and watching, and it's getting neither.
+opinion @2 road against 2 [world.wagons=raided] : #oath#, they've had another wagon. Somebody up the hill wants to send #watch# out past the gate, not keep them warm in it.
+opinion @1 watch for 1 [self.role=merchant] : A patrol past the Hall door and nobody's pinching from my hooks. I'll stand them a pie for that. | Grumble at #watch# all you want. I sleep, and my till's where I left it.
+opinion @2 watch for 1 [self.role!=merchant] : Somebody walks the night streets so I needn't. Good enough for me.
+opinion @1 houses mixed 0 : Grayrock's ships I'd watch all day. Grayrock's prices I'd not pay for a week. | The Houses are like weather. You don't argue with it, you work round it.
+opinion @1 festivals mixed 1 : I like a feast day for the noise and hate it for the crush. | Half the city wants the same thing on the same morning. Lovely for some, ruin for the temper.
+opinion @1 church mixed 0 : I go when I go. Prayers can find me at work as well as anywhere. | A candle for a ship coming home, yes. A sermon on a market morning, no.
+opinion @1 times against 2 [world.times=hard|lean] : When folk start asking for bones and scrag ends, the times are bad, never mind what the Rain Hall says.
+
+grown
+line @1 greet : #greet#. You've caught me mid-thought. | #greet#, #address#. Talk away. Cutting's for paws, listening's for ears.
+line @2 greet [pair.band=strangers] : New face. You came in by #gate#, I'll wager. | #greet#. New to me, that face. Not for long.
+line @3 greet [self.working=yes self.role=merchant] : #greet#. Step round the sawdust, I've only now spread it. | Stand clear of #block#, #address#. I'm mid-swing.
+line @4 greet [here.time=dawn] : Morning. Early as a drover, you. | Morning. The mist's still on the water.
+line @5 greet [here.time=dusk|night] : Evening. I've scrubbed down and I'm not getting mucky again. | Evening, #address#. I'm done for the day.
+line @1 greet.return : #greet#. I was half saying something anyway. | #greet#. Good. I'm bursting with something.
+line @2 greet.return [pair.band=friends|family] : There you are. Nobody's let me finish a sentence all morning. | You. Good. Sit, and don't touch my knife.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Talk fast, I've a side to break. | Go on. The cleaver's loud but I'm louder.
+line @4 greet.return [here.time=dusk|night] : Evening. If it's news, I want it. | Evening. The day's gossip is all but sold, but there's a scrap left.
+line @1 kin.open [pair.kin!=no] : You'll never guess what came through the gate today. | Sit. I've kept this back since breakfast, just for you.
+line @1 again.open : Twice in a morning. You're nearly a regular. | Back already. Either you forgot something or you heard something.
+line @1 hail [pair.band=friends] : Here. Come here. You'll want to hear this. | Oi. Over here, before somebody else tells you first.
+line @1 farewell : #farewell#. If you hear anything, I want it first. | #farewell#. Don't go telling it round before I have.
+line @2 farewell [here.time=dusk|night] : Good night. Mind the cobbles by the gate, they're slick. | Good night. I'll want the rest of that tomorrow.
+line @1 farewell.return : #farewell#. And keep your ears open. | Mind how you go. And bring me a story next time.
+line @2 farewell.return [self.working=yes self.role=merchant] : Away with you. There's a counter wants me. | Off you go. The regulars are queuing.
+line @1 react.news : Wait. Say it again, slower. | Hang on. Who had it first?
+line @1 react.news.new : That's not reached the gate. Where'd you get it? | #oath#. That got past me, and nothing gets past me.
+line @1 react.news.known : Had that at dawn off the drovers. You're a morning behind. | Old news, #address#. It was all round Northgate before breakfast.
+line @1 react.news.doubt : That's carried a long way and grown on the road. I'll wait. | Fetch me the one with eyes on it. Not a cousin of a cousin.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's bad. That's a cruel business altogether. | #oath#. No. Poor souls, whoever they are.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's worth hearing. I'll have it round the Hall by noon. | Good. Good! That's the first cheerful thing all week.
+line @1 answer.how : Rushed. I'd sooner rushed than idle. | Well enough, if nobody tells me I'm holding the knife wrong.
+line @1 answer.how.busy [self.working=yes self.role=merchant] : Run off my paws. There's a queue and three sides to break. | Busy. The regulars want everything at once, same as always.
+line @1 ask.how : Road dust all over you. Been far? | You're wearing a look. Something happened.
+line @1 sympathise : That's hard. Sit a while, the rest can wait. | I'm sorry. Truly. I don't say that to everybody.
+line @1 reassure : Wait seven days. Most troubles shrink by then. | Don't fret yet. Fret when it's certain.
+line @1 decline : #hedge#, no. I've work waiting and no paws spare today. | I can't, I'm sorry. My day's full to the brim, and it won't keep while I stand here.
+line @1 accept_decline : Fair enough. I'll ask somebody less busy. | Right. I'll not ask twice.
+line @1 thank : #thanks#. I'll file that beside the rigs, and I forget no rig. | Kindly done. I'll pay that back, see if I don't.
+line @1 deflect_thanks : It's nothing. Anybody with paws would. | Never mind thanking me. Just tell me if you hear anything.
+line @1 preclose [self.working=yes self.role=merchant] : I'd best get to the queue before it turns on me. | That's the bell. I've a side wants breaking.
+line @2 preclose : Right. That's enough of my chatter for one morning. | Well. I've things to see to.
+line @1 accept_preclose : Off with you. I've held you long enough. | Go, go. There's work waiting on me anyhow.
+line @1 ack : Right. | Go on.
+line @1 give.advice : Buy early, before the regulars clear the best of it. | Never trust a cut you can't see both sides of.
+line @1 warn [world.bandits=near] : Stay inside the gate after dark. There's been trouble up the north road. | Don't go up the road alone this week, #address#.
+line @1 take_offence : Nobody tells me my own trade. | Now just a moment. I heard that, and I didn't care for it.
+line @1 accept_apology : Fine. Fine. I'm over it. Mostly. | Right. Say no more and we'll leave it.
+line @1 insist : I'm telling you, the drovers told me themselves. | #insist#. Invent news? Me? I've never needed to.
+line @1 congratulate : Well done, you. I'll be telling everyone. | That's grand. Good for you.
+line @1 change_subject : Anyway. Did you see the sails out on the bay this morning? | Never mind that. Listen to this instead.
+scene block_before_the_bell
+when topic=work|day here.time=dawn self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : Sawdust down, block scrubbed, two sides hung, and the gate bell hasn't even gone yet. | Up before the drovers. I like the Hall empty, only the cleaver for company. | First knife in the Hall again. I check, you know. I look down the rows.
+b : You must have been up in the dark. | Is it quiet, that early? | Does anybody else care who's first?
+a : In the dark and the damp. Meat keeps no clock. | Quiet as the Sound on a still day. Then the regulars arrive, and it never is again till dusk. | They should. First knife gets first customers. That's sense, not vanity.
+
+scene cuts_by_their_rigs
+when topic=work|ships self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : That shoulder's a brig. Broad in the beam, sits heavy. I call every joint after a rig. | See this loin? That's a cutter. Long and lean and quick in the pan. | The little chops along the end are my luggers. Small, busy, and everybody wants one.
+b : A brig? What makes it a brig? | And the leg, then? | What's the neck?
+a : Two good masts of bone and a deep hold of meat. Same shape, if you squint. | The leg's a ketch. Stout, short in the mast, and it'll carry a family a week. | The neck's a fishing smack. Ugly, cheap, and better than it looks with a slow fire.
+b : I'll not look at a joint the same way again. | You've thought about this a lot. | I'll ask for a smack next time.
+a : Good. Nobody else in the Hall says it, and they should. | More than I'd admit to the regulars. | Call it a smack at my counter and I'll know you were listening.
+
+scene flies_in_summer
+when topic=work|weather here.season=summer self.working=yes self.role=merchant
+does tell.complaint / react.complaint / assess
+a : Bluebottles. Every summer, every morning, as if they've a standing order. | Cloth on every joint, and in they come regardless. I could scream. | The heat's not the worst of summer. The flies are the worst of summer.
+b : You can't keep them off meat. Nobody can. | It's the heat brings them up from the gutters. | Cooler days are coming.
+a : I can, near enough, if I'm quick and I'm rude to them. | Then I'll keep the gutters as well, if that's what it takes. | Not soon enough. I'm counting the mornings.
+
+scene came_late_to_the_knife
+when topic=work|memories self.apprentice=yes self.role=merchant
+does confide / react.self / reassure
+a : I came to the block late, you know. Most of them in the Hall started as pups. | I'm still a learner at it, if I'm honest. Don't tell the regulars. | The one teaching me says I hold the cleaver as if I'd been born holding it. I wasn't.
+b : You'd never know it. | Nobody would guess. | Then you've a gift for it.
+a : I make sure you'd never know it. That's half the work. | Good. If they guessed, I'd hear about it every morning. | A gift, or I watched harder than the others. Either way.
+
+scene the_hair_splitting_knife
+when topic=pastimes|work self.likes=sharp_knife
+does tell.boast / react.self / assess
+a : Look at that edge. It'll split a hair down the long way. | I strop the thin knife each night, last thing, before the lamp goes out. | A blunt knife's an insult to the meat. Mine has never been blunt.
+b : Mind your paws with it. | Every night? | Never?
+a : I mind them. It's the blunt ones that slip. | Every night. I'd not rest otherwise. | Not once. Ask anybody in the Hall. Then ask them about theirs.
+
+scene asking_for_bones
+when topic=prices|times world.times=hard|lean self.role=merchant
+does tell.worry / sympathise / assess
+a : Bones and scrag, that's what they're asking for now. A bad week, then. | Same regulars, half the order. Nobody says why. Nobody has to. | I've started keeping the trimmings back for the ones who look thin.
+b : It's the same everywhere this month. | That must be hard to watch. | That's decent of you.
+a : I know. I hear it from every town that comes through the gate. | Harder to watch than to cut. I'll tell you that for nothing. | It's not decent. It's what you do. I'd want it done for me.
+
+scene carts_late_north
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.complaint / ask.detail / answer.detail
+a : #carts.capitalize# are late again. I went to look at dawn and there was nothing but rain. | No drovers this morning. Not one. The gate's like a chapel on a market day. | Late. Again. I've a hook empty where a side ought to be hanging.
+b : Is it the road, or the weather? | And with no stock, then? | How long can you wait?
+a : Both, and somebody up the road too slow to mend either. | Sell what I've got slower and smile more. I'm bad at the smiling. | A day. Two, if I salt what's left. After that I'm selling sawdust.
+
+scene carts_in_north
+when topic=caravan|work world.wagons=in self.role=merchant
+does tell.news / react.news / assess
+a : They're in! Carts, all of them! I knew it by the rumble on the cobbles before I saw a thing. | Drovers came through at dawn with a good string. I had the pick of it. | Everything's arrived from up north. The whole Hall's in a better mood.
+b : That's a relief, after the wait. | You had the pick? | I could tell from the noise.
+a : A relief and a half. I'd started dreaming about empty hooks. | First at the gate, first to choose. I've told you that before. | Noise means trade. I'd take a noisy Hall over a quiet one any day.
+
+scene wagon_robbed_north
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess
+tone grave / serious / even
+a : A wagon's been taken coming down. That's all anybody's saying, and they're saying it quiet. | A wagon robbed, coming down. The drovers came through white about the eyes. | Thieves out on the road once more. Meat and money gone, and maybe worse.
+b : Was anyone hurt? | That's frightening. | Again? It's getting worse.
+a : Nobody would say. When they won't say, I don't like it. | It is. And nobody in the Rain Hall walks that road, do they. | Worse every season. Mark me, the price of a chop will feel it before Restday.
+
+scene the_hands_at_the_block
+when topic=work|friends self.hand self.working=yes
+does tell.self / react.self / assess
+a : Till and thin knife both, I'd hand to #self.hand#. That's not nothing. | I've a good pair of paws at the block in #self.hand#. Not that I'd ever tell that face. | Without #self.hand# I'd be cutting and wrapping and talking all at once.
+b : You should say it, sometimes. | Not nothing at all. | You'd manage.
+a : I might. On a good day. | Not with me. I'm particular. | I'd manage worse. I'd manage loudly.
+
+scene mist_on_the_sound
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Mist like this, and the masts swim up through it one after another. Nothing in the city beats it. | I stood on the top step this morning and couldn't see the Sound at all. Only the bells. | You can tell a rig by its outline in mist, if you've the eyes. I've the eyes.
+b : It's only fog. | Only the bells? | Can you really?
+a : Only fog! Only fog, says you. There's no poetry in you at all. | Bells, and a gull or two. Then a topsail, all at once, like a ghost coming in. | Brig, schooner, ketch. Dim or not, I'm never wrong.
+
+scene misty_dawn_walk
+when topic=weather|day here.time=dawn self.likes=misty_dawns
+does tell.self / react.self / assess
+a : I came down while the steps were still grey with mist. I'd get up early for that alone. | There's no hour like a misty dawn. Nobody's shouting yet. Even me. | A grey dawn and wet whiskers. You can keep your summer.
+b : Most folk would rather stay in bed. | Even you? | Wet whiskers?
+a : Then most folk sleep through the finest hour. | Even me, for an hour. After that, all bets are off. | Wet whiskers and a clean head. That's the trade.
+
+scene a_ship_in
+when topic=ships topic.kind=in|arrived topic.ship here.region=ridgemere
+does tell.news / ask.detail / answer.detail
+a : #topic.ship.capitalize#'s in. I had the masts in sight from the high steps before anyone at the Hall. | Did you see? #topic.ship.capitalize#, made fast at the piers on the dawn tide. | #topic.ship.capitalize# came in while I was hanging the first side. I heard the shout from the piers.
+b : How did you know it from that far? | Is it the one you were waiting on? | You heard it from the Hall?
+a : By the rake of the masts. Every rig leans its own way, if you know it. | I wait on every ship. That's how I'm made. | From the Hall door. The wind was right. I'd know that shout anywhere.
+
+scene a_ship_due
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s due. I'll be looking down the Sound between customers. | #topic.ship.capitalize#'s expected, they say. I'll know it before it clears the headland. | #topic.ship.capitalize#, expected any hour. My neck's sore from watching the bay since breakfast.
+b : You'll spot it first, I expect. | Before it clears the headland? | Rest your neck a while.
+a : I generally do. It's no trick, just looking. | By the cut of the sails. You'd see it too if you bothered. | Not till it's in. I'll be first to say so, and that's what counts.
+
+scene a_ship_late
+when topic=ships topic.kind=late topic.ship
+does tell.worry / reassure / insist / ack
+a : #topic.ship.capitalize#'s late. Two tides. I don't like it. | Still no #topic.ship#. I've stopped looking, and I'm still looking. | #topic.ship.capitalize#, late. One fool at the Hall muttered the word lost. I near threw a chop.
+b : Ships run late all the time. | You've stopped looking? | They spoke out of turn.
+a : Ships do run late. I've said it myself a hundred times. I'll still not sleep. | I'll look again at noon. I'll pretend it's for the weather. | They did. Not twice, though. Not near my block.
+b? : #bc_maybe# | #bc_i_know# | #bc_true#
+
+scene a_ship_lost
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : #topic.ship.capitalize#'s lost. I knew that rig coming in a mile off. | They say #topic.ship# went down. I've no chatter in me this morning. | #topic.ship.capitalize#. Gone. #oath#. The whole Hall's gone quiet with it.
+b : I'm sorry. I know you watched for it. | That's a heavy thing. | Rest easy, all aboard.
+a : Every time it came in. I'll miss the sight of it, and worse for the ones who'll miss more. | It is. Somebody's waiting at home for that crew. That's the part I can't cut round. | Bright One keep them, every one aboard.
+
+scene a_ship_sailed
+when topic=ships topic.kind=sailed|left topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s gone out. I watched it to the headland between two customers. | There goes #topic.ship#, riding the ebb out. Clean wake, every sail full. | #topic.ship.capitalize# sailed at first light. Sitting deep, so somebody filled the hold.
+b : You never miss one. | Every sail full? | Somebody did well, then.
+a : I miss them all. That's why I watch. | Every one. Pretty as anything in the Rain Hall. | Somebody always does. It's never me, but somebody.
+
+scene tell_a_rig
+when topic=ships|pastimes here.region=ridgemere here.outdoors=clear|overcast
+does challenge / accept / assess / ack
+a : Look out on the Sound. That one with two masts and the big square sails. That's a brig. | See the little one with the one mast and the long boom? That's a cutter, and quick with it. | That fat one, tall mast forward, short one aft. That's a ketch. Now you say it.
+b : A brig. Two masts, square sails. | A cutter. One mast, long boom. | A ketch. Tall forward, short aft.
+a : There. You know more than half the Hall now. | Good. Next time I'll test you, and I'll not be kind. | Right. You'll be calling my joints by them next.
+b? : #bc_ha# | #bc_we_will_see# | #bc_maybe#
+
+scene pass_it_on
+when topic=gossip here.gossip=yes topic.claim_kind=other|prowling|wanted|promise_broken
+does tell.gossip / ask.detail / answer.detail
+a : Here's one. #topic.subject.capitalize# #topic.claim#. Mine first, mind. | Listen. #topic.subject.capitalize# #topic.claim#. It was round the gate before noon. | You never heard this from me. #topic.subject.capitalize# #topic.claim#.
+b : Who told you that? | True, would you say? | Why the secrecy?
+a : A carter off the north road, who swore to a cousin who saw. Close enough. | True enough to repeat. I'll not swear to more. | No secrecy. I only want to tell it again myself before you do.
+
+scene gossip_cruel
+when topic=gossip here.gossip=yes topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+tone serious / grave / even
+a : You'll have heard. #topic.subject.capitalize# #topic.claim#. I wish I hadn't. | It's all round the Hall. #topic.subject.capitalize# #topic.claim#. Nobody's laughing today. | #topic.subject.capitalize# #topic.claim#. That's the word at the gate, and it's a hard one.
+b : That's a terrible thing. | I'd not heard. I'm sorry. | Bright One keep #topic.them#.
+a : It is. Anyone who laughs at it can buy their meat elsewhere. | You'll hear it again by dusk, and worse told. I'd sooner you had it straight. | Bright One keep #topic.them#, and keep us out of it.
+
+scene gossip_sweet
+when topic=gossip|newcomer here.gossip=yes topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Now here's one. #topic.subject.capitalize# #topic.claim#. I've been grinning since breakfast. | Good news, for once. #topic.subject.capitalize# #topic.claim#. I had it first. | #topic.subject.capitalize# #topic.claim#. The Hall's talked of nothing else.
+b : That's lovely to hear. | Good for #topic.them#. | You'd have heard it first, wouldn't you.
+a : Isn't it? I'll have it round the whole of Northgate by dark. | Good for #topic.them#, and for my till too. Somebody will order a roast. | Course I did. It's my gate.
+
+scene what_the_carts_said
+when topic=news world.news
+does tell.news / ask.detail / answer.detail
+a : Word off the road from #world.news_from#: #world.news#. I had it before the toll was paid. | The drovers brought it down from #world.news_from#. #world.news.capitalize#. | You'll want this. From #world.news_from#: #world.news#.
+b : Before the toll was paid? | Do you believe it? | Who else knows?
+a : Before the drover's paws were dry. I ask quick. | I believe the drovers. They've no reason to lie, only to exaggerate. | By now, half the Hall. By dark, everyone. I can't help it.
+
+scene new_face_at_the_gate
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess
+a : Somebody new in Northgate. Came in by the gate, I'd say, by the mud on them. | Somebody new's been wandering Northgate like a lost hen. They'll know us all inside seven days. | Another stranger off the road. That's coin walking about with nowhere to go yet.
+b : You notice everyone. | You'll win them over. | Coin with nowhere to go?
+a : Everyone who comes through the gate. Which is everyone. | I'll win them or I'll know why. | Not for long. Not with me on the corner.
+
+scene hard_times_north
+when topic=times world.times=hard|lean self.role=merchant
+does give.opinion / agree / assess
+a : The drovers say it's worse up the road than here, and here's bad enough. | What folk buy tells you the times. It's the cheap end, now. | Hard all over. Worse up north, to hear the carters.
+b : It's bad everywhere. | Times always come round. | And the Rain Hall does nothing.
+a : Everywhere, and the price of a side still goes up. Explain that to me. | They'd better come round soon. I can't sell bones forever. | Nothing I can see. Somebody up the hill should come and stand at a counter.
+
+scene good_times_north
+when topic=times world.times=good|boom self.role=merchant
+does tell.feeling / agree / assess
+a : The good joints are selling again. Folk walk taller with a roast to carry. | Every cart through the gate is loaded, and every regular wants a roast. | I've run out of loin twice this week. I'll not complain about that.
+b : Good while it lasts. | Busy's better than quiet. | Twice? That's a good week.
+a : It'll last while I'm quick. I'm always quick. | It is. And it's better still when the till's heavy. | The best in a long while. I'll sleep well tonight.
+
+scene feast_morning_rush
+when topic=festival|season world.festival=today|soon self.role=merchant
+does tell.feeling / react.self / assess
+a : Feast coming. Half the city wants a roast the same morning. | By dawn the queue will be out into the street. I've told them to order ahead. They never do. | Feast days fill the till and empty my patience.
+b : You'll do well out of it. | They never do? | Empty your patience?
+a : I'll do well and I'll be furious doing it. That's every feast. | Never. Then they're cross with me when the joints are gone. | Mine's short already. By noon, it's gone altogether.
+
+scene buttered_oatcake
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : Hand me #oatcake# and all's forgiven. Nearly all. | I keep two oatcakes wrapped by the block for when the queue goes. | A buttered oatcake at noon. That's the day halfway won.
+b : Nearly? | Only two? | Halfway?
+a : Nearly. There's a limit, and folk find it. | Two. If I kept three I'd eat three. | Halfway. Keeping my temper till dusk wins the rest.
+
+scene tea_gone_cold
+when topic=food|smalltalk self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : Made a cup first thing, found it at noon, stone cold. I could cry. | Cold tea. There's nothing sadder in a cup. | Somebody handed me stewed tea with no heat in it, and smiled. Smiled.
+b : You could warm it again. | Drink it quicker. | They meant well.
+a : Warmed-over tea is worse. It knows what it's done. | Drink it quicker. As if I've a spare moment to drink anything. I'll try that. | Meaning well is how folk get away with it.
+
+scene cards_at_night
+when topic=pastimes self.likes=cards here.time=dusk|night
+does tell.self / tease / tease.return / ack
+a : A hand of cards after the scrub-down. I play to win, mind. | Three hands lost, one after another, last night. I've not slept for it. | Sit down across from me and I'll deal. Expect no mercy.
+b : You don't like losing. | Three in a row? Bad luck. | I might hold my own.
+a : Nobody likes losing. I just say so louder. | It's not luck. Somebody was cheating, and I'll prove it. | You might. Or you'll be buying the oatcakes. One or the other.
+b? : #bc_ha# | #bc_bad_luck# | #bc_we_will_see#
+
+scene the_office_drawers
+when topic=smalltalk|day here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail
+a : The City Office loses paper the way the Sound loses hats. Nobody knows where it goes. | I'd sooner wait on a late cart than on a clerk. A cart at least comes in the end. | Ask the City Office a thing and they point you to another window.
+b : Waiting on them for what? | Have you complained? | Which window?
+a : Something filed and never seen again. I go back and ask. They gaze at me as if I were the weather. | To who? There's a form for complaining, and it's lost as well. | The next one. Always the next one along. I've stood at every one.
+
+scene rain_at_the_gate
+when topic=weather here.weather=rain here.region=ridgemere self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : It's coming down so hard the drovers came through the gate looking drowned. | Rain on the Hall roof like gravel. I can hardly hear the customers. Fine by me, some days. | Wet sawdust, wet paws, and every regular dripping on my counter.
+b : It always rains on the gate. | Fine by you? | You can't stop the rain.
+a : The gate's a funnel. Everything off the hills comes down it, rain and all. | Some of them say things I'm better off not hearing. | No, but grumbling's free, and I'm generous with it.
+
+scene housemate_trust
+when topic=home|friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I can quarrel at breakfast and forget it by supper. | I'd trust #self.friend# with my knives. Nobody else gets that. | When the Hall's shut, #self.friend#'s the one I tell things to.
+b : That's worth a lot. | From you, that's a great deal. | Does #self.friend# listen?
+a : It is. Just never within earshot. | It is. That stays between us. | Most of the time. Enough to keep me from bursting.
+
+scene a_cut_paw
+when topic=health self.role=merchant
+does tell.self / react.self / assess / ack
+a : I nicked a pad on the bone saw. My own fault, I was talking. | My paws ache by dusk. It's the cold of the meat, not the work. | Somebody told me I look tired. I near took offence.
+b : You talk a lot while you work. | Warm them by the fire. | You do look a bit tired.
+a : Then I'll talk less. I'll fail, but I'll mean it. | I do, and they mend by morning. That's enough. | Well. Fine. Maybe a little. Don't spread it about.
+b? : #bc_ha# | #bc_good# | #bc_sorry#
+
+scene teased_and_bristling
+when topic=smalltalk|work pair.band=friends|acquaintances self.role=merchant
+does tell.self / tease / take_offence / apologise / accept_apology
+a : I can name every joint on the block after a rig. Nobody else in the Hall can. | The drovers gave me that before the gate was even open. | I tied that parcel myself. Under, round and pull.
+b : Nobody else in the Hall wants to, I'd guess. | You'd have it off the gulls if they could talk. | It looks like it was tied in the dark.
+a : Now that's uncalled for. Civil, if you please. | And what's that supposed to mean? I listen, that's all. | I'll have you know that knot's held a side of beef.
+b : I didn't mean anything by it. | Only that you hear everything. It's a compliment. | All right, all right. It's a good knot.
+a : Fine. I'm over it. I'm always over it by noon. | Then say it like one next time. Right. We'll leave it. | It's a very good knot. Say no more and we'll leave it there.
+
+scene the_bright_one_and_ships
+when topic=faith
+does tell.self / react.self / assess
+a : A candle for every late ship. The Bright One must know my voice by now. | Sermons go over my head. A word at the water's edge does me. | The chapel by the water's the only one I'll go into without being dragged.
+b : Better that than nothing. | That's enough for most. | Why that one?
+a : True. I could be praying for my own temper, and I'd be there all day. | It must. The day won't open itself. | It faces the Sound. I can pray and look at the rigs at the same time.
+
+scene the_sound_and_the_city
+when topic=lore|land here.region=ridgemere
+does tell.self / react.self / assess
+a : Every town up the north road thinks itself grand. Then the carters see the Sound, and go quiet. | The city's built on the Sound's back, and the Sound doesn't care. | High in Northgate there's a step where the whole bay shows, and half the realm's business sailing in.
+b : They do go quiet. | Doesn't care? | Half the realm's business?
+a : Without fail. I watch for it. It's my favourite thing at the gate. | Not a bit. It was here first. It'll be here after the Rain Hall falls in. | Near enough. The other half comes through the gate. I watch both.
+
+scene towns_up_the_road
+when topic=travel|caravan here.region=ridgemere self.away=no
+does tell.self / react.self / assess
+a : The carters from #northtowns# talk slower than us. You can sell them anything while they're still saying hello. | Past the gate? Never been. Why would I go? The towns come to me. | Ask a drover what's dear up north and you'll know what'll be dear here in a week.
+b : Never past the gate? | That's a sly trick. | That's useful.
+a : There's no need. All I'd want to see walks in on its own. | Not sly. Patient. I'm not patient, but I manage it with carters. | It is. And they'll tell you, if you've a pie in your paw.
+
+story first_side_alone [topic=work|memories self.apprentice=yes self.role=merchant]
+  : The first side I broke down alone, the one teaching me stood at my back, silent the whole while.
+  : I could hear every breath. I got through the shoulder, the loin, the leg, and only then turned round.
+  ask : What do you suppose was said, after all that?
+  b : Something kind, I hope.
+  : Not a thing. A nod, and a fresh side hung up beside it. I've never been prouder of a nod.
+
+story three_masters [topic=ships|memories self.age>=18 here.region=ridgemere]
+  : As a pup I'd sit up on the north wall counting masts till my eyes ran.
+  : One morning three tall ships came in together out of the mist, one behind the other, like a procession.
+  ask : Can you picture a thing like that, coming out of nothing?
+  b : I can try. It must have been a sight.
+  : I named every rig that day and nobody believed me. I've not stopped since.
+
+story the_losing_hand [topic=pastimes self.likes=cards]
+  : I once lost a whole week's oatcakes to a carter at cards, one hand after another.
+  : I kept saying the next one's mine, and the next one never was.
+  ask : Would you have stopped, or kept going?
+  b : I'd have stopped after the second, I think.
+  : Sense, that. I kept going. I've never sat down with a carter since without counting the deck first.
+
+story topsail_in_the_mist [topic=weather|ships self.likes=misty_dawns here.region=ridgemere]
+  : I came down the steps one grey dawn and a topsail slid out of the mist so close I could have hailed it.
+  : Nobody else on the steps. Only me, and that great grey sail, and the water slapping.
+  b : That must have given you a start. Did you hail it?
+  : Course I did. Somebody aboard waved back. The Hall opened without me that morning and I didn't care a bit.
+
+story the_old_drover [topic=travel|caravan|memories self.age>=18]
+  : As a pup I knew an old drover who'd stop at our door and name the towns for me, one by one, as far as the snow.
+  : He'd say what each one smelled of. Wool, smoke, snow, cheese. I learned them like a song.
+  ask : What would you say this city smells of, if you had to?
+  b : Rain and smoke, I'd say. And the sea.
+  : That's it. And meat, round my end. I never did get to tell him that.
+
+rule @block_cry
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 6h
+say Fresh off the block! Brigs and cutters, come and see! | Shoulders, loins, chops and shanks! Cut while you wait!
+
+rule @bluebottles
+when concept=bark self.working=yes here.season=summer
+does aside
+cooldown 8h
+say Off. Off! Go and bother the fishmongers. | Another one. I'll have every fly in Northgate by noon.
+
+rule @mast_spotted
+when concept=bark here.region=ridgemere here.time=dawn
+does aside
+cooldown 10h
+say That's a brig coming round the headland. Told you. | Two masts, square rigged, low in the water. In by noon.
+
+rule @carts_wanted
+when concept=bark world.wagons=late self.role=merchant
+does aside
+cooldown 9h
+say Still no carts. Still no carts! | Where are those drovers? I've empty hooks.
+
+rule @wet_sawdust
+when concept=bark here.weather=rain self.working=yes self.role=merchant
+does aside
+cooldown 10h
+say Wet paws on my counter again. | Rain through the Hall door, and the sawdust soaking.
+
+rule @cold_cup
+when concept=bark
+does aside
+cooldown 12h
+say Cold. It's gone cold again. | Who left my cup to die?
+
+dlg @1 resident.hub : #greet#. If you've news, I'm listening. If not, I'm cutting. | #greet#, #address#. Quick, before the queue comes back.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Anything new through the gate that I've missed? | #topic.player#. There you are. Talk, I'm all ears.
+dlg @3 resident.hub [here.time=night] : Evening. I've done my day, so whatever it is, it's talk only. | It's late, #address#. What's wanted?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Out with it, plainly. I've no time for faces. | You've a look I don't care for. Well?
+dlg @1 resident.job [self.role=merchant self.working=yes] : #self.trade_words.capitalize#. I break the sides, cut the joints and call them after ships, and the regulars buy them anyway. | Meat. Every cut on the block, and a word for every one.
+dlg @2 resident.job : Busy hands, open ears. In this city that's most of a living. | Whatever needs doing, and quickly. I'm not good at slow.
+dlg @1 resident.bye : #farewell#. Bring me something worth hearing next time. | #farewell#, #address#. Don't be a stranger.
+dlg @2 resident.bye [here.time=night] : Good night. Mind the cobbles at the gate. | Good night. I'll want the rest tomorrow.
+dlg @1 resident.news [world.news] : Off the carts from #world.news_from#: #world.news#. Had it before anyone, mind. | Word from #world.news_from#, in at dawn with the drovers: #world.news#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at the Hall. You'll hear nothing else today.
+dlg @3 resident.news [world.wagons=raided] : Robbers took a wagon on its way down to us. The drovers came in pale. Have a care on the road.
+dlg @4 resident.news [world.death=recent] : A burying on our street this week. Northgate's been hushed since, and so have I, near enough.
+dlg @5 resident.news [world.wedding=recent] : A wedding! I sold the roast for it. Best order of the month.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And that's not for want of asking, believe me. | Nothing through the gate worth repeating. You'd have had it from me first if there were.
+dlg @1 resident.gossip [here.gossip=yes] : They're saying #topic.subject# #topic.claim#. That's how it reached me. Plain, as I had it.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=death|violence] : It's a sad one. #topic.subject.capitalize# #topic.claim#. I'll not say more.
+dlg @3 resident.gossip [here.gossip!=yes] : #gossip_none# Which is a first, for me. | Nothing today. The gate's been dull as ditchwater.
+dlg @1 resident.business [business=thriving] : Every hook bare by noon, and loin gone twice this week. | Busy enough to want two more paws.
+dlg @2 resident.business [business=steady] : Steady. Folk eat, and I cut. The rent's covered and then some. | Steady enough. I'd do better if the carts kept time.
+dlg @3 resident.business [business=failing] : Poorly. Folk are buying the cheap end, and not much of that. | Bad, and no use hiding it. The hooks are full and the till isn't.
+dlg @1 shop.greet [here.shop=open] : #greet#. Brigs, cutters and luggers today. Shoulders, loins and chops, if you're not a sailor. | #greet#, #address#. Name the joint and I'll cut it to the weight.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#. I put a good cutter by, hoping you'd come. | #greet#, #topic.player#. The usual cut, or a ketch for a change?
+dlg @3 shop.greet [here.shop=bare] : #greet#. Bare hooks, I'm afraid, till the drovers are in. I'd buy meat off you, mind. | Nothing hanging. The carts have let me down again.
+dlg @1 shop.prices : #shop_dear# Mutton goes with the carts. When they're late, it's dear. | It's all on the slate. Ask me tomorrow and the slate will have changed.
+dlg @1 shop.bye : #shop_bye# Cook it slow, mind. | #farewell#. Tell them where you bought it.
+graft resident.hub
+choice Can you really tell every ship on the Sound? [here.region=ridgemere] -> rigs
+node rigs
+say Every rig, yes. Not every name; I'm no harbourmaster. A brig's two masts and square sails. A cutter's one mast and a long boom. That's the start.
+mood keen
+free
+choice Why do you care so much? -> rigs_why
+choice Back to what I was asking. -> hub
+node rigs_why
+say Everything this city has comes in on one, or through the gate. And they're lovely, and nobody in the Hall will admit it but me.
+mood pleased
+choice I'll look at them differently now. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Why do you call that joint a brig? [here.shop=open] -> brig
+node brig
+say Look at it. Broad in the beam, two masts of bone, a deep hold of meat. A brig. The loin's a cutter, the chops are luggers, the neck's a fishing smack.
+mood keen
+free
+choice I'll take a brig, then. -> greet
+choice Goodbye. -> bye

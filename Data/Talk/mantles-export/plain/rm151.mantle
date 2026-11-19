@@ -1,0 +1,331 @@
+# rm151, the square-by-dark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm151
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mathis_saltton
+written_by claude
+title the square-by-dark
+fits stage=adult|old
+prefers job=merchant temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk settles_every_debt_before_the_lamps_are_lit
+likes blackberries cards market_bustle autumn_wind
+dislikes drizzle wet_floors
+fears dying_with_a_name_on_the_slate a_debt_that_cannot_be_found_to_pay
+hopes a_clean_slate_every_night_of_the_year the_young_one_reckoning_better_than_me
+topics work +0.4 prices +0.3 weather +0.3 pastimes +0.3 family +0.2 gossip -0.2 festival -0.4
+styles comfort=quiet gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# helps behind a counter in the Commons and will not sleep on a debt, owed or owing: quiet, short with anyone who says "tomorrow", stubborn as a stuck door, and given to standing still in an autumn wind as if somebody had called from a long way off.
+
+words
+oath! = Crusts and quittance | Quits by lamplight
+saying! = A debt goes stale quicker than a loaf | Square by dark, sleep by dark | Owing keeps nobody warm
+slate = the slate | the tally slate by the till
+farthing = a farthing | a quarter-penny
+lamps = the lamps | the street lamps
+round = my round | my walk before the lamps
+brambles = the brambles on the city ditch | the ditch brambles
+berries = blackberries | a capful of blackberries
+cards = cards | cards at the back table
+peas = dried peas | a saucer of dried peas
+gust = an autumn gust | the hill wind in autumn
+drizzle = drizzle | this half-hearted wet
+boards = the boards | my clean boards
+paste = a floor like porridge | grey paste underfoot
+crowd = the square at full cry | Market Square at its loudest
+hm = Hm | Mm
+
+any
+opinion @1 city for 1 : Ridgemere does right by anyone who pays their way. I've never wanted another roof, and I've never been owed long by one.
+opinion @1 festivals against 1 : Festival week, half the street eats on tick and forgets it by Restday. I stop in, and I keep the slate short.
+opinion @1 houses for 1 : I'll speak up for the Houses on one count. Their stewards settle on the day it's due. Half the Commons can't say as much.
+opinion @1 newcomers for 1 : New faces, new coin. I'll serve anyone the once. After that it depends how they pay.
+opinion @1 strangers for 1 : A traveller pays on the nail. No slate, no promises, no "Restday, honest". A stranger's the best payer there is.
+opinion @1 times for 1 : Bread on the board and a dry roof. Folk who want the times to hand them more than that try my patience, and it's short.
+opinion @2 times against 1 [world.times=hard|lean] : The slates are getting long all down the street. Long slates mean short tempers. Mine's short to start with.
+opinion @1 merchants mixed 0 : There's fair scales on the square and short ones. I could name every short one. I won't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. New to the street, by the look. | #greet#. I can't put a door to your face yet.
+line @2 greet [self.working=yes] : #greet#. Wipe your paws; I've just done #boards#. | #greet#. Say it while I count.
+line @3 greet [here.time=dawn] : Morning. The lamps aren't even out yet. | Morning. You're about early.
+line @4 greet [here.time=dusk|night] : Evening. One more door to knock before the lamps are all lit. | Evening. You're out after the lamplighter.
+line @5 greet [pair.band=friends|family|spouses] : Ah. You. The stool's free. | You. Good. Saves me a walk.
+line @6 greet : #greet#. | #hm#. #greet#.
+line @1 kin.open [pair.kin!=no] : You're home. Boots off; the floor's done. | Sit down. There's supper put by.
+line @1 again.open : Twice today. That's a call with a reason behind it. | You again. I'm not complaining.
+line @1 greet.return : #greet#. | #greet#. Say on.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. We're square, you and I, so sit. | #greet#. Nothing between us but the weather.
+line @3 greet.return [self.working=yes] : #greet#. Mind the wet patch. | #greet#. I'm counting. Go on anyway.
+line @4 greet.return [here.time=dusk|night] : Evening. I've only now come in from settling up. | Evening. Quick, then; I'm on my way round.
+line @1 farewell : #farewell#. | Right. That's me.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the steps; they go slick after dark. | Off home. Nothing owed between us tonight.
+line @1 farewell.return : #farewell#. | And you.
+line @2 farewell.return [pair.band=friends|family|spouses] : Go on. We're square. | Mind the third step down; it rocks.
+line @1 react.news : #hm#. Go on. | Right. Say the rest.
+line @1 react.news.new : #oath#. That's new. | That never crossed my counter, and most things cross it.
+line @1 react.news.known : #knew#. It went round the square before noon. | Heard it twice already. Once would have done.
+line @1 react.news.doubt : I'd want it from someone who pays their debts. | #doubt#. News gets dearer the further it's carried.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad. Words won't mend it, so I'll keep mine. | #pity#. I hope somebody sees that house right.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Something's come out square for once. | #gladnews#. If there's a round stood, I'll pay my share.
+line @1 answer.how : Well enough. Nothing owing. | Fair. The slate's clean, so I'm fair.
+line @2 answer.how.busy [self.working=yes] : Busy. Don't stand on the wet bit. | Up and at it since the lamps went out, and nowhere near finished.
+line @3 answer.how.poorly : Out of sorts. It'll pass if I let it. | #poorly.capitalize#. I'll not make a song about it.
+line @1 ask.how : And you? Keeping square? | Well? Everything paid up at your end?
+line @1 sympathise : #sympathy#. Sit a moment. No need to talk. | That's a heavy one. I'll not make it lighter with talk.
+line @1 reassure : Things square up in the end. They do. | Seven days. Most things square up inside seven days.
+line @1 decline : I'd rather not. I never start what I can't finish before the lamps, and this wouldn't be. | Not today. I've my round to walk before the lamps, and it won't wait.
+line @1 accept_decline : #no_matter#. I'd sooner a straight no. | Fair. Asking's free; nobody owes for it.
+line @1 thank : #thanks#. I'll pay that back. I always do. | Obliged. That's on my slate now, and it won't stay there long.
+line @1 deflect_thanks : No need. It's not a debt. | Don't. Then neither of us owes.
+line @1 preclose [self.working=yes] : Right. The floor wants doing again. | That'll do. The counter won't mind itself.
+line @2 preclose : Well. There's a door I'm due at before dark. | #preclose#. I'll be off.
+line @1 accept_preclose : Go on, then. | Right. Off you go.
+line @1 ack : #hm#. | #bc_right#
+line @1 give.advice : #advise.capitalize#: pay it the day it's owed. Never mind next week. | A debt kept a week gets paid twice: once in coin, once in sleep.
+line @1 warn [world.bandits=near] : Road's bad, they say. Take three friends with you, or stop home. | #warn#. Nobody with sense walks out of the gate alone this week.
+line @1 take_offence : Every farthing I've ever owed is paid. Don't you say different. | That's my name you're talking about. Mind it.
+scene lamp_round
+when topic=day|work here.time=dusk here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Every evening, before the lamplighter's done, I walk round and settle up. Every farthing, owed or owing. | I've two calls to make tonight, and the lamplighter's already on our street. | That's my round done. Four doors, and I'm square with every one.
+b : Every evening? | Two calls? | Four doors in one night?
+a : Every one. A debt left overnight sets like mortar. | One I owe, one owes me. Both are getting seen to before dark. | Small sums. Small sums are the ones folk forget.
+b : #bc_fair_enough# | Better you than me. | #bc_wise#
+
+scene slate_names
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : #slate.capitalize# has three names on it this morning. By dark it'll have none. | I don't let a name sit on #slate# past one evening. It's not a parlour. | Somebody chalked a new name on #slate# while I was in the back. No sum beside it.
+b : What if they don't come in? | It's only chalk. | No sum at all?
+a : Then I go to them. Most are glad to be reminded. Some aren't. | It's a promise in chalk. Wipe it and you're done; leave it and it hardens. | No sum. I'll find out what was meant. A blank's worse than a big number.
+
+scene no_tick
+when topic=work|prices self.job=merchant
+does tell.self / react.self / assess
+a : Somebody new asked for it on tick today. I said cash, or come back with someone who'll speak for you. | I'll give tick to folk I know. Folk I don't know pay on the nail. | There's a wolf up the street owes half the shops in it. Not ours. I saw to that.
+b : That's hard on a newcomer. | Seems fair. | How did you manage it?
+a : Hard's better than owing. The newcomer came back with a neighbour, and that was that. | It is fair. Nobody's offended twice. | I said no the first time and every time after. It's not clever.
+
+scene wet_boards
+when topic=weather|work here.outdoors=rain self.working=yes
+does tell.complaint / react.complaint / assess
+a : Wet from dawn, and the whole street's walked in across my floor on folk's paws. | #boards.capitalize# were clean at six. Look at them now. | Grit on the boards and wet on the paws. That's #paste#, and it's me that scrapes it.
+b : It's only water. | They'll dry. | Put a sack down by the door.
+a : It's water and grit and whatever's off the cobbles. On my floor. | They'll dry when it stops raining, which is never. | There's a sack. They walk round it like it's a hole. All of them.
+
+scene half_drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.self / assess
+a : #drizzle.capitalize#. It's been trying to rain since breakfast and can't manage it. | I'd rather a proper downpour. At least you know where you stand. | Drizzle like this gets in at the collar and stays all day.
+b : It'll lift by noon. | A downpour's worse. | My collar too.
+a : It won't. It'll hang about like a wolf who owes you money. | It's honest. This stuff's only damp with notions. | Then you know. It's in for the day.
+
+scene autumn_gust
+when topic=weather|season here.season=autumn here.outdoors=clear|overcast|storm
+does tell.feeling / react.self / assess
+a : Wind's come down off the hills. I stepped out into it and forgot what for. | #gust.capitalize#. Best weather going. Nobody's talking me round on that. | My eyes were running in that wind this morning, and I stayed out in it anyway. Don't ask me why.
+b : You'll catch your death. | Most folk hate it. | Your eyes ran?
+a : Not in one gust. I've stood in worse. | Most folk are wrong. It blows the street clean. | Wind does that. I didn't mind. I don't mind much, in autumn.
+
+scene ditch_brambles
+when topic=food|season here.season=summer|autumn here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I had #berries# off #brambles# this morning. Ate half before I got back. | The brambles are thick this year. I've a purple paw to prove it. | Somebody's been at my brambles before me. Picked them bare.
+b : Whereabouts? | Did you save any? | Your brambles?
+a : Along the ditch below the wall. I'm not saying where exactly. | A bowlful. The rest went in me on the way home. | Not mine. Nobody's. But I'd been watching them ripen, and that feels like owning.
+b : I'll not ask, then. | #bc_lovely# | #bc_ha#
+
+scene back_table_cards
+when topic=pastimes
+does tell.self / react.self / assess
+a : I play cards of an evening. For #peas#, never coin. | Cards after shutting. I lose most nights. It doesn't trouble me. | We had a hand going late last night. Nobody owed anybody by the end.
+b : Why not for coin? | You don't mind losing? | Nobody?
+a : Because coin lost at night has to be found by morning. Peas don't. | Not for peas. Lose a pea, shell another. | Nobody. I saw to it. You don't leave a card table owing.
+
+scene cards_window
+when topic=pastimes|friends here.time=dusk|night
+does tell.self / ask.detail / answer.detail / assess
+a : I'm poor at cards. The wind gets up outside and I forget what's been played. | They kicked me under the table tonight. Three times. My turn, and I was off watching the shutters. | I won a hand tonight. First this month. I shared the peas round so nobody went home short.
+b : Why play, then? | What was out there? | Why share them?
+a : For the company. Nobody minds a quiet one at cards, provided the peas are paid. | Nothing. The lamp across the way, swinging. It's worth looking at, if you ask me. | Because then I can sleep. Winning's no good if somebody walks home owing.
+b : #bc_ha# | #bc_fair_enough# | #bc_fair#
+
+scene full_square
+when topic=pastimes|day here.region=ridgemere here.day=market
+does tell.feeling / react.self / assess
+a : Marketday. I'll walk through #crowd# on my way back, slow as I like. | This morning I stopped dead in Market Square and let the noise go round me. | Nothing beats a full square for noise. Everybody wanting something at once.
+b : I'd be out of there quick. | Didn't you get knocked about? | It's a racket.
+a : Not me. I don't like crowds, mostly. That one I'd stand in all day. | Now and then. In that crowd I'm nobody's creditor and nobody's debtor. | Aye. A racket worth hearing. Better than a quiet street.
+
+scene the_young_one
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I want my #self.child# quicker at sums than I ever was. That's my whole hope, near enough. | One rule I'll leave my #self.child#: owe nobody, and let nobody owe you long. | Some evening I'll take my #self.child# on my round. Not yet. When the reason will make sense.
+b : A fair thing to wish for. | Hard rule for a young one. | Why wait?
+a : It is. A quick head and a clean slate. You can't ask better. | Hard now, easy later. That's most rules worth having. | Because a pup thinks it's a walk. It isn't. It's keeping your word.
+
+scene the_boss_bakes
+when topic=work|friends self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss.capitalize# does the clever part. I keep the counter and the slate. It's a fair split. | I'll not have #self.boss# chasing debts. That's my job, and I'm better at it. | #self.boss.capitalize# would let a slate run a month. I'd not let it run a night.
+b : Sounds like you suit each other. | Better at it? | A month?
+a : We do. Two quiet ones in a shop; it suits the customers. | I'm worse at everything else, so I'd better be. | So the chasing's mine. Every shop wants one hard head.
+
+scene neighbour_key
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : I'd hand #self.neighbour# my key and my slate and not think twice. | Not one farthing has gone owing between #self.neighbour# and me. That's what I call a neighbour. | Living next to #self.neighbour# is easy. Nothing borrowed that isn't brought back.
+b : That's rare. | Not a farthing? | That's all you want.
+a : Rare, aye. I don't hand that out. | Not one, in all the years. I'd remember. | It is all. The rest is weather.
+
+scene gossip_passed
+when topic=gossip here.gossip=yes topic.claim_kind=other|newcomer|marriage|promise_kept
+does tell.gossip / react.news / assess
+a : Word over the counter is that #topic.subject# #topic.claim#. I've added nothing. | Heard #topic.subject# #topic.claim#. I'll pass it on bare; I'll not dress it. | Somebody had it that #topic.subject# #topic.claim#. I kept my mouth shut. It's none of mine.
+b : #bc_so_they_say# | You don't sound sure. | #bc_fair#
+a : Not my business. I'll keep it not my business. | I'm sure it was said. I'm not sure of more than that. | Fair is the word. Let #topic.them# settle #topic.their# own affairs.
+
+scene promise_broken
+when topic=gossip|crime topic.claim_kind=promise_broken
+does tell.gossip / react.news / insist / assess
+a : They say #topic.subject# #topic.claim#. A promise is a debt. I'd not forget it. | Heard #topic.subject# #topic.claim#. Somebody's owed, then, and somebody's ashamed. | #topic.subject.capitalize# #topic.claim#, they say. Well. I'll be remembering that one.
+b : Maybe there's a reason. | Hard words. | Folk forget.
+a : There's always a reason. It still wants paying. | They're the right words. A promise broken is a debt left on the slate. | Folk forget. That's why somebody has to remember.
+b : #bc_fair_enough# | #bc_true# | #bc_maybe#
+
+scene theft_talk
+when topic=gossip|crime topic.claim_kind=theft
+does tell.worry / reassure / assess
+a : Word is #topic.subject# #topic.claim#. I've been over the till twice since. | Theft again. #topic.subject.capitalize# #topic.claim#. I'll be locking the back an hour earlier. | #topic.subject.capitalize# #topic.claim#, they're saying. Taking's worse than owing. At least owing gets paid.
+b : Leave it to the Watch. | That's a nuisance. | Mostly it does, aye.
+a : They'll see to it after. I'd rather nothing wanted seeing to. | A nuisance. It costs me an hour each night. I'll manage. | Mostly. Taking never does. That's the difference.
+
+scene long_slates
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Slates are getting long all down the street. Folk who've always paid on the nail are asking for tick. | Times are lean. I've let two names sit a week. First time since I can remember. | Hard times show you who'll pay late and who won't pay at all.
+b : It's not their fault. | That must sit badly. | Most will pay, surely.
+a : It isn't. It still has to be carried by somebody. | It does. I'm not sleeping right. I'll be glad when they're cleared. | Most. I know which ones. I always know.
+
+scene good_trade
+when topic=times|work world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. Everybody's paying on the nail. #slate.capitalize# is clean by noon. | Coin about, and folk paying old debts I'd near given up on. | When times are good, I've nothing to chase. My evenings go empty.
+b : That's a fine thing. | Near given up? | Play cards.
+a : It is. Won't last. Still, it is. | Near. Never quite. A sum's a sum till it's paid. | I do. For peas. I'm not daft.
+
+scene carts_late
+when topic=caravan|prices world.wagons=late
+does tell.worry / reassure / assess
+a : No carts again. Every shop on the street runs short, and the slates run long behind them. | No carts in today. Late carts, early tick. Always the way. | I heard the North Road's slow. That's flour, salt and patience all going up.
+b : They'll be in by Marketday. | Can't be helped. | Patience isn't sold.
+a : Then I'll clear the slates on Marketday. Not before. | It can't. It can be counted, though, and I'm counting. | No. And there's never enough of it about.
+
+scene festival_tabs
+when topic=festival
+does give.opinion / disagree / assess / ack
+a : Festival's coming, and half the street will eat on tick and forget it after. | I don't go to festivals. Somebody has to be sober at the counter on the morning after. | Noise and ale, and a long slate once the noise stops. I'll stop in.
+b : Once a year won't hurt. | You'll miss the music. | Come out for an hour.
+a : Once a year is how a slate starts. | The music carries. I'll have it from the doorstep. | An hour, then. I'll pay as I go.
+b : #bc_ha# | #bc_fair_enough# | #bc_good#
+
+scene newcomer_paid
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody's taken the empty rooms along our way. Paid cash the first day. I'll remember that. | Somebody I've never seen asked me for tick today. I said come back in a month. | New folk again. I serve them once, and then we'll see how they pay.
+b : Good start. | A month? | Fair test.
+a : Good start. Cash on the first day says a lot. | A month. If they're still here, they're staying. Then we'll talk. | It's the only test I know. Never once wrong.
+
+scene plate_faith
+when topic=faith
+does tell.self / react.self / assess
+a : On Restday the plate gets whatever cards would have cost me that week. | I'm no chapel wolf. I go, I take the end of a pew, I pay my bit. That's my share. | One thing I want from the Bright One: to go owing nobody.
+b : That's a decent way. | That's enough for most. | A good prayer.
+a : It's an honest way. I don't know any other. | Enough. The Bright One's slate is longer than mine, and kept straighter. | That's my one prayer. Every night, the same.
+
+scene clean_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #slate# was wiped clean and wouldn't take chalk. Wouldn't take it at all. | I dream of a street where nobody owes anybody. It's very quiet. | I dreamt the wind blew every lamp out before I'd done my round. Woke up cross.
+b : Was that a good dream? | Quiet? | Did you finish it?
+a : Good, I think. Odd. I kept trying, all night. | Nobody calling round. Nobody to call on. I'd be lost in it. | Not in the dream. I went round anyway, in my nightshirt, when I woke. It was fine.
+b : #bc_ha# | #bc_maybe# | #bc_true#
+
+story gale_farthing [topic=memories self.age>=30 here.region=ridgemere]
+  : Years back I gave a customer from up the Rise the wrong change. A farthing short.
+  : I didn't notice till dark. There was a gale off the hills, and I went up the hill in it, the whole way.
+  ask : Would you have gone up, for a farthing?
+  b : I would, if I'm honest. A farthing's a farthing.
+  b[wealth=poor|destitute] : A farthing's not nothing. I'd have gone too.
+  : The servant at the door laughed at me. I didn't care. I came down square, and I slept.
+
+story stubbed_name [topic=memories self.age>=40]
+  : An old customer of ours once died with a small sum on the slate.
+  : Nobody else knew. I could have left it. I put the coin in the till myself and rubbed the name out.
+  b : That's a decent thing. Why did it matter to you?
+  : I'd not have a name on my slate with nobody left to settle it. That's all.
+
+story night_cards [topic=memories|pastimes self.age>=25]
+  : I was young once, and daft with it. I lost more at cards than I had on me.
+  : I walked the city all night to scrape it together, and paid it back by first light.
+  ask : Anything ever kept you awake that way?
+  b : Now and then. I never walked the streets for it.
+  b[stage=young|adolescent] : Not yet. I've nothing to lose at cards.
+  : Buttons ever since. Never coin. I learned that the once.
+
+rule @slate_bark
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Anybody on the slate, today's a good day to see it settled. | Cash or a name I know. Those are the terms.
+
+rule @dusk_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Lamplighter's out. Time I was round. | Lamps soon. #saying#.
+
+rule @floor_bark
+when concept=bark here.outdoors=rain working=yes
+does aside
+cooldown 8h
+say Paws on the sack, if you please. | That's #paste# again. Every blessed morning.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast|storm
+does aside
+cooldown 12h
+say Listen to that wind. | There it is. #gust.capitalize#.
+
+dlg @1 resident.hub : #greet#. What's wanted? | #greet#. Out with it; I'm counting.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're square with me, so ask away. | #topic.player#. Paid on the nail last time. I don't forget that.
+dlg @3 resident.hub [here.time=night] : Evening. I've done my round, so I've a minute. | Late for callers. Make it short.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #hm#. Stop where you are and say it. | I'll hear you. I'll promise nothing.
+dlg @1 resident.job [self.job=merchant] : The counter and the slate. I sell, I sweep, and nobody leaves owing. | #self.trade_words.capitalize#. I keep the slate. Nothing stays on it past dark.
+dlg @2 resident.job : Busy, and square. Ask anybody on the street. | Work, and an errand round the street at dusk. Every evening.
+dlg @1 resident.business [business=thriving] : Busy, and paying on the nail. Can't ask better. | Doing well. #slate.capitalize#'s clean most days.
+dlg @2 resident.business [business=steady] : Steady. Folk pay, mostly. | Steady enough. I'd rather steady than clever.
+dlg @3 resident.business [business=failing] : Poor. The slate's longer than the till. | Badly. Too much owing and not enough paying.
+dlg @1 resident.news [world.news] : Off the road from #world.news_from#: #world.news#. I'll vouch for the telling, not the truth. | They're saying #world.news#. From #world.news_from#, so I'm told.
+dlg @2 resident.news [world.event_words] : Nobody at the counter's on about anything but #world.event_words# today.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nobody owes me news. | Nothing I'd pass on. Ask on the square.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Not from me.
+dlg @1 resident.bye : #farewell#. | Right. Mind how you go.
+dlg @2 resident.bye [here.time=dusk] : #farewell#. I've my round to walk.
+graft resident.hub
+choice Where do you go every evening? -> round
+node round
+say Round the street, before the lamps are lit. Anything I owe, I pay. Anything owed me, I ask for. Nothing sleeps on the slate overnight.
+mood calm
+free
+choice What if they can't pay? -> round_cant
+choice Goodbye. -> bye
+node round_cant
+say Then they tell me when they can, and I hold them to it. A day named is half paid. #saying#.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye

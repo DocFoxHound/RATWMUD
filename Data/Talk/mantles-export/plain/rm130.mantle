@@ -1,0 +1,312 @@
+# rm130, the clerk who times the rain (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm130
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_philippa_coldby
+written_by claude
+title the clerk who times the rain
+fits stage=adult|old
+prefers job=scholar honesty=sly
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk times_every_shower_by_the_court_clock
+likes mutton_stew dancing new_boots autumn_wind
+dislikes rats drizzle
+fears rats_in_the_record_room a_page_gone_missing_on_my_watch
+hopes a_week_with_nothing_to_enter a_reel_at_every_feast
+topics weather +0.4 work +0.4 crime +0.3 festival +0.2 pastimes +0.2 gossip -0.2 faith -0.3
+styles comfort=practical gossip=guarded refuse=soft tease=none
+marks oath saying
+persona #self.first# writes a square, careful hand, answers exactly what was asked and not a word more, times every shower against the court clock, and is the last wolf anybody would expect to see dancing a reel on a feast night.
+
+words
+oath! = Entered and witnessed | So noted | Strike that
+saying! = Paper remembers what folk forget | Nothing's settled till it's sanded and signed | Ask the question you want answered
+clock = the court clock | the clock over the bench
+showers = showers | the day's showers
+tally = my rain tally | the little column of times
+docket = the docket | the morning's docket
+book = the court book | the daybook
+hand = a square hand | my plain square hand
+stew = mutton stew | mutton stewed since breakfast
+boots = new boots | the new boots
+wind = an autumn wind | a good gusting wind
+rats = rats | rats in the record room
+drizzle = drizzle | that grey stuff with no edges
+reel = a reel | a reel on a feast night
+record = the record | the written record
+seal = the seal | the court's seal
+
+any
+opinion @1 church against 1 : The collection plate moves quicker than any prayer in that chapel. I've timed both. | My coin goes in at the door, quietly. Nobody needs to count it.
+opinion @1 watch against 1 : #watch.capitalize# have their noses in every affair but their own, and their reports in the worst hand in Ridgemere. | They write "about noon". About. I ask you.
+opinion @1 city for 1 : This city keeps records older than any House. That steadies me. | It rains, it argues, it writes everything down. It suits me.
+opinion @1 houses mixed 0 [self.job!=scholar] : The Houses settle their quarrels out of court. That tells you a good deal, if you're listening.
+opinion @2 houses against 1 [here.region=ridgemere self.job=scholar|official] : I've copied too many wharf inquests with a Grayrock seal at the foot. Officially, that's the end of my remarks.
+opinion @1 festivals for 1 : One night a season I dance, and nobody from the court is invited to watch. | A feast's the only night the city stops writing things down.
+opinion @1 newcomers mixed 0 : Newcomers are neither here nor there to me until they appear in the register. Most do, eventually.
+opinion @1 merchants mixed 0 : Most of them keep honest books. The rest I meet in court.
+
+grown
+line @1 greet : #greet#. You've a question, I expect. Most folk do. | #greet#, #address#. Brief, if you can.
+line @2 greet [pair.band=strangers] : #greet#. I don't think we've met. I'd remember the face, if not the name. | #greet#. A new face. I'll take it as I find it.
+line @3 greet [self.working=yes self.job=scholar|official] : #greet#. I'm between entries; you have a minute. | #greet#. The court's in session, so quietly.
+line @4 greet [here.time=dawn] : Morning. The day's not started asking things of me yet. | Good morning. The sky's been inspected and found wet. Old habit.
+line @5 greet [here.time=dusk|night] : Good evening. The day's book is shut, and so is my working face. | Evening. You've caught me off the record.
+line @1 greet.return : #greet#. Back again. I'll note that. | #greet#. I thought we'd finished, but go on.
+line @2 greet.return [pair.band=friends|family] : Ah. You. Sit, and I'll stop being a clerk for a while. | Good. A stew's on, should you stay.
+line @3 greet.return [here.time=dusk|night] : Evening. If it's business, it can wait for the morning. | Good evening. Sit; the clock's stopped counting for today.
+line @1 kin.open [pair.kin!=no] : Sit down. I've had a day of other folks' troubles and I'd like an ordinary one. | Come in. Nothing official, I promise.
+line @1 again.open : A second visit in one day. I'll put it down to my company. | You've come back. Something I said, or something I didn't.
+line @1 farewell : #farewell#. Mind the gutters; they overflow at the corner. | #farewell#. If anyone asks, we discussed the weather.
+line @2 farewell [here.time=dusk|night] : Good night. Walk where it's lit; the Watch won't. | Good night. Rest well, and sign nothing before morning.
+line @1 farewell.return : #farewell#. That's that, then. | #farewell#. Noted, and good day.
+line @1 react.news : Go on. Start where it starts. | I'm listening. Leave out what you guessed.
+line @1 react.news.new : That's not crossed my desk yet. It will. | Is it. That's new, unless someone's lying.
+line @1 react.news.known : Heard it already. The morning's papers had it, near enough. | Yes. It's on file, so to say.
+line @1 react.news.doubt : Who swore to it? Nobody, I suspect. | I'd not enter that as fact. Not yet. Possibly not ever.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a grievous thing. I'm truly sorry. | Oh. That's hard. There'll be paper on that, and not a page of it will help.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's an entry I'd be glad to make. | Good. Let it be written in a fair hand.
+line @1 answer.how : Even. My desk is tidy and my boots are dry. | Well enough. Nothing has gone missing today.
+line @1 answer.how.busy [self.working=yes self.job=scholar|official] : Busy. Four cases and a dispute over a hen. | The docket's long and the light's short. Otherwise well.
+line @1 ask.how : You look as though something's happened. Has it? | How do you do, then? The real answer, not the one for the court.
+line @1 sympathise : Hard. None of it goes in any book, if that's your worry. | I'm sorry. Truly. Take a moment; nobody here is counting.
+line @1 reassure : These things have a way of settling. Most of what I copy does. | It's not over until it's signed. There's time yet.
+line @1 decline : Forgive me, I'd sooner not. It's not my place, and it's not my pen. | Not today, I'm afraid. I've work to keep and a hand to keep steady.
+line @1 accept_decline : Understood. I'll not press it. | Fair. In your seat I'd answer likewise.
+line @1 thank : #thanks#. I'll remember that, in a good column. | That was kind. More than was owed.
+line @1 deflect_thanks : It was nothing. Only what was asked. | No need. It was all in order.
+line @1 preclose : Well. I'll keep you no longer. | My desk wants me back before the ink dries without me.
+line @1 accept_preclose : Of course. We'll leave it there. | Go on, then. The rest will keep.
+line @1 ack : Noted. | Entered.
+line @1 give.advice : Write it down, then make a second copy for yourself. | Never sign anything on a wet day. The ink runs, and so do the terms.
+line @1 warn [world.bandits=near] : Stay within the walls. There've been reports, and they read badly. | Keep off the highway till the week's out. I'll say no more, but don't.
+scene shower_by_the_clock
+when topic=weather here.weather=rain self.working=yes self.job=scholar|official
+does tell.self / ask.detail / answer.detail
+a : Third shower since the bench sat. Nine minutes past, by #clock#. | That one stopped at twenty to eleven. It'll be back by the half. | I keep #tally# down the side of my blotter. Start, stop, start again.
+b : Why time them at all? | How do you know it'll be back? | What does it come to?
+a : Because nobody in the court can argue with a shower. | Because it was back by the half yesterday, and the day before. | Eleven showers on a good day. Twenty on a bad. I've never had none.
+
+scene not_stopping
+when topic=weather here.weather=rain|overcast here.region=ridgemere
+does tell.self / react.self / assess
+a : It stopped for four minutes this morning. I watched each of those minutes go. | Every day I think it might stop properly. It never yet has, and still I watch. | The rain hasn't missed a day this month. I have that in writing.
+b : Four minutes isn't much. | It might, one day. | You've written down a month of rain?
+a : It's more than yesterday. I'll take four. | It might. If it does, I mean to have seen it first. | A month, day by day. In a column. It's very orderly, rain.
+
+scene the_grey_stuff
+when topic=weather here.weather=rain|fog self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : This is drizzle. It has no start and no stop. I can't time it at all. | I'd sooner a downpour. A downpour at least begins and ends. | #drizzle.capitalize# gets into the papers and the pages curl. I hate it.
+b : It's still rain. | A downpour's wetter. | Keep the window shut.
+a : It's not rain. It's damp that's lost its way. | Wetter, but honest about it. | I do. It comes under the door like a petitioner.
+
+scene the_autumn_gusts
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : A good gusting wind, the leaves going sideways. I'd stand out in that till dark. | A gust took a whole sheaf of somebody's papers clean down the street. I laughed. Nobody else did. | Autumn's the only season the rain comes in sideways. That's its charm, to me.
+b : It'll take your hat. | Whose papers were they? | Sideways rain's worse.
+a : Let it. I've another hat, and the wind's not here for long. | Not mine. I'll say that much. | Worse for the windows. Better for the soul.
+
+scene new_boots_squeak
+when topic=pastimes|smalltalk self.likes=new_boots
+does tell.self / react.self / assess
+a : I've new boots. They squeak on the court steps and everybody turns round. | New boots are the one extravagance I allow. Good leather, proper soles. | There's nothing quite like stepping into a puddle in new boots and staying dry.
+b : They'll stop squeaking. | Proper soles matter, in this city. | And if they leak?
+a : I know. I'll be sorry when they do. | They do. Dry paws matter more to me than coin. Nearly. | Then I take them back, with the receipt. I always keep the receipt.
+
+scene the_stew
+when topic=food self.likes=mutton_stew
+does tell.self / react.self / assess
+a : Mutton stew, cooked slow from the morning, and eaten after dark. That's my Restday. | I put the stew on before the court sits and it's ready when I'm home. | Stew's the single thing I cook without measuring.
+b : Mutton wants slow cooking. | That's good planning. | Without measuring? You?
+a : It is. The meat knows when it's done. I only wait. | It's not planning. It's knowing what the day will take out of me. | Even me. Somebody has to be allowed one untidy thing.
+
+scene feast_night_reel
+when topic=pastimes|festival self.likes=dancing
+does confide / react.self / assess
+a : I dance on feast nights. Reels, mostly. Nobody I work with would believe it. | Once a season I put the pen down and dance till my feet ache. | The quickest reel in Ridgemere and I know every turn of it. Don't tell a soul where I sit by day.
+b : I'd not have guessed it. | That sounds a good way to spend a night. | Your secret's safe.
+a : Nobody does. That's half the pleasure of it. | It's the only night the sky goes unwatched. | I know. You've no reason to tell, and I've a good memory.
+
+scene the_feast_coming
+when topic=festival|season world.festival=today|soon
+does tell.feeling / react.self / assess
+a : There's a feast coming. My boots are oiled already. | Work stops early for a feast. I'll be at the dancing before the clock strikes. | Feast days the docket's light and the streets are loud. I like both.
+b : You'll be dancing, then. | Before the clock? | The streets are very loud.
+a : Every reel they'll play. I'm not ashamed. | I've the clock's measure. It doesn't have mine. | They are. One night a season, I can bear it.
+
+scene rats_in_the_files
+when topic=home|work self.dislikes=rats
+does tell.complaint / react.complaint / assess
+a : Something with teeth was in the record room and a deed's lost its corner. A whole corner. | I found droppings in a drawer of wills. Sleep's been poor ever since. | There's a rat behind my larder wall. Nights, it scratches away, keeping its own records.
+b : The whole city has rats. | They'll eat anything with paste in it. | Set a trap.
+a : Not in my drawers, it doesn't. | They will, and they'll leave the tiresome parts. | I have. It reads the trap the way the Watch reads a report. Ignores it.
+
+scene the_docket
+when topic=work here.time=dawn|day self.working=yes self.job=scholar|official
+does tell.self / ask.detail / answer.detail
+a : The docket's eleven long today. Most of it debts, two of it hens. | I write what's said before the bench. Not what's meant. What's said. | Every word from the bench goes into the book in my hand, square and plain.
+b : Hens? | What's the difference? | Why square?
+a : Hens. Always somebody's hen in somebody else's yard. | What's meant is for the magistrate. What's said is for me, and I keep it. | So nobody can say they misread it. Nobody ever has.
+
+scene off_the_record
+when topic=crime|gossip self.job=scholar|official
+does tell.self / ask.detail / answer.detail
+a : I can't tell you what was said in court. I can tell you it's public, if you know where to look. | I wouldn't say I'd heard anything. I'd say there's a file. | There was a case this week. I couldn't possibly. It's on the third shelf.
+b : Where would I look? | What's in the file? | The third shelf?
+a : The City Office, any working day before noon. You'll need a reason. Invent one. | Paper. Reams. You'd have to read it yourself. | From the left. Not that I told you.
+
+scene said_not_claimed
+when topic=gossip here.gossip=yes topic.claim_kind=other|prowling|promise_broken|wanted
+does tell.gossip / react.self / assess
+a : I wouldn't say #topic.subject# #topic.claim#. I'd say it's being said. | It's being said, though not by me, that #topic.subject# #topic.claim#. | Strictly as hearsay: #topic.subject# #topic.claim#. My name stays out of it.
+b : There's a difference? | That's careful of you. | I didn't have it from anybody.
+a : All the difference in the world, in a court. | Care is my trade. | Good. Then we're both covered.
+
+scene heavy_hearsay
+when topic=gossip|crime here.gossip=yes topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+tone serious / grave / even
+a : There's word that #topic.subject# #topic.claim#. If it's so, it'll come before the bench. | You'll have heard: #topic.subject# #topic.claim#. I'm sorry for it. | #topic.subject.capitalize# #topic.claim#. So it came to me. I add nothing.
+b : That's a terrible thing. | It's a sad business. | Best not to.
+a : It is. I'd sooner copy a hundred hen disputes. | It is. It'll need writing down properly, and the pen may be mine. | No. Adding is how a story gets longer than the truth.
+
+scene the_watch_report
+when topic=crime|smalltalk here.region=ridgemere self.job=scholar|official
+does give.opinion / agree / assess
+a : The Watch brought in a report today written in pencil. In pencil. | Their noses go everywhere but their own ledgers. Those are a disgrace. | A watchman told me a thing happened "about noon". There is no about in a court.
+b : They're busy, I suppose. | That's the Watch for you. | What did you do?
+a : So am I, and I use ink. | It is. I've copied their mistakes into the record for years. | I wrote down noon, and underlined about. Let the magistrate decide.
+
+scene wharf_inquests
+when topic=ships|work here.region=ridgemere self.job=scholar|official
+does tell.self / react.self / assess
+tone serious / even / serious
+a : I've copied wharf inquests by the dozen, more than is good for anyone. The seal at the foot is very often the same one. | Every inquest from the piers comes through the clerks' room. I read them all, slowly. | Accidental, they write. Accidental, accidental. I write it too. I don't always believe it.
+b : Whose seal? | That's grim reading. | You think otherwise?
+a : I couldn't say. Officially. You'll know it if you've walked the wharf. | Grim, and badly spelled. I correct the spelling, at least. | I think it's written down. What I think isn't, and won't be.
+
+scene ship_lost_inquest
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : #topic.ship.capitalize#, lost. There'll be an inquest, and I'll copy it. | They say #topic.ship# went down. I'd sooner not have to write that out. | #topic.ship.capitalize#'s gone. #oath#. That's a long page coming.
+b : That's a dreadful thing. | Somebody must write it. | Poor souls aboard.
+a : It is. The page won't say the half of it. | Somebody must. I'll make sure it's in a fair hand, for whoever reads it. | Poor souls. Each name will get my slowest hand.
+
+scene the_lean_docket
+when topic=times world.times=hard|lean self.job=scholar|official
+does tell.worry / agree / assess
+a : The docket's all debts this month. Small ones. That's the surest sign of a bad season. | Hard times fill a court. Not with thieves. With folk who owed a little and couldn't. | Three cases of rent this morning, and all three of them ashamed.
+b : It's the same everywhere. | Sad to see. | Ashamed of rent?
+a : It is. The book doesn't care, and that's what I dislike in it. | It is. I write it plainly, so nobody reads it as worse than it was. | Of owing it. Nobody should be ashamed of that in a court. They are.
+
+scene good_year_docket
+when topic=times world.times=good|boom self.job=scholar|official
+does tell.feeling / react.self / assess
+a : Good times, and the docket's half the length. It's almost pleasant. | Nobody's suing anybody over pennies this month. The court's very quiet. | The good weeks I spend copying old files. It's as near a holiday as I get.
+b : You'll be out of work. | Quiet's good. | A holiday, copying files?
+a : No. Good times only change what folk quarrel over. | Quiet's a rest. It never lasts, so I enjoy it. | It is, for me. Nobody's waiting on them.
+
+scene the_register
+when topic=newcomer|player here.region=ridgemere self.job=scholar|official
+does give.opinion / react.self / assess
+a : New faces turn up at the City Office every week. Most of them end up in the register sooner or later. | Newcomers are no trouble. Unknown names are. That's put right soon enough. | A newcomer two doors along. I'll know more when they sign something.
+b : Do they all end up there? | You learn names that way? | They might never sign anything.
+a : All of them who stay. Paper's patient. | That way, and by asking. I'm better at the first. | Everybody signs something. It's only a question of when.
+
+scene plate_and_prayers
+when topic=faith
+does give.opinion / disagree / insist / backchannel / concede
+a : Prayers are long and the plate is quick. I've a column for each. | My faith is ordinary. I attend, I sit, I count the candles. | The Bright One keeps better records than the Office. I'll allow the chapel that.
+b : That's unkind to the chapel. | Count the candles? | Better than the Office?
+a : It's an observation. I make a lot of those. | Twenty-two, most Restdays. I find it settles the mind. | Fewer gone missing, at any rate.
+b? : #bc_ha# | #bc_fair_enough# | #bc_true#
+a : I'll grant you the prayers are better meant than timed. | Somebody has to keep count, and I've the habit. | We'll leave it there before I say something actionable.
+
+scene a_friend_on_record
+when topic=friends|home self.friend
+does tell.feeling / react.self / assess
+a : I'd tell #self.friend# a thing off the record, and nobody else. That's not a small list to be on. | I've known #self.friend# long enough not to keep accounts. | #self.friend# brings me news nobody else would and never asks what I'll do with it.
+b : Not a small list? | That's a rare thing for you. | That's a friend worth keeping.
+a : It's a list of one. | It is. I've kept accounts of everything else. | It is. I'll keep that friendship in good order.
+
+scene word_from_away
+when topic=news world.news self.job=scholar|official
+does tell.news / react.self / assess
+a : Word from #world.news_from#: #world.news#. It'll be in front of the court by Restday, one way or another. | From #world.news_from#, they say #world.news#. Sworn testimony would convince me. | #world.news.capitalize#. That came from #world.news_from#, so it's had a long way to grow.
+b : Will it really come to court? | Sworn by whom? | Grow?
+a : Most things do, in this city. Eventually. | Somebody who was there. That's always the difficulty. | Stories get longer on a road. The depositions show it.
+
+story first_entry [topic=work|memories self.job=scholar|official]
+  : In my first fortnight with a pen and a stool, the senior clerk told me to note the time of every adjournment.
+  : The court adjourned for rain three times that morning, and I wrote down the rain as well, by mistake.
+  ask : Do you ever keep a habit you started by getting something wrong?
+  b : More than one, I expect.
+  : So do I. I've timed every shower since. It's the most reliable column in the building.
+
+story the_lost_boot [topic=festival|pastimes self.likes=dancing]
+  : At a midsummer feast I danced a reel so fast one of my boots flew off into the crowd.
+  : I finished the reel in one boot and a stocking, and nobody stopped playing.
+  ask : Would you have gone after the boot, or finished the dance?
+  b : I'd have finished the dance, I think.
+  : Quite right. The boot was on my step next morning, polished. Who brought it, I still can't say.
+
+story four_dry_days [topic=weather|memories self.age>=30 here.region=ridgemere]
+  : Once, years ago, I had four days in a row with nothing in my rain column. Four whole days.
+  : The other clerks said I'd forgotten to look. I showed them the blank lines, all initialled.
+  b : In this city? Hard to credit. Did it last?
+  : On the fifth morning it poured so hard the court rose early. I wrote that down with great satisfaction.
+
+rule @tally_bark
+when concept=bark here.weather=rain self.working=yes self.job=scholar|official
+does aside
+cooldown 6h
+say There. Twelve past. Noted. | Stopped. No, it hasn't. Strike that.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain|fog self.dislikes=drizzle
+does aside
+cooldown 8h
+say Drizzle. Nothing to time. | Fall properly or stop. One or the other.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say There goes somebody's hat. | Now that's a wind.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.time=night
+does aside
+cooldown 12h
+say I hear you in there. | Not one more page, do you hear me.
+
+dlg @1 resident.hub : #greet#. How may I help, within reason? | #greet#, #address#. Ask exactly, and you'll be answered exactly.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. I did write your name down. | #topic.player#. I remember. Go on.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. Nothing official at this hour, mind.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'd choose my words carefully, if I were you. I write them down for a living. | Yes? Say it, and say it plainly.
+dlg @1 resident.job [self.job=scholar|official self.working=yes] : #self.trade_words.capitalize#. I write down what's said, keep the book, and time the rain when nobody's looking. | The court's book is mine to keep. Every word in it, square and plain.
+dlg @2 resident.job : I keep accounts, of one kind or another. That's all I'll put my name to.
+dlg @1 resident.news [world.news] : Word came from #world.news_from#: #world.news#. That's hearsay, mind, until somebody swears to it.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's crossed my desk that I could repeat. | Quiet. The weather's the only thing I've written down today.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd sign.
+dlg @2 resident.gossip [here.gossip=yes] : It's being said that #topic.subject# #topic.claim#. I say nothing, myself. You'll note that.
+dlg @1 resident.bye : #farewell#. Mind the gutters. | #farewell#, #address#. You didn't hear any of it from me.
+graft resident.hub
+choice Why do you keep looking out of the window? -> rain
+node rain
+say I'm timing the rain. Every shower, when it starts and when it stops. Years of it. Nobody asked me to.
+mood calm
+free
+choice Has it ever stopped for good? -> rain_stop
+choice Back to what I was asking. -> hub
+node rain_stop
+say Four days, once. I have them in writing, initialled. I'm waiting for a fifth. When it comes, I'll have the minute.
+mood pleased
+choice I hope you see it. -> hub
+choice Goodbye. -> bye

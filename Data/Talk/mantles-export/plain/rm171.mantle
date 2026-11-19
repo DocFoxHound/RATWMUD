@@ -1,0 +1,282 @@
+# rm171, the landing dreamer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm171
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_ingrid_kendrick
+written_by claude
+title the landing dreamer
+fits stage=adult|old
+prefers talk=quiet humour=merry
+traits temper=even talk=quiet warmth=reserved humour=merry honesty=plain piety=ordinary drive=content
+quirk picks_out_a_dream_house_on_the_rise_from_every_landing
+likes roast_pork old_tales fresh_straw first_warm_day
+dislikes bad_manners drizzle
+fears dying_in_a_borrowed_bed
+hopes one_last_winter_in_a_house_on_the_rise
+topics dreams +0.4 lore +0.3 food +0.3 memories +0.3 season +0.2 smalltalk +0.2 prices -0.3 gossip -0.2
+styles comfort=quiet gossip=reluctant refuse=soft tease=merry
+marks oath saying
+persona #self.first# lives near the north gate on very little, says not much and smiles at most of it, and stops on every landing of the long stairs to choose, once again, which grand house up on the Rise is going to be the last home.
+
+words
+oath! = Crackling and candlelight | Gravy and gold leaf | Bless my old ruff
+saying! = Looking up costs nothing | Dream high and sleep where you can | I'll take the one with the balcony
+dreamhouse = the one with the green door | the tall one with the balcony | the house with the copper roof
+rise = the Rise | the grand houses at the top
+landing = the landing | the third landing
+pork = roast pork with its crackling | a fat slice off the roast
+crackling = the crackling | a bit of crackling
+straw = fresh straw | new straw underfoot
+tale = an old tale | a tale told slow
+drizzle = drizzle | that fine wet stuff
+manners = manners | a kind word at the door
+wink = Mm | Heh
+
+any
+opinion @1 times against 2 [self.wealth=poor|destitute] : My pot's emptier every Marketday, and up the hill nobody notices the pinch. Why would it. It's got balconies.
+opinion @2 times mixed 1 : I've seen fat years and thin ones come round like the tide, and I've dreamed through both.
+opinion @1 dole for 2 [self.on_dole=yes] : My house has eaten off the dole in many a thin week. Run it down to someone else.
+opinion @1 church for 2 : The chapel kept us fed once, when the street had nothing. I go and sit, and I sing a little, badly.
+opinion @1 watch against 1 [self.wealth=destitute] : The Watch have moved me off every good bench by the gate. I only wanted to look at the view.
+opinion @1 festivals for 1 : An evening of dancing does old bones more good than lying abed. I don't dance. I watch, and that counts.
+opinion @1 newcomers against 1 : Each stranger who stays makes the gate a little less ours. I'll nod to them all the same. Manners.
+opinion @1 merchants against 1 [self.wealth=poor|destitute] : Hardly a crumb comes my way, and the loaf's dearer every month. Somebody's fattening on it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the step; it's sneaky. | #greet#. A new face. Northgate's glad of you.
+line @2 greet [here.time=dawn] : Morning. Up with the carts. | Morning. The best light for looking up the hill.
+line @3 greet [here.time=dusk|night] : Evening. The Rise has its lamps lit. Look. | Evening. Late for an old stick to be out, I know.
+line @4 greet [pair.band=friends] : #greet#. Sit. I'll tell you which house I've chosen today. | Ah, you. The sunny bit of the bench is yours.
+line @1 kin.open [pair.kin!=no] : Home, then. Come here. | Home. Good. Your paws are cold.
+line @1 again.open : Twice. I'm flattered. | Back so soon. I've not stirred, as you see.
+line @1 greet.return : #greet#. | #greet#. Sit if you like.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. I'd hoped for you. | #greet#. #wink.capitalize#. Sit.
+line @1 farewell : #farewell#. | #farewell#. Mind the step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Glance up on your way; the Rise is all lit. | #farewell#. Keep warm tonight.
+line @1 farewell.return : #farewell#. | #farewell#. Come again.
+line @1 react.news : #wink.capitalize#. Fancy. | Is it now. Well.
+line @1 react.news.new : #oath#. That's a new one. | #surprise#. Nobody tells me anything.
+line @1 react.news.known : #knew#. Even I heard. | That one reached my bench days ago.
+line @1 react.news.doubt : #doubt#. Sounds like a tale to me. | I like it. I don't believe it. Both.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. | That's hard. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll smile on that all day. | Good. Somebody's luck turned.
+line @1 answer.how : Still here. That's a fine start. | Well enough. A bit hungry, a bit happy.
+line @2 answer.how.poorly [self.hungry=yes] : Hungry, if I'm honest. It goes off by evening, mostly. | Thin today. I'll dream of #pork#.
+line @1 ask.how : And you? | You look tired. Are you?
+line @1 sympathise : #sympathy#. Sit by me. | That's hard. Stay a while by me.
+line @1 reassure : #reassure#. I've seen worse mended. | It'll come right. Look at me; I'm still here.
+line @1 decline : #hedge#. My knees won't stand it today, I'm afraid. | I'd rather not. I've nothing to bring, and I'd not come empty-pawed.
+line @1 accept_decline : #no_matter#. | Never mind. Another day.
+line @1 thank : #thanks#. That's kind. | Bless you for that.
+line @1 deflect_thanks : #deflect#. | Nothing. It was nothing.
+line @1 preclose : Well. #preclose#. | The bench is getting cold under me.
+line @1 accept_preclose : Go on, then. | Off you go.
+line @1 tease [pair.band=friends] : You strut like the Rise has given you a key. | Look at that coat. Fit for a balcony.
+line @1 tease.return : Says the wolf with the crooked hat. | Heh. That'll cost you a tale.
+line @1 ack : #wink.capitalize#. | #bc_true#
+line @1 give.advice : Always look up. It's free, and you never know. | Say please. It's cheaper than bread and goes further.
+scene choosing_the_house
+when topic=dreams|smalltalk here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I stopped on #landing# and chose my house again. #dreamhouse.capitalize#. | See the Rise? I've picked the one I'll die in. | Every landing on the long stairs, I choose a different house. I've chosen them all by now.
+b : Which one? | Die in? | All of them?
+a : The one with the green door, up past the bend. It's got a pear tree. | When I'm good and old. Older than this. In a big bed with a view. | All of them. Some twice. The green door's still my favourite.
+b : #bc_good# | That's a fine wish. | #bc_ha#
+
+scene the_long_stairs
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : I take the long stairs slow these days, and I stop on every landing. | The stairs are steep, but the view from #landing# beats any in Ridgemere. | Folk think I stop for breath. I stop to look up the hill.
+b : Your knees? | The best? | And do you?
+a : The knees, and the view. Half and half. | Better than the Rise's own, I'd bet. They never look down. | Look up? Every time. Breath as well, mind.
+
+scene up_the_hill
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : Up on the Rise they've gardens with nobody in them. I'd sit in every one. | The big houses have more rooms than wolves. I counted windows once. | Sump below, Rise above, and us halfway, looking both ways.
+b : They'd not let you. | How many? | Which way do you look?
+a : No. I'd sit in my head, then. It's warmer there. | Forty-one windows on the green door house. I'd need a lot of candles. | Up. Always up. Down's where you fall.
+
+scene roast_pork
+when topic=food self.likes=roast_pork
+does tell.feeling / react.self / assess / ack
+a : #pork.capitalize#. The inn's roasting again; it's cruel. | If I had a coin to waste, I'd waste it on #crackling#. | My #mum# did pork on feast days. The crackling went first, and I went for it.
+b : Smells good. | Just the crackling? | Did you get it?
+a : It does. I stand downwind and pretend. | Just the crackling. The rest I'd give away. | Every time. I was small and quick.
+b? : #bc_ha# | #bc_lovely# | Good for you.
+
+scene hungry_days
+when topic=food|health self.hungry=yes
+does tell.self / reassure / assess
+a : Not much in the pot today. I'll eat it slow and call it a feast. | Hungry's not so bad, once you've known it a while. You get on. | I'll dream of pork tonight. Dreaming's filling, if you do it right.
+b : That's hard. | You shouldn't have to. | Dreaming's free.
+a : It's hard, and I'm still smiling. Both. | No. But here we are. #saying#. | Free, and I'm a rich wolf in it.
+
+scene the_dole
+when topic=times|prices self.on_dole=yes
+does tell.self / react.self / assess
+a : The dole came through this week. Bread, and a scrape of dripping. I'm grateful. | Some sniff at the dole. I've never been rich enough to sniff. | I line up with the others and nobody says much. It's fine. It's quiet.
+b : Good that it's there. | Luxury? | Quiet's not bad.
+a : It is. I'd not be here without it, and that's plain. | Pride's dear. I sold mine years back for a loaf. | Not bad at all. I chose a house while I waited.
+
+scene old_tales
+when topic=lore|pastimes self.likes=old_tales
+does tell.feeling / ask.detail / answer.detail / assess
+a : Tell me #tale#, if you've one. I'll give you one back. | Nothing beats a tale from somebody who's worn it smooth with telling. | My #gran# had a tale about a wolf who climbed every stair in Ridgemere in one night.
+b : What kind? | Any you like best? | Did he get to the top?
+a : The kind with a ghost and a supper in it. Both, ideally. | The bell under the Sound. Some evening I'll give it you whole. | Up and up, and at the top it was somebody's cellar. Ridgemere's like that.
+b : #bc_ha# | Some evening, then. | That's a good one.
+
+scene fresh_straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : New straw down today. My room's a hayloft now. | I'd trade a supper for #straw#. Well. Half a supper. | Clean straw and a shut door. That's a palace, near enough.
+b : Lovely. | Half? | Near enough.
+a : It is. I rolled about in it. Don't tell anyone. | The other half I'd keep. I'm not daft. | Near enough. It's no green door, but it's mine.
+
+scene first_warm_day
+when topic=season|weather here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : First warm day. I'm out on the step, nose to the sun like a cat. | Warm at last. The old bones are singing. Quietly. | Sun on the stairs. I'll climb to the top landing just to sit in it.
+b : You deserve it. | Singing? | All that way?
+a : I do. Everybody does, after this winter. | Humming, then. Old bones can't hold a tune. | All that way. The view's better warm.
+
+scene drizzle_again
+when topic=weather here.weather=rain|fog here.region=ridgemere self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize# again. Not rain enough to grumble at, and too wet to ignore. | I can't see the Rise for #drizzle#. It's as if they've gone away. | This fine stuff gets in my ruff and stays till Restday.
+b : It's always like this. | They'll be back. | Warm it out by a grate.
+a : Always. I complain every time. It's a habit. | They will. I'll be on the landing waiting. | What fire? #wink.capitalize#. I'll sit in the window and steam.
+
+scene bad_manners
+when topic=smalltalk|day self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : A young one barged past me on the stairs. Not a word, not a glance. | I said good day to a carter and he looked through me like a window. | Manners cost nothing. Some folk still can't afford them.
+b : Rude. | Some are like that. | That's true.
+a : Rude, and in a hurry. I hope he gets where he's going. Slowly. | They are. I said good day again, louder. He jumped. | It is. I've no coin, and I've plenty of manners. I could lend some out.
+
+scene my_child
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : I'd bet my #self.child# outthinks me already. Good. | I'd like my #self.child# to see the house with the green door one day. I've furnished it already. | My #self.child# thinks I dream too much, I'd wager. Somebody in the house must.
+b : Proud, then. | Furnished it? | Somebody does.
+a : Yes. Lessons I'd go hungry for, gladly. | In my head. There's a red chair in the window. It's mine. | Somebody does. I'm the one in our house.
+
+scene feast_day
+when topic=festival
+does tell.feeling / react.self / assess
+a : Feast day. I'll sit by the dancing and tap my foot. That's my dancing. | The smell of the roasts at a feast. I could live on the smell. | The Rise lights every window on a feast night. From the landing I count them, and lose count.
+b : Tap away. | On the smell? | How many?
+a : I will. Nobody minds an old stick tapping. | Nearly. I've tried. It's thin living, but it's tasty. | I lose count every year, and start again. It's the counting I like.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : One hungry winter the chapel's soup was all my house had. On Restdays I take the end pew and remember it. | I pray for a room up the hill. A little one, Bright One, I say. A little one will do. | I sing at chapel. Badly, but loud. The Bright One's heard worse.
+b : That's a good memory. | Small? | I'm sure.
+a : Yes. That memory's outlasted the bread by years. | Small, with a window. I'm not greedy. Just particular. | Everyone's heard worse. I've heard worse, from me.
+
+scene gossip_held
+when topic=gossip|crime
+does tell.gossip / react.news / assess
+a : I hear things on the bench. They go by me, like carts. | Folk chatter above me as if I'm a post. I don't mind. Posts hear everything. | There's a tale going round. It stops here with me. It's not a good tale.
+b : Nothing worth keeping? | Everything? | Not good?
+a : Nothing worth repeating. Some worth smiling at. | Everything. It goes in a drawer in the dream house. | Not good, and not mine. Give me one that ends better.
+
+scene new_face
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : There's somebody new by the gate. Good manners on that one. I noticed. | A traveller asked which way for the Rise. I pointed. I could have drawn a map. | New folk always gaze up the hill first. Then they look at their purse.
+b : That's rare. | You know it well. | Ha.
+a : It is. I'll nod to that one every morning. | Every landing of it. Every door. I've never set foot past the gates up there. | Ha. Me too. That's how I know.
+
+story the_green_door [topic=dreams|memories self.age>=40]
+  : I was barely grown when an errand took me up the hill, and I saw a green door with a brass knocker like a fish.
+  : A servant opened it to take the parcel. I saw a hallway with a red rug and a clock as tall as me.
+  : I've chosen that house ever since. I've never been back. I'd rather keep the rug.
+  ask : Would you go back, if you were me?
+  b : No. Keep the rug.
+  b[old] : Never. They'd have changed the rug by now.
+
+story the_drowned_bell [topic=lore here.region=ridgemere]
+  : They say there's a bell under the Sound from a chapel that slid into the sea.
+  : On a still night it rings once for every ship that comes home. My #gran# swore she heard it.
+  : I've listened all my life. I hear the gulls. Maybe the gulls are the bell, grown wings.
+  b : That's a lovely tale.
+  b[stage=young|adolescent] : Is it true? Can we go and listen tonight?
+
+story the_pork_feast [topic=food|memories self.age>=40]
+  : Once, a feast night, the inn near the gate threw out a whole tray of crackling that had caught.
+  : Half the street was out there in the dark picking it over. Burnt crackling. Nobody complained.
+  : I still say it's the best I ever had. I'll not hear otherwise.
+  ask : What's the best thing you ever ate, that you weren't meant to have?
+  b : A pie off a windowsill. I was very small.
+  b[wealth=poor|destitute] : Something off the back step of an inn. Same as you.
+
+rule @landing_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say That one. #dreamhouse.capitalize#. Today it's that one. | #saying#. Up we go.
+
+rule @pork_bark
+when concept=bark here.time=dusk|night self.likes=roast_pork
+does aside
+cooldown 10h
+say Somebody's roasting pork. Lucky souls. | Smell that. Crackling. Cruel.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain|fog self.dislikes=drizzle
+does aside
+cooldown 10h
+say Fall properly or stop, sky. | Damp. Just damp. All day.
+
+rule @manners_bark
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 12h
+say A please costs nothing, you know. | And a fine how-do to you too. Heh.
+
+dlg @1 resident.hub : #greet#. Take the bench. I don't bite. | #greet#. What is it, then?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back to see the old stick. | #topic.player#. I've chosen a new house since you were here.
+dlg @3 resident.hub [here.time=night] : Evening. I was watching the lamps up on the Rise. | It's late. Still, sit.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Mind your manners and I'll mind mine. | Ask it nicely and we'll see.
+dlg @1 resident.job [self.job=none self.working=no] : Me? I sit and watch Northgate. I'm very good at it. | I look up the hill and choose houses. It doesn't pay.
+dlg @2 resident.job [self.working=yes] : #self.trade_words.capitalize#. Not grand, but it's mine. | I work. I dream while I do it. Nobody's caught me yet.
+dlg @1 resident.news [world.news] : Talk at the gate, from #world.news_from#: #world.news#. Fancy. | Even I heard this one: #world.news#.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The Rise is still up there. That's my news. | Nothing new. The carts come and go.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | It rolls past, like the carts.
+dlg @1 resident.bye : #farewell#. Glance up the hill on your way. | #farewell#. Mind your manners.
+graft resident.hub
+choice Why do you keep looking up the hill? -> hill
+node hill
+say I'm choosing a house. Up on the Rise. I'll die in one of them, when I'm good and ready. Today it's #dreamhouse#.
+mood pleased
+free
+choice They'll never let you in. -> hill_never
+choice Back to it. -> hub
+node hill_never
+say No. Heh. But looking's free, and nobody's ever moved me off a dream. #saying#.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how.poorly : The knees. Always the knees. They've climbed too many stairs. | Old, and a bit stiff, and still looking up.
+line @1 confide : I'm old now. I know I'll not get a house on the Rise. I'll choose one anyway. Every day. | Once, anybody could stroll up the hill and nobody stopped them. I miss that.
+scene in_my_day
+when topic=memories|lore here.region=ridgemere
+does tell.memory / react.self / assess
+a : Once you could walk right up to the Rise gates and look in. Now there's a gatekeeper. | I remember when the gate was a wooden one. I'm older than the iron. | When I was a youngster the long stairs had a lamp on every landing. Now it's every other.
+b : I didn't know that. | Older than the iron? | Every other?
+a : Few do. The young think the gates were always there. | Older than the iron, younger than the Sound. That's a good age. | Every other. They're saving oil. I can see the dark ones from my bench.
+
+scene old_knees
+when topic=health
+does tell.self / react.self / reassure
+a : My knees creak like the cellar door. I stop on the landing and pretend it's the view. | The damp's settled on my chest. #remedy.capitalize#, then. | I'm old, but I'm quick when there's pork. Ask anyone.
+b : Rest them. | Does it work? | I believe it.
+a : I do. On every landing. They're well rested, my knees. | Some days. Other days it's only something warm to hold. | Good. It's true. Quickest old stick by the gate, when there's crackling.

@@ -1,0 +1,402 @@
+# rm184, the voice across the square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm184
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_rosamund_slagstack
+written_by claude
+title the voice across the square
+fits stage=young|adolescent|adult|old
+prefers talk=chatty warmth=warm
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk calls_across_the_square_rather_than_cross_it
+likes roast_pork stars new_boots autumn_wind
+dislikes salt_wind night_noise
+fears losing_my_voice a_friend_spoken_ill_of_behind_my_back
+hopes a_crackling_stall_on_festival_days to_name_every_star_over_the_rise
+topics family +0.4 friends +0.4 food +0.3 festival +0.4 pastimes +0.3 day +0.3 gossip +0.2 weather +0.1
+styles comfort=company gossip=eager refuse=soft tease=none
+marks oath saying
+persona #self.first# is a big-hearted, big-voiced wolf of the Commons who would sooner shout across Market Square than walk it, runs on about crackling, new boots and the stars over the Rise, and stands up loudly for kin and friends alike.
+
+words
+oath! = Crackling and candlewax | Boots and bonfires | Stars and saucepans
+saying! = Say it loud or don't bother | A whisper's a shout that lost its nerve | If it's worth saying, the square can hear it
+crackling = the crackling | roast pork with the skin gone crisp
+boots = my new boots | the boots I saved half a year for
+stars = the stars | the stars over the Rise
+square = the square | the far side of Market Square
+voice = my voice | the voice that carries to the Sound
+saltwind = the salt wind | a wind off the water that sticks in your fur
+nightnoise = the night noise | carts and cats under the window at all hours
+gust = a good autumn wind | the wind that chases leaves round the square
+stall = a crackling stall | a crackling stall on festival days
+lessons = lessons | the abbey schoolroom
+errand = an errand | an errand to the far end of the Commons
+whisper = a whisper | a proper whisper, which I can't do
+coppers = my coppers | the coppers in the sock behind the bed
+heights = the Rise | the gates and gravel up on the Rise
+
+any
+opinion @1 festivals for 2 : Festival day, every door on the Commons is open and every mouth too, and I can hear all of it. | Music, crackling, and everybody shouting. Finally I'm not the loudest.
+opinion @2 strangers for 1 : A stranger's somebody you haven't fed yet. I'd give them crackling and the whole history of the street. | New faces are the best. They haven't heard any of my stories.
+opinion @3 newcomers for 1 : Anyone who'll work and say good morning back is welcome on the Commons. | Every new family is somebody new to shout hello to.
+opinion @4 dole for 1 : Nobody in a city this big ought to sleep hungry. If they did, I'd hear it through the wall. | The parish loaf's fine. Bread's bread.
+opinion @5 city for 1 : Born under the smoke, and I'll be loud under it till the end. | Ridgemere wins. There's no other city to race it, but it'd win anyway.
+opinion @6 houses mixed 0 : The Rise is very grand and very quiet. I don't know how they stand it. | I'd like to see inside a House just once. I'd be ever so good.
+
+grown
+line @1 greet : #greet#! There you are! | #greet#! I saw you from across the square.
+line @2 greet [pair.band=strangers] : #greet#! New, are you? Welcome to the Commons, you'll like it. | #greet#! Somebody new. By supper we'll be friends.
+line @3 greet [here.time=dawn] : Morning! Up early, the pair of us. | Morning! The carts had me up as well.
+line @1 greet.return : #greet#! | #greet#, and lovely to see you.
+line @2 greet.return [pair.band=friends|family] : Oh, it's you! Quick, I've a story. | You! Good, I was about to come looking.
+line @1 farewell : #farewell#! Come back soon, mind. | #farewell#! I'll shout if I need you.
+line @1 farewell.return : #farewell#! | And you! Go carefully!
+line @1 react.news : Go on, go on, every bit. | Wait, start again, slower.
+line @1 react.news.new : Never! I hadn't heard a word. | Well, I didn't know that, and I know most things.
+line @1 react.news.known : I'd heard! Half the square's talking about it. | Oh, I know. I told three people already.
+line @1 react.news.doubt : Hmm. That sounds like somebody's guess got loose. | Did anyone actually see it, or is it just going round?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. Poor house. Has anyone gone round? | That's terrible. I'll go round with something hot.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's wonderful! I'll tell everyone! | Good! Good! I'll be smiling about that till Restday.
+line @1 answer.how : Grand, thank you! Busy and loud, the usual. | Very well. Hungry, mostly.
+line @1 decline : Ooh, I can't, I've promised myself to #errand# already. | Best not ask me, honestly. I'd only stand there making a noise.
+line @1 accept_decline : Oh, all right. Another time. | That's fine, truly. I'll ask again.
+line @1 thank : Thank you! You're a treasure. | Thanks ever so much. I'll not forget.
+line @1 deflect_thanks : Oh, it was nothing! | Don't mention it. Well, mention it a bit.
+line @1 accept_preclose : Go on, then! Lovely talking. | Off you go! See you soon.
+line @1 ack : Oh! | Right! | Truly?
+scene gr_across_square
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / tell.self / assess
+a : I still shout across the square instead of walking it. Saves the boots. | I called a friend's name from the fountain end and three folk turned round.
+b : Saves the ears, walking. | Only three?
+a : Not mine. I like it loud. | Three that I saw. The rest pretended not to hear.
+b : #bc_ha# | Fair.
+
+scene gr_crackling
+when topic=food
+does tell.self / react.self / assess
+a : #crackling.capitalize#. I'd cross the Commons twice for a decent piece. | Roast pork on a Restday, and the crackling's mine. I fight for it.
+b : Best part. | You'd fight?
+a : The very best. The rest is only pork. | I would. Politely. Loudly.
+
+scene gr_boots
+when topic=pastimes|smalltalk
+does tell.boast / react.self / assess
+a : New boots! Look at them. They squeak on the cobbles. | I saved months for these boots and I'm going to wear them out properly.
+b : Very smart. | You'll wear them out?
+a : I've walked the whole square in them twice just to hear them. | Properly. Every cobble in the Commons. That's what boots are for.
+
+scene gr_stars
+when topic=pastimes here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : Look at #stars#. Clear right over #heights# tonight. | Nine stars I know by name. Four more I named myself.
+b : Lovely, aren't they. | Made them up?
+a : They're the only thing up there quieter than me. | Nobody else had named them. Somebody had to.
+
+scene gr_salt_wind
+when topic=weather here.weather=overcast|storm|rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : That wind's off the water and it's sticking in my fur. I'll be crusty all week. | #saltwind.capitalize#. My fur feels like a fishmonger's apron.
+b : #grumble#. | Comb it out.
+a : I will. Loudly. | I've combed it twice. It's still in there.
+
+scene gr_autumn_gust
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #gust.capitalize#. I love it. It's the only thing on the Commons louder than me. | The leaves are going round the square like they're racing. I nearly joined them.
+b : It's bracing. | Nearly?
+a : Bracing! Yes! That's the word. | I had a basket. Otherwise I'd have gone.
+
+scene gr_night_noise
+when topic=home here.time=night
+does tell.complaint / react.complaint / assess
+a : #nightnoise.capitalize#. I'm loud all day, but at night I want quiet. Is that so much? | There's a cart under my window every night at the same hour. I could set a bell by it.
+b : Not at all. | Every night?
+a : Everyone thinks I'd sleep through anything. I don't. | Every night. I've started waving at the driver.
+
+scene gr_friends
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'll not stand for a word against #self.friend#, and I'll say so across the square if need be. | #self.friend# is the first I'd stand up for, without being asked.
+b : Loyal. | I believe it.
+a : Loyal and loud. It's a family thing. | You should. Everyone else does.
+
+scene gr_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / tell.self / assess
+a : You'll have heard! #topic.subject.capitalize# #topic.claim#. Well, that's what they're saying. | They say #topic.subject# #topic.claim#. True or not, it's round the whole street.
+b : Is it true? | Everyone?
+a : No idea! It came to me loud, so I'm passing it on loud. | The whole square. I helped a little.
+b : #bc_ha# | Of course you did.
+
+scene gr_festival
+when topic=festival
+does tell.feeling / react.self / assess
+a : A festival! Music, crackling, and nobody tells me to keep my voice down. | Tonight I dance till my new boots give up.
+b : The day's made for you. | Mind the boots.
+a : The very best. I can be as loud as I like. | They'll survive. They're good boots.
+
+scene gr_heights
+when topic=lore|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : I climbed to #heights# one afternoon to see how quiet it is. You could hear a spoon drop. | They don't shout up on the Rise. They ring bells for each other instead.
+b : Not your sort of street, then. | Bells?
+a : Much. I didn't last long. | Little ones. For the servants. I'd never hear a little bell.
+
+scene gr_lean
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Crackling's dear this month. I've not had any in a fortnight. I'm being brave. | There's houses on the street with no smoke from the chimney. I've noticed. I don't like it.
+b : #sympathy#. | You've a good eye.
+a : I'll live. There's folk worse off, and I know it. | I do. I'll go round with bread if somebody'll let me.
+
+story gr_lost_voice [topic=memories|health self.age>=20]
+  : The winter I was ten, #voice# went for a whole week. Not a squeak.
+  : Folk came from three streets to see if I was ill. One brought soup. One brought a prayer.
+  ask : Can you guess the hardest part?
+  b : Not being able to tell anyone, I'd guess.
+  : Exactly that. I had a whole week of news saved up when it came back.
+
+dlg @3 resident.hub : #greet#! Come here, I've news. What do you need? | #greet#! I saw you coming a mile off. What's wanted?
+
+young
+line @1 greet : Hello! Hello! I'm over here! | #greet#! I was shouting for you.
+line @1 greet.return : Hello! | Hello! I'm loud today.
+line @1 farewell.return : Bye! Bye-bye! | Bye! I'll shout when I see you!
+line @1 react.news.new : Really? Really really? | Ooh! I didn't know that!
+line @1 answer.how : Good! I'm good! | Hungry! Is there crackling?
+line @1 kin.open [pair.kin!=no] : I'm here! I've been shouting for ages! | Guess what! No, guess!
+line @1 decline : No, thank you, I don't want to, it's scary. | I'd rather not. Can I do something else instead?
+rule @pup_shout_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Hello-o! Over here! | Can you hear me? I'm here!
+
+scene yg_shout
+when topic=day|smalltalk
+does tell.boast / react.self / assess
+a : I shouted from one end of the square to the other and somebody waved! | I'm the loudest pup on the Commons. I've been told.
+b[stage=adult|old] #grown : Somebody waved to make you stop. | Told by who?
+b : Who waved? | Are you?
+a@grown : Then they should have shouted back. | By everybody. It's a good thing to be.
+a : I don't know! I waved back! | I am. Listen. Hello-o!
+
+scene yg_crackling
+when topic=food
+does tell.self / react.self / assess
+a : We had roast pork and I got the crackling. All of it. Nearly. | Crackling is the best food. It goes crunch. Then it's gone.
+b[stage=adult|old] #grown : All of it? Greedy pup. | Too soon, always.
+b : Lucky! | Then it's gone?
+a@grown : Nearly all. I gave one bit away. | Always. That's the sad bit.
+a : I gave one bit to the cat. | Then I want more.
+
+scene yg_stars
+when topic=pastimes here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : I counted the stars over the Rise. I got to forty and lost my place. | That bright one is mine. I named it after crackling.
+b[stage=adult|old] #grown : Start again tomorrow. | That's a fine name for a star.
+b : Forty! | After crackling?
+a@grown : I will. I'll start from the other side. | It's the best name. It's shiny like crackling.
+a : Forty! Then lots. | It's shiny, like crackling is.
+
+scene yg_night
+when topic=home here.time=night
+does tell.complaint / react.complaint / assess
+a : There's a cat yowling under the window. I can't sleep. I yowled back. | The carts go past at night and they rattle. I put my head under the blanket.
+b[stage=adult|old] #grown : Did it stop? | Good idea.
+b : Did it stop? | Does that work?
+a@grown : It stopped. It was surprised. | It doesn't work. It's just warm.
+a : It stopped. I won. | Not really. But it's warm.
+
+story yg_boots [topic=pastimes|memories]
+  : I got new boots and I wore them to bed. Then I wore them to breakfast.
+  : Then I walked all round the square twice so everybody could see them.
+  ask : Did you ever get anything that new?
+  b : Once. I'd forgotten till now.
+  : Then you know. You have to show everybody. That's the rule.
+
+dlg @4 resident.hub : Hello! I'm over here! What do you want? | Hello! Have you got news? I love news.
+
+adolescent
+line @1 greet : #greet#! I saw you from the other end of the square! | #greet#! There you are!
+line @2 greet [pair.band=strangers] : #greet#! New, aren't you! The Commons is the best bit, you'll see. | #greet#! I don't know you yet. I will by supper.
+line @3 greet [here.time=dawn] : Morning! I'm up early, I've an errand. | Morning! Isn't it lovely and quiet. Not for long.
+line @1 kin.open [pair.kin!=no] : At last! I've been shouting for you. | You! Good. I've got so much to tell you.
+line @1 again.open : You again! Lovely. | Back so quick! I'd just begun telling someone about you.
+line @1 greet.return : #greet#! | #greet#! I was just thinking about you.
+line @2 greet.return [pair.band=friends|family] : Oh, it's you! Come here! | You! I've news, loads of it.
+line @3 greet.return [here.time=dusk|night] : Evening! I'm meant to be quiet now. I'm trying. | Evening! Shh. Well, nearly shh.
+line @1 farewell : #farewell#! Don't be a stranger! | #farewell#! I'll shout if I see you!
+line @1 farewell.return : #farewell#! | And you! Mind how you go!
+line @1 react.news : Go on! Don't leave anything out! | Wait, wait, start again.
+line @1 react.news.new : Never! I hadn't heard a thing! | Really? Oh, I'm telling everyone.
+line @1 react.news.known : I knew! I heard it in the square this morning. | Oh, everybody knows that. I told half of them.
+line @1 react.news.doubt : That's off, that is. It's got a wobble in it. | Hmm. Somebody's stretched that, I think. It's got too long.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's awful. Poor them. Is there anything we can do? | Oh, no. That's horrible. I'll be quiet for a bit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely! That's the best news! | Good! Oh, good! I'll shout it round the square.
+line @1 answer.how : Grand! Busy and loud. | Good, thanks! Starving, though.
+line @1 ask.how : How are you? Truly? | You look well. Do you feel well? Truly?
+line @1 sympathise : Oh, that's hard. Sit, sit, there's a stool, I'll bring you a cup. | Oh, I'm sorry. I can hush. Watch me hush.
+line @1 reassure : It'll be all right. It mostly is. I'll help. | Don't fret. Worse has come right before now.
+line @1 decline : Ooh, I would, only the schoolroom bell's about to go and I can't be late again. | I'd rather not, if that's all right. I'd make a mess of it, I always do.
+line @1 accept_decline : That's all right! Another time. | Fine, fine. I'll ask again tomorrow.
+line @1 thank : Thank you! You're lovely. | Thanks ever so much! I'll pay you back.
+line @1 deflect_thanks : Oh, it was nothing! | Don't, you'll make me go red.
+line @1 preclose : I'd best go, I've an errand. | Oh, I'm late. I'm always late.
+line @1 accept_preclose : Go on, then! | All right! See you soon!
+line @1 ack : Oh! | Really? | Right!
+rule @teen_shout_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Over here! No, here! | Hello! Hello, you! Yes, you!
+
+rule @teen_boots_bark
+when concept=bark
+does aside
+cooldown 12h
+say Listen to them squeak. Lovely. | New boots. Still new.
+
+rule @teen_wind_bark
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Ooh, here it comes! Hold your hats! | Leaves everywhere! Wonderful!
+
+scene ad_across_square
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / tell.self / assess
+a : I called my friend from across the square and the whole market turned round. | Why walk across #square# when you can shout? It saves the boots.
+b[stage=adult|old] #grown : You could walk, you know. | Saves the boots, ruins the ears.
+b : Did your friend hear? | Very sensible.
+a@grown : I could. It'd take ages. | Not mine. Mine are fine.
+a : My friend heard. So did the fishmonger. | I think so. Nobody else does.
+b : #bc_ha# | I believe it.
+
+scene ad_lessons
+when topic=work|day self.job=child|scholar
+does tell.complaint / react.complaint / tell.self / assess
+a : I got told off at #lessons# for answering before the question finished. I knew the answer, though. | We're meant to read aloud one at a time. I read aloud all the time. That's the problem.
+b[stage=adult|old] #grown : Let the question finish next time. | It is a problem.
+b : Did you get it right? | Ha. Is it?
+a@grown : I'll try. It's hard when you know. | It's only a problem for the others.
+a : I did! That's the worst bit. | Apparently. I think it's a gift.
+b : Fair. | Ha.
+
+scene ad_crackling
+when topic=food
+does tell.self / react.self / tell.plan / assess
+a : #crackling.capitalize#. I'd do anything for it. Almost anything. Most things. | Some festival I'll have #stall# and sell nothing but crackling.
+b : Almost? | Only crackling?
+a : I'd not give up my boots. Anything else. | Only crackling. And maybe a bit of apple sauce. For the posh ones.
+b : Fair enough. | I'd buy it.
+
+scene ad_saving
+when topic=dreams|work
+does confide / react.self / assess
+a : I've got #coppers# saved for #stall#. Eleven. Twelve, with the bent one. | Every copper's going toward a stall. A proper one. I'll be the loudest stall on the square.
+b[stage=adult|old] #grown : Twelve's a start. | You'll be heard, that's certain.
+b : Good for you. | You will.
+a@grown : It's the bent one that counts. | That's the idea. You can't sell what nobody hears.
+a : I count them every night. | Nobody'll miss me. That's the whole plan.
+
+scene ad_boots
+when topic=pastimes|smalltalk
+does tell.boast / react.self / tell.self / assess
+a : Look at #boots#! I saved half a year. Don't step on them. | My boots squeak. I love it. I can hear myself coming.
+b : Very smart. | Can everyone?
+a : They're the best thing I own. After my voice. | Everyone. They know I'm coming before I shout.
+b : They're grand. | Two warnings, then.
+
+scene ad_stars
+when topic=pastimes here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : #stars.capitalize# are out. They hush me, nearly. Nothing else does. | I know nine stars by name. I'm going to learn all the ones over the Rise.
+b : Lovely, aren't they. | All of them?
+a : They're too big to shout at. That's what I think. | All of them. I'll know the sky like the square.
+
+scene ad_family_loud
+when topic=family self.mother
+does tell.self / react.self / assess
+a : I'd stand on the fountain and shout down the whole square for #self.mother#. | Everyone on the Commons knows whose pup I am. I tell them.
+b : That's loyal. | They'd know by the voice, I'd think.
+a : It's only right. Family's family. | Ha! That's what everybody says.
+
+scene ad_father
+when topic=family self.father
+does tell.feeling / react.self / assess
+a : I'm proud of #self.father#. I tell everybody so. Loudly. | A rude word about #self.father#, and the whole of #voice# goes after it.
+b : Lucky to have you. | I'd not want to be them.
+a : I'm the lucky one. I'd say so to anyone. | No. Nobody does.
+
+scene ad_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I tell each other everything. Well, I tell. Mostly. | Somebody said something about #self.friend# behind a paw at lessons. I said it back louder so everyone could hear how silly it was.
+b : That's a good friend. | Good for you.
+a : The best. I'd not swap for anyone. | It worked. Nobody said it again.
+
+scene ad_salt_wind
+when topic=weather here.weather=overcast|storm|rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#. My fur feels like a herring barrel. | The wind's coming up off the water and I'll be salty till Restday.
+b : #grumble#. | Comb it out.
+a : I've combed it. The salt's laughing at me. | I'll try. The salt always wins.
+
+scene ad_autumn
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #gust.capitalize#! The leaves go round the square like a dance. | I love autumn. The wind's loud, and nobody tells it to keep its voice down.
+b : It's lovely. | Lucky wind.
+a : I ran after them. A bit. Quite a lot. | Exactly. I'm on its side.
+
+scene ad_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / tell.self / assess
+a : Have you heard? They're saying #topic.subject# #topic.claim#. It's all over the square. | Everyone's talking about it. #topic.subject.capitalize# #topic.claim#. That's what I heard, anyway.
+b : Is it true? | Everyone?
+a : I don't know! That's why I'm asking everybody. | Everyone. Well, everyone who's heard it from me.
+b : #bc_ha# | Of course.
+
+scene ad_newcomer
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : There's a new face on the Commons. I've said hello four times already. They said it back once. | Somebody new wanted Market Square, so I took them all the way and told them everything.
+b : Give them time. | Everything?
+a : I will. I'll say it again tomorrow. | Everything. Where the good crackling is. Who's courting. Where not to stand.
+
+story ad_fountain [topic=memories|day here.region=ridgemere]
+  : Once I stood on the edge of the fountain in Market Square and called the time to the whole market.
+  : I didn't even know the time. I made it up. Half the stalls packed up early.
+  ask : Do you think I got into trouble?
+  b : I'd hope so!
+  : Oh, I did. But I was right, near enough. The bell went just after.
+
+story ad_whisper [topic=pastimes|memories]
+  : A friend tried to teach me #whisper# once. We practised in the chapel.
+  : The first one I did, the priest turned round from the far end.
+  ask : Have you ever tried to be quiet and found you couldn't?
+  b : Every time I've had a secret.
+  : That's it! That's exactly it. I'm not built for secrets. They come out loud.
+
+dlg @1 resident.hub : #greet#! I saw you coming! What's needed? | #greet#! Hello! What do you need?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! It's you! I was just talking about you! | #greet#, #topic.player#! You're back!
+dlg @1 resident.job : I'm at lessons! And putting coppers by for a crackling stall. | Lessons, mostly. And errands. And being loud, which nobody pays me for.
+dlg @1 resident.bye : #farewell#! I'll shout if I see you! | #farewell#! Come back soon!
+graft resident.hub
+choice Why do you shout across the square instead of walking? -> shout
+node shout
+say Because it's quicker! And the boots last longer. And everybody knows where I am, which is useful, mostly.
+mood pleased
+free
+choice Doesn't it bother people? -> shout_bother
+choice Goodbye. -> bye
+node shout_bother
+say Some of them. They shout back, mostly. Then we're both happy. Well, I am.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

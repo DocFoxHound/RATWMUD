@@ -1,0 +1,307 @@
+# rm165, the candle-namer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm165
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_rupert_sootley
+written_by claude
+title the candle-namer
+fits stage=adult|old
+prefers job=laborer piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk prays_one_neighbour_into_every_candle
+likes barley_soup roof_birds new_boots first_snow
+dislikes gulls salt_wind
+fears a_name_left_out_of_the_prayers the_sea_wind_reaching_the_gate
+hopes a_candle_burning_for_every_house_on_the_street snow_before_the_festival
+topics faith +0.5 work +0.4 news +0.3 weather +0.2 animals +0.2 crime -0.2 gossip -0.2
+styles comfort=prayer gossip=plain refuse=blunt tease=none
+marks oath saying
+persona #self.first# lifts and dips for a chandler by the north gate and says one neighbour's name to the Bright One over every candle: blunt, devout, humourless, quick to pass on what the travellers bring in and slow to dress it up, fond of the roof birds and no friend at all to the gulls or the wind off the sea.
+
+words
+oath! = Bright One witness | By the standing flame
+saying! = A crooked prayer burns crooked | Say it plain; the Bright One hears plain best | One candle, one name
+dip = the dipping | the dipping frame
+tallow = tallow | the tallow pot
+rack = the drying rack | the candle rack
+oil = lamp oil | a flask of lamp oil
+broth = barley broth | barley broth in a deep bowl
+roofbirds = the roof birds | the sparrows on the tiles
+gulls = gulls | those yellow-eyed gulls
+saltwind = the salt wind | sea wind coming up the hill
+boots = new boots | boots still stiff from the last
+whitefall = the first snow | new white along the tiles
+bells = the close bells | the bells from the cathedral close
+plainly = Straight out | Plainly, then
+road = the North Road | the long road north
+
+any
+opinion @1 church for 2 : The chapel's the one door in the city that opens the same for a carter as for a lord. I'm there every Restday and no apology.
+opinion @1 dole for 1 : A full bowl for an empty belly. If the parish gives it, the parish is doing the Bright One's errand, and nobody should grudge it.
+opinion @1 drink against 1 : I've carried enough folk home from the Northgate taprooms to know where drink goes. Out of the children's supper.
+opinion @1 merchants against 1 : Sellers fatten the sum and swear it's the carter's fault. Some of it is. Not as much as they claim.
+opinion @2 merchants against 2 [world.times=hard|lean] : Tallow's dear and wicks are dear, and somebody's still getting fat. It's not the dipper.
+opinion @1 city for 1 : The close bells rang me in, and they'll ring me out. I'd not swap Ridgemere for anywhere the carts come from.
+opinion @1 strangers mixed 0 : Any stranger buying oil might be honest, might be off before paying for the oil. Each gets judged once, fresh.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've road on your boots. | #greet#. You'll want oil for the road, or you'll want directions.
+line @2 greet [self.working=yes] : #greet#. Mind the hot pot; I'm dipping. | #greet#. Speak up. My paws are full of tallow.
+line @3 greet [here.time=dawn] : Morning. The close bells have only just started. | Morning. #bless#.
+line @4 greet [here.time=dusk|night] : Evening. This is when the lamps sell. | Evening. Half light. I can just make you out.
+line @5 greet [pair.band=friends|family|spouses] : There you are. I said your name over a candle this morning. | You. Good. Pull the door to; draughts bend the flames.
+line @6 greet : #greet#. | #blessing#.
+line @1 kin.open [pair.kin!=no] : You're home. Take the stool nearest the pot. | Home, and safe. Bright One be thanked.
+line @1 again.open : Twice today. That's two candles you've earned. | You again. Fine by me.
+line @1 greet.return : #greet#. | #greet#. #bless#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Good to see you whole. | #greet#. I'd wondered about you.
+line @3 greet.return [self.working=yes] : #greet#. I'm dipping; talk on. | #greet#. Stand clear of the pot and say it.
+line @1 farewell : #farewell#. | #bless#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take a light if you've far to go. | Watch the cobbles once the light's gone. #bless#.
+line @1 farewell.return : #farewell#. | And you. #bless#.
+line @1 react.news : #plainly#: say it as it was. | Go on. No trimmings.
+line @1 react.news.new : #oath#. That's not been through the gate yet. | That's new. The carters haven't had it.
+line @1 react.news.known : #knew#. Somebody buying oil had it at dawn. | Came in on the road two days back.
+line @1 react.news.doubt : That's grown in the carrying. Cut it back to what was seen. | #doubt#. Who was actually standing there?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. It goes in tonight's candle. | #pity#. #rest#, if it's a death. If it's not, I'll pray anyway.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. The Bright One sends some of that too. | #gladnews#. That's a house getting a candle of thanks off me.
+line @1 answer.how : Steady. Kept, and thankful for it. | Well. Paws stiff with tallow, otherwise well.
+line @2 answer.how.busy [self.working=yes] : Busy. The rack's half full and the pot's hot. | No time to stand. Talk while I dip.
+line @1 ask.how : And you? Keeping well? | How's your house?
+line @1 sympathise : #sympathy#. Your name goes over a candle tonight. It's what I have. | That's a hard road. I'm sorry you're on it.
+line @1 reassure : Worse has been mended. The Bright One mended it. | It'll mend. Slowly, but it will.
+line @1 decline : #plainly#: I can't. The rack wants filling, and half a rack's no use. | I'd rather not. It sits wrong with me. That's my reason.
+line @1 accept_decline : Fair. A plain no beats a crooked yes. | No harm in asking. No harm in refusing.
+line @1 thank : #thanks#. You'll be in a candle for that. | Obliged. You'll be prayed for, mind.
+line @1 deflect_thanks : Don't thank me. It wanted doing. | No need. It cost me nothing.
+line @1 preclose [self.working=yes] : The pot's cooling. I'll lose the batch. | Back to the frame. #bless#.
+line @2 preclose : That's me said. | I'll be off; I've an errand by the close.
+line @1 accept_preclose : Go on. #bless#. | Off you go.
+line @1 ack : #bc_right# | #bc_true#
+line @1 give.advice : #plainly#: keep a prayer short, and mean all of it. | Buy your lamp oil before dark. Everybody else does it after.
+line @1 warn [world.bandits=near] : There's trouble on #road#. Don't go alone, and don't go at dusk. | #warn#. Travellers coming in say the road's bad. I believe them.
+scene candle_names
+when topic=work|faith self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Every candle I dip, I say one name to the Bright One. A neighbour, a stranger, whoever comes. | Forty candles on the rack this morning. Forty names. I ran short before noon. | I said a name over every candle today and finished on a carter I'd only met once.
+b : Every one? | Who did you start with? | Why that one?
+a : Every one. One candle, one name. It's no trouble; my paws do the work. | The oldest on the street. Then their neighbours, then down the hill till I ran out. | Because nobody else would. Out on the road, a carter's short of prayers.
+b : #bc_good# | That's a long list. | #bc_wise#
+
+scene whose_name
+when topic=faith|friends self.working=yes
+does tell.self / react.self / assess
+a : I put you in a candle this morning. Third from the end. | Somebody asked me once if I ever pray for myself. I don't. I'm on the rack, aren't I? | There's a candle for you on the rack. I'll not say which one.
+b[friends] #friend : Third from the end? Is that good? | Who's praying for you, then? | Why not say?
+b : That's kind. | Don't you need it? | I'll take it.
+a@friend : It's a candle. They're all good. You were the one I was thinking of. | Everybody who buys one. That's my reckoning. | Because you'd go and stare at it. It's not for looking at.
+a : It's not kind. It's a name and a breath. | Need's not it. There's more names than candles already. | Take it. It's lit or it will be.
+
+scene oil_for_the_road
+when topic=work|travel self.working=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : Travellers heading north stop for #oil# first. The road's dark after the third milestone. | Sold six flasks to one party heading north. I told them to keep one dry. | A traveller bought a candle and asked which road. My answer was plain: the North Road, and don't stop at dusk.
+b : Do they listen? | Keep one dry? | Good advice.
+a : Some. The ones who don't come back for more oil, if they come back. | One in oilcloth, deep in the pack. The others get rained on. | It's the only advice I have, and it's free.
+
+scene gate_word
+when topic=news|caravan world.news
+does tell.news / react.news / assess
+a : Word came under the arch at dawn, from #world.news_from#: #world.news#. That's how the traveller told it. | A carter buying wicks said #world.news#. From #world.news_from#. I've put nothing to it. | #plainly#: #world.news#. Came in from #world.news_from# with the morning carts.
+b : Is it true? | Anything else? | #bc_so_they_say#
+a : I believe the one who told me. Beyond that I won't swear. | Nothing. I asked. That was all the carter had. | So they say, and so I say. No trimmings.
+
+scene gulls_at_the_wall
+when topic=animals|weather here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A gull landed beside me and had my bread before I'd bitten it. Snatched clean. | #gulls.capitalize# reach the gate these days. They never used to come this far. | I'll feed a sparrow all day. A gull gets a broom and that's all.
+b : They're only hungry. | It's the cold drives them in. | That's not very charitable.
+a : So am I, now. And I'd asked nicely, which it didn't. | Then the cold can take them back. | The Bright One made gulls. I've never understood why, and I've asked.
+
+scene salt_wind
+when topic=weather here.region=ridgemere here.outdoors=clear|overcast|storm
+does tell.complaint / react.self / assess
+a : Wind's round off the Sound. Smell that. Salt on the windows by noon. | I wipe the shop glass every morning when the wind's from the sea. It's back by dark. | #saltwind.capitalize# gets in the tallow. The smoke comes out tasting of it.
+b : It's the sea air. | Can't you shutter it? | You can taste it?
+a : I know what it is. Knowing doesn't mean liking. | Shutter a shop and nobody comes in. So I wipe. | Folk say not. I can. A candle should smell of a candle.
+
+scene roof_birds
+when topic=animals|pastimes
+does tell.self / react.self / assess / ack
+a : There's a row of sparrows on the tiles opposite. I count them at noon. Nine today. | Crumbs go out on our sill for #roofbirds#. Not the gulls. Never the gulls. | A pigeon's nesting under our gutter. I've not told the chandler.
+b : Nine? | They'll get fat. | Will you tell?
+a : Nine, and a tenth that comes and goes. I think it's courting. | Let them. A fat sparrow's a happy sparrow. | Not till the eggs are hatched. After that, it's anyone's guess.
+b : #bc_ha# | #bc_lovely# | #bc_good#
+
+scene stiff_boots
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : #boots.capitalize# today. They creak on every step. I'll not complain. | Bought boots at last. The old pair let the street in through the sole. | New boots on Restday, for chapel. Then they're work boots, like the others.
+b : They'll soften. | About time. | Why chapel first?
+a : They'll soften by the first snow. Till then I'll creak. | It was. I'd been praying over it, and then I got paid. | Because new boots go to chapel first. My #mum# had it so, and I keep it.
+
+scene first_white
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : First snow. I went out with my face up and let it settle. | #whitefall.capitalize#. The whole street goes quiet. Even the gulls. | Snow on the tiles and the sparrows all puffed up like little loaves.
+b : You'll freeze. | Quiet's nice. | Like loaves?
+a : I'll come in when I'm white. Not before. | It is. I can hear the close bells from here, clear as anything. | Like loaves. Brown and round. Go and look.
+
+scene broth
+when topic=food here.season=autumn|winter
+does tell.self / react.self / assess
+a : #broth.capitalize# when it's cold out. Give me that and keep the rest. | There's barley soup on the hob. I'll get there before it thickens. | Barley broth over any feast the Rise can lay. Every time.
+b : Simple tastes. | Before it thickens? | Over any feast?
+a : Simple, aye. Simple's not small. | It thickens if you leave it. Then it's porridge, and that's another thing. | Any. A feast leaves you wanting your supper. Broth doesn't.
+
+scene inns_and_drink
+when topic=pastimes|smalltalk here.region=ridgemere here.time=dusk|night
+does give.opinion / disagree / insist / ack
+a : The taprooms at the gate are filling. By midnight half of them will be carried out. | I don't drink. I've seen where it goes, and it comes out of the children's bowls. | There'll be bawling under the windows within the hour. There always is.
+b : A cup never hurt anyone. | You're hard on it. | It's only singing.
+a : One cup, no. It's never one. | I'm plain on it. That's different from hard. | It's singing now. It's fighting by the third song.
+b : #bc_maybe# | #bc_fair# | #bc_we_will_see#
+
+scene close_bells
+when topic=faith|day here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Hear #bells#? I stop dipping for every one. | The close bells ring and I say a name. That's the bargain I've made. | You can hear the cathedral from our counter if the carts are quiet.
+b : Every one? | With whom? | It carries.
+a : Every one. The tallow can wait for a bell. | With the Bright One. Nobody else has heard of it till now. | It does. Some mornings nothing else gets through the cart noise.
+
+scene plain_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray plain. No fine words. The Bright One can follow me. | Folk pray as if they're writing to the Rain Hall. Ask, and have done. | #saying#. A priest who stammered taught me that.
+b : That's a good way. | Some like the long prayers. | A stammering priest?
+a : It's my way. I've no other. | Then they can have them. I'll be finished and dipping. | Took him an age to say a blessing. Every word meant. I've never forgotten it.
+
+scene mother_at_the_door
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : My #mum#'s first in the first candle every morning. Then the street. | If I could only say one name all day, I know whose it'd be. | My #mum# raised me to say grace even over dry bread. I still do.
+b : That's a habit worth keeping. | Whose? | Even dry bread?
+a : It's a habit, that's all. Good doesn't come into it. | My #mum#'s. That's no secret from the Bright One. | Dry bread most of all. It's the bread that needs it.
+
+scene boss_trade
+when topic=work self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss.capitalize# knows the trade. I carry the tallow and keep the pot hot. | I'd follow #self.boss# into any shop in the city. I'll say that plainly. | #self.boss.capitalize# does the fine work. I do the lifting and the praying.
+b : Fair division. | That's loyalty. | The praying?
+a : It is. I'm no chandler. I'm the back that carries the tallow. | It's honest, that's all. | Over every candle. The candles don't know, but I do.
+
+scene dear_tallow
+when topic=prices|times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Tallow's dear this month. Three candles have gone down to one, at most doors. | The poor houses are going to bed with the light. I've seen the windows go dark early. | Lamp oil's gone up. Up the hill, nobody's felt it.
+b : Hard for everybody. | That's sad to see. | They never do.
+a : Hardest at the bottom. It always is. | It is. I say their names anyway. They can have that for nothing. | No. They've got candles to spare.
+
+scene death_candle
+when topic=gossip|news topic.claim_kind=death
+does tell.news / react.news / assess
+a : Word is #topic.subject# #topic.claim#. There's a candle for that tonight. #rest#. | Heard #topic.subject# #topic.claim#. That's a name for the first candle tomorrow. | #topic.subject.capitalize# #topic.claim#, they're saying. Bright One keep #topic.them#. Nothing more to say.
+b : #bc_poor_soul# | That's good of you. | #rest#
+a : Poor soul, aye. The house will need it more than the one gone. | It's not good. It's what's owed. | And for all of us left, while I'm at it.
+
+scene bad_word
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted
+does tell.gossip / react.news / assess
+a : #plainly#: they're saying #topic.subject# #topic.claim#. I'll not soften it. | Word is #topic.subject# #topic.claim#. Bright One forgive #topic.them#, if it's true. | Heard #topic.subject# #topic.claim#. I'll pray for whoever was wronged. And for the other one too.
+b : For both? | That's charitable. | Is it true?
+a : Both. The wrongdoer needs it most and wants it least. | It's not charity. It's my job, as I see it. | I don't know. I know what was said. I've told you that much straight.
+
+scene new_through_the_gate
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess
+a : A traveller's stopped on, at Northgate, for good. The newcomer goes in a candle tonight. | Somebody new took rooms over the inn. Polite. Paid for a lamp in coin. | A newcomer wanted the chapel. I walked the whole way to its door.
+b : That's a warm welcome. | Paid in coin? | All the way?
+a : It's not warm. It's a name and a breath. Warmth's for later, once I know the face. | Coin. That counts for something at Northgate. | All the way. It's not far, and a stranger can lose the way in the close.
+
+scene festival_lights
+when topic=festival
+does tell.self / react.self / assess
+a : Festival's coming. We'll dip every hour there is and still run short. | Every window in Northgate wants a candle at festival. I'll have said a lot of names by then. | I like the festival lights. I don't like what comes after, at the inns.
+b : Busy, then. | A lot of names. | After?
+a : Busy. I'll not see daylight till it's over. | Every house on the street, twice. I'll manage it. | The drinking. I'll be home before the singing.
+
+scene late_tallow_carts
+when topic=caravan|work world.wagons=late
+does tell.worry / reassure / assess
+a : No tallow carts in. One pot left, and then nothing. | The carts are late on #road#. I've been out to the gate twice to look. | Carts missing past Marketday, and the street goes dark early.
+b : They'll come. | Twice? | Not everybody's.
+a : The Bright One's been asked. I'll still walk out a third time. | Twice. The gate wardens know my face now. | No. The Rise will have its lamps. It's the stair-tops that go dark.
+
+story first_named_candle [topic=memories|faith self.age>=25]
+  : My first named candle was for an old drover who sat by the north gate every day, with nothing.
+  : One winter morning he wasn't there. I'd never asked his name. I said "the drover" over that candle.
+  ask : Would you have asked his name?
+  b : I hope I would. Most of us don't.
+  : I ask everybody's name now. And I've said one over every candle since.
+
+story the_pier [topic=memories self.age>=25 here.region=ridgemere]
+  : As a pup I meant to go to sea. I knew every sea song there was.
+  : I went out on the long pier one day in a gale. The spray soaked me through and a gull took my cap.
+  b : So the sea lost you that day. Did you ever go back?
+  : Never. I sing the songs indoors now, and only when nobody's listening. The salt can stay on the water.
+
+story gull_bread [topic=animals|memories self.age>=20 here.region=ridgemere]
+  : I was sat by the gate with my bread, minding my own business.
+  : A gull came down out of nowhere, took the bread and half my patience, and ate it two yards off, staring.
+  ask : Chase it, or let it be?
+  b : I'd have thrown my boot at it.
+  b[stage=young|adolescent] : I'd have chased it to the sea.
+  : I did neither. I prayed for the thing. Through my teeth. Hardest prayer of my life.
+
+rule @candle_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say One for the house on the corner. #bless#. | There. That's a name said and a candle made.
+
+rule @oil_bark
+when concept=bark working=yes here.time=dusk
+does aside
+cooldown 8h
+say Oil for the road! Get it before dark, not after. | Candles and lamp oil. Last of the day.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say Off that sill, you yellow-eyed thief. | #gulls.capitalize#. The Bright One's one mistake.
+
+rule @bell_bark
+when concept=bark here.region=ridgemere here.time=dawn|day
+does aside
+cooldown 12h
+say There's #bells#. One name, then. | Bells. #bless#.
+
+dlg @1 resident.hub : #greet#. Name it. Plain question, plain answer. | #greet#. Mind yourself; there's hot tallow about.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I said your name over a candle once. | #topic.player#. You're back. Good.
+dlg @3 resident.hub [here.time=night] : It's late. If it's oil you want, be quick. | Evening. #bless#. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #plainly#: what do you want? | Stay that side of the pot and talk.
+dlg @1 resident.job [self.working=yes] : #self.trade_words.capitalize#. I carry, I dip, I keep the pot hot, and I pray over every candle. | Tallow in, candles out. A name over each one.
+dlg @2 resident.job : Whatever I'm set to, done properly. That's my trade, near enough. | Lifting, mostly. And praying. Folk forget the praying.
+dlg @1 resident.news [world.news] : A traveller through the gate had it from #world.news_from#: #world.news#. That's as told. | #plainly#: #world.news#. From #world.news_from#.
+dlg @2 resident.news [world.event_words] : Every carter through the gate is on about #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Road wolves stopped and stripped a wagon, out north. The carter's in my prayers. You keep off it alone.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The gate's been quiet. | The gate's brought nothing worth the breath.
+dlg @1 resident.gossip [here.gossip!=yes] : Tallow's what I carry. Tales can walk. | #gossip_none#
+dlg @1 resident.bye : #farewell#. #bless#. | Go careful.
+dlg @2 resident.bye [here.time=dusk|night] : Take a light if you've far to go. #bless#.
+graft resident.hub
+choice What were you muttering over that candle? -> names
+node names
+say A name. One to every candle I dip. A neighbour, a carter, whoever comes to mind. It's heard while the tallow sets.
+mood calm
+free
+choice Would you say one for me? -> names_me
+choice Goodbye. -> bye
+node names_me
+say You're in the next one. You needn't tell me anything. The Bright One knows who you are, and so will the candle.
+choice Thank you. -> hub
+choice Goodbye. -> bye

@@ -1,6 +1,6 @@
-# rm106, the borrowed saying (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm106, the borrowed saying (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm106
-revision 2
+revision 3
 state ready
 dialect plain
 accent light broad
@@ -75,7 +75,7 @@ line @3 greet [pair.band=friends|family] : You can take the dry side of the #gat
 line @4 greet [here.time=dawn] : The #pigs# rose before I did today. | #greet#. The first #bucket# is already gone.
 line @1 greet.return : I remember your step by the #fence#. | #welcome_back#. The #yard# is quieter now.
 line @1 kin.open [pair.kin!=no] : Come in; the #larder# has enough for both. | Your #boots# can dry beside the hearth.
-line @1 again.open : We have met since the #trough# was filled. | Have you come back for that #saying#?
+line @1 again.open : We have met since the #trough# was filled. | Back for another of my sayings, I expect.
 line @1 farewell : #farewell#. Mind the #gate# on your way. | #saying.capitalize#. Keep warm.
 line @1 farewell.return : There will be another #cup# tomorrow. | Come back when the #snow# arrives.
 line @1 react.news : Give me the part you saw yourself. | I can set down the #bucket# and listen.

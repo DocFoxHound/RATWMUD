@@ -1,0 +1,333 @@
+# rm132, the pothole namer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm132
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_delphine_brackwick
+written_by claude
+title the pothole namer
+fits stage=adult|old
+prefers job=carter talk=chatty
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk names_every_pothole_on_the_round_and_greets_them
+likes hard_cheese swimming quiet_chapel thunder
+dislikes cold_tea rats
+fears a_wheel_lost_on_the_steep_streets the_rent_coming_before_the_pay
+hopes a_cart_and_a_round_of_my_own a_hot_summer_for_swimming
+topics work +0.5 gossip +0.4 friends +0.3 weather +0.3 pastimes +0.3 festival +0.3 faith -0.1
+styles comfort=chatter gossip=eager refuse=laughing tease=merry
+marks oath saying laugh
+persona #self.first# drives loads up and down the city's steep streets and talks the whole way: warm, teasing, poor and cheerful about it, fond of a cold swim and a loud storm, with a pet name for every hole in the road.
+
+words
+oath! = Wheels and whistles | Axle-grease and glory | Spokes and sixpences
+saying! = Know your holes and the road's your friend | Every street's got a hole worth a name
+laugh! = Hoo, hark at me | Hoo, that's a good one | Oh, give over
+round = the round | my round up the hill
+holes = my holes | the potholes on my round
+grumbler = the grumbler by the chandler's | the big hole at the bend
+wheel = the wheel | my near-side wheel
+box = the box seat | my perch on the cart
+load = the load | a cartload of somebody's furniture
+team = the horses | my pair
+cheese = a hunk of hard cheese | cheese that fights back
+tea = tea gone cold | tea with a skin on it
+dip = a swim | a dip in the Sound
+storm = a good thunderstorm | thunder rattling the slates
+chapel = the chapel | an empty pew
+rents = our rents | the stairs at home
+hill = the hill | the long drag up to the Rise
+
+any
+opinion @1 dole for 3 : The dole kept the roof on our stair one lean week. I'll bless it to anybody's face. | I'd rather work than take it. But I've taken it, and I'm not ashamed.
+opinion @1 houses against 1 : I've carted up to the Rise a thousand times and never once got past a kitchen door. | They've lovely gates, the Houses. I see a lot of gates.
+opinion @1 merchants against 1 : I haul their goods all day and couldn't buy half of it. Funny, that. | A merchant once tipped me a penny for a ton of wine. A penny!
+opinion @1 road for 1 [self.job=carter] : Streets feed me. Some days they're kind, some not, and I've a name for every hole in them. | Roads are only as bad as you don't know them.
+opinion @1 drink for 1 : A jar with the yard lot after a long day never did anybody any harm. Well. Not much. | I'll have one. Two if you're buying. Three and I'm singing.
+opinion @1 festivals for 2 : One night's dancing beats a month of early beds, for me. | Festival day the carts stop, and I dance. Nothing beats it.
+opinion @1 strangers for 1 : Strangers are just folk I haven't talked at yet. | I'll talk to anybody. Ask the potholes.
+opinion @1 times against 2 : Tighter each week, and the Rise can't tell, never having gone short a day. | Rent's up, pay's not. Same song, new verse.
+
+grown
+line @1 greet : #greet#! Come and walk with me; I can't stop. | #greet#, #pet#. You've a face full of news, by the look.
+line @2 greet [pair.band=strangers] : #greet#! New face. I'll learn it. I'm good at faces. | #greet#. You're not from my round, are you. I'd know.
+line @3 greet [self.working=yes self.job=carter] : #greet#! Hop up, or mind the wheel, one or the other. | #greet#. Walk alongside; the horses don't mind.
+line @4 greet [here.time=dawn] : Morning! Out before the milk, me. | #greet#. First load's on and I'm awake. Mostly.
+line @5 greet [here.time=dusk|night] : Evening! Back after dark, as usual. Mind the cart. | #greet#. I've been on the box since dawn and I'm still talking.
+line @1 greet.return : #greet# yourself! | #greet#! There you are, then.
+line @2 greet.return [pair.band=friends|family] : There's my favourite! Don't tell the others. | You! Funny, I'd just thought of you. Nothing bad.
+line @3 greet.return [self.working=yes] : #greet#! Can't stop; got a wardrobe to deliver. | Hello! Talk fast, the horses won't wait.
+line @4 greet.return [here.time=dusk|night] : Evening! Still up, are you? Me too. | #greet#. Day's done. Thank the Bright One.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Good. Put the kettle on. Hot, mind. | Come here. Fed yet? I've cheese.
+line @1 again.open : You again! People will talk. | Twice today. My chatter's catching.
+line @1 hail [pair.band=friends] : Oi! Over here! | Wait up! Have I got one for you.
+line @1 farewell : #farewell#! Mind the holes. | #farewell#. Say hello to the grumbler for me if you pass it.
+line @2 farewell [here.time=dusk|night] : Night! Hug the lit walls going home. | #farewell#. Bed for me, or I'll fall off the box tomorrow.
+line @1 farewell.return : Bye, then! | Bye! Don't do anything I'd do.
+line @2 farewell.return [here.time=dusk|night] : Night! Sleep well. | Night, #pet#.
+line @1 react.news : Ooh. Go on. Go on! | Tell me everything. Slowly.
+line @1 react.news.new : #oath#! That's new. The yard'll have it off me by noon. | Well, that's passed me by, and nothing passes me.
+line @1 react.news.known : Heard it this morning off the milk cart. | Oh, that. Half my round's talking about it.
+line @1 react.news.doubt : Ooh, I'd check that twice before it went round the yard. | Who said? Because carters make things up, and I should know.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. Oh, that's awful. | Oh, that's cruel. Poor things. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! That's made my day. | Good! Somebody deserves a bit of luck.
+line @1 answer.how : Grand, ta. Tired, but grand. | Oh, you know. Up and down. Mostly up.
+line @1 answer.how.busy [self.working=yes] : Three loads down, two to go, and my leg's had enough. | Run off my wheels. Ask me tonight.
+line @1 ask.how : How are you keeping? Really, though. | All well with you? You look a bit peaky.
+line @1 sympathise : Oh, come here. That's rotten. Every bit, now, from the start. | Ah, no. You poor thing. Sit down.
+line @1 reassure : It'll come out right. Mostly it does, give or take a wheel. | Chin up. Worse things roll down the Rise every week.
+line @1 decline : Oh, I can't, sorry. I've a load due at the Rise and the boss'll skin me. | Not tonight, love. I'm dead on my paws.
+line @1 accept_decline : Never mind. Next time! | Oh, fair enough. I'll be back asking, mind.
+line @1 thank : Oh, you're a gem. Ta. | Ta! I'm in your debt. I'll remember. Probably.
+line @1 deflect_thanks : Oh, give over. Nothing to it. | Hush. Thank me again and I'll go red.
+line @1 preclose : Right, I'd best get on. The load won't carry itself. | I've talked your ears thin. Off you go.
+line @1 accept_preclose : Off with you. Watch for holes! | Off you go. We'll finish this later.
+line @1 tease [pair.band=friends] : You've the gait of a barrow with one wheel gone square. | Is that a new hat, or did a gull land on you?
+line @1 tease.return : Hark at the one with muck to the knees. | #laugh#. That's rich, coming from you.
+line @1 ack : Right! | #laugh#! | #bc_true#
+line @1 give.advice : Learn the holes on your way, and you'll never twist an ankle. | Never drink cold tea. Life's too short.
+line @1 warn [world.bandits=near] : Stay inside the walls after dark this week. I mean it, love. | Carts are getting robbed out there. Keep in, if you can.
+scene naming_holes
+when topic=work|day self.job=carter
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : Every hole on my round's got a name. That one's the grumbler. It grumbles at the wheel. | The big hole by the chandler's gets a hello off me every day. It's polite. | I've names for forty-two potholes between the yard and the Rise.
+b : Why the grumbler? | Does it answer? | Forty-two?
+a : Go over it and listen. Grr-thunk. Grumbler. | Not yet. I'll keep trying. | Forty-two. Forty-three if you count the one that's only a crack.
+b? : #bc_ha# | #bc_ha# | That's a lot of holes.
+a : #saying#. That's my motto. | You've got to be civil. They can have a wheel off. | It is. And I love every one, the beasts.
+
+scene new_hole
+when topic=work|weather self.job=carter here.weather=rain
+does tell.boast / react.self / tease / tease.return / assess
+a : The rain's made a new hole by the pump. Needs a name. I'm thinking "the soup bowl". | Found a new hole this morning. Nearly lost my near-side wheel. | Rain's dug me a new pothole. I'll name it after the next person who annoys me.
+b : The soup bowl's good. | Nearly? | Not me, I hope.
+a : It is. It's full of brown soup already. | Nearly. I had words with it. Strong words. | Well, now. Depends how the rest of this goes.
+b : Name it after the boss. | You'd not dare. | Fine. I'll behave.
+a : Ha! I'd lose my job and my hole both. | I would. Watch me. | Good. Then it'll be "the soup bowl" after all.
+
+scene the_hill
+when topic=work self.job=carter here.region=ridgemere
+does tell.self / react.self / assess
+a : The long drag up to the Rise. Horses hate it, I hate it, and the load hates it. | Hauled a wardrobe up to the Rise this morning. The wardrobe nearly took me back down. | Going up's hard. Coming down's worse. You lean on the brake and pray.
+b : Sounds hard work. | Nearly? | I'd pray too.
+a : It is. But you see the whole Sound from the top. That's the pay. | Nearly. It went for a slide at the bend. I sang at it till it stopped. | Pray and sing. The horses like the singing.
+
+scene the_boss
+when topic=work self.job=carter self.boss
+does tell.self / react.self / assess
+a : #self.boss# runs the yard like a drill sergeant. Fair, though. I'll give that. | I'd not cross #self.boss#. Not twice. | #self.boss# reckons my mouth never stops. I said that's not a complaint, that's a talent.
+b : Fair's what matters. | Wise. | What was said back?
+a : It is. Fair and loud, the yard's two virtues. | Once was enough. I talked my way out of it, mind. | Nothing. A look. A fond one, I've decided.
+
+scene the_horses
+when topic=animals self.job=carter
+does tell.self / react.self / assess
+a : My pair could do the round blind. I sit up top and chatter. | The near horse takes the corners wide. I've told it. It doesn't listen. | I talk to the horses all day. They're the best listeners in the city.
+b : Good beasts. | Does it ever listen? | They can't answer back.
+a : The best. I'd trust them over most folk. | When there's an apple in it. | Exactly. That's why they're the best.
+
+scene box_lunch
+when topic=food
+does tell.self / react.self / assess
+a : #cheese.capitalize# on the box seat, and a heel of yesterday's. That's my dinner. | Give me cheese hard enough to chip a tooth. The soft stuff's for the Rise. | I'd sell my own tail for a good bit of hard cheese.
+b : Sounds good to me. | You've strong teeth. | Not the tail.
+a : It is. Best dinner in the city, with a view. | Carters' teeth. We chew everything. | No, you're right. I'd sell somebody else's.
+
+scene cold_tea
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : Set my tea down on the step, turned round, and it had gone stone cold. Ruined my morning. | Cold tea's the worst thing in the world. Worse than rats. Nearly. | Somebody brought me a cup at the yard and it was cold. I said thank you. I lied.
+b : Warm it up. | Worse than rats? | Polite of you.
+a : It's never the same. Tea knows. | Nearly. Rats at least run away. | It was. I tipped it in the gutter after. The grumbler had it.
+
+scene cold_dip
+when topic=pastimes|day here.region=ridgemere here.season=spring|summer|autumn
+does tell.boast / react.self / assess
+a : I had a dip in the Sound before work. Freezing. Glorious. | There's nothing like a cold swim to make you feel alive. Or nearly dead. One of those. | Swam off the wharf steps this morning. Came out blue.
+b : You're mad. | Which one? | Blue?
+a : Mad and awake. Best way to be. | Both, usually. It's a good mix. | Blue and grinning. You should come.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Thunder! I love it. Under a good roof, I'd listen all night. | Listen to that. The whole sky shouting. Lovely. | On the cart it's terrifying. Under a roof it's heaven.
+b : Not me. | It's loud tonight. | Which is it now?
+a : You don't know what you're missing. | It is. Let it shout. | Roof, thank the Bright One. Heaven, then.
+
+scene wet_box
+when topic=weather here.weather=rain self.job=carter
+does tell.complaint / react.complaint / assess
+a : Soaked through on the box seat. Even my tail's wet inside. | Rain trickling under my collar since dawn. And I'm still cheerful. Look at me. | Six loads in the rain and one wheel stuck in the soup bowl. Lovely day.
+b : You'll catch your death. | You are cheerful. | The soup bowl again?
+a : I'll catch a cold. Death can wait. | Somebody has to be. It's not the horses. | #oath#, it's got a taste for my wheels, that one.
+
+scene the_leg
+when topic=health here.weather=rain|storm self.age>=25
+does tell.complaint / sympathise / assess
+a : My leg's playing up. It feels rain a good hour ahead of the clouds. | Limping again. Weather's turned. I'm better than a barometer. | My leg's been at me all day. Comes and goes, like the boss's temper.
+b : Rest it. | Handy, in a way. | That bad?
+a : Rest it? On a carter's pay? Ha! | Handy. I could charge for it. | Not that bad. I'll dance on it Restday anyway.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : An empty chapel's my secret. Candles, no chatter, not even mine. | Between loads I duck in among the pews. Quietest five minutes of my day. | Nobody'd guess it, but I love a quiet chapel.
+b : Even yours? | That's nice. | I'd not think it.
+a : Even mine. I do stop, now and then. | It is. Out I come, ready for the next load. | Ha. Nobody does. That's why it's nice.
+
+scene rise_gates
+when topic=work|lore self.job=carter
+does tell.self / react.self / assess
+a : I've carted up to the Rise a thousand times. Never once past the kitchen door. | They've lovely gates up there. I know them all. Never seen the faces behind them. | A House steward tipped me once. A whole penny. I nearly fainted.
+b : What's up there, then? | Not once? | A whole penny?
+a : Gardens. Lots of gardens. And geese that hiss at carters. | Not once. I'm not complaining. Well. A bit. | A whole penny. Still got it. It's going in the ground with me.
+
+scene wagons_raided
+when topic=bandits|caravan world.wagons=raided
+does tell.worry / reassure / concede
+a : Robbers had a wagon out there. Could've been any of us from the yard. | Robbed carts again. The yard's all talking. Nobody wants the road run now. | Somebody's robbing carts. I'm glad my round's inside the walls.
+b : Keep to the city. | They'll catch them. | It's a worry.
+a : I will. You couldn't pay me to go out there now. Well. You could. | I hope so. Before somebody gets hurt. | It is. I'll keep talking about it. That's how I worry.
+
+scene wagons_in
+when topic=caravan world.wagons=in self.job=carter
+does tell.news / react.news / assess
+a : Wagons are in! I'll be carting from the gate till dark. | The north carts came in. That's a week's work for the yard, all at once. | Big load at the gate today. Every carter in the city's out.
+b : Good for you. | That's a lot of work. | Busy, then.
+a : It is! My leg disagrees. I'm not listening to it. | Work's work. I'll take it all. | Busy and happy. Best kind.
+
+scene tight_times
+when topic=times world.times=hard|lean self.wealth=poor|destitute
+does tell.worry / sympathise / assess
+a : Rent's up again and pay's the same. I'll be eating cheese rinds by the month's end. | Lean times. I've had to take the dole twice this winter. I'm not ashamed. | Every penny I make goes somewhere before I've had it.
+b : You shouldn't be. | That's hard. | Same here.
+a : I'm not. I'll still laugh about it. Laughing's free. | It is. But I've got my holes and my horses. I'll get by. | Ha. We'll be poor together, then. That's something.
+
+scene yard_gossip
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. The whole yard's talking. | Ooh, I've got one. #topic.subject.capitalize# #topic.claim#. Not a word where it came from. | Word is #topic.subject# #topic.claim#. Straight off the milk cart, so it's true.
+b : No! | I won't. | Off the milk cart?
+a : Yes! I nearly fell off the box. | You will, though. Everybody does. | The milk cart knows everything. It goes everywhere first.
+
+scene gossip_hard
+when topic=gossip|crime topic.subject topic.claim_kind=death|violence|theft
+does tell.news / sympathise / assess
+tone serious / tender / serious
+a : Heard yet? #topic.subject.capitalize# #topic.claim#. It's been in my head all day. | Awful news going round: #topic.subject# #topic.claim#. | Word on the round is #topic.subject# #topic.claim#. It sits badly with me.
+b : That's terrible. | That's sad. | Nor do I.
+a : It is. Even I've gone quiet. That's how bad. | It is. I'll not joke about that one. | No. Mind yourself out there.
+
+scene jar_with_yard
+when topic=friends|pastimes here.time=dusk|night
+does invite / accept_invite / assess
+a : A jar with the yard lot tonight. Come along. | We're going for one. Just the one. Ha! | Coming for a drink? I'm buying. Once.
+b : Go on, then. | Just the one? | You're buying?
+a : Good! You can listen to me tell the grumbler story. | Just the one. Each. Several times. | Once. Chalk it on the wall.
+
+scene festival_dance
+when topic=festival
+does tell.plan / react.self / assess
+a : Festival day! The carts stop and I'm dancing till my leg gives out. | I'll dance with anybody. Even you. | No loads, no boss, and fiddles till dawn. Grand.
+b : Save me one. | Even me? | Sounds a good day.
+a : I'll save you three. You'll need a rest after the first. | Especially you. You'll need the practice. | The best. I'll be useless the day after. Worth it.
+
+scene rats_yard
+when topic=animals|work
+does tell.complaint / react.complaint / assess
+a : Rats in the feed bins at the yard. I hate them. Dirty, sneaky little beasts. | Something with a tail crossed my boot this morning. I screamed. The horses laughed at me. | There's one rat at the yard so fat I've named it. I hate it the most.
+b : Horrible. | Horses don't laugh. | What's its name?
+a : They are. I'd rather cold tea. Nearly. | These ones do. I heard them. | The landlord. Don't tell anyone.
+
+scene thin_walls
+when topic=home self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Our walls are so thin I hear next door sneeze. I say bless you through the wall. | It's a damp stair and a draughty window, but it's home. | I share a room. We get along. I talk; it's peaceful.
+b : Do they answer? | Home's home. | Peaceful?
+a : Sometimes. We're good friends, through the wall. | It is. And I'm hardly in it, so it'll do. | Ha. For one of us.
+
+scene neighbour_good
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : Best neighbour I've had, #self.neighbour#. My last cheese is safe with #self.neighbour#. That's serious trust, that is. | I'd do anything for #self.neighbour#. Well. Nearly anything. Not cold tea. | You'll like #self.neighbour#. Everybody does. I do.
+b : High praise, from you. | That's a line. | I'm sure I would.
+a : It is. Cheese is serious. | Everybody's got a line. That's mine. | You will. Say I sent you.
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody new asked how to get across town. Potholes, I told them: left at the soup bowl, right at the grumbler. | Fresh faces on our street. I've introduced myself twice already. | There's a shy new one living near the yard. I'll fix that.
+b : Did they find it? | Twice? | Poor them.
+a : They found the soup bowl. Head first. | The first time didn't take. | They'll thank me. Everybody does, eventually.
+
+story first_day [topic=memories|work self.job=carter self.age>=25]
+  : My first day on the box, I carted crockery to the Rise and found every hole in the street.
+  : By the top I had a cart of broken plates and a very quiet steward.
+  ask : Could you have faced another load, after that?
+  b : I'd have run.
+  : Next morning, back up on the box. Learned every hole by name, so it'd never happen again. It never has.
+
+story storm_swim [topic=memories|weather self.age>=20]
+  : One summer I swam off the wharf steps in a thunderstorm. The whole Sound lit up white.
+  : I came out laughing so hard I swallowed half the sea.
+  b : That's mad. Weren't you frightened?
+  : Terrified. Best swim of my life. Never again.
+
+story the_soup_bowl [topic=memories|work self.job=carter self.age>=20]
+  : There's a hole by the pump that ate a wheel off my cart, clean off, on a wet Marketday.
+  : Neighbours came pouring out to help, and somebody brought me a hot tea.
+  : Hot. Not cold. I could have cried.
+  b : Is that why you call it the soup bowl?
+  : That's why. It owes me a wheel. I still give it a hello.
+
+rule @round_bark
+when concept=bark self.working=yes self.job=carter
+does aside
+cooldown 6h
+say Hello, grumbler! Steady now. | Mind the soup bowl, mind the soup bowl.
+
+rule @storm_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say #oath#! Listen to that one! | Shout away, sky. I'm under a roof.
+
+rule @tea_bark
+when concept=bark
+does aside
+cooldown 10h
+say Who left this tea to go cold? Criminal. | Hot tea. Is that so much to ask?
+
+rule @hill_bark
+when concept=bark self.working=yes self.job=carter here.region=ridgemere
+does aside
+cooldown 9h
+say Up we go. Up, up, up. | Lean on it. Nearly there.
+
+dlg @1 resident.hub : #greet#! Need something? Talk fast, I'm on a round. | #greet#, #pet#. Something wants carrying, by your face.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! The horses were only now hearing about you. | #greet#, #topic.player#. A known face. That's my day better.
+dlg @3 resident.hub [here.time=night] : Evening! I'm only just off the box. Make it quick and cheerful. | Late, and still I'm talking. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Easy, now. I'm friendly, I promise. What's wanted? | All right, all right. Say your piece.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. Up and down the hill, all day, with a name for every hole. | I drive a cart from #self.workplace#. Furniture, flour, whatever's going.
+dlg @2 resident.job : #job_busy# Ask me later; you'll get the lot. | Oh, this and that. Mostly talking.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new, worse luck. Ask me tomorrow. | #news_none# The milk cart's slow this week.
+dlg @2 resident.news [world.news] : Off the gate carts this morning, from #world.news_from#: #world.news#. Fancy that.
+dlg @3 resident.news [world.event_words] : Everybody on my round's on about #world.event_words#.
+dlg @1 resident.gossip [here.gossip!=yes] : Nothing! I know. Me, with nothing. | #gossip_none# I'm as shocked as you.
+dlg @2 resident.gossip [here.gossip=yes] : Ooh, yes. They say #topic.subject# #topic.claim#. Carters never gossip. Ha!
+dlg @1 resident.bye : #farewell#! Mind the holes. | Bye, then! Come and walk with me another day.
+dlg @2 resident.bye [here.time=dusk|night] : Night! Steer by the lamplight.
+graft resident.hub
+choice Did you just say good morning to a pothole? -> holes
+node holes
+say I did! That's the grumbler. Every hole on my round's got a name. You learn your holes, you never lose a wheel. Well. Nearly never.
+mood pleased
+free
+choice How many have you named? -> holes_count
+choice Goodbye. -> bye
+node holes_count
+say Forty-two, from the yard to the Rise. Forty-three if you count the crack by the pump. Go on, find me a new one, and you can name it.
+choice I'll keep an eye out. -> hub
+choice Goodbye. -> bye

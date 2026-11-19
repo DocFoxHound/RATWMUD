@@ -1,0 +1,304 @@
+# rm138, the winter forecaster (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm138
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_lionel_lowe
+written_by claude
+title the winter forecaster
+fits stage=adult|old
+prefers job=herder humour=dry
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk gives_the_houses_till_winter_to_fall_out
+likes mutton_stew digging new_boots first_snow
+dislikes stale_bread crowds
+fears another_winter_on_stale_bread being_pushed_out_again
+hopes boots_with_nobody_else_s_feet_in_them a_bit_of_ground_of_my_own
+topics work +0.3 times +0.4 food +0.3 gossip +0.2 weather +0.2 festival -0.4 newcomer -0.2
+styles comfort=gruff gossip=dry refuse=short tease=dry
+marks oath saying
+persona #self.first# mucks out stables for a wage, keeps quiet, takes offence quickly and jokes drier than the hay, eats stale bread without a word, and gives the great Houses till winter to be at each other's throats.
+
+words
+oath! = Muck and manger | By the long rake
+saying! = Give it till winter | Friends till the first frost | Every House keeps a knife behind its back
+beasts = the beasts | the big draught horses
+mules = the mules | that pair of grey mules
+muck = muck | a barrow of muck
+rake = the rake | my muck rake
+stalls = the stalls | the stable stalls
+hay = hay | a forkful of hay
+harness = the harness | the harness leather
+boots = these boots | my old boots, held on with twine
+newboots = new boots | boots nobody's walked in before me
+stew = mutton stew | a bowl of mutton and barley
+stale = stale bread | yesterday's loaf, hard enough to prop a door
+snow = the first snow | the year's first flakes
+ground = my bit of ground | the patch I dig
+houses = the Houses | the four big Houses
+
+any
+opinion @1 houses against 1 : A lifetime hauling for the Houses, and none of their lordships would know me from a fence post, nor me them. #saying.capitalize#.
+opinion @2 houses against 2 [world.times=hard|lean] : Folk are going short and the Houses still sit to their dinners. They'll fall out over the last slice. Watch.
+opinion @1 merchants against 2 : A day's wage won't run to bread and a candle both. The stall never goes short. Funny, that.
+opinion @1 dole for 2 [self.on_dole=yes] : The dole kept my belly lined the week I'd nothing. Run it down where I can't hear.
+opinion @2 dole for 1 : Somebody goes hungry, you feed them. Nobody needs a sermon about it.
+opinion @1 church for 1 : The chapel fed folk on my stair when nobody else bothered. I remember that.
+opinion @1 festivals against 2 : Racket, slopped ale, a fight by dark and tears after. And a crush of bodies between me and my bed.
+opinion @1 times against 2 : Every week a bit worse. Up the hill they've not noticed. Why would they.
+
+grown
+line @1 greet : #greet#. | Mm. #greet#.
+line @2 greet [pair.band=strangers] : #greet#. Mind where you tread. | #greet#. You're stood in the muck, for the record.
+line @3 greet [self.working=yes] : Busy. Talk away. The rake doesn't stop. | #greet#. Keep back from that mule.
+line @4 greet [here.time=dawn] : #greet#. Up before the beasts, me. Always. | Morning. Cold one.
+line @5 greet [here.time=dusk|night] : Evening. Shift's over, thank the Bright One. | #greet#. Late to be wandering.
+line @1 kin.open [pair.kin!=no] : You. Come here. Sit. | There you are. You'll have eaten, I hope.
+line @1 again.open : Twice. People will talk. | Back again. Same spot, same wolf.
+line @1 greet.return : #greet#. | Mm. And you.
+line @2 greet.return [pair.band=friends|family] : There you are. I'd near given you up. | #greet#. Sit down, then.
+line @3 greet.return [self.working=yes] : #greet#. Mind the barrow. | Can't stop. Say it while I rake.
+line @1 farewell : #farewell#. | Right. I'm off.
+line @2 farewell [here.time=dusk|night] : Night. Keep off the dark stairs. | #farewell#. I'm for my bed.
+line @1 farewell.return : #farewell#. | Aye. Go on.
+line @2 farewell.return [pair.band=friends|family] : Don't leave it long. | Mind yourself.
+line @1 react.news : Go on, then. | What now.
+line @1 react.news.new : That's news to the stables. | First I've had. I don't get much.
+line @1 react.news.known : Heard it in the yard. Mucking out, you hear everything. | Old. It came through the stables yesterday.
+line @1 react.news.doubt : Who says? Somebody up the hill wanting it so? | Bring it to me twice and I might.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's rotten. Nobody earns that. | #pity#. No joke in that one.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Something in this city came out right. | Well. There's a turn up. Good.
+line @1 answer.how : Still standing. Try me when the shift's done. | Can't complain. I could, but who'd listen.
+line @2 answer.how.busy [self.working=yes] : Busy. The stalls don't muck themselves. | Up to the knees in it, as usual.
+line @3 answer.how.poorly [self.hungry=yes] : Hungry. Otherwise grand. | Empty. The bread was hard and there wasn't enough of it.
+line @1 ask.how : You're keeping all right? | How's yours, then?
+line @1 sympathise : Rotten luck. Sit a minute. | Hm. Nobody earns a thing like that. Sorry.
+line @1 reassure : It'll pass. You outlast it, mostly. | You'll get through. I did, and I'm nobody special.
+line @1 decline : #hedge#, no. I'm on shift, and the boss counts. | Not me. I've nothing spare, and I'm not lying about that.
+line @1 accept_decline : Fair. Once is enough. | No harm.
+line @1 thank : Ta. That's decent of you. | Obliged. I'll owe you one.
+line @1 deflect_thanks : Nothing. Don't sing about it. | Forget it. I have.
+line @1 preclose [self.working=yes] : Right. The stalls won't wait. | That mule's looking at me. I'd best go.
+line @2 preclose : That'll do. | Well. I've said my bit.
+line @1 accept_preclose : Go on, then. | Right.
+line @1 tease [pair.band=friends] : That face. Like a mule that's been asked nicely. | All clean, are we? Stand still and I'll fix that.
+line @1 tease.return : Says the one who smells of the stalls. | You'd know about mules.
+line @1 take_offence : Who asked you? | I heard that. Say it again, slower.
+line @1 ack : Mm. | #bc_right#. | Aye.
+line @1 give.advice : Never walk behind a mule you don't know. Or one you do. | Eat the crust first. It's the bit that'll go hard.
+line @1 warn [world.bandits=near] : Don't go out the east gate today. The carters won't. | Stay in. I mean it.
+line @1 hail [pair.band=friends] : Oi. Here. | You. A word.
+scene till_winter
+when topic=gossip|times|news
+does give.opinion / disagree / insist / backchannel / assess
+a : Give it till winter. Two of the Houses will be snarling. | Greatly and Timberland all smiles at the Council table. Watch them by the first frost. | Mark me. Before the snow, two of the Houses won't be speaking.
+b : They've got along this long. | You said that last year. | They need each other.
+a : They've had years to grow tired of it. | I did. And I'll say it next year. One year I'll be right. | Need each other's money. That's a long way from liking.
+b : #bc_we_will_see# | #bc_maybe# | #bc_ha#
+a : We will. #saying.capitalize#. | Maybe. I'll have the last laugh, or no laugh. | Laugh. Then look me up when the snow's down.
+
+scene first_frost_forecast
+when topic=season|times here.season=autumn
+does tell.self / react.self / assess
+a : Leaves are coming down. That's my clock for the Houses falling out. | Autumn. I say it every year and mean it every year. Not long now. | Getting cold. Somewhere on the Rise somebody's sharpening something. You'll see.
+b : The Houses again? | You never give up. | Sharpening what?
+a : Always the Houses. Somebody ought to keep an eye. | Never. It's all the hope I can afford. | Their tongues, for now. Knives later.
+
+scene muck_dawn
+when topic=work|day self.job=herder self.working=yes here.time=dawn
+does tell.self / react.self / assess
+a : Twelve stalls before the bell. I've done nine. | First barrow of muck's out. I can see my breath. | The beasts want feeding before I do. That's the job.
+b : Nine already? | Cold for it. | They come first, then.
+a : Nine. The last three are the mules. I save the worst. | Cold, and it stinks, and I'm still glad of the wage. | They do. I eat when the hay's down.
+
+scene the_mules
+when topic=animals|work self.job=herder
+does tell.self / react.self / assess
+a : One of #mules# bites. Not hard. Just to let you know. | That grey mule kicks if you come in on the left. I come in on the right. | The mules are cleverer than the carters. Don't tell the carters.
+b : Why keep it, then? | Only on the left? | Cleverer?
+a : It pulls like three horses. A bite's cheap at that. | Only on the left. Something happened to it on the left, once. | They know when it's going to rain before anyone. They lie down.
+
+scene harness_mend
+when topic=work self.job=herder self.working=yes
+does tell.self / react.self / assess
+a : Mending #harness# by lamp. The leather's older than me. | The boss says the harness has a year left. It had a year left three years ago. | Stitching a strap that'll snap again by Restday.
+b : Can't they buy new? | Older than you? | You'll stitch it again, then.
+a : They can. They won't. That's the difference. | Near enough. It smells like it. | Again and again. That's me, that is.
+
+scene boots_twine
+when topic=smalltalk|pastimes self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Look at #boots#. That's twine holding the sole on. | I'd give a week's wage for #newboots#. I'd go barefoot the week. | Every cobbler's window, I stop and look. Then I walk on.
+b : Twine works, I suppose. | Barefoot? | One day.
+a : Till it rains. Then nothing works. | Worth it. My paws would forgive me. | One day. Put it on my headstone.
+
+scene stale_crust
+when topic=food self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : #stale.capitalize# for breakfast. Dip it in water and it's almost bread. | They sell off yesterday's loaves cheap. I'm a regular. | Stale bread again. My teeth have opinions about it.
+b : Better than nothing. | Cheap's good. | Soak it in something.
+a : Only just. | Cheap's all I can do. Fresh is for other folk. | In what? Soaking costs money too.
+
+scene stew_once
+when topic=food self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Once a month I have #stew#. I think about it the other twenty-seven days. | There's a cookshop does mutton on a Restday. The smell carries up the street. | Mutton stew. Proper, with the fat on top. That's as rich as I get.
+b : What's in yours? | Can you smell it from there? | Rich, is it?
+a : Mutton, barley, an onion if I'm lucky. Salt. That's a feast. | From the yard. The beasts can too. They go quiet. | It's the only rich I've ever been.
+
+scene hungry_belly
+when topic=health|food self.hungry=yes
+does tell.self / sympathise / assess
+a : Empty. Haven't eaten since the crust this morning. | My belly's louder than the mules today. | Hungry. Don't mind me. I've had practice.
+b : #sympathy# | Have you anything put by? | You shouldn't have to be.
+a : Don't be. Supper's coming. Eventually. | Put by? I'd have to have something first. | No. But there it is.
+
+scene the_dole
+when topic=times|life|faith self.on_dole=yes
+does confide / sympathise / assess
+a : Dole this week. I'll say it straight out, I'm not ashamed. | Queued at the chapel for bread yesterday. Nobody looked at me sideways. | Dole's kept me fed. I'll pay it in sweat, once there's sweat wanted.
+b : No shame in it. | Good. | You will.
+a : None. It's hunger I'd be ashamed to keep quiet about. | Good, aye. More like it, I say. | I will. Mark me. I always pay.
+
+scene digging
+when topic=pastimes
+does tell.self / react.self / assess
+a : A spade, an hour, and the temper's gone out of me. | There's #ground# out past the tannery yard I'm let dig. Nothing grows. I don't care. | Digging. Nobody shouts at you. Nobody wants anything.
+b : Where does it go? | Nothing grows? | Peaceful.
+a : Down into the hole with the dirt. I come up quieter. | Stones and roots. I dig them out. It's honest. | It is. You and the dirt and that's all.
+
+scene first_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow. The first. Leave me be a minute, I'm looking at it. | Look at that. #snow.capitalize#. Makes even the stable yard look clean. | First flakes. The city goes quiet. Even the carts.
+b : You like the snow? | Clean, eh? | It's cold, though.
+a : I like the first of it. After that it's slush and wet paws. | An hour or so. Then the beasts tramp it brown. | Cold's nothing. Quiet's rare.
+
+scene rain_stalls
+when topic=weather here.weather=rain self.job=herder
+does tell.complaint / react.self / assess
+a : Rain. Every beast comes in wet and stinking. | Roof over the end stall leaks. Right onto my neck, every time. | The yard's a river. My boots are a river.
+b : Wet wolf, wet beast. | Tell the boss. | Your poor boots.
+a : Wet everything. That's Ridgemere. | I have. Twice. The roof's still leaking and so am I. | Poor me, more like. The boots are past caring.
+
+scene crowd_dodge
+when topic=festival|day
+does tell.complaint / react.complaint / assess
+a : Feast day. The square's packed. I went by the back lanes, the whole way. | Crowds. Elbows and noise. I'd rather muck out twice. | Festival tomorrow. I'll find a quiet corner and sit it out.
+b : You'll miss the music. | Twice? | A quiet corner?
+a : I can hear it fine from the lanes. | Twice. And the second lot by paw. | A corner never treads on your tail. Not many folk can say as much.
+
+scene my_boss
+when topic=work self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss.capitalize#'s fine by me. It's the wage I mind. | #self.boss.capitalize# and me get on. We don't talk. That's how we get on. | Talk about #self.boss# all you want. Not me. Not where it's heard.
+b : That's fair. | Best way. | Wise.
+a : Fair's all I've got. | It is. Words cause trouble. | Wise, or I've learned. Same thing.
+
+scene my_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : My last copper goes to #self.friend#, if it's wanted. And I've not many coppers. | In any fight going, I'm at #self.friend#'s back. Not that there's fights. | #self.friend.capitalize# laughs at my jokes. That's rarer than you'd think.
+b : That's a friend, then. | Good to have. | Your jokes are dry.
+a : That's a friend. | It is. Between us, mind. | Dry's the only kind worth telling.
+
+scene old_place
+when topic=memories|life self.age>=25
+does confide / sympathise / assess
+a : Once there was a place that was mine. Somebody with better friends has it now. | I was my own master a while. Then I wasn't. That's all I'll say. | Back to waged work. I don't complain. Not where it's heard.
+b : Rough, that. | #sympathy# | Not to me, then. I won't repeat it.
+a : It was. It's done. | Don't. It's old. I've stopped chewing on it, mostly. | Good. Ta. I'll leave it there.
+
+scene newcomers_work
+when topic=newcomer self.working=yes
+does give.opinion / disagree / concede
+a : More new faces at the stable gate after work. None to give them. | Somebody new took the shift I was after. Came in last week. | Here for the work, they are. There was too little before they came.
+b : They've got to eat too. | It's not their fault. | Hard on everybody.
+a : They do. Me as well. There's the rub. | No. I know. Doesn't help my belly. | Aye. And it was going to be me.
+
+scene loaf_price
+when topic=prices|price_cause
+does tell.complaint / react.complaint / assess
+a : Bread's gone up. My wage hasn't. Do the sum. | Bread and a candle, and that's the day's pay gone. | Bread's up and hay's down. Guess which one I eat.
+b : #bc_they_always_do# | Everybody's pinched. | Hay?
+a : They do. Never the other way. | Everybody down here, aye. Not up the hill. | For the beasts. The stables pay. Not my supper, though.
+
+scene wagons_east
+when topic=caravan world.wagons=late|raided self.job=herder
+does tell.worry / react.self / assess
+a : No carts out the east gate today. The carters are sat in our yard eating my bread. | Carts are held at the stables. Nobody wants the road. | The teams are standing idle. Beasts eat whether they work or not.
+b : Bad on the road, then. | Your bread? | So do you.
+a : Bad enough. They're not daft, carters. | Figure of speech. I've none to spare. | Me too. There's the joke.
+
+story stubborn_mule [topic=work|animals self.age>=20 self.job=herder]
+  : One winter a mule stopped dead in the east gate and wouldn't move. A whole line of carts behind it.
+  : The carters shouted. The Watch shouted. I just stood next to it and waited.
+  ask : Guess what it wanted?
+  b : Food, I'd bet. Or a kind word.
+  : An apple from the barrow under the arch. I bought it one. The carters never paid me back.
+
+story first_snow_pup [topic=weather|memories self.age>=20]
+  : I was a scrap of a pup, one winter so white and thick the Watch couldn't find the gate.
+  : Out I went, no boots, and planted myself mid-street with my jaws wide.
+  b : Did you catch any? Bet you got a hiding after.
+  : Caught a lot. And a cold. And a cuff on the ear. Worth all three.
+
+story the_lost_place [topic=memories|work self.age>=30]
+  : I ran a place, once. Small, but mine. The beasts knew my step.
+  : Somebody up the hill wanted it for a cousin. The rent went up till it pushed me out.
+  ask : In my shoes, would you have gone quietly?
+  b : Shouted, probably. Did you?
+  : No. I picked up my rake and went back to wages. I don't shout where it's heard.
+
+rule @bark_muck
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 6h
+say Muck. Barrow. Muck. Barrow. | Stand still, you great lump of a mule.
+
+rule @bark_houses
+when concept=bark
+does aside
+cooldown 10h
+say Give it till winter. You'll see. | Every House keeps a knife. Every one.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rain. Down my neck. Again. | That end stall's leaking like a sieve.
+
+rule @bark_hungry
+when concept=bark self.hungry=yes
+does aside
+cooldown 10h
+say My belly's talking louder than me. | Stale bread. Always stale bread.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Make it quick. I'm on shift.
+dlg @2 resident.hub [topic.meeting=known] : You again, #topic.player#. What now? | #topic.player#. Thought I'd seen the last of you. Go on.
+dlg @3 resident.hub [here.time=night] : Late. I'm worn through. Be quick. | Night. What do you want?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from there. I've a rake. | I know your sort. Make it short.
+dlg @1 resident.job [self.job=herder] : I muck out and feed the beasts. #self.trade_words.capitalize#. It pays. Not much. | Stalls, hay, harness. And the mules, Bright One help me.
+dlg @2 resident.job : I work. Head down, mouth shut, eat when I can. | Waged work. It's honest, and it's thin.
+dlg @1 resident.news [world.news] : Came in with a carter from #world.news_from#: #world.news#. Don't ask me more.
+dlg @2 resident.news [world.event_words] : All anyone's on about is #world.event_words#. Even the mules are sick of it.
+dlg @3 resident.news [world.wagons=raided] : Carts robbed out east. The teams are sat idle. Don't go out the east gate.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Except the Houses. Give it till winter. | Nothing. Bread's dear. That's not news, that's weather.
+dlg @1 resident.gossip [here.gossip=yes] : They're saying #topic.subject# #topic.claim#. I never told you.
+dlg @2 resident.gossip [here.gossip!=yes] : Not my business. | Gossip wants spare time. I've stalls.
+dlg @1 resident.bye : #farewell#. | Right. Off you go.
+dlg @2 resident.bye [here.time=dusk|night] : Night. Mind the stairs. | #farewell#. I'm for my bed.
+graft resident.hub
+choice You think the Houses will fall out? -> houses
+node houses
+say Give it till winter. All smiles at the Council table, and every one counting the others' coin in the dark. That's not friendship.
+mood calm
+free
+choice And if they don't? -> houses_wrong
+choice Back to it. -> hub
+node houses_wrong
+say Then I'll say it again next year. One year I'll be right, and I'll crow about it.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

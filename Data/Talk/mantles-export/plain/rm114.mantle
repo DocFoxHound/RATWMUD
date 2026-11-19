@@ -1,0 +1,335 @@
+# rm114, the ear at the north gate (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm114
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_gerrit_hollis
+written_by claude
+title the ear at the north gate
+fits stage=adult|old
+prefers talk=quiet warmth=cold
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk knows_every_north_road_cart_by_the_creak_of_its_wheels
+likes barley_soup stars full_larder warm_rain
+dislikes bad_manners salt_wind
+fears a_stranger_through_the_door_after_dark the_tin_found_empty
+hopes a_stall_on_the_square_paid_for_in_full the_household_in_before_the_lamps
+topics caravan +0.5 travel +0.3 weather +0.3 home +0.3 food +0.2 gossip -0.5 player -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# sits under the north gate arch most days and knows each north road cart by its wheels: few words, a shut door to faces not known, a tin of coin put by for a market stall, and barley soup when the rain comes warm.
+
+words
+oath! = Hold the axle | Axle and arch
+saying! = The wheel speaks before the carter does | Shut doors keep warm houses
+gate = the north gate | the gate
+arch = the arch | the gate arch
+bench = my bench under the arch | the bench by the toll post
+carts = the north road carts | every cart down from the hills
+creak = a dry creak | that creak
+soup = barley soup | barley soup, thick as it comes
+larder = a stocked larder | shelves that want for nothing
+stars = the first stars | the stars over the gate
+warmrain = a warm rain | the soft warm sort of rain
+saltwind = the salt wind | the Sound's wet breath
+stall = a stall on the square | my stall, when it comes
+tin = the tin | the tin behind the flour
+lamp = the lamp | the lamp in the front window
+manners = manners | a civil word
+drover = a drover | some drover off the hills
+
+any
+opinion @1 strangers against 2 : No face crosses my step till I've a name for it. | Strangers come in on a cart and leave on one. I'd as soon they kept it that way.
+opinion @1 newcomers against 1 : Every cart brings one more who means to stay. I know fewer faces in the street each year. | They come for the work and stop for good. The city fills and nobody asks the city.
+opinion @1 road against 1 : The north road was safer once, whatever the carters tell you now. | Ask a cart that comes in short of its load what the road is like.
+opinion @2 road against 2 [world.wagons=raided] : #bandits.capitalize# out there once more, and nobody rides after them. Nobody ever does.
+opinion @1 dole against 1 : Stand a wolf in a bread queue and you teach the wolf to queue. Give out work instead. | #dole.capitalize# keeps a belly full and a back idle. I'd want both seen to.
+opinion @1 church for 1 [self.age>=50] : Enough graves I've stood beside. I'm glad somebody has the words for them.
+opinion @1 city for 1 : Born under its rain. I'll go into its ground, and not sorry for it.
+opinion @1 merchants mixed 0 : They ask what they like. Still, I mean to keep #stall# myself one day, so I'll hold my tongue.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. I've not heard your step before. | #greet#. You've the north road on your coat.
+line @2 greet : #greet#. Sit, if you're sitting. | #greet#. Mind the ruts there.
+line @3 greet [here.time=dawn] : Up before the first cart, then. | #greet#. Hardly light yet.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out. | #greet#. The lamps are lit already.
+line @1 kin.open [pair.kin!=no] : Soup's on the hob. Help yourself. | In you come. Bolt it behind you.
+line @1 again.open : Twice today. The street will wear thin under you. | Back. I've not shifted.
+line @1 greet.return : #greet#. I heard you before I saw you. | #greet#, then.
+line @2 greet.return [pair.band=friends|family] : Ah. You. Take the stool. | A face I know. Good.
+line @3 greet.return [here.time=dusk|night] : #greet#. Don't stand in the draught. | #greet#. It's late for you.
+line @4 greet.return [self.working=yes] : Say it quick, my paws are full. | #greet#. Talk while I work.
+line @1 farewell : #farewell#. Mind the ruts. | Go on, then. #farewell#.
+line @2 farewell [here.time=dusk|night] : Get home before the lamps gutter. | #farewell#. Keep under a lamp going home.
+line @1 farewell.return : Aye. And you. | #farewell#. Mind the carts turning.
+line @2 farewell.return [pair.band=friends|family] : Come by again. Soup's on most days. | Next time, sooner.
+line @1 react.news : Mm. Go on. | Plainly, now. I'm hearing you.
+line @1 react.news.new : Hasn't reached the arch yet, that. | The gate's not had that one. Not today.
+line @1 react.news.known : Had it by noon. Said nothing. | Old news under the arch. I sat on it.
+line @1 react.news.doubt : Who saw it? Not who said it. Who saw it. | When a second cart says the same, I'll believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. I'm sorry it's so. | Bad business. It stops with me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's luck has turned. | That's a fair thing. Leave it there.
+line @1 answer.how : Same as yesterday. That suits me. | Fair. Nothing worth airing.
+line @2 answer.how [here.weather=rain|storm] : Dry inside. That'll do me. | Wet out, warm in. No complaint.
+line @1 ask.how : Are you eating properly? | Keeping dry?
+line @1 sympathise : That's a weight. Stop here a while under it. | I know it. There's nothing to say that mends it.
+line @1 reassure : Leave it for daylight. Most things look smaller. | You'll come through. A week, and it's lighter.
+line @1 decline : Not that. My business is mine, and yours can stay yours. | I'd rather not. There's little enough spare, and I've counted every coin of it.
+line @1 accept_decline : Fair. Once is asking. | Then that's that.
+line @1 thank : I'll owe you that one. It won't sit long owing. | Much obliged. Not many bother.
+line @1 deflect_thanks : Cost me nothing. | No need. You'd have done it.
+line @1 preclose : The lamp wants lighting. | I'll be getting in.
+line @2 preclose [here.time=dusk|night] : Stars are out. I'll stand under them a bit. | Getting late. I'm for my bed.
+line @1 accept_preclose : Go on, then. | Aye. Off you go.
+line @1 ack : #bc_true# | Mm. #bc_right#
+line @1 give.advice : Listen to the wheels, not the carters. | Put a bit by, however little it is.
+line @1 warn [world.bandits=near] : This week the north road wants company. Don't walk it single. | Wait for a full cart and walk beside it.
+line @1 hail [pair.band=friends] : You. Over here. | There's room on the bench.
+scene wheel_by_ear
+when topic=caravan|travel here.region=ridgemere here.time=day
+does tell.self / ask.detail / answer.detail / ack
+a : Flour cart coming. Left wheel wants grease. | Hear that? A rim with a flat in it. It's been coming in since spring. | That one's new. Nobody I know drives a wheel that quiet.
+b : From this distance? | Since spring? You've kept count? | How can you know that?
+a : Sit long enough and wheels have voices. That one sings flat. | Every week. It's got worse, not better. | I know the loud ones. A quiet one is a stranger.
+b? : #bc_i_know# | #bc_clever# | #bc_true#
+
+scene carts_late
+when topic=caravan|travel world.wagons=late here.region=ridgemere
+does tell.worry / reassure / assess
+a : Not one cart through since yesterday. The arch is too quiet. | I've sat all morning and heard one wheel. One. | Carts are late. I can hear it, or I can't hear it. Same thing.
+b : Rain on the hills, maybe. The road goes soft. | They'll turn up. They do. | Late's not lost.
+a : Maybe. I'll sit till they're in, all the same. | Always have isn't always will. | No. Late's late. I'll know when I hear them.
+
+scene carts_raided
+when topic=caravan|bandits world.wagons=raided here.region=ridgemere
+does tell.news / react.news / give.opinion
+a : A cart came in light. Driver wouldn't look at anybody. | One came through with a wheel off another cart lashed on the back. You don't do that for fun. | #bandits.capitalize# out again. Today the carts came in nose to tail, every one.
+b : Robbed? | Whose wheel was it? | Close together. That tells you.
+a : Didn't ask. The face said enough. | Didn't ask. A thing like that goes by the gate unspoken. | It does. Wolves bunch up when they're frightened. Carts too.
+
+scene carts_in
+when topic=caravan world.wagons=in here.region=ridgemere
+does tell.self / react.self / assess
+a : Carts are in. Six through the arch before noon, all heavy. | The north road's busy. Not a moment's peace on #bench#. | Full wheels today. You can hear the weight in them.
+b[old] #elder : Six. That's a good morning. | You'd think the city was starving, the way they come. | I used to hear it from my window. Not any more.
+b : That's good, then. | Busy's better than quiet. | You can hear weight?
+a@elder : Good enough. I remember mornings with twelve. | It eats. That's what a city does. | The ears go. Sit nearer.
+a : For the larders, aye. Prices will settle. | Busy's honest. Quiet's when you worry. | Low and slow. Heavy wheels don't rattle.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : This is the warm sort. I'll stop on the step for it. | #warmrain.capitalize#. Nobody agrees with me, but it's the best weather going. | Rain of this kind I can bear. It's the cold kind that finds your bones.
+b : You'll get soaked. | I'd rather it was dry. | It's still rain.
+a : I'll dry. I always have. | You'd be wrong, but there it is. | Aye. But it's honest rain. Doesn't bite.
+
+scene cold_rain
+when topic=weather here.weather=rain|storm here.season=autumn|winter
+does tell.complaint / react.complaint.agree / assess / ack
+a : Cold rain. Nothing on the road but drovers and misery. | It's coming sideways under the arch. Nowhere to sit dry. | This sort goes through a coat and starts on you.
+b : No weather for sitting out. | It's been coming down all day. | Get inside, then.
+a : No. I'll give it an hour. | All day and all last night. I counted the carts anyway. | I'm going. When it lets up.
+b? : #bc_true_enough# | #bc_every_day# | #bc_ha#
+
+scene salt_wind
+when topic=weather here.weather=overcast|storm here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Wind's come round from the water. Salt on my lips. | #saltwind.capitalize#. It gets in the hinges and in me. | That's a sea wind. Wrong way for the gate. It blows the dust right in your face.
+b : It'll turn by evening. | It's only wind. | Face away from it, then.
+a : Maybe. I'll not wait out here to find out. | Only wind, and it rusts a door in a month. | Then I can't hear the road. I'd sooner have the dust.
+
+scene stars_out
+when topic=pastimes|day here.time=dusk|night here.weather=clear
+does tell.self / ask.detail / answer.detail / assess
+a : There. #stars.capitalize#. I wait for those before I go in. | Clear tonight. The hills are sharp as cut paper. | First one's out over the gate. Always that one first.
+b : Every night? | Can you see far from here? | Which one is it?
+a : Every clear one. Not many, in this city. | Far enough. The road goes up into the dark and stops. | Don't know its name. Doesn't need one from me.
+b? : #bc_lovely# | #bc_true# | #bc_fair#
+
+scene barley_soup
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize# tonight. Barley, onion, the end of the bacon. | I've a pot on. Tomorrow it'll be better. | Soup and a shut door. You don't need more than that.
+b : Sounds good. | Second day? | Not even bread?
+a : It is. I make it the same every time. | The barley swells overnight. It goes thick enough to hold. | Bread if there's bread. The soup's the thing.
+
+scene larder_shelves
+when topic=home|food
+does tell.self / react.self / ack
+a : I like #larder#. Not to eat. To look at. | Every shelf full going into winter. Then I sleep. | I counted the jars. I always count the jars.
+b : To look at? | That's sensible. | How many?
+a : To know it's there. That's enough. | It's the only sensible thing I do. | Enough. That's a count for me alone.
+
+scene tin_and_stall
+when topic=dreams|work
+does confide / ask.detail / answer.detail / assess
+a : #stall.capitalize#. I put by for it. A bit every week. | There's #tin# at home. My paw goes in it and no other. | There'll be a counter for me yet, instead of a gate to sit by.
+b : Is there much put by? | What would you sell? | Why a stall?
+a : Enough to keep putting by. That's all you're getting. | Whatever comes in through the gate. I know what sells. | So I can say I did. That's reason enough.
+b? : #bc_fair_enough# | #bc_go_on_then# | #bc_hope_so#
+
+scene child_late
+when topic=family self.parent=yes self.child here.time=dusk|night
+does tell.worry / reassure / assess
+a : #self.child# isn't in yet. I keep #lamp# going till I hear the door. | I don't sleep till #self.child# is home. I've never managed it. | Late again. I sit up. I always sit up.
+b : Grown wolves keep late hours. | You'll hear the door. | Leave a light and go to bed.
+a : Grown or not. I sit up. | I will. Then I'll sleep. | I'll leave a light. I'll still sit up.
+
+scene shut_door
+when topic=player|smalltalk here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : My door doesn't open to strange faces. Dark or daylight. | There's a traveller asking at every door down the street. Not mine. | Folk off the carts knock and ask for water. I point at the pump.
+b : Some of them only want a kind word. | That's hard on them. | Water's cheap.
+a : Then they'll have one through the door. It stays shut. | Maybe. It's not hard on me. | So's the pump. It's right there.
+b? : #bc_fair# | #bc_i_know# | #bc_ha#
+
+scene newcomer_in
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize#. Through the arch on a cart, I'd guess. New face, anyway. | They say #topic.subject# is stopping in the city. Another one. | Heard the name #topic.subject# twice today. New to me.
+b : Somebody has to come. | Give #topic.them# a chance. | You don't sound pleased.
+a : Somebody always does. They never go again. | Could be decent. A year tells. | I'm not. I'll grow used to it. I always have.
+
+scene gossip_held
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / insist
+a : Something came by the gate about #topic.subject#. I'll keep it. | Something's being said about #topic.subject#. Not by me. | The carters were talking about #topic.subject#. I let it roll past.
+b : Go on, then. | You can tell me. | Not even a word?
+a : No. I'll not carry it further than my ears. | I could. I won't. It isn't mine to pass on. | Not a word. Ask the carters.
+
+scene gossip_theft
+when topic=gossip|crime topic.claim_kind=theft|wanted here.region=ridgemere
+does warn / react.news / assess
+a : They say #topic.subject# #topic.claim#. Lock your door tonight. | The talk under the arch is #topic.subject# #topic.claim#. I've bolted mine. | #topic.subject.capitalize# #topic.claim#, I hear. That's why the door stays shut.
+b : I'll bolt it. | Is it true? | You always shut it.
+a : Do. And the window. | I don't know. I bolted it all the same. | I do. Now I've a reason to give.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint.agree / assess
+a : Lean carts this month. Half of them empty going out. | Barley's gone up again. I put less in the tin. | The drovers stop longer at the gate. Nobody's buying up the hill.
+b : Everyone's feeling it. | It'll come right. | I've seen it.
+a : Everyone. Some more than others. | It might. I'll put by less till it does. | You'll see more of it before spring.
+
+scene prices_at_gate
+when topic=prices here.region=ridgemere
+does tell.self / react.self / assess
+a : The toll's gone up at the gate. Carts pay it, and then we do. | Barley costs more inside the walls than out. It's the same barley. | Ask #drover# what a sheep fetches and then ask a butcher.
+b : That's how it works. | Same barley, aye. | Not the same thing.
+a : That's how it's always worked. Doesn't mean I like it. | Same sack, a mile on, and a penny dearer. | No. A sheep's a sheep. The difference is somebody's supper.
+
+scene manners
+when topic=smalltalk|day here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A carter shouted at me to move. I've sat on that bench longer than his wheels have turned. | Nobody says good day under the arch now. They just push. | A pup knocked into me and kept running. Not a word.
+b : Some folk have no manners. | Busy, maybe. | Pups do that.
+a : None. They pass through and leave it behind them. | Busy's no excuse. It costs nothing. | They do. Somebody ought to stop them.
+
+scene bells_close
+when topic=faith|day here.region=ridgemere
+does tell.self / react.self / assess
+a : The close bells are going. I can hear them over the carts. | I don't go in. I listen from the gate. That's my share. | When the cathedral bells ring, the carts slow. They always slow.
+b : You never go? | That's something. | Even the carters listen.
+a : At a burying. Otherwise I listen from here. | It's enough. The words are the same out here. | Even them. For a minute.
+
+scene fog_gate
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail / ack
+a : Can't see the road. I can hear it, though. | #fog.capitalize# on the hills. The carts will come in slow and close. | Thick out. Nobody's sure what's coming till it's at the arch.
+b : What can you hear? | How slow? | Doesn't that worry you?
+a : A wheel. Two horses. Somebody swearing. | Walking pace. Carters walk beside them. | No. I know the sound. It's the silent ones you mind.
+b? : #bc_i_know# | #bc_true# | #bc_fair_enough#
+
+story first_wheel [topic=memories self.age>=40]
+  : My grandad sat me down by the gate one spring and made me shut my eyes.
+  : A cart came in, and he said: whose? I didn't know. He told me. Then the next one.
+  : By autumn I knew more of them than he did. He didn't like that.
+  ask : Had you anybody to sit you down like that, as a pup?
+  b[old] : My mother did, with birds. I never got as good as her.
+  b : Nobody had the patience with me. You were lucky.
+  : I was. He was hard, but he was right about the wheels.
+
+story the_tin [topic=dreams|memories self.age>=30]
+  : The first coin in #tin# was a carter's. I held a horse for an hour and he gave me a copper.
+  : I didn't spend it. Into the tin it went, and the tin went up high.
+  : It's still in there, under all the rest.
+  ask : Would you have spent it?
+  b : On something sweet, straight away. I'd have regretted it.
+  : Most would. I'm not most.
+
+story warm_night [topic=weather|memories self.age>=30]
+  : One summer it rained warm all night. Till midnight I was out in it, alone on the cobbles.
+  : Nobody else came out. Just me, and the gutters running.
+  b : All night in it? Did you catch a chill?
+  : Not a sniffle. Best night of that year, and I'd not tell anybody why.
+
+rule @bark_wheel
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 8h
+say That wheel wants grease. Same one as last week. | #oath#. Listen to that axle.
+
+rule @bark_saltwind
+when concept=bark here.weather=overcast|storm
+does aside
+cooldown 10h
+say Wind off the Sound again. | #saltwind.capitalize#. I'll have rust on the hinges.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 9h
+say Warm or cold, that's all I want to know. | #saying#.
+
+rule @bark_stars
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 12h
+say There's the first one. | Clear. I'll stand out a minute.
+
+dlg @1 resident.hub : #greet#. Say what you want. | #greet#. I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You again. Say on. | #topic.player#. I know the step. What now?
+dlg @3 resident.hub [here.time=night] : It's late for knocking. Make it quick. | Night. I'll hear you from here.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay where you are. Say it from there. | I've nothing for you. What is it?
+dlg @1 resident.job [self.job=none] : I sit under the north gate arch and listen to the carts. Somebody should. | No trade now. I watch the road come in, and I save.
+dlg @2 resident.job : I keep my own business. That's work enough for anybody. | This and that. I don't crow about it.
+dlg @1 resident.news [world.news] : Came in off a cart from #world.news_from#: #world.news#. That's all I'll say. | A carter from #world.news_from# had it: #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody under the arch is on about #world.event_words#. | It's all #world.event_words# today. Ask anyone.
+dlg @3 resident.news [world.wagons=raided] : A cart came in robbed off the road. Go armed or don't go. | Somebody's cart was stopped and stripped. Keep within the walls.
+dlg @4 resident.news [world.death=recent] : A burying, this week. Leave it at that. | The street's lost one. It's gone quiet since.
+dlg @5 resident.news [world.wedding=recent] : A wedding, this week. The whole street went. I heard it from my door. | Somebody's wed. Good luck to them.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts brought nothing worth a word. | Nothing through the gate today but flour and drovers.
+dlg @1 resident.gossip [here.gossip=yes] : I don't carry tales. But they say #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. Not from me, mind.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Plenty reaches my ears. None leaves them.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the ruts going.
+graft resident.hub
+choice How do you know the carts by ear? -> wheels
+node wheels
+say Every wheel's got its own sound. A flat in the rim, a dry axle, a loose spoke. Sit by the gate long enough and you know them like voices.
+mood calm
+free
+choice Which do you listen for? -> wheels_which
+choice Goodbye. -> bye
+node wheels_which
+say The ones I don't know. A cart I've never heard is somebody I've never met. I watch those.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how [self.age>=60] : The knees know it's damp. I don't argue with them. | Slow, but here. That'll do.
+scene old_knees
+when topic=health|day self.age>=60
+does tell.complaint / sympathise / assess
+a : Knees won't take the hill steps now. I sit lower and lower. | I used to walk out to the first milestone. Now I walk to the bench. | Cold gets in my hips first. Then the rest follows.
+b : It comes to all of us. | The bench is closer, at least. | A hot brick helps.
+a : It does. I'd have liked it to come later. | It is. And the carts come to me. | So I hear. I've not tried it.
+
+scene old_gate_then
+when topic=memories|lore self.age>=60 here.region=ridgemere
+does tell.memory / ask.detail / answer.detail
+a : They shut the north gate at dusk when I was young. Bar across and that was it. | There was a gatekeeper who knew every carter's name. Nobody does now. | The road was all ruts in my pup days. They've laid stones since. Not enough.
+b : What if you were late? | Who was it? | Better than nothing.
+a : You slept under a cart outside and came in at dawn. | Before your time. Before most folks' time. | A little. The wheels still find the holes.

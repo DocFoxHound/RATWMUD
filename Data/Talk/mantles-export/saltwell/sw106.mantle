@@ -1,6 +1,6 @@
-# sw106, the stone-sill raker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw106, the stone-sill raker (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw106
-revision 2
+revision 3
 state ready
 dialect saltwell
 accent light broad
@@ -290,7 +290,7 @@ say #soup.capitalize#'s on. Nobody touch it. | Barley takes its time. So do I. #
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're not from here. Say what you need, #address#. | #greet#. Say what you came to say; I'm listening.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you're staying. | #topic.player#. You again. #talk_open#
 dlg @3 resident.hub [pair.disposition=hostile|wary] : I've not forgotten last time, #address#. Well? | Say it quick, #address#, and we'll see.
-dlg @1 resident.job [self.job=farmer] : I'm a #self.trade_words#. Up before the sun, done when it's done. | #self.trade_words.capitalize#. That's me. #rake.capitalize#, the sacks, and sore by noon.
+dlg @1 resident.job [self.job=farmer] : Up before the sun, done when it's done. That's the work. | #self.trade_words.capitalize#. That's me. #rake.capitalize#, the sacks, and sore by noon.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I don't go looking for news. | If there's news, it went past me on #crust#.
 dlg @1 resident.bye : #farewell#. | #farewell#. Mind the step.
 graft resident.hub

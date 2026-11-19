@@ -1,6 +1,6 @@
-# sw108, the sky-arguing carter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw108, the sky-arguing carter (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw108
-revision 2
+revision 3
 state ready
 dialect saltwell
 accent none
@@ -39,7 +39,7 @@ load = the load | a full load
 any
 opinion @1 road for 1 : #road.capitalize#'s my living. Most days it's no worse than it ever was, and some days it's better.
 opinion @1 strangers for 1 : Somebody I don't know is somebody I haven't fed yet. Sit them down first and ask after.
-opinion @1 newcomers for 1 : There's room. Anybody who'll pull their weight can have a corner of my #cart# to start with.
+opinion @1 newcomers for 1 : There's room. Anybody who'll pull their weight can have a corner of #cart# to start with.
 opinion @1 festivals against 1 : Noise, spilt drink, and somebody in tears by the end. I'll mind #mules#, thanks.
 opinion @1 dole for 1 : Nobody in a place this size should go to bed #hungry#. That's not charity. That's arithmetic.
 opinion @1 houses mixed 1 : I'd not bow to a House myself. But a pup in a House's colours eats every day, and I'd carry them there.
@@ -261,7 +261,7 @@ say #leg.capitalize# told me this was coming. | Ow. Yes, all right, #leg#, I hea
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're new. Hungry? Sit down first, ask after. | #greet#. #talk_open#
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you. What's wanted? | #topic.player#! #talk_open#
 dlg @3 resident.hub [pair.disposition=hostile|wary] : I've not forgotten. Say your piece, #address#, and we'll see. | You. Well, go on.
-dlg @1 resident.job [self.job=carter] : I'm the #self.trade_words#. Salt out, everything else in, and words with the sky both ways. | #cart.capitalize#, #mules#, and #road#. That's my work.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. Salt out, everything else in, and words with the sky both ways. | #cart.capitalize#, #mules#, and #road#. That's my work.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# If anything's coming, it'll come on a cart, and I'll know first. | Nothing yet. Ask me when the carts come in off #road#.
 dlg @1 resident.bye : #farewell#. | #farewell#. Mind the ruts.
 graft resident.hub
