@@ -1,0 +1,240 @@
+mantle rm550
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_soren_millwell
+title supper for a letter
+fits stage=adult|old
+prefers warmth=warm honesty=frank
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk reads_vineyard_letters_twice_while_the_stew_waits
+likes mutton_stew singing full_larder summer_evenings
+dislikes crowds haggling
+fears a_guest_left_hungry_on_the_step
+hopes a_clear_evening_to_read_aloud
+topics food +0.7 family +0.4 weather +0.3 pastimes +0.3
+styles comfort=warm gossip=plain refuse=blunt tease=none
+marks oath saying
+persona #self.first# leaves the stew on the slow side of the hearth, judges passing showers by the gaps between drips, and will read a vineyard letter twice for anyone who missed the first helping.
+words
+oath! = Chill my ladle | Rain in the gravy
+saying! = Cover the dish and wait | Read the fold after supper
+slowpot = a deeply blackened pot | a squat brown stewpot
+letterfold = a little square of paper | a folded letter
+brothring = a brown broth ring | a rim of gravy
+grapelint = a scrap of vine fibre | a thread of dried vine
+silldrop = a drop off the sill | a little glint on the ledge
+hotplate = a waiting warm plate | a dish by the hearth
+stewherb = a tough bay leaf | a bit of green herb
+lidsong = a rattling pot lid | a lid with a loose note
+breadstep = a thick heel of bread | a sturdy slice
+lampside = a patch of warm light | a yellow pool on the cloth
+
+grown
+
+opinion strangers for 2 : Sit a stranger near enough to smell supper and most introductions will take care of themselves.
+opinion dole for 2 : The pot is heavy when filled. A full belly is lighter company than a street full of empty ones.
+opinion merchants against 1 : If the price takes three speeches to explain I will buy my dinner from a quieter counter.
+opinion city for 1 : I know the note rain makes on my own sill. A new roof would have to teach my ears all over again.
+opinion church for 1 : I've heard the words spoken at gravesides. I would remember the living just as plainly while there's stew left.
+line greet : Lift the fold and release the steam. You'll get a good welcome here.
+line greet.return : Here's another helping of talk, still warm for you.
+line farewell : Eat something stout before giving the road any more of yourself.
+line farewell.return : I'll keep a warm word back in case the rain returns.
+line ask.how : Have you been properly fed since the last heavy shower?
+line answer.how : Got an appetite and a dry seat. I consider that a good start.
+line thank : Your patience left me enough time for both the last sentence and a hot supper.
+line decline : I don't pass round another household's letter while the cloth is off the table.
+line accept_decline : No need to finish a helping that doesn't suit you.
+line sympathise : I can dish up something warm without asking you to talk over it.
+line reassure : A letter can be folded and read again after the hard part.
+line react.news : Bring it in off the step while there's enough light.
+line react.news.new : That's a bit of handwriting new to this table.
+line react.news.known : I remember where the paper creased on that bit.
+line react.news.doubt : A neat fold tells me precious little about who wrote the words.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd leave a whole pot warming to give those good words a proper welcome.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Close the door against the weather. I'll stay beside you till sitting ceases to help.
+line ack : Legible with a whole supper table between us.
+line deflect_thanks : It's no difficulty to shift one more dish towards the warmth.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A mutton stew needs an undisturbed corner and one good stirring just before it's wanted.
+b : Why leave it alone? | Is one piece yours?
+a : You can fuss all the heat away lifting a lid to encourage it. | The piece left after the dishes have been seen to. I know what's good in the pot.
+
+scene family_1
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I'd keep #hotplate# for #self.child# even if the rain held up the whole evening.
+b : Doesn't it dry out? | How long would you wait?
+a : Keep the plate warm and the meat in the pot. I've had time to learn that little distinction. | I'd wait to share a table. An appetite needn't be punished for an inconvenient shower.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I get an occasional letter from kin among the vines. I like to read it when supper's down to a simmer.
+b : Is there news of the grapes? | Why then?
+a : The little ordinary things are what I want. I could buy a report about prices if prices were what I missed. | I want my hands free for unfolding the page without spreading gravy across the best bit.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch the drops making a line along the sill. The first gap is a proposal to stop raining.
+b : Do you trust the proposal? | What if the gap fills?
+a : I trust it far enough to fetch my coat while keeping the door shut. | Then I've found my coat and lost no supper. The rain hasn't got the better of the entire household.
+
+scene pastimes_1
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I can sing the middle verse of a long song while the stew settles after a stir.
+b : Why the middle? | Is the lid your accompaniment?
+a : The beginning is for getting everybody seated and the last is too dear to perform over an unattended dish. | A very determined one. There's a reason I choose a song with a strong beat.
+
+scene home_1
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A shelf with mutton, onions and dried herbs on it is halfway to a welcome.
+b : What's the other half? | Wouldn't you want some bread?
+a : An actual guest to get the benefit. A larder is a sorry sort of audience. | Certainly. Bread makes the last bit of gravy available to somebody without a spoon.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can read a letter twice for a friend if the words were offered for sharing.
+b : Which ones get left out? | Can a friend read it alone?
+a : Private matters. Those stay folded, even at the friendliest table. | With leave from the writer. The words came to me and the hand that made them belongs elsewhere.
+
+scene prices_1
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : Name the cost of the joint without singing me three verses about the sheep.
+b : What if the verses are good? | Would you pay extra for silence?
+a : Then sing after I've eaten. I can give a good song a much fairer hearing then. | I'd put my pennies with a seller who doesn't need bribing to give a straight answer.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A cat can detect the exact instant a lid leaves a stewpot.
+b : Does it get any? | How could you measure that?
+a : It gets its own dish at a distance where my elbows and its hopes won't meet. | I don't need a measure. The appearance of whiskers between me and my spoon is evidence enough.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I fold letters with the blank side outwards before I put the bread down.
+b : So the writer stays private? | What about the crumbs?
+a : Partly. I also dislike a fine line taking on the colour of yesterday's gravy. | Shake the cloth away from the paper. A crumb in a crease has made a more lasting mark than plenty of ink.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A long journey sounds tolerable when it comes folded in paper with the rain already dried off.
+b : Would you visit the vines? | Why not go tomorrow?
+a : I'd like one evening there hearing in person how the day went. I should like my own hearth again afterwards. | It takes a different pair of legs to read a road and to walk its length.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When times pinch I stretch the stew with more onion and take care it tastes like a meal.
+b : Will it go far enough? | Would you tell the guests?
+a : I'd rather count the spoons before I start than tell somebody late that a smell is supper. | I would tell them what's in it. Nobody has to sit through my household reckoning in order to enjoy a bowl.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I am grateful for words I can hear a second time without making the speaker stand up again.
+b : Do written words comfort you? | What about a song?
+a : A familiar hand can bring a quiet room surprisingly close to a distant one. | A song belongs to whoever still remembers the tune. That's another kind of letter carried well.
+
+story grease [topic=food]
+  : I put a letter under a plate to stop a wobble and forgot the plate had a little gravy on its foot.
+  : A round brown hill appeared across a description of vineyard rows.
+  b : Could you read it still?
+  : Perfectly. It looked exactly like a hill I'd always thought the writer ought to have mentioned.
+
+story rainverse [topic=weather]
+  : I sang a slow verse between one rail of drips and the next. I wanted to learn whether the shower was easing.
+  : Each verse grew a little longer than its predecessor.
+  b : Was the shower nearly over?
+  : I was adding a repeat to the chorus. I stopped singing and got a much more reliable opinion from the sill.
+
+story greenscrap [topic=memories]
+  : A letter arrived with one green scrap caught in the fold. I imagined an entire evening among the vines.
+  : I was careful not to lose that precious scrap before supper.
+  b : Was it really vine leaf?
+  : It was the herb I'd picked for the stew. The letter had done its travelling quite without company.
+
+rule @pot
+when concept=bark
+does aside
+cooldown 8h
+say Hot plate first, full helping second. | Another voice is welcome by the hearth.
+
+rule @showers
+when concept=bark
+does aside
+cooldown 8h
+say Look how widely those last drops are spaced. | I'd fetch the coat, no farther yet.
+
+rule @sings
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Begin the chorus when the lid settles down. | There's another verse in the gravy if we take our time.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good long light to flatten a folded letter. | The second reading is the one I keep.
+dlg resident.hub : Pull the pot cloth away from the spare seat. I like company within reach of supper.
+dlg resident.job : I mind who comes in hungry and how long the rain might keep a visitor indoors.
+dlg resident.news [world.news] : The words fit to read out this evening are these. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody in from the weather had #topic.subject# #topic.claim#. I couldn't say whose hand first set that going.
+dlg resident.bye : Warm your hands round something before the evening runs out.
+
+graft resident.hub
+choice What do you look for in a vineyard letter? -> vine_fold
+node vine_fold
+say One detail worth keeping. The smell of a row after rain, perhaps, or what somebody managed to eat before a whole afternoon's work.
+choice Is there a particular way to read it? -> vine_fire
+choice I'll take my time with it. -> hub
+node vine_fire
+say Warm plate, clean fingers and light from one side. A letter from kin comes seldom enough to deserve more than a hurried glance over some washing.
+choice I'll take my time with it. -> hub
+
+old
+
+line greet [here.time=dusk] : At my age I'd taste the summer evening down to the last drop.
+line answer.how : Older and unequivocally in favour of a seat near the gravy.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My eyes now prefer a particular yellow patch of light for reading a closely filled page.
+b : Can you still read every word? | Why yellow light?
+a : Most. A familiar hand supplies the little tails my eyes leave out. | It's the patch beside my chair. I confess to a strong practical interest in not moving the furniture.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I'd like the household not to enquire after my strength by handing me a full iron pot.
+b : Can you still lift it? | Would you sooner have help?
+a : I can answer that question without conducting a public trial just before dinner. | I'd rather have two smaller pots. A sensible arrangement outlasts a kind pair of hands.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar face no longer troubles me half so much as an unfamiliar crowd.
+b : How would you greet just one guest? | How many are too many?
+a : I'd ask if the visitor had eaten. Hunger has a steadier pronunciation than most introductions. | Enough to make it impossible to hear the quiet person who has come all that way to sit down.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch a summer shower with increasing patience as my years accumulate.
+b : Did you run through them before? | Does patience get you home dry?
+a : At one time I could afford to make a much quicker mistake about the weather. | It gets me another ten minutes with the letter open. Dryness is a separate negotiation.

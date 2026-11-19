@@ -1,0 +1,332 @@
+mantle rm552
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_thyra_carlisle
+title the dance awning
+fits stage=young|adolescent|adult|old
+prefers job=child warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk measures_a_future_market_awning_in_quiet_dance_steps
+likes pickled_herring dancing old_maps frosty_mornings
+dislikes salt_wind smoke
+fears a_customer_left_standing_outside_the_cover
+hopes a_stall_with_dry_room_for_both_sides_of_a_bargain
+topics dreams +0.6 pastimes +0.5 prices +0.4 weather +0.4
+styles comfort=shelter gossip=careful refuse=gentle tease=kind
+marks oath saying
+persona #self.first# measures the width of a future market awning in dance steps, patiently watching for the rain to draw back.
+
+words
+oath! = By four dry corners | A whole reel of rain
+saying! = Leave a step for the buyer | Give rain the outside turn
+awningstep = a sheltered measure | the dry step
+longreel = a travelling figure | my long crossing
+heelturn = a closed turn | the proper corner
+frontedge = a buyer's breadth | the front hem
+backedge = a seller's stride | the back line
+copperhem = a saved inch | the paid edge
+mapcloth = a faded plan | the old street drawing
+dancerest = a little held beat | the waiting count
+brinebit = a folded herring | the sharp bite
+whitecord = a frosted thread | the shining line
+windhole = the open side | a salty gap
+smokesmear = a dark waver | the sooty edge
+
+any
+opinion merchants for 1 : A market table can make room for ordinary courtesy with both parties standing under its awning.
+opinion houses mixed 0 : A handsome house can lend its name to a market row. I want my own coppers to pay for the cloth.
+opinion dole for 1 : A covered bench beside a food stall is a small expense compared to a meal spoiled by rain.
+opinion city for 1 : Our rooflines may step up a hillside but the lower markets' music still reaches me up here.
+opinion newcomers for 1 : An unfamiliar market feels friendlier when a stranger can stop and look without first agreeing to buy.
+opinion festivals for 2 : A festival gives a figure learnt in a room the breadth it needs to become a public pleasure.
+
+adolescent
+line greet : Welcome. I've saved the dry forward step. | Stand by the hem of my imagined awning.
+line greet [pair.band=strangers] : A new visitor may claim my dry forward corner. | Hello. There is comfortable room for your step.
+line greet [here.time=dawn] : Morning. The light lays out my future counter rather neatly. | First light measures the width without asking a fee.
+line greet.return : Hello in return. I was just finishing the fourth corner. | I've set my little measure down to listen.
+line greet.return [pair.band=friends|family] : You know which step belongs to the buyer. | My familiar partner in the dry corner again.
+line greet.return [here.time=night] : Evening. The night makes a generous ceiling. | There's a quiet measure left before I put my plan away.
+line again.open : Back to the measure where we last left it. | The little market has scarcely shifted in your absence.
+line hail [pair.band=friends] : Come stand under the awning I haven't bought yet! | The empty corner could use your dancing feet!
+line farewell : A dry dancing step wherever your errands lead. | May your way home finish in good time.
+line farewell.return : I'll mind the unoccupied square of floor. | Go while you can enjoy a free stretch of pavement.
+line react.news : Give the account a little floor of its own. | I'll hear the whole measure without rushing your step.
+line react.news.new : That wasn't on my plan of the morning. | Another unfamiliar figure in my market row.
+line react.news.known : I remember the same turn in the earlier account. | We've danced past that particular notice before.
+line react.news.doubt : That final step appears to hang in open air. | I'd want the middle of the figure made clearer first.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Here is the sheltered side while the loss feels close. | I can leave my little plans folded and hear your sorrow.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Excellent. That calls for a turn round the whole dry floor. | Happy news will fit a much longer measure.
+line ask.how : Has today's going been pleasant underfoot? | Has anything given your morning a lighter step?
+line answer.how : Low in spirits, fairly steady in my measure. | All right. I still see the bright corner under the clouds.
+line decline : I haven't quite the breadth of spare time that would need. | My promised piece of floor is full today.
+line accept_decline : Then I'll shift the measure off your side. | We can leave your share entirely unclaimed.
+line preclose : I should return to the unmeasured corner. | Time I set the next copper carefully aside.
+line accept_preclose : Dance the remaining figure just as you please. | My stall has plenty of patience between our meetings.
+line thank : You gave my plan another inch of shelter. Thank you. | That kindness left me room for a real step forward.
+line deflect_thanks : It was a place I'd already measured for a second wolf. | One little step won't wear out the imaginary floor.
+line sympathise : Come under the broad part while the weather feels cruel. | Your grief has no performance to give here.
+line reassure : We need only cross to the sheltered edge of this figure. | There's space to turn gently instead of finishing in a rush.
+line ack : Yes. That fits my four corners quite comfortably. | I see how your step meets mine.
+line give.advice : Price enough cloth to cover the waiting visitor too. | Keep your feet outside the swing of a loaded basket.
+
+adolescent
+
+scene planstep
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I have a market awning four dance steps across. At present the steps are the part I own.
+b : Which is paid for next? | Why start with steps?
+a : The first handspan of cloth, copper by copper. Cloth doesn't care how fine my house looks. | Because I can measure where a customer should stand before I have money for a single post.
+
+scene rainend
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I watch the rain until the pauses between drops give me time for one small turning figure.
+b : Can you actually stop it? | Why wait for pauses?
+a : I could easily afford an enormous awning if I could command the weather. I can only watch. | The sound of a shoe landing in a clear moment is a little more distinct. I like giving the dance its proper ending.
+
+scene study
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : During lessons I practise drawing a straight stall front and dividing the spaces for the baskets.
+b : Does that count as arithmetic? | Where would you keep a book?
+a : When each basket has a cost and a width, very emphatically. My sums have acquired a roof. | Above the table with enough cover to read prices in a downpour.
+
+scene loft
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : From the Heights a whole jumble of awnings looks like patches on a single neat blanket.
+b : Does the blanket have holes? | Would you trade from up here?
+a : Where the streets go through, yes. It's easy to overlook the buyers getting wet in those handsome gaps. | My plan belongs in the Commons, where one can actually stand beside the market traffic.
+
+scene dance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : A dance taught me the difference between room to stand and room to turn carrying something.
+b : What did you carry? | Is a turn much wider?
+a : My sleeve first, then an empty basket. An ordinary errand can have rather generous elbows. | The basket thinks so. I'd rather learn it with a dance figure than with a customer's breakfast.
+
+scene maproad
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My old map places a market road where no reasonable dance step could reach it.
+b : Why use that sheet? | What does a dance prove?
+a : The mistaken road leaves just enough clear paper for my own little row. | Merely my own turning width. The best proof of a road is still going there with a basket.
+
+scene herring
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I like herring folded small enough to eat between dances. It leaves me a free hand for the next turn.
+b : Does the brine drip? | Would you sell herring?
+a : With a clean scrap of bread beneath, very little. I prefer the flavour on the food to the flavour on my cuff. | I'd consider it if I could keep a shelf for wrappings quite separate from a shelf for money.
+
+scene frostmorning
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosty morning draws my four steps on the sill before I've really begun the day.
+b : With your hand? | Do they stay all day?
+a : One finger. I can place the entire market in a strip no wider than my wrist. | Only till the sun comes round. A short tenancy but a remarkably modest rent.
+
+scene saltgap
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / ask.detail / answer.detail
+a : Salt wind finds the gap where I have imagined the awning's side. I may have to dance myself another foot of cloth.
+b : Will that cost more? | Does your counter have to face that way?
+a : Yes. I'll put a shuttle's width aside slowly. I'd like anybody standing there to taste the food rather than the wind. | Sometimes, but a stall has neighbours. I can't rotate the entire market to suit my herring.
+
+scene smokeeye
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I leave space for a sidestep out of any smoke drifting into my space by the front hem.
+b : Won't some other wolf get it? | Why not a full screen?
+a : That's why I examine how the entire row sits. My clean breath shouldn't cost a neighbour a dirty one. | A screen that keeps smoke out might keep the smoke in as well. I'd like the air to have its own passage.
+
+scene motherplan
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.mother# the first space under my awning before putting a price on anything.
+b : Why the first place? | What if rain starts?
+a : It would make the coppers I've saved feel more solid to see a dear face under the cloth my money bought. | All the better for showing what those little savings really paid for.
+
+scene quietpurse
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I put the first copper for the awning aside before planning all the colours I'd like it to have.
+b : Which colour would you choose? | Are the savings necessary?
+a : Something pale underneath so I can read prices, and a cheerful colour facing the street. | I want a stall I have saved for myself. I should know how a day of slow sales feels.
+
+young
+line greet : Hello. I drew a little market on this dry patch. | You can visit my pretend shop without a copper.
+line farewell : Don't step on the chalk herring! | Go out by my pretend curtain.
+
+scene chalkshop
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A toy basket is my whole stall today. I'll make a roof by holding my paw over it.
+b : Won't your hand get tired? | Can I get in there too?
+a : I can use the other one while it rests. Shopkeeping takes both sometimes. | Your little finger can. It's my first whole customer.
+
+scene dreamstep
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I want a market cloth big enough for two separate dancing places.
+b : What goes between the dancers? | Won't you need coins?
+a : All my make-believe herring. We have to sell something while the music plays. | I'm saving one real one. The rest can be drawn till I get bigger.
+
+grown
+line greet : Welcome. The buyer's side of my plan is comfortably broad. | There's room beyond the front hem for you.
+line greet.return : Yes, hello. I've set the figures down. | I can leave this corner unmeasured while we speak.
+line farewell : May every market awning offer generous shelter. | A clear turn for your basket on the journey home.
+line farewell.return : I'll fold my portion of the awning here. | Take the dry stride while there's room.
+line react.news : I'll take a plain account without ornamental edges. | I'll leave the floor free for your report.
+
+scene firstcoins
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My very first stall copper bought nothing by itself. The long saving taught me what a paying customer was giving up.
+b : Did the lesson cost a great deal? | Would you pass the coin on?
+a : Time more than money. Time is something a poor customer can scarcely afford to have wasted. | Real money does its best work in circulation. My first copper stays in memory without keeping it prisoner.
+
+scene marketfit
+when topic=prices
+does give.opinion / react.self / assess
+a : When pricing cover I include the space for the indecisive buyer. A quick decision shouldn't be the price of keeping dry.
+b : What if the wait is long? | Would you seat that visitor?
+a : I can keep a clear place by the row's last upright for wolves who have already chosen. | A stool well clear of the service passage is a particularly sound investment in goodwill.
+
+scene roofdance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : My old measuring steps are still quite a respectable dance if I let the basket mark the change of hands.
+b : Does anyone need to know their origin? | Is it really the same figure?
+a : Only anyone carrying a real basket. Other partners may enjoy a more mysterious account. | Yes. A well-spaced turn serves a market or a festival with remarkable impartiality.
+
+scene wetlesson
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I used to watch each shower as if patient observation might discourage it. Now I look for the side that gets wet first.
+b : What does that show? | Do you still hope it stops?
+a : Which waiting place needs better cover. Weather is quite generous with advice about my arrangements. | Sometimes. A good long shower is also an honest test of what our money bought.
+
+scene shelterfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When a sheltered stranger's shoulders finally relax, my thoughts turn toward the Bright One.
+b : Does it require a prayer? | Is a little roof enough?
+a : A simple thanks seems appropriate. It is pleasant to have had a hand in an answer somebody might have wanted. | For that moment's need, perhaps. A tired traveller may also be glad of directions and a dry chair.
+
+scene hands
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A tidy herring parcel should open in the hand my basket leaves clear. Mine took a few attempts.
+b : What was wrong at first? | Could a buyer eat as well?
+a : I tied the knot under the bread. A buyer needs to locate lunch without unpacking the whole market. | A small bite on a clear patch certainly. For a proper meal the basket can wait on the ground.
+
+scene reserve
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : For #self.mother# I would keep a place that doesn't disappear when the market grows busy.
+b : Does family come before trade? | Why a permanent place?
+a : A sound plan makes room for both. Courtesy needn't be measured and grudgingly lent out each time. | Because a dear face made my first idea of a decent stall seem possible.
+
+scene quiet
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A dancing floor pleases me especially when it empties enough for a tired dancer to try a slower measure.
+b : Would you close the market then? | Why choose a quiet dance?
+a : Only when the proper closing hour came. I'm speaking of the room opening out, not an order to leave. | A slow turn lets me look at the faces instead of concentrating entirely on the feet.
+
+scene sailwind
+when topic=travel self.dislikes=salt_wind
+does warn / react.self / assess
+a : A canvas bought for its colour should be shown a real crosswind before anybody chooses where to stand beneath it.
+b : Wouldn't that be an unpleasant trial? | What movement deserves attention?
+a : Less unpleasant than a surprised wolf with the hem blown across a full basket. | A lifted side, a sag that holds water, an obstacle to a free step back. All are easier to mend before opening.
+
+scene mapsadult
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I enjoy an old map best when I can put it beside a living market and see which parts refused to follow the paper.
+b : Does that make the map useless? | What refuses most often?
+a : Quite the reverse. Every difference has a reason that can teach me something about the place. | A shortcut made by actual tired feet. A draughtsman sitting indoors likes rather straighter lines.
+
+scene fairsource
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : News reaches me from #world.news_from#. #world.news#. I should leave its origin beside the account.
+b : Is that all one can say? | Would you announce it at market?
+a : Unless I have an independent witness, yes. A neat presentation doesn't add anything to truth. | With the source named if the account concerned people present. No market needs a fresh decoration of rumours.
+
+scene lastdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Someday a stranger might describe my stall as the comfortable place for a wait. I'd value that description.
+b : Why not mention the fine colours? | Does waiting help a business?
+a : Fine colours tempt a first glance. That account would tell me what the stall actually did for a visitor. | It helps a tired wolf who has spent every other errand hurrying. That seems a fair enough beginning.
+
+adolescent
+
+story wetmeasure [topic=weather|memories]
+  : I measured an awning by chalking my feet round the first dry patch I found. Stood back and admired a very long narrow plan.
+  : The patch was under the dry outline of my own shoulders after a sprinkling shower. I had designed a stall almost exactly my width.
+  b : Where did the buyer go?
+  : On the next drawing. I took four honest measures with a basket instead of trusting a flattering patch of stone.
+
+story dancingfish [topic=food|memories]
+  : I packed two wrapped herring bites together to practise changing my basket hand at each turn. A tidy figure from the outside.
+  : At the last turn both parcels were in the same hand, and I was politely offering an empty basket to the wall.
+  b : Did either herring survive the dance?
+  : We had a very quiet supper while I considered a less ambitious piece of choreography.
+
+story mapcloth [topic=travel|memories]
+  : A market road on my old map once looked as if it continued straight through a blue square. I held the sheet up to the window.
+  : The road was a crease continuing through the marked square. No roadmaker had been quite so unreasonable.
+  b : Did that ruin the layout?
+  : Improved it. I could use the entire square for imaginary stalls and still fold the map properly when the rain came.
+
+rule @awning
+when concept=bark
+does aside
+cooldown 8h
+say Four clear turns and a generous strip for the front. | The saved copper goes toward that bit of the roof.
+
+rule @dance
+when concept=bark self.likes=dancing
+does aside
+cooldown 8h
+say Basket changes hands under the driest section of canvas. | Small turn by the buyer's end, then home.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say One clear interval, then the long patter again. | Rain along the hem has its own last measure.
+
+rule @herring
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say A little bread under the sharp fold, please. | A dry wrapper for the hand that carries the herring.
+
+dlg resident.hub : You can stand on the customer's side of my imagined awning. I always measure enough room there.
+dlg resident.hub [topic.meeting=known] : #topic.player#, the forward step is just where we left it.
+dlg resident.hub [here.time=night] : Night has made my market plan almost all quiet corners. There's still one free.
+dlg resident.hub [pair.disposition=wary|hostile] : The full width of my counter can stand between us while we speak.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. My lessons find themselves applied to shop cloth, steps and the cost of a copper's worth of each.
+dlg resident.job : I care for work that gives the next arrival a comfortable place to stand.
+dlg resident.bye : Find a pleasant measure where the awnings cover your walk.
+
+graft resident.hub
+choice Can I take a turn under your imagined awning? -> drydance
+node drydance
+say Take one pace forward with an imaginary basket. Turn it to your other hand. If it stays clear of my elbow and of the rain, we have a reasonable width.
+free
+choice What happens if our baskets meet? -> widercloth
+choice I can see the dry front edge. -> hub
+node widercloth
+say I measure the next copper's worth of cloth. My aim is a market where nobody needs an instructed dance partner simply to buy a herring in comfort.
+choice We could try the turn again. -> hub
+choice I'll bring a smaller basket. -> bye

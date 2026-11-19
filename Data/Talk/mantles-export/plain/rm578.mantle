@@ -1,0 +1,262 @@
+mantle rm578
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ulf_kelpmarsh
+title the apprentice's cool stone
+fits stage=adult|old
+prefers job=merchant honesty=guarded
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk keeps_a_flat_stone_beside_the_butter_to_test_the_shelf_with_the_back_of_a_finger
+likes barley_soup wrestling new_boots first_snow
+dislikes haggling cold_tea
+fears warm_butter_in_a_paying_customers_parcel a_familiar_step_missing_from_the_wharf
+hopes a_cool_dry_room_with_a_floor_firm_enough_for_good_boots
+topics food +0.6 work +0.6 home +0.3 travel +0.2
+styles comfort=practical gossip=closed refuse=quiet tease=none
+marks oath saying
+persona #self.first# rests a flat clean stone beside the butter, tests its chill against a knuckle and gives a better welcome in warm soup than in questions.
+
+words
+oath! = Butter on the boot hook | My stone gone warm
+saying! = Let the shelf tell the temperature | Turn the wheel before tying the parcel
+stone = my flat test stone | a smooth shelf stone
+coolface = the stone's cool face | the cool flat surface
+butterfold = a folded butter cloth | the clean butter wrapping
+heelprint = the first heel print | a crisp boot mark
+wheeltag = the turn tag | a little tag on the hoop
+lowrack = the low resting rack | the shelf nearest the floor
+barleysoup = a bowlful of thick barley | the hot barley broth
+snowspot = an untouched spot of snow | the first patch of snow
+cordstrap = my neat lifting strap | the short lifting band
+tearing = a dark ring of cold tea | a grey stain inside the cup
+coughcloth = my tucked-in cloth | a neatly hemmed square
+
+any
+opinion merchants mixed 0 : A buyer deserves a parcel that holds its shape right to the supper board.
+opinion houses against 1 : A fine mark over the wharf gate can hardly answer a question asked at ground level.
+opinion city for 1 : There's a way home through streets that remember enough of the daylight to keep a walker company.
+opinion drink mixed 0 : I'd choose a good heavy bowl of soup over a thin drink that's gone cold waiting.
+opinion strangers mixed 0 : A visitor may see the goods and hear the price. My private affairs have no label hung on them.
+opinion dole for 1 : Barley cooked right through will do a body more good than counting the grains one by one.
+opinion festivals for 1 : I'd turn out for a friendly wrestling bout, given a sheltered spot to leave my boots.
+
+grown
+line greet : Put the parcel here in the cool. Welcome.
+line greet [pair.band=strangers] : A first visitor can have a clean corner.
+line greet [here.time=dawn] : Morning. The stone's still got its night chill.
+line greet [here.time=dusk|night] : Evening. Stand where the warm air goes past.
+line greet.return : I've heard you. I'll ease this wheel onto its shelf.
+line greet.return [pair.band=friends|family] : Your voice will do instead of an introduction.
+line greet.return [self.working=yes] : I can listen with the stone under my hand.
+line greet.return [here.time=dusk|night] : The quiet nearly carries your footsteps for you.
+line kin.open [pair.kin!=no] : My end of the cheese bench is yours, kin.
+line again.open : The knot's exactly where I left it.
+line hail [pair.band=friends] : Friend, here on the cool side.
+line farewell : Good footing under your heels.
+line farewell.return : And keep the cloth off the sunny side.
+line react.news : What part of it arrived intact?
+line react.news.new : A new word to set by.
+line react.news.known : Heard before. It held its shape then.
+line react.news.doubt : I'd test the middle as well as the surface.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll sit through the quiet bit beside you.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good thing to bring home before supper.
+line ask.how : How have your feet held up?
+line answer.how : A steady sort of day with a catch here and there.
+line thank : That was a kind way to steady the load.
+line deflect_thanks : I was close enough to catch it.
+line sympathise : You can sit here without having to explain the whole journey.
+line reassure : Let your shoulders come down before the next turn.
+line decline : I've a load here that needs both my hands.
+line accept_decline : Fair. I'll leave the strap slack.
+line preclose : My next round won't do itself.
+line accept_preclose : Step out easy. I'll catch the panel as you go.
+
+scene stone_test
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #stone.capitalize# sits beside the butter. | I test #coolface# with a knuckle.
+b : What does the stone do? | Why your knuckle?
+a : Takes the shelf's temperature without my putting a finger on anybody's supper. | My palm's warm from holding the parcel. I'd get a different answer.
+
+scene shop_round
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a turn missed this morning doesn't become two good turns tonight. | I set #wheeltag# before leaving #self.workplace#.
+b : You're speaking of cheese? | How much does the tag say?
+a : Yes. You let each face have its own time on the rack. | Enough that the next hand needn't turn the same cheese twice.
+
+scene apprentice_hand
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : An apprentice can lift one side of a wheel and learn something without taking the whole weight. | I check #cordstrap# while the loop is still empty.
+b : What do you learn? | Is that easier?
+a : Which way it'll want to roll. Best to know before you let it. | Considerably easier than inventing a third hand halfway to the shelf.
+
+scene butter_walk
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Tuck #butterfold# in without pinching the corners of the pat. | I reserve a little of #lowrack# for wrapped butter.
+b : Does its shape matter? | Not beside the door?
+a : It tells the buyer it travelled cool. | Air coming under a door has had the whole street to warm itself.
+
+scene barley_bowl
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : #barleysoup.capitalize# puts some weight back in a wolf after a long wet morning. | The barley needs a bit of time to take the broth.
+b : You like it thick? | Can you tell by eye?
+a : I'd like each spoonful to know what it came out of. | I give one grain the chance to tell me by tooth.
+
+scene wrestle_fair
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I like a bout where the other wolf offers a steady grip before trying anything clever. | I'll wrestle on a clear patch and get up without calling an audience.
+b : What's your first move? | What if you win?
+a : Check the ground. One slip is a poor account of the pair of us. | Same arrangement. No crowd required.
+
+scene boot_mark
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #heelprint.capitalize# from a new boot has nice sharp angles. | A sound pair of new boots is a kindness that goes the whole way home with me.
+b : Do you keep the print? | New every year?
+a : Just the sight of it till the next shower goes through. | New when I've saved enough for the seams I like.
+
+scene first_snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snowspot.capitalize# makes the street look as though it's been given another start. | I liked the very first flakes even before I could afford boots fit to keep them out.
+b : Will you walk across it? | Do you stay outdoors?
+a : One careful step. I like seeing the first good shape in it. | Till the snow has left a little pleasure in my toes.
+
+scene haggling
+when topic=work self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I decide on a price I can speak without studying my toes. | The parcel hasn't lost weight during the time somebody spent arguing.
+b : What if somebody says half? | Does anybody ask you to weigh it again?
+a : I can hear half without having to agree twice. | I'd rather weigh it twice than argue over an invisible difference.
+
+scene cold_tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : #tearing.capitalize# is all the persuasion I need to order a smaller cup next time. | My stone can tell me whether a cup's gone cold.
+b : Why smaller? | No need to taste?
+a : A little cup can get drunk before it's a cold one. | There was never much need to taste cold tea.
+
+scene sump_cover
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On a Sump landing I turn the parcel so the cooler wall's at its back. | There's a draught under plenty of Sump doors.
+b : Just while you're waiting? | Handy for the butter?
+a : A little heat taken on here is still there at the table. | I'd keep the butter up off that floor in any weather.
+
+scene private_wharf
+when topic=memories here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The stretch by the wharf can bring a whole conversation to a stop for me. | I'd walk a bit farther to avoid one particular landing.
+b : Do you want company there? | Why that landing?
+a : Quiet company if we're going that way. | A private account. I'll walk the extra bit without charging you for it.
+
+scene catch_breath
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : #coughcloth.capitalize# is handy on a damp shift. | I like a dry patch behind a collar.
+b : A cough bothering you? | For warmth?
+a : A little catch. Give me the length of a breath and I'll finish what I meant to say. | For the few extra words I get when there's no tickle in my throat.
+
+scene lean_turn
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When work grows scarce I wrap a small portion just as carefully as a full round. | I keep a very small corner cool even beside a long bare shelf.
+b : Do you mind the trouble? | Expecting a delivery?
+a : A small supper is quite as entitled to arrive intact. | Leaving room for whatever turns up is a kind of hope.
+
+scene stranger_shade
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd point a newcomer towards the shady stretch first. | Leave the newcomer space for turning a wheel without losing pride or toes.
+b : With a parcel? | Is it that difficult?
+a : Especially with one. An empty-handed traveller can choose the sunny way back. | Worth knowing beforehand that an edge rolls.
+
+scene parcel_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : Wrapped up from #world.news_from# came this word. #world.news#. | #world.news#. It has #world.news_from# marked at the start.
+b : Did you open it yourself? | Where would you mark the end?
+a : What reached my ears is all I have. What came before that is private. | Here for now. Somebody else can answer for the next journey.
+
+scene shelf_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : There's talk getting softer the longer it stands about. | A rumour does badly when tucked beside clean goods.
+b : Can you tell what shape it had? | What if it's true?
+a : I'd be guessing. The original sender can have that task. | Then a plain word in its own place will do.
+
+scene dry_feet
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My ideal room has one dry shelf and a floor my boots know all the way across. | I'd like the whole day planned well enough to turn the last wheel before the first good flakes come down.
+b : No more than that? | Would you go out in them?
+a : A soup pot that comes off its hook as soon as I'm in. | With my collar up and both hands entirely free.
+
+story cold_button [topic=memories|work]
+  : I replaced my lost shelf stone with a large button for one afternoon.
+  : Turned out it had once been covered neatly in cloth.
+  b : Did it give a good reading?
+  : It told me the temperature of an old coat button. I went back along my route and found my stone.
+
+story wheel_shadow [topic=work|memories]
+  : I saw a wheel leaning where I'd left it flat and went round to whisper a correction.
+  : When I got round to the far side I could see through it.
+  b : Was it a hoop?
+  : A hoop and its shadow making enough cheese to keep me employed for a moment.
+
+story snow_boot [topic=weather|memories]
+  : I made a lovely sharp first print in the snow with one new boot.
+  : Lifted the other foot to match it and discovered the whole patch was scarcely wider than one heel.
+  b : Did you try again?
+  : I let the one mark do. A wolf with one very nice foot had apparently passed that way.
+
+rule @test_shelf
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Cool at the edge and cool in the centre.
+
+rule @turn_hoop
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Tag on the outside for morning.
+
+rule @warm_cloth
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Shaded side facing the parcel.
+
+rule @dry_boot
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Leave a little dry stone for the next boot.
+
+dlg resident.hub : This edge is dry. Put your things down if you choose.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's no need to stand holding that.
+dlg resident.hub [here.time=dusk] : The last turn is done. I'm listening.
+dlg resident.hub [pair.disposition=hostile|wary] : The shelf stays between us till we've finished speaking.
+dlg resident.job [self.job=merchant self.workplace] : I help keep the goods in condition at #self.workplace#. You can tell a good deal with a cool knuckle.
+dlg resident.news [world.news] : The first mark is #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : That word has stood too long in the warmth for my liking.
+dlg resident.bye : I hope the last bit of your way is kind to your boots.
+
+graft resident.hub
+choice May I try the stone test? -> cool_knuckle
+node cool_knuckle
+say With the back of one clean finger. Touch the shelf stone first. Then touch the wall above it. You'll find the corner where a butter parcel ought to rest.
+choice Wouldn't the parcel tell me that? -> clean_paper
+choice I feel the cooler patch. -> hub
+node clean_paper
+say Only after you'd put a warm finger exactly where a buyer might like to find a clean, firm pat. The stone won't begrudge you the experiment.
+choice I'll use the stone next time. -> hub
+choice I'll leave the cool corner open. -> bye

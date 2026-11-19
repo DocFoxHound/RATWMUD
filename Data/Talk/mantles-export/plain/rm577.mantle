@@ -1,0 +1,262 @@
+mantle rm577
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_tove_mossdale
+title the high-water tally
+fits stage=adult|old
+prefers job=merchant temper=calm
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk rules_bale_weights_above_a_blue_line_that_marks_the_height_of_a_flood
+likes honey_cakes stars market_bustle first_snow
+dislikes bad_manners early_bells
+fears a_ledger_left_on_a_low_sill a_figures_last_corner_pulled_by_the_damp
+hopes an_orderly_desk_with_room_for_another_learners_page
+topics work +0.7 weather +0.5 smalltalk +0.3 food +0.3
+styles comfort=patient gossip=plain refuse=steady tease=none
+marks oath saying
+persona #self.first# rules a blue flood line across scrap paper, writes the bale weights above it in a square hand, and speaks up so even the far end of a store can hear a correction.
+
+words
+oath! = Blue ink on my cuff | Snag the bale cord
+saying! = Keep the figures above the blue | A square sum dries true
+blueline = my thin blue rule | a blue stroke across the page
+weightbox = a square for the weight | a ruled weight box
+bale = a tight-bound bale | a square bale
+inklid = a close-fitting ink lid | the little blue lid
+cake = a square of honey cake | a honeyed corner
+starrow = the three stars over the roof | a bright row of stars
+snowrim = the first pale rim of snow | snow on a high sill
+chalkmark = the high chalk stroke | the flood mark
+roughslip = a rough count slip | a scrap for first figures
+pensplit = the tiny slit of the nib | an open nib
+cordend = a clean end of packing cord | a short tie of cord
+
+any
+opinion merchants for 1 : If the apprentice at one end of a store can read what's written at the other, the charge is easier to explain.
+opinion city for 1 : Walk it after a heavy shower and the slopes reveal the whole town's arrangements for water.
+opinion road mixed 0 : The quickest road changes once the bottom step disappears.
+opinion houses mixed 0 : A House seal doesn't make a wet tally any easier to read.
+opinion festivals for 1 : A festival market gives a good strong voice plenty of work between the bells.
+opinion watch for 1 : I appreciate a hand at the corner that can send the carts round before the lane floods.
+opinion strangers for 1 : A stranger naming the street that soaked a boot has just given me a useful measurement.
+
+grown
+line greet : Plenty of dry room above this line. Come over.
+line greet [pair.band=strangers] : I've a fresh square for a new arrival.
+line greet [here.time=dawn] : Morning. The first figures have the board to themselves.
+line greet [here.time=dusk|night] : Evening's left a blue rim on the rooftops.
+line greet.return : Your voice reached clear across the page.
+line greet.return [pair.band=friends|family] : I was keeping a dry square for the familiar voices.
+line greet.return [self.working=yes] : My pen can stop exactly at this corner.
+line greet.return [here.time=dusk|night] : A voice carries farther once the last lit window darkens.
+line kin.open [pair.kin!=no] : Kin may take the end nearest the warm cakes.
+line again.open : The count's where we left the lid.
+line hail [pair.band=friends] : Friend, there's a fine clean place for your elbow.
+line farewell : May the high road stay worth the climb.
+line farewell.return : And dry your cuffs before you pack the papers.
+line react.news : Call the place clearly along with the word.
+line react.news.new : That's a fresh number across my square.
+line react.news.known : I entered that one with an earlier hand.
+line react.news.doubt : I'd like to look where the last figure bends.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the page lie still while we hear the hard part.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's one worth calling down the whole length.
+line ask.how : Any good high ground in your day?
+line answer.how : I've enough daylight left to finish a clear row.
+line thank : You kept that entry above water. I'm grateful.
+line deflect_thanks : I had spare paper and a sound ledge.
+line sympathise : An open square is yours to sit beside quietly.
+line reassure : One small clean entry will start a muddled sheet.
+line decline : I've already put my name above another piece of work.
+line accept_decline : Very well. A clear answer fits a small square.
+line preclose : My next figure wants what light there is.
+line accept_preclose : Take the lane where the doorsills show.
+
+scene blue_line
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I draw #blueline# even on a dry page. | I write every weight over #weightbox#.
+b : To judge the height of a flood? | What goes underneath?
+a : To remember the last one before I choose where the book will sleep. | A blank margin for an uninvited tide.
+
+scene warehouse
+when topic=work self.workplace self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : In #self.workplace# the tally must be readable one bale after the last. | I can speak the count across #self.workplace# without my pen following my voice off the page.
+b : When else would you read it? | Is that difficult?
+a : When asking why the space is full yet the order a bale short. | Try saying seven and finishing yesterday's six.
+
+scene learning
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : An apprentice may call for a weight to be repeated without accusing anybody of carelessness. | I turn #roughslip# round to examine my own handwriting.
+b : And if the same figure comes back? | What do you learn upside down?
+a : Then we have an entry and two ears in agreement. | Whether my corners have started depending on luck.
+
+scene raised_sill
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I look for #chalkmark# behind a door that opens inwards. | I know where the first deep patches will be.
+b : Water reaches round the door? | From today's rain?
+a : It does. But a mark there is less likely to be polished away. | From where yesterday's dry street kept its little stripes of grit.
+
+scene cake_edge
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : #cake.capitalize# travels better beside a book than above it. | The corner of a honey cake is my favourite place to begin.
+b : Afraid of crumbs? | Keeps the count square?
+a : Crumbs brush away. A square of honey in a figure is a binding agreement. | Keeps the honey clear of both thumbs if I eat it promptly.
+
+scene stars_count
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : #starrow.capitalize# will stay in its proper order all through my supper. | I like an evening figure made of points without any lines between.
+b : Do you count the stars? | A constellation?
+a : Usually I stop at the first lovely arrangement and let that suffice. | Yes. My pen can have the evening off.
+
+scene market_speed
+when topic=smalltalk self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I enjoy the busiest part of a market best at the joining of two rows. | Give me a crossing full of buyers and my ears find the one quiet price that matters.
+b : Surely that's the noisiest part? | How?
+a : I like voices with something to say to each other. | Watch the paw that reaches for a purse.
+
+scene snow_board
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snowrim.capitalize# makes a good level before hall doors disturb it. | First snow gives even a rough sill a beautifully square top.
+b : What do you compare it with? | Does it last?
+a : Where the snow starts to slide. That's where I keep my papers clear. | Just far enough into morning to be worth looking for.
+
+scene polite_repeat
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A wolf who calls a figure while my pen's busy owes me one calm repetition. | Pushing a hand in front of somebody else's square is poor manners.
+b : Do you have to ask twice? | Even to correct the sum?
+a : I stand ready to ask with remarkable patience. | Say there's a correction. Let the first hand get out of the way.
+
+scene early_ring
+when topic=festival self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : Early bells fill my first empty column before I've a chance to use it. | Bells are welcome when there's already a light behind the curtain.
+b : How do you mean? | Never before?
+a : I find myself counting the strokes while getting a quite different total ready. | If there's urgent news I'll hear them quite willingly.
+
+scene spouse_dry
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.spouse# the dry chair even if I'd had my papers spread across it all morning. | An evening with #self.spouse# goes better once #inklid# has clicked.
+b : Where would the papers go? | Is that the signal?
+a : On my own chair. I can manage a few figures standing. | For me. I try to hear it as the end of business.
+
+scene commons_high
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : On the Commons I like a doorstep with a high lip and a broad place for landing a basket. | I could draw the low turns through the Commons in pale ink.
+b : Which do you need most? | From memory?
+a : Height during the shower. Breadth when supper arrives. | From the places I've had to stop and re-tie a wet boot.
+
+scene paper_due
+when topic=times self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : When a payment's due I put my own name in the first square. | I write an owed amount high enough for daylight to reach it at breakfast.
+b : And the payment? | To encourage thrift?
+a : On its proper date. Accounts shouldn't borrow the weather's habit of creeping forward unseen. | To spare myself discovering an old duty in a fresh hurry.
+
+scene close_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a tight week the cost of one water-marked bale falls on more shoulders than a full one takes to lift. | I ask after the small loads when trade is lean.
+b : Who'll bear it? | Why those?
+a : Whoever can't afford another loss. A sound sill's cheap in comparison. | A small order can represent a whole week's hope for somebody.
+
+scene visitor_mark
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd send a stranger along the high side where there's light on the stone. | A newcomer wants directions that outlast a shower.
+b : The shortest way? | Can you draw them?
+a : The way a dry traveller can keep walking. | Certainly. I'll put the low crossing under the blue.
+
+scene news_call
+when topic=news world.news
+does tell.news / react.self / assess
+a : This arrived marked #world.news_from#. #world.news#. | #world.news#. The name on the slip is #world.news_from#.
+b : Is the whole store to hear? | Your own entry?
+a : Only if the words are called as plainly as they arrived. | My entry for what reached me. The original belongs to the source.
+
+scene gossip_rule
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I have an untidy bit of news with a very tidy price attached. | Names have been added to a damp slip of talk.
+b : Will you pay for it? | Whose names?
+a : No. The tidy price is wanting my good name under it. | I'd leave the whole thing off the clean book.
+
+scene desk_room
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a desk with space beside my page for a beginner's work. | My ambition is a very square hand that still has some liveliness left about its corners.
+b : Aren't you still learning? | How would you practise that?
+a : I know one thing well enough to share, which is where the sheet stays dry. | Draw the figures carefully and leave a clear bit of margin for stars.
+
+story honey_mark [topic=memories|food]
+  : I put half a honey cake down on a spare slip and picked up what I thought was my count.
+  : A long printed line had appeared across the cake's lower crust.
+  b : Was a weight on it?
+  : Only the weight of the half cake. I finished the sticky evidence with tea and began a tidier page.
+
+story flood_ink [topic=memories|weather]
+  : I drew a careful blue line round a practice sheet and carried it out in fine rain.
+  : It was a lovely afternoon for proving why the blue ink mattered.
+  b : Did the page stay dry above the line?
+  : The colour ran upwards under my wet thumb. An imaginary flood with quite real consequences for my cuff.
+
+story star_square [topic=pastimes|memories]
+  : One clear night I drew four stars as the corners of a box.
+  : Turned the page by morning and decided the bottom star had got the wrong distance from the others.
+  b : Was it a poor measurement?
+  : It was the spot where my nib first touched paper. I promoted it from star to full stop.
+
+rule @pen_start
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Just room left of the first square.
+
+rule @tuck_sheet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wrapper over the figures.
+
+rule @curve_sky
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say That upper star's joined the row.
+
+rule @bale_knot
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Tie the card on the dry loop.
+
+dlg resident.hub : I'll cap this ink first. There's elbow room across my desk.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I'll use the page where we left the earlier figures.
+dlg resident.hub [here.time=dusk] : Still a fine edge of daylight for a visitor's word.
+dlg resident.hub [pair.disposition=hostile|wary] : I can hear the particulars from well beyond the reach of this nib.
+dlg resident.job [self.job=merchant self.workplace] : At #self.workplace# I keep a square for each load and its actual weight.
+dlg resident.news [world.news] : The square marked #world.news_from# holds this notice. #world.news#.
+dlg resident.gossip [here.gossip=yes] : That tale hasn't the dry edge I'd need to put it into a clean account.
+dlg resident.bye : Leave some dry paper for the next arrival.
+
+graft resident.hub
+choice Why put a blue line on a ledger? -> blue_rule
+node blue_rule
+say I found a real line like that on a store wall. It went through the space a low shelf had occupied. Now I decide where a book belongs before I open it.
+choice How high is high enough? -> high_enough
+choice I see why you remember the shelf. -> hub
+node high_enough
+say Above the last mark with room to pass underneath carrying a dry sheet. A flood has no obligation to stop where a clerk finished ruling.
+choice I'll keep a little height in reserve. -> hub
+choice May your next count stay dry. -> bye

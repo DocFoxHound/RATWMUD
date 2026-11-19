@@ -1,0 +1,374 @@
+mantle rm572
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_oda_marrowby
+title the rook's footprint
+fits stage=adult|old
+prefers role=merchant job=baker
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk marks_pie_lids_with_the_tracks_of_different_roof_birds
+likes fried_fish roof_birds a_full_till first_snow
+dislikes crowds early_bells
+fears a_pie_burnt_while_a_petition_waits a_wet_morning_without_a_quiet_breath
+hopes to_see_a_familiar_mark_on_an_answered_petition a_tray_with_every_crust_sound
+topics food +0.5 animals +0.4 work +0.4
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# marks pie crusts with a rook's track and can spend a quiet moment watching the rooftop originals argue over the ridge tiles.
+
+words
+oath! = Rooks in the pastry | A cough in the flour bin
+saying! = The crust can tell you what's beneath | Put the bird outside the pie
+rookfoot = my three long cuts | the broad roof track
+tinysparrow = a pair of little pricks | two short toe marks
+gullheel = the wide curved vent | a cut like a webbed foot
+pastrypin = my small blunt pin | the old marking tool
+gravywell = the dark bit at the bend | a peppery pocket
+tinpaper = a paper copy folded in thirds | my petition leaf
+crimpedge = the raised thumb joints | the crust's little wall
+counterwarm = the patch by the tray | the heat under my elbow
+fishcorner = a buttery browned edge | the crisp fish tail
+roofflock = my council of black coats | the assembly on the tiles
+winterinch = the first visible white | the thin snow on the ridge
+pursesound = a clink with weight behind it | the sound of a full day's till
+slipstone = the weight on my paper | a grey stone shaped like a plum
+emptyperch = the clean ledge of tile | a bare run of roof
+
+any
+opinion church for 1 : A proper chapel table can receive hot food as well as a pair of folded paws. I'd gladly fill a dish for it.
+opinion city for 1 : There's somebody here who wants each kind of crust I can make. Some even notice whose paw put the mark there.
+opinion dole for 2 : The best time to share a hot pie is when it's hot. The argument about a hungry wolf's circumstances will keep till after dinner.
+opinion road against 1 : Cool pastry tells me precisely how long a late delivery took. I'm losing confidence in the road's arrangements.
+opinion times against 2 : The flour takes a bit more of the price each time. I'd like there still to be room in the pie for a baker's supper.
+opinion watch for 1 : A busy counter serves the honest buyer better if a quick paw must think twice before going round behind it.
+opinion merchants mixed 1 : Marking the pie clearly is my half and paying the marked price is the buyer's. We can manage a decent arrangement that way.
+opinion houses mixed 0 : An impressive roof will keep rain off one side of a lane and drip it down the other. I look where I stand before admiring.
+
+grown
+line greet : There's a clean bit by the tray for your elbow.
+line greet [pair.band=strangers] : This way for the little track marks.
+line greet [here.time=dawn] : The roof birds have their aprons on early too.
+line greet [here.time=dusk|night] : Last light on the crimp. You caught me at a good minute.
+line greet [self.working=yes] : Stand back from the tray until I've got it settled.
+line kin.open [pair.kin!=no] : A home voice can have the warm corner here.
+line again.open : Back by the rook's toes again.
+line greet.return : Heard you above the first little hiss of gravy.
+line greet.return [pair.band=friends|family] : Take the warm side. I know that note in your voice.
+line greet.return [self.working=yes] : I'm just letting this tray have the counter. I heard you.
+line greet.return [here.time=dusk|night] : Very clear above the rim of my last warm tray.
+line farewell : Warm crust to the very last bite, I hope.
+line farewell.return : I'll leave a bird track on the next crust for luck.
+line farewell [here.time=dusk|night] : Keep to the light when you pass the square's unlit corner.
+line react.news : Which bit of that would have left a visible footprint?
+line react.news.new : That takes a clean place on my paper.
+line react.news.known : Same track with a little extra flour round it.
+line react.news.doubt : Could somebody point out the original mark to me?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could make a pie the household had only to warm.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd cut an extra little wing in a lid for that.
+line answer.how : Floury to the elbows and mostly easy in my mind.
+line answer.how [self.working=yes] : I've both wrists busy with a case that won't crimp itself.
+line ask.how : Did anything good come out of your day's baking?
+line sympathise : I'd make one ordinary thing easy while you carry the difficult part.
+line reassure : I've a warm ledge and time to listen between the batches.
+line decline : The oven's already taken my promise and it has a very particular clock.
+line accept_decline : My request can wait with the dough that isn't risen yet.
+line thank : You've made the next tray considerably easier to manage.
+line deflect_thanks : Give a hungry caller time to choose a decent portion.
+line preclose : There's a crust waiting for its three little toes.
+line preclose [self.working=yes] : That oven lip could use my attention now.
+line accept_preclose : Time enough for another word when the tray is cool.
+line ack : Nicely marked.
+
+scene prints
+when topic=work self.job=baker self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I put a different footmark into each sort of pie lid before the tray goes in.
+b : Why use feet? | Do the marks last in the oven?
+a : The birds have given me several clear shapes. A hungry caller can point without needing my whole list read out. | Cut a little deeper than the finest detail and the hot crust will show the mark plainly.
+
+scene filling
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A rook track means the filling that can stand the longest baking.
+b : Is there rook in the filling? | Why give it the strong mark?
+a : No. The bird's office ends at the pastry's marked surface. I wouldn't sell a filling on a false description. | A long bake softens the finest little pricks. Three deep toes hold their shape quite handsomely.
+
+scene birds
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : A rook that lands on a sloping tile spreads the toes before settling the wings.
+b : Can you see the feet from below? | Why pay attention?
+a : On a ridge against bright sky, for an instant, which lets me learn the outline. | I draw that same landing on a pie top. It's a small loan from a bird with plenty of other occupations.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fried fish is my first choice on a day when I've looked at more pastry than I want to meet at supper.
+b : Would you put it in a pie? | Which part do you take?
+a : For a customer who asked, perhaps. My own part stays crisp in the butter and comes straight to the plate. | The edge that's gone brown while the middle stays tender. Then I get the contrast in a single bite.
+
+scene fulltill
+when topic=prices self.likes=a_full_till
+does tell.self / ask.detail / answer.detail
+a : A till sounds quite different at closing when there's enough in it for tomorrow's flour.
+b : Could you tell by ear? | Do you count it twice?
+a : Near enough to feel hopeful. The miller will insist on a more exact form of music. | Once carefully, and again if the answer has surprised me in either direction.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : The first white roof looks like a fresh page awaiting its birds.
+b : How long does the page stay clean? | Can you copy what's written there?
+a : Until the first excited pair of feet. I'm fond of that first correction to the view. | A few marks. The whole account is beyond me by the time a flock's had breakfast.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I don't mind half a dozen customers nearly as much as half a dozen elbows in the wrong place.
+b : Where should the elbows go? | Do you tell people to move?
+a : Beside their owners and clear of the hot tin. I like everybody to go home with supper and sound sleeves. | In a voice fit to carry over the tray. I keep the words simple and the welcome in them.
+
+scene bell
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell generally catches me already trying to decide how much air a pie case needs.
+b : Does the bell start the work? | How much air is right?
+a : For somebody else, no doubt. My work and I have been on speaking terms a while before the first stroke. | A vent large enough to let steam out without letting half the gravy follow enthusiastically behind.
+
+scene cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Damp air gives me a cough just when I'd rather be looking dignified over a fine tray.
+b : Do you stop working? | What happens to the tray?
+a : I step clear of the food, turn away and wash before I'm back at it. A cough shouldn't become an ingredient. | It sits on a firm rest. I've got a moment without asking the counter to do anything unexpected.
+
+scene petition
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A petition can lie about an office longer than any dough I ever put by to prove.
+b : Do you keep enquiring? | Have you a copy?
+a : I come back with the particulars in my own hand. A weekly walk is cheap enough while the hope of an answer holds. | Yes. One folded sheet in a clean wrapper. I learned from flour to keep damp out of anything I intend to use again.
+
+scene child
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I like saving the smallest good pastry bird for #self.child#.
+b : Is the little one all edge? | Does it have a filling?
+a : Nearly. A bit of tender middle beneath the crisp wing makes the size seem an advantage. | A spoon of something sweet when it's handy. A scrap made for home doesn't have to support the whole business.
+
+scene hand
+when topic=work self.job=baker self.hand
+does tell.self / ask.detail / answer.detail
+a : At a busy counter I'd arrange with #self.hand# which side the empty trays will come back on.
+b : Can't you put an empty tray anywhere? | Which side do you use?
+a : An empty hot tin can give quite a startling account of itself under a clean cloth. | Whichever side gives both workers an unobstructed sight of each returning tin. Agreeing first matters more.
+
+scene homecommons
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : A market-square neighbour can tell which part of my day I'm in from the stairwell's smell.
+b : What smells come first? | What's your favourite part?
+a : Toasted flour, then the fat going warm. After that there's too much going on for a neat list. | The first clean buttery smell after the tin's inside. That first smell settles the tightness across my back.
+
+scene roadtime
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I've brought a tray across a short wet square at a speed that felt entirely appropriate for crossing a continent.
+b : Very slowly? | Was the tray heavy?
+a : One sound footfall, then another. Nobody rewards a baker for arriving promptly with a roof of mince all down my apron. | Less heavy than the idea of having to bake the whole lot over again.
+
+scene poor
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : Some days there's more value in the pies on the tray than in all my money put together.
+b : How do you feel about that? | Would a sale change it?
+a : Rather keen that the tray should stay level. I've been using both paws for a reason. | At once. A baker's task is to move value from one side of the counter to the other while it still smells lovely.
+
+scene frontguest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer standing by my tray might well expect a pie with rook prints to contain a rook.
+b : What keeps the filling clear to a buyer? | Why keep the prints then?
+a : I say the filling out loud before taking the coin, and mark the same kinds consistently. | They're clear to the eye and I'm fond of making them. Those are substantial qualities in an early morning job.
+
+scene tinshape
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : A thumbprint round a pie edge makes a better seal when each mark just meets the next.
+b : Do you pinch hard? | What's wrong with a gap?
+a : Enough to join the layers without cutting a channel right through. A little practice teaches a paw. | A gap can empty half a filling onto the tin. The cleaning up is a rather complete demonstration.
+
+scene drypin
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : I wipe my bird marker clean between lids with different fillings.
+b : Can filling really reach the top? | Is the pattern different when it's wet?
+a : A little fat can. I'd prefer each pie to give a true account of its own flavour. | Very. A clinging crumb can change a neat bird toe into something that looks as though it limps.
+
+scene secretnews
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A bit of talk can get from one counter to another with a whole extra set of feathers attached.
+b : Would you pass it on? | Where would you look for the change?
+a : Only the part I had good cause to credit. I'd leave the feathers for the actual birds. | Ask two tellers which bit each heard directly. Often there's a much smaller but perfectly good body inside.
+
+scene hush
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can lower my voice quite naturally at a chapel door even after a morning of calling fillings across the square.
+b : Does it take a conscious effort? | What does the quiet feel like?
+a : Only the first word. The rest falls to a proper volume once I hear the walls receive it. | Rather like taking a heavy tray out of both arms. One begins to notice what's been there waiting to be seen.
+
+scene hope
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd be pleased to get an answer to my paper with the same little fold it carried when it went in.
+b : Why the same fold? | Would any answer do?
+a : I'd know somebody had used the actual words I took such care to put there. | An honest one. I'd like my position to be clear even if the spot's a little colder than I'd hoped.
+
+scene roofmap
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : One particular ridge across from my counter collects the roof birds for a change of weather.
+b : Do you count them? | Will the birds tell the weather?
+a : I notice which bird breaks ranks first. After that they're moving too freely for my arithmetic. | They'll tell their own minds. The clouds get their share of my attention too.
+
+scene workday
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I can trace a tray's last visits to the counter by the warm arcs in the flour dust.
+b : Can you really count the visits? | Do you keep the pattern?
+a : Only the last few, while the memory of moving that heavy tin is still good in my arms. | One last look, then a clean cloth. Tomorrow's work deserves an entirely new set of marks.
+
+scene brothcorner
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A pie that came apart on me once gave me a perfectly good supper in a bowl.
+b : Did you serve it that way? | Was it disappointing?
+a : To myself. A customer who pays for a sound crust is entitled to receive one. | Less so once I'd eaten the gravy and understood exactly where the pastry had given way.
+
+scene queuepast
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can choose an occupation for every roof bird just by the way each one waits to get on a ridge.
+b : Is there a baker? | Are the birds good at queuing?
+a : The one standing in warm light with an expression of needing three more empty paws is the baker. | By their own rules, excellent. They have fairly relaxed views on whose place was where.
+
+scene shelter
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Warm steam against damp air makes the little stall cover look as though it's wearing a hat of cloud.
+b : Can you work beneath that? | Does it soak the pastry?
+a : For a while. I leave a gap high up so there's enough clear air to see all my toes and tins. | Not if I keep the trays well back from the run of water. Dry crust is a matter of good siting.
+
+scene familyseat
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the least draughty seat for whoever has to eat the last hot portion after a day's work.
+b : Could that be you? | Why does the last portion matter?
+a : It could. I reserve a fair share of kindness for the wolf who is doing the reserving. | Because the last plate deserves to taste as though somebody thought about it too.
+
+story tinrook [topic=work self.job=baker]
+  : I marked a tray of lids with my three long rook cuts and set a spare scrap of dough on the corner.
+  : The scrap puffed up in the oven into a fine raised head, with three very public feet lying all round it.
+  b : Was it fit to sell?
+  : I made that one part of my own supper. It isn't every day a baker gets to eat the model after the sitting.
+
+story snowpaper [topic=weather]
+  : I set my petition copy on the inner sill while the first snow put a cover on the roofs.
+  : When I looked back, the pane had framed a rook exactly over the part of my paper that needed a signature.
+  b : Did it provide the mark?
+  : A handsome tilt of the head and no ink. Considerably quicker than my usual appointment.
+
+story fishcoat [topic=food]
+  : I fried my own portion of fish and left the last corner in butter while the rest was already on the plate.
+  : That corner came out so beautifully crisp that I stood there considering whether to save it for last.
+  b : What did you decide?
+  : I ate it at once while the decision was still mine. The butter was hot and the plate had plenty to offer afterwards.
+
+story copperbird [topic=prices]
+  : I dropped a copper into the till and the sound was answered almost exactly by a bird tapping a roof nail.
+  : I counted the coins twice because I couldn't quite forget having heard the second arrival.
+  b : Had you lost anything?
+  : Nothing at all. I took my true earnings home and left the counterfeit account to the roofer.
+
+story emptytin [topic=work self.job=baker]
+  : I put an empty tin in the warm oven to dry and came round again expecting the scent of a finished pie.
+  : There was the tin, extraordinarily dry, and the whole unbaked pie still resting on its board.
+  b : Did you lose the batch?
+  : Only a few minutes. I've given empty tins a place of their own ever since, which has saved both parties considerable embarrassment.
+
+rule @heat
+when concept=bark self.job=baker self.working=yes
+does aside
+cooldown 8h
+say Stand the tin down before fetching the next. | Three toes in the lid that takes the long bake.
+
+rule @roof
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say A rook up there waiting on a warm tile. | Another fine mark to borrow at the bench.
+
+rule @coin
+when concept=bark self.likes=a_full_till
+does aside
+cooldown 8h
+say Count clean paws and clean coppers separately. | Flour money first out of the till.
+
+rule @bells
+when concept=bark self.dislikes=early_bells
+does aside
+cooldown 8h
+say That bell's a late customer at this oven. | Dough was up before the first stroke.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Look at the roof tracks before they vanish. | First white line along the ridge again.
+
+rule @dark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Strip the last loose crumb from the lip. | Let that empty tin have its own shelf.
+dlg resident.hub : You can see the track along the crust from here. There's a little warmth in this corner too.
+dlg resident.hub [topic.meeting=known] : You've stood by my marked trays before, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll keep the till to myself while you explain your visit briefly.
+dlg resident.hub [here.time=night] : The last of the oven heat should last one quiet conversation.
+dlg resident.job [self.job=baker] : #self.trade_words.capitalize#. I mark the lids so I can tell the fillings apart even in a busy spell.
+dlg resident.job : I can give a little food a sound roof and send it out while it's warm.
+dlg resident.news [world.news] : A bit of talk came over my counter quite plainly. #world.news#.
+dlg resident.news [world.event_words] : I heard mention of #world.event_words# between trays. I'll keep to the part I heard clearly.
+dlg resident.news [world.wagons=raided] : When wagons have been raided I need the actual deliveries before I can promise what I'll have to sell.
+dlg resident.gossip [here.gossip!=yes] : The little space under my stall cover contains pie tins and no private account for a passerby.
+dlg shop.greet [here.shop!=bare] : Welcome over to the stall. I'll describe whatever's available and what each mark represents.
+dlg shop.greet [here.shop=bare] : Nothing left to offer at the counter just now. The empty trays certainly had an industrious day.
+dlg shop.prices : Show me which purchase you're considering. I keep the price as plain to a caller as the filling.
+dlg shop.bye : Enjoy what you carry home before the evening takes its warmth.
+dlg resident.bye : Mind the projecting end of the tin as you leave.
+
+graft @rooksupper resident.hub
+choice Is that bird's foot meant to be on the pie? -> rooksupper
+node rooksupper
+say I put it there. Three long cuts for one filling, smaller marks for the others. A vent lets the steam out and gives a customer a way to recognise supper.
+choice Do the birds know you're using their marks? -> rooksupper_more
+choice Look again at the pastry marks. -> hub
+node rooksupper_more
+say A rook on a ridge is quite free with its signature. I give the originals a few minutes of admiration whenever the tins are resting.
+choice Look again at the pastry marks. -> hub
+choice Leave room near the warm tray. -> bye
+
+graft @weeklypaper resident.hub
+choice Why is an office paper wrapped up beside the clean things? -> weeklypaper
+node weeklypaper
+say It's my copy of a petition. I can take a clean, legible account on each return enquiry. Once flour and ink have met you don't easily get them parted.
+choice Would you take a pie in with the paper? -> weeklypaper_more
+choice Fold the paper into its wrapper. -> hub
+node weeklypaper_more
+say Only as my own lunch for a long wait. I'd want the answer to depend on what I wrote on the page, not what I managed to put under a crust.
+choice Fold the paper into its wrapper. -> hub
+choice Move away from the counter. -> bye

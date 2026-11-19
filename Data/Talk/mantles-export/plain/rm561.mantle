@@ -1,0 +1,257 @@
+mantle rm561
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_wystan_tarstack
+title the odd stair left over
+fits stage=adult|old
+prefers job=servant
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk saves_the_single_stair_for_an_unanswered_riddle
+likes barley_soup riddles quiet_chapel frosty_mornings
+dislikes deep_mud haggling
+fears spending_all_the_ambition_on_appearing_quick
+hopes to_be_trusted_with_the_chambers_most_difficult_hour
+topics work +0.6 pastimes +0.4 faith +0.3 home +0.2
+styles comfort=measured gossip=close refuse=plain tease=none
+marks oath saying
+persona #self.first# climbs by pairs and reserves a single odd stair for a riddle's unanswered word.
+
+words
+oath! = By the odd tread | Heel and last riser
+saying! = Leave one step for the answer | A pair goes quickly till a thought calls halt
+stair = my odd stair | the single unpaired step
+pair = a pair of high treads | two short risers
+rail = the worn inner rail | the smooth banister
+riddle = an unsolved little riddle | a softly twisting question
+bowl = my barley bowl | a bowl of thick barley
+steam = a grey spoonful of steam | the barley vapour
+rag = a soft chamber cloth | a clean wiping square
+chapel = the still chapel air | the empty pew corner
+frost = a clear white edging | the morning frost line
+heel = a neat heel mark | a mark from my sole
+char = a charcoal shaving | a black wood chip
+scar = my pale nose scar | the line across my nose
+
+any
+opinion merchants against 1 : I'd rather climb a whole extra flight than take part in a quarrel over an already stated price.
+opinion city for 1 : My home city has enough different stairs to keep interesting company with a wolf of settled habits.
+opinion church for 1 : The quiet after a riddle and the quiet of an empty chapel have a little in common for me.
+opinion houses mixed 1 : Keeping a House's rooms in order teaches respect for good work, wherever in the building it comes from.
+opinion newcomers for 1 : A new caller deserves a clear direction to the room the first time of asking.
+
+grown
+line greet [pair.band=strangers] : Welcome by the landing. | Come to the level place.
+line greet [self.working=yes] : My cloth's at rest for a word. | A civil greeting between chamber rounds.
+line greet [here.time=dawn] : Morning on the pale stair edges. | A fresh beginning at the bottom.
+line greet [here.time=dusk|night] : Evening. An easy pace from here. | The landing has light enough for talk.
+line kin.open [pair.kin!=no] : There's household room at my banister. | Household voices belong inside.
+line again.open : Another circuit brings us back. | The turn at the landing comes round again.
+line greet.return : Back above the last riser, welcome. | I'm pleased our paths share a landing.
+line greet.return [pair.band=friends|family] : Good to hear a familiar sole on the treads. | Beside my shoulder, there's your welcome.
+line greet.return [self.working=yes] : I can pause without leaving a room undone. | My round admits a welcome here.
+line greet.return [here.time=dusk|night] : Evening has brought us to a common step. | Your tread's clear in the quiet.
+line farewell : A sound next step to you. | Keep something pleasant for the final stair.
+line farewell.return : I'll take the next pair in good company another time. | Finish your way in peace.
+line farewell.return [here.time=night] : A still room above your stair tonight. | May your latch give quietly.
+line react.news : What's the small turn in that account? | Set those words in order for my ear.
+line react.news.new : A question new to this landing. | I haven't reached that piece before.
+line react.news.known : That answer came with an earlier round. | I recognise the turn in those words.
+line react.news.doubt : I'd wait on the last detail before calling that riddle solved. | A neat answer can fit the wrong question remarkably well.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy step. You needn't climb yet. | Rest against the inner rail awhile.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's put a spring under both feet. | Glad of that unusually kindly answer.
+line ask.how : What's given your thoughts a turn today? | Did you find a level moment for yourself?
+line answer.how : I finished two rooms and saved one thought. | My feet are quick and my temper's easy.
+line decline : I'd better give the remaining light to a room I have yet to finish. | I ought to reserve this pause for the work awaiting me upstairs.
+line accept_decline : I'll let that question lie quiet. | You've made your own next step clear.
+line thank : That saved me an unnecessary climb. | I remember the quiet service you did.
+line sympathise : Come breathe on the landing with me. | There's room to stop where the stair turns.
+line reassure : Nobody has to take these steps in pairs. | One pause won't put a sound room in disorder.
+line preclose : I can hear my unfinished round calling. | My cloth ought to go back upstairs.
+
+scene odd
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I climb by #pair# until #stair# remains at the turn.
+b : Do you stop there? | Always an odd one?
+a : For one breath. It's useful to reach a chamber quietly as well as promptly. | In my favourite flight. Elsewhere I slow for the landing by choice.
+
+scene word
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I carry #riddle# up with me and give its last word one step to arrive.
+b : What if it won't? | Ever find the answer?
+a : It may rest on my spare tread till my next round. I've patient habits where words are concerned. | Sometimes halfway through polishing the next room. Puzzles rarely keep regular hours.
+
+scene linen
+when topic=work self.workplace self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# two steps at once are for an empty pair of hands.
+b : What about fresh linen? | Why hurry at all?
+a : A folded load gets every tread. A quick journey undone at the top is an odd sort of economy. | I like having spare minutes for something that requires a careful eye.
+
+scene barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I like #bowl# on a landing with #steam# rising straight off the spoon.
+b : On the stair itself? | Why straight?
+a : Where I can sit properly. Even an ambitious eater should give barley a fair chance to settle. | It tells me my neck will be spared a draught while I'm having supper.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : In #chapel# I let both feet come fully to rest before I make any request.
+b : A long prayer? | Why mind the feet?
+a : Sometimes no request at all. A little attention can turn the whole hour around. | Because they're usually on their way somewhere before my thoughts have caught up.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #frost.capitalize# along a ledge makes a plain ledge look like an answer underlined in white.
+b : What question did you ask? | Would you touch it?
+a : Where the morning light first reaches the house. There's my answer already marked. | I'd spare it until a chamber needs the window opened. Pleasure has some claim on my time too.
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud on the sole doubles the work of an ordinary stair.
+b : Because it sticks? | Would you leave your shoes?
+a : Because I have to undo my own tracks on the way back. The mud is remarkably fond of company. | Where the household allows it. Usually a clean change of sole settles the argument.
+
+scene haggling
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd like to put two merchants with shifting prices on separate staircases and let them call across.
+b : Would that help? | Take the cheaper price?
+a : It would leave the landing free for a customer with one clear question and some honest coin. | Once I've learned which price will still be standing by the time I get there.
+
+scene mark
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : #scar.capitalize# looks sharper in frosty light. I've seen people take it for a freshly drawn frown.
+b : Is it painful? | Do you correct them?
+a : Only to be told I'm in an ill temper when I've just finished a decent riddle. | By speaking in my ordinary voice. A scar can do little against a plain welcome.
+
+scene hill
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A trace of charcoal on a swept sill brings an odd stretch of quiet hillside to mind.
+b : Is the dust welcome? | What do you remember?
+a : The memory is. Black dust has a very short tenure in a clean chamber. | The difference between one footfall in dry wood chips and a whole hall full of hurrying feet.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put a little stair riddle to #self.friend# over barley supper.
+b : What's the question? | What's the prize?
+a : What shortens under a pair of ascending feet? A flight still to climb, if I get to set the answer. | The next question. I consider an endless supply of puzzles a fair exchange for a bowl.
+
+scene ambition
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I want the difficult chamber given to me for the quality of my finishing, not the noise of my speed.
+b : What makes one difficult? | How would somebody know?
+a : A room used again before the cloth is quite dry. You have to plan where your own feet finish. | Look at the last unused minutes and the first guest's ease. Neither makes a great announcement.
+
+scene hall
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : On #self.street# I can tell when I've left my working pace behind.
+b : How can you tell? | Does it last?
+a : I cease counting the pairs. A homeward stair is allowed an unremarkable number of steps. | Until morning if there's nothing spilled and no riddle at the very top.
+
+scene ink
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A riddle's missing word is pleasant. A rumour's missing witness is considerably less so.
+b : Would you pass either along? | Why the difference?
+a : The riddle, certainly. A rumour carried upstairs doesn't become sounder for the higher air. | Everyone hearing the puzzle knows I'm withholding a word. That's an honest bargain.
+
+scene newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I tell a caller which hand to keep on #rail# right up to the landing.
+b : Easier than counting? | Which hand?
+a : Many callers lose their count halfway up when meeting somebody halfway. A rail will wait for the hand. | Depends which room is wanted. I don't give an answer before I've got the question.
+
+scene desk
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I fold #rag# with a clean quarter uppermost before entering each room.
+b : A sign that it's done? | Why quarters?
+a : A sign that I've begun the next one with a clean face to my work. | Eight folds are bulky in my pocket. A good idea can stand a practical limit.
+
+scene distant
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a chamber left in my charge through a whole difficult season.
+b : No rest at all? | What would you change?
+a : A season includes the right hour to leave a room in peace. Knowing that is part of my ambition. | Anything that sends a tired caller up or down for what ought to have been ready.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed every stair in the house came in pairs except the last one, which had the shape of a question mark.
+b : Could you step on it? | What was the answer?
+a : My heel fitted the dot. I woke before finding a comfortable place for my toes. | There's some dignity in admitting when one has climbed into a rather elaborate mistake.
+
+story oddstep [topic=memories]
+  : I once hurried upstairs rehearsing a riddle's difficult answer. My feet reached the spare single step before my mind did and I sat down rather abruptly.
+  : The answer was something that brings a traveller to rest without offering a chair. I had just discovered a version the riddler hadn't intended.
+  b : Did it hurt?
+  : My dignity needed a minute. I reserve a deliberate pause for that stair these days.
+
+story broth [topic=food]
+  : I carried a barley bowl upstairs feeling very pleased with the two whole spoonfuls I hadn't spilled. At the landing I realised the spoon itself was downstairs.
+  : I came back at a sensible pace. Some efficient journeys improve when you look at the entire supper before setting out.
+  b : Was the soup cold?
+  : Still warm, and the spoon was waiting exactly where I'd put it. I've had more obscure riddles.
+
+story charcoal [topic=work self.job=servant]
+  : A black speck once proved impossible to rub from a chamber window. I was considering the strength of the glass before noticing the smell of charcoal.
+  : The speck was on my own paw and kept following the clean cloth about. I changed my cloth and my opinion of the window at the same moment.
+  b : Was the chamber ready on time?
+  : With one minute left to admire the first frost outside. I have a fair regard for a minute honestly saved.
+
+rule @aside1
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 6h
+say Empty paws may take the pair. | A clean cloth face into the next chamber.
+
+rule @aside2
+when concept=bark self.likes=riddles
+does aside
+cooldown 7h
+say An odd step left for the last word. | There's another answer if I turn the question.
+
+rule @aside3
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say The ledge has underlined its own edge. | White sill, very clear sunrise.
+
+rule @aside4
+when concept=bark self.likes=quiet_chapel
+does aside
+cooldown 9h
+say Both feet still before the prayer. | A quiet pew leaves an honest pause.
+
+dlg resident.hub : Stand on the landing where a passing thought can stop awhile. I've time before the next room.
+dlg resident.job [self.job=servant self.trade_words] : My work is #self.trade_words#. A sound finish leaves me a minute to look at the morning.
+dlg resident.news [world.news] : This report came up as I was finishing a round. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, a familiar footfall at the pause in my stair.
+dlg resident.bye : May the last odd step bring a pleasant answer.
+
+graft resident.hub
+choice What's the unanswered stair riddle? -> riser_question
+node riser_question
+say What grows shorter under your feet even as you rise? The flight you've left to climb. I save one extra step for anyone who thinks of a better answer.
+free
+choice Why leave one step for thinking? -> riser_thought
+choice I'd say a morning shadow might do it. -> hub
+node riser_thought
+say I'm quick enough on a stair. It's the chance to arrive at the top with a clear head that might one day earn me the harder rooms.
+choice I'd trust a clear head with a busy house. -> hub
+choice Good luck on the next flight. -> bye

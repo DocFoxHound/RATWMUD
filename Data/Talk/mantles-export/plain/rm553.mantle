@@ -1,0 +1,396 @@
+mantle rm553
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_tilde_nailby
+title the gate guard's unthrown die
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk carries_one_die_to_mark_undelivered_calls
+likes pickled_herring dice fresh_straw summer_evenings
+dislikes early_bells bad_manners
+fears a_letter_left_at_the_wrong_door a_slick_double_step
+hopes a_signed_receipt a_quiet_evening_rail
+topics work +0.5 pastimes +0.4 travel +0.3 weather +0.2
+styles comfort=practical gossip=guarded refuse=firm tease=none
+marks oath saying
+persona #self.first# takes paired steps at a brisk pace, reserving a bone die for counting calls at a lord's door that have yet to yield a receipt.
+
+words
+oath! = Chip my sixth spot | Scuff both heels
+saying! = The die needn't roll to count | A closed door earns another spot
+dieone = the bone die | my pale die
+pips = the black pips | those inked spots
+crease = the receipt fold | a dry fold
+tie = the tied wrapper | the grey tie
+rail = a worn stair rail | the long rail
+bottom = the bottom tread | a square first step
+strawpad = a fresh straw pad | a braided straw square
+sharpend = the tail of the herring | a neat fish tail
+saltlid = the little brine lid | a screwed tin cover
+rimstone = the raised stone rim | a low stone lip
+lightmark = a long gleam | a late streak of light
+patchbook = my delivery slip | the narrow slip
+pairwalk = a two-step climb | my double stride
+shut = a silent knocker | a quiet door ring
+cupdice = a plain dice cup | the covered cup
+tooth = a chipped corner | a small flat spot
+
+any
+opinion @1 watch for 1 : I know which feet have stood on gate stone all night. I can respect a duty without praising every decision.
+opinion @2 city for 1 : The long stairs are measured in my legs. I could get home reading a letter by knowing the steps underfoot.
+opinion @3 road for 1 : A road is a piece of public business. Somebody ought to notice each damaged stretch.
+opinion @4 dole against 1 : I'd sooner see sound work ready for a waiting wolf than another morning spent standing for a bowl.
+opinion @5 houses mixed 0 : A fine door can shut as quietly as a poor one. I expect the same receipt from either.
+opinion @6 strangers mixed 0 : The first greeting tells me about manners. The rest takes more than a greeting.
+opinion @7 festivals mixed 0 : I like the long evening after the stalls close. The crush before closing is less to my taste.
+opinion @8 merchants mixed 0 : A clean gate slip keeps a trade cart moving. An overlong account of its owner's virtues only holds it up.
+
+grown
+line @1 greet [pair.band=strangers] : Stand level with the first step. We can speak there.
+line @2 greet [here.time=dawn] : A little dawn light. A little too much bell.
+line @3 greet [here.weather=rain] : Find the ridged flag before you turn toward me.
+line @4 greet [self.working=yes] : One at a time across the line, please.
+line @5 greet.return : A civil opening counted in your favour.
+line @6 greet.return [pair.band=friends] : A familiar face beside the covered cup.
+line @7 greet.return [here.time=dusk] : Room in the evening for one more voice.
+line @8 farewell : Set your first step down square.
+line @9 farewell.return : Your end of this visit is clear.
+line @10 again.open : Another spot turned up for the same caller.
+line @11 kin.open [pair.kin!=no] : Family can stand inside the little rail.
+line @12 hail [pair.band=friends] : Here, by the double tread!
+line @13 react.news : State what reached you and how it arrived.
+line @14 react.news.new : No mark of that on my earlier slip.
+line @15 react.news.known : That visit already has a spot against it.
+line @16 react.news.doubt : A loud knock isn't proof the right wolf heard.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : I'll keep this step clear till the worst weight lifts.
+line @18 react.news.glad [topic.kind=birth|marriage] : A welcome arrival. I'll gladly make room for that.
+line @19 answer.how : Steady enough for two steps at once.
+line @20 decline : That wouldn't leave me time to carry out a promise already made.
+line @21 accept_decline : One plain refusal is as serviceable as six.
+line @22 sympathise : Leave the weight here a minute. I'll give you room.
+line @23 thank : That saves a second set of stairs for my heels.
+line @24 deflect_thanks : The extra pace was already in my stride.
+line @25 preclose : I've still a call to make before the evening goes.
+line @26 accept_preclose : Clear passage. Use your time well.
+line @27 farewell [here.time=night] : Mind the shallow tread the shadows miss.
+line @28 greet [pair.band=friends] : A known walker. I'll clear you a landing.
+line @29 preclose [here.time=dusk] : Daylight will just cover one uphill call.
+line @30 answer.how [self.working=yes] : Both heels down and the passage moving.
+line @31 farewell.return [here.weather=rain] : One step at once on wet stone, even for me.
+
+scene die
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I don't throw #dieone# when there's a letter to deliver.
+b : Why does a letter put an end to your game?
+a : I turn the face one spot at each closed door. Throwing would wipe out my afternoon.
+
+scene fish
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I pack #sharpend# pointing away from #crease#.
+b : Do you expect a fish to sign your receipt?
+a : No. I expect the brine to respect its boundary inside my lunch bag.
+
+scene straw
+when topic=smalltalk self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail / assess
+a : I put #strawpad# down exactly where I stand for the evening.
+b : Is the stone very hard on a pair of heels?
+a : It's the cold that travels upwards. Fresh straw gives it a longer road.
+b : A small kindness to the legs that climb those stairs.
+
+scene summer
+when topic=weather self.likes=summer_evenings
+does tell.plan / ask.detail / answer.detail
+a : I'll try a longer way home on the next light evening.
+b : Will it take you farther from the gate?
+a : No farther than the wall shadow. I like to see that shadow stretch while I walk.
+
+scene earlybell
+when topic=season self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : A bell before dawn cuts the fine last stretch off a night's rest.
+b : Does it matter if you're already up?
+a : It does. My ears can still be enjoying the quiet after my boots have started.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / disagree / concede
+a : A visitor who shoulders past owes the whole line a word.
+b : Is a word enough for somebody kept waiting?
+a : It opens the matter. The visitor can then go back and take a proper place.
+
+scene gateturn
+when topic=work self.job=guard self.workplace
+does tell.self / ask.detail / answer.detail
+a : I hold a gate out in #self.workplace#. I know the ground by heel wear.
+b : Which stone takes the worst rubbing?
+a : The one where a caller turns to let the next cart through. Everybody turns there eventually.
+
+scene door
+when topic=work
+does tell.feeling / sympathise / assess
+a : I've a lord's letter still riding inside #tie#.
+b : Does the waiting get under your coat?
+a : It does literally. I carry the paper there on a wet climb and try another day.
+
+scene twoheel
+when topic=land
+does tell.self / react.self / assess
+a : I take two at once up the longer flights, even when nobody's calling.
+b : Does that truly shorten the distance?
+a : No. It gives the legs a long rhythm that makes an ordinary stair feel new.
+
+scene receipt
+when topic=gossip
+does give.opinion / disagree / concede
+a : I'd rather a blank delivery slip than an obliging stranger's name.
+b : What if the stranger properly belongs at the door?
+a : Proper business can wait for the proper hand. I'll keep #patchbook# empty till then.
+
+scene friend
+when topic=friends self.friend
+does offer / accept / assess
+a : I keep #cupdice# handy when I'm off duty and #self.friend# is free for a game.
+b : Wouldn't another cup serve just as well?
+a : Not one with a chip throwing a die sideways. I keep the good cup for company.
+
+scene boss
+when topic=work self.job=guard self.boss
+does tell.self / ask.detail / answer.detail
+a : I take the plainest account I can to #self.boss# at the change.
+b : What part goes in first?
+a : Anything still waiting to be settled. The completed part won't keep another wolf standing.
+
+scene dicecorner
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Would you keep a bone die with #tooth# on one edge?
+b : Keep it for counting and throw a square one for stakes.
+a : Exactly. The edge makes a nice thumb rest while I'm standing at a closed door.
+
+scene wait
+when topic=smalltalk
+does offer / accept / assess
+a : There's an unclaimed end on #strawpad# if your feet ache.
+b : I could use one dry foot at a time.
+a : Start on the side nearest #rail#. That part hasn't had a wet boot on it.
+
+scene priceq
+when topic=prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : A thin week makes me wonder who's eaten before the morning queue forms.
+b : Could you leave something small where a waiting wolf can reach it?
+a : A bit of herring wrapped separate wouldn't cost the waiting wolf a place in line.
+
+scene late
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A delayed cart can move its shadow across half a gate before a wheel appears.
+b : What casts that shadow without the cart?
+a : Waiting wolves shifting after each rumble. You can watch the whole line lean.
+
+scene pocket
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I learnt early how many marks will fit a little piece of bone.
+b : Why six when a paper could hold sixty?
+a : A hand knows six by touch. Paper needs light and eyes and often a dry landing.
+
+scene daydream
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I picture a door opening before I lift the knocker.
+b : You must have tried that landing many times.
+a : Enough to know how heavy it feels to lift #shut#. I'd like the next weight I feel to be a receipt.
+
+scene brine
+when topic=food
+does tell.plan / ask.detail / answer.detail
+a : I'll wrap #saltlid# in a second cloth before the long climb.
+b : Does the lid leak on your papers?
+a : It hasn't yet. I'd prefer that answer to stay true.
+
+scene reports
+when topic=lore
+does give.opinion / disagree / concede
+a : I prefer a plain witnessed report to the loudest voice in the street.
+b : Even when the quiet witness is uncertain?
+a : Especially then. A wolf willing to say where sight ended helps me place a fact.
+
+scene boots
+when topic=travel
+does tell.self / react.self / assess
+a : A doubled stride works on a stair and very poorly on a busy square.
+b : Do you have to remind your legs which way you're going?
+a : Only when the line begins moving after a wait. The first yard's a negotiation.
+
+scene grip
+when topic=smalltalk
+does ask.advice / give.advice / assess
+a : What keeps a knotted packet shut without wrinkling the wax?
+b : Tie your cord round a slip of stiff card over the seal.
+a : I'll cut the card with rounded corners so it won't wear a hole in my lining.
+
+scene summerlight
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I like #lightmark# to reach the last of #rail# before I leave.
+b : Does it tell you the time?
+a : It tells me there's enough evening to come back by the view instead of by the shortest flight.
+
+scene upstairs
+when topic=dreams
+does tell.worry / reassure / assess
+a : Sometimes I dream #bottom# follows me all the way uphill.
+b : A climb that keeps its first step sounds exhausting.
+a : It is until I remember I can sit down on it. Dreams do have their useful rules.
+
+scene rank
+when topic=work
+does give.opinion / disagree / concede
+a : A folded letter shouldn't get a quicker answer because I wear a gate badge.
+b : What does the badge change at the door?
+a : The duty to carry a truthful account back. It buys nobody else's hand on the page.
+
+scene courtesy
+when topic=smalltalk
+does offer / accept / assess
+a : You can take the first throw. I'll keep #pips# in clear view.
+b : Good. I'd rather see the bones between us.
+a : As is proper. Any throw that goes over #rimstone# can be made again in the open.
+
+scene strawstack
+when topic=work
+does tell.plan / ask.detail / answer.detail
+a : I'd move the spare straw away from the door swing.
+b : Does it catch under the hinge?
+a : Only the longest stalks. They make a surprising catch after a long turn on duty.
+
+scene harbour
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A delivery to a lord by the wharf can be longer in the last yard than all the way down.
+b : No reply at the house?
+a : The owner has to take this one. I won't decide to whom a private letter belongs.
+
+scene nightwalk
+when topic=friends
+does tell.feeling / sympathise / assess
+a : A quiet friend makes the climb home feel less like a continued round.
+b : Does it matter if you keep the same pace?
+a : We can meet at the next landing. A friendship needn't be marched in step.
+
+scene dicefood
+when topic=food
+does tease / tease.return / laugh
+a : My herring tin sounds like a dice cup in a loose pocket.
+b : I hope the bones don't come out pickled.
+a : The proper lid will keep my supper from having to win its own game.
+
+story sixdoors [topic=work]
+  : I once came down after turning my die through all six faces at one door.
+  : I thought about scratching a seventh mark underneath.
+  b : Where would the old count have gone?
+  : Nowhere. One knot in my cord stood for six. Then I started counting spots again. There's always more string than bone.
+
+story branpip [topic=pastimes]
+  : A bit of bran stuck in a dark spot and changed a six into a five.
+  : I lost a friendly throw by the difference.
+  b : Did you ask to count it again?
+  : I blew the spot clean and left the first throw standing. Supper had had its little share.
+
+story stepseat [topic=land]
+  : I once finished a long climb with one bootlace trailing three steps below.
+  : I had climbed too fast to catch it underfoot.
+  b : How did you come down?
+  : Sitting to tie both boots first. I know when a single step will serve me better.
+
+story brinepaper [topic=food]
+  : I shook a parcel at lunch and heard a soft slosh where the paper was meant to be.
+  : I opened it under the gate eave.
+  b : Had you pickled your letter?
+  : Only my spare string. The lunch wrapper had been carrying a remarkably tidy coil.
+
+story doublemoon [topic=weather]
+  : Summer light once gave me two little moons below the stair rail.
+  : Both moved when I took one step sideways.
+  b : Which puddle held the real moon?
+  : Neither. Two bright nail heads had caught the light. They left my boots perfectly dry.
+
+rule @strawstand
+when concept=bark self.working=yes self.job=guard
+does aside
+cooldown 8h
+say Make a square pad. Plenty of standing yet.
+
+rule @stepclear
+when concept=bark self.working=yes self.job=guard
+does aside
+cooldown 8h
+say One space clear at the turn, please.
+
+rule @dryfish
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say Brine on the tin side. Paper on the other.
+
+rule @pipturn
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say Up one spot. No throwing this bone today.
+
+rule @sundownrail
+when concept=bark self.likes=summer_evenings
+does aside
+cooldown 8h
+say Last light just crossing the rail now.
+
+rule @strawtuck
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Turn the rough ends under the mat.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#. You can speak your business on the first landing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've seen your tread on these steps before.
+dlg @3 resident.hub [here.time=night] : The stairs are harder to read after dark. Stand here.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep the rail between us and give me your words.
+dlg @5 resident.job [self.job=guard self.workplace] : My gate round takes me through #self.workplace#. Letters are the part that keeps me climbing after the round.
+dlg @6 resident.job : Before turning home I count whoever is waiting.
+dlg @7 resident.bye : Let the lower landing clear before you descend.
+dlg @8 watch.hub [here.wanted=yes] : We have a matter of #here.fine# pennies to clear before you go.
+dlg @9 watch.hub [on_watch=no] : My watch is over. Keep the matter short and civil.
+dlg @10 watch.crime [here.witnessed=0] : Begin with the detail your own eyes caught. I can leave an uncertain line blank.
+dlg @11 watch.fine [here.wanted=no] : There's no fine counted against you here.
+dlg @12 watch.fine [here.wanted=yes] : The sum standing against you is #here.fine# pennies.
+dlg @13 watch.reported [topic.reported=yes] : Your report has its place in the account now.
+dlg @14 watch.bye : Give the wolf coming through a clear turn at the rail.
+
+graft resident.hub
+choice Why don't you throw that die? -> doorbone
+node doorbone
+say It marks calls at a closed door. One careless throw and I might have to climb a staircase twice to satisfy myself.
+choice What counts as a proper call? -> callmark
+choice We can leave it in your pocket. -> hub
+node callmark
+say I arrive with the paper dry and ask for the hand to whom it belongs. The answer can be no. That still counts as calling.
+choice Speak of another thing. -> hub
+choice An easy climb to you. -> bye
+
+graft watch.hub
+choice Where can a tired traveller wait? -> gatemat
+node gatemat
+say Clear of the turning stone. There's a straw pad by the rail where a traveller can rest with the gate directly in view.
+choice May I leave my parcel there? -> parcelwait
+choice Back to gate business. -> hub
+node parcelwait
+say Keep it beside your own boots. My duty is to keep the passage clear. Private parcels need their bearers.
+choice I've more to ask the watch. -> hub
+choice Good evening at the post. -> bye

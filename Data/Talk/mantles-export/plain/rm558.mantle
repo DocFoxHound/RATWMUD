@@ -1,0 +1,332 @@
+mantle rm558
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ulf_stanmore
+title the four-coal choir
+fits stage=young|adolescent|adult|old
+prefers job=child piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=ambitious
+quirk sets_four_lucky_coals_in_voice_order_to_practise_a_round
+likes plum_tart singing tidy_house summer_evenings
+dislikes rats deep_mud
+fears four_households_singing_against_one_another
+hopes a_harmony_that_outlasts_the_first_winter
+topics pastimes +0.6 faith +0.5 family +0.4 season +0.3
+styles comfort=sing gossip=careful refuse=plain tease=measured
+marks oath saying
+persona #self.first# stands four pocket coals in voice order, rehearsing a round in which each part leaves room for the next.
+
+words
+oath! = My four flat notes | A pocket full of basses
+saying! = Even a rest has a place | Leave room for the fourth voice
+choal = a little coal singer | the dark chorister
+basscoal = the square bass | my heavy voice
+thincoal = the high thin one | my bright note
+roundedge = the round alto | the curved singer
+emptybeat = a clean rest | the quiet count
+songstep = a measured entry | the first beat
+plumpiece = a plum crescent | the glossy slice
+pantrysill = the clean shelf lip | the high safe edge
+mudboot = a heavy sole | the sucking mud
+eveninggleam = a late gold strip | the last bright edge
+cleancloth = a folded sky cloth | the choir wrap
+notechip = a small fleck | the tuning chip
+
+any
+opinion houses mixed 0 : Four households can each sound impressive alone and still make a dreadful noise starting at once.
+opinion church for 2 : A song for the Bright One can include my small voice alongside the voices of trained singers.
+opinion city for 1 : All these city roofs leave room for more than one good part in a song.
+opinion festivals for 1 : Listening for the next singer's entrance makes a crowded festival kinder on the ears.
+opinion newcomers for 1 : A new voice should have a turn before we decide which note suits it.
+opinion dole for 2 : A hungry singer has very little breath to lend to the fourth verse.
+
+young
+line greet : Hello. I've four singers here if you count the round one. | Welcome. Your entrance can follow this rest.
+line greet [pair.band=strangers] : A new listener for my pocket choir. | Hello. You can take the quiet place by the short singer.
+line greet [here.time=dawn] : Morning. I start my high note early. | First light puts a shine on the bass coal.
+line greet.return : Yes, hello. I've counted the fourth one in. | The choir can keep quiet while I hear you.
+line greet.return [pair.band=friends|family] : Your voice fits the second part beautifully. | Come beside the curved singer again.
+line greet.return [here.time=night] : A soft hello from my late evening choir. | I haven't put the dark singers away quite yet.
+line again.open : Back before we sing the final bit. | The same small choir has room for another ear.
+line hail [pair.band=friends] : Come hear four singers who don't make a noise! | Stand beside my round one for a moment!
+line farewell : Carry a cheery refrain down your home road. | May the last note stay pleasant.
+line farewell.return : I'll wrap the choir before the walk gets muddy. | I'll keep the little bass out a moment longer.
+line react.news : Start where the first voice came in. | My coals can rest while I hear your voice.
+line react.news.new : That's a fresh part for my dark singers. | No one put that verse in my ear before.
+line react.news.known : My little choir knows that ending. | Same old tune with a different cough in it.
+line react.news.doubt : That verse comes in before its own first note. | I'd want to hear the wolf who started it.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : The quiet part is yours when speaking hurts. | I'll put the singers away while you feel sad.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good! All four can come in for that. | I'd give happy news a nice long high note.
+line ask.how : How does today sound in your ears? | Got a good strong note to start from?
+line answer.how : A bit low, but my bass doesn't mind. | I'm all right when I keep a count for the next voice.
+line decline : My fourth beat is already promised to the little choir. | I'd have to drop a part I've agreed to sing.
+line accept_decline : Then I won't make you take the high part. | A rest is allowed there. I'll mark one.
+line preclose : I'll have to wrap my singers up now. | It's getting near the end of my small verse.
+line accept_preclose : Go. The choir can manage its own ending. | We'll stop on the note we both found.
+line thank : You helped a quiet voice come in. Thank you. | That made my little tune much brighter.
+line deflect_thanks : I just left the small voice a bit of room. | It cost a rest I could spare.
+line sympathise : My little choir can hold its breath with you. | I'll sit where one small sad word can find me.
+line reassure : We can take one breath before the next hard note. | I can hold the count till you're ready.
+line ack : Yes. I think that's the right beat. | That comes in at the place I heard.
+line give.advice : Put your quietest singer just where the face is visible. | Wrap the coals before you put on a clean coat.
+
+young
+
+scene fourcoals
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : Four coals are my choir. I give the largest a low hum and the little shiny one the top.
+b : How can they all sing together? | What does the round one sing?
+a : I hum each part, then imagine the others still going. It's a very busy head for four bits of coal. | A note that fits in the gaps. That part has quite a lot to remember.
+
+scene fourhouses
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I think the Houses might quarrel before winter. Four voices trying to take the first note could spoil a whole song.
+b : Have they quarrelled already? | How would you stop it?
+a : It's my worry, not news. I haven't heard a quarrel through anybody's door. | I'd give each a time to begin and ask the rest to listen. A coal choir is easier to arrange, of course.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I arrange the lesson in four bits and give each singer something to remember. Then the long question doesn't seem so enormous.
+b : What if there are five bits? | Does the teacher sing?
+a : The quiet space after the last voice gets a little job. A rest can remember something too. | I keep the tune inside my own head unless singing is actually the lesson.
+
+scene motherfamily
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd like #self.mother# to hear all four parts before I put the coal singers away.
+b : Why wait for all four? | Which part would you start with?
+a : Because the last one is meant for home. I want the song to get that far. | My bass. It stays very still, so I can find its note when my ears feel shy.
+
+scene fatherfamily
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I could give #self.father# a grand welcome with one verse each from my four singers.
+b : Would four welcomes be rather long? | Could a coal bow?
+a : Not if each has one short note and I let the welcome proper come through at the end. | The round one rolls over quite elegantly. I have to keep a finger in front of the bass.
+
+scene faithsong
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I practise one small tune in praise of the Bright One. There's a proper rest before its last note.
+b : Why have a rest there? | Is it a song about coal?
+a : So a wolf with shorter breath than mine could still sing the ending. | No. Coals remind me of my four parts. The prayer is about making a little room for every singer.
+
+scene crookedchoir
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : At home my singers line up on my freshly folded choir cloth. If I wash the cloth I know I have four to put back.
+b : Does the order matter? | Isn't coal awfully dirty?
+a : Yes. The bass takes up most of the left side, and I don't want it sitting on the thin voice. | I keep the smooth ones and wrap them. A good tidy room ought to allow a well-behaved choir.
+
+scene plum
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I divide my slice of plum tart where the little lumps of fruit make four good notes.
+b : Are you sharing with the coals? | What if you find only three plums?
+a : Only letting them watch. A sticky bass makes an appalling mark on a white collar. | The fourth bit can be a pastry rest. Some rests are particularly nice to eat.
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : Deep mud makes each step late like a singer who forgot to breathe.
+b : Would a bigger boot help? | Could you carry the tune over it?
+a : A bigger boot would make a bigger noise getting loose. I'd like a drier place to stand. | I've tried. By the time my foot comes out I'm a whole bar behind myself.
+
+scene rat
+when topic=animals self.dislikes=rats
+does warn / react.self / assess
+a : I keep plum on a proper covered plate. A rat would take the whole choir's supper in one selfish turn.
+b : Would a coal scare it? | What about crumbs?
+a : I wouldn't throw my singers at anyone. A sound cupboard door does a perfectly good job. | I wipe the table after my last verse. No applause in the pantry, please.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : Summer evenings leave enough gold for the smallest singer to keep shining through a second round.
+b : Why a second round? | Do the notes shine?
+a : I can get the last entrance a little better when nobody has to ask me to put everything away. | The coal does, where there's a bright patch. My own voice must manage without any polish.
+
+scene kinfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd invite #self.friend# to choose a singer in my pocket choir. Then I'd only have three parts to mind.
+b : What if the bass is chosen? | Will you tell which note to give?
+a : I'd enjoy hearing what somebody else thinks a heavy square coal ought to sound like. | Only for the first round. Then we can find a tune the two of us are equally pleased to hear.
+
+adolescent
+line greet : Welcome. The old pocket choir can manage a public rehearsal now. | Come by the edge I left free for listeners.
+line farewell : A clear rest before the next demand on your breath. | May your part be easy to hear at home.
+
+scene quietname
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to give four coals a complete choral education. I found I was my own most heavily employed pupil.
+b : Do you still own the four? | What lesson lasted?
+a : In varying sizes. The pieces wear, whereas a good count can be kept with empty fingers. | Listening for the part that's being crowded out. Anybody can hear the loud one.
+
+scene warnsnow
+when topic=season
+does give.opinion / react.self / assess
+a : When I worry that the Houses will quarrel, I try to say precisely what I've heard and what I've merely imagined.
+b : Why worry aloud at all? | Is a winter quarrel certain?
+a : Because asking someone sensible can show me where my impression stops and the actual evidence begins. | No. I have a youthful fear and a reasonable hope that my judgement is much too gloomy.
+
+grown
+line greet : Welcome. There's a comfortable resting note for us here. | You find me keeping a quiet count.
+line greet.return : Hello. The singers are wrapped and I have a listening ear. | I've put the fourth voice down to hear yours.
+line farewell : An unhurried breath before the last note of your day. | A plain tune to ease the longer walk home.
+line farewell.return : I'll keep the remaining cadence in hand. | I'll wrap the coals and call the rehearsal done.
+line react.news : Give the event its own voice before we add commentary. | I'll hear the report while my other parts remain silent.
+
+scene memorycloth
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The finest shelf I've ever kept held four plain coals arranged to suit the voices I heard in my head.
+b : Why call a little shelf fine? | What happened to the singers?
+a : It held as much pleasure as I had imagination for. I can think of few finer qualifications. | I've worn several sets quite smooth. A choir ought to go on learning new voices.
+
+scene choirwork
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : When friends sing together I listen to the chest taking its breath before the note. That's where a generous rest belongs.
+b : Can you hear something so quiet? | Would a longer rest help?
+a : I can see a shoulder move, too. There are more ways to attend to a voice than hearing it ring. | One well-placed beat will often serve. A rest is part of the music as much as any note.
+
+scene cleanhouse
+when topic=home self.likes=tidy_house
+does tell.feeling / react.self / assess
+a : I enjoy a tidy room with four small places left ready for the ordinary things that will come home in a pocket.
+b : Why four places? | What occupies those four places?
+a : Entirely an old habit from arranging a choir. Four has suited my shelves unusually well. | A little folded cloth and whatever the day's walking has suggested as a possible singer.
+
+scene politic
+when topic=lore
+does give.opinion / react.self / assess
+a : A council easily mistakes a loud unison for agreement. Four civil differences can make a much healthier sound.
+b : Is that something you have witnessed? | How should each part begin?
+a : It's an opinion drawn from singing in company. I claim no seat at a council table. | After listening to the previous voice long enough to understand which question is being answered.
+
+scene faithold
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : My prayers still have a resting beat near their finish. A breath can itself be part of a petition.
+b : Does silence count as praise? | Has the tune altered?
+a : When it leaves room to hear what somebody else is asking for, I believe it does. | Much more than the pause has. The pause suits all sorts of words.
+
+scene marketshare
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : Cut a plum tart into shares by examining the fruit under its crust. Angles alone don't indicate the generous piece.
+b : Which would you choose last? | Must the pieces be exactly equal?
+a : The smallest wedge with the darkest visible plum. A surprising balance can be struck that way. | Only fair enough for the guests to stop measuring and enjoy the company.
+
+scene tideline
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : I time a muddy crossing by the slowest foot in the company. A splendid pace in front leaves bad music behind.
+b : Why call it music? | Would you carry a bundle?
+a : I've listened to enough unhappy boots to know when a party has lost a comfortable common rhythm. | A share of it, gladly. Four hands arranged sensibly can keep quite a respectable measure.
+
+scene gracious
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A new singer should hear the whole tune once before anyone decides the newcomer has missed an entrance.
+b : What if the singer knows it already? | Why sing through it first?
+a : Then the second time will give us the pleasure of a confident beginning. | Each household leaves its pauses in slightly different places. It's worth learning where this particular quiet belongs.
+
+scene newsfull
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : The account from #world.news_from# runs like this. #world.news#. I'll keep the rest after the last fact clear.
+b : Will you add your opinion? | Is the source important?
+a : Only if asked and with the distinction made plain. An opinion shouldn't claim a fact's place in the score. | As important as which singer began the round. Hearing a second voice doesn't prove there's a second witness.
+
+scene warmhour
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer light lingers long enough for a familiar tune to lose its performance manners and sound like a household again.
+b : What goes first? | Does it still need practice?
+a : The grand first note. Somebody begins quietly, somebody joins, and before long we're simply singing. | Sometimes. Practice is pleasantest when it can stop long before anybody's patience runs out.
+
+scene carefriends
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# an honest hearing on the subject of a tune I've spent years trying to finish.
+b : Does an old tune need changing? | Would you keep another ending?
+a : Only if there's something it still means to say. Time spent isn't evidence of perfection. | I'd keep both endings if each gave honest pleasure. An old friendship can bear two opinions of a cadence.
+
+scene wintersdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like four households to arrive at winter with a song in which every entrance is willingly offered.
+b : Do you mean a real song? | How would you teach it?
+a : A real song would be an excellent start. Wolves doing an ordinary thing together have less time to practise grievances. | I'd let each household bring one line and begin with the quietest. The rest can learn some patience.
+
+young
+
+story roundbass [topic=pastimes|memories]
+  : I placed all four singers along one chair corner. Sat on the far side to conduct them. The round one rolled into my lap.
+  : I sang the other three parts and waited for the runaway voice to remember its entrance.
+  b : Did it come back in?
+  : Once I levelled the chair. My first tenor needed furniture quite as much as instruction.
+
+story lastslice [topic=food|memories]
+  : I arranged four little tart crumbs for an imaginary supper. Counted them, then put my bass coal on the same plate.
+  : Suddenly I could see five things without being sure which was the berry and which was the smooth black stone.
+  b : Did you taste them to find out?
+  : Daylight from the window fell across my plate. The plum glistened and the bass stayed solemn. I like knowing my singers by sight.
+
+story goldcloth [topic=season|memories]
+  : I spread the singers on a pale cloth during a long summer evening. The sun went orange and each coal cast a tall, narrow shape.
+  : There was a second choir, upright on the wall behind the real one.
+  b : Did those singers have a different tune?
+  : A very long, quiet tune. It faded when the light did. They knew when to finish without my counting.
+
+rule @entry
+when concept=bark
+does aside
+cooldown 8h
+say Bass first. The little round one comes after the rest. | A patch of cloth for every voice.
+
+rule @learn
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say Four parts to this question and a free beat after every part. | My bass remembers where the lesson started.
+
+rule @pantry
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Plum plate covered before the singing begins. | The pantry isn't an audience for crumbs.
+
+rule @summer
+when concept=bark self.likes=summer_evenings
+does aside
+cooldown 8h
+say Another whole round before the gold leaves the sill. | Even the little high coal catches this light.
+
+dlg resident.hub : I've got all four singers inside the proper edge of my cloth. You can hear what I'm making them practise.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your listening place beside the bass is still free.
+dlg resident.hub [here.time=night] : The singers hardly show after dark but I can feel their shapes in order.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll keep my choir in my hand while I hear the reason for your visit.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. The pocket choir helps me remember where each part of a long answer begins.
+dlg resident.job : I like occupations where a quiet contribution gets a clear place to come in.
+dlg resident.bye : I hope your next verse has a comfortable resting beat.
+
+graft resident.hub
+choice Which piece of coal is the bass singer? -> bassvoice
+node bassvoice
+say The square one that stays put when the others wobble. I hold a low note for it and count two beats before calling in the next little singer.
+free
+choice Does any singer get to choose its own entrance? -> coalentry
+choice I can hold the low note. -> hub
+node coalentry
+say The round one. It rolls across my cloth and I give it a note where it stops. I like one singer in the choir that doesn't always follow my instructions.
+choice Let's give the rolling singer a turn. -> hub
+choice I'll leave on the resting beat. -> bye

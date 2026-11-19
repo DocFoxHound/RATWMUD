@@ -1,0 +1,287 @@
+mantle rm568
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_humphrey_sootton
+title the boot's berry stitch
+fits stage=young|adolescent|adult|old
+prefers warmth=warm talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk maps_imagined_miles_with_blackberry_stains_on_a_boot_pattern
+likes blackberries long_walks new_boots autumn_wind
+dislikes wet_floors flies
+fears a_private_debt_becoming_a_public_name
+hopes boots_that_come_home_dry
+topics food +0.6 travel +0.5 friends +0.3 weather +0.3
+styles comfort=gentle gossip=guarded refuse=quiet tease=none
+marks oath saying
+persona #self.first# marks the miles of an imagined walk with blackberry stains, keeps the best mark tucked inside a boot pattern, and offers the unstained corner to a trusted guest.
+words
+oath! = Purple my toes | Berries in the seam
+saying! = Save the sweet side | A boot can dream a mile
+shoepaper = a paper boot shape | a heel drawn on a scrap
+berryink = a dab of purple juice | a dark blackberry stain
+toeberry = a fat purple berry | a glossy black bead of fruit
+heelprick = a little pencil point | a tiny mark at the heel
+dryfold = a clean paper fold | a dry inner corner
+twiglace = a fine grass lace | a soft strand of green
+windcuff = a flapping brown leaf | a loose leaf cuff
+dryledge = a narrow dry ledge | a strip above the damp
+milespot = a purple mile spot | a small round berry mark
+flycloth = a thin bread cloth | a scrap of washed linen
+
+any
+
+opinion houses against 1 : If I have to bring a promised penny, a House could at least bring a promised repair.
+opinion dole for 3 : I know the difference a helping makes when you wake up wondering whether you can eat that day.
+opinion church for 1 : There was bread to go with the kindness just when hunger hurt. I remember the two together.
+opinion merchants against 1 : A hungry walker doesn't need to hear how fortunate it is to live near a stall full of food beyond the purse.
+opinion watch against 1 : I'd sooner see an ordinary broken step mended than another official inspection of the mud at the bottom.
+line greet : Come on the dry edge. I've kept a clean corner there.
+line greet.return : The berry mark has stayed where we left it.
+line farewell : A heel that keeps its shape on the way home for you.
+line farewell.return : I can keep the next bit of our walk blank.
+line ask.how : Has the day given your feet a dry place?
+line answer.how : There's still a sweet bit put away where the damp can't get it.
+line thank : You kept your foot off the part I'd marked for later.
+line decline : My private count stays folded up no matter who asks for a look.
+line accept_decline : That's all right. I'll leave your side clean.
+line sympathise : I can share the ledge if you don't feel like telling the whole account.
+line reassure : A stained bit of paper still has another side to use.
+line react.news : Say it without stamping on the little words.
+line react.news.new : That's a new purple spot on my route.
+line react.news.known : I remember the curve of the first print that made.
+line react.news.doubt : There's too much damp round that mark to tell its proper shape.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd save a whole handful of the sweetest berries for that news.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd give the wolf carrying that a seat where feet can rest awhile.
+line ack : Now I know which mark you were pointing at.
+
+young
+
+line greet [pair.band=strangers] : You can see my paper boot. I keep the underneath bit private.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Look at my two spick-and-span boots. Well, #shoepaper# and another one. They can go quite a long way on my knee.
+b : Do the paper ones fit? | What holds them on?
+a : They fit my idea of my feet. My real toes are a nuisance about being thick. | A little grass. My imaginary feet have excellent manners and don't pull it apart.
+
+scene food_1
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : A blackberry can be food and ink if you only use one little bead for the ink.
+b : What do you write? | Can I eat the ink?
+a : One spot for every mile the paper boots have walked. I eat the rest so it can't make surprising extra miles. | You may have the part I haven't written with. I'd sooner you left all the miles on the paper.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I practise at #self.workplace# by packing a whole sum into the shape of a boot sole.
+b : Where do the big numbers go? | Suppose your answer's wrong?
+a : In its broad toe. The skinny ones can keep the heel company till dinner. | I draw a proper heel beside it and give the wrong sum a private place for thinking.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I've some pennies to find by the time of the new moon. I keep those figures away from my walking game.
+b : Why keep them apart? | Can the game give you any pennies?
+a : A promise to pay is real even if I draw very grand pretend boots all round it. | No. Pretending gives me a whole long walk on paper while my real pennies stay safely put by.
+
+scene weather_1
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn leaf has tied itself round my paper boot like a cuff.
+b : Can a leaf tie itself? | Does it keep the boot warm?
+a : I helped a little. The wind kept trying and missing the knot by a whole doorstep. | The boot says yes. It hasn't got a tongue that can explain much more than that.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put my pattern where no water can run off the board and make the toes turn up.
+b : Would turned-up toes be bad? | How high do you put it?
+a : They'd look funny, but I want to have the choosing of when my boots look funny. | As high as my hand can reach comfortably. It isn't dry if I've dropped the whole thing on my head getting it down.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd share the sweetest blackberry with somebody who didn't want to know the secret under the heel.
+b : Can I ask once? | Should I shut my eyes?
+a : You can ask. I can say that's the private bit. There's still a good berry left for both of us. | Then you might miss the berry altogether. You can look at my hand without reading the heel.
+
+scene animals_1
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : If a fly sits on my route it looks like a little traveller who never paid for new boots.
+b : Would you charge it? | What's it doing there?
+a : I'd send it away before it got very interested in the berry juice. It can use its own wings for nothing. | Probably counting how many miles it could have for supper. I've a cloth for keeping its feet off.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My paper boots have gone farther than the good boots I mean to own someday.
+b : Where have they been? | What makes the distance look long?
+a : Up three hills, down two, then on to a blackberry bush that's got berries at the easy height. | When the little purple spots reach the back of my knee I have to turn the paper round and find some more distance.
+
+story grasslace [topic=pastimes]
+  : I put a grass lace into my paper boot while the grass was green. It looked tight enough to take a proper walk.
+  : The next morning the lace lay in a very small curl beside the heel.
+  b : Did the paper boot walk away?
+  : It had stayed put. The lace had dried and gone on a tiny walking holiday all by itself.
+
+rule @boots
+when concept=bark
+does aside
+cooldown 8h
+say One purple spot per paper mile. | Let the tall figure sit in the toe.
+
+rule @cloth
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Cover the route if a fly wants its supper. | No free rides in my pot of berry ink.
+dlg resident.hub : Look at the bright side of my boots. The dark bit under the heel is my own.
+dlg resident.job [self.job=child] : I'm #self.trade_words#. The boot on this scrap gives me a useful shape to keep my sums in.
+dlg resident.bye : I hope your real boots make it farther than my paper ones.
+
+graft resident.hub
+choice Are those boot shapes really a map? -> berry_walk
+node berry_walk
+say Each spot marks a mile on the walk I imagine. A tiny one means I sat down for a berry before I got all the way.
+choice How do you mark coming home? -> berry_home
+choice I'll leave the clean heel for you. -> hub
+node berry_home
+say I leave the heel clean. Home is where the boot can stand quite still and my hand can go back to finishing the berries.
+choice I'll leave the clean heel for you. -> hub
+
+adolescent
+
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've made a pattern from a paper boot that actually accounts for the shape of a moving foot.
+b : What did you have to change? | Will you make a real pair?
+a : Leave room for toes as well as for how handsome the outline looks on paper. | When I can pay for decent pieces to work with. A careful pattern can wait better than a cold foot can.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A House name alone won't persuade me to unfold a private promise.
+b : What would persuade you? | Will you keep the promise if it's difficult?
+a : A reason that actually belongs to the person whose name is on the page. | I'll do what I've agreed or go and explain the difficulty in my own voice. No crowd needs to come and listen.
+
+story twoheels [topic=memories]
+  : I traced my feet for a better pair of paper boots and cut the right pattern out twice.
+  : The tips matched beautifully until I tried to stand on the two shapes.
+  b : Could you turn one over?
+  : Yes. The berry marks on the back made the second one recognisable. A fault I wanted to hide proved to be a useful distinction.
+
+grown
+
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like berries picked at the height where a hand can tell which are soft enough without looking.
+b : Why judge them by touch? | Do you mind the stains?
+a : A berry that comes free without being pulled hard is worth the extra moment spent finding it. | I mind a stain that reaches somebody else's clean work. My own fingers are welcome to remember the meal.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A long walk is most pleasant when I have enough dry leather beneath me to forget the cost of the next step.
+b : Do you go far then? | Does an old pair suit better?
+a : Until I find something worth bringing back besides my own tired feet. | After the fit has been established, yes. I still like knowing what a good new pair could feel like.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : An autumn gust recalls a leaf I used for a boot cuff as a child.
+b : Did you wear the leaf? | What part do you remember?
+a : My paper pattern wore it. I was fond of trying out impossible bits before wasting good material. | The brown edge ticking against the doorstep. A leafy cuff makes a very modest travelling companion.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wet floor can spoil a carefully chosen step. I dry a strip before carrying anything across.
+b : Why only a strip? | What if somebody is waiting?
+a : I clear what feet actually need first. The rest of the boards can follow without keeping anyone perched in a doorway. | I tell the visitor which part is dry. The information matters more than an elaborate account of why there's a cloth on the floor.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Even on a well-stocked shelf I leave one corner to fruit that ought to be eaten today.
+b : What's the corner for? | Is there a written count?
+a : So company can see what's ready to share without making delicate enquiries about tomorrow's meal. | Only with my eye. Fruit wants to leave the shelf before the visit turns into an audit.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can be loyal to a neighbour without repeating what a rival household may have said about the neighbour.
+b : Where does the loyalty show? | Don't the words matter?
+a : In a dry place to sit, a shared supper and an honest answer on the day one is really needed. | When action is called for, certainly. A morsel of spite passed round for company makes a poor meal.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I examine boots for the way the toes can bend before I consider the handsome finish on the heel.
+b : What shows you the bend is right? | Would you pay for looks?
+a : By walking a few actual steps, if the seller will permit me the ground to do it. | When I can afford the fit as well. The outside won't give my toes back an inch of missing room.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My first imagined journeys were made with purple marks. I've since worn out honest leather walking several of those hills.
+b : Did the places match? | Why keep a paper pattern?
+a : The hills generally proved steeper. The berries I found on the way were a pleasant piece of accuracy. | It reminds me how far a little wishing used to take me when I had no money for the leather.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Food offered freely makes me thankful. At prayer I like to describe the giving hand, right down to the thumbprint in the berries.
+b : Do you say a formal prayer? | Would you give in the same way?
+a : Sometimes. I can also go and make the same thing happen for a neighbour, which keeps the thanks from growing idle. | I would name the food as a gift while it was still in my hand. A hungry guest ought to be sure on that point.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : If I have only a handful of berries I can still take care over who receives them.
+b : Would you weigh every share? | How much is enough?
+a : I'd sooner notice who has already eaten. A strictly equal measure can be an odd kind of generosity. | Enough for a meal is rather more than the handful. I'll see what bread there is before promising a guest a proper supper.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I offer new arrivals the sort of directions I would want while trying to keep good new leather dry.
+b : How much detail? | What about a rival House?
+a : Name a dry step they can recognise before they're halfway into the puddle. | I can give a sound direction without offering up a private confidence. Those seem quite different acts to me.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep a little blank heel on my private paper even now.
+b : What's the blank for? | Would a name fit there?
+a : To remind me I may stop travelling or adding figures and let an evening be simply an evening. | It might. I prefer the thought of a place nobody has to label before resting a foot on it.
+
+story heelstain [topic=food]
+  : I used a scrap of paper under a dish of berries and forgot it had the pattern of a boot on the back.
+  : When we'd finished the berries the left heel had acquired an excellent purple shine.
+  b : Was the pattern spoilt?
+  : I could still see the outline, and the heel had a finish I'd challenge a working cobbler to match.
+
+rule @dryheel
+when concept=bark
+does aside
+cooldown 8h
+say Keep the heel clear and the tread readable. | A boot pattern is patient with its owner.
+
+rule @wind
+when concept=bark self.likes=autumn_wind
+does aside
+cooldown 8h
+say One good gust to set the leaf cuff dancing. | A berry-stained paper needs a weight on this sill.
+dlg resident.hub : There is a public side to the plan and a private corner. I'm quite willing to share the first.
+dlg resident.news [world.news] : The clear mark in the account reads this way. #world.news#.
+dlg resident.bye : Let the road give you a dry place at fairly regular intervals.

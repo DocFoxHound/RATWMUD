@@ -1,0 +1,307 @@
+mantle rm575
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_signe_bilgewell
+title the bread-paddle keel
+fits stage=young|adolescent|adult|old
+prefers job=baker
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk carves_a_boat_keel_into_discarded_bread_paddle_wood
+likes fried_fish whittling sharp_knife warm_rain
+dislikes haggling waiting
+fears having_to_bargain_away_the_only_dry_berth
+hopes to_earn_a_dry_passage_with_bread_and_woodwork
+topics work +0.5 pastimes +0.4 dreams +0.3 food +0.2
+styles comfort=brief gossip=guarded refuse=firm tease=none
+marks oath saying
+persona #self.first# turns spent bread-paddle wood over to find the keel of a small dry ship.
+
+words
+oath! = Hot iron and salt spray | Forge heat and sound timber
+saying! = Save a dry shaving for the keel | Bread on top and a ship beneath
+paddle = the old bread paddle | a splinter of paddle wood
+keel = my little carved keel | the boat's narrow spine
+curl = a thin dry shaving | a little shaving curl
+butter = the browned butter | a bit of sizzling butter
+fish = a butter-crisp fish | a piece of fried fish
+oven = the bright oven mouth | the dark oven lip
+board = my carving board | a scrap wood block
+berth = a bunk above the spray | a dry covered berth
+grain = the long clean grain | the close wood fibres
+price = the marked sum | the single asking price
+rain = a warm water bead | a drop of mild rain
+fur = a patch of silver coat | a clean silver cuff
+
+any
+opinion merchants against 1 : Put the price down before my hands are full. I don't mean to perform a whole market scene over one penny.
+opinion houses mixed 1 : If a House needs bread at sea I'd consider a fair berth for my share of the work. A name on the sail doesn't make the bunk dry.
+opinion dole for 1 : A decent scrap of fish for a hungry mouth has an advantage over pretty speeches above an empty board.
+opinion road mixed 1 : My morning road comes to a familiar door. My thoughts prefer a little open water beyond the paving.
+opinion city mixed 1 : This is my native city and I can still want a change from the damp pressed into its boards.
+
+any
+line greet [pair.band=strangers] : Hello. There's a clear corner on the board. | Keep the shavings this side and come in.
+line greet [self.working=yes] : A word can go alongside my work. | Stand where the oven heat eases.
+line greet [here.time=dawn] : Morning over the paddle wood. | Bright edge on the grain today.
+line greet [here.time=dusk|night] : Evening. There's still shape in the offcut. | Come clear of the last wet gleam.
+line kin.open [pair.kin!=no] : The private carving may be shown to kin. | A home voice gets through the clatter.
+line again.open : Another meeting on the dry side. | You've found my little keel again.
+line greet.return : Good. A return without the long wait. | You're back within sight of the board.
+line greet.return [pair.band=friends|family] : A known face by my cleaner sleeve. | There's room near the little boat for you.
+line greet.return [self.working=yes] : Hold on while I set the carving flat. | Come through. My hands can stop safely now.
+line greet.return [here.time=dusk|night] : Evening. The board is ticking as it dries. | Welcome past the glimmer from the oven.
+line farewell : A dry board for your next step. | Good travelling to a place with clear prices.
+line farewell.return : The little ship will last till next time. | I'll keep the shavings off your place.
+line farewell.return [here.time=night] : Good rest where the roof holds dry. | No long waiting at your last latch.
+line react.news : What's arrived off the heat today? | Give me the sound bit under the crust.
+line react.news.new : I didn't have that scrap yet. | New grain in the account.
+line react.news.known : That mark was there on an earlier turn. | Yes. I've already handled that piece.
+line react.news.doubt : I'd keep a careful thumb on that story till somebody answers for it. | A sharp-sounding account can still be split through the middle.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a rough edge to get past. | I'll stay without making you bargain for company.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good enough for a whole new boat. | That may go on the brighter side of my board.
+line ask.how : How did your bit of work turn out today? | Any dry room left in your hour?
+line answer.how : My sleeves are clean. My patience is thinner. | I've a useful offcut and the means to shape it.
+line decline : I'd keep the rest of my time for a piece already begun. | My next errand can't wait while we revise this one.
+line accept_decline : I can leave the answer where you set it. | That settles the asking.
+line thank : That help came in cleanly. | I won't rub away the mark your kindness made.
+line sympathise : Have the corner away from the noise. | Let the troublesome piece lie flat awhile.
+line reassure : We can work round one poor patch of grain. | There'll be another chance to take a clean cut.
+line preclose : I'd like to have my board back awhile. | The keel has one short curve to finish.
+
+young
+
+scene y_boat
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put #curl# in a puddle and call the high end a ship's nose.
+b : Does it sail? | Why the high end?
+a : Until the wood drinks too much water. Then I build another ship from the drier corner. | I want its bow pointing towards a particular crumb. Puddles don't give many directions.
+
+scene y_fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : #fish.capitalize# makes the nicest little cracking sound when I break my piece.
+b : Do you break it twice? | Would you share?
+a : Once. It's too good to spend the whole time listening. | If I could choose which corner of the crisp skin was mine.
+
+scene y_clean
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I brush my sleeve before looking at the board. Dust doesn't belong to me just because it fell there.
+b : Very particular? | Do you miss any?
+a : About the sleeve, yes. My wood's allowed to keep its own marks. | Usually under my elbow. I have to twist my whole arm to see there.
+
+scene y_wave
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #rain.capitalize# can push my shaving ship farther than my smallest finger.
+b : Does it sink? | Can you steer it?
+a : If it lands in the middle. Off one end it makes a fine following sea. | With a little wall of wet crumbs. I'm still deciding where the harbour belongs.
+
+story y_crumb [topic=memories]
+  : My earliest boat was made of crust and set it in my supper bowl. It was the fastest way I knew to send a ship round the room without wetting the floor.
+  : One evening the boat sank before I'd named it. I fished it out with my spoon and ate the whole expedition.
+  b : Was it worth the voyage?
+  : It tasted of fish and butter. I've had worse luck with bigger plans.
+
+adolescent
+
+scene t_oven
+when topic=work self.job=baker self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the useful side of #paddle# faces the bread. I study the other side in my own time.
+b : For splinters? | What's underneath?
+a : Of course before work. Off duty I hunt for the beginning of a little wooden ship. | A line of grain that could become a keel when the paddle has finished earning its keep.
+
+scene t_master
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : An apprentice ought to return the working paddle clean before coveting the offcut.
+b : Must the offcut have permission? | Who decides?
+a : Yes. A dry piece of wood can still belong to the next job. I don't carve what's been set aside for a repair. | The wolf responsible for the oven tools. I can bear to hear a plain refusal.
+
+scene t_boss
+when topic=work self.boss
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.boss# for the bent end of a spent paddle when there's a quiet hour.
+b : Why a bent end? | Is there often a quiet hour?
+a : There's half a ship's rise in it already. The oven can give a small present to the water that way. | I watch the work before asking. I dislike being made to wait and won't ask somebody else to do it without need.
+
+scene t_wood
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I smooth #keel# before thinking about a mast.
+b : Will it ever sail? | Why that order?
+a : It must survive a trial in a bowl before I give it a dry berth on a shelf. | A ship that lies sideways with no mast won't become a better ship by growing taller.
+
+scene t_tools
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I want the carving edge keen enough that I can follow #grain# without tearing a thread.
+b : Do you show off the edge? | What do you carve first?
+a : No. The clean shaving tells the tale without my having to wave anything about. | The plain bottom of a little boat. Decorations come once its hull sits steadily on a board.
+
+scene t_haggle
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I want #price# before I start asking about fish for supper.
+b : Even for a handsome fish? | What if the sum changes?
+a : Especially then. I can see how easily an appetite could be talked into spending tomorrow's coin. | I can walk. I won't bid against the hunger in my own stomach.
+
+scene t_berth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I picture #berth# with space to hang a clean coat somewhere the spray can't reach.
+b : A big ship? | Where bound?
+a : Big enough for a working passage and a bunk with room to dry my coat. Size alone won't persuade me. | A coast where a wet cuff isn't the first and last inconvenience of every day.
+
+scene t_butter
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : When #butter# starts to smell nutty I think about a whole dry fish supper.
+b : Why dry? | Would you serve bread?
+a : The fish should crisp at the edge. I don't mean to chew anything like old boot leather. | If I've earned enough to buy both parts. I keep a firm distinction between baking a loaf and owning it.
+
+scene t_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# see the boat while it's still rough at the stern.
+b : Why before it's ready? | Would you sell it?
+a : A trusted face can see a thing with its work still showing. I keep a firmer guard against other eyes. | This one is going to have the dry berth I want for myself. It can be a standing reminder.
+
+scene t_home
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : On #self.street# I keep the smallest boat in the dry patch above my sleeve hook.
+b : How dry? | Does it fit?
+a : Dry after the rain, which is a more useful answer than dry before it starts. | Just. One extra curl on the mast would snag my clean sleeve in the morning.
+
+scene t_wait
+when topic=work self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : Waiting while dough does its own work is different from waiting for somebody to name a price.
+b : Better or worse? | Can you hurry either?
+a : Better. Dough doesn't invent another figure the instant it sees the colour of my purse. | Hurrying an oven has a cost. A slow bargainer can find somebody with a softer temper.
+
+scene t_oath
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep an oath with both forge heat and sea in it for the day a boat comes apart.
+b : Why both? | Do you shout it?
+a : A ship needs iron as well as wood. A sharp disappointment deserves a well-equipped oath. | Depends what else is being heard. I don't expect a whole bake room to share my quarrel with a shaving.
+
+story t_first [topic=work self.apprentice=yes]
+  : A cast-off oven paddle had a black mark running its length. I saw a boat's spine there and asked to keep the wood when it was really finished.
+  : The black went away under the first few shavings. The wood beneath still had the curve I'd seen. That was the bit that mattered to me.
+  b : Did you paint the black line back?
+  : No. I'd got the shape I came for. I don't spend good colour to explain a ship to itself.
+
+grown
+
+scene g_bread
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : A worn paddle tells you how many times bread has chosen one side to leave by.
+b : Can you change that? | What about the boat inside?
+a : I can mind the rough part and make sure the bread comes free cleanly. The tool gets its proper working life first. | The keel can wait. Nothing stays permanently at the oven mouth.
+
+scene g_pantry
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I lay the plain bread next to a piece of crisp fish and let the butter be the only sauce.
+b : Would more spice improve it? | What's the pleasure?
+a : If it's good fish I want to taste the mouthful I paid for. Salt and warmth do enough. | A whole simple supper chosen by me. There's a surprising amount of voyage in that.
+
+scene g_sail
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Offered passage, my first question would concern dry bread aboard ship.
+b : Before asking the wage? | Why bread?
+a : Alongside the wage. A fair coin can buy remarkably little comfort if everything I own stays wet. | I know how a hard-won loaf feels when carelessness has given a whole corner to the rain.
+
+scene g_guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : For first visits I leave a generous open space beside my board.
+b : Suspicious of strangers? | Why wide?
+a : Suspicious of close elbows until I know how a wolf moves. That's a small private habit. | Even a friendly guest deserves a clear patch without shavings clinging to a cuff.
+
+scene g_road
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's a scent of warm board that makes old rooms feel like a shipyard in my thoughts.
+b : Ever built a real boat? | What would change?
+a : Only the sort that fits in a dry hand. I have more respect for the sea than to confuse the scales. | I'd ask somebody who actually knows hulls to look at my pretty designs before promising a dry sleeping place.
+
+scene g_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : After praying I can hear even the landing of a wood curl.
+b : What do you ask? | Is that an answer?
+a : For a clean start after a short temper. I can do part of the work myself by waiting one little breath. | It's a moment where I can decide what to do next. A fair thing to carry from a prayer.
+
+scene g_purse
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : An old paddle end is a poor luxury in most purses and a whole evening's voyage in mine.
+b : Try to sell the carvings? | What do they cost?
+a : If I've one I can part with at a plain price. A carving given freely suits me better than acting in a bargaining play. | Time after the oven's done. I can't pretend that costs nothing just because it isn't written on a tag.
+
+scene g_remember
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember the day I first saw a keel in the underside of a bread paddle.
+b : Did somebody point it out? | Did you have time to make it?
+a : It was my own thought while the used tool was being set aside. I liked having one thing in the busy room entirely my own. | A little each evening. A small boat is patient even when its maker isn't.
+
+story g_water [topic=pastimes]
+  : I made a tiny berth above the deck of a carving and gave it a roof before trying the hull in water. The roof did indeed stay dry.
+  : The rest of the boat tipped over so far that any passenger would have gone straight out of bed. I had to take my small kingdom back to the board.
+  b : What did you keep?
+  : The honest shape below the deck and the idea of sleeping dry. The first one took more work than I'd allowed it.
+
+any
+
+rule @aside1
+when concept=bark self.working=yes self.job=baker
+does aside
+cooldown 6h
+say Working paddle flat, cast-off wood aside. | Bread clear of the lip before another load.
+
+rule @aside2
+when concept=bark self.likes=whittling
+does aside
+cooldown 7h
+say The keel's already showing underneath. | A dry shaving's got a long curve in it.
+
+rule @aside3
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say A crisp edge on the little supper fish. | Brown butter finds every ridge of skin.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Finish the dry berth before losing light. | No shavings left on the sleeve hook.
+
+dlg resident.hub : I've a clear patch by the board and a clean sleeve. Say what brings you here while they're both free of shavings.
+dlg resident.job [self.job=baker self.workplace] : I spend my working hours at #self.workplace#. A worn paddle can have an interesting underside when its day's finished.
+dlg resident.news [world.news] : Some news clear of the oven bustle. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've seen the little ship with fewer shavings taken off it.
+dlg resident.bye : A dry berth for whatever you're carrying home.
+
+graft resident.hub
+choice Is that a ship hiding under an oven paddle? -> keel_work
+node keel_work
+say It will be if this cast-off end gives me the curve I think I see. Bread goes on the working face. The other side keeps a little private sea.
+free
+choice Where will the small boat go? -> keel_sea
+choice I'll leave the good grain to you. -> hub
+node keel_sea
+say Into a bowl for a trial, then onto a dry shelf. Some day I'd like a ship big enough to give me a bunk, and a sound place to earn it.
+choice I hope it sits straight on the water. -> hub
+choice Keep that dry berth in mind. -> bye
