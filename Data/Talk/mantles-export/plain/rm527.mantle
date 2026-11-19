@@ -1,0 +1,257 @@
+mantle rm527
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ivar_cinderford
+title the covered riddle
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk leaves_a_riddle_under_an_upturned_dish
+likes pickled_herring riddles tidy_house misty_dawns
+dislikes crowds rats
+fears an_uncovered_confidence a_guest_in_the_linen_press
+hopes a_morning_without_crumbs one_riddle_for_home
+topics work +0.4 family +0.3 pastimes +0.4 gossip +0.2
+styles comfort=discreet gossip=guarded refuse=courteous tease=dry
+marks oath saying
+persona #self.first# carries a high bright voice and a remarkably quiet tray, paying for each good riddle with a covered answer.
+
+words
+oath! = Polish my silence | Lift the wrong cover
+saying! = A lid leaves both ears free | The best answer keeps till supper
+lid = the domed cover | a tin dome
+nap = my folded napkin | a fresh square of linen
+trayfoot = the low tray foot | a little brass foot
+jar = the herring jar | a vinegar pot
+forktip = a fine fork point | the narrow tine
+loop = a loop in the cord | a doubled length
+press = the linen press | a shut cupboard
+mistline = the pale mist line | a belt of morning mist
+crumb = a brown crumb | a fleck of crust
+corner = the far napkin corner | a corner of cloth
+mousehole = a gap under the baseboard | a little dark opening
+grip = a steady serving grip | my broad grip
+
+any
+opinion @1 city for 1 : Our hills let me tell service at the top from service at the bottom by the ache in the tray arm.
+opinion @2 festivals for 1 : A festival gives a serving voice some healthy competition.
+opinion @3 houses mixed 1 : Another House is welcome to a place at table. The keys to the linen would remain in my pocket.
+opinion @4 watch mixed 0 : A quiet round pleases me. A question about the guests gets the answer it's entitled to.
+opinion @5 dole mixed 0 : I mind a clean dish going back empty more than I mind its next destination.
+opinion @6 road mixed 0 : A sound road does wonders for the crockery and makes a very poor subject for breakfast talk.
+
+grown
+line @1 greet [pair.band=strangers] : A welcome with no silver to clean afterward.
+line @2 greet [here.time=dawn] : A pale morning and a place made ready.
+line @3 greet [here.weather=rain] : Enter by the mat. The rest of the floor has ambitions.
+line @4 greet.return : I heard the greeting. The whole hall may have heard my answer.
+line @5 greet.return [pair.band=friends] : A familiar voice requires no place card.
+line @6 farewell : Keep the answer covered till supper.
+line @7 farewell.return : I'll take the last word out with the tray.
+line @8 again.open : A second sitting for the same company.
+line @9 kin.open [pair.kin!=no] : Our family needs no announcement on the landing.
+line @10 hail [pair.band=friends] : My friend, before my voice reaches the upper landing!
+line @11 react.news : I can carry a bit of news without serving it round.
+line @12 react.news.new : That dish hasn't crossed my station before.
+line @13 react.news.known : Second helping of a matter I've already heard.
+line @14 react.news.doubt : Something rattles beneath that handsome cover.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll bring clean linen and turn the curious away.
+line @16 react.news.glad [topic.kind=birth|marriage] : That is one announcement I could make with genuine pleasure.
+line @17 answer.how : Polished in public and moderately comfortable underneath.
+line @18 decline : I should have to mislay a duty to make room for that.
+line @19 accept_decline : Quite right. Even an empty tray has its limits.
+line @20 sympathise : A quiet side of the room is available without explanation.
+line @21 thank : That takes considerable weight off my best sleeve.
+line @22 deflect_thanks : The footwork was almost entirely mine to do already.
+line @23 preclose : I ought to be heard somewhere else about now.
+line @24 accept_preclose : I'll attend to the silence after you.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : At dawn #mistline# sometimes levels the view from the estate.
+b : Levels it in what sense?
+a : Hides the lower roofs and upper arches alike. Everybody appears to occupy the same pale storey.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : Something walks the length of a hall on four feet and takes no step.
+b : May I examine those feet?
+a : All four are brass and live under my tray.
+b : Then the legs of the servant deserve some of the credit.
+
+scene herring
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I'd take a thin piece from #jar# before facing a long table.
+b : Doesn't it announce itself on the breath?
+a : Exactly why I have my fish before a long table and not before a short conversation.
+
+scene tidy
+when topic=smalltalk self.likes=tidy_house
+does tell.self / react.self / assess
+a : Order is having #nap# within reach of a spill before the spill begins.
+b : That suggests a remarkable gift of foresight.
+a : It suggests experience of overfull gravy boats.
+
+scene elbows
+when topic=smalltalk self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : A press of guests can make a silver tray feel six feet wide.
+b : Could you call for a little more room?
+a : I can. The art lies in leaving the impression that the room has kindly enlarged itself.
+
+scene rat
+when topic=work self.dislikes=rats
+does tell.worry / reassure / assess
+a : I'd quite like #mousehole# closed before somebody has to ask whose tail went by.
+b : Have you actually seen a tail?
+a : Only a suspicious gap. A hypothetical tail suits me best.
+
+scene hall
+when topic=work self.job=servant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I learn the tune of the floor with a loaded tray.
+b : Which note do you keep away from?
+a : The high one by the turn. It announces pudding before I am ready.
+
+scene partner
+when topic=family self.spouse
+does tell.feeling / sympathise / assess
+a : I save my quietest riddles for #self.spouse#.
+b : A private performance for a fortunate listener?
+a : Private, certainly. Fortunate depends on the riddle.
+
+scene seal
+when topic=gossip
+does give.opinion / disagree / concede
+a : A rival seal can have all the courtesy due a guest.
+b : Surely a courteous welcome includes answering a few questions.
+a : The questions about supper get splendid answers. Other subjects may find the lid in place.
+
+scene secret
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : There's a certain hall where I remember a silence more clearly than any speech.
+b : Whose silence was it?
+a : The part I'm at liberty to describe was my own.
+
+scene receipt
+when topic=work
+does tell.plan / ask.detail / answer.detail
+a : I'll put a small cross under #lid# to mark the dish that wobbles.
+b : Wouldn't it be better to cure the wobble?
+a : Certainly. Marking it first saves me repairing a perfectly innocent dish.
+
+scene lean
+when topic=food world.times=hard|lean
+does offer / accept / assess
+a : I can offer the nearest end of a loaf still fit for company.
+b : I'll eat the heel plain if there's little else.
+a : Have #nap# too. A small supper ought to come as neatly as a large one.
+
+scene rains
+when topic=travel
+does ask.advice / give.advice / assess
+a : What would keep a folded cloth dry through a shower?
+b : Put the cloth under your tray, if the tray's empty.
+a : A first-rate roof. I'll take care nothing has to be served off the chimney.
+
+scene oldrow
+when topic=memories
+does tell.self / react.self / assess
+a : I practised service once with a turnip under a tea cover.
+b : Did the turnip receive the proper formal announcement?
+a : Very properly. The unexpected roll down my sleeve received a less polished announcement.
+
+scene table
+when topic=prices
+does tell.worry / reassure / assess
+a : If vinegar goes up much further I shall have to admire the herring through a lid.
+b : Is that a more economical sort of admiration?
+a : Considerably less nourishing. I might buy a smaller jar and remove the lid.
+
+scene foot
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I can tell estate boots from their impatience on a stair.
+b : Do well-placed boots make a nicer sound?
+a : Not invariably. They expect the door to have noticed the first tap.
+
+scene covered
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I dream the covers all rise at once and every dish contains a riddle.
+b : Must keep you busy serving the answers.
+a : Fortunately everybody is too occupied guessing to complain of the delay.
+
+scene crumbs
+when topic=smalltalk
+does tease / tease.return / laugh
+a : I may have failed to see #crumb#. A grave professional confession.
+b : And who will hear evidence from the crumbs?
+a : Nobody, once I have attended to the matter with my thumb.
+
+story twopots [topic=work]
+  : I once carried two covered pots and forgot which held the pickles.
+  : I tilted each a very little.
+  b : Did the pickles speak up?
+  : Most intelligently. The empty pot had nothing useful to contribute.
+
+story morningrail [topic=weather]
+  : One misty morning I polished the end of a rail and couldn't see where my work stopped.
+  : I went considerably farther than intended.
+  b : Did you polish the whole staircase?
+  : Nearly. I stopped when a perfectly dry rail began to feel offended.
+
+story foldriddle [topic=pastimes]
+  : I folded the answer to a riddle into a napkin and laid the napkin down.
+  : When I went back somebody had put it among the clean squares.
+  b : Was the question ever settled?
+  : Indeed. What hides a ridiculous amount of thought? Apparently one well-stocked cupboard.
+
+rule @halltray
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Four steady feet and two moving ones.
+
+rule @brinebit
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say A thin sliver for the considerable silence before breakfast.
+
+rule @pressfold
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Corners in line. No separate opinions in the press today.
+
+rule @mistcool
+when concept=bark self.likes=misty_dawns
+does aside
+cooldown 8h
+say The estate appears to have lost its upper floor.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#, at your hearing if the volume suits you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have a perfectly presentable pause in the service.
+dlg @3 resident.hub [here.time=night] : Even my loud voice can use the small door after dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Courtesy across the width of my tray should suffice.
+dlg @5 resident.job [self.job=servant self.workplace] : My hall duties take me to #self.workplace# and occasionally persuade a tray to keep its private opinions quiet.
+dlg @6 resident.job : I keep useful objects close and awkward secrets closer.
+dlg @7 resident.bye : A comfortable exit with no need to announce it.
+
+graft resident.hub
+choice What is the covered answer? -> domeriddle
+node domeriddle
+say What can make a whole hall hungry without ever lifting a spoon? Give up the cover and the riddle comes with it.
+choice Is it the smell of supper? -> savouranswer
+choice Let's leave it covered. -> hub
+node savouranswer
+say Exactly. A scent has the freedom of the upper landing while I negotiate the elbows below.
+choice One further question. -> hub
+choice Enjoy your supper. -> bye

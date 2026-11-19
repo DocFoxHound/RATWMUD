@@ -1,0 +1,285 @@
+mantle rm544
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ragnar_cinderwell
+title the riddle owing
+fits stage=young|adolescent|adult|old
+prefers drive=restless honesty=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk remembers_a_kindness_by_making_a_riddle_whose_answer_is_the_favour_owed
+likes mutton_stew riddles festival_bells first_snow
+dislikes deep_mud flies
+fears a_kindness_forgotten_in_a_crowd mud_that_holds_a_boot_past_belltime
+hopes to_pay_every_favour_with_a_better_riddle_and_something_useful
+topics smalltalk +0.6 family +0.4 festival +0.5 food +0.3
+styles comfort=practical gossip=plain refuse=direct tease=playful
+marks oath saying
+persona #self.first# keeps a kindness in mind by making a riddle with the favour for its answer and tries the words under the breath before the next bell.
+
+words
+oath! = Twist my answer round | Ding the wrong pot
+saying! = A good answer comes back with both handles | Keep the puzzle till the kindness comes round
+riddle = my owing riddle | the puzzle I keep for later
+bellmouth = the wide end of a bell | a bell with a deep mouth
+snowbit = the first white crumb of snow | a speck of first snow
+stewbit = a piece of mutton from the stew | my soft bit of mutton
+button = a button with a chipped rim | an odd little button
+flywing = a flash of fly wing | two wings over the stew
+mudboot = a boot with an extra mud sole | a bootful of the road
+paper = a square of practice paper | a slip for a secret answer
+leftthumb = my left thumb tip | a bent thumb
+rungap = the silence between two rings | a little bell silence
+shopbag = a brown paper bag | a clean folded bag
+
+any
+opinion festivals for 2 : A feast gives the bells plenty to do and gives the rest of us plenty to puzzle over.
+opinion city for 1 : A town with this many turns can keep a good riddle going all the way home.
+opinion dole for 1 : A hot bowl is the proper answer to an empty stomach.
+opinion merchants mixed 0 : Anybody clever with prices ought to be clever enough to give a plain one.
+opinion strangers for 1 : A strange face can try a riddle without remembering what my answer was last time.
+opinion road mixed 0 : I like the long way until I find a boot-sized hole with no dry way round.
+opinion times mixed 0 : There's usually one good question in a day even if the answer takes till morning.
+
+any
+line greet : Come hear a riddle once I've got the edges right.
+line greet [pair.band=strangers] : New ears. I'll start with an easy one.
+line greet [here.time=dawn] : Morning. The bell's still got its mouth shut.
+line greet [here.time=dusk|night] : Evening has a long space for thinking.
+line greet.return : Yes. I was working on the middle bit.
+line greet.return [pair.band=friends|family] : Yours is a voice that remembers the interesting answers.
+line greet.return [self.working=yes] : I can puzzle with one hand still busy.
+line greet.return [here.time=dusk|night] : It's quite easy to hear you in this much dark.
+line kin.open [pair.kin!=no] : Kin can have a hint before the rest.
+line again.open : I remember the word just before the bell.
+line hail [pair.band=friends] : Friend, there's an answer waiting for your ear!
+line farewell : Keep a riddle for the long bit home.
+line farewell.return : And don't let the mud choose your last step.
+line react.news : Tell it from the bit that really happened.
+line react.news.new : First hearing. I get a fresh guess.
+line react.news.known : I know which way those words are going.
+line react.news.doubt : Something doesn't fit in the middle there.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put away my puzzles for that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's a good answer to bring in.
+line ask.how : Have you found a good bit in today?
+line answer.how : Busy thinking of a return kindness.
+line thank : I can make a riddle to remember that by. Thank you.
+line deflect_thanks : I already had a useful answer to give.
+line sympathise : Tap my elbow if you want company. I'll be beside you.
+line reassure : We can take the puzzling part quite slowly.
+line decline : I need that bit of time for something I promised.
+line accept_decline : Then we can keep the question for another day.
+line preclose : I'd best catch the next space in the bells.
+line accept_preclose : Go while the lane's still got its dry edge.
+
+young
+
+scene button_question
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What has a hole and can still keep a coat closed? | Here's #riddle#. What do I owe if you held my bag?
+b : A button? | A penny?
+a : Yes. Somebody helped me find #button# and that's how I remember. | A spare hand next time. That's a better answer than money.
+
+scene lesson_bit
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I can make the answer to a sum rhyme with a spoon. | I fold #paper# over when the answer ought to be secret.
+b : Is the sum right? | Won't you forget it?
+a : I still have to check. The spoon doesn't know its numbers. | I stick #leftthumb# inside. Then there's a big reminder attached.
+
+scene mutton_answer
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : #stewbit.capitalize# makes a fine island aboard my deep-bellied spoon. | My riddle has a bowl for a bed and a potato for a pillow.
+b : What's the sea made of? | Is it supper?
+a : The rest of the stew. It keeps washing the island into my mouth. | It is if the spoon gets its turn.
+
+scene bell_sleep
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : What's got #bellmouth# and never bites my dinner? | I like #rungap# because it's where I fit my guess.
+b : A bell? | A guess about what?
+a : Yes. It makes an awful lot of noise for something with no teeth. | Which bell will speak first when the quiet's full.
+
+scene snow_six
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snowbit.capitalize# is a little puzzle with an answer that melts on my arm. | First snow leaves a white lid on every barrel.
+b : Did you see the answer? | Which bit tells you it's a barrel?
+a : I saw it had points. Then my sleeve got the rest. | By its tummy. Barrels have very round ones.
+
+scene mud_tug
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : #mudboot.capitalize# is very slow about listening to the homeward foot. | Small mud is perfectly tolerable. It's the mud deeper than the knot in my lace I object to.
+b : Which message? | What happens then?
+a : The one from my foot. I've been lifting it for ages. | The knot becomes a riddle I have to wash.
+
+scene parent_hint
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.mother# a riddle about the kindest sort of shop bag. | My question for #self.mother# has an answer I nearly know already.
+b : What's the answer? | Why ask then?
+a : The one with both handles sound when somebody has a long walk. | To find the bit I nearly know wrong.
+
+adolescent
+
+scene riddle_favours
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A favour remembered only by its price doesn't make much of a riddle. | I've got better at keeping the answer until it's asked for.
+b : What's your question, then? | Is that hard?
+a : Who gave up a dry place so I could get the mud off first? That I can remember. | Much harder than remembering who was kind.
+
+scene counter_use
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I wonder how the counter looks to somebody serving. | With #shopbag# and a steady voice I could practise the politest part of a sale.
+b : Are you looking for a post? | Which part?
+a : I'm looking at the way the price is given. There's time to choose my own work. | Giving the change correctly so a customer needn't find a polite way to ask again.
+
+scene father_visit
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I can talk to #self.father# about wanting a bit of work of my own. | Sometimes a riddle lets me ask #self.father# for an opinion without demanding a decision.
+b : Must you choose the same work? | Do the answers feel different?
+a : With practice of my own I'll be able to answer that myself. | I can tell which answer leaves me something to do.
+
+scene bell_meet
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I choose a bell as the time to meet and a doorstep where we can both hear it. | Festival bells used to sound like questions to me.
+b : What if it rings early? | And now?
+a : Then the doorstep's a good place to practise waiting patiently. | Like a question with three competing answers. That's why I listen.
+
+scene flies_plate
+when topic=food self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : #flywing.capitalize# doesn't improve the puzzle of what's for supper. | A feast table without a cover makes a quite unfair game.
+b : How do you give a fly directions? | Unfair to the cooks?
+a : Put the lid back and pass the question to its wings. | To anybody obliged to wave a paw through the entire meal.
+
+scene family_notes
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : A little note can travel round the Commons quicker than a restless wolf. | I remember the turns to my Commons door by asking a little question at each.
+b : How do you send yours? | Do you need that now?
+a : With clear directions and enough courtesy that somebody might like to carry it. | I don't. It's amusing hearing the old answers as I pass them.
+
+grown
+
+scene kind_account
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once remembered a favour by inventing a riddle. The habit still serves. | I like to return help quietly before explaining the elaborate way I remembered it.
+b : Have you forgotten many? | Why quietly?
+a : I couldn't honestly count forgotten things. I do recall some very small kindnesses. | Somebody tired enough to want a hand may have little patience for a puzzle.
+
+scene young_soup
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A spoonful of mutton can bring a whole street back into the present. | My first riddles about mutton stew had very repetitive endings.
+b : A street you knew? | A bite?
+a : One in which a hot meal once made the rest of a wet walk quite bearable. | Invariably. I've had time to appreciate the work done before the pot came off.
+
+scene old_question
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : Give me a riddle where the second hearing feels like a different question. | Childhood questions about the sound of bells have stayed surprisingly good questions.
+b : What sort is that? | Have you better answers?
+a : One where a new listener hears the clue I have walked past all these years. | I've found better places to stand and listen.
+
+scene first_fall
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : I take one minute to see the first snow before ordinary arrangements put me back indoors. | I like a high sill where snow can gather without pressing a boot into it.
+b : What draws you to it? | Still counting the points?
+a : The first footprint. Somebody else always seems to have thought of the same minute. | Sometimes. The sleeve which used to melt them gave me a reason to stand back an elbow's length.
+
+scene market_kind
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to make one fair exchange that makes as good a tale as the finest riddle. | An ambition stays with me longer if I can express it simply.
+b : What's in it for you? | What do you want, then?
+a : If it's really fair there ought to be an answer to that for each of us. | To be remembered as a decent answer to somebody else's difficulty.
+
+any
+
+scene ring_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : Word has rung in from #world.news_from#. #world.news#. | #world.news#. The place that goes with it is #world.news_from#.
+b : Are we meant to solve anything? | Anything for us to guess?
+a : No. I kept the words sensible this time. | I'd keep guessing out of news somebody tried to bring accurately.
+
+scene puzzle_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A bit of talk hasn't the right shape for a straight answer. | Some voices seem to be passing around a guess instead of a fact.
+b : Can you make a riddle of it? | Which fact?
+a : I wouldn't make a game with a real wolf for the answer. | If I knew there'd be less call for all the guessing.
+
+story bag_handles [topic=work|memories]
+  : I made a puzzle about a bag that took two hands to carry though it weighed almost nothing.
+  : Gave the hint that it had lost something on the way.
+  b : Was one handle gone?
+  : Right. I spent so long explaining the answer that I could have knotted a new handle on twice.
+
+story bell_steam [topic=food|memories]
+  : I stood over hot stew waiting for a little bell to ring and listened for its note in every noise.
+  : At last there was a clear high note right beside my ear.
+  b : Which bell had rung?
+  : None. The lid had settled on the stew pot. I thought it gave a perfectly sensible dinner signal.
+
+story mud_word [topic=travel|memories]
+  : I scratched a riddle into a patch of mud and put a dry stick beside it for writing the answer.
+  : On returning I noticed three fat dots beneath my question.
+  b : Had anybody guessed right?
+  : Three drops from a gutter. The question was what makes a hole without lifting any dirt. I gave the gutter the credit.
+
+rule @hold_guess
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First guess of the morning. Keep it a moment.
+
+rule @clean_heel
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Dry bit by the doorpost for a heel.
+
+rule @bell_gap
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say There's room for the answer in that hush.
+
+rule @rain_mark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That's dot number four from the gutter.
+
+dlg resident.hub : There's a moment free while my newest answer thinks of its question.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you get to choose which clue comes first.
+dlg resident.hub [here.time=night] : In the quiet you can almost hear a guess arriving.
+dlg resident.hub [pair.disposition=hostile|wary] : We can keep some distance between your guess and mine.
+dlg resident.job [self.job=child self.workplace] : My lessons take me to #self.workplace#. Sums make quite good puzzles when I get a say.
+dlg resident.job : I like starting a task whose finish I can recognise myself.
+dlg resident.news [world.news] : This account comes with #world.news_from# attached. #world.news#.
+dlg resident.gossip [here.gossip=yes] : A half-heard answer oughtn't to turn into a whole account about somebody.
+dlg resident.bye : Keep one good riddle tucked behind an ear.
+
+graft resident.hub
+choice How can a riddle remember a favour? -> favour_question
+node favour_question
+say Suppose you held a heavy bag as I did a knot up. What's got four boots under one bag? The answer was us. My turn to take the handles another time.
+choice What if I guess wrong? -> guess_kindly
+choice I like the four boots. -> hub
+node guess_kindly
+say Then I've had two bits of help. I'll remember the kindness. I've also found the bit where my riddle wants mending.
+choice I'll try it another way. -> hub
+choice I'll listen for the bell. -> bye

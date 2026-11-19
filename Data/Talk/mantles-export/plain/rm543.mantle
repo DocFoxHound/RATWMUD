@@ -1,0 +1,262 @@
+mantle rm543
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_piet_muddale
+title the two-sided favour card
+fits stage=adult|old
+prefers honesty=plain talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk turns_a_playing_card_face_up_for_a_favour_due_and_face_down_for_a_favour_received
+likes fried_fish cards old_maps autumn_wind
+dislikes stale_bread gulls
+fears a_promise_called_paid_by_mistake gulls_getting_the_only_hot_meal
+hopes a_dry_berth_with_a_porthole_that_opens_inland
+topics travel +0.6 home +0.3 memories +0.3 work +0.3
+styles comfort=quiet gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# turns a battered card down on receiving a favour and up when a return is due, and studies the dry side of every folding map.
+
+words
+oath! = Grease on my pips | A gull in the berth
+saying! = A favour has two faces | A dry berth begins with a dry blanket
+card = my two-sided card | a battered playing card
+pips = the faded black pips | three worn pips
+crease = the deep crease in a map | a fold worn soft
+fishbit = a crisp scrap of fried fish | a fish tail fried golden
+dryberth = a bunk under a rainproof roof | a berth away from the roof drip
+windturn = a strong autumn turn of wind | a blustery change
+dryboard = a plank under cover | the dry bit of board
+gullshade = a gull's moving shadow | a shadow with wings
+hardbread = a piece of yesterday's loaf | a hard crust
+mapwest = the western edge of an old chart | a coast in faded ink
+cordback = a fine cord round the pack | the pack's braided cord
+
+any
+opinion merchants mixed 0 : A penny agreed and a penny remembered make better neighbours than two different recollections.
+opinion houses mixed 0 : I'd board a sound ship under a fair agreement. The paint on the stern takes care of itself.
+opinion road mixed 0 : I like the roads on the old maps. At least the rain can't alter the ink while the cover stays shut.
+opinion city for 1 : A city this wet can make a little patch of dry board feel remarkably generous.
+opinion dole for 1 : I remember the warmth of a meal, whoever provides it.
+opinion festivals mixed 0 : I can enjoy the cards on a quiet doorstep while the louder games go on.
+opinion times against 1 : A thin week lets an old obligation take up most of the room in a pocket.
+
+grown
+line greet : There's room where the card's lying flat.
+line greet [pair.band=strangers] : No account between us yet. Sit easy.
+line greet [here.time=dawn] : Morning. The boards are drying in strips.
+line greet [here.time=dusk|night] : Evening's brought the wind below the roofline.
+line greet.return : I heard your words. They didn't blow through.
+line greet.return [pair.band=friends|family] : A familiar voice can take the seat by my pack.
+line greet.return [self.working=yes] : My hands can keep count without much looking.
+line greet.return [here.time=dusk|night] : I hear the quiet hauls at this hour.
+line kin.open [pair.kin!=no] : Kin doesn't have to show a receipt.
+line again.open : I left that card on the same face.
+line hail [pair.band=friends] : Friend. There's a dry space for your heel.
+line farewell : A fair passage and dry bedding.
+line farewell.return : And keep the folded coast to yourself.
+line react.news : Start with what came ashore.
+line react.news.new : Fresh word across my card table.
+line react.news.known : I had that entry turned up already.
+line react.news.doubt : Turn that statement over. I'd inspect the reverse.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can hear a hard account without keeping a tally.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Turn that good thing face up for everybody.
+line ask.how : Did the day leave any dry patches?
+line answer.how : Not much spare. Enough for a hand of cards.
+line thank : I'll turn the face down for your kindness.
+line deflect_thanks : It was my turn for the squared account.
+line sympathise : You can rest without owing me a story.
+line reassure : A turn of the card doesn't bring a debt collector to the door.
+line decline : I've no room for a further promise this tide.
+line accept_decline : That's clear enough to mark. No more needed.
+line preclose : I'll tie the pack while there's still light.
+line accept_preclose : We'll count this visit square.
+
+scene two_faces
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #card.capitalize# goes down for a favour received. | I turn #pips# upwards when it's my turn to give something back.
+b : Why hide the marks? | A whole account on one card?
+a : My obligation doesn't need a public number against it. | Just the reminder. The amount I remember.
+
+scene old_coast
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #mapwest.capitalize# has a bay nobody can find now. | I open #crease# slowly or my road will finish in two pieces.
+b : Did it dry out? | Would you tape it?
+a : I prefer to think the ink slipped. A much smaller misfortune. | I'll sew a bit of cloth to the back. Paper with a backbone.
+
+scene butter_fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : #fishbit.capitalize# tastes better with the wind carrying the frying smell inland. | I wrap fried fish with the crispiest edge sticking out.
+b : Why inland? | So it won't go soft?
+a : The gulls get their directions a little late. | To give myself a nibble before I've even found a seat.
+
+scene three_cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : Three pips can look like seven in a bad light. | Keep the playing pack separate from my favour card.
+b : Is that an advantage? | What if the backs match?
+a : It is for whoever's got a seat nearer the window. | The one with the worn corner has seen far too much business.
+
+scene wind_post
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : #windturn.capitalize# sorts the leaves by weight. | Autumn air will push me out and home again if I choose a circular walk.
+b : Like a hand of cards? | Both ways following?
+a : The heavy ones stay against my boots and the light ones change tables. | In my hopes. The wind and I still differ as to the route.
+
+scene steal_meal
+when topic=food self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : #gullshade.capitalize# goes over my supper and my elbow comes down. | I tuck myself against a wall while I eat the crisp end.
+b : Can a shadow take fish? | For privacy?
+a : Something's usually attached to it. | The gull in front has to face me across my supper.
+
+scene soup_crust
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #hardbread.capitalize# goes in the pan before the rest of supper's ready. | A bread crust that could wedge a cart wheel is better at that job than at supper.
+b : To warm it? | Would it make a lasting wheel wedge?
+a : To hear it soften. I'm tired of doing the work with my teeth. | I'd give it one last chance in gravy.
+
+scene trade_around
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : The work line says #self.trade_words#. I pay attention to what rolls away when the ground tilts. | My work is entered as #self.trade_words#.
+b : Such as? | Is it all heavy?
+a : A stray wedge. Cheaper to notice it before a wheel starts moving. | Looking properly at a small part can save a deal of lifting.
+
+scene quarter_board
+when topic=home self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : Down on the Wharf my fingers find #dryboard# almost without looking. | I like a day on the Wharf when a cold wind tires of blowing inland and turns.
+b : How can you tell? | Tires of the city?
+a : Look overhead. What's doing the sheltering usually shows before the shelter. | It at least changes the side I'm cold on.
+
+scene friend_seat
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd deal #self.friend# a hand before turning my own card over. | My best invitation to #self.friend# is a patch of board kept dry.
+b : To keep the debt clear? | Some supper too?
+a : To say it's a game. Games deserve a fresh account. | I'd make an equal division of whatever's under my elbow.
+
+scene travel_desire
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : #dryberth.capitalize# sounds a fine inducement to take a voyage. | I study the drier ports on a map that has taken a great deal of rain.
+b : Have you the berth? | Is that a good guide?
+a : I've the inducement. The berth is the part still wanted. | It's an excellent explanation of my interest.
+
+scene ties
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #cordback.capitalize# lies over the crease in my pack. | I keep an old card loose inside the flap.
+b : Does it keep the wet out? | What's that one for?
+a : Keeps the flap down. The dry bit of paper has its own wrapper. | To find the opening without setting my supper on wet stone.
+
+scene hard_times
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean days leave very definite memories of a shared pan. | In hard weeks a favour can be a dry place to hang a single sock.
+b : Do you record a price? | Just one sock?
+a : I record the warm part. I can find the means of returning that much later. | Yes. The other one missed the puddle.
+
+scene first_board
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New in the harbour? Find the step with dry boot marks. | I'd point a stranger to the corner least interesting to a hungry gull.
+b : Aren't wet marks easier to see? | Far from the fish?
+a : That's where folk walked away. Dry prints show where somebody had shelter. | Close to a good bit of cover. I wouldn't send a stranger away hungry.
+
+scene carried_word
+when topic=news world.news
+does tell.news / react.self / assess
+a : The word's come off #world.news_from#. #world.news#. | #world.news#. The mark was #world.news_from#.
+b : What goes on your card? | Is that a sufficient mark?
+a : That I heard it. The rest has more travelling to do. | Enough to tell the starting place from the stops since.
+
+scene never_dealt
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Chatter's passed me a card face down. | A bit of talk's trying to put another wolf in my debt.
+b : Are you looking? | How's that?
+a : I'll leave it where a willing player can find it. | By suggesting I owe the telling onward. I don't remember agreeing.
+
+scene road_rain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A wet map can stick two towns together. | A change in the wind is a warning to put the map away before the sky makes its own remarks.
+b : How do you part them? | Does it write much?
+a : Give them an afternoon at either end of a dry table. | Enough to blur the whole evening's route.
+
+scene berth_view
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My ideal berth has a little round window that shows a dry hillside. | I dream of one morning when reaching for my boots doesn't mean checking which end caught rain.
+b : How far inland? | What then?
+a : Just far enough that I wouldn't have to lean out to see the top. | I'd use the spare time to slice fish very carefully into a hot pan.
+
+story one_deal [topic=pastimes|memories]
+  : I used my favour card to fill a gap in a playing pack one wet evening.
+  : After the last deal I found myself deeply obliged to my own left paw.
+  b : Why the left?
+  : That's where I keep a hand of cards. I've been more particular about markings since.
+
+story rolled_map [topic=travel|memories]
+  : I weighted the corner of a curling map with a wheel wedge and let the sea coast show.
+  : By morning the wedge had wandered just far enough to hide the only town I wanted.
+  b : Where had it gone?
+  : Along the tilt of the table. A wheel wedge of all things ought to have known better.
+
+story fish_tail [topic=food|memories]
+  : I covered a golden piece of fried fish with a bowl and ate the other bit very slowly.
+  : Kept one eye on every gull that came anywhere near.
+  b : Did any get under the bowl?
+  : No. When I lifted it the fish was under my other bowl. The gulls had been getting unfair looks all through dinner.
+
+rule @jacket_card
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Face down first. Keep yesterday's kindness in mind.
+
+rule @cord_pack
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Hook that little flap under the cord.
+
+rule @step_gold
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say A dry strip fit for two boots.
+
+rule @shade_pass
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Cover the hot fish. Something's circling.
+
+dlg resident.hub : I've a card and a dry corner here. What's brought your boots this far?
+dlg resident.hub [topic.meeting=known] : #topic.player#, I'll put away the pack. I remember this hand.
+dlg resident.hub [here.time=night] : The tide's clear to the ear. You will be too.
+dlg resident.hub [pair.disposition=hostile|wary] : Let the width of that plank stand between our accounts.
+dlg resident.job [self.trade_words] : My work's put down as #self.trade_words#. I can speak for the work my own hands have done.
+dlg resident.news [world.news] : The last word in by way of #world.news_from# goes like this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I don't add other wolves' accounts to my private card.
+dlg resident.bye : Keep the map folded on its driest side.
+
+graft resident.hub
+choice Can one card remember all that? -> favour_face
+node favour_face
+say I remember. The card gives my fingers something to do while I'm deciding how best to return a kindness. I wouldn't entrust the amount to a scrap of paper.
+choice What if the card goes missing? -> favour_memory
+choice I'll leave it face down. -> hub
+node favour_memory
+say Then I lose a rather poor playing card. A hot plate of fish that turned up on a cold morning is considerably harder to lose.
+choice That's the part worth remembering. -> hub
+choice I'll find my dry patch before the wind turns. -> bye

@@ -1,0 +1,249 @@
+mantle rm520
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hjalte_sootby
+title the garden account
+fits stage=adult|old
+prefers job=laborer
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk buries_a_stone_in_a_garden_row_when_a_debt_is_settled
+likes barley_soup digging old_maps frosty_mornings
+dislikes crowds haggling
+fears a_wage_lost_to_bad_counting a_shallow_root_in_hard_ground
+hopes a_berth_under_a_dry_sky a_garden_with_every_marker_buried
+topics land +0.5 prices +0.4 work +0.3
+styles comfort=practical gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# can tell the difference between a wage and a favour down to the last copper and plants little stones for debts made good.
+
+words
+oath! = Lime in my soup | Stones among the seed
+saying! = Bury the debt after the paying | Dig far enough for a root to hold
+duechip = a bit of red brick | my marker above ground
+paidchip = a buried white pebble | my quittance stone
+rowend = the last thumb of soil | the bare strip at the row foot
+soupgrain = the barley heart | a pale grain with a seam
+handspade = my short digging iron | my narrow garden blade
+plankload = the low timber pile | a yardful of boards
+frostskin = a white scratch on the soil | frost at the rim
+wrongroad = a mistaken pencil turn | a lane ending in ink
+seaheap = a dry berth | my far-off bunk
+coinbed = my little hiding place | the shallow stone pocket
+
+any
+opinion dole for 2 : If there's soup to spare it ought to reach a bowl before anybody counts what the hungry wolf owes.
+opinion houses against 2 : A mark on a plank gets more respect than the sore back that fetched it. I've had cause to notice that.
+opinion merchants against 2 : One price for the timber and another for waiting for it. The timber never got any longer.
+opinion sump for 1 : A neighbour can come to a doorway here with nothing and leave with a bit of supper in a folded rag.
+opinion times against 2 : My cheapest meal still takes a whole morning of shoulder work to pay for.
+opinion watch against 1 : I've seen too much time go into asking why a tired wolf has stopped to admire the stone he's standing on.
+
+grown
+line greet : There's a strip for standing beside my row.
+line greet [pair.band=strangers] : Mind that red chip. It's standing there on purpose.
+line greet [here.time=dawn] : Morning. The frost's written on the stone again.
+line greet [here.time=dusk|night] : Sit clear of the dug earth and take the last light.
+line greet [self.working=yes] : I'm getting the weight down. Then you can have my ear.
+line again.open : Back on this row with me.
+line kin.open [pair.kin!=no] : Family can take the broad garden stone.
+line greet.return : Your call came clear across my little plot.
+line greet.return [pair.band=friends|family] : Your voice is known here without any reckoning.
+line farewell : Leave my red stone on the surface.
+line farewell.return : I'll close this furrow up before dark.
+line react.news : Which bit would stand up to being weighed?
+line react.news.new : I'll need another mark to remember that.
+line react.news.known : That entry's been made once already.
+line react.news.doubt : Did the account come straight from someone on the load?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A pot can go quietly to a grieving household.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth smoothing the soil over a good day's work.
+line answer.how : Tired in an exact number of places.
+line ask.how : Have you got your full day's due?
+line sympathise : Some aches won't come off with the yard dirt.
+line reassure : Set down what's heavy. I'll give it room.
+line decline : I'd have to owe my own supper hour twice to take that on.
+line accept_decline : Then that request can stay out of our reckoning.
+line thank : A full measure of help. I'll remember.
+line preclose : I've still one small hole to fill.
+line ack : Paid fair.
+
+scene pebble
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I put a white stone below the soil when I've settled what I owe.
+b : Doesn't that cost a stone? | What if someone owes you?
+a : Costs a bend at the waist. The stone stays in my possession. | I leave red brick showing. It's a reminder to ask once, plainly.
+
+scene yard
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A plank can look mighty short among a great pile and very long on the walk across the yard.
+b : What's your test for weight? | Which supports should receive it?
+a : Lift one end a thumb before taking the whole business. My back likes notice. | On sound supports. Bent planks take their rest out of somebody else's working day.
+
+scene dig
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : A narrow spade makes a small garden last.
+b : Wouldn't you finish quicker with a wide one? | How deep are your rows?
+a : Yes. Getting done quickly isn't all I enjoy about gardening. | Deep according to the root. I'm planting supper, not opening a gravel pit.
+
+scene barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : Well-cooked barley will split against my wooden spoon.
+b : Is split grain good eating? | What if the pot's thin?
+a : Good and soft. It sits warm inside after a long carry. | Give it a slow stir. Sometimes the thick bit's all below the surface.
+
+scene map
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I own a map showing one ink road passing through another road's bridge.
+b : What would happen at the crossing? | Could you correct it?
+a : On paper, nothing. In a cart I'd stop and have a good look first. | Pencil would do it. I keep the old way visible to show what a sure hand can get wrong.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : The first frost picks out a spade mark more clearly than fresh rain.
+b : Does that help the garden? | Would you dig then?
+a : Helps the gardener see where the foot landed and packed the soil last night. | Later, once the point can go in without jarring my wrist.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A crowd can take a great deal of space without bringing a decent patch of silence.
+b : Would a wall help? | Do you go home from a fair?
+a : At least I'd know one side couldn't lean against me. | Once I've bought the thing I came for. There's no prize for staying till my head aches.
+
+scene price
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I like a charge I can remember after the first asking.
+b : Would you try for a better price? | Suppose it's too dear to begin with?
+a : I try a different seller, quite calmly. | Set the article back entire. Nobody can charge me extra for doing that.
+
+scene sharesoup
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd save a bit of warm soup to share at home with #self.spouse#.
+b : Do you keep enough for two? | Why soup after a day of dirt?
+a : Two bowls before I reckon what can go in the jar. | The dirt stays on my boots. Hot barley goes just where the work left a space.
+
+scene sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A little patch of green doesn't show much from the Sump stairs unless a wolf stops to look.
+b : What shows first? | Does the ground belong to you?
+a : A new leaf with the edges still pinched together. I've got time to stop for that. | The plants have the use of it. I make no grander claim.
+
+scene sail
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd take a berth that carried me far enough to hang up my coat in perfectly dry weather.
+b : How far is enough? | Would you take your garden along?
+a : I expect I'd know by the lighter feel across my shoulders. | A pinch of seed, maybe. Not much ballast required for such a notion.
+
+scene weigh
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I count my trips separate from the piles.
+b : Why keep two counts? | Are all trips equal?
+a : Several trips make one pile. I'd rather my pay had the full arithmetic. | No. Wet timber and dry timber don't take equal shares of a shoulder.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd be content to trade seeds with #self.friend# without putting either lot on the scales.
+b : No entry in the account? | Why keep the agreement loose?
+a : Presents aren't debts. An honest reckoning knows where to stop. | A plant that grows well is its own receipt.
+
+scene rest
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : After carrying timber I put both palms on a flat stone a while.
+b : Cold or warm? | Does it do much?
+a : Either if the stone's smooth. I'm giving my fingers leave to stretch. | It brings my hands back to their ordinary size in my thoughts.
+
+scene spring
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A wet row in early spring wants watching before anybody adds seed.
+b : What's it waiting for? | How can waiting help?
+a : A little air in the soil. Even barley needs more than wet earth closed about it. | I can mend my tools while the earth dries. No day entirely wasted.
+
+scene ledger
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I know where each copper in my pocket has agreed to go.
+b : What about an unexpected expense? | Is there anything left for pleasure?
+a : It means altering some other arrangement. That's why I notice the difference of a copper. | A garden's reasonable. It mostly asks the use of muscles already paid for.
+
+scene dark
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I lay the short spade flat when the light starts showing only its handle.
+b : Why on its side? | How will you find it?
+a : A tread on the blade otherwise lifts the handle smartly. I prefer getting up without the spade's assistance. | Along the same board every time. Habit's a cheap lantern.
+
+story whitebrick [topic=land]
+  : I buried a white pebble to mark a repaid copper and hit another pebble already there.
+  : I'd chosen the same bare spot twice and come to rest on an old paid account.
+  b : Did you move either stone?
+  : I moved the new one a finger's width. Even settled debts deserve entries of their own.
+
+story warmbarley [topic=food]
+  : I kept a bowl warm by settling a smaller bowl across the rim.
+  : A little cloud came up from under my improvised cover and cleared my nose more effectively than a sharp wind.
+  b : Was the soup still hot?
+  : Steaming. I gave the first spoonful the further courtesy of a little breath.
+
+story wrongbridge [topic=travel]
+  : I followed an old ink mark down to a lane that ended at a garden wall.
+  : Above the wall I could see a turn of road just where my sheet claimed I should be standing.
+  b : Did you jump across?
+  : I added a little upright stroke for the wall and walked round carrying a better map.
+
+rule @load
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 8h
+say Set the long end down on the bearer. | Keep both hands clear of the last inch.
+
+rule @cold
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say Wait till the frost lets the spade in. | That's yesterday's heel in the white.
+
+rule @soup
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say Stir up the grains along the bottom. | Two portions before the jar's share.
+
+rule @dark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Short iron flat on its side. | Leave a red chip showing for morning.
+dlg resident.hub : My row's clear and my back could use a minute standing straight.
+dlg resident.hub [topic.meeting=known] : You've seen my marker stones before, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Leave the reckoning on my side until I've heard yours.
+dlg resident.hub [here.time=night] : The white stones show faintly from where you're standing.
+dlg resident.job [self.job=laborer] : I carry what the yard needs shifted at #self.workplace#. I've learned to give each plank its length of room.
+dlg resident.job : I'll take a sound day's load for a sum that doesn't change on the way to my pocket.
+dlg resident.news [world.news] : Here's a little piece with the weight still on it. #world.news#.
+dlg resident.bye : Stay on the firm slip beside the furrows.
+
+graft @buriedcoin resident.hub
+choice What grows from a buried pebble? -> buriedcoin
+node buriedcoin
+say Nothing edible. It marks a debt settled. The red chip I left above it tells me another little thing still needs attending to.
+choice Why bury what you've finished paying? -> buriedcoin_more
+choice Turn back from the row. -> hub
+node buriedcoin_more
+say Because I like going past without being reminded once the matter's properly done. The bit of ground looks better for the peace.
+choice Turn back from the row. -> hub
+choice Leave the stones settled. -> bye

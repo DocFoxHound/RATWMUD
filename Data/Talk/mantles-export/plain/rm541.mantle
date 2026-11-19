@@ -1,0 +1,257 @@
+mantle rm541
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ottilie_harrowgate
+title the waxed blue sleeve
+fits stage=adult|old
+prefers class=upper
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk plays_out_petition_routes_with_blue_draughtsmen
+likes smoked_eel draughts sharp_knife first_snow
+dislikes gulls wet_floors
+fears a_lost_reply water_through_a_fold
+hopes a_reply_for_every_caller a_week_of_dry_crossings
+topics work +0.4 travel +0.3 pastimes +0.4 family +0.2
+styles comfort=gentle gossip=discreet refuse=kind tease=none
+marks oath saying
+persona #self.first# walks petitions down the hill in a waxed sleeve, keeping a little blue counter turned face up until a reply comes home.
+
+words
+oath! = Soak my blue sleeve | Chip my little counter
+saying! = A reply has the steeper walk | Blue up until the answer comes
+bluepiece = the blue man | a blue counter
+packet = a waxed sleeve | my dry packet
+flap = the doubled flap | a blue flap
+slicer = my thin sharp knife | a clean narrow blade
+eelend = a piece of smoked eel | the brown eel end
+daub = a dab of blue | a blue spot
+wing = a white wing | a sweep of gull feather
+slick = a shiny patch | a slick flag
+grain = a grain of salt | a speck of salt
+snowpatch = a new white square | a square of clean snow
+knot = the sleeve knot | a doubled cord
+lozenge = a smooth throat sweet | a little honey sweet
+
+any
+opinion @1 city for 1 : There are enough staircases here to give a traveller home a remarkably sound pair of legs.
+opinion @2 houses for 1 : I value a great household when a little paper can get its attention.
+opinion @3 strangers for 1 : An unfamiliar voice may be making a first attempt to ask for something important.
+opinion @4 watch for 1 : An ordinary night round keeps the steep walk back from becoming a lonely one.
+opinion @5 dole mixed 1 : I'd have a hungry household heard while the soup is still hot enough to serve.
+opinion @6 times for 1 : I have the comfort to walk a second time when somebody else cannot. I should make use of it.
+
+grown
+line @1 greet [pair.band=strangers] : Come into the passage out of the wet. You're welcome there.
+line @2 greet [here.time=dawn] : A pale morning and room for a kind beginning.
+line @3 greet [here.weather=rain] : Let the sleeve take the drops. Step through.
+line @4 greet.return : Your greeting has reached a willing ear.
+line @5 greet.return [pair.band=friends] : A friend on this landing shortens the climb.
+line @6 farewell : May the upward steps be kind to your knees.
+line @7 farewell.return : I'll leave a little blue showing for next time.
+line @8 again.open : We've found the same landing twice.
+line @9 kin.open [pair.kin!=no] : A family matter may travel by the shorter stair.
+line @10 hail [pair.band=friends] : Here, beside the sleeve with the blue turn!
+line @11 react.news : I'd like to hear who is waiting for an answer.
+line @12 react.news.new : I'll turn a blue man up for that report.
+line @13 react.news.known : The earlier word made the climb already.
+line @14 react.news.doubt : A paper can lose more than its corners between one desk and another.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll attend to that next errand and leave you some quiet.
+line @16 react.news.glad [topic.kind=birth|marriage] : A happy reason to hurry a message uphill.
+line @17 answer.how : A little damp round the collar. Happy to have reached you.
+line @18 decline : I'd rather keep that space free for somebody waiting on me.
+line @19 accept_decline : Your word is sufficient. I'll take the next turn myself.
+line @20 sympathise : A pause on the landing can be part of the journey too.
+line @21 thank : That has shortened more than my walk today.
+line @22 deflect_thanks : I was making the climb in any event.
+line @23 preclose : I ought to see if the last answer is ready to travel.
+line @24 accept_preclose : Go gently. I'll keep your place for another time.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I cut #eelend# across on a slant.
+b : Does the slant improve the smoking?
+a : It gives me a broad thin slice fit for eating on a narrow landing without a plate.
+
+scene blueboard
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail / assess
+a : I turn #bluepiece# face down when a petition gets its reply.
+b : What happens when you'd like a game before that?
+a : I play round the piece. It's good practice in getting past a blocked street.
+b : I hope the waiting wolf gets a clear road before the game is finished.
+
+scene blade
+when topic=smalltalk self.likes=sharp_knife
+does tell.self / react.self / assess
+a : I keep #slicer# well apart from the cuts of wax on my sleeve.
+b : Do you fear opening a sealed letter in error?
+a : I fear opening my useful packet along with it. A keen blade has no idea where I'd like it to stop.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.plan / ask.detail / answer.detail
+a : When the year's snow comes I take a fresh way across #snowpatch#.
+b : To keep the hem free of slush?
+a : To see my own tracks returning beside the ones that carried the papers out.
+
+scene gull
+when topic=food self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : #wing# over my shoulder means my little lunch has attracted an audience.
+b : Do you give the gull a piece?
+a : I fold the eel away. I prefer an audience that waits to be invited.
+
+scene slick
+when topic=land self.dislikes=wet_floors
+does tell.worry / reassure / assess
+a : I watch #slick# more closely on the return journey.
+b : Are you carrying something more delicate uphill?
+a : Sometimes an answer somebody has waited a week for. I don't want to arrive sitting down.
+
+scene route
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : I carry petitions out of #self.workplace# in person.
+b : Why make such a routine journey yourself?
+a : A wolf who has walked it once knows exactly which question to ask on returning next week.
+
+scene cough
+when topic=weather
+does tell.feeling / sympathise / assess
+a : There. The damp caught my voice in #flap# for an instant.
+b : Can we stand somewhere kinder to your throat?
+a : Gladly. I'm sure the sleeve would benefit from the drier air as well.
+
+scene mother
+when topic=family self.mother
+does offer / accept / assess
+a : I'd offer #self.mother# the dark men and play my blue ones round the board.
+b : Is the choice of colour important at home?
+a : I like a familiar hand across the squares. The colour is a small courtesy I can add.
+
+scene seal
+when topic=gossip
+does give.opinion / disagree / concede
+a : A royal seal ought to get a letter opened, not its writer's answer decided.
+b : Mightn't the seal hurry more than the opening?
+a : Then let the answer make the grounds quite plain. A quick hearing should be just as careful.
+
+scene youngwish
+when topic=memories
+does tell.self / react.self / assess
+a : As a pup I imagined a petition was one very long question.
+b : Does that idea survive your working days?
+a : Sometimes a small sheet is a whole week of questions. The answer can still take a single line.
+
+scene packet
+when topic=travel
+does ask.advice / give.advice / assess
+a : Where would you shelter a folded sheet if the wax started to crack?
+b : Slip it behind the part that stays against your coat.
+a : Yes. Body heat will keep the old fold from stiffening any further.
+
+scene closed
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt the reply desk had a little blue square hanging over it.
+b : Could you move it off the board?
+a : Only by finding the right answer. That's the part of the dream I quite liked.
+
+scene upstairs
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late cart leaves a surprising width of road clear for a walker.
+b : Would you take the longer route for that?
+a : If the packet is dry and the daylight good I can spare a turn by the river.
+
+scene lean
+when topic=food world.times=hard|lean
+does offer / accept / assess
+a : I can spare a slice off the broad end of my eel.
+b : It looks thin already. Will you have enough?
+a : I cut it thin on purpose. A second sheet of bread makes a lunch of each strip.
+
+scene office
+when topic=work
+does give.opinion / disagree / concede
+a : A caller ought to know when a paper has changed rooms.
+b : Even when the answer is still quite uncertain?
+a : That is when the news is most welcome. At least the wolf can put the next question to the right desk.
+
+scene sleevecare
+when topic=smalltalk
+does tell.plan / ask.detail / answer.detail
+a : I'd like to put #daub# on the dry end of every packet.
+b : Will you know the dry end after a downpour?
+a : By the little mark on its lining. It only shows when I open the flap under cover.
+
+scene rest
+when topic=friends
+does tell.feeling / sympathise / assess
+a : I value a friend willing to share a quiet climb.
+b : Is that a kindness to your breathing?
+a : And to my thoughts. Sometimes I find a kinder question on a quiet flight of stairs.
+
+story blueflag [topic=pastimes]
+  : I once took a blue man for a paperweight and spent the evening looking for it on a game board.
+  : I even checked beneath the table.
+  b : Did the petition win the game?
+  : It held the middle square till morning. I have to grant it remarkable staying power.
+
+story snowheel [topic=travel]
+  : First snow kept a complete impression of my heel outside a doorway.
+  : On the return I stepped squarely into the old track.
+  b : Did it still fit after a whole day?
+  : Perfectly. I wished the morning's question had come home with such a satisfactory answer.
+
+story waxfish [topic=food]
+  : I put a wrapped slice of smoked eel in the wrong fold of my carrying sleeve.
+  : By lunch my spare paper smelt wonderfully appetising.
+  b : How did the eel taste?
+  : Of eel, fortunately. I kept that sheet for a private note about dinner.
+
+rule @blueroute
+when concept=bark self.working=yes self.workplace
+does aside
+cooldown 8h
+say Blue side showing. That's one answer still to carry home.
+
+rule @eelslice
+when concept=bark self.likes=smoked_eel
+does aside
+cooldown 8h
+say Cut on the slant and the thin slice holds.
+
+rule @snowtrack
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say An outward track can have its partner later.
+
+rule @boardmark
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Clear the third row for the moving men.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I'm #self.first#. There's a dry place for a question on this landing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've still a moment before the downhill walk.
+dlg @3 resident.hub [here.time=night] : I can see the next tread. We may speak here in comfort.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We'll leave the packet closed and hear each other from here.
+dlg @5 resident.job [self.workplace] : I take the royal petitions from #self.workplace# to the City Office and walk back up carrying the replies.
+dlg @6 resident.job : An errand pleases me when its answer reaches the wolf who first asked.
+dlg @7 resident.bye : A sure footing as far as your own door.
+
+graft resident.hub
+choice What does the blue side mean? -> sleeveblue
+node sleeveblue
+say A question has gone out in #packet# and somebody is waiting for me to come back. A little colour is easier to see at dusk than small writing.
+choice When does the counter turn over? -> sleevereturn
+choice Another matter, if you please. -> hub
+node sleevereturn
+say After the answer reaches the wolf, not merely the landing. A paper can be held up under one's own roof as easily as under a stranger's.
+choice Let's sit on this landing. -> hub
+choice May your walk be dry. -> bye
