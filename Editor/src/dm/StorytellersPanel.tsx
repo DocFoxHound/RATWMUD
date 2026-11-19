@@ -2,15 +2,31 @@
 // (approve or refuse, with a reason), the approved (revoke), each storyteller's tales with who did what, their kept words
 // (narration and story characters' lines, 30 days), the approved visitors, and the DM's own hand: give a character a
 // storyline, credit a world story's milestone (its lines built from the ledger by the DM host).
-import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Me, type Storytellers, type Target, worldLabel} from './api';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {awaitOutcome, type ActOutcome} from '../lib/acts';
+import type {Project} from '../model/model.mjs';
+import {StoryPicker} from './StoryPicker';
+import {type Npcs, type Players, isLive, worldName, dmApi, type Me, type Storytellers, type Target, worldLabel} from './api';
 
-export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
+export function StorytellersPanel({me, target, world, players, refresh, openAssignment}: {openAssignment: boolean; me: Me; target: Target; world: Project | null; players: Players | null; refresh: () => Promise<void>}) {
     const [data, setData] = useState<Storytellers | null>(null);
     const [problem, setProblem] = useState(''), [note, setNote] = useState(''), [busy, setBusy] = useState(false);
     const [reason, setReason] = useState('');
     const [visitor, setVisitor] = useState({id: '', name: '', description: '', like: '', enabled: true});
     const [give, setGive] = useState({character: '', template: '', resident: '', place: ''});
+    const [showGive, setShowGive] = useState(openAssignment);
+    const heading = useRef<HTMLElement>(null);
+    useEffect(() => { if (openAssignment) heading.current?.focus(); }, [openAssignment]);
+    const [roster, setRoster] = useState<Npcs | null>(null);
+    const [sent, setSent] = useState<(ActOutcome & {id: number}) | null>(null);
+    const observed = players?.actions.find(a => a.id === sent?.id);
+    const receipt = sent?.status === 'queued' ? observed ?? sent : sent;
+    useEffect(() => {
+        if (!showGive) return;
+        let active = true;
+        dmApi.npcs(target).then(n => { if (active) setRoster(n); }).catch(e => { if (active) setProblem(e.message); });
+        return () => { active = false; };
+    }, [showGive, target]);
     const [credit, setCredit] = useState({story: '', milestone: '', weight: 'great', kind: 'storyline', storyline: '', cell: '', from: 0, to: 0});
     const load = useCallback(() => dmApi.storytellers(target).then(d => { setData(d); setProblem(''); }).catch(e => setProblem((e as Error).message)), [target]);
     useEffect(() => { void load(); }, [load]);
@@ -26,7 +42,7 @@ export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
     if (data && !data.ready) return <section className="dm-panel"><header><div><small>STORYTELLERS</small><h2>Storytellers</h2></div></header>
         <p className="hint">The {worldLabel(target)} database has no storytellers table yet (migration 0049).</p></section>;
     const applied = data?.standing.filter(s => s.state === 'applied') ?? [], approved = data?.standing.filter(s => s.state === 'approved') ?? [];
-    return <section className="dm-panel" aria-label="Storytellers">
+    return <section className="dm-panel" aria-label="Storytellers" ref={heading} tabIndex={-1}>
         <header><div><small>STORYTELLERS</small><h2>Applications{data ? ` (${applied.length})` : ''}</h2></div>
             <button title="Read again" onClick={() => void load()}>↻</button></header>
         {problem && <p className="hint error-text">{problem}</p>}
@@ -63,14 +79,34 @@ export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
             <input placeholder="Looks like (a resident's id)" value={visitor.like} onChange={e => setVisitor({...visitor, like: e.target.value})} />
             <input placeholder="Description" value={visitor.description} onChange={e => setVisitor({...visitor, description: e.target.value})} />
             <button disabled={busy || !visitor.id || !visitor.name} onClick={() => void run(`Save visitor ${visitor.id}`, () => dmApi.saveStoryVisitor(target, visitor))}>Save visitor</button></div>}
-        {canAct && <><p className="dm-group">Give a storyline</p><div className="button-grid">
-            <input placeholder="Character id" value={give.character} onChange={e => setGive({...give, character: e.target.value})} />
-            <select value={give.template} onChange={e => setGive({...give, template: e.target.value})}>
-                <option value="">a story…</option>{(data?.templates ?? []).filter(t => t.source === 'dm').map(t => <option key={t.id} value={t.id}>{t.title}</option>)}</select>
-            <input placeholder="Resident (cast)" value={give.resident} onChange={e => setGive({...give, resident: e.target.value})} />
-            <input placeholder="Place (a cell id)" value={give.place} onChange={e => setGive({...give, place: e.target.value})} />
-            <button disabled={busy || !give.character || !give.template} onClick={() => void act('storyline.give', give.character,
-                {template: give.template, cast: Object.fromEntries([['resident', give.resident], ['place', give.place]].filter(([, v]) => v))})}>Give</button></div></>}
+        {canAct && <details open={showGive} onToggle={e => setShowGive(e.currentTarget.open)}><summary>Give a personal storyline</summary>
+            <label>Player character<select aria-label="Player character" value={give.character} onChange={e => setGive({...give, character:e.target.value})}>
+                <option value="">Choose a player</option>{players?.characters.map(c => <option key={c.id} value={c.id}>{c.name} · {c.id}</option>)}</select></label>
+            <label>Story template<select aria-label="Story template" value={give.template} onChange={e => setGive({...give, template:e.target.value})}>
+                <option value="">Choose a template</option>{data?.templates.filter(t => t.source === 'dm').map(t => <option key={t.id} value={t.id}>{t.title}</option>)}</select></label>
+            <StoryPicker world={world} roster={roster} resident={give.resident} place={give.place}
+                onResident={resident => setGive({...give,resident})} onPlace={place => setGive({...give,place})} />
+            <p className="hint">An empty location uses the player’s current cell.</p>
+            <button disabled={busy || receipt?.status === 'queued' || !give.character || !give.template ||
+                (data?.templates.find(t => t.id === give.template)?.residentRequired && !give.resident) ||
+                (!!give.resident && (!roster || roster.dead.includes(give.resident) ||
+                    ![...roster.people, ...roster.holders].find(p => p.id === give.resident)?.home))}
+                onClick={async () => {
+                    if (isLive(target) && !window.confirm('Give this personal storyline on ' + worldName(target) + '?')) return;
+                    setBusy(true); setProblem('');
+                    try {
+                        const sent = await dmApi.liveAction(target, 'storyline.give', give.character, {template:give.template,
+                            cast:Object.fromEntries([['resident',give.resident],['place',give.place]].filter(([,v]) => v))});
+                        setSent({id:sent.id, status:'queued', result:''});
+                        const done = await awaitOutcome(() => dmApi.action(target, sent.id));
+                        setSent({id:sent.id, ...done});
+                        await refresh();
+                    } catch (e) { setProblem((e as Error).message); } finally { setBusy(false); }
+                }}>Give storyline</button>
+            {receipt && <p role="status">Storyline assignment {receipt.status}. {receipt.result} <small>Action {receipt.id}</small></p>}
+            {receipt?.status === 'queued' && !busy && <button onClick={() => dmApi.action(target, receipt.id)
+                .then(setSent).catch(e => setProblem(e.message))}>Check assignment status</button>}
+        </details>}
         {canAct && <><p className="dm-group">Credit a milestone</p><div className="button-grid">
             <input placeholder="The story" value={credit.story} onChange={e => setCredit({...credit, story: e.target.value})} />
             <input placeholder="The milestone" value={credit.milestone} onChange={e => setCredit({...credit, milestone: e.target.value})} />

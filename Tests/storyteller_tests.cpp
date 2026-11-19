@@ -129,6 +129,20 @@ void tales()
         for (const auto& [id, line] : t.g.storylineBook().all())
             if (line.kind == "tale")
                 tale = id;
+        order(t, t.ash, {{"type", "storyteller"}, {"verb", "edit"}, {"tale", tale}, {"request", "edit-one"}});
+        json::Value edit;
+        for (const auto& e : t.ash.events)
+            if (e.string("type") == "tale_draft" && e.string("request") == "edit-one")
+                edit = e;
+        expect(edit.array("steps").size() == 2 && edit.array("cast").front().string("looks") == "a lean old wolf",
+               "the author can reopen the complete draft");
+        said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "save"}, {"tale", tale}, {"title", "The Drowned Bell"},
+                                 {"premise", "A second tide"}, {"steps", edit["steps"]}, {"cast", edit["cast"]}});
+        expect(contains(said, "Saved") && t.g.storylineBook().find(tale)->premise == "A second tide" &&
+                   t.g.storylineBook().all().size() == 1, "editing the saved tale keeps its ID");
+        said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "save"}, {"tale", "missing-draft"}, {"title", "Copy"},
+                                 {"steps", steps}});
+        expect(!contains(said, "Saved") && t.g.storylineBook().all().size() == 1, "a missing draft cannot silently create a copy");
         said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "start"}, {"tale", tale}});
         expect(contains(said, "begins") && t.g.storylineBook().find(tale)->state == "running", "begun: " + said);
         // An invitation out of scope; a call, an ask, an admit.

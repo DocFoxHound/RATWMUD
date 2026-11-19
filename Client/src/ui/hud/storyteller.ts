@@ -6,12 +6,7 @@ import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts'
 import {button, el} from './dom.ts';
 import {ask} from '../dialog.ts';
 
-const Kinds: [string, string][] = [['told', 'You judge it done'], ['place', 'Be at a place'], ['talk', 'Talk to a resident'],
-    ['scene', 'A scene together'], ['contract', 'A job done'], ['hunt', 'A kill'], ['fight', 'A fight won'], ['gift', 'A Gift used'], ['deliver', 'An item given']];
-
-interface DraftStep { title: string; text: string; kind: string; target: string; line: string }
-interface Draft { title: string; premise: string; chapter: boolean; steps: DraftStep[]; cast: {name: string; looks: string}[] }
-const draft: Draft = {title: '', premise: '', chapter: false, steps: [{title: '', text: '', kind: 'told', target: '', line: ''}], cast: []};
+import {openTale, renderTaleEditor} from './taleEditor.ts';
 
 const input = (parent: HTMLElement, value: string, placeholder: string, set: (v: string) => void, field = '') => {
     const i = el('input', 'profile-input', parent) as HTMLInputElement;
@@ -51,6 +46,7 @@ export function renderStoryteller(panel: HTMLElement, s: GameState, redraw: () =
         const box = el('div', 'letter', panel);
         el('div', 'label', box, `${str(t, 'title').toUpperCase()} · ${state} · step ${Math.min(num(t, 'step') + 1, num(t, 'steps'))} of ${num(t, 'steps')}`);
         const row = el('div', 'story-row', box);
+        if (bool(t, 'canEdit')) button('EDIT DRAFT', 'small', row, () => void openTale(s, id, redraw)).tabIndex = 0;
         if (state === 'draft' || state === 'paused') button('BEGIN', 'small', row, () => send('start', {tale: id}));
         if (state !== 'running') continue;
         button('END · DONE', 'small', row, async () => { if (await ask('End the tale, done?', {ok: 'End it'})) send('end', {tale: id, how: 'done'}); });
@@ -98,36 +94,7 @@ export function renderStoryteller(panel: HTMLElement, s: GameState, redraw: () =
         coins.style.width = '4em';
         button('GIVE A PRIZE', 'small', prize, () => send('prize', {tale: id, to: to.value, coins: Math.trunc(Number(coins.value))}));
     }
-    // A new tale.
-    const form = el('details', 'letter-sheet', panel);
-    el('summary', 'label muted', form, 'WRITE A NEW TALE');
-    input(form, draft.title, 'Title (60 letters)', v => { draft.title = v; }, 'tale-title');
-    const premise = el('textarea', 'profile-input', form) as HTMLTextAreaElement;
-    premise.value = draft.premise;
-    premise.placeholder = 'Premise (500 letters)';
-    premise.addEventListener('change', () => { draft.premise = premise.value; });
-    draft.steps.forEach((step, i) => {
-        el('div', 'label muted', form, `STEP ${i + 1}`);
-        input(form, step.title, 'Its title', v => { step.title = v; }, `step-${i}-title`);
-        input(form, step.text, 'What it asks', v => { step.text = v; }, `step-${i}-text`);
-        const kind = el('select', '', form) as HTMLSelectElement;
-        for (const [k, words] of Kinds) (el('option', '', kind, words) as HTMLOptionElement).value = k;
-        kind.value = step.kind;
-        kind.addEventListener('change', () => { step.kind = kind.value; });
-        input(form, step.target, 'Where or whom (a place or resident id), if it asks', v => { step.target = v; });
-    });
-    const more = el('div', 'story-row', form);
-    if (draft.steps.length < 10) button('ADD A STEP', 'small', more, () => { draft.steps.push({title: '', text: '', kind: 'told', target: '', line: ''}); redraw(); });
-    if (draft.cast.length < 6) button('ADD A STORY CHARACTER', 'small', more, () => { draft.cast.push({name: '', looks: ''}); redraw(); });
-    draft.cast.forEach((c, i) => {
-        input(form, c.name, `Story character ${i + 1}: a name (never a real wolf's)`, v => { c.name = v; });
-        input(form, c.looks, 'How they look', v => { c.looks = v; });
-    });
-    button('SAVE THE DRAFT', 'primary', form, () => send('save', {
-        title: draft.title, premise: draft.premise, chapter: draft.chapter,
-        steps: draft.steps.map(st => ({title: st.title, text: st.text, objectives: [{kind: st.kind, target: st.target, line: st.title}]})),
-        cast: draft.cast,
-    }));
+    renderTaleEditor(panel, s, redraw);
 }
 
 /** The credits screen: who did what, and the stars one may give (a tale: its storyteller, once; a milestone: up to 3). */

@@ -221,3 +221,7 @@
 .shop-keeper { display: flex; gap: 12px; align-items: center; margin: 0 0 10px; }
 .shop-keeper-face { width: 64px; height: 76px; flex: none; border-radius: 8px; background: #2a2620; }
 .shop-keeper-line { color: var(--paper); font-style: italic; }
+
+.tale-fields { min-width: 0; border: 0; padding: 0; margin: .5rem 0; }
+.tale-field { display: grid; gap: .2rem; margin: .45rem 0; }
+.tale-fields .letter { margin: .6rem 0; }

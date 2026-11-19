@@ -238,9 +238,10 @@ Result Game::saveTale(const std::string& teller, const Value& j)
     // wolf's. Only a draft is rewritten.
     const auto& r = storylines::rules();
     storylines::Storyline tale;
-    if (auto* old = storylines_.find(j.string("tale")))
+    if (!j.string("tale").empty())
     {
-        if (old->kind != "tale" || old->authorCharacter != teller || old->state != "draft")
+        const auto* old = storylines_.find(j.string("tale"));
+        if (!old || old->kind != "tale" || old->authorCharacter != teller || old->state != "draft")
             return {false, "Only your own draft can be rewritten.", {}};
         tale = *old;
         tale.steps.clear();
@@ -281,6 +282,7 @@ Result Game::saveTale(const std::string& teller, const Value& j)
             obj.kind = o.string("kind", "told");
             obj.target = json::utf8Prefix(o.string("target"), 80);
             obj.cell = json::utf8Prefix(o.string("cell"), 80);
+            obj.to = json::utf8Prefix(o.string("to"), 80);
             obj.x = o.number("x", -1), obj.y = o.number("y", -1), obj.radius = std::clamp(o.number("radius", 0), 0.0, 16.0);
             obj.count = std::clamp(int(o.number("count", 2)), 1, 12);
             obj.line = json::utf8Prefix(o.string("line", step.title), 160);
@@ -414,6 +416,29 @@ bool Game::storytellerCommand(Connection* c, const Value& j, Result& result)
     if (!approvedStoryteller(account))
     {
         result = {false, "Only storytellers " + deciders() + (communityWorld() ? " has" : " have") + " approved can do that.", {}};
+        return true;
+    }
+    if (verb == "edit")
+    {
+        const auto* tale = storylines_.find(j.string("tale"));
+        if (!tale || tale->kind != "tale" || tale->state != "draft" || tale->authorCharacter != id)
+            result = {false, "Only your own draft can be reopened.", {}};
+        else
+        {
+            // The manuscript is private to its author and only needed when the editor opens.
+            const auto saved = storylines::saveStoryline(*tale);
+            auto reply = Value::object();
+            reply.add("type", "tale_draft");
+            reply.add("request", json::utf8Prefix(j.string("request"), 80));
+            reply.add("tale", tale->id);
+            reply.add("title", tale->title);
+            reply.add("premise", tale->premise);
+            reply.add("chapter", !tale->chapter.empty());
+            reply.add("steps", saved["steps"]);
+            reply.add("cast", saved["cast"]);
+            send(c, reply);
+            result = {true, "Opened your draft.", tale->id};
+        }
         return true;
     }
     if (verb == "save")
@@ -930,6 +955,7 @@ Value Game::storytellerSelf(const std::string& viewer)
                 j.add("state", t.state);
                 j.add("step", int(t.current()));
                 j.add("steps", int(t.steps.size()));
+                j.add("canEdit", t.state == "draft" && t.authorCharacter == viewer);
                 auto cast = Value::array();
                 for (const auto& m : t.cast)
                     cast.push(m.name);

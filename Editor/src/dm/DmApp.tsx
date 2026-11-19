@@ -18,6 +18,7 @@ import {ProsperityTab} from './ProsperityTab';
 import {EconomyTab} from './EconomyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
+import {StoryCreator} from './StoryCreator';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
 import {MyWorldTab} from './MyWorldTab';
@@ -31,8 +32,7 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'live', label: 'LIVE', icon: '●', ready: true, blurb: ''},
     {id: 'npcs', label: 'NPC Life', icon: '☺', ready: true, blurb: ''},
     {id: 'chapters', label: 'Chapters', icon: '♞', ready: true, blurb: ''},
-    {id: 'stories', label: 'Story Creator', icon: '✦', ready: false,
-        blurb: 'Build, save and load multi-phase world stories with triggers and actions; test on DEV, run on PROD. Coming in phase 5.'},
+    {id: 'stories', label: 'Story Creator', icon: '✦', ready: true, blurb: ''},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
     {id: 'prosperity', label: 'Prosperity', icon: '¤', ready: true, blurb: ''},
     // The staged economy's levers, applied to the running server (doc 79, 12); Prosperity is its read model and acts.
@@ -67,6 +67,7 @@ export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 /** The DM suite (doc 66, 3): running a live world. Its world (the live server's) is the studio's top bar's. */
 export function DmSuite({me, target}: {me: Me; target: Target}) {
     const [tab, setTab] = useState<Tab>('live');
+    const [openStories, setOpenStories] = useState(false);
     const current = TABS.find(t => t.id === tab)!;
     // A host's Editor (doc 78, 2 and 7): one world, no imports or releases; its server tab is My world (status, Close and
     // Open, Restart, backups, settings, AI use, history).
@@ -75,18 +76,20 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
         <header className="topbar dm-tabs">
             <div className="workspace-tabs" role="tablist">
                 {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
-                    title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => setTab(t.id)}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
+                    title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => {setOpenStories(false); setTab(t.id);}}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
             </div>
         </header>
         {me.hosted && me.role === 'viewer' && <p className="hint dm-viewer-hint">Your account can watch only. Ask the world's owner to change its role.</p>}
         {tab === 'live' ? <LiveTab me={me} target={target} key={target} />
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
+            : tab === 'stories' ? <StoryCreator key={JSON.stringify([target, me.username])} me={me} target={target}
+                openPersonal={() => {setOpenStories(true); setTab('players');}} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
             : tab === 'server' ? (me.hosted ? <MyWorldTab me={me} key={target} /> : <ServerTab me={me} target={target} key={target} />)
             : tab === 'prosperity' ? <ProsperityTab target={target} key={target} me={me} />
             : tab === 'economy' ? <EconomyTab target={target} key={target} me={me} />
-            : current.ready ? <PlayersTab me={me} target={target} key={target} />
+            : current.ready ? <PlayersTab me={me} target={target} key={target} openStories={openStories} />
             : <div className="dm-center"><div className="empty-sheet"><h2>{current.icon} {current.label}</h2><p>{current.blurb}</p></div></div>}
     </div>;
 }
@@ -123,7 +126,7 @@ const COLUMNS: Column[] = [
     {key: 'saved', label: 'Last saved', get: c => c.saved},
 ];
 
-function PlayersTab({me, target}: {me: Me; target: Target}) {
+function PlayersTab({me, target, openStories}: {me: Me; target: Target; openStories: boolean}) {
     const [data, setData] = useState<Players | null>(null);
     const world = useWorld(target);
     const [problem, setProblem] = useState('');
@@ -182,7 +185,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
                 : <p className="hint">Select a character in the table or on the map.</p>}
             <TiesPanel ties={data?.ties ?? []} onSelect={setSelected} />
             <ReportsPanel me={me} target={target} />
-            <StorytellersPanel me={me} target={target} />
+            <StorytellersPanel openAssignment={openStories} me={me} target={target} world={world} players={data} refresh={load} />
             {!me.hosted && <ArtworkPanel me={me} target={target} />}
         </aside>
     </div>;

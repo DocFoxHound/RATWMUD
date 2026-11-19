@@ -650,7 +650,8 @@ class DungeonMaster:
                                               (world,)).fetchall()]
         log.sort(key=lambda e: -(e.get('at') or 0))
         return {'target': target, 'ready': True, 'standing': standing, 'tales': tales, 'log': log, 'visitors': visitors,
-                'templates': [{'id': t['id'], 'title': t.get('title', t['id']), 'source': t.get('source', 'dm')} for t in storyline_templates()]}
+                'templates': [{'id': t['id'], 'title': t.get('title', t['id']), 'source': t.get('source', 'dm'),
+                               'residentRequired': '{resident}' in json.dumps(t.get('steps', []))} for t in storyline_templates()]}
 
     # -- talk (Docs/Design/62-talk.md, phase 6) -------------------------------------------------------------------------
     # A resident's voice (where they're from, accent, quarter, traits, quirk, the personality written for them, their own

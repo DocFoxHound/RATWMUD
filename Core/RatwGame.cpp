@@ -5900,6 +5900,16 @@ void Game::command(Connection* c, const std::string& raw)
         }
         else
             storytellerCommand(c, j, result);
+        if ((j.string("verb") == "save" || (j.string("verb") == "edit" && !result.ok)) && !j.string("request").empty())
+        {
+            auto reply = json::Value::object();
+            reply.add("type", "tale_save_result");
+            reply.add("request", json::utf8Prefix(j.string("request"), 80));
+            reply.add("ok", result.ok);
+            reply.add("tale", result.targetId);
+            reply.add("message", result.message);
+            send(c, reply);
+        }
         report = true;
     }
     else if (type == "storyline")

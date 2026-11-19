@@ -80,7 +80,7 @@ const check = (ok, what) => {
     if (!ok) throw new Error(what);
 };
 const S = 'window.ratw.game().state';
-const click = (page, text) => page.evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === ${JSON.stringify(text)}); if (b) b.click(); return !!b; })()`);
+const click = (page, text) => page.evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.dataset.page === ${JSON.stringify(text)} || b.textContent.trim() === ${JSON.stringify(text)}); if (b) b.click(); return !!b; })()`);
 try {
     const open = async who => {
         const browser = await Browser.launch({width: 1440, height: 940});
@@ -91,7 +91,6 @@ try {
     };
     const ash = await open('ash'), bo = await open('bo');
     await ash.evaluate(`${S}.send({type: 'time', value: 'day'})`);
-    await ash.evaluate(`window.confirm = () => true`);
     // A storyline given: in her journal, step 1 ticked, the next marked on the map.
     await ash.evaluate(`${S}.send({type: 'storyline', verb: 'give', template: 'the-debt', cast: {resident: 'u1', place: 'c_5_0'}})`);
     check(!!await ash.waitFor(`(${S}.snapshot?.self?.journal ?? []).length > 0`, 10), 'a storyline given');
@@ -115,6 +114,14 @@ try {
     })()`);
     await click(ash, 'SAVE THE DRAFT');
     check(!!await ash.waitFor(`document.body.innerText.includes('THE DROWNED BELL · draft')`, 10), 'the draft saved');
+    await click(ash, 'EDIT DRAFT');
+    check(!!await ash.waitFor(`document.querySelector('[data-field="step-0-text"]')?.value === 'Meet at the pier in the fog.' && !document.querySelector('.tale-fields').disabled`, 10), 'reopened the saved steps');
+    await ash.evaluate(`(() => { const line = document.querySelector('[data-field="objective-0-0-line"]'); line.value = 'Wait for the tide'; line.dispatchEvent(new Event('input')); })()`);
+    await click(ash, 'Preview as player');
+    check(!!await ash.waitFor(`document.body.innerText.includes('· Wait for the tide')`, 10), 'preview shows the edited objective');
+    await ash.screenshot(`${OUT}/5-draft-preview.png`);
+    await click(ash, 'SAVE CHANGES');
+    check(!!await ash.waitFor(`${S}.snapshot.self.storyteller.tales.length === 1 && ${S}.snapshot.self.storyteller.tales[0].objectives[0].line === 'Wait for the tide'`, 10), 'saved changes to the same tale');
     await click(ash, 'BEGIN');
     check(!!await ash.waitFor(`document.body.innerText.includes('THE DROWNED BELL · running')`, 10), 'begun');
     await click(ash, 'POST A CALL');
@@ -142,6 +149,8 @@ try {
     await ash.evaluate(`document.querySelector('.nav-button.storyteller').click()`);
     await ash.waitFor(`document.body.innerText.includes('END · DONE')`, 10);
     await click(ash, 'END · DONE');
+    await ash.waitFor(`document.querySelector('.ratw-dialog')?.textContent.includes('End the tale')`, 10);
+    await click(ash, 'End it');
     check(!!await bo.waitFor(`document.body.innerText.includes('THE TALE ENDS')`, 15), 'Bo\'s end card');
     await click(bo, '★ STORYTELLER');
     check(!!await bo.waitFor(`document.body.innerText.includes('★ starred')`, 10), 'Bo stars her as a Storyteller');

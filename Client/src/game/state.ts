@@ -239,6 +239,7 @@ export class GameState {
     journalView: Json | null = null;                // (The journal: lore, bestiary, herbarium, places.)
     chronicleView: Json | null = null;              // (The chronicle: doc 56.)
     creditsView: Json | null = null;                // (A credits screen: doc 58.)
+    taleSaveResult: Json | null = null;
     storytellerVersion = 0;                         // (The tale editor's rows, drawn again: doc 58.)
     welcomeView: Json | null = null;                // (While you were away: doc 56, 10; kept until the next logout.)
     boardView: Json | null = null;                  // (A notice board as last read: doc 54.)                         // (Bumped when the page, not the player's typing, changes the draft.)
@@ -1272,6 +1273,11 @@ export class GameState {
         if (type === 'welcome') {
             this.welcomeView = e;                   // (Back after a break: doc 56, 10.)
             this.modal = 'welcome';
+            return;
+        }
+        if (type === 'tale_save_result' || type === 'tale_draft') {
+            this.taleSaveResult = e;
+            ++this.storytellerVersion;
             return;
         }
         if (type === 'credits') {

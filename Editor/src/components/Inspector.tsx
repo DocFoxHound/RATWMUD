@@ -178,6 +178,14 @@ function MultiCellInspector({cells}: {cells: AnyCell[]}) {
 }
 
 /** `pinned`: shown as the Interiors workspace's page for the open room, so there is nothing to close. */
+function StoryReference({id}: {id: string}) {
+    return <div className="story-reference"><span>Story reference <code>{id}</code></span>
+        <button onClick={async () => {
+            try { await navigator.clipboard.writeText(id); toast('Copied story reference.'); }
+            catch { toast('Select the reference to copy it manually.'); }
+        }}>Copy ID</button></div>;
+}
+
 function CellInspector({project, cell, pinned = false}: {project: Project; cell: AnyCell; pinned?: boolean}) {
     const room = isRoom(cell) ? cell as Room : null;
     const update = (fields: Partial<Room>, label = 'Updated cell details.') => commit(label, p => M.updateCell(p, cell.id, fields), true);
@@ -188,6 +196,7 @@ function CellInspector({project, cell, pinned = false}: {project: Project; cell:
         <Header eyebrow={room ? 'INTERIOR' : 'WORLD CELL'} title={cell.name} onClose={pinned ? undefined : close}>
             {!viewing && <button className="primary" onClick={() => openView({kind: 'cell', id: cell.id})}>Open ↗</button>}
         </Header>
+        <StoryReference id={cell.id} />
         <Section title="Details">
             <TextField label="Name" value={cell.name} max={120} onCommit={v => update({name: v})} />
             <TextField label="Scene description" multiline value={cell.description} max={4000} placeholder="What a wolf notices on arrival…" onCommit={v => update({description: v})} />
@@ -302,6 +311,7 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
         <Header eyebrow={info.label.toUpperCase()} title={person.name} onClose={close}>
             <span className="role-chip" style={{borderColor: info.color, color: info.color}}>{info.icon}</span>
         </Header>
+        <StoryReference id={person.id} />
         <Section title="Identity">
             <Row>
                 <TextField label="Name" value={person.name} max={120} onCommit={v => update({name: v})} />

@@ -147,3 +147,27 @@
 .dm-word li, .dm-log li { margin: 2px 0; }
 .dm-log small { color: var(--muted); margin-right: 4px; }
 .dm-band-for { border-top: 1px solid var(--line, #333); margin-top: 8px; padding-top: 6px; }
+
+.story-workspace { padding: 16px clamp(12px, 3vw, 36px); overflow: auto; min-height: 0; flex: 1; }
+.story-workspace > header, .story-workspace nav, .story-exit, .story-reference { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; }
+.story-workspace > header { justify-content: space-between; }
+.story-workspace nav { margin: 14px 0; }
+.story-workspace nav [aria-pressed="true"] { color: var(--amber-2); border-bottom: 2px solid currentColor; }
+.story-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 16px; align-items: start; }
+.story-workspace fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.story-workspace label, .story-pickers label { display: grid; gap: 3px; margin: 6px 0; min-width: 0; }
+.story-workspace label:has(input[type="checkbox"]) { display: flex; align-items: center; }
+.story-workspace :is(input,select,textarea), .story-pickers select { max-width: 100%; }
+.story-step { border-top: 1px solid var(--line); margin: 16px 0; padding-top: 8px; }
+.story-workspace .dm-panel button { margin: 3px; }
+.story-pickers { display: grid; gap: 4px; }
+.story-reference { align-items: center; padding: 8px 12px; font-size: 12px; overflow-wrap: anywhere; }
+.story-reference code { user-select: all; }
+@media (max-width: 800px) { .story-columns { grid-template-columns: minmax(0, 1fr); } }
+.story-columns > .dm-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 16px; }
+.story-columns > .dm-panel > h3:first-child { margin-top: 0; }
+.story-workspace .hint, .story-pickers small { color: var(--text-2, #b2c1b7); }
+
+.story-context { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; }
+.story-context dt { color: var(--muted); }
+.story-context dd { margin: 0; }

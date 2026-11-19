@@ -81,7 +81,7 @@ export interface TaleRow {
 export interface StoryLogRow { id: string; account: string; character: string; name: string; storyline: string; kind: string; target: string; text: string; detail: string; at: number }
 export interface Storytellers {
     target: Target; ready: boolean; standing: StorytellerStanding[]; tales: TaleRow[]; log: StoryLogRow[];
-    visitors: {id: string; name: string; description: string; enabled: boolean; approvedBy: string}[]; templates: {id: string; title: string; source: string}[];
+    visitors: {id: string; name: string; description: string; enabled: boolean; approvedBy: string}[]; templates: {id: string; title: string; source: string; residentRequired?: boolean}[];
 }
 export interface Reports { target: Target; ready: boolean; reports: PlayerReport[]; actions: (Action & {payload?: unknown})[] }
 export interface AccountStanding {
