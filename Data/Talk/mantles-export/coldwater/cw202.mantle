@@ -1,0 +1,317 @@
+# cw202, the berth-book clerk (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw202
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_septimus_plankmarsh
+written_by claude
+title the berth-book clerk
+fits stage=adult|old
+prefers job=scholar humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk knows_every_ship_by_its_page_in_the_book
+likes warm_bread stars market_bustle first_snow
+dislikes salt_wind rats
+fears a_page_lost_to_the_rats a_ship_whose_line_stays_empty
+hopes a_desk_with_a_window_of_my_own a_roof_to_watch_the_stars_from
+topics ships +0.5 work +0.4 smalltalk +0.3 pastimes +0.2 weather +0.2 faith -0.2
+styles comfort=light gossip=careful refuse=soft tease=merry
+marks oath saying
+persona #self.first# clerks the berths and dues of a busy wharf: chatty, wry and plain, quick with a joke and slow with a blot, able to name every ship that comes into the Sound, with a weakness for warm bread and the stars.
+
+words
+oath! = Quill and keel | By the tide-table | Ink and anchor-chain
+saying! = If it's not in the book, it never docked | Every hull has a page | Write it wet, read it dry
+book = the berth book | the big book of berths
+ink = the ink | a pot of ink gone thick
+desk = my desk | the desk that faces the water
+ships = the ships | every hull in the Sound
+sound = the Sound | the grey of the Sound
+manifest = the manifest | a manifest in three hands
+stars = the stars | the stars over the water
+firstsnow = the first snow | the year's first snow
+loaf = warm bread | a loaf still breathing
+roar = the market | the market in full cry
+saltwind = a salt wind | a wind with brine in it
+rats = the wharf rats | rats in the ledgers
+office = the Office | the Wharf Office
+quill = my quill | the good quill
+
+any
+opinion @1 drink for 1 : A jar once the figures are done, and I can count again by morning, shore-friend.
+opinion @1 festivals for 2 : A feast day shuts #office#, and I'm first into #roar# with my coat open.
+opinion @1 city against 1 : The city's too loud by half. Still, there's always a sail on #sound# to look at, and I know her name.
+opinion @1 houses mixed 0 : A House pays my wage, on the day, to the farthing. I'll not hear them called thieves at #desk#.
+opinion @1 merchants mixed 1 : Every merchant swears #manifest# is short. Every one. I've a page for each of them, #oath#.
+opinion @1 newcomers for 1 : A new ship's a new name to learn. A new face, the same. I'm never short of either.
+opinion @1 watch for 1 : #watch.capitalize# on the wharf at night keep the ledgers honest and #rats# humble.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. A new face. I'll write you down somewhere, I expect. | #greet#, #address#. Not off a ship, by your boots.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. Mind #ink#; it's wet. | #greet#. Speak up over the scratch of #quill#.
+line @3 greet [here.time=dawn] : Morning. The tide's turned, and so have I, nearly. | Morning, #address#. The wharf's waking, by the noise.
+line @4 greet [here.time=dusk|night] : Evening. Look up; #stars# are out. | #greet#. Late. I'm only now off #book#.
+line @1 kin.open [pair.kin!=no] : Oh, you. Sit anywhere but on the papers. | You! #good.capitalize#. I've been saving up a story for somebody.
+line @1 again.open : Back again. I'll have to give you a page in #book#. | Twice since noon. I'm keeping a tally of you, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#. All present and correct.
+line @2 greet.return [pair.band=friends|family] : #greet#. I've saved a joke for you. | #greet#. Pull up a crate and sit.
+line @3 greet.return [self.working=yes] : #greet#. Two more lines and I'm yours. | #greet#. Talk on; I can add and listen both.
+line @1 farewell : #farewell#. | #farewell#. Don't fall in anything wet.
+line @2 farewell [here.time=dusk|night] : #farewell#. #stars.capitalize# will see you home. | #farewell#. Mind the dark corners, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, and calm water under you.
+line @1 react.news : #oath#! Now there's a thing for the margins. | Oh, that's going in #book#. Go on.
+line @1 react.news.new : #surprise#. That hasn't reached #office#. | New to me, and a great deal crosses my counter.
+line @1 react.news.known : #knew#. The morning boats brought it. | I'd heard. The wharf talks faster than it works.
+line @1 react.news.doubt : #doubt#. I'll want it in writing. | #hedge#. That smells like wharf talk to me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a cruel entry. | That's #bad#, #address#. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Best line I've read today. | #good.capitalize#! I'll stand somebody a jar for that.
+line @1 answer.how : #fine#. The figures add up, and so do I. | Steady, #address#. Not a blot all morning.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Six ships in and one quill. | Up to my ears in #manifest#, and grinning about it.
+line @1 answer.how.poorly : #tired.capitalize#. Too many figures and too little sleep. | Ink in the eyes and a crick in the neck. I'll mend.
+line @1 ask.how : And you? Anything to report? | How's the tide running for you, #address#?
+line @1 sympathise : #sympathy#. Sit a moment. | That's hard. I've no joke for it, #address#.
+line @1 reassure : #reassure#. It'll balance in the end. | Most columns come right, given a second look.
+line @1 decline [self.working=yes self.job=scholar] : #hedge#, but no. #book.capitalize# has to be closed before the tide. | I'd like to, only there are three ships still to enter.
+line @2 decline : #hedge#, but no. I've letters to write and the light's going. | Not tonight. I've promised my eyes an early night, #address#.
+line @1 accept_decline : #no_matter#. Another tide, then. | Right you are. I'll pencil you in.
+line @1 thank : #thanks#. That's going in the good column. | Thank you, #address#. Noted, and kindly.
+line @1 deflect_thanks : #deflect#. No trouble at all. | Oh, don't. I'll go red and blot something.
+line @1 praise : That's #good# work. Neat, too. | #very.capitalize# well done. I'd sign under that.
+line @1 deflect_praise : #modest#. Luck and a sharp nib. | Oh, go on. I only wrote it down.
+line @1 preclose [self.working=yes] : Well. #book.capitalize# won't close itself. | I'd better get back before somebody docks without me.
+line @2 preclose : Well. #preclose#. | That's me, #address#. #stars.capitalize# are calling.
+line @1 accept_preclose : Off you go, then. | #bc_fair_enough# I've kept you.
+line @1 tease [pair.band=friends] : You've ink on your nose. No, the other side. | You'd lose a ship in a washtub, #fool#.
+line @1 tease.return : Rich, from somebody who signs with a blot. | #oath#. I'll get you back, in writing.
+line @1 laugh : Ha! I'll write that down. | Ha! Oh, that's #good#.
+line @1 ack : #bc_true# | Noted, #address#.
+line @1 give.advice : #advise#: write it down. Whatever it is. #saying.capitalize#. | Never trust #manifest# with only one hand on it.
+line @1 warn [world.bandits=near] : #warn#. Keep within the gates until #watch# sounds easier. | The roads can wait, #address#. Let them.
+scene ship_names
+when topic=ships|smalltalk here.region=ridgemere
+does tell.boast / ask.detail / answer.detail / assess
+a : Ask me any ship in #sound#. Go on. I'll know her. | I learned #ships# off #book#, one page at a time. | Folk think I'm showing off when I name the ships. I am, a bit.
+b : All of them? | One page at a time? | Only a bit?
+a : All that come in. The ones that don't, I know by the gap they leave. | One a day, at first. Then three. Now I dream in ship names. | A bit. Mostly I like the names in #book#. They're the best words in the city, shore-friend.
+b : #bc_ha# | #bc_clever# | #bc_true#
+
+scene ship_tied_up
+when topic=ships topic.kind=in topic.ship here.region=ridgemere
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize# tied up this tide. I'd her page open before she'd tied up. | She's in, #topic.ship#. That's one less worry in #book#. | #topic.ship.capitalize#'s in. I know her by the way she sits in the water.
+b : Quick of you. | All well, then? | You can tell?
+a : #book.capitalize#'s quicker than I am. I only keep up. | All well. A tick in the margin, and a breath out. | By the sit and the paint. And the noise her crew make, #oath#.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene ship_overdue
+when topic=ships topic.kind=late topic.ship here.region=ridgemere
+does tell.worry / reassure / assess
+a : #topic.ship.capitalize# is late. Her line in #book# is still empty. | No word of #topic.ship#. I keep looking at the gap on the page. | #topic.ship.capitalize#'s overdue. #oath#. I don't like an open line.
+b : Late isn't lost. | She'll come. | Weather, perhaps.
+a : No. I tell #book# the same thing. | She will. I'll keep the line clear for her. | Weather, or a slow cargo. I'll know which when she comes.
+
+scene ship_gone_down
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They're saying #topic.ship# is lost. I'll not rule the line off yet. | #topic.ship.capitalize#, lost. #pity#. | I had her page open this morning, #topic.ship#. Now they say she's gone down.
+b : That's hard. | It is. | Poor souls.
+a : Hard. I'll leave the page open a while. It's all I can do. | #rest.capitalize#. I've nothing better to add. | I hope every soul aboard got clear. I'll not write another word today.
+
+scene ship_out
+when topic=ships topic.kind=sailed topic.ship here.region=ridgemere
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s gone out. I closed her page with a flourish. | She sailed, #topic.ship#, on the morning tide. #farewell# to her. | #topic.ship.capitalize# went out. I'll miss her; she always paid her dues on time, #oath#.
+b : A flourish? | Good sailing to her. | Paid on time?
+a : A small one. A clerk's only joy. | And a quick return, so I can open the page again. | To the farthing. A rare thing on the wharf, #address#.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene berths_and_dues
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Three ships in, two out, and every one wants its page today. | I write the berths in #book#, and the dues, and who argued. | #desk.capitalize# faces the water. I can see the masts if I lean.
+b : Every one? | Who argued? | Do you lean?
+a : Every one, and yesterday. I tell them #book# doesn't hurry. | Everybody. I keep a column for it, in pencil. | All day long. My neck's gone crooked from it.
+b : #bc_ha# | Ha! A column. | #bc_poor_soul#
+
+scene short_manifest
+when topic=work|prices self.job=scholar
+does tell.complaint / ask.detail / answer.detail / assess
+a : Every skipper swears #manifest# is short. Every single one. | A manifest came in today in three different hands. I'm still reading it. | There's a barrel on today's manifest that nobody can find on the wharf.
+b : And is it? | Three hands? | Where's it gone?
+a : Sometimes. Mostly they've counted the crew's beer, shore-friend. | Three hands and two spellings of barrel. #oath#. | That's the question. I've a page waiting for the answer.
+b : #bc_ha# | #bc_ha# | #bc_we_will_see#
+
+scene brine_in_the_ink
+when topic=weather here.weather=overcast|storm here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / ask.detail / answer.detail / assess
+a : #saltwind.capitalize# off #sound#. Brine in my fur, and in #ink# too. | The wind's off #sound# today. My papers won't stay put. | I hate a salt wind. Everything tastes of #sound#.
+b : Your ink? | Weigh them down. | Everything?
+a : The ink dries thick and the fur dries stiff. #oath#. | I have. With a brick. The brick's blown off twice. | My bread, my tea, my thoughts. All brine, shore-friend.
+b : #bc_poor_soul# | #bc_ha# | #bc_ha#
+
+scene white_as_a_page
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / ask.detail / answer.detail / assess
+a : #firstsnow.capitalize#! I stopped on the steps and looked up like a minnow. | Snow on the masts. You should see the wharf, white as a clean page. | Not a single footprint in it yet. I'd keep it like that if I could.
+b : Like a pup? | White as a page? | Keep it?
+a : Like a pup, with my coat full of it. | Clean, and nobody's written on it yet. That's what I love. | In #book#, maybe. First snow, this date. I'll write it down.
+b : #bc_lovely# | #bc_lovely# | #bc_ha#
+
+scene roof_and_stars
+when topic=pastimes|day here.time=night here.weather=clear self.likes=stars
+does tell.feeling / ask.detail / answer.detail / assess
+a : Look up. You can see #stars# tonight, every one. | I count #stars# the way I count ships. I lose count sooner. | When the day's done I go up on the roof and watch #stars# come out.
+b : Every one? | Sooner? | On the roof?
+a : Near enough. They're the one list I'll never finish. | Much sooner. Ships keep still in #book#. | On the roof, with a blanket and a heel of bread. Don't tell anyone, #address#.
+b : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene juggled_loaf
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail / assess
+a : There's a baker on my way does bread so warm you have to juggle it. | #loaf.capitalize# and a quiet desk. That's my morning, when the tide lets me. | I eat my bread over #book# and get crumbs in the berths.
+b : Worth the burnt paws? | When it lets you? | Crumbs in the book?
+a : Every time. A cold loaf's only half a loaf. | Some days the tide's early, and the bread waits. Never the other way round. | In the margins. Some clerk after me will think we kept mice, #oath#.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene full_roar
+when topic=smalltalk|pastimes self.likes=market_bustle here.region=ridgemere
+does tell.feeling / ask.detail / answer.detail / assess
+a : I love #roar#. You can't hear yourself think, and nobody minds. | On a market day I walk the long way home, right through the middle of it. | Every stall in #roar# shouting a price and every buyer shouting back. There's no finer noise in the city.
+b : Not too loud for you? | The long way? | Better than ships?
+a : Never too loud. Quiet's for #office#. | The longest way. I'm home by dark, smelling of onions. | Just about. Ships don't haggle, #address#.
+b : #bc_ha# | #bc_ha# | Ha. Fair.
+
+scene rats_in_the_berths
+when topic=animals self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : A rat ate the corner off a page last night. Three berths, gone. | #rats.capitalize# are bigger than the Office cat. The cat knows it. | My bread lives in a tin these days. #rats.capitalize# read the book better than the skippers.
+b : Gone where? | Bigger? | Read it?
+a : Into a rat. I had to write them out again from memory. #oath#. | Bigger, and bolder. The cat's taken to sitting on #desk#, out of reach. | They go straight for the pages with grain on them. Clever things. I hate them.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene six_boats_at_home
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town#, the lake had six boats, and I knew every one by name. That's where it started. | My #gran# taught me letters on the jetty, writing in the wet with a stick. | The city got me because the lake ran out of boats to learn.
+b[from=coldwater] #cw : Six boats. I'd know them too. | Letters in the wet. I remember that. | Still water's no place for a counting wolf.
+b : Six? | In the wet? | Ran out?
+a@cw : Then we'd have argued over the names, shore-friend. | Then you had a good #gran# as well. | No. Too still by half, for me.
+a : Six, and one leaked. I knew her best of all. | The lake lapped it away, and she'd say, again. | Ran out. Here there's more than I'll ever finish, shore-friend.
+b : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene gulls_on_the_roof
+when topic=memories|lore self.age>=20
+does tell.memory / ask.detail / answer.detail / assess
+a : I could read before I could row. Not a common thing, on the lake. | Letters and figures were my toys. I'd sit adding up gulls along the ridge. | My first wage was writing a letter for a neighbour who couldn't. I got a pie for it.
+b : Who taught you? | How many gulls? | A whole pie?
+a : My #gran#, mostly. And a great deal of stubbornness. | Forty-one, and then they all flew off and I lost the total. | A whole pie, and I've been in trade ever since, shore-friend.
+b : #bc_good# | #bc_ha# | #bc_ha#
+
+scene feast_no_books
+when topic=festival here.day=festival
+does tell.self / ask.detail / answer.detail / assess
+a : Feast day! #office.capitalize# is shut, and I'm going to dance badly. | No books today. I've left #quill# in a drawer and the key in my pocket. | A feast is the one day I don't count anything. Not even ships.
+b : Badly? | And the key? | Not even ships?
+a : Badly, and loudly, and all night. | In my pocket, where #book# can't call me. | Well. Maybe one or two, if they come in.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene counter_talk
+when topic=gossip topic.claim_kind=promise_kept|promise_broken|newcomer|marriage|prowling|other topic.subject
+does tell.gossip / ask.detail / answer.detail / assess
+a : Wharf talk says #topic.subject# #topic.claim#. Hearsay till it's signed, shore-friend. | They're saying #topic.subject# #topic.claim#. #office.capitalize# will have it before the noon bell. | I heard #topic.subject# #topic.claim#. Across a counter, mind, so half of it's wrong.
+b : Do you believe it? | That fast? | Which half?
+a : I believe it's been said. That's all I'll sign. | Faster. Clerks have nothing to do but listen, #address#. | The half I liked. That's usually the wrong one.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene empty_lines
+when topic=times|prices world.times=hard|lean self.job=scholar here.region=ridgemere
+does tell.worry / ask.detail / answer.detail / assess
+a : Fewer ships in #book# this month. The empty lines tell the times better than any crier. | The skippers argue the dues harder in a lean month. Three shouting matches today. | Lean times. Even #office# is counting candle ends.
+b : Hard everywhere. | Three? | Candle ends?
+a : Everywhere, and on paper too. #pity#. | Three, and I won two. The third's still going. | Candle ends and #ink#. I write smaller now.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene the_real_book
+when topic=faith
+does give.opinion / ask.detail / answer.detail / assess
+a : Each hull that ties up whole, I tip #quill# at the sky for it. The Bright One must be sick of me. | My #gran# said the true book's kept by the Bright One. Mine's only a copy. | Chapel and I aren't close, but the overdue ships get a candle from me, #address#.
+b : Never of thanks, surely. | A copy? | That's kind of you.
+a : I hope not. I'd be out of a habit. | A copy, with blots. The original's bound to be neater. | It's something I can do. #book.capitalize# can't, shore-friend.
+b : #bc_ha# | #bc_ha# | #bc_good#
+
+story stern_name [topic=memories|ships self.away=yes self.from=coldwater]
+  : The first ship I ever saw come into #sound#, I asked a docker her name.
+  : The docker didn't know. Nobody on the quay knew. I read it off her stern and told them all.
+  ask : Do you know the name of the first ship you ever saw?
+  b : I don't. I wish I'd asked.
+  b[job=sailor] : I do. I crewed on her after.
+  : I've asked every ship since. They mostly answer, if you look.
+
+story cat_on_the_book [topic=work|animals self.job=scholar]
+  : The Office cat once slept on #book# a whole morning, right across the day's berths.
+  : Nobody dared move her. We wrote the arrivals on our cuffs.
+  ask : Would you have moved her?
+  b : Not for anything.
+  b[old] : I'd have moved her, and been scratched for it.
+  : At noon she woke, yawned, and walked off. The cuffs never came clean.
+
+story snow_on_the_jetty [topic=season|pastimes self.likes=first_snow self.from=coldwater self.age>=18]
+  : As a pup, the first snow came on the night of the clearest stars I ever saw.
+  : I stretched out on the jetty boards and let it land on my nose, and counted till I fell asleep.
+  : Somebody carried me home. To this day I don't know whose arms.
+  b : That's a lovely thing to keep.
+  b[from=coldwater] : Snow on the jetty. I remember nights like that.
+
+rule @book_bark
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 6h
+say Next! Name of the ship, and spell it. | Dues on the left, complaints on the right.
+
+rule @sail_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say There's a sail on #sound#. I know her. | Ah. She's early. #good.capitalize#.
+
+rule @salt_bark
+when concept=bark self.dislikes=salt_wind here.weather=overcast|storm here.region=ridgemere
+does aside
+cooldown 8h
+say Salt in #ink# again. #oath#. | Hold still, papers. Hold still.
+
+rule @star_bark
+when concept=bark here.time=night here.weather=clear self.likes=stars
+does aside
+cooldown 12h
+say Look at that sky. | There's the big star over the masts, #address#.
+
+dlg @1 resident.hub : #greet#. What can I note down for you? | #greet#, #address#. Ask away; I'm between ships.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've a page in my head already. Go on.
+dlg @3 resident.hub [here.time=night] : It's late; #office#'s shut, and so am I, nearly. Quickly, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it plainly from there, and I'll take it down.
+dlg @1 resident.job [self.job=scholar] : I clerk at #self.workplace#. Ships in, ships out, dues and berths, and every name in #book#.
+dlg @2 resident.job : #job_busy# I keep good records. That's my whole trade. | #self.trade_words.capitalize#. Neat hand, short temper for blots.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. The boats brought it, as they bring most things.
+dlg @2 resident.news [world.event_words] : The whole wharf's on about #world.event_words#. I've written it in the margin twice.
+dlg @3 resident.news [world.wagons=raided] : There's a wagon been robbed on the road. Stay in the walls, #address#; ships are safer.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing in #book# but tides and dues today.
+dlg @1 resident.gossip [here.gossip=yes] : The wharf says #topic.subject# #topic.claim#. Unsigned, mind; I'd not file it in #book#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd sign my name to, #address#.
+dlg @1 resident.bye : #farewell#. Mind the wet boards. | #farewell#, #address#. Fair sailing.
+graft resident.hub
+choice Do you know every ship in the Sound? [here.region=ridgemere] -> ships
+node ships
+say Every one that's come in while I've kept the book. I know them by their sit in the water, their paint, their noise. Ask me about any you see.
+mood pleased
+free
+choice How did you learn them all? -> ships_how
+choice Goodbye. -> bye
+node ships_how
+say One page at a time. A name a day, then three. Now I can't look at the Sound without the names coming up like fish.
+mood warm
+choice That's quite a thing. -> hub
+choice Goodbye. -> bye

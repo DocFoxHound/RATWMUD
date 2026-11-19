@@ -1,0 +1,313 @@
+# cw198, the doorkeeper with the coal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw198
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_hanne_wickworth
+written_by claude
+title the doorkeeper with the coal
+fits stage=adult|old
+prefers job=merchant temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk touches_a_lump_of_coal_before_opening_any_door
+likes warm_bread dice new_boots thunder
+dislikes smoke night_noise
+fears an_unbolted_door losing_the_coal
+hopes a_quiet_room_above_the_noise a_roof_that_never_leaks
+topics work +0.4 weather +0.3 home +0.2 pastimes +0.2 newcomer +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# minds a shop door and keeps its step swept: careful, anxious and plain, formal in the manner of the hill, noting every face that comes through, with a lump of coal in a paper twist in one pocket for luck.
+
+words
+oath! = Hinge and latch | By the doorpost | Latch and lintel
+saying! = Wipe your paws and mind your luck | A quiet door is a well-kept door | Luck likes a tidy step
+coal = my bit of coal | the coal in its paper twist
+twist = the paper twist | a twist of brown paper
+door = the door | the front door
+step = the step | the front step, swept
+bell = the door bell | the little bell over the door
+loaf = a warm loaf | bread with the oven still in it
+boots = my new boots | boots not yet broken in
+roof = a sound roof | a roof that keeps its tiles
+hill = the hill | the hill streets
+mat = the mat | the door mat
+pocket = my pocket | the left pocket
+noted = noted | written down in my head
+
+any
+opinion @1 newcomers for 1 : A new face at #door# is one more name for me to learn. I'm glad of them, on the whole.
+opinion @1 strangers for 1 : I hold #door# for strangers all day. Most of them wipe their paws, and that's all I ask of anybody.
+opinion @1 sump against 1 : I don't go down past the middle streets. One hears things, and I'd sooner hear them than see them.
+opinion @1 city mixed 1 : The city is loud at night and one sleeps poorly for it. By day, I'll grant, #hill# keeps good order.
+opinion @1 watch for 1 : I've a great respect for #watch#. Odd hours, clean boots, and #very# little fuss.
+opinion @1 church mixed 1 : I go to chapel when I'm able. I'd not trouble the Bright One with small things; that's what #coal# is for.
+opinion @1 houses mixed 0 : The Houses pay for the lamps up #hill#. I'll not speak against a lamp, whoever lights it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your paws, if you would; #step# was done this morning. | #greet#, #address#. Mind the edge of #step#; it's worn.
+line @2 greet [self.working=yes self.job=merchant self.role=civilian] : #greet#. In you come, and mind #bell#. | #greet#. Allow me; I'll have #door# for you.
+line @3 greet [here.time=dawn] : Morning. #step.capitalize# has been swept since first light. | Morning, #address#. #hill.capitalize#'s quiet yet, and I like it so.
+line @4 greet [here.time=dusk|night] : Evening. You'll want to be indoors before long, #address#. | #greet#. It's late. The lamps on #hill# are lit; walk by them.
+line @1 kin.open [pair.kin!=no] : You've come. I kept #loaf# back for you. | You. #good.capitalize#. I had begun to wonder.
+line @1 again.open : Back again, #address#. I'd know your knock by now. | A second visit today. #noted.capitalize#, and welcome.
+line @1 greet.return : #greet#. | #greet#, #address#. Quite well, thank you.
+line @2 greet.return [pair.band=friends|family] : #greet#. The kettle's on, near enough. | #greet#. It is you, then. #good.capitalize#.
+line @3 greet.return [self.working=yes] : #greet#. Forgive me if I watch #door# while we speak. | #greet#. Speak on; I can listen and keep an eye both.
+line @1 farewell : #farewell#. | #farewell#. Mind #step# going down.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamps all the way home, if you would. | #farewell#. Bolt your door tonight, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Go carefully.
+line @1 react.news : #oath#. That wants thinking about. | That's news to sit down for, #address#.
+line @1 react.news.new : I'd not heard. I'll make a note of it. | #surprise#. That hasn't come up #hill# yet.
+line @1 react.news.known : #knew#. It reached #door# before the shutters were down. | I'd heard, yes. One hears most things at a door.
+line @1 react.news.doubt : #doubt#. I'll keep it to one side until it's confirmed. | #hedge#. Talk on a doorstep is half wrong, in my experience.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That grieves me, #address#. Truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That is good to hear. | #good.capitalize# news. I'm glad of it, #address#.
+line @1 answer.how : #fine#. Steady, and #step#'s clean. | Well enough, thank you. #coal.capitalize# is where it should be, so I'm content.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #door.capitalize# hasn't been shut an hour together. | Busy, thank you. In and out since first light, and #mat# to show for it.
+line @1 ask.how : And you? You look a little #tired#, if you'll forgive me. | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Take a moment; there's no hurry at all. | That's a heavy thing to carry. I'm sorry, #address#.
+line @1 reassure : #reassure#. Most things come right with a little order. | It will come right. I'd put #coal# on it, if I were a betting wolf.
+line @1 decline [self.working=yes self.job=merchant self.role=civilian] : #hedge#, but I can't leave #door#. It's my whole post, and somebody must keep it. | I'm sorry, no. There'd be nobody at #door#, and that won't do at all.
+line @2 decline : #hedge#, but not today. I've my accounts to set straight before dark. | Not this evening, I'm afraid. I keep early hours and I'd make poor company.
+line @1 accept_decline : #no_matter#. Another time, then. | Quite all right, #address#. I'll ask again.
+line @1 thank : #thanks#. That was thoughtful. | Thank you, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. It was no trouble. | Not at all. One holds a door; that's all it was.
+line @1 preclose [self.working=yes] : Well. #door.capitalize# won't mind itself. | I should get back to my post, #address#.
+line @2 preclose : Well. #preclose#. | I'll be on my way. #step.capitalize# wants doing before the light.
+line @1 accept_preclose : Of course. Go on, #address#. | #bc_fair_enough# I've kept you.
+line @1 ack : #bc_true# | Quite. #noted.capitalize#.
+line @1 give.advice : #advise#: wipe your paws before you step in anywhere. People notice. | Keep a bit of luck about you. It costs nothing to carry. #saying.capitalize#.
+line @1 warn [world.bandits=near] : #warn#. Stay inside the walls until #watch# says otherwise. | Don't travel the roads alone just now, #address#.
+scene coal_touch
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #coal# in #pocket#. I touch it before I open a door to anyone. | You'll have seen me reach into #pocket#. It's coal, wrapped in #twist#. | I've carried the same lump of coal a long while now. It's worn smooth on one side.
+b : For luck? | Why coal, of all things? | Smooth from your paw?
+a : For luck. I don't say it works. I say I've not gone without it. | It's cheap, it's black, and nobody would think to steal it. A sensible sort of luck. | From my paw. I'd know #coal# in the dark among a hundred.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene door_post
+when topic=work self.working=yes self.job=merchant self.role=civilian
+does tell.self / ask.detail / answer.detail / assess
+a : I mind #door# at #self.workplace#. I hold it, I watch it, and I keep #step# clean. | Forty-odd through #door# before noon. I count them; it's a habit. | Somebody tried #door# before we'd opened. I #noted# the time.
+b : Isn't it dull? | Every one of them? | Who was it?
+a : Not if it's done properly. A door tells you a great deal. | Every one. And how many wiped their paws, which is fewer. | I couldn't say. I #noted# the time, and the size of the paw print.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene paws_wiped
+when topic=work|smalltalk self.working=yes self.job=merchant self.role=civilian
+does tell.complaint / ask.detail / answer.detail / assess
+a : I asked three customers today to wipe their paws. Two did. | #mat.capitalize# by #door# was new on Marketday. It's ruined already. | One gets to know a wolf by how they come through #door#.
+b : And the third? | Ruined how? | How do you mean?
+a : Went in muddy. I followed with a cloth. Nothing was said, of course. | Grit and wet. I beat it every evening and it forgives me nothing. | Fast or slow, head up or down, paws wiped or not. I'm seldom wrong.
+b : #bc_good# | #bc_true# | #bc_clever#
+
+scene thunder_overhead
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / ask.detail / answer.detail / assess
+a : Listen to that. I do like thunder, so long as I've #roof# over me. | #hill.capitalize# catches the worst of a storm. I pull my stool to the window and count the beats between flash and roll. | They say thunder sours milk. I've never seen it, but I keep the jug covered.
+b : You like it? | How far off is it? | Covered, just in case?
+a : From indoors, #very# much. It's the one loud thing I don't mind. | Four, five. It'll be over the water soon enough. | Just in case. One does what one can, #address#.
+b : #bc_lovely# | #bc_true# | #bc_fair_enough#
+
+scene night_racket_below
+when topic=home|day here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess / ack
+a : There's shouting under the window again. I've my head under the bolster. | I sleep poorly. Every boot on the street after dark wakes me. | Somebody sang in the lane till the small hours. Badly, I'd add.
+b : It'll quiet down. | Every one? | Badly?
+a : It does, near dawn. And then I'm up, of course. | Every one. I lie there and wonder where they're going, #address#. | Badly, and the one verse. I knew it by heart before the end.
+b : #bc_poor_soul# | #bc_true# | #bc_ha#
+
+scene smoke_in_eyes
+when topic=weather|home self.dislikes=smoke here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : The chimneys are going hard today. My eyes won't stop running. | Smoke down #hill# this morning, thick as #fog#. I kept #door# shut as long as I could. | I can't abide smoke. It gets into the cloth and the bread and everything.
+b : It's the cold. Everybody's burning. | Shut tight? | Into the bread?
+a : I know it. I'd burn too, and grumble about the others. | As long as was proper. Then I opened it and stood well back. | The bread most of all. A smoky loaf is a #bad# thing.
+b : #bc_true# | #bc_fair# | #bc_true#
+
+scene warm_loaf
+when topic=food self.likes=warm_bread
+does tell.feeling / ask.detail / answer.detail / assess
+a : There's nothing kinder than #loaf# first thing. | I buy my bread before #door# opens, so it's still warm when I sit down. | I'd eat bread and nothing else and be quite content.
+b : Nothing kinder? | Before opening? | Nothing at all else?
+a : Nothing I've found. #loaf.capitalize# asks nothing of you. | It's the one indulgence I keep. I'm careful in all the others. | Perhaps butter. If it were offered. I wouldn't ask, #address#.
+b : #bc_true# | #bc_good# | #bc_ha#
+
+scene dice_book
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : I play dice of an evening, for pennies. Never more than pennies, #address#. | I keep a score of every game of dice I've played. In a little book. | I'm a careful player. I touch #coal# before each throw.
+b : Do you win? | Every single game? | Does that help?
+a : About as often as I lose. That's the right amount, I think. | Every one. I'm a few pennies down, all told. #noted.capitalize#. | No. But I'd not throw without it.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene breaking_in_boots
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail / assess
+a : I've #boots#. I'm breaking them in one street at a time. | I polish #boots# every night. They're the best thing I own. | My old pair let in water at the toe. These don't. I keep checking.
+b : Do they pinch? | Every night? | Checking how?
+a : Only at the heel. There's a plaster on it. | Every night. A thing kept is a thing that lasts, #address#. | Wriggling my toes. Dry, every time. It's a #very# great comfort.
+b : #bc_good# | #bc_wise# | #bc_good#
+
+scene home_quiet
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# you'd hear the reeds whisper all night long. I miss that. | Back in #self.from_town#, nobody locked a door. I lock three here. | I came down to the city with one bag and #coal#. I have both still.
+b[from=coldwater] #cw : The reeds at night. I remember them. | We never locked anything. | Coal? From home?
+b : Do you miss it? | Three? | Just the one bag?
+a@cw : So you'll understand why my nights here are short. | No. We'd nothing worth the bother of a key. | From the hearth, the morning I left. Don't tell anyone, #address#.
+a : The quiet, yes. Not much else. The city's order suits me. | Three, and I check each twice. It's how I'm made. | One bag. I've needed #very# little since.
+b : #bc_true# | #bc_fair_enough# | #bc_good#
+
+scene manners_up_the_hill
+when topic=home|smalltalk here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : Up on #hill#, folk say good day and mean it. I like that. | One doesn't shout on #hill#. One waits to be spoken to. | Every step on #hill# is swept by somebody. I've noticed which ones aren't.
+b : Not like down below. | Strict, then. | Which ones?
+a : Not at all like. Down below, nobody waits for anything. | Not strict. Considerate. There's a difference, #address#. | Two. I'll not say which. They know.
+b : #bc_true# | #bc_fair_enough# | #bc_ha#
+
+scene faces_at_the_door
+when topic=player|newcomer
+does tell.self / ask.detail / answer.detail / assess
+a : A traveller stopped at #door# this morning, asking which street ran down to the market. I gave directions twice. | New faces come up #hill# every day. I learn them by their boots. | There's a stranger outside who has walked past #door# three times now.
+b : That was kind of you. | By their boots? | Three times?
+a : It's a door's business to know where things are. | Boots tell you the road they've walked. Mud from the low streets, dust from the gate. | Three. I'll not worry yet. At four, I'll mention it to #watch#.
+b : #bc_good# | #bc_clever# | #bc_wise#
+
+scene luck_and_chapel
+when topic=faith
+does give.opinion / ask.detail / answer.detail / assess
+a : I go to chapel when I can. I'd not go bothering the Bright One over small matters, though. | Each morning there's a word for the Bright One and a touch for #coal#. One for each. | A priest once told me luck is nonsense. I agreed, and kept the coal.
+b : Small things? | Both? | You kept it?
+a : The weather. A lost glove. Those I see to myself. | Both. I'd not want to offend either one. | Kept it. Agreeing costs nothing, #address#.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene step_hears_things
+when topic=gossip
+does tell.self / ask.detail / answer.detail / assess
+a : People talk on #step# as if #door# had no ears. It has. | I hear a great deal at #door#. I repeat #very# little of it. | Somebody said a thing on #step# today that I'll not pass on.
+b : What have you heard? | Very little? | Nothing at all?
+a : Nothing I'll repeat. It was said in passing, and it'll stay there. | Very little, and only what's kind. | Nothing. A door that talks is soon kept shut.
+b : #bc_fair# | #bc_good# | #bc_wise#
+
+scene theft_bolts
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / warn / ack
+a : They say #topic.subject# #topic.claim#. I've checked the bolts twice since. | #topic.subject.capitalize# #topic.claim#, I'm told. That's #bad#. | It was said at #door# that #topic.subject# #topic.claim#. I don't care for it.
+b : Lock up, then. | It is. | Nor do I.
+a : I have. Twice, and the window as well. | Bad, and near home. I'll keep #coal# by me. | It has me looking at every face twice, #address#.
+b? : #bc_wise# | #bc_true# | #bc_fair#
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess / ack
+a : Fewer through #door# these weeks. I count them, so I know. | Folk pick up three things and buy one. That's how a lean season looks. | I've seen good boots come in with holes in them lately.
+b : Hard everywhere. | Three? | Holes?
+a : Everywhere. One keeps #step# clean regardless. | Three, and put two back. I hold the door the same for them all. | Mended, mostly. Mended is respectable, #address#.
+b : #bc_true# | #bc_fair# | #bc_good#
+
+scene winter_draught
+when topic=season|weather here.season=winter self.working=yes self.job=merchant self.role=civilian
+does tell.self / ask.detail / answer.detail / assess
+a : Winter's hard on a door. Every time it opens, the warmth goes out of it. | My paws are #cold# by noon in this season. I keep them in #pocket# between customers. | Frost on #step# this morning. I salted it before anyone came.
+b : Shut it quick, then. | Between customers? | Salted it?
+a : As quick as is polite. Not quicker. | Between, yes. Never while somebody's at #door#. | With a scoop of coarse salt. Nobody slipped. I checked, #address#.
+b : #bc_wise# | #bc_good# | #bc_good#
+
+scene rain_two_mats
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Rain again. I've put one mat down inside #door# and another outside. | It's rained since before light. I wrung out #mat# at noon. | The rain on #hill# runs down the steps like a stream. I'd not want to be at the bottom.
+b : Two mats? | At noon? | Nor would I.
+a : Two. One for mud, one for water. They're different jobs. | And again at three. It's no trouble; it's what's needed. | Somebody always is. Hills are like that, #address#.
+b : #bc_wise# | #bc_fair_enough# | #bc_true#
+
+scene trusted_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd hand #coal# to #self.friend# to hold, and to #very# few besides. | When I can't sleep, I think of #self.friend#. It settles me, oddly. | I'd stand at #self.friend#'s door in the rain, if I were asked.
+b : High praise. | Oddly? | Would you?
+a : The highest I have to give. | Oddly. I can't put it any better than that, #address#. | Without being asked, I expect. That's how it is.
+
+story hearth_coal [topic=memories self.away=yes self.from=coldwater self.age>=25]
+  : On the day I left #self.from_town#, a lump of coal came off the hearth with me, wrapped in brown paper.
+  : I meant to light my first fire in the city with it. I never did. It seemed wrong to burn it.
+  ask : Have you carried anything about with you that long, for no reason you could give?
+  b : A button. No sense to it, but there it is.
+  b[old] : More things than I'd care to count.
+  : Then you'll understand. It isn't luck, really. It's the hearth.
+
+story stuck_bell [topic=work|memories self.job=merchant self.role=civilian]
+  : My first week at #door#, I polished #bell# so hard it stopped ringing.
+  : I thought I'd worn the clapper down. It was only stuck fast with wax.
+  : Nobody came in for an hour before I noticed. I thought trade had died in the night.
+  b : An hour! You must have fretted.
+  b[role=merchant] : A shop with no bell is a shop with no customers. You learned that early.
+
+story counting_thunder [topic=weather|memories self.likes=thunder self.age>=18]
+  : Thunder frightened me as a pup, until a neighbour had me counting slowly after each flash.
+  : Five, and it's a mile off. Ten, and it's nobody's business at all.
+  ask : Did anybody ever teach you that?
+  b : Somebody did, yes. I still count.
+  b[stage=young] : I'll count it next time.
+
+rule @door_bark
+when concept=bark working=yes self.job=merchant self.role=civilian
+does aside
+cooldown 6h
+say Wipe your paws, if you would. | Mind #step#. It's worn at the edge.
+
+rule @coal_bark
+when concept=bark
+does aside
+cooldown 10h
+say Still there. #good.capitalize#. | #pocket.capitalize#, #coal#, latch. All in order.
+
+rule @smoke_bark
+when concept=bark self.dislikes=smoke here.region=ridgemere
+does aside
+cooldown 8h
+say Smoke again. My eyes. | Somebody's chimney wants sweeping, and #very# badly.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 8h
+say One, two, three. Close, that one. | Listen. That's a proper roll, over #hill#.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Quiet down there, if you please. | Half the street's awake, #address#, and so am I.
+
+dlg @1 resident.hub : #greet#. How may I help? | #greet#, #address#. You'll want something; do ask.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You wiped your paws last time. I remember.
+dlg @3 resident.hub [here.time=night] : It's late, and I'm not fond of the dark. Briefly, if you would.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what it is from there, please. I can hear #very# well.
+dlg @1 resident.job [self.job=merchant self.role=civilian] : I mind #door# at #self.workplace#. I hold it, I keep #step# clean, and I know who's been in.
+dlg @2 resident.job : #job_busy# I keep things in order. That's most of any work, #address#. | #self.trade_words.capitalize#. It suits me well enough.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what the customers carried in today.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# on #step# today. I've heard it a dozen times.
+dlg @3 resident.news [world.wagons=raided] : A wagon was robbed on the road, I'm told. I'd keep inside the walls, #address#.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing worth repeating has come through #door#.
+dlg @1 resident.gossip [here.gossip=yes] : One hears on #step# that #topic.subject# #topic.claim#. Beyond that, I keep quiet.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Whatever's said at #door# stays at #door#.
+dlg @1 resident.bye : #farewell#. Mind #step# going down. | #farewell#, #address#.
+graft resident.hub
+choice What is it you keep touching in your pocket? -> coal
+node coal
+say A lump of coal, wrapped in brown paper. I touch it before I open a door to anyone. It's a habit, and I'd rather not lose it.
+mood calm
+free
+choice Does it bring you luck? -> coal_luck
+choice Goodbye. -> bye
+node coal_luck
+say I couldn't say. I've never been without it, so I've nothing to measure by. That seems lucky enough to me.
+choice That's fair. -> hub
+choice Goodbye. -> bye

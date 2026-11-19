@@ -1,0 +1,295 @@
+# cw197, the rain-watcher on the step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw197
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rmx_desmond_hollis
+written_by claude
+title the rain-watcher on the step
+fits stage=adult|old
+prefers temper=short honesty=sly
+traits temper=short talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk bets_oatcakes_on_when_the_rain_will_stop
+likes oatcakes old_tales fresh_straw summer_evenings
+dislikes smoke flies
+fears telling_what_i_saw being_found_out
+hopes a_dry_summer_from_end_to_end
+topics weather +0.5 lore +0.3 pastimes +0.2 food +0.2 gossip +0.2 festival -0.4 faith -0.2
+styles comfort=quiet gossip=hints refuse=short tease=none
+marks oath saying
+persona #self.first# sits at a window or on a front step in the city's middle streets, watching the rain and betting oatcakes on when it will stop: proud, shrewd and short of patience, fond of oatcakes, an old tale and fresh straw, quick to hint and slow to tell, and keeping one secret from a great hall on the hill.
+
+words
+oath! = Rot the rain | Drip and drown it
+saying! = It stops when it stops | What's seen needn't be said
+drip = the drip off the eaves | that drip
+window = the window | my front window
+step = the step | our front step
+oatcakes = oatcakes | a stack of oatcakes, buttered
+tale = an old tale | a tale told slow
+straw = fresh straw | new straw on the floor
+smoke = smoke | the smoke off the chimneys
+flies = the flies | flies at the window
+evening = a summer evening | a dry evening, for once
+secret = what I saw | a thing I'll not tell
+cloud = the cloud | that grey lid
+hall = the great hall | the hall on the hill
+street = the street | this street
+therain = the rain | the wet
+lake = the lake | the lake at home
+city = the city | this city
+hill = the hill | the high streets
+
+any
+opinion @1 church against 1 : The plate goes round quicker than the prayers, and I've watched where it goes after. I'll keep my coppers, #address#.
+opinion @1 festivals against 1 : Noise, spilt ale, and somebody weeping by the end. I've seen the end of enough feasts from #window#.
+opinion @1 watch against 1 : #watch.capitalize# poke into every door on #street# but their own. I don't answer them, and they don't like it.
+opinion @1 city against 1 : Smoke on every roof, and nobody on #street# who knows your face. #oath#. I'd go back to #lake# if it would have me.
+opinion @1 houses mixed 1 : The Houses can do as they please, for all I care. They weep like anybody, I'd guess. Some of us have reason to know it.
+opinion @1 strangers mixed 0 : Strangers or neighbours, it's all one to me. I watch them both the same, from #step#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Keep moving; it's wet. | #greet#. You'll be wanting somewhere drier than this.
+line @2 greet [here.time=dawn] : #greet#. Up early for nothing, like me. | #greet#. The street's not awake yet.
+line @3 greet [here.time=dusk|night] : #greet#. Late to be wandering, #address#. | #greet#. The lamps are lit, for what they're worth.
+line @4 greet [here.weather=rain] : #greet#. It'll stop. Give it a minute. | #greet#. Step in under the eaves, if you're stopping.
+line @1 kin.open [pair.kin!=no] : You. Sit. Watch #street# with me. | It's you. Good. Mind #drip#.
+line @1 again.open : #welcome_back#. Twice. People will talk. | You again. I've not moved off #step#, as you see.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Pull up a box. | #greet#. About time you came by #step#.
+line @3 greet.return [here.time=dusk|night] : #greet#. Late for it. | #greet#. Still up, then.
+line @1 farewell : #farewell#. | #farewell#. Keep under the eaves.
+line @2 farewell [here.time=dusk|night] : #farewell#. Watch your step in the dark. | #s8_night#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. I'll think on that. | Is it. Well, it's yours to tell.
+line @1 react.news.new : #surprise#. That's new on this street. | #oath#. Nobody told me, and I watch everything.
+line @1 react.news.known : #knew#. I saw it go by from #window#. | Heard it yesterday under #window#. I didn't say.
+line @1 react.news.doubt : #doubt#. Who saw it, though? Nobody, I'd bet. | Hm. That's been stretched on the way, I'd say.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Bad business. | #sympathy#. Hard on whoever's left.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good for them. | #good.capitalize#. Somebody's had a dry day of it, then.
+line @1 answer.how : Dry, which in #city# is something. | #fine#. Watching. Same as ever.
+line @1 answer.how.poorly [self.mood=low|sore] : #poorly.capitalize#. The damp's in me. | Low. It's the weather. It's always the weather.
+line @1 ask.how : And you? Keeping dry? | You're keeping, I suppose, #address#.
+line @1 sympathise : #sympathy#. Sit under the eaves a while; nobody's asking anything of you. | That's #bad#. I'll not pry.
+line @1 reassure : #reassure#. #saying.capitalize#. | It'll pass. Most weather does, in the end, #address#.
+line @1 decline : #hedge#. Not today; I'd only stand about watching #cloud# anyway. | No, #address#. I've my own reasons, and they'll keep.
+line @1 accept_decline : #no_matter.capitalize#. Suit yourself. | Fine. I'd have said no too.
+line @1 thank : #thanks#. | Decent. I'll remember that, #address#.
+line @1 deflect_thanks : #deflect.capitalize#. It was nothing to me. | Don't. You'll make it a habit.
+line @1 preclose : #preclose#. | That'll do for now. #therain.capitalize# wants watching.
+line @1 accept_preclose : Go on, then. #farewell#. | Off with you. Mind #drip#.
+line @1 ack : #bc_it_is# | Hm.
+line @1 give.advice : #advise.capitalize#: watch first. Most folk talk before they've looked. | Keep back half of what you know. You'll never be sorry for it.
+scene it_might_stop
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / insist / ack
+a : Look at the edge of #cloud#. It's thinning. It'll stop by noon. | I've watched it all morning. It's easing. You can hear it in #drip#. | One of these days it'll stop for good, and I'll be sat on #step# to see it.
+b : It's been saying that all week. | Sounds the same to me. | For good? Here?
+a : All week it's been wrong. Today it means it. #oath#, I'll wait. | Listen longer. There's a gap between the drops off #drip# now. | For good. And I'll be the only one in #city# who saw it go.
+b? : #bc_we_will_see# | #bc_maybe# | #bc_ha#
+
+scene grey_but_dry
+when topic=weather here.weather=overcast here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Dry for now. #cloud.capitalize#'s low, though. It's thinking about it. | Overcast and holding. I give #cloud# till dusk before it opens. | I've been out on #step# an hour. Not a drop. I don't trust it.
+b : Will it rain? | Till dusk? | Why not trust it?
+a : It always does. The question is when, and I'm the one who'll know first. | Dusk, or a little before. I've watched more skies than you've had suppers. | A dry sky over #city# is a sky with something up its sleeve.
+
+scene fog_on_the_street
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Can't see across #street# in this. Good. Nobody can see me either. | #fog.capitalize#'s honest. It tells you plain you'll see nothing, and then it keeps its word. | Somebody walked out of the fog this morning and near fell over me on #step#.
+b : Good? | Honest fog? | Did they see you?
+a : #good.capitalize#. I like watching without being watched. | More honest than most of what walks through it. | Not till they were on top of me. They'll look harder next time.
+
+scene the_long_dry_evening
+when topic=season|day here.season=summer here.time=dusk here.weather=clear
+does tell.feeling / react.self / assess / ack
+a : #evening.capitalize#. Clear right across. I hardly know what to do with myself. | A dry dusk in summer. I could sit on #step# till the stars and never once look up for rain. | This is the one evening a year I'll admit I like #city#.
+b : Sit and enjoy it. | Never once? | Only one?
+a : I am. Watch me on #step#. I'm enjoying it. | Well. Once or twice. It's a habit. | One, maybe two. Don't spread it about.
+b? : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene step_with_my_father
+when topic=family|home self.father
+does tell.feeling / react.self / assess
+a : #self.father# and I sit on #step# of an evening and watch #street#. Neither of us says much. Suits us. | I'd sooner sit beside #self.father# and say nothing than talk all night with anyone else. | There's a way #self.father# and I can be quiet together that's better than talk.
+b : That sounds peaceful. | Rare, that. | You're lucky.
+a : It is. We've the same eyes for #street#, and the same mouth for keeping shut. | Rare. Don't tell anybody; they'll want to come and sit with us. | Lucky. I'll not argue with that one.
+
+scene idle_hours
+when topic=smalltalk|work self.working=no !self.trade_words here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I keep my own hours. Nobody tells me when to get up, and nobody pays me #money# for it either. | People ask what I do all day. I watch #street#. It needs watching. | I'd take a post if the right one came. It hasn't, and I'm in no hurry.
+b : Don't you get tired of it? | Watch what? | What's the right one?
+a : No. #therain.capitalize# wears on me. The rest I can stand. | #street.capitalize#. Who goes in where, and when, and who comes out looking different. | One that's dry, indoors, and pays for keeping my mouth shut. I'm good at that.
+
+scene oatcakes_on_the_sill
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #oatcakes.capitalize# on the sill, and #therain# beyond the glass. That's as good as it gets. | I could live on #oatcakes#. I nearly have, some weeks. | Nobody in #city# makes a proper oatcake. They make biscuits and lie about it.
+b : That does sound good. | Every week? | Biscuits?
+a : It is good. Don't tell anyone, or they'll want a share. | Most weeks. There's worse to live on, and I've seen folk do it. | Biscuits. Sweet, and too thin. An oatcake should fight you a bit.
+
+scene chimney_smoke
+when topic=weather|smalltalk self.dislikes=smoke here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# again, flat on the roofs. My teeth taste of it. | Every chimney on #street# going at once, and #therain# beating the smoke back down on us. | I can't watch #therain# properly for #smoke#. It's like trying to read through a dirty window.
+b : It's the city. | That's the worst. | Close the window.
+a : It's #city#. I didn't ask for it. | It is. Rain I can live with. Smoke and rain together, no. | Then I'd not see out. I'll put up with it and complain.
+
+scene flies_at_the_glass
+when topic=animals|weather self.dislikes=flies here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#, at the glass all afternoon. Buzzing like they've somewhere better to be. | One summer day without rain, and #city# fills up with flies. I'd almost rather #therain#. | A fly walked across #oatcakes#. I've not been so insulted since spring.
+b : Summer, that's all. | Almost? | Since spring?
+a : Summer. It brings #evening# and #flies#, and you can't have one without. | Almost. Not quite. #oath#. | Since spring. That was a gull, and it took the whole oatcake.
+
+scene tale_told_slow
+when topic=lore|pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail / assess
+a : There's nothing better than #tale#, told by somebody who's in no hurry. | I know a hundred of them. I change the endings to see who's listening. | I'll swap you #tale# for an oatcake. It's a fair price for a good one.
+b : What makes a good one? | Change them? | What tale?
+a : Something kept back to the very end. And a teller who doesn't laugh at their own. | Only a little. If nobody notices, they weren't worth telling it to. | The one about the ferryman who wouldn't take the last passenger. You'll want to sit down for it.
+b? : #bc_true# | #bc_ha# | #bc_go_on_then#
+
+scene what_i_saw_up_the_hill
+when topic=memories|gossip here.region=ridgemere self.age>=25
+does tell.memory / ask.detail / answer.detail / ack
+tone even / even / grave / even
+a : I saw something once in #hall#, up #hill#, that I've told nobody. I'll not start with you. | There's somebody very grand in #city# who'd not like to know #secret#. Don't ask. | I know what the high ones look like when they think nobody's watching. #saying.capitalize#.
+b : Was it bad? | Who is it? | What did they look like?
+a : Not #bad#. Sad. That's worse, from somebody that high. | Ask all you like. #saying.capitalize#, and I've kept it years. | Like you and me. That's all of #secret#, and more than I've said to anybody.
+b? : #bc_fair_enough# | #bc_fair_enough# | #bc_poor_soul#
+
+scene a_hint_for_an_oatcake
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I know a thing about somebody on #street#. I might tell it. I might not. | I know who's in late and who's out early on #street#. That's not gossip; that's watching. | There's a door on #street# that opens after midnight. That's all you'll have off me.
+b : Go on, then. | And what have you seen? | Whose door?
+a : Not for nothing. Bring me #oatcakes# and I'll think about it. | Enough to know who to nod to. That's all you'll get. | No more than that, I said. I keep what I see, mostly.
+b? : #bc_ha# | #bc_fair_enough# | #bc_fair_enough#
+
+scene heard_it_by_the_window
+when topic=gossip topic.claim_kind=theft|wanted|prowling|violence|other
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. Not a word of where you got it. | They say #topic.subject# #topic.claim#. I only sit on #step#; I'm nobody. | Word under #window# is that #topic.subject# #topic.claim#. I'd keep it under your hat.
+b : I'll keep it quiet. | I never would. | Under my hat, then.
+a : Good. Quiet's the only way a thing like that keeps its value. | Good. Nobody ever looks at the one on #step#. | Under your hat, and off your tongue, #address#.
+
+scene watch_at_the_doors
+when topic=crime world.crime=recent here.region=ridgemere
+does tell.self / react.self / assess
+a : #watch.capitalize# were round asking who'd seen what. I saw plenty. I told them nothing. | There's been trouble, and now #watch# wants to know what the wolf on #step# saw. | They asked me twice, and twice I said I'd been watching #therain#.
+b : You might have helped. | And had you? | You were, though.
+a : Might have. #watch.capitalize# would have asked me back every week after. | I'd seen enough. Not enough to want my name on a paper. | I was. I watched #therain# and everything that walked through it.
+
+scene rain_on_the_lake
+when topic=memories|weather self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : At #self.from_town# #therain# walked over #lake# like a curtain. You'd see it coming a mile off. | As a pup in #self.from_town# I'd sit on the boathouse roof and watch #therain# on #lake# till I was soaked. | Rain on #lake# at #self.from_town# was quiet. Here it rattles on the slates like it's owed money.
+b[from=coldwater] #home : Like a curtain. I'd forgotten that. | Everybody's pup sat on that roof. | The lake took it soft. Nothing here does.
+b : A mile off? | Soaked? | Like it's owed money?
+a@home : You'd forgotten. I never do. I watch for that curtain here, and it never comes. | And got a clip round the ear for it after. Worth it. | Nothing does. Soft rain's not for sale in #city#, and I've looked.
+a : A mile, and you'd have time to get in, if you wanted. I never wanted. | Through to the fur. I'd sit in it and wait for it to stop. It never did. | Like it's owed money, and it's come to collect.
+b? : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene my_old_voice
+when topic=accent self.away=yes self.from=coldwater self.accent=none
+does tell.self / react.self / assess
+a : My voice lost #lake# the first year here, and I let it. A voice tells people where to find you. | Nobody on #street# knows where I'm from. That suits me fine. | I could do the old voice if I wanted. I don't want, #address#.
+b : That's a shame. | Don't they ask? | Not even a bit?
+a : Is it. I'd call it sense. | They ask. I tell them somewhere wet, which is true. | Not even a bit. Some things you keep in a drawer.
+
+scene feast_noise
+when topic=festival|event world.festival=today|soon
+does give.opinion / disagree / insist / ack
+a : Feast coming. That's three days of noise and somebody singing under #window#. | I'll be indoors for the feast. #therain.capitalize#'s better company than a crowd. | A feast is noise, spilt ale, and a fight by midnight. I've watched enough of them to know.
+b : It's good for folk. | You'll miss the fun. | Not every feast.
+a : Good for folk who like noise. I'm not one. | I'll watch it from #window#. That's all the fun I want. | Every one I've watched. And I've watched them all from #step#.
+b? : #bc_fair_enough# | #bc_ha# | #bc_maybe#
+
+scene straw_down_fresh
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : Fresh #straw# down today, and my room smells of a dry day. | Nothing beats #straw# underfoot. It's the closest I'll get to a summer field in this city. | When it rains for a week, I change #straw#. It's the only dry thing I can make.
+b : It does smell good. | A field? | That's clever.
+a : It does. I sit in it like a fool and breathe. | If I shut my eyes and leave #window# open, it's close. | Clever, or just stubborn. One of the two.
+
+scene new_faces_on_the_street
+when topic=newcomer here.region=ridgemere
+does tell.self / react.self / assess
+a : There's new faces about on #street#. I've had a good look at every one. | Somebody's moved in across the way. Up at dawn, out by noon, back at dark. I've got the pattern already, #address#. | Newcomers walk in the middle of #street#. Locals keep to the walls. You can tell in a glance.
+b : Anything to worry about? | Already? | Which do I do?
+a : Not yet. Ask me in a month. | I'd know it anywhere now. Three days is all I need. | The middle. I'll let you work out what that means.
+
+story the_day_it_stopped [topic=memories|weather here.region=ridgemere]
+  : Once, in my first summer here, #therain# stopped. Not for an hour. For three whole days.
+  : I sat on #step# all three. I didn't trust it once. By the end my neck was sore from looking up.
+  ask : Would you have trusted it, after three days?
+  b : By the second I would.
+  b[old] : Never. I've lived here too long.
+  : On the fourth day it rained, and I felt better. At least I knew where I was.
+
+story the_changed_ending [topic=lore|pastimes self.likes=old_tales]
+  : I told a tale once at a fire and changed the ending, just to see.
+  : The hero didn't come home. He married the wolf he'd gone to rescue and stayed.
+  ask : Do you think anybody noticed?
+  b : Somebody always notices.
+  b[stage=young|adolescent] : I'd have noticed. That's a better ending.
+  : Nobody said a word. Next week I heard my ending told back to me, as the old one.
+
+story the_bet_on_noon [topic=weather|smalltalk here.region=ridgemere]
+  : A neighbour bet me a stack of oatcakes #therain# would stop by noon.
+  : I took it, and I sat on #step# and watched the bell-tower till noon came.
+  b : And did it stop? Who won?
+  : It stopped at a quarter to. I paid up. I've never been so glad to lose oatcakes.
+
+rule @it_will_stop
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 6h
+say #therain.capitalize#'ll stop. Any minute now. | #oath#. Stop, will you.
+
+rule @smoke_again
+when concept=bark self.dislikes=smoke here.region=ridgemere
+does aside
+cooldown 10h
+say #smoke.capitalize#, on everything. | Who's burning wet wood on #street# again.
+
+rule @fly_off
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off. Off the glass, you. | #flies.capitalize#. Every one of them.
+
+rule @dry_dusk
+when concept=bark here.time=dusk here.weather=clear
+does aside
+cooldown 10h
+say Dry. Look at #street#. Dry. | #saying.capitalize#. And it has.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Make it quick; I'm watching something.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Well? Out with it, and then move along.
+dlg @1 resident.job [self.working=yes] : I'm #self.trade_words#. That's all you need to know about it.
+dlg @2 resident.job : I keep my own hours, and #street# gets my watching. It needs it.
+dlg @1 resident.news [world.news] : I heard it under #window#, from #world.news_from#: #world.news#. Believe as much as you like.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only #therain#, and that's no news. | Nothing. Or nothing I'm telling.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I know things about #street#. I'm not saying them.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Keep my name out of it.
+dlg @1 resident.bye : #farewell#. | #farewell#. Keep under the eaves.
+graft resident.hub
+choice Do you think the rain will stop? -> rain
+node rain
+say It might. See #cloud# there, thinning at the rim? I've watched it every day for years. When it stops for good, I'll be there to see.
+mood calm
+free
+choice Has it ever stopped? -> rain_ever
+choice Goodbye. -> bye
+node rain_ever
+say Once, for three days, my first summer here. I didn't trust it once. When it started again I felt better. That's #city# in you, I suppose.
+choice I'll let you watch. -> hub
+choice Goodbye. -> bye

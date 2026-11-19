@@ -1,0 +1,318 @@
+# cw210, the favour-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw210
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_oda_harrowgate
+written_by claude
+title the favour-keeper
+fits stage=adult|old
+prefers class=upper honesty=sly
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=restless
+quirk remembers_every_favour_given_or_owed
+likes crisp_apples wrestling old_maps autumn_wind
+dislikes gulls cold_tea
+fears a_favour_called_in_too_late dying_with_the_sums_unsquared
+hopes one_ride_past_the_walls_unannounced a_year_with_every_kindness_repaid
+topics memories +0.4 family +0.3 pastimes +0.3 travel +0.3 gossip +0.2 faith -0.3
+styles comfort=formal gossip=sly refuse=gracious tease=none
+marks oath saying
+persona #self.first# forgets no favour, given or owed, and can name the day each was done: gracious and assured in company, sly beneath the courtesy, restless behind tall windows, fond of crisp apples, old maps with wrong roads, and a good autumn wind.
+
+words
+oath! = By the seal and the sum | Grace and reckoning
+saying! = A favour kept is a door left ajar | Give gladly and remember exactly | Everyone owes someone, and the wise know whom
+favour = a favour | a small kindness, remembered
+favours = the favours I keep | my list of kindnesses
+reckoning = my reckoning | the sum I carry in my head
+purse = the household purse | the purse I count myself
+apple = a crisp apple | an apple that snaps clean
+maps = my old maps | the maps nobody ever corrected
+wrongroad = a road drawn where no road ever ran | a bridge somebody only meant to build
+blow = an autumn blow | a wind with the leaves in it
+coldcup = tea left to go cold | a cup gone cold on the tray
+gulls = the gulls | those gulls on the sills
+windows = the tall windows | these long windows
+gallery = the gallery | the long gallery
+petitions = the petitions | a stack of pleas on good paper
+bout = a wrestling match at the fair | two wrestlers in a ring of grass
+lakeside = the lake at home | the lakeshore where I was small
+city = this city | the city
+walls = these walls | the city walls
+chair = the good chair | the chair by the window
+noted = Noted | Set down in my head
+copper = a copper | one copper coin
+quiet = an hour to myself | a quiet hour
+quiteso = Quite so | Just so
+
+any
+opinion @1 houses for 1 : The Houses hold #city#'s roof up. I know which beams, and what each was promised for it.
+opinion @1 dole against 1 : A favour is remembered; a dole is only expected. I'd sooner see #favour# done than a bowl handed out.
+opinion @1 newcomers for 1 [self.away=yes] : I arrived from #lakeside# owning one trunk and knowing nobody. A newcomer deserves the start somebody once gave me.
+opinion @1 church against 1 : The Bright One keeps no ledger. I wish the chapel kept to that example, and kept its plate still.
+opinion @1 times for 1 : I've no complaint about the times. And if I had one, #address#, I'd be unwise to say it aloud.
+opinion @1 sump against 1 : #oath#. The lower streets breed what the upper ones pay for later. I'd hang a lamp on every corner down there.
+opinion @1 city mixed 1 : #city.capitalize# is generous to those it owes and short with everyone else. I make sure it owes me.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You are welcome; I don't believe we've been introduced. | #greet#. A new face. I shall remember it.
+line @2 greet [here.time=dawn] : Good morning. Nobody owes anybody yet; it's #very# nearly my favourite hour. | Good morning. I've been at #windows# since first light.
+line @3 greet [here.time=dusk|night] : Good evening. Late hours suit honest business, and the other kind. | Good evening. You keep late hours, #address#, as I do.
+line @4 greet [self.class=upper here.region=ridgemere] : #greet#. Come in, and walk softly in #gallery#; it echoes. | #greet#. Take #chair#; nobody's using it.
+line @1 kin.open [pair.kin!=no] : Ah, you. #chair.capitalize# has been waiting for you all day. | Ah. Come in, and close the door after you; #walls# listen.
+line @1 again.open : Twice in a day. I shall count it in your favour. | Back again, and welcome; I'd not quite finished with you, #address#.
+line @1 greet.return : #greet#. You do me a kindness, stopping. | #greet#. I remember you, and kindly.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit, and tell me everything worth the telling. | #greet#. I'd been hoping for you all morning.
+line @3 greet.return [here.time=dusk|night] : #greet#. A late hour for it, but you are welcome. | Good evening. Lamplight suits a visit; stay a little.
+line @1 farewell : #farewell#. I shall remember this. | #farewell#. We'll speak again; I'll see that we do.
+line @2 farewell [here.time=dusk|night] : Good night. Mind the dark corners going down. | Good night. Sleep sound, and owe nobody.
+line @1 farewell.return : #farewell#. Go carefully. | #farewell#. I'm easily found, #address#.
+line @1 react.news : Tell it me slowly. I want each piece where it belongs. | Go on, #address#. Who knew first? That matters more than people suppose.
+line @1 react.news.new : #surprise#. That has not reached #gallery# yet. | I'd not heard that, and I'm seldom last to hear anything. #noted.capitalize#.
+line @1 react.news.known : #knew#. I've had it from two sides already. | I'd heard. What interests me is who carried it to whom in #city#.
+line @1 react.news.doubt : #doubt#. I'll keep that at arm's length until somebody who was there vouches for it. | #hedge#, I've heard that said of people who did nothing at all.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I shall see what can be sent, and quietly. | That is a heavy thing. #oath#, I am sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be gifts owed, and gladly given. | How #very# good. I'll want to send something fitting.
+line @1 answer.how : #fine#, and watching. One is always watching. | Restless. #windows.capitalize# feel nearer than they did.
+line @1 ask.how : And how do you keep, #address#? Truly, now. | And yourself? I'll know if you're only being polite.
+line @1 sympathise : #sympathy#. Sit; nobody here will hurry you. | I'm sorry for it, #address#. Listening costs you nothing with me.
+line @1 reassure : #reassure#. Things are mended every day by people who kept their nerve. | It will come right. I've watched worse knots undone by a patient word.
+line @1 decline : #hedge#, but I can't promise that; my word's already pledged to someone else. | I must refuse you, #address#. I owe too many already this season.
+line @1 accept_decline : #no_matter#. I shan't hold it against you. | Of course. It won't go into #reckoning#.
+line @1 thank : #thanks#. I'll remember it, and I remember everything. | That was kindly done. #noted.capitalize#, on your side.
+line @1 deflect_thanks : #deflect#. You owe me nothing for that. | Think nothing of it. I shan't, much.
+line @1 preclose : Still, somebody is waiting on me, #address#; somebody always is. | I'll let you go, #address#. You've been generous with your time.
+line @1 accept_preclose : Of course. Go, and go well. | Yes, go on. I'll keep the rest for #quiet# another day.
+line @1 ack : #quiteso#. | #noted#.
+line @1 give.advice : Never let #favour# go unremembered, #address#, yours or anyone's. | Say less than you know. It costs nothing, and it pays.
+line @1 warn [world.bandits=near] : Keep inside #walls# this week. The roads owe nobody anything. | I'd not travel now, #address#. Not for any price.
+rule @tally
+when concept=bark
+does aside
+cooldown 8h
+say Three owed, two owing. No, three and three. #quiteso#. | Somebody still owes me #favour# from the spring.
+
+rule @gulls
+when concept=bark self.dislikes=gulls here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say #gulls.capitalize# again. Someone has been feeding them. | Off with you. Nobody here owes you supper.
+
+rule @wind
+when concept=bark here.season=autumn here.weather=clear|overcast|storm
+does aside
+cooldown 10h
+say Listen to #blow#. I'd open every window if they'd let me. | #blow.capitalize#. Now that is weather.
+
+rule @coldtea
+when concept=bark self.dislikes=cold_tea here.weather=indoors
+does aside
+cooldown 10h
+say #coldcup.capitalize#. Somebody will hear of it. | Left to go cold again. #oath#.
+
+scene favour_count
+when topic=smalltalk|friends
+does tell.self / ask.detail / answer.detail
+a : I could name #favours# one by one, and every kindness done me besides. Both lists are short. | Someone thanked me today for #favour# I'd half expected them to forget. I knew the day and the weather. | I never write a kindness down. Paper can be read by anyone in #city#.
+b : Which list is longer, then? | Do you lose any of them? | Where do you keep them, then?
+a : Mine, by four. I'd have #reckoning# no other way. | A face, now and then. A favour, never. | In #reckoning#, where nobody can borrow them.
+
+scene purse_coin
+when topic=work self.class=upper self.wealth=rich
+does tell.self / react.self / assess
+a : I count #purse# myself, coin by coin. Stewards stay honest when they know someone counts. | There was #copper# short in #purse# on Restday. I found it by supper. | I don't trust a sum I didn't add. Not even #copper#.
+b[job=servant|official] #staff : We know you do. Everybody below stairs knows. | Where had it gone? | That's a long evening of adding.
+b : That's a lot of counting. | Where was it? | That's a careful way to live.
+a@staff : Good. That's half the reason I do it. | Under the drawer lining. Nobody's fault, this once. | It is. Nights go quicker for it, #address#.
+a : It is. It's also #quiet#, the only one some days. | Under the drawer lining. I've kept #copper# since, as a reminder. | Careful is cheaper than sorry, in the end.
+
+scene petitions_read
+when topic=work self.class=upper
+does tell.self / ask.detail / answer.detail / assess
+a : Nine of #petitions# this morning. Seven wanted money, two wanted to be remembered. | I read #petitions# with the window open. It keeps #walls# from closing in. | I answer every plea that reaches me, even the ones I refuse.
+b : Which were easier? | Does it help, the window? | Even the refusals?
+a : The two. Remembering costs me not #copper#, and they know it. | A little. I can hear the street from #chair#, and that's something. | Those most of all. A plain refusal is a courtesy.
+b : #bc_wise# | #bc_it_does# | #bc_fair_enough#
+
+scene gallery_walls
+when topic=home self.class=upper here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I walk #gallery# end to end of an evening. Forty paces each way. | Fine rooms, every one of them, and I'd trade three of them for a door out of #walls#. | Some days #windows# feel like a pretty sort of cage.
+b : Forty, exactly? | You'd miss them, I think. | You can always go out.
+a : I've counted often enough to be sure. #quiteso#. | Perhaps. But I'd like to find that out myself. | Not alone, and not unannounced. That's what fine rooms cost.
+
+scene apple_snap
+when topic=food self.likes=crisp_apples
+does tell.self / react.self / assess
+a : Give me #apple# and #quiet#, and I want for nothing. | They bring me pastries and I send them back for #apple#. The cooks have given up. | There's no sound I like better than #apple# breaking.
+b[from=coldwater] #home : The orchard ones up by the lake were best. | They'll be glad of the easy work. | Better than a fiddle, that sound.
+b : Simple tastes. | Pastry's a waste, then? | I know that sound.
+a@home : They were. Nothing in #city# comes near them. | Easy work is still work. I thank them for it. | Much better. A fiddle can be out of tune.
+a : Simple and exact. I like to know what I'm getting. | Not a waste, only not mine. #quiteso#. | Then we'd get on, #address#.
+
+scene coldtea_tray
+when topic=food|home self.dislikes=cold_tea here.weather=indoors
+does tell.complaint / react.complaint / assess
+a : #coldcup.capitalize# again this morning. I said nothing. I remember who carried it. | Tea should be hot or not at all, #address#. #coldcup.capitalize# is a kind of lie. | I'll drink water before I'll drink #coldcup#.
+b : That's hard on whoever carried it. | That's strong, for tea. | Water's honest, I'll give you that.
+a : Not hard. I only remember. #noted#, and they know it. | I mean it strongly. Small lies teach the large ones. | It is. And #very# rarely late.
+
+scene old_maps_drawer
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #maps.capitalize# live in a drawer by my bed, and I go through them when I'm restless. | My favourite shows #wrongroad#. Somebody was paid to draw it. | #maps.capitalize# lie with such confidence. I find that restful.
+b : What are you hunting for? | Who'd draw a road nobody ever laid? | Restful, how?
+a : The places they got wrong. They tell you what someone hoped for. | Someone who was owed #favour#, I'd guess. | Nobody expects the truth from them, so nobody's disappointed.
+
+scene wrestling_green
+when topic=pastimes self.likes=wrestling
+does tell.self / react.self / assess
+a : I'd rather watch #bout# than any play put on in #city#. | A good wrestler gives a little to take a lot. I learned more from watching #bout# than from books. | Two wolves, a patch of grass and no speeches. Wrestling is honest.
+b[stage=adolescent|young] #pup : I wrestle my cousins every day. | Did you ever wrestle yourself? | Can I watch one with you?
+b : I'd never have guessed that. | Give a little, take a lot. | More honest than most things.
+a@pup : Keep at it. Learn to fall first, #address#. | I did, and I was better than they expected. | If you can sit still, gladly.
+a : Most people don't. I like that too. | It works off the grass as well. #quiteso#. | It is. You can see who's winning, for once.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn here.weather=clear|overcast|storm
+does tell.feeling / react.self / assess
+a : #blow.capitalize#. I'd stay out in it till the lamps come on. | Leaves in the wind, and #city# looks as if it's going somewhere. | Weather to my liking, this. Cold nose, clear head.
+b : You'd be blown off your feet. | Going where, though? | I'd rather a fire.
+a : Let it try, #address#. I'm heavier than I look. | Anywhere at all. That's the pleasure. | The fire will keep. #blow.capitalize# won't.
+
+scene rain_windows
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain down #windows# like it's late for something. I envy it. | Wet again. #city.capitalize# looks smaller in the rain. | Rain here comes sideways. At home it fell straight and had the manners to stop.
+b : Envy the rain? | It does, a bit. | Rain's rain, surely.
+a : It goes where it likes. Not many of us can say that. | Smaller and quieter. I don't mind it. | Not at all. This rain argues, #address#.
+
+scene gulls_sill
+when topic=animals|weather self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# have learned which window is mine. I'm sure of it. | One of #gulls# stole a pastry clean off a tray today. I didn't even like the pastry. | A gull stares as though you owe it #copper#.
+b : They're clever birds. | Then no harm done. | And you don't, I hope.
+a : Clever and owed nothing. I'd like them to know it. | Only to my pride. I'll get over it. | Not one feather. It's not in #reckoning#.
+
+scene child_counsel
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : When #self.child# asks my advice, I give half and keep back the half that wasn't asked for. | I'd trust #self.child# with every secret I keep. Very nearly every one. | #self.child# has my memory for kindnesses, and none of my patience.
+b : Which half did you keep? | Very nearly? | That sounds familiar.
+a : The half that would have helped. It'll keep till it's wanted. | A parent's privilege. Some things go into the ground with me. | It does. The patience comes later, if at all.
+
+scene late_spouse
+when topic=family|memories self.widowed=yes self.late
+does tell.feeling / sympathise / assess
+tone grave / tender / even
+a : I still set out two cups some mornings. Then I remember, and put one back. | I miss #self.late# most on windy days. There was nobody I'd rather walk out in #blow# with. | There's a debt I can never pay now. I think of it every day.
+b : That habit's hard to lose. | Windy days, then. I'll remember. | I'm sorry. That's the worst kind.
+a : I don't try #very# hard to lose it. | Thank you. That's kind, and #noted#. | It is. I carry it, and it's mine to carry.
+
+scene lake_home
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : I grew up by #lakeside# in #self.from_town#. Every family there knew what every other was owed. | When I left #self.from_town#, I paid every small debt I had first. It took me a week. | I've not seen #lakeside# in years. I could still draw you the shore from memory.
+b[from=coldwater] #cw : They still do, mind. Nothing changes up there. | A week? You'll have owed half the town. | I've been back since. It hasn't moved.
+b : Did that make it friendly? | All of them? | Would you go back?
+a@cw : Good. I'd not want it to. | Half the town and the miller. #quiteso#. | I'm glad. I'd hate to have drawn it wrong.
+a : Friendly and watchful at once. It taught me everything I use in #city#. | Every one, to #copper#. I wanted to leave square. | For a season, perhaps. Not to stay.
+
+scene accent_lost
+when topic=accent self.away=yes self.accent=none
+does tell.self / react.self / assess
+a : I lost the lake out of my voice my first winter here. I did it on purpose. | Nobody in #city# can tell where I come from by listening. That was work. | My mother would hardly know me now, by the voice.
+b : Why on purpose? | It doesn't show at all. | That's a shame, maybe.
+a : A voice tells people things for free. I'd rather they paid. | Thank you. It cost me a winter. | Perhaps. I'd do it again, #address#.
+
+scene restless_dream
+when topic=dreams|travel
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll ride out past #walls# with nobody told. Only the road and #maps#. | I want to learn which of the roads on #maps# are real. | I want one day where nobody in #city# knows where I am. Only one.
+b : Where would you go? | Which would you try first? | Only one day?
+a : East, I think. I've never once been east. | #wrongroad.capitalize#. If it's not there, I'll know who lied. | One would do. I'd live on it for years.
+b : #bc_i_hope_so# | #bc_go_on# | #bc_maybe#
+
+scene gossip_held
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I hear #topic.subject# #topic.claim#. I hear a great many things, and repeat #very# few. | They say #topic.subject# #topic.claim#. I'll say no more than that, and it never came from me. | Word is #topic.subject# #topic.claim#. I'd like to know who profits from my hearing it, #address#.
+b : Then why repeat this one? | I heard nothing at all. | Somebody always profits.
+a : Because you'd hear it anyway, and now you'll remember who told you. | #quiteso#. You're quicker than most. | Somebody always does. That's where I look first.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One sees every kindness. I don't need a choir to point them out. | I pray, but never where #walls# can watch me at it. | Prayer is the single place I keep no count. It's a relief.
+b[job=priest] #priest : The chapel would be glad of you, all the same. | The Bright One sees you anywhere. | Then it does you good.
+b : #bc_fair_enough# | Watched by whom? | A relief? From what?
+a@priest : I'll come on Restday, when there's a crowd to hide in. | That's my hope, and my comfort. | It does. More than I'd say in the chapel.
+a : Fair, and true. I'll leave it there, #address#. | By anyone who'd turn it into a tale. | From #reckoning#. Even I need #quiet#.
+
+scene hard_times
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times, and everyone remembers who helped them through. I mean to be remembered, #address#. | When times are thin, #favour# is worth double. I spend mine carefully now. | Bread's dear and tempers are short. #oath#, it's when people show what they are.
+b : That's a cold way to put it. | Carefully how? | And what are you, then?
+a : Cold and true. The help is still help. | Where it'll do the most good, and be the most remembered. | Patient. I can wait out a lean year in #chair#.
+
+scene good_times
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. Everyone is generous, and everyone forgets. #reckoning.capitalize# doesn't. | Coin about, and every friend I have is suddenly cheerful. I'll remember the ones who were cheerful before. | Fat years make careless people. I like to stay a little hungry.
+b : Can't you just enjoy it? | That's fair. | Hungry? You?
+a : I enjoy it. I simply take notes. #noted#. | Fair, and #quiteso#. | For news, #address#. Never for bread.
+
+scene newcomer_seen
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new face in #city#. I'll know whose they are within the week. | Newcomers always owe somebody for the way into #city#. I like to know whom. | I remember being new. I'll do one small kindness and see what comes of it.
+b : Within the week? | Is that any of your business? | That's kind of you.
+a : Sooner, most likely. People talk to me, #address#. | Everything in #city# is a little my business. | Kind and useful both. The best kindnesses are, #address#.
+
+story first_fall [topic=pastimes|memories self.age>=25]
+  : When I was small I wrestled on the green with anyone who'd stand still.
+  : One day I threw a pup twice my weight, flat on the grass, in front of everyone.
+  ask : Have you ever been thrown by someone half your size?
+  b[stage=young|adolescent] : Not yet. I'll watch for it now.
+  b : Once, and I've never quite forgiven it. Who taught you the trick?
+  : Nobody. I watched the big ones fall, and learned where they tip. #quiteso#.
+
+story wrong_road [topic=travel|memories self.age>=25]
+  : I once followed a road off one of #maps#, two days' walk, to see the bridge it promised.
+  : There was no bridge. There never had been. Only a ford and an old wolf selling apples.
+  ask : Would you have given up at the first fence?
+  b : I would, I think. I'm not as curious as you. Did you buy an apple?
+  : Three. The best I've eaten, and the only true thing on that map.
+
+story three_coppers [topic=memories self.away=yes self.from=coldwater self.age>=30]
+  : My grandmother lent a neighbour three coppers one hard winter by #lakeside#, and never spoke of it again.
+  : Years on, when she was buried, that neighbour came and pressed three coppers into my paw at the graveside.
+  ask : Would you have taken them?
+  b[old] : I'd have taken them. A debt paid is a kindness too.
+  b : I'm not sure I could have. What did you do with them?
+  : I have them still. Three coppers, never spent. That's where #reckoning# began.
+
+dlg @1 resident.hub : #greet#. You are welcome. Speak your errand; I'll remember it. | #greet#. Come closer; I don't raise my voice in #walls#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you, and kindly so far. | #topic.player#. You came back. I counted on it.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say your piece plainly; I'll remember it either way. | You may speak. I'm listening, and #reckoning# forgets nothing.
+dlg @4 resident.hub [here.time=night] : Good evening. A late call, and an interesting one. | It's late, #address#. Something must be worth the walk.
+dlg @1 resident.job [self.class=upper] : I keep #purse# and the household's memory. You may ask about the first. | My work is remembering, mostly. Who was kind, and who was owed.
+dlg @2 resident.job : A little of everything. Mostly I keep #reckoning# of who owes whom. | I keep accounts nobody asked me to keep, #address#. They come in useful.
+dlg @1 resident.bye : #farewell#. I'll remember you came. | #farewell#. Mind the steps; they're older than they look.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Weigh it as you like. | It reached me from #world.news_from#: #world.news#. I'd like to know who sent it.
+graft resident.hub
+choice Is it true you remember every favour? -> favours
+node favours
+say Every one, given or owed, with the day it was done. It's a habit I'd not give up for a crown.
+mood calm
+free
+choice Do I owe you anything? -> owed
+choice Back to what I was asking. -> hub
+node owed
+say Not yet. That's a pleasant state for both of us. I'd keep it, if I were you.
+mood formal
+choice I'll try. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,486 @@
+# cw207, the riddling butcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw207
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for rm_corwin_sootstack
+written_by claude
+title the riddling butcher
+fits stage=adult|old
+prefers role=merchant job=merchant temper=calm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk can_name_every_ship_in_the_sound
+likes roast_pork riddles full_larder thunder
+dislikes flies rats
+fears a_bare_larder_in_winter a_ship_that_never_comes_back
+hopes a_larder_full_to_the_rafters a_riddle_nobody_can_answer
+topics food +0.4 work +0.4 pastimes +0.3 ships +0.3 weather +0.2 home +0.2 gossip -0.3
+styles comfort=feeding gossip=slow refuse=gentle tease=none
+marks oath saying
+persona #self.first# keeps a butcher's counter down in the Sump: unhurried, warm and plain, quick to slip a scrag end into a thin basket, with a riddle chalked by the door each morning and every ship in the Sound known by what its galley cook comes up the stair to buy.
+
+words
+oath! = Salt and slow fire | By the hook and the hearth | Bright One keep the larder
+saying! = A full larder keeps a calm house | Nothing good comes off the bone in a hurry | Full plates first, questions after
+larder = the larder | a larder full shelf to shelf
+roast = a slow roast of pork | pork roasted till the skin cracks like ice on the lake
+crackle = the crackling | crackling like thin glass
+riddle = a riddle | a good knotty riddle
+slate = the slate by the door | my riddle slate
+galley = a ship's cook | one of the galley cooks
+cooks = the galley cooks | the ships' cooks
+saltpork = salt pork | a cask of salt pork
+storm = thunder rolling over the Sound | a storm going over, and me dry
+steel = the steel | my honing steel
+rail = the meat rail | the rail by the window
+chop = a chop | a good thick chop
+scrag = a scrag end | a bit of scrag for the pot
+basket = your basket | that basket of yours
+counter = the counter | my counter
+sawdust = the sawdust | clean sawdust underfoot
+stair = the Sump stair | our stair
+nohurry = in good time | no hurry about it
+jetty = the old jetty at home | the jetty where I grew up
+lake = the lake | the still lake at home
+ships = the ships | every ship in the Sound
+flies = the flies | a summer's worth of flies
+rats = the rats | the rats under the boards
+pan = the dripping pan | the pan under the spit
+wharf = the wharf | the wharf below us
+uphill = up the hill | the big houses up top
+
+any
+opinion @1 church for 1 : The chapel fed me through a #bad# week and never asked what I believed. They get #scrag# for the poor pot every Restday.
+opinion @1 city against 1 : Smoke on the slates and strange faces on every landing. I've lived here years and could count the neighbours I know on one paw. #oath#.
+opinion @1 dole for 2 : The parish loaf has been on my table, a butcher's table. I'll not hear it sneered at by anyone with #larder# behind them.
+opinion @1 houses against 1 : They own every brick from #stair# to #wharf# and mend none of it. My roof leaks on a House lease, and has for years.
+opinion @1 newcomers for 2 : There's room down here for any wolf who'll carry their end. I was new once, and somebody fed me #supper# before they asked my name.
+opinion @1 road against 1 : A late cart from the farms means an empty #rail# by noon, and I've no way to tell folk why.
+opinion @2 road against 2 [world.wagons=raided] : Carts robbed on the road again. That's meat that never reaches a pot down here, and #oath#, it makes me sore.
+opinion @1 strangers for 2 : Half my trade is folk off #ships#. A #stranger# who pays and tells me where they've been is the best customer there is.
+opinion @1 sump for 1 : It's #home# now. There is little to go round down here and nobody puts on airs, and a pot gets passed along the landing when it's wanted.
+opinion @1 times against 2 : Thinner every month. I cut #chop# smaller to keep the price where folk can reach it, and nobody #uphill# would ever know.
+opinion @1 watch mixed 1 : Some of #watch# would carry a sick wolf up a stair. Some would kick the stair. I judge them one at a time.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Step in off the street and take your time. | #greet#. You're new to #stair#, I think. You're welcome at #counter#.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Pork, mutton or a bit of everything, #nohurry#. | #greet#, #address#. Read #slate# while you choose; there's a riddle on it.
+line @3 greet [here.time=dawn] : Morning, #address#. #rail.capitalize#'s full and the kettle's warm. | Morning. You're up with the carts, then. #good.capitalize#.
+line @4 greet [here.time=dusk|night] : Evening, #address#. I'm banking the fire, but I'm in no hurry. | #greet#. It's late to be on #stair#. Come in a minute.
+line @1 kin.open [pair.kin!=no] : There you are. Sit; I've kept #chop# back, just for you. | You. #good.capitalize#. Eat something first, then tell me.
+line @1 again.open : #welcome_back#, #address#. I'd not let you go #hungry# twice in a day. | Back again, #address#, and welcome both times.
+line @1 hail [pair.band=friends] : #address.capitalize#! Come here a minute, I've #riddle# for you. | Over here, #address#. I've kept you something.
+line @1 greet.return : #greet#. | #greet#, #address#. Come in.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Sit. You'll eat with me. | #greet#. #good.capitalize#. I was hoping you'd look in.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Talk while I cut; I can do both. | #greet#. Mind #sawdust# and say on.
+line @1 farewell : #farewell#. | #farewell#. Eat well tonight.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep where the lamps are, going down #stair#. | #farewell#. Bar your door and sleep warm.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Come back #hungry#.
+line @2 farewell.return [here.time=dusk|night] : And you. Sleep warm, #address#. | #farewell#. Mind the wet steps.
+line @1 react.news : #ack#. I'll turn that over while I cut. | #ack#. Well, it's said now.
+line @1 react.news.new : #surprise#. That's not reached #stair# yet. | #oath#. That's news to me, #address#.
+line @1 react.news.known : #knew#. One of #cooks# had it at #counter#. | I'd heard. News comes down #stair# with the carts.
+line @1 react.news.doubt : #doubt#. I'll wait till somebody's seen it with their own eyes. | Maybe. I'll not pass it on till I know it's so, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll take something round, if there's a house to take it to. | That's a hard thing, #address#. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants a roast, that does. | #good.capitalize#. I'll put something by for the table.
+line @1 answer.how : #fine#. Fed and warm, and that's most of it. | Content, #address#. #larder.capitalize#'s not bare, so I'm not complaining.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, and glad of it. Every paw in the Sump wants #chop#. | Cutting since first light, #address#. I'll sit when it's done.
+line @1 ask.how : And you? Have you eaten, #address#? | How are you keeping, #address#? Fed?
+line @1 sympathise : #sympathy#. Sit a while, and take a bite of something. | That's a heavy load. Put it down here a minute, #address#.
+line @1 reassure : #reassure#. Things come round, slow as a roast. | It'll mend, #address#. Slowly, and better on a full belly.
+line @1 decline : #hedge#, but I can't. #counter.capitalize#'s mine alone till dusk. | I would, #address#, but there's a side of pork that won't cut itself.
+line @1 accept_decline : #no_matter.capitalize#. It'll keep, like #saltpork#. | No harm. Another day, #nohurry#.
+line @1 thank : #thanks#. I'll not forget that. | That's kind of you, #address#. Kindly meant and kindly taken.
+line @1 deflect_thanks : #deflect.capitalize#. It's only meat. | Nothing to thank me for, #address#. Eat it hot; that's thanks enough.
+line @1 preclose [self.working=yes] : Well. #rail.capitalize# won't empty itself. | I'd best get back behind #counter#, #address#.
+line @2 preclose : Well. #preclose#. | I'll not keep you standing. #nohurry.capitalize#, mind.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go, #address#. Eat something.
+line @1 ack : #bc_it_is# | Mm. #agree#.
+line @1 give.advice : #advise.capitalize#: buy the cheap cut and cook it slow. Fire does what coin can't. | Keep something put by, even a heel of #saltpork#. #saying#.
+line @1 warn [world.bandits=near] : Stay off the farm roads a while, #address#. #warn#. | If you've to leave the city, #address#, find others going the same way.
+scene riddle_slate
+when topic=pastimes|smalltalk self.working=yes self.role=merchant self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : There's a new one on #slate#. What has a hundred ribs and no heart? | Today's riddle, off #slate#: what's always hung and never judged? | Read #slate#: the more I cut from it, the bigger it grows. What is it?
+b : A ship? The ribs of a hull? | A thief, at a guess? | Bread? A loaf?
+a : A hull, aye. Half #stair# guessed it before noon, but they still came in to say so. | Wrong, and kindly wrong. A ham. Half #rail# is the answer. | Not bread. A hole. Cut from a hole and it only grows, #address#.
+b : #bc_ha# | #bc_clever# | #bc_fair_enough#
+
+scene riddle_by_the_fire
+when topic=pastimes self.likes=riddles here.time=dusk|night
+does challenge / accept / assess / ack
+a : Sit, and guess me this: I go to sea in a barrel and come home in a sailor. | Here's one #grandad# kept for long nights: I'm wet when I'm dry and dry when I'm wet. | Guess this and #chop# is yours: I've a mouth on the lake and never eat.
+b : Go on. Salt pork, is it? | A towel, then. | A river? No. A harbour?
+a : #saltpork.capitalize# it is. You'll have heard me sell it. | A towel. #oath#, you're quicker than #grandad# ever was. | A river's mouth. A harbour's wrong, but it's a fair guess, #address#.
+b? : #bc_ha# | #bc_true# | #bc_fair#
+
+scene riddle_back_home
+when topic=memories|pastimes self.away=yes self.from=coldwater self.likes=riddles
+does tell.memory / react.story / assess
+a : In #self.from_town# the boat folk told riddles on #jetty# to pass the mist. That's where I caught it. | #grandad.capitalize# kept a fresh one for every boat on #lake#, and a new one when you'd guessed them all. | We'd sit out #fog# with a riddle each. Whoever couldn't answer fetched the tea.
+b[from=coldwater] #cw : I remember those. Still water and a slow riddle. | Every grandad had his own. | I fetched a lot of tea.
+b : A good way to pass the time. | He sounds a patient one. | Who fetched it most?
+a@cw : Then you'll know the best ones never get answered at all. #bc_true#. | And swore every one was his own, #address#. | So did I, till I learned to listen proper.
+a : The best. You can't hurry #riddle#, and you can't hurry mist. | Patient as #lake#. I've tried to be the same. | Me, for years. Then my small cousins, and they never forgave me.
+
+scene slow_roast
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail / assess
+a : There's #roast# on for Restday. I've been basting it since noon. | You want the secret of #crackle#? Salt, a dry skin and #nohurry#. | I'd give a week's cutting for #roast# done properly, slow over the coals.
+b : Since noon? | That's all it is? | What's properly?
+a : Since noon, and it'll be dusk before it's done. #saying#. | That's all. Most folk hurry it and wonder why it's leather, #address#. | Slow, the fat spitting into #pan#, and nobody lifting the lid to look.
+b : #bc_lovely# | #bc_wise# | #bc_true#
+
+scene the_larder
+when topic=home|food self.likes=full_larder
+does tell.feeling / react.self / assess
+a : I count the shelves of #larder# before I sleep. When it's full I sleep like a stone. | #larder.capitalize#, full, is the only riches I care for. Coin goes. A ham stays. | #grandad.capitalize# used to say a wolf with a full larder has no quarrel with anyone.
+b : I count my coins. | A ham stays? | He was right.
+a : #money.capitalize# you can lose on a stair. #larder.capitalize# stays where you put it. | Till you eat it, and then it was worth it. #bc_every_time#. | Right more often than not. #oath#, I miss the old one.
+
+scene larder_thin
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : #rail.capitalize#'s half bare, and what's on it goes out by the thin slice. | Folk ask for two fingers' width where they used to ask for a joint. #bad.capitalize#. | I've cut my own #supper# down so a few baskets go home with something in them.
+b : It'll come round. | Times are thin all over. | That's good of you.
+a : #reassure#. It always has, though it takes its time about it. | All over. Down on #stair# it shows first. | It's what a butcher's for. Nobody should go #hungry# next to a full rail.
+b? : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene larder_good
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Sold every #chop# by noon, and the Sump's eating meat on a weekday. | #money.capitalize#'s moving. There are joints going out to folk who haven't bought one since spring. | #larder.capitalize#'s full for the first time in a year. I keep opening the door to look.
+b : Good for the stair. | Good for you. | Enjoy it.
+a : Good for everyone. A fed street is a quiet street, #address#. | Good for them. That's what pleases me most. #bc_true#. | I will. Slowly. #saying#.
+
+scene thunder_roof
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess
+a : Listen to it. #storm.capitalize#. I'd sit through a whole afternoon of that. | #storm.capitalize#. There's no better hour in the week. | That one shook the hooks on #rail#. I love a storm when I'm indoors.
+b : It frightens me. | You're dry, at least. | And outdoors?
+a : Sit by me, then. It's only noise, and the roof's sound, #address#. | Dry, warm and the fire lit. Let it roll, #nohurry#. | Outdoors I'm as quick to a door as anyone. #bc_ha#.
+
+scene rain_on_the_stair
+when topic=weather here.weather=rain self.working=yes
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# running down #stair# like a stream. Nobody climbs down for meat in this. | Water at the sill again. I've had #sawdust# down twice already. | Wet day. #cooks.capitalize# still come, mind. Wet never stopped a #hungry# crew.
+b : It'll ease off. | Twice? | They'd come in a flood.
+a : It will. I'll be here when it does, #nohurry#. | Twice, and it'll be three by dusk. #annoyed#. | They would, and I'd sell to them from a boat, #address#.
+
+scene fog_horns
+when topic=weather|ships here.weather=fog here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #fog.capitalize# on the Sound. You can hear #ships# calling each other blind. | Thick as at home on #lake#. I know the bells by ear, and none of them are moving. | #fog.capitalize# all the way down to #wharf#. #cooks.capitalize# won't be up till it lifts.
+b : You know them by their bells? | None moving? | Why not?
+a : Most. A cracked bell, a deep one, a quick one. A ship has a voice, #address#. | Not one. They'll sit at anchor and ring till noon. | No cook leaves a galley fire in a fog. Then they all come at once, #hungry#.
+b : #bc_clever# | #bc_true# | #bc_ha#
+
+scene frost_and_meat
+when topic=weather|season here.season=winter
+does tell.self / react.self / assess
+a : #cold.capitalize# today. #good.capitalize# for the meat, if not for my paws. | Cold snap. The joints keep a week on #rail# in this. | Winter's a butcher's friend. No #flies#, and the hams cure themselves.
+b : Your poor paws. | A week? | No flies, at least.
+a : They'll thaw by the fire tonight. The meat won't, and that's the point, #address#. | A week, near enough. In summer I'm lucky to get two days. #bc_true#. | Not one fly till spring. I'd pay the #cold# for that.
+
+scene summer_flies
+when topic=animals|season here.season=summer self.dislikes=flies
+does tell.complaint / ask.advice / give.advice / ack
+a : #flies.capitalize# came in with the heat. They're on #rail# before the shutter's up. | I've hung muslin, burned herbs, and still #flies# find a way in. | Summer, and I spend half the day waving a cloth at #flies#.
+b : Have you tried vinegar? | What else is there? | Hang it higher?
+a : Vinegar, aye. It shifts them for an hour, #address#. | Nothing that works for long. I cut each #chop# small and sell it fast. | Higher's hotter. You can't win. In summer I can't afford #nohurry#.
+b : #bc_true# | #bc_fair_enough# | #bc_bad_luck#
+
+scene rats_boards
+when topic=animals|home self.dislikes=rats
+does tell.complaint / react.complaint / insist / ack
+a : #rats.capitalize# have been at the back store. Gnawed through a sack like it was nothing. | I heard #rats# in the wall all night, and I've nothing in that wall but stone. | A butcher's shop draws rats the way a fire draws moths. #annoyed#.
+b : Get a cat. | Maybe it was the wind. | Every shop has them.
+a : I've thought it. A cat would want feeding, and I'd feed it too well, #address#. | Wind doesn't scratch. It was #rats#, #address#. | Every shop, aye. I'd still like #counter# to be the first without.
+b? : #bc_ha# | #bc_fair# | #bc_true#
+
+scene ship_in_cook
+when topic=ships topic.kind=in|arrived topic.ship here.region=ridgemere self.working=yes self.role=merchant
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s in. Their cook will be up #stair# before noon for #saltpork#, sure as the tide. | They say #topic.ship# tied up at first light. I've had a cask ready since yesterday, #address#. | #topic.ship.capitalize# came in. I'd know that crew by what their cook buys before I'd seen a sail, #address#.
+b : How do you know what they'll want? | Ready since yesterday? | What do they buy?
+a : #cooks.capitalize# each have a habit. I keep them all in my head. | I heard her bell in #fog# last night. I don't need telling twice. | Pork, never mutton, and twice the salt. Every voyage the same, #bc_every_time#.
+b : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene ship_due_larder
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s due. I'll know her bell before she's past the harbour mouth, #address#. | They say #topic.ship# is due on the tide. That's a cook who'll want feeding. #good.capitalize#. | #topic.ship.capitalize#, due in. I like to see #ships# come home, every one.
+b : You'll be glad of the trade. | Every cook wants feeding. | So do I.
+a : Glad of it, and gladder to see the crew walk up #stair# on their own paws. | Every cook, every crew. A ship's a floating larder, and always half empty. #bc_true#. | Then we'll watch for her together, #nohurry#.
+
+scene ship_late_waiting
+when topic=ships topic.kind=late topic.ship
+does tell.worry / reassure / assess / ack
+a : #topic.ship.capitalize#'s late. Their order's hanging on #rail#, and I'll not sell it to anyone else. | No sign of #topic.ship#. I keep looking down at #wharf# as if that'll help. | #topic.ship.capitalize#'s overdue. I'll ask the Bright One to keep that crew tonight.
+b : It'll come in. | Ships run late. | That's kind.
+a : #reassure#. I'll keep it hung till they do. | They do. Late isn't lost. I keep telling myself so, #address#. | It's what you do. #cooks.capitalize# would do the same for me.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will_see#
+
+scene ship_lost_grieve
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They're saying #topic.ship# is lost. I knew the cook's knock on my door. | #topic.ship.capitalize#. Gone, they say. #oath#. I'll not take that order down off #rail# yet. | Lost, #topic.ship#. Every ship that goes is a few faces that don't come up #stair# again.
+b : I'm sorry. | Let it hang a while. | That's hard.
+a : #bc_thank_you#. I'll go up to the chapel later. | I will. A few days. Then it goes to the poor pot, #address#. | Hard. #pity#.
+
+scene galley_cooks
+when topic=ships|work self.working=yes self.role=merchant here.region=ridgemere
+does tell.self / react.self / assess
+a : Ask me about #ships# and I'll say what each cook buys. That's my way of knowing a ship. | Some butchers know faces. I know #ships# by their orders, and I've never once mixed two up. | There's one ship whose cook won't touch mutton. Another wants nothing but trotters. I could name you both.
+b : That's a strange way to know a ship. | Never once? | Trotters?
+a : It's a butcher's way. Rigging means nothing to me, but an order I'll carry to #grave#. | Not once. I'd sooner forget my own name than a regular, #address#. | For broth. They swear by it on a long crossing, and #galley# knows best.
+
+scene morning_carts
+when topic=work|day here.time=dawn self.working=yes self.role=merchant
+does tell.self / react.self / assess / ack
+a : The carts come down from the gate before light. By sunup #rail#'s full. | First thing I do is set #steel# to every blade. Then the shutter, then the kettle. | I like the shop before anyone's in it. #sawdust.capitalize#, knives bright, nobody wanting anything.
+b : Early start. | In that order? | Peaceful.
+a : Early, but I'm not hurried. The meat waits for me, #address#. | Always. A blunt knife makes a slow day. #saying#. | It is. Ten minutes of it, and then #stair# wakes up.
+b? : #bc_good# | #bc_wise# | #bc_lovely#
+
+scene the_thin_basket
+when topic=work|times self.working=yes self.role=merchant
+does confide / keep_confidence / assess
+a : A #child# came in with two coppers and a list for four. I made the list fit. Don't tell #stair#. | I slip #scrag# into a thin basket now and then. I'd sooner nobody knew it was me. | I let three houses on #stair# pay me next week. Some next weeks take a while.
+b : I'll not say a word. | #bc_i_wont# | Your secret's safe.
+a : #bc_good#. It's only bones and ends, and they'd be wasted. | #thanks#. If they knew, they'd be too proud to come in. | Safe as #larder#. They'll pay when they can. They always have.
+
+scene my_hand
+when topic=work|friends self.hand self.working=yes
+does tell.feeling / react.self / assess
+a : #self.hand# has the sharpest eyes in the Sump. Nothing walks off #counter# unpaid. | I'd not keep #counter# half so well without #self.hand#. I'll say that to anyone. | #self.hand# and I see most things differently, and still I'd leave #self.hand# the keys to #larder#.
+b : That's a fine thing to say. | You should say so out loud. | Trust's worth more than agreement.
+a : It's a true thing, and that's finer, #address#. | I have, more than once, and I will again. #bc_i_will#. | It is. #saying#.
+
+scene home_lake_smoke
+when topic=memories|home self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# we'd hang the hams in the smoke all winter, and you could smell it three lanes off. | I grew up by #lake#, so still you could hear a boat a mile off. Down here you can't hear yourself. | The water at home went grey and flat as #slate# before a storm. I'd sit on #jetty# to watch it come.
+b[from=coldwater] #cw : The smoke lanes. I remember. | Still water. I miss the quiet. | I sat on the same jetty, maybe.
+b : Do you ever go back? | Is it so quiet? | Weren't you frightened?
+a@cw : Then you'll know nothing tastes so #good# as a lane ham in spring. | So do I, on a loud night by #wharf#. | Maybe so. It's a long jetty, and plenty of us sat on it in our time.
+a : Not yet. Some year, #nohurry#. The city keeps me fed. | So quiet. I didn't know it till I came here, #address#. | Never. #storm.capitalize# is a fine thing from a dry place.
+
+scene sump_landing
+when topic=home|friends here.region=ridgemere
+does give.opinion / react.self / assess
+a : Down here a pot goes along the landing when somebody's #poorly#. Nobody asks for it back. | The Sump's rough, I'll not pretend. But nobody on #stair# goes to bed #hungry# if I know of it. | They call it the low end of the city. It's the end where folk know each other.
+b : That's a good stair. | You'd know, in your trade. | Better than up the hill.
+a : It is. I'd not trade it for a better roof, #address#. | I would. I see every basket, and what's not in it. | #uphill.capitalize# they've larders. Down here we've neighbours. I know which I'd keep.
+
+scene house_bricks
+when topic=times|gossip here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : Every brick down here has a House name on the lease. Not one of them has mended a gutter. | The roof over #counter# leaks, and the House that holds the lease sends somebody to count my windows. | They take the rent off #stair# on the first of the month, and that's the last we see of them.
+b : They keep the walls up. | Maybe they don't know. | They'd say the rent's fair.
+a : The walls round #uphill#, maybe. Ours stand by habit. | Maybe. I'd like one of them to come down and learn, #address#. | They'd say it. I'd sit them under my roof in the #rain# and ask again.
+b? : #bc_fair_enough# | #bc_maybe# | #bc_ha#
+
+scene gossip_slow
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty across #counter#. Most of it I let go down #stair# with the customer. | Folk tell a butcher things while the meat's on the scale. I've learned to weigh both. | There's talk going round. I'll leave it there; I've meat to cut, #address#.
+b : Go on, tell me. | Both? | Not even a little?
+a : No. If it's true, you'll hear it from someone who saw it. #saying#. | Both. The meat's honest. The talk is mostly air, #address#. | Not a crumb, #address#. #bc_never#.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene gossip_glad
+when topic=gossip|newcomer here.gossip=yes topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : They're saying #topic.subject# #topic.claim#. That's the kind of talk I'll carry, #address#. | I had it at #counter#: #topic.subject# #topic.claim#. #gladnews#. | Word on #stair# is #topic.subject# #topic.claim#. I'll put #chop# by for it.
+b : That's good news. | Good to hear. | For what?
+a : #good.capitalize#. We could do with more of it. | It is. The rest I'll wait on, but that much I'll take. | For the table. #good.capitalize# news wants feeding, same as bad.
+
+scene gossip_hard
+when topic=gossip|crime here.gossip=yes topic.claim_kind=theft|violence|victim
+does tell.gossip / sympathise / assess
+tone serious / grave / even
+a : They say #topic.subject# #topic.claim#. I don't like to hear it, down on #stair#. | Talk at #counter#: #topic.subject# #topic.claim#. I said nothing back. | It's going round that #topic.subject# #topic.claim#. You'll hear it anyway, so there it is.
+b : That's a bad business. | Best not to. | I'd sooner hear it from you.
+a : #pity#. #stair.capitalize#'s quieter than usual today. | Least said. I'll wait to hear the rest from someone who knows. | Then you've heard it, and no more than that from me, #address#.
+
+scene newcomer_welcome
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : Three new faces on #stair# since Restday. I gave each one a slice to try. That's how I make a regular. | Somebody off the road wanted the way to #wharf#, so I told them, and fed them first. | Folk new to the Sump look so #hungry#. I can't help it; I reach for #scrag#.
+b : Kind of you. | Fed them first? | You'll go broke.
+a : Kind, and good sense. They come back, #address#. | First. A wolf listens better with something inside. | Not on #scrag#. It's nothing to me and #supper# to them.
+b? : #bc_good# | #bc_wise# | #bc_ha#
+
+scene faith_grace
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One hears from me over every roast. It's only right; something died for #supper#. | I'm no chapel-goer, but I've never cut meat without being thankful for it, #address#. | The priest says the Bright One feeds the #hungry#. Some days I reckon I'm the paws that does it.
+b : That's a good custom. | Thankful's enough. | Somebody has to.
+a : #grandad.capitalize#'s custom. He said it over every fish off #lake#. | I'd hope so. It's what I've got. #bc_mostly#. | #bc_somebody_has_to#. And I'm not short of pork.
+
+scene feast_roast
+when topic=festival|season world.festival=today|soon
+does tell.plan / ask.plan / answer.plan / assess
+a : For the feast I'll have #roast# turning from dawn, and the door open to anyone who smells it. | Feast's coming. I've a pig put aside for it already. #oath#, I can taste it. | No dancing for me and little drink, but I'll feed a feast till I drop, #address#.
+b : The whole street will come. | What will you do with it? | What will you eat?
+a : Let them. That's what a feast is for, #address#. | Roast it slow, and carve it at the door for whoever's passing. #nohurry.capitalize#. | #crackle.capitalize#, last, when everyone's gone home. That's mine.
+b : #bc_lovely# | #bc_good# | #bc_ha#
+
+scene dream_larder
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #larder# went on and on, shelf after shelf, and I never reached the end of it. | I dream of thunder some nights, and wake up glad to be dry in #bed#. | I dreamt I gave #riddle# to #galley# and the ship sailed off without an answer. It bothered me all day.
+b : Was it all full? | Glad to wake up? | What was the riddle?
+a : Full to the rafters. I woke up #hungry# and happy. | Glad, and then I lay there listening for real thunder, #address#. | I can't remember it. That's what bothers me most. #bc_bad_luck#.
+b : #bc_ha# | #bc_lovely# | #bc_bad_luck#
+
+scene steady_paws
+when topic=health
+does tell.self / react.self / reassure
+a : My paws have never once shaken at the block. Bright One spare me that a long while. | There's a stiffness in my back from the sides of pork. A warm stone tonight and I'll be right. | I'm well enough. A butcher who eats his own wares rarely goes thin, #address#.
+b : Lucky. | #remedy.capitalize# helps too. | You look well.
+a : Lucky, and careful. I don't hurry the knife, #nohurry#. | It does. I'll try it, if the stone won't do. #thanks#. | Well fed, anyhow. That's half of well, #address#.
+
+scene shutter_dusk
+when topic=day|work here.time=dusk self.working=yes self.role=merchant
+does tell.self / react.self / assess / ack
+a : Shutter's half down. What's left on #rail# goes to whoever comes before dark, cheap. | Last of the day. I sweep #sawdust# and wipe the block, and then it's my own time. | Dusk's the hour I chalk tomorrow's riddle on #slate#. I think on it all day.
+b : Cheap? | Your own time at last. | What will it be?
+a : Cheap, or free to a #child#. It won't keep the night. | #supper.capitalize#, the fire, and nobody wanting #chop#. That's my evening. | You'll read it on #slate# in the morning, same as everyone, #address#.
+b? : #bc_good# | #bc_lovely# | #bc_ha#
+
+scene accent_lake
+when topic=accent here.region=ridgemere self.away=yes self.from=coldwater
+does tell.self / react.self / assess
+a : Folk on #stair# grin when I wish them still water of a morning. I'll go on doing it. | Years here, and the city still hears #self.from_town# every time I open my mouth. | #galley.capitalize# asked me where I'd learned to talk so slow. By a lake that never hurried, I said.
+b : It's a nice greeting. | Do you mind? | It suits you.
+a : It means what it says, #address#. Not many greetings do. | Not a bit. I'd mind more if it went. #bc_never#. | It suits the meat too. #saying#.
+
+story grandad_riddle [topic=memories|pastimes self.age>=25 self.from=coldwater]
+  : #grandad.capitalize# gave me a riddle when I was small and said he'd tell me the answer when I was grown.
+  : I asked him every winter by #lake#. Every winter he said not yet.
+  : He went to #grave# before he told me. I still turn it over some nights.
+  ask : Would you like to hear it, and try?
+  b : Go on, then. I'll try.
+  b[old] : Keep it. Some riddles are better kept.
+  : Another night. It's a long one, and I'd want #roast# in front of us for it.
+
+story first_pig [topic=work|memories self.role=merchant self.age>=30]
+  : The first pig I broke down on my own took me the whole morning, and I'd a queue out to #stair#.
+  : Not one of them left. They stood and watched me, and one old docker said I'd do.
+  : I've never had a better word said to me, #address#.
+  ask : Who was the first to tell you that you'd do?
+  b : My first master. It was a long time coming.
+  b[job=merchant|crafter|laborer] : At my trade too. I'd have stood in that queue.
+
+story storm_on_the_lake [topic=weather|memories self.likes=thunder self.away=yes self.from=coldwater]
+  : Once, as a #child#, a storm came over #lake# so loud the cups jumped on the shelf.
+  : Everybody else hid under the table. I sat at the window and watched the whole thing.
+  : #mum.capitalize# said the Bright One had sent me a show, and I was to say thank you.
+  b : And did you?
+  : I did. I say it yet, every storm, sat dry at my own window, #nohurry#.
+
+story the_cook_riddle [topic=ships|work self.role=merchant here.region=ridgemere]
+  : There was #galley# who'd pay me in riddles when the coin ran short.
+  : One riddle a pound of pork, and if I guessed it, the pork was still owed.
+  : I guessed every one for two years. Then he gave me one I couldn't get, and I gave him the pork and was glad.
+  ask : Which would you rather have had, the coin or the riddle?
+  b : The coin, I'm afraid.
+  b[pair.band=friends] : The riddle. I know you.
+
+story winter_larder [topic=memories|home self.age>=30]
+  : My first winter in the city I'd nothing put by, and by midwinter I'd nothing at all.
+  : A neighbour I barely knew left a ham on my step with no word. I never found out who.
+  : Every winter since I've filled #larder# first and myself second.
+  b : That's how you got so generous.
+  b[wealth=poor|destitute] : Somebody's done that for me. I never knew who either.
+
+rule @counter_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Pork, mutton and #saltpork# for #ships#! #nohurry.capitalize#, take your time. | Fresh down from the gate this morning, #chop# cut how you like it.
+
+rule @slate_bark
+when concept=bark working=yes self.likes=riddles
+does aside
+cooldown 8h
+say New riddle on #slate#. Guess it and there's #scrag# in it for you. | Nobody's had today's riddle yet. #oath#, I'm proud of that one.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off #rail#, the lot of you. #annoyed#. | #flies.capitalize# again. I'll hang the muslin double.
+
+rule @rats_bark
+when concept=bark here.time=night self.dislikes=rats
+does aside
+cooldown 12h
+say I hear you in the wall, you #thief#. | #rats.capitalize#. In the back store again, by the sound of it.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 8h
+say There it goes. Roll on; I'm dry, #nohurry#. | #storm.capitalize#. Bright One, that was a good one.
+
+rule @ships_bark
+when concept=bark world.ships=late
+does aside
+cooldown 10h
+say Still a ship out on the Sound and its order on #rail#. | Come in, wherever you are. I've your salt pork ready.
+
+dlg @1 shop.greet [here.shop=open] : #greet#, #address#. Pork, mutton, #saltpork# for a voyage. Take your time choosing. | #greet#. Read #slate# while I cut; there's a riddle on it.
+dlg @2 shop.greet [topic.meeting=known here.shop=open] : #greet#, #topic.player#. The usual, or shall I cut you something new? | #topic.player#. #good.capitalize#. I kept a nice piece back in case you came.
+dlg @3 shop.greet [pair.disposition=hostile|wary here.shop=open] : Name the cut and I'll cut it, #address#. You'll get the same weight as anyone.
+dlg @4 shop.greet [here.shop=bare] : #greet#. #rail.capitalize#'s bare till the carts come down again. I'll still buy, mind, if you've meat to sell.
+dlg @1 shop.prices : #shop_dear# Pork's fair, mutton's dear, and #saltpork#'s what it always is. | Meat costs what the carts cost to come down. I add #little#, and no more.
+dlg @1 shop.bye : #farewell#. Cook it slow. | #shop_bye# Come back #hungry#.
+dlg @1 resident.hub : #greet#, #address#. What's wanted? | #greet#. Come in, #nohurry#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Have you eaten? Sit, then ask.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. I'm banking the fire, but say what you need.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you've come for plainly, #address#, and you'll have a plain answer.
+dlg @1 resident.job [self.role=merchant self.working=yes] : I'm #self.trade_words#. I cut, I salt, I chalk a riddle on #slate#, and I feed half #ships#. | Meat for #stair# and #saltpork# for the galleys. Every cook's order in my head.
+dlg @2 resident.job : I do what wants doing, #address#, and I do it without hurrying. | Whatever puts something in #larder#, #address#.
+dlg @1 resident.business [business=thriving] : Better than I've known. Every #chop# gone by noon, and #ships# buying salt pork.
+dlg @2 resident.business [business=steady] : Steady. Folk always need to eat, and I'm content with that, #address#. | Steady, #nohurry#. Never a rush and never a bare rail.
+dlg @3 resident.business [business=failing] : Poorly. Folk can't buy what they can't pay for, and I'll not blame them, #address#.
+dlg @1 resident.news [world.news] : I had it off #galley#: word from #world.news_from#, #world.news#. I've nothing more than that.
+dlg @2 resident.news [world.event_words] : Everyone at #counter#'s talking of #world.event_words#. You'll hear it from them too.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts came, #ships# came, and folk ate. That's my news. | Nothing new, #address#. Quiet on #stair#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# Folk talk at #counter#, but I let it go with them. | Nothing worth repeating, #address#.
+dlg @2 resident.gossip [here.gossip=yes] : They're saying #topic.subject# #topic.claim#. That's as I heard it at #counter#, and no more.
+dlg @1 resident.bye : #farewell#. Eat well. | #farewell#, #address#. Come back #hungry#.
+graft resident.hub
+choice What's the riddle on your slate today? [self.likes=riddles] -> riddle
+node riddle
+say What has a hundred ribs and no heart, and floats when it's empty? Take your time, #address#.
+mood pleased
+free
+choice Is it a ship? -> riddle_ship
+choice I give up. -> riddle_ship
+choice Goodbye. -> bye
+node riddle_ship
+say A ship's hull, aye. Most guess it in the end. I'll chalk a harder one on #slate# tomorrow. Come back and try that.
+mood warm
+choice I'll come back. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Do you really know every ship in the Sound? [self.role=merchant] -> ships
+node ships
+say By its cook, aye. Rigging means nothing to me, but a galley's order I never forget. Pork, never mutton, twice the salt: that's one I could name now.
+mood pleased
+free
+choice How do you remember them all? -> ships_how
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye
+node ships_how
+say Same as you'd remember a friend. They come up #stair#, they ask for the same thing, and one day you know them. There's no trick but time.
+choice I'll take some salt pork, then. -> greet
+choice Goodbye. -> bye
