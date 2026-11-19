@@ -260,6 +260,13 @@ std::map<std::string, std::string> TalkLedger::kept(const std::string& resident,
     return out;
 }
 
+void TalkLedger::forget(const std::string& a, const std::string& b, const std::string& key)
+{
+    if (const auto f = notes_.find(pairKey(a, b)); f != notes_.end())
+        for (auto& n : f->second)
+            n.kept.erase(key);
+}
+
 std::map<std::string, std::string> TalkLedger::pairKept(const std::string& a, const std::string& b, double day) const
 {
     std::map<std::string, std::string> out;

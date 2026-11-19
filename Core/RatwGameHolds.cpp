@@ -148,13 +148,13 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
                 result = {false, "They are sworn already.", target};
             else if (!bond || bond->affinity < 70 || bond->trust < 60)
             {
-                companionSays(target, "That's a great deal to ask of me. Not yet.");
+                companionSays(target, "companion.sworn_not_yet", "That's a great deal to ask of me. Not yet.");
                 result = {false, "They aren't ready to swear their life to the Chapter.", target};
             }
             else
             {
                 chapters_.byId(chapter->id)->sworn.insert(target);
-                companionSays(target, "Then I'm yours, and the Chapter's, for as long as I live.");
+                companionSays(target, "companion.sworn", "Then I'm yours, and the Chapter's, for as long as I live.");
                 tellChapter(chapter->id, names::capitalised(strangerLabel(target)) + " swears to the Chapter for life.", id);
                 result = {true, "They swear to the Chapter.", target};
             }

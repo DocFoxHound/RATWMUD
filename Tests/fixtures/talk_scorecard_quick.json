@@ -630,13 +630,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "20-35%",
-   "value": 0.18835347669125727,
+   "value": 0.14111006585136407,
    "passes": false,
    "by_profile": {
-    "town": 0.188
+    "town": 0.141
    },
-   "control": 0.09417673834562863,
-   "separation": 0.5,
+   "control": 0.07839448102853559,
+   "separation": 0.4444444444444445,
    "real_better": true,
    "separates": true,
    "control_required": false,
@@ -1022,9 +1022,9 @@
     "broad_lines": 6130
    },
    "U1_detail": {
-    "wearers": 1.97,
-    "wearer_lines": 610,
-    "own": 12,
+    "wearers": 1.48,
+    "wearer_lines": 609,
+    "own": 9,
     "speakers": 3
    }
   }
@@ -1100,6 +1100,16 @@
     "town": "/tmp/u1/quick-final"
    },
    "on": "2026-11-19T01:02:44+00:00"
+  },
+  {
+   "metrics": [
+    "U1"
+   ],
+   "why": "Doc 84 Phase 13: the window's trees add their rules to the shared library, which moves the talk town's draw; the wearers' own share over six seeds is 0.14-0.25% (mean 0.22) against 0.16-0.23% (0.21) on P12's trees, this seed's 0.14 against 0.19: a line or two either way, not a change.",
+   "from": {
+    "town": "/tmp/tmp.nYYQF7cBe3/town"
+   },
+   "on": "2026-11-19T03:13:57+00:00"
   }
  ]
 }

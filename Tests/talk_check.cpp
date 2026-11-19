@@ -152,7 +152,11 @@ int renderTrees(const talk::Library& lib, std::uint64_t seed, bool asJson)
         {"topic.job_progress", "You've the letter still. Oda's at the Glasswater Inn."}, {"here.trade_title", "smithing"},
         {"here.tithe_fee", "20"}, {"here.report_fee", "5"},
         {"here.bounty", "There's a price on the bandit camp out by the Greyteeth: 40 pennies to whoever clears it."},
-        {"here.innkeeper", "Loam Pinefell"}, {"topic.greeting", "Welcome to the Glasswater."}};
+        {"here.innkeeper", "Loam Pinefell"}, {"topic.greeting", "Welcome to the Glasswater."},
+        // Doc 84, Phase 13: the window's new facts and bound items.
+        {"here.way_asked", "the Glasswater Inn"}, {"here.person_asked", "Oda Fenn"}, {"here.quirk_words", "swims in the lake even in autumn"},
+        {"topic.opinion_words", "the Watch"}, {"topic.opinion_issue", "watch"}, {"topic.kin_name", "Oda Fenn"}, {"topic.kin_word", "sister"},
+        {"topic.person_name", "Oda Fenn"}, {"topic.deed", "drove the bandits off the East Road"}, {"topic.since", "the spring"}, {"topic.heard_words", "Hesta Marl was robbed on the East Road"}, {"topic.place_dir", "north"}};
     std::vector<std::string> voices{"plain"};
     for (const auto& g : lib.grammars())
         if (g != "plain" && g.rfind("person:", 0) != 0)

@@ -467,6 +467,18 @@ class Metrics(unittest.TestCase):
         m = talk_score.score_run(talk_score.Run(d))
         self.assertEqual(m["K3"], 1)                # (Jory, told it in the first talk, told it again in the second.)
 
+    def test_k3_a_friend_defending_twice_is_not_told_twice(self):
+        # Stage 4's end: Game::joiners lets a friend who heard it cut in again to defend; K3 doesn't count that.
+        d = write_run(self.root / "k3d", [({}, [("jory", "varg", "Wren stole a fish."), ("varg", "jory", "Never."),
+                                                ("wren", "jory", "Hearsay.")]),
+                                          ({}, [("jory", "varg", "Wren stole a fish, they say."), ("varg", "jory", "So?"),
+                                                ("wren", "jory", "You're wrong about her.")])], PEOPLE)
+        fields = {(i, b): {"told_key": "wren|stole"} for i in (1, 2) for b in (0, 1)}
+        fields.update({(1, 2): {"moves": ["join.defend"]}, (2, 2): {"moves": ["join.defend"]}})
+        self.with_fields(d, fields)
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["K3"], 1)                # (Varg, told it twice; not Wren, who defended.)
+
     def test_t6_across_a_line(self):
         m = self.score([({}, [("jory", "varg", "Wren Tarford's arrested."), ("varg", "jory", "Then they'll be out by noon.")]),
                         ({}, [("jory", "varg", "Wren Tarford's arrested."), ("varg", "jory", "Then she'll be out by noon.")]),

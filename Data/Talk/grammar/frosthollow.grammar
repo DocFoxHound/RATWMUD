@@ -255,3 +255,14 @@ bc_nothing = Nothing. Bare rock. | Not a chip.
 bc_and_q = And then, stone?
 bc_who_q = Who's that, stone?
 bc_it_was = It was. Sound. | That it was, stone.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = a lamp's reach | close by
+way_short = a short climb | a short walk
+way_far = a long haul, cousin | a long way
+refuse_gone = That seam's worked out. | That work is gone.
+refuse_taken = Someone's working that seam already.
+refuse_no_rooms = No beds by this hearth to let.
+refuse_name = My name stays by my own hearth.

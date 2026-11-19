@@ -1,5 +1,5 @@
 {
-  "about": "The facts the talk library may test and say (Docs/Design/62-talk.md, section 1). Doc 84, Phase 10 (§11's slots): surname; called (what the one speaking calls this one: their first name between kin, friends and those who know it, a Master or Mistress and the surname across a class gap in Ridgemere, else nothing, and #other.called# says the speaker's #address#); spouse_word (husband or wife); late (the kin last mourned, dead); friend and rival (the closest, affinity 40 or more, and the worst, -25 or less, living); boss and hand (over and under at work); workplace (the work's place by name), trade_words (the post as its title says it), street (the street home opens onto), from_town (where they grew up, by name), away (grew up elsewhere than they live), dialect (the grammar they speak); pair.echo and pair.echo_of (§12.4: one of the two wears a mantle last worn by kin of theirs whom the other knew well, and that wolf's name). Doc 84, Phase 6: a person's mood and mood_why (§8.8: the last days' events), likes and dislikes (\"list\": any number of opinions.json's items, self.likes=honey_cakes holding when the list has it) and the words of each kind liked (pastime_words, food_words, weather_words, thing_words; dislike_words), stance, stance_why and stance_strength (their side on the issue a talk is on: conv.issue), speaks (the accent a speaker uses toward the one spoken to: accommodation, §10.6, read before accent); each issue's op.<issue>, op_why.<issue> and op_strength.<issue>, and the pair's pair.agree.<issue>, come from opinions.json. pair.same_speech: the two grew up speaking the same dialect. world.arrest (within a day) and world.mood (the town's: frames.json's moods). topic.subject_sex and topic.victim_sex give #topic.they# and #topic.victim_they# (their, them...). A list is the values a fact may take; \"text\" is words to say, testable with any value; \"number\" may be compared (self.age>=60). A person's facts are read as self.X and other.X (the speaker and the one spoken to) or a.X and b.X (in a scene, the opener and the answerer); the rest by their namespace (here.place), or alone where only one namespace has the name (place). A misspelt fact or value in a rule is refused when the library loads. Where each comes from in the world, and how its values are worked out: Docs/Design/62-talk.md, appendix.",
+  "about": "The facts the talk library may test and say (Docs/Design/62-talk.md, section 1). Doc 84, Phase 10 (§11's slots): surname; called (what the one speaking calls this one: their first name between kin, friends and those who know it, a Master or Mistress and the surname across a class gap in Ridgemere, else nothing, and #other.called# says the speaker's #address#); spouse_word (husband or wife); late (the kin last mourned, dead); friend and rival (the closest, affinity 40 or more, and the worst, -25 or less, living); boss and hand (over and under at work); workplace (the work's place by name), trade_words (the post as its title says it), street (the street home opens onto), from_town (where they grew up, by name), away (grew up elsewhere than they live), dialect (the grammar they speak); pair.echo and pair.echo_of (§12.4: one of the two wears a mantle last worn by kin of theirs whom the other knew well, and that wolf's name). Doc 84, Phase 6: a person's mood and mood_why (§8.8: the last days' events), likes and dislikes (\"list\": any number of opinions.json's items, self.likes=honey_cakes holding when the list has it) and the words of each kind liked (pastime_words, food_words, weather_words, thing_words; dislike_words), stance, stance_why and stance_strength (their side on the issue a talk is on: conv.issue), speaks (the accent a speaker uses toward the one spoken to: accommodation, §10.6, read before accent); each issue's op.<issue>, op_why.<issue> and op_strength.<issue>, and the pair's pair.agree.<issue>, come from opinions.json. pair.same_speech: the two grew up speaking the same dialect. world.arrest (within a day) and world.mood (the town's: frames.json's moods). topic.subject_sex and topic.victim_sex give #topic.they# and #topic.victim_they# (their, them...). A list is the values a fact may take; \"text\" is words to say, testable with any value; \"number\" may be compared (self.age>=60). A person's facts are read as self.X and other.X (the speaker and the one spoken to) or a.X and b.X (in a scene, the opener and the answerer); the rest by their namespace (here.place), or alone where only one namespace has the name (place). A misspelt fact or value in a rule is refused when the library loads. Doc 84, Phase 12 (§13.1): here.came_in (the player came in within two minutes, and the keeper looked up: the window greets a customer), here.newcomer (a newcomer whose welcome at this inn is due: the greeting is the welcome), topic.asked (on talk.player: what a resident overheard the player asking after in open chat, a quarter of a day, in words: \"asking the way to the Grey Gull\"). Where each comes from in the world, and how its values are worked out: Docs/Design/62-talk.md, appendix. Doc 84, Phase 13 (§13.4-13.5, the window's talk): the player namespace (what the window knows of the player spoken to); here.opinions, kin, people, heard (the counts of the window's new lists), quirk_words, hours (when the resident works, in words), matchmaker, vouched, letter, festival_won, records (whether the game has a line of its own for game.match, game.vouch, game.letters, game.festival, game.records), way_asked (a place this player asked this resident the way to lately: the ledger's callback); topic.place_far and place_dir (the way in parts, for #way_close#...), opinion_*, kin_*, person_*, heard_* (the bound items), why_kind (a refusal's kind, for #refuse_*#).",
   "person": {
     "id": "text",
     "name": "text",
@@ -189,6 +189,8 @@
     "take_on_why": "text",
     "companion": ["yes", "no"],
     "waiting": ["yes", "no"],
+    "came_in": ["yes", "no"],
+    "newcomer": ["yes", "no"],
     "service": "text",
     "folk": "number",
     "shops": "number",
@@ -196,7 +198,22 @@
     "district": "text",
     "gossip": ["yes", "no"],
     "places": "number",
-    "troubles": "number"
+    "troubles": "number",
+    "opinions": "number",
+    "kin": "number",
+    "people": "number",
+    "heard": "number",
+    "quirk_words": "text",
+    "has_quirk": ["yes", "no"],
+    "hours": "text",
+    "has_hours": ["yes", "no"],
+    "matchmaker": ["yes", "no"],
+    "vouched": ["yes", "no"],
+    "letter": ["yes", "no"],
+    "festival_won": ["yes", "no"],
+    "records": ["yes", "no"],
+    "way_asked": "text",
+    "person_asked": "text"
   },
   "topic": {
     "item": "text",
@@ -207,6 +224,7 @@
     "kind": ["arrived", "left", "late", "raided", "due", "news", "in", "lost", "sailed", "camp", "theft", "assault", "arrest", "marriage", "death", "birth", "apprentice", "succession", "crime", "loss", "work"],
     "when": ["today", "soon"],
     "known": ["yes", "no"],
+    "asked": "text",
     "bare": ["yes", "no"],
     "has_nickname": ["yes", "no"],
     "subject": "text",
@@ -257,7 +275,21 @@
     "place_way": "text",
     "trouble_id": "text",
     "trouble_words": "text",
-    "reported": ["yes", "no"]
+    "reported": ["yes", "no"],
+    "place_far": ["here", "close", "short", "far"],
+    "place_dir": "text",
+    "opinion_issue": "text",
+    "opinion_words": "text",
+    "kin_id": "text",
+    "kin_name": "text",
+    "kin_word": "text",
+    "person_id": "text",
+    "person_name": "text",
+    "heard_key": "text",
+    "heard_words": "text",
+    "heard_kind": "text",
+    "kin_state": ["well", "hurt", "hungry", "mourning"],
+    "why_kind": ["gone", "taken", "promised", "elsewhere", "own", "no_rooms", "lodging", "keeper", "trust", "learning", "busy", "asleep", "counter", "other"]
   },
   "world": {
     "herbs_price": ["up", "down", "steady"],
@@ -342,5 +374,13 @@
     "about": "A third party a line binds (binds x=self.spouse: Docs/Design/84 §7.1), read as x.X: a person's facts, and these, the speaker's bond to them. x.said.K is what talk has said of them (the ledger, Phase 5).",
     "affinity": "number",
     "disposition": ["hostile", "wary", "cool", "neutral", "warm", "fond"]
+  },
+  "player": {
+    "about": "Doc 84 §13.4 (Phase 13): what the window knows of the player spoken to, in the window's queries only, read as player.X. named: the resident knows the player's name (they gave it); met: the resident has given the player theirs; knows: what the player has heard (the claim store, Game::playerClaims_), a list of claim kinds, each also as <kind>:self when it is about the one spoken to and <kind>:kin when about their kin (player.knows=theft:self); newcomer: new to these parts (doc 52); asked: what the player last asked this resident in the window lately (the way, after someone: here.way_asked, here.person_asked), for the ledger's callback.",
+    "named": ["yes", "no"],
+    "met": ["yes", "no"],
+    "knows": "list",
+    "newcomer": ["yes", "no"],
+    "asked": ["way", "person", "none"]
   }
 }

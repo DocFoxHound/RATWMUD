@@ -134,6 +134,8 @@ class TalkLedger
     std::map<std::string, std::string> kept(const std::string& resident, double day) const;
     // The pair's kept tags, newest first (pair.was.k).
     std::map<std::string, std::string> pairKept(const std::string& a, const std::string& b, double day) const;
+    // A pair's kept tag forgotten, in every note of theirs (doc 84 §13.4.7: the window's callback said once).
+    void forget(const std::string& a, const std::string& b, const std::string& key);
 
     // Drift (Phase 6): an event moves a stance a step (never past 2 either way), once for each event id.
     void drift(const std::string& resident, const std::string& issue, int steps, const std::string& event,

@@ -18,6 +18,11 @@ node hub
 say #watch_greet# | #greet#. #watch_greet# | #greet#, #address#.
 say[here.wanted=yes priority=3] You. You're wanted, #address#: #here.fine# pennies settles it. | Hold there. The watch wants a word, #here.fine# pennies' worth.
 say[on_watch=no] Off duty, #address#. Make it quick. | I'm off watch. #talk_open#
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. #watch_greet# | Look who it is. Not since #topic.since#! #watch_greet#
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. #watch_greet# | So you're the one who #topic.deed#. #watch_greet#
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #watch_greet# | I've heard of a wolf like you, who #topic.deed#. #watch_greet#
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What do you want?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | You. I'm watching you.
 mood formal
 free
 choice What do I owe the watch? [here.wanted=yes] -> fine

@@ -255,3 +255,14 @@ bc_nothing = Nothing worth a penny. | Nothing, not a penny's worth.
 bc_and_q = And? What's the price? | And? Don't short-change me.
 bc_who_q = Who's that, then?
 bc_it_was = It was, full weight. | That it was.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = two stalls over | close by
+way_short = a short walk | a market's length
+way_far = a long way, past the stalls | a long way
+refuse_gone = That's sold, friend. Gone. | That work is gone.
+refuse_taken = Someone's bought that up already.
+refuse_no_rooms = No rooms on offer, not at any price.
+refuse_name = My name's not for sale.

@@ -275,3 +275,14 @@ bc_nothing = Nothing, by the well. | Not a grain.
 bc_and_q = And then, my friend? | And what came after?
 bc_who_q = Who, my friend? | Who is it, then?
 bc_it_was = It was so, by the well. | Truly, it was.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = a few steps through the shade | close by
+way_short = a short walk, no more | a short walk
+way_far = a long walk under the sun | a long way
+refuse_gone = That well is dry: the work is gone. | That work is gone.
+refuse_taken = Another has drawn from that well already.
+refuse_no_rooms = There is no room to give you, I'm sorry.
+refuse_name = My name I keep in my own shade.

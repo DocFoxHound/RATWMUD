@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <map>
 #include <set>
+#include <sstream>
 
 namespace ratw::game
 {
@@ -431,12 +432,30 @@ talk::Query Game::dialogueQuery(const std::string& playerId, const DialogueSessi
     facts["here.report_fee"] = std::to_string(reportFee(playerId));
     facts["here.tithe_fee"] = std::to_string(titheFee(playerId));
     dialogueRoleFacts(playerId, d.npc, facts);
+    // Doc 84 Phase 12 (§13.1.4-5): a customer who came in within two minutes, the keeper having looked up; a newcomer
+    // whose welcome at this inn is due (the greeting is the welcome).
+    const auto in = cameIn_.find(playerId);
+    facts["here.came_in"] = in != cameIn_.end() && in->second.first == d.npc && world_.time() <= in->second.second ? "yes" : "no";
+    const auto welcome = welcomeDue_.find(playerId);
+    facts["here.newcomer"] = welcome != welcomeDue_.end() && welcome->second.first == d.npc && world_.time() <= welcome->second.second ? "yes" : "no";
+    windowFacts(playerId, d, facts);               // (Doc 84 §13.4, Phase 13: player.*, the new lists, the meeting.)
     for (const auto& [k, v] : d.bound)
         facts[k] = v;
     if (const auto job = d.bound.find("topic.job_id"); job != d.bound.end())
         for (const auto& [k, v] : jobFacts(playerId, d.npc, job->second))
             facts[k] = v;
-    return talkQuery(d.npc, playerId, "", facts);
+    auto q = talkQuery(d.npc, playerId, "", facts);
+    // The resident's quirk, for "They say you're one who swims in the lake even in autumn."
+    if (const auto quirk = q.a.facts.find("quirk"); quirk != q.a.facts.end() && !quirk->second.empty())
+    {
+        auto words = quirk->second;
+        std::replace(words.begin(), words.end(), '_', ' ');
+        q.facts["here.quirk_words"] = words;
+        q.facts["here.has_quirk"] = "yes";
+    }
+    else
+        q.facts["here.has_quirk"] = "no";
+    return q;
 }
 
 std::vector<talk::Facts> Game::dialogueItems(const std::string& playerId, const std::string& npcId, const std::string& list)
@@ -483,6 +502,8 @@ std::vector<talk::Facts> Game::dialogueItems(const std::string& playerId, const 
     }
     else if (list == "here.places")
         return dialoguePlaces(npcId);
+    else if (list == "here.opinions" || list == "here.kin" || list == "here.people" || list == "here.heard")
+        return windowItems(playerId, npcId, list);   // (Doc 84 §13.4, Phase 13.)
     else if (list == "here.troubles")
     {
         // What this wolf may do here about a trouble it has heard of (doc 57): the wheel's own "trouble:" actions.
@@ -522,7 +543,7 @@ std::string Game::upstairsOf(const std::string& keeper) const
     return {};
 }
 
-std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId)
+std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId, bool voiced)
 {
     // The places in this resident's town worth asking the way to: where its innkeepers, priests, watch, smiths, bakers,
     // brewers, healers and officials work (a building, each once), the nearest six, each with its way in words.
@@ -551,13 +572,16 @@ std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId)
         if (words == placeKinds().end())
             continue;
         double far = -1;
-        const auto way = wayWords(npcId, p.work.cell, far);
+        std::string dir;
+        auto way = wayWords(npcId, p.work.cell, far, &dir);
         if (way.empty() || far < 0)
             continue;
         seen.insert(p.work.cell);
         const auto* keeper = world_.entity(held->second.holder);
+        const std::string band = far < 40 ? "close" : far < 200 ? "short" : "far";
         found.push_back({far, {{"topic.place_id", p.work.cell}, {"topic.place_title", c->name}, {"topic.place_kind", words->second},
-                               {"topic.place_way", way + (keeper && !keeper->dead ? " " + keeper->name + " is there, most days." : std::string())}}});
+                               {"topic.place_far", band}, {"topic.place_dir", dir}, {"topic.place_way", way},
+                               {"~keeper", keeper && !keeper->dead ? keeper->name : std::string()}}});
     }
     // The nearest of each kind first (an inn, a church, the watch...), then the nearest others.
     std::sort(found.begin(), found.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
@@ -570,6 +594,20 @@ std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId)
                 taken[i] = true;
                 out.push_back(found[i].second);
             }
+    // The way in the resident's own speech (doc 84 §10, Phase 13: #way_close#, #way_short#, #way_far#; plain's words are
+    // wayWords' own), only for the six kept (a query and an expansion each: stage 4's review), and only when asked for.
+    for (auto& f : out)
+    {
+        auto& way = f["topic.place_way"];
+        if (voiced && !f["topic.place_dir"].empty())
+            if (auto said = inVoice(npcId, std::string(), "#topic.place_title# is #way_" + f["topic.place_far"] + "# to the #topic.place_dir#.",
+                                    {{"topic.place_title", f["topic.place_title"]}, {"topic.place_dir", f["topic.place_dir"]}});
+                !said.empty())
+                way = said;
+        if (const auto keeper = f["~keeper"]; !keeper.empty())
+            way += " " + keeper + " is there, most days.";
+        f.erase("~keeper");
+    }
     return out;
 }
 
@@ -783,9 +821,15 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
             f["topic.claim"] = predicate;
             world_.talkSexes(best->subject, best->object, f);   // (#topic.they#: doc 84, Phase 6.)
             f["topic.claim_kind"] = claims::family(best->kind, best->claim);
+            // (Which belief it is, for the player's claim store once it is told: doc 84 §13.4.5. Never a line's.)
+            f["~gossip.subject"] = best->subject;
+            f["~gossip.claim"] = best->claim;
+            f["~gossip.kind"] = best->kind;
+            f["~gossip.object"] = best->object;
+            f["~gossip.place"] = best->place;
         }
     }
-    f["here.places"] = std::to_string(dialoguePlaces(npcId).size());
+    f["here.places"] = std::to_string(dialoguePlaces(npcId, false).size());   // (A count: no voicing.)
     f["here.troubles"] = std::to_string(dialogueItems(playerId, npcId, "here.troubles").size());
 }
 
@@ -801,8 +845,16 @@ void Game::dialogueSpeak(const std::string& speaker, const std::string& to, cons
     post.ok = true;
     post.speech = true;
     post.segments.push_back({"speech", words});
-    publish(speaker, post, Voice::Speak, {to});
     const auto* e = world_.entity(speaker);
+    if (e && !e->npc)                               // (An introduction said there is heard as one: doc 84 Phase 12.)
+        if (const auto* npc = world_.entity(to); npc && npc->npc)
+        {
+            // (Not by one asleep: stage 4's review.)
+            const auto* life = world_.society().resident(to);
+            if (!(npc->posture == "lying" || (life && life->task == "sleep")))
+                noticeIntroduction(speaker, to, words);
+        }
+    publish(speaker, post, Voice::Speak, {to});
     if (e && e->npc)
     {
         npcLastSpeech_[speaker] = world_.time();
@@ -887,8 +939,8 @@ void Game::dialogueSend(Connection* c, const DialogueSession& d, const std::stri
     if (!c)
         return;
     const auto* npc = world_.entity(d.npc);
-    const auto* t = talk_.tree(d.tree);
-    const auto* node = t && t->nodes.count(d.node) ? &t->nodes.at(d.node) : nullptr;
+    talk::TreeNode shownNode;                       // (A tree's node, or a wearer's graft node: doc 84 Phase 13.)
+    const auto* node = c && windowNode(c->entityId, d, d.node, shownNode) ? &shownNode : nullptr;
     if (!npc || !node)
         return;
     auto m = json::Value::object();
@@ -950,34 +1002,21 @@ void Game::dialogueSend(Connection* c, const DialogueSession& d, const std::stri
 bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& nodeId, const std::string& note)
 {
     const auto playerId = c->entityId;
-    const auto* t = talk_.tree(d.tree);
-    if (nodeId == "end" || !t || !t->nodes.count(nodeId))
+    talk::TreeNode node;
+    if (nodeId == "end" || !windowNode(playerId, d, nodeId, node))
     {
         dialogueClose(playerId, "end", false);
         return false;
     }
-    const auto& node = t->nodes.at(nodeId);
     d.node = nodeId;
     auto q = dialogueQuery(playerId, d);
     q.concept = node.concept;
     const auto seed = std::hash<std::string>{}(d.npc + "|" + playerId + "|" + nodeId) + std::uint64_t(world_.time() * 10);
-    std::string line;
-    // A node that asks the game (`ask player.trade`): the answer the router's intent would give, in the resident's
-    // voice (doc 28's facts, doc 62's rules); the node's own words where the game has nothing to say.
-    if (node.ask.rfind("player.", 0) == 0)
-        line = gameAnswer(d.npc, playerId, std::string(), true, node.ask.substr(7));
-    talk::LineInfo lineFrom{line.empty() ? std::string() : node.ask, -1, {}};
-    if (line.empty())
-    {
-        const auto said = talk_.pick(q, seed, {}, {});
-        if (!said.lines.empty())
-        {
-            line = said.lines.front().second;
-            talkRemember(said.effects);
-            if (!said.info.empty())
-                lineFrom = said.info.front();
-        }
-    }
+    // The resident's line (doc 84 §13.4, Phase 13: Game::windowLine): the wearer's own first, an `answers` node's answer to
+    // the move made, an `ask` (the game's answer in the resident's voice, a companion's view, the game's own lines), the
+    // tree's floor; never the same line twice running.
+    talk::LineInfo lineFrom;
+    const auto line = windowLine(playerId, d, node, q, seed, lineFrom);
     d.line = line;
     d.mood = dialogueMood(d.npc, q, node.mood);
     d.awaiting = false;
@@ -989,6 +1028,34 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     world_.faceTalker(d.npc, playerId);
     if (!d.quiet || d.history.size() > 1)          // (A quiet window's greeting isn't said aloud: dialogueOpen.)
         dialogueSpeak(d.npc, playerId, line);
+    // A newcomer's welcome at an inn (doc 84 §13.1.5): the greeting said it; now the wolves here are pointed out.
+    if (q.facts.count("here.newcomer") && q.facts.at("here.newcomer") == "yes")
+        if (const auto more = welcomeInWindow(playerId, d.npc); !more.empty())
+        {
+            d.line = line.empty() ? more : line + " " + more;
+            d.history.back().second = d.line;
+        }
+    // A graft node's invitation (a mantle's "Come at dawn and I'll show you"): the world checks whether they come.
+    if (!node.invite.empty())
+        if (const auto* npc = world_.entity(d.npc); npc && world_.talkLedger().enabled)
+        {
+            std::istringstream in(node.invite);
+            std::string place, hourWord, daysWord;
+            in >> place >> hourWord >> daysWord;
+            static const std::map<std::string, int> Hours{{"dawn", 6}, {"morning", 9}, {"noon", 12}, {"afternoon", 15}, {"dusk", 18},
+                                                          {"evening", 19}, {"night", 21}};
+            const auto h = Hours.find(hourWord);
+            const int hour = h != Hours.end() ? h->second : std::atoi(hourWord.c_str());
+            const double days = std::max(1.0, std::atof(daysWord.c_str()));
+            std::replace(place.begin(), place.end(), '_', ' ');
+            const double day = world_.calendarDays();
+            // (One standing invitation between the two: going back to the node doesn't pile them up. Stage 4's review.)
+            auto& invites = world_.talkLedger().invites();
+            if (std::none_of(invites.begin(), invites.end(), [&](const auto& i) {
+                    return i.by == d.npc && i.to == playerId && i.state == "open" && i.until >= day;
+                }))
+                invites.push_back({d.npc, playerId, npc->cellId, place, hour, day, day + days, "open"});
+        }
     voiced("dialogue", "tree", d.npc);
     if (options_.logTalkWords && !line.empty())
         voicedWords("dialogue", d.npc, playerId, line, &lineFrom);
@@ -1024,8 +1091,9 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     const std::string base = entry.substr(0, colon), arg = colon == std::string::npos ? std::string() : entry.substr(colon + 1);
     // The other roles (Phase 3): learn (a master's trade: the wheel's Apprentice), report and fine (the watch's: the
     // wheel's Report and Pay fine), orders (a companion's).
+    // Doc 84 Phase 13: introduce (the wheel's Introduce: "I'm Kestrel." said in the window, and the resident's answer).
     static const std::set<std::string> Entries{"trade", "talk", "work", "job", "missions", "mine", "deliver", "learn", "report", "fine",
-                                               "orders"};
+                                               "orders", "introduce"};
     if (!Entries.count(base) || (base == "job" || base == "deliver") == arg.empty())
     {
         refuse("none", "");
@@ -1134,8 +1202,53 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     d.quiet = quiet;
     if (base == "trade")
         shopWith_[playerId] = npcId;                 // (Its list in the snapshot, before a nearer keeper's.)
+    // The meeting a greeting heard once (doc 56): back after a long while, its deeds known.
+    const auto meeting = q.facts.count("topic.meeting") ? q.facts.at("topic.meeting") : std::string();
     auto& kept = dialogues_[playerId] = std::move(d);
-    dialogueGo(c, kept, t->entries.at(base));
+    if (base == "introduce")
+    {
+        // The wheel's Introduce (doc 84 §13.2, Phase 13): the name said aloud, as a choice's words are (learned by whoever
+        // hears it: noticeIntroduction), then the resident's answer, theirs given back if it would.
+        // (Said as chat is: never from a silenced account, no faster than chat. Stage 4's review.)
+        const auto name = names::capitalised(nameOf(playerId));
+        const bool tooSoon = lastChat_.count(playerId) && world_.time() - lastChat_[playerId] < 1;
+        if (!name.empty() && !tooSoon && !silenced(playerId, nullptr))
+        {
+            lastChat_[playerId] = world_.time();
+            dialogueSpeak(playerId, npcId, "I'm " + name + ".");
+            kept.history.push_back({"you", "I'm " + name + "."});
+        }
+        if (givesName(npcId, playerId) && !known_.knows(playerId, npcId))
+            learnName(playerId, npcId, npc->name, "introduced");
+        kept.asked = "introduce";
+    }
+    if (!dialogueGo(c, kept, t->entries.at(base)))
+        return;
+    // A grievance it brings up itself (doc 52, 7: one this wolf vouched for wronged it): said after the greeting, once.
+    if (auto open = dialogues_.find(playerId); open != dialogues_.end())
+        for (const auto& [id, v] : vouches_)
+            if (v.resident == npcId && v.state == "broken" && v.voucher == playerId && !v.raised)
+            {
+                auto q = dialogueQuery(playerId, open->second);
+                if (const auto said = windowAsk(playerId, open->second, "game.vouch", q); !said.empty())
+                {
+                    auto& w = open->second;
+                    w.line = w.line.empty() ? said : w.line + " " + said;
+                    w.history.back().second = w.line;
+                    w.mood = "cross";
+                    dialogueSpeak(npcId, playerId, said);
+                    dialogueSend(c, w);
+                }
+                break;
+            }
+    if (meeting == "returning")
+        if (auto away = absences_.find(playerId); away != absences_.end())
+            away->second.unseen.erase(npcId);
+    if (meeting == "famous" || meeting == "famous_look")
+    {
+        fameGreeted_[npcId + "|" + playerId] = world_.calendarDays();
+        fameBriefing(npcId, playerId, true);       // (Spoken of: as the Mind's briefing notes it.)
+    }
 }
 
 void Game::dialogueClose(const std::string& playerId, const std::string& why, bool sayBye)
@@ -1143,18 +1256,31 @@ void Game::dialogueClose(const std::string& playerId, const std::string& why, bo
     const auto f = dialogues_.find(playerId);
     if (f == dialogues_.end())
         return;
-    const auto d = f->second;
+    auto d = f->second;
     dialogues_.erase(f);
     if (sayBye && !(d.quiet && d.history.size() <= 1))   // (Nor its goodbye, if nothing more was said.)
-        if (const auto* t = talk_.tree(d.tree); t && t->nodes.count("bye"))
-        {
-            DialogueSession last = d;
-            auto q = dialogueQuery(playerId, last);
-            q.concept = t->nodes.at("bye").concept;
-            const auto said = talk_.pick(q, std::hash<std::string>{}(d.npc + playerId) + std::uint64_t(world_.time() * 10), {}, {});
-            if (!said.lines.empty())
-                dialogueSpeak(d.npc, playerId, said.lines.front().second);
-        }
+    {
+        // The goodbye (the wearer's own first, then the 36 bye rules by the resident's tone: doc 84 §13.4.6), from the
+        // tree's bye, else the resident tree's.
+        for (const auto& treeId : {d.tree, std::string("resident")})
+            if (const auto* t = talk_.tree(treeId); t && t->nodes.count("bye"))
+            {
+                d.tree = treeId;
+                auto q = dialogueQuery(playerId, d);
+                const auto& node = t->nodes.at("bye");
+                q.concept = node.concept;
+                talk::LineInfo from;
+                const auto line = windowLine(playerId, d, node, q, std::hash<std::string>{}(d.npc + playerId) + std::uint64_t(world_.time() * 10), from);
+                if (!line.empty())
+                {
+                    dialogueSpeak(d.npc, playerId, line);
+                    if (options_.logTalkWords)
+                        voicedWords("dialogue", d.npc, playerId, line, &from);
+                }
+                break;
+            }
+    }
+    windowNote(playerId, d);                      // (The ledger with players: doc 84 §13.4.7.)
     if (auto* c = clientOf(playerId))
     {
         auto m = json::Value::object();
@@ -1186,8 +1312,8 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         return;
     }
     auto& d = f->second;
-    const auto* t = talk_.tree(d.tree);
-    const auto* node = t && t->nodes.count(d.node) ? &t->nodes.at(d.node) : nullptr;
+    talk::TreeNode current;
+    const auto* node = windowNode(playerId, d, d.node, current) ? &current : nullptr;
     if (type == "dialogue_close")
     {
         const auto why = j.string("why", "bye");
@@ -1236,6 +1362,7 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         ParsedPost post;
         post.ok = post.speech = true;
         post.segments.push_back({"speech", text});
+        noticeIntroduction(playerId, d.npc, text); // ("I'm Kestrel." in the window: the resident learns the name.)
         publish(playerId, post, Voice::Speak, {d.npc});
         const int xp = dialogueExperience(playerId, d.npc, text, std::string());
         d.history.push_back({"you", text});
@@ -1244,23 +1371,40 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         d.awaiting = true;
         d.changed = world_.time();
         const int id = d.id;
-        if (!talk(d.npc, playerId, text, Voice::Speak))
+        const std::string earned = xp > 0 ? "+" + std::to_string(xp) + " roleplay experience" : std::string();
+        // The user's answer Q1 (doc 84 §13.6): the NPC Mind answers a player's own words only when it is connected; else,
+        // and whenever its call fails or times out (Game::windowFallback), the window's own understanding answers them.
+        if (mind_.live() && talk(d.npc, playerId, text, Voice::Speak))
         {
-            if (auto again = dialogues_.find(playerId); again != dialogues_.end() && again->second.id == id)
-            {
-                again->second.awaiting = false;
-                dialogueSend(c, again->second, "They didn't catch that.");
-            }
+            if (auto again = dialogues_.find(playerId); again != dialogues_.end() && again->second.id == id && again->second.awaiting)
+                dialogueSend(c, again->second, earned);
             return;
         }
-        if (auto again = dialogues_.find(playerId); again != dialogues_.end() && again->second.id == id && again->second.awaiting)
-            dialogueSend(c, again->second, xp > 0 ? "+" + std::to_string(xp) + " roleplay experience" : std::string());
+        // (What talk() does for any line said to a resident: the storyline's "talk to", kept in its memory of them.)
+        if (const auto* npc = world_.entity(d.npc))
+            storylineEvent({"talk", playerId, npc->cellId, d.npc, {}, 0, 0, {}});
+        memories_.record(d.npc, playerId, {sequence_++, now(), labelFor(d.npc, playerId), text});
+        logEvent("conversation", playerId, d.npc);
+        dialogueUnderstand(c, d, text, earned);
         return;
     }
     if (type != "dialogue_choose")
         return;
-    // A choice: checked again as it stands now, then its words said, then what it does.
-    const int n = int(wire::number(j, "n"));
+    dialogueChoose(c, d, int(wire::number(j, "n")), oneLine(j.string("text")), false);
+}
+
+void Game::dialogueChoose(Connection* c, DialogueSession& d, int n, std::string words, bool spoken)
+{
+    // A choice (or free words that were one: doc 84 §13.5.1, `spoken`, said aloud already): checked again as it stands
+    // now, then its words said, then what it does.
+    const auto playerId = c->entityId;
+    talk::TreeNode current;
+    if (!windowNode(playerId, d, d.node, current))
+    {
+        dialogueClose(playerId, "gone", false);
+        return;
+    }
+    const auto* node = &current;
     const auto shown = std::find_if(d.shown.begin(), d.shown.end(), [&](const talk::ShownChoice& s) { return s.n == n; });
     if (shown == d.shown.end())
     {
@@ -1270,10 +1414,14 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
     auto q = dialogueQuery(playerId, d);
     q.concept = node->concept;
     const auto now_ = talk_.choices(*node, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
-    // (The same choice: an `each` one by its job, wherever it now stands in the list, its facts as they are now.)
-    const auto& itemName = node->choices[shown->index].item;
+    // (The same choice, found by what it is, not where it stood: the node is rebuilt each time, a wearer's grafts filling
+    // what room there is, so its choices may have moved or gone (doc 84 Phase 13); an `each` one by its job, its facts as
+    // they are now.)
     const auto still = std::find_if(now_.begin(), now_.end(), [&](const talk::ShownChoice& s) {
-        return s.index == shown->index && (shown->item < 0 ? s.item < 0 : s.item >= 0 && itemOf(s, itemName) == itemOf(*shown, itemName));
+        if (s.key != shown->key || s.index >= node->choices.size())
+            return false;
+        const auto& itemName = node->choices[s.index].item;
+        return shown->item < 0 ? s.item < 0 : s.item >= 0 && itemOf(s, itemName) == itemOf(*shown, itemName);
     });
     if (still == now_.end() || still->locked)
     {
@@ -1281,13 +1429,12 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         dialogueSend(c, d, still != now_.end() ? still->why : "That's no longer on offer.");
         return;
     }
-    const auto choice = node->choices[shown->index];
+    const auto choice = node->choices[still->index];
     const auto offered = shown->text;
     const auto bound = still->bound;
-    std::string words = oneLine(j.string("text"));
     // The player's own words are chat: never from a silenced account (it says the default line), and no faster than
     // chat (the window can't be a way round either).
-    if (!words.empty() && words != offered)
+    if (!spoken && !words.empty() && words != offered)
     {
         if (silenced(playerId, nullptr))
             words.clear();
@@ -1303,14 +1450,44 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         words = offered;
     // The choice picks the branch; the words are what the wolf says (the user's answer 1): said aloud, and the player's
     // own earning roleplay experience.
-    dialogueSpeak(playerId, d.npc, words);
-    const int xp = words == offered ? 0 : dialogueExperience(playerId, d.npc, words, offered);
-    const std::string earned = xp > 0 ? "+" + std::to_string(xp) + " roleplay experience" : std::string();
-    d.history.push_back({"you", words});
-    while (d.history.size() > Kept)
-        d.history.pop_front();
+    std::string earned;
+    if (!spoken)
+    {
+        dialogueSpeak(playerId, d.npc, words);
+        const int xp = words == offered ? 0 : dialogueExperience(playerId, d.npc, words, offered);
+        earned = xp > 0 ? "+" + std::to_string(xp) + " roleplay experience" : std::string();
+        d.history.push_back({"you", words});
+        while (d.history.size() > Kept)
+            d.history.pop_front();
+    }
     for (const auto& [k, v] : bound)
         d.bound[k] = v;
+    // The move it makes (doc 84 §13.4.2: an `answers` node answers it), and what was talked of, for the ledger.
+    d.asked = choice.does;
+    if (const auto place = bound.find("topic.place_title"); place != bound.end())
+        d.topics.push_back("way:" + place->second);
+    else if (const auto person = bound.find("topic.person_name"); person != bound.end())
+        d.topics.push_back("person:" + person->second);
+    else if (const auto issue = bound.find("topic.opinion_issue"); issue != bound.end())
+        d.topics.push_back("opinion:" + issue->second);
+    else if (!choice.go.empty())
+        d.topics.push_back(choice.go[0] == '@' ? std::string("own") : choice.go);
+    if (d.topics.size() > 48)                     // (What a window talked of, the latest only: stage 4's review.)
+        d.topics.erase(d.topics.begin(), d.topics.end() - 32);
+    if (choice.action == "introduce" || choice.action == "ask_name")
+    {
+        // A name given (said aloud above: learned by whoever heard it), or the resident's asked (doc 84 §13.4.3): a
+        // friendly resident gives theirs (the player's Known wolves); the node says it.
+        if (givesName(d.npc, playerId) && !known_.knows(playerId, d.npc))
+            if (const auto* npc = world_.entity(d.npc))
+                learnName(playerId, d.npc, npc->name, "introduced");
+        d.asked = choice.action == "introduce" ? "introduce" : "ask.name";
+        if (!choice.then.empty())
+            dialogueGo(c, d, choice.then, earned);
+        else
+            dialogueSend(c, d, earned);
+        return;
+    }
     if (!choice.go.empty())
     {
         dialogueGo(c, d, choice.go, earned);
@@ -1379,7 +1556,7 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
                 dialogueClose(playerId, "end", false);
             return;
         }
-        d.bound["topic.why"] = r.message;
+        d.bound["topic.why"] = refusalInVoice(d.npc, playerId, r.message);   // (#refuse_*#: in their own speech.)
         if (!choice.refused.empty())
             dialogueGo(c, d, choice.refused, r.message);
         else

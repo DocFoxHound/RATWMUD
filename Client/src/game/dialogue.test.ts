@@ -136,11 +136,12 @@ test('Talk opens the hub from afar after walking over; an older server keeps the
     commands.length = 0;
     assert.ok(s.sayDialogue('What brings you out in this weather?'));
     assert.deepEqual(commands.at(-1), {type: 'dialogue_say', session: 7, text: 'What brings you out in this weather?'}, 'free talk');
-    // No tree for them on this server: the talk target, as before.
+    // No tree for them on this server: nothing opens, and never the old talk target (doc 84 §13.2, Phase 12).
     s.dialogue = null;
     s.openDialogue('oda', 'talk');
     s.receiveEvent({type: 'dialogue_close', npc: 'oda', entry: 'talk', why: 'none'});
-    assert.ok(commands.some(c => c.type === 'action' && c.action === 'talk' && c.target === 'oda'), 'the old Talk');
+    assert.ok(!commands.some(c => c.type === 'action' && c.action === 'talk'), 'no old Talk');
+    assert.match(s.toast, /nothing to say/, 'said so');
 
     const old = onTheMap(false);
     old.state.openContextAt('bram', [120, 100]);
@@ -269,5 +270,32 @@ test('the other roles: Talk asks the server, which answers with the role\'s tree
     old.state.openContextAt('gil', [120, 100]);
     old.state.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'pay fine'});
     assert.ok(old.commands.some(c => c.type === 'action' && c.action === 'pay fine'), 'Pay fine as it was');
+    assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0);
+});
+
+test('Introduce to a resident is the window\'s own (doc 84 Phase 13); to a player, and on an older server, said aloud', () => {
+    const introduce = (server: boolean) => {
+        const g = testGame();
+        g.state.applySnapshot({cell: {id: 'square', width: 32, height: 24}, self: {id: 'me', name: 'Ash', x: 5, y: 5, names: {name: 'Ash'}},
+            entities: [{id: 'me', name: 'Ash', x: 5, y: 5},
+                {id: 'hob', name: 'Hob', x: 6, y: 5, npc: true, actions: ['talk', 'introduce']},
+                {id: 'wren', name: 'A grey wolf', x: 5, y: 6, actions: ['introduce']}],
+            time: 0, cellGeneration: 1, dialogue: true, dialogueWork: true, dialogueRoles: true, ...(server ? {dialogueIntroduce: true} : {})});
+        g.state.mapOrigin = [0, 0];
+        g.state.mapRect = rect(0, 0, 640, 480);
+        g.state.tileSize = 20;
+        return g;
+    };
+    const {state: s, commands} = introduce(true);
+    s.sendAction('introduce', 'hob');
+    assert.deepEqual(commands.filter(c => c.type === 'dialogue_open').at(-1), {type: 'dialogue_open', npc: 'hob', entry: 'introduce'},
+        'to a resident: the window, at its introduce entry');
+    assert.equal(commands.filter(c => c.type === 'chat').length, 0, 'nothing said in chat');
+    s.pendingDialogue = null;
+    s.sendAction('introduce', 'wren');
+    assert.ok(commands.some(c => c.type === 'chat' && String(c.text).includes("I'm Ash.")), 'to a player: said aloud, as before');
+    const old = introduce(false);
+    old.state.sendAction('introduce', 'hob');
+    assert.ok(old.commands.some(c => c.type === 'chat' && String(c.text).includes("I'm Ash.")), 'an older server: said aloud');
     assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0);
 });

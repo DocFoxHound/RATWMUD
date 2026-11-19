@@ -170,8 +170,8 @@ s8_hello = Harvest to you, neighbour | Ah, bless you | Good harvest, friend | We
 s8_okay = Off you pick, then | Bless you, go on | The furrows won't wait | Ripe time to go
 s8_bye = Ripe days, neighbour | Bless you, then | Mind the furrows | Good gleaning
 s8_byeback = And ripe days to you | And bless you | Good gleaning to you | Mind the furrows, now
-s8_night = Sweet hay to you | Early to the furrows, then | Rest now, dawn comes early | Sleep sound, neighbour
-s8_nightback = And sweet hay to you | Up with the cockerel | Sleep sound, neighbour
+s8_night = Sweet hay to you | Early to the furrows, then | Rest now, dawn comes early | Sleep sound under the thatch
+s8_nightback = And sweet hay to you | Up with the cockerel | Sleep sound under the thatch
 s8_nevermind = Another harvest, then | Bless you, no matter | Let it lie fallow
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Southmeadow says them.
@@ -251,3 +251,14 @@ bc_nothing = Not a pip. | Nothing, bless me.
 bc_and_q = And then, bless you?
 bc_who_q = Who's that, then? | Who, bless me?
 bc_it_was = It was, ripe and right. | That it was.
+
+# Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
+# #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
+# game's reasons as the resident says them).
+way_close = a hedge or two off | close by
+way_short = a short walk down the lane | a short walk
+way_far = a long way across the fields | a long way
+refuse_gone = That's harvested and gone. | That work is gone.
+refuse_taken = Someone's picked that already.
+refuse_no_rooms = No beds to let this season.
+refuse_name = My name's not for the picking.

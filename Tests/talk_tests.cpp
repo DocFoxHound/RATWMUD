@@ -1247,6 +1247,20 @@ aside = mind;
     expect(say("#habit#.") == "The loaves are honest.", "and one of two stops: " + say("#habit#."));
     expect(say("#aside#, now.") == "Mind, now.", "a semicolon too: " + say("#aside#, now."));
     expect(say("#habit# Yes.") == "The loaves are honest. Yes.", "and keeps it where the line goes on: " + say("#habit# Yes."));
+    // Stage 4's ticking listen: a value that repeats its line's own words is said once (a mantle's `heart = my heart` in a
+    // shared "There's my #heart#"); repeats with punctuation between, and "her" before "a", stay.
+    for (const auto& [in, want] : std::vector<std::pair<std::string, std::string>>{
+             {"There's my my heart.", "There's my heart."},
+             {"What'll you do with your the day's silver?", "What'll you do with your day's silver?"},
+             {"I carved my own my knucklebone dice.", "I carved my own knucklebone dice."},
+             {"Every a wet turf comes up dripping.", "Every wet turf comes up dripping."},
+             {"Had a swim off the steps off the steps down to the water.", "Had a swim off the steps down to the water."},
+             {"We last talked of it of it.", "We last talked of it."},
+             {"A throw of a throw of the dice?", "A throw of the dice?"},
+             {"Bring her a comb, too.", "Bring her a comb, too."},
+             {"Still water, still water, neighbour.", "Still water, still water, neighbour."},
+             {"Round and round it goes.", "Round and round it goes."}})
+        expect(say(in) == want, "said once: " + in + " -> " + say(in));
 
     expect(lib.parse(R"(
 rule r_also_weather
@@ -1311,11 +1325,12 @@ void movesAndTags()
         refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}}})", "no ack");
         refused(R"({"tones": ["even"], "moves": {"nod": {"family": "ground"}, "ack": {"family": "ground", "answers": ["*"]}}})", "either opens");
     }
-    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move.
+    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move. (A
+    // companion's few words are one speaker's, as barks and reactions are: doc 84 Phase 12.)
     auto lib = foundation();
     expect(!lib.moves().empty() && lib.moves().all().size() >= 85, "the book: about 85 moves or more");
     for (const auto& c : lib.settings().concepts)
-        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c != "bark")
+        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c.rfind("companion.", 0) != 0 && c != "bark")
             expect(!lib.moves().alias(c).empty(), "the answer concept " + c + " is a move's alias");
     expect(lib.moves().alias("jest.answer") == "tease.return", "jest.answer is tease.return (§7.2)");
 

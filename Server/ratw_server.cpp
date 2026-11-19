@@ -654,7 +654,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database KEY [--world-kind dev|live] | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--log-talk-words] [--mantles-from DIR] [--no-talk-ledger] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--host-cheats] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--log-talk-words] [--mantles-from DIR] [--no-talk-ledger] [--residents-answer-chat] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--host-cheats] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n"
                  "                   [--central URL --world-id ID --central-keys FILE [--official] [--world-name NAME] [--player-limit N]\n"
                  "                    [--arrivals-per-hour N] [--no-quickened-wolves]]   (ticket mode: Docs/Design/77)\n";
@@ -701,6 +701,7 @@ int main(int argc, char** argv)
         else if (a == "--log-talk-words") options.logTalkWords = true;   // (The ledger's words too: doc 84 §15.6.)
         else if (a == "--mantles-from") options.mantlesFrom = next();   // (Mantles from files: doc 84 §17.5.)
         else if (a == "--no-talk-ledger") options.talkLedger = false;   // (Fast economy sims: doc 84 §8.7.)
+        else if (a == "--residents-answer-chat") options.residentsAnswerChat = true;   // (Chat answered: doc 84 §13.1, tests.)
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;
         else if (a == "--host-cheats") options.hostCheats = true;

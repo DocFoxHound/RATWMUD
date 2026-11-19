@@ -12,6 +12,11 @@ entry deliver greet
 
 node greet
 say #greet#. #receiver_ask# | #greet#. #talk_open# | #receiver_ask#
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. #talk_open# | Look who it is. Not since #topic.since#! #talk_open#
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. #talk_open# | So you're the one who #topic.deed#. #talk_open#
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #talk_open# | I've heard of a wolf like you, who #topic.deed#. #talk_open#
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What is it?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | What do you want?
 free
 each job in here.deliveries max 3
 choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused

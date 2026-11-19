@@ -8,6 +8,13 @@
 #
 # Only the keeper lets the beds (doc 83, Phase 4): a pot hand or a helper at the inn (here.inn_helper, the keeper's name
 # here.innkeeper) gets this tree too, but the beds are shown locked with "Ask <keeper>" and they sell nothing.
+#
+# Doc 84, Phase 12 (§13.1.4-5): here.came_in, the keeper looked up as this wolf came in, a minute or two ago (the
+# customer's greeting, once said aloud); here.newcomer, a newcomer's first evening, the keeper having caught their eye:
+# the greeting is the welcome, and the game then points out the wolves here it knows (Game::welcomeInWindow).
+#
+# Doc 84, Phase 13 (§13.4.4, 13.4.6): greetings by meeting and disposition, and the matchmaker's pointer (doc 52, 5:
+# "Anyone here I ought to meet?", here.matchmaker), asked in the window now that chat is never answered.
 
 tree inn
 for job=innkeeper
@@ -21,12 +28,20 @@ say[topic.meeting=known] #greet#, #topic.player#. The usual? | Back again, #topi
 say[here.time=night] Late one? #inn_offer# | Come in, it's a cold night. #inn_offer#
 say[here.shop=asleep priority=10] #shop_asleep#
 say[here.inn_helper=yes priority=3] #greet#. #inn_helper#
+say[here.came_in=yes priority=1] #greet#! Sit anywhere, I'll be with you. | Come in, come in. #inn_offer#
+say[here.newcomer=yes priority=12] Welcome, friend. New in town? Find yourself a seat by the fire. | Welcome, friend. New here? Pull up a seat by the fire.
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. #inn_offer# | Look who it is. Not since #topic.since#! #inn_offer#
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. #inn_offer# | So you're the one who #topic.deed#. #inn_offer#
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #inn_offer# | I've heard of a wolf like you, who #topic.deed#. #inn_offer#
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What will it be?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | I'll serve you, and that's all.
 mood warm
 free
 choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
 choice Something to eat or drink. [here.shop=open|bare] -> do shop
 choice What other rooms are there? [here.inn=yes] -> rooms
 choice What's the news of the house? -> do open news
+choice Anyone here I ought to meet? [here.matchmaker=yes] -> match
 choice I'll just rest by the fire a while. -> rest
 choice Something else... -> do open chat
 choice Goodbye. -> bye
@@ -54,6 +69,14 @@ choice Goodbye. -> bye
 
 node refused
 say #topic.why# | Sorry, #address#. #topic.why#
+choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye. -> bye
+
+node match
+ask game.match
+say Nobody I'd point you to just now. Try again of an evening, when it's busier. | Not just now. Come back when there's more about.
+mood warm
+free
 choice Something to eat or drink. [here.shop=open|bare] -> do shop
 choice Goodbye. -> bye
 

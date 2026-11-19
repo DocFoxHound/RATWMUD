@@ -1,39 +1,71 @@
 # Talk with a resident (Docs/Design/83-dialogue-trees.md): Talk on the wheel opens the dialogue window on the
-# resident's hub. Free talk is built in: the player may say something of their own at any node, and the resident (the
-# NPC Mind, or the library's answers) replies in the window. A choice's words are a default line the player may send
-# as written or rewrite. The resident's lines are talk concepts (dlg.resident.<node>).
+# resident's hub. Free talk is built in: the player may say something of their own at any node marked `free`, and the
+# resident replies in the window (the NPC Mind when it is connected, else the window's own understanding of the words:
+# Data/Voice/understand.json, doc 84 §13.5-13.6). A choice's words are a default line the player may send as written or
+# rewrite. The resident's lines are talk concepts (dlg.resident.<node>); a mantle's own lines there are the wearer's
+# (doc 84 §13.4.1), the tree's the floor.
 #
-# The hub (Phase 3): the town or district, the person's work, the news and the gossip, the way to a place, a trouble
-# they have, goodbye; and the role's own topics where the resident has one (the wares, work, a trade to learn, a
-# Chapter's missions). The other roles' trees go on here through `do open chat` ("Something else..."), and the news and
-# the ways are this tree's for every role (`do open news`, `do open way`).
+# The hub (doc 84 §13.4.3, Phase 13): the role's links where there are any (the wares, work or a Chapter's missions, a
+# trade to learn), the news, Ask about..., the player's name given or the resident's asked, up to two things the player
+# has heard that they might bring up (the claim store), goodbye. Never more than nine choices: the loader counts them
+# (Library::mostShown), and a wearer's grafts fill what room is left (the rest go under Ask about...). The other roles'
+# trees go on here through `do open chat` ("Something else..."), and the news and the ways are this tree's for every
+# role (`do open news`, `do open way`).
 #
-# Facts from the world (Core/RatwGameDialogue.cpp, dialogueRoleFacts): here.folk, here.shops and here.inns (the town's
-# residents, shops and inns), here.district (the House whose district this is); here.gossip and topic.subject,
-# topic.claim, topic.claim_kind (the freshest thing the resident has heard of someone else, a week old at most);
-# here.places and each place (topic.place_title, place_kind, place_way: the town's inn, church, watch, smithy...
-# nearest first, with the way from here); here.troubles and each trouble (the wheel's doc 57 remedies, in words).
+# Greetings by meeting and disposition (doc 84 §13.4.4): returning (back after a long while, doc 56, 10), famous (its
+# deeds heard of, doc 56, 5), hostile and wary. And the ledger's callback (§13.4.7): a way asked a while back.
+#
+# Facts from the world (Core/RatwGameDialogue.cpp, dialogueRoleFacts; Core/RatwGameWindowTalk.cpp, windowFacts):
+# here.folk, here.shops and here.inns (the town's residents, shops and inns), here.district (the House whose district
+# this is); here.gossip and topic.subject, topic.claim, topic.claim_kind (the freshest thing the resident has heard of
+# someone else, a week old at most); here.places and each place (topic.place_title, place_kind, place_way); here.troubles
+# and each trouble; here.opinions (the issues the resident holds a view on), here.kin (their living family),
+# here.people (residents the player may ask after), here.heard (what the player might bring up), here.quirk_words,
+# here.hours, here.matchmaker, here.vouched, here.letter, here.festival_won, here.records; player.named and player.met.
 
 tree resident
 entry talk hub
 entry chat hub
 entry news news
 entry way way
+entry introduce introduced
 
 node hub
 say #greet#. #talk_open# | #talk_open#
 say[topic.meeting=known] #greet#, #topic.player#. #talk_open# | #topic.player#. #talk_open#
 say[here.time=night] It's late. #talk_open#
+say[here.came_in=yes] #greet#. Come in, come in. #talk_open# | #greet#. In you come. #talk_open#
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. #talk_open# | Look who it is. Not since #topic.since#! #talk_open#
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. #talk_open# | So you're the one who #topic.deed#. #talk_open#
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #talk_open# | I've heard of a wolf like you, who #topic.deed#. #talk_open#
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What do you want?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | I've nothing to say to you.
+say[player.asked=way priority=10] You asked me the way to #here.way_asked# a while back. Find it? | Did you find #here.way_asked#, in the end?
+say[player.asked=person priority=10] Did you find #here.person_asked#, that time you asked? | You were after #here.person_asked#. Find them?
 free
-choice What's it like around here? -> town
-choice What do you do? -> job
-choice Heard any news? -> news
-choice Could you tell me the way? [here.places>0] -> way
 choice Let me see your wares. [role=merchant here.shop=open|bare] -> do shop
-choice Any work going? [here.giver=yes] -> do open work
+choice Any work going? [role=merchant here.giver=yes] -> do open work
+choice Any missions for our Chapter? [role!=merchant here.official=yes here.chapter=yes] -> do open missions
 choice Could you teach me your trade? [here.teaches=yes] -> do open learn
-choice Any missions for our Chapter? [here.official=yes here.chapter=yes] -> do open missions
+choice Heard any news? [does ask.detail] -> news
+choice Ask about... -> about
+choice I'm #self.name#. [player.named=no] -> do introduce ; then introduced
+choice What's your name? [player.named=yes player.met=no] -> do ask_name ; then name
+each heard in here.heard max 2
+choice I heard #heard.words#. [does tell.news] -> told
 choice Goodbye. -> bye
+
+node about
+say What about? | Ask away. | Go on, then.
+say[pair.disposition=hostile|wary] If you must.
+free
+choice Tell me about yourself. [does ask.detail] -> job
+choice They say you're one who #here.quirk_words#. [here.has_quirk=yes] -> quirk
+choice What do you make of things these days? [here.opinions>0] -> opinions
+choice How's your family? [here.kin>0] -> kin_list
+choice What's it like around here? -> town
+choice Could you tell me the way? [here.places>0] -> way
+choice Back to the rest. -> hub
 
 node town
 say #here.town#? About #here.folk# of us live here, and there are #here.shops# shops. | #here.town#'s home to #here.folk# or so. It does well enough, #address#.
@@ -43,8 +75,11 @@ say[world.times=hard] Hard times in #here.town#. #here.folk# of us, and not all 
 say[here.folk=0 priority=3] It's quiet out here. Not many of us about.
 say[world.times=good|boom] #here.town#'s doing well. #here.folk# of us, #here.shops# shops, and coin about. | Good times, here. Ask anyone.
 free
-choice Could you tell me the way? [here.places>0] -> way
-choice What do you do? -> job
+choice Where would I find someone? [here.people>0] -> people
+choice What day is it? -> day
+choice Anyone here I ought to meet? [here.matchmaker=yes] -> match
+choice Am I wanted here? -> wanted
+choice Back to the rest. -> hub
 choice Goodbye. -> bye
 
 node job
@@ -52,7 +87,21 @@ ask player.job
 say #job_busy#
 free
 choice And how's business? [business=thriving|steady|failing] -> business
+choice When do you work? [here.has_hours=yes] -> hours
+choice How are you keeping, yourself? [does ask.how] -> how
 choice Heard any news? -> news
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node how
+answers
+say Well enough. | Getting by. | Can't complain. | Middling, thank you.
+say[tired=yes] Tired. It's been a long day. | Worn through, if I'm honest.
+say[injured=light] A few aches. Nothing to speak of.
+say[injured=bad priority=2] Hurt. I'm hurt, and it's slow mending.
+say[mourning=kin|friend priority=3] Some days are easier than others. | I manage.
+free
+choice Back to the rest. -> hub
 choice Goodbye. -> bye
 
 node business
@@ -62,6 +111,51 @@ say[business=failing] Badly. I don't know how long we'll last. | Poorly. Custome
 free
 choice Heard any news? -> news
 choice Something else... -> do open talk
+choice Goodbye. -> bye
+
+node hours
+ask player.hours
+say Most days, from the morning until the light goes. | The usual hours. Morning till dusk.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node quirk
+say So they say. They're not wrong. | Ha. Somebody's been talking. It's true enough. | Guilty. A wolf has her habits, or his.
+say[pair.disposition=hostile|wary] And what's it to you?
+mood pleased
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node opinions
+say Which things? | About what, now? | Ask, and I'll tell you.
+each opinion in here.opinions max 3
+choice What do you make of #opinion.words#? [does ask.opinion] -> opinion
+choice Back to the rest. -> about
+
+node opinion
+answers
+say #topic.opinion_words.capitalize#? I couldn't say, one way or the other. | #topic.opinion_words.capitalize#? I keep my thoughts on that to myself.
+free
+choice What else? -> opinions
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node kin_list
+say Which of them? | Mine? Ask, then.
+each kin in here.kin max 3
+choice How's your #kin.word#? [does ask.after] -> kin_said
+choice Back to the rest. -> about
+
+node kin_said
+say #topic.kin_name#? Well enough, thank you for asking. | #topic.kin_name#'s well. Busy, as ever.
+say[topic.kin_state=hurt] #topic.kin_name#'s hurt, and mending slowly. Kind of you to ask. | Not so well. #topic.kin_name#'s hurt.
+say[topic.kin_state=hungry] Hungry, if I'm honest. We're short this week.
+say[topic.kin_state=mourning] Grieving, still. We both are.
+free
+choice And the others? -> kin_list
+choice Back to the rest. -> hub
 choice Goodbye. -> bye
 
 node news
@@ -74,6 +168,10 @@ say[world.wedding=recent] There was a wedding! The whole street turned out.
 free
 choice Any gossip going round? -> gossip
 choice Is something troubling you? -> trouble
+choice Did anyone speak up for me? [here.vouched=yes] -> vouch
+choice About your letter... [here.letter=yes] -> letters_said
+choice Who won at the festival? [here.festival_won=yes] -> festival_said
+choice What do the records say of this town? [here.records=yes] -> records
 choice Something else... -> do open talk
 choice Goodbye. -> bye
 
@@ -86,6 +184,41 @@ say[here.gossip=yes topic.claim_kind=violence] They say #topic.subject# #topic.c
 free
 choice Is something troubling you? -> trouble
 choice Something else... -> do open talk
+choice Goodbye. -> bye
+
+node told
+ask game.tell
+say Is that so. | I'll bear it in mind. | Hm. So I'd heard, or near enough.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node vouch
+ask game.vouch
+say Nobody's said a word for you that I've heard. | Not to me.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node letters_said
+ask game.letters
+say My letter? I've written you none that I recall. | I don't remember writing to you.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node festival_said
+ask game.festival
+say I didn't see who won. I was busy. | I couldn't tell you. I missed it.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node records
+ask game.records
+say The records? I wouldn't know. Ask the town office. | I've never read them.
+free
+choice Back to the rest. -> hub
 choice Goodbye. -> bye
 
 node trouble
@@ -115,7 +248,65 @@ node place
 say #place.way#
 free
 choice Somewhere else? -> way
-choice Thank you. Something else... -> do open talk
+choice Thank you. -> thanks
+choice Goodbye. -> bye
+
+node people
+say Who are you after? | Who is it you want?
+each person in here.people max 6
+choice Where would I find #person.name#? -> whereis
+choice Never mind. -> hub
+
+node whereis
+ask game.where
+say #topic.person_name#? I couldn't tell you where, just now. | I haven't seen #topic.person_name# about today.
+free
+choice Someone else? -> people
+choice Thank you. -> thanks
+choice Goodbye. -> bye
+
+node day
+ask player.day
+say Another day. Work, mostly. | The same as yesterday, near enough.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node wanted
+ask player.wanted
+say Not that I've heard. The watch would know, not me. | Ask the watch, not me. I keep out of their business.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node match
+ask game.match
+say Nobody I'd point you to just now. Try again of an evening, when it's busier. | Not just now. Come back when there's more about.
+mood warm
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node introduced
+say #topic.player#. I'll remember it. | #topic.player#, then. Good to know you. | I'll keep that, #topic.player#.
+say[player.met=yes] #topic.player#. I'll remember it. And I'm #self.name#. | #topic.player#. I'm #self.name#. Good to know you.
+say[pair.disposition=hostile|wary] Hm. #topic.player#. | If you like.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node name
+ask game.name
+say I'm #self.name#. | #self.name#. And you are? | Folk call me #self.name#.
+free
+choice Back to the rest. -> hub
+choice Goodbye. -> bye
+
+node thanks
+ask player.thanks
+say You're welcome. | Not at all. | Any time.
+free
+choice Back to the rest. -> hub
 choice Goodbye. -> bye
 
 node refused
@@ -123,6 +314,16 @@ say #topic.why# | Hm. #topic.why#
 choice Something else... -> do open talk
 choice Goodbye. -> bye
 
+node unclear
+say I'm not sure I follow you, #address#. | Come again? | You've lost me there. | I don't follow. Ask me plainer?
+say[temper=short] Speak plainly, will you? | What? Say it so I can understand it.
+say[temper=calm] I'm not sure I follow you, #address#. Ask me plainer, and I'll answer plainer.
+say[warmth=warm] Sorry, love, you've lost me. Try me again? | I didn't quite catch your meaning. Again?
+say[warmth=cold] I don't know what you're on about. | Make sense, or don't waste my time.
+say[humour=merry] Ha! I've no idea what you mean. Try again. | You've tied my ears in a knot. Again?
+say[humour=dry] Fascinating. I understood none of it. | I'll pretend I followed that.
+
 node bye
+ask player.bye
 say #farewell#. | #farewell#, #address#.
 end

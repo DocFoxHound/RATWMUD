@@ -1,0 +1,199 @@
+# A companion's few words (Docs/Design/84-living-conversations.md §13.1.6, Phase 12): a resident travelling with a
+# party (doc 32) as things happen on the way (arriving, trouble in sight, a party mate hurt, a long quiet, talk of the
+# road) and as they answer what they are asked (to come along, to wait, to follow, to go home, to part ways, to keep a
+# camp, to swear to a Chapter) or leave of their own accord. Once hard-coded English in RatwGameCompanions.cpp; now in
+# the companion's dialect (#agree#, #refuse#, #farewell#, #address#...) and by their tone, said to the party as a bark
+# or, when one of the party has the companion's window open, in the window. Alone and repeated, as barks are
+# (settings.json). The game's written line stands where nothing here fits.
+#
+# Facts: topic.where (companion.arrive: the place arrived at, by its name).
+
+############################################################################ On the way
+
+rule comp_arrive
+when concept=companion.arrive topic.where
+does aside
+say So this is #topic.where#. | #topic.where#. I'd not thought to see it today. | Mind your step in #topic.where#. | #topic.where#, then. Where to now?
+
+rule comp_arrive_warm
+when concept=companion.arrive topic.where tone=warm
+does aside
+say #topic.where#! I've always wanted a look at it. | Here we are, #topic.where#. Good to be off the road a while.
+
+rule comp_arrive_gruff
+when concept=companion.arrive topic.where tone=gruff
+does aside
+say #topic.where#. Don't dawdle. | #topic.where#. Seen worse.
+
+rule comp_danger
+when concept=companion.danger
+does aside
+tone serious
+say Careful. I don't like the look of them. | Trouble ahead. Stay close. | Keep your eyes open; we're watched. | I see #bandits#. Close up, all of you.
+
+rule comp_danger_shy
+when concept=companion.danger tone=shy
+does aside
+tone serious
+say Oh, no. Do you see them? | Please, let's go round. Let's not.
+
+rule comp_hurt
+when concept=companion.hurt
+does aside
+tone serious
+say You're hurt. Let me look at that when we stop. | That looks bad. Take it slower. | Easy now. You're bleeding.
+
+rule comp_hurt_gruff
+when concept=companion.hurt tone=gruff
+does aside
+tone serious
+say You're bleeding. Don't be a hero about it. | Sit down before you fall down.
+
+rule comp_quiet
+when concept=companion.quiet
+does aside
+say Quiet road. | Are we waiting on something? | I could do with a meal before long. | It's good to be out walking.
+
+rule comp_quiet_tired
+when concept=companion.quiet tired=yes
+does aside
+priority 1
+say My legs are done in. A rest soon? | I'd not say no to #bed#.
+
+rule comp_quiet_hungry
+when concept=companion.quiet hungry=yes
+does aside
+priority 1
+say My belly's talking louder than I am. | I could eat a whole loaf, crust and all.
+
+rule comp_road
+when concept=companion.road
+does aside
+say The road's been quiet. Too quiet, some days. | Roads are only as safe as the last carter says. | Keep to the middle of the road and your ears open. | I've walked worse roads. Not many.
+
+rule comp_road_bandits
+when concept=companion.road world.bandits=near
+does aside
+tone serious
+priority 1
+say There's #bandits# about. I'd not stray off the road. | They say #bandits# hold the road ahead. We'd best go careful.
+
+############################################################################ Asked, and answering
+
+rule comp_hired
+when concept=companion.hired
+does aside
+say Done. I'll walk with you. | Your coin, my feet. Lead on. | Paid's paid; I'll come.
+
+rule comp_join
+when concept=companion.join
+does aside
+say Lead on. I'll come. | Gladly. Where are we going? | I could do with a change of scene.
+
+rule comp_join_warm
+when concept=companion.join tone=warm
+does aside
+say I'd like nothing better. Lead on! | With you? Gladly, #address#.
+
+rule comp_refuse_along
+when concept=companion.refuse_along
+does aside
+tone cross
+say Not for any money. Not with you. | Keep your coin. I'll not walk with you.
+
+rule comp_refuse_stranger
+when concept=companion.refuse_stranger
+does aside
+say I hardly know you. | I don't walk the roads with strangers. | We've barely met, #address#.
+
+rule comp_refuse_friend
+when concept=companion.refuse_friend
+does aside
+say I don't know you well enough for that. | Not yet. Ask me again when we know each other better. | Maybe another day, #address#.
+
+rule comp_wait
+when concept=companion.wait
+does aside
+say I'll wait here. | Right, I'll stay put. | I'll keep this spot warm. | As you like. I'll be here.
+
+rule comp_follow
+when concept=companion.follow
+does aside
+say Right behind you. | Coming. | Lead the way. | On we go.
+
+rule comp_home
+when concept=companion.home
+does aside
+say Home, then. Safe roads. | I'll head home. Send for me if you need me. | Home it is. #farewell#.
+
+rule comp_dismiss
+when concept=companion.dismiss
+does aside
+say Then this is where I leave you. Fare well. | Our roads part here, then. #farewell#. | It's been a good road. #farewell#, #address#.
+
+rule comp_watch
+when concept=companion.watch
+does aside
+tone serious
+say Not against the Watch. I won't. | Raise a paw to the Watch? Not me. | #refuse#. Not against the Watch.
+
+rule comp_camp
+when concept=companion.camp
+does aside
+say I'll keep the camp. | Leave the camp to me. | I'll mind the fire and the gear.
+
+rule comp_sworn
+when concept=companion.sworn
+does aside
+tone serious
+say Then I'm yours, and the Chapter's, for as long as I live. | I swear it. Your Chapter is mine, to the end of my days.
+
+rule comp_sworn_not_yet
+when concept=companion.sworn_not_yet
+does aside
+say That's a great deal to ask of me. Not yet. | My whole life? Give me time. | Not yet. That's no small thing to swear.
+
+############################################################################ Leaving of their own accord
+
+rule comp_leave_unpaid
+when concept=companion.leave_unpaid
+does leave
+tone cross
+say No pay, no company. I'm going home. | No coin, no road. I'm off home.
+
+rule comp_leave_own_life
+when concept=companion.leave_own_life
+does leave
+say I should get back to my own life. It's been good travelling with you. | Time I went home. It's been a good road, #address#.
+
+rule comp_leave_fed_up
+when concept=companion.leave_fed_up
+does leave
+tone cross
+say I've had enough of this. I'm going. | That's it. I'm done. #farewell#.
+
+rule comp_leave_crime
+when concept=companion.leave_crime
+does leave
+tone cross
+say I won't be part of that. I'm done with you. | I saw what you did. Don't follow me.
+
+############################################################################ Asked what they think, with no view to give
+
+# The companion window's "What do you think?" (companion.tree's node think): the game answers it from the companion's
+# own stances (Game::companionOpinion); these, in their dialect, where they hold none worth the giving.
+
+rule comp_opinion_none
+when concept=companion.opinion
+does aside
+say Hard to say. I'll think on it. | I've no strong view either way. | I'd sooner keep my thoughts to myself, for now.
+
+rule comp_opinion_none_gruff
+when concept=companion.opinion tone=gruff
+does aside
+say I keep my thoughts to myself. | No strong view. Lead on.
+
+rule comp_opinion_none_warm
+when concept=companion.opinion tone=warm
+does aside
+say Oh, I've no strong view either way, truly. | Hard to say! Ask me again over supper.

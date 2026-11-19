@@ -266,7 +266,7 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
             camps_.staff()[target] = st;
             if (auto* npc = world_.entity(target))
                 npc->leaderId = "camp:" + here->id;
-            companionSays(target, "I'll keep the camp.");
+            companionSays(target, "companion.camp", "I'll keep the camp.");
             result = {true, "They stay to work at the camp, paid from the Chapter's treasury.", target};
         }
     }

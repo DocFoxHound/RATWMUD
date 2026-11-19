@@ -142,7 +142,7 @@ struct Town
     game::Game g;
     Client ash, bo, cy;
     Town(const std::string& world, const std::string& save, double performQuiet = 120, bool voice = false, double awayBreak = 3 * 86400,
-         const std::string& mind = {}) : g([&] {
+         const std::string& mind = {}, const std::string& mantles = {}) : g([&] {
           game::Options o;
           o.hiddenNames = true;
           o.devIdentity = true;
@@ -153,6 +153,7 @@ struct Town
           o.performQuietSeconds = performQuiet;
           o.awayBreakSeconds = awayBreak;
           o.dialogueEndpoint = mind;                // (A stand-in NPC Mind, for a test that needs one: "" none.)
+          o.mantlesFrom = mantles;                  // (Mantles from a folder, each worn by whom it was written for.)
 #ifdef RATW_SOURCE_DIR
           if (voice)
               o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";   // (The router and the written scenes.)
@@ -220,3 +221,33 @@ struct Town
         return c.snapshots.empty() ? json::Value{} : c.snapshots.back()["self"];
     }
 };
+// Words said to a resident (doc 84 §13, Phase 12): residents never answer open chat, so they are said in the resident's
+// dialogue window, as its free talk (dialogue_open on the talk entry, then dialogue_say). A window already open with
+// them is used as it is; it is left open, as a player leaves it while the answer comes. A world with no talk library has
+// no window: there the words are said in open chat, to them (heard, and a name given there learned, never answered).
+inline void sayInWindow(Town& t, Client& c, const std::string& npc, const std::string& text)
+{
+    const auto* open = t.g.dialogueOf(c.entityId);
+    if (!open || open->npc != npc)
+    {
+        t.g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", "talk"}}));
+        t.g.settle();
+        t.run(.5);
+        open = t.g.dialogueOf(c.entityId);
+    }
+    if (!open || open->npc != npc)
+    {
+        const auto* closed = c.last("dialogue_close");
+        expect(closed && closed->string("why") == "none" && t.g.talkLibrarySize() == 0,
+               "a window opens with " + npc + " to speak in" + (closed ? " (closed: " + closed->string("why") + ")" : std::string()));
+        auto targets = json::Value::array();
+        targets.push(npc);
+        t.g.command(&c, cmd({{"type", "chat"}, {"text", text}, {"channel", "ic"}, {"volume", "speak"}, {"targets", targets}}));
+        t.g.settle();
+        t.run(1);
+        return;
+    }
+    t.g.command(&c, cmd({{"type", "dialogue_say"}, {"session", open->id}, {"text", text}}));
+    t.g.settle();
+    t.run(1);
+}
