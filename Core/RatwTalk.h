@@ -642,6 +642,8 @@ struct ShownChoice
     std::size_t index = 0;                // In the node's choices.
     int item = -1;                        // An `each` choice's item.
     Facts bound;                          // That item's facts (topic.job_title...).
+    std::string key;                      // Which choice it is (its words, way, action, list), wherever it now stands in
+                                          // the node's choices: a window's node is rebuilt each time (grafts, room).
 };
 
 // The facts there are, and the values each may take.

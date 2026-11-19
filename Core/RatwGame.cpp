@@ -5084,7 +5084,9 @@ void Game::windowFallback(const std::string& npcId, const std::string& playerId,
     voiced("dialogue", "mind-failed", npcId);
     auto* c = clientOf(playerId);
     const auto f = dialogues_.find(playerId);
-    if (c && f != dialogues_.end() && f->second.npc == npcId)
+    // (Only the window that asked, still waiting on it: a choice taken meanwhile, the window closed or opened again,
+    // and the old words are not matched against what is on show now. Stage 4's review.)
+    if (c && f != dialogues_.end() && f->second.npc == npcId && f->second.awaiting)
         dialogueUnderstand(c, f->second, text, std::string());
     talkNext(npcId);
 }
@@ -6652,8 +6654,12 @@ void Game::command(Connection* c, const std::string& raw)
             {
                 // Overheard, never answered (§13.1.2). A companion's interjection on the road is a bark to no one
                 // (§13.1.6), and a companion asked what they think is told so in their window ("What do you think?").
+                // (Named by the first name too, as players say it, capitalised: "Rosamund, what's good?" Stage 4's end:
+                // the whole name alone was rarely said, so the glance and the hint seldom came.)
+                const auto first = e.name.substr(0, e.name.find(' '));
+                const bool calledBy = namesWord(lower, mind::lower(e.name)) || (first.size() >= 3 && namesWord(perceived, first));
                 if (post.speech && sense.hearing >= 0.5)
-                    overhearing.push_back({npcId, perceived, sense, targeted || namesWord(lower, mind::lower(e.name)) || invited, false, false});
+                    overhearing.push_back({npcId, perceived, sense, targeted || calledBy || invited, false, false});
                 if (const auto* mine = roadTalk && post.speech ? parties_.of(id) : nullptr;
                     mine && npcLastSpeech_[npcId] + 45 < world_.time() && world_.time() >= remarkAt_[mine->id])
                 {

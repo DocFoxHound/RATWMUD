@@ -1598,6 +1598,30 @@ void windowTalk()
         expect(d && contains(d->string("line"), "Merchant u"), "the callback: " + show(d));
         d = open("u1");
         expect(d && !contains(d->string("line"), "Merchant u"), "said once: " + show(d));
+        // Stage 4's review: a stranger's whole name isn't told from a surname alone; a typed refusal takes no choice; a
+        // sleeping resident told a name by the wheel's Introduce doesn't give its own back.
+        d = open("u1");
+        d = type("Where can I find u3?");
+        expect(d && !contains(d->string("line"), "Neighbour u3"), "a surname alone tells no stranger's whole name: " + show(d));
+        {
+            d = open("u2");
+            expect(d && pick(d, "I'm Ash.") > 0, "u2 not yet told Ash's name: " + show(d));
+            auto* sleeper = w.entity("u2");
+            keep("u2");
+            if (const auto* open = town.g.dialogueOf(town.ash.entityId))
+                town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", open->id}, {"why", "closed"}}));
+            town.run(1.1);
+            sleeper->posture = "lying";
+            town.ash.events.clear();
+            town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", "u2"}, {"entry", "introduce"}}));
+            town.g.settle();
+            const auto* asleep = lastOf(town.ash, "dialogue");
+            expect(!asleep || !contains(asleep->string("line"), "Neighbour u2"), "asleep: its name not given: " + show(asleep));
+            sleeper->posture = "standing";
+            town.run(4);
+            d = open("u2");
+            expect(d && pick(d, "I'm Ash.") > 0, "asleep when told Ash's name: not learned (offered again awake): " + show(d));
+        }
         // Lines turn over: the hub's greeting not the same twice running.
         std::string last, again;
         int same = 0;
@@ -1643,10 +1667,12 @@ dlg resident.job : I count the cobbles, and I mind the lane. Somebody has to.
 dlg resident.bye : Mind the loose one on your way out.
 
 graft resident.hub
+choice Up counting by moonlight? [time=night] -> loose
 choice What are you counting? -> counting
 node counting
 say Cobbles. Four hundred and twelve, last I looked. One's loose.
 mood pleased
+invite the_lane dawn 2
 free
 choice Which one's loose? -> loose
 choice Goodbye. -> bye
@@ -1702,6 +1728,16 @@ choice Back to the rest. -> hub
     expect(d && contains(d->string("line"), "The one you're on"), "and on: " + show(d));
     d = choose(pick(d, "Back to the rest."));
     expect(d && d->string("node") == "hub", "back to the tree's hub: " + show(d));
+    // (The graft node's invitation stands once between the two, however often the node is visited: stage 4's review.)
+    for (int i = 0; i < 3; ++i)
+    {
+        d = choose(pick(d, "What are you counting?"));
+        d = choose(pick(d, "Which one's loose?"));
+        d = choose(pick(d, "Back to the rest."));
+    }
+    const auto invites = std::count_if(w.talkLedger().invites().begin(), w.talkLedger().invites().end(),
+                                       [&](const auto& i) { return i.by == "u1" && i.to == town.ash.entityId && i.state == "open"; });
+    expect(invites == 1, "one invitation standing, not one a visit: " + std::to_string(invites));
     d = choose(pick(d, "Ask about..."));
     d = choose(pick(d, "Tell me about yourself."));
     expect(d && contains(d->string("line"), "I count the cobbles"), "the job's line the wearer's, before the game's answer: " + show(d));
@@ -1710,8 +1746,28 @@ choice Back to the rest. -> hub
     town.g.settle();
     expect(std::any_of(town.ash.events.begin(), town.ash.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Mind the loose one"); }),
            "the goodbye the wearer's");
+    // Stage 4's review: the hub is rebuilt at every choice, a graft shown or not by the hour, so the choices move; the one
+    // chosen is the one taken (never its neighbour, never past the end of the list).
+    d = open("u1");
+    const int byeAtNoon = pick(d, "Goodbye.");
+    expect(byeAtNoon > 0 && pick(d, "Up counting by moonlight?") == 0, "no moonlight choice at noon: " + show(d));
+    w.setTimeOfDay(23);
+    d = choose(byeAtNoon);
+    expect(!d || d->string("node") == "bye" || town.g.dialogueOf(town.ash.entityId) == nullptr,
+           "Goodbye chosen at noon is Goodbye at night, the moonlight graft now before it: " + show(d));
+    d = open("u1");
+    const int byeAtNight = pick(d, "Goodbye.");
+    expect(pick(d, "Up counting by moonlight?") > 0 && byeAtNight > byeAtNoon, "the moonlight choice at night: " + show(d));
+    w.setTimeOfDay(12);
+    d = choose(byeAtNight);
+    expect(!d || d->string("node") == "bye" || town.g.dialogueOf(town.ash.entityId) == nullptr,
+           "Goodbye chosen at night is Goodbye at noon (it stood past the end of noon's list): " + show(d));
+    d = open("u1");
+    d = choose(pick(d, "Ask about..."));
+    w.setTimeOfDay(23);
     d = open("u2");
     expect(d && pick(d, "What are you counting?") == 0 && !contains(d->string("line"), "cobbles"), "nobody else's: " + show(d));
+    w.setTimeOfDay(12);
     // Typed words about the quirk: the graft.
     d = open("u1");
     town.run(1.1);

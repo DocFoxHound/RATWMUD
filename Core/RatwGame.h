@@ -846,6 +846,9 @@ class Game
     std::string itemLabel(const std::string& viewer, const std::string& item) const;
     std::string veilFor(const std::string& viewer, const std::string& text) const;
     bool willName(const std::string& npcId, const std::string& playerId) const;
+    // Doc 84 Phase 13, stage 4's review: whether a resident gives its name in the window now (willing, awake, and told the
+    // player's name first): the one rule for the wheel's Introduce, the name choices, typed words and the name node.
+    bool givesName(const std::string& npcId, const std::string& playerId) const;
     bool learnName(const std::string& knower, const std::string& known, const std::string& name, const std::string& how);
     void noticeIntroduction(const std::string& author, const std::string& listener, const std::string& heard);
     void sendIntroductionReceipt(const std::string& author);
@@ -932,11 +935,16 @@ class Game
     // (T)"). A shopkeeper looks up as a customer comes in (cameIn_: here.came_in for 120 s, so the window's greeting
     // fits); a newcomer is welcomed at an inn in the keeper's window (welcomeDue_: newcomer -> innkeeper,
     // here.newcomer). By "npc|player": the last emote and the last hint.
+    std::string askedAfter(const std::string& heard, const std::string& npcName) const;
     void overheard(const std::string& npcId, const std::string& playerId, const std::string& heard, const SensoryResult& sense,
                    bool addressed);
     void emote(const std::string& npcId, const std::string& toward, const std::string& words);
     void talkHint(const std::string& playerId, const std::string& npcId);
     std::map<std::string, double> emotedAt_, hintedAt_;
+    // What one chat line was about, read once for every resident in earshot (stage 4's review): the line, and by the
+    // hearer's name (the router strips a name it is addressed by) what it asked after.
+    std::string overheardLine_;
+    std::map<std::string, std::string> overheardAsked_;
     std::map<std::string, std::pair<std::string, double>> cameIn_;
     std::map<std::string, std::pair<std::string, double>> welcomeDue_;
     // A welcome due is kept until the newcomer next opens that keeper's window, for six game days (a real day) at most
@@ -1013,7 +1021,7 @@ class Game
     std::string dialogueBrief(const std::string& npcId, const std::string& playerId) const;   // (For the Mind.)
     // The face's mood with a line (doc 83, Phase 5): one of the face slot's moods, or none (Client/src/game/face.ts).
     std::string dialogueMood(const std::string& npcId, const talk::Query& q, const std::string& tagged) const;
-    std::vector<talk::Facts> dialoguePlaces(const std::string& npcId);
+    std::vector<talk::Facts> dialoguePlaces(const std::string& npcId, bool voiced = true);
     // The upstairs an innkeeper lets beds in ("<inn>, upstairs" over the inn they keep), "" for none.
     std::string upstairsOf(const std::string& keeper) const;
     // Which way a place is from where a resident stands, in words ("The Frozen Lantern is a short walk to the

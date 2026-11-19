@@ -100,6 +100,12 @@ int main(int argc, char** argv)
                "a choice's own words take it");
         expect(u.matchChoice("heard any news", {"Heard any news?", "Let me see your wares.", "Goodbye."}, lex) == 0,
                "a choice's own words take it, without its punctuation");
+        // Stage 4's review: a refusal is never the choice it names (it would pay the fine, take the job, the room).
+        expect(u.matchChoice("No, I won't pay the fine", {"Pay the fine.", "Goodbye."}, lex) == -1, "\"I won't pay the fine\" isn't Pay the fine.");
+        expect(u.matchChoice("I don't want to take it on", {"I'll take it on.", "Not for me."}, lex) != 0, "\"I don't want to take it on\" isn't taking it");
+        expect(u.matchChoice("pay the fine", {"Pay the fine.", "Goodbye."}, lex) == 0, "\"pay the fine\" is");
+        expect(u.matchChoice("no, not for me", {"I'll take it on.", "Not for me."}, lex) == 1, "a refusal may take the choice that refuses");
+        expect(u.refuses("I'd never sell it", lex) && !u.refuses("I'd like a room", lex), "refuses: never, not \"like\"");
     }
 
     // W2 on a corpus: right first (the intent, sure, with its person, place, issue or name), confidently wrong, not followed.

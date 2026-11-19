@@ -329,6 +329,17 @@ std::vector<talk::Facts> Game::windowItems(const std::string& playerId, const st
     return out;
 }
 
+// ------------------------------------------------------------------ A name given back
+
+bool Game::givesName(const std::string& npcId, const std::string& playerId) const
+{
+    const auto* npc = world_.entity(npcId);
+    if (!npc || npc->dead || !willName(npcId, playerId) || !knowsName(npcId, playerId))
+        return false;
+    const auto* life = world_.society().resident(npcId);
+    return !(npc->posture == "lying" || (life && life->task == "sleep"));
+}
+
 // ------------------------------------------------------------------ A node as this wearer sees it (grafts)
 
 bool Game::windowNode(const std::string& playerId, const DialogueSession& d, const std::string& nodeId, talk::TreeNode& out)
@@ -554,7 +565,7 @@ std::string Game::windowAsk(const std::string& playerId, DialogueSession& d, con
     if (ask == "game.name")
     {
         // The resident gives its name (or keeps it): the player knows it now (their Known wolves).
-        if (!willName(npcId, playerId))
+        if (!givesName(npcId, playerId))
             return refusalInVoice(npcId, playerId, "My name's my own business.");
         learnName(playerId, npcId, npc->name, "introduced");
         auto line = windowAnswer(playerId, d, "ask.name", q);
@@ -619,9 +630,19 @@ std::string Game::windowLine(const std::string& playerId, DialogueSession& d, co
         if (said.lines.empty() || last == windowLast_.end() || said.lines.front().second != last->second)
             break;
     }
-    const bool own = !said.id.empty() && talk_.ownLine(said.id, q);
+    bool own = !said.id.empty() && talk_.ownLine(said.id, q);
     const auto* picked = said.id.empty() ? nullptr : talk_.find(said.id);
-    const bool strict = picked && picked->priority >= talk_.settings().strict;
+    bool strict = picked && picked->priority >= talk_.settings().strict;
+    // The name node: a wearer's own "I'm #self.name#" is said only when the resident would give it (and then the player
+    // knows it); else the game's refusal, whatever the wearer's lines (stage 4's review).
+    if (node.ask == "game.name")
+    {
+        if (!givesName(d.npc, playerId))
+            own = strict = false;
+        else if (own || strict)
+            if (const auto* npc = world_.entity(d.npc))
+                learnName(playerId, d.npc, npc->name, "introduced");
+    }
     std::string line;
     if (!own && !strict)
     {
@@ -737,7 +758,7 @@ understand::Lexicon Game::dialogueLexicon(const std::string& npcId)
         if (const auto* e = world_.entity(id); e && !e->dead && !e->name.empty() && id != npcId &&
                                                (town.empty() || world_.communityOf(life.homeCell) == town || world_.communityOf(e->cellId) == town))
             l.people.push_back(e->name);
-    for (const auto& p : dialoguePlaces(npcId))
+    for (const auto& p : dialoguePlaces(npcId, false))
         l.places.push_back(fact(p, "topic.place_title"));
     for (const auto& [id, c] : world_.cells())
         if (!c.outdoors && !town.empty() && world_.communityOf(id) == town && l.places.size() < 400)
@@ -817,6 +838,9 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
         return false;
     };
     const auto openEntry = [&](const std::string& entry) {
+        if (entry == "missions")                  // (The day's board, as dialogueOpen makes it.)
+            if (const auto faction = officialOf(d.npc); !faction.empty())
+                missionBoard(faction, d.npc, world_.calendarDays());
         auto q = dialogueQuery(playerId, d);
         const auto* next = talk_.treeFor(entry, q);
         if (!next)
@@ -854,6 +878,8 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
         return f == r.slots.end() ? std::string() : f->second;
     };
     d.topics.push_back("said");
+    if (d.topics.size() > 48)                     // (What a window talked of, the latest only.)
+        d.topics.erase(d.topics.begin(), d.topics.end() - 32);
     // A matchmaker hearing a newcomer (doc 52, 5): whatever was said, the pointer, as the innkeeper's answer.
     if (const auto pointer = windowPointer(d.npc, playerId, text); !pointer.empty())
     {
@@ -868,12 +894,16 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
         return;
     }
     // A choice on show that goes where the intent does (the wares, the news...).
+    // (Words that refuse never take a choice that does something: "I don't want a room" is no lodging. Stage 4's review.)
+    const bool refusing = understanding_.refuses(text, lexicon);
     const auto take = [&](const std::function<bool(const talk::TreeChoice&)>& wanted) {
         talk::TreeNode node;
         if (!windowNode(playerId, d, d.node, node))
             return false;
         for (const auto& s : d.shown)
-            if (!s.locked && s.index < node.choices.size() && wanted(node.choices[s.index]))
+            if (!s.locked && s.index < node.choices.size() && wanted(node.choices[s.index]) &&
+                !(refusing && !node.choices[s.index].action.empty() && node.choices[s.index].action != "open" &&
+                  node.choices[s.index].action != "shop"))
             {
                 d.awaiting = false;
                 dialogueChoose(c, d, s.n, text, true);
@@ -903,8 +933,9 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
     }
     else if (in == "introduce")
     {
-        // (The name was learned as it was said: noticeIntroduction. The resident gives theirs back if it would.)
-        if (willName(d.npc, playerId) && !known_.knows(playerId, d.npc))
+        // (The name was learned as it was said: noticeIntroduction. The resident gives theirs back if it would: only once
+        // it has learned the player's, so words with no name in them get no name back.)
+        if (givesName(d.npc, playerId) && !known_.knows(playerId, d.npc))
             if (const auto* npc = world_.entity(d.npc))
                 learnName(playerId, d.npc, npc->name, "introduced");
         if (goTo("introduced", {}, "introduce"))
@@ -959,9 +990,17 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
     }
     else if (in == "ask_person")
     {
+        // (Someone the player has met, or named in full: a surname alone, or a name one letter off, never tells them a
+        // stranger's whole name. Stage 4's review.)
         const auto name = slot("person");
+        const auto lower = [](std::string w) {
+            for (auto& ch : w)
+                ch = char(std::tolower(static_cast<unsigned char>(ch)));
+            return w;
+        };
+        const bool named = !name.empty() && lower(text).find(lower(name)) != std::string::npos;
         for (const auto& [id, life] : world_.society().state().residents)
-            if (const auto* e = world_.entity(id); e && e->name == name)
+            if (const auto* e = world_.entity(id); e && e->name == name && (named || known_.knows(playerId, id)))
                 if (goTo("whereis", {{"topic.person_id", id}, {"topic.person_name", name}}, "ask.whereabouts"))
                 {
                     d.topics.push_back("person:" + name);
@@ -1092,6 +1131,12 @@ void Game::dialogueUnderstand(Connection* c, DialogueSession& d, const std::stri
         std::vector<talk::TreeChoice> grafts;
         if (!mantle.empty())
             talk_.graftChoices(mantle, "resident", "hub", grafts);
+        {
+            // (Only a graft that would be offered now: its `when` as the hub would check it. Stage 4's review.)
+            auto q = dialogueQuery(playerId, d);
+            grafts.erase(std::remove_if(grafts.begin(), grafts.end(), [&](const talk::TreeChoice& g) { return !talk_.holdsAll(g.when, q, 0); }),
+                         grafts.end());
+        }
         if (!grafts.empty() && !grafts.front().go.empty() && grafts.front().go[0] == '@')
         {
             d.tree = "resident";
@@ -1185,14 +1230,17 @@ void Game::windowNote(const std::string& playerId, const DialogueSession& d)
     auto& note = ledger.note(d.npc, playerId, day);
     note.opener = playerId;
     note.outcome = "even";
+    std::set<std::string> seen;                   // (Each once, and a dozen and a half at most: stage 4's review.)
     for (const auto& t : d.topics)
     {
+        if (!seen.insert(t).second || note.keys.size() >= 16)
+            continue;
         const auto colon = t.find(':');
         const auto topic = colon == std::string::npos ? t : t.substr(0, colon);
         const auto what = colon == std::string::npos ? std::string() : t.substr(colon + 1);
         if (std::find(note.topics.begin(), note.topics.end(), topic) == note.topics.end())
             note.topics.push_back(topic);
-        if (!what.empty())
+        if (!what.empty() && std::find(note.keys.begin(), note.keys.end(), what) == note.keys.end())
             note.keys.push_back(what);
         // A way or a person asked after: remembered between the two (the callback, ten days), and as a light person fact
         // the residents may talk of to each other ("That stranger was asking the way to the smithy.").

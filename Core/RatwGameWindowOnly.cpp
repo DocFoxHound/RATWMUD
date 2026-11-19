@@ -39,6 +39,41 @@ std::string plain(const std::string& s)
 }
 } // namespace
 
+std::string Game::askedAfter(const std::string& heard, const std::string& npcName) const
+{
+    // What a line overheard asked after, in the world's own words: a place or a resident by their own names, never the
+    // player's.
+    const auto intent = voices_.intent(heard, npcName);
+    std::string asked;
+    if (intent.id == "where" && !intent.target.empty())
+    {
+        const auto target = plain(intent.target);
+        for (const auto& [id, c] : world_.cells())
+            if (const auto name = plain(c.name); !name.empty() && (name == target || name == "the " + target))
+            {
+                asked = "asking the way to " + c.name;
+                break;
+            }
+        if (asked.empty())
+            for (const auto& [id, e] : world_.entities())
+                if (e.npc && !e.transient && !e.dead && world_.society().resident(id))
+                    if (const auto name = plain(e.name); name == target || name.substr(0, name.find(' ')) == target)
+                    {
+                        asked = "asking after " + e.name;
+                        break;
+                    }
+    }
+    else if (intent.id == "trade")
+        asked = "asking what was for sale";
+    else if (intent.id == "hours")
+        asked = "asking when the shops open";
+    else if (intent.id == "day")
+        asked = "asking what day it was";
+    else if (intent.id == "trouble")
+        asked = "asking about trouble in town";
+    return asked;
+}
+
 void Game::overheard(const std::string& npcId, const std::string& playerId, const std::string& heard, const SensoryResult& sense,
                      bool addressed)
 {
@@ -57,34 +92,13 @@ void Game::overheard(const std::string& npcId, const std::string& playerId, cons
     // like."), never quoting. Only words the world gives: a place or a resident by their own names, never the player's.
     if (voices_.routes())
     {
-        const auto intent = voices_.intent(heard, npc->name);
-        std::string asked;
-        if (intent.id == "where" && !intent.target.empty())
+        if (heard != overheardLine_)
         {
-            const auto target = plain(intent.target);
-            for (const auto& [id, c] : world_.cells())
-                if (const auto name = plain(c.name); !name.empty() && (name == target || name == "the " + target))
-                {
-                    asked = "asking the way to " + c.name;
-                    break;
-                }
-            if (asked.empty())
-                for (const auto& [id, e] : world_.entities())
-                    if (e.npc && !e.transient && !e.dead && world_.society().resident(id))
-                        if (const auto name = plain(e.name); name == target || name.substr(0, name.find(' ')) == target)
-                        {
-                            asked = "asking after " + e.name;
-                            break;
-                        }
+            overheardLine_ = heard;
+            overheardAsked_.clear();
         }
-        else if (intent.id == "trade")
-            asked = "asking what was for sale";
-        else if (intent.id == "hours")
-            asked = "asking when the shops open";
-        else if (intent.id == "day")
-            asked = "asking what day it was";
-        else if (intent.id == "trouble")
-            asked = "asking about trouble in town";
+        const auto cached = overheardAsked_.find(npc->name);
+        const auto asked = cached != overheardAsked_.end() ? cached->second : overheardAsked_[npc->name] = askedAfter(heard, npc->name);
         if (!asked.empty())
             world_.talkLedger().said(playerId, "asked", asked, npcId, world_.calendarDays() + 0.25);
     }
@@ -95,6 +109,9 @@ void Game::overheard(const std::string& npcId, const std::string& playerId, cons
     if (npc->posture == "lying" || (life && life->task == "sleep") || world_.inBattle(npcId))
         return;
     const auto key = npcId + "|" + playerId;
+    if (emotedAt_.size() > 20000)                 // (Kept only as long as they matter: stage 4's review.)
+        for (auto it = emotedAt_.begin(); it != emotedAt_.end();)
+            it = t - it->second >= EmoteSeconds ? emotedAt_.erase(it) : std::next(it);
     if (const auto last = emotedAt_.find(key); last == emotedAt_.end() || t - last->second >= EmoteSeconds)
     {
         emotedAt_[key] = t;
@@ -127,6 +144,9 @@ void Game::talkHint(const std::string& playerId, const std::string& npcId)
         return;
     const auto key = npcId + "|" + playerId;
     const double t = world_.time();
+    if (hintedAt_.size() > 20000)
+        for (auto it = hintedAt_.begin(); it != hintedAt_.end();)
+            it = t - it->second >= HintSeconds ? hintedAt_.erase(it) : std::next(it);
     if (const auto last = hintedAt_.find(key); last != hintedAt_.end() && t - last->second < HintSeconds)
         return;
     hintedAt_[key] = t;

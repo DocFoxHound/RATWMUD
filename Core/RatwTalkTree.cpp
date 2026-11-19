@@ -199,6 +199,9 @@ std::vector<ShownChoice> Library::choices(const TreeNode& node, const Query& q, 
             return;
         shown.n = int(out.size()) + 1;
         shown.index = index;
+        shown.key = c.words + '\x1f' + c.go + '\x1f' + c.action + '\x1f' + c.each + '\x1f' + c.then;
+        for (const auto& a : c.args)
+            shown.key += '\x1f' + a;
         shown.item = item;
         shown.bound = facts;
         shown.locked = !ok;

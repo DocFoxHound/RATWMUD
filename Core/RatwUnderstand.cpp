@@ -491,6 +491,24 @@ Reading Understanding::read(const std::string& text, const Lexicon& lexicon) con
     return r;
 }
 
+namespace
+{
+const std::set<std::string>& negations()
+{
+    static const std::set<std::string> Words{"no", "not", "never", "nor", "nope", "nah", "cannot", "neither"};
+    return Words;
+}
+bool negated(const std::vector<std::string>& w)
+{
+    return std::any_of(w.begin(), w.end(), [](const std::string& x) { return negations().count(x) > 0; });
+}
+} // namespace
+
+bool Understanding::refuses(const std::string& text, const Lexicon& lexicon) const
+{
+    return negated(words(text, lexicon));
+}
+
 int Understanding::matchChoice(const std::string& text, const std::vector<std::string>& choices, const Lexicon& lexicon) const
 {
     const auto content = [&](const std::vector<std::string>& w) {
@@ -500,13 +518,19 @@ int Understanding::matchChoice(const std::string& text, const std::vector<std::s
                 out.insert(x);
         return out;
     };
+    // A refusal is never the choice it names: "No, I won't pay the fine" holds every word of "Pay the fine." (the
+    // contractions read as "will not"), but it isn't it; the intent reads it instead (stage 4's review).
     const auto said = words(text, lexicon);
     const auto mine = content(said);
+    const bool refusing = negated(said);
     int best = -1;
     double bestScore = 0;
     for (std::size_t i = 0; i < choices.size(); ++i)
     {
-        const auto theirs = content(words(choices[i], lexicon));
+        const auto choiceWords = words(choices[i], lexicon);
+        if (refusing && !negated(choiceWords))
+            continue;
+        const auto theirs = content(choiceWords);
         if (theirs.empty() || mine.empty())
             continue;
         std::size_t both = 0;

@@ -48,6 +48,8 @@ class Understanding
     // Which of the choices on show the words are (their words, nearly enough: the content words shared over those of
     // either, 0.6 or more, or the choice's words all said), or -1.
     int matchChoice(const std::string& text, const std::vector<std::string>& choices, const Lexicon& lexicon) const;
+    // Whether the words refuse (no, not, never...: "I won't pay the fine"): never taken as a choice that does something.
+    bool refuses(const std::string& text, const Lexicon& lexicon) const;
     std::vector<std::string> intents() const;
     // The issue ids understand.json knows (opinions.json's).
     std::vector<std::string> issues() const;

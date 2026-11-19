@@ -336,6 +336,14 @@ void residentsNeverAnswerChat()
         chat("I'm Ash.", {"npc_keeper"}, "speak");                     // An introduction.
         if (!answering)
         {
+            // (Stage 4's end: a resident of two names named by the first alone, as players say it, glances over too.)
+            const int before = glances;
+            const auto name = w.entity("npc_keeper")->name;
+            w.entity("npc_keeper")->name = "Rowan Ashby";
+            run(g, ash, 31);
+            chat("Rowan, a word?", {}, "speak");
+            w.entity("npc_keeper")->name = name;
+            expect(glances > before, "named by the first name alone: a glance");
             const auto asked = w.talkLedger().saidOf("player-ash", w.calendarDays());
             expect(asked.count("asked") && asked.at("asked").find("asking") == 0,
                    "what Ash asked after is kept in the talk ledger, in the world's words: " +
