@@ -1,6 +1,6 @@
-# lf127, the wheat-price map keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf127, the wheat-price map keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf127
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -289,8 +289,7 @@ a : It amuses me. | Not yet.
 story wrong_map [topic=pastimes self.age>=18]
   : I followed an old #map# toward a #bridge# it placed too near the #field#.
   : The real #bridge# stood farther down the #road#.
-  ask : Did you keep the map?
-  b : A useful mistake.
+  b : A useful mistake. Did you keep the map?
   : It still sits by my #window#.
 
 story thief_night [topic=memories self.age>=18]

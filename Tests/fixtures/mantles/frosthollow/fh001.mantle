@@ -16,7 +16,7 @@ fears losing_it_all
 hopes to_keep_what_she_won
 topics faith +.3 work +.2
 marks oath saying
-persona #self.first# digs ore: plain-spoken, short of temper, devout and private, and she tells the same three stories whenever talk lulls.
+persona #self.first# digs ore: plain-spoken, short of temper, devout and private, telling the same three stories whenever talk lulls.
 
 words
 saying! = Every seam remembers the pick | Stone keeps what tongues spill

@@ -1,6 +1,6 @@
-# mb106, the name-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb106, the name-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb106
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent broad light
@@ -19,7 +19,7 @@ hopes a_name_said_kindly_at_the_last
 topics lore +0.3 work +0.2 food +0.2 friends +0.2 weather +0.1 prices -0.2 festival -0.3
 styles comfort=quiet gossip=reluctant refuse=soft tease=dry
 marks oath saying
-persona #self.first# rakes salt by the fen and says little, but she never forgets a name: warm, dry, and sure the marsh lights are the drowned.
+persona #self.first# rakes salt by the fen and says little, but never forgets a name: warm, dry, and sure the marsh lights are the drowned.
 
 words
 oath! = Brine and bone | Salt in the eye
@@ -123,7 +123,7 @@ scene the_drowned
 when topic=lore here.region=fens here.time=dusk|night
 does tell.story / react.story / assess
 a : #lights.capitalize# are the drowned. I'll swear to it, fen-friend. | They walk where the old town was. Looking for the road home. | Don't follow them. Don't pity them neither. Just let them be.
-b[priest] #faith : It's bog-gas. The Bright One keeps the drowned. | We pray for them. | #bc_wise#
+b[priest] #faith : It's bog-gas. The drowned are the Bright One's now. | We pray for them. | #bc_wise#
 b : How do you know? | #bc_poor_soul# | #bc_i_wont#
 a@faith : Then the Bright One keeps them out there, with lanterns. | Pray loud. They can't hear much under the murk. | #bc_true#
 a : I've seen them stop where the drowned chapel stood. Every night. | They'll find it. Or they won't. | #bc_good# They've enough company.
@@ -247,7 +247,7 @@ story the_name_came_back
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. What do they call you? I'll keep it.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Told you I'd remember.
 dlg @1 resident.job : I rake salt off #pans#. Dawn to dusk. Salty work, fen-friend.
-dlg @1 resident.news : Nothing floated up but salt. Ask somebody chattier.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing floated up but salt. Ask somebody chattier.
 dlg @1 resident.bye : #farewell#, #topic.player#. I'll know you next time.
 graft resident.hub
 choice You remembered my name. -> keeper

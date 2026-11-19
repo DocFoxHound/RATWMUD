@@ -1,6 +1,6 @@
-# lf111, the doorway bakehouse hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf111, the doorway bakehouse hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf111
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -283,8 +283,7 @@ story roof_bird [topic=pastimes self.age>=18]
 story small_farm [topic=home self.age>=18]
   : I once walked a #field# beyond the #gate# and imagined a small #farm# there.
   : The #soil# was dark, and the #road# still led back to the #market#.
-  ask : Did you buy it?
-  b : A place to remember.
+  b : A place to remember. Did you buy it?
   : Not yet; I keep the #coin# aside.
 
 rule @bark_oven

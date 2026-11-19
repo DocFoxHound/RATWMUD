@@ -1,6 +1,6 @@
-# cw124, the second seal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw124, the second seal (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw124
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -352,8 +352,7 @@ story missed_wagon [topic=work self.age>=25]
 story southern_seed [topic=dreams self.age>=25]
   : I carried a #seed# from a southern #tree# in my pocket for a whole season.
   : It never grew where I planted it, but I kept reading about the #soil# it needed.
-  ask : Would you try again?
-  b : You sound as though you would.
+  b : You sound as though you would. Would you try again?
   : I will, when I find ground that suits it.
 
 rule @bark_lid

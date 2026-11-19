@@ -1,6 +1,6 @@
-# sw112, the sky-scolder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw112, the sky-scolder (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw112
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -290,8 +290,8 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. And who might you be? No
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come to hear me scold #sky#? Front row's free.
 dlg @3 resident.hub [pair.disposition=wary|hostile] : You. #hah#. Say it short; I've casks.
 dlg @1 resident.job : I keep #cellar# at #self.workplace#. Turn #tuns#, chalk them, carry them up. #saying#.
-dlg @1 resident.news : News? #sky.capitalize# hasn't rained in a month. That's my news, and it's old.
-dlg @1 resident.gossip : Gossip? From me? I keep my mouth like a cask: sealed, till somebody pays for a cup.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? #sky.capitalize# hasn't rained in a month. That's my news, and it's old.
+dlg @1 resident.gossip [here.gossip!=yes] : Gossip? From me? I keep my mouth like a cask: sealed, till somebody pays for a cup.
 dlg @1 resident.bye : #farewell#. Don't let #brasslid# catch you.
 graft resident.hub
 choice Do you really argue with the weather? -> weather

@@ -1,6 +1,6 @@
-# sw105, the name-keeper of the pans (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw105, the name-keeper of the pans (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw105
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -163,7 +163,7 @@ scene gulls
 when topic=animals|work
 does tell.complaint / react.complaint / assess
 a : #gulls.capitalize# came inland again. Sitting on the brine like they own the pan. | One of #gulls# took a whole loaf off my sack. Sat on the store roof and ate it at me. | I can't abide #gulls#. Loud, greedy, and nobody knows where they come from.
-b[herder] #herd : Gulls go where the water is. Brine's water to them. | Bold things. Worse than hawks. | Like some carters, then.
+b[herder] #herd : Gulls follow water. Brine's water to them. | Bold things. Worse than hawks. | Like some carters, then.
 b : Odd, out here. | #bc_bad_luck# | They're only birds.
 a@herd : Then I'll drain the brine. Not really. Nearly. | Worse, and noisier. | Like some carters. I know their names, too.
 a : Odd and greedy, #address#. | #bc_bad_luck# And bad manners. | Birds with no manners. #annoyed.capitalize#.
@@ -181,7 +181,7 @@ scene mother_house
 when topic=family self.mother
 does tell.self / react.self / assess
 a : #self.mother# keeps the house book. Every one of #sacks# I fill, it's written there by dusk. | I live with #self.mother#, out by #pans#. Quiet house. I'm the noise in it. | #self.mother# says I talk too much. True. But I listen too, and nobody notices that.
-b[old] #old : A good book keeps a good family. | Every house needs one noisy wolf. | Listen to your mother, then.
+b[old] #old : Mind the book, and the family minds itself. | Every house needs one noisy wolf. | Listen to your mother, then.
 b : #bc_good# | #bc_lucky_you# | #bc_true#
 a@old : It does. I learned my numbers off it. | Then ours is well kept. | I do. Mostly. #oath#.
 a : Good, and strict. #bc_it_is# | Lucky, and loud. #bc_it_is# | True. And I remember everything said, #address#.
@@ -288,8 +288,9 @@ story the_first_sack [concept=talk.dreams]
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#! Your name? I'll keep it, I promise. Never forgot one yet.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! See? I remembered. I always do.
 dlg @1 resident.job [self.job=farmer] : I work the salt at #pans#. Rake it, sack it, sell it. And remember who bought it.
-dlg @1 resident.news : Nothing new since the carts, and I'd know, #address#. | It's all #world.event_words#. I've heard it from eleven wolves already, and I'll name them if you like.
-dlg @1 resident.gossip : I know #names#. What they do with them is their business. Mostly.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new since the carts, and I'd know, #address#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words#. I've heard it from eleven wolves already, and I'll name them if you like.
+dlg @1 resident.gossip [here.gossip!=yes] : I know #names#. What they do with them is their business. Mostly.
 dlg @1 resident.bye : #farewell#, #topic.player#. I'll remember you. I always do.
 graft resident.hub
 choice Do you really remember every name you hear? -> names

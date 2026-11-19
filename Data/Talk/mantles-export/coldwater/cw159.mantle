@@ -1,6 +1,6 @@
-# cw159, the chapel soap hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw159, the chapel soap hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw159
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -273,15 +273,13 @@ story open_door [topic=work self.age>=18]
 story chapel_loaf [topic=faith self.age>=18]
   : I heard a #prayer# for the hungry while carrying a spare #loaf#.
   : Afterward I left it with a #neighbour# who had missed #supper#.
-  ask : Did they know it was yours?
-  b : Bread answers quickly.
+  b : Bread answers quickly. Did they know it was yours?
   : They knew someone had remembered.
 
 story young_tree [topic=home self.age>=18]
   : I put a young #tree# in dark #soil# on the #south# #slope#.
   : The #wind# bent it, so I tied a reed beside the #root#.
-  ask : Is it standing?
-  b : A beginning for your orchard.
+  b : A beginning for your orchard. Is it standing?
   : Through two winters now.
 
 rule @bark_exit

@@ -1,6 +1,6 @@
-# lf103, the carved lark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf103, the carved lark (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf103
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -267,8 +267,7 @@ a : By the #wind# over the #downs#. | Only if the #roof# fails.
 story city_bolt [topic=work self.age>=18]
   : A #merchant# brought a fine #bolt# from the #city# and praised its color.
   : I pulled one loose #thread# and found a weak run through the middle.
-  ask : Did you buy it?
-  b : The color was not enough.
+  b : The color was not enough. Did you buy it?
   : Not at the #price# asked.
 
 story bird_for_friend [topic=pastimes self.age>=18]

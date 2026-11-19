@@ -115,10 +115,14 @@ a crash or a maintenance close (exit 76).
   kin, fen backstories on Saltwell residents, the dialect word list flagging ordinary English. Fix in a data pass;
   ask the user if unsure.
 
-## 8. Problems found while writing the handbook (fix before or during stage 5)
+## 8. Problems found while writing the handbook: FIXED (fix 8, 2026-11-18)
 
-Found by the agent that wrote `Docs/Mantle-writing-handbook.md` (commit `e4a597b1`, with `tools/mantle_batch.py`);
-documented there, not fixed:
+Found by the agent that wrote `Docs/Mantle-writing-handbook.md` (commit `e4a597b1`, with `tools/mantle_batch.py`).
+**All nine are fixed** on branch `r3-talk-fix8` (doc 84 §42; the handbook is updated to match), so stage 5's writing
+can go ahead: mark banks parse; window lines on fact nodes are gated in all 145 mantles, refused by G2 and made to stand
+aside by the engine; G2 reads tagged lines; personas are pronoun-free; 183 misplaced `ask :` lines are folded into the
+listener's; `mantle_load` exits 2 on a failed bind and takes `--written-by`; `mantle_check --pools` exists; the kits
+test knows plain. The 145 are reloaded into `ratw_ridgemere3` and exported. What each problem was:
 
 - **Mark banks can't be written yet:** the grammar parser refuses `mark.oath`, the name the engine looks for. P15's mark
   banks are blocked on this engine fix.

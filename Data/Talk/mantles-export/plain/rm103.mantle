@@ -1,6 +1,6 @@
-# rm103, the clay-digger who counts to ten (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm103, the clay-digger who counts to ten (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm103
-revision 1
+revision 2
 state ready
 dialect plain
 accent light broad
@@ -97,9 +97,9 @@ scene clay_morning
 when topic=work self.job=miner here.time=dawn|day
 does tell.self / react.self / assess
 a : Dug since first light and the pile's no taller. #clay.capitalize# just sucks it all back. | The pottery wants more by the week's end. More of #clay#, as if it grows. | Third spade broke this season. The handle just gave.
-b[job=miner|laborer] #dig : Wet ground's the worst. You can't get a purchase. | They always want more. | Ash handles. Nothing else lasts.
+b[job=miner|laborer] #dig : Wet ground's the worst. You can't get a purchase. | They always want more. | Handles of ash. Nothing else lasts.
 b : Slow going, then. | Do they pay more for more? | That'll wear your paws out.
-a@dig : No purchase, no pile. #tally#. I'll get there. | And the same pay for it. | Ash. I'll remember.
+a@dig : No purchase, no pile. #tally#. I'll get there. | And the same pay for it. | An ash handle, then. I'll remember.
 a : Slow, and wet, and slow. | No. They never do. | Wears the purse out quicker.
 
 scene clay_smell
@@ -166,7 +166,7 @@ does tell.self / react.self / assess
 a : I'd give a day's pay for #herring#. A proper one, sharp. | Eel, eel and eel. I'd kill for #herring#. | The store had a crock of herring in. I bought the lot.
 b[from=ridgemere] #city : Off a Wharf barrel, with an onion. | Eel's not so bad. | All of it?
 b : Pickled? Not for me. | Eel's what there is. | The whole crock?
-a@city : And a heel of bread. Don't start me. | It's not herring. | All of it. Don't look at me like that.
+a@city : And a crust to go with it. Don't start me. | It's not herring. | All of it. Don't look at me like that.
 a : More for me, then. | That's my complaint. | Every one. I'm counting them out, one a night.
 
 scene cards_offer
@@ -271,31 +271,28 @@ a : One then the other. | I hope so. | Dry knees, and no offence meant.
 story petition [topic=memories|times self.age>=30]
   : Years back I wrote it all down. Wages, rents, the lot. Took it up to the Houses myself.
   : Stood in a hall all day. Counted the tiles. Two hundred and twelve.
-  ask : And what came of it?
-  b[friends] : I've heard this. It still makes me cross.
-  b : What did they say?
+  b[friends] : I've heard this. It still makes me cross. And what came of it?
+  b : What did they say? And what came of it?
   : Somebody read the first line and handed it back. That was the answer. I've not forgiven one of them.
 
 story first_night [topic=memories|home self.away=yes here.region=fens]
   : My first night out here I thought somebody was screaming. It was #frogs#.
   : I sat up with a lamp and counted every noise till it was light.
-  ask : Did you get used to it?
-  b : What did you count to?
+  b : What did you count to? Did the noise ever stop bothering you?
   : No. I just got more tired than they are.
 
 story snowfall [topic=memories|season self.from=ridgemere]
   : When I was little it snowed so hard the carts stopped. The whole city went quiet.
   : I walked down the middle of the street. Nobody shouting at me to move. First time in my life.
-  ask : Where were you going?
-  b[old] : I remember a winter like that.
-  b : Where to?
+  b[old] : I remember a winter like that. Where were you going?
+  b : Where to? Where were you going?
   : Nowhere. I just walked. That's why I like snow.
 
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're stood on the soft bit. Step over. What is it?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Quick, if you can. I'm counting something.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : You. #tally#. Right. What do you want?
 dlg @1 resident.job : I dig #clay# for the pottery. All day. Ask me how I like it and I'll tell you, and you'll wish you hadn't.
-dlg @1 resident.news : News? Bread's up. Floors are wet. Same as last week.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? Bread's up. Floors are wet. Same as last week.
 dlg @1 resident.bye : #farewell#. Mind where you put your feet.
 graft resident.hub
 choice You're counting under your breath. Why? -> counting

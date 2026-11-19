@@ -1,6 +1,6 @@
-# cw114, the unanswered page (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw114, the unanswered page (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw114
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -318,15 +318,13 @@ story the_wet_page [topic=memories self.age>=18]
 story three_cards [topic=pastimes self.age>=18]
   : I held three poor #cards# and watched everyone else study their own hands.
   : I stayed in for one turn because I wanted to see who would show a strong #card#.
-  ask : Did you win the hand?
-  b : Not with those cards, surely.
+  b : Not with those cards, surely. Did you win the hand?
   : No. I learned who bluffs when the #table# goes quiet.
 
 story first_litter [topic=work self.age>=18]
   : I tried to clear a #pen# while a #sow# guarded a new #litter#.
   : She planted herself between me and the #straw#, so I set the bucket down and waited.
-  ask : Did she let you through?
-  b : After you gave her room, perhaps.
+  b : After you gave her room, perhaps. Did she let you through?
   : At last. I learned to move the #trough# before touching her bedding.
 
 story sharp_edge [topic=work self.age>=18]

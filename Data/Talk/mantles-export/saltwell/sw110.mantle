@@ -1,6 +1,6 @@
-# sw110, the row-walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw110, the row-walker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw110
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -117,7 +117,7 @@ does tell.self / react.self / assess
 a : Pruned back half of #slope# this week. Two buds a spur, no more. | You cut #vines# harder than you'd like. That's the trick. | My paws ache from the shears. #hurt.capitalize#, and a good ache.
 b[job=farmer] #farm : Two buds? We leave three on the low rows. | Same with goats, my grandfather said. And pups. | Wrap them in wet cloth overnight. Old cure.
 b : #bc_ill_try# | Seems cruel, #address#. | #hurt.capitalize# paws, then.
-a@farm : Three, and you get leaves. Two, and you get grapes. | Pups, maybe. Goats, never. | I'll try it. Can't hurt more.
+a@farm : Three, and you get leaves. Two, and you get grapes. | Pups, maybe. Goats, never. | Worth a try. Can't hurt more.
 a : Cruel in winter. Kind at the picking. #oath#. | It'll pass. The shears don't care. | #saying#.
 
 scene sw110_water_turn
@@ -214,7 +214,7 @@ scene sw110_newcomer
 when topic=newcomer here.region=waste
 does tell.news / react.news / give.opinion
 a : #topic.subject# came in with #carts# and stayed. Good. | Somebody new, #topic.subject#. Asked me the way to #vines#. | Have you seen #topic.subject#? Up early. I like that.
-b[from=saltwell] #sw : Three days a guest, then a neighbour. | Did you take them up? | Up early's half the work done.
+b[from=saltwell] #sw : A guest gets three days. After that, a neighbour. | Did you take them up? | Up early's half the work done.
 b : #bc_good# | And you showed them, #address#? | #bc_maybe#
 a@sw : Then a neighbour. I'll see to it. | Walked them the whole slope. They kept up. | The other half's staying up there.
 a : We could use more paws. Plenty of #rows#. | I did. Whoever stays walks #rows# sometime. | Early, and quiet. Two #good# signs.
@@ -289,7 +289,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#. Walk if you w
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Quick, then. #rows.capitalize# are waiting.
 dlg @3 resident.hub [pair.disposition=wary|hostile] : What is it? Say it plain, #address#. I've work.
 dlg @1 resident.job : I walk #rows#. Prune, water, pick. Up before light, down by #whitehour#. #saying#.
-dlg @1 resident.news : Nothing new on #slope#. #shoots.capitalize# are fine. That's my news.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new on #slope#. #shoots.capitalize# are fine. That's my news.
 dlg @1 resident.bye : #farewell#. I'm off up #slope#.
 graft resident.hub
 choice You look like you'd rather be somewhere else. -> restless

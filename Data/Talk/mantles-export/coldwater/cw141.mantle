@@ -1,6 +1,6 @@
-# cw141, the patient wager (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw141, the patient wager (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw141
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -236,22 +236,19 @@ a : When the #road# is clear. | If it comes wet and heavy.
 story lost_purse [topic=memories self.age>=25]
   : I left for the #city# with more hope than #coin#.
   : I came home with an almost empty purse and a better ear for promises.
-  ask : Did you tell the household?
-  b : A costly lesson.
+  b : A costly lesson. Did you tell the household?
   : Enough of it for them to know I was staying.
 
 story frost_wager [topic=weather self.age>=25]
   : I wagered a #cup# that #frost# would reach the #orchard# by morning.
   : The white edge appeared just before the #bells#.
-  ask : Did you win?
-  b : A close wager.
+  b : A close wager. Did you win?
   : By a few moments, and I shared the #cider#.
 
 story ladder_basket [topic=work self.age>=25]
   : The #ladder# slipped as I reached for a high #apple#.
   : I fell into an empty #basket# and broke its handle.
-  ask : Were you hurt?
-  b : The basket took the worst of it.
+  b : The basket took the worst of it. Were you hurt?
   : A bruise. I ask someone to hold the foot now.
 
 rule @bark_wager

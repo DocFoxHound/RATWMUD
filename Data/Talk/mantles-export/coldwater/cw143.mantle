@@ -1,6 +1,6 @@
-# cw143, the storm walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw143, the storm walker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw143
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -244,22 +244,19 @@ a : If the shower is light. | I move steadily.
 story night_before_storm [topic=weather self.age>=25]
   : I lay awake while the #sky# still showed stars.
   : By morning a #storm# had crossed the #lake# and soaked the last #crate#.
-  ask : Could you save the fruit?
-  b : You sensed it before the clouds.
+  b : You sensed it before the clouds. Could you save the fruit?
   : Most of it, after we spread it on #trays#.
 
 story map_walk [topic=pastimes self.age>=25]
   : I carried an old #map# on a #walk# with no errand.
   : Its #road# ended at a #field#, so I followed the #shore# instead.
-  ask : Did you get lost?
-  b : A better route than the map.
+  b : A better route than the map. Did you get lost?
   : Only in thought; I knew the way #home#.
 
 story wood_turn [topic=memories self.age>=25]
   : I reached the #wood# #path# as the #shadow# lengthened.
   : I turned for the open #road#, though it made the journey longer.
-  ask : Did something follow you?
-  b : You chose the way you could see.
+  b : You chose the way you could see. Did something follow you?
   : Nothing I saw. The quiet was enough.
 
 rule @bark_cloud

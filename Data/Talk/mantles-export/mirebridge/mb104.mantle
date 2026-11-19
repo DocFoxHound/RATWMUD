@@ -1,6 +1,6 @@
-# mb104, the latch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb104, the latch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb104
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent broad light
@@ -185,7 +185,7 @@ a : #saying#. | Bless you. | #blessing#.
 scene child_worry
 when topic=family self.parent=yes self.child
 does tell.worry / react.self / assess
-a : #self.child# was out on the water past dusk again. I sat by the lamp till I heard the boards creak. | I worry about #self.child#. I know I shouldn't. I do. | #self.child# never tells me where they're going. I find out after, and then I fret backwards.
+a : #self.child# was out on the water past dusk again. I sat by the lamp till I heard the boards creak. | I worry about #self.child#. I know I shouldn't. I do. | #self.child# never says where to. I find out after, and then I fret backwards.
 b[stage=old] #old : They come home. They always do. | We all worry. It's the job. | Ha. Fretting backwards. I know it.
 b : #bc_poor_soul# | #bc_true# | #bc_ha#
 a@old : Till the night they don't. Bright One forgive me for saying it. | It's a job without a #wages#, that. | You'd think we'd learn, at our age.
@@ -261,7 +261,7 @@ dlg @1 resident.hub : #greet#. Stay on the boards, please, and say what you want
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in, quick, and I'll bar the door. | #topic.player#. You're a welcome face. #talk_open#
 dlg @3 resident.hub [here.time=dusk|night] : It's getting dark, #address#. Say it quick, I'm barring up. | Not now, not after dusk. Well. Quickly, then.
 dlg @1 resident.job : I keep the house. Floors, food, #latch# and lamp. That's work enough at my age. | I keep the house for #young#. #job_busy#
-dlg @1 resident.news : #news_none# I don't go far enough to hear any. | Nothing I'd want to repeat, #address#. The Bright One keep us.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I don't go far enough to hear any. | Nothing I'd want to repeat, #address#. The Bright One keep us.
 dlg @1 resident.bye : #farewell#. Straight home, and don't follow any lights. | #blessing#. Mind the boards.
 graft resident.hub
 choice Are the lights on the fen really the drowned? [here.region=fens] -> lights
@@ -286,7 +286,7 @@ does tell.self / react.self / assess
 a : My knees are #hurt# in the damp, and it's always damp. | I had the fen-ague all last month. I lit the lamp every night in case it was the end. | I sleep sitting up now, facing the door. The young 'uns laugh. Let them.
 b[job=healer] #healer : Willow bark for the knees. | You're stronger than you think. | Lie down, or your back will go too.
 b : #bc_poor_soul# | #bc_i_hope_so# | #bc_ha#
-a@healer : #remedy.capitalize#. I've drunk enough to grow a tree. | Strong as a reed in a blow, #address#. Bends, doesn't break. | Lie down with my back to the door? Never.
+a@healer : #remedy.capitalize#. I've drunk enough to grow a tree. | Strong as a reed in a blow, #address#. Bends, doesn't break. | Lie down and turn my back on the door? Never.
 a : Seventy winters. They've earned their aching. | It wasn't the end. The Bright One wasn't ready for me. | They'll do the same at my age. Mark me.
 
 scene old_floods_remembered

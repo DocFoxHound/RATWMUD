@@ -1,6 +1,6 @@
-# lf104, the counted tale (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf104, the counted tale (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf104
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -284,15 +284,13 @@ story thirteenth_pass [topic=work self.age>=18]
 story borrowed_ending [topic=pastimes self.age>=18]
   : I began an old #tale# at the #table# and forgot how it ended.
   : A #friend# supplied a new #ending# so good I now ask for it each time.
-  ask : Do you tell the original?
-  b : Stories can grow.
+  b : Stories can grow. Do you tell the original?
   : Only when that #friend# is away.
 
 story first_spring [topic=weather self.age>=18]
   : The first warm #spring# #day# came while I was tying a #hem#.
   : I opened the #window#, and the #market# noise carried into the #shed#.
-  ask : Did you finish the work?
-  b : Warm air helps.
+  b : Warm air helps. Did you finish the work?
   : Before the #sun# left the #field#.
 
 rule @bark_count

@@ -1,6 +1,6 @@
-# mb103, the pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb103, the pot hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb103
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -135,7 +135,7 @@ a : Crowded and warm. You can't have one without the other in a fen winter. | Ba
 scene friend_peat
 when topic=friends self.friend
 does tell.self / react.self / assess
-a : #self.friend# comes in off the cutting black to the ears, and I've the water hot. That's the arrangement. | #straight#, #self.friend# is the best of the lot of them. Doesn't talk much, which suits, as I talk enough for two. | #self.friend# and me play #cards# most nights. I win. #self.friend# says otherwise.
+a : #self.friend# comes in off the cutting black to the ears, and I've the water hot. That's the arrangement. | #straight#, #self.friend# is the best of the whole lot. Doesn't talk much, which suits, as I talk enough for two. | #self.friend# and me play #cards# most nights. I win. #self.friend# says otherwise.
 b : Sounds a good friend. | #bc_ha# | Who wins?
 a : The best. I'll not say it to #self.friend#'s face, mind. That's not how it goes. | Somebody has to listen. Turns out it's #self.friend#. | I do. I'm telling you, and I don't lie. #saying#.
 
@@ -278,8 +278,8 @@ story the_six_bowls [concept=talk.food]
 dlg @1 resident.hub : #greet#. Sit on that side, would you, I like the door. #talk_open# | #greet#, #address#. What'll it be? I'll talk about anything but pots.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You'll want news. I've got news. | #topic.player#. Sit. Not there; that's #doorside#.
 dlg @1 resident.job : I scour #pots#. All of them. Every night. #straight#, it's not grand, but it's honest and it's mine. | #self.trade_words.capitalize#. Suds to the elbow.
-dlg @1 resident.news : I'll tell you what came over the sink, straight as I heard it. #news_none# | Nothing worth the breath, #address#, and that's rare from me.
-dlg @1 resident.gossip : I hear it all from the sink, and I'll say it as it came. #gossip_none# | Nothing fit to pass on today, #address#, and that's the truth.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : I'll tell you what came over the sink, straight as I heard it. #news_none# | Nothing worth the breath, #address#, and that's rare from me.
+dlg @1 resident.gossip [here.gossip!=yes] : I hear it all from the sink, and I'll say it as it came. #gossip_none# | Nothing fit to pass on today, #address#, and that's the truth.
 dlg @1 resident.bye : #farewell#. Mind the loose board, the third one. | #farewell#. Come by the Heron, I'll be at the back with the pots.
 graft resident.hub
 choice Why do you always sit facing the door? -> door

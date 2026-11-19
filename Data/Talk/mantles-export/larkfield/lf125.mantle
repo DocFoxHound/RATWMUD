@@ -1,6 +1,6 @@
-# lf125, the guarded granary marcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf125, the guarded granary marcher (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf125
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -273,8 +273,7 @@ a : They did not say. | I kept my #door# shut.
 story old_march [topic=pastimes self.age>=18]
   : I learned an old #march# long before I worked at the #granary#.
   : The words have gone, but the #beat# still carries a #sack# across the #floor#.
-  ask : Who taught you?
-  b : A useful rhythm.
+  b : A useful rhythm. Who taught you?
   : Someone at home; I remember the #voice#.
 
 story rain_mark [topic=memories self.age>=18]

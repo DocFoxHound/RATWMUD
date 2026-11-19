@@ -1,6 +1,6 @@
-# cw101, the deckhand without a deck (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw101, the deckhand without a deck (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw101
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -18,7 +18,7 @@ hopes a_boat_of_his_own
 topics work +0.4 dreams +0.3 weather +0.3 food +0.2 faith -0.3
 styles comfort=practical gossip=reluctant refuse=short tease=none
 marks oath saying
-persona #self.first# hauls and coils at a boat shed with no boat to speak of: plain, short of temper, reserved, hungry to make a name, and he never sleeps the night before a storm.
+persona #self.first# hauls and coils at a boat shed with no boat to speak of: plain, short of temper, reserved, hungry to make a name, and never sleeps the night before a storm.
 
 words
 oath! = Rope and rudder | Blast the sky
@@ -202,8 +202,7 @@ a : #bc_i_know# I still don't like it. | It's a step. Steps get you up. | I will
 story the_grandad_boat [concept=talk.memories self.from=coldwater]
   : My grandad had a boat on #lake#. Flat-bottomed, tarred black, older than he was.
   : When it went, it went to pay a debt. Nobody in the family's had one since.
-  ask : Is that why you want one?
-  b : Makes sense.
+  b : Makes sense. Is that why you want one?
   : I want one because it's ours. #grandad.capitalize# should never have let it go.
 
 story the_night_it_broke [concept=talk.memories self.age>=20]
@@ -215,8 +214,7 @@ story the_night_it_broke [concept=talk.memories self.age>=20]
 story the_first_day [concept=talk.work self.workplace]
   : My first day at #self.workplace#, I asked where the boat was.
   : They laughed. Said I'd see it when I'd earned my #wages#.
-  ask : Have you seen it yet?
-  b : Not yet?
+  b : Have you seen it yet?
   : Not yet. I've earned it twice over. #bc_we_will_see#
 
 opinion @1 houses against 2 : They'd sooner leave a bench empty than take on the likes of me. I've stood at #yard# to prove it.
@@ -274,8 +272,8 @@ say That's more like it. Noise and #money#. | #roar.capitalize#. Good.
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You want something, or just passing? | #greet#. I've not much time. What is it?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Out for a walk, or out for work?
 dlg @1 resident.job : #self.trade_words#. #hauling.capitalize#. It's work, for now. | #job_busy#
-dlg @1 resident.news : Nothing worth repeating. #weather.capitalize#, maybe. | #news_none#
-dlg @1 resident.gossip : I don't trade in talk, #address#. Ask somebody with time for it. | #gossip_none#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing worth repeating. #weather.capitalize#, maybe. | #news_none#
+dlg @1 resident.gossip [here.gossip!=yes] : I don't trade in talk, #address#. Ask somebody with time for it. | #gossip_none#
 dlg @1 resident.bye : #farewell#. | #farewell#. Mind the weather.
 graft resident.hub
 choice You look tired. Bad night? -> night

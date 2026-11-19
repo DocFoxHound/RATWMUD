@@ -1,6 +1,6 @@
-# mb107, the petitioner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb107, the petitioner (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb107
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -19,7 +19,7 @@ hopes an_answer_from_the_council
 topics weather +0.3 work +0.3 times +0.2 lore +0.2 food +0.1 gossip -0.3
 styles comfort=patient gossip=reluctant refuse=soft tease=none
 marks oath saying
-persona #self.first# rakes salt by the sea-dyke: gentle, careful to a fault, his bad leg a barometer, and still sore at the Council that lost his petition.
+persona #self.first# rakes salt by the sea-dyke: gentle, careful to a fault, a bad leg for a barometer, and still sore at the Council that lost the petition.
 
 words
 oath! = By the long dyke | Steady on the boards
@@ -121,7 +121,7 @@ does tell.self / react.self / assess
 a : Rake in straight rows and the crust comes up even. Crooked rows, crooked salt. | I've raked #pan# the same way for forty years. It's the right way. | Edge first, then the middle. Never the other way round, #address#.
 b[job=farmer|laborer] #hands : Every raker has their way. | Forty years? Then it's yours. | #bc_true#
 b : #bc_clever# | #bc_wise# | Does it matter?
-a@hands : Mine's the straight one. #saying#. | It is. I'll not change it now. | #bc_it_is#
+a@hands : Mine's the straight one. #saying#. | #bc_it_is# I'll not change it now. | #bc_it_is#
 a : Not clever. Careful. #saying#. | Slow, mostly. Slow and #good#. | It does to the salt, and that's what we sell.
 
 scene the_tally
@@ -150,7 +150,7 @@ when topic=food here.season=autumn|winter
 does offer / accept / assess
 a : Have #cider#. Cloves, a bit of honey, and warmed slow. | There's nothing better in the cold than #cider#. Nothing. | I make it the way #mum# did. Slow, and never boiled.
 b : #bc_thank_you# | I'll not argue. | Why never boiled?
-a : Drink it slow. That's the trick. | Good. Sit by the fire with it. | Boil it and the spice goes bitter. #saying#.
+a : Drink it slow, #address#. That's the trick. | #bc_good# Sit by the fire with it. | Boil it and the spice goes bitter. #saying#.
 
 scene market_day
 when topic=pastimes|smalltalk here.place=market|street
@@ -195,7 +195,7 @@ scene pay_day
 when topic=prices|times self.wealth=poor|destitute
 does tell.complaint / react.complaint / assess
 a : #wages.capitalize# came this morning. I've already spent it, on paper. | The store charges dear for salt, and I'm the one that raked it. I've checked. | I can tell you to the coin what we're paid and what it buys. Less, every season.
-b[wealth=rich|comfortable] #purse : Prices go up for everyone. | Somebody has to carry it to market. | Have you told the Council?
+b[wealth=rich|comfortable] #purse : Prices go up for everyone. | Somebody's got to haul it to the stalls. | Have you told the Council?
 b : #bc_poor_soul# | #bc_very_bad# | #bc_true_enough#
 a@purse : Not for everyone the same, #address#. | Carrying's work. So is raking. | I did. #petition.capitalize#. You know how that went.
 a : #bc_it_is# | I'd show you #tally#, if you'd like. | It is. I keep it written, for when someone asks.
@@ -258,7 +258,7 @@ story the_snow_market
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Take your time; #easy#. What can I do for you?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit a moment, if you've a moment.
 dlg @1 resident.job : I rake salt by #dyke#. Straight rows, every day, and #tally# kept.
-dlg @1 resident.news : Nothing new that I've written down. #blow.capitalize#, maybe.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new that I've written down. #blow.capitalize#, maybe.
 dlg @1 resident.bye : #farewell#, #topic.player#. Go steady on the boards.
 graft resident.hub
 choice Can you really tell when a storm's coming? -> sense

@@ -1,6 +1,6 @@
-# cw156, the apple riddle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw156, the apple riddle (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw156
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -251,22 +251,19 @@ a : I save half of mine. | Then I eat it later.
 story city_walk [topic=travel self.age>=10]
   : I once walked every #mile# to the #city# and back.
   : The stone streets smelled nothing like our #orchard#, so I kept thinking of the #gate# at #home#.
-  ask : Did you find the way?
-  b : That is a long walk.
+  b : That is a long walk. Did you find the way?
   : I followed the #road# and knew our #trees# by their #scent#.
 
 story rat_basket [topic=work self.age>=10]
   : A #rat# made a hole in a cloth #bag# beside the #store#.
   : I moved the #apples# into a clean #basket# before it found another bite.
-  ask : Did you catch it?
-  b : Quick work.
+  b : Quick work. Did you catch it?
   : The #trap# caught it the next #morning#.
 
 story riddle_trade [topic=pastimes self.age>=10]
   : I asked a #seller# a #riddle# while carrying #fruit# through the #market#.
   : The answer was in the #apple# I held, but the seller guessed a #bell#.
-  ask : What did you win?
-  b : You had the answer already.
+  b : You had the answer already. What did you win?
   : A warm #oatcake#, shared in two.
 
 rule @bark_apple

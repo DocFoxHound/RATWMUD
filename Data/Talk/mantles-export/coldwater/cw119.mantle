@@ -1,6 +1,6 @@
-# cw119, the crooked map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw119, the crooked map (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw119
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -234,15 +234,13 @@ a : Some, if they keep sound. | Until the cut #fruit# is safe from damp.
 story crooked_road [topic=travel self.age>=25]
   : I followed the #map# to a turn that no longer existed.
   : The #path# ended in wet ground, so I folded the paper and found a higher way.
-  ask : Did you mark the change?
-  b : Otherwise someone else would follow it.
+  b : Otherwise someone else would follow it. Did you mark the change?
   : I put a new line in the margin. The old one is still there to remind me.
 
 story grandmother_saying [topic=memories self.age>=25]
   : I heard an elder say a sound #apple# would not fear the #knife#.
   : I thought it meant to cut every fruit, until they showed me how to feel for a #bruise#.
-  ask : Do you still say it?
-  b : It sounds useful beyond the orchard.
+  b : It sounds useful beyond the orchard. Do you still say it?
   : Too often, according to some at #home#.
 
 story wet_rack [topic=work self.age>=25]

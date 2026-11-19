@@ -1,6 +1,6 @@
-# mb108, the grandmother-judge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb108, the grandmother-judge (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb108
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent none
@@ -19,7 +19,7 @@ hopes a_quiet_old_age_and_a_full_shelf
 topics family +0.3 food +0.2 pastimes +0.2 home +0.2 festival -0.3 gossip -0.2
 styles comfort=practical gossip=reluctant refuse=polite tease=dry
 marks oath saying
-persona #self.first# works the salt by the fen and wants for nothing: quiet, dry, a little dreamy, with an opinion on everyone's grandmother and a promise she means to keep.
+persona #self.first# works the salt by the fen and wants for nothing: quiet, dry, a little dreamy, with an opinion on everyone's grandmother and a promise meant to be kept.
 
 words
 oath! = Upon my word | Mercy me
@@ -99,7 +99,7 @@ does give.opinion / react.self / assess
 a : You can tell everything about a wolf from #gran#. Everything. | #grans.capitalize# are the root of every quarrel on the boards, if you dig. | I've a theory about #grans#. Nobody asks, so I'll tell you.
 b[stage=old] #elder : I'm somebody's grandmother. Careful. | Some of us are trying. | Go on, then.
 b : Everything? | #bc_ha# | Go on.
-a@elder : Then you'll know I'm right. | I can tell. You've the look of a good one. | The strict ones raise the kind ones. Every time.
+a@elder : Then you'll know I'm right. | I can tell. You look like a good one. | The strict ones raise the kind ones. Every time.
 a : Their #manners#, their cooking, what they're afraid of. All of it. | Laugh. You'll see it now, everywhere. | The strict ones raise the kind ones, and the kind ones raise the trouble. #saying#.
 
 scene your_gran
@@ -144,7 +144,7 @@ when topic=smalltalk
 does tell.complaint / react.self / assess
 a : A wolf walked past me this morning without so much as a nod. #saying#. | Bad cooking I can forgive. Bad #manners#, never. | Somebody pushed in at the store. I let it go. Outwardly.
 b : #bc_true# | #bc_ha# | Outwardly?
-a : #gran.capitalize# somewhere has a great deal to answer for. | One can learn to cook, #address#. | Inwardly, I've written them out of my will.
+a : #gran.capitalize# somewhere will answer for that. | One can learn to cook, #address#. | Inwardly, I've written them out of my will.
 
 scene the_wedding_word
 when topic=memories|friends
@@ -255,7 +255,7 @@ story the_longest_walk
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're new. Watch #planks#; and your #manners#, ideally.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in. There are #cakes#, if you're quick.
 dlg @1 resident.job : I work the salt at #works#. Count it, mostly. It suits me.
-dlg @1 resident.news : Nothing worth repeating, #address#. I wouldn't repeat it anyway.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing worth repeating, #address#. I wouldn't repeat it anyway.
 dlg @1 resident.bye : #farewell#, #topic.player#. Mind how you go.
 graft resident.hub
 choice What do you make of my grandmother? -> gran

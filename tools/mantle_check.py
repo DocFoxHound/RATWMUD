@@ -6,6 +6,11 @@ fixture in ctest, and on every save (tools/mantle_store.py, which Atlas, the DM 
   python3 tools/mantle_check.py PATH... [--world KEY] [--strict] [--json]     .mantle files (a directory: all under it)
   python3 tools/mantle_check.py --one ID --world KEY [--strict] [--json]      one mantle as the world's rows hold it
   --facts RESIDENTS.jsonl: the wearers' facts (talk_check --world KEY --residents --json), for the slots they fill
+  python3 tools/mantle_check.py --pools --world KEY [PATH...] [--years 5] [--json]
+      The pools (doc 84 §9.5, §12.1; P15's gate): each dialect's spare + ready mantles against the births forecast
+      (tools/mantle_pool.py's), year by year, the wearers' deaths coming back once rested, green when a year starts with
+      1.5 x its half year's births + 2 (the game's line); and the spares' share of sly + guarded within 5 points of the
+      dialect's living residents'. PATHs: spare drafts not yet in the rows, counted in. Exit 1 if any pool isn't green.
 
 What it refuses (each finding names the mantle and the item's key):
   * names: a first name or surname of any NPC of the world (live.npcs, living or dead: --world) outside a slot, and any
@@ -15,6 +20,11 @@ What it refuses (each finding names the mantle and the item's key):
     only (mantle_rules.json's forbidden);
   * pronouns: he, she, him, her, his or hers in a sentence that names a person by a slot (#other.*#, #x.*#, one's kin...):
     a wolf's pronouns come from their sex (#other.they#);
+  * every line of a scene or story, the tagged ones too (`b[...] #tag :`, `a@tag :`: fix 8; they were skipped before);
+  * the persona: no pronoun (he, she, they...: it passes to a later wearer of either sex);
+  * window lines (fix 8): a `dlg` line on a node whose tree's lines report facts (the news, the gossip, the business, a
+    bare shop, a lodger, a warrant...: window_facts) tests at least one of them, so it says which case it is; the game
+    makes such a line stand aside wherever a fact line holds (yieldToTree), but the writer says it;
   * a word's value that ends its own sentence (".", ";", "!", "?": defect 14, it breaks the window's templates);
   * truth (§9.6, Data/Talk/truth.json): words that take something for granted ("my nets", "back home", fog) need their
     item's criteria, its section's stage or the fit to imply it;
@@ -56,6 +66,10 @@ RULES = HERE / 'mantle_rules.json'
 SLOT = re.compile(r'#[^#\s]*#')
 TAG = re.compile(r'^\{[^}]*\}\s*')
 TELLING = {'says', 'said', 'told', 'tells', 'asked', 'reckons', 'swears'}
+# A scene's or story's line: `: words` (a story's teller), `ask : words`, `a : words`, `b? : words`, `b[crit] : words`,
+# `b[crit] #tag : words` (marks a branch), `a@tag : words`, `a@tag[crit] : words` (the branch's answer).
+SCENE_LINE = re.compile(r'^(?:(?P<ask>ask)\s*|(?P<who>[ab])\??(?:@[a-z0-9_]+)?(?:\[(?P<crit>[^\]]*)\])?(?:\s*#[a-z0-9_]+)*\s*)?'
+                        r':\s*(?P<words>.*)$')
 STAGE = {'any': [], 'grown': ['self.stage=adult|old'], 'young': ['self.stage=young|adolescent'], 'adolescent': ['self.stage=adolescent'],
          'old': ['self.stage=old']}
 
@@ -132,10 +146,12 @@ def said(it: T.Item) -> list[tuple[list[str], list[str], str]]:
             words = t[7:].rsplit('->', 1)[0]
             out.append(([re.sub(r'\[[^\]]*\]\s*$', '', words).strip()], [], 'p'))
         elif it.kind in ('scene', 'story'):
-            m = re.match(r'^(ask\s*|[ab]\??(?:\[([^\]]*)\])?\s*)?:\s*(.*)$', t)
+            # (Tagged lines too, fix 8: the listener's `b[...] #tag :` that marks a branch, the wearer's `a@tag :` that
+            # follows one. Before, this reader skipped them, and 52 problems in the pilot went unseen.)
+            m = SCENE_LINE.match(t)
             if m:
-                who = 'b' if (m.group(1) or '').startswith('b') else 'a'
-                out.append((alternatives(m.group(3)), when + (m.group(2) or '').split() + (stage if who == 'a' else []), who))
+                who = 'b' if m.group('who') == 'b' else 'a'
+                out.append((alternatives(m.group('words')), when + (m.group('crit') or '').split() + (stage if who == 'a' else []), who))
     return out
 
 
@@ -171,6 +187,49 @@ def unfilled(text: str, slots: dict, facts: dict) -> list[str]:
 
 
 LISTENER_GATE = re.compile(r'^(?:b\.|other\.)?(?:from|dialect)=')
+PERSONA_PRONOUN = re.compile(r"\b(he|she|him|her|his|hers|himself|herself|they|them|their|theirs|themselves|he's|she's|"
+                             r"they're|he'd|she'd|they'd|he'll|she'll|they'll)\b", re.I)
+# How a window line is said, not what it reports: the hour, the meeting, the mood, the trade (and the section's stage).
+COSMETIC = {'topic.meeting', 'here.time', 'pair.disposition', 'trade', 'priority', 'concept', 'self.stage', 'stage'}
+
+
+# The plain case of the commonest such nodes, for the message.
+PLAIN_CASE = {'resident.news': '!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent',
+              'resident.gossip': 'here.gossip!=yes', 'resident.business': 'business!=thriving|failing',
+              'shop.greet': 'here.shop!=bare', 'inn.greet': 'here.inn_helper!=yes', 'inn.rest': 'here.lodging!=yes',
+              'watch.hub': 'here.wanted=no', 'watch.fine': 'here.wanted=no', 'watch.law': 'here.wanted=no',
+              'church.greet': 'here.day!=rest', 'church.service': 'here.day!=rest', 'master.learn': 'here.teaches=yes'}
+
+
+def window_facts(talk: Path = TALK) -> dict[str, set]:
+    """For each window node (<tree>.<node>), the facts its own tree's lines turn on (Data/Talk/dialogue/*.tree: the news,
+    the gossip, the business, a bare shop, a warrant...), but for COSMETIC and a line of priority 10 or more (which wins
+    whatever a mantle says). A mantle's line there outranks the tree's (+5): one that tests none of them would hide them
+    ("Nothing worth the telling" while the salt road is shut), so the game makes it stand aside (Library::compileMantle,
+    yieldToTree), and G2 refuses it, so the writer says which case it is."""
+    out = {}
+    for f in sorted((talk / 'dialogue').glob('*.tree')):
+        tree = node = None
+        for raw in f.read_text().splitlines():
+            t = raw.strip()
+            if t.startswith('tree '):
+                tree = t.split()[1]
+            elif t.startswith('node '):
+                node = f'{tree}.{t.split()[1]}'
+            elif t.startswith('say[') and node and ']' in t:
+                toks = t[4:t.index(']')].split()
+                pr = [int(x.split('=')[1]) for x in toks if x.startswith('priority=') and x.split('=')[1].isdigit()]
+                if pr and pr[0] >= 10:
+                    continue
+                for k in crit_keys(' '.join(toks)):
+                    if k not in COSMETIC:
+                        out.setdefault(node, set()).add(k)
+    return out
+
+
+def crit_keys(crit: str) -> set:
+    """The facts criteria test: `world.news`, `!world.news`, `here.shop!=bare` -> world.news, here.shop."""
+    return {re.split(r'!=|<=|>=|=|<|>', tok.lstrip('!'))[0] for tok in crit.split()}
 
 
 def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = False, others: list[T.Mantle] | None = None,
@@ -191,6 +250,7 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
     person_slot = re.compile(r['person_slots'])
     slots = r.get('slots', {})
     names = set((world or {}).get('names', ()))
+    reported = window_facts()
     out: list[Finding] = []
     everyone = list(mantles) + [o for o in (others or []) if o.id not in {m.id for m in mantles}]
     runs: dict[str, dict[tuple, set]] = {}            # dialect -> 5-word run -> the mantles saying it
@@ -363,6 +423,20 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                     fail('marks', f"'{mark}' has {len(alts)} alternative: a mark needs two or more, to be drawn again (§12.4)")
         if m.persona and '#self.first#' not in m.persona and m.persona:
             fail('persona', 'the persona names its wearer by #self.first# (it is passed on)', True)
+        if PERSONA_PRONOUN.search(plain_words(m.persona or '')):
+            fail('persona', f'"{PERSONA_PRONOUN.search(plain_words(m.persona)).group(0)}": the persona passes to the next wearer, '
+                            f'of either sex; say it with no pronoun ("#self.first# keeps..., and keeps a jar of stones")')
+        # A window line on a node whose tree reports facts says which case it is (fix 8, doc 84 §42).
+        for it in m.items:
+            if it.kind != 'dlg':
+                continue
+            _, head, crit, _, _, _ = T.split_item(it.body.split('\n')[0][len('dlg'):])
+            need = reported.get(head.strip(), set())
+            if need and not (crit_keys(crit) & need):
+                case = PLAIN_CASE.get(head.strip(), ' '.join(f'{k}!=...' for k in sorted(need)))
+                fail(it.key, f'{head.strip()}: its tree reports {", ".join(sorted(need))} and this line tests none of them '
+                             f'(it would hide them; the game makes it stand aside): gate it on its case, the plain one '
+                             f'[{case}], or one line a case (handbook §4.5.8)')
     # In a world: who wears what, where; a town's oaths, sayings and quirks.
     if world:
         town = world.get('town', {})
@@ -440,6 +514,94 @@ def world_mantles(conn, world_id: str, only: str | None = None) -> list[T.Mantle
     return out
 
 
+# ------------------------------------------------------------------ The pools (--pools: doc 84 §9.5, §12.1, P15's gate)
+
+def pool_health(report: dict, drafts: list[T.Mantle] | None = None) -> dict:
+    """Each dialect's pool, year by year, from mantle_pool's forecast (`report`) and any spare drafts not yet in the rows:
+    {d: {'years': [{'year', 'supply', 'births', 'back', 'green'}], 'honesty': (spares %, living %), 'ok': bool, 'why': [...]}}.
+    A year is green when its start's supply (spare + ready mantles, the game's own line: §12.1) is at least 1.5 x the half
+    year's births + 2; each year the births are drawn from it and the wearers' deaths come back to it once rested (the
+    resting ones in the first). The spares' share of sly + guarded is within 5 points of the dialect's living residents'
+    (§9.5; a pool with no spares yet has nothing to compare)."""
+    out = {}
+    extra = {}
+    for m in drafts or []:
+        if m.tier == 'spare':
+            extra.setdefault(m.dialect, []).append(m)
+    for d, p in report['pools'].items():
+        supply = p['spare'] + p['ready'] + len(extra.get(d, []))
+        years, why = [], []
+        back = p['resting']
+        deaths = p.get('wearerDeathsByYear') or []
+        for y, births in enumerate(p['birthsByYear'], 1):
+            green = supply >= 1.5 * births / 2 + 2
+            years.append({'year': y, 'supply': supply, 'births': births, 'back': back, 'green': green})
+            supply = max(0, round(supply - births + back))
+            back = deaths[y - 1] if y - 1 < len(deaths) else 0
+        short = [y for y in years if not y['green']]
+        if short:
+            f = short[0]
+            why.append(f"{len(short)} of {len(years)} years short (year {f['year']}: {f['supply']} to give, {f['births']:.1f} "
+                       f"births; green from {1.5 * f['births'] / 2 + 2:.1f})")
+        sly = lambda mix: round(mix.get('sly', 0) + mix.get('guarded', 0), 1) if mix else None
+        honesty = dict(p['honesty'] or {})
+        drafts_d = extra.get(d, [])
+        spares = p['spare'] + len(drafts_d)
+        if drafts_d:
+            # (The drafts' honesty beside the rows' spares, weighted by count.)
+            counts = {h: honesty.get(h, 0) * p['spare'] / 100 for h in ('frank', 'plain', 'guarded', 'sly')}
+            for m in drafts_d:
+                h = m.traits.get('honesty', 'plain')
+                counts[h] = counts.get(h, 0) + 1
+            honesty = {h: 100 * n / spares for h, n in counts.items()} if spares else {}
+        pool_sly, living_sly = (sly(honesty) if spares else None), sly(p['livingHonesty'])
+        if pool_sly is not None and living_sly is not None and abs(pool_sly - living_sly) > 5:
+            why.append(f'honesty: {pool_sly:.1f}% of its spares sly or guarded, {living_sly:.1f}% of its living (within 5 points)')
+        out[d] = {'years': years, 'honesty': (pool_sly, living_sly), 'spares': spares, 'ok': not why, 'why': why}
+    return out
+
+
+def pools_main(a) -> int:
+    """mantle_check --pools --world KEY [PATH...]: the pools' health for --years forecast years and the spares' honesty mix."""
+    import mantle_pool as P
+    import world_db as W
+    with W.connect(W.resolve(a.world), 'editor') as conn:
+        with conn.transaction():
+            data = P.read_world(conn)
+    report = P.forecast(data, a.years)
+    # The wearers' deaths by dialect, year by year (their mantles come back once rested).
+    dialect_of = {c['id']: c['dialect'] for c in data['cards']}
+    for d, p in report['pools'].items():
+        ages = [data['npcs'][b['npc']]['age'] for b in data['bindings']
+                if b['alive'] and b['released'] is None and dialect_of.get(b['mantle']) == d and b['npc'] in data['npcs']]
+        p['wearerDeathsByYear'] = [round(sum(P.yearly_death(age + y) for age in ages), 2) for y in range(a.years)]
+    have = {c['id'] for c in data['cards']}
+    drafts = []
+    for f in files(a.paths):
+        try:
+            m = T.read(f.read_text(), str(f))
+        except T.MantleError as e:
+            print('\n'.join(e.problems))
+            return 1
+        if m.id not in have:
+            drafts.append(m)
+    health = pool_health(report, drafts)
+    if a.json:
+        print(json.dumps(health, indent=1))
+    else:
+        print(f"{report['world']}: day {report['day']:.1f}; pools over {a.years} forecast years" +
+              (f' (with {len(drafts)} drafts not in the rows)' if drafts else ''))
+        print(f"{'pool':<12} {'spares':>6}  {'years green':<12} honesty (spares / living, % sly+guarded)")
+        for d, h in health.items():
+            g = ''.join('+' if y['green'] else '-' for y in h['years'])
+            ps, ls = h['honesty']
+            print(f"{d:<12} {h['spares']:>6}  {g:<12} {'-' if ps is None else ps} / {'-' if ls is None else ls}"
+                  f"{'' if h['ok'] else '   ' + '; '.join(h['why'])}")
+        bad = [d for d, h in health.items() if not h['ok']]
+        print(f'{len(health)} pools: {len(bad)} not green' + (f' ({", ".join(bad)})' if bad else ''))
+    return 1 if any(not h['ok'] for h in health.values()) else 0
+
+
 def files(paths: list[str]) -> list[Path]:
     out = []
     for p in map(Path, paths):
@@ -455,7 +617,13 @@ def main() -> int:
     ap.add_argument('--strict', action='store_true')
     ap.add_argument('--json', action='store_true')
     ap.add_argument('--facts', help="the wearers' facts: a saved talk_check --world KEY --residents --json")
+    ap.add_argument('--pools', action='store_true', help='the pools\' health and the spares\' honesty (with --world; PATHs: spare drafts)')
+    ap.add_argument('--years', type=int, default=5)
     a = ap.parse_args()
+    if a.pools:
+        if not a.world:
+            ap.error('--pools needs --world')
+        return pools_main(a)
     facts = None
     if a.facts:
         facts = {}

@@ -13,6 +13,13 @@ it is everything you need, in one place and in the order you'll need it, with ev
 Where this handbook and the pilot disagree, **this handbook wins**: it was written after the pilot, and it lists
 mistakes the pilot made (§4.6, §8) that you must not copy.
 
+**Fix 8 (2026-11-18, branch `r3-talk-fix8`)** fixed the nine problems this handbook first listed in §8 (handoff §8):
+mark banks can be written (§3.6); window lines on fact nodes are gated in all 145 mantles, refused by G2 and made to
+stand aside by the game (§4.5.8); G2 reads tagged scene lines (§6.1); the personas have no pronouns; the misplaced
+`ask :` lines are folded into the listener's (§4.5.6); `mantle_load` exits non-zero when a bind fails and takes
+`--written-by` (§7.3); `mantle_check --pools` exists (§3.6); the kits test knows plain (§3.6). The text below is
+updated to match; §8 says what each was.
+
 **Read §1 to §9 once, fully, before you write anything.** Then, for each batch: §3.2 (pick it), §4 (write each
 mantle), §6 (check), §7 (load, export, commit), §9 (report).
 
@@ -69,12 +76,12 @@ reused (§11).
 |---|---|---|---|---|
 | R1 | Every NPC a unique dialogue set, in its region's dialect | "unique dialogue trees that follow the dialect of their region" | One mantle per resident, in the dialect of where they **grew up** (the brief tells you: Fenshore speaks `mirebridge`; Ridgemere speaks `plain`). Nothing copied between mantles; no 5-word run shared within a dialect; no oath or saying shared within a town. | `mantle_check` (G2), `mantle_batch lint` |
 | R2 | Name-free, so it can be reused | "can interchange their own names so that we can reuse dialogue trees" | Never write a name of anyone in the world. Every person, kin, trade and place comes through a slot (§4.4.9). A line whose slot is empty for a wearer simply isn't said by them. | G2 (names list of all 1,083 NPCs, living or dead) |
-| R3 | Passed from the dead to newborns of the same dialect region | "dialogue trees of old dead wolves can be reused for newborns in the same dialect region" | Write nothing that is true only of this one wolf unless a fact gates it (`self.married=yes`, `self.job=smith`, `self.age>=40`). `fits` is **stage only** (never sex, role or job: a newborn has none and would never qualify). The persona has **no pronoun**. | lint (persona, fits), G2 (truth) |
+| R3 | Passed from the dead to newborns of the same dialect region | "dialogue trees of old dead wolves can be reused for newborns in the same dialect region" | Write nothing that is true only of this one wolf unless a fact gates it (`self.married=yes`, `self.job=smith`, `self.age>=40`). `fits` is **stage only** (never sex, role or job: a newborn has none and would never qualify). The persona has **no pronoun**. | G2 (persona, truth), lint (fits) |
 | R4 | NPCs never answer players' open chat | "I do not expect NPCs to be responding to players in general conversation" | Everything a resident says *to* a player is a `dlg` line or a `graft` (the dialogue window). Scenes, lines and stories are NPC-to-NPC. Barks are said to no one. Never write a line that answers what a player typed in chat. | the engine (residents never answer chat, §13) |
 | R5 | Deities | (the user, 2026-11-17) the world has two deities: **the Bright One** (benevolent, God-like) and **the Dark One** (malevolent, Satan-like) | Never "god", "gods", "Gods!", "godsend", "godly", "godforsaken", "goddess". Blessings, prayers, oaths of good: the Bright One. Curses, evil, temptation: the Dark One. Capitalised exactly so. | G2 (`gods?`, `goddess`), lint (the whole family) |
 | R6 | Never "dog" | "I would not use the word Dogs, it'll confuse things." (2026-10-14) | They are wolves; the young are **pups**. No "dog", "dogs", "puppy", "doggy". Reword idioms: dog-tired → bone-tired; wet dog → wet fur; going to the dogs → going to ruin; lucky dog → lucky so-and-so; dogsbody → drudge. Use cats, goats, hens, geese where a pet or stray is meant. | G2 |
 | R7 | "private messages", never "tells" | (the user's rule for player messaging) | If a line ever mentions players' private messages, call them that. "tells" as a verb ("she tells me") is fine. | G2 (`a/your/my/private tells`) |
-| R8 | Male or female only; pronouns follow sex | (the user, 2026-10-07) "created characters are either male or female; no other options" | **Never "they/them/their" for one known wolf.** A mantle doesn't know a slot person's sex, so in a sentence that names someone by a slot use **no** pronoun: repeat the slot, say "that one", or restructure. For the topic's person use `#topic.they#`, `#topic.them#`, `#topic.their#` (sexed by the engine); for the listener `#other.they#`. Never "he/she" about the listener. | G2 (he/she beside a slot), lint (they_named, persona) |
+| R8 | Male or female only; pronouns follow sex | (the user, 2026-10-07) "created characters are either male or female; no other options" | **Never "they/them/their" for one known wolf.** A mantle doesn't know a slot person's sex, so in a sentence that names someone by a slot use **no** pronoun: repeat the slot, say "that one", or restructure. For the topic's person use `#topic.they#`, `#topic.them#`, `#topic.their#` (sexed by the engine); for the listener `#other.they#`. Never "he/she" about the listener. | G2 (he/she beside a slot, persona), lint (they_named) |
 | R9 | The richer size | Q3: "richer" (about 0.7 million words), "written by Claude agents in sessions, no paid model calls" | Full tier ≥ 92 items, standard ≥ 55, spare ≥ 64 (items that aren't symbols); the pilot's real counts are in §3.4. **No paid model calls**: never run `tools/voice_tables.py`, `tools/live_npc_smoke.py` or anything that calls the NPC Mind or an AI API to write or judge lines. You write every line yourself. | G2 `--strict` (size) |
 | R10 | Most believable conversations, all preprogrammed | goal 6 | Whole scenes that read as one natural talk in every thread; true to the moment, the wearer and the town; no stock filler (§5). | blind ratings (§34-§37), your self-review |
 
@@ -365,9 +372,13 @@ A spare: `tier spare`, ids from 901 (`cw901`...), no `written_for`, `fits stage=
 only), `young`, `adolescent` and `grown` sections, a sex-neutral persona and lines (no `^m`/`^f`, no "my
 husband"/"my wife" but through `#self.spouse_word#` gated on `self.married=yes`), and honesty written to the pool's
 mix: each pool's share of `sly` + `guarded` within 5 points of its dialect's living residents (§9.5). Check with
-`python3 tools/mantle_batch.py pools Data/Talk/mantles-export --facts Saved/Mantles/residents.jsonl` and the
-"living" column of `python3 tools/mantle_pool.py forecast ridgemere3` (`mantle_check --pools`, planned in doc 84,
-was never built). Spares are loaded with `mantle_load` without `--bind` (nobody to bind).
+`python3 tools/mantle_batch.py pools Data/Talk/mantles-export --facts Saved/Mantles/residents.jsonl` while drafting,
+and gate with `python3 tools/mantle_check.py --pools --world ridgemere3 Data/Talk/mantles-export/<dialect>/<id>.mantle ...`
+(your drafts counted beside the rows): each pool's spare + ready mantles against the births forecast (`mantle_pool
+forecast`'s) for five years, year by year (the births drawn, the wearers' deaths coming back once rested), green when a
+year starts with 1.5 x its half-year's births + 2 (the game's own line), and the spares' sly + guarded within 5 points
+of the dialect's living. It exits 1 while any pool isn't green: today every pool is (no spares exist yet), which is
+what P15 is for. Spares are loaded with `mantle_load` without `--bind` (nobody to bind).
 
 **Stage kits: 12** left of 16 (`saltwell` and `mirebridge` young and adolescent exist): `plain`, `coldwater`,
 `larkfield`, `southmeadow`, `frosthollow`, `oakhaven`, each `young` and `adolescent`. A kit is a shared **`.talk`**
@@ -376,16 +387,23 @@ rules) whose every entry is gated `self.from=<the dialect's towns> self.stage=<s
 `Data/Talk/kits/saltwell.young.talk`). Checks: `$RATW_TALK_CHECK --data "$PWD/Data/Talk" --validate <each file>` (name the files; a
 directory validates nothing), `python3 tools/talk_migrate.py --check`, `python3 tools/talk_lint.py` (0 new),
 `python3 tools/dialect_check.py` (0 failures), `$RATW_TALK_CHECK --data "$PWD/Data/Talk" --coverage` (0 holes in the core moves), `python3
-tools/test_mantle_check.py`. **Known gap:** `tools/test_mantle_check.py`'s `test_kits_are_their_dialects_pups`
-maps a kit's dialect to its towns only for saltwell and mirebridge; a `plain` kit gated `self.from=ridgemere` fails
-it until `'plain': {'ridgemere'}` is added to that test's `towns` map. That one-line test edit is the only code
-change P15 needs; make it in the kits' commit and say so in the report.
+tools/test_mantle_check.py` (its kit table maps `plain` to `ridgemere` since fix 8, so a plain kit is gated
+`self.from=ridgemere`; the other dialects' kits are gated on their own town's name).
 
-**Mark banks: blocked. Do not write them.** The engine redraws a reused mantle's habits from a grammar symbol named
-`mark.<symbol>` (`Library::redrawHabit`, Core/RatwTalk.cpp:2667), but the grammar parser accepts only `[a-z0-9_]`
-names (and `.broad`), so `mark.oath = ...` is refused ("expected '=' or '+=' after mark"; verified 2026-11-17). Until
-the engine is changed (not your job), habits are redrawn from the mantle's own alternatives, which is why every mark
-needs two or more. Report it; skip it.
+**Mark banks** (doc 84 §7.10.4, §12.4): when a mantle passes to a newborn the neighbours would remember it in, its
+marks are drawn again from the newborn's dialect's bank, `mark.<symbol>` (`Library::redrawHabit`), else from the
+mantle's own other alternatives (which is why every mark needs two or more). Since fix 8 the grammar parser takes
+`mark.<symbol> = alt | alt` lines: write them in the dialect's own grammar file, under its `grammar <dialect>` line
+(`Data/Talk/grammar/coldwater.grammar`...; plain speech's bank in `plain.grammar`), about 140 alternatives each for
+`mark.oath`, `mark.saying`, `mark.laugh` and `mark.pet` (§7.10.4). A bank is in no layer below (plain needn't have
+it), takes no `.broad` and no `!` (its values become the wearer's own habit), and its values are sex-neutral (a sexed
+`^m`/`^f` alternative is never drawn) and end without a stop, like any word. Check with `$RATW_TALK_CHECK --data
+"$PWD/Data/Talk" --validate` (the grammars load with the library), `python3 tools/dialect_check.py --world
+ridgemere3` (the deity lint reads every grammar line), then `python3 tools/talk_seed.py --only dialects --world
+ridgemere3` to bring the world's `live.dialects` rows up to the files (the game reads the rows over the files; a
+world whose rows predate the banks redraws from the mantles' own alternatives until this is run). The two banks
+of one dialect never share a value with a mantle's `oath`/`saying` worn in the same town (G2's town check covers the
+mantles only: check by eye against the index).
 
 ---
 
@@ -484,7 +502,7 @@ exactly this.
 | `accent` | yes | 1-3 of `none light broad`, the first as written: the brief's `mantle accents` (`light broad`, `broad light` or `none`) |
 | `tier` | yes | `full`, `standard` or `spare` |
 | `written_for` | yes (not spares) | the resident's id |
-| `written_by` | no | written by the loader (`claude-<batch>`) |
+| `written_by` | no | written by the loader: `--written-by WHO` (e.g. `codex`, `claude-opus`), else `claude-<batch>` |
 | `title` | yes | 2-5 words for writers and the DM, never spoken: "the stone-keeper" |
 | `fits` | yes | **stage only**: `stage=adult|old`, or `stage=young|adolescent|adult|old` for a pup's or a spare |
 | `prefers` | yes | soft criteria for who suits it: `role=merchant`, `job=smith`, `temper=short`... |
@@ -545,7 +563,7 @@ story first_stone [topic=memories|lore self.age>=25]          # told once to eac
   b[old] : An old listener's answer.
   b : Anyone's answer.
 
-dlg @1 shop.greet : #greet#. Salt, oil, rope and dates, and every weight #honest#.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Salt, oil, rope and dates, and every weight #honest#.
 dlg @2 resident.news [world.news] : Word off the carts: #world.news#. Ask #carter# for the rest.
 
 graft resident.hub                                             # the wearer's own window branch
@@ -571,7 +589,7 @@ choice Goodbye. -> bye
 | line | `line [@name] <move>[.variant] [criteria] : alt \| alt` | 2-3 alternatives; moves in §4.4.5 |
 | rule | `rule [@name]` then `when ...`, `does ...`, optional `cooldown 6h`/`tone`, `say alt \| alt` | barks: `when concept=bark ...`, `does aside`, a cooldown of 6-12 h |
 | scene | `scene <name>` then `when ...`, `does m1 / m2 / ...`, optional `tone t1 / t2 / ...`, then turns | §4.5.5 |
-| story | `story <name> [criteria]` then indented lines `  : beat`, `  ask : question`, `  b[...] : answer` | no `does`; the engine assigns tell.story / ask.detail / react.story / answer.detail. **`ask :` is the teller's question to the listener**, not the listener's. At least one `b` line. |
+| story | `story <name> [criteria]` then indented lines `  : beat`, `  ask : question`, `  b[...] : answer` | no `does`; the engine assigns tell.story / ask.detail / react.story / answer.detail. **`ask :` is the teller's question to the listener** ("Would you have stayed?"), never the listener's to the teller ("Did you catch one?": that goes at the end of the `b` line after it). At least one `b` line. |
 | dlg | `dlg [@name] <tree>.<node> [criteria] : alt \| alt` | the node must exist (§4.4.8) |
 | graft | `graft [@name] <tree>.<node>` then `choice <player's words> [criteria] -> <node>`, `node <name>`, `say ...`, `mood ...`, `free` | every node says something and has a way back; choices lead to its own nodes, the tree's nodes, `bye` or `end` |
 
@@ -753,6 +771,22 @@ the listener's answer(s) (`  b : ...`, `  b[old] : ...`), then maybe a closing b
 `here.region=` for local legends. Only people **not in the world** in invented memories ("my grandad", "an old
 carter"), never a resident.
 
+**`ask :` is the teller speaking.** The engine gives it to the teller (ask.detail) and the next `b` line answers it
+(answer.detail). So it asks the *listener* something ("Would you have gone back in for them?", "Do you know the ones
+with a ring right round them?"), or teases the listener with what comes next ("Did the batch spoil?", answered with
+a guess: "You caught the heat in time, perhaps."). It never asks the teller about the story: "Did you catch one?",
+"Were you hurt?", "What did you do?" are the listener's questions, so they end the listener's line:
+
+```
+  : I waited at the river bend till the light went.
+  b : You found the better water. Did you catch one?
+  : Enough for a meal after the shift.
+```
+
+(Before fix 8, 183 stories in 106 mantles had the listener's question under `ask :`, so the teller asked it of the
+listener; fix 8 folded each into the `b` line after it. The lint refuses the common forms now: `ask : Did you...`,
+`Were you...`, `What did you...`, `Is that why you...`.)
+
 #### 4.5.7 Barks (6 full, 4 standard)
 
 Unaddressed calls, said to no one (`concept=bark`), each with a cooldown of 6-12 hours and gated: the trade's cry
@@ -762,7 +796,9 @@ Unaddressed calls, said to no one (`concept=bark`), each with a cooldown of 6-12
 #### 4.5.8 Window lines (12-16 full, 4-7 standard)
 
 What the wearer says to a player in the dialogue window. A mantle's `dlg` line **outranks the tree's own lines**
-(+5), so:
+(+5), so (fix 8: G2 refuses a line that breaks the first rule below, and the game makes one that slipped in, in
+Atlas or the DM, stand aside wherever one of its tree's fact lines holds: `yieldToTree` in Core/RatwMantle.cpp gives
+it each fact line's first fact, negated):
 
 - **Never write an ungated line for a node that reports facts.** The tree's lines there say real things (`resident.news`:
   `world.news`, `world.event_words`, `world.wagons=raided`, `world.death`, `world.wedding`; `resident.gossip`:
@@ -779,7 +815,11 @@ What the wearer says to a player in the dialogue window. A mantle's `dlg` line *
   dlg shop.greet [here.shop!=bare] : #greet#. Salt, oil, rope and dates, and every weight #honest#.
   dlg watch.hub [here.wanted=no] : #greet#. Quiet so far, and I'd like it kept so.
   ```
-  The lint refuses an ungated line on such a node.
+  G2 refuses an ungated line on such a node, and its message gives the plain case to write. What counts as such a
+  node and its facts is read from the trees (`mantle_check.window_facts`: every fact a node's `say[...]` lines test,
+  but the hour, the meeting, the mood and the trade, and but a line of priority 10, which wins anyway). An
+  alternative that says a fact (`#world.event_words#`) goes in a line gated on that fact, never beside a "nothing
+  new" one.
 - **Greetings by meeting and disposition** at the hub (and the role's greeting node): bare, `[topic.meeting=known]`
   (`#topic.player#` is the player's name), `[here.time=night]`, `[pair.disposition=hostile|wary]`.
 - `resident.job`: their work in their words (gate on the job if the words are trade-specific); `resident.bye`.
@@ -804,8 +844,11 @@ work or money worries. An adolescent wants to be taken seriously, works as a lea
 ### 4.6 A complete annotated example: `sw101`, the stone-keeper (full tier, Saltwell)
 
 The pilot's lead wrote this first, written for Saltwell's storekeeper (`tn_fh_thistle_stonepick`), and it passes
-G1, G2 `--strict` and G3. It is the best model of breadth and voice. **It also has four faults the newer checks
-catch** (marked ✗ below); write yours without them. The whole file, in order, with notes after each part:
+G1, G2 `--strict` and G3. It is the best model of breadth and voice. **It also had four faults the newer checks
+catch** (marked ✗ below); write yours without them. The whole file, in order, as it was at revision 1, with notes
+after each part. (Fix 8 corrected the persona, the ungated window lines and a 5-word run in the file itself, now at
+revision 2: read `Data/Talk/mantles-export/saltwell/sw101.mantle` for the corrected lines. The `resident.job` fault
+below is still in it: no check catches it.)
 
 ```
 # sw101, the stone-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
@@ -841,7 +884,7 @@ persona #self.first# keeps the store by the spring and lives above it: patient, 
 - `topics`: lore, prices, weather and travellers up; gossip down ("slow to gossip").
 - `marks oath saying`: both have three alternatives in `words`.
 - ✗ **The persona says "she"**: a male newborn could inherit this mantle. Write: "...honest at the scales, with a
-  jar of smooth stones from the wadi beds on the counter." (The lint now refuses any pronoun in a persona.)
+  jar of smooth stones from the wadi beds on the counter." (G2 refuses any pronoun in a persona since fix 8.)
 
 ```
 words
@@ -1277,7 +1320,8 @@ story cold_night_carter [topic=travel|lore here.region=waste]
 
 - Five stories, each gated where it must be (age, the shop, the region). `ask :` is **the teller's** question to the
   listener ("Do you keep anything...?"), then the listener's answers. (`cw102`'s writer used `ask :` for the
-  *listener's* question: "Is that why you carve them?" said by the teller. Don't.)
+  *listener's* question: "Is that why you carve them?" said by the teller; so did 105 other mantles, 183 stories in
+  all, until fix 8 folded them into the `b` lines. Don't: §4.5.6.)
 - The unnamed carter is "he": an invented person **not in the world**, so a pronoun is fine. Real residents (slots)
   never get one.
 
@@ -1344,8 +1388,8 @@ dlg @1 resident.bye : #farewell#. Mind the step. | #farewell#, #address#. Come b
   own (the pilot: 99%).
 - ✗✗ **The big one:** `shop.greet @1` (no `here.shop` gate), `resident.business`, `resident.news` and
   `resident.gossip` are **ungated on nodes that report facts**. They outrank the tree's lines and hide a bare shop,
-  a failing business, real news and real gossip. All 42 of the pilot's `resident.news` lines have this fault. Write
-  them as §4.5.8 shows; the lint refuses them now.
+  a failing business, real news and real gossip. All 42 of the pilot's `resident.news` lines had this fault (fix 8
+  gated them on their plain case). Write them as §4.5.8 shows; G2 refuses them now.
 - ✗ `resident.job` names `#self.workplace#` and the goods ungated: a later wearer who isn't a storekeeper says "salt,
   oil, rope, dates". Gate it `[self.role=merchant]` and keep an ungated one that fits anyone.
 
@@ -1624,8 +1668,8 @@ format can't carry a mantle's own `b` turns for others' scenes (frozen), so with
 
 - **The town**: no oath or saying the same as another mantle's in the town; a quirk at most twice (G2 with
   `--world`; for farm residents check the index yourself, §8.8). Run the index before each mantle.
-- **The dialect**: no 5-word run shared with any other mantle of the dialect, anywhere (G2 checks untagged lines;
-  the lint checks the tagged ones). Plain will hold about 600 mantles: phrase things your own way from the start.
+- **The dialect**: no 5-word run shared with any other mantle of the dialect, anywhere (G2 checks every line, the
+  tagged ones too). Plain will hold about 600 mantles: phrase things your own way from the start.
 - **The brief's words**: likes, "their words for things" and stance reasons go to every writer of the town;
   paraphrase them (the lint warns on a copied 5-word run).
 - **Same place, same hour**: two wolves in one room saying the same distinctive line is a hard failure of the
@@ -1640,10 +1684,11 @@ format can't carry a mantle's own `b` turns for others' scenes (frozen), so with
 | Gate | What | Command | Pass |
 |---|---|---|---|
 | G1 | the game's loader: syntax, facts, symbols, moves, 160 characters, trees and nodes, graft paths, `does` counts | `$RATW_TALK_CHECK --data "$PWD/Data/Talk" --mantle FILE...` | "0 refused" |
-| G2 | the rules: names, capitals, dog/gods/tells, pronouns by slot, truth, dialect by accent, density 60%, uniqueness (5-word runs, town oaths/sayings/quirks), habits ≤25%, marks ≥2 alternatives, tier minimum and size | `python3 tools/mantle_check.py Data/Talk/mantles-export/<dialect> --world ridgemere3 --strict --facts Saved/Mantles/residents.jsonl` | "0 refusals, 0 warnings" |
-| lint | what G1/G2 miss (§6.3): tagged lines under G2's rules, the deity family, they_named, persona pronouns, TODOs, header vs wearer, thread counts, bare declines, window lines hiding facts; warnings | `python3 tools/mantle_batch.py lint FILE... --facts Saved/Mantles/residents.jsonl` | 0 refusals; warnings read and fixed or justified |
+| G2 | the rules, over every line (tagged scene lines too, since fix 8): names, capitals, dog/gods/tells, pronouns by slot, a persona with no pronoun, window lines on fact nodes gated on their case, truth, dialect by accent, density 60%, uniqueness (5-word runs, town oaths/sayings/quirks), habits ≤25%, marks ≥2 alternatives, tier minimum and size | `python3 tools/mantle_check.py Data/Talk/mantles-export/<dialect> --world ridgemere3 --strict --facts Saved/Mantles/residents.jsonl` | "0 refusals, 0 warnings" |
+| lint | what G1/G2 miss (§6.3): the deity family, they_named, a story's `ask :` asking the teller, TODOs, header vs wearer, thread counts, bare declines; warnings | `python3 tools/mantle_batch.py lint FILE... --facts Saved/Mantles/residents.jsonl` | 0 refusals; warnings read and fixed or justified |
 | G3 | coverage against real listeners of the wearer's town: core moves answered both ways, scenes heard | `$RATW_TALK_CHECK --data "$PWD/Data/Talk" --world ridgemere3 --mantles-from DIR --mantle-coverage` (DIR holds only your batch) | "0 holes in the core moves"; scenes never heard listed and explained |
 | all at once | G1 + G2 (whole dialect folders) + lint + G3 | `python3 tools/mantle_batch.py gates Data/Talk/mantles-export/<dialect>/<id>.mantle ... --facts Saved/Mantles/residents.jsonl` | "G1 pass, G2 pass, lint pass, G3 pass" |
+| pools | P15: the pools' health for five forecast years and the spares' honesty | `python3 tools/mantle_check.py --pools --world ridgemere3 <spare drafts>` | "8 pools: 0 not green" (exit 1 until the spares exist) |
 | G6 | the round trip, after loading | `python3 tools/mantle_export.py ridgemere3 --check` | "the rows and ... agree" |
 | G4 | the scorecard (`talk_card`) and ticking listens | **not yours**: the owner runs them at a slice's end (they are simulations) | |
 | ctest | G1/G2 over the committed export, the tools' tests | in the main checkout after merging: `ctest --test-dir build-core -R 'mantle_export|mantle_check_rules|dialect_check|talk_lint'` | all pass |
@@ -1689,15 +1734,16 @@ format can't carry a mantle's own `b` turns for others' scenes (frozen), so with
 | `8 items of the standard tier's 55` | G2 strict | under size | write more scenes |
 | `under its tier's minimum (...): no line answering greet.return` | G2 | a core move missing | write it |
 | `marks: 'oath' has 1 alternative` | G2 | a mark can't be redrawn | 2+ alternatives |
-| `[a tagged line: b[...] #tag : or a@tag :]` | lint | any G2 rule, in a tagged line G2 skips | fix as for G2 |
+| any G2 message on a tagged line (`b[...] #tag :`, `a@tag :`) | G2 | G2 reads them since fix 8 (the lint did before) | fix as for any line |
+| `"ask : Did you catch one?": ask : is the teller's question to the listener...` | lint | the listener's question under the teller's `ask` | end the `b` line after it with the question; drop the `ask` (§4.5.6) |
 | `"gods": the deities are the Bright One and the Dark One` (line N) | lint | the deity family anywhere | the Bright One / the Dark One |
 | `"they" (them, their) after one wolf named by a slot` | lint | R8 | repeat the slot, rephrase; if "them" means things, make that plain ("rubbing fat into the cracks") |
-| `persona: "she": the persona passes to the next wearer` | lint | R3/R8 | no pronoun |
+| `persona: "she": the persona passes to the next wearer` | G2 | R3/R8 | no pronoun |
 | `a TODO is left` | lint | | finish it |
 | `X speaks with accent light: the accents must include it` / `speaks coldwater, not ...` / `honesty is kept` / `the fit refuses them` / `is a pup: a young section is needed` | lint | the header doesn't fit the wearer | copy the brief's values |
 | `an \`a\` line has 2 alternatives where it has 3 threads` | lint | threads misaligned | 1 or N alternatives every line |
 | `"No.": a decline hedges and gives a reason` | lint | bald dispreferred answer | hedge + reason, 6+ words |
-| `resident.news: its tree speaks of world.death, world.event_words, world.news... this ungated line outranks it` | lint | the line would hide real news | §4.5.8 |
+| `resident.news: its tree reports world.death, world.event_words, world.news... and this line tests none of them` | G2 | the line would hide real news (the game makes it stand aside; say the case) | gate it on the plain case the message gives, or one line a case (§4.5.8) |
 | warning `a thread ends on a question nobody answers` | lint | | end on a closing line |
 | warning `a claim of years needs an age gate` | lint | "forty years" for any wearer | `self.age>=N` or `old` section |
 | warning `the brief's own words` | lint | collision bait | paraphrase |
@@ -1711,7 +1757,7 @@ format can't carry a mantle's own `b` turns for others' scenes (frozen), so with
 
 Non-sequiturs inside a thread; cryptic replies; stiffness; a scene whose threads are interchangeable; an invented deed
 of a real resident; a claim true only of this wearer but not caught by truth.json (a trade noun, a family member, a
-house, an age); `ask :` used for the listener's question in a story; sex-marked words ("crone", "lad", "lass")
+house, an age); `ask :` used for the listener's question in a story, in a form the lint doesn't know; sex-marked words ("crone", "lad", "lass")
 about the wearer; caricatured dialect; the same scene shape repeated; news words with no gate ("the carts are
 late" on any caravan topic); a graft choice that assumes a shop or trade without a gate.
 
@@ -1755,7 +1801,7 @@ run (checks everything, writes nothing):
 ```
 cd .claude/worktrees/mantles-$B
 export RATW_TALK_CHECK=/home/martinb/Documents/GitHub/MUDProject/build-core/talk_check
-python3 tools/mantle_load.py ridgemere3 $(cut -f12 Saved/Mantles/$B/batch.tsv | tail -n +2) --batch $B --bind --dry-run
+python3 tools/mantle_load.py ridgemere3 $(cut -f12 Saved/Mantles/$B/batch.tsv | tail -n +2) --batch $B --written-by <you> --bind --dry-run
 # each mantle: "cw103: {'revision': None, 'dry_run': True, 'items': 64}"; any problem is listed by file, mantle, item
 ```
 
@@ -1773,16 +1819,20 @@ python3 tools/mantle_load.py backup ridgemere3        # every mantle, item, hist
 ### 7.3 Load and bind
 
 ```
-python3 tools/mantle_load.py ridgemere3 $(cut -f12 Saved/Mantles/$B/batch.tsv | tail -n +2) --batch $B --bind
+python3 tools/mantle_load.py ridgemere3 $(cut -f12 Saved/Mantles/$B/batch.tsv | tail -n +2) --batch $B --written-by <you> --bind
+echo $?                                   # 0 done; 1 refused, nothing written; 2 written, a bind failed
 ```
 
 It (§17.4): checks every file (G1, G2 `--strict`; one problem refuses the whole batch), compares revisions, backs
-up, writes in one transaction as Atlas's role (history source `mantle_load:<batch>`, `written_by claude-<batch>`:
-the prefix is fixed in the tool, so put your own provenance in the batch name, e.g. `--batch codex-cw-1`), binds
+up, writes in one transaction as Atlas's role (history source `mantle_load:<batch>`; `written_by` is
+`--written-by WHO`: pass your own provenance, e.g. `--written-by codex` or `--written-by claude-opus`, else it reads
+`claude-<batch>`; to fix someone else's batch keep theirs: `--written-by claude-codex-cw-1`), binds
 each mantle to its `written_for` resident (`bound_how authored`; refused if they're dead, wear another, or don't fit),
 queues one `voice.sync` for the running DEV server (expected; it is not a restart), and **rewrites your files in
 canonical form** (every item named `@1`, `@2`..., a `revision 1` header). Read its output: lines `cwNNN: {...}`,
-`bound cwNNN -> <npc>`, `backup: ...`. **It can exit 0 while printing `cwNNN not bound: <why>`**: look for it.
+`bound cwNNN -> <npc>`, `backup: ...`. It exits 0 when all is done, 1 when the batch is refused (nothing written),
+and **2 when it wrote but a mantle wasn't bound** (`cwNNN not bound: <why>`, then `N loaded but not bound: ...`; before
+fix 8 that exited 0).
 Loading the same files again changes nothing.
 
 ### 7.4 Verify, export, round trip
@@ -1825,9 +1875,10 @@ rename an item's key.
 ### 7.7 What NOT to do
 
 - **Don't edit the engine or the tools**: nothing under `Core/`, `Client/`, `Editor/`, `Tests/` (C++), CMake files,
-  `Database/migrations/`, `tools/*.py` (the one exception: the plain-kit test map in P15, §3.6), `tools/*.json`
+  `Database/migrations/`, `tools/*.py`, `tools/*.json`
   (allow-lists: report a missing place instead), `Data/Talk/*.json`, `Data/Talk/grammar/`, `Data/Talk/dialogue/`,
-  the library's `.talk` files (except the kits you write in P15), `Data/Talk/names/`.
+  the library's `.talk` files (except the kits you write in P15), `Data/Talk/names/` (and `Data/Talk/grammar/`
+  only for P15's mark banks, `mark.<symbol>` lines, §3.6).
 - **Don't change the format** (§4.4): no new header fields, sections, item kinds or syntax.
 - **Don't touch PROD** (`prod`, `ratw_prod`) or the other worlds (`dev` = `ratw_ridgemere2`, `dev-old`); no
   `world_db.py migrate/use/serve-world/new/down`, no hand-written SQL, no `psql` writes, no `world_sync.py` imports,
@@ -1896,27 +1947,30 @@ None is yours to fix in the data: handle it in the writing, and list what you me
     towns' places; a real place of Coldwater, Larkfield or Ridgemere (an inn, a street, a hill) may be refused as
     "capitalised mid-sentence". Use `#here.place_name#`/`#self.workplace#`/`#self.street#`, a lowercase description
     ("the inn by the jetty"), or list it in the report for the owner to add to `tools/mantle_rules.json`.
-11. **The pilot's own faults** (don't copy; report, don't fix). On 2026-11-17 the lint over the 43 found 160
-    refusals and 163 warnings: 15 personas with a pronoun; 84 window lines on fact-reporting nodes left ungated (42
+11. **The pilot's own faults** (don't copy). Fixed by fix 8 (2026-11-18) in all 145 mantles then written, so G2 and
+    the lint over the whole export show 0 refusals; what they were, for the record. On 2026-11-17 the lint over the 43
+    found 160 refusals and 163 warnings: 15 personas with a pronoun; 84 window lines on fact-reporting nodes left ungated (42
     `resident.news`, 14 `resident.gossip`, 8 `resident.business`, 12 `shop.greet`, 5 `inn.greet`, 3 `inn.rest`),
     which hide real facts in the window; 52 problems in tagged scene lines G2 never saw (5-word runs, a Southmeadow
     phrase in `mb120`, listener lines writing dialect out, "Ash"); 8 "they" after a slot; 1 bare doubt; 22 age
     claims ungated; 121 brief phrases copied. By eye: `cw102`'s stories use `ask :` for the listener's question,
-    `sw101`'s "old crone", a few invented deeds of slot people. `python3 tools/mantle_batch.py lint
-    Data/Talk/mantles-export --facts Saved/Mantles/residents.jsonl` lists them all.
-12. **G2 doesn't read tagged lines** (`b[...] #tag :`, `a@tag :`): mantle_check's line reader skips them (doc 84 §40
-    says it reads them; on 2026-11-17 it didn't). The lint re-runs G2's rules on them; `mantle_load` does not, so
-    run the lint.
-13. **`mantle_check --pools` isn't built**: use `mantle_batch.py pools` and `mantle_pool.py forecast` (§3.6).
-14. **Mark banks can't be written** (the grammar refuses `mark.<symbol>` names): §3.6.
+    `sw101`'s "old crone", a few invented deeds of slot people. Fix 8 fixed every refusal (the 84 window lines gated on
+    their case, 4 news alternatives that said `#world.event_words#` moved to lines of their own; the 15 personas; the
+    52 tagged-line problems and the 8 "they" and the bare doubt rephrased; 3 mantles' density lifted after G2 began
+    counting tagged lines; 183 misplaced `ask :` lines in 106 mantles, the pilot's and cw-1/cw-2/lf-1's, folded into the
+    listener's). The warnings (age claims, brief phrases...) stand: read them in your own batch.
+12. **Fixed (fix 8): G2 reads tagged lines** (`b[...] #tag :`, `a@tag :`); before, its line reader skipped them and
+    only the lint saw them. `mantle_load` refuses them now too.
+13. **Fixed (fix 8): `mantle_check --pools`** is built (§3.6).
+14. **Fixed (fix 8): mark banks can be written** (`mark.<symbol>` in a dialect's grammar): §3.6.
 15. **A pup born in the game with no mantle**: `born_1grqt7uo` (Juniper Coldmere, Coldwater, young). He is on the
     list: write him a pup's mantle in the Coldwater batch (§3.5). More births will appear; `todo` shows them.
 16. **`#self.late#` and `#self.rival#` are empty for every resident today** (nobody mourned yet; no rivals in the
     save): lines with them are never heard now. One gated scene for each at most, for later wearers.
 17. **Iris Greywater (Fenshore's potter) is dead**; the dead are never written for. Some pilot scene names mention
     residents (`friend_iris`): keys aren't spoken, but don't name keys after residents.
-18. **`mantle_load` exits 0 when a bind fails** (it prints `<id> not bound: <why>`): read its output (§7.3).
-19. **`written_by` reads `claude-<batch>`** whoever wrote it: name your batches with your provenance (§7.3).
+18. **Fixed (fix 8): `mantle_load` exits 2 when a bind fails** (it prints `<id> not bound: <why>`) (§7.3).
+19. **Fixed (fix 8): `written_by` is `--written-by WHO`** (default `claude-<batch>`) (§7.3).
 20. **Talk in Coldwater about fishing**: Coldwater's homes hold "hardly a fisher"; its grammar is the lake's. Use the
     lake's idiom, never fishing claims without `self.job=fisher|sailor` (and a fishing town's words need
     `here.fishers>=3`).
@@ -2010,13 +2064,14 @@ $RATW_TALK_CHECK --data "$PWD/Data/Talk" --world ridgemere3 --mantles-from <dir 
 
 # load (after all gates pass)
 python3 tools/mantle_load.py backup ridgemere3
-python3 tools/mantle_load.py ridgemere3 <files> --batch cw-1 --bind --dry-run
-python3 tools/mantle_load.py ridgemere3 <files> --batch cw-1 --bind
+python3 tools/mantle_load.py ridgemere3 <files> --batch cw-1 --written-by <you> --bind --dry-run
+python3 tools/mantle_load.py ridgemere3 <files> --batch cw-1 --written-by <you> --bind   # exit 2: a bind failed
 python3 tools/mantle_load.py check ridgemere3
 python3 tools/mantle_export.py ridgemere3 && python3 tools/mantle_export.py ridgemere3 --check
 
 # spares (P15)
 python3 tools/mantle_batch.py pools Data/Talk/mantles-export --facts $F
+python3 tools/mantle_check.py --pools --world ridgemere3 <spare drafts>      # P15's gate
 python3 tools/mantle_pool.py forecast ridgemere3
 ```
 

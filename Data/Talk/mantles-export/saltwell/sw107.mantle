@@ -1,6 +1,6 @@
-# sw107, the counting raker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw107, the counting raker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw107
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -162,7 +162,7 @@ does tell.complaint / react.complaint / assess
 a : #topic.what.capitalize# at #topic.price#. And they pay me less for the salt that went in it. | The store sells my salt to the carter, the carter sells it to the city, and I'm the only one #skint#. | I know what a sack fetches at the inn. I know what I'm paid. I've #counted# both.
 b[role=merchant] #trade : The road costs. The cart costs. | Every trade's got a middle. | And what does the sack cost me?
 b : That's not right. | It's always the way. | What does it fetch?
-a@trade : The road costs you less than me. I've seen your cart. | Every trade's got a thumb on the scale. #saying#. | #whoasks.capitalize#? You know.
+a@trade : The road costs you less than me. I've seen your cart. | Every trade leans on the scale a little. #saying#. | #whoasks.capitalize#? You know.
 a : No. #oath#. | It is. Doesn't make it right. | More than I get. That's all I'll say.
 
 scene sand_shut
@@ -267,7 +267,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. #whoasks.capitalize#? Sa
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What is it this time? | #topic.player#. #hum# Go on.
 dlg @3 resident.hub [pair.disposition=warm] : #greet#, #topic.player#. Sit, if you like. #hum# | #topic.player#. #talk_open#
 dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. I rake, I count, I get paid less than I've #counted#. | I'm a #self.trade_words#. #whoasks.capitalize#?
-dlg @1 resident.news : #news_none# | News? Ask the inn. I keep what I hear to myself. #hum#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | News? Ask the inn. I keep what I hear to myself. #hum#
 dlg @1 resident.bye : #farewell#. | #farewell#. Shut the gate.
 graft resident.hub
 choice What's that tune you're humming? -> tune

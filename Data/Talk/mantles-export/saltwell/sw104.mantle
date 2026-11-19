@@ -1,6 +1,6 @@
-# sw104, the house-book keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw104, the house-book keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw104
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent broad light
@@ -236,7 +236,7 @@ scene faith_kept
 when topic=faith
 does give.opinion / react.self / assess
 a : The Bright One has kept me seventy years and more. I'll not quarrel with that record. | The Dark One gets nothing from this house. Not a crumb, not a word. | I pray for #pans# every night. Salt keeps a family; the Bright One keeps the salt.
-b[piety=devout] #devout : A long record. | Not a crumb. Good. | Truly said.
+b[piety=devout] #devout : A long record. | Not a crumb. Good. | Just so.
 b : Seventy years. | #bc_good# | Salt and faith.
 a@devout : Longer than most. #bc_it_is# | Not a crumb, #oath#. | #bc_wise#
 a : And more. Don't count, #address#; it's rude. | #bc_good# Keep it so in yours. | Salt and faith. Neither keeps without the other.
@@ -300,7 +300,6 @@ story the_long_drought [concept=talk.memories self.age>=60]
 story the_wedding_song [concept=talk.pastimes]
   : At my sister's wedding I sang the old well song so loud the carters stopped at the edge of the hamlet.
   : They thought it was a blessing for them. So they came in and ate.
-  ask : Was it?
   b[stage=young|adolescent] : Did you get in trouble?
   b : And did they stay?
   : Three days. A guest is a guest. My father was furious and fed them anyway.
@@ -310,7 +309,8 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#, and peace on your house,
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit. You'll have water, and then you'll talk.
 dlg @3 resident.hub [pair.disposition=hostile] : Say what you want and say it plainly. #knees.capitalize# haven't the patience for anything else.
 dlg @1 resident.job : I keep the house and #book#. That's work enough, I promise you.
-dlg @1 resident.news : Nothing new that I'd repeat, #address#. | All the talk is of #world.event_words#. The Bright One knows what comes of it.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new that I'd repeat, #address#.
+dlg @2 resident.news [world.event_words] : All the talk is of #world.event_words#. The Bright One knows what comes of it.
 dlg @1 resident.bye : #farewell#, and come back to us. Mind the wet stones.
 graft resident.hub
 choice Why don't you trust anything from the city? -> city

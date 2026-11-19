@@ -1,6 +1,6 @@
-# mb117, the old-saw rabbit keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb117, the old-saw rabbit keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb117
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent none
@@ -71,7 +71,7 @@ does tell.self / react.self / assess
 a : Two of the does kindled in the night. Nine kits between them. | Lost a litter to the cold. It happens. #saw#. | Moved #kits# to the warm end of #hutch#.
 b[job=herder|farmer] #beasts : Nine's a good number. | It does happen. | The warm end's best.
 b : Nine! | I'm sorry. | Will they live?
-a@beasts : It is. #bc_true# | It does. You don't get used to it. | It is. They'll do.
+a@beasts : It is. #bc_true# | It does. It never gets easier. | It is. They'll do.
 a : Nine. I'll count #kits# again in a week. | It happens. #saying#. | They'll do. Warm's most of it.
 
 scene straw_day
@@ -243,7 +243,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Not many come out to #hi
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit a while. There's #straw# on the bench.
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. Speak slow; I'm not quick these days.
 dlg @1 resident.job : I keep rabbits. #hutch.capitalize#, #warren#, #straw#. #saying#.
-dlg @1 resident.news : News comes out here slow, and old. #saw#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News comes out here slow, and old. #saw#.
 dlg @1 resident.bye : #farewell#. Go steady over #hills#.
 graft resident.hub
 choice Have you a saying for everything? -> saws

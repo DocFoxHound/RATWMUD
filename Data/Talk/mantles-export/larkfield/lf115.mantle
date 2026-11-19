@@ -1,6 +1,6 @@
-# lf115, the quiet orchard wagerer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf115, the quiet orchard wagerer (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf115
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -267,15 +267,13 @@ a : When they wish. | Less than the #market#.
 story loose_ladder [topic=work self.age>=18]
   : The top #rung# gave way as I reached for a #branch#.
   : I dropped the #basket# and caught the #tree# instead.
-  ask : Were you hurt?
-  b : A wise catch.
+  b : A wise catch. Were you hurt?
   : Only the #fruit# was bruised.
 
 story wager_on_wind [topic=pastimes self.age>=18]
   : I wagered that the #wind# would empty one #tree# by dusk.
   : It spared that #tree# and scattered the next one.
-  ask : Did you lose?
-  b : The wind chooses its own side.
+  b : The wind chooses its own side. Did you lose?
   : A single #coin# and a little pride.
 
 story stone_after_rain [topic=memories self.age>=18]

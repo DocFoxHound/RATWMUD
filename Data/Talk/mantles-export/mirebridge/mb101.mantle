@@ -1,6 +1,6 @@
-# mb101, the hearth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb101, the hearth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb101
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -460,15 +460,15 @@ dlg @3 resident.hub [topic.meeting=returning] : Back again, #topic.player#. I'd 
 dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it. Say it and be quick, #address#; I've the room to mind. | You. Mind your boots and your tongue, #stranger#.
 dlg @5 resident.hub [here.time=night] : We're near #closing#. One thing, then I bank #hearth#. | Late, #address#. Make it short.
 dlg @1 resident.job [self.job=innkeeper] : I keep the room. Cups, barrels, #slate#, and #hearth#. That last's the one that matters. | The taproom, #address#. Everything you see, I wiped.
-dlg @1 resident.business : Steady. #hooks.capitalize#, then empty, then full again. | Steady enough, fen-friend. Nobody's run off owing, this week.
-dlg @1 resident.news : #news_none# What I hear over the bar stays over it. | Nothing I'd carry, #address#. Ask the stores.
-dlg @1 resident.gossip : I don't repeat what's said at my bar. Not a word past the reeds. | #gossip_none#
+dlg @1 resident.business [business!=thriving|failing] : Steady. #hooks.capitalize#, then empty, then full again. | Steady enough, fen-friend. Nobody's run off owing, this week.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# What I hear over the bar stays over it. | Nothing I'd carry, #address#. Ask the stores.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't repeat what's said at my bar. Not a word past the reeds. | #gossip_none#
 dlg @1 resident.bye : #farewell#. Shut the door properly. | #farewell#. Mind the boards.
-dlg @1 inn.greet : #greet#. #mat#, then #inn_offer# | #greet#. #inn_offer#
-dlg @2 inn.greet [topic.meeting=known] : #greet#, #topic.player#. Your usual's on its hook. | #topic.player#. Feet first, then the bar.
+dlg @1 inn.greet [here.inn_helper!=yes] : #greet#. #mat#, then #inn_offer# | #greet#. #inn_offer#
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes] : #greet#, #topic.player#. Your usual's on its hook. | #topic.player#. Feet first, then the bar.
 dlg @1 inn.rooms : Up the stair. #here.bed_night#p a night, #here.bed_week#p the week, the whole floor #here.upstairs_night#p. Sheets changed weekly. #mat#. | #here.bed_night#p a night. Clean sheets, and the stair's #scrubbed#, so keep it so.
 dlg @1 inn.roomed : Top of the stair, second door, high and dry. Boots off at the landing. | #inn_bed# Boots off at the landing, mind.
-dlg @1 inn.rest : Take the bench by #hearth#. It's the warmest seat in the fen. | Sit and dry your feet. Not on the #scrubbed# end.
+dlg @1 inn.rest [here.lodging!=yes] : Take the bench by #hearth#. It's the warmest seat in the fen. | Sit and dry your feet. Not on the #scrubbed# end.
 dlg @1 inn.bye : #farewell#. Shut the door behind you. | #farewell#. Mind the boards.
 graft resident.hub
 choice What's that you're scattering on the rail? -> sparrows

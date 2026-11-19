@@ -1,6 +1,6 @@
-# lf122, the storm-wakeful granary hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf122, the storm-wakeful granary hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf122
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -291,8 +291,7 @@ story cut_rope [topic=work self.age>=18]
 story house_whisper [topic=memories self.age>=18]
   : I heard something about a great #house# while moving #grain#.
   : I have kept the #story# out of the #market# since.
-  ask : Will you tell it?
-  b : Some accounts are dangerous.
+  b : Some accounts are dangerous. Will you tell it?
   : Not while anyone else can hear.
 
 rule @bark_storm

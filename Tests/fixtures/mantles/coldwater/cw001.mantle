@@ -18,7 +18,7 @@ hopes to_make_his_name
 topics weather +.4 work +.3
 styles refuse=short
 marks oath saying
-persona #self.first# is ambitious, stubborn and plain-spoken, with a short temper behind a reserved manner; he sleeps badly before storms.
+persona #self.first# is ambitious, stubborn and plain-spoken, with a short temper behind a reserved manner, and sleeps badly before storms.
 
 words
 saying! = Still water hides deep weeds | A steady paw does the work

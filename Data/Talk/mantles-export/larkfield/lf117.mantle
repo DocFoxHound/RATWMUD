@@ -1,6 +1,6 @@
-# lf117, the bogwise pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf117, the bogwise pot hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf117
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -272,8 +272,7 @@ a : I am careful. | They have their own habits.
 story lost_cup [topic=work self.age>=18]
   : A #guest# left a #cup# behind the #bench# after closing.
   : I found it when I had nearly emptied the last #bucket#.
-  ask : Did you wash it?
-  b : A familiar nuisance.
+  b : A familiar nuisance. Did you wash it?
   : I kept the #water# and finished the job.
 
 story bog_path [topic=travel self.age>=18]

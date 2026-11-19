@@ -1,6 +1,6 @@
-# lf124, the wood-edge swineherd (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf124, the wood-edge swineherd (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf124
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -362,8 +362,7 @@ story wood_turn [topic=memories self.age>=18]
 story storm_fence [topic=weather self.age>=18]
   : Before the #storm# broke, I was already awake in the #yard#.
   : One #rail# had worked loose in the #wind#.
-  ask : Did you mend it?
-  b : Good that you checked.
+  b : Good that you checked. Did you mend it?
   : Before the #rain# reached us.
 
 story honey_after_count [topic=food self.age>=18]
@@ -383,8 +382,7 @@ story first_lesson [topic=work self.age>=18]
 story market_edge [topic=home self.age>=18]
   : I stood at the #market# edge while the crowd grew.
   : I heard every trader without losing the open #road# beside me.
-  ask : Did you buy anything?
-  b : A good place to stand.
+  b : A good place to stand. Did you buy anything?
   : A little #feed# and a #cake# for later.
 
 rule @bark_gate

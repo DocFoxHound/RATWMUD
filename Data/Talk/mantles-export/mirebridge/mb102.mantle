@@ -1,6 +1,6 @@
-# mb102, the counter-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb102, the counter-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb102
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -394,13 +394,13 @@ dlg @3 resident.hub [topic.meeting=returning] : #topic.player#. #welcome_back#. 
 dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it. I've a count to finish. | Say your piece. I'm listening, and I'm counting.
 dlg @5 resident.hub [here.time=night] : The book's shut. Be quick, #address#. | Late. If it's trade, it's tomorrow.
 dlg @1 resident.job [self.role=merchant] : I keep the stores. Rope, salt, oil, pots, #herring#. And I read eel water better than anyone. | #self.trade_words.capitalize#. Every shelf, every sack, every copper, #reckon#.
-dlg @1 resident.business : Steady and rising, thanks to the Bright One. | Good. #shelves.capitalize# empty and fill, as they should.
+dlg @1 resident.business [business!=thriving|failing] : Steady and rising, thanks to the Bright One. | Good. #shelves.capitalize# empty and fill, as they should.
 dlg @2 resident.business [business=thriving] : Thriving. I'll have #plans# by next year at this rate. | Couldn't be better. #oath#.
-dlg @1 resident.news : #news_none# The travellers bring what news there is. | Nothing that's not in #ledger#, #address#.
-dlg @1 resident.gossip : I don't trade in gossip. Bad coin, that. | #gossip_none#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The travellers bring what news there is. | Nothing that's not in #ledger#, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't trade in gossip. Bad coin, that. | #gossip_none#
 dlg @1 resident.bye : #farewell#. The Bright One see you home. | #farewell#. Mind the boards.
-dlg @1 shop.greet : #greet#. #shop_offer# Nothing city-made, mind. | #greet#, #address#. Rope, salt, oil, pots. What'll it be?
-dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. #herring.capitalize# is fresh in #crock#. | Back, #topic.player#. #shop_offer#
+dlg @1 shop.greet [here.shop!=bare] : #greet#. #shop_offer# Nothing city-made, mind. | #greet#, #address#. Rope, salt, oil, pots. What'll it be?
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. #herring.capitalize# is fresh in #crock#. | Back, #topic.player#. #shop_offer#
 dlg @1 shop.prices : #shop_dear# Salt on straight scales, and the herring's worth every copper. | Nothing's moved much. #pans.capitalize#, oil, rope, same as last week, #reckon#.
 dlg @1 shop.bye : #shop_bye# Go with the Bright One. | #farewell#. Use #scraper# on the way out.
 graft shop.greet

@@ -1,6 +1,6 @@
-# lf118, the patient harvest baker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf118, the patient harvest baker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf118
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent broad light
@@ -349,22 +349,19 @@ a : A hollow tap. | After the #fire# settles.
 story first_batch [topic=work self.age>=18]
   : I hurried a #batch# once because the #queue# was growing.
   : The #crust# browned while the #crumb# stayed heavy.
-  ask : What did you do?
-  b : A lesson in patience.
+  b : A lesson in patience. What did you do?
   : I sold the later #loaves# and kept those for our #table#.
 
 story city_walk [topic=travel self.age>=18]
   : I walked to the #city# for a missing #order#.
   : At the #bridge# on my way home, I finally heard the #wind# again.
-  ask : Did you find the order?
-  b : That is a long walk.
+  b : That is a long walk. Did you find the order?
   : Yes; the #walk# was worth more.
 
 story harvest_step [topic=pastimes self.age>=18]
   : I reached the harvest #dance# with #flour# still on my sleeve.
   : Someone pulled me into the first round before I could brush it away.
-  ask : Did you mind?
-  b : A fine evening.
+  b : A fine evening. Did you mind?
   : Not for a moment.
 
 story child_and_tray [topic=family self.age>=18]

@@ -1,6 +1,6 @@
-# mb119, the fretful turf-cutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb119, the fretful turf-cutter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb119
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent none
@@ -75,7 +75,7 @@ does tell.self / react.self / assess
 a : #cutting.capitalize#'s wet to the knee today. Every #turf# comes up dripping. | Cut two hundred turves and built #stack#. My back's talking to me. | The face of #cutting# slipped this morning. Just a little. I stood back.
 b[job=miner|laborer|farmer] #hands : Wet cutting's slow cutting. | Two hundred's a good day. | Good. Never stand under a face.
 b : Sounds hard. | Rest it, then. | Were you all right?
-a@hands : It is. #saying#. | It is. I'll pay for it tomorrow. | Never. I learned that young.
+a@hands : It is. #saying#. | #bc_it_is# I'll pay for it tomorrow. | Never. I learned that young.
 a : It is. I'm only #tired#, though. | I will. After #soup#. | I was. I'm fine. #fret#.
 
 scene bog_finds
@@ -114,7 +114,7 @@ does tell.self / react.self / assess
 a : #soup.capitalize#. That's all I want after the cutting. | Made a pot of #soup# last night. Enough for the whole house. | Can't eat when I'm worried. #soup.capitalize#, I can always manage.
 b[wealth=poor|destitute] #poor : Barley's cheap, at least. | Did they eat it? | Soup goes down easy.
 b : #bc_lovely# | Did it last? | #bc_good#
-a@poor : It is. For now. #fret#. | Every drop. | It does. It's kind, soup.
+a@poor : It is. For now. #fret#. | Every drop. | #bc_it_does# It's kind, #soup#.
 a : It's warm and it's plain. | Not till morning. Somebody had seconds. | It's the one thing that settles me.
 
 scene rats_larder
@@ -122,7 +122,7 @@ when topic=home|animals here.region=fens
 does tell.complaint / react.complaint / assess
 a : #rats.capitalize#. I heard it scratching all night. I didn't sleep. | Found holes in the meal sack. #rats.capitalize#. I knew it. | I put everything up on the high shelf. They climb. They always climb.
 b : Get a cat. | #bc_bad_luck# | #bc_they_always_do#
-a : A cat? I'd only worry about the cat. | I knew it. I said there was something. | They do. I'll put a lid on it. Two lids.
+a : A cat? I'd only worry about the cat. | I knew it. I said there was something. | #bc_they_do# I'll put a lid on it. Two lids.
 
 scene tidy_room
 when topic=home here.region=fens
@@ -259,7 +259,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : Oh. #greet#. I don't know your fa
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Is everything all right? You look like something's happened.
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. I'll listen. From here. #fret#.
 dlg @1 resident.job : I cut turf at #cutting#. Cut it in spring, stack it, dry it. It's hard, but it's quiet.
-dlg @1 resident.news : I don't know anything. Not really. #fret#. Nothing I'd want to be the one to say.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : I don't know anything. Not really. #fret#. Nothing I'd want to be the one to say.
 dlg @1 resident.bye : #farewell#. Go carefully. Stay off the soft ground.
 graft resident.hub
 choice You seem worried. Is something wrong? -> worried

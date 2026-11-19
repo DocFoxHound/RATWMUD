@@ -1,6 +1,6 @@
-# rm101, the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm101, the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm101
-revision 1
+revision 2
 state ready
 dialect plain
 accent broad light
@@ -164,7 +164,7 @@ scene dk_thunderstorm
 when topic=weather here.weather=storm
 does tell.feeling / react.self / assess
 a : Hear that? #thunder.capitalize#. I could listen all day. | Storm's come up proper. Best thing that's happened all week. | They're running for doorways. I'm staying put under the awning.
-b[old] #old : I liked it too, once. Now my bones tell me a day early. | We had them worse when I was a pup. | A good awning's worth its weight.
+b[old] #old : I liked it too, once. Now my bones tell me a day early. | We had them worse in my young days. | A good awning's worth its weight.
 b : You like this? | Best thing? Truly? | You'll get soaked.
 a@old : Mine too. I listen anyway. | Everything was worse. That's how you know you've lived. | Mine's held twenty years. Patched twice.
 a : From under a roof, aye. Out in it, no. | Clears the air. Clears the market of chatterers too. | Not under this. I know where the leaks are.
@@ -379,9 +379,8 @@ a : One or two. Not many. | Someone with a steady paw. I'll know them. | I'd hav
 story dk_story_knife [concept=talk.memories self.age>=40]
   : #knife.capitalize# was an old fishwife's. She kept the slab next to mine when I was a sprat.
   : She never let me touch it. Then one winter she put it in my paw and the stone with it, and went home, and didn't come back.
-  ask : Did you know she was ill?
-  b[old] : The old know. They don't say.
-  b : Did you know why?
+  b[old] : The old know. They don't say. Did you know she was ill?
+  b : Did you know why? Did you know she was ill?
   : I knew. I said nothing. Neither did she. I've kept the edge on it since. #hone#.
   b : That's a good way to remember someone.
   : It's the only way I know.
@@ -399,8 +398,7 @@ story dk_story_lightpaw [concept=talk.memories]
 story dk_story_storm [concept=talk.memories here.region=ridgemere]
   : Worst storm I ever saw, the gulls came down and stood in the market like customers. Rows of them.
   : Lightning on the water, roofs going. Everybody under the arches. I stood out at the slab and watched it all.
-  ask : Weren't you frightened?
-  b[old] : I remember that one. Or one like it.
+  b[old] : I remember that one. Or one like it. Weren't you frightened?
   b : Weren't you frightened?
   : Of weather? No. Weather doesn't want anything from you. Wolves do.
   b : I'll think on that.
@@ -410,15 +408,13 @@ story dk_story_counter [concept=talk.memories self.age>=45 self.role=merchant]
   : The day it came free, I was there before the sun with a bucket of ice and my own fish.
   b : Eleven years.
   : Eleven. I'd have waited twelve. Nobody else wanted it as much.
-  ask : Did anyone try for it?
-  b : Did anyone else want it?
+  b : Did anyone else want it? Did anyone try for it?
   : One. They came at noon. Noon! I'd sold half a slab by then.
 
 story dk_story_road [concept=talk.memories self.age>=50]
   : When I was young I walked the coast road alone at night with a basket on my back. Nobody looked twice.
   : I'd not do it now. Not for a full purse. They send guards with the wagons now.
-  ask : Was it really safer?
-  b[old] : It was. We didn't lock our doors.
+  b[old] : It was. We didn't lock our doors. Was it really safer?
   b : Was it really safer?
   : Safer. Maybe I was faster. #hm#. Both, I'd say.
 
@@ -429,12 +425,12 @@ dlg @4 resident.hub [pair.disposition=wary] : #hm#. What is it? Say it from ther
 dlg @5 resident.hub [pair.disposition=warm] : There you are, #topic.player#. Stand out of the drip and talk.
 dlg @6 resident.hub [here.time=night] : It's late. I'm off my feet, not off my guard. What's wanted?
 dlg @1 resident.job : Fish. Gutting it, selling it, smelling of it. Since I was a sprat. | I'm a #self.trade_words#. Have been since before you were weaned.
-dlg @1 resident.business : Fish moves. That's all you can ask. | Steady. Steady's good. Exciting's for festivals.
-dlg @1 resident.news : Not my trade. Ask at the wharf. | #news_none# I sell fish, not talk.
-dlg @1 resident.gossip : I hear plenty. It stays in the ice. | Not from me. Try the barber.
+dlg @1 resident.business [business!=thriving|failing] : Fish moves. That's all you can ask. | Steady. Steady's good. Exciting's for festivals.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Not my trade. Ask at the wharf. | #news_none# I sell fish, not talk.
+dlg @1 resident.gossip [here.gossip!=yes] : I hear plenty. It stays in the ice. | Not from me. Try the barber.
 dlg @1 resident.bye : #farewell#. Mind the slick by the slab. | Off you go. Come early next time.
-dlg @1 shop.greet : #greet#. Fresh off the boats this morning. Pick, or step aside. | Cod, herring, eels. Look all you like.
-dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. I kept back a good one. Don't tell the others.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Fresh off the boats this morning. Pick, or step aside. | Cod, herring, eels. Look all you like.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. I kept back a good one. Don't tell the others.
 dlg @1 shop.prices : What's chalked is what it costs. I don't haggle over herring. | Fair price for a fair fish. Ask the stall next door if you want a worse one.
 dlg @1 shop.bye : Eat it tonight, not tomorrow. #farewell#. | #farewell#. Keep it cool.
 graft @stone resident.hub

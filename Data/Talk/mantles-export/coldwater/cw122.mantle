@@ -1,6 +1,6 @@
-# cw122, the evening line (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw122, the evening line (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw122
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -331,8 +331,7 @@ story small_sparrow [topic=memories self.age>=25]
 story lost_float [topic=pastimes self.age>=25]
   : My #float# vanished beside the #reeds# and I thought I had a catch.
   : I pulled gently and found the #hook# caught in an old stem.
-  ask : Did you lose the line?
-  b : A patient pull might free it.
+  b : A patient pull might free it. Did you lose the line?
   : I worked it loose and sat another hour without a fish.
 
 story cider_spice [topic=food self.age>=25]
@@ -345,8 +344,7 @@ story cider_spice [topic=food self.age>=25]
 story quiet_post [topic=family self.age>=25]
   : I heard of a #post# with better pay and asked what it required.
   : The hours were longer than the promise made it sound, so I brought the terms home to think on.
-  ask : Did you take the work?
-  b : You would want the hours clear first.
+  b : You would want the hours clear first. Did you take the work?
   : No. I learned to ask that question before any family member agrees.
 
 rule @bark_sparrow

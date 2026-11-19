@@ -1,6 +1,6 @@
-# cw136, the orchard nose (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw136, the orchard nose (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw136
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -241,8 +241,7 @@ a : For a short trip. | After the next crop.
 story apple_in_crate [topic=work self.age>=25]
   : A sealed #crate# smelled sweeter than the others.
   : I opened it and found one #apple# soft beneath a sound top layer.
-  ask : Did you save the rest?
-  b : The nose found what eyes missed.
+  b : The nose found what eyes missed. Did you save the rest?
   : Most of it. That #crate# stays open until I check the bottom now.
 
 story quiet_plate [topic=memories self.age>=25]
@@ -255,8 +254,7 @@ story quiet_plate [topic=memories self.age>=25]
 story southern_ground [topic=dreams self.age>=25]
   : I walked a southern #field# with a seller who praised its low #price#.
   : The #soil# held water where every young #root# would have gone.
-  ask : Did you buy it?
-  b : The ground answered before the seller.
+  b : The ground answered before the seller. Did you buy it?
   : No. I would rather wait for a place worth planting.
 
 rule @bark_scent

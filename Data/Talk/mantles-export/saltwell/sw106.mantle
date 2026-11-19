@@ -1,6 +1,6 @@
-# sw106, the stone-sill raker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw106, the stone-sill raker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw106
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -131,7 +131,7 @@ scene straw_home
 when topic=home
 does tell.self / react.self / assess
 a : Put down #straw# today. The whole room smells of it. | Changed the straw. Slept like a stone on the bank. #nod.capitalize#. | Keep your feather beds. #straw.capitalize# and a cold night, and I'm gone.
-b[wealth=rich|comfortable] #soft : A feather bed's not so bad, you know. | Straw itches. | I've not slept on straw since I was a pup.
+b[wealth=rich|comfortable] #soft : A feather bed's not so bad, you know. | Straw itches. | I've not slept on straw in years.
 b : Lovely. | Lucky you. | Sounds snug.
 a@soft : I'd sink in one and never come up. #oath#. | Old straw itches. #straw.capitalize# doesn't. | Then you've forgotten something #good#.
 a : Cut green, dried in the sun. You can't buy that smell for #money#. | I don't dream, on #straw#. I just go. | Gone till #beasts# wake.
@@ -220,7 +220,7 @@ story city_once [concept=talk.memories self.age>=25]
   : I went down to the city one year. A bag of stones, a plan, and nothing else.
   : The plan went. I kept the stones.
   b : What was the plan?
-  : #enough.capitalize#. That's the whole of it, and all you'll get.
+  : #enough.capitalize#. That's all of it, and all you'll get.
 
 story first_stone [concept=talk.memories]
   : The first stone I kept, I was a pup. #gran.capitalize# said put it back; it isn't yours.
@@ -291,7 +291,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're not from here. Sa
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you're staying. | #topic.player#. You again. #talk_open#
 dlg @3 resident.hub [pair.disposition=hostile|wary] : I've not forgotten last time, #address#. Well? | Say it quick, #address#, and we'll see.
 dlg @1 resident.job [self.job=farmer] : I'm a #self.trade_words#. Up before the sun, done when it's done. | #self.trade_words.capitalize#. That's me. #rake.capitalize#, the sacks, and sore by noon.
-dlg @1 resident.news : #news_none# I don't go looking for news. | If there's news, it went past me on #crust#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I don't go looking for news. | If there's news, it went past me on #crust#.
 dlg @1 resident.bye : #farewell#. | #farewell#. Mind the step.
 graft resident.hub
 choice What's that in your paw? A stone? -> stones

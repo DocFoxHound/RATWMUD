@@ -1,6 +1,6 @@
-# cw117, the pocket stones (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw117, the pocket stones (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw117
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -230,15 +230,13 @@ a : Sometimes a neighbour with the same idea. | A little. I do not mind.
 story first_stone [topic=memories self.age>=25]
   : I found a flat #stone# at the #bank# while I was meant to be hurrying home.
   : I carried it in my #pocket# and kept touching its edge along the #road#.
-  ask : Did you keep that first one?
-  b : A stone with a story is harder to throw back.
+  b : A stone with a story is harder to throw back. Did you keep that first one?
   : I did. It sits on my #shelf# among the others.
 
 story berry_basket [topic=food self.age>=25]
   : I went out for #berries# and came home with more #stones# than fruit.
   : The best #bush# had already been picked, so I walked farther along the #bank#.
-  ask : Did you find any berries at all?
-  b : Enough for a taste, perhaps.
+  b : Enough for a taste, perhaps. Did you find any berries at all?
   : A handful. We ate them before the #larder# door was open.
 
 story low_flame [topic=work self.age>=25]

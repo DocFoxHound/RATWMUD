@@ -1,6 +1,6 @@
-# lf133, the road-saying carter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf133, the road-saying carter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf133
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -285,15 +285,13 @@ a : Some. | Every #winter#.
 story shared_well [topic=home self.age>=18]
   : My #neighbour# claimed the #well# while I was filling a #bucket#.
   : I asked who had built it; neither of us knew.
-  ask : Did you take the water?
-  b : A difficult quarrel.
+  b : A difficult quarrel. Did you take the water?
   : We drew a #bucket# each.
 
 story wrong_turn [topic=travel self.age>=18]
   : I trusted an old #map# and turned the #cart# toward a missing #bridge#.
   : The real #road# bent past a #field#.
-  ask : Did you turn back?
-  b : A poor map.
+  b : A poor map. Did you turn back?
   : I did, and kept the map for its tale.
 
 story spoke_before_bridge [topic=work self.age>=18]

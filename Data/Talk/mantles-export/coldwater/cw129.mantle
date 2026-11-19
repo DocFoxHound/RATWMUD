@@ -1,6 +1,6 @@
-# cw129, the return stone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw129, the return stone (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw129
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -239,8 +239,7 @@ a : When they want to hear it. | It reminds me they are on the #road#.
 story three_nights [topic=memories self.age>=25]
   : I lost the #path# in a #wood# and spent more than one #night# there.
   : I rationed my #bread# and watched the #sun# until I found a clear way out.
-  ask : What did you do first when you reached a road?
-  b : I would have sat and caught my breath.
+  b : I would have sat and caught my breath. What did you do first when you reached a road?
   : I did, then took a #stone# from the #bank# near #home#.
 
 story warm_loaf [topic=work self.age>=25]
@@ -253,8 +252,7 @@ story warm_loaf [topic=work self.age>=25]
 story lost_stone [topic=pastimes self.age>=25]
   : I lost a #stone# I had kept from a safe journey.
   : I looked along the #road# for a while, then went to the #river# again.
-  ask : Did you find the same one?
-  b : The river would have many others.
+  b : The river would have many others. Did you find the same one?
   : No. I chose a new one and kept the memory of the first.
 
 rule @bark_bread

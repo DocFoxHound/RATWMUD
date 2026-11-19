@@ -1,6 +1,6 @@
-# mb120, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb120, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb120
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent broad light
@@ -137,7 +137,7 @@ scene draughts_evening
 when topic=pastimes
 does invite / accept / assess
 a : #draughts.capitalize#, after supper? I'll not go easy. | I've been beaten at #draughts# twice running. I've marked it. | Set up #draughts#. I've been thinking of a move all day, out on the downs.
-b[pair.band=spouses] #mine : You always say that. | Marked it on your stick? | Out with it, then.
+b[pair.band=spouses] #mine : You always say that. | Marked it on your stick? | Go on, say it.
 b : Go on, then. | By who? | Only one move?
 a@mine : And I always mean it. | It's a sore notch. | Not till you've moved first.
 a : Black or white, #address#? | Somebody who'll not beat me three times, fen-sure. | One good one is enough.
@@ -291,15 +291,14 @@ story snow_lamb [topic=memories|animals self.job=herder]
 story first_floor [topic=home|memories self.away=yes]
   : The first night in a house with a stone floor, I couldn't sleep. It was too dry. I kept waking for the damp.
   : So I got up and walked on it. Up and down, barefoot, in the dark. Just to feel it.
-  ask : All night?
-  b : Did you sleep in the end?
+  b : Did you sleep in the end? All night?
   : Near dawn. And I thanked the Bright One before I shut my eyes. Every dry floor's a gift to a fen wolf, fen-friend.
 
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#. You're new to me. Step in out of the mizzle and say what you need.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Your last kindness is on the stick. Right here, fen-friend.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. I'll hear you out, #address#. I'll not promise more than that.
 dlg @1 resident.job : I keep sheep on the downs, at #fold#. Count them out, count them home. Same with favours.
-dlg @1 resident.news : Nothing much floats up to #fold#. Grass is good. #ewes.capitalize# are fat. I give thanks for it.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing much floats up to #fold#. Grass is good. #ewes.capitalize# are fat. I give thanks for it.
 dlg @1 resident.bye : #farewell#, #address#. Mind the soft verge going home.
 graft resident.hub
 choice What's that stick you're carrying? -> tally

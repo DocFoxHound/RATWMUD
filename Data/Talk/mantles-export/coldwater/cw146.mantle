@@ -1,6 +1,6 @@
-# cw146, the ledger skipper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw146, the ledger skipper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw146
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -264,8 +264,7 @@ story snapped_knife [topic=pastimes self.age>=25]
 story road_mile [topic=travel self.age>=25]
   : A #cart# #wheel# complained halfway along the #road# to the #city#.
   : I stopped, found a loose pin, and fixed it before the #load# could spill.
-  ask : Did you reach the city?
-  b : That was worth the stop.
+  b : That was worth the stop. Did you reach the city?
   : Late, and happy to turn back to the #lake#.
 
 rule @bark_ledger

@@ -1,6 +1,6 @@
-# cw134, the name remembered (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw134, the name remembered (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw134
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -248,8 +248,7 @@ story boiling_spill [topic=work self.age>=25]
 story boot_at_wedding [topic=memories self.age>=25]
   : My wedding #music# carried on well past supper.
   : The sole of one #boot# opened during the last dance.
-  ask : Did you stop dancing?
-  b : A new pair sounds deserved.
+  b : A new pair sounds deserved. Did you stop dancing?
   : After that tune. I still keep better #boots# for festivals.
 
 rule @bark_names
