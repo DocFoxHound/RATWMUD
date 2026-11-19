@@ -18,9 +18,9 @@ Branch `cloud/mantles-city-a3` from `154fd7c0`. Codex coordinated six parallel w
 | rm192 | rm_mab_pitchcot | Mab Pitchcot | plain | light broad | standard | adult | the drifting tally | 80 | 21 | 3 | 7 | 36 | 4 | 8 | 1 | 14 | 254 |
 | rm193 | rm_mogens_dripley | Mogens Dripley | plain | light broad | full | adult | the cabbage league-keeper | 132 | 33 | 5 | 10 | 45 | 6 | 31 | 2 | 21 | 530 |
 | rm194 | rm_rune_fogworth | Rune Fogworth | plain | light broad | full | adult | the backwards reader | 122 | 32 | 5 | 11 | 42 | 6 | 24 | 2 | 19 | 517 |
-| rm195 | rmx_hollis_shaw | Hollis Shaw | plain | light broad | standard | adult | the copyist who sings the low part | 80 | 20 | 3 | 7 | 34 | 4 | 11 | 1 | 16 | 378 |
+| rm195 | rmx_hollis_shaw | Hollis Shaw | plain | light broad | standard | adult | the low-part copyist | 80 | 20 | 3 | 7 | 34 | 4 | 11 | 1 | 16 | 378 |
 | rm196 | rm_godfrey_dripmore | Godfrey Dripmore | plain | light broad | full | adult | the stair gauge | 98 | 28 | 5 | 9 | 34 | 6 | 14 | 2 | 19 | 262 |
-| rm197 | rm_liv_pitchhand | Liv Pitchhand | plain | light broad | full | adult | the star on the first loaf | 130 | 36 | 5 | 10 | 44 | 6 | 27 | 2 | 19 | 535 |
+| rm197 | rm_liv_pitchhand | Liv Pitchhand | plain | light broad | full | adult | the first loaf's star | 130 | 36 | 5 | 10 | 44 | 6 | 27 | 2 | 19 | 535 |
 | rm198 | rmx_philippa_rainford | Philippa Rainford | plain | light broad | standard | young | the pocket fleet | 62 | 19 | 3 | 6 | 21 | 4 | 8 | 1 | 14 | 192 |
 | rm199 | rm_clemence_rustham | Clemence Rustham | plain | broad light | full | adult | the last warm saucer | 97 | 30 | 5 | 9 | 31 | 6 | 14 | 2 | 18 | 302 |
 | rm200 | rm_edda_ropeton | Edda Ropeton | plain | light broad | full | adult | the folded mile | 97 | 30 | 5 | 9 | 31 | 6 | 14 | 2 | 17 | 302 |
@@ -71,9 +71,9 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 - **rm192, the drifting tally.** This wolf keeps a respectable counter and loses the tally every time a leaf goes past the window, says little and takes offence quickly, and lights up for pickled herring, a throw of the dice, feast-day bells and a gusting autumn.
 - **rm193, the cabbage league-keeper.** This wolf sells greens on Market Square, meets the country carts in the dark for first pick, keeps a running league of which farm grows the best cabbages, and says the driest things with the kindest face on the square.
 - **rm194, the backwards reader.** This wolf says little and means it, reads every sign in the street the wrong way round from long years at the type case, likes a storm and a wrestling bout from the back of the crowd, and keeps any thought about the Houses well out of the ink.
-- **rm195, the copyist who sings the low part.** This wolf copies for the city in a square, patient hand, says little and says it softly, keeps the door shut to faces not yet known, sings the bottom line in the Restday choir, and turns every damp-weather cough into a low note as if warming up.
+- **rm195, the low-part copyist.** This wolf copies for the city in a square, patient hand, says little and says it softly, keeps the door shut to faces not yet known, sings the bottom line in the Restday choir, and turns every damp-weather cough into a low note as if warming up.
 - **rm196, the stair gauge.** This wolf keeps broken crocks for measuring high water on the city steps, speaks frankly about a bad bargain and finds a dance partner by clearing space to turn.
-- **rm197, the star on the first loaf.** This wolf bakes sweet loaves near the north gate and lives over the ovens: quick to tease and quicker to bless, scores a star on the first loaf of every bake for the Bright One, loves an empty chapel, a long aimless walk and a thunderstorm from under a good roof, can't abide rats or stale bread, and means to end up on the Rise.
+- **rm197, the first loaf's star.** This wolf bakes sweet loaves near the north gate and lives over the ovens: quick to tease and quicker to bless, scores a star on the first loaf of every bake for the Bright One, loves an empty chapel, a long aimless walk and a thunderstorm from under a good roof, can't abide rats or stale bread, and means to end up on the Rise.
 - **rm198, the pocket fleet.** This wolf carves tiny boats, bristles at pity and tests each hull in water before choosing a name.
 - **rm199, the last warm saucer.** This wolf keeps a coal nub for marking the last warm saucer and receives strangers with quiet, unhurried pride.
 - **rm200, the folded mile.** This wolf folds old maps to hide the miles already walked, gives provisions by the journey and demands a sounder guarantee than a fine crest.
