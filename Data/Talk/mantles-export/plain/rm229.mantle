@@ -1,0 +1,319 @@
+mantle rm229
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mab_saltgate
+title the straw skipper
+fits stage=young|adolescent|adult|old
+prefers talk=chatty honesty=guarded
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=guarded piety=ordinary drive=steady
+quirk creases_straw_hulls_to_race_in_wash_water
+likes oatcakes whittling fresh_straw thunder
+dislikes drizzle gulls
+fears a_course_with_no_landing
+hopes a_ship_of_dry_wood
+topics travel +0.5 pastimes +0.6 weather +0.2 gossip -0.4
+styles comfort=games gossip=guarded refuse=merry tease=quick
+marks oath saying
+persona #self.first# races little straw hulls on wash water, with an invented crew for each boat and a very firm distinction between a tale and a confidence.
+
+words
+oath! = Keels of barley | Six leaks in a thimble
+saying! = Small ships deserve big names | The shore can wait its turn
+boat = my straw boat | the folded hull
+sail = a scrap of leaf | a crooked leaf sail
+spar = the shortest splinter | my little mast stick
+crew = my crumb crew | three oat grains
+shore = the basin rim | the opposite rim of the bowl
+course = my crooked course | the long way round
+breath = a puff from shore | a little wind
+boatknife = a blunt little cutter | a rounded blade
+oat = a buttered oat round | an oat biscuit
+spray = a cold splash | a little spurt of water
+nest = a dry knot of straw | a warm curl of straw
+fleet = a fairly small navy | three boats in a row
+
+any
+opinion festivals for 3 : A whole street prepared to sing, and all I have to bring is the tune. I'll come twice if there's time.
+opinion houses against 1 : A big House could spare a little timber for a landing that doesn't give under ordinary feet.
+opinion strangers against 1 : A pleasant voice gets a pleasant answer. It doesn't get the latch lifted.
+opinion city for 1 : I could go round this city in a bowl if somebody carried the bowl. There's certainly water enough.
+opinion sump for 1 : I rate the low streets highly. They teach you to keep what floats and to spot what only looks dry.
+opinion watch against 1 : Let me play a good game to the finish without anybody wanting a list of who's playing.
+any
+line greet : Welcome aboard the bit of shore I'm standing on. | Take a dry berth beside me.
+line greet [pair.band=strangers] : First visit to this port, as far as the crew can tell. | New passenger. You can have the place by the mast.
+line greet.return : You've caught me between voyages. | Yes, the crew and I can both hear you fine.
+line greet.return [pair.band=friends|family] : There's a trusted face. You can mind the whole fleet for a minute. | I'd know that hail above a dozen gulls.
+line greet.return [here.time=night] : Night watch looking lively, I see. | Hullo in the dark. We're safely tied up.
+line hail [pair.band=friends] : Come quick. There's been an exciting development in the basin. | Over by the world's smallest harbour!
+line kin.open [pair.kin!=no] : A family boat can carry one more. | You get aboard free, naturally.
+line again.open : You've come into port a second time already. | I see your voyage was a short one.
+line react.news : I've stopped humming. Go on with your news. | Tell the important piece first and the juicy piece second.
+line react.news.new : That's news enough to stop a whole fleet. | I'm hearing that for the very first time.
+line react.news.known : That one got here by the faster boat. | I knew how the tale docked, yes.
+line react.news.doubt : I don't think that story draws water evenly. | There's a suspicious hole under all that excitement.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice] : A cheer from every little deck! That's good hearing. | I'd put up my finest scrap of sail for news like that.
+line react.news.sorrow [topic.kind=loss|death|theft|arrest|crime|assault] : Oh. I'll draw my boats aside and listen properly. | That sinks low in me. Can I sit here with you?
+line farewell : The shore crew wishes you dry travelling. | I'll hum you a verse to go out on.
+line farewell.return : A dry crossing back to you. | Come back with tales enough to fill a basin.
+line ask.how : Has anything floated your way that you'd care to keep? | Are you sailing nicely or shipping water?
+line answer.how : Keeping afloat quite handsomely, thank you. | Quite merry, with certain details kept private.
+line decline : I'm keeping that stretch of water to myself today. | I promised the crew we wouldn't take such a job.
+line accept_decline : No sailing orders for you, then. | Thank you for giving my idea a hearing anyway.
+line preclose : Tide's turning in my particular bowl. I'd better consult the crew. | I'll hum the last verse and cast off shortly.
+line accept_preclose : Good luck getting your cargo where it's meant to go. | Take your own heading. I'll keep mine.
+line thank : You've earned a cheer from three grains of oat. | Thanks. That was my very smallest boat you saved.
+line deflect_thanks : Let the crew take a little of the glory. | Think of it as a friendly port charge.
+line sympathise : I won't go singing that story to the street. | I can be quiet with you. Just watch me.
+line reassure : No need to carry the whole ocean in your head tonight. | I'll lend a paw without having to know everything.
+line give.advice : Try the tiniest version of your idea in a bowl first. | If you're asking me, I'd keep one dry way home.
+line ack : That's aboard and stowed safely. | All ears on this vessel.
+young
+
+scene crew_dry
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : My crew consists of #crew#. One's the captain because it's got a mark. | A grain fell overboard and suddenly I had a rescue on.
+b : What do the others do? | Any survivors?
+a : One keeps watch. The other keeps an eye on the first one. | Yes. I dried the sailor on my sleeve. Very slow recovery.
+
+
+scene butterpay
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : The clean bits of an oatcake go in my mouth. The crumbs go sailing. | Butter makes a fine sea for a ship you mean to eat.
+b : That's not many passengers. | Doesn't it stick?
+a : Enough. Nobody's yet asked me for a bigger ship. | A bit. You get to eat the seabed as well.
+
+
+scene school_sail
+when topic=day self.job=child
+does tell.self / react.self / assess
+a : I can crease a little sail under my slate. | Sums go quicker if I count sailors.
+b : Can you still write on it? | What if you run out of sailors?
+a : On the slate, yes. On the sail, only tiny sailing orders. | Easy. I borrow the port authority. That's me in a different hat.
+
+
+scene no_gulls
+when topic=animals self.dislikes=gulls
+does warn / react.self / assess
+a : Keep your voice down about the oat grain sailors. Gulls have ears. | A gull sees a boat and thinks breakfast.
+b : They have eyes as well. | Only your boats, surely.
+a : Then keep your paws in front of the cargo too. | I bet the big skippers lose the odd crumb as well.
+
+
+scene private_sea
+when topic=friends|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'll show you every boat except the one tied behind my wrist. | A skipper is allowed one secret island.
+b : What's that one carrying? | How does anyone find it?
+a : My business. It's a small cargo and it's under my protection. | That's why I give you all the other islands to look for.
+
+
+scene downpour_race
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Thunder makes a splendid drum for my launch. | I'm too busy being harbourmaster to be scared of that noise.
+b : Will the boat hear you? | What are your orders?
+a : I'll wave a paw. Under thunder my finest voice is a squeak. | All boats under the roof. Harbourmaster too.
+
+
+scene songs_under
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : My crew won't row unless I hum. | I've got another verse but I sing it very quietly.
+b : A demanding lot, for oats. | Are the words secret?
+a : They're not light work. Got to blow the wind and provide the music. | No words yet. That's the quiet bit.
+
+adolescent
+
+scene peg_mast
+when topic=pastimes
+does tell.plan / react.self / assess
+a : I want to make a mast that comes down when a boat tips. | I'd carve the hull without looking at another boat.
+b : Won't that just leave it lying there? | Planning a new kind of boat?
+a : Yes, and that's when a crew wants to haul somebody back aboard. | A boat I can't blame on the example if it sinks.
+
+
+scene boat_name
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I name each boat after something it survived. | A new hull waits a while for its proper name.
+b : What if it capsizes at once? | Why wait?
+a : Then it'll be called belly-up. It still earns a launch. | I've wasted grand names on some very ordinary leaks.
+
+grown
+
+scene skin_fold
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #boatknife.capitalize# has a round end, by design. | Turn a splinter slowly and a hull appears under your thumb.
+b : Doesn't that make carving slow? | What if it's just a splinter?
+a : Slow suits a hand holding something as thin as #spar#. | A useful discovery. I can stop improving it.
+
+
+scene drydeck
+when topic=dreams
+does tell.feeling / ask.detail / answer.detail
+a : I dream of sailing to a place where a towel stays dry. | My ideal voyage includes a bone-dry bunk.
+b : What will your little fleet do there? | You'd still cross an ocean for it?
+a : Sit on a shelf enjoying retirement. | Yes. Much more satisfying to get dry when you know exactly what wet costs.
+
+
+scene thin_straw
+when topic=land|pastimes self.likes=fresh_straw
+does tell.self / react.self / assess
+a : Good straw has a shine to it even in poor light. | Every stalk's a mast till I crease it.
+b : Picking roofing material? | And after a crease?
+a : Hulls, today. Roofs aren't beyond my little boatyard though. | Could be the whole coast of an island. Depends how close you look.
+
+
+scene wet_song
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : This little wet stuff is enough to spoil a song but won't fill a basin. | Drizzle keeps a crew hanging about the imaginary pier.
+b : You want larger drops? | Does anybody get shore leave?
+a : I'd like the weather to finish a job it starts. | Naturally. I've got the whole crew on my sleeve.
+
+
+scene nearest_port
+when topic=home self.quarter=sump
+does tell.self / react.self / assess
+a : Down our way a leaky sill can launch a fleet. | There are Sump doorsteps with a high-water mark higher than my little mast.
+b : Do you launch indoors? | Hard on the doorstep.
+a : Not unless I've been invited to empty the basin. | Harder on boots. That's why I like playing admiral on shore.
+
+
+scene made_tide
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : Look, I can change the tide with one thumb. | I've the moon's job for a moment.
+b : Does the moon know? | How come?
+a : Somebody ought to tell it to save its strength for a larger basin. | Tilt this bowl and the tide obeys. A gratifyingly modest universe.
+
+
+scene ferry_dream
+when topic=travel|friends
+does tell.plan / ask.detail / answer.detail
+a : I'd build a little ferry for things people lose between chair and cupboard. | A button's exactly the right size for a lifebelt.
+b : How would your ferry get underneath? | Have you tested that?
+a : I'll have to invent a very small boat hook next. | Not a chance. I don't know anybody with a button-sized waist.
+
+
+scene word_harbour
+when topic=gossip
+does give.opinion / react.self / assess
+a : I'll put a funny name on any boat. I won't put a real wolf's trouble on it. | Sending a secret round the harbour is a peculiar way of losing a friend.
+b : What if it's an excellent tale? | You've a safer route for it?
+a : Then I can almost certainly make up a better one. | Yes. Keep that one tied to its post.
+
+
+scene quiet_flotsam
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : The water's so flat my little boat makes two hulls. | If my sail holds still its reflection gets a proper outline.
+b : Which one would you board? | Does the lower boat have a crew?
+a : The top boat. The other one's had its floor fitted upside down. | The same number, but quite astonishingly wet.
+
+
+scene marketday
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll take payment for a passage in clean shavings. | The fare on my ferry depends entirely on the size of the cargo.
+b : Surely you want actual coin? | More for a heavy load?
+a : Coin goes straight through the bottom. Keep it. | Less. It won't get very far, and I charge by distance.
+
+
+scene house_quay
+when topic=times world.times=lean|hard
+does tell.worry / react.self / assess
+a : A long hungry spell leaves very little crew for my ships. | In lean times I stick to straw boats with straw sailors.
+b : Because the oats go first? | Can they still float upright?
+a : All the oat goes into a meal. The game can learn new rules. | Better than oats, actually. Cheapest improvement I ever made.
+
+
+scene river_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A soaking followed by kind weather seems an excellent reason to say a little prayer. | I keep a little quiet after a boat comes through trouble.
+b : Do you keep score of such things? | For a prayer?
+a : Only the fires. I could never count all the soakings. | Yes. Some things a shanty doesn't quite cover.
+
+
+scene downwind_fair
+when topic=festival
+does tell.plan / react.self / assess
+a : A festive regatta needs two spare sailors for each that gets eaten. | I'd make the prizes from straw as well.
+b : You're planning on hungry spectators? | Same prize for first and last?
+a : I'm planning on being there myself. | Last gets a fresh hull. First can keep the lucky one.
+
+any
+
+story boatbread [topic=food|memories]
+  : Once I cut the crust off a thick oatcake and sailed the middle. It drank water till the edges fell away.
+  : For a moment the only part above water was the proud little captain.
+  b : Was the captain a crumb too?
+  : A raisin. Went down much more bravely than the oats.
+
+
+story mooring_hum [topic=pastimes|memories]
+  : I made up a winding song to remember how to tie a tiny mooring. The knot was tied before I'd sung the second line.
+  : I had to undo it all and add a completely unnecessary loop just to fit my beautiful tune.
+  b : Did it hold?
+  : Yes. I hadn't written the song for getting it loose again.
+
+
+story travelling_box [topic=travel|dreams]
+  : I once kept my whole fleet in a shallow box and carried it up a hill. I could see the real boats down below.
+  : I had sailed farther uphill that afternoon than the whole harbour ever had.
+  b : Did you put that in the log?
+  : In very large letters. There's always room for another hill in the log.
+
+
+rule @launch
+when concept=bark
+does aside
+cooldown 8h
+say Stand clear for a truly unimportant launching! | A thimble of water for the port, please!
+
+
+rule @meal
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Mind the cargo! Some of that's for eating! | Butter on the good half, sailors on the other!
+
+
+rule @weather
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Thunder salute! Mark that down in the little log! | All hands to the driest rim of the basin!
+
+
+rule @quiet
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Lovely straw, straight down the middle. There's a fleet in that handful. | Save me the long hollow stalk at the edge!
+
+dlg resident.hub : Yes, I know a great deal. Which tiny piece shall I serve up first?
+dlg resident.hub [topic.meeting=known] : #topic.player#, fine weather in my imaginary harbour, whatever the real one's doing.
+dlg resident.hub [here.time=night] : I've doused the lights on my very smallest vessel. It's tied up for the night.
+dlg resident.hub [pair.disposition=wary|hostile] : Ask from the quay. No need to board.
+dlg resident.job [self.job=child] : In lessons I practise sums that would fit the stores of a boat.
+dlg resident.job : #self.trade_words.capitalize#. Beyond that I run a very little port.
+dlg resident.bye : The crew wishes you a perfectly ordinary voyage with a magnificent supper at the end.
+graft resident.hub
+choice How can I tell which straw boat is quickest? -> oatfleet
+node oatfleet
+say Blow once across both bows. The slow one sticks to the side and wins by waiting for the other to sink. Most surprising sport.
+free
+choice Does the race have any rules? -> oatfair
+choice I'll cheer from the dock. -> hub
+node oatfair
+say Two. You have to declare your cargo beforehand, and nobody eats a passenger till both skippers have stopped blowing.
+choice I'll keep the oat grains safe. -> hub
+choice I have to sail. -> bye

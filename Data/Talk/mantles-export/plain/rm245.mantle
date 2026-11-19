@@ -1,0 +1,280 @@
+mantle rm245
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_frida_rainhand
+title the folded hill
+fits stage=adult|old
+prefers job=none quarter=sump
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=ambitious
+quirk folds_hills_into_scraps_of_map
+likes honey_cakes old_tales old_maps frosty_mornings
+dislikes cold_tea deep_mud
+fears losing_the_view_in_a_fold
+hopes a_window_level_with_the_heights
+topics land +0.6 dreams +0.5 memories +0.3 gossip -0.6
+styles comfort=quiet gossip=guarded refuse=indirect tease=none
+marks oath saying
+persona #self.first# creases scraps of old maps into hills and keeps the summit window folded out of sight.
+
+words
+oath! = Flatten my hill | Frost my sill over
+saying! = A fold can hide an entire hill | Climb twice before drawing once
+hillpaper = a paper ridge | a creased hill
+blankgap = the empty square | a gap between the streets
+glaze = a sticky golden skin | a thin honey crust
+wrongturn = the road drawn crooked | a bend drawn backward
+workcloth = my square of wiping cloth | a rag from my pocket
+spice = a burnt honey edge | a sticky corner
+foldmark = a worn white crease | a fold going pale
+toproom = a room looking out | a high room
+rimestripe = a white frost line | a rime of white
+hulls = the sweep of a stern | the rake of a mast
+ruler = a straight sliver of wood | a straight bit of lath
+steeppath = the hard climb | a long rise
+sill = the dry interior ledge | a narrow ledge
+
+any
+opinion houses against 3 : A House gets its whole roof on a map. Down here my entire street fits under a dot.
+opinion city for 2 : I mean to see every roof in town from above. That ambition's one thing I owe this place.
+opinion dole for 2 : A full belly gives me the leisure to want something beyond tomorrow's meal.
+opinion strangers against 1 : I'll show the public turning to anybody. The walk to my own door I keep folded up.
+opinion merchants against 2 : Little cakes shrink in the same old wrapper until the paper seems the better bargain.
+opinion sump for 1 : I learned every way up by starting down here. I still know the way back.
+
+grown
+line greet : Step round the fold. There's room. Welcome. | Just enough space for us both to stand easily.
+line greet [pair.band=strangers] : I can give a stranger a little width of pavement. | Come as far as my shadow.
+line greet.return : Welcome in your turn. I've put the paper away. | Good to have you level with me.
+line again.open : Same stretch of road again. | Our paths cross pretty neatly.
+line farewell : Find the turning you set out for. | Take the ascent at your own pace.
+line farewell.return : And may your way show up plain. | Your kind words will travel in a dry fold.
+line react.news : Let me hear which direction the news came from. | My eyes will follow your account to its edge.
+line react.news.new : That puts another street on my paper. | My old map hasn't a mark for that.
+line react.news.known : I've travelled the edge of that account before. | That one's on my sheet already.
+line react.news.doubt : There's an odd corner where those claims ought to join. | I'd leave that stretch in pencil.
+line react.news.glad [topic.kind=birth|marriage|work] : I'd climb a bit for news like that. | That's worth a light in the upper window.
+line react.news.sorrow [topic.kind=loss|death|assault] : Some hurts look larger the closer you come. | Leave the talk there. There's grief enough.
+line answer.how : Keeping my higher hopes under cover. | I'm moving, even when the street looks level.
+line ask.how : How far did your plans carry you? | Was today much of an uphill walk?
+line sympathise : There's a place to sit without being seen. | Step into my shelter a moment.
+line ack : I can see where your line's going. | That much is clear from here.
+line refuse : I've a thing half done that takes both paws. | Another time, when I've seen to my own errands.
+line accept_decline : I'll fold that away for another occasion. | You've your own road to walk.
+line preclose : I ought to take the rest of my climb in daylight. | There's a turning I've yet to reach today.
+line accept_preclose : Go before the way gets crowded underfoot. | Best leave while you can choose your own pace.
+
+scene map
+when topic=land self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Old ink sends a road straight through a hill. | My map's wrong at a place I love.
+b : Would you scratch it out? | Will you get a new one?
+a : I'd fold the sheet at the hill. Let the road climb visibly. | I like knowing one thing the maker never learned.
+
+
+scene heights
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I'd like the sort of window where rain arrives sideways. | I'd pay dearly for first light on my own floor.
+b : Up in the Heights? | Does the sun cost more uphill?
+a : High enough for a clear view, anyway. I'm keeping the sill bare. | The light's free. The boards under it are dear.
+
+
+scene ship
+when topic=travel
+does tell.self / react.self / assess
+a : A ship's name comes to me from the shape under the sail. | I know the ships better from far off.
+b : Without seeing the flag? | How do you see their names?
+a : Paint can change overnight. A stern takes a little longer. | In their outlines. Up close one great wall of wood looks like another.
+
+
+scene honey
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I break a honey cake where the top cracks first. | The sticky wrapper's worth taking away.
+b : Is there an art to eating one? | For the crumbs?
+a : Only the art of getting two crisp edges with one break. | And for the smell. My pocket gets to be a bakery for an hour.
+
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost draws every sloping tile on the roofs. | You can see a path growing under the frost.
+b : You could copy that into a map. | Before anybody walks it?
+a : For half an hour. Then the warm chimneys rub it out. | Where the stones hold heat. The white goes thin first.
+
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.self / assess
+a : My tea goes cold while I'm tracing roads. | There goes another day, cooling in my cup.
+b : Why not drink before drawing? | Can it be warmed again?
+a : I mean to every time. There's that one last turning. | I can at least set tomorrow's cup nearer the fire.
+
+
+scene story
+when topic=memories self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : The old tales I remember have one thing the teller could touch. | I don't care whether a tale's castle stood on that very hill.
+b : Such as a sword? | What do you care about?
+a : An onion would do. I'm curious how that papery skin felt. | Whether you can hear the stairs protest under the feet coming down.
+
+
+scene work
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : Coming away from #self.workplace#, I clean one paw before feeling for my map. | I notice which way my shadow falls on my walk from work.
+b : Why only one? | Does it help you find home?
+a : The cloth's small. My second paw must wait till I get home. | It tells me how much daylight I have for walking farther.
+
+
+scene window
+when topic=home
+does tell.self / react.self / assess
+a : A window wide enough to lean both elbows in would suit me. | I keep a paper window folded shut.
+b : That's a little dream. | Can you see through it?
+a : There's a whole hillside outside it. I've only priced the elbows. | I get to decide what's outside. For now, that's enough.
+
+
+scene gull
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A gull can blot out a ship if it crosses close enough. | I drew a gull as large as the market on my first map.
+b : Ever mistake one for a sail? | Was it a very grand bird?
+a : Only until the sail folds both wings and lands. | It was standing on the sheet when I drew round its toes.
+
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : Mud takes the shape of a road I would never draw. | Cold mud finds the inside of my cuffs.
+b : All swerves and potholes? | Why go out in it?
+a : One long dead end waiting for my foot. | Hard to climb a hill from inside one's cupboard.
+
+
+scene north
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : I know #self.street# by the way it catches its first light. | I've drawn home smaller than it lives in my head.
+b : Even with the sun behind cloud? | Why leave so little room?
+a : The roof edges turn pale in the same order. | The page wouldn't hold it otherwise.
+
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : I'd let #self.friend# look over my folded map. | I can listen to a familiar voice even while tracing a street.
+b : A private map? | Does a stranger take more work?
+a : The roads are public. The pencilled windows are mine. | I have to put the paper away to hear what's behind the words.
+
+
+scene climb
+when topic=travel
+does tell.self / react.self / assess
+a : I count a climb by the change in my breath. | I like taking two different streets up and down.
+b : How far is one breath worth? | To give your feet some variety?
+a : Depends what's waiting at the top. I get there faster for a view. | To give my paper another seam I know for myself.
+
+
+scene times
+when topic=times world.times=hard|lean
+does tell.feeling / ask.detail / answer.detail
+a : These thin times keep pushing my window farther uphill. | Even the chalk for drawing a better room seems dear.
+b : Are you giving up on it? | Can you still draw it?
+a : I've only made the pencilled frame narrower. | I can fold the four walls out of scrap.
+
+
+scene gossip
+when topic=gossip here.gossip=yes
+does tell.self / react.self / assess
+a : I heard #topic.subject# #topic.claim#. | Some talk goes round three streets and comes back wearing a hat.
+b : Are you willing to stand behind that? | Have you seen the hat before?
+a : I'll stand behind hearing it. That's the limit. | Often enough to leave the latest tale where I found it.
+
+
+scene hinge
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I've drawn my upper room's door opening outward. | If my hill room had only one shelf I'd know what to put there.
+b : Planning the way out already? | The old map?
+a : I don't want a door eating the little floor I can afford. | A flat stone to keep the map from rolling.
+
+
+scene ink
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : You can date a street on paper by the way the ink's worn. | A town drawn with brown ink looks warm even in frost.
+b : Read a year from a smudge? | Which do you prefer looking at?
+a : No. But somebody's thumb kept returning there. | Frost on the actual town. Brown ink in a pocket.
+
+
+story room [topic=dreams]
+  : I made a house of paper with a square window cut in the wall. I held it up on the climb.
+  : At one bend it framed nothing but the Sound. At the next, a row of leaking gutters.
+  b : Where did you set it down?
+  : In my pocket. I wasn't buying the first view just because it was lovely.
+
+
+story glaze [topic=food self.likes=honey_cakes]
+  : A cake drew a perfect brown circle through my map where the paper folded round it.
+  : I spent half the climb wondering what great wall I'd forgotten.
+  b : When did you find out?
+  : When I licked a sticky claw. I cut along the circle and now my town fits inside a cake.
+
+
+story sailcloth [topic=travel]
+  : I once named a distant ship for a pup who wouldn't take my word.
+  : The little unbeliever wanted a second look. We waited till the wind blew hard.
+  b : Was the name right?
+  : It was a sheet hung between two poles. I thanked the pup, a bit stiffly. I look for the hull now.
+
+
+rule @fold
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The pale cuts in the roofline show beautifully just now. | First light finds every fold I've missed.
+
+
+rule @workrag
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say My paper can wait till my paws are clean. | Set the scrap aside. There's still a clean corner on it.
+
+
+rule @frost
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A cold morning makes straight edges easy to see. | White sky over that rise. Good walking light.
+
+
+rule @road
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say I'd like a line of sight over those roofs. | There's another climb to fit into the margin.
+
+dlg resident.hub : The public roads are written out between my ears.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's one less unfamiliar turn in my day.
+dlg resident.hub [pair.disposition=wary|hostile] : There's no call to lean over my shoulder. My ears reach perfectly well.
+dlg resident.hub [here.time=dusk|night] : I can trace my way without the sheet at this hour.
+dlg resident.job [self.working=yes self.job=none self.trade_words] : #self.trade_words.capitalize#. It gets the daylight hours.
+dlg resident.job : I like to come home with something to show for the climb.
+dlg resident.news [world.news] : This came into my hearing. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody says #topic.subject# #topic.claim#. The blank edges are yours to judge.
+dlg resident.bye : I hope the view's clear at your next turning.
+
+graft resident.hub
+choice Why keep a map that's wrong? -> wrong_map
+node wrong_map
+say Some roads disappear and leave their names behind. I like walking out with a sheet that knows both versions.
+free
+choice Which version would you give a traveller? -> wrong_map_more
+choice Goodbye. -> bye
+node wrong_map_more
+say The one underfoot. I'd draw the old bend on a separate scrap for somebody curious.
+choice I'll remember the bend. -> hub
+choice Goodbye. -> bye

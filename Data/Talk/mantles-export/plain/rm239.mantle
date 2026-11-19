@@ -1,0 +1,267 @@
+mantle rm239
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mogens_greycot
+title the dry ledge
+fits stage=adult|old
+prefers job=crafter
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk holds_a_palm_out_to_shelter_a_dry_ledge
+likes smoked_eel roof_birds tidy_house first_snow
+dislikes stale_bread crowds
+fears turning_a_guest_into_the_downpour
+hopes for_room_to_dry_a_second_coat
+topics weather +0.4 home +0.4 faith +0.3 animals +0.2 gossip -0.3
+styles comfort=gentle gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# shelters a patch of dry stone under a palm and watches for a break in the rain big enough to walk a guest home.
+
+words
+oath! = Bright shelter | By the kindly eaves
+saying! = Even a hand's breadth keeps something dry | A cloak fits closer on a friend
+ledge = the sheltered lip of stone | a dry sill
+shelter = a hand's breadth | the width of my palm
+burr = a small brown burr | a hooked seed
+mantel = the shelf by my hearth | a little shelf indoors
+rag = a folded bit of towelling | the clean side of my cloth
+bowl = a heavy brown bowl | a deep dish
+eel = a brown strip of eel | a smoky mouthful
+line = a thin chalk edge | the pale line of dust
+bird = a starling with wet feet | one dark roof bird
+tilt = a finger's fall | a tiny downward slant
+ridge = the snug side of a ridge | a shoulder of tile
+dry = still pale | quite dry underneath
+
+any
+opinion church for 2 : When the Bright One's folk gave me food, there was a place to put my coat. I needed both.
+opinion dole for 3 : My belly would remember that bowl if my head forgot every day that followed.
+opinion houses against 2 : A roof up high is still a roof. I'd like the owner to see who carries the tiles up.
+opinion merchants against 2 : My day goes out in good work. The money comes home too small for the loaf I remember.
+opinion strangers for 1 : Until somebody's coat dries, we're all pretty much the same shape underneath.
+opinion drink against 1 : I've known kitchens where a cup took up more room than the supper did.
+
+grown
+line greet : Come under my hand a bit. You're welcome. | Leave that wet edge of the street and come here.
+line greet [pair.band=strangers] : Step a little nearer. This bit's sheltered. | Come in easy. There's room beyond my shoulders.
+line greet.return : I'm glad you spoke. | Here now. I'll move the cloth for you.
+line greet.return [here.weather=rain|storm] : Let's greet each other under cover. | Over this way, where the rain comes sideways less.
+line greet.return [pair.band=friends|family] : There's a sound I'd follow straight through a rainstorm. | Your voice makes room round me.
+line again.open : You've found my little dry patch again. | Come back beside me, then.
+line farewell : Dry footing all the distance home. | Bright shelter ahead of you.
+line farewell.return : I'll hold the door till you're well through. | Walk easy when the boards change colour.
+line ask.how : Have you found any ease in the day? | Got enough dry about you to feel comfortable?
+line answer.how : I keep making a little room round me. | A heavy sort of day, but I can share it.
+line react.news : Take your time. I hear you. | Come closer and give me the word.
+line react.news.new : That's new under my roof. | I had no word of that before this moment.
+line react.news.known : I've heard. I still think on it. | That word's reached the sill of my window.
+line react.news.doubt : I'd leave that one a little space to settle. | I wonder how much shelter that story's had on the way.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, step into my shelter awhile. | That's weight enough to bow any roof.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something to lift our faces for. | A good word opens up the sky.
+line decline : I'd sooner keep this little time quiet. | Leave me here for a while, if you will.
+line accept_decline : You've your own weather to get through. | That's settled. Stay comfortable.
+line thank : You've given me a dry measure of peace. | I feel the warmth of that.
+line deflect_thanks : Shelter's for more than the one under it. | Easy work once I saw what was wanted.
+line preclose : I'll go clear a space for things to dry. | There's still a little walking before I can rest.
+line accept_preclose : Take your way while the light holds. | I'd be glad to pause here.
+line sympathise : You can lean by me without an explanation. | Give me the wetter part to carry.
+line offer : I'll make a bit of shelter round that. | Your paws look full. Could one of mine help?
+line give.advice : Feel underneath before deciding the whole cloth needs drying. | Put your dry clothes where you can reach them with your eyes shut.
+line confide : Sometimes I wait longer for it to clear than the walk would take. | There are days I'd sooner watch a cloud than go about my business.
+line kin.open [pair.kin!=no] : Here's the snug corner for family. | Come dry your coat alongside mine.
+scene palm
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Hold your hand above #ledge# a moment. | My palm can cover a little bit of the street.
+b : What am I waiting for? | What's the good of that?
+a : Lift it when the drops slow down. See that pale patch? You kept it. | For a little while that bit of street still belongs to dry weather.
+
+scene wing
+when topic=animals self.likes=roof_birds
+does tell.self / react.self / assess
+a : I see #bird# choosing the very edge of a roof. | Look at a roof bird's feet when the rain starts.
+b : Is the edge safest? | I'd have looked at the wings.
+a : There's a warm draught creeping up the wall there. | The feet shift first. Wings come into it once the perch goes cold.
+
+scene dust
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : Clay dust shows every place a paw didn't reach. | I leave my work cloth behind when I finish at #self.workplace#.
+b : Makes cleaning easy? | Don't you need it at home?
+a : Makes it honest. Wash with clean water and the gaps show plainly. | I need the dust left where it came from even more.
+
+scene prayer
+when topic=faith self.piety=devout
+does tell.feeling / react.self / assess
+a : My little morning prayer takes as long as drying my palms. | Making room for someone is my way of remembering the Bright One.
+b : Have you learnt the prayer by heart? | Why just then?
+a : Some mornings I know only the thanks. I believe that part's heard. | Because there's a real elbow or a shoulder waiting for me to finish.
+
+scene burr
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Another burr in my ruff. I might as well carry a garden. | I get hooked seeds out without pulling them nowadays.
+b : Do you brush them down? | What's your trick?
+a : Lay them in your wet palm first so they won't spring about. | Hold the fur close to its roots and ease the hooks out one by one.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / react.self / assess
+a : Rice and riches don't come into my wish for supper. I'd have #eel#. | I like to warm my bowl before I put my eel in.
+b : Even with the bones? | Why warm the bowl first?
+a : Bones give me a reason to slow down and taste my own supper. | A cold bowl takes the smell away before I've sat down to it.
+
+scene quiet
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy floor leaves the door free to swing wide. | My favourite thing to put away is a wet coat.
+b : Is that why you keep at it? | Where does it go?
+a : If somebody comes in all arms and bundles I needn't do a dance first. | On a peg well away from the dry clothes. Tidying up ought to help tomorrow too.
+
+scene crowd
+when topic=festival self.dislikes=crowds
+does tell.worry / react.self / assess
+a : My shoulders rise before I notice a crowd getting thick. | Feasts are rather easier from an outside stair.
+b : Do you leave at once? | Can you see much?
+a : I look for a way to the side. Leaving's easier if I start early. | Enough to see somebody coming who might like to sit with me there.
+
+scene crust
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : Yesterday's heel can look fair until it takes the skin off your mouth. | I dislike bread that goes dusty when you bite it.
+b : Would you waste it? | Does soaking help?
+a : I moisten it in broth. A dislike isn't money in the purse. | A little. It's why I keep the last of the soup in the pot.
+
+scene snow
+when topic=season self.likes=first_snow
+does tell.feeling / react.self / assess
+a : The first snow changes every roof without a sound. | I like a white line caught on a high ridge.
+b : You watch from below? | It won't last long.
+a : Far enough back to see the snow break off and land in the gutter. | Long enough to show me how neatly the ridge sits.
+
+scene house_fears
+when topic=dreams
+does tell.worry / ask.detail / answer.detail
+a : I wonder which roof will take the rain should two Houses ever quarrel. | When the great folk talk across one another I feel small.
+b : Is there word of a quarrel? | Have you heard anything?
+a : Only my own fears. I've no news for anybody about that. | Nothing I'd put on anybody else's doorstep. It's a worry of mine.
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : There's a peg I'd clear in a hurry for #self.friend#. | I could tell #self.friend# I've spent half the day watching rain.
+b : Is it the warmest one? | Without feeling foolish?
+a : The lowest. Easy to reach if your fingers are still stiff. | Without making up a busier sort of day to talk about.
+
+scene ways
+when topic=travel
+does tell.plan / react.self / assess
+a : I look for the sheltered route even when I'm on my own. | On a strange stairway I look underneath the top step.
+b : Don't you lose time? | For a leak?
+a : Sometimes. But I learn a way to bring a tired wolf home. | For that dusty strip where a wolf could stand and tie up a parcel.
+
+scene outside
+when topic=newcomer
+does offer / ask.detail / answer.detail
+a : If you're finding your feet, you can share my corner a bit. | I'll hold your bag above the puddles while you sort yourself.
+b : Won't I put you out? | You aren't in a hurry?
+a : Put me a few inches over, maybe. That's nothing. | If I were, I'd still have time to save your bag.
+
+scene lowday
+when topic=health
+does tell.feeling / react.self / assess
+a : On a low day I wash just one ledge clean. | A houseful of errands feels large when the light's bad.
+b : Does that lift you? | Where do you start then?
+a : Not always. But I've done one good thing by bedtime. | There's always room to fold one cloth. Then I see about the next.
+
+scene clay
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : At work I turn each tile over for a look underneath. | A corner of a tile tells a longer tale than the face of it.
+b : What for? | What tale?
+a : Nobody sees underneath once it's laid. I want to lay it down knowing it's sound. | Whether a careful paw eased it away from a board or a hurried one snatched.
+
+scene tidyguest
+when topic=home
+does tell.self / react.self / assess
+a : I'll sweep the entrance after the visit, if you please. | Wet marks on my floor are all right while the visitor's still here.
+b : Mud doesn't trouble you? | But you like it tidy.
+a : I'd sooner have a visitor standing easy than a clean board under a restless foot. | There's a right time for clean boards and a right time for a second cup.
+
+scene loaf
+when topic=prices
+does tell.worry / ask.detail / answer.detail
+a : I can judge the price of bread with my arms shut about a loaf. | I want my wages to come home smelling of crust.
+b : By the size of it? | Only bread?
+a : By how far my paws overlap once I've bought what I can afford. | Let me buy enough of that first. Then I'll think of eel.
+
+scene churchdoor
+when topic=faith self.priest
+does tell.plan / react.self / assess
+a : I'd like to ask #self.priest# about a prayer for wolves who have to wait outside. | When I go to hear #self.priest# I choose the chair beside the latch.
+b : What might that prayer ask? | Why there?
+a : Good weather if it can be managed, and good company whatever comes. | If someone hesitates to come in, there's a friendly face close to hand.
+
+story smallroof [topic=memories]
+  : I set a broken flowerpot on its side one winter, because even a cracked pot looked worth saving. A small bird went under its lip and fluffed right out.
+  : I stayed there in shirtsleeves until my feet were blue. I wanted to see how long such a mean bit of roof would do.
+  b : Did the bird stay long?
+  : I found my coat and came back in time. I put a flat stone under the pot to steady it.
+
+story heel [topic=food]
+  : I tried steaming a hard bread heel by holding it over my cup. My nose got a fine warm drink before my mouth was any better off.
+  : I got tired of holding it and set the bread on two sticks across the rim. It sagged through with a little plop.
+  b : Did you fish it out?
+  : No. I spooned it up and went on using the sticks for firewood.
+
+story shadow [topic=weather]
+  : I waited beside a wall for a patch of brightness to reach me. It crept down every chimney, every window, while I stood there getting cold.
+  : Then I looked at my toes. The sun had been warming the tips for quite a while. I'd been watching the shadow of a much taller roof.
+  b : Did you get out from under it?
+  : Three steps across the street did it. That much light was there for the taking.
+
+rule @palm
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 7h
+say My paw's still wide enough to cover this bit. | Nice pale stone underneath there.
+
+rule @workdust
+when concept=bark self.job=crafter self.working=yes
+does aside
+cooldown 9h
+say Dust cloth on the work peg. Leave it there. | Other corner up. Now the air can get underneath.
+
+rule @bird
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 10h
+say Keep those little feet tucked in, bird. | There's a dry bit just behind the ridge.
+
+rule @calm
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say Bit of the floor clear for the evening. | Anything still wet can hang till morning.
+
+dlg resident.hub : Here, I've room on this side. Turn so the draught's behind you.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's a bit of shelter I've been saving for you.
+dlg resident.hub [pair.disposition=hostile|wary] : You can stay at the edge there if that suits you better.
+dlg resident.job [self.job=crafter self.workplace] : I work at #self.workplace#. A sound dry roof starts a long way below the eaves.
+dlg resident.job : Whatever work I take on, I leave a freshly dried cloth hanging ready for whoever comes next.
+dlg resident.news [world.news] : Here's the word that reached my doorstep. #world.news#
+dlg resident.bye : I'll keep the door wide till your parcel's through.
+dlg resident.hub [here.weather=rain|storm] : Plenty of rain out there. Stand where my hand was.
+graft resident.hub
+choice Why keep that patch of stone dry? -> dry_space
+node dry_space
+say Once I lifted my hand and a roof bird settled on the pale spot. Now I keep thinking something might come along that could use it.
+mood calm
+free
+choice Does a bird come every time? -> dry_bird
+choice It's a good size for a perch. -> hub
+node dry_bird
+say Mostly I just get a wet hand. I don't mind. It keeps me watching what's beyond the sill, which I ought to do more often.
+choice I'll look at the ledges as I go. -> bye
+choice Your paw's left a mark there. -> hub

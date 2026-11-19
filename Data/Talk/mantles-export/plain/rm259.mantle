@@ -1,0 +1,258 @@
+mantle rm259
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ingrid_ashwell
+title the carved comma
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk carves_a_wooden_comma_to_hold_a_place_in_conversation
+likes honey_cakes whittling fresh_straw autumn_wind
+dislikes salt_wind wet_floors
+fears a_slick_threshold a_notice_with_no_signature
+hopes a_drawer_of_good_offcuts a_room_with_dry_air
+topics pastimes +0.5 home +0.4 news +0.3 gossip -0.4
+styles comfort=practical gossip=guarded refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a comma whittled from scrap wood, pauses for breath over damp floors, and can make room for a listener on the narrowest bench.
+
+words
+oath! = Split burr | Ink in my tea
+saying! = Leave an inch for breath | Give the last word a dry place
+curl = a shaving of alder | a thin curl of wood
+comma = my little wooden comma | my pocketful of pause
+scrapwood = a pale offcut | a dry bit of alder
+strawmat = a handful of bright straw | a twist of dry straw
+caketail = the dark sticky corner | the honeyed edge
+chalkdot = a dot of chalk | a pale chalk spot
+chipbowl = my shallow chip bowl | a saucer for the shavings
+strawtip = a clean straw tip | a stiff end of straw
+inkspot = a pinprick of ink | a small black blot
+carvecut = one shallow cut | a smooth little scoop
+paperweight = a tile corner in cloth | a little cloth-covered weight
+
+any
+opinion church for 2 : The chapel bench has a dry corner where nobody asks a wolf to give a reason for sitting down.
+opinion dole for 3 : I could read the bread notice on an empty belly. Quite another thing to read it chewing.
+opinion houses against 2 : A House seal on good thick paper. The explanation for an empty berth comes on a thinner sheet.
+opinion watch against 1 : Plenty of ink for warnings to the Sump. Little enough for answers when the Sump writes back.
+opinion sump for 2 : There's usually space to put a sore foot up if you ask at the right door down here.
+opinion merchants against 1 : A nice copperplate figure doesn't make a dear loaf any heavier.
+
+grown
+line greet : Take the dry end of this bench. Welcome. | Come a little out of the wet. There's space.
+line greet [here.time=night] : You've brought a shadow with you. Room for both.
+line greet [pair.band=strangers] : You're welcome to a quiet minute here.
+line greet.return : A decent word travels far enough in a low voice. | I heard you fine from there.
+line kin.open [pair.kin!=no] : Sit near. Some things need a familiar ear.
+line again.open : I've kept the place where we broke off.
+line hail [pair.band=friends] : There's a dry spot saved over here!
+line farewell : May the next threshold hold firm for you. | Take your time across the wet stones.
+line farewell.return : I'll gather my bits. Away you go.
+line react.news : Give me a breathing space to take that in.
+line react.news.new : That changes the sense of what I read.
+line react.news.known : The words sounded different the first time round.
+line react.news.doubt : What mark was underneath it, if any?
+line react.news.sorrow [topic.kind=death|loss|crime|assault|theft] : There's a door somewhere that wants a warm pot left at it.
+line react.news.glad [topic.kind=work|birth|marriage] : I'd choose handsome big letters for news like that.
+line answer.how : A little rasp to my voice. Everything else in order.
+line ask.how : Been able to sit somewhere quiet and catch a breath?
+line sympathise : You can finish when your mouth will let you.
+line reassure : Keep a place at the hard bit. We'll come back and read it together.
+line decline : That piece won't bear another airing.
+line accept_decline : I'll put the wood away. Your silence will do.
+line thank : That's a kindness I can put a finger on.
+line deflect_thanks : Leave space for another on the bench sometime.
+line preclose : I'm beginning to scrape up shavings with my heel.
+line accept_preclose : Go along while the stones are still light.
+line ack : I've got the sense of it now.
+
+scene comma
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : This is #comma#. I cut one end heavy so it sits right. | Hold this. The tail ought to point down.
+b : What does it sit on? | Feels like a bent nail. What's it meant to be?
+a : My unfinished business, most days. The thing stands on paper and keeps the next sheet from flapping over. | A comma. Good writing ought to allow a wolf a breath.
+
+scene wetstep
+when topic=weather self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A patch just inside a doorway goes dark before you slip on it. | I'd leave the first wet print where it shows.
+b : Would you mark it somehow? | You'd leave mud on clean boards?
+a : A ring of straw. Easy to see, easy to sweep. | Till somebody puts a mat down. Clean boards can cost a wolf a hip.
+
+scene cakecorner
+when topic=food self.likes=honey_cakes
+does offer / accept / assess
+a : Would you take half a honey cake with me? | You can have first pick of the cake.
+b : Gladly. You choose the cut. | I'll take the middle if that's fair.
+a : Good. Here's the soft half. I'm fond of #caketail#. | Entirely fair. The edge has a bitterness from the baking tin that goes well with the sweet.
+
+scene autumn
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn gust clears the shavings from a lap nicely. | There's a wind that makes a damp cuff wearable again.
+b : Where do those shavings end up? | Out here by the water?
+a : Inside my collar the last time. There was a piece missing from my plan. | In a sheltered doorway it will. Face the wrong way and you might as well lick salt.
+
+scene freshfloor
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I take the old straw up by rolling it into itself. | I step barefoot on new straw once before I cover it.
+b : Does it keep the dust down? | Won't it prick?
+a : Some. Then I lay the new straw from beyond the table and leave a clean floor behind me. | One or two scratches. I like to know what's under my feet.
+
+scene smallink
+when topic=work self.job=official self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A thumbprint behind a line of type will show through poor paper. | I turn a test sheet and look at the white side first.
+b : Does it spoil the message? | What can the blank side tell you?
+a : Sometimes all a reader sees is the print behind a word. Then I'd run the notice again. | Whether the ink has come through. A reader deserves one clean face on the sheet.
+
+scene lowbench
+when topic=smalltalk
+does tell.feeling / sympathise / assess
+a : I can manage a damp afternoon better if nobody counts my coughs. | Forgive the breaks in my voice. I'll come to the end presently.
+b : I'll hear you when you get there. | There's no race on this bench.
+a : That's a better kindness than asking after every little rasp. | Good. I had a whole thought ready and nearly lost it chasing after my breath.
+
+scene halfword
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't copy a name from the torn half of a notice. | Somebody left me a tale with the first bit missing.
+b : What if you know what belongs there? | How much is missing?
+a : Then I know enough to find an unbroken copy. | Enough to turn a warning into an accusation, I think. I'll keep it off my tongue.
+
+scene loanwood
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : When I get #scrapwood# I look for the split before the shape. | The rough end is the one I ask to keep.
+b : Does the split tell you what to carve? | Aren't the ends thrown out for a reason?
+a : Yes. Follow it and I have two small pieces. Fight it and I have fuel. | They are. Sometimes that reason is just that the next wolf needs a longer piece.
+
+scene nearhome
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down Sump way you find the slant under a bench by setting a chip on it. | I keep a short peg for the low foot of a stool.
+b : Does a chip roll far enough? | Do all the floors slope here?
+a : One little twitch towards the water is enough. I've put hot mugs on worse. | Enough do. I'd sooner carry a peg than hold my tea with both paws.
+
+scene shortbread
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I pick up a loaf after I hear the price. | You can make a small loaf look a grand size by leaving space round it.
+b : To feel the weight? | Does the trick sell bread?
+a : Some crusts are grand hollow houses for a spoonful of crumb. | It sells me one good look at the loaf underneath.
+
+scene namecheck
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : One printed name can stick to a door long after the paste has gone. | I'd give the smallest type on a public sheet the longest look.
+b : Will peeling it off do any good? | Is the small print more likely wrong?
+a : Start by reading the name properly before it goes up. Taking it down's the easy part. | No. More likely to go wrong without anyone troubling to look.
+
+scene littlefire
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I stop carving when a shaving will stand on my thumbnail. | There's a cut you take by feel and a cut that wants light.
+b : One that small? | Which cut wants daylight?
+a : Yes. If I carry on, the piece gets smaller till it joins the shavings. | Think about keeping the thumb you've got. Doubt is a good reason to wait for morning.
+
+scene savevoice
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : My first word in the morning often comes out as a whisper. | I have a swallow of warm water before I answer the day.
+b : Does it get stronger? | What does the day ask of you?
+a : Generally. No need to start every morning proving it. | Usually where I put my other shoe. A quiet question deserves a quiet answer.
+
+scene signedsheet
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I worry over notices that have lost their bottom edge. | I've seen a scrap go a long way on the authority of a torn corner.
+b : Why that particular edge? | What would settle it for you?
+a : It's where the name often sits. Somebody ought to own an order. | A whole sheet and a legible mark. Then we could speak about the order itself.
+
+scene byfriend
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I save the near end of the bench for #self.friend#. | If #self.friend# comes by, there's a half-cake saved.
+b : Do you talk much on that bench? | Won't it go hard?
+a : Enough to tell when there's no more need. | Maybe. That's why there's tea.
+
+scene drydrawer
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I've designed myself a drawer that never sticks in wet weather. | In my sleep my best wood grows back when I carve too deep.
+b : How does the drawer do that? | Would you ever finish a piece?
+a : Haven't reached that part of the dream. So far it just smells wonderful inside. | I think I'd spend most of my time putting the wood back.
+
+scene lightend
+when topic=day here.time=night|dusk
+does tell.self / ask.detail / answer.detail
+a : I trim the rough little knobs by daylight and polish by lamplight. | When the street turns grey I can still feel a sharp edge.
+b : Why save the polishing? | Is that enough to carve by?
+a : A fingertip can find the last rough patch. My eyes deserve an evening off. | Enough to stop. I'll rub a finished piece smooth until the edge shows bright again.
+
+story emptyline [topic=memories self.job=official]
+  : Once I set a short notice so tightly the words ran into one another.
+  : I took it out to read from across the way. It looked like a single black bar.
+  b : Could you spare another sheet to print it again?
+  : I found one. The blank strip I left down the middle did more good than a dozen fresh words.
+
+story leafpile [topic=pastimes self.likes=whittling]
+  : I carved a leaf, thin enough to let the hearth shine through.
+  : Set it down to admire the grain. A gust carried it into my bowl of shavings.
+  b : How did you pick it out?
+  : I didn't. That evening the bowl lit a fire and I had a completely different sort of light through my leaf.
+
+story honeywrap [topic=food self.likes=honey_cakes]
+  : A honey cake once stuck fast to the cloth I'd saved to carry it home.
+  : I tried to peel it off while it was cold. Got a fair mouthful of thread.
+  b : How did you eat the rest?
+  : I hung the cloth by the kettle, let it warm, and gave the cake a push. Down it came, taking every fold like an elderly caller on the stairs.
+
+rule @damp
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Mind that shine inside the door. | Put straw across the slick patch first.
+
+rule @press
+when concept=bark working=yes self.job=official
+does aside
+cooldown 8h
+say Give the damp sheet room to lie flat. | Clear print on the front, clean paper behind!
+
+rule @chips
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Mind my chips, there's a sharp one. | Let that curl fall clear.
+
+rule @finish
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say Light's gone off the cutting edge. | Knives down, rubbing cloth out.
+
+dlg resident.hub : I'll hear a caller from this dry bit of floor. Stand where you're comfortable.
+dlg resident.hub [topic.meeting=known] : A place beside me again, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : We can stay civil across the width of a bench.
+dlg resident.hub [here.time=dawn] : A quiet word will carry this early.
+dlg resident.job [self.job=official] : #self.trade_words.capitalize#. Plenty goes into giving a word its proper space.
+dlg resident.job : A careful paw where a small thing wants putting right.
+dlg resident.news [world.news] : A piece worth reading all the way through. #world.news#.
+dlg resident.bye : Leave your wet footprints going safely home.
+
+graft resident.hub
+choice May I hold the little carved comma? -> rests_in_hand
+node rests_in_hand
+say Cup your paw so the tail runs into the crease. You can feel the place where my knife caught. It fits me better for the nick.
+choice Why a comma of all things? -> worth_of_space
+choice Put it back on the page. -> hub
+node worth_of_space
+say Because you can stop there without coming to an end. It's a fine courtesy to wolves with more words than breath.
+choice Leave a moment of quiet. -> hub
+choice Say goodbye. -> bye

@@ -1,0 +1,376 @@
+mantle rm226
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_ulla_greymore
+title the corner turned in
+fits stage=adult|old
+prefers job=laborer
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_the_bells_from_the_chapel_of_the_tide
+likes oatcakes long_walks tidy_house first_snow
+dislikes gulls early_bells
+fears sending_private_marks_round_the_street
+hopes to_give_each_bundle_back_whole
+topics work +0.6 home +0.3 travel +0.3 friends +0.2
+styles comfort=practical gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# turns marked corners inside a bundle, counts bell strokes against the wrist, and bristles at questions about other households.
+
+words
+oath! = Boil my good cuff | Wrinkle my working thumb
+saying! = Return the bundle whole | Turn the private corner in
+cornerbit = a marked corner | a corner with black stitching
+foldbit = a loose fold | a deep inward tuck
+wringbit = a thick twist of linen | a wet roll of cloth
+soapend = a cloudy soap heel | a shaving of amber soap
+pairstick = a split tally | one half of a notched stick
+pinbit = a plain wooden pin | a square peg
+walkbit = a long flat stretch | a level road
+oatpiece = a broken oatcake | a toasted oat round
+whitedust = a drift of clean flakes | a handful of first snow
+birdbit = a shriek from a gull | the scrape of a gull's cry
+bellbit = a stroke of chapel bronze | a low swinging note
+toepatch = an oval patch | a grey patch of cloth
+handspan = a paw's breadth | the length of one thumb
+stringbit = a thick loop of twine | a bit of soft cord
+steambit = a little hot cloud | a fog of kettle steam
+threadbit = a short blue thread | a length of black wool
+breadrag = a little bread cloth | a clean square for oatcakes
+
+grown
+
+opinion houses against 2 : A grand badge doesn't make the water any lighter for the wolf who lifts it.
+opinion dole for 3 : Let the one who brings the bowl choose how full. Hunger has a voice worth hearing.
+opinion strangers for 1 : If I've got an oatcake I can find a way to break it cleanly in two.
+opinion merchants against 1 : That last bit of soap costs most to the household with the fewest clothes.
+opinion festivals against 1 : I'd like room to cross a street on weary legs without shouting setting me spinning.
+opinion church for 1 : A chapel bell reaches through the steam when I can't see my own boots.
+opinion sump for 1 : I like neighbours who'll give you a hand with a soaking bundle and keep their eyes off the mark.
+opinion watch against 1 : Anyone asking to inspect somebody else's business ought to give a reason out loud.
+opinion city mixed 1 : There's a hard climb between a rich wolf's doorstep and the hands that keep the linen clean.
+line greet : Set down whatever you're carrying. My ears work better when nobody's straining.
+line greet [pair.band=strangers] : No ceremony needed. You have my attention.
+line greet [here.time=dawn] : Morning. I'll take my first words a little softer.
+line greet [self.working=yes] : I'm listening above my wrists, anyhow.
+line greet.return : I've put the sharp edge of my voice away.
+line greet.return [pair.band=friends|family] : For you I can loosen a little of the day.
+line greet.return [here.time=dusk] : A welcome voice to hear with the light going.
+line again.open : You caught me before the next bundle of business.
+line hail [pair.band=friends] : Nearer, if you've got time to stop properly!
+line kin.open [pair.kin!=no] : Take an easy hold of my arm. There's room.
+line farewell : Leave yourself a bit of unclaimed daylight.
+line farewell.return : Go with light hands if you've any say in it.
+line react.news : Give me the whole bundle before I judge the weight.
+line react.news.new : That's a fresh bit of cloth on the pile.
+line react.news.known : I've handled that piece of news once already.
+line react.news.doubt : A mark on one corner proves less than you might suppose.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd do a quiet turn of work for whoever's hurting.
+line react.news.glad [topic.kind=birth|marriage|work|succession|apprentice] : That's worth an extra oatcake and a generous scrape of butter.
+line answer.how : My wrists are speaking and I'm letting them finish.
+line ask.how : Is anything pulling harder on you than it ought?
+line answer.how.busy [self.working=yes] : Busy down to the knuckles. I can still hear you.
+line sympathise : Give me one small thing to take off your hands.
+line reassure : It needn't all be wrung out in one turn.
+line thank : My arms owe you for the weight you've spared.
+line deflect_thanks : Doing the little part was easier than standing watching.
+line decline : I'd be spending somebody else's trust if I did that.
+line accept_decline : I'll take my hands off the matter.
+line preclose : I need to let my feet get moving again.
+line accept_preclose : Away with you before another job finds you.
+line ack : I've got both corners of your meaning now.
+line offer : Here, take this corner. It's the driest.
+line give.advice : Loosen the knot while you can still get a nail under it.
+scene at_self_workplace_i
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I want each bundle back with its owner and its business inside. | If I'm at my work, #self.trade_words#, I turn marks where no idle eye can read them.
+b : Wouldn't it be quicker to leave them showing?
+a : Quicker for me. Dearer for the one who's got patched clothes on the line. | I don't count time saved by passing somebody's worries round the room.
+
+scene i_turn_a_stitched
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn a stitched name inward before I put a bundle down. | A corner can give the game away while a grand front door keeps up appearances.
+b : Where does that knowledge belong?
+a : Tie it inside. A decent knot can keep a good deal quiet. | Leave it where it came from. My fingers have their own work.
+
+scene butter_ought_to_find
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : Butter ought to find the hollows in an oatcake before your teeth do. | If there's a broken oatcake I'll take the piece with the burnt rim.
+b : What's good about the edge?
+a : A dark edge and a little soft butter give each other something to do. | The crunch gets louder and then all at once it stops. That's a fine mouthful.
+
+scene a_proper_walk_has
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A proper walk has no parcel pulling on either arm. | I like to go out with no load but my coat.
+b : Where do you aim for?
+a : The place where I stop thinking about what time I ought to turn back. | No particular doorway. That's why the walk feels longer than an errand.
+
+scene i_count_the_chapel
+when topic=faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I count the chapel bells with my thumb against my wrist. | I lose count if I stop to say the numbers out loud.
+b : Does every stroke need counting?
+a : No, but I enjoy finding how far my own thoughts have taken me. | The early ones can count themselves without any help from me. They spoil a lovely sleep.
+
+scene the_first_snow_is
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : The first snow is my favourite coverlet. Nobody has to haul it up the hill. | I'd get out of bed to see the season's first flakes.
+b : Even before the bells?
+a : For snow, yes. A bell has never made the whole street clean in one breath. | I'd be cross about the hour and delighted at the sight. I can manage both.
+
+scene a_gull_knows_precisely
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull knows precisely when to begin shouting over something worth hearing. | I wouldn't trust a gull alone with an uncovered oatcake.
+b : What would you trust it with?
+a : The dirty end of a very long line, well clear of everybody else's supper. | Flying its own wings and making its own awful racket.
+
+scene i_want_a_clear
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want a clear seat more than a shining shelf. | A tidy room is one I can go into tired without thinking where to put my feet.
+b : Where do things go first?
+a : Everything sharp goes up high. Everything heavy goes where I won't have to lift it twice. | Leave a clear space inside the threshold for my next armful.
+
+scene i_might_make_a
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I might make a private note of a doubtful mark. I won't read it out for sport. | You can keep an eye on whose coin goes where without calling the street to witness.
+b : What if you're pressed for names?
+a : I'd press right back for evidence and wait to hear who still wanted to talk. | I'd close the book. Ink shouldn't get a wolf condemned for a guess.
+
+scene a_friend_doesn_t
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend doesn't have to offer both arms when one will do. | I'd rather ask for one definite kindness than leave a friend guessing.
+b : What sort of kindness?
+a : Hold the door while my elbows are full. It's an ordinary kind of miracle. | Walk a few minutes with me. Leave the day's accounts to settle by themselves.
+
+scene when_i_show_another
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : When I show another pair of hands a job, I do it once at half speed. | I like a learner to find a grip without my fingers laid over the top.
+b : What if the grip's wrong?
+a : Stop before anybody gets hurt. Show where the strain goes and start again. | Ask what hurts. There's generally a wrist somewhere answering before the mouth does.
+
+scene my_wrists_know_sooner
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My wrists know sooner than my temper when I ought to rest. | I open both paws straight out before taking hold of a second heavy thing.
+b : What does that do?
+a : Gives all those little joints a vote while I'm still disposed to listen. | Stops me carrying the last job's twist into the next one.
+
+scene before_i_pay_for
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When I price a length of cloth I look at the space between threads. | Pull the weave across your thumb before you hand over your coin.
+b : What do you hope to see between the threads?
+a : A gap that opens and closes without leaving a ladder behind. | Enough cloth there that the first wring won't turn my purchase into a net.
+
+scene in_pinching_times_i
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In pinching times I keep my soap heels in a scrap of mesh. | If a new cake of soap's out of reach I still want the old ends together.
+b : Why in mesh?
+a : Little ends rub a lather up between them and I'm spared chasing scraps round a tub. | They'll do one more job in company than any of them can do alone.
+
+scene don_t_tell_me
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Don't tell me one end of a load weighs the same as the other without lifting it. | A bundle can look tidy while every heavy bit's hiding at one end.
+b : How would you set it right?
+a : Move one folded thing. Ask both carriers again. They'll let you know. | Balance it on a stool first. Whichever end hits your toe needs lightening.
+
+scene i_like_the_moment
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I like the moment a knot holds without another finger on it. | A good bundle should forgive one loose turn.
+b : How can you be sure it'll hold?
+a : Lift an inch. If the tail slides, put it down while you've still got the choice. | Roll it gently sideways before anybody hoists it. There's your answer.
+
+scene i_can_remember_a
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember a piece of cloth by the shape of its worst patch. | Some repairs are so well done the old hole becomes the strongest place.
+b : What does one of those look like?
+a : A little oval, stitches close together, no hard ridge to rub through from inside. | More patience on the underside than on the part that shows.
+
+scene rain_s_no_enemy
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain's no enemy to a wolf with everything still soaking in the tub. | A shower always seems to know when something's nearly ready to take in.
+b : What do you save first?
+a : Whatever took the longest to wring out. My wrists have strong opinions. | Small stuff I could tuck inside my coat. I won't carry the whole sky at once.
+
+scene the_hills_here_teach
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The hills here teach me more about a load than a set of scales. | I measure the height of each hill by how often I swap arms.
+b : Do you have a favourite landing?
+a : One with a ledge high enough that I needn't bend to pick up again. | The last landing before I remember I've something further to carry.
+
+scene a_buttered_oatcake_travels
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A buttered oatcake travels better in good cloth than in a warm bare paw. | I wrap the last bite separately if I'm walking far.
+b : Why save one bite?
+a : On a long road the last corner tastes as good as the whole first cake. | It feels like a present from the wolf I was when I set out.
+
+scene don_t_offer_me
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Don't offer me pity in the voice you'd use to order me about. | If I snap at an offer it may be the tone that's caught my fur.
+b : How should the offer sound?
+a : Like a question I'll really be allowed to answer either way. | Talk to me level. I'm easy to help once nobody's trying to arrange me.
+
+scene i_ask_the_bright
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When I speak to the Bright One, it's a gentle grip I want more often than a strong back. | I don't need much ceremony to give thanks after I've set down a load.
+b : A gentle grip on what?
+a : Usually on my temper. Other things can stay held well enough. | Whatever's been handed back to me more tenderly than I expected.
+
+scene i_ll_offer_a
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll offer a newcomer a piece out of my clean bread cloth. | It's easy to help somebody in a way that puts the whole street in on it.
+b : What makes a private kindness possible?
+a : Make it ordinary. Hand over the cake like I'm passing a pin. | Speak softly and once. There's no need to announce a refusal either.
+
+scene i_don_t_like
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I don't like walks measured in the number of useful things I do along the way. | Sometimes I go out to see how far I can get without acquiring an errand.
+b : What if a friend needs help?
+a : Then my walk has become a visit and I can have my walk some other time. | I help if it's needed. Nobody gets to put the walk down in an account.
+
+scene a_damp_rag_by
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A damp rag by a latch makes a whole room smell like a forgotten job. | I leave a gap around anything drying, even the meanest dishcloth.
+b : Does a gap matter so much?
+a : Touch two wet folds in the morning and try to tell me air doesn't earn its keep. | I like getting a second use out of one day's airing.
+
+scene i_d_finish_my
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I'd finish my own bundle before giving an opinion on yours. | When I'm working I count what's come in before I count what's gone out.
+b : Doesn't that take twice the time?
+a : Less time than searching the town for a cuff that never came through the door. | It takes the heat out of a disagreement when both counts match.
+
+scene i_remember_making_a
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember making a parcel look grander than the thing wrapped up in it. | I've spent more string than sense on a present before now.
+b : What were you giving?
+a : One plain oatcake to a friend with a long hungry walk ahead. | A square of good cloth. I'd wrapped the wrapper and forgotten to laugh about it.
+
+scene somebody_put_it_about
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Somebody put it about that #topic.subject# #topic.claim#. | I've heard this. #topic.subject# #topic.claim#.
+b : Would you put your mark against it?
+a : On a clean sheet I'd mark only that I've heard it. Mind the difference. | No. A repeat costs breath. A guarantee would cost my good name.
+
+story button [topic=work]
+  : Once a button dropped into a tub and I fished round to the elbow.
+  : I came up with two buttons and a strip of very decisive blue ribbon.
+  b : Did you find the one you lost?
+  : Still on a thread round my wrist. The morning went by trying to account for the other two.
+
+story birds [topic=food]
+  : I wrapped an oatcake so neatly that I wrapped an empty cloth the same way for practice.
+  : A gull went sailing off with a parcel before I'd stowed the pair.
+  b : Did you lose your supper?
+  : I had the cake. The gull had a useful lesson which seemed to make it very cross.
+
+story walk [topic=travel]
+  : I went out for a walk and took an empty basket for no sensible reason.
+  : By the far corner I'd filled it with things I thought I might use at home.
+  b : Was the walk worth it?
+  : The return half taught me what an empty paw was worth. Next time I took only my coat.
+
+story mark [topic=memories]
+  : I once marked the underside of a patch with a tiny row of dots.
+  : I folded it twice, set it aside and spent a whole evening looking for my mark.
+  b : When did the mark turn up?
+  : In my own very clever hiding place. My own discretion had kept me completely in the dark.
+
+story stroke [topic=faith]
+  : I tried counting bells while pulling a knot apart with my teeth.
+  : The knot came loose on a stroke and my two counts came wonderfully mixed.
+  b : Which count did you keep?
+  : The knot was open. I called it one and let the chapel keep the rest.
+
+rule @linen
+when concept=bark
+does aside
+cooldown 8h
+say That edge wants turning towards the middle. | Keep the marked corner out of sight.
+
+rule @wrists
+when concept=bark
+does aside
+cooldown 8h
+say Straighten the fingers before another twist. | A grip should end when the job does.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A bell's an unkind way to stir a sleeper. | My wrists aren't taking early orders from the sky.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Cover the dry things nearest your shoulder. | Keep a corner for wiping your eyes clear.
+
+rule @home
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Save a little walking for yourself. | Fine light for a walk with empty arms.
+
+rule @lesson
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Find where the strain is before showing off a grip. | Let the learner feel the balance first.
+
+dlg resident.hub : Mind the bundle if you take the nearer seat.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your hands on your own business and I'll hear you.
+dlg resident.hub [topic.meeting=known] : #topic.player#, come where we can talk at an ordinary volume.
+dlg resident.job [self.job=laborer] : #self.workplace# keeps my wrists busy. Clean cloth has to find its own door again too.
+dlg resident.job : I like work where I can give a thing back in better shape.
+dlg resident.news [world.news] : Here's the news as it came into my hands. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody said #topic.subject# #topic.claim#. Allow for a few twists on the way round.
+dlg resident.bye : May the next load sit comfortably.
+dlg master.work : Get a feel for the weight before you agree to carry it. A trade lives in the fingers as much as the head.
+dlg master.takes [here.take_on=yes] : There's room under my wing for a single learner I trust. Ask and I'll take you on.
+dlg master.wages : There's no apprentice wage. You'll learn three times faster beside me, and can sell whatever your hands turn out.
+dlg master.bye : Give those fingers a rest on your way.
+graft resident.hub
+choice Why hide the mark on the cloth? -> corner_privacy
+node corner_privacy
+say You come to me with a bundle. It comes back. Between those two moments nobody has paid for the right to pick over your affairs.
+choice What if you mix them up? -> corner_pair
+choice I'll leave it folded. -> hub
+node corner_pair
+say Two halves of a tally or a quick look inside the fold. A whole street doesn't need to help me read.
+choice I see how that works. -> bye
+graft master.learn
+choice Can I try balancing a bundle? -> corner_balance
+node corner_balance
+say Start close to the ground. Take the weight against your palm, with the other hand open underneath till you know which way it'll tip.
+choice The far corner pulls. -> corner_repack
+choice Another day, perhaps. -> learn
+node corner_repack
+say Set it down before you shift the heavy part. No prize for holding on with your teeth when there's a perfectly good floor.
+choice I'll put it down. -> learn

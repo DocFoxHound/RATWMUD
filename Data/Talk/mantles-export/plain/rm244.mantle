@@ -1,0 +1,282 @@
+mantle rm244
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_brenna_milldale
+title the square price
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=plain warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk disguises_a_damp_cough_as_a_wrestling_feint
+likes crisp_apples wrestling full_larder warm_rain
+dislikes haggling drizzle
+fears paying_rent_on_an_empty_board
+hopes apples_under_a_canvas_roof
+topics work +0.5 pastimes +0.4 food +0.4 gossip -0.3
+styles comfort=blunt gossip=dry refuse=firm tease=deadpan
+marks oath saying
+persona A docker's balance, a wrestler's bad cough and a market seller's square price all meet in #self.first#.
+
+words
+oath! = Crate me sideways | Twist my apple clean
+saying! = Every apple gets one price | The board tips at the heavy end
+stallcloth = a length of striped canvas | a patch of stout cloth
+pippin = a hard little apple | a russet pippin
+toepeg = the near peg | a stubby tent peg
+priceboard = a slate propped on end | a scrap of black board
+larderdoor = a well-hung cupboard door | the pantry latch
+throwmat = my old fall blanket | the patched practice rug
+barrelrim = the upper hoop | the iron rim
+chalkline = a short white stroke | a crooked chalk mark
+heap = a little pyramid | a three-apple pile
+changebit = a thin bit of change | a blunt copper
+bite = a sharp wet crunch | a loud clean snap
+scuff = a scrape with one heel | a dry shuffle
+
+any
+opinion merchants against 3 : If the price changes with the cut of my coat, I don't want what's on that board.
+opinion dole for 2 : I've counted a portion of meal twice to make the cupboard sound fuller. Give out the meal.
+opinion houses against 2 : My shoulders pay rent twice. Once under a crate and once under a roof.
+opinion church for 1 : A bowl in my paws puts me in a listening mood. An empty bowl doesn't.
+opinion sump for 1 : A low roof doesn't fray the edge of my knife or take the bite out of my apple.
+opinion times against 2 [world.times=lean|hard] : I keep saving the same copper. Something else eats it before the second one turns up.
+
+grown
+line greet : Stand this side. There's elbow room. | Welcome. The loose bit of board's at my back.
+line greet [pair.band=strangers] : You can stand near. I don't charge ground rent.
+line greet.return : Comfortable here, thanks. Stay if you like. | Greetings accepted at their face value.
+line again.open : You're round again before I've changed sides.
+line farewell : Go on before the boards get greasy. | Look where your second foot lands.
+line farewell.return : I mean the same for you. Keep steady. | Goodbye. You've a clear path past me.
+line react.news : Give it to me with the skin still on. | I'll hear the whole price before I judge it.
+line react.news.new : Fresh to my ears. Mighty sharp, too.
+line react.news.known : Been over that board once already.
+line react.news.doubt : There's a soft spot in that version.
+line react.news.sorrow [topic.kind=death|loss|assault] : No decent weight to put against a hurt like that.
+line ask.how : Standing square on the day so far?
+line answer.how : One foot's where I put it. The other'll follow.
+line sympathise : Here's the steady end of the bench. Take it.
+line ack : Understood down to the small change.
+line reassure : A wolf can fall flat and still have a sound pair of legs.
+line refuse : Won't take that on. You've had the straight price.
+line give.advice : I'm listening with my good ear.
+line answer.how.busy [self.working=yes] : My shoulders are occupied. My ears are free.
+line react.news.glad [topic.kind=birth|work|marriage] : That's got a sound bright ring to it. | Reckon that earns a good loud clap.
+line accept_decline : You're entitled to your price and your time. | I can stand a straight refusal.
+line preclose : I've a board needing my attention before it warps. | Best get back before my parcel grows legs.
+line accept_preclose : Take your chance before the queue grows longer. | Go on. I've got other shoulders to lean on.
+
+scene fall
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : First thing in wrestling is learning the ground. | I practise falling on #throwmat#.
+b : Can it throw you? | Doesn't falling come naturally?
+a : Every single time if you lock both knees. | Plenty. Getting up the same shape takes practice.
+
+
+scene price
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : My stall will have one price in chalk. | I've picked out the bit of the stall I want first.
+b : What about the wolf who can't read? | The canopy?
+a : I'll say it aloud. Same price, same apples. | The price board. Nobody's to have to guess with me.
+
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / react.self / assess
+a : A good apple says more in one bite than a seller all morning. | I test an apple with the flat of my thumb.
+b : What's it say, then? | Why keep the claw out?
+a : That I ought to have bought its neighbour. | Because the next buyer deserves the whole skin.
+
+
+scene quay
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I feel a crate's lean before I lift it. | I give a rolling cask the width of two wolves.
+b : How can you tell? | Are you afraid of getting knocked down?
+a : Nudge it an inch. The heavy corner sulks behind. | I'd rather choose my own opponent.
+
+
+scene cough
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : That was a practice feint. Yes, the noise too. | Ahem. You can hear the damp catching in my voice.
+b : I hadn't said anything about the noise. | It sounded painful.
+a : Good. A properly executed feint attracts no comment. | Just the burr coming off. You may admire the polish now.
+
+
+scene stall
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I know how wide my Commons stall's going to be. | I've measured room under my future board.
+b : Whose measure are you going by? | For a strongbox?
+a : Both my arms. If I can't reach it, I can't mind it. | For my feet. I'm earning myself a proper seat.
+
+
+scene larder
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A packed shelf shuts a cupboard with a deep sound. | I like a pantry where something decent hides behind the first jar.
+b : Isn't that just a heavy door? | A second jar?
+a : Empty it and listen. The shelf answers from inside. | Exactly. My whole ambition's there in that second jar.
+
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / react.self / assess
+a : Warm rain takes the salt off my whiskers. | An honest shower is welcome.
+b : Even when it's running down your collar? | You object to dishonest rain?
+a : My collar charges extra for that service. | Drizzle. Won't own up to what it's doing.
+
+
+scene house
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : #self.street# looks broad enough till I turn a crate crosswise in my head. | I walk home imagining the size of my stall.
+b : Why take cargo home in your head? | Fit it on your own street?
+a : Costs less than buying furniture to measure with. | I'd have to leave the neighbours a generous gap.
+
+
+scene coins
+when topic=prices|work
+does tell.self / ask.detail / answer.detail
+a : My stall money lives inside two socks. | I balance my last copper on edge sometimes.
+b : Won't one do the work? | What does that prove?
+a : The first has a hole. I'm saving up, remember. | How little it takes to knock a plan over. I pick it straight up.
+
+
+scene haggling
+when topic=work self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : There's a wolf who'd bargain with an echo. | If a price needs arguing, the slate's wasted.
+b : Would the echo come down a bit? | What if it's marked too dear?
+a : It'd be there after sundown asking for its own price back. | I can walk away. Perfectly civil statement, walking.
+
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I've got room for #self.friend# at my imagined stall. | I reckon friends deserve the same square deal as strangers.
+b : Would your friend jump the queue? | No extra apples for a friend?
+a : Behind the counter, if a seat's wanted. Queue goes by arrival. | After I've finished selling, I can give anybody an apple.
+
+
+scene balance
+when topic=travel
+does tell.self / react.self / assess
+a : I try a wet plank with the outside of one foot. | A loose stone under dry grass is a nasty little wrestler.
+b : Is one foot expendable? | Does it win often?
+a : Cheaper than putting the lot down together. | Once per stone. I remember a good throw.
+
+
+scene chalk
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I draw a stall in chalk then walk round it. | I test my market lettering across a cracked slate's underside.
+b : Does it sell much? | Can I read it?
+a : The rain bought the entire lot last time. | From three paces. That's the whole test.
+
+
+scene cloth
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I'm saving a strip of canvas with a sound hem. | Canvas sags where the water finds an idle thumbprint.
+b : Part of your stall already? | Can you keep it level?
+a : If I'm very small and stand edgeways. | I mean to give it a proper slope. Rain won't stand about to shop.
+
+
+scene wrestler
+when topic=pastimes self.likes=wrestling
+does tell.self / react.self / assess
+a : I wrestle better on an empty stomach. | A good wrestler shakes paws with the ground still on both coats.
+b : So you always go hungry first? | What if somebody's cross?
+a : Certainly not. I'd sooner wrestle a bit worse. | Brush down separately, shake after. The order's flexible.
+
+
+scene bruise
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A bruised apple belongs in a pan, says I. | I cut the windfalls before judging them.
+b : Won't anybody buy it cheap? | Are many good inside?
+a : Stewed apples deserve to have a full price of their own. | Most. They came off worse against a branch, that's all.
+
+
+scene hold
+when topic=work self.job=sailor
+does tell.self / react.self / assess
+a : The pier goes on moving in my sleep. | I like loads that tell the truth about their insides.
+b : You sleep aboard cargo? | What's a lying load?
+a : I work it ashore. The wobble comes home free. | Feathers in a box marked stone. I nearly sat down in the sky.
+
+
+story flat [topic=pastimes self.likes=wrestling]
+  : At practice I once threw my rolled-up blanket clean across the yard.
+  : The knot came loose in mid-air. The blanket landed flat as a laid table.
+  b : And your opponent?
+  : I planted my feet on the blanket and bowed. Finest landing I've ever given anybody.
+
+
+story pips [topic=food]
+  : I bit a market apple expecting meal and got such a crack my ears went back.
+  : One pip shot straight into the open purse I was using to pay.
+  b : Did you keep the pip?
+  : Carried it for a week as the start of an orchard. The purse could use the company.
+
+
+story rent [topic=dreams]
+  : I asked the cost of a board at market and came away quite lightheaded.
+  : Went home, cut a square of paper for every copper of rent, covered half the table.
+  b : Did it look any cheaper spread about?
+  : No. It looked like something I could pick up one square at a time. I kept the papers.
+
+
+rule @crate
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Leave the corners clear. That's where I want my grip. | Give that cask the rights of the whole plank.
+
+
+rule @drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Drips make a great fuss for so little water. | My throat just cleared itself. Nothing to inspect.
+
+
+rule @morning
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Morning, knees. Both still reporting for duty. | A new day with its price unchalked.
+
+
+rule @apple
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say There's a proper crack off that skin. | I'll take my fruit firm enough to argue back.
+
+dlg resident.hub : Plain answers here. Two or three, if the first doesn't fit.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I know where to leave an elbow's room for you.
+dlg resident.job [self.job=sailor] : I move cargo off the piers. Someday I'll stand behind a board of my own.
+dlg resident.news [world.news] : Make your own reckoning of this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody's put a price on talk. #topic.subject# #topic.claim#. I wouldn't pay full.
+dlg resident.bye : Take the way with the sound footing.
+dlg resident.hub [here.time=dusk] : Getting hard to see a chalk mark. Still plenty of light to talk in.
+dlg resident.hub [pair.disposition=wary|hostile] : No wrestling necessary. Say your piece.
+dlg resident.job : I work by feel. Usually know when I've given the full measure.
+
+graft resident.hub
+choice What would your stall sell? -> market_slate
+node market_slate
+say Something a wolf can choose without having to smell it under a layer of sales talk. Apples would do.
+free
+choice Would you sell the bruised ones too? -> market_slate_more
+choice Goodbye. -> bye
+node market_slate_more
+say In a little pot after stewing. Take a deposit on the pot, take it back against the next helping.
+choice That sounds like a start. -> hub
+choice Goodbye. -> bye

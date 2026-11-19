@@ -1,0 +1,263 @@
+mantle rm241
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ivo_dripworth
+title the pockets of plenty
+fits stage=adult|old
+prefers job=fisher warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=ambitious
+quirk moves_a_coal_from_one_pocket_to_the_other_for_each_good_turn
+likes hard_cheese riddles market_bustle frosty_mornings
+dislikes stale_bread rats
+fears scales_sticking a_bare_supper_board
+hopes a_stall_with_a_little_free_shelf
+topics work +0.4 food +0.5 friends +0.3 dreams +0.3 weather +0.2
+styles comfort=feed gossip=careful refuse=soft tease=none
+marks oath saying
+persona #self.first# moves a bit of coal between pockets for each kindness received, offers food without a fuss, and keeps thinking up better ways to fit another plate on a little counter.
+
+words
+oath! = Gut my pockets | Scales and cinders
+saying! = Pass the favour before the coal settles | A whole fish has two sides
+chip = a clean bit of coal | my lucky black pebble
+rightbag = the pocket with the patch | my patched pocket
+cheesecut = a slice off the very heel | a thick wedge with the rind left on
+silver = a flash of fish silver | the silver stripe
+fishknife = a short curved blade | my fish knife
+spareplate = a saucer for an extra helping | a spare tin dish
+teethmark = the bite in the rind | a half-moon cut
+whiteair = the pearly morning air | breath turned white
+slateedge = a slate's chalky rim | a narrow slate lip
+kindness = a good turn | a kindness passed along
+busybells = bells and voices together | a bright racket of barrows
+
+any
+opinion dole for 3 : A pot of fish stew gives a hungry wolf a choice about tomorrow. Hunger takes choices away.
+opinion city for 2 : I can walk out wanting nobody and come back with four good reasons to return a favour. That's Ridgemere.
+opinion festivals against 1 : A holiday can empty a purse while everybody's congratulating the purse on its holiday.
+opinion strangers for 1 : It takes two plates to feed a neighbour and somebody about to become one.
+opinion sump for 1 : Put a dish outside down our way and there's always some little good to come of it.
+opinion houses against 2 : I've never got a leaking sill mended by calling it somebody's property.
+opinion newcomers for 1 : A fresh arrival might have a fresh recipe for the tails.
+
+grown
+line greet : Welcome along. I can make the space.
+line greet [pair.band=strangers] : We've a first word to get past. Welcome.
+line greet [here.time=dawn] : Cold light makes the whole street look silver.
+line greet [here.time=dusk|night] : Good evening. Just got the chill off my nose.
+line greet.return : There's a kindness in being hailed like that.
+line greet.return [pair.band=friends|family] : Come right over, favourite face.
+line greet.return [self.working=yes] : Work takes two paws. You can still have an ear.
+line greet.return [here.time=dusk|night] : It's late enough that your voice carries beautifully.
+line kin.open [pair.kin!=no] : Come stand on the family side of my elbow.
+line again.open : Hoped there'd be time to finish our word.
+line hail [pair.band=friends] : Hoy! I've a thought just your size.
+line farewell : Walk home with a little to spare.
+line farewell.return : May you find a warm plate at the end.
+line react.news : I'll make room on the table for those words.
+line react.news.new : I'd have put money on hearing that sooner.
+line react.news.known : That particular fish has crossed my dish before.
+line react.news.doubt : There's a dull patch to that account.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a weight no pocket could carry.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Put another coal on the happy side.
+line ask.how : How's your share of the day turned out?
+line answer.how : I can still make room for an unexpected good turn.
+line thank : That earns a coal in the patched pocket.
+line deflect_thanks : Let the good bit travel one place further.
+line sympathise : A little food and listening I could manage.
+line reassure : Some things need another pair of paws nearby.
+line decline : I'd love to, but my next hour's promised out.
+line accept_decline : Your own business needs you first.
+line preclose : I'll carry the rest of my words home.
+line accept_preclose : I'll keep some good company for another day.
+
+scene turn_counter
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : I count kindnesses on #chip#. | See the soot on #rightbag#? That's my good pocket.
+b : Isn't one stone a short count? | What's in the other?
+a : The stone only counts till I can pass the kindness on. | A good intention waiting for its turn.
+
+scene two_plates
+when topic=food
+does tell.feeling / react.self / assess
+a : A single offering looks lonely alone on a big bare board. | A corner of cheese tastes better when it's the second corner.
+b : You'd dish it twice? | You've eaten the first?
+a : Two little helpings let somebody choose which one. | Given it away. Now I can eat in company.
+
+scene look_for_silver
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : A good bright side is only half a fish's story. | I wipe #fishknife# upwards from the handle.
+b : What's the other half? | Why upwards?
+a : Turn it over and see what the boards haven't shown you. | A palm full of scales slides. I keep the blade pointed away.
+
+scene free_shelf
+when topic=dreams
+does confide / react.self / assess
+a : My stall would have a shelf low enough for somebody short to see what's free. | I measure my dream stall in plates.
+b : Free for the taking? | Sounds like trouble if you buy a larger plate.
+a : Yes. A gift shouldn't need a mighty stretch first. | Then I'll have dreamed myself an extra foot of frontage.
+
+scene chin_cold
+when topic=weather here.season=winter here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : I grow a little white beard on a frosty walk. | #whiteair.capitalize# sharpens the whole outline of a roof.
+b : Where does it go afterwards? | Does a chill wind suit you too?
+a : Into my scarf like the rest of the weather. | Only till it finds the hole in my cuff.
+
+scene riddle_rind
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I've a riddle written all over this cheese. | My best riddles come in pairs.
+b : What's the question? | One for each ear?
+a : Which side of a wedge do you keep? The side your friend didn't fancy. | One answer I think of and a better one somebody else thinks of.
+
+scene bustle_stand
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : Let the barrows pass and listen to #busybells#. | A big market makes my shoulders rise.
+b : Can you hear individual voices? | With worry?
+a : Usually just the price I didn't quite catch and really want to. | To see over the heads in front of me.
+
+scene hard_bite
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : Have #cheesecut#. Don't lose the rind. | I like cheese stubborn enough to object to a blunt knife.
+b : What's good about the rind? | Say you've only a blunt blade?
+a : That's where smoke lingers if the cheese has been well kept. | Bring out a smaller cheese and ask it nicely.
+
+scene bread_fix
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Bad bread gets a second chance in good broth. | I turn stale bread apart with my fingers.
+b : For how long? | To feed to the birds?
+a : Just till I've laid paws on a spoon. | To see if there's a soft bit left for me.
+
+scene street_line
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump a narrow stair makes you meet your neighbours one shoulder at a time. | I can remember a street by the smell out of its windows.
+b : Which shoulder first? | What if supper changes?
+a : Whichever one will take a basket while a neighbour turns. | Then I get a pleasant surprise instead of directions.
+
+scene family_portion
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : I'd keep the better half of any fruit for #self.spouse#. | For my #self.spouse_word# I could make an ordinary plate look like feast day.
+b : Even if the halves were equal? | With what?
+a : Then the first choice is the better half. | A bit of care about which way the pieces lie.
+
+scene mother_visit
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd carry a parcel to #self.mother# even if the parcel were one warm bun. | I keep a good thought for #self.mother# ready in my pocket.
+b : Would you take the long road? | Right beside your coal?
+a : I'd choose the shortest. A warm bun deserves some haste. | Warmer than coal and cleaner than a pocket.
+
+scene rat_cup
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : Tins make a cooler cupboard than wood does. | I don't mind a squeak behind a wall.
+b : And a noisier one. | A rat gets a welcome there?
+a : That's the point. A rat won't wake me opening a wooden lid. | Beyond the wall is beyond my supper.
+
+scene wagon_lean
+when topic=prices|times world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : If I were in the late cart I'd want somebody to save me supper. | Delays tell on the little stalls first.
+b : What if you don't know the driver? | Through prices?
+a : I don't have to know a name to put a lid on a dish. | Through the space between two heaps on a board.
+
+scene gossip_closed
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : News I can weigh travels farther with me than rumour. | I've got talk here that doesn't smell fresh.
+b : What if a rumour weighs plenty? | Do you know whose it was?
+a : Then it needs to stay put till somebody sees the bottom of it. | I'd be making the trouble worse by guessing.
+
+scene kind_work
+when topic=news world.news
+does tell.news / react.self / assess
+a : Out of #world.news_from# comes this account: #world.news#. | #world.news#. That reached me from #world.news_from#.
+b : How do you take it? | Can I repeat it?
+a : I'd give it room to breathe before making more of it. | In the words you heard. Leave my fish out of the telling.
+
+scene charity_bowl
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A hard week makes little tins very precious. | I've seen a week turn round on the strength of a shared dinner.
+b : For keeping food? | Did the wages change?
+a : For carrying it where it's wanted. | No, but the number of willing hands did.
+
+scene lost_stall
+when topic=dreams|travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I'd take the dark end of Market Square if it meant having a stall. | I wonder which sound carries best over an open square.
+b : Nobody would see you. | To call out your prices?
+a : They'd smell something warming. I'd planned that bit. | To call somebody back when a parcel gets left behind.
+
+story the_rind_gift [topic=food|memories]
+  : I wrapped a piece of very hard cheese as a little gift.
+  : Used fine thin paper so the yellow would show through.
+  b : A pretty idea. Did it keep?
+  : It oiled the paper clear. I had made a window with a whole supper looking out.
+
+story coal_rain [topic=weather|memories]
+  : I once left my lucky coal on a wall all through a shower.
+  : On my return I found the wall sporting a neat black beard.
+  b : How did you clean it?
+  : Went home for a brush and came back to a clean wall. Rain saved me two jobs and gave me two walks.
+
+story odd_scales [topic=work|memories self.job=fisher]
+  : A single fish scale got inside my pocket watch case.
+  : Every time I checked the hour there was a little flash.
+  b : Did the hands stick?
+  : Never. Left the scale till it wore thin. I had a different little moon for every hour.
+
+rule @coal_finger
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Coal's in the good pocket already. That's a promising start.
+
+rule @change_wind
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say The breeze is carrying the warm smells our way.
+
+rule @cheese_end
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say There's room for a bigger wedge in here yet.
+
+rule @good_turn
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Catch the far end and leave the hard bit to me.
+
+dlg resident.hub : Step across. One body more never spoiled a welcome.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Good to match that face to a voice again.
+dlg resident.hub [here.time=night] : I can offer a decent word even at this hour.
+dlg resident.hub [pair.disposition=hostile|wary] : We can give the words room by standing well apart.
+dlg resident.job [self.job=fisher] : #self.trade_words.capitalize#. A keen eye's worth as much as a quick blade.
+dlg resident.job : I try to find the bit of any job that leaves something over for supper.
+dlg resident.news [world.news] : I kept the account plain from #world.news_from#: #world.news#.
+dlg resident.gossip [here.gossip=yes] : The talk that landed here was this: #topic.subject# #topic.claim#. My part ends there.
+dlg resident.bye : I hope the next door yields something warm.
+
+graft resident.hub
+choice Do those pockets have different jobs? -> patched_corner
+node patched_corner
+say They do since I tore one. The patch goes a bit past the opening. I know the feel of a kindness owed even in pitch darkness.
+choice How does a kindness feel? -> smooth_bit
+choice Best leave them buttoned. -> hub
+node smooth_bit
+say Smooth, at first. A day spent carrying coal makes a pocket rub, and then it's about time I did somebody a good turn.
+choice I could get used to that. -> hub
+choice I hope the pocket stays smooth. -> bye

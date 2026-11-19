@@ -1,0 +1,298 @@
+mantle rm221
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_orm_fogmore
+title the tune under the tongue
+fits stage=young|adolescent|adult|old
+prefers temper=short warmth=warm
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk trusts_no_one_from_a_rival_house
+likes barley_soup singing new_boots warm_rain
+dislikes haggling night_noise
+fears giving_away_a_confidence
+hopes to_carry_longer_messages
+topics friends +0.6 pastimes +0.4 food +0.2 gossip -0.3
+styles comfort=practical gossip=cautious refuse=direct tease=none
+marks oath saying
+persona #self.first# sets messages to little tunes and takes a broken confidence worse than a broken toe.
+
+words
+oath! = Split my high note | Rattle my back teeth
+saying! = A message keeps its own coat on | Get the words there warm
+lastnote = the last low note | my humming note
+parcel = a soft little bundle | a twist of brown cloth
+bootpeg = a blunt boot peg | my spare peg
+oat = a pale husk | a grain of barley
+heelbeat = my double heel tap | two knocks with my heel
+strap = a tight sling | a narrow strap
+crease = the small fold | the tuck at the corner
+wetstep = a shiny doorstep | a slippery slate
+breathbit = half a breath | one quick puff
+spoonbit = a dented spoon | a spoon with a notch
+chorus = a running tune | a song for two feet
+throat = the back of my tongue | the roof of my mouth
+
+any
+
+opinion houses against 1 : I've seen a fine sleeve held out for something that ought to go into another paw.
+opinion festivals for 1 : A street singing in three different keys sounds wonderful from the middle.
+opinion sump for 1 : There are doors here where a soaking runner can drip without catching a scolding.
+opinion dole for 2 : A ladleful can keep somebody going clear across the town.
+opinion newcomers mixed 1 : I'll give directions gladly. A sealed message goes only where it was meant.
+opinion city for 1 : There's a whole tune in the steep and level parts of a walk here.
+line react.news : I'd better get the words straight before I remember them wrong.
+line react.news.known : That one's been in my ear already.
+line react.news.new : I'll need another tune to keep that much straight.
+line react.news.doubt : Sounds as though a word got lost on the road.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd run for whoever needs to hear that privately.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's something worth singing out loud.
+line accept_preclose : You'd best get along. I'll stay awhile.
+line reassure : I'll keep any private words to myself.
+line sympathise : Sit close. There's no need to put a tune to this.
+
+young
+
+line greet : Hullo! I've got breath back enough to talk now.
+line greet [pair.band=strangers] : I'm just catching my wind. You can share my step.
+line greet.return : Right here, both ears uncovered.
+line farewell : If you hear two heels knocking, that'll be me going home.
+line farewell.return : I'll remember you stopped for me.
+line decline : No. Whatever you offer, it isn't your message.
+line answer.how : Well enough to hum without wobbling.
+line ask.how : Do your boots rub anywhere today?
+line thank : You waited till my puff came back. I appreciate that.
+line deflect_thanks : My feet were headed there on my own feet anyhow.
+scene i_can_make_a
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I can make a tune for two words. Give me two. | Put a word in each paw and clap them together.
+b : Barley and boots?
+a : Bar-ley goes up, boots comes down. March to it! | That's three claps. Boots gets the biggest one.
+
+scene when_sums_get_stuck
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : When sums get stuck I hum the numbers up a stair. | Letters come easier if I give the crooked ones crooked notes.
+b : Does anybody mind the humming?
+a : I can do it inside my teeth. Nobody knows I'm at it. | Only when I forget a crooked letter and squeak.
+
+scene i_won_t_say
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I won't say what somebody looked like after crying. | You can look at a wet face and still mind your business.
+b : Even if I ask nicely?
+a : Especially then. I'd hate to get cross with you. | I'd hate a crowd watching my own nose run.
+
+scene i_fish_the_barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I fish the barley out last with #spoonbit#. | I keep the best grains till my bowl's nearly gone.
+b : Won't the broth go cold?
+a : Never gets the chance. I drink quicker than I chew. | Warm enough for my paws is warm enough for my tongue.
+
+scene i_ll_carry_a
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'll carry a message for a ribbon. I won't deliver it to a ribbon. | A House colour won't fool me into handing over a letter.
+b : What would convince you?
+a : The right doorstep and the right wolf standing there. | Someone who knows what was folded inside without having to peek.
+
+scene can_you_hear_that
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Can you hear that rain drumming behind our steps? | Raindrops are playing chase with me again.
+b : Who's winning?
+a : The rain. It's inside one boot already. | I was ahead until I tried to look back.
+
+scene i_like_a_price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a price that stays put after it's named. | Haggling sounds like an argument where nobody even means it.
+b : Would you ever bargain?
+a : If both of us wanted the very same last bun, maybe. | I'd rather look in my purse and say exactly what I've got.
+
+scene too_much_banging_after
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Too much banging after dark makes my ears prick straight through a blanket. | I can sleep through singing but not somebody thumping a door.
+b : How do you manage to doze off?
+a : Count the quiet after it. There's generally more of that. | Turn the blanket over and pretend the cold bit is a fresh night.
+
+scene want_to_see_heelbeat
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Want to see #heelbeat#? First heel's the call, second one's the answer. | My boots keep up a private tune. Listen under my humming.
+b : Can you slow it down?
+a : There. Now you can step inside the gap. | Slower makes the pegs squeak. That's the funny bit.
+
+story wrongword [topic=memories]
+  : I made up a rhyme to remember to fetch onions.
+  : Halfway back I forgot what rhymed with onions and stood there in a terrible sweat.
+  b : What did you bring back?
+  : Onions. Turns out it's the other half of the rhyme that's gone for ever.
+
+rule @chew
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Can't whistle that high and keep my feet moving! | I've swallowed the last note again.
+
+rule @drip
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Bootful on the left! The right one's still trying. | Rain's doing the quick part of my tune.
+
+dlg resident.hub : Bend an ear this way. I can make you hear me without the whole street joining in.
+dlg resident.job [self.job=child] : #self.workplace# is where I go to fit all my letters inside their lines.
+dlg resident.bye : Off you go. I'll give your steps a tune.
+graft resident.hub
+choice Can you sing a message? -> humming_fold
+node humming_fold
+say Give me an empty one and I'll sing it. A real one stays tucked up in my mouth until I get there.
+choice How does an empty one go? -> humming_empty
+choice I'll keep mine. -> hub
+node humming_empty
+say Mm dum, mm dum. The last bit's a shut mouth. See how far you can carry it without laughing.
+choice I'll try that. -> bye
+
+adolescent
+
+line greet : Walk beside me if you like. I've learnt to talk on the move.
+line greet.return : Wait while I swallow the word I was practising.
+line decline : You can have my time, but that confidence belongs elsewhere.
+scene i_m_learning_to
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I'm learning to let a silence do some of the carrying. | Nobody can misquote a pause unless I fill it.
+b : Is it hard to stay quiet?
+a : I want the last word something fierce. That's when I walk faster. | I count the space in heel taps till the urge passes.
+
+scene if_i_tell_a
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If I tell a friend I'm cross there's a chance we'll mend it. | Going all polite on a friend takes more work than speaking my mind.
+b : And if it's your fault?
+a : Then I'll have the apology on its feet before sundown. | That's when knowing the shortest route comes in handy.
+
+story buttons [topic=memories]
+  : Once I put a button in each boot to remember two errands.
+  : At the first corner I'd learnt to walk in a very interesting way.
+  b : Did it help your memory?
+  : I remember both buttons perfectly. Couldn't name either errand for a copper.
+
+
+grown
+
+line greet : Rest your voice a moment. This little bit of street can wait.
+line greet.return : You came back on a different beat. Still knew you.
+line farewell : May the road let you keep your breath.
+line farewell.return : Your words are safely folded up.
+line decline : That's someone else's business and I've no right to spend it.
+scene if_i_have_hard
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If I have hard news to carry I'd rather walk a friend home first. | Even a welcome word can unsteady a wolf on a stair.
+b : Where would you stop?
+a : Somewhere with a place to sit and room to wet a sleeve. | Anywhere the first answer can be given quietly.
+
+scene a_tune_can_hold
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A tune can hold a whole shopping list. | When a melody slips my mind I try walking it.
+b : What happens if the rhythm changes?
+a : I get home with twice the salt and neither of the candles. | Usually there's a hill involved. I sing the hill twice.
+
+scene the_soup_i_remember
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : The soup I remember best made my spoon stand up. | I judge a broth by the sound the last grain makes.
+b : What sound's that?
+a : A little plop. With thick soup there's hardly a sound. | A tidy little click when I tip the bowl far enough.
+
+scene i_give_one_price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I give one price, and any quiet afterwards belongs to the buyer. | Bargaining fairly means leaving room for somebody to walk away.
+b : Would you take less from a friend?
+a : I'd name less at the start and spare us both the performance. | I'd call it a gift and keep the price out of our friendship.
+
+scene shortcuts_tend_to_skip
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Shortcuts tend to skip somebody you'd gladly have seen. | I let the long way collect its due now and again.
+b : What sort of dues?
+a : A shouted greeting, three minutes hearing about a sore foot. Nothing dear. | The time to walk home without carrying anybody else's hurry.
+
+scene even_a_low_hum
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Even a low hum finds its way home in fog. | My heels sound much nearer in a mist.
+b : How do you judge distance?
+a : Stop humming and listen till somebody else's heel clicks. | I wait till my own step stops echoing before I cross.
+
+scene i_ve_never_much
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've never much cared for a House badge on a message. | Coloured ties on parcels make me want to turn the label over.
+b : Looking for what?
+a : The name I was meant to see instead of the house I was meant to admire. | A place to take it without answering to a ribbon.
+
+scene i_can_give_the
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : There are thanks I send to the Bright One between two breaths. | I like a quiet blessing that reaches no farther than its listener.
+b : Why so softly?
+a : A kindness deserves a little room to itself. | Because it's often the smallest voice I'm trying to hear.
+
+scene a_hook_right_beside
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A hook right beside the door is my idea of luxury. | I can bear a cramped entrance if there's somewhere to hang wet things.
+b : Just a hook would do?
+a : Low down where even a pup can unburden a shoulder alone, yes. | I'd settle for a nail that doesn't tear straps.
+
+scene i_ease_a_dry
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I ease a dry throat with a spoonful of warm broth. | After a long talk my voice whistles on the high notes.
+b : Does humming help?
+a : It tempts me to sing and there goes the benefit of the broth. | Quiet helps. Humming's my second choice.
+
+scene in_a_lean_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When the week pinches I cut the heels off a loaf into the soup. | Poor times give a broth far too much room for water.
+b : Will stretched soup still taste of anything?
+a : Slow eating and a bit of company. We take turns telling tales. | Barley if I can find it, and no apologising for a second helping.
+
+scene i_remember_the_first
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember the first time silence felt like a present I could give. | There's a face I could draw quite well and never shall.
+b : Why keep it so close?
+a : Somebody needed a minute without the whole city hearing about it. | The memory came to me unasked. I still owe its owner that much.
+
+story flour [topic=memories]
+  : A floury thumb once left a white mark across my folded note.
+  : I rubbed at it and made the whole thing look as though it'd been through a bakehouse.
+  b : Could anybody read it?
+  : Certainly. The only writing was on the inside, which I remembered just before asking to borrow a sieve.
+
+rule @rest
+when concept=bark
+does aside
+cooldown 8h
+say Save a little wind for the climb back. | Feet know the chorus even when the mouth forgets.
+
+rule @hush
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Soft heels now. There'll be somebody dozing. | A door can close without waking the street.
+
+dlg resident.hub : Lay the whole matter down where we can both look at it.
+dlg resident.news [world.news] : This is what I carried home: #world.news#.
+dlg resident.bye : I hope the next word to find you is welcome.

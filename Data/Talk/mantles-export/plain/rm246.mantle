@@ -1,0 +1,281 @@
+mantle rm246
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_rune_wickwell
+title the doorstep astronomer
+fits stage=adult|old
+prefers job=none quarter=sump
+traits temper=calm talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_stars_in_the_clear_gaps_after_rain
+likes pickled_herring stars old_maps first_warm_day
+dislikes stale_bread waiting
+fears quarrels_shutting_the_shutters
+hopes company_for_the_first_clear_evening
+topics weather +0.6 home +0.5 memories +0.4 faith +0.2
+styles comfort=patient gossip=curious refuse=gentle tease=none
+marks oath saying
+persona #self.first# studies the bright strips between showers and makes room on the step for another pair of eyes.
+
+words
+oath! = Cloud my little square | Pickle that star chart
+saying! = A doorstep sees a deal of sky | The last drop shines the longest
+stepmat = a bit of folded sacking | my little sitting mat
+pebble = a pale doorstep pebble | a flat white stone
+stargap = a rent in the cloud | a clear black patch
+herringbit = a strip of pickled fish | a sharp piece of herring
+jarjuice = the brine left behind | a little salty liquor
+skystrip = my slice of evening | the sky between two roofs
+mapweight = a smooth chunk of tile | my round paperweight
+mapedge = the worn margin | a torn edge
+rut = a puddled cart rut | a long hollow
+springday = the mild turn | the first kind afternoon
+dryspot = a patch the rain missed | a little dry island
+latchsound = a low wooden knock | the lift of a latch
+
+any
+opinion houses against 1 : I watch water meet where two roofs join. Should the Houses quarrel about a gutter, it'll be our heads underneath.
+opinion dole for 3 : A doorstep's tall as a wall when your belly's empty. A portion of meal can lift you over.
+opinion strangers for 1 : Never seen a visitor who needed a different sky. Plenty of sky if you sit where I sit.
+opinion festivals for 1 : I hear the day coming uphill in pieces. A whistle, a drum, then all the voices together.
+opinion church for 2 : Give me the wolf who remembers a hungry mouth after the blessing's spoken.
+opinion road against 1 : Leaving on a bright morning doesn't guarantee a bright welcome at journey's end.
+
+grown
+line greet : Rest at the edge of my little patch of sky. | You've come where a wolf can sit a minute.
+line greet.return : And here I am to greet you underneath it all. | A welcome back across the step to you.
+line again.open : Here we are under the same roof of weather again. | You haven't missed the entire sky since last time.
+line farewell : Keep an eye out for the first clear patch. | May something worth looking at delay you pleasantly.
+line farewell.return : And may your roof keep the wet outside. | My own good wishes trail after your heels.
+line react.news : Sit awhile. The sky can watch itself while I listen. | Let me turn my better ear to your tidings.
+line react.news.new : Well, that came from beyond my little strip. | I haven't heard the first bit of that before.
+line react.news.known : Yes, that sound has passed my doorstep. | That's an old visitor coming up the street.
+line react.news.doubt : I wonder what the cloudy part of that account hides. | I'd wait for a clearer patch before repeating it.
+line react.news.sorrow [topic.kind=loss|death|theft] : A hard bit of weather for somebody's heart. | I'll keep a quiet place here for any who need it.
+line react.news.glad [topic.kind=birth|marriage|work] : There's a light worth watching for. | That'll put a happy face at a window somewhere.
+line ask.how : How much of your day did you get to keep? | Anything bright come through the cracks for you?
+line answer.how : The sky hasn't tired of my face. I'm content. | Plenty of small things keeping me curious.
+line sympathise : I can mind the silence till you're ready. | Use my shoulder for a quiet minute.
+line reassure : Sit beside me till the clouds begin thinning. | Even a very wet step dries at the edge first.
+line refuse : I'm keeping a little time free for the light to change. | My paws are promised elsewhere this time, friend.
+line accept_decline : Off you go with the time you saved. | It'll keep till a day you can spare.
+line ack : Yes, I can picture the very shape of that. | Your meaning's come through clear.
+line preclose : I've promised myself one look at the sky before I settle. | I'll take my evening turn while there's light.
+line accept_preclose : Go get the benefit of that last bit of day. | Off with you while the going's still comfortable.
+
+scene drip
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I watch for the gap after the last drop. | The eaves are drumming farther apart.
+b : Does the last one look different? | Is it clearing?
+a : I can't. That's the pleasure of sticking about. | At our end perhaps. The street's long enough for two sorts of weather.
+
+
+scene herring
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A bit of herring makes me sit up straight. | I eat my herring by the open air.
+b : Is it the salt? | Does it taste better outside?
+a : The vinegar. Like opening a small window inside my mouth. | I'm less inclined to hurry. Sharp fish deserves a long acquaintance.
+
+
+scene map
+when topic=pastimes self.likes=old_maps
+does tell.self / react.self / assess
+a : My old map's got a street so wrong it makes a better river. | I look for the blank bit on a map before the roads.
+b : Shall I get you a newer sheet? | What's drawn in the blank?
+a : Oh, leave it. I like thinking where a boat would come ashore. | All the places a wolf can still go without a printed suggestion.
+
+
+scene star
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I wait for a second star before I name the first. | One poor star sits over the gutter until my neck aches.
+b : Do they introduce each other? | Wouldn't it be easier lying down?
+a : The pair lets me see just which bit of sky I'm looking through. | Oh yes. I've picked a wonderfully inconvenient favourite.
+
+
+scene parent
+when topic=family self.parent=yes self.child
+does tell.feeling / ask.detail / answer.detail
+a : I'd like #self.child# to have a bigger slice of sky. | I save some stories for #self.child#.
+b : Bigger than what you can see here? | Why keep the best ones back?
+a : Big enough to choose which little bit feels like home. | Because I remember the pleasure of being the first to hear a thing.
+
+
+scene bread
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.self / assess
+a : That old bread ought to knock before it comes in my mouth. | A hard crust makes me wish I'd become a keeper of soup.
+b : Too hard for supper? | Little room for a soup pot?
+a : It'll have a long bath first. Then we'll discuss it. | Always room. The question is what else is going in.
+
+
+scene spring
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : I recognise spring when I forget to move my seat into the sun. | First mild afternoon and the street seems wider.
+b : Warm enough in shade? | Does it get longer too?
+a : More than warm. Warm enough not to spend all day arranging warmth. | A little. I walk beyond my errands when the air's like that.
+
+
+scene waiting
+when topic=day self.dislikes=waiting
+does tell.feeling / react.self / assess
+a : I dislike a wait till I've found something in it to mind. | A queue's a string of empty minutes till somebody says a word.
+b : Something like a cloud? | And then?
+a : Or a rain run taking three tries to get round a stone. | Then it's a row of lives next to mine. I can stand that nicely.
+
+
+scene door
+when topic=work self.job=none
+does tell.self / ask.detail / answer.detail
+a : Minding a door is mostly minding the space beside it. | I like a step where a wet visitor can shake off outside.
+b : Do you stand there the whole time? | Is it easy keeping the inside dry?
+a : A wolf who blocks the way is a very poor welcome. | No. A welcome ought to cost a little wiping up.
+
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : A sky opening like a book always brings #self.friend# to mind. | A friend can tell me I've mistaken a lamp for a star.
+b : Hoping for company to read it? | Do you mind being corrected?
+a : There's room between my shoulder and the jamb. | Not when the lamp turns out to be a perfectly nice sight.
+
+
+scene puddle
+when topic=land
+does tell.self / react.self / assess
+a : A little hollow brings the high roof down to my feet. | I'd draw puddles on a proper map of this street.
+b : The water shows the whole roof? | Wouldn't they dry up?
+a : As much as I have a mind to stoop for. | I'd mark the dips. Rain remembers where to fill them.
+
+
+scene winter
+when topic=dreams|times
+does tell.feeling / ask.detail / answer.detail
+a : I'm afraid of what the Houses might quarrel over before winter. | I picture the city arguing over one dry roof.
+b : Have you heard anything certain? | Which House would win?
+a : Only my own worrying. Better to tell the difference. | I hope they mend the flashing before anybody claims it.
+
+
+scene starsill
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I own #skystrip# once evening comes. | If the sky were any narrower I'd have to watch with one eye.
+b : Cost you much to keep? | Would you give the step up?
+a : Costs me putting my washing below it before I can see. | I'd move along half a foot. There's usually another angle.
+
+
+scene gossip
+when topic=gossip here.gossip=yes
+does tell.self / react.self / assess
+a : Word went by that #topic.subject# #topic.claim#. | A rumour travels down a street more quickly than rainwater.
+b : Could you see any of that from your doorway? | Does either stop with you?
+a : No. My view has limits even on a bright day. | I let the rumour rest. The rain's welcome to go on.
+
+
+scene hard
+when topic=times world.times=hard|lean
+does tell.feeling / ask.detail / answer.detail
+a : These lean days make me count the pauses between callers. | When times pinch I try to make the doorstep a little wider.
+b : Do you miss the bustle? | With a chisel?
+a : I miss wolves having time to stop without losing a meal. | With my own backside. I shuffle over and let somebody rest.
+
+
+scene shop
+when topic=home self.shopkeeper
+does tell.self / ask.detail / answer.detail
+a : A word with #self.shopkeeper# would round out my afternoon. | There's a lovely click to a latch you can lift with one claw.
+b : Have you anything to buy? | Why one?
+a : Just a preference for company when the view's all grey. | Leaves room for a parcel, or a paw helping a visitor up.
+
+
+old
+
+scene neck
+when topic=health
+does tell.self / react.self / assess
+a : My neck gets the first news of a long night watching stars. | I used to tip my whole head back to see the sky.
+b : Is there a kinder way to look up? | And now?
+a : A folded cloth against the wall. I'm old enough to have earned padding. | I find a clean puddle and let the stars do the bending.
+
+
+scene years
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've known this much sky under a good many sorts of roof. | In my first coat I had no patience with a shower.
+b : Does the sky change too? | Are you more patient now?
+a : Enough that I'm still watching with my last good bit of curiosity. | No. I can just fill in the wait with a longer story.
+
+
+story tilestar [topic=memories]
+  : I once watched a light hold very steady beyond two chimneys. The night clouded over and there it shone.
+  : I moved my sitting mat three steps. My stubborn star came with me.
+  b : Was the light in your eye?
+  : It was in a patch of glazed tile. I scraped the moss away to give it a bigger sky.
+
+
+story fishmap [topic=food self.likes=pickled_herring]
+  : I put a jar of herring on an old map to stop it curling. Brine leaked and a coast spread inland.
+  : For a bit I had a fine harbour right where the paper used to show a road.
+  b : Did you have to throw the map away?
+  : I dried it, kept it and ate the harbour-maker. It's my best smelling stretch of coast.
+
+
+story firstbreak [topic=weather]
+  : One evening it rained so long I forgot what I'd gone out to look for. My backside grew damp and I felt a proper fool.
+  : A drop landed on my nose and stayed there. The others had finished their business.
+  b : Did the sky clear after that?
+  : A thin crack, enough for a star. I went back in knowing exactly why I'd come out.
+
+
+rule @clear
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Look at the gaps between those drops. Getting roomy. | Plenty of rain left, but its edges are thinning.
+
+
+rule @sun
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say A bright patch for my doorstep. Kindly stay a bit. | I'll move the sitting mat into the light.
+
+
+rule @star
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say See that little clear bit hang on to the dark. | A roof's no obstacle to the patient stargazer.
+
+
+rule @wait
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 8h
+say I'll find something to do while my shadow catches up. | Standing about goes better with something worth seeing.
+
+dlg resident.hub : Stay in my patch of sky till you've seen your fill.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I could have recognised your outline against the light.
+dlg resident.hub [here.time=night] : Good company makes the dark look full of possibilities.
+dlg resident.hub [pair.disposition=wary|hostile] : We'll leave a comfortable step of space between us.
+dlg resident.job [self.job=none] : I can sit by a door and give a friendly word to passing wolves.
+dlg resident.job : I prefer work with a little sky in the corner of my eye.
+dlg resident.news [world.news] : This came to my step. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I heard that #topic.subject# #topic.claim#. I'll lend you my ear for what you make of it.
+dlg resident.bye : I hope you find a dry doorstep wherever you stop.
+
+graft resident.hub
+choice How much sky fits between those roofs? -> street_sky
+node street_sky
+say Push an arm straight out. See the gap on each side of your paw? That's two good strips of sky, even if you keep the paw up.
+free
+choice Is that enough to see a star? -> street_sky_more
+choice Goodbye. -> bye
+node street_sky_more
+say Some evenings a whole little procession comes through there. No charge for watching and the programme keeps changing.
+choice I'll leave you a clear view. -> hub
+choice Goodbye. -> bye

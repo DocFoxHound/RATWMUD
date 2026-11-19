@@ -1,0 +1,402 @@
+mantle rm238
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_jorunn_ropewick
+title the folded ticket
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk folds_paid_tickets_outward
+likes spiced_cider stars full_larder first_snow
+dislikes haggling bad_manners
+fears a_favour_mistaken_for_a_loan
+hopes to_hand_back_every_wedding_spoon
+topics work +0.5 prices +0.3 friends +0.2 gossip -0.4 festival -0.3
+styles comfort=practical gossip=close refuse=flat tease=dry
+marks oath saying
+persona #self.first# folds a paid ticket outwards, weighs an insult in silence and remembers a small kindness down to the hour.
+
+words
+oath! = My good red ink | Crease my last ticket
+saying! = A sum can end even if a story can't | Borrowed silver comes home by copper
+paper = a pawn slip | a strip of writing paper
+wrist = my old pen cuff | my inky cuff
+corner = the turned corner | a triangular fold
+rule = a little bone straightedge | my short black rule
+silver = a spoon with a rubbed bowl | a thin silver teaspoon
+wrap = a square of old linen | a soft wrapping rag
+tin = a flat tobacco tin | a tin with a sliding lid
+cider = a mug of fragrant cider | a cup of mulled cider
+spice = one clove | a curl of spice bark
+larder = a shelf of sealed pots | high rows of covered jars
+light = a single hanging lamp | my little oil lamp
+knife = my nib knife | the short penknife
+empty = a clean white square | a square of unwritten paper
+return = a fold opening outwards | a turned-back paper ear
+latch = a brass catch | a little cupboard turn
+
+any
+opinion dole for 2 : A meal from the dole left all our spoons on the table. The value of that stays with me.
+opinion church for 1 : A kindness done with a ladle is one I can still taste years on.
+opinion festivals against 2 : I'd pay the fiddler twice to pack up before the crying starts.
+opinion newcomers for 1 : A face new to the street deserves the same clear terms as one I first saw with milk teeth.
+opinion merchants mixed 1 : Count the coin in front of the customer. Then at least one thing about the deal was done right.
+opinion houses against 1 : Rain through my ceiling never seems to find its way onto a rent receipt.
+opinion strangers for 1 : Hard to live on familiar faces. Some of the kindest words come from mouths I couldn't name.
+opinion times against 2 : A little less silver coming back out of pawn, a little more stayed on the shelf. That's my reckoning.
+opinion road against 1 : A late load can spoil an honest promise. Try putting the use of a week on a bill.
+
+grown
+line greet : Yes, hello. Shut out the draught. | Welcome. You can put your parcel there.
+line greet [pair.band=strangers] : New to me. You've my ear till you've finished. | Come along. Clean place on the table for you.
+line greet [here.time=dawn] : Morning. Ink's still thick as cream. | Early word? You've the clean end of the day.
+line greet.return : I heard the latch. Welcome. | Hello yourself. There's room to set that down.
+line greet.return [pair.band=friends|family] : You can set your elbows down. | Good. You know where the cups live.
+line greet.return [self.working=yes] : I'll put this nib down properly first. | One word while the ink dries, then I'm yours.
+line greet.return [here.time=dusk|night] : Evening. Stand inside the lamplight. | Welcome. I still know a face by one lamp.
+line again.open : I see you've turned the corner back. | Same page. Go ahead.
+line farewell : Safe passage for you and your parcel. | Button your pockets for the walk.
+line farewell.return : I'll close the latch for you. | Yes. Mind the paper stays dry.
+line ask.how : Anything owing you a good turn lately? | Has the day dealt plainly with you?
+line answer.how : I've had worse written against me. | More inward folds than outward today, but I'm managing.
+line react.news : Let me have the exact part. | I'll hear it through once.
+line react.news.new : That was a blank space to me. | Fresh ink indeed.
+line react.news.known : I've put that particular account away. | Already dry, that bit.
+line react.news.doubt : Some figures bear a second look. So do some tales. | Who saw enough to sign the bottom?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. Lay the paper down a minute. | No sum comes even after a thing like that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news to fold outwards. | I'm glad of that entry.
+line decline : You have my answer. Keep your other arguments dry. | No, and that's the whole figure.
+line accept_decline : Clear terms suit me. | I'll mark the matter shut.
+line thank : I keep good turns in mind. This one's yours. | That's worth double your figure to me.
+line deflect_thanks : Leave that one off the books. | Gratitude received in full.
+line sympathise : There's a chair with a good back here. Use it. | You can put your bundle down for a bit.
+line preclose : Time to stopper my ink. | I'll have to fold this up shortly.
+line accept_preclose : Of course. Your time belongs to you. | Leave the rest for another page.
+line praise : A fair account, neatly delivered. | You'd know a good edge by touch, I think.
+line deflect_praise : That's practice with small sums. | I've had long enough to get a few things right.
+line warn : Keep the written terms where water can't get at them. | If the figure changes with every breath, walk away.
+line accept_apology : Outward corner. That's settled. | I'll give you a clean square.
+line apologise : Sharp of me. Put that against my name. | I spoke before you'd finished. Go on.
+line offer : I can put that into writing for you. | Shall I stay while you reckon it up?
+line kin.open [pair.kin!=no] : You're charged nothing for sitting by me. | Pull your chair nearer. Plenty of room for kin.
+line ack : My pen's down. | You've as much quiet as you need.
+line ask.detail : What exactly was put into your paw? | Where did the account change?
+line answer.detail : That corner was turned in. Still owed. | I'd marked the amount beside the date.
+line reassure : No need to show me every pocket. | Your word can stand here a little while.
+scene paper_ear
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I can feel whether a ticket's paid in my pocket. | I fold every settled account away from the writing.
+b : What does a paid one feel like? | Why outwards?
+a : A little ear turned back like it's listening behind itself. | Easier to open. Nothing left inside it to protect.
+
+scene receipt
+when topic=work self.job=merchant
+does tell.self / react.self / assess
+a : I leave a clear finger's width below a final figure. | My last line nearly touches the name.
+b : Quite a particular margin. | To save paper?
+a : Room to lay your finger on the sum without hiding it. | To leave no space for an extra figure afterwards.
+
+scene spoon
+when topic=memories
+does tell.feeling / ask.detail / answer.detail
+a : A much-polished spoon is sad to handle. | Silver looks better to me once it's worn.
+b : Why sad? | More valuable?
+a : A mouth's learnt that edge and ought to have it back. | Less, in money. More like somebody's own.
+
+scene quietroom
+when topic=friends
+does tell.self / react.self / assess
+a : Good company needn't earn its chair. | I like a visit that lasts through a whole cup in silence.
+b : I'd wonder if I'd offended. | You don't talk at all?
+a : If you'd offended me you'd have no need to wonder. | I've a perfectly good second cup for that.
+
+scene firstoffer
+when topic=prices self.dislikes=haggling
+does tell.complaint / ask.detail / answer.detail
+a : Some wolves take the first figure as a greeting. | I'd like to price the wear on my patience.
+b : How do you mean? | How much is it?
+a : They think business starts somewhere around the seventh. | Considerable at the start. Dearer with every question.
+
+scene cloves
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I take #spice# out of #cider# before the last mouthful. | That clove can last a second heating.
+b : Does it turn bitter? | Even after the first cup?
+a : Oh yes. And all the sweet stuff goes first. | Warm it between your fingers. If it scents the skin, keep it.
+
+scene starsum
+when topic=pastimes self.likes=stars
+does tell.feeling / react.self / assess
+a : I watch the sky until I forget which stars I've counted. | The stars don't show a total at the bottom.
+b : Sounds a poor way to add them up. | Do you wish they did?
+a : Splendid way to go to sleep, though. | Bright One spare me an evening audit as well.
+
+scene jars
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I turn every full jar with the fastening towards the wall. | My larder tells me when I've had a busy week.
+b : To make the shelf tidy? | A glance at the labels?
+a : To keep my sleeve from catching on the bits of string. | Count the lids I haven't tied back on straight.
+
+scene newfoot
+when topic=weather self.likes=first_snow
+does tell.feeling / react.self / assess
+a : First snow makes every arriving footstep private. | At the first snow I stand and let the street turn white.
+b : No warning anybody's coming. | Won't you get cold?
+a : Quite. I can finish one thought before the latch speaks. | When the toes start complaining, the visit's over.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : There's no charge for saying please. | I dislike a finger clicking for my attention.
+b : Cheap at the price. | Makes two of us.
+a : Odd how few stock up even so. | I'm inclined to look about for a beetle.
+
+scene father
+when topic=family self.father
+does tell.feeling / ask.detail / answer.detail
+a : I could sit opposite #self.father# half a day without watching the light. | I'd like to put #self.father# first on a list of good turns.
+b : No account of the hours? | What would you write?
+a : Time spent that well scarcely needs a ticket. | Just the name. The rest is family business.
+
+scene dolebowl
+when topic=food
+does tell.feeling / react.self / assess
+a : I remember a meal that allowed me to keep all my spoons. | A serving ladle takes up a funny place in my memory.
+b : Hungry week? | Because of its size?
+a : Lean enough. Somebody filled a bowl before we had to sell it. | Because I didn't have to weigh my supper out against anything.
+
+scene custom
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar face gets as much time to read as an old one. | I leave a second seat for a stranger's friend.
+b : And if the wolf reads slowly? | A witness?
+a : There's a great difference between slowness and haggling. | Or somebody with better eyes. No business of mine which.
+
+scene limp
+when topic=health
+does tell.self / react.self / assess
+a : When my leg's playing up I like a chair I can trust. | A low footstool makes poor weather bearable.
+b : No rock in it? | Is it comfortable?
+a : No show of sympathy every time I lean sideways. | It gives me one place that's the right height whatever the weather.
+
+scene traffic
+when topic=travel
+does tell.worry / ask.detail / answer.detail
+a : A short trip sometimes comes dearer than a long one. | Walking across town is the cheap part of the errand.
+b : How's that? | What costs most?
+a : Depends how long the wolf at the other end keeps you waiting. | Going back because you were too tired to ask one question.
+
+scene feast
+when topic=festival
+does tell.complaint / react.complaint / assess
+a : There's always a tune at a feast that outlives its welcome. | A feast always reminds me of a dropped coin.
+b : By how much? | Everybody rushing after it?
+a : Till next morning, sometimes, when it's still between my ears. | All that noise getting to the floor. Nothing much left to hear afterwards.
+
+scene watch
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I look a watch badge straight in the face. | If the Watch needs a word I'll have it indoors.
+b : So you can read it? | Away from the street?
+a : So a brass button doesn't pass itself off as one. | Whatever it concerns, nobody paid the neighbours for seats.
+
+scene weatherink
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Wet weather and writing don't make good companions. | A drop of rain can turn a six quite round.
+b : How do you keep the page dry? | Would you guess what it was?
+a : Old cuff first on the wet wrist, new ink last. | No. I'd start the slip over with both parties there to see.
+
+scene lamptime
+when topic=day here.time=dusk|night
+does tell.self / react.self / assess
+a : One lamp's enough for figures but not for matching ribbon. | I use my ear more after dusk.
+b : Does the colour go? | To hear the latch?
+a : All the reds take on the same look. It would deceive an honest wolf. | A crack in a saucer changes its ring even by poor light.
+
+scene mend
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I like a darn on a wrapping cloth. | I stitch a little cross where a parcel cloth begins to thin.
+b : Doesn't the needlework catch? | Why a cross?
+a : Turn the darn against the grain. Then it'll slide. | So the next time I hold it up I can see whether the hole's grown.
+
+scene return
+when topic=prices self.job=merchant
+does tell.feeling / ask.detail / answer.detail
+a : I like seeing one of my wrappings come back empty. | The nicest sound at a counter is china leaving it.
+b : Why empty? | Why leaving?
+a : Means the owner got the thing home. | A few saved coppers have turned into somebody's best dish again.
+
+scene rumour
+when topic=gossip
+does decline / ask.detail / answer.detail
+a : I don't quote what a wolf offered in private. | Business heard through a partition isn't mine to repeat.
+b : Not even roughly? | Could you say whether it's true?
+a : A rough breach of confidence is still a breach. | I'd be answering the first question by the back door.
+
+scene badluck
+when topic=smalltalk
+does tell.self / react.self / assess
+a : My luckiest possession is nearly worthless. | I've a bent pin I take along to a bargain.
+b : Show me that treasure. | For luck?
+a : It's #wrap#. Nearly everything dear to me's been carried in it. | For clearing the nib. That does more for luck than a new coat.
+
+scene neighbor
+when topic=friends self.neighbour
+does tell.feeling / ask.detail / answer.detail
+a : I wouldn't want #self.neighbour# to think I tally every doorstep visit. | I have an easy way to keep peace with #self.neighbour#.
+b : Does a doorstep visit really stick with you? | What's that?
+a : I do. It's different from keeping score. | Knock before entering. Doesn't cost a penny in either direction.
+
+scene snowprints
+when topic=season here.season=winter
+does tell.self / react.self / assess
+a : I like the first print of my own foot on a winter morning. | I'll open the shutters with cold paws in winter.
+b : All alone on the street? | To get it done quickly?
+a : Just for a second you can see precisely where you've been. | To feel how much warmer the breakfast cup is afterwards.
+
+scene stop
+when topic=smalltalk
+does tell.plan / ask.detail / answer.detail
+a : I'm learning to end a conversation before I get sharp. | I give an unwelcome question just one answer.
+b : Any success with that today? | Just the once?
+a : Just far enough to be allowed another try tomorrow. | The second time it's asked I show both sides of my empty paws.
+
+scene receiptbook
+when topic=dreams
+does tell.plan / react.self / assess
+a : I'd like every spoon on my shelf to find its own table. | Sometimes I picture a drawer full of tickets all folded out.
+b : Leave you with an empty shelf. | All settled at once?
+a : Quite. Imagine the pleasure of dusting it. | Every last one. I'd take the afternoon to unfold them.
+
+scene sumpstair
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down in the Sump I know which boards steal a quiet entrance. | There's a change of air as I get home to the Sump.
+b : Do you skip over them? | Does it smell cleaner?
+a : Only on the way out. Coming in I like to give fair warning. | Hardly. But a familiar smell lets the neck go slack.
+
+scene poor
+when topic=prices
+does tell.self / react.self / assess
+a : An empty purse can hold a surprising number of things. | I keep my smallest copper in its own fold.
+b : What've you got left in yours? | Afraid it'll get lost?
+a : Two receipts and a shopping list with an optimistic bottom half. | Afraid I'll give it away in change before I've bought supper.
+
+scene civic
+when topic=home here.region=ridgemere
+does tell.feeling / ask.detail / answer.detail
+a : Ridgemere can fit into the marks on a worn cup. | I know this city best at elbow height.
+b : What marks? | Elbow height?
+a : Smoke upstairs, chips from the stairs, little black ring from a cheap stove. | Door latches, counter tops, the dent where a wolf leans waiting.
+
+story tin [topic=memories]
+  : I once kept the last of a week's food money in a tobacco tin. Every morning it sounded a little poorer.
+  : On the last morning I shook it and heard two distinct coppers. I went looking for butter as well as bread.
+  b : Were there two?
+  : One copper and a tin lid beginning to come unsoldered. The bread was good, though.
+
+story parcel [topic=work self.job=merchant]
+  : I wrapped a cracked basin with such care I folded my pen into the parcel too.
+  : I had a clean slip and suddenly nothing to write with. I had to open my splendid parcel again, in full view.
+  b : Did the basin come out in one piece?
+  : Beautifully. I take my pen behind my ear before I fold anything nowadays.
+
+story starpatch [topic=pastimes self.likes=stars]
+  : I saw an unfamiliar star through a gap in my shutter. Its light trembled like a live coal.
+  : I got up, set my eye to the crack and saw the same star a second time, much further down.
+  b : What were you seeing?
+  : Lamplight reflected in two drops on the shutter. It made going to bed seem a little extravagant.
+
+story sweet [topic=food]
+  : I once grated the spice for my cider onto a page of rough figures. Then I took a draught and tried my sums again.
+  : I came up one spice bark short and three coppers more cheerful than the money on the table allowed.
+  b : Had you spilt the cider?
+  : No. I'd counted three brown flecks as dots of ink. I have a special saucer for grating now.
+
+story badbend [topic=smalltalk]
+  : I wrote a very sharp answer to a wolf who'd sent me a poor account. I folded it, tucked it into my cuff and went to wash up.
+  : I forgot my cuff until the water ran pink. Only the quietest words survived at either end.
+  b : Did you write the sharp bits back in?
+  : I delivered a fresh copy of the surviving words. I'd still take a washtub's advice on a letter.
+
+rule @tab
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Name and sum where both can see. | Corner in for now. We'll hope it turns back soon.
+
+rule @cold
+when concept=bark here.season=winter
+does aside
+cooldown 9h
+say Dry cuff before I unstop the ink! | White street, black nib. Each in its place.
+
+rule @cup
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 10h
+say Clove out before the last swallow. | That's cider worth warming both paws for.
+
+rule @crowd
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 7h
+say Latch with your paw, please, not your shoulder. | There's time enough for please.
+
+rule @light
+when concept=bark self.likes=stars here.time=night
+does aside
+cooldown 12h
+say Leave me a patch of sky past the lamp. | One skyful that nobody has to account for.
+
+rule @rest
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say My joints and the clock agree on that. | Time for the footstool and the small lamp.
+
+dlg resident.hub : Make yourself heard. There's room for a parcel too.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I know the face even with my pen down.
+dlg resident.hub [pair.disposition=hostile|wary] : Keep your voice level. I'm within earshot.
+dlg resident.job [self.job=merchant self.workplace] : I lend against things at #self.workplace#. I like it best when the things go home.
+dlg resident.job : I put figures in order and try to leave the owners be.
+dlg resident.news [world.news] : I set down just these words: #world.news#
+dlg resident.bye : Dry pocket for anything you've signed.
+dlg resident.bye [here.time=night] : Mind the step outside the lamplight.
+dlg shop.greet [self.role=merchant here.shop!=bare] : Set down what you've brought and state the figure you had in mind.
+dlg shop.greet [self.role=merchant here.shop=bare] : Bare shelves today. The dust shows where the goods used to stand.
+dlg shop.prices [self.role=merchant here.shop!=bare] : I'll write the figure down. Take time to consider it.
+dlg shop.bye [self.role=merchant] : Put any slip I gave you inside your coat.
+dlg resident.hub [here.time=dawn] : Morning. You get the benefit of a freshly cut nib.
+dlg resident.hub [here.time=night] : One lamp between us. Sit on the bright side.
+dlg resident.job [self.working=yes] : Keeping paper and wet sleeves well apart at present.
+dlg resident.hub [self.father pair.band=family] : Family's welcome on either side of my table.
+graft resident.hub
+choice What do you fold the paper for? -> entry_fold
+node entry_fold
+say Feel that corner. Turned in, the slip feels shut. Turned out, it lifts clear under your thumb. I can read a pocketful like that.
+mood calm
+free
+choice Does every kindness get a slip? -> entry_favour
+choice I'll leave the corner as I found it. -> hub
+node entry_favour
+say A kindness is what happens when somebody passes something over without writing a slip. I've room enough in my head for those.
+choice I see the difference. -> hub
+choice I'll keep this one in mind. -> bye
+graft shop.greet
+choice How much is a well-worn spoon worth? [self.role=merchant] -> spoon_worn
+node spoon_worn
+say Turn the bowl up to the light. See how thin silver gets with polishing? Each polish takes a little metal and leaves a little memory. I can price the metal.
+free
+choice And who prices the memory? -> spoon_memory
+choice I can see the thin patch now. -> greet
+node spoon_memory
+say Whoever brings the spoon in. Sometimes I wrap it back up and wait for a wolf to decide to carry it home.
+choice Time enough to choose. -> greet
+choice I'll keep my spoon. -> bye

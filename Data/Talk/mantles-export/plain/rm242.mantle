@@ -1,0 +1,436 @@
+mantle rm242
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_gorm_saltstack
+title the rain ear
+fits stage=adult|old
+prefers role=merchant job=baker
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk measures_rain_by_tapping_loaf_tins
+likes mutton_stew draughts a_full_till warm_rain
+dislikes deep_mud flies
+fears silence_before_the_oven_cools
+hopes a_berth_with_a_dry_locker
+topics weather +0.6 work +0.5 food +0.4 pastimes +0.3 gossip -0.4
+styles comfort=nourishing gossip=slow refuse=soft tease=none
+marks oath saying
+persona #self.first# listens to drops landing in spare tins, keeps a soft answer for weary company and would like to carry one small warm thing across a great deal of water.
+
+words
+oath! = Tap my tin twice | Sift the headland thin
+saying! = There's a small loaf in a long wait | The hollow vessel hears first
+tin = my spare loaf tin | a blackened empty tin
+drip = a quick little patter | a tap on the lip
+rack = a low rack of rods | the crooked cooling rack
+heel = a crust round the thumb | a thumb of crust
+ovenlip = the brick just inside | the warm red lip
+twist = a ring of twisted dough | a little bread loop
+stew = mutton under a dark gravy | a slow-cooked dish of mutton
+counter = a draughts disc | a varnished wooden man
+drysock = a folded dry stocking | my dry pair
+locker = a cupboard with a lip | a dry cubby
+hiss = that short sharp hiss | a little tongue of steam
+crumb = a torn cloud of crumb | the fine white middle
+breadboard = a smooth floury board | my scrubbed board
+foldcloth = the doubled cloth | my little hand towel
+settle = the soft lowering sound | a sigh from the crust
+
+any
+opinion dole for 3 : The wolf collecting a loaf knows what it weighs. Someone weighing charity from upstairs might come down and feel it.
+opinion church for 1 : A meal does more for a weary voice than an hour explaining why it shook.
+opinion houses against 1 : If the roof were as dear to the Houses as the rents, less water would come through.
+opinion strangers for 1 : A loaf torn for company goes altogether quicker. I'm prepared to call that a return.
+opinion merchants mixed 1 : Some sellers remember a face until the purse has finished opening. Some remember what you like.
+opinion road against 1 : We pay twice for a bad road. Once for the load and once for finding it scattered.
+opinion times against 2 [world.times=hard|lean] : Lean days rub the middles out of things. Only the hard edges seem to keep their shape.
+opinion sump for 1 : There's a skill to making each dry hour pay for the wet ones. The low streets have it.
+opinion newcomers for 1 : Anybody wanting a job ought to be given time to dry off before being judged for the look of damp fur.
+
+grown
+line greet : Sit on the near end, I warmed it a little. | Here, there's a gap in the bustle for you.
+line greet [pair.band=strangers] : First time by my elbow. You're welcome to the space. | A clean place for a fresh face, then.
+line greet [here.time=dawn] : We've caught the day before the cold got out. | Dawn already, and the day's brought company.
+line greet [here.time=dusk|night] : Step in where there's light enough for your feet. | Quiet company this late may stay awhile.
+line greet.return : I'm glad to see what's become of your day. | A welcome to you from this side too.
+line greet.return [pair.band=friends|family] : There's somebody worth making a gap for. | You'd have a seat even in a full room.
+line again.open : Only a crumb of time since you left. | Back while the first greeting's still warm.
+line kin.open [pair.kin!=no] : Family's just the company for my tired side. | Sit by me. I can let my ears rest with kin.
+line hail [pair.band=friends] : Wave that paw once so I know you've seen me! | Here beside the low rail, same as last time!
+line farewell : Go well till we next get to share a seat. | Mind the way home with your arms full.
+line farewell.return : Keep a little ease about you on the way. | I'll take your good wishes home with me.
+line react.news : Begin where you like. I'm slow but I'll follow. | Give it the telling it deserves.
+line react.news.new : Well. That's an unfamiliar note in my ear. | I hadn't put an ear to that at all.
+line react.news.known : It sounded much the same the first time round. | Ah, that one's already been at my door.
+line react.news.doubt : It'll need a second hearing before I'd carry it on. | It sounded a little hollow on the first tap.
+line react.news.sorrow [topic.kind=crime|death|loss|arrest|theft|assault] : That's a weight you can't make lighter by counting the paws under it. | There must be somebody needing a warm seat just now.
+line react.news.glad [topic.kind=birth|marriage|work|succession|apprentice] : Hear the ring in that! Good tidings indeed. | I'd put the best edge of a loaf aside for news like that.
+line answer.how : Quiet round the edges, holding up in the middle. | I'm fed. The rest can be managed.
+line ask.how : Where's today worn thin on you? | Have you had something warm inside lately?
+line answer.how.busy [self.working=yes] : I have exactly enough hands if the world waits its turn. | Moving from one small job straight into its neighbour.
+line sympathise : Lean against something solid. I'll do for the moment. | No shame in needing a rest before telling it.
+line reassure : There's room to begin again from this end. | Leave the worrying with me for half an hour.
+line decline : I ought to stay put until my next job's done. | Please count me out. I'm on my last bit of get-up today.
+line accept_decline : Very well. A soft no is plain enough. | Don't wear yourself out accounting for it.
+line thank : That'll ease the rest of my day considerably. | You brought help with you and made very little fuss.
+line deflect_thanks : I was up on my feet already. | Let me spend a kindness now and then.
+line preclose : I hope you'll excuse me sliding back into my work. | My ears could stay, but the rest must be moving.
+line accept_preclose : Go get comfortable before you lose the chance. | Your road's waited quite politely enough.
+line give.advice : Wait one breath more than your impatience thinks decent. | Try the underside before making up your mind about the top.
+line ack : Yes, I hear how it stands. | That follows easily enough.
+
+scene tins
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : The drops are striking #tin# on its lip. | I set three tins where the gutter leaks.
+b : How do you know without looking? | You can't catch much with three.
+a : Hollow in the middle, clipped on the lip. Each note cuts off sharp. | Catching is incidental. I like hearing which fills first.
+
+
+scene warmrain
+when topic=weather here.weather=rain self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : This rain doesn't come as a surprise against the wrist. | I like this gentle soaking. Makes me feel rested while I'm still walking.
+b : Is that how you take its measure? | Your feet'll argue later.
+a : Cold drops make me pull away. These have asked their leave. | I've got #drysock# thinking ahead for me.
+
+
+scene loaf
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : I tap at the base and listen for a proper room inside. | The top may look quite grand while the base is shamefully soft.
+b : What does underdone sound like? | Who buys the bottom anyway?
+a : Like somebody laid a thick blanket across the door. | The selfsame wolf who bought the top. I like both to be worth the trip.
+
+
+scene head
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : Up on the headland the city noises lose their teeth. | Coming over the headland you smell the city before you see it.
+b : Even the cart wheels? | Bread smoke?
+a : Just a low rumble. I could listen without having to get out of anybody's way. | Often that. Sometimes the tide comes out to meet you instead.
+
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I save the bit of stew that clings to the spoon. | I'd swap half the meat for gravy thick enough to take a crust.
+b : Is that tastier than the bowl? | What about the fat?
+a : Only that spoonful stays warm while I attend to the door. | The little beads of it on the gravy are the chief reason I come.
+
+
+scene game
+when topic=pastimes self.likes=draughts
+does invite / react.self / assess
+a : Take the chipped disc for luck. | Choose whether we jump quick or take the whole afternoon over it.
+b : Luck for the one with less wood? | I like a little thought.
+a : You recognise it after three moves. That's a kind of luck. | Good. I'll stop trying to look as if I'd already decided.
+
+
+scene mud
+when topic=weather here.weather=rain self.dislikes=deep_mud
+does tell.complaint / react.self / assess
+a : The mud nearly kept my shoe in payment for passage. | I found the softest stepping stone in the street.
+b : Did you bargain it back? | A stone?
+a : I left a good outline of my heel. That had to suffice. | A lump of mud quite determined to pass as one.
+
+
+scene ships
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : In my imaginary berth there's always #locker#. | If I ever go to sea I'll ask where the cook keeps the flour.
+b : What do you keep in it? | Looking for work aboard?
+a : Linen, matches, a crust. The real luxury would be the dry air between them. | Looking for the driest bunk. It'll be somewhere near that flour.
+
+
+scene pride
+when topic=work self.job=baker
+does tell.self / react.self / assess
+a : The best loaf I made this week was a little one. | A twisted loaf wants a loose hand.
+b : Easier to get it right? | It looks quite firm to me.
+a : Easier to pass it over. I took all the care of a great one. | Now. Before baking you have to leave it room to breathe.
+
+
+scene coins
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I like a good noise in a till, not too sharp. | Once the last sale's made, I count without looking.
+b : Has money got a soft sound? | Can you tell them all by feel?
+a : Another coin underneath takes the bark off the new one. | I can tell which one will need a lamp and another look.
+
+
+scene friends
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : I'd keep my softest chair for #self.friend#. | I should like to share #stew# with #self.friend#.
+b : You make it sound a big favour. | What would your share consist of?
+a : I only own the one truly soft patch on a chair. | Good company and whatever's stuck around the rim.
+
+
+scene shortmeal
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : Hard days make me wish a loaf would grow while it's being cut. | Bad times make folk timid about looking in the window.
+b : Cut the slices thinner? | Is the looking dear now too?
+a : It won't fool a hungry tongue. Better drop in an extra bit of supper. | It's the going away with nothing that costs.
+
+
+scene arrival
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : A newcomer ought to have one night before deciding what the place is like. | I'd set a clean cloth out for a stranger without asking the journey.
+b : Does sleep improve a town? | Why not ask?
+a : No. It improves the eyes a traveller brings to it. | After the meal, maybe. Hard to make a civil answer on an empty belly.
+
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.complaint / ask.detail / answer.detail
+a : I've counted the ways a fly can get round a cloth. | A fly on the far wall doesn't vex me till it's vanished.
+b : And how many are there? | Why then?
+a : Four corners, four edges, plus whenever I lift it to look. | Because the whole room's turned into a possible fly.
+
+
+scene dry
+when topic=dreams
+does tell.feeling / ask.detail / answer.detail
+a : I dream of a washday when I know exactly when the cloth will dry. | I'd like half a day with no need to judge the clouds.
+b : Have you considered hanging it indoors? | What would you look at instead?
+a : In my dream the roof doesn't leak either. It's a lavish dream. | My own two feet going where I choose.
+
+
+scene lostpost
+when topic=memories
+does tell.self / react.self / assess
+a : One winter my place disappeared. Eventually the thing I'd learned there found me another. | A changed shift can put the entire street out of order.
+b : What did you learn? | The buildings don't move.
+a : When to stop waiting for the old door to open again. | True. But the baker you used to greet is now a pair of shut shutters.
+
+
+scene weight
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : A loaf can come out light for honest reasons. | I tear one loaf whenever a new batch cools.
+b : Can you sell it for the full weight? | Do you lose its price?
+a : No. A fair reason doesn't fill an empty space in a belly. | I'd lose more selling a whole rank of poor ones.
+
+
+scene grain
+when topic=caravan world.wagons=late
+does tell.worry / ask.detail / answer.detail
+a : A late cart can put an entire meal back by half the night. | Still no wagons. That gives us time to compare what we already have.
+b : Couldn't you change the meal? | And if there isn't enough?
+a : That's what I'm considering. The cart can't hear us arguing. | Then we decide who needs the first plate instead of hurrying the empty road.
+
+
+scene chapel
+when topic=faith
+does tell.feeling / react.self / assess
+a : When folk share a loaf it's the quiet part that I remember. | I find thanks come easy when I have very little.
+b : The chewing? | That's when I'd expect complaint.
+a : Just before it. The moment everybody's seen there's enough. | The complaint comes too. There's space in me for both.
+
+
+scene backache
+when topic=health
+does give.advice / ask.detail / answer.detail
+a : Try easing your pack off before you reach for the latch. | A warm brick wrapped twice is good company for a sore shoulder.
+b : Why not get through first? | Wrapped twice for softness?
+a : A tired arm can open a door or hold a load. I wouldn't ask for both. | For the heat. First wrapper's for the brick, second one's for you.
+
+
+scene kit
+when topic=home
+does tell.self / react.self / assess
+a : I keep fewer pans than hooks. | I'd like a cupboard that sighs when it's full.
+b : Saves leaving one on the floor? | You could just open it.
+a : And gives me the rare satisfaction of having a spare place left. | Last time I tried that, three lids answered at once.
+
+
+scene news
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : It's being said that #topic.subject# #topic.claim#. | Word's come down that #topic.subject# #topic.claim#.
+b : Is that the whole report? | Does that sit easily with you?
+a : All I can set my mark under is that I've heard it said. | I keep stories like that on the cooling rack awhile.
+
+
+scene cliffs
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I've followed the headland path by wind alone. | The gate looks small from a good distance out.
+b : Which way was home? | Does the road look shorter?
+a : When I felt the wall cut off the gust, I knew to look for the turning. | No. That's the unfair part. Everything shrinks but what's left to walk.
+
+
+scene dawn
+when topic=day here.time=dawn
+does tell.feeling / ask.detail / answer.detail
+a : There's a pause before the street becomes today's street. | I like the half light on a clean bench.
+b : Can you hear it happening? | Doesn't it make working difficult?
+a : The first shutter rattles and somebody clears a throat. That's usually it. | That's why I look now. Won't have the leisure when I can see to work.
+
+
+scene cold
+when topic=season here.season=winter
+does tell.complaint / react.self / assess
+a : Cold makes the handles on everything feel thinner. | A winter cloth stiffens in the shape you leave it.
+b : Your paws have gone thick. | It makes hanging things easier.
+a : Ah. I'd been blaming all the spoons. | Until you hang one over a hook and it stays standing straight out.
+
+
+scene supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I don't scrape a board till supper's over. | I keep a small dish for the last bite.
+b : What's left on it? | To carry it away?
+a : The small crumbs that look like nothing and end up soaking the nicest gravy. | To enjoy the sight of a full dish once more.
+
+
+scene churchfriend
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : I'd open to #self.neighbour# with the place in a muddle. | Happy news often feels like something to set before #self.neighbour#.
+b : That's trust of an unusual kind. | You'd make a dish of it?
+a : Exactly. I'd have one door I could answer as I am. | No grand dish. A bite that improves the whole evening.
+
+
+scene steam
+when topic=work self.job=baker
+does give.advice / ask.detail / answer.detail
+a : Put an ear close to a fresh loaf. It tells you when the crust's settling. | Never wrap a loaf while it's still giving out its breath.
+b : Listen to bread? | It might stay warmer.
+a : Like a little fire working backwards. Cracks getting smaller till nothing. | It might. But a warm wet crust is a poor reward.
+
+
+scene gameend
+when topic=pastimes self.likes=draughts
+does tell.self / react.self / assess
+a : I like the move before the winning move. | I don't mind losing if somebody points out where I went astray.
+b : Why stop there? | You want the board set up again?
+a : Because that's the one that seldom gets any credit. | Just the last few pieces. I don't ask a whole evening of penance.
+
+
+scene sun
+when topic=weather here.time=day here.weather=clear
+does tell.feeling / ask.detail / answer.detail
+a : Clear light shows the patch on my coat from across the lane. | I'd carry a patch of this light home if it had edges.
+b : Does it bother you? | In a tin, perhaps?
+a : No. The patch stands up to inspection and keeps out the wind. | Yes. Lid off at bedtime so my stockings stay in view.
+
+
+story board [topic=pastimes]
+  : I once marked a draughts board across a battered tin lid with charcoal.
+  : Our first six moves rubbed out most of the squares.
+  b : Who won on the disappearing board?
+  : We settled on a draw after trying to crown a thumbprint.
+
+
+story pigeon [topic=memories]
+  : A pigeon once nested over a rain barrel I liked to listen to.
+  : The drops stopped for a week. I thought a stretch of lovely weather had come unnoticed.
+  b : You never looked outside?
+  : I looked up at last. The nest had been drinking my whole concert.
+
+
+story ovenfoot [topic=work self.job=baker]
+  : My first great loaf slid sideways as it went in and took the shape of a shoe.
+  : Nobody wanted an entire shoe for dinner.
+  b : Did it go to waste?
+  : I sold it in thick soles. Cut that way it was as pretty as any bread.
+
+
+story spooncarver [topic=food]
+  : A passing carver once made a spoon for a bowl I carried, measuring nothing till the end.
+  : The shape was strange and narrow, like a narrow willow leaf.
+  b : Did the carver get the measure right?
+  : It swept the bowl clean without my needing to turn the bowl once.
+
+
+story whistle [topic=travel]
+  : I thought I heard a ship far out with a marvel of a whistle. Walked half the cliff trying to find it.
+  : Every time I leaned into the wind the whistle pitched up.
+  b : Where was it hiding?
+  : In a loose button on my coat. I brought the whole ship home for tea.
+
+
+rule @steam
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 8h
+say Leave a breath between the loaves. Warmth wants elbow room too. | There's a hollow note underneath this batch. They're ready.
+
+
+rule @rack
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 8h
+say That little cracking sound is the crust coming to rest. | Soft rolls on this corner. Hard crusts just beyond.
+
+
+rule @mud
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Another puddle eating the lane from both sides. | I'll be glad of dry wool by supper.
+
+
+rule @till
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Round up your own coppers first. I'll wait with the bread. | A little honest clink and we're both content.
+
+
+rule @warm
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Up, you sleepy shutters. I can see those hooks clearly now. | First warm bite of the day ought to be taken sitting.
+
+
+rule @fly
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Every last fly thinks the cloth was lifted for it. | Shoo now, before you cost me a whole batch of patience.
+
+dlg resident.hub : There's time for a soft-spoken question or even a hard one.
+dlg resident.hub [topic.meeting=known] : #topic.player#, this space by my shoulder's still good.
+dlg resident.hub [here.time=night] : Late to be out. Stay a bit before making the return.
+dlg resident.hub [pair.disposition=wary|hostile] : Let's have plain words without any hard shoving.
+dlg resident.job [self.job=baker] : I bake at #self.workplace#. I stay to hear the crust settle afterward.
+dlg resident.job : I put things in decent order for whoever comes onto the shift.
+dlg resident.news [world.news] : This is what drifted down to my end. #world.news#.
+dlg resident.gossip [here.gossip=yes] : What I heard was that #topic.subject# #topic.claim#. You'll know how much to trust a second telling.
+dlg resident.bye : A comfortable journey to wherever you're sitting next.
+dlg shop.greet [here.shop=open] : Come towards the light to choose. It's easier to judge a crust by both colour and feel.
+dlg shop.prices : Show me how wide. Then I can put a figure to it.
+dlg shop.bye [here.shop!=asleep] : Tuck the parcel where the spray can't get to it.
+dlg resident.business [business=steady] : The counter clears well enough that I can start fresh next day.
+
+graft resident.hub
+choice Can you tell what the weather's doing by a pan? -> rain_tin
+node rain_tin
+say By three pans, easier. One fills first and lowers its note. You learn the sort of rain that fills them all.
+free
+choice And what does a dry spell sound like? -> rain_tin_more
+choice Goodbye. -> bye
+node rain_tin_more
+say Like the quiet when someone you love has finished a song. A fine thing too, but you listen for what's next.
+choice I'll listen with you. -> hub
+choice Goodbye. -> bye
+
+
+graft shop.greet
+choice How do you test a loaf by ear? [self.job=baker] -> crust_ear
+node crust_ear
+say Turn it over and give the base a little rap with one knuckle. Don't squeeze; that's somebody's supper you're holding.
+free
+choice What note am I after? -> crust_ear_more
+choice Goodbye. -> bye
+node crust_ear_more
+say More room than thump, if you take my meaning. Try a stone first. It has no room inside at all.
+choice I'll practise with a stone. -> greet
+choice Goodbye. -> bye

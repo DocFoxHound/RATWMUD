@@ -1,0 +1,263 @@
+mantle rm227
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_kjell_coalham
+title the landing finder
+fits stage=adult|old
+prefers honesty=guarded temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk remembers_stairs_by_the_flat_place_on_each_landing
+likes warm_bread cards old_maps thunder
+dislikes early_bells night_noise
+fears a_step_that_tips back_doors_locked_at_dusk
+hopes to_see_flat_country_from_a_ship
+topics work +0.6 travel +0.3 home +0.3 food +0.2 gossip -0.4
+styles comfort=practical gossip=closed refuse=blunt tease=none
+marks oath saying
+persona #self.first# knows where a load can stand level on crooked steps, speaks with the same economy when pressed, and studies maps of places without hills.
+
+words
+oath! = Split that riser | Level me sideways
+saying! = Lay the rope down last | A flat inch earns its keep
+riser = a shallow step | a tall awkward riser
+flat = one good flat spot | a patch level as a table
+ropeend = a frayed lifting loop | my short hauling cord
+wedge = a sliver of barrel oak | a tapered wood chip
+crust = the warm heel | a soft lump of fresh loaf
+mapedge = the rag edge of a map | a map corner dark with thumbs
+knuckle = two knuckle widths | the breadth of a paw
+tilt = the outward lean | a slant towards the rail
+rest = a narrow resting place | a shelf of sound stone
+ropeburn = a hot streak across the palm | a red line under the fur
+cardback = a grey card back | the back of a playing card
+
+any
+opinion dole for 2 : A loaf when the ropes are idle keeps a back fit for the next load.
+opinion sump for 1 : I can set a pot level on the worst stair in the Sump. There's satisfaction in knowing where.
+opinion watch against 1 : Boots marching abreast leave no room for anyone bringing a burden down.
+opinion houses against 2 : A grand stair can be wide enough for six. How many of those six ever get through the door?
+opinion merchants against 1 : I'd trust a price marked up before my paws were full.
+opinion festivals against 1 : Drum skins rest when a parade ends. Wish my ears did.
+opinion newcomers against 1 : More backs for the same few loads. I count that before I count the welcomes.
+
+grown
+line greet : You can stand here. The stones hold.
+line greet [pair.band=strangers] : We can meet with a step between us.
+line greet [here.time=dawn] : Early enough that the street's still got its shape.
+line greet [here.time=dusk|night] : Stay against the lit edge if you're stopping.
+line greet.return : Heard your tread. Welcome up.
+line greet.return [pair.band=friends|family] : Come ahead. I know that weight of step.
+line greet.return [self.working=yes] : Half a breath. I can listen while my grip settles.
+line greet.return [here.time=dusk|night] : Your voice comes clearer when the carts stop.
+line kin.open [pair.kin!=no] : Blood gets the flatter spot beside me.
+line again.open : There's another dry inch here for our talk.
+line hail [pair.band=friends] : Up here! Follow my bent elbow.
+line farewell : Keep the high side going down.
+line farewell.return : And plant your heel before you turn.
+line react.news : Let me put that down before you go on.
+line react.news.new : None of that reached this landing.
+line react.news.known : I've heard that account make the climb already.
+line react.news.doubt : Which bit could you swear to yourself?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take a little weight off if I knew how.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. My back feels straighter hearing it.
+line ask.how : Are you keeping your footing today?
+line answer.how : Upright and earning my share of the view.
+line thank : That bought a moment for my shoulders.
+line deflect_thanks : Saving someone a slip is cheap enough.
+line sympathise : Lean a while. The stone can take us.
+line reassure : I'll stand below you till you're steady.
+line decline : I'll pass, my shoulders are keeping other promises.
+line accept_decline : Then take the easier way for once.
+line preclose : I'd better give my feet a chance at home.
+line accept_preclose : I'll let you turn without crowding the rail.
+
+scene flat_inch
+when topic=work|smalltalk self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A burden can rest square even on a crooked stair. | Set a basket on three sound points.
+b : Whereabouts? | Why three?
+a : Under the inside corner. Nobody wears that bit away. | A fourth always wants a chip beneath it.
+
+scene stride_mark
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : I know distances by tired strides. | Going up I count the rises. Coming down I count the landings.
+b : How far is a tired stride? | Why change?
+a : From an unfinished errand to the first place your knees will bend. | Landings come sooner when you're looking ahead.
+
+scene loop_cut
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : Feel #ropeend#. Hard where it rubbed a stone. | I keep spare cord under my belt.
+b : Will it break? | For a second load?
+a : A sharp bend tells me sooner than a hard pull. | For the first one when the original knot gives.
+
+scene maps_fold
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I smooth #mapedge# before I study the roads. | A map on a wall shows you every possible road at once.
+b : Why the edge? | That sounds handy.
+a : That's where the places I haven't been are generally hiding. | I like a folded map. I can fancy there's more country under my thumb.
+
+scene soup_heel
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Press #crust# against your cheek before you eat. | Give me a heel over a middle slice.
+b : To feel the warmth? | Why the heel?
+a : For a second it's like leaning on the bakehouse wall. | One paw stays free for the rail.
+
+scene honest_cut
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : Cards are the one weight I'll carry for nothing. | A bent corner spoils a pack for me.
+b : You play for coin? | Someone's marked it?
+a : No. I'd be doing the lifting all over again. | Maybe just damp. A suspicion weighs plenty either way.
+
+scene wake_early
+when topic=weather|smalltalk here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : That first bell seems to look for my skull specially. | Morning light I'd welcome. Morning noise can climb on past.
+b : Are you awake by then? | Even footsteps?
+a : I am when the iron gets done with me. | Steps mean somebody found work. I can stand those.
+
+scene storm_pause
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder lets my shoulders down a little. | Those clouds made a stair of their own.
+b : It sounds heavy enough. | And would you climb it?
+a : Exactly. Nobody expects me to carry that. | Only for a dry room at the top.
+
+scene salt_rail
+when topic=home|weather self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down our way I run my paw along a rail before I trust it. | The cheap stairs have smooth middles and good strong edges.
+b : Feeling for a splinter? | That's backwards.
+a : For a rusted joint. A splinter's cheap. | Folk wear down the easy way. I take what lasts.
+
+scene hush_yard
+when topic=home|health here.time=night
+does tell.self / ask.detail / answer.detail
+a : A voice through a thin wall can tip the whole night sideways. | I'm hoping for a night without a dropped lid.
+b : Do you knock? | A lid wakes you?
+a : Once, fair and quiet. Don't want a second voice to keep everybody up. | I wait to hear if the pot goes with it.
+
+scene rival_hands
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : There are other backs by the gate. Always are. | I'd give a stranger space to set a sack down.
+b : Does that fret you? | Even if it's your patch?
+a : Only when the job needs one pair of shoulders. | A load isn't choosy about whose back it breaks.
+
+scene road_cond
+when topic=travel|times world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Arms feel queerly light when the carts run late. | I'm done guessing why a cart runs late.
+b : Is that welcome? | What do you do instead?
+a : Arms like it well enough. A dinner bowl doesn't. | Coil the cord where mud can't settle into it.
+
+scene lean_house
+when topic=times|prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A short week makes a long crust. | I'm putting the paid jobs nearer together in my head.
+b : Does it stretch? | To what end?
+a : No. You have to eat more slowly. | Gives me something better than the gap to remember.
+
+scene private_name
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : A word about a neighbour's come by. It's staying with me. | There's plenty that weighs nothing until you repeat it.
+b : Too heavy to pass along? | You're keeping this one?
+a : Too easy. That's the trouble. | Behind my teeth where the weight belongs.
+
+scene safe_face
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# see a hand of mine before I played it. | I'd clear the level stone for #self.friend#.
+b : Even the good cards? | Where would you sit?
+a : Especially those. I'd rather share a pleasure than a gripe. | Anywhere the view held a friendly face.
+
+scene boat_horizon
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to see land as flat as a deck in a calm. | In my head I've walked a mile on flat dry earth.
+b : Just once? | Where did you get the earth?
+a : Long enough for my knees to forget what a step feels like. | From a patch of yellow on an old map.
+
+scene charity_box
+when topic=faith|food
+does tell.self / ask.detail / answer.detail
+a : An empty palm takes a loaf better than a sermon. | I'd set a soup pot halfway along any long climb.
+b : And afterwards? | Why halfway?
+a : Afterwards I can listen. Hunger's got a loud voice. | Folk coming down could leave something for folk coming up.
+
+scene old_slant
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A new stair once made me stumble. | My first cord had two knots that never came undone.
+b : Had the stone shifted? | Good knots, then?
+a : Perfectly level. My foot was looking for the old slant. | No. I had to carry the cord round what I'd tied it to.
+
+story turning_pan [topic=memories]
+  : I tried taking a wide pan edgewise through a narrow door.
+  : The handle slipped into my belt loop. Turned left, turned right, the pan kept following me.
+  b : How did you escape it?
+  : Took off the belt. For once the pan carried my things.
+
+story paper_flats [topic=pastimes|memories]
+  : I spent a free afternoon drawing a district with no stairs.
+  : Finished up with every road running into one enormous puddle.
+  b : Did you give the puddle a name?
+  : Called it home and put a little boat where my chair ought to go.
+
+story parcel_music [topic=work|memories]
+  : A parcel I carried used to sing whenever I stopped.
+  : Crossed two busy roads certain my wits had gone.
+  b : What was inside the parcel?
+  : Six little pipes with air coming up through the wrapping. I regret handing that one over.
+
+rule @soundstone
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say My heel can trust that strip of stone.
+
+rule @drygrip
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rain in the fur makes a poor grip poorer.
+
+rule @heavyhour
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Set down easy. Lifting comes later.
+
+rule @loosebelt
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say There's a groove in my belt where the day's been hanging.
+
+dlg resident.hub : There's holding room for two voices here.
+dlg resident.hub [topic.meeting=known] : #topic.player#. I know the tread as well as the face now.
+dlg resident.hub [here.time=night] : I can hear you if you speak under the noise.
+dlg resident.hub [pair.disposition=hostile|wary] : Easy on that rail. There's space enough apart.
+dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. My feet could quote the rest.
+dlg resident.job : I measure a day's work by how my belt fits at supper.
+dlg resident.news [world.news] : Word took a climb from #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I've heard the talk. My mouth's a bad place to try and get it back.
+dlg resident.bye : Leave a flat stone for the next foot.
+
+graft resident.hub
+choice Why do you carry a wooden wedge? -> test_wedge
+node test_wedge
+say See the rubbed end? I can slide that much under a pot on most any slant and set it level.
+choice Why so narrow? -> wedge_thin
+choice I can see the wear now. -> hub
+node wedge_thin
+say Made it from a thick one. Kept shaving it till it fit behind my ear. An excellent test of when to stop.
+choice Let's talk about the streets. -> hub
+choice Safe climbing. -> bye
