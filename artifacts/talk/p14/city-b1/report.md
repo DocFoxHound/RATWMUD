@@ -141,7 +141,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm354, rm356, rm362, rm368.
 - Friend also listed as kin — rm350, rm353, rm358, rm359, rm361, rm365, rm366, rm369, rm371, rm373, rm374, rm376, rm377, rm378.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm357. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm347, rm354, rm355, rm370, rm371, rm378. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 The rural briefs for rm346, rm370 and rm372 give no city quarter. The writing keeps their local knowledge and ambitions without supplying one. Family service is a hope for rm372, who has no children recorded. The market block listed for rm356 and the workplaces for rm362 and rm368 describe districts. Readers will encounter these places as areas a wolf can work around.
