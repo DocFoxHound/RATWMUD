@@ -141,7 +141,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm423, rm447.
 - Friend also listed as kin — rm416, rm417, rm419, rm425, rm427, rm429, rm430, rm434, rm437, rm438, rm440.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm421, rm424, rm444, rm445. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm441, rm446. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 The source records a birthplace and, in some cases, a different place in a charcoal-camp recollection. For rm432 and rm442 the sound or scent of a fire carries the memory without changing the upbringing field. Some live quarters are blank. For rm425 the workplace also resolves to a district. Its family memory leaves the bereaved relative unnamed. The debt story for rm430 requires a live debt. The younger resident rm419 has a father who is also the friend and a debt anecdote that belongs to a different stage of life.
@@ -157,7 +157,7 @@ The editors compared the entire batch to earlier branches and all checked-in dia
 - **rm419** turns a soot print into a night sky. The young, adolescent and grown sections change what the wearer sees in it.
 - **rm436** treats a seed row like a harbour, working from the trade and household facts in the brief.
 - **rm440** offers independent conversation choices about a sample's bright corner and the cost of carrying iron overseas.
-- **rm445** hears the rain through a hood as a young wolf, cuts a corner to practise singing as an adolescent, and listens for someone else's voice as an adult.
+- **rm445** hears the rain through a hood as a young wolf, stitches a hood corner to suit a practising singer as an adolescent, and listens for someone else's voice as an adult.
 - **rm447** judges water levels from thread left in cracks and protects a tray of small wares from wheel splash.
 
 ## Owner handoff
