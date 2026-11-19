@@ -300,6 +300,27 @@ class MindTests(unittest.TestCase):
         release.set()
         worker.join(5)
 
+    def test_authored_scene_direction_and_submitted_words_reach_only_the_provider(self):
+        class History:
+            def life(self, npc_id):
+                return "You have served as watch captain for six winters." if npc_id == "wren" else ""
+
+        entries = []
+        writer = Recording({"text": "Then the east gate is yours."})
+        service = mind.Mind(writer, history=History(), audit=entries.append, budget=mind.Budget(10, 1))
+        direction = {"npc": "Wren", "npcId": "wren", "personality": "Gruff but patient.",
+                     "intent": "Recognize the volunteer.", "fallback": "Stand with us.",
+                     "title": "The watch changes", "beat": "take-post", "questions": ["Where will you stand?"],
+                     "responses": ["I will guard the east gate."]}
+        self.assertEqual(service.scene(direction), writer.answer)
+        self.assertEqual(writer.calls[0]["user"], {**direction, "life": History().life("wren")})
+        self.assertEqual(writer.calls[0]["name"], "npc_scene")
+        with self.assertRaisesRegex(BridgeError, "budget_exhausted"):
+            service.scene(direction)
+        for secret in (direction["personality"], direction["intent"], direction["questions"][0],
+                       direction["responses"][0], writer.answer["text"], History().life("wren")):
+            self.assertNotIn(secret, json.dumps(entries))
+
     def test_the_audit_holds_no_words(self):
         entries = []
         mind.Mind(Recording(reply(speech="A secret recipe.")), audit=entries.append).dialogue(CONTEXT)
@@ -431,6 +452,18 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(400, self.post("/recap", {"place": "The Wharf", "lines": "no"})[0])
         status, data = self.post("/book", {"mode": "flavour", "title": "T", "chapters": [{"title": "A", "summary": "B"}]})
         self.assertEqual((200, True), (status, "text" in data))
+
+    def test_scene_text_follows_answers_and_never_controls_the_scene(self):
+        direction = {"npc": "Wren", "npcId": "wren", "intent": "Hear the volunteers' promises",
+                     "personality": "Solemn and encouraging", "fallback": "What will you promise?"}
+        self.assertEqual(self.post("/scene", direction), (200, {"text": direction["fallback"]}))
+        self.assertEqual(self.post("/scene", {**direction, "responses": ["I will keep watch."]}),
+                         (200, {"text": "I have heard your answer."}))
+        self.assertEqual(self.post("/scene", {**direction, "responses": [" "]})[0], 400)
+        self.assertEqual(self.post("/scene", {**direction, "responses": ["x" * 281]})[0], 400)
+        self.assertEqual(self.post("/scene", {**direction, "responses": ["I will."], "questions": []})[0], 400)
+        with self.assertRaises(mind.BridgeError):
+            mind.decode_scene_line({"text": "Walk with me.", "next": "other"})
 
     def test_an_exchange_over_http(self):
         status, data = self.post("/exchange", {"a": {"name": "Wren"}, "b": {"name": "Sorrel"},

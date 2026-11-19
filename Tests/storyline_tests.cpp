@@ -101,6 +101,181 @@ void say(Town& t, Client& c, const std::string& text, const std::string& to)
     t.run(1);
 }
 
+void privateCameraAndMovement()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-private-scene-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        const auto manifest = writeStrip(root);
+        const auto paintTile = [&](const std::string& cell, int x, int y, char tile) {
+            const auto path = root / "cells" / (cell + ".cell");
+            std::ifstream file(path);
+            std::string terrain{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+            terrain.at(terrain.find("grid:\n") + 6 + y * (Side + 1) + x) = tile;
+            std::ofstream(path) << terrain;
+        };
+        paintTile("c_7_0", 5, 6, '#'); // Camera (4,6), wall, tile (6,6).
+        paintTile("c_1_0", 9, 11, '+');
+        paintTile("c_2_0", 4, 4, '+');
+        std::ofstream(root / "world.ratw", std::ios::app)
+            << R"(door "scene-door" "Hall door" "c_1_0" 9.5 11.5 "c_2_0" 3.5 4.5 "scene-back" 1 0 0 0 "-")" << '\n'
+            << R"(door "scene-back" "Hall door" "c_2_0" 4.5 4.5 "c_1_0" 8.5 11.5 "scene-door" 1 0 0 0 "-")" << '\n';
+        Town t(manifest, save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 10.5);
+        t.place(t.ash, 1, 8.5, 11.5);
+        const auto run = "world-camera";
+        auto phase = parsed(R"({"title":"Audience","phase":"waiting","journal":"Hear the runner.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        players.push(t.bo.entityId);
+        phase.add("players", players);
+        expect(t.g.applyDmAct({"1","story.phase",run,"dm",json::dump(phase)}).ok, "The camera story opens");
+        auto payload = parsed(R"({"cue":"report","visit":1,"scene":{"format":"ratw-scene","version":1,"id":"audience",
+            "title":"Audience","visibility":"individual","lockMovement":true,"camera":{"cell":"c_7_0","x":4,"y":6},
+            "cast":[{"id":"runner","npc":"u1"}],"start":"ask","beats":[{"id":"ask","type":"choice","speaker":"runner",
+            "text":"Which gate needs runners?","seconds":300,"mode":"first","options":[{"id":"east","label":"East"},
+            {"id":"west","label":"West"}],"default":"west"}]}})");
+        payload.add("player",t.ash.entityId);
+        auto& world = t.g.world();
+        auto* ash = world.entity(t.ash.entityId);
+        const auto cell = ash->cellId;
+        const auto position = ash->position;
+        world.observe(ash->id);
+        const auto knewCameraCell = world.memories(ash->id).count("c_7_0");
+        const auto prior = world.moveTo(ash->id, 5.5, 11.5);
+        expect(prior.ok && !ash->path.empty(), "A queued route is present as the scene begins");
+        t.place(t.bo, 1, position.x, position.y);
+        const auto started = t.g.applyDmAct({"2","story.scene",run,"dm",json::dump(payload)});
+        expect(started.ok, "A private viewing starts: " + started.message);
+        auto view = t.selfOf(t.ash)["scene"];
+        expect(view.string("beat") == "ask" && view.boolean("lockMovement"), "The addressed player sees the choice");
+        expect(view.object("frame").string("cell") == "c_7_0" && !view.object("frame").array("rows").empty() &&
+               world.cell("c_7_0")->loaded, "A remote camera returns authored terrain from its own cell");
+        expect(view.object("frame").array("rows").at(6).asString().at(6) == ' ' &&
+               !view.object("speaker").has("cell") && view.array("actors").empty(),
+               "A camera cannot reveal the tile behind the wall or the off-camera speaker's position");
+        expect(knewCameraCell == world.memories(ash->id).count("c_7_0"), "Watching does not mark the camera cell as explored");
+        expect(!t.selfOf(t.bo).has("scene"), "Another player at the same spot cannot see a private camera or dialogue");
+        const auto* bo = world.entity(t.bo.entityId);
+        expect(ash->path.empty() && ash->position.x == position.x && ash->position.y == position.y && ash->cellId == cell &&
+               (bo->position.x != position.x || bo->position.y != position.y),
+               "Opening the shot cancels the old route and moves the overlapping bystander off the anchored viewer");
+        expect(world.door("scene-door") != nullptr, "The fixture has an accessible door");
+        t.g.command(&t.ash, R"({"type":"action","target":"scene-door","action":"enter"})");
+        expect(ash->cellId == cell, "The door cannot move a locked character");
+        t.g.command(&t.ash, R"({"type":"path","x":11,"y":8})");
+        t.g.command(&t.ash, R"({"type":"move","x":1,"y":0})");
+        t.g.pose(&t.ash, ash->poseSeq + 1, position.x + .4, position.y, 0, 1, 0);
+        t.run(.1);
+        expect(ash->position.x == position.x && ash->position.y == position.y && ash->path.empty(),
+               "Neither input channel nor a new route moves a locked character");
+        auto ballot = parsed(R"({"type":"scene_vote","option":"east"})");
+        ballot.add("beat",view.string("beat"));
+        ballot.add("instance",view.string("instance"));
+        ballot.add("actor",t.ash.entityId); // The signed-in connection owns the vote.
+        t.g.command(&t.bo,json::dump(ballot));
+        expect(t.selfOf(t.ash).object("scene").string("beat") == "ask", "A bystander cannot cast the player's ballot");
+        t.g.command(&t.ash,json::dump(ballot));
+        expect(!t.selfOf(t.ash).has("scene") && !t.g.cinematicLocks(ash->id), "The player's vote ends the scene and releases input");
+        t.place(t.bo, 1, position.x, position.y);
+        t.run(.1);
+        expect(ash->position.x != position.x || ash->position.y != position.y, "Both bodies participate in collisions again after release");
+        t.place(t.bo, 1, 11.5, 11.5);
+        t.place(t.ash, 1, position.x, position.y);
+        t.g.command(&t.ash, R"({"type":"path","x":11,"y":8})");
+        expect(!ash->path.empty(), "The ordinary movement command works again");
+        t.g.command(&t.ash, R"({"type":"action","target":"scene-door","action":"enter"})");
+        expect(ash->cellId == "c_2_0", "The same door admits the player after the scene");
+
+        auto publicScene = payload["scene"];
+        publicScene.set("visibility","public");
+        publicScene.set("area",parsed(R"({"cell":"c_1_0","x1":8,"y1":11,"x2":8,"y2":11})"));
+        payload.set("scene",publicScene);
+        payload.set("player","world");
+        payload.set("cue","crowd");
+        expect(t.g.applyDmAct({"3","story.scene",run,"dm",json::dump(payload)}).ok && !t.g.cinematicLocks(ash->id),
+               "A public scene leaves a viewer in another cell free");
+        const auto audienceView = [&] {
+            t.run(1); // Four fixture ticks cover every connection's staggered snapshot slot.
+            return t.ash.snapshots.back()["self"]["scene"];
+        };
+        // At the southeast-facing corner of the collision pair, an ordinary body push would carry Ash over x=9.
+        t.place(t.ash, 1, 8.99, 11.01);
+        t.place(t.bo, 1, 8.89, 10.99); // Touching from outside the viewing area.
+        expect(audienceView().boolean("lockMovement") && ash->position.x == 8.99 && ash->position.y == 11.01,
+               "The crowd beyond the public boundary cannot push an audience member out of the scene");
+        t.place(t.ash, 1, 7.5, 11.5);
+        expect(audienceView().isNull() && !t.g.cinematicLocks(ash->id), "Leaving the area releases the public lock");
+        t.place(t.ash, 1, 8.99, 11.5);
+        expect(audienceView().boolean("lockMovement"), "Reentry reacquires the current scene and its lock");
+    }
+    fs::remove(save);
+    fs::remove_all(root);
+}
+
+void privateSceneQueue()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-private-queue-" + std::to_string(::getpid()));
+    const auto file = root.string() + ".json";
+    const auto world = writeStrip(root);
+    std::string ash, bo, first;
+    {
+        Town t(world, file);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 10.5);
+        ash=t.ash.entityId; bo=t.bo.entityId;
+        const auto run="world-private-queue";
+        auto phase=parsed(R"({"title":"Interviews","phase":"hear","journal":"State your case.","visit":1})");
+        auto names=json::Value::array(); names.push(ash); names.push(bo); phase.add("players",names);
+        expect(t.g.applyDmAct({"1","story.phase",run,"dm",json::dump(phase)}).ok,"private hearing opens");
+        auto payload=parsed(R"({"visit":1,"cue":"first","scene":{"format":"ratw-scene","version":1,"id":"hearing","title":"Give an account","visibility":"individual","lockMovement":true,"cast":[{"id":"scribe","npc":"u1"}],"start":"ask","beats":[{"id":"ask","type":"response","speaker":"scribe","text":"Tell me about the crossing.","seconds":120,"mode":"first"}]}})");
+        auto launch=[&](const std::string& who,const char* cue) {
+            payload.set("player",who); payload.set("cue",cue);
+            return t.g.applyDmAct({"2","story.scene",run,"dm",json::dump(payload)});
+        };
+        expect(launch(ash,"first").ok,"Ash can enter the first hearing");
+        first=t.g.cinematicView(ash).string("instance");
+        expect(!first.empty() && launch(ash,"second").ok && launch(bo,"other").ok,"a second private hearing and a disjoint hearing accepted");
+        const auto other=t.g.cinematicView(bo);
+        expect(other.string("instance")!=first && other.string("beat")=="ask" && t.g.cinematicView(ash).string("instance")==first,
+               "disjoint actors play concurrently and an overlapping instance waits");
+        expect(!t.g.cinematicReply(bo,first,"ask","Someone else's answer.").ok,"a private scene rejects another actor's input");
+        t.g.save();
+    }
+    {
+        Town t(world,file);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        expect(t.g.cinematicView(ash).string("instance")==first,"recover both the current and waiting private instances");
+        std::vector<WorldEvent> promptEvents;
+        t.g.world().setEventWatcher([&](const WorldEvent& e) { if (e.kind=="scene response") promptEvents.push_back(e); });
+        const std::string accented=u8"é";
+        std::string full;
+        for (int i=0;i<280;++i) full+=accented;
+        expect(!t.g.cinematicReply(ash,first,"ask",full+accented).ok && !t.g.cinematicReply(ash,first,"ask",accented+'\x01').ok,
+               "reply bound counts Unicode characters and rejects embedded control bytes");
+        expect(t.g.cinematicReply(ash,first,"ask",full).ok,"a full 280-character Unicode reply is accepted");
+        t.g.tick(.05);
+        auto second=t.g.cinematicView(ash);
+        expect(second.string("instance")!=first && second.string("beat")=="ask" && second.number("remainingMs")>118000,
+               "the waiting prompt starts with its own reading time");
+        expect(!contains(json::dump(t.g.storylineBook().save()),full),"answers without an AI consumer are not retained");
+        expect(promptEvents.size()==1 && promptEvents.front().detail=="first.ask.submitted" &&
+               promptEvents.front().actor==ash && promptEvents.front().target=="world-private-queue" && promptEvents.front().quantity==1,
+               "resolving a response emits only the owning cue, beat and outcome");
+        // Simulate a restored deadline already in the past; the waiting instance gets the timeout outcome once.
+        auto* play=t.g.storylineBook().find("world-private-queue");
+        play->cinematics.at(second.string("instance")).set("end",1.);
+        t.g.tick(.05);
+        expect(promptEvents.size()==2 && promptEvents.back().detail=="second.ask.timeout", "a missed response branches on timeout");
+        t.g.world().setEventWatcher({});
+        expect(t.g.applyDmAct({"3","story.stop","world-private-queue","dm","{}"}).ok && !t.g.cinematicLocks(ash) && !t.g.cinematicLocks(bo),
+               "stopping the owning story cancels every instance");
+    }
+    fs::remove_all(root);
+    fs::remove(file);
+}
+
 void storyAreaEffects()
 {
     const auto root = fs::temp_directory_path() / ("ratw-storyareas-" + std::to_string(::getpid()));
@@ -492,7 +667,9 @@ int main()
     try
     {
         pure();
+        privateSceneQueue();
         scriptedResidentScene();
+        privateCameraAndMovement();
         storyAreaEffects();
         inTheGame();
         sources();

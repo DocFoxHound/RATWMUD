@@ -8,11 +8,14 @@ from pathlib import Path
 import story_library
 import story_program as rules
 import story_runner as runner
+import story_scenes
 
 
 def request(data, snapshot, world_key=None, read_world=False):
     rules.require(isinstance(data, dict), 'Send a JSON object.')
     op = data.get('op')
+    if op in story_scenes.OPERATIONS:
+        return story_scenes.request(data)
     if op == 'catalog':
         return runner.catalogue()
     if op == 'components':

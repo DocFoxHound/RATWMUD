@@ -363,6 +363,7 @@ struct Entity
     Vec2 heldTurn;
     double heldNearest = 0, heldSince = 0, heldAt = -1;
     double pressedAt = -1e9, pressedByWalkerAt = -1e9;
+    std::uint64_t sceneHoldTick = 0;               // Transient. A locked viewer stays planted through this simulation tick.
     Vec2 input;
     // Set by an accepted transition; UI must release/reissue held movement.
     bool transitioned = false;
@@ -742,6 +743,8 @@ class World
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
     void sceneHold(const std::string& id, bool hold, int pace);
+    // Plan the route a scene-local actor can walk in one cell, without moving a world entity.
+    std::vector<Vec2> cinematicPath(const std::string& cell, Vec2 from, Vec2 to);
     void sceneWalk(Entity& actor, const std::string& cell, Vec2 tile);
     Result relocateResident(const std::string& npc, const std::string& destination, double x, double y);
     // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
@@ -1592,6 +1595,7 @@ class World
     Result face(const std::string& id, double x, double y);
     Result setPosture(const std::string& id, const std::string& posture);
     Result stop(const std::string& id);
+    void holdForScene(const std::string& id);
     // Kills (true) or brings back (false) a character or NPC: stops them and lays them down, or stands them up.
     Result setDead(const std::string& id, bool dead);
     // Live changes (Dungeon Master): makes NPC `id` exactly as `candidate` (a fully validated world loaded from the

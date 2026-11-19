@@ -1,4 +1,6 @@
 import {useState} from 'react';
+import {cueEvent,SceneCueFilter} from './SceneCueFilter';
+import type {Scene} from './scenes';
 import type {Region} from './StoryRegions';
 import type {Mission, Objective} from './StoryMissions';
 
@@ -24,8 +26,8 @@ export interface Trigger {
 export interface Component {role:string; label:string; trigger?:Trigger; objective?:Objective; gate?:Pick<Mission,'mode'|'percent'|'contributors'>; action?:Action}
 export interface ComponentSource {id:string; title:string; category:string; components:Component[]}
 interface Props {
-    regions:Region[]; index:number; select:(index:number)=>void;
-    ruleGroups:{phase:number|null; label:string; rules:Trigger[]; missions:Mission[]; effects:Effect[]}[];
+    cueEffects:Effect[]; scenes:Scene[]; regions:Region[]; index:number; select:(index:number)=>void;
+    ruleGroups:{phase:number|null; label:string; rules:Trigger[]; missions:Mission[]}[];
     navigate:(phase:number|null,index:number)=>void;
     campaign:boolean; triggers:Trigger[]; sources:ComponentSource[]; events:string[]; effects:Record<string,string[]>;
     phases:string[]; missions:Mission[]; change:(triggers:Trigger[])=>void; changeMissions:(missions:Mission[])=>void;
@@ -124,7 +126,7 @@ function describeAction(a:Action) {
         case 'cancel':return 'Cancel '+a.signal;
     }
 }
-export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,campaign,triggers,sources,events,effects,phases,missions,change,changeMissions}:Props) {
+export function StoryTriggerEditor({cueEffects,scenes,regions,index,select,ruleGroups,navigate,campaign,triggers,sources,events,effects,phases,missions,change,changeMissions}:Props) {
     const regionIds=regions.map(r=>r.id);
     const [filter,setFilter]=useState('');
     const [search,setSearch]=useState('');
@@ -132,9 +134,6 @@ export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,cam
     const [recipe,setRecipe]=useState('');
     const [piece,setPiece]=useState(0);
     const [missionId,setMissionId]=useState('');
-    const sceneCues=Array.from(new Set(ruleGroups.flatMap(g=>[...g.effects,
-        ...g.rules.flatMap(t=>t.actions.flatMap(a=>a.do==='effect'?[a.effect]:[]))])
-        .flatMap(effect=>typeof effect.cue==='string' && effect.cue?[effect.cue]:[])));
     const at=Math.min(index,triggers.length-1);
     const rule=triggers[at];
     const found=sources.filter(s=>(s.title+' '+s.category+' '+s.components.map(c=>c.label+' '+(c.trigger?.on ?? '')).join(' ')).toLowerCase().includes(search.toLowerCase()));
@@ -223,10 +222,7 @@ export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,cam
                 revise({...rest,on,match:undefined,...(sceneEvent(on)?{audience:'world',once:rest.once==='player'||rest.once==='member'?'each':rest.once}:{}),
                     ...(on==='story signal'?{signal:'route-open'}:{}),...(on==='clock'?{afterDays:1,once:'visit',audience:'world'}:{})});
             }}>{options(events.filter(k=>k===rule.on || k.toLowerCase().includes(eventSearch.toLowerCase())).sort())}</select></label>
-            {sceneEvent(rule.on) && <label>Scene cue to wait for<input list="story-scene-cues" placeholder="Any cue" value={rule.match?.detail ?? ''} onChange={e=>{
-                const match={...rule.match};if(e.target.value)match.detail=e.target.value;else delete match.detail;
-                revise({...rule,match});
-            }}/><datalist id="story-scene-cues">{options(sceneCues)}</datalist></label>}
+            {cueEvent(rule.on) && <SceneCueFilter on={rule.on} effects={cueEffects} scenes={scenes} match={rule.match} change={match=>revise({...rule,match})}/>}
             {(rule.on==='region entered'||rule.on==='region left') && <label>Crossed region<select value={rule.match?.target ?? ''} onChange={e=>{
                 const match={...rule.match}; if(e.target.value)match.target=e.target.value; else delete match.target;
                 revise({...rule,match});
@@ -236,7 +232,7 @@ export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,cam
             <label>Whose event<select aria-label="Whose event" disabled={rule.on==='clock'||sceneEvent(rule.on)} value={rule.audience ?? 'world'} onChange={e=>revise({...rule,audience:e.target.value})}>{options(['world','participant'])}</select></label>
             <label>Fire<select aria-label="Fire" disabled={rule.on==='clock'} value={rule.once ?? 'each'} onChange={e=>revise({...rule,once:e.target.value})}>
                 <option value="each">Every matching event</option><option value="visit">Once this phase visit</option><option value="player" disabled={sceneEvent(rule.on)}>Once per player this visit</option><option value="campaign">Once per campaign</option><option value="member" disabled={sceneEvent(rule.on)}>Once per player per campaign</option></select></label>
-            <details><summary>Match event fields</summary>{fields.filter(k=>(k!=='target' || (rule.on!=='region entered' && rule.on!=='region left')) && (k!=='detail' || !sceneEvent(rule.on))).map(k=><label key={k}>{k}<input value={rule.match?.[k] ?? ''} onChange={e=>{
+            <details><summary>Match event fields</summary>{fields.filter(k=>(k!=='target' || (rule.on!=='region entered' && rule.on!=='region left')) && (k!=='detail' || !cueEvent(rule.on))).map(k=><label key={k}>{k}<input value={rule.match?.[k] ?? ''} onChange={e=>{
                 const match={...rule.match}; if(e.target.value) match[k]=e.target.value;else delete match[k];revise({...rule,match});
             }}/></label>)}</details></fieldset>
             <fieldset><legend>Conditions</legend>{rule.if?<><ConditionRow node={rule.if} regions={regionIds} missions={campaign?[]:missions} edit={c=>revise({...rule,if:c})}/>
@@ -259,9 +255,9 @@ export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,cam
                     <label>Counter name<input value={a.key} onChange={e=>changeAction(i,{...a,key:e.target.value})}/></label>
                     <label>Value source<select aria-label="Value source" value={typeof a.value==='number'?'number':a.value} onChange={e=>changeAction(i,{...a,value:e.target.value==='number'?1:e.target.value})}>{options(['number',...amounts])}</select></label>
                     {typeof a.value==='number' && <label>Counter value<input type="number" value={a.value} onChange={e=>changeAction(i,{...a,value:Number(e.target.value)})}/></label>}</>}
-                {a.do==='effect' && <><label>World effect<select aria-label="World effect" value={a.effect.kind} onChange={e=>changeAction(i,{do:'effect',effect:makeEffect(e.target.value,effects[e.target.value],regionIds)})}>
+                {a.do==='effect' && <><label>World effect<select aria-label="World effect" value={a.effect.kind} onChange={e=>changeAction(i,{do:'effect',effect:makeEffect(e.target.value,effects[e.target.value],regionIds,scenes)})}>
                     {Object.keys(effects).filter(k=>k!=='npc.line').map(k=><option key={k} value={k}>{effectName(k)}</option>)}</select></label>
-                    <StoryEffectFields regions={regions} effect={a.effect} fields={effects[a.effect.kind] ?? []} change={effect=>changeAction(i,{...a,effect})}/></>}
+                    <StoryEffectFields scenes={scenes} regions={regions} effect={a.effect} fields={effects[a.effect.kind] ?? []} change={effect=>changeAction(i,{...a,effect})}/></>}
                 <button disabled={!i} onClick={()=>revise({...rule,actions:reorder(rule.actions,i,i-1)})}>Move action earlier</button>
                 <button disabled={i===rule.actions.length-1} onClick={()=>revise({...rule,actions:reorder(rule.actions,i,i+1)})}>Move action later</button>
                 <button onClick={()=>revise({...rule,actions:rule.actions.filter((_,n)=>n!==i)})}>Remove action</button></fieldset>)}

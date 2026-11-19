@@ -394,6 +394,168 @@ class RuntimeTests(unittest.TestCase):
     def tick(self):
         runner.tick(self.conn, self.world)
 
+    def test_scene_play_embeds_approved_document_and_uses_originating_player(self):
+        import story_scenes
+
+        scene = story_scenes.blank()
+        scene['cast'] = [{'id': 'speaker', 'npc': 'rm111'}]
+        program = story_scenes.wrap(scene)
+        self.examples['portable'] = program
+        self.launch('portable')
+        self.answer()
+        player = self.cohort[1]
+        self.fact('arrival', player)
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'playing')
+        self.answer()
+        self.tick()
+        receipt = self.status()['actions'][-1]['id']
+        kind, target, payload = self.conn.execute(
+            'SELECT kind,target_id,payload FROM dm.actions WHERE id=%s', (receipt,)
+        ).fetchone()
+        self.assertEqual((kind, target), ('story.scene', self.run))
+        self.assertEqual(payload, {'scene': scene, 'player': player, 'visit': 2, 'cue': 'presentation'})
+        self.answer()
+        self.fact('scene finished', player, 'another-run', quantity=2, detail='presentation')
+        self.fact('scene finished', player, self.run, quantity=1, detail='presentation')
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'playing')
+        self.fact('scene finished', player, self.run, quantity=2, detail='presentation')
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'complete')
+        scene['cast'][0]['npc'] = 'missing-resident'
+        with self.assertRaisesRegex(ValueError, 'Unknown npc'):
+            runner.references(self.conn, self.world, program)
+
+    def test_written_response_branch_ignores_other_runs_and_visits(self):
+        p = self.examples['answers'] = story_author.request({'op': 'draft', 'blank': True}, {})['program']
+        p['phases'][0]['triggers'] = [
+            {
+                'id': outcome,
+                'on': 'scene response',
+                'match': {'detail': 'oath.promise.' + outcome},
+                'actions': [{'do': 'add', 'key': outcome, 'scope': 'story', 'value': 1}],
+            }
+            for outcome in ('submitted', 'timeout')
+        ]
+        self.launch('answers')
+        self.answer()
+        for run, visit, outcome in [
+            ('other-run', 1, 'submitted'),
+            (self.run, 2, 'timeout'),
+            (self.run, 1, 'submitted'),
+            (self.run, 1, 'timeout'),
+        ]:
+            self.fact('scene response', self.cohort[0], run, quantity=visit, detail='oath.promise.' + outcome)
+        self.tick()
+        self.assertEqual(self.status()['state']['counters'], {'story': {'submitted': 1, 'timeout': 1}})
+
+    def test_scene_participant_is_verified_before_publication(self):
+        import story_scenes
+
+        p = story_scenes.wrap(story_scenes.blank(), self.cohort[0])
+        p['phases'][0]['effects'][0]['player'] = self.cohort[1]
+        approval = runner.approve(self.conn, self.world, 'human', p, rules.digest(p))
+        with self.assertRaisesRegex(ValueError, 'opening audience'):
+            runner.publish(self.conn, self.world, approval['ticket'])
+        self.assertFalse(
+            self.conn.execute('SELECT 1 FROM dm.actions WHERE target_id=%s', (approval['run'],)).fetchone()
+        )
+
+    def test_terminal_phase_waits_for_native_scene_end(self):
+        import story_scenes
+
+        player = self.cohort[0]
+        p = story_scenes.wrap(story_scenes.blank(), player)
+        p['phases'] = p['phases'][:1]
+        p['phases'][0]['exits'] = []
+        p['tests'] = [{'name': 'Closing scene', 'cohort': [player], 'events': [], 'expect': ['playing']}]
+        self.examples['closing'] = p
+        self.launch('closing')
+        self.answer()
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.scene')
+        self.answer()
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.scene')
+        self.fact('scene finished', player, self.run, quantity=2, detail='presentation')
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.scene')
+        self.fact('scene finished', player, self.run, quantity=1, detail='presentation')
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.finish')
+        self.answer()
+        self.tick()
+        self.assertEqual(self.status()['status'], 'complete')
+
+    def test_overlapping_presentations_with_same_cue_hold_the_terminal_visit(self):
+        import story_scenes
+
+        scene = story_scenes.blank()
+        first, second, _ = self.cohort
+        p = self.examples['paired'] = story_scenes.wrap(scene)
+
+        # A single arrival matches two separate rules in order. Both scenes are staged for this visit.
+        def launch(player):
+            return {
+                'do': 'effect',
+                'effect': {'kind': 'scene.play', 'scene': scene['id'], 'player': player, 'cue': 'shared'},
+            }
+
+        p.update(
+            start='standby',
+            phases=[
+                {
+                    'id': 'standby',
+                    'journal': 'Wait for a volunteer.',
+                    'effects': [],
+                    'exits': [],
+                    'triggers': [
+                        {
+                            'id': 'notify-witness',
+                            'on': 'arrival',
+                            'audience': 'participant',
+                            'actions': [launch(first)],
+                        },
+                        {
+                            'id': 'notify-volunteer',
+                            'on': 'arrival',
+                            'audience': 'participant',
+                            'actions': [launch('$actor'), {'do': 'enter', 'phase': 'end'}],
+                        },
+                    ],
+                },
+                {'id': 'end', 'journal': 'The invitations have been sent.', 'effects': [], 'exits': []},
+            ],
+            tests=[
+                {
+                    'name': 'One invitation for each wolf',
+                    'cohort': [first, second],
+                    'events': [{'kind': 'arrival', 'actor': second, 'day': 0, 'id': 'join'}],
+                    'expect': ['standby', 'end'],
+                }
+            ],
+        )
+        self.launch('paired')
+        self.answer()
+        self.fact('arrival', second)
+        self.tick()
+        self.answer()
+        for expected in (first, second):
+            self.tick()
+            last = self.status()['actions'][-1]
+            self.assertEqual(last['kind'], 'story.scene')
+            play = self.conn.execute('SELECT payload FROM dm.actions WHERE id=%s', (last['id'],)).fetchone()[0]
+            self.assertEqual((play['cue'], play['player'], play['visit']), ('shared', expected, 2))
+            self.answer()
+        self.fact('scene finished', second, self.run, quantity=2, detail='shared')
+        self.fact('scene finished', first, self.run, quantity=1, detail='shared')
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.scene')
+        self.fact('scene failed', first, self.run, quantity=2, detail='shared')
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.finish')
+
     def test_only_reviewed_tiles_and_current_scene_receipts_drive_the_run(self):
         self.conn.execute('RESET ROLE')
         self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'gate','cell')", (self.world,))

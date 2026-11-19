@@ -154,6 +154,8 @@ void Game::devCommand(Connection* c, const json::Value& j)
             text += std::string("\n/") + d.name + ": " + d.help;
         result = {true, text, {}};
     }
+    else if (cinematicLocks(id) && (command.rfind("fight-", 0) == 0 || command == "hunt" || command.rfind("hunt ", 0) == 0))
+        result = {false, "Your character is holding position for the scene.", {}};
     else if (command == "fight-test-1")
         result = world_.testFight(id);
     else if (command == "fight-test-team-1")

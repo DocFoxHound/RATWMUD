@@ -1,4 +1,6 @@
 import {useMemo, useState} from 'react';
+import {cueEvent,SceneCueFilter} from './SceneCueFilter';
+import type {Scene} from './scenes';
 import type {Project} from '../model/model.mjs';
 import {StoryRegions,type Region} from './StoryRegions';
 import {StoryMissions, type Mission, type EventType} from './StoryMissions';
@@ -11,8 +13,8 @@ interface Exit {
     on:string; to:string; match?:Record<string,string>; afterDays?:number; percent?:number; players?:number; participant?:boolean;
 }
 interface Phase {campaignRules?:boolean;triggers?:Trigger[]; missions?:Mission[]; guestVoices?:string[]; id:string; journal:string; effects:Effect[]; exits:Exit[]}
-export interface WorldProgram {regions?:Region[];triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
-export interface ProgramCatalogue {blank:WorldProgram;triggerRules:{events:string[]}; eventTypes:EventType[]; missionEvents:string[]; missionMeasures:Record<string,string[]>; events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
+export interface WorldProgram {scenes?:Scene[];regions?:Region[];triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
+export interface ProgramCatalogue {sceneExamples?:Record<string,Scene>;blank:WorldProgram;triggerRules:{events:string[]}; eventTypes:EventType[]; missionEvents:string[]; missionMeasures:Record<string,string[]>; events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
 
 function newExit(on:string, to:string):Exit {
     if (on==='missions completed') return {on,to,missions:[]};
@@ -53,6 +55,8 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
         onEdit({...program,phases:program.phases.map((p,i)=>i===at?{...phase,...patch}:p)});
     }
     const regions=program.regions ?? [];
+    const cueEffects=[...program.phases.flatMap(p=>p.effects),...[...(program.triggers ?? []),...program.phases.flatMap(p=>p.triggers ?? [])]
+        .flatMap(t=>t.actions.flatMap(a=>a.do==='effect'?[a.effect]:[]))];
     const regionIds=regions.map(r=>r.id);
     function changeRegions(next:Region[],rename?:[string,string]) {
         const updated=rename?structuredClone(program):program;
@@ -102,9 +106,9 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
             <button aria-pressed={scope==='campaign'} onClick={()=>goScope('campaign')}>Campaign triggers</button></div>
         {scope==='campaign' && <label><input type="checkbox" checked={phase.campaignRules ?? !!(phase.triggers?.length || phase.exits.length)}
             onChange={e=>update({campaignRules:e.target.checked})}/>Run campaign triggers during {phase.id}</label>}
-        <StoryTriggerEditor regions={regions} index={ruleIndex} select={setRuleIndex}
-            ruleGroups={[{phase:null,label:'Campaign',rules:program.triggers ?? [],missions:[],effects:[]},
-                ...program.phases.map((p,i)=>({phase:i,label:p.id,rules:p.triggers ?? [],missions:p.missions ?? [],effects:p.effects}))]}
+        <StoryTriggerEditor cueEffects={cueEffects} scenes={program.scenes ?? []} regions={regions} index={ruleIndex} select={setRuleIndex}
+            ruleGroups={[{phase:null,label:'Campaign',rules:program.triggers ?? [],missions:[]},
+                ...program.phases.map((p,i)=>({phase:i,label:p.id,rules:p.triggers ?? [],missions:p.missions ?? []}))]}
             navigate={(target,rule)=>{if(target!==null)setIndex(target);setScope(target===null?'campaign':'phase');setRuleIndex(rule);}}
             key={scope+'-'+phase.id} campaign={scope==='campaign'} triggers={(scope==='campaign'?program.triggers:phase.triggers) ?? []} sources={catalog.eventTypes} events={catalog.triggerRules.events} effects={catalog.effects}
             phases={program.phases.map(p=>p.id)} missions={phase.missions ?? []} change={triggers=>{if(scope==='phase') update({triggers});
@@ -115,7 +119,7 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
                 ? {...edge,missions:edge.missions?.filter(id=>missions.some(m=>m.id===id))}:edge)})} start={start}/></details>
         <details className="phase-tools"><summary>Phase exits and entry effects</summary>
         {!phase.exits.length && !phase.triggers?.length && !(program.triggers?.length && phase.campaignRules) && <p>This phase ends the story.</p>}
-        {phase.exits.map((edge,i)=><fieldset key={i}><label>When<select value={edge.on} onChange={e=>exit(i,newExit(e.target.value,edge.to))}>
+        {phase.exits.map((edge,i)=><fieldset key={i}><label>When<select aria-label="When" value={edge.on} onChange={e=>exit(i,newExit(e.target.value,edge.to))}>
             {[...catalog.events,'missions completed'].map(on=><option key={on}>{on}</option>)}</select></label>
             <label>Continue to<select value={edge.to} onChange={e=>exit(i,{...edge,to:e.target.value})}>
                 {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label>
@@ -132,16 +136,17 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
                 {(edge.percent!==undefined || edge.players!==undefined) && <label>{edge.percent!==undefined?'Percentage required':'Players required'}
                     <input type="number" min="1" max={edge.percent!==undefined?100:500} value={edge.percent ?? edge.players}
                         onChange={e=>exit(i,{...edge,[edge.percent!==undefined?'percent':'players']:e.target.valueAsNumber || 0})}/></label>}
-                <details><summary>Event filters</summary>{['actor','target','cell','item','detail'].map(key=><label key={key}>{key}
+                {cueEvent(edge.on) && <SceneCueFilter on={edge.on} effects={cueEffects} scenes={program.scenes ?? []} match={edge.match} change={match=>exit(i,{...edge,match})}/>}
+                <details><summary>Event filters</summary>{['actor','target','cell','item','detail'].filter(k=>k!=='detail'||!cueEvent(edge.on)).map(key=><label key={key}>{key}
                     <input value={edge.match?.[key] ?? ''} onChange={e=>{const match={...edge.match}; if(e.target.value) match[key]=e.target.value; else delete match[key]; exit(i,{...edge,match});}}/></label>)}</details></>}
             <button onClick={()=>update({exits:phase.exits.filter((_,n)=>n!==i)})}>Remove trigger</button></fieldset>)}
         <button onClick={()=>update({exits:[...phase.exits,newExit('conversation',program.phases[(at+1)%program.phases.length].id)]})}>Add phase exit</button>
         <label>Optional guest speakers (resident IDs, one per line)<textarea rows={2}
             value={(phase.guestVoices ?? []).join('\n')} onChange={e=>update({guestVoices:e.target.value ? e.target.value.split('\n') : []})}/></label>
         <h4>When this phase opens</h4>{phase.effects.map((e,i)=><fieldset key={i}><legend>{effectName(e.kind)}</legend>
-            <StoryEffectFields regions={regions} effect={e} fields={catalog.effects[e.kind] ?? []} change={next=>effect(i,next)}/>
+            <StoryEffectFields scenes={program.scenes ?? []} regions={regions} effect={e} fields={catalog.effects[e.kind] ?? []} change={next=>effect(i,next)}/>
             <button onClick={()=>update({effects:phase.effects.filter((_,n)=>n!==i)})}>Remove effect</button></fieldset>)}
-        <label>Add phase effect<select value="" onChange={e=>{const kind=e.target.value; const next=makeEffect(kind,catalog.effects[kind],regionIds);
+        <label>Add phase effect<select value="" onChange={e=>{const kind=e.target.value; const next=makeEffect(kind,catalog.effects[kind],regionIds,program.scenes);
             update({effects:[...phase.effects,next]});}}><option value="">Choose an effect</option>
             {Object.keys(catalog.effects).map(kind=><option key={kind} value={kind}>{effectName(kind)}</option>)}</select></label>
         </details><StoryRehearsalEditor regions={regions} cases={program.tests} events={catalog.events} phases={program.phases.map(p=>p.id)} change={tests=>onEdit({...program,tests})}/></>;

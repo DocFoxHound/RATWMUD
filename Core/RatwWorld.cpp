@@ -2310,6 +2310,20 @@ void World::adoptFactions(const World& candidate)
     }
 }
 
+void World::holdForScene(const std::string& id)
+{
+    if (auto* viewer = entity(id))
+        viewer->sceneHoldTick = ticks_ + 1;
+    stop(id);
+    setClientWalks(id, false);
+    if (auto* fight = battleFor(id))
+        if (auto* fighter = fight->fighter(id))
+        {
+            fighter->walk.clear();
+            fighter->plan = {};
+        }
+}
+
 Result World::stop(const std::string& id)
 {
     auto* a = entity(id);
@@ -4418,7 +4432,9 @@ void World::separate(double dt)
         for (const Entity* e : who)
             separateCells_.push_back(e->cellId);
     }
-    const auto fixed = [](const Entity& e) { return e.downedLeft > 0 || e.clientWalks; };
+    const auto fixed = [this](const Entity& e) {
+        return e.downedLeft > 0 || e.clientWalks || e.sceneHoldTick == ticks_;
+    };
     // At rest: going nowhere (no route, no keys). Two at rest press together a little and settle there (Rest of a
     // body's width apart) rather than pushing every step in a corner or a crowd with nowhere to go; anyone walking
     // still nudges them a full body's width.
@@ -5268,6 +5284,16 @@ void World::sceneHold(const std::string& id, bool hold, int pace)
     pathRetryAt_.erase(id);
     e->sceneDirected = hold;
     e->pace = pace;
+}
+
+std::vector<Vec2> World::cinematicPath(const std::string& cell, Vec2 from, Vec2 to)
+{
+    if (!ensureLoaded(cell).ok || !standable(cell, to)) return {};
+    if (distance(from, to) < .05) return {to};
+    Entity shadow;
+    shadow.cellId = cell;
+    shadow.position = from;
+    return findPath(shadow, to);
 }
 
 void World::sceneWalk(Entity& e, const std::string& cell, Vec2 tile)

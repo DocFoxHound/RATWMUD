@@ -83,6 +83,8 @@ struct Storyline
     std::string owner;                              // A personal storyline's character.
     std::string authorAccount, authorCharacter;     // A tale's storyteller.
     std::string title, premise, chapter;
+    // Isolated cinematic instances, including their authored graph, audience, ballots, stage and wall-clock deadline.
+    std::map<std::string, json::Value> cinematics;
     std::map<std::string, SceneOrder> sceneOrders;
     std::vector<Step> steps;
     std::map<std::string, Participant> participants;
@@ -168,6 +170,7 @@ class Book
     std::vector<const Storyline*> of(const std::string& who) const;
     int counting(const std::string& who, const std::string& kind) const;
     // Kinds of objective someone is waiting on now (for the game's cheap checks: who needs a place probe).
+    const std::set<std::string>& playingCinematics() const { return playingCinematics_; }
     const std::set<std::string>& activeScenes() const { return activeScenes_; }
     bool waiting(const std::string& kind) const;
     std::set<std::string> waitingFor(const std::string& kind) const;   // Characters taking part in one waiting on it.
@@ -178,7 +181,7 @@ class Book
     void load(const json::Value& saved);
 
   private:
-    std::set<std::string> activeScenes_;
+    std::set<std::string> activeScenes_, playingCinematics_;
     void reindex();
     std::vector<Progress> settle(Storyline& s, double now);
     std::map<std::string, Storyline> all_;

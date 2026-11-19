@@ -274,11 +274,13 @@ void Book::reindex()
 {
     waiting_.clear();
     activeScenes_.clear();
+    playingCinematics_.clear();
     for (const auto& [id, s] : all_)
     {
         if (!s.live())
             continue;
         if (!s.sceneOrders.empty()) activeScenes_.insert(id);
+        if (!s.cinematics.empty()) playingCinematics_.insert(id);
         const auto at = s.current();
         if (at >= s.steps.size())
             continue;
@@ -445,6 +447,12 @@ Value saveStoryline(const Storyline& s)
     o.add("template", s.templateId); o.add("owner", s.owner); o.add("authorAccount", s.authorAccount);
     o.add("author", s.authorCharacter); o.add("title", s.title); o.add("premise", s.premise); o.add("chapter", s.chapter);
     o.add("state", s.state); o.add("began", s.began); o.add("ended", s.ended); o.add("lastActivity", s.lastActivity);
+    if (!s.cinematics.empty())
+    {
+        auto instances = Value::object();
+        for (const auto& [id, instance] : s.cinematics) instances.add(id, instance);
+        o.add("cinematics", std::move(instances));
+    }
     if (!s.sceneOrders.empty())
     {
         auto orders = Value::object();
@@ -541,6 +549,8 @@ Storyline loadStoryline(const Value& o)
     s.state = o.string("state", "running"); s.began = o.number("began"); s.ended = o.number("ended", -1);
     s.lastActivity = o.number("lastActivity");
     if (!readRegions(o["regions"], s.regions)) s.regions.clear();
+    for (const auto& [id, v] : o.object("cinematics").fields())
+        if (v.isObject() && v["doc"].isObject()) s.cinematics.emplace(id, v);
     for (const auto& [npc, j] : o.object("sceneOrders").fields())
         s.sceneOrders[npc] = {j.string("kind"), j.string("cue"), j.string("cell"), j.string("words"), j.string("posture"),
             int(j.number("x")), int(j.number("y")), int(j.number("pace")), int(j.number("previousPace")), j.boolean("done")};

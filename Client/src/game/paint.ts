@@ -1,5 +1,6 @@
 // Drawing the game screen: SRatwGame::OnPaint and its helpers (UI/SRatwGame.cpp), call for call, on a 1600×1000
 // canvas. Reads the state; records click targets (state.hits) and where the map is (state.mapRect and friends).
+import {actorPoint} from './cinematic.ts';
 import {css, lerp, rgb, scale, transparent, withAlpha, type Color} from '../ui/color.ts';
 import {contains, rect, type Painter, type Point, type Rect} from '../ui/painter.ts';
 import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speakingColor, font} from '../ui/theme.ts';
@@ -554,6 +555,7 @@ export class GamePainter {
         type Bubble = {view: EntityView; lines: string[]; alpha: number; typing: boolean};
         const bubbles: Bubble[] = [];
         for (const view of s.entities.values()) {
+            if (s.cinematic.suppressedActors.has(view.id)) continue;
             const saying = view.said && (view.saidUntil ?? 0) > s.clock;
             if (saying) {
                 const left = (view.saidUntil ?? 0) - s.clock;
@@ -1465,6 +1467,7 @@ export class GamePainter {
         // Back from a fight, everyone fades in where it left them (doc 33).
         const fadeIn = clamp((s.clock - s.fightEndedAt) / 0.75, 0, 1);
         for (const view of s.battle ? [] : s.entities.values()) {
+            if (s.cinematic.suppressedActors.has(view.id)) continue;
             const x = ox + view.x * tile, y = oy + view.y * tile;
             // Who they are to this wolf (doc 32): a party mate in the player's own amber, anyone hostile in red.
             const chapterColour = view.rel === 'chapter' && /^#[0-9a-f]{6}$/i.test(view.colour) ? rgb(parseInt(view.colour.slice(1), 16)) : null;
@@ -1515,6 +1518,13 @@ export class GamePainter {
                 p.ctx.stroke();
             }
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
+        }
+        if (!s.battle) for (const actor of s.cinematic.actors.values()) {
+            if (actor.cell !== s.cellId) continue;
+            const [wx,wy] = actorPoint(actor,s.clock), x = ox + wx*tile, y = oy + wy*tile;
+            const size = clamp(Math.round(tile*.55),10,13);
+            this.turnedText(x,y,'W',size,Sage,actor.posture==='lying'?Math.PI/2:0);
+            if (actor.posture==='sitting') p.box(x-4,y+6,8,1,Sage);
         }
         s.hoveredEntity = hovered;
         if (!s.battle && s.outdoors && !s.plainGlyphs) {

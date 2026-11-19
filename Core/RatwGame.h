@@ -1490,6 +1490,20 @@ class Game
     std::map<std::string, StoryTile> lastStoryTile_;
     std::set<std::string> storiesWatchingRegions_;
     void observeStoryTile(const std::string& actor);
+    json::Value cinematicView(const std::string& viewer) const;
+    bool cinematicLocks(const std::string& viewer) const;
+    Result cinematicVote(const std::string& viewer, const std::string& instance, const std::string& beat, const std::string& option);
+    Result cinematicReply(const std::string& viewer, const std::string& instance, const std::string& beat, const std::string& text);
+  private:
+    Result startCinematic(const std::string& run, const json::Value& payload);
+    const json::Value* visibleCinematic(const std::string& viewer) const;
+    bool cinematicViewer(const json::Value& instance, const std::string& viewer) const;
+    void openCinematicBeat(json::Value& instance, const std::string& beat, double since);
+    void tickCinematics();
+    bool advanceCinematic(json::Value& instance, double wall);
+    Result submitCinematicInput(const std::string& viewer, const std::string& instance, const std::string& beat,
+                               const std::string& input, bool reply);
+  public:
     Result directSceneResident(const std::string& kind, const std::string& npc, const json::Value& payload);
     void tickStoryScenes(double dt);
     void releaseSceneResidents(const storylines::Storyline& story);
@@ -2186,7 +2200,9 @@ class Game
 
     // The world as each client sees it.
     void stampFrame(Connection* c, json::Value& root, const std::string& cell);
-    void sendSnapshot(Connection* c);
+    using SceneFrames = std::map<std::tuple<std::string, int, int>, json::Value>;
+    json::Value viewerScene(const std::string& viewer, SceneFrames* batch = nullptr);
+    void sendSnapshot(Connection* c, const json::Value* preparedScene = nullptr);
     void sendSnapshots(const std::vector<Connection*>& sending);
     void movementSounds();
     // Speech to everyone who can perceive it. `to`: whom it was meant for (each listener is told, as they can tell).

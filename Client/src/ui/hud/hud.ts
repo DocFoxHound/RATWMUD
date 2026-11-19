@@ -16,6 +16,7 @@ import {NavIcons, SenseIcons, TimeIcons, WeatherIcons, senseLevel, timeOfDay, we
 import './hud.css';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
+import {CinematicPanel} from './cinematic.ts';
 import {DialogueWindow} from './dialogue.ts';
 import {MapRenderer, MapScales} from '../../game/minimap.ts';
 import {artCache} from '../artwork.ts';
@@ -80,6 +81,7 @@ export class Hud {
     private portraits: Portraits;
     private dialogs: Dialogs;
     private dialogue: DialogueWindow;
+    private cinematic: CinematicPanel;
     // The surroundings bar: the place, the time of day, the weather, what kind of day, the senses.
     private mapPlace: HTMLElement;
     private timeIcon: HTMLElement;
@@ -306,6 +308,7 @@ export class Hud {
         this.tipWhy = el('div', 'why', this.tooltip);
         show(this.tooltip, false);
         this.dialogs = new Dialogs(this.root, state, portraits);
+        this.cinematic = new CinematicPanel(this.mapWrap,state,portraits);
         this.dialogue = new DialogueWindow(this.mapWrap, state, portraits);   // (Talk and Trade: doc 83.)
         // The fight screen (doc 37): its parts sit in the map, the side, under the map and above the composer.
         this.combat = new CombatScreen(state, portraits, {map: this.mapWrap, side, center, before: this.looking, story: this.story.root,
@@ -316,6 +319,7 @@ export class Hud {
 
     update() {
         const s = this.s, snapshot = s.snapshot, self = obj(snapshot, 'self');
+        setClass(this.root, 'watching-cinematic', !!s.cinematic.current);
         setStyle(this.root, '--story', `${s.storyWidth}px`);
         setText(this.mapPlace, s.cellName);
         if (this.mapPlace.title !== s.cellName) this.mapPlace.title = s.cellName;   // (The whole name, if it is cut.)
@@ -373,6 +377,7 @@ export class Hud {
         }
         this.dialogs.update();
         this.dialogue.update();
+        this.cinematic.update();
     }
 
     private drawMinimap() {

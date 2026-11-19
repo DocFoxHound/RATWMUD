@@ -225,3 +225,33 @@
 .tale-fields { min-width: 0; border: 0; padding: 0; margin: .5rem 0; }
 .tale-field { display: grid; gap: .2rem; margin: .45rem 0; }
 .tale-fields .letter { margin: .6rem 0; }
+
+.cinematic-camera { position:absolute; inset:0; width:100%; height:100%; z-index:7; background:#101714; }
+.cinematic-panel { position:absolute; z-index:8; inset:auto 12px 12px; display:flex; align-items:flex-start; gap:14px;
+    max-height:58%; overflow:auto; box-sizing:border-box; padding:14px 16px;
+    color:#e5e6d5; background:#14201bf5; border:1px solid #768574; border-top:2px solid #c9ab69; border-radius:5px;
+    box-shadow:0 4px 16px #0008; user-select:text; }
+.map .cinematic-portrait { position:static; inset:auto; flex:none; width:clamp(52px,10vw,86px); height:auto; aspect-ratio:8/9; }
+.cinematic-body { flex:1; min-width:0; }
+.cinematic-header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; }
+.cinematic-header strong { color:#ecd199; font-size:1.05rem; }
+.cinematic-time,.cinematic-note { color:#bccebd; font-size:.82rem; }
+.cinematic-time { font-variant-numeric:tabular-nums; }
+.cinematic-line { white-space:pre-wrap; overflow-wrap:anywhere; margin:.45rem 0; line-height:1.45; }
+.cinematic-options,.cinematic-response { display:flex; flex-wrap:wrap; gap:6px; margin:.55rem 0 0; align-items:flex-end; }
+.cinematic-response label { flex:1 1 160px; min-width:0; font-size:.86rem; }
+.cinematic-response input { display:block; box-sizing:border-box; width:100%; }
+.game .cinematic-options button,.game .cinematic-response button { min-height:32px; padding:4px 9px; background:#25362f; color:#eee3ca; border:1px solid #617463; border-radius:4px; white-space:normal; overflow-wrap:anywhere; }
+.cinematic-note { margin:.35rem 0 0; }
+.cinematic-note:empty,.cinematic-time:empty { display:none; }
+@media(max-width:620px) {
+    .cinematic-panel { inset:auto 4px 4px; padding:9px; gap:8px; max-height:66%; }
+    .map .cinematic-portrait { width:46px; }
+}
+.cinematic-options button:focus-visible,.cinematic-response button:focus-visible { outline:2px solid #e4bd72; outline-offset:2px; }
+
+@media(max-width:800px) {
+    .game.watching-cinematic { grid-template-columns:minmax(0,1fr); grid-template-areas:"center"; }
+    .game.watching-cinematic > :is(.story,.resizer,.side) { display:none; }
+    .game.watching-cinematic > .center { padding-inline:4px; }
+}

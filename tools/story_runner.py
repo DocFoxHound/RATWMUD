@@ -6,10 +6,12 @@ import json
 import secrets
 import time
 import uuid
+from collections import Counter
 from pathlib import Path
 
 import story_library
 import story_program as rules
+import story_scenes
 
 DATA = Path(__file__).resolve().parents[1] / 'Data'
 EXAMPLES = DATA / 'Storylines/programs'
@@ -25,6 +27,8 @@ def world_id(conn):
 def catalogue():
     return {
         'blank': story_library.blank(),
+        'sceneExamples': story_scenes.examples(),
+        'sceneOperations': story_scenes.OPERATIONS,
         'events': rules.EVENTS,
         'missionEvents': rules.MISSION_EVENTS,
         'missionMeasures': rules.MISSION_MEASURES,
@@ -91,8 +95,23 @@ def references(conn, world, program):
         for s in rules.phases_of(program)
         for e in rules.possible_effects(s)
         for key, value in e.items()
-        if key in tables
+        if key in tables and not (e['kind']=='scene.play' and key=='player' and value=='world')
     }
+    for scene in program.get('scenes', []):
+        if 'area' in scene:
+            area = scene['area']
+            check_tile(conn, world, area['cell'], area['x2'], area['y2'])
+        if 'camera' in scene:
+            camera = scene['camera']
+            check_tile(conn, world, camera['cell'], camera['x'], camera['y'])
+        for role in scene['cast']:
+            if 'npc' in role:
+                refs.add(('npc', role['npc']))
+            elif 'cell' in role['selector']:
+                refs.add(('cell', role['selector']['cell']))
+        for beat in scene['beats']:
+            if beat['type'] == 'move':
+                check_tile(conn, world, beat['cell'], beat['x'], beat['y'])
     refs.update(('npc', npc) for s in rules.phases_of(program) for npc in s.get('guestVoices', []))
     refs.update(('player', p) for p in program['audience'].get('players', []))
     if any(phase.get('missions') for phase in rules.phases_of(program)):
@@ -291,6 +310,9 @@ def publish(conn, world, ticket):
         ]
     rules.require(0 < len(cohort) <= 500, 'The opening audience needs 1–500 eligible characters.')
     for phase in rules.phases_of(program):
+        for e in rules.possible_effects(phase):
+            if e['kind'] == 'scene.play' and e['player'] not in ('$actor', 'world'):
+                rules.require(e['player'] in cohort, f'Scene initiator {e["player"]} must be in the opening audience.')
         exits = rules.triggers.routes(phase)
         rules.require(
             not exits
@@ -362,6 +384,20 @@ def write_relation(conn, w, faction_id, other_id, disposition, stance, reason, u
 
 def submit_effect(conn, world, run, who, state, effect, phase):
     kind = effect['kind']
+    if kind == 'scene.play':
+        player = state['actor'] if effect['player'] == '$actor' else effect['player']
+        return queue(
+            conn,
+            who,
+            'story.scene',
+            run,
+            {
+                'scene': phase['_scenes'][effect['scene']],
+                'cue': effect['cue'],
+                'player': player,
+                'visit': state['visits'],
+            },
+        )
     if kind in rules.SCENE_EFFECTS:
         payload = {k: v for k, v in effect.items() if k not in ('kind', 'npc')}
         return queue(conn, who, kind, effect['npc'], {**payload, 'run': run, 'visit': state['visits']})
@@ -405,6 +441,17 @@ def delivered(conn, world, run, phase, state, who, receipts):
     if len(receipts) > len(effects):
         return True
     effect = effects[len(receipts) - 1]
+    if effect['kind'] == 'story.finish':
+        # Acceptance starts playback. Keep this visit open until every terminal presentation has ended.
+        pending = Counter(e['cue'] for e in effects if e['kind'] == 'scene.play')
+        if pending:
+            rows = conn.execute(
+                """SELECT detail,count(*) FROM game.events WHERE world_id=%s AND target=%s AND quantity=%s
+                       AND kind IN ('scene finished','scene failed') AND detail=ANY(%s) GROUP BY detail""",
+                (world, run, state['visits'], list(pending)),
+            )
+            if pending - Counter(dict(rows)):
+                return False
     receipt = submit_effect(conn, world, run, who, state, effect, phase)
     if receipt is None:
         return False

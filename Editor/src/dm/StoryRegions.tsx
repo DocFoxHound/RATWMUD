@@ -21,8 +21,8 @@ export function RegionTilePicker({regions,pick}:{regions:Region[];pick:(tile:Pla
     }}><option value="">Choose a region</option>{regions.map(r=><option key={r.id}>{r.id}</option>)}</select></label>;
 }
 
-export function StoryRegions({world,regions,change,used}:{
-    world:Project|null; regions:Region[]; change:(next:Region[],rename?:[string,string])=>void; used:(name:string)=>boolean
+export function StoryRegions({world,regions,change,used,single=false}:{
+    single?:boolean; world:Project|null; regions:Region[]; change:(next:Region[],rename?:[string,string])=>void; used:(name:string)=>boolean
 }) {
     const [index,setIndex]=useState(0);
     const [open,setOpen]=useState(false);
@@ -54,13 +54,13 @@ export function StoryRegions({world,regions,change,used}:{
             y1:Math.min(area.y1,next.height-1),y2:Math.min(area.y2,next.height-1)}:{cell:value});
     }
     return <details className="story-regions" onToggle={e=>setOpen(e.currentTarget.open)}>
-        <summary>Map regions · {regions.length}</summary>
+        <summary>{single?'Public viewing area':'Map regions · '+regions.length}</summary>
         {open && <><div className="region-toolbar">
-            {area && <label>Selected region<select value={at} onChange={e=>{stopDrawing();setIndex(Number(e.target.value));}}>
+            {!single && area && <label>Selected region<select value={at} onChange={e=>{stopDrawing();setIndex(Number(e.target.value));}}>
                 {regions.map((r,i)=><option key={i} value={i}>{r.id}</option>)}</select></label>}
-            <button disabled={regions.length>=128} onClick={startArea}>Add region</button>
+            {!single && <button disabled={regions.length>=128} onClick={startArea}>Add region</button>}
         </div>
-        {area && <><div className="region-toolbar"><label>Region name<input key={area.id} defaultValue={area.id} maxLength={80}
+        {area && <><div className="region-toolbar">{!single && <label>Region name<input key={area.id} defaultValue={area.id} maxLength={80}
             onChange={e=>e.target.setCustomValidity('')} onBlur={e=>{
                 const id=e.target.value.trim();
                 if(!regionId.test(id) || regions.some((r,i)=>i!==at && r.id===id)) {
@@ -68,7 +68,7 @@ export function StoryRegions({world,regions,change,used}:{
                     e.target.reportValidity();return;
                 }
                 if(id!==area.id)update({id});
-            }}/></label>
+            }}/></label>}
             <label>Map cell or interior<input list="story-region-places" value={area.cell} onChange={e=>setCell(e.target.value)}/>
                 <datalist id="story-region-places">{cells.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}</datalist></label></div>
             {surface && cell ? <>
@@ -95,8 +95,8 @@ export function StoryRegions({world,regions,change,used}:{
             <div className="region-footer"><small>{current.x2>=current.x1 && current.y2>=current.y1
                 ? (current.x2-current.x1+1)+' × '+(current.y2-current.y1+1)+' tiles, including both corners'
                 : 'The right and bottom corners must follow the left and top corners.'}</small>
-                <button disabled={inUse} onClick={()=>{stopDrawing();change(regions.filter((_,i)=>i!==at));}}>Remove region</button></div>
-            {inUse && <small>Remove its condition or action references to delete this region.</small>}
+                {!single && <button disabled={inUse} onClick={()=>{stopDrawing();change(regions.filter((_,i)=>i!==at));}}>Remove region</button>}</div>
+            {!single && inUse && <small>Remove its condition or action references to delete this region.</small>}
         </>}</>}
     </details>;
 }

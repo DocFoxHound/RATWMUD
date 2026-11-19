@@ -1,0 +1,29 @@
+{
+  "format": "ratw-scene",
+  "version": 1,
+  "id": "greyfen-oath",
+  "title": "The watch takes its oath",
+  "visibility": "public",
+  "lockMovement": false,
+  "area": {"cell": "town", "x1": 23, "y1": 16, "x2": 37, "y2": 24},
+  "camera": {"cell": "town", "x": 29, "y": 20},
+  "cast": [
+    {"id": "captain", "npc": "harrow"},
+    {"id": "witness", "selector": {"role": "merchant"}}
+  ],
+  "start": "procession",
+  "beats": [
+    {"id": "procession", "type": "move", "speaker": "captain", "cell": "town", "x": 29, "y": 20, "pace": "walk", "next": "stand"},
+    {"id": "stand", "type": "pose", "speaker": "captain", "posture": "standing", "next": "witness"},
+    {"id": "witness", "type": "line", "speaker": "witness", "text": "Last winter the watch found my cart in the drifts. I came to hear the next watch give its word.", "seconds": 8, "next": "oath"},
+    {"id": "oath", "type": "choice", "speaker": "captain", "text": "I have one lantern and two roads. Where shall the first patrol carry it?", "seconds": 20, "mode": "majority", "default": "bridge", "options": [
+      {"id": "bridge", "label": "Keep the bridge lit for the night crossing.", "next": "bridge-watch"},
+      {"id": "carters", "label": "Meet the last carters on the south road.", "next": "name-the-watch"}
+    ]},
+    {"id": "bridge-watch", "type": "line", "speaker": "captain", "text": "The bridge, then. If a wolf sees our lantern from the far bank, they will know someone is waiting.", "seconds": 8},
+    {"id": "name-the-watch", "type": "response", "speaker": "captain", "text": "Who are you hoping the patrol will meet? Give me a name or a reason for carrying the light.", "seconds": 18, "mode": "first", "next": "road-watch", "timeoutNext": "silent-watch"},
+    {"id": "silent-watch", "type": "line", "speaker": "captain", "text": "Some names are yours to keep. I swear the same oath for every carter still on the road.", "seconds": 7},
+    {"id": "road-watch", "type": "line", "speaker": "captain", "text": "We take the south road. Keep the light low, and listen for wheels. No carter comes home alone.", "seconds": 8,
+      "ai": {"personality": "Harrow is a plain-spoken veteran who commands Greyfen’s watch and counts every wolf before shutting the gate.", "intent": "Answer the volunteer’s concern in one short line and swear to meet the carters. Promise only to send the patrol on the south road."}}
+  ]
+}

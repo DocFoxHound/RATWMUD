@@ -5,9 +5,10 @@ import json
 import math
 import re
 
+import story_scenes
 import story_triggers as triggers
 
-SCENE_EVENTS = ('scene arrived', 'scene spoken', 'scene posed', 'scene blocked')
+SCENE_EVENTS = ('scene arrived', 'scene spoken', 'scene posed', 'scene blocked', 'scene finished', 'scene choice', 'scene response', 'scene failed')
 REGION_EVENTS = ('region entered', 'region left')
 SCENE_EFFECTS = ('npc.walk', 'npc.speak', 'npc.pose')
 EVENTS = (
@@ -167,6 +168,7 @@ EVENTS = (
 FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 # Actions here map to existing, bounded world operations. Story-only dialogue expires on phase exit.
 EFFECTS = {
+    'scene.play': ('scene', 'player', 'cue'),
     'npc.line': ('npc', 'text'),
     'npc.walk': ('npc', 'cell', 'x', 'y', 'pace', 'cue'),
     'npc.speak': ('npc', 'text', 'cue'),
@@ -482,7 +484,7 @@ def check_region_source(rule, regions):
         require(regions and (name is None or name in regions), 'A boundary crossing must use a region in this story.')
 
 
-def validate_effect(effect, pid, regions=None):
+def validate_effect(effect, pid, regions=None, scenes=None):
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
     shape(effect, ('kind', *EFFECTS[kind]))
@@ -531,6 +533,12 @@ def validate_effect(effect, pid, regions=None):
         else:
             ok = identifier(v) or (k == 'player' and v == '$actor')
         require(ok, f'{pid}: invalid {kind}.{k}.')
+    if kind == 'scene.play':
+        scene = (scenes or {}).get(effect['scene'])
+        require(
+            scene and len(effect['cue']) <= 64, f'{pid}: choose an embedded scene and a cue of up to 64 characters.'
+        )
+        require(effect['player']!='world' or scene['visibility']=='public', 'A private scene needs a character.')
     if kind == 'faction.relation':
         require(
             effect['faction'] != effect['other'],
@@ -543,6 +551,8 @@ def region_index(program):
 
 
 def effective_phase(program, phase):
+    if program.get('scenes'):
+        phase = {**phase, '_scenes': {s['id']: s for s in program['scenes']}}
     if program.get('regions'):
         phase = {**phase, '_regions': region_index(program)}
     shared = program.get('triggers', [])
@@ -570,8 +580,15 @@ def validate(p):
     shape(
         p,
         ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests'),
-        ('triggers', 'regions'),
+        ('triggers', 'regions', 'scenes'),
     )
+    scenes = p.get('scenes', [])
+    require(isinstance(scenes, list) and len(scenes) <= 32, 'Choose up to 32 embedded scenes.')
+    scene_docs = {}
+    for scene in scenes:
+        story_scenes.validate(scene)
+        require(scene['id'] not in scene_docs, 'Embedded scenes need distinct IDs.')
+        scene_docs[scene['id']]=scene
     rectangles = p.get('regions', [])
     require(isinstance(rectangles, list) and len(rectangles) <= 128, 'Choose up to 128 named regions.')
     names = set()
@@ -621,7 +638,7 @@ def validate(p):
         'Choose up to 64 campaign triggers.',
     )
     # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
-    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared, '_regions': region_index(p)})
+    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared, '_regions': region_index(p), '_scenes': scene_docs})
     ids = set()
     for phase in p['phases']:
         shape(
@@ -655,7 +672,7 @@ def validate(p):
         )
         speakers = set()
         for effect in phase['effects']:
-            validate_effect(effect, pid, phase.get('_regions'))
+            validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
             kind = effect['kind']
             if kind == 'npc.line':
                 require(

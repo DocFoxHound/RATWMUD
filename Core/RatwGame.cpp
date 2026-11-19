@@ -1407,6 +1407,14 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         }
         saveSoon();
     }
+    else if (kind == "story.scene")
+    {
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem))
+            outcome = startCinematic(target, payload);
+        else outcome = {false, "Invalid cinematic direction.", target};
+    }
     else if (kind == "npc.walk" || kind == "npc.pose" || kind == "npc.speak")
     {
         json::Value payload;
@@ -1467,6 +1475,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                 story->steps.back().objectives.front().doneAt = now();
             if (story->live()) releaseSceneResidents(*story);
             story->sceneOrders.clear();
+            story->cinematics.clear();
             storylines_.end(target, finished ? "done" : "abandoned", now());
             storiesWatchingRegions_.erase(target);
             if (storiesWatchingRegions_.empty()) lastStoryTile_.clear();
@@ -2420,7 +2429,7 @@ void Game::observeStoryTile(const std::string& actor)
 
 void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
 {
-    if (!c || c->entityId.empty() || c->movementMode == Fighting)
+    if (!c || c->entityId.empty() || c->movementMode == Fighting || cinematicLocks(c->entityId))
         return;
     const auto& id = c->entityId;
     auto* player = world_.entity(id);
@@ -2498,7 +2507,7 @@ void Game::updateMovementModes()
         std::uint8_t mode = FreeMovement;
         if (fighting_.count(id) || world_.inBattle(id) || e->lingering)
             mode = Fighting;                       // In an arena: no walking at all (doc 33).
-        else if (e->downedLeft > 0)
+        else if (e->downedLeft > 0 || cinematicLocks(id))
             mode = HeldMovement;                   // Downed: the server crawls the wolf (half a tile a second).
         else if (world_.pursued(id) || world_.foughtWithin(id, HeldAfter) || world_.offendedWithin(id, HeldAfter) ||
                  !e->path.empty() || world_.travelState(id).active)
@@ -3337,11 +3346,16 @@ void Game::tick(double dt)
         frameDebt_ = std::max(0.0, frameDebt_ - 1);
     keepOwnership(real);
     std::map<std::string, std::string> beforeCells;
-    for (auto* c : clients_)
-        if (const auto* e = world_.entity(c->entityId))
-            beforeCells[e->id] = e->cellId;
     {
         perf::Scope world(meter_, perf::World);
+        tickCinematics();
+        for (auto* c : clients_)
+            if (const auto* e = world_.entity(c->entityId))
+            {
+                beforeCells[e->id] = e->cellId;
+                // Newly opened and resumed scenes hold any pending input before the simulation advances.
+                if (cinematicLocks(e->id)) world_.holdForScene(e->id);
+            }
         tickStoryScenes(dt);
         world_.tick(dt);
     }
@@ -3667,8 +3681,78 @@ Value Game::storesView(const std::string& cellId) const
     return list;
 }
 
+// Build a spectator's camera on the game thread. Loading a remote cell must never mutate
+// streaming state on the snapshot workers or add to the character's exploration memory.
+json::Value Game::viewerScene(const std::string& viewer, SceneFrames* batch)
+{
+    auto scene = cinematicView(viewer);
+    if (!scene.isObject()) return scene;
+    // Dialogue and the speaker's portrait can be heard off-camera. Their map position is private to the shot.
+    if (auto* speaker = scene.find("speaker"))
+        for (const char* field : {"x", "y", "cell"}) speaker->erase(field);
+    const auto camera = scene.object("camera");
+    const bool filmed = camera.isObject();
+    const auto* watcher = static_cast<const World&>(world_).entity(viewer);
+    const auto cellId = filmed ? camera.string("cell") : watcher ? watcher->cellId : std::string{};
+    const auto* cell = world_.cell(cellId);
+    const int cx = int(camera.number("x")), cy = int(camera.number("y"));
+    const Vec2 eye = filmed ? Vec2{cx + .5, cy + .5} : watcher ? watcher->position : Vec2{};
+    auto frame = Value{};
+    if (filmed && cell && cx >= 0 && cx < cell->width && cy >= 0 && cy < cell->height &&
+        (cell->loaded || world_.ensureLoaded(cellId).ok))
+    {
+        const auto key = std::make_tuple(cellId, cx, cy);
+        if (batch && batch->count(key)) frame = batch->at(key);
+        else
+        {
+            const int width = std::min(cell->width, 17), height = std::min(cell->height, 13);
+            const int left = std::clamp(cx - width / 2, 0, cell->width - width);
+            const int top = std::clamp(cy - height / 2, 0, cell->height - height);
+            auto rows = Value::array();
+            for (int y = top; y < top + height; ++y)
+            {
+                std::string row;
+                for (int x = left; x < left + width; ++x)
+                {
+                    const auto* tile = cell->tile(x, y);
+                    row += tile && world_.lineOfSight(cellId, eye, {x + .5, y + .5}) ? tile->glyph : ' ';
+                }
+                rows.push(row);
+            }
+            frame = Value::object();
+            frame.add("cell", cellId); frame.add("name", cell->name);
+            frame.add("x", left); frame.add("y", top); frame.add("width", width); frame.add("height", height);
+            frame.add("rows", std::move(rows));
+            if (batch) batch->emplace(key, frame);
+        }
+        scene.add("frame", frame);
+    }
+    auto cast = Value::array(), suppressed = Value::array();
+    for (const auto& actor : scene.array("actors"))
+    {
+        // Suppress the ordinary sprite even when its private projected position is around a corner.
+        suppressed.push(actor.string("id"));
+        const Vec2 at{actor.number("x"), actor.number("y")};
+        if (actor.string("cell") != cellId || !cell || !watcher) continue;
+        if (filmed)
+        {
+            if (!frame.isObject() || at.x < frame.number("x") || at.y < frame.number("y") ||
+                at.x >= frame.number("x") + frame.number("width") || at.y >= frame.number("y") + frame.number("height")) continue;
+        }
+        else if (!world_.onScreen(*watcher, at)) continue;
+        if (world_.lineOfSight(cellId, eye, at)) cast.push(actor);
+    }
+    scene.set("actors", std::move(cast));
+    scene.add("suppressedActors", std::move(suppressed));
+    return scene;
+}
+
 void Game::sendSnapshots(const std::vector<Connection*>& sending)
 {
+    std::vector<Value> scenes;
+    scenes.reserve(sending.size());
+    SceneFrames frames;
+    for (const auto* c : sending) scenes.push_back(viewerScene(c->entityId, &frames));
     std::vector<std::string> due;
     for (auto* c : sending)
         if (!c->entityId.empty())
@@ -3694,18 +3778,19 @@ void Game::sendSnapshots(const std::vector<Connection*>& sending)
     world_.prepareReading();
     batching_ = true;
     if (pool_)
-        pool_->run(sending.size(), [&](std::size_t i) { sendSnapshot(sending[i]); });
+        pool_->run(sending.size(), [&](std::size_t i) { sendSnapshot(sending[i], &scenes[i]); });
     else
-        for (auto* c : sending)
-            sendSnapshot(c);
+        for (std::size_t i = 0; i < sending.size(); ++i)
+            sendSnapshot(sending[i], &scenes[i]);
     batching_ = false;
 }
 
-void Game::sendSnapshot(Connection* c)
+void Game::sendSnapshot(Connection* c, const Value* preparedScene)
 {
     const auto id = c->entityId;
     if (!world_.entity(id))
         return;
+    auto scene = preparedScene ? *preparedScene : viewerScene(id);
     const auto view = world_.snapshot(id, false, !batching_);
     auto root = Value::object();
     root.add("time", view.time);
@@ -4137,6 +4222,7 @@ void Game::sendSnapshot(Connection* c)
     // The party (doc 32): its members and where they are, an invitation waiting, a party mate's fight calling.
     if (auto party = partyView(id); !party.isNull())
         self.set("party", std::move(party));
+    if (scene.isObject()) self.set("scene", std::move(scene));
     root.add("self", self);
     auto cell = Value::object();
     cell.add("id", view.cell.id);
@@ -5638,7 +5724,27 @@ void Game::command(Connection* c, const std::string& raw)
     bool report = false;
     const auto num = [&](const char* key) { return wire::number(j, key); };
     const bool walkingCommand = type == "move" || type == "path" || type == "pose" || type == "face" || type == "travel";
-    if (walkingCommand && c->movementMode == Fighting)
+    const auto sceneActionMoves = [&] {
+        const auto action = j.string("action");
+        return action == "attack" || action == "challenge" || action == "accept" || action == "ask to spar" ||
+               ((action == "enter" || action == "open") && world_.door(j.string("target")));
+    };
+    const bool battleAction = type == "battle" && j.string("verb") != "observe" && j.string("verb") != "leave";
+    const bool sceneMovement = walkingCommand || type == "visit" || type == "hunt" || type == "leaveHunt" || battleAction ||
+                               (type == "action" && sceneActionMoves());
+    if (type == "scene_vote" || type == "scene_reply")
+    {
+        // The connection owns this character. Only the native runtime decides whose current beat accepts input.
+        result = type == "scene_vote" ? cinematicVote(id, j.string("instance"), j.string("beat"), j.string("option"))
+                                      : cinematicReply(id, j.string("instance"), j.string("beat"), j.string("text"));
+        report = !result.ok;
+    }
+    else if (sceneMovement && cinematicLocks(id))
+    {
+        result = {false, "Your character is holding position for the scene.", {}};
+        report = type != "move" && type != "pose";
+    }
+    else if (walkingCommand && c->movementMode == Fighting)
     {
         result = {false, player->downedLeft > 0 && !world_.inBattle(id) ? "You are down." : "You are in a fight.", {}};
         report = type != "move" && type != "pose";
@@ -5648,7 +5754,7 @@ void Game::command(Connection* c, const std::string& raw)
         // The client walks its own wolf where it may (free movement), and says where it is with "pose".
         c->clientWalking = j.string("mode") == "client";
         c->clientSight = j.string("sight") == "client";
-        world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking);
+        world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking && !cinematicLocks(id));
     }
     else if (type == "net")
     {
@@ -6434,6 +6540,12 @@ void Game::command(Connection* c, const std::string& raw)
         }
         else if (action == "accept" || action == "decline")
         {
+            const auto* challenge = world_.challengeTo(id);
+            if (action == "accept" && challenge && cinematicLocks(challenge->from))
+            {
+                system(c, "The challenger is holding position for a scene.");
+                return;
+            }
             const auto done = world_.answerChallenge(id, action == "accept");
             system(c, done.message);
             updateMovementModes();

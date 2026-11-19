@@ -19,6 +19,8 @@
 
 namespace ratw::mind
 {
+constexpr std::size_t MaxWorkers = 4;
+
 std::string left(const std::string& s, std::size_t units)
 {
     std::size_t n = 0, i = 0;
@@ -391,6 +393,31 @@ std::string firstPerson(std::string text, const std::string& teller)
     return text;
 }
 
+void Client::sceneLine(const json::Value& context, std::function<void(const std::string&)> done)
+{
+    const std::string suffix = "/dialogue";
+    bool workerAvailable;
+    {
+        std::lock_guard<std::mutex> guard(lock_);
+        workerAvailable = std::size_t(busy_) + jobs_.size() < MaxWorkers;
+    }
+    // Timed beats have an authored fallback. Avoid queuing paid generation behind a backlog past its reading window.
+    if (!workerAvailable || !live() || path_.size() < suffix.size() ||
+        path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0)
+    {
+        done({});
+        return;
+    }
+    post({path_.substr(0, path_.size() - suffix.size()) + "/scene", json::dump(context), 8.,
+          [done](int status, const std::string& body) {
+              json::Value reply;
+              std::string error, words;
+              if (status == 200 && body.size() <= 8192 && json::parse(body, reply, error))
+                  words = trim(reply.string("text"));
+              done(left(words, 600));
+          }});
+}
+
 void Client::polish(const std::string& npc, const std::string& personality, const std::string& mood, const std::string& reply,
                     std::function<void(int, const std::string&)> done)
 {
@@ -516,7 +543,7 @@ void Client::post(Job job)
 {
     std::lock_guard<std::mutex> guard(lock_);
     jobs_.push_back(std::move(job));
-    if (workers_.size() < 4 && busy_ + int(jobs_.size()) > int(workers_.size()))
+    if (workers_.size() < MaxWorkers && busy_ + int(jobs_.size()) > int(workers_.size()))
         workers_.emplace_back([this] { work(); });
     wake_.notify_one();
 }

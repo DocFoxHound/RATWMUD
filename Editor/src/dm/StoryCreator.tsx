@@ -4,6 +4,7 @@ import {dmApi, worldName, type Me, type Npcs, type Target} from './api';
 import {useWorld} from './world';
 import {download} from '../lib/api';
 import {StoryPicker} from './StoryPicker';
+import {SceneWorkspace} from './SceneWorkspace';
 import {StoryProgramPanel} from './StoryProgramPanel';
 
 interface StoryFile {draft: StoryDraft; run: Rehearsal | null}
@@ -32,7 +33,7 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
     const [fileError, setFileError] = useState('');
     const [catalogError, setCatalogError] = useState('');
     const [roster, setRoster] = useState<Npcs | null>(null);
-    const [mode, setMode] = useState<'write' | 'rehearse' | 'program'>('program');
+    const [mode, setMode] = useState<'write' | 'rehearse' | 'program' | 'scenes'>('program');
     const [eventPlace, setEventPlace] = useState('');
     const world = useWorld(target, setCatalogError);
     useEffect(() => {
@@ -92,16 +93,21 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
     }
     return <main className="story-workspace">
         <header><div><h2>Story Creator</h2><p className="hint">Drafts and rehearsals save in this browser for {worldName(target)}.</p></div>
-            {mode!=='program' && <label>Story library<select aria-label="Story library" value={book.selected} onChange={e => {persist({...book, selected: e.target.value}); setEventPlace('');}}>
+            {mode!=='program' && mode!=='scenes' && <label>Story library<select aria-label="Story library" value={book.selected} onChange={e => {persist({...book, selected: e.target.value}); setEventPlace('');}}>
                 {book.files.map(f => <option key={f.draft.id} value={f.draft.id}>{f.draft.title || 'Untitled draft'}</option>)}</select></label>}
-            {mode!=='program' && editable && <button onClick={() => {const d = newStory(); persist({selected: d.id, files: [...book.files, {draft: d, run: null}]}); setMode('write');}}>New story</button>}
+            {mode!=='program' && mode!=='scenes' && editable && <button onClick={() => {const d = newStory(); persist({selected: d.id, files: [...book.files, {draft: d, run: null}]}); setMode('write');}}>New story</button>}
         </header>
         {store.error && <p role="alert">{store.error} <button onClick={() => setStore(read(key))}>Reopen saved version</button></p>}
         <nav aria-label="Story workspace"><button aria-pressed={mode === 'program'} onClick={() => setMode('program')}>World stories</button>
+            <button aria-pressed={mode === 'scenes'} onClick={()=>setMode('scenes')}>Scenes</button>
             <button aria-pressed={mode === 'write'} onClick={() => setMode('write')}>Write draft</button>
             <button aria-pressed={mode === 'rehearse'} onClick={() => setMode('rehearse')}>Inspect rehearsal</button>
             <button onClick={openPersonal}>Personal storylines and storytellers</button></nav>
-        {mode === 'program' ? <StoryProgramPanel world={world} canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
+        {mode === 'scenes'?<SceneWorkspace libraryKey={key+'.scenes'} world={world} roster={roster} target={target} canDirect={editable}
+            openProgram={p=>{if(window.confirm('Open this release in World stories and replace the current world-story draft?')){
+                try{localStorage.setItem(key+'.world-program',JSON.stringify(p,null,2));setMode('program');}
+                catch{setFileError('Could not save the release draft. Browser storage is unavailable.');}
+            }}}/>:mode === 'program' ? <StoryProgramPanel sceneLibraryKey={key+'.scenes'} world={world} canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
             <fieldset disabled={!editable}><label>Story title<input value={draft.title} onChange={e => edit({title:e.target.value})}/></label>
             <StoryPicker world={world} roster={roster} resident={draft.resident} place={draft.place}
                 onResident={resident => edit({resident})} onPlace={place => edit({place})} />

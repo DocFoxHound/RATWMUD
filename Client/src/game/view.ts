@@ -165,6 +165,7 @@ export class GameView {
         const s = this.state, textarea = this.composer.element;
         this.on(window, 'keydown', e => {
             // Cmd going down lets go of everything held (macOS WebKit sends no keyup for other keys while it is down).
+            if (e.target instanceof Element && e.target.closest('.cinematic-panel')) return;
             if (metaKey(e)) s.focusLost();
             if (e.target === textarea || e.target instanceof HTMLInputElement) return;   // (Typing a name, say.)
             // Ctrl and Cmd leave the page's own keys alone (copy, paste...): Ctrl+C on a story copies (doc 76, 4.4).
@@ -176,6 +177,7 @@ export class GameView {
             if (s.keyDown(keyOf(e))) e.preventDefault();
         });
         this.on(window, 'keyup', e => {
+            if (e.target instanceof Element && e.target.closest('.cinematic-panel')) return;
             if (metaKey(e)) s.focusLost();
             if (e.target === textarea || e.target instanceof HTMLInputElement) return;
 

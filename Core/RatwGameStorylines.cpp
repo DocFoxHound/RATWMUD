@@ -604,6 +604,7 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
             if (who.isString()) story.participants[who.asString()] = {now(), -1};
     }
     story.sceneOrders.clear();
+    story.cinematics.clear();
     story.admitted.clear();
     for (const auto& voice : p.array("guestVoices"))
     {

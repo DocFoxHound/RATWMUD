@@ -242,7 +242,7 @@ void Game::partyTick(double dt)
                 continue;
             for (const auto& mate : parties_.mates(f.id))
             {
-                if (pulls_.count(mate) || !clientOf(mate) || !parties_.autoJoin(mate) || world_.inBattle(mate) ||
+                if (pulls_.count(mate) || !clientOf(mate) || !parties_.autoJoin(mate) || world_.inBattle(mate) || cinematicLocks(mate) ||
                     b.fled.count(mate) || b.observed.count(mate))
                     continue;
                 if (const auto out = stayedOut_.find(mate); out != stayedOut_.end() && out->second.count(b.id))
@@ -268,7 +268,7 @@ void Game::partyTick(double dt)
     {
         const auto& [who, pull] = *it;
         const auto* b = world_.battle(pull.battle);
-        if (!b || b->over || world_.inBattle(who) || !clientOf(who) || !parties_.together(who, pull.mate))
+        if (!b || b->over || world_.inBattle(who) || !clientOf(who) || cinematicLocks(who) || !parties_.together(who, pull.mate))
         {
             it = pulls_.erase(it);
             continue;

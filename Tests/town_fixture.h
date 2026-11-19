@@ -162,7 +162,8 @@ struct Town
       }())
     {
         std::string problem;
-        expect(g.start(problem), "starts: " + problem);
+        const bool started = g.start(problem);
+        expect(started, "starts: " + problem);
         run(1);
     }
     void enter(Client& c, int n, const char* id, const char* name, int cell, double x)

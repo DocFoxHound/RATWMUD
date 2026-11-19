@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {storyProgram, worldName, type Target} from './api';
 import type {Project} from '../model/model.mjs';
+import {EmbeddedScenes} from './EmbeddedScenes';
 import {editableRegion} from './StoryRegions';
 import {editableRule} from './StoryTriggerEditor';
 import {download} from '../lib/api';
@@ -17,7 +18,7 @@ interface Details {trace?:(TraceTile & {id:number;visit:number;phase:string;trig
     actions:{id:number;kind:string;status:string;result:string}[]}
 const pretty = (value: unknown) => JSON.stringify(value,null,2);
 
-export function StoryProgramPanel({world,target, storageKey, canDirect}: {world:Project|null;target:Target; storageKey:string; canDirect:boolean}) {
+export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, canDirect}: {sceneLibraryKey:string;world:Project|null;target:Target; storageKey:string; canDirect:boolean}) {
     const [catalog,setCatalog] = useState<Catalogue>();
     const [source,setSource] = useState(() => { try { return localStorage.getItem(storageKey) ?? ''; } catch { return ''; } });
     const [report,setReport] = useState<Report>();
@@ -70,6 +71,7 @@ export function StoryProgramPanel({world,target, storageKey, canDirect}: {world:
         && (c.expectEffects===undefined || (Array.isArray(c.expectEffects) && c.expectEffects.every(e=>e && typeof e.phase==='string')))
         && (c.expectMissionVisits===undefined || (Array.isArray(c.expectMissionVisits) && c.expectMissionVisits.every(v=>v && typeof v.phase==='string')))
         && Array.isArray(c.cohort) && Array.isArray(c.expect) && Array.isArray(c.events) && c.events.every(f=>f && typeof f.kind==='string'))
+        && (program.scenes===undefined || (Array.isArray(program.scenes) && program.scenes.every(s=>s && typeof s.title==='string' && Array.isArray(s.beats) && s.beats.every(b=>b && typeof b.id==='string'))))
         && typeof program.title === 'string' && program.audience && typeof program.audience.kind === 'string' && Array.isArray(program.phases) && program.phases.every(p=>
         p && typeof p.id==='string' && typeof p.journal==='string' && (!p.guestVoices || Array.isArray(p.guestVoices)) &&
         (p.triggers === undefined || (Array.isArray(p.triggers) && p.triggers.every(editableRule))) &&
@@ -91,8 +93,9 @@ export function StoryProgramPanel({world,target, storageKey, canDirect}: {world:
             });
         }}/></label>
         </div>{catalog && program && editableGraph &&
+            <><EmbeddedScenes target={target} libraryKey={sceneLibraryKey} program={program} examples={catalog.sceneExamples ?? {}} edit={p=>edit(pretty(p))}/>
             <StoryPhaseEditor world={world} start={id=>{if(window.confirm('Replace this draft with the selected event story?'))
-                void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))}/>}
+                void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))}/></>}
         <details><summary>Program JSON and rehearsal cases</summary><label>Program JSON<textarea rows={18} spellCheck={false} value={source} onChange={e => edit(e.target.value)}/></label></details>
         <button disabled={!source} onClick={() => download('world-story.json',source)}>Export draft</button>
         <button disabled={!source} onClick={() => void perform(async () => setReport(await storyProgram<Report>(target,'rehearse',{program:JSON.parse(source)})))}>Rehearse all paths</button>

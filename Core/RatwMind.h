@@ -81,6 +81,8 @@ class Client
     // A few lines between two NPCs; authored ones when there is no NPC Mind, or it fails.
     static Exchange authoredExchange(const ExchangeContext& c);
     void exchange(const ExchangeContext& c, std::function<void(const Exchange&)> done);
+    // An empty scene reply selects the line written by the author.
+    void sceneLine(const json::Value& context, std::function<void(const std::string&)> done);
     // The game's own answer put in the NPC's voice by the small model (doc 28): the status (0 without an NPC Mind)
     // and the words, "" when it can't (polishing off, a fact lost, a failure): the game's own words stand then.
     void polish(const std::string& npc, const std::string& personality, const std::string& mood, const std::string& reply,

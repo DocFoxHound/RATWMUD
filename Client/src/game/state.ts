@@ -1,5 +1,6 @@
 // The game screen's state and rules: SRatwGame (UI/SRatwGame.cpp) without its drawing. The client is a projection of
 // observer-filtered server data; no simulation lives here. paint.ts draws it; view.ts connects it to the page.
+import {Cinematic} from './cinematic.ts';
 import {storyCommand} from '../ui/hud/storyteller.ts';
 import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, isObject, num, obj, objects, str, wholeCount, type Json} from './json.ts';
 import type {LetterDraft} from '../ui/hud/letters.ts';
@@ -153,6 +154,7 @@ export function keptByMyScene(post: Post, selfName: string): boolean {
 
 export class GameState {
     // What the screen is showing.
+    readonly cinematic = new Cinematic();
     snapshot: Json | null = null;
     inspectedCharacter: Json | null = null;
     // One's own roleplay profile, one's account as a person, and the profile rules (doc 50), as the server last sent them.
@@ -430,7 +432,10 @@ export class GameState {
     readonly composer: Composer;
 
     constructor(send: (command: Json) => void, composer: Composer) {
-        this.send = send;
+        this.send = command => {
+            if (this.cinematic.locked && ['move','path','pose','face','travel'].includes(str(command,'type'))) return;
+            send(command);
+        };
         this.composer = composer;
     }
 
@@ -441,6 +446,16 @@ export class GameState {
             width: this.cellWidth, height: this.cellHeight,
             rows: this.tileRows, heights: this.tileHeights, fringe: this.fringe,
             fringeRows: this.fringeRows, fringeHeights: this.fringeHeights};
+        const wasLocked = this.cinematic.locked;
+        this.cinematic.update(obj(s,'self'), this.clock);
+        if (this.cinematic.locked && !wasLocked) {
+            this.heldKeys.clear();
+            this.freePose = null;
+            this.walking = false;
+            this.movementPending = false;
+            this.facingPreview = false;
+            this.pendingDialogue = null;
+        }
         this.snapshot = s;
         const cell = obj(s, 'cell') ?? s;
         const newId = str(cell, 'id', str(s, 'cellId', this.cellId));
@@ -1560,7 +1575,7 @@ export class GameState {
 
     /** The page walks its own wolf: the server allows it, the walker is here, and the wolf is on its feet. */
     freeWalking(): boolean {
-        if (!this.walker || !this.walkAsked || this.movementMode !== 0) return false;
+        if (this.cinematic.locked || !this.walker || !this.walkAsked || this.movementMode !== 0) return false;
         const posture = str(obj(this.snapshot, 'self'), 'posture', 'standing');
         return posture === 'standing' || posture === 'crouching';
     }
@@ -2043,6 +2058,7 @@ export class GameState {
     /** A key pressed on the map; true when the game took it (the page then keeps it from the browser). */
     keyDown(k: KeyInput): boolean {
         const code = k.code;
+        if (this.cinematic.locked && MovementKeys.includes(code) && !this.chat) return true;
         if (code === 'Escape' && this.aiming) {
             this.aiming = '';
             this.giftShape = [];

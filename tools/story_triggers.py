@@ -185,7 +185,7 @@ def validate(phase):
                 require(rules.identifier(a['signal']), 'Name the timer signal.')
             elif kind == 'effect':
                 shape(a, ('do', 'effect'))
-                rules.validate_effect(a['effect'], phase['id'], phase.get('_regions'))
+                rules.validate_effect(a['effect'], phase['id'], phase.get('_regions'), phase.get('_scenes'))
                 require(
                     a['effect']['kind'] != 'npc.line',
                     'Set resident dialogue on phase entry.',
