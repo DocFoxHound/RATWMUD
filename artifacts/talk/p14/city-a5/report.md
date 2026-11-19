@@ -80,29 +80,29 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 - **rm273, the witness at the seam.** This wolf seeks the join between two accounts and worries at a crooked seam long after the day's walking ends.
 - **rm274, the cupboard constellations.** This wolf sets peppercorns in the shapes of stars, takes stairs quickly to reach a view of the sky, and gives a short answer to anyone poking through the cupboard unasked.
 - **rm275, the awning in the apron.** This wolf carries a scrap of canvas for a future stall and always asks where the rain will run off.
-- **rm276, the stitch against forgetting.** persona This wolf works small obligations into the edge of a cuff and unpicks each cross when even again.
+- **rm276, the stitch against forgetting.** This wolf works small obligations into the edge of a cuff and unpicks each cross when even again.
 - **rm277, the unpainted handle.** This wolf turns carrying handles over to see beneath the paint and sets more store by the bare grain than by any owner's mark.
 - **rm278, the washer of maps.** This wolf rests a warm flat palm on a wrinkled coastline and gives a stubborn crease all the time a good hand deserves.
 - **rm279, the gull's false answer.** This wolf saves impossible answers for squawking gulls, draws riddles on scraps of charcoal paper and craves the quiet interval before a good guess.
 - **rm280, the roof flock ledger.** This wolf keeps a map of roof perches on an old cheese board and lets a flock settle before making another mark.
 - **rm281, the teacher with a coast in the margins.** This wolf plots imaginary passages on the edges of lesson slates and answers intrusive questions with a better one.
-- **rm282, the pocket constellation.** persona This wolf carries a pocket of coal, counts the sooty fingerprints after a good lift and lets a question ripen before asking.
+- **rm282, the pocket constellation.** This wolf carries a pocket of coal, counts the sooty fingerprints after a good lift and lets a question ripen before asking.
 - **rm283, the graduated doorstep.** This wolf sets graduated clay feet under provisions, measuring a flood by the last dry notch and a good day by what remains sound.
 - **rm284, the song with its mouth shut.** This wolf hums the weight of a parcel on a single note and goes quiet when the contents begin to slide.
 - **rm285, the skipped tread.** This wolf takes stairs in pairs, counts the treads left untouched and demands the missing part of any story told down by the water.
 - **rm286, the thunder buttons.** This wolf keeps buttons for counting the quiet after lightning, hides the best one, and looks for a firm footing before a wrestling match.
-- **rm287, the whittled landing.** persona This wolf skips a tread on the real stairs and shaves a broad seat into each landing of a pocket-sized wooden stair.
+- **rm287, the whittled landing.** This wolf skips a tread on the real stairs and shaves a broad seat into each landing of a pocket-sized wooden stair.
 - **rm288, the diagonal walker.** This wolf finds the diagonal between two stair treads and considers every draughts move an occasion for plain dealing.
 - **rm289, the bearer of the spare napkin.** This wolf rolls an extra clean napkin inside a smoky cuff and offers kindness with eyes deliberately elsewhere.
 - **rm290, the ladle rest.** This wolf keeps supper songs going with two taps on a ladle whenever damp catches in the throat, with strong opinions about the proper time to join in.
 - **rm291, the thumbnail stall.** This wolf whittles a market stall small enough to shelter under a thumb, measures puddles against its tiny legs and puts every spare copper toward the full-sized thing.
-- **rm292, the stair in the keel.** persona This wolf cuts a secret upper window into scraps of timber and lets a low sea air cover the sound of the knife.
+- **rm292, the stair in the keel.** This wolf cuts a secret upper window into scraps of timber and lets a low sea air cover the sound of the knife.
 - **rm293, the crust under the eave.** This wolf judges a break in the rain by a cooling crust and watches the street with the patience of a wrestler waiting for a grip.
 - **rm294, the petition ribbon.** This wolf measures a wait for an answer in ribbon knots and will sit unhurriedly through the silence of someone finding words.
 - **rm295, the swimmer with the floating hood.** This wolf turns an oilcloth hood inside out to float a pebble and chatters cheerfully until a question deserves a straight answer.
 - **rm296, the charcoal doorstep.** This wolf saves flat charcoal flakes for testing the damp on a sill and keeps private conclusions well out of sight.
 - **rm297, the covered ember.** This wolf draws a straw from a smoke-scented cuff, can pick the sound side of a battered crate by touch and takes unkindly to questions about either talent.
-- **rm298, the bell after the bell.** persona This wolf counts the hush after the chapel bell and warms a space for company without asking what brought the visitor there.
+- **rm298, the bell after the bell.** This wolf counts the hush after the chapel bell and warms a space for company without asking what brought the visitor there.
 - **rm299, the unpriced hour.** This wolf leaves a deliberate gap in the day's reckoning and takes offence when a kindness comes back priced.
 - **rm300, the pebble for a missing road.** This wolf pins the missing road on old maps with a whetstone and gets fiercely protective of anyone who needs to be left off the page.
 - **rm301, the listening brim.** This wolf turns one corner of an oilcloth brim up for sound and the other down for shelter, always alert for a fishing float rattling against a bank.

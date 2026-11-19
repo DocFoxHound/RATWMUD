@@ -16,7 +16,7 @@ hopes warm_bread_when_the_roof_birds_settle
 topics day +0.5 home +0.4 food +0.4 gossip -0.6
 styles comfort=discreet gossip=withheld refuse=kind tease=none
 marks oath saying
-persona persona #self.first# counts the hush after the chapel bell and warms a space for company without asking what brought the visitor there.
+persona #self.first# counts the hush after the chapel bell and warms a space for company without asking what brought the visitor there.
 
 words
 oath! = Crumb my bell rope | Ring my bread board

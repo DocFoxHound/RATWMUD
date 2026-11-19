@@ -16,7 +16,7 @@ hopes a_room_above_the_salt_wind
 topics dreams +0.6 work +0.4 home +0.4 gossip -0.5
 styles comfort=brief gossip=reticent refuse=measured tease=none
 marks oath saying
-persona persona #self.first# cuts a secret upper window into scraps of timber and lets a low sea air cover the sound of the knife.
+persona #self.first# cuts a secret upper window into scraps of timber and lets a low sea air cover the sound of the knife.
 
 words
 oath! = Shiver my window peg | Salt my last dry sill

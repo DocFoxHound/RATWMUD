@@ -16,7 +16,7 @@ hopes a_letter_with_space_for_a_reply
 topics work +0.6 friends +0.4 food +0.3 weather +0.2
 styles comfort=specific gossip=exact refuse=direct tease=none
 marks oath saying
-persona persona #self.first# works small obligations into the edge of a cuff and unpicks each cross when even again.
+persona #self.first# works small obligations into the edge of a cuff and unpicks each cross when even again.
 
 words
 oath! = Seam my pocket closed | Prick the last cross

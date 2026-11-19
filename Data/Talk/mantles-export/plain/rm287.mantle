@@ -16,7 +16,7 @@ hopes a_little_wooden_stair_that_climbs_into_sun
 topics memories +0.5 pastimes +0.5 home +0.4 faith +0.2
 styles comfort=playful gossip=curious refuse=dry tease=light
 marks oath saying
-persona persona #self.first# skips a tread on the real stairs and shaves a broad seat into each landing of a pocket-sized wooden stair.
+persona #self.first# skips a tread on the real stairs and shaves a broad seat into each landing of a pocket-sized wooden stair.
 
 words
 oath! = Splinter my best landing | Turn my shavings uphill

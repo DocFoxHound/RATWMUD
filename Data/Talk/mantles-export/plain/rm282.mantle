@@ -16,7 +16,7 @@ hopes one_clear_evening_with_everything_ashore
 topics work +0.5 pastimes +0.4 faith +0.3 season +0.3
 styles comfort=deliberate gossip=inquisitive refuse=mild tease=none
 marks oath saying
-persona persona #self.first# carries a pocket of coal, counts the sooty fingerprints after a good lift and lets a question ripen before asking.
+persona #self.first# carries a pocket of coal, counts the sooty fingerprints after a good lift and lets a question ripen before asking.
 
 words
 oath! = Speckle my supper | Black my last clean corner
