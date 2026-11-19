@@ -57,6 +57,10 @@ struct Book
     // mantle's own from Phase 9).
     double favourite = 0;
     std::map<std::string, std::vector<std::string>> favourites;
+    // Doc 84 §43 (U1): an everyday topic one of the two's mantle has whole scenes of its own for gets `mantleCovers`, and
+    // its wearer raises it (never news, a claim or one's own news): a talk with a wearer in it leans toward what their
+    // mantle says.
+    double mantleCovers = 0;
     // Added to every topic of two by who they are to each other (pair.band: friends, family...): those close talk more.
     std::map<std::string, double> pairBonus;
     // A claim (or one's own news) is told to a listener once (the ledger's told set: the scorecard's K3).
@@ -71,7 +75,7 @@ struct Book
     // Whether the cooling and the floor are on (today's has neither).
     bool tuned() const
     {
-        return noveltyFactor != 1 || saturationPerDay > 0 || floorBoost != 0 || favourite != 0 || toldOnce || !pairBonus.empty();
+        return noveltyFactor != 1 || saturationPerDay > 0 || floorBoost != 0 || favourite != 0 || mantleCovers != 0 || toldOnce || !pairBonus.empty();
     }
 };
 

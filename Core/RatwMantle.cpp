@@ -1278,6 +1278,34 @@ const Mantle* Library::mantle(const std::string& id) const
     return o == owned_.end() ? nullptr : o->second->card.get();
 }
 
+std::vector<std::string> Library::mantleTopics(const std::string& id) const
+{
+    // §43: the topics its whole scenes and stories are said on (their concepts, talk.<topic>), most scenes first.
+    std::vector<std::string> out;
+    const auto o = owned_.find("m:" + id);
+    if (o == owned_.end())
+        return out;
+    std::map<std::string, int> n;
+    for (const auto& e : o->second->entries)
+        if (e.scene)
+            for (const auto& c : e.concepts)
+                if (c.rfind("talk.", 0) == 0)
+                    ++n[c.substr(5)];
+    for (const auto& [t, k] : n)
+        out.push_back(t);
+    std::stable_sort(out.begin(), out.end(), [&](const std::string& x, const std::string& y) { return n[x] > n[y]; });
+    return out;
+}
+
+bool Library::ownEntry(const Entry& e, const Query& q, int speaker) const
+{
+    // (By its id, as answer's share counts them: "<mantle>.<item>", "@<npc>.<rule>".)
+    const auto own = ownersOf(q, speaker);
+    return std::any_of(own.begin(), own.end(), [&](const Owned* o) {
+        return e.id.size() > o->owner.size() && e.id.compare(0, o->owner.size(), o->owner) == 0 && e.id[o->owner.size()] == '.';
+    });
+}
+
 std::vector<std::string> Library::mantleIds() const
 {
     std::vector<std::string> out;

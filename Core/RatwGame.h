@@ -2353,6 +2353,7 @@ class Game
     void talkPledges();
     // A resident's favourite topics (topics.json's favourites, by their traits and trade; once a game day).
     std::vector<std::string> talkFavourites(const std::string& id);
+    std::vector<std::string> talkCovers(const std::string& id) const;   // (Doc 84 §43: what their mantle has scenes of.)
     std::map<std::string, std::vector<std::string>> favourites_;
     std::int64_t favouritesDay_ = -1;
 

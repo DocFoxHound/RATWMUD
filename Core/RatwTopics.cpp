@@ -161,7 +161,8 @@ bool load(const std::string& text, std::string& problem)
     std::vector<std::string> errors;
     Book b;
     static const std::set<std::string> Top{"about", "topics", "jitter", "hourly", "pair_novelty", "place_saturation",
-                                           "everyday_floor", "favourite", "favourites", "pair_bonus", "told_once", "topics_per_talk"};
+                                           "everyday_floor", "favourite", "favourites", "mantle_covers", "pair_bonus", "told_once",
+                                           "topics_per_talk"};
     for (const auto& [k, v] : doc.fields())
         if (!Top.count(k))
             errors.push_back("topics.json: unknown field '" + k + "'");
@@ -195,6 +196,7 @@ bool load(const std::string& text, std::string& problem)
         num(n, "boost", b.floorBoost, 0, 10, "topics.json everyday_floor");
     }
     num(doc, "favourite", b.favourite, 0, 5, "topics.json");
+    num(doc, "mantle_covers", b.mantleCovers, 0, 5, "topics.json");
     double per = 1;
     num(doc, "topics_per_talk", per, 1, 3, "topics.json");
     b.topicsPerTalk = int(per);

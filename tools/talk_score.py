@@ -869,6 +869,17 @@ def score_run(run: Run) -> dict:
     own = sum(1 for l in lines if "." in l.get("entry", "") and (l["entry"].split(".", 1)[0] == l["who"] or
                                                                  "m_" + l["entry"].split(".", 1)[0] in l.get("layers", [])))
     m["U1"] = pct(own, len(lines))
+    # (§43: and of the wearers' own lines alone, the measure the target is for while few wear a mantle: a speaker wears
+    # one when the residents' facts say so, or a line of theirs spoke its words.)
+    worn: dict = {}
+    for l in lines:
+        if not worn.get(l["who"]):
+            worn[l["who"]] = run.residents.get(l["who"], {}).get("mantle") or next(
+                (x[2:] for x in l.get("layers", []) if x.startswith("m_")), None)
+    w_lines = [l for l in lines if worn.get(l["who"])]
+    w_own = sum(1 for l in w_lines if l.get("entry", "").split(".", 1)[0] == worn[l["who"]])
+    m["U1_detail"] = {"wearers": round(pct(w_own, len(w_lines)), 2) if w_lines else 0, "wearer_lines": len(w_lines),
+                      "own": w_own, "speakers": len({l["who"] for l in w_lines})}
     m["U2"], m["U2_detail"] = distinguish(lines, run.residents)
     m["B5"] = float(run.meta.get("exchanges_per_second") or 0)
     # B1 (Phase 4): the director's own timings, as talk_sim measured them (the run's load included: tools/talk_card runs

@@ -257,6 +257,9 @@ struct Conversation
     std::string body;
     int stitched = 0;
     bool hybrid = false;                          // (Played as the hybrid: settings.json's, a talk of residents on a topic.)
+    // §43: the body is the one spoken to's own mantle scene, cast with them opening it (its turns' who swapped: the
+    // scene's `a` is people[1]); its queued turns are checked again with the two the scene's way round. Its entry's id.
+    std::string cast;
 };
 
 
@@ -461,6 +464,12 @@ struct Settings
     // tests' small libraries, and a library before it, keep the line-by-line engine).
     bool hybrid = false;
     int hybridStitch = 2;
+    // Doc 84 §43 (U1): within the hybrid, a mantle-wearer's own content has first claim whenever they are either party
+    // ("mantle_first": true). The body: of the scenes that fit, an unheard one of the opener's own mantle is played; else
+    // one of the one spoken to's own, cast with them opening it (its `a` turns are theirs, written in their voice), on a
+    // topic with no claim to tell; else the shared library. The edges (a greeting, an answer, a joiner's word, the
+    // goodbyes): the speaker's own line where one fits as well as any, within the mantle's share (§8.2).
+    bool mantleFirst = false;
     // Doc 84 §12 (Phase 10): a dead wolf's mantle rests this many game days before it passes on ("mantle_rest_days"), and
     // the neighbouring pool a dialect with nothing to give borrows from ("mantle_fallback": Frosthollow -> Coldwater...).
     double mantleRestDays = 365;
@@ -683,6 +692,9 @@ public:
     void dropMantle(const std::string& id);
     void dropMantles();
     const Mantle* mantle(const std::string& id) const;   // A loaded one (null if none)
+    // §43 (U1): the director's topics a loaded mantle's own whole scenes and stories are written for (talk.<topic>), so
+    // a talk with its wearer in it leans toward what the mantle can say.
+    std::vector<std::string> mantleTopics(const std::string& id) const;
     std::vector<std::string> mantleIds() const;
     std::size_t mantleEntries() const;                   // The rules and scenes of every loaded mantle
     // The rules and scenes a mantle (or an NPC's own lines: "@<npc>") compiled to, for talk_check.
@@ -737,6 +749,7 @@ public:
     void describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect = true) const;
     const Settings& settings() const { return settings_; }
     void setHybrid(bool on) { settings_.hybrid = on; }   // (§37: the tests of the line-by-line engine turn it off.)
+    void setMantleFirst(bool on) { settings_.mantleFirst = on; }   // (§43: the tests compare with it and without.)
     // The dialect (a grammar layer) of one who grew up in `from`: its own, or settings.json's dialect_of for a town with
     // none of its own (Fenshore: mirebridge).
     std::string dialectOf(const std::string& from) const;
@@ -770,7 +783,12 @@ public:
     // limits) and the rest of the scene dropped if it no longer holds. What is owed in react.news is answered by the
     // known variant (react.news.known: "I heard.") when the one answering already knew (their `knows`), and never by it
     // when they didn't; never "Never!" (react.news.new) from one who knew.
-    std::optional<SaidLine> begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace = nullptr) const;
+    //
+    // §43 (U1): `turned`, where given, is the same talk asked the other way round (the one spoken to as a, with their view
+    // of the other: the game's query for them): where the one spoken to wears a mantle and the opener's own has no scene
+    // that fits, one of theirs may carry the talk, cast with them opening it (settings.json's mantle_first).
+    std::optional<SaidLine> begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace = nullptr,
+                                  const Query* turned = nullptr) const;
     std::optional<SaidLine> next(Conversation& c, const std::function<Query(int speaker, int to)>& facts,
                                  const Freshness& fresh, Trace* trace = nullptr) const;
     // A conversation begun with lines already written (the game's authored exchange, when no library line fits): set up
@@ -902,7 +920,12 @@ private:
     bool expandInto(const std::string& text, Expansion& x, int depth, std::string& out) const;
     bool expandSymbol(const std::string& name, Expansion& x, int depth, std::string& out) const;
     Said pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
-                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst = false) const;
+                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst = false,
+                 bool ownOnly = false) const;
+    // §43: whether an entry is one of the speaker's own (their mantle's, or their own lines').
+    bool ownEntry(const Entry& e, const Query& q, int speaker) const;
+    // §37: the topic's facts a rendered entry says (its words, or a flag it tests: topic.bare=yes), the director's.
+    std::set<std::string> factsSaid(const Entry& e, const Said& said, const Query& q) const;
     bool checkGrammars(std::vector<std::string>& errors) const;
     void reindex();                                         // byConcept_, byId_ and byMove_ from entries_.
     void indexMoves(std::size_t i);

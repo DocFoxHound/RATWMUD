@@ -5383,3 +5383,97 @@ the ceiling is 15%); U1 is 5.52 / 3.54% of all lines (0.96 at P11: 145 wearers, 
 frozen mode, **D2 = 2**: lf105's (lf-1's) story beat "had little #fish#" says Coldwater's "little fish" in a Larkfield
 mouth (G2 can't see a phrase split by a symbol). Fixed after the card ("had hardly any #fish#", reloaded, revision
 3); the card was not run again. Nothing refrozen.
+
+## 43. U1: a wearer's own mantle first whenever the wearer is either party (2026-11-18)
+
+Branch `r3-talk-u1`, on `ridgemere2` after fix 8 (`d33aad57`, the 145 mantles). **Why.** §40 measured U1 for the
+pilot's wearers at 11.6%: a wearer's own scene was the talk only when the wearer opened it on a topic the mantle had a
+scene for; in the other's talk they said the `b` lines anyone would. The user's decision (2026-11-17): a wearer's own
+content gets first claim whenever the wearer is **either** party, the hybrid kept (whole scenes carry the body) and every
+truth, ledger, no-retell and collision rule with it, coherence (C1, C3, X1) and repetition (R1, R4, R5) unharmed.
+
+**What was built** (`settings.json` `"mantle_first": true`; `topics.json` `"mantle_covers": 0.1`):
+- **(a) The body.** Of the scenes that fit (after §37's whole-scene and director's-facts rules), an **unheard** one of the
+  opener's own mantle carries the talk (`Library::pickOne`). Unheard means the entry, where it may not be heard again,
+  and the thread its first line is in, even where the concept repeats (the weather's: a wearer's one weather scene is
+  not their every word on the weather). Where the opener's own has nothing and the body would be a shared scene (or
+  nothing), **the one spoken to's own scene is cast with them opening it**: the game asks the talk the other way round
+  (`Game::ambientBegin`, only for a listener who wears a mantle, never on a claim: the teller's to tell), the library
+  picks among that mantle's own unheard whole scenes alone (`pickOne`'s `ownOnly`) and plays it with its `a` turns
+  theirs (`Library::begin`; `Conversation::cast`): never over a rule that says the topic's facts or a line that must be
+  said, never saying fewer of the topic's facts than the scene it replaces (`Library::factsSaid`, the director's facts
+  rule of §37 made one function), never told before (the ledger) or colliding; its queued turns are checked the scene's
+  way round (`Library::next`), the opener's breath (greeting, recall) is the caster's (`Library::preface`), and its
+  frames are theirs (an innkeeper casting her own is the host). In the rooms below 3-6% of talks are cast.
+- **(b) The edges.** A greeting, a direct question's answer, a joiner's word, the goodbyes: the speaker's own line first
+  where one fits as well as any, within its share (§8.2's 35%), **and those who would hear it haven't heard it**
+  (`Library::answer`). Without that last clause the wearers' own share in the rooms rose another 1.5-4 points but R4
+  rose 17-23% (the same farewell at every goodbye: the inns' R6 3.2 → 4.3%), so it was not kept.
+- **(c) The director.** An everyday topic one of the two's mantle has whole scenes or stories for
+  (`Library::mantleTopics`, via `Game::talkCovers` and `World::setTalkCovers`) gets `mantle_covers` and its wearer
+  raises it (`World::weighTopics`); never news. Tried and dropped: on every topic (in the inns the newcomer topic fell
+  from 208 talks to 1 and the week's events from 250 to 63), and on everyday topics at 0.5 or 0.25 (the wagons' news in
+  the inns 194 → 9 / 64; the talk town's R1 halved, 1.5 h against 2.8 h over six seeds). At 0.1 it is a lean, not a
+  takeover: news keeps its share, R1 is within the seeds' noise.
+- **A scene that says the same words twice is not said** (`pickOne`; C6): mantle-first plays the mantles' stories far
+  more and a writer's slip shows (rm101's "Was it really safer?" / "Was it really safer?", before fix 8's `ask :`
+  pass). And **a wagon's carter is never named to their face** (`World::sceneTopics`: no `topic.who` when the driver is
+  one of the two), the card's one T3 line ("Delphine Brackwick's on the Coldwater run." to Delphine Brackwick), found
+  after the card and checked by L10 run again (T3 0).
+- **The instrument**: `talk_score`'s `U1_detail` (the wearers' lines and their own), talk_sim's `picked` (the director's
+  teller: a talk whose first line is the other's was cast), `talk_card --talk-data` and `--mantles-from`.
+
+**Tests.** `mantle_tests`' `mantleFirst` (the keeper's own weather scene opens all 40 of her talks, against fewer
+without it; heard in every thread it gives way; spoken to, her own scene is cast in 40 of 40 with her opening it, played
+as written, its `b` turn the neighbour's, nobody twice running; never cast without the talk turned, on a claim, or with
+mantle_first off; her goodbyes her own, and once heard not first); `talk_tests`' `hybridTalk` 1b (a scene echoing its
+own words is never said). `mantle_tests` 563, `talk_tests` 276,805, `ambient_tests` 252 checks; the full ctest but the
+database tests (108 under `-j8`, then `talk_scorecard_quick`, `talk_bench` and `mantle_bench` alone: the quick card's
+timing rows fail under the parallel load only). The quick card's baseline is refrozen on **U1 alone**, with the why: the
+talk town's three wearers say 12 of their own lines in 2,000 exchanges against 15 (0.19 against 0.23%; over six seeds
+0.17-0.22 against 0.20-0.25%, three lines either way); every other row passes.
+
+**Measured** (talk_sim over P0's pinned fixture, 100 world hours, seed 1, all 145 mantles worn from the files, the
+same build with `mantle_first` and `mantle_covers` off and on). U1 here is the wearers' lines from their own mantles:
+every speaker in these rooms wears one. The inns are §41's P11 profile (`--places cn_saltwell_inn,cn_fenshore_alehouse`:
+the Oasis Inn and the Heron, 4 speakers); Coldwater and Larkfield, where most of the new wearers live, are
+`cn_coldwater_weavers,cn_coldwater_inn,cn_larkfield_weavers,cn_larkfield_alehouse` (17 speakers). Off → on:
+
+| | Inns, frozen | Inns, fixtures | Coldwater/Larkfield, frozen | Coldwater/Larkfield, fixtures |
+|---|---|---|---|---|
+| U1, the wearers' own (%) | 12.2 → **14.0** | 12.3 → **16.7** | 16.3 → **18.8** | 15.9 → **18.8** |
+| talks cast (the one spoken to's own) | 0 → 71 of 2,400 | 0 → 65 of 1,028 | 0 → 234 of 8,124 | 0 → 191 of 3,571 |
+| R1 first identical talk (h) | 4.59 → 7.59 | 7.72 → 7.72 | 4.34 → 3.54 | 6.38 → 11.0 |
+| R4 a sentence again in 10 h, per 100 h | 1,190 → 1,120 | 291 → 290 | 4,190 → 4,130 | 1,390 → 1,320 |
+| R5 collisions | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 |
+| R6 the most-spoken (%) | 3.13 → 3.01 | 3.27 → 3.37 | 0.81 → 0.76 | 0.88 → 0.89 |
+| C1 owed answers answered (%) | 99.0 → 99.8 | 99.3 → 99.2 | 98.4 → 98.2 | 98.7 → 98.6 |
+| C3 good endings (%) | 100 → 100 | 100 → 100 | 100 → 100 | 99.7 → 99.8 |
+| X1 replies sharing a word (%) | 19.5 → 19.1 | 19.2 → 20.4 | 16.9 → 16.1 | 18.6 → 17.4 |
+| K1 everyday / K2 the largest (%) | 47.0 / 25.4 → 50.7 / 24.6 | 47.1 / 26.1 → 49.9 / 25.2 | 62.4 / 20.1 → 64.9 / 18.5 | 46.6 / 21.5 → 50.2 / 20.7 |
+| T2, T5, C6 | 0 | 0 | 0 | 0 |
+
+**The card** (`artifacts/talk/runs/u1`, every profile in both modes, the 145 worn from the files, 6 min 34 s), against
+fix 8's card (§42, the same 145 from DEV's rows, mantle-first not yet built; its runs rescored with today's scorer for
+`U1_detail`), fixtures / frozen: **the wearers' own share 16.0 / 16.3% → 20.2 / 19.0%** (2,596 of 12,853 and 5,277 of
+27,724 lines), U1 of all lines 4.91 / 5.52 → 6.20 / 6.46%; R1 6.82 / 2.3 → 6.57 / 2.3 h; R4 520 / 2,290 → 508 / 2,300;
+R5 0 / 0; R6 1.74 / 0.99 → 1.81 / 0.98%; C1 95.6 / 97.5 → 95.5 / 97.2%; C3 99.8 / 100 both; C4 and C6 0 / 0; X1 23.4 /
+19.2 → 23.0 / 19.0%; K1 44.1 / 69.7 → 45.1 / 70.5%; K2 23.9 / 15.9 → 23.8 / 15.3%; T2 0; D2 0 / 2 → 0 / 0 (fix 8's
+lf105); U2 37.6 / 32.6 → 40.0 / 32.1%; R8 0.37 / 0.30 → 0.37 / 0.34%. `talk_card` breaks no hard gate; it exits 1 on
+the soft rows §41 and §42 left (R8, C8, C9, D1A, O1, D1B, U2, K2, X1, the timings). Nothing refrozen in the committed
+baselines. (A first card, on the base before fix 8 with `mantle_covers` 0.25, broke C4, C6 and D2 on mantle lines
+mantle-first had surfaced: fix 8's content pass and the echo rule above cleared them; it was run again on this base.)
+
+**Why the rooms stay under 20%.** The wearers' own content is spent, not passed over. Read from a 30-hour run of the
+inns with the cast's every attempt traced: of 511 talks whose body was a shared scene, the one spoken to's own was cast
+in about 60; in 212 their mantle had no scene for the topic at all, in 229 only scenes the room had heard in every
+thread. The prices are a quarter of the inns' talks and a rule's exchange says them (no mantle scene says a price), and
+the wagons nearly a tenth. Two to four wolves who talk all day to each other with a listener beside them hear a mantle's 20-40
+scenes in a few hours; after that the no-retell rule, rightly, gives the talk back to the shared library. Over the
+card's listeners, who move and hear more wearers for less time, the share is in the target. More of it needs more
+content (P14's mantles: scenes of the prices and the wagons, more threads to the most-heard scenes), not the engine
+claiming heard lines again.
+
+**For the writers** (the mantles are another session's; not touched here): cw105's `crowded_lane` renders "There's my
+#dear#" as "There's my my catch." (Coldwater's `dear!` is "my pearl | my catch | love"; talk_score's T2 read it as a
+fisher's catch); mb113's `jas_first_white` answers "Caught a beating." with `#bc_ha#` (C4's tone clash, by its words).
