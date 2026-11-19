@@ -1784,6 +1784,11 @@ export class GameState {
     }
 
     sendAction(action: string, target = '', extra: Json = {}) {
+        // Introduce to a resident is the window's own (doc 84 §13.2, Phase 13): "I'm Kestrel." said there, and answered.
+        if (action === 'introduce' && target && this.entities.get(target)?.kind === 'npc' && this.dialogueIntroduceServer()) {
+            this.openDialogue(target, 'introduce');
+            return;
+        }
         // An introduction is said aloud, so whoever hears it learns the name (doc 32): "I'm Kestrel."
         if (action === 'introduce' || action.startsWith('introduce as ')) {
             const name = action === 'introduce' ? str(obj(obj(this.snapshot, 'self'), 'names'), 'name') : action.slice('introduce as '.length);
@@ -2931,6 +2936,11 @@ export class GameState {
      *  the master's and the watch's dialogue. */
     dialogueRolesServer(): boolean {
         return this.dialogueWorkServer() && bool(this.snapshot, 'dialogueRoles');
+    }
+
+    /** A server whose window takes Introduce to a resident (doc 84 Phase 13): the wheel's Introduce opens it there. */
+    dialogueIntroduceServer(): boolean {
+        return this.dialogueServer() && bool(this.snapshot, 'dialogueIntroduce');
     }
 
     /** Talk, Trade or a giver's work on a resident's wheel (doc 83): the dialogue window, opened by the server on the
