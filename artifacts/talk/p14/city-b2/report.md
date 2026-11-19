@@ -141,7 +141,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm410.
 - Friend also listed as kin — rm381, rm385, rm386, rm388, rm389, rm391, rm392, rm398, rm399, rm401, rm402, rm403, rm404, rm413.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm380, rm382, rm387, rm395, rm412. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm383, rm411, rm413. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 Some work and household descriptions differ from the live fields. For rm388 the prose about minding a merchant's door has neither a post nor a workplace to back it. The lessons recorded for rm395 do not establish an apprenticeship, while the chamber named for rm400 does not establish a school. The adult voices of those whose briefs begin in youth can continue after the occupation or household changes. For rm396 the source supplies no urban quarter.
