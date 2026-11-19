@@ -165,7 +165,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm263, rm264, rm265, rm267, rm277, rm282, rm284, rm289, rm297, rm302.
 - Friend also listed as kin — rm271, rm296, rm301.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm279, rm286, rm300. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm263, rm266, rm273, rm277, rm284, rm287, rm288, rm289, rm292, rm302, rm304. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 Work and job classification diverge for several carriers and paid helpers, including rm263, rm273, rm277, rm284, rm288, rm289 and rm302. The writing uses the trade or current-work facts where a job code alone misses this work. The smokehouse description calls rm303 a master while the apprenticeship data records no master role. The file gives this wolf smokehouse skill and a personal interest in charcoal sketches, without offering training. The spousal and friend slots coincide for rm271 and rm296. For rm301, the friend is also a child. Fishing in rm276 and rm301 follows the evening-line pastime in the briefs. Unverified institutional accusations and repeated kin-loss or charcoal-camp backstories were kept out of factual news.
