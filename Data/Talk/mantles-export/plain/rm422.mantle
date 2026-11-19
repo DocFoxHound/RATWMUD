@@ -1,0 +1,246 @@
+mantle rm422
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_magnus_tarton
+title the star above the cellar mouth
+fits stage=adult|old
+prefers piety=devout temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes roast_pork stars fresh_straw misty_dawns
+dislikes crowds haggling
+fears exchanging_work_for_favours
+hopes one_high_window_clear_of_smoke
+topics faith +0.6 work +0.4 travel +0.3 food +0.2
+styles comfort=quiet gossip=guarded refuse=direct tease=none
+marks oath saying
+persona #self.first# looks for one patch of sky above a cellar mouth and insists on stating a fair figure just once.
+words
+oath! = Cork my smoke | Soot on the highest pane
+saying! = A clean window earns its light | Name the figure plainly
+starpatch = a strip of upper sky | one clear pane of dark
+strawbed = a cushion of clean straw | a bright twist of packing
+sillmeasure = the span of a sill | one little square of air
+sootpalm = my ash-grey palm | a smoky thumb mark
+winestop = a flat-ended cork | a wooden stopper
+rindstrip = a roasted rind curl | a crisp pork edge
+fogmouth = a mouthful of soft mist | a pale streak of damp
+doorpost = the outer jamb | a worn upright
+kickstraw = a bent straw | a dry stalk
+workrag = a small clean wiping cloth | a square of washed linen
+givemark = a low chalk line | a black crossmark
+
+grown
+
+opinion houses against 1 : A better-placed wolf can take a post without ever learning how its door sticks.
+opinion merchants mixed 1 : Ask me a price I can say in one breath. An open-ended bargain gives my temper too much room.
+opinion church for 2 : One star above the nearest roof is enough to put my evening thanks in order.
+opinion newcomers mixed 1 : No welcome requires telling a stranger the whole reason I want to move uphill.
+opinion dole for 2 : A hungry wolf gets no better dinner by offering a humiliating price for it.
+opinion city mixed 1 : In this city two windows a street apart can see quite different amounts of the sky.
+line greet : Come over where neither of us is blocking the light.
+line greet [pair.band=strangers] : We can speak plainly clear of all those elbows.
+line greet.return : You've picked a quiet opening to be heard in.
+line farewell : May you find the last bit of sky clear before bed.
+line farewell.return : Turn your clean side to the breeze.
+line ask.how : Has somebody given you space enough to speak without pressing?
+line answer.how : Fairly settled, with a few ambitious inches left to climb.
+line react.news : I'd like the words before the crowd works on them.
+line react.news.known : That reached my corner on a different breath.
+line react.news.new : There's another pin of light where I had a dark patch.
+line react.news.doubt : It smells like smoke carried a little further than the flame.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I would give thanks aloud for news like that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stay with whoever's left standing quiet after those words.
+line decline : I gave my answer plainly and I won't start bargaining over it.
+line thank : You left enough air for me to think and speak.
+line deflect_thanks : It cost less than arguing about who should do it.
+line reassure : The whole dark doesn't have to clear for one light to show.
+line sympathise : I'll leave the price and all the measuring aside today.
+line preclose : Time to finish the part I still owe the day.
+line ack : I can see the figure without any embroidery.
+
+scene work_1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I take the loose straw away before checking what it was meant to protect.
+b : Looking for chips? | Wouldn't you sell it still wrapped?
+a : A nick hidden by the straw doesn't heal inside somebody's purse. | Only after looking beneath. I won't ask a buyer to trust what I haven't seen.
+
+scene work_2
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I learn a place from its back doorway first.
+b : Why that particular door? | What if the teacher starts in front?
+a : That's where awkward loads arrive before anybody has made them look effortless. | I'll follow. A good learner still remembers to enquire how things began.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I want a clean scrap of sky over the evening prayer.
+b : Does a ceiling make a difference? | What if there's only cloud?
+a : The difficulty is mine alone. My thoughts settle better beside a window. | I know the sky hasn't left the city. Trust will have to serve me for one cloudy spell.
+
+scene pastimes_1
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I wait for the very first star like a buyer waiting for the shutters to open.
+b : What do you buy? | Doesn't that try your patience?
+a : Absolutely nothing. One reason I value the transaction. | It's a wait of my own choosing. A crowd telling me to wait has a different effect.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I cut the crisp bits of pork from the rest before I sit down.
+b : To give away? | Why not wait until you eat?
+a : If somebody else has the same fondness for crackling, yes. A hard thing to give can be an honest gift. | I'd rather hear each bit break than smother the good edge in gravy.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : If I could choose my own room I'd choose it by the window first.
+b : Would you pay a lot for the view? | What else would you want?
+a : I'd save for it. I won't sign away the sight of the sky in smaller purchases out of impatience. | Good straw beneath my feet and a door with a useful amount of silence round it.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From my patch of low ground I look up and see how high the last lit window sits.
+b : Planning a visit? | How would you furnish a high room?
+a : Planning to stand one day looking back down. No harm keeping the direction fixed. | A well-placed window seat. We could defer the expensive part until I've had my first long look.
+
+scene weather_1
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : A misty dawn can make the lowest roofs seem to stand higher than all the neighbouring streets.
+b : What vanishes first? | Can you still smell your sleeve?
+a : All the little lines that say where one property stops and the next begins. | Quite plainly. Mist has proved no more able to wash the smoke out than my best intentions.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When I'm offered six versions of one price I start to want none of the article.
+b : Would you take the lowest? | Isn't haggling expected?
+a : Only when I can tell it's the price, rather than a new opening bid in the seventh round. | Then some expectations will have to meet with disappointment.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd spare a friend the inside of my temper if I've a minute's warning.
+b : What warning helps? | Wouldn't a friend understand?
+a : An offer made once and left standing. A crowd of helpful reminders isn't always helpful. | I'd like friendship to mean I practise restraint, not that somebody has to absorb every sharp word.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My smoky coat has followed me into cleaner places than I ever expected to see.
+b : Do they mind? | Do you try covering the smell?
+a : Some people do. I can wash a cuff. My history takes rather longer to launder. | A little soap does more good than sending perfume to quarrel with woodsmoke in a narrow passage.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A crowd makes my chest feel small long before I run out of actual breath.
+b : How do you get clear? | Is that what smoke does too?
+a : Choose one ordinary doorway in sight and move towards it without trying to win a race. | In a different way. Both improve if I'm allowed near an opening for a minute.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I forfeited a post to the kind of recommendation that doesn't need a pair of working hands attached.
+b : Did you challenge it? | Would you want it back?
+a : I asked what was needed next. I still remember how my throat felt asking the question. | I'd want a fair hearing more than the old position. A name on a duty list can be changed again.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean month can make a high window appear to climb another whole storey.
+b : Does that mean you stop saving? | Would you settle for less?
+a : It means I save less and insist on calling it a step even if it's a very short one. | A good sill doesn't have to be grand. It has to be within my reach and show the sky.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I like fresh straw for the way yesterday's footprints can be cleared from it.
+b : Isn't that hiding evidence? | Would a swept floor do?
+a : Not from anybody entitled to ask. Some of us appreciate a clean beginning for the ordinary day. | A swept board doesn't give back that little dry sound under the toes.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can ask a blessing over a transaction without asking the buyer a single question about belief.
+b : Why include the buyer? | Do you say anything about the cost?
+a : Because the transaction needs two honest weights in the room. Mine's only one. | I say the price plainly and the prayer quietly. Neither should be used to disguise the other.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll point a newcomer towards an open view if the market press begins to bite.
+b : Could I find it alone? | Why give the spot away?
+a : Walk till you see a little sky between two sets of shoulders. The gap is the place to start. | A view doesn't shrink because two tired pairs of eyes make use of it.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Somebody said #topic.subject# #topic.claim#. I heard the declaration and not the event.
+b : Do you have an opinion? | Would you offer that report to a customer?
+a : A reserved one. My temper likes certainty better than my conscience can justify. | A buyer came for goods, not for unasked rumours packed into the straw.
+
+story star [topic=memories]
+  : I once mistook a gleam from a high window for the first star and said my thanks rather early.
+  : The window lost its glow. The actual star appeared just above it.
+  b : Did you begin again?
+  : I gave thanks a second time. Of all the mistakes a wolf can make in town that is among the less expensive.
+
+story straw [topic=work]
+  : I bound a fragile little object in enough straw to hide it completely.
+  : Then I stood looking at three equally fine parcels without a mark on any of them.
+  b : How did you find yours?
+  : Listened when I lifted each one an inch. Next time I saved a tremendous amount of education by using a label.
+
+story crackle [topic=food]
+  : I put the best curl of crackling aside as the dish made its round.
+  : It sprang off the plate when I tried to lift it and landed in my empty cup.
+  b : Did anyone see?
+  : Only the whole table. I called it an excellent way of combining dinner with an illustration of good aim.
+
+rule @sky
+when concept=bark
+does aside
+cooldown 8h
+say One light through a gap's quite visible enough. | Keep the upper corner of the pane clear.
+
+rule @sell
+when concept=bark self.job=merchant
+does aside
+cooldown 8h
+say A stated price leaves both sides room to choose. | Off with the straw before praising the contents.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say This quiet part is mine before the doors go wide. | A grey start can put lovely light along a sill.
+
+rule @rush
+when concept=bark
+does aside
+cooldown 8h
+say Give the doorway half a shoulder's width of air. | The crowded side of the bargain can keep itself.
+dlg resident.hub : I can hear you without both of us trying to argue above the street.
+dlg resident.job [self.job=merchant] : At #self.workplace# I prefer an examined parcel and a price that stays where the buyer heard it.
+dlg resident.news [world.news] : Here's what came clearly through the press. #world.news#.
+dlg resident.gossip [here.gossip=yes] : An account in circulation says #topic.subject# #topic.claim#. The smoke hasn't cleared enough to say more.
+dlg shop.greet [here.shop=open] : Look over the goods. I'll name a straight figure.
+dlg resident.bye : I hope there's a patch of clear sky wherever your door opens.
+
+graft resident.hub
+choice Why judge a room by its window? -> sill_view
+node sill_view
+say Because I know how much care I put into the small piece of sky I've got. I could tell if a little more would suit before I'd even examined the furniture.
+choice How much would be enough? -> sill_star
+choice I'll look up on my walk. -> hub
+node sill_star
+say Enough for two stars with some black between, without perching on a stool and turning my head sideways. I'm not asking to own the roof of the world.
+choice I'll look up on my walk. -> hub

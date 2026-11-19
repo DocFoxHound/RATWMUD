@@ -1,0 +1,255 @@
+mantle rm433
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_jarl_greyford
+title the star on the whetstone
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk checks_the_edges_reflection_against_a_single_star
+likes oatcakes stars sharp_knife misty_dawns
+dislikes cold_tea bad_manners
+fears a_careless_edge_among_shared_provisions
+hopes a_letter_read_on_a_perfectly_clear_dawn
+topics work +0.5 faith +0.5 pastimes +0.4 weather +0.3
+styles comfort=quiet gossip=precise refuse=civil tease=none
+marks oath saying
+persona #self.first# turns a whetstone under one steady star and keeps both the provision knife and the words of a letter in good order.
+
+words
+oath! = Cloud my bright edge | Dull the morning star
+saying! = An honest edge needs very little pressure | A patient star can inspect a whole blade
+stone = a damp grey stone | a dark whetstone
+knife = a bright provision knife | a narrow field blade
+stripe = a clean silver stripe | a line of light
+oatcake = a flat oat round | a thin cake of oats
+wrapper = the waxed wrapper | a sliver of paper
+knot = a tightly drawn knot | a flat tie
+shelf = the dry shelf | a level board
+letter = a folded leaf | a letter turned soft
+star = a low white star | a clear high point
+mist = a grey veil | a pale dawn mist
+tea = a dark mug of tea | a fresh little cup
+sheath = a plain sheath | the leather guard
+tallier = a nick of light | a fleck of brightness
+
+any
+opinion church for 2 : A blessing is best accompanied by a little care that actually reaches the person blessed.
+opinion dole for 2 : I can divide an oatcake evenly without asking which hungry mouth deserves to go first.
+opinion merchants mixed 1 : A clean cut and a civil word are part of the trade whether or not they're on the slate.
+opinion road for 1 : A letter that travels soundly puts two far hills within a paw's reach for a while.
+opinion strangers for 1 : A strange voice can have excellent manners. I listen to how a question's put.
+opinion houses against 1 : A House mark on a provision bag is quite a large thing next to the small fingers tying the mouths.
+
+grown
+line greet : My knife's sheathed. There's room for a proper greeting. | A quiet patch beside the stores for you.
+line greet.return : Your courtesy finds my ears quite open.
+line again.open : Back to inspect the same patch of light, I see.
+line farewell : Go with sound ties and an easy reach to your supper. | Good footing over the headland's outer path.
+line farewell.return : And a clear patch of sky over your way.
+line react.news : Give the news its own clean shape. | I'll lay the stone aside until you've finished.
+line react.news.new : A line of light I hadn't noticed before.
+line react.news.known : I could recognise the earlier cut of that account.
+line react.news.doubt : I'd test the strength of that before I passed it round.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'll give the hurt its quiet place in my blessing.
+line react.news.glad [topic.kind=birth|marriage|work] : A happy account merits a clear and grateful hearing.
+line ask.how : Are you finding enough ease between the day's jobs?
+line answer.how : Steady at the wrist and thankful for the rest.
+line sympathise : Sit this close. You needn't press your voice.
+line reassure : The next cut can wait till your hands feel settled.
+line refuse : I have an earlier duty needing a little careful time.
+line accept_decline : Your own decision deserves a courteous hearing too.
+line preclose : I've a quiet bit of sharpening to see through yet.
+line accept_preclose : You may take your leave without hurrying the last word.
+line ack : The meaning came through without a rough edge.
+
+scene exchange1
+when topic=work self.job=sailor self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I cut the tie clear of what's wrapped inside. | I leave a clean square where a parcel can be set down.
+b : Can you feel the distance? | Before checking the list?
+a : I slip a smooth sliver under the cord first. | A list never tore on a dirty splinter. A flour bag can.
+
+scene exchange2
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I look for a single star reflected on the knife. | I let the stars appear before unfolding my letters.
+b : To know the edge is sharp? | Can you read by starlight?
+a : To see there's no bend left in the bright line. | No. I light the lamp once I've wished a clear sky over the sender.
+
+scene exchange3
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I divide an oatcake by pressing on the knife back. | I take oatcakes wrapped in pairs.
+b : Why give such care to a plain cake? | For sharing?
+a : The crumbs belong to the eater as much as the two halves. | Or for the long bit of an unexpectedly hungry day.
+
+scene exchange4
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp blade needn't bully a length of cord. | I wipe the knife before feeling for its sheath.
+b : How does a keen edge show itself? | Afraid it'll rust?
+a : The ends barely move apart when the pressure comes off. | I want it ready for whoever inspects my blade next.
+
+scene exchange5
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : The mist shows a star in stages, faint then sharp. | Through dawn mist a distant lift makes a noise my ears recognise.
+b : Are you sure it's the same one? | No view of the vessel?
+a : I keep the roof corner beside it as my mark. | The sound's company before the wharf comes fully into sight.
+
+scene exchange6
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I set tea beyond the stone with the steam plainly in view. | I drink my cup before opening a long letter.
+b : Why carefully in sight? | Surely the letter comes first?
+a : When the steam's thin I stop. Cold tea has taught me that much. | A good page deserves better than being hurried over a cooling cup.
+
+scene exchange7
+when topic=day self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A rushed elbow might still be followed by a civil word. | I keep my knife put away when I speak to a stranger.
+b : Does that mend it? | Good manners?
+a : It tells me the next elbow may be placed with more care. | Clear signs of them. It leaves no doubt which thing I want to offer.
+
+scene exchange8
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : My hand's still steady at delicate work. My thanks for that go to the Bright One. | I set the blade down flat before a blessing.
+b : Do you do that aloud? | For reverence?
+a : My thanksgiving doesn't require a second listener. | And for the safety of whoever reaches for the parcel. Those go well together.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A letter carrying a whiff of vineyard soil can fill this end of the table. | I know the first fold of an expected letter by its worn corners.
+b : Does it travel far to reach you? | Why expected if it's worn?
+a : Far enough that I read the simple words twice. | I expect to take an old letter out and find another bit worth reading.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd leave a clean oatcake and room to sit for #self.friend#. | I can sharpen a friend's blade without asking every errand it has done.
+b : A little meal only? | Do you inspect it?
+a : Enough to begin a quiet talk without a hungry voice. | I inspect the edge. Other business may stay with its owner.
+
+scene exchange11
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the stone lower than the letters. | My bedside shelf has room for a travelling bundle.
+b : Afraid of a little damp? | Are you often expecting company?
+a : Ink has a reason to dislike even a little. | I'd like the room ready before I know who's coming.
+
+scene exchange12
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I walk the headland by the edge the light picks out. | A dry rag shares pocket space with my whetstone.
+b : Safe in mist? | Doesn't one undo the other?
+a : I choose the inside edge of the path. I don't gamble with drops. | They have duties at different times. Like working and giving thanks.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report is #topic.subject# #topic.claim#. I can attest only to hearing it. | A report can have two sharp edges.
+b : Would you carry it to the next door? | Which do you mind?
+a : I'd have to know what useful end the journey served. | The one a hasty mouth doesn't see until the damage is done.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks make the knife work precise on every portion. | A short supply calls for careful lists.
+b : To make it smaller? | Do you strike off the smallest claimant?
+a : To be sure small shares are still fair. | I count that mouth as accurately as a large household.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one clear morning to answer a letter without a job interrupting. | I hope my hands stay steady enough to share what I carry.
+b : What would you write? | Until when?
+a : The truth about a completely unhurried breakfast. That would be a novelty. | Until there's no wolf waiting for a clean little portion.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The headland lets me see the sky's first pinprick. | I can feel the street slope from the way the parcels pull.
+b : Where exactly? | Hard on the wrist?
+a : Where the sky clears over the tide. A star isn't going to sign for any one roof. | Only if I fight it. I change the angle before the strap tightens.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my wrist flat before whetting. | I shake the mist out of my coat before taking a blade out.
+b : Suppose the work can't wait? | A wet handle's unsafe?
+a : Then the rest matters more. The edge will remember my hurry. | Particularly beside somebody expecting a parcel.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My last job is putting the stone where it can breathe. | I carry the sheathed knife against my coat seam.
+b : Does stone breathe? | Why that spot?
+a : The cloth round it surely needs a drying place. | I know its outline there without showing metal at every turn.
+
+story tale1 [topic=pastimes self.likes=stars]
+  : I once watched a star on a blade after the rest of the sky had gone cloudy. It shone with an admirable persistence.
+  : I turned the knife half a circle and the star stayed with me.
+  b : What supplied the light?
+  : A lamp behind my shoulder. I thanked the lamp owner silently for an ordinary light doing the work of a grand one.
+
+story tale2 [topic=work self.job=sailor]
+  : I put three neat parcels in a row and cut all the cord ends to precisely the same length. I stepped back to enjoy the line they made.
+  : I'd put the tallest parcel nearest the shelf and left no room to lift it out.
+  b : Did the beautiful row survive?
+  : I moved two bags and delivered the third. A neat row ought to be of service before it's admired.
+
+story tale3 [topic=memories]
+  : An old letter came folded round a pressed vine leaf. The leaf had dried as thin as the edge of an oatcake and came apart in my hand.
+  : I gathered the pieces on a clean wrapper and read the lines before deciding what to keep.
+  b : Did you save the leaf?
+  : I saved its stalk inside the fold. When I read the page I see the whole leaf in my mind lying across it.
+
+rule @call1
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Slip the wood between the tie and the bag. | Clean wrapping down before the stores arrive.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Soft light along a carefully kept edge. | Headland mist leaves the upper roofline clear first.
+
+rule @call3
+when concept=bark self.likes=stars
+does aside
+cooldown 8h
+say The clear line has room for one bright point. | Give the dusk another moment to send the stars out.
+
+rule @call4
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 8h
+say A civil word before putting a hand on another's load. | Give a visitor room to place the bundle properly.
+dlg resident.hub : I've set everything down. Your words can have my attention.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's a clean place by the supplies for a familiar greeting.
+dlg resident.hub [here.time=night] : At night the quiet words reach me quite distinctly.
+dlg resident.hub [pair.disposition=wary|hostile] : There's room for courtesy even where trust is thin.
+dlg resident.job [self.job=sailor] : I help at #self.workplace# and inspect every parcel before passing it along.
+dlg resident.job : I take care with the small things a hungry crew might otherwise lack.
+dlg resident.news [world.news] : The word that reached the supplies was #world.news#.
+dlg resident.gossip [here.gossip=yes] : It was said that #topic.subject# #topic.claim#. I give you the claim just at its received weight.
+dlg resident.bye : May the Bright One show you a steady patch of light on the way.
+
+graft resident.hub
+choice Does a star really test the blade? -> edge_star
+node edge_star
+say A bright reflection can show a rough place when I roll the steel slowly. The actual cutting test comes after, on a scrap with no business left to do.
+free
+choice Why choose a star? -> edge_star_again
+choice Goodbye. -> bye
+node edge_star_again
+say A poor provision hand may still work under a very fine lamp. Looking up reminds me to be grateful before looking down again.
+choice Keep the blade in its cover. -> hub
+choice Goodbye. -> bye

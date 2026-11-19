@@ -1,0 +1,257 @@
+mantle rm430
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_disa_millley
+title the hood with two brims
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=warm humour=none honesty=sly piety=ordinary drive=steady
+quirk turns_an_oilcloth_hood_to_share_its_dry_side
+likes hard_cheese stars fresh_straw first_warm_day
+dislikes smoke deep_mud
+fears a_wet_letter_with_an_unreadable_name
+hopes to_keep_a_dry_corner_for_family
+topics home +0.4 friends +0.3 weather +0.3 work +0.2
+styles comfort=gentle gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# turns an oilcloth brim to shelter a second muzzle and listens carefully to what a traveller says under cover.
+
+words
+oath! = Oil my second brim | By the dry seam
+saying! = A spare corner earns its oil | Walk close and the hood goes further
+hood = my doubled brim | the stiff oiled edge
+fold = my second fold | a spare oilcloth corner
+pin = a flat-headed pin | the short hood pin
+straw = a clean straw braid | a twist of fresh straw
+cheese = a sharp dry wedge | a thumb of cheese
+star = a pinprick above the brim | a faint cold star
+wind = the draught at ear height | the wind under a hood
+pocket = my inner pocket | the oilcloth flap
+paper = a folded order | a clean scrap
+shine = an oily gleam | a slate-coloured shine
+muck = the thick street mud | a layer of black mire
+oil = a drop of linseed oil | the oil on my thumb
+
+any
+opinion dole for 3 : I've tasted the use of a public pot. My hand went in shaking and came out steady enough to carry supper.
+opinion strangers for 2 : A visitor under my hood can tell me which goods last the journey after I have seen the payment.
+opinion watch against 1 : A nose inserted under an oilcloth without leave is still an impertinence when it comes with a badge.
+opinion times against 1 : I've learnt which direction a dole queue moves from a closer view than I expected.
+opinion merchants mixed 0 : If a trader keeps your paper and the parcel dry, that's some small part of the price returned already.
+
+grown
+line greet [pair.band=strangers] : Come on the dry-brim side. | I can make a corner free for a new muzzle.
+line greet [self.working=yes] : Welcome as far as the good seam. | Say it across the parcel.
+line greet [here.time=dawn] : Morning. My hood's still got its shape. | Early enough to try the light side.
+line greet [here.time=dusk|night] : Evening comes beneath both brims. | Draw a little nearer the light.
+line kin.open [pair.kin!=no] : Family fit inside the widest fold. | A dry corner with the family claim on it.
+line again.open : Another walk under the same brim. | Your face appears on this side again.
+line greet.return : Here. I'd know a greeting through oilcloth. | Welcome to the covered bit.
+line greet.return [pair.band=friends|family] : I've kept the good fold towards you. | Your voice fits here pleasantly.
+line greet.return [self.working=yes] : Speak while I pin the loose end. | I'll listen across this small bit of business.
+line greet.return [here.time=dusk|night] : Evening. A little light still under the brim. | Glad of a voice at this quieter hour.
+line farewell : Dry ears to the next doorway. | Mind the paper under your coat.
+line farewell.return : I'll keep the fold turned in your favour. | May the rain fall behind your shoulders.
+line farewell.return [here.time=night] : Good lamplight and a snug collar. | A dry way past the late turnings.
+line react.news : What's travelled safely under the wrapping? | Let me hear the dry part.
+line react.news.new : New word beneath my cover. | That arrived with its fold unbroken.
+line react.news.known : I've seen under that flap already. | I know what came through in that parcel.
+line react.news.doubt : I'd check that the ink hasn't run two words together. | One wet corner can change a very tidy account.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hood has enough room for quiet sorrow. | Walk easy. I'll come on the windward side.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news makes a good lining. | That's a little star in a dull fold.
+line ask.how : What's been getting inside your collar? | Had any shelter in your day?
+line answer.how : Steady beneath my proper fold. | I can turn a stiff breeze out without complaint.
+line decline : I'd sooner keep this dry interval for the family. | I need my free hand for a parcel just now.
+line accept_decline : You know best where your dry ground lies. | Very well. I won't lean on the matter.
+line thank : I'll remember that welcome corner. | You've saved me a folded worry.
+line sympathise : Here, let the brim catch some of it. | My shoulder can keep that wind off you.
+line reassure : A wet page can dry if it's opened gently. | I'll wait here while you smooth the corners.
+line preclose : I've a loose fold needing a pin. | I'd best get this parcel into shelter.
+
+scene fold
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I made #hood# broad enough for an unexpected guest.
+b : Two wolves under that? | Doesn't the rain collect there?
+a : One whole wolf and an additional nose. A surprisingly useful capacity. | It travels down the far edge. Turn the fold before inviting the nose.
+
+scene widestar
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I watch the stars between the two folds of my hood.
+b : Can't you take it off? | How many stars fit inside the gap?
+a : Certainly. But the folds keep the street lamps out of my eyes. | Three in the gap if I stand with one shoulder against the wall.
+
+scene cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I keep #cheese# in the pocket the seam protects.
+b : Do you always have cheese? | To keep it dry?
+a : When I don't I have a satisfactorily shaped space for hope. | My bread disagrees with getting wet. The cheese makes quite a tidy lid.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I tuck fresh straw above the hem to dry my damp hood lining.
+b : Does it itch? | What happens to the straw?
+a : It would if I put my head in before taking the bundle out. | I use it for a floor cloth stuffing. A good bit of straw can have several honest careers.
+
+scene sun
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The first warm day brings a fine soft gloss out of oilcloth.
+b : Do you put it away then? | Does it smell nice?
+a : I carry it over my arm. Sunshine has never signed me an all-day guarantee. | A little warm oil and dry straw. Much kinder than a day beside the smoke.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : A hood can catch smoke as readily as it sheds drops.
+b : How do you free the smoke? | Would you change hoods?
+a : Shake it inside out, well away from the face. I try not to smoke my own nose twice. | I mend an inconvenience before I go buying a second inconvenience.
+
+scene mud
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : In deep mud I pin my oilcloth a little higher.
+b : To clear the hem? | What about your ankles?
+a : Mud likes a low hem the way a small merchant likes a full shelf. | My ankles can wipe much more cheaply than a length of oilcloth.
+
+scene pair
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd always turn the broad fold towards #self.spouse#.
+b : Even on your wet side? | A small kindness?
+a : A short way with a wet ear won't do me much harm. | Of course. It's the small ones one can give every time.
+
+scene child
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I want #self.child# to know a dry hiding place for a very private paper.
+b : What sort of paper? | Where is it?
+a : One a child has drawn or folded or chosen. The privacy's the important part. | I'd show it privately, naturally. A family promise ought to have a waterproof seam.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : For #self.friend# I'd carry a parcel inside the good fold all the way home.
+b : Without opening it? | Wouldn't it make a lump?
+a : Rain would be a poor excuse for curiosity. I can keep both out. | One I had agreed to carry. That's a different sort of lump altogether.
+
+scene shop
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I fold a damp order open from the driest corner.
+b : What for? | Why not begin at the seal?
+a : The names generally survive there. A name with a wet letter missing is an expensive guess. | I'd like the paper to come apart without half the writing moving to the wrong face.
+
+scene hoodtalk
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Travellers give good accounts when their collars are properly sheltered.
+b : Which accounts? | Do you ask a lot?
+a : Which shop sold a lasting needle. Which stretch of road shook the pins out of poor wrapping. | I seldom need to. A quiet ear and a little privacy are very competent questioners.
+
+scene workshop
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : I keep my hood down through part of the Works.
+b : For the light? | To listen?
+a : For the shadows. They show me what's approaching beyond the bend. | For the clatter that says a cart is coming even when my eyes can't yet see the wheels.
+
+scene cost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A bargain's sound if I know exactly what the dearer bit of it buys.
+b : What about show? | What's worth paying for?
+a : A little shine can be useful at dusk. I don't universally condemn a bit of polish. | The stitch you can't see because the fold has protected it for several years.
+
+scene loan
+when topic=smalltalk self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : An amount outstanding has an unfortunate way of finding all the dry room inside my head.
+b : Would you keep a written reckoning? | Can other thoughts still find their way in?
+a : Yes. One dry slip to remember what actually has to be paid, and when. | I take it out and look at it once a day. Imagined figures grow faster than proper ones.
+
+scene shelter
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A blessing offered below an eave gives the mouth less work.
+b : Why so? | Does the eave bless anybody?
+a : A dry muzzle catches the quieter words much more easily. | It keeps the drops off. What the Bright One does with a small practical kindness is private.
+
+scene wish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed I had a hood big enough for the entire street.
+b : Did everyone fit? | Could you walk in it?
+a : End to end. The folk at either hem were having an entirely different conversation. | I could just about turn over in bed. The street had to provide its own feet.
+
+scene supper
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I set the hood over a chair back while supper's cooking.
+b : Why there? | Isn't that somebody's chair?
+a : Air goes all through it and the fold keeps its shape. I do like things to earn their drying space. | I can lift a hood with less trouble than finding another good chair for company.
+
+story drip [topic=memories]
+  : I once tied my hood off to dry over a low peg. Every drop from its far corner fell into a small cup I hadn't noticed below.
+  : On going back to the peg I found nearly a mouthful of water and a pin perfectly clean at the bottom. I'd lost that pin a week before.
+  b : Was it in the hood all that time?
+  : Under the brim. The water put it back in my hands more neatly than a whole hour's searching.
+
+story starspot [topic=pastimes]
+  : I mistook a bright stitch in my oilcloth for a star one night. Turning my muzzle made it travel past two chimney pots with me.
+  : I wanted to be sure, so I took the hood off. The stitch dimmed while a surprising number of real stars came clear.
+  b : Did you leave the hood off?
+  : Briefly. I wore it afterwards with a much better idea what my own light was worth.
+
+story cheeserag [topic=food]
+  : I once folded a cheese and a clean sewing rag in adjoining pockets. I took them out after a long errand and could not remember which bundle was supper.
+  : My nose knew at once. I opened the cheese and discovered I'd wrapped the cloth inside like a very neat napkin.
+  b : And the other pocket?
+  : Empty apart from its own buckle. I'd spent a mile worrying about biting a perfectly decent piece of brass.
+
+rule @aside1
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 6h
+say Name inside, clean wrapping out. | Fasten the fold with a dry iron pin.
+
+rule @aside2
+when concept=bark self.likes=stars
+does aside
+cooldown 7h
+say One little gap between the lamp and the brim. | Keep the oily edge out of the starlight.
+
+rule @aside3
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Turn the hem above that soft patch. | Leave the mud to enjoy its own short journey.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say A spare fold for the homeward caller. | Leave the hood over the wide chair tonight.
+
+dlg resident.hub : Step over near my shoulder and my brim can shelter us both. A civil conversation takes very little shelter.
+dlg resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. Small wares, a tidy order and parcels that can be got safely home.
+dlg resident.news [world.news] : This much has come through without getting smudged. #world.news#
+dlg resident.hub [topic.meeting=known] : It's the spare corner again for you, #topic.player#.
+dlg resident.bye : A sound seam between your business and the weather.
+
+graft resident.hub
+choice Does that hood really shelter two? -> second_nose
+node second_nose
+say A second nose quite comfortably. Add another pair of ears and we must walk very companionably. It makes a fine test of what a wolf means by a little help.
+free
+choice Isn't the outside ear left to get wet? -> outer_ear
+choice The second fold looks very snug. -> hub
+node outer_ear
+say It depends who offers first. I take the wet one when I turn the brim. A real favour ought to cost the giver at least half a damp ear.
+choice I'll remember whose ear paid. -> hub
+choice I'll risk my own hood now. -> bye

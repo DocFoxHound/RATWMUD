@@ -1,0 +1,397 @@
+mantle rm436
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_rosamund_saltmarsh
+title the harbour in a seed row
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk marks_seed_rows_with_the_outlines_of_ships
+likes roast_pork digging tidy_house frosty_mornings
+dislikes drizzle wet_floors
+fears cutting_through_a_row_before_it_has_come_up
+hopes for_a_dry_berth_and_a_long_seed_bed
+topics pastimes +0.5 work +0.3 travel +0.3 weather +0.2
+styles comfort=practical gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# marks unbroken seed rows with ship-shaped pegs and lets the apparent order conceal a private plan.
+
+words
+oath! = Turn my furrow seaward | Dry furrows witness me
+saying! = A good marker keeps its own counsel | A seed's business starts underground
+peg = a ship-shaped peg | my notched ship marker
+row = the short seed row | my little furrow
+seed = a black dry seed | a small seed
+bed = a firm raised bed | my square of earth
+keel = a shallow keel cut | the pointed notch
+ship = a tall square stern | a little upturned bow
+brush = a short stiff brush | the narrow hand brush
+spade = a small pointed spade | my bright digging blade
+tile = a flat tile shard | a bit of red tile
+rind = the crisp pork rind | a strip of crackling
+drip = a thin cold drip | persistent little rain
+frost = a row of white points | the frost on a peg
+mud = a wet glossy clod | the mud under my heel
+cloth = a clean floor cloth | my dry rag
+berth = a berth snug under a dry blanket | my imagined bunk
+mark = a short nick in wood | an old dark mark
+
+any
+opinion strangers for 1 : A returning buyer knows which bit of a purchase wore through. The customer standing still can't possibly know.
+opinion watch against 1 : A boot that hasn't paid for a thing has no pressing claim to hear what went inside the wrapping.
+opinion church against 1 : I like a prayer allowed to finish at its own pace before anybody attends to the collection.
+opinion merchants mixed 0 : A good bargain should come up in reliable rows. I'll give a selling promise time to grow to its advertised size.
+opinion road mixed 0 : A road earns its keep by the dry places when you're carrying something packed in paper.
+opinion festivals mixed 0 : There's music I appreciate very well from a little distance. It's a question of choosing one's position.
+opinion houses mixed 0 : A fine House can keep the soil around its roots in wonderful order. I look at what grows just outside its boundary.
+opinion dole mixed 0 : I care what comes up from the pot and whether the waiting feet have any cover. The rest can fit in somebody's speech.
+
+grown
+line greet [pair.band=strangers] : Welcome. Mind the marked end of the board. | New visitor, dry spot just inside.
+line greet [self.working=yes] : There's room behind the packing edge. | A voice and a little light this way, please.
+line greet [here.time=dawn] : Morning. The marks show sharply. | Fresh light along the neat rows.
+line greet [here.time=dusk|night] : Evening. Step within the remaining light. | My ears keep their range after dusk.
+line kin.open [pair.kin!=no] : Kin know which bit of ground's private. | You've the household end of the bench.
+line again.open : Back at my marker again. | Same little ship come round twice.
+line greet.return : You've reached the right end. | Hello. Take the clean board.
+line greet.return [pair.band=friends|family] : Your voice comes past any shutter. | Good to have a well-known hull in sight.
+line greet.return [self.working=yes] : I'll let the parcel settle while you talk. | My hands can wait beside the string.
+line greet.return [here.time=dusk|night] : Evening. The peg still throws a shadow. | Come to the late light by my shoulder.
+line farewell : Follow the sound line home. | A dry corner at journey's end.
+line farewell.return : I'll keep the row properly marked. | May the ground take your footprint easily.
+line farewell.return [here.time=night] : Good footing past the last bright gable. | Safe passage under the few late lamps.
+line react.news : Set the account beside its marker. | What bit stood clear of the rest?
+line react.news.new : New ground inside this row. | I haven't seen that bow mark.
+line react.news.known : It's come by this little harbour before. | I recognise the shape of that business.
+line react.news.doubt : I'd see what sprouts before naming the crop. | That's a handsome marker for a row nobody's seen.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor souls. I'll give the matter room. | A heavy bit of ground to turn over.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a fine bright first shoot. | Something worth marking plainly.
+line ask.how : How's the soil gone under your day? | Any dry footing under your day?
+line answer.how : Keeping clear of the wet edges. | Fairly level, if not particularly rested.
+line decline : I should keep today's soundest hours for another errand. | I'd sooner spend my dry interval on this row.
+line accept_decline : Good. I'll put the peg away. | You've marked your wishes plainly.
+line thank : That leaves a much cleaner row. | I'll keep a good notch for that favour.
+line sympathise : I've a clear patch where you can rest. | Set it down and ease your stance.
+line reassure : A hidden shoot can still find its way. | You may leave that ground untended for a little.
+line preclose : I'll put my small tools back in order. | Time to find the right bit of ground again.
+line accept_preclose : Take whatever road suits your feet. | I'll keep the last marker here.
+line deflect_thanks : That bit of trouble was mine to take. | A simple nod meets the price completely.
+line ack : Clearly marked. | Sound growth.
+line give.advice : Watch which end the peg turns to. | Wait a day before declaring a bare row barren.
+line offer : I can help put a dry lid over it. | Shall I mark the spot for later?
+line praise : That's close work, neatly finished. | You recognised an awkward edge at once.
+
+scene ships
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I give every row a distinctive little ship.
+b : Isn't a label easier? | Big or little ships?
+a : A label tells everyone the crop. #peg.capitalize# tells me which end I sowed first. | Long hulls mark the slow rows, little boats the ones that hurry up.
+
+scene dig
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I like a spade that cuts a clean corner and stops there.
+b : A small spade? | Why stop at the corner?
+a : A settled wrist is more important than size. I want the soil turned in its proper bed. | The next row may have begun to stir. An overgenerous cut can cost a whole week.
+
+scene sound
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I know the Sound's working fleet well enough to keep their outlines in my garden.
+b : Are the crews flattered? | What if a ship gets new canvas?
+a : A peg doesn't mention its friends. Nobody need know which hull marks cabbages. | I look lower down. The line close to water is more dependable.
+
+scene rind
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I score pork skin in small squares much like seed beds.
+b : Does it roast more evenly? | Do you mark the squares?
+a : A neatly cut edge goes crisp before the centre dries out, which means good eating. | Only by taking one. A missing crisp has a perfectly unambiguous meaning.
+
+scene neat
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I clean the spade before coming to the indoor table.
+b : No mud on the boards? | Would you touch up the edge each time?
+a : That too. A smear of bright earth on a clean blade tells what sort I was digging. | No. A polished shovel that can't keep its working edge looks rather foolish.
+
+scene rime
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosty row of pegs makes a fleet under fresh sail.
+b : Does the frost stay long? | Why a fleet?
+a : Till my fingers warm round the first tool. The picture's a morning indulgence. | White tufts on the dark little bows. Looks more convincing before breakfast.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle leaves every decision about a day's digging half made.
+b : Which decision matters? | Worse than a shower?
+a : Whether the soil will crumble or come up as a lump that won't break till next week. | A shower rests its case. Fine drops keep adding one more little circumstance.
+
+scene wet
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A bright clean board gone wet is an unreliable picture of good order.
+b : Looks polished? | How can you tell?
+a : Beautiful shine. Extremely uncertain behaviour under an honest heel. | Rub the edge with a dark rag. A polish doesn't travel as a puddle.
+
+scene mentor
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I have the learner put a mark at the start before doing any other part of a task.
+b : Is that necessary? | Even an obvious beginning?
+a : Unless there is some means of finding it again after two interruptions. | Especially then. Nobody remembers what was so obvious after supper.
+
+scene familywork
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like orders laid out in the direction they'll leave.
+b : Nearest first? | Won't the clerk remember?
+a : Next due first. Nearest can wait if the other's wagon is already outside. | On a quiet day. I prefer the arrangement that works amid three interruptions.
+
+scene kind
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd mark a bit of my ground for #self.friend# without asking what will go in it.
+b : Not even out of curiosity? | Good ground?
+a : I'd wonder very much. I can wait quite as long as a dormant seed. | The dry end. A favour shouldn't begin by giving a friend drainage to rectify.
+
+scene stranger
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I listen to a stranger's description of damp before recommending any wrapping.
+b : Can damp differ? | Why ask a stranger?
+a : Salt spray and gutter drips both wet paper. They arrive from quite different directions. | A local customer's coat tells me a good deal of what I want to know.
+
+scene floorprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Nobody much notices the price of a reliable floor until one board goes through.
+b : Do you inspect shops that way? | Does it affect what you buy?
+a : Quietly. A sound threshold shows where the owner is prepared to spend unseen money. | It tells me whether I'd trust a heavy jar to that counter.
+
+scene tidemouth
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A row of seedlings and a harbour each need spare room where a visitor enters.
+b : Why the seedlings? | What if space is short?
+a : I want my hand to reach the first stem without leaning on the second. | Fewer rows that come up properly. One overcrowded corner never earned its keep.
+
+scene dreamberth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a berth where my boots could dry inside the door.
+b : Aboard something grand? | Would you leave the soil?
+a : Grand enough to have an unbroken roof. Any further grandeur can wait. | I'd take a fist of seeds. Nobody says a traveller has to abandon every planting.
+
+scene trust
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A friend told me in confidence is a poor beginning for a parcel label.
+b : Would you ever finish it? | Is it any better spoken?
+a : I'd keep the rest inside. The label only needs to say private. | Only when the speaker keeps the precious particulars behind closed teeth.
+
+scene rise
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a chapel seat from which I can see an open door.
+b : So you can go? | Why the door?
+a : When necessary, yes. Freedom to stay makes an easier sitting. | An incoming wolf should see at least one place that isn't guarding its space.
+
+scene homeway
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : In the Commons I know a corner where the whole street appears to be carrying something.
+b : Is it? | What does it carry?
+a : At that corner one sees mostly backs coming up and elbows going down. | The city's small provisions. Nothing grand, everything missed if it goes astray.
+
+scene teacher
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I'd teach the feel of the right scale weight before the figures written on it.
+b : Without the numbers? | To prevent error?
+a : Let a learner feel weight as well as read it. Both together give a better measure. | To notice an error when the scale's clean and the page's been copied wrong.
+
+scene air
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Early air shows a low mist before a warm room admits there's weather outside.
+b : Do you leave the window open? | Can you see the yard?
+a : Just a dry finger's width. A working day benefits from a little honest air. | Enough of it to tell whether the floor cloth should come down with me.
+
+scene night
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night the pegs make shadows like little private gates.
+b : Do you go into the garden then? | What do they guard?
+a : Only to look. Roots need not expect a spade at every hour. | Tomorrow's work, in effect. Seeing their place is enough for tonight.
+
+scene grain
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Tired fingers tell a great many little domestic lies.
+b : What sort? | Can you catch them at it?
+a : That the knot's finished when it still wants a tuck. That the brush was put back. | I tie the closing parcel more slowly than the first. Experience returns some honesty to the operation.
+
+scene party
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I go to the edge of a feast where the sellers pack up.
+b : For bargains? | Does that count as enjoying the music?
+a : For the last tune. It sounds rather sweeter when nobody can find me a seat in the middle. | Completely. I give it considerably more attention without having my sleeves trodden on.
+
+scene cart
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : For a late delivery I leave the marker standing in an empty space.
+b : Wouldn't the empty shelf do? | Even for a small item?
+a : A whole shelf can be empty for several reasons. A peg names just one of them. | Especially then. Large holes make their own case without much help.
+
+scene loaf
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard times make small gaps in a parcel look very large indeed.
+b : Do you pad them out? | What would you do?
+a : I pack the contents close. I don't wrap up an impression that there's more than I sold. | Weigh it in clear sight before wrapping. That's a better promise than any puffed-up paper.
+
+scene spadeedge
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I know by the sound when the edge of my spade meets a bit of buried tile.
+b : What sound? | Do you dig the tile out?
+a : An abrupt dry tick quite unlike a stone buried in wet ground. | I ease it up to see whether it's a useful whole piece. A row marker can be red as well as wooden.
+
+scene seedswap
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A packet of unknown seeds makes a shrewder test of patience than an empty promise.
+b : How so? | Would you plant them?
+a : A promise can be called on. A seed goes on considering the matter at leisure. | A few in a marked square, with a perfectly sound crop on either side for company.
+
+scene fishboat
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : Some small boats carry their names where the mud hides the lettering.
+b : Could you identify one? | Does that seem foolish?
+a : From the stern rail and the cut of the bow, often. They tell in more than one language. | A name painted higher might weather away. I'd ask the person who chose the place.
+
+scene fear
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I mind upsetting a seed row I thought empty more than breaking a household dish.
+b : Why that one? | Even a good dish?
+a : A dish shows exactly what's lost. A seed hasn't had its opportunity to show the loss yet. | A good dish can generally be repaired. A sprout cut off in ignorance just stops.
+
+scene hidden
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a shop shelf sprouted all the goods that had ever stood there.
+b : Which sprouted first? | Did the customers come?
+a : The little clay cups, their handles just pushing through like folded leaves. | I was too busy finding a peg for each row before the spoons came up.
+
+story lostrow [topic=memories]
+  : I once planted two rows a hand apart and marked them with low little bows. A stiff night wind tipped both my pegs over. Next morning I set them upright again.
+  : I had no assurance they were in the original places. For a month I tended two quite mysterious rows with exceptional impartiality.
+  b : What came up?
+  : Beans where I expected herbs and herbs where I expected beans. An admirable test of the usefulness of names.
+
+story porkmap [topic=food]
+  : I put a cold slice of roast by a sketch of my next seed bed. A drop of fat slid off the pork and marked a sweeping curve across the centre of my plan.
+  : I turned the sketch to find a route round it and saw the gleam of a little path, with dry stepping stones in the wettest bit.
+  b : Did you build the path?
+  : There's a narrow walk there now. One may have worse advisers than a little roast pork on a cold day.
+
+story shippeg [topic=pastimes]
+  : I made an especially accurate little peg with the outline of a ship I knew at first glance. I planted it firmly then gave myself a good clear view of the work.
+  : From the other side the outline looked precisely like a deep garden shoe. It took some effort to see my ship again.
+  b : Did you change its shape?
+  : I drew a little eye on the bow and let it be both things. A shoe makes an entirely reasonable harbour for a seed.
+
+story receipt [topic=work self.job=merchant]
+  : I put two closed orders beside one another and discovered the wrong quantity had been written on the outside of both. I opened them before correcting the ink.
+  : The contents were right, the figures were right, and the little piles had been standing in the wrong places. Swapping the orders back corrected both errors.
+  b : Did you alter the counter?
+  : I cut two distinct notches along its edge. Paper may travel. The counter has remained fairly close to home.
+
+story voyage [topic=dreams]
+  : Working late once, I found a strip of sky between two piled baskets. A far sail moved through the gap and for a moment the baskets looked like harbour walls.
+  : I saw a whole voyage from that narrow stretch of floor before the sail moved on and the waiting packets recalled me to counting.
+  b : Would you have gone aboard?
+  : If there was a dry bunk, quite possibly. I should have had to see the state of the bedding.
+
+rule @aside1
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 6h
+say Place each order at its marked end. | Two parcels on two distinct notches.
+
+rule @aside2
+when concept=bark self.master=yes
+does aside
+cooldown 7h
+say Mark the start before inviting a learner to follow. | Let the novice examine the empty row too.
+
+rule @aside3
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Lift the clod clear of the little marker. | Dry crumbs, healthy bed. Leave the rest.
+
+rule @aside4
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 9h
+say Put a dry cloth where the shine begins. | That floor has more shine than judgment.
+
+rule @aside5
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Turn every little prow the same way home. | The seed pegs hold the late light very nicely.
+
+rule @aside6
+when concept=bark here.season=winter
+does aside
+cooldown 11h
+say Silver line on each good furrow. | The frosty boards need a careful entrance.
+
+dlg resident.hub : Set your business on the unmarked space. The little notches along the rest of the counter mean something to me.
+dlg resident.hub [topic.meeting=known] : Your last visit has its own notch, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Stay beside the clean marker, please. I'll take mine and we can conduct a civil exchange.
+dlg resident.hub [here.time=dawn] : There's good light for a clear account at this hour.
+dlg resident.hub [here.time=dusk] : We can talk while the outlines are still distinct.
+dlg resident.job [self.job=merchant self.workplace] : I help with the orders at #self.workplace#. I like a counter where things can be found after the first interruption.
+dlg resident.job [self.master=yes] : I show the marks clearly to the learner as well as the task. Neither is any use in the wrong place.
+dlg resident.job : I keep the small things in their proper rows and watch what comes of them.
+dlg resident.news [world.news] : I've put a mark beside this particular account. #world.news#
+dlg resident.bye : A dry berth and a properly marked turning for the rest of your way.
+dlg resident.bye [here.time=night] : May you see the edge of every damp board coming home in the dark.
+dlg resident.hub [self.working=yes] : Leave that peg in place. My ear isn't attached to the marker and you may have my attention.
+dlg resident.hub [pair.band=friends|family] : Choose the dry corner. I've kept that little bit of room ready.
+
+graft @ship resident.hub
+choice What do the little wooden ships mark? -> seedharbour
+node seedharbour
+say Slow crops get deep boats, quick crops get slim ones. A passing eye sees a little harbour with nothing much in it. I see exactly what work is due.
+free
+choice What if somebody changes the ships about? -> seedswap
+choice That stern looks fit for beans. -> hub
+node seedswap
+say Then I wait to learn my lesson at harvest. A little nick on the buried end insures my pegs against unusually helpful visitors.
+choice I'll let the fleet stay anchored. -> hub
+choice I'll leave you to the harvest. -> bye
+graft @dry resident.hub
+choice What sort of voyage would tempt you away from your garden? -> seedberth
+node seedberth
+say A voyage to a place where seeds will keep inside a simple paper fold. A dry bunk would also come into the discussion before I went and packed.
+free
+choice Wouldn't you miss the seed bed? -> seedsoil
+choice It sounds like a sensible test for a berth. -> hub
+node seedsoil
+say Naturally. I'd want a destination with earth I could turn over and water of a sort one could decide how much to apply.
+choice A sailor with a spade, then. -> hub
+choice May you find that dry place. -> bye

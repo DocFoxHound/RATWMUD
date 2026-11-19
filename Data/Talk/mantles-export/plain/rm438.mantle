@@ -1,0 +1,247 @@
+mantle rm438
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_silas_brinemore
+title the passenger in the clean pocket
+fits stage=adult|old
+prefers warmth=warm drive=restless
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk keeps_a_pocketful_of_coal_for_luck
+likes smoked_eel evening_line fresh_straw frosty_mornings
+dislikes salt_wind night_noise
+fears letting_a_possible_voyage_pass_unseen
+hopes a_berth_bound_for_someplace_dry
+topics travel +0.6 pastimes +0.4 friends +0.3 food +0.2
+styles comfort=practical gossip=careful refuse=plain tease=gentle
+marks oath saying
+persona #self.first# wraps pocket coal in two layers of cloth, calls the smallest piece a passenger, and likes to hear where other feet are going.
+words
+oath! = Coal down my clean sleeve | Shake my luck loose
+saying! = Carry one passenger free | Keep the outside clean
+passenger = a little triangular coal | a glossy coal chip
+coalcloth = my doubled square | a black-lined wrapper
+fishstrip = a soft bend of eel | a smoked eel shaving
+pocketbow = a pinched seam | a pocket corner
+lineend = a cork-tied line | a little working float
+frostlift = a white lip of stone | a frost-edged sill
+strawvoice = a dry little whisper | a crisp straw rustle
+brineedge = the salt on a collar | a sting of spray
+voyagelist = a slip of paper | a folded sailing list
+luckpurse = a rolled rag purse | a dark cloth pocket
+knockmark = a crease in the flap | a mark beside the pocket
+
+grown
+
+opinion strangers for 1 : A traveller may have seen the far shore I keep trying to put a shape to.
+opinion houses mixed 1 : A House has a hundred ways to send a package travelling. I like to remember the servant carrying it might want a journey too.
+opinion road for 2 : I enjoy a road even before it goes anywhere I know, especially before then.
+opinion church for 1 : One small coal steadies my nerve. Giving thanks is the Bright One's due. I can carry both thoughts comfortably.
+opinion dole for 2 : A wolf with spare coin can play generous with more than guesses about luck.
+opinion merchants mixed 1 : I appreciate a seller who says exactly how much the wrapping costs before I decide what is going inside it.
+line greet : Come stand where my passenger can meet your boots.
+line greet [pair.band=strangers] : Any traveller's welcome to this little space beside me.
+line greet.return : There you are. My feet have stayed put till your words reached me.
+line farewell : May your pockets travel lighter than your hopes.
+line farewell.return : I'd wave the coal but I've only just got the cloth folded neatly.
+line ask.how : Any opportunity to walk a little ground beyond your usual round?
+line answer.how : Restless from my ears to the passenger in my pocket.
+line react.news : Where's the far end of those words travelled from?
+line react.news.known : That bit's come up my road already.
+line react.news.new : Another little parcel for my travelling memory.
+line react.news.doubt : I'd see what lay inside the wrapping before paying freight on that.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That sets my best bit of luck knocking against my thigh.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can turn my feet towards whoever's carrying the worst of that.
+line decline : I've promised this little bit of freedom to a journey still ahead.
+line accept_decline : One invitation can go back inside my pocket unopened.
+line thank : You spared a corner of the road for my hopes.
+line deflect_thanks : There's room in my good luck for a second traveller.
+line sympathise : My feet can sit quiet long enough for you to get some rest.
+line reassure : A journey can be worth keeping even before there's money for a berth.
+line ack : There's a familiar shape inside that fold now.
+line preclose : I must take the whole passenger list up the next flight.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My passenger's black as soot and quite incapable of paying a fare.
+b : Do you carry a beetle? | Will you put it off at the next stop?
+a : #passenger#. I've wrapped it twice so my true explanation doesn't blacken anybody's cuff. | Not till the coal asks. A remarkably undemanding companion when left in its own cloth.
+
+scene work_1
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I turn my pocket inside out before trusting it near a clean table.
+b : What are you afraid of losing? | Isn't that rather a lot of care over a pocket?
+a : A crumb of coal in somebody's best linen. My own luck shouldn't be another wolf's washing. | Less trouble than explaining a lovely thumb-shaped black mark on a white cloth after the fact.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd like passage out towards a shore where wet coats are an amusing local curiosity.
+b : Wouldn't you miss home? | Why take to water for a dry place?
+a : Yes. I'm asking about the outward fare first because the wish to come home is part of what I'd like to feel. | I am prepared to undertake one very considerable inconvenience to get away from a smaller repeated one.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I can tell #self.spouse# all the things I would pack for our first unconstrained journey.
+b : Do you agree about packing? | What if your spouse wants to stay?
+a : I can make an opening suggestion and leave the larger part of a bag free for further opinions. | Then I have a fine tale to bring home, or a good reason to go on planning together by the fire.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I never put my lucky coal to work weighting a line, even when I badly need a weight.
+b : Wouldn't the fish find it interesting? | Then what sinks the line?
+a : I hope not. My luck and a very deep fish would be a difficult travelling party to get back together. | A plain pebble. The coal has already obtained a comfortable cabin in my coat.
+
+scene food_1
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoked eel can put a whole evening by the water into the space of one bite.
+b : Do you take it fishing? | Do you mind the bones?
+a : Wrapped apart from the coal. I give the future traveller in my pocket no voice in ordering supper. | I notice them. I prefer food that can take me on a little journey without arranging a trip to a healer.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The crackle of clean straw underfoot welcomes me before anybody gets a word out.
+b : What if your feet are wet? | Would you rather have a carpet?
+a : I'd wipe first. Entering a warm room doesn't require dragging my whole walk behind me. | A bit of straw has a nice voice. I've never heard an expensive rug ask so pleasantly about my day.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Frost on a morning rail makes every passing paw leave its own clear route.
+b : Do you try to read the tracks? | Would you leave a mark?
+a : Only the way the feet went. Some of the rest belongs inside the house they were aiming for. | I'd brush a tiny black traveller shape in the frost and let the warmth take the fare.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend with a journey ahead may carry one of my smooth little coals.
+b : Do you charge interest? | What if the coal doesn't come back?
+a : A word about the road is payment enough, if a comfortable opportunity to tell it happens along. | Then one of us got away. My scheme for wider travel is succeeding by instalments.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I know what a piece of coal costs and another thing it's worth to me altogether.
+b : Would you part with the best piece? | Could you buy another tomorrow?
+a : To a friend for a hard journey I might. Selling it to a stranger would require quite a different set of sums. | Coal, certainly. Yesterday's little wish hidden in the corner takes more than a shop to replace.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I bring the coal into prayer only as something my fingers need to put down first.
+b : Why put it down? | Don't you think it's lucky?
+a : So I ask plainly with an open paw. I'd rather my hopes did their own explaining. | I do. A lucky bit of stone is company for my courage, not somebody to whom I say my thanks.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I can stand still very well until I start wondering what I'd find beyond the last bend in a lane.
+b : What if you're meant to stay? | How far will a thought take you?
+a : I stay. A servant has feet on loan some of the day and an imagination employed rather more privately. | To a warm dry harbour and back in the time somebody takes to search for a dropped button.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Salt wind works its little crystals right under a collar.
+b : What gives relief? | Would you rather be indoors?
+a : Turn the collar down and keep the softer side to the neck after a rinse. I've a cloth that isn't the coal one. | I prefer an opening out of the direct sting. I wouldn't ask to have the whole sea put away.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When money goes thin I measure a hoped-for fare in coal chips and move the little pile more slowly.
+b : Isn't that pretending? | Can you keep saving at all?
+a : It's remembering what the coins have to do once they're there. Pretending wouldn't require counting the missing ones. | Some weeks I can save nothing except the intention to begin again.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember smuggling my little parcel of luck into a clean coat for the first time.
+b : Did it leave a mark? | Was anybody inspecting?
+a : A dark square below the seam where the stuffing grew thin. That's when I gave the passenger a second blanket. | Only my conscience and my sleeve. Between them the inspection was perfectly adequate.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Night noises keep shifting the room about in my head long after the floor's gone still.
+b : What stops that? | Does a familiar noise help?
+a : Rest one hand on #coalcloth#. I can usually imagine the little passenger's content to remain at anchor. | A steady step going home, yes. A shutter announcing its own importance all night is considerably less companionable.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'm curious to learn what caught a new arrival's eye first.
+b : Want the route from the gate? | Are you taking notes?
+a : Just the one first thing that felt different. I have a supply of streets already and rather fewer surprises. | In my head. A dry harbour may turn out dreary, and I'd like a traveller to warn me before I get carried away.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The parcel of talk going round says #topic.subject# #topic.claim#.
+b : Would you carry it far? | Have you opened it yourself?
+a : Less far than a clean account from the wolf concerned. A rumour can blacken a coat faster than my coal. | I heard words. If I also saw the matter with my own eyes I'd put that on a different footing.
+
+story pocket [topic=memories]
+  : I once doubled the coal wrapper very carefully and put the blackest fold on the outside.
+  : I reached into my pocket and left four impressive little travellers down my cuff.
+  b : Could you get those marks off?
+  : Washed three of them off. The fourth reached home before I saw it, so one passenger completed the whole journey.
+
+story boat [topic=travel]
+  : I sketched a vessel across an old scrap and set my smallest coal on its deck.
+  : The ship rocked in a puddle, took a little water and pressed itself flat on the stone.
+  b : Did the passenger swim?
+  : It stayed where it was put. A creditable passenger, if perhaps a little overconfident in my arrangements.
+
+story eel [topic=food]
+  : I saved a fine strip of smoked eel for an evening by the water.
+  : I wound the paper round it so neatly I mistook it for a roll of thread.
+  b : Did you take the thread instead?
+  : No. I discovered I'd been trying to tie a knot in my supper and ate it before matters got worse.
+
+rule @coal
+when concept=bark
+does aside
+cooldown 8h
+say Little passenger riding clean for another mile. | Tuck the dark corner twice before calling it ready.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Morning light has made the window a road again. | Good hour to imagine the bags already packed.
+
+rule @work
+when concept=bark self.job=servant
+does aside
+cooldown 8h
+say Check the cuff before it reaches the good linen. | A clean thumb can carry luck too.
+
+rule @gust
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say The best passage today is somewhere inside a coat. | Mind the bit of cloth the wind keeps trying to open.
+dlg resident.hub : Room for your parcel of talk, even with my pocket already occupied.
+dlg resident.job [self.job=servant] : At #self.workplace# I look after every clean little detail and let my mind travel only when my hands know the way.
+dlg resident.news [world.news] : Here's what has completed its passage. #world.news#.
+dlg resident.gossip [here.gossip=yes] : A travelling account says #topic.subject# #topic.claim#. I've left its coat of uncertainty on.
+dlg resident.hub [topic.meeting=known] : #topic.player#, a pleasant stop on my present small circuit.
+dlg resident.bye : I hope your next little journey surprises you kindly.
+
+graft resident.hub
+choice Can I meet this passenger? -> coal_guest
+node coal_guest
+say Here. Two folds undone and there's a coal no larger than the end of a plum. It's gone to work and come back with me more times than either of us could count.
+choice Does it travel well? -> coal_berth
+choice Good sailing to you both. -> hub
+node coal_berth
+say Better than I do. Give it the smallest dry berth and it'll go beyond the last port anybody's drawn without once enquiring about supper.
+choice Good sailing to you both. -> hub

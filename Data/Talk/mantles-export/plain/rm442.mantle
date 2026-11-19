@@ -1,0 +1,257 @@
+mantle rm442
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_grete_dimmock
+title the soot seal at the door
+fits stage=adult|old
+prefers job=official
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk presses_a_sooty_knuckle_to_the_inside_of_a_finished_errand_note
+likes blackberries cards tidy_house autumn_wind
+dislikes night_noise waiting
+fears delivering_a_letter_with_an_extra_listener_attached
+hopes to_walk_every_errand_home_in_quiet
+topics work +0.4 friends +0.3 travel +0.3 food +0.2
+styles comfort=warm gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# leaves a private soot mark inside a finished errand list and carries a clean cloth for every surface that belongs to somebody else.
+
+words
+oath! = Seal my knuckles clean | By the folded black mark
+saying! = A quiet errand needs two clean ends | The soot belongs inside my own paper
+knuckle = my smoky knuckle | the soot on one joint
+cloth = a folded white cloth | my soft wiping square
+note = my errand list | a paper in my cuff
+mark = the black half moon | a little thumb smut
+bag = the inside flap | my tidy leather pocket
+heel = the pale card edge | the clean rim of a card
+berry = a dark blackberry | a soft ripe berry
+cup = a small berry cup | my short wooden dish
+wind = a brown autumn gust | a leafy breeze
+fold = the inward fold | my hidden fold
+step = my last return step | the quiet pace home
+noise = a late shutter knock | a troublesome rattle
+
+any
+opinion strangers for 1 : A traveller who remembers a door from one good meal may come back years later with a perfectly civil word.
+opinion dole for 1 : Nobody ought to spend the homeward walk wondering whether the kitchen has even a single bowl to spare.
+opinion houses for 1 : A sound public office rests on quite ordinary doors and roofs. Somebody must keep the timber and the work coming.
+opinion times for 1 : I've a sound bed to come home to and food under cover. Those are substantial entries on my personal account.
+opinion road mixed 0 : A route improves when you know which walls give shelter at the turning. A strange road takes longer to be fair to.
+
+grown
+line greet [pair.band=strangers] : Hello. I can take a word for myself here. | Welcome beside the clean cuff.
+line greet [self.working=yes] : One errand can accommodate a greeting. | Walk beside the parcel if you like.
+line greet [here.time=dawn] : Morning. A clean list to begin. | Fresh light on the waiting names.
+line greet [here.time=dusk|night] : Evening. The last run's gentler. | Come to the still spot just past the lamps.
+line kin.open [pair.kin!=no] : Family can read my unwritten welcome. | There's a door that opens easily for kin.
+line again.open : This time the return walk brings us together. | My list has room for a second greeting.
+line greet.return : Heard and received quite safely. | Hello. My pockets are buttoned and my ears open.
+line greet.return [pair.band=friends|family] : I'd recognise the easy end of your footfall. | Your voice belongs on the pleasant side of the list.
+line greet.return [self.working=yes] : My hand can write while my ears attend. | I'll keep your word separate from the order.
+line greet.return [here.time=dusk|night] : Step within range of my little lamp. | Evening. A soft hello travels beautifully beside me.
+line farewell : May the correct door open easily. | Keep your paper close on the way.
+line farewell.return : I'll mark our meeting safe and done. | See you on a kinder return errand.
+line farewell.return [here.time=night] : Quiet hinges outside your bedchamber. | An undisturbed walk past your last lamp.
+line react.news : Give me the bit you heard distinctly. | What message actually reached your ear?
+line react.news.new : New word in the inner pocket. | That's the first copy I've heard.
+line react.news.known : I've made the mark beside that one. | The same message reached me by a different route.
+line react.news.doubt : I'd see the fold before signing for that account. | A message that's been through several mouths may have lost its last word.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk beside you carrying silence. | That has a weight I wouldn't hurry along.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome errand for anybody's tongue. | That's news I'd keep clean all the way home.
+line ask.how : Did your door open onto a good morning? | Have the errands sat easily with you?
+line answer.how : Quite happy with the walk between the doors. | Working through my little list without hurry.
+line decline : I'd rather reserve the dry pocket for its proper errand. | I need some quiet walking before I can undertake that.
+line accept_decline : A good clear refusal travels cleanly. | I'll take that answer back unchanged.
+line thank : A kindness for the inside fold. | You've saved me a whole troublesome turning.
+line sympathise : I'll carry whatever part you can set down. | Walk here and take what quiet you require.
+line reassure : There's time enough between these two doors. | I'll keep the last clean corner ready.
+line preclose : I should mark off one more errand now. | My little list hasn't entirely let me go.
+
+scene soot
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I mark the inside of #note# when an errand's done.
+b : Why inside? | Why soot?
+a : The outside belongs to any eye I pass. My reckoning belongs to me. | I have it on my paws already. No need to borrow the recipient's pen.
+
+scene paper
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I separate outgoing paper from the little list on which I mark returns.
+b : Isn't that more paper? | What distinguishes the lists?
+a : Yes, a very small price for leaving a customer's letter entirely free of my own marks. | The fold with the dark side inward is mine to open.
+
+scene berry
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I pick blackberries before washing the soot off my hands.
+b : Wouldn't it spoil the fruit? | Is that tidy?
+a : I use my clean cloth over my fingers when I pick. It's the return trip that's untidy. | Tidier to wash once when all the dark stains have had their turn.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I wipe my knuckles before I deal even a friendly hand.
+b : No marked cards? | Can you play while holding the cloth as well?
+a : Precisely. A good game's worth surrendering my natural advantage in soot. | Only a very poor game. I fold the cloth and put it aside first.
+
+scene home
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I like the whole table clear except for one unfinished errand.
+b : Why leave that out? | Just one?
+a : So I can pick it straight back up after supper. A tidy house makes it easier to remember a promise. | That's my limit for visible unfinished things. The pocket takes the others.
+
+scene leaf
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind turns my list like a leaf if I let it.
+b : Would you chase it? | Don't you keep it fastened?
+a : I'd rather walk where it lands and pretend that was my intended route. Less alarming for passers-by. | Against all but a gust ambitious to do a courier's job.
+
+scene nightnoise
+when topic=health self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : A late knock gets all four corners of my attention.
+b : Even with your bag put away? | Does it worry you?
+a : My hand reaches for the list before my eyes are open. It's a habit with energetic legs. | More when nothing follows. I go looking for the loose shutter then.
+
+scene wait
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I find waiting at a shut door harder than walking twice the distance.
+b : How do you pass it? | Can you come back?
+a : I sort the slips into the order of the errands that follow when the door opens. | Occasionally. I leave a polite time for the wolf inside to reach the latch.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd take a second walk for #self.friend# without counting either set of steps.
+b : Even up the hill? | To bring what?
+a : A useful hill gets shorter with good company in mind. | Something forgotten on a busy day. Anybody can carry the grand important things.
+
+scene tidyroute
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I fold a route back towards home by stages.
+b : What's the first stage? | How does a route fold?
+a : The furthest door while the legs are freshest. Then the rest comes back in quiet corners. | On paper. In the street I have to do it with considerably more shoe leather.
+
+scene charcoal
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a dry woodscent that makes the whole city sound less busy.
+b : From your cuff? | Can a smell change a sound?
+a : Perhaps. I suspect I've carried a bit of charcoal smell into places that never bought a sack. | It can turn my thoughts for a little while. That's a quiet thing all on its own.
+
+scene new
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll speak directions twice for a stranger if a street name is difficult.
+b : Why not draw a map? | Would you walk along?
+a : I can do that as well. It depends which paw isn't holding the parcel. | To the first clear landmark. The remaining doors on my list still deserve their visits.
+
+scene bustle
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : In the Commons I reckon hills by the number of elbows I have to pass.
+b : Rather than steps? | What about an empty street?
+a : Steps stay put. Elbows decide where a messenger fits on any particular day. | A luxury. Then I enjoy finding the paving quite long enough by itself.
+
+scene gossip
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : Sometimes the cleanest way to carry a message is to leave the middle folded.
+b : Don't you want to know? | How could you repeat it?
+a : A closed paper has nothing to tell my curiosity. My feet are quite capable without it. | I deliver the thing itself. That's the service people generally mean.
+
+scene post
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a carrying fee that a tired wolf can understand in a single hearing.
+b : What needs mentioning? | Even for a difficult climb?
+a : The distance and any delay that needs a paid wait. A surprise fee makes a sorry welcome. | Especially then. I want the surprise to be the view.
+
+scene date
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I keep the time on my slip in the order I heard it.
+b : Why not neaten it later? | What sort of order?
+a : Because a neater guess is still a guess. I ask while the speaker's at the door. | If the appointment follows dinner, I write dinner before the hour.
+
+scene rest
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I think of a delivered meal when I hear a blessing offered over a table.
+b : Whose meal? | What do you remember?
+a : Any one that somebody outside the kitchen needed. A meal can be a message too. | How much lighter an empty dish felt on my return journey.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In a dream I had a deck of cards where every spot was a different doorstep.
+b : Could you deliver the hand? | What counted as winning?
+a : I reached the third card and found the door knocker had become a berry. It was that sort of night. | Coming back with the cards in order and enough berries for two.
+
+story foldflip [topic=memories]
+  : I once put a completed errand list into my pocket the wrong way round. My smoky mark printed itself onto the inside of a clean white handkerchief.
+  : I opened it in bright sunlight expecting a plain square and met a perfect dark crescent. At first glance it could have been a tiny moon somebody sent me.
+  b : Did the stain wash out?
+  : Yes. I copied it onto my own page before washing. A little moon makes quite an agreeable sign for going home.
+
+story berrygame [topic=pastimes]
+  : I set down a blackberry alongside each card I meant to remember in a practice game. It was an excellent system until I got hungry halfway through the hand.
+  : Two long suits disappeared from my reckoning. I tried using the little stems, which worked very well indeed once the fruit was eaten.
+  b : Did you win?
+  : I was playing myself. I got the berries and the other player got a perfectly orderly defeat.
+
+story leafrun [topic=travel]
+  : An autumn leaf once travelled down a street just ahead of me, stopping at every doorway where I had no business. It took its time selecting the wrong ones.
+  : When my own doorstep errand came due, the leaf caught on the buckle of my bag and stayed put. We went in together.
+  b : Which door did the leaf finally choose?
+  : I chose the sill for it when my business was over. I'd done my part and could leave the next journey to the weather.
+
+rule @aside1
+when concept=bark self.job=official self.working=yes
+does aside
+cooldown 6h
+say Mark the inner slip. Clear fingers for the outer. | Right flap for the return list.
+
+rule @aside2
+when concept=bark self.likes=blackberries
+does aside
+cooldown 7h
+say Clean cloth first, stained fingers after. | Save a whole berry for the doorstep.
+
+rule @aside3
+when concept=bark self.dislikes=night_noise
+does aside
+cooldown 8h
+say One honest knock beats a shutter talking all night. | Listen for a second step beyond the rattle.
+
+rule @aside4
+when concept=bark here.season=autumn
+does aside
+cooldown 9h
+say Keep the flap shut where the corner blows. | A leaf can run the light errands itself.
+
+dlg resident.hub : I've time to hear whatever you've brought. Stand on the side where you don't have to raise your voice over my bag buckle.
+dlg resident.job [self.job=official self.workplace] : I carry for #self.workplace#. The letter gets a clean passage and my private list gets whatever's on my knuckles.
+dlg resident.news [world.news] : This report travelled as far as my doorstep. #world.news#
+dlg resident.hub [topic.meeting=known] : I'd know your voice behind a folded message, #topic.player#.
+dlg resident.bye : May the wind keep behind your papers and the latch open on the first attempt.
+
+graft resident.hub
+choice What does the dark little crescent say? -> soot_end
+node soot_end
+say Finished and safely delivered. I turn my knuckle against the inside of my own slip. Nobody would thank me for using a letter intended for a clean table.
+free
+choice Why not just cross out the name? -> soot_name
+choice I'll keep my fingers on the clean side. -> hub
+node soot_name
+say Because I might need to read it again. My mark sits beside the name without getting any of its private business on my sleeve.
+choice A convenient little moon. -> hub
+choice My own errand is calling. -> bye

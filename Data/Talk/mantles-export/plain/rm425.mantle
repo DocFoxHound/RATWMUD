@@ -1,0 +1,257 @@
+mantle rm425
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for cty_flint_snowdrift
+title the die by the bedpost
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk balances_a_die_on_a_bedpost_before_a_storm
+likes crisp_apples dice fresh_straw summer_evenings
+dislikes crowds wet_floors
+fears missing_the_small_restless_sounds_before_a_storm
+hopes to_sleep_through_a_whole_hand_of_weather
+topics weather +0.5 work +0.3 family +0.3 pastimes +0.2
+styles comfort=practical gossip=curt refuse=soft tease=none
+marks oath saying
+persona #self.first# balances a die on the bedpost before a storm and lets its first little tap carry the blame for a restless night.
+
+words
+oath! = Rattle my bedpost | By the wakeful pip
+saying! = A settled die owes no answer | The roof makes its own cast
+die = a small bone cube | my chipped die
+pip = the hollow black pip | an inked pit
+post = the broad bedpost | my low wooden post
+tap = a timid little click | the dry first tap
+wind = a restless gust | a ridge wind
+wood = one quiet billet | a piece of settled timber
+apple = a hard green apple | my little russet
+straw = a handful of yellow straw | the fresh floor straw
+knot = a loose binding knot | a cord in a loop
+step = the steadiest board | a patch of solid footing
+crowd = the press of shoulders | a knot of customers
+night = the long still stretch | a wakeful interval
+
+any
+opinion festivals for 2 : A wedding dance put my feet on better terms with a crowded floor. I remember how to enjoy it for a night.
+opinion dole for 2 : A meal kept me steady through a week when my wages did not. My head keeps a clear record of that sort.
+opinion merchants against 2 : There's less fruit in a day's money than my hands remember cutting wood for.
+opinion houses against 1 : Their roof beams come from the same living trees that rock and creak over my head. They might inquire after the cutters.
+opinion strangers against 1 : I'll give an unknown wolf the path but keep looking to see what's coming along behind.
+
+grown
+line greet [pair.band=strangers] : Step on the still board. Welcome. | There's a quiet place within earshot.
+line greet [self.working=yes] : I'll steady this first. Say what you like. | Welcome by my clear shoulder.
+line greet [here.time=dawn] : Morning. The die's stayed upright. | Fresh light at the bedpost.
+line greet [here.time=dusk|night] : Evening. The little sounds are clearer. | Come where the wind can't steal your first word.
+line kin.open [pair.kin!=no] : Kin can take the sheltered footway. | You have my family ear.
+line again.open : We're at the same corner once more. | Second throw of our meeting.
+line greet.return : I've heard your step distinctly. | Come in. The board holds us both.
+line greet.return [pair.band=friends|family] : That friendly voice carries through a storm. | You know how much quiet suits me.
+line greet.return [self.working=yes] : Give me time to ground the timber. | I can listen over any honest stroke.
+line greet.return [here.time=dusk|night] : Welcome by the late lamp. | Evening. I'll hear you before I see.
+line farewell : Quiet boards beneath you. | Come home dry above the soles.
+line farewell.return : My die will mind this corner. | Travel where a branch can't reach you.
+line farewell.return [here.time=night] : Every roof between you and home stay firm. | Good footing beyond the lamplit gate.
+line react.news : Tell it where I needn't strain to hear. | I'd hear exactly what moved first.
+line react.news.new : Fresh pips showing on that throw. | That's the first rattle of that news for me.
+line react.news.known : Yes. I know the note it made. | Same throw as earlier.
+line react.news.doubt : I'd trust that account better after a second hearing. | A loose board could make precisely the same noise.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stand close enough to help. | There's a bitter sort of quiet to that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good clear sound to hear. | That's a kinder throw than I'd expected.
+line ask.how : Have you had a steady hour lately? | How much sleep found you last night?
+line answer.how : Steady enough after the morning apple. | Rather aware of every little sound.
+line decline : I should stay where I know how the ground lies. | I'd best keep the spare hour for some rest.
+line accept_decline : Nobody else can throw your die. | Fair. I have your answer plainly.
+line thank : That settles a little worry for me. | You've spared my ears another hour.
+line sympathise : Take the dry spot beside my elbow. | I'll let you hear my breathing there.
+line reassure : One little rattle needn't shift the whole roof. | Steady your knees before reckoning the rest.
+line preclose : Time to make my last check. | I'll go and see to my sleeping place.
+
+scene dice
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : On a stormy night I leave #die# on #post#.
+b : To foresee the weather? | How can you sleep with that?
+a : It's the timber moving I hear. No bone can tell the wind what to do. | If it's my die tapping I can stop wondering which timber's come unfastened.
+
+scene trees
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : A standing tree has more than one sound when a wind comes through.
+b : Which noises differ? | Which sound worries you?
+a : Leaves hiss and small limbs knock. Then there's the low groan from further down. | The last one when the wind's already eased a bit. I give it room.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : The sound of a crisp apple does my ears good.
+b : Is that why you bite slowly? | What sort of sound?
+a : I save the first bite for a time when I can actually hear it. | No guessing what it means. Just skin and good firm fruit doing what's expected.
+
+scene floor
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I like enough fresh straw to show a single path across the floor.
+b : To follow it? | For counting visitors?
+a : To see that I don't keep pacing a new route in the dark. | Mostly I see how often my own paws went to the door before I slept.
+
+scene game
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : A proper dice throw makes its point and falls quiet.
+b : Don't you throw again? | Unlike the weather?
+a : Once I know the count. First I enjoy the exact end of that small bit of chance. | Rain will stand tapping on a roof all night without showing me its spots.
+
+scene evening
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer dusk gives each board ample time to stop moving.
+b : Even in a breeze? | Does it ever quite stop?
+a : It can ease into night at its own pace. A sharp change unsettles more than wood. | There's generally one last crack from a board that was sunnier than the others.
+
+scene press
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : In a thick crowd my ears can't pick which way a sound is moving.
+b : Is that frightening? | What helps?
+a : It's enough to set my shoulders bracing against a thing that isn't there. | A bit of wall at my back. At least one direction's taken care of then.
+
+scene wet
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet board keeps changing its mind about where I ought to stand.
+b : You mean it slips? | How do you get across?
+a : My feet slip. I like giving the board the responsibility for a moment. | Flat feet, slow, where the nails show. Then I wipe a space for whoever follows.
+
+scene mate
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I can speak quietly to #self.spouse# even after the day's all been noise.
+b : What do you say? | Does that help your sleep?
+a : Whatever plain little thing is left when I've let the day's creaks go by. | I like knowing one voice in the house doesn't have to compete with weather.
+
+scene lost
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I watch the winter road as though it still had somebody to bring me.
+b : Do you know who? | Do you go far?
+a : Yes. It's something I've kept private since a hard season. Thank you for asking quietly. | Only far enough for a look. The road can go on without my feet.
+
+scene yard
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A long log will take its time round a bend regardless of the hurry behind it.
+b : Have you seen the rear swing? | Does shouting help?
+a : Many times. That's why I look round once more before edging up to a load. | One clear instruction helps. Several loud opinions are mostly scenery.
+
+scene money
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd examine both pieces of a split apple before buying either half.
+b : Why both? | Wouldn't a whole apple do?
+a : A good half on display up front can have a sorry companion below. | Delightfully, when my purse can manage it. A half and some bread often serves.
+
+scene guide
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : If you're new near a cutting, wait for a clear word before crossing.
+b : Even if it's still? | Who should speak?
+a : When it goes still I particularly want to know what's hanging before I go underneath. | The wolf with eyes on the whole limb, not just the one nearest the footpath.
+
+scene pip
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : On a tired morning I trace the pips with my thumb to calm my claws.
+b : Counting them? | Does it keep you alert?
+a : I know the count already. The small hollows give worry a harmless occupation. | Helps me notice how tired I am before I start anything that deserves two clear eyes.
+
+scene wrongwork
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : I choose which side to approach a fallen limb by looking at the little twigs.
+b : Aren't they light? | Tell you which side's safest?
+a : They're light enough to show a live spring in the wood before the heavy bit moves. | They tell me which questions still need answering. I won't trust a single sign alone.
+
+scene quiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : In my prayers I leave the weather to the Bright One.
+b : What do you ask? | Would a little sleep do?
+a : For the sense to shelter early and the decency to make room for somebody else. | It would. I take that particular request to bed rather often.
+
+scene rumour
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't blame a whole gust on one rumbling shutter.
+b : Meaning what? | Would you pass a warning on?
+a : A loud account of a storm can travel without a cloud ever having formed. | An honest one with the place and sound attached, so a listener knows what I really heard.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My die rolled out into a road in a dream and every pip became a little door.
+b : Did any open? | What lay beyond?
+a : The one I'd landed on was underneath. In my dream it took all night to roll the road clear. | I woke up in time to be spared that particular piece of curiosity.
+
+story windpost [topic=memories]
+  : My sleeping die once made a promising clack on a quite cloudless evening. I sat up expecting the first moan of wind through the rafters.
+  : Instead I found the post had grown dry and a little sliver had lifted under the cube. The whole weather report fitted under one fingernail.
+  b : Did you stop using it?
+  : I smoothed the post. Even a poor forecaster can do an honest turn as a warning about the furniture.
+
+story core [topic=food]
+  : I cut an apple carefully into six so each bit would correspond to a throw. It seemed a fair way of stretching a small supper.
+  : My first throw was a six. I stared at the entire apple sitting there waiting for my rules to become inconvenient.
+  b : Did you eat the lot?
+  : I ate three and set the other three by for morning. A wolf is allowed better sense than a gaming piece.
+
+story dance [topic=memories self.married=yes]
+  : At my wedding the rhythm slipped from my keeping and simply stood still in my own small patch. The music seemed to be coming at me from two directions.
+  : I felt my partner's hand and the direction of the next step at once. One pace forward brought me right back among the instruments.
+  b : Did you lose the beat again?
+  : Probably. I remember the step that brought me back much better than any that wandered off.
+
+rule @aside1
+when concept=bark self.job=woodcutter self.working=yes
+does aside
+cooldown 6h
+say Wait for the branch to stop talking. | Check the smaller twigs before passing the trunk.
+
+rule @aside2
+when concept=bark self.likes=dice
+does aside
+cooldown 7h
+say Flat corner on the post. Let that settle. | One die's enough company for a dark room.
+
+rule @aside3
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Catch that shine before it catches a sole. | Dry boards where the door comes in.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Time to test the wobbling post. | That little tap can take the night watch.
+
+dlg resident.hub : Choose a firm plank near my better ear and give me your message without a lot of guessing.
+dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. I like the wood to settle before I promise the route is clear.
+dlg resident.news [world.news] : I can distinguish this much above the ordinary noise. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, your step has a sound my ears know between the others.
+dlg resident.bye : May there be no more than a little honest settling in your roof tonight.
+
+graft resident.hub
+choice What can your sleeping die predict? -> die_watch
+node die_watch
+say Its own fall, with fair accuracy. A gust can jar the timber enough to shake it down. If it taps before I sleep I can stop waiting for the first noise.
+free
+choice What if it falls for no particular reason? -> die_lean
+choice I can hear that little tap already. -> hub
+node die_lean
+say Then the post is leaning, the cube's got a chip or I've been moving about in bed. All three make better company than an unexplained bang in the dark.
+choice I wish you a steady post. -> hub
+choice I'll let the dice rest. -> bye
