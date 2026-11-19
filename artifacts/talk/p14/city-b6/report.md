@@ -141,7 +141,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm516, rm523, rm528, rm542, rm547.
 - Friend also listed as kin — rm519, rm520, rm523, rm527, rm529, rm530, rm531, rm532, rm533, rm534, rm540, rm541, rm542, rm544, rm547.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm538. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm518, rm531, rm541, rm543. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 A few residents have a formal post with an empty job class. For rm531 and rm541 the workplace and post support official duties without requiring a job identifier the records do not supply. The gate detail for rm542 and the customs work for rm547 have districts in the workplace field. Their work scenes use locations within those areas. The finer description in rm543 points to yard work; the live fields have trade wording but no named workplace or post. The speaker can discuss the work and hope for a dry berth without claiming a vessel.
