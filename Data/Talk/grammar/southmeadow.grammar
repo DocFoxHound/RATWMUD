@@ -255,7 +255,7 @@ bc_it_was = It was, ripe and right. | That it was.
 # Doc 84, Phase 13 (§10, §13.4): the English the C++ writes, in the window: the way to a place (#way_close#,
 # #way_short#, #way_far#: "The Grey Gull is a short walk to the north.") and a refusal's reason (#refuse_*#, the
 # game's reasons as the resident says them).
-way_close = over the hedge | close by
+way_close = a hedge or two off | close by
 way_short = a short walk down the lane | a short walk
 way_far = a long way across the fields | a long way
 refuse_gone = That's harvested and gone. | That work is gone.
