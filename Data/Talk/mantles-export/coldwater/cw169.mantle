@@ -1,6 +1,6 @@
-# cw169, the rain-bettor (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw169, the rain-bettor (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw169
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -290,8 +290,8 @@ dlg @1 resident.hub : #greet#! Name it, and I'll find it. | #greet#, #address#. 
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. I knew you would be. | #topic.player#! #greet#. Sit down.
 dlg @3 resident.hub [here.weather=rain] : #greet#. Get under the roof, quick. It'll stop soon; I've a copper on it.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Easy, now. There's no trouble in here. | Steady on. Say what you need.
-dlg @1 resident.job [self.job=merchant] : I'm #self.trade_words#. Fetching, carrying, talking. Mostly talking. | #shop.capitalize#'s the family's. Whatever you forgot, it's in here.
-dlg @2 resident.job : I'm #self.trade_words#. Keeps me out of the #rain#. | #job_busy#
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Fetching, carrying, talking. Mostly talking. | #shop.capitalize#'s the family's. Whatever you forgot, it's in here.
+dlg @2 resident.job : #self.trade_words.capitalize#. Keeps me out of the #rain#. | #job_busy#
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new, and I'd know. Everything comes past #counter#.
 dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. It came in with the first customer. | From #world.news_from#: #world.news#. Isn't that something?
 dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Not from me, mind. Well, from me. | Folk are saying #topic.subject# #topic.claim#. That's all I know, honest.

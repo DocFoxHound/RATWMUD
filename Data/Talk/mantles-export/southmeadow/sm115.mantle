@@ -1,6 +1,6 @@
-# sm115, the thrice-told farmhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm115, the thrice-told farmhand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm115
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent broad light
@@ -145,7 +145,7 @@ a : I do! I can't help it. Wide swings and wide talk, both. | Slow. But I've onl
 scene granary_day
 when topic=work self.working=yes self.job=farmer
 does tell.self / react.self / assess
-a : Sacks all morning up to #loft#. My arms are long as a ladder now. | We turned the grain in #loft# today. Hot work, and dusty, and I talked the whole way through. | I'm #self.trade_words#, and today that means sacks. Tomorrow too.
+a : Sacks all morning up to #loft#. My arms are long as a ladder now. | We turned the grain in #loft# today. Hot work, and dusty, and I talked the whole way through. | #self.trade_words.capitalize#, and today that means sacks. Tomorrow too.
 b : Sounds heavy. | I bet they loved that. | Sacks are sacks.
 a : Heavy, but good. You feel it in your sleep. | They did! Well. Some of them. Mostly they sang louder. | Sacks are sacks. But I count them out loud, and that makes them go quicker, #address#.
 
@@ -268,7 +268,7 @@ say Let #scythe# do it. Let it do it. | Swing, step, swing. Don't talk. Don't ta
 
 dlg @1 resident.hub : #greet#! What can I tell you? I know plenty. | #greet#, #address#! Stop a while. I'll talk if you will.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. Have I told you about the pig? | #topic.player#! Good. I've a story you'll like, if I haven't told you.
-dlg @1 resident.job [self.job=farmer] : I'm #self.trade_words#. Sacks to #loft#, rows to cut, and learning #scythe# when they let me. | Fields, mostly. And talking. Mostly talking, #boss# says.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. Sacks to #loft#, rows to cut, and learning #scythe# when they let me. | Fields, mostly. And talking. Mostly talking, #boss# says.
 dlg @2 resident.job : #job_busy# Whatever wants doing, loudly. | Odd jobs, #address#, with a story for each one.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not even at the granary, and that's saying something. | Nothing new, #address#. Only my three stories, and you've heard those.
 dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# For once I've nothing to pass on. | Nothing about anybody. I'm as surprised as you.

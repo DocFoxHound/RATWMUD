@@ -1,6 +1,6 @@
-# cw208, the almoner in oilcloth (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw208, the almoner in oilcloth (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw208
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -231,7 +231,7 @@ a : Nearly. I don't dance. #oath#, I was tempted. | Somebody is. I'll not ask wh
 scene learning_trade
 when topic=work self.apprentice=yes self.working=yes
 does tell.self / react.self / assess
-a : I'm still learning #self.trade_words#. Mostly I'm learning not to say what I think. | They're teaching me #almsbook# and patience. I'm better at the book. | My teacher says I've the heart for it and the temper of a wet cat.
+a : Still learning. #self.trade_words.capitalize#. Mostly I'm learning not to say what I think. | They're teaching me #almsbook# and patience. I'm better at the book. | My teacher says I've the heart for it and the temper of a wet cat.
 b : That's the hard part. | Patience comes. | Is that fair?
 a : It's the only hard part. The rest is counting #loaves#. | It'll have to. I'm not getting any sweeter. | It's fair. I've never been called sweet. #plain.capitalize#.
 
@@ -274,7 +274,7 @@ story two_hats [topic=work|memories self.working=yes self.job=none]
 dlg @1 resident.hub : #greet#. Out with it. | #greet#, #address#. What do you need?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. | #topic.player#. Get a hood yet? No. I can see.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Say it straight or don't say it, #address#. | #greet#. I've no time for trouble, #address#.
-dlg @1 resident.job : I'm #self.trade_words#. I do it properly or not at all. | #self.trade_words.capitalize#. Long days, and worth them.
+dlg @1 resident.job : #self.trade_words.capitalize#. I do it properly or not at all. | #self.trade_words.capitalize#. Long days, and worth them.
 dlg @2 resident.job [self.working=yes self.job=none] : Bread at #almsdoor#, names in #almsbook#, and no fuss. | I feed folk. Somebody's got to, and it may as well be me.
 dlg @1 resident.bye : #farewell#. Get a hood. | #farewell#, #address#.
 graft resident.hub

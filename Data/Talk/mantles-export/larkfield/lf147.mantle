@@ -1,6 +1,6 @@
-# lf147, the lid-dater (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf147, the lid-dater (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf147
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -407,7 +407,7 @@ dlg @9 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You know wh
 dlg @10 resident.hub [here.time=night] : Late, but the lamp's lit. What is it?
 dlg @11 resident.hub [pair.disposition=hostile|wary] : Say what you've come for. I've #lids# to write.
 dlg @12 resident.job [self.role=merchant] : I keep #self.workplace#. I set the fruit, write #lids# and sell what I set. | Preserves. Plum, #quince#, apple, and the day and the weather on every jar.
-dlg @13 resident.job : I'm #self.trade_words#, and #busy# with it. | #job_busy#
+dlg @13 resident.job : #self.trade_words.capitalize#, and #busy# with it. | #job_busy#
 dlg @14 resident.business [business=thriving] : Selling faster than I can set it. I'll want #secondshop# at this rate. | Thriving. I've not written spare on a shelf in weeks.
 dlg @15 resident.business [business=failing] : Poorly. The jars sit and the days on #lids# get older. | Badly, and I'll not dress it up. Folk aren't buying.
 dlg @16 resident.business [business!=thriving|failing] : Steady. It pays, and a little goes by for #secondshop#. | Steady enough. Every jar sells in the end.

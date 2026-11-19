@@ -1,6 +1,6 @@
-# lf151, the wheel-spinner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf151, the wheel-spinner (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf151
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -403,7 +403,7 @@ dlg @1 resident.hub : #greet#. Say it quick; I've #rim# on. | #greet#. What's wa
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Same as last time. What's wanted?
 dlg @3 resident.hub [here.time=night] : It's late. Say what you need and let me lock #shed#.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay out in the light, there, where I've a clear look at you. Now. #talk_open#
-dlg @1 resident.job [self.role=merchant] : I'm the #self.trade_words#. They bring it in broken and take it out #runtrue#. | I keep the trade, and I keep it myself. #oneprice.capitalize#.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. They bring it in broken and take it out #runtrue#. | I keep the trade, and I keep it myself. #oneprice.capitalize#.
 dlg @2 resident.job : Whatever wants doing. Quickly, mostly. #hm#. | #job_busy#
 dlg @1 resident.business [business=thriving] : Turning carts away. I don't like it, but I'll take #takings#.
 dlg @2 resident.business [business=steady] : Steady. #fulltill.capitalize# most nights, a light one some.

@@ -1,6 +1,6 @@
-# cw211, the knife-row keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw211, the knife-row keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw211
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -277,7 +277,7 @@ say Look at that light. Still day, nearly. | #evening.capitalize#. I'd have ever
 dlg @1 resident.hub : #greet#. What can I do, #address#? | #greet#. Ask away.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #good.capitalize# to see you again. What's wanted?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Ask it plain and you'll get it plain, #address#.
-dlg @1 resident.job [self.working=yes self.job=merchant] : I'm #self.trade_words#. I cut, I trim, I keep #knives# in order. | I came to #trade# late, but I know it to the bone now.
+dlg @1 resident.job [self.working=yes self.job=merchant] : #self.trade_words.capitalize#. I cut, I trim, I keep #knives# in order. | I came to #trade# late, but I know it to the bone now.
 dlg @2 resident.job : I work, and I do it properly. Nothing more to tell. | Whatever's wanted, done right the first time.
 dlg @1 resident.news [world.news] : Somebody had it at the counter: #world.news_from#, #world.news#. That's as it was told.
 dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new, #address#. A quiet week, so far.

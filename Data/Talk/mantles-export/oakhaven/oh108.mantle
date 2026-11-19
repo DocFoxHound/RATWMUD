@@ -1,6 +1,6 @@
-# oh108, the shelf-squaring storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# oh108, the shelf-squaring storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle oh108
-revision 1
+revision 2
 state ready
 dialect oakhaven
 accent none
@@ -415,7 +415,7 @@ dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What can I 
 dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. Everything's where you left it.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Keep your paws where I can see them and say your business.
 dlg @5 resident.hub [here.time=night] : It's late. I was balancing #ledger#. What is it?
-dlg @1 resident.job [self.role=merchant] : I'm the #self.trade_words#. Salt, oil, cloth, #candles#, and nothing that falls apart. | I keep #shelves# square and #weights# honest. That's the whole trade.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. Salt, oil, cloth, #candles#, and nothing that falls apart. | I keep #shelves# square and #weights# honest. That's the whole trade.
 dlg @2 resident.job : This and that, done properly. | I keep things in order. Somebody has to.
 dlg @1 resident.business [business=thriving] : Thriving. I've had to start a second ledger. | #good.capitalize#. Better than I'll say aloud.
 dlg @2 resident.business [business=failing] : Badly. #shelves.capitalize# are emptier than I'd like, and so's the box. | Poorly. I'll not pretend otherwise.

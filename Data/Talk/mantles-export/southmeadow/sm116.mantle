@@ -1,6 +1,6 @@
-# sm116, the knotted-string reaper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm116, the knotted-string reaper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm116
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent broad light
@@ -257,7 +257,7 @@ say No head, but a neck. No, I know that one. | What's heavier, the sheaf or the
 
 dlg @1 resident.hub : #greet#. What is it? | #greet#. Say what you need, #address#.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Go on.
-dlg @1 resident.job [self.job=farmer] : I'm #self.trade_words#. I cut #sheaves#. I count them. That's the work. | Reaping, mostly. And keeping count on #string#.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. I cut #sheaves#. I count them. That's the work. | Reaping, mostly. And keeping count on #string#.
 dlg @2 resident.job : #job_busy# Steady, every day. | Whatever's put in front of me, #address#.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I've heard. I don't listen much, #address#.
 dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. Ask a #busybody#; they've the mouth for it.

@@ -1,6 +1,6 @@
-# cw197, the rain-watcher on the step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw197, the rain-watcher on the step (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw197
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -274,7 +274,7 @@ say Dry. Look at #street#. Dry. | #saying.capitalize#. And it has.
 dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Make it quick; I'm watching something.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. What is it?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Well? Out with it, and then move along.
-dlg @1 resident.job [self.working=yes] : I'm #self.trade_words#. That's all you need to know about it.
+dlg @1 resident.job [self.working=yes] : #self.trade_words.capitalize#. That's all you need to know about it.
 dlg @2 resident.job : I keep my own hours, and #street# gets my watching. It needs it.
 dlg @1 resident.news [world.news] : I heard it under #window#, from #world.news_from#: #world.news#. Believe as much as you like.
 dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only #therain#, and that's no news. | Nothing. Or nothing I'm telling.

@@ -1,6 +1,6 @@
-# lf144, the load-blesser (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf144, the load-blesser (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf144
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -270,7 +270,7 @@ say Bright One, keep us through the night... | Mm. The evening hymn, then #soup#
 dlg @1 resident.hub : #greet#. What is it? | #greet#. Stand back from #hook# and say on.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bright One keep you. What's wanted?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Say it plain, and keep your paws off #rope#.
-dlg @4 resident.job : I'm #self.trade_words#. I bless every load, and none of them drop off #hook#. | #job_busy#
+dlg @4 resident.job : #self.trade_words.capitalize#. I bless every load, and none of them drop off #hook#. | #job_busy#
 dlg @5 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new but #drizzle# and ships.
 dlg @6 resident.gossip [here.gossip!=yes] : #gossip_none# | I'll not carry talk. It's a sin with a smile on.
 dlg @7 resident.bye : #farewell#. Bright One keep you. | #farewell#. Mind #hook# going.

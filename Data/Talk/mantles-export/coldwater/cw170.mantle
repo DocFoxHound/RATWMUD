@@ -1,6 +1,6 @@
-# cw170, the berth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw170, the berth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw170
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent light broad
@@ -447,8 +447,8 @@ dlg @1 resident.hub : #greet#. #mm#. What is it you're after? | #greet#, #addres
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again, then. | #topic.player#. #greet#. Sit if you're staying.
 dlg @3 resident.hub [here.time=night] : It's late, and I'm #tired#. Ask it quick and I'll answer it slow. | Late hour. #lamps.capitalize# are lit; say your piece.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak your piece from where you stand, #stranger#. | #mm#. I'm listening. From there.
-dlg @1 resident.job [self.job=sailor self.master=yes] : I'm #self.trade_words#. Berths, dues, #ledger#, and whoever's shouting at the window. | I keep #berths# and write down every hull that ties up. Slowly, and right.
-dlg @2 resident.job : I'm #self.trade_words#. Slow work, done right. | #job_busy#
+dlg @1 resident.job [self.job=sailor self.master=yes] : #self.trade_words.capitalize#. Berths, dues, #ledger#, and whoever's shouting at the window. | I keep #berths# and write down every hull that ties up. Slowly, and right.
+dlg @2 resident.job : #self.trade_words.capitalize#. Slow work, done right. | #job_busy#
 dlg @1 resident.news [world.news] : Word's come in from #world.news_from#: #world.news#. #dunno#. | From #world.news_from#: #world.news#. Weigh it yourself.
 dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#, down by #steps#. | It's all #world.event_words# today.
 dlg @3 resident.news [world.wagons=raided] : Somebody's wagon was robbed out on the road, they're saying. Best keep behind the walls for a bit. #warn#.

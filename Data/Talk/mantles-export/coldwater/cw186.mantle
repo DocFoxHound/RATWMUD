@@ -1,6 +1,6 @@
-# cw186, the drip-counter at the block (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw186, the drip-counter at the block (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw186
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -280,7 +280,7 @@ say #bells.capitalize#. Again. | Every blessed morning.
 dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Can I help?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. What's wanted? | #topic.player#. Get under #awning#, out of #wet#.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : What do you want? I'm working #block#.
-dlg @1 resident.job [self.job=merchant self.working=yes] : I'm #self.trade_words#. Cutting, hanging, scrubbing #block#. | #mutton.capitalize#, mostly. Some pork. Clean cuts, honest scales.
+dlg @1 resident.job [self.job=merchant self.working=yes] : #self.trade_words.capitalize#. Cutting, hanging, scrubbing #block#. | #mutton.capitalize#, mostly. Some pork. Clean cuts, honest scales.
 dlg @2 resident.job : I work, shore-friend. Nothing else worth saying. | This and that. Keeps me fed and #room# paid.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Not that's reached #block#. I keep my ears to myself.
 dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | And if there were, it'd stay behind #block#. #saying#.

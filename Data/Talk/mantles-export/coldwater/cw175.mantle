@@ -1,6 +1,6 @@
-# cw175, the swept step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw175, the swept step (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw175
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -93,7 +93,7 @@ line @33 warn [world.bandits=near] : The roads are bad this week. #warn#. | Past
 scene sweeping_scale
 when topic=work self.working=yes self.job=none
 does tell.self / ask.detail / answer.detail / assess
-a : I'm #self.trade_words#. Mostly I sweep #scale# and carry it out to the heap. | I swept #floor# four times today. You'd not know it to look at it. | My work's keeping #floor# clear, so nobody trips with hot iron in their paws.
+a : #self.trade_words.capitalize#. Mostly I sweep #scale# and carry it out to the heap. | I swept #floor# four times today. You'd not know it to look at it. | My work's keeping #floor# clear, so nobody trips with hot iron in their paws.
 b : What's the scale for? | Four times? | That's important work.
 a : The heap. Somebody buys it for the roads, I'm told. I just push #broom#. | Four, and it'll be five before the bell. #saying.capitalize#. | It is. Nobody notices till somebody trips on #floor#. Then everybody does.
 b : #bc_ha# | #bc_poor_soul# | #bc_true#
@@ -285,7 +285,7 @@ dlg @1 resident.hub : #greet#. Mind #step#. What's wanted? | #greet#, #address#.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you. What's wanted?
 dlg @3 resident.hub [here.time=night] : It's late for the Sump. Say what you need and get home safe.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Out with it, and mind #step#.
-dlg @5 resident.job : I'm #self.trade_words#. I sweep, I carry, and I keep #floor# safe. | Whatever needs doing. Mostly #broom#.
+dlg @5 resident.job : #self.trade_words.capitalize#. I sweep, I carry, and I keep #floor# safe. | Whatever needs doing. Mostly #broom#.
 dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Down here it's all bread prices and who's shouting. | Nothing new, #address#. Quiet week, by Sump standards.
 dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep street talk off #step#.
 dlg @8 resident.bye : #farewell#. Keep moving. | #farewell#, #address#. Mind #step#.

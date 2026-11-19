@@ -1,6 +1,6 @@
-# cw172, the coal in the pocket (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw172, the coal in the pocket (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw172
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -279,7 +279,7 @@ dlg @1 resident.hub : #greet#. What can I wrap for you, or is it just talk? | #g
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're looking lucky today. What's wanted?
 dlg @3 resident.hub [here.time=night] : It's late. Meat's put away for the night. Talk I've still got.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? What is it, #address#?
-dlg @5 resident.job : I'm #self.trade_words#. Wrapping, weighing, sweeping, smiling. | I help out. I'm the one with paper and string, not #cleaver#.
+dlg @5 resident.job : #self.trade_words.capitalize#. Wrapping, weighing, sweeping, smiling. | I help out. I'm the one with paper and string, not #cleaver#.
 dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the price of mutton, and that's not news. | Nothing new. It's been a quiet week on our street, #address#.
 dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep counter talk at the counter.
 dlg @8 resident.bye : #farewell#. Good luck to you. | #farewell#, #address#. Mind the step.

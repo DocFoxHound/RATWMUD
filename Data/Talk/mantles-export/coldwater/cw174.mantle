@@ -1,6 +1,6 @@
-# cw174, the lime-burner in the wind (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw174, the lime-burner in the wind (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw174
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent broad light
@@ -421,8 +421,8 @@ dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Say what you ne
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Come in. | #topic.player#. #greet#. Mind #floor#.
 dlg @3 resident.hub [here.time=night] : It's late. I'm tired, and I smell of smoke. Ask quick. | #greet#. Late for it. What's wanted?
 dlg @4 resident.hub [pair.disposition=hostile|wary] : You're a stranger to me. Your business, from there. | #so#. You'll keep your distance till I do.
-dlg @1 resident.job [self.job=crafter self.role=merchant] : I #self.trade_words#. Burn the stone, draw #lime#, sell it by the sack. Answer for every load. | Lime. I burn it for the House and keep #tally# square. No more to it than that.
-dlg @2 resident.job : I #self.trade_words#. It's work, and it's mine. | #job_busy#
+dlg @1 resident.job [self.job=crafter self.role=merchant] : #self.trade_words.capitalize#. Burn the stone, draw #lime#, sell it by the sack. Answer for every load. | Lime. I burn it for the House and keep #tally# square. No more to it than that.
+dlg @2 resident.job : #self.trade_words.capitalize#. It's work, and it's mine. | #job_busy#
 dlg @1 resident.business [business=thriving] : Better than steady. Folk are building, and building wants lime. | Busy. I can't burn it fast enough.
 dlg @2 resident.business [business=steady] : Steady. The carts are late more than they're early, but #lime# sells. | It pays. I'd not say more than that.
 dlg @3 resident.business [business=failing] : Badly. Nobody's building. #sacks.capitalize# just sit. | Poor. No sense pretending otherwise.

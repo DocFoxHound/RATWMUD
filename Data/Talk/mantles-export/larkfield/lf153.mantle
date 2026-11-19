@@ -1,6 +1,6 @@
-# lf153, the coin-weigher at the door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf153, the coin-weigher at the door (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf153
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -251,7 +251,7 @@ say There they come. One, two. Look at that. | #stars.capitalize#. Worth the col
 dlg @1 resident.hub : #greet#. What's wanted? Speak up; the street's loud. | #greet#. In or out, then.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #welcome_back#. What is it?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. I'm watching you, and I'm good at it. Say what you want.
-dlg @1 resident.job [self.working=yes] : I'm #self.trade_words#. I watch who comes and goes, and weigh what they pay. | #door.capitalize#. I mind it. It's more than it looks.
+dlg @1 resident.job [self.working=yes] : #self.trade_words.capitalize#. I watch who comes and goes, and weigh what they pay. | #door.capitalize#. I mind it. It's more than it looks.
 dlg @2 resident.job : A bit of this, a bit of that. #job_busy#
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd know; it all comes past #door#. | Nothing worth the weight.
 dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't pass light coin, #address#, and gossip's light.

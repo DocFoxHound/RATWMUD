@@ -1,6 +1,6 @@
-# cw187, the hull-namer (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw187, the hull-namer (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw187
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent none
@@ -426,7 +426,7 @@ dlg @1 resident.hub : #greet#! Speak up: rope, news, or a ship's name? | #greet#
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I've three new ships to tell you about. | #topic.player#! Back again. Good. What's wanted?
 dlg @3 resident.hub [here.time=night] : It's late, and loud. What is it, #address#?
 dlg @4 resident.hub [pair.disposition=hostile|wary] : What do you want? Say it and be quick; I've work.
-dlg @1 resident.job [self.job=crafter self.working=yes] : I'm #self.trade_words#. Rope, tar, lanterns, cleats, and a free opinion on every ship in #sound#. | I splice, I tar, I sell. And I name ships, but nobody pays me for that.
+dlg @1 resident.job [self.job=crafter self.working=yes] : #self.trade_words.capitalize#. Rope, tar, lanterns, cleats, and a free opinion on every ship in #sound#. | I splice, I tar, I sell. And I name ships, but nobody pays me for that.
 dlg @2 resident.job : A bit of everything, and too much talking while I do it. | Whatever's wanted. And I watch #hulls#; that's the part I'd do for nothing.
 dlg @1 resident.business [business!=thriving|failing] : Steady. Ships need rope, and rope wears out. | Steady as #tide#. Never a rush, never a drought.
 dlg @2 resident.business [business=thriving] : Run off my paws! Every ship in #harbour# wants something.

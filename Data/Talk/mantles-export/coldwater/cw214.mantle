@@ -1,6 +1,6 @@
-# cw214, the square hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw214, the square hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw214
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -265,7 +265,7 @@ story the_snow_letter [topic=season|memories self.likes=first_snow]
 dlg @1 resident.hub : #greet#. #nohurry#. How can I help? | #greet#, #address#. Sit down, if you like.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're welcome back. | #topic.player#. Come back for a tale, or a paper?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Please, say it plainly. I'll listen. | I'll help if I can, #address#. Calmly, though.
-dlg @1 resident.job [self.job=scholar] : I'm #self.trade_words#. Copying, filing, and finding what's lost. | I keep #rolls# at #self.workplace#. #saying.capitalize#; I find it.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. Copying, filing, and finding what's lost. | I keep #rolls# at #self.workplace#. #saying.capitalize#; I find it.
 dlg @2 resident.job : I write things down so they don't get lost. That's most of it. #saying.capitalize#. | A quiet sort of work, #address#. I like it.
 dlg @1 resident.bye : #farewell#. #nohurry#. | #farewell#, #address#. Come back soon.
 graft resident.hub

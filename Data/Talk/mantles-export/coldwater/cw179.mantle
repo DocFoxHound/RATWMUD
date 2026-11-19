@@ -1,6 +1,6 @@
-# cw179, the humming preserver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw179, the humming preserver (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw179
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent light broad
@@ -420,7 +420,7 @@ dlg @7 resident.hub : #greet#. What'll it be? | #greet#, #address#. Mind the cra
 dlg @8 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a spoon of something for you. What's wanted?
 dlg @9 resident.hub [here.time=night] : Late, this. If it's jam, I'm closed. If it's talk, I've #cider#.
 dlg @10 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain, #address#.
-dlg @11 resident.job [self.role=merchant] : I'm #self.trade_words#. Jams, jellies, #pickles#, and I put up every #jar# myself. | I put up #fruit#. #plums.capitalize# mostly. Then I sell it and buy more.
+dlg @11 resident.job [self.role=merchant] : #self.trade_words.capitalize#. Jams, jellies, #pickles#, and I put up every #jar# myself. | I put up #fruit#. #plums.capitalize# mostly. Then I sell it and buy more.
 dlg @12 resident.job : #busy.capitalize#, #address#. Stir, seal, sell, sleep. | #job_busy#
 dlg @13 resident.business [business=thriving] : The #jars# go faster than I can fill them. | Thriving. My arms ache, so I know it's true, #address#.
 dlg @14 resident.business [business=failing] : Thin. Jam's the first thing folk stop buying. #dryly#. | #bad.capitalize#, #address#. I'll not pretend.

@@ -1,6 +1,6 @@
-# cw204, the prayer-stone picker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw204, the prayer-stone picker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw204
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -102,7 +102,7 @@ a : Three. I said thank you at the water each time, #address#. | Five. It'll be 
 scene picking_rows
 when topic=work self.working=yes self.job=none here.season=autumn
 does tell.self / react.self / assess
-a : I'm #self.trade_words#. Up #ladder#, fill #basket#, down, empty, up again. All day. | #rows.capitalize# go on further than you can see. I don't look at the end. | Good #apple# this year. Heavy on the branch. I say a word for whoever eats it.
+a : #self.trade_words.capitalize#. Up #ladder#, fill #basket#, down, empty, up again. All day. | #rows.capitalize# go on further than you can see. I don't look at the end. | Good #apple# this year. Heavy on the branch. I say a word for whoever eats it.
 b : Hard on the legs. | Wise. | Whoever eats it?
 a : Hard on everything. I pray on #ladder#; it passes the time. | Keep looking for the last tree and you'll never climb the next one. | Somebody in the city. I'll never know them. #keepyou.capitalize#, I say anyway.
 
@@ -267,7 +267,7 @@ dlg @1 resident.hub : #greet#. Is there something you need? | #greet#, #address#
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I'm glad you've come back.
 dlg @3 resident.hub [here.time=night] : It's late, #address#. I'm just back. What is it?
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Ask what you want to ask, #address#, and I'll answer if I can.
-dlg @1 resident.job [self.working=yes self.job=none] : I'm #self.trade_words#. Up #ladder# and down, and a prayer on every rung. | I work out at #self.workplace#, and walk there and back each day.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Up #ladder# and down, and a prayer on every rung. | I work out at #self.workplace#, and walk there and back each day.
 dlg @2 resident.job : I work as I'm able, and I pray as I go. | Whatever I'm given, done with care, #address#.
 dlg @1 resident.news [world.news] : It was said at #chapel#: word from #world.news_from#, #world.news#. I'm praying it's no worse than that.
 dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I've heard, #address#. A quiet week, thank the Bright One.

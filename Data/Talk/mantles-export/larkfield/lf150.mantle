@@ -1,6 +1,6 @@
-# lf150, the mark-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf150, the mark-reader (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf150
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -414,7 +414,7 @@ dlg @9 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Go on.
 dlg @10 resident.hub [here.time=night] : It's late. What is it?
 dlg @11 resident.hub [pair.disposition=hostile|wary] : Hm. Say it, then.
 dlg @12 resident.job [self.role=merchant] : I keep #self.workplace#. Rings, clasps, chains. I read #marks# and mend what's broken. | I'm at #bench# all day. That's the work.
-dlg @13 resident.job : I'm #self.trade_words#. Paw-work at #bench#, and eye-work. | #job_busy#
+dlg @13 resident.job : #self.trade_words.capitalize#. Paw-work at #bench#, and eye-work. | #job_busy#
 dlg @14 resident.business [business=thriving] : Busy. More mending than #bench# can hold. | Selling, for once. Don't tell anyone.
 dlg @15 resident.business [business=failing] : Poorly. #trays.capitalize# sit full and nobody buys. | Badly. I'll not pretend otherwise.
 dlg @16 resident.business [business!=thriving|failing] : Steady. Mending pays #rent#. | Steady enough. #trays.capitalize# turn over, slowly.

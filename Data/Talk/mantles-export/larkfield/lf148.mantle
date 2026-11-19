@@ -1,6 +1,6 @@
-# lf148, the weekly asker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf148, the weekly asker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf148
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -274,7 +274,7 @@ say #saying.capitalize#. I'll be back at #window# next week. | #oath#. They'll f
 dlg @1 resident.hub : #greet#. What's wanted? I'll help if I can. | #greet#. Have you come far? Sit down a minute.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've #cheese#, if you're hungry. What is it?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say it straight. I'd sooner hear it plain.
-dlg @1 resident.job [self.job=merchant] : I'm #self.trade_words#. #sundries.capitalize#, and whatever folk forgot. | #counter.capitalize#. I'm learning it, and stubborn about it.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. #sundries.capitalize#, and whatever folk forgot. | #counter.capitalize#. I'm learning it, and stubborn about it.
 dlg @2 resident.job : Whatever's in front of me. Done properly. | #job_busy#
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask me about the roads instead. | Nothing new. Only a lane I found behind the chandler's.
 dlg @2 resident.news [world.news] : #traveller.capitalize# from #world.news_from# had it: #world.news#.

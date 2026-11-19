@@ -1,6 +1,6 @@
-# lf139, the swearer who says sorry (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf139, the swearer who says sorry (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf139
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -94,7 +94,7 @@ b : #bc_ha# | #bc_bless_you# | #bc_i_hope_so#
 scene sawdust_down
 when topic=work|smalltalk self.working=yes
 does tell.self / react.self / assess
-a : I lay #sawdust# at dawn and again at noon. #shop.capitalize# smells clean, at least. | I'm #self.trade_words#. I sweep, I carry and I keep out from under paws. | First thing every morning, #broom# and fresh #sawdust#. The rest of the day follows.
+a : I lay #sawdust# at dawn and again at noon. #shop.capitalize# smells clean, at least. | #self.trade_words.capitalize#. I sweep, I carry and I keep out from under paws. | First thing every morning, #broom# and fresh #sawdust#. The rest of the day follows.
 b : Twice a day? | Sounds like a lot. | Sensible.
 a : Twice. A shop floor wants it. I'd rather sweep than slip. | It's honest work and I like it. Nobody asks me to be clever. | It is. #saying#.
 
@@ -275,7 +275,7 @@ dlg @1 resident.hub : #greet#. Take your time; there's no hurry. | #greet#, #add
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bless you for coming back. | #topic.player#! Stay a while, if you can.
 dlg @3 resident.hub [here.time=night] : It's late, #address#. But if you need something, ask.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #hedge#. I'll not quarrel. Tell me what's wanted, and if it's in my paws, it's yours.
-dlg @1 resident.job : I'm #self.trade_words#. I sweep, I carry, I lay #sawdust#. It's honest. | A bit of everything. Whatever's needed, I do it, and I'm grateful for the work.
+dlg @1 resident.job : #self.trade_words.capitalize#. I sweep, I carry, I lay #sawdust#. It's honest. | A bit of everything. Whatever's needed, I do it, and I'm grateful for the work.
 dlg @1 resident.bye : #farewell#. #bless#. | #farewell#, #address#. Mind the step.
 graft resident.hub
 choice Why do you apologise every time you swear? -> pardon

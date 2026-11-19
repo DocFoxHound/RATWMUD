@@ -1,6 +1,6 @@
-# sm117, the potter who walked back (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm117, the potter who walked back (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm117
-revision 2
+revision 3
 state ready
 dialect southmeadow
 accent light broad
@@ -396,7 +396,7 @@ dlg @1 resident.hub : #greet#. What can I do for you? | #greet#. Stop a while, i
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You came back. I'm glad.
 dlg @3 resident.hub [here.time=night] : It's late. Come in, then. Quietly; #kiln#'s cooling.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Is there something you need? I'll help if I can.
-dlg @1 resident.job [self.job=crafter] : I'm #self.trade_words#. I throw #pots#, I fire them, and I sell what comes out whole. | I make #pots#. Jugs, bowls, cups. Slowly, and one at a time.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. I throw #pots#, I fire them, and I sell what comes out whole. | I make #pots#. Jugs, bowls, cups. Slowly, and one at a time.
 dlg @2 resident.job : #job_busy# Quietly, as best I can. | A little of everything. I do it slow, #address#.
 dlg @1 resident.business [business=thriving] : Better than I deserve. #kiln.capitalize#'s never cold. | Folk are buying. I'm grateful, every day, #address#.
 dlg @2 resident.business [business=failing] : #poorly.capitalize#. Folk mend their pots instead of buying. I don't blame them. | Not well. #shelf.capitalize# is full and nobody's buying.

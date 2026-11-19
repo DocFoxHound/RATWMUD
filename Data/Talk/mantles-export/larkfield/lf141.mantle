@@ -1,6 +1,6 @@
-# lf141, the plank-knocker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf141, the plank-knocker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf141
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -462,7 +462,7 @@ dlg @1 resident.hub : #greet#. Make it quick; #work# won't wait. | #greet#. Name
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've a habit of coming back. I don't mind it.
 dlg @3 resident.hub [here.time=night] : It's dark and I'm done. If it's short, ask it.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Your face is new to me. Say what you're after, and keep your paws in sight.
-dlg @1 resident.job [self.job=merchant self.role=merchant] : I'm #self.trade_words#. I build hulls and knock on every #plank# that goes in them. | #boats.capitalize#. Planks, pegs, pitch and patience. Mostly patience.
+dlg @1 resident.job [self.job=merchant self.role=merchant] : #self.trade_words.capitalize#. I build hulls and knock on every #plank# that goes in them. | #boats.capitalize#. Planks, pegs, pitch and patience. Mostly patience.
 dlg @2 resident.job : I #work#, I'm paid, I go home. There's not much more to say about it. | Honest #work#. That's all I'll say to a stranger.
 dlg @1 resident.business [business=thriving] : Orders for half a year. I'll believe them when they've paid. | #busy.capitalize#. Too busy to talk about being busy.
 dlg @2 resident.business [business=failing] : Badly. Nobody's buying #boats#, and I won't build cheap ones. | Poor. I've swept #yard# four times this week.

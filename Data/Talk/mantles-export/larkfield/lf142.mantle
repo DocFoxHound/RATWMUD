@@ -1,6 +1,6 @@
-# lf142, the door-minder who dreams uphill (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf142, the door-minder who dreams uphill (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf142
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -93,7 +93,7 @@ b : #bc_ha# | Brave of you. | #bc_i_hope_so#
 scene minding_door
 when topic=work|smalltalk self.working=yes self.job=merchant
 does tell.self / react.self / assess
-a : I'm #self.trade_words#. I open #door#, I ring #bell#, and I see the whole street go by. | You'd think minding a door was nothing. You'd be wrong; it's everything that comes in. | I stand on #step# all day. #knees.capitalize# know every stone of it.
+a : #self.trade_words.capitalize#. I open #door#, I ring #bell#, and I see the whole street go by. | You'd think minding a door was nothing. You'd be wrong; it's everything that comes in. | I stand on #step# all day. #knees.capitalize# know every stone of it.
 b : Sounds dull. | Everything? | Hard on the legs.
 a : Not a bit. Each face through it brings a story. | Every customer, every rogue, every bit of weather. The door sees it first. | It is. Honest enough, though, and the news reaches me first.
 
@@ -284,7 +284,7 @@ dlg @1 resident.hub : #greet#. Mind #step#. Come in and say what's wanted. | #gr
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! #door.capitalize# remembers you. | #topic.player#. Back again; I'm glad of it.
 dlg @3 resident.hub [here.time=night] : It's late, but #door#'s open. What is it?
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #hedge#. I mind a door, that's all. Say what you want plainly.
-dlg @1 resident.job : I'm #self.trade_words#. Honest work, and I see #street# go by. | Whatever's asked of me. I'm good on #step#, and better with folk.
+dlg @1 resident.job : #self.trade_words.capitalize#. Honest work, and I see #street# go by. | Whatever's asked of me. I'm good on #step#, and better with folk.
 dlg @1 resident.bye : #farewell#. Mind #step# going out. | #farewell#, #address#. #saying#.
 graft resident.hub
 choice You keep talking about the Heights. [here.region=ridgemere] -> heights

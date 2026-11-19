@@ -1,6 +1,6 @@
-# lf140, the crust-saver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf140, the crust-saver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf140
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -103,7 +103,7 @@ a : It is. They squabble like a market and never once haggle. #oath#, I love the
 scene big_kitchen
 when topic=work self.job=cook self.working=yes
 does tell.self / react.self / assess
-a : Up at #kitchen# they eat what #city# eats, only twice as much and off silver. | We had forty for dinner up the hill today. I made the sauce. The sauce! | I'm #self.trade_words#. It sounds grand. It's mostly onions.
+a : Up at #kitchen# they eat what #city# eats, only twice as much and off silver. | We had forty for dinner up the hill today. I made the sauce. The sauce! | #self.trade_words.capitalize#. It sounds grand. It's mostly onions.
 b : Off silver? | That's grand. | Onions?
 a : Off silver, and they never once look at it. I'd look at it. | It is. Nobody up there will know my name, but they'll know my sauce. | Onions, and #stockpot#, and a great deal of washing up.
 
@@ -276,7 +276,7 @@ dlg @1 resident.hub : #greet#! Oh, a new face. Where are you from, then? | #gree
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I hoped you'd come back. | #topic.player#! Sit down, I've so much to say.
 dlg @3 resident.hub [here.time=night] : It's late, but I'm always up for a word. What is it?
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Oh. You've a cross look. I'll listen, if you'll talk gently.
-dlg @1 resident.job [self.job=cook] : I'm #self.trade_words#. Onions, sauces, #stockpot#, and a great deal of washing up. | I cook. Up the hill they eat what we eat down here, only off silver.
+dlg @1 resident.job [self.job=cook] : #self.trade_words.capitalize#. Onions, sauces, #stockpot#, and a great deal of washing up. | I cook. Up the hill they eat what we eat down here, only off silver.
 dlg @2 resident.job : #oh#, a bit of everything. I like to keep busy. | Work's work. I'd rather talk about the birds, honestly.
 dlg @1 resident.bye : #farewell#! Come back soon. | #farewell#, #address#. Mind #stairs#.
 graft resident.hub

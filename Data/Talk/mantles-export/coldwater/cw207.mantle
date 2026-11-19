@@ -1,6 +1,6 @@
-# cw207, the riddling butcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw207, the riddling butcher (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw207
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -445,7 +445,7 @@ dlg @1 resident.hub : #greet#, #address#. What's wanted? | #greet#. Come in, #no
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Have you eaten? Sit, then ask.
 dlg @3 resident.hub [here.time=night] : It's late, #address#. I'm banking the fire, but say what you need.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you've come for plainly, #address#, and you'll have a plain answer.
-dlg @1 resident.job [self.role=merchant self.working=yes] : I'm #self.trade_words#. I cut, I salt, I chalk a riddle on #slate#, and I feed half #ships#. | Meat for #stair# and #saltpork# for the galleys. Every cook's order in my head.
+dlg @1 resident.job [self.role=merchant self.working=yes] : #self.trade_words.capitalize#. I cut, I salt, I chalk a riddle on #slate#, and I feed half #ships#. | Meat for #stair# and #saltpork# for the galleys. Every cook's order in my head.
 dlg @2 resident.job : I do what wants doing, #address#, and I do it without hurrying. | Whatever puts something in #larder#, #address#.
 dlg @1 resident.business [business=thriving] : Better than I've known. Every #chop# gone by noon, and #ships# buying salt pork.
 dlg @2 resident.business [business=steady] : Steady. Folk always need to eat, and I'm content with that, #address#. | Steady, #nohurry#. Never a rush and never a bare rail.

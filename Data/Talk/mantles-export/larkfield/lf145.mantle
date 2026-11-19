@@ -1,6 +1,6 @@
-# lf145, the notched stick (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf145, the notched stick (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf145
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -292,7 +292,7 @@ dlg @1 resident.hub : #greet#. What can I do? | #greet#. Say on; I'm listening.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Still in town, then.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Hm. Say it, then, and I'll listen.
 dlg @4 resident.job [self.job=laborer] : I'm at #self.workplace#. I carry stone, I mix #mortar#, I push #barrow#. | I'm a pair of strong paws at #yard#. It's honest work.
-dlg @5 resident.job : I'm #self.trade_words#. It pays, and it keeps me tired enough to sleep. | #job_busy#
+dlg @5 resident.job : #self.trade_words.capitalize#. It pays, and it keeps me tired enough to sleep. | #job_busy#
 dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new at #yard# but the weather.
 dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. I've #barrow# for carrying.
 dlg @8 resident.bye : #farewell#. Safe road. | #farewell#. Bright One go with you.

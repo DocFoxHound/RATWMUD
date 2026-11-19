@@ -1,6 +1,6 @@
-# oh109, the backward-reading printer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# oh109, the backward-reading printer (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle oh109
-revision 1
+revision 2
 state ready
 dialect oakhaven
 accent light broad
@@ -393,7 +393,7 @@ dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What is it 
 dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. I'd counted you gone.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Stand where I can see you and say it plain.
 dlg @5 resident.hub [here.time=night] : It's late. #door.capitalize#'s barred for a reason. What is it?
-dlg @1 resident.job [self.job=merchant] : I'm the #self.trade_words#. Bills, cards, notices, almanacs. Spelt right. | I set #type# backward and print it forward. Every letter counted.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Bills, cards, notices, almanacs. Spelt right. | I set #type# backward and print it forward. Every letter counted.
 dlg @2 resident.job : A bit of everything, done properly, #oath#. | Steady work. I count it all.
 dlg @1 resident.business [business=thriving] : Thriving. I've ink to the elbow and orders to Restday. | #good.capitalize#. I'll not say how good.
 dlg @2 resident.business [business=failing] : Badly. Nobody prints a bill when there's nothing to sell. | Poorly. I'll not pretend it's otherwise.

@@ -1,6 +1,6 @@
-# cw206, the roof-bird watcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw206, the roof-bird watcher (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw206
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -277,7 +277,7 @@ say Still #waiting#. Always #waiting#. | If that cart's coming, it can come now.
 dlg @1 resident.hub : #greet#. What is it? | #greet#. Say what you want.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. What now?
 dlg @3 resident.hub [pair.disposition=hostile|wary] : Stay where you are. I can hear you fine from there.
-dlg @1 resident.job [self.working=yes self.job=merchant] : I'm #self.trade_words#. I weigh, I wrap, and I watch #till#. Mostly I watch. | Counter work, and watching. That part's mine.
+dlg @1 resident.job [self.working=yes self.job=merchant] : #self.trade_words.capitalize#. I weigh, I wrap, and I watch #till#. Mostly I watch. | Counter work, and watching. That part's mine.
 dlg @2 resident.job : This and that. I keep my eyes up and #latch# done.
 dlg @1 resident.news [world.news] : I heard word from #world.news_from#: #world.news#. Don't say I told you.
 dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd sooner keep it that way. | Nothing. Quiet. Too quiet, if you ask me.
