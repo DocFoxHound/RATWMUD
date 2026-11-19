@@ -1,0 +1,500 @@
+{"text": "hi", "intent": "greet"}
+{"text": "Hello there!", "intent": "greet"}
+{"text": "Good morning, mistress.", "intent": "greet"}
+{"text": "hey myrtle", "intent": "greet"}
+{"text": "Good morrow to you, Mistress Stillford.", "intent": "greet"}
+{"text": "evening", "intent": "greet"}
+{"text": "Well met, shopkeeper.", "intent": "greet"}
+{"text": "hullo, anyone in?", "intent": "greet"}
+{"text": "Greetings.", "intent": "greet"}
+{"text": "Morning! Lovely day for it.", "intent": "greet"}
+{"text": "howdy", "intent": "greet"}
+{"text": "Good afternoon to you.", "intent": "greet"}
+{"text": "hey there, mind if I come in?", "intent": "greet"}
+{"text": "Bright One keep you, mistress.", "intent": "greet"}
+{"text": "Hail, Myrtle!", "intent": "greet"}
+{"text": "Good day. I've just come in off the road, dusty as anything.", "intent": "greet"}
+{"text": "bye", "intent": "bye"}
+{"text": "Goodbye, Myrtle.", "intent": "bye"}
+{"text": "farewell", "intent": "bye"}
+{"text": "I'll be off then.", "intent": "bye"}
+{"text": "See you around.", "intent": "bye"}
+{"text": "Take care, mistress. Bright One keep you.", "intent": "bye"}
+{"text": "gotta go", "intent": "bye"}
+{"text": "That's all for now, I'll be going.", "intent": "bye"}
+{"text": "Good night to you.", "intent": "bye"}
+{"text": "I must be on my way, the light's going.", "intent": "bye"}
+{"text": "cya", "intent": "bye"}
+{"text": "Until next time.", "intent": "bye"}
+{"text": "Well, I won't keep you any longer. Good day.", "intent": "bye"}
+{"text": "Right, I'm off to the docks before they close up.", "intent": "bye"}
+{"text": "so long, and mind the cold water", "intent": "bye"}
+{"text": "leaving now, bye bye", "intent": "bye"}
+{"text": "where's the smithy", "intent": "ask_way", "slots": {"place": "smithy"}}
+{"text": "How do I get to the Grey Gull Inn?", "intent": "ask_way", "slots": {"place": "the Grey Gull Inn"}}
+{"text": "Which way to the docks?", "intent": "ask_way", "slots": {"place": "docks"}}
+{"text": "Could you tell me the way to the Knucklebones?", "intent": "ask_way", "slots": {"place": "the Knucklebones"}}
+{"text": "Is there a healer in town? Where would I find one?", "intent": "ask_way", "slots": {"place": "healer"}}
+{"text": "where is the church", "intent": "ask_way", "slots": {"place": "church"}}
+{"text": "I'm trying to find the Anchor Forge, can you point me there?", "intent": "ask_way", "slots": {"place": "the Anchor Forge"}}
+{"text": "how do i get to the jetty from here", "intent": "ask_way", "slots": {"place": "jetty"}}
+{"text": "Can you give me directions?", "intent": "ask_way"}
+{"text": "Where can I find the notice board?", "intent": "ask_way", "slots": {"place": "notice board"}}
+{"text": "Pardon me, which road leads to the Oasis Inn?", "intent": "ask_way", "slots": {"place": "the Oasis Inn"}}
+{"text": "wheres the bakry", "intent": "ask_way", "slots": {"place": "bakery"}}
+{"text": "Point me toward the Heron, would you?", "intent": "ask_way", "slots": {"place": "the Heron"}}
+{"text": "Where do I find the stables? My legs are done for.", "intent": "ask_way", "slots": {"place": "stables"}}
+{"text": "Mistress, how would a stranger find his way to Coldwater Weavers?", "intent": "ask_way", "slots": {"place": "Coldwater Weavers"}}
+{"text": "which way's the well", "intent": "ask_way", "slots": {"place": "well"}}
+{"text": "seen Wick about?", "intent": "ask_person", "slots": {"person": "Wick Marshwade"}}
+{"text": "Do you know Brenna Abbot?", "intent": "ask_person", "slots": {"person": "Brenna Abbot"}}
+{"text": "Where can I find Orrin Stillford?", "intent": "ask_person", "slots": {"person": "Orrin Stillford"}}
+{"text": "What's the news of Delphine Brackwick?", "intent": "ask_person", "slots": {"person": "Delphine Brackwick"}}
+{"text": "Is Corra Ropewell around today?", "intent": "ask_person", "slots": {"person": "Corra Ropewell"}}
+{"text": "Any idea where to find Dagny Slaghand?", "intent": "ask_person", "slots": {"person": "Dagny Slaghand"}}
+{"text": "who's bo gilbey", "intent": "ask_person", "slots": {"person": "Bo Gilbey"}}
+{"text": "Tell me about Fern Ridge.", "intent": "ask_person", "slots": {"person": "Fern Ridge"}}
+{"text": "Have you heard from Tamsin lately?", "intent": "ask_person", "slots": {"person": "Tamsin Holloway"}}
+{"text": "Ada Rainmore, know where I'd find her?", "intent": "ask_person", "slots": {"person": "Ada Rainmore"}}
+{"text": "what's brock marshholm like", "intent": "ask_person", "slots": {"person": "Brock Marshholm"}}
+{"text": "Is Wick Marshwade still working down at the docks?", "intent": "ask_person", "slots": {"person": "Wick Marshwade"}}
+{"text": "Do you happen to know a Corra? Ropewell, I think.", "intent": "ask_person", "slots": {"person": "Corra Ropewell"}}
+{"text": "Myrtle, does Delphine still live round here?", "intent": "ask_person", "slots": {"person": "Delphine Brackwick"}}
+{"text": "I've a message for Tamsin Holloway. Where does she stay?", "intent": "ask_person", "slots": {"person": "Tamsin Holloway"}}
+{"text": "know where fern is?", "intent": "ask_person", "slots": {"person": "Fern Ridge"}}
+{"text": "What do you think of the Watch?", "intent": "ask_opinion", "slots": {"issue": "watch"}}
+{"text": "How do you feel about the Houses?", "intent": "ask_opinion", "slots": {"issue": "houses"}}
+{"text": "what do you make of the restday dole", "intent": "ask_opinion", "slots": {"issue": "dole"}}
+{"text": "Thoughts on newcomers?", "intent": "ask_opinion", "slots": {"issue": "newcomers"}}
+{"text": "What's your view of the church these days?", "intent": "ask_opinion", "slots": {"issue": "church"}}
+{"text": "Merchants are charging a fortune lately, don't you think?", "intent": "ask_opinion", "slots": {"issue": "merchants"}}
+{"text": "What do you reckon to life in Ridgemere?", "intent": "ask_opinion", "slots": {"issue": "city"}}
+{"text": "Are the roads safe these days, in your opinion?", "intent": "ask_opinion", "slots": {"issue": "road"}}
+{"text": "Do you like the festivals?", "intent": "ask_opinion", "slots": {"issue": "festivals"}}
+{"text": "What's your take on folk who drink too much?", "intent": "ask_opinion", "slots": {"issue": "drink"}}
+{"text": "How do you think things are going, generally? Hard times?", "intent": "ask_opinion", "slots": {"issue": "times"}}
+{"text": "what do you think about the Sump", "intent": "ask_opinion", "slots": {"issue": "sump"}}
+{"text": "Do you trust strangers passing through?", "intent": "ask_opinion", "slots": {"issue": "strangers"}}
+{"text": "How do you find the lords of the great Houses, fair or grasping?", "intent": "ask_opinion", "slots": {"issue": "houses"}}
+{"text": "What's your feeling on the alms they hand out on Restday?", "intent": "ask_opinion", "slots": {"issue": "dole"}}
+{"text": "bandits on the road, what do u think", "intent": "ask_opinion", "slots": {"issue": "road"}}
+{"text": "What do you sell?", "intent": "ask_wares"}
+{"text": "Myrtle, what've you got for sale?", "intent": "ask_wares"}
+{"text": "show me your goods", "intent": "ask_wares"}
+{"text": "What's in stock today?", "intent": "ask_wares"}
+{"text": "I'd like to buy something.", "intent": "ask_wares"}
+{"text": "Can I see what you've got?", "intent": "ask_wares"}
+{"text": "what do you have", "intent": "ask_wares"}
+{"text": "Do you carry rope?", "intent": "ask_wares"}
+{"text": "Have you any lamp oil?", "intent": "ask_wares"}
+{"text": "I need some supplies for the road. What can you offer?", "intent": "ask_wares"}
+{"text": "Let me have a look at your shelves.", "intent": "ask_wares"}
+{"text": "What kinds of things does a general store in Coldwater keep?", "intent": "ask_wares"}
+{"text": "i wanna buy stuff", "intent": "ask_wares"}
+{"text": "Do you sell fishing hooks?", "intent": "ask_wares"}
+{"text": "What's good today? Anything fresh in?", "intent": "ask_wares"}
+{"text": "Mistress, I'm after candles and soap if you've any.", "intent": "ask_wares"}
+{"text": "Any news?", "intent": "ask_news"}
+{"text": "What's new?", "intent": "ask_news"}
+{"text": "Heard anything lately?", "intent": "ask_news"}
+{"text": "I was wondering if anything had happened round here lately.", "intent": "ask_news"}
+{"text": "What's the news in Coldwater?", "intent": "ask_news"}
+{"text": "what's been happening", "intent": "ask_news"}
+{"text": "Anything interesting going on?", "intent": "ask_news"}
+{"text": "Tell me the latest.", "intent": "ask_news"}
+{"text": "Any word from the city?", "intent": "ask_news"}
+{"text": "Has anything happened while I was away?", "intent": "ask_news"}
+{"text": "news?", "intent": "ask_news"}
+{"text": "What's going on in the world these days?", "intent": "ask_news"}
+{"text": "Any tidings from the road?", "intent": "ask_news"}
+{"text": "Catch me up, what did I miss?", "intent": "ask_news"}
+{"text": "Has there been anything new at the docks?", "intent": "ask_news"}
+{"text": "Anything happen in town since last Restday?", "intent": "ask_news"}
+{"text": "thanks", "intent": "thank"}
+{"text": "Thank you kindly.", "intent": "thank"}
+{"text": "thx", "intent": "thank"}
+{"text": "Much obliged, mistress.", "intent": "thank"}
+{"text": "Thanks, that's very helpful.", "intent": "thank"}
+{"text": "I appreciate it, Myrtle.", "intent": "thank"}
+{"text": "cheers for that", "intent": "thank"}
+{"text": "You've been a great help, thank you.", "intent": "thank"}
+{"text": "ty", "intent": "thank"}
+{"text": "Bright One bless you for that.", "intent": "thank"}
+{"text": "That's good of you, thanks ever so.", "intent": "thank"}
+{"text": "I'm Kestrel.", "intent": "introduce", "slots": {"name": "Kestrel"}}
+{"text": "My name is Thorn.", "intent": "introduce", "slots": {"name": "Thorn"}}
+{"text": "call me Ash", "intent": "introduce", "slots": {"name": "Ash"}}
+{"text": "They call me Rowan of the hills.", "intent": "introduce", "slots": {"name": "Rowan"}}
+{"text": "Hello, I'm Bramble, new in town.", "intent": "introduce", "slots": {"name": "Bramble"}}
+{"text": "Name's Hollis.", "intent": "introduce", "slots": {"name": "Hollis"}}
+{"text": "i am sorrel", "intent": "introduce", "slots": {"name": "sorrel"}}
+{"text": "Allow me to introduce myself: Garret Fenwick, late of the eastern farms.", "intent": "introduce", "slots": {"name": "Garret Fenwick"}}
+{"text": "You can call me Wren.", "intent": "introduce", "slots": {"name": "Wren"}}
+{"text": "Pleased to meet you, I'm Juniper.", "intent": "introduce", "slots": {"name": "Juniper"}}
+{"text": "the name's Cobb, by the way", "intent": "introduce", "slots": {"name": "Cobb"}}
+{"text": "What's your name?", "intent": "ask_name"}
+{"text": "Who am I speaking to?", "intent": "ask_name"}
+{"text": "and you are?", "intent": "ask_name"}
+{"text": "May I ask your name, mistress?", "intent": "ask_name"}
+{"text": "what do they call you", "intent": "ask_name"}
+{"text": "I didn't catch your name.", "intent": "ask_name"}
+{"text": "Your name?", "intent": "ask_name"}
+{"text": "What should I call you?", "intent": "ask_name"}
+{"text": "wats ur name", "intent": "ask_name"}
+{"text": "Do you have a name, shopkeeper?", "intent": "ask_name"}
+{"text": "Tell me your name, if you would.", "intent": "ask_name"}
+{"text": "Tell me about yourself.", "intent": "ask_self"}
+{"text": "Where are you from?", "intent": "ask_self"}
+{"text": "How old are you, if you don't mind me asking?", "intent": "ask_self"}
+{"text": "Were you born in Coldwater?", "intent": "ask_self"}
+{"text": "So what's your story?", "intent": "ask_self"}
+{"text": "Who are you, really?", "intent": "ask_self"}
+{"text": "tell me a bit about urself", "intent": "ask_self"}
+{"text": "Where did you grow up?", "intent": "ask_self"}
+{"text": "How long have you been in Coldwater?", "intent": "ask_self"}
+{"text": "What sort of wolf are you, Myrtle?", "intent": "ask_self"}
+{"text": "Are you a local, or did you come from elsewhere?", "intent": "ask_self"}
+{"text": "What do you do?", "intent": "ask_job"}
+{"text": "How's business?", "intent": "ask_job"}
+{"text": "Is this your shop?", "intent": "ask_job"}
+{"text": "How long have you kept the store?", "intent": "ask_job"}
+{"text": "What's your line of work?", "intent": "ask_job"}
+{"text": "busy day in the shop?", "intent": "ask_job"}
+{"text": "Do you enjoy running a store?", "intent": "ask_job"}
+{"text": "So you keep Coldwater Stores, then?", "intent": "ask_job"}
+{"text": "Is trade good this season?", "intent": "ask_job"}
+{"text": "what's it like being a shopkeeper", "intent": "ask_job"}
+{"text": "Do you run this place by yourself?", "intent": "ask_job"}
+{"text": "How are you?", "intent": "ask_feeling"}
+{"text": "how r u", "intent": "ask_feeling"}
+{"text": "Are you well, mistress?", "intent": "ask_feeling"}
+{"text": "How are you keeping?", "intent": "ask_feeling"}
+{"text": "How's your day been?", "intent": "ask_feeling"}
+{"text": "You doing alright?", "intent": "ask_feeling"}
+{"text": "How do you fare today, Myrtle?", "intent": "ask_feeling"}
+{"text": "how are things with you", "intent": "ask_feeling"}
+{"text": "Feeling well today?", "intent": "ask_feeling"}
+{"text": "I hope you're in good health?", "intent": "ask_feeling"}
+{"text": "how goes it", "intent": "ask_feeling"}
+{"text": "Do you have family?", "intent": "ask_family", "slots": {"kin": "family"}}
+{"text": "Is Orrin your husband?", "intent": "ask_family", "slots": {"kin": "husband"}}
+{"text": "Have you any children?", "intent": "ask_family", "slots": {"kin": "children"}}
+{"text": "Are you married?", "intent": "ask_family"}
+{"text": "How's your mother?", "intent": "ask_family", "slots": {"kin": "mother"}}
+{"text": "got any pups", "intent": "ask_family", "slots": {"kin": "pups"}}
+{"text": "Do your parents live in town?", "intent": "ask_family", "slots": {"kin": "parents"}}
+{"text": "Is your son helping out in the shop?", "intent": "ask_family", "slots": {"kin": "son"}}
+{"text": "Do you have a sister?", "intent": "ask_family", "slots": {"kin": "sister"}}
+{"text": "Does your husband fish the lake?", "intent": "ask_family", "slots": {"kin": "husband"}}
+{"text": "Who's your mum, then? Would I know her?", "intent": "ask_family", "slots": {"kin": "mum"}}
+{"text": "What's this town like?", "intent": "ask_town"}
+{"text": "Tell me about Coldwater.", "intent": "ask_town"}
+{"text": "is coldwater a nice place to live", "intent": "ask_town"}
+{"text": "What's there to see around here?", "intent": "ask_town"}
+{"text": "I'm new here. What sort of place is this?", "intent": "ask_town"}
+{"text": "How big is this town?", "intent": "ask_town"}
+{"text": "What do folk do for a living in Coldwater?", "intent": "ask_town"}
+{"text": "Is it a quiet town?", "intent": "ask_town"}
+{"text": "What's Coldwater known for?", "intent": "ask_town"}
+{"text": "Is this a fishing town mostly?", "intent": "ask_town"}
+{"text": "so whats this place about", "intent": "ask_town"}
+{"text": "Heard any rumours?", "intent": "ask_gossip"}
+{"text": "What's the gossip?", "intent": "ask_gossip"}
+{"text": "So what's the talk of the town?", "intent": "ask_gossip"}
+{"text": "Who's saying what these days?", "intent": "ask_gossip"}
+{"text": "Any juicy gossip?", "intent": "ask_gossip"}
+{"text": "What are folk whispering about?", "intent": "ask_gossip"}
+{"text": "Go on, who's been up to no good?", "intent": "ask_gossip"}
+{"text": "I hear there's talk going round. What's it about?", "intent": "ask_gossip"}
+{"text": "Any scandal lately?", "intent": "ask_gossip"}
+{"text": "what are ppl saying about town", "intent": "ask_gossip"}
+{"text": "Who's courting whom this season?", "intent": "ask_gossip"}
+{"text": "Is something wrong?", "intent": "ask_trouble"}
+{"text": "You look worried.", "intent": "ask_trouble"}
+{"text": "What's troubling you?", "intent": "ask_trouble"}
+{"text": "Is everything all right? You seem upset.", "intent": "ask_trouble"}
+{"text": "something bothering you", "intent": "ask_trouble"}
+{"text": "Has something happened? You look pale.", "intent": "ask_trouble"}
+{"text": "You've a face like a wet week. What's the matter?", "intent": "ask_trouble"}
+{"text": "Is anything the matter, Myrtle?", "intent": "ask_trouble"}
+{"text": "Anything weighing on your mind?", "intent": "ask_trouble"}
+{"text": "Is someone giving you grief?", "intent": "ask_trouble"}
+{"text": "Why so glum?", "intent": "ask_trouble"}
+{"text": "Any work going?", "intent": "ask_work"}
+{"text": "I'm looking for a job.", "intent": "ask_work"}
+{"text": "Do you need a hand in the shop? Paid, I mean.", "intent": "ask_work"}
+{"text": "Is anyone hiring around here?", "intent": "ask_work"}
+{"text": "Got any jobs for me?", "intent": "ask_work"}
+{"text": "I need to earn a few pennies. Know of any work?", "intent": "ask_work"}
+{"text": "Where might a wolf find honest work in this town?", "intent": "ask_work"}
+{"text": "any odd jobs", "intent": "ask_work"}
+{"text": "Could you use a worker? I'm strong and I don't complain.", "intent": "ask_work"}
+{"text": "Is there labour to be had at the docks?", "intent": "ask_work"}
+{"text": "I'm skint. Any paying work you know of?", "intent": "ask_work"}
+{"text": "How much is the bread?", "intent": "ask_prices", "slots": {"good": "bread"}}
+{"text": "what's dear these days", "intent": "ask_prices"}
+{"text": "How much for a coil of rope?", "intent": "ask_prices", "slots": {"good": "rope"}}
+{"text": "What's the price of salt?", "intent": "ask_prices", "slots": {"good": "salt"}}
+{"text": "how much r candles", "intent": "ask_prices", "slots": {"good": "candles"}}
+{"text": "Is lamp oil expensive this time of year?", "intent": "ask_prices", "slots": {"good": "lamp oil"}}
+{"text": "What would honey cost me?", "intent": "ask_prices", "slots": {"good": "honey"}}
+{"text": "Are your prices fair?", "intent": "ask_prices"}
+{"text": "How much do you want for the cheese?", "intent": "ask_prices", "slots": {"good": "cheese"}}
+{"text": "What does a bar of soap go for?", "intent": "ask_prices", "slots": {"good": "soap"}}
+{"text": "How many pennies for a pound of nails?", "intent": "ask_prices", "slots": {"good": "nails"}}
+{"text": "When do you open?", "intent": "ask_hours"}
+{"text": "What time do you close?", "intent": "ask_hours"}
+{"text": "Are you open tomorrow?", "intent": "ask_hours"}
+{"text": "Are you open on Restday?", "intent": "ask_hours"}
+{"text": "How late do you stay open?", "intent": "ask_hours"}
+{"text": "what are your hours", "intent": "ask_hours"}
+{"text": "When's the shop open in the morning?", "intent": "ask_hours"}
+{"text": "Do you shut at dusk?", "intent": "ask_hours"}
+{"text": "Will you still be open after supper?", "intent": "ask_hours"}
+{"text": "Is the store open every day?", "intent": "ask_hours"}
+{"text": "What day is it?", "intent": "ask_day"}
+{"text": "Is it market day?", "intent": "ask_day"}
+{"text": "What's the date today?", "intent": "ask_day"}
+{"text": "is today restday", "intent": "ask_day"}
+{"text": "Which day of the week is it, do you know?", "intent": "ask_day"}
+{"text": "When's the next market day?", "intent": "ask_day"}
+{"text": "How long until Restday?", "intent": "ask_day"}
+{"text": "what day r we on", "intent": "ask_day"}
+{"text": "Is it a holiday today? Everyone seems out.", "intent": "ask_day"}
+{"text": "I've lost track of the days on the road. What day is this?", "intent": "ask_day"}
+{"text": "Am I wanted?", "intent": "ask_wanted"}
+{"text": "Is there a price on my head?", "intent": "ask_wanted"}
+{"text": "Has the Watch been asking after me?", "intent": "ask_wanted"}
+{"text": "Is there a warrant out for me?", "intent": "ask_wanted"}
+{"text": "Anyone been looking for me? Official-like, I mean.", "intent": "ask_wanted"}
+{"text": "have the guards put up a notice with my face on it", "intent": "ask_wanted"}
+{"text": "Am I in trouble with the law here?", "intent": "ask_wanted"}
+{"text": "Do they want me for anything in this town?", "intent": "ask_wanted"}
+{"text": "Is there a bounty on me, Myrtle? Be honest.", "intent": "ask_wanted"}
+{"text": "Would the Watch arrest me if I walked in there?", "intent": "ask_wanted"}
+{"text": "Will you teach me your trade?", "intent": "ask_teach"}
+{"text": "Take me on as an apprentice?", "intent": "ask_teach"}
+{"text": "Could I learn shopkeeping from you?", "intent": "ask_teach"}
+{"text": "I'd like to learn how to run a store.", "intent": "ask_teach"}
+{"text": "Do you take apprentices?", "intent": "ask_teach"}
+{"text": "teach me something", "intent": "ask_teach"}
+{"text": "Can you show me how to keep accounts?", "intent": "ask_teach"}
+{"text": "I want to learn a trade. Would you train me?", "intent": "ask_teach"}
+{"text": "How would I become a storekeeper like you?", "intent": "ask_teach"}
+{"text": "Could you teach me to haggle?", "intent": "ask_teach"}
+{"text": "Is there a room for the night?", "intent": "ask_bed"}
+{"text": "Where can I sleep tonight?", "intent": "ask_bed"}
+{"text": "I need a bed.", "intent": "ask_bed"}
+{"text": "Good morrow, mistress. I've walked three nights from the hills; is there a bed to be had anywhere?", "intent": "ask_bed"}
+{"text": "Do you know anywhere cheap to stay?", "intent": "ask_bed"}
+{"text": "any rooms going", "intent": "ask_bed"}
+{"text": "I need somewhere to lay my head.", "intent": "ask_bed"}
+{"text": "Could I sleep in your back room?", "intent": "ask_bed"}
+{"text": "Where would a traveller find lodging?", "intent": "ask_bed"}
+{"text": "Is there an inn with a free bed?", "intent": "ask_bed"}
+{"text": "Can I rent a bunk for a few nights?", "intent": "ask_bed"}
+{"text": "Do you really swim in that lake?", "intent": "ask_quirk"}
+{"text": "I hear you swim every morning. Isn't the water freezing?", "intent": "ask_quirk"}
+{"text": "is it true you go swimming even in autumn", "intent": "ask_quirk"}
+{"text": "Why do you swim in the lake when it's so cold?", "intent": "ask_quirk"}
+{"text": "Your fur's damp. Been in the lake again?", "intent": "ask_quirk"}
+{"text": "How do you stand the cold water every morning?", "intent": "ask_quirk"}
+{"text": "Folk say you swim before dawn. Is that so?", "intent": "ask_quirk"}
+{"text": "What's the secret to swimming in water that cold?", "intent": "ask_quirk"}
+{"text": "Doesn't the lake chill you to the bone?", "intent": "ask_quirk"}
+{"text": "Myrtle, you're mad to swim this time of year, you know that?", "intent": "ask_quirk"}
+{"text": "Could I join you for a swim tomorrow?", "intent": "ask_quirk"}
+{"text": "Is there anyone here I should meet?", "intent": "ask_match"}
+{"text": "I'm looking for company.", "intent": "ask_match"}
+{"text": "Know anyone who'd want to travel with me?", "intent": "ask_match"}
+{"text": "I'm looking for a group to run with.", "intent": "ask_match"}
+{"text": "Who should I get to know in town?", "intent": "ask_match"}
+{"text": "Are there other travellers about I could team up with?", "intent": "ask_match"}
+{"text": "I'm lonely. Is there anyone my age around?", "intent": "ask_match"}
+{"text": "Anyone looking for a hunting partner?", "intent": "ask_match"}
+{"text": "Do you know a good crowd I could fall in with?", "intent": "ask_match"}
+{"text": "Any adventurers in town looking for an extra pair of paws?", "intent": "ask_match"}
+{"text": "Nice weather today, isn't it?", "intent": "ask_weather"}
+{"text": "Will it rain?", "intent": "ask_weather"}
+{"text": "Is a storm coming?", "intent": "ask_weather"}
+{"text": "cold out isnt it", "intent": "ask_weather"}
+{"text": "What's the weather going to do?", "intent": "ask_weather"}
+{"text": "How's the weather on the lake?", "intent": "ask_weather"}
+{"text": "Think the fog will lift?", "intent": "ask_weather"}
+{"text": "Will it snow soon?", "intent": "ask_weather"}
+{"text": "Is it always this windy here?", "intent": "ask_weather"}
+{"text": "Looks like rain. What do you think?", "intent": "ask_weather"}
+{"text": "Is it going to be fair tomorrow for the road?", "intent": "ask_weather"}
+{"text": "Can you help me?", "intent": "ask_help"}
+{"text": "I'm lost.", "intent": "ask_help"}
+{"text": "I need help.", "intent": "ask_help"}
+{"text": "Please, I'm in a bad way. Can you do anything?", "intent": "ask_help"}
+{"text": "help", "intent": "ask_help"}
+{"text": "I don't know where I am or what to do.", "intent": "ask_help"}
+{"text": "Could you lend me a hand?", "intent": "ask_help"}
+{"text": "Someone stole my pack and I've nothing. Please help.", "intent": "ask_help"}
+{"text": "Could you lend me ten pennies?", "intent": "ask_help"}
+{"text": "I'm hurt and I've no one. Please.", "intent": "ask_help"}
+{"text": "Will you help a stranger out?", "intent": "ask_help"}
+{"text": "Can I help you with anything?", "intent": "offer_help"}
+{"text": "Need a hand with those crates?", "intent": "offer_help"}
+{"text": "Is there anything I can do for you?", "intent": "offer_help"}
+{"text": "Let me help you.", "intent": "offer_help"}
+{"text": "I could carry that for you.", "intent": "offer_help"}
+{"text": "Want me to fetch anything?", "intent": "offer_help"}
+{"text": "If you need anything done, just ask.", "intent": "offer_help"}
+{"text": "anything i can do", "intent": "offer_help"}
+{"text": "Let me sweep up for you, it's the least I can do.", "intent": "offer_help"}
+{"text": "Shall I help you stock the shelves?", "intent": "offer_help"}
+{"text": "Nice shop.", "intent": "compliment"}
+{"text": "You've a lovely store here.", "intent": "compliment"}
+{"text": "Your fur looks lovely today.", "intent": "compliment"}
+{"text": "You're very kind.", "intent": "compliment"}
+{"text": "This place is so tidy!", "intent": "compliment"}
+{"text": "I like your apron.", "intent": "compliment"}
+{"text": "Best store I've seen in any town.", "intent": "compliment"}
+{"text": "you're a good sort, myrtle", "intent": "compliment"}
+{"text": "What a fine collection of goods.", "intent": "compliment"}
+{"text": "You've a kind face.", "intent": "compliment"}
+{"text": "You must be the strongest swimmer in Coldwater.", "intent": "compliment"}
+{"text": "You're an idiot.", "intent": "insult"}
+{"text": "This shop is a dump.", "intent": "insult"}
+{"text": "ugly old hag", "intent": "insult"}
+{"text": "Your prices are robbery, you old crook.", "intent": "insult"}
+{"text": "Nobody likes you.", "intent": "insult"}
+{"text": "Shut up.", "intent": "insult"}
+{"text": "You smell of wet fur and fish.", "intent": "insult"}
+{"text": "What a useless shopkeeper.", "intent": "insult"}
+{"text": "stupid wolf", "intent": "insult"}
+{"text": "Go jump in your lake and stay there.", "intent": "insult"}
+{"text": "You're a mangy old fleabag.", "intent": "insult"}
+{"text": "Sorry for your loss.", "intent": "condole"}
+{"text": "I heard about your loss. I'm so sorry.", "intent": "condole"}
+{"text": "My condolences.", "intent": "condole"}
+{"text": "That must be hard. I'm sorry.", "intent": "condole"}
+{"text": "I'm sorry to hear that.", "intent": "condole"}
+{"text": "May the Bright One keep the one you lost.", "intent": "condole"}
+{"text": "Sorry about your husband.", "intent": "condole"}
+{"text": "That's terrible, I'm sorry it happened to you.", "intent": "condole"}
+{"text": "My sympathies, mistress.", "intent": "condole"}
+{"text": "grief is a heavy thing. i'm sorry", "intent": "condole"}
+{"text": "Tell me a joke.", "intent": "joke"}
+{"text": "Know any good jokes?", "intent": "joke"}
+{"text": "Make me laugh.", "intent": "joke"}
+{"text": "Why did the eel blush? It saw the bottom of the lake.", "intent": "joke"}
+{"text": "Got anything funny to say?", "intent": "joke"}
+{"text": "What do you call a wolf who won't share? A lone wolf!", "intent": "joke"}
+{"text": "say something funny", "intent": "joke"}
+{"text": "Here's one: a merchant walks into a tavern...", "intent": "joke"}
+{"text": "Do you know the one about the eel and the priest?", "intent": "joke"}
+{"text": "cheer me up with a joke", "intent": "joke"}
+{"text": "Sorry.", "intent": "apologise"}
+{"text": "I apologise.", "intent": "apologise"}
+{"text": "My apologies, I didn't mean that.", "intent": "apologise"}
+{"text": "sorry about earlier", "intent": "apologise"}
+{"text": "Forgive me, I was rude.", "intent": "apologise"}
+{"text": "I'm sorry I knocked that over.", "intent": "apologise"}
+{"text": "Pardon me, that was out of line.", "intent": "apologise"}
+{"text": "I take it back, I'm sorry.", "intent": "apologise"}
+{"text": "oops sorry", "intent": "apologise"}
+{"text": "Please forgive my manners, mistress.", "intent": "apologise"}
+{"text": "I agree.", "intent": "agree"}
+{"text": "You're right.", "intent": "agree"}
+{"text": "Exactly.", "intent": "agree"}
+{"text": "That's true.", "intent": "agree"}
+{"text": "Fair point.", "intent": "agree"}
+{"text": "Couldn't have said it better.", "intent": "agree"}
+{"text": "true enough", "intent": "agree"}
+{"text": "Aye, you've the right of it.", "intent": "agree"}
+{"text": "Same here, I think so too.", "intent": "agree"}
+{"text": "Indeed.", "intent": "agree"}
+{"text": "I disagree.", "intent": "disagree"}
+{"text": "That's not true.", "intent": "disagree"}
+{"text": "You're wrong.", "intent": "disagree"}
+{"text": "I don't think so.", "intent": "disagree"}
+{"text": "Nonsense.", "intent": "disagree"}
+{"text": "I can't agree with that.", "intent": "disagree"}
+{"text": "nah that's not right", "intent": "disagree"}
+{"text": "I see it differently.", "intent": "disagree"}
+{"text": "Hardly. The opposite, if anything.", "intent": "disagree"}
+{"text": "With respect, mistress, you've got that backwards.", "intent": "disagree"}
+{"text": "yes", "intent": "yes"}
+{"text": "Yeah.", "intent": "yes"}
+{"text": "Yep", "intent": "yes"}
+{"text": "Aye.", "intent": "yes"}
+{"text": "Sure.", "intent": "yes"}
+{"text": "Of course.", "intent": "yes"}
+{"text": "yes please", "intent": "yes"}
+{"text": "Certainly.", "intent": "yes"}
+{"text": "ok", "intent": "yes"}
+{"text": "Absolutely, go on.", "intent": "yes"}
+{"text": "no", "intent": "no"}
+{"text": "Nope.", "intent": "no"}
+{"text": "No thanks.", "intent": "no"}
+{"text": "Nah.", "intent": "no"}
+{"text": "Not today.", "intent": "no"}
+{"text": "I'd rather not.", "intent": "no"}
+{"text": "no way", "intent": "no"}
+{"text": "Certainly not.", "intent": "no"}
+{"text": "not really", "intent": "no"}
+{"text": "No, I'm fine.", "intent": "no"}
+{"text": "Any missions for our Chapter?", "intent": "ask_missions"}
+{"text": "Does our Chapter have any work from you?", "intent": "ask_missions"}
+{"text": "Our Chapter is looking for a job. Anything?", "intent": "ask_missions"}
+{"text": "We're a Chapter of six, any tasks for us?", "intent": "ask_missions"}
+{"text": "Got anything for the Chapter?", "intent": "ask_missions"}
+{"text": "Is there a contract our guild could take on?", "intent": "ask_missions"}
+{"text": "My Chapter needs a quest. Know of one?", "intent": "ask_missions"}
+{"text": "chapter missions?", "intent": "ask_missions"}
+{"text": "Anything my companions and I could do together for pay? We're a Chapter.", "intent": "ask_missions"}
+{"text": "Do you have a task worthy of a whole Chapter?", "intent": "ask_missions"}
+{"text": "We've just founded a Chapter. Any work you'd trust us with?", "intent": "ask_missions"}
+{"text": "Any advice?", "intent": "ask_advice"}
+{"text": "What should I do?", "intent": "ask_advice"}
+{"text": "Got any tips for someone new?", "intent": "ask_advice"}
+{"text": "I'm new here. What would you suggest I do first?", "intent": "ask_advice"}
+{"text": "What's the best way to get by in Coldwater?", "intent": "ask_advice"}
+{"text": "Any words of wisdom for a young wolf?", "intent": "ask_advice"}
+{"text": "If you were me, what would you do?", "intent": "ask_advice"}
+{"text": "what should a newbie know", "intent": "ask_advice"}
+{"text": "What would you advise a traveller?", "intent": "ask_advice"}
+{"text": "Should I stay in Coldwater or move on?", "intent": "ask_advice"}
+{"text": "Anything I should watch out for?", "intent": "ask_advice"}
+{"text": "*nods*", "intent": "none"}
+{"text": "*sniffs the air*", "intent": "none"}
+{"text": "Can you read my fortune?", "intent": "none"}
+{"text": "sing me a song", "intent": "none"}
+{"text": "What's two hundred times thirty-seven?", "intent": "none"}
+{"text": "asdfgh", "intent": "none"}
+{"text": "lol", "intent": "none"}
+{"text": "...", "intent": "none"}
+{"text": "The moon is made of cheese.", "intent": "none"}
+{"text": "Can you cast a spell on my enemy?", "intent": "none"}
+{"text": "Do you dream in colour?", "intent": "none"}
+{"text": "Teach me to fly.", "intent": "none"}
+{"text": "I like turnips.", "intent": "none"}
+{"text": "brb", "intent": "none"}
+{"text": "*sits down on a barrel*", "intent": "none"}
+{"text": "What's the meaning of life?", "intent": "none"}
+{"text": "Will you marry me?", "intent": "none"}
+{"text": "hmm", "intent": "none"}
+{"text": "Recite a poem.", "intent": "none"}
+{"text": "I once saw a three-legged heron in the reeds.", "intent": "none"}
+{"text": "Do you believe in ghosts?", "intent": "none"}
+{"text": "Dance with me!", "intent": "none"}
+{"text": "How many stars are in the sky?", "intent": "none"}
+{"text": "*howls at the ceiling*", "intent": "none"}
+{"text": "Who would win in a fight, a bear or an eel?", "intent": "none"}
+{"text": "What's the Dark One's true name?", "intent": "none"}
+{"text": "I can juggle five eggs.", "intent": "none"}
+{"text": "Why is the sky blue?", "intent": "none"}
+{"text": "Give me your shop.", "intent": "none"}
+{"text": "Bark like a seal.", "intent": "none"}
+{"text": "xyz 123", "intent": "none"}
+{"text": "Let's go steal a boat.", "intent": "none"}
+{"text": "What do you think of me?", "intent": "none"}
+{"text": "Read me a story.", "intent": "none"}
+{"text": "ok so um", "intent": "none"}
+{"text": "Will you keep a secret?", "intent": "none"}
+{"text": "I was a sailor once, you know.", "intent": "none"}
+{"text": "Do you know any card tricks?", "intent": "none"}

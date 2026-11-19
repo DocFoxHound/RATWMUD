@@ -1,0 +1,15 @@
+{
+  "about": "The world's words the window's understanding is given for the corpus (Docs/Design/84 §13.5, Phase 13): in the game these lists are built from the world (living residents' names, the town's places, goods, the Houses, the wearer's quirk); here they are fixed, so Tests/fixtures/understand_corpus.jsonl is read the same every run. The one spoken to is Myrtle Stillford, keeper of Coldwater Stores, who swims in the lake.",
+  "self": "Myrtle Stillford",
+  "person": ["Myrtle Stillford", "Wick Marshwade", "Orrin Stillford", "Brenna Abbot", "Delphine Brackwick", "Corra Ropewell",
+             "Dagny Slaghand", "Bo Gilbey", "Fern Ridge", "Tamsin Holloway", "Ada Rainmore", "Brock Marshholm"],
+  "place": ["the Grey Gull Inn", "the Knucklebones", "the Rainbarrel", "the Bilge", "Coldwater Stores", "the Anchor Forge",
+            "the Glass Lantern", "the Oasis Inn", "the Heron", "Coldwater Weavers"],
+  "place_kind": ["inn", "tavern", "church", "smithy", "forge", "bakery", "brewery", "healer", "watch house", "market",
+                 "town office", "docks", "jetty", "notice board", "stables", "well"],
+  "good": ["bread", "ale", "salt", "candles", "soap", "rope", "herbs", "meal", "fish", "iron", "nails", "wool", "cloth",
+           "eel", "cheese", "honey", "lamp oil", "string"],
+  "house": ["House Greatly", "House Ferro", "House Vane"],
+  "quirk": "swims_in_the_lake_even_in_autumn",
+  "town": "Coldwater"
+}
