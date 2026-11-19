@@ -1,0 +1,291 @@
+# sm119, the clay-digger by the door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm119
+revision 1
+state ready
+dialect southmeadow
+accent none
+tier standard
+written_for cty_briar_sedgebridge
+written_by claude
+title the clay-digger by the door
+fits stage=adult|old
+prefers job=miner humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes mutton_stew draughts festival_bells frosty_mornings
+dislikes crowds stale_bread
+fears a_secret_spoken_in_the_wrong_room knees_that_quit_before_the_work_does
+hopes a_long_life_of_laughing a_winter_with_the_pot_always_full
+topics pastimes +0.4 food +0.4 festival +0.3 friends +0.3 work +0.2 gossip -0.3
+styles comfort=company gossip=teasing refuse=soft tease=merry
+marks oath saying
+persona #self.first# works hard and laughs at it, talks the ears off anyone at the table, always takes the seat facing the door, and knows one story about a big House that will never be told.
+
+words
+door = the door | the front door
+uncle = an old uncle of mine | my old uncle
+oath! = By my muddy elbows | Clay to the knees
+saying! = Sit facing the door and you'll never miss a friend | A laugh costs nothing and keeps all winter
+seat = the seat facing the door | my chair by the wall
+pit = the pit | the clay pit
+clay = clay | good grey clay
+barrow = the barrow | a barrow of wet clay
+pot = a mutton pot | mutton stewed till it falls apart
+draughts = a round of draughts | the draughts board
+bells = the feast bells | bells on a feast morning
+frost = white frost | frost on the ruts
+crush = a press of folk | too many folk in one room
+stale = stale bread | bread gone hard as a step
+knees = my knees | these old knees
+tale = that tale | the one I don't tell
+
+any
+opinion @1 merchants against 2 : I work all week and still count pennies at the counter, and the shelves never look hungry. Make that add up, #address#. | Prices go up like bread in an oven. My pay sits there like #stale#.
+opinion @1 houses against 1 : The Houses? I could tell you a thing about one of them. I won't; it's #tale#. That's my opinion, and it's a long one.
+opinion @1 festivals for 2 : The minute #bells# start I'm off, and I don't come home till my feet give out.
+opinion @1 drink for 1 : A cup with friends at the end of a long day. Nothing wrong with that, and plenty right, #oath#.
+opinion @1 times against 1 : Every week the purse gets lighter and #work# doesn't. Nobody up the hill seems to notice.
+opinion @1 strangers for 1 : Bring a stranger in and feed them, I say. Only leave me #seat#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in, come in. Mind, that seat's mine. | #greet#. Don't stand in #door#way; I can't see past you.
+line @2 greet [self.working=yes self.job=miner] : #greet#. Don't shake my paw, it's all #clay#. | #greet#. Stand back from the edge; #pit# bites.
+line @3 greet [here.time=dawn] : #greet#. Up with the birds, are you? So am I, and I'm louder. | #greet#. A #cold# start, and all the better for it.
+line @4 greet [here.time=dusk|night] : #greet#. Pull a stool round; I've #door# in my eye. | #greet#. Late for visiting. I'm glad you did.
+line @1 kin.open [pair.kin!=no] : There you are! Sit, sit. Not that side; that's #seat#. | #greet#. I've kept the pot on for you.
+line @1 again.open : Back twice before #supper#. I'll be charging rent on that stool soon. | You again. #good.capitalize#, I'd run out of things to tell the wall.
+line @1 greet.return : #greet#! Look who it is. | #greet#, #address#. Sit where I can see you, you and #door# both.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Took you long enough. Sit. | #greet#. I've saved you a laugh.
+line @3 greet.return [self.working=yes] : #greet#. Mind my paws; they're filthy. | #greet#. Talk while I work; I can do both.
+line @1 farewell : #farewell#. Off you go; I'll be watching #door#. | #farewell#. Come back when you've a story.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go careful; the ruts are deep after dark. | Off you go. #farewell#, and sleep sound.
+line @1 farewell.return : #farewell#! Keep laughing. | #farewell#, #address#. Mind how you go.
+line @1 react.news : Go on! That's one for the fireside. | #surprise#. Well, there's a thing.
+line @1 react.news.new : Never! You've caught me out there, #address#, and that takes doing. | #oath#, that's news to me.
+line @1 react.news.known : #knew#. Old news by now. | I'd heard. Somebody shouted it across the lane at #supper#.
+line @1 react.news.doubt : #doubt#. Somebody's stretching that like wet #clay#. | Show me somebody who saw it, not a rumour off a cart.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a #bad# thing for anyone. | Oh, that's hard. My heart goes out to them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I'll drink to that with whatever's going. | Well, that's lovely. Somebody ring #bells#.
+line @1 answer.how : Muddy and merry, same as ever, #address#. | #good.capitalize#. #knees.capitalize# say otherwise, but nobody asked them.
+line @1 answer.how.busy [self.working=yes] : Up to the elbows in it. Talk while I dig. | Busy as bees, and loving the sound of my own voice.
+line @1 ask.how : And you? Keeping out of trouble, or in it? | How are you keeping, #address#? Truly, now.
+line @1 sympathise : #sympathy#. Come and sit by the fire with me. | Oh, #address#. That's a #bad# business. Sit down.
+line @1 reassure : #reassure#. I've seen worse mended. | It'll come round. Most things do, given a laugh and a week.
+line @1 decline : I'd like to, truly, but I've no coin to spare this week, and that's the honest end of it. | Not this time, #address#. Too many folk in one place for me; go and tell me about it after.
+line @1 accept_decline : #no_matter#. Next time, then. | Fair enough. I'll hold you to the next one.
+line @1 thank : #thanks#. You're a treasure. | #thanks#. I'll not forget that.
+line @1 deflect_thanks : #deflect#. | Get away with you. It was nothing at all.
+line @1 preclose : Listen to me, talking the day out. #excuse#. | #preclose#. #knees.capitalize# want their chair.
+line @1 accept_preclose : Go on, then. Mind #door#. | Off you go. I've talked your ear thin.
+line @1 tease [pair.band=friends|family|spouses] : That's a long face for a short day. Who stole your pudding? | Is that the same coat? It's been to more feasts than I have.
+line @1 tease.return : #cheek#. | Says the one with porridge on the chin.
+line @1 ack : #bc_ha# | #bc_true#. Go on.
+line @1 give.advice : Sit where you can see #door#. You'll thank me one day. | Laugh first. Worry after, if there's time.
+line @1 warn [world.bandits=near] : Keep to the road, and if you stop, keep a wall at your back. | Bandits about, they say. Sit facing #door# tonight.
+rule @pit_lift
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 6h
+say Up you come, you heavy lump of #clay#. | Another #barrow#. #oath#, my arms.
+
+rule @door_watch
+when concept=bark here.place=tavern|home|hall
+does aside
+cooldown 8h
+say Shift up, would you? I want the wall at my back and #door# in front. | Who's that coming in? Oh. Only the wind.
+
+rule @crowd_wall
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 8h
+say #crush.capitalize#, elbows everywhere. I'll be by the wall. | I'll wait till #crush# thins, thank you.
+
+rule @bells_out
+when concept=bark world.festival=today
+does aside
+cooldown 12h
+say #bells.capitalize#! Somebody find me my good shawl. | There they go. Dancing, whoever's with me.
+
+scene door_seat
+when topic=smalltalk|day here.place=tavern|home|hall|chapel
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Shift along, would you? I like #seat#. | I always take the chair facing #door#. Always have. | You're in #seat#. No, stay; I'll stand till you're done.
+b : What's wrong with this side? | Why's that? | It's only a chair.
+a : Nothing, if you don't mind folk coming up behind you. I do. | So I see who's coming and wave first. I like to be first. | It's only a chair to you. To me it's the one facing #door#.
+b : Fair enough. | Handy, that. | Have it, then.
+a : #bc_ha# #saying.capitalize#. | And I'm never caught with my mouth full. Mostly. | #thanks#. I'll keep you company from here, and keep an eye on #door#.
+
+scene door_why
+when topic=smalltalk|memories pair.band=friends|family|spouses
+does confide / react.self / assess
+a : #vent#: it isn't really about waving first. I just rest easier knowing who's come in. | #uncle.capitalize# sat with his back to a door once and never heard the end of it. I learned from him. | I tell everyone it's so I see friends first. That's half of it.
+b : That's nothing to be ashamed of. | What happened to him? | And the other half?
+a : I'm not ashamed. Just careful, and #very# merry with it. | Somebody poured a jug of milk down his collar at a wedding. He was never the same. | The other half stays with me. Have some #pot#.
+
+scene house_hint
+when topic=gossip
+does tell.gossip / ask.detail / answer.detail / react.self / assess
+a : I know a story about one of the big Houses that would curl your whiskers. | There's a thing I saw once, years back, that a House would pay to have forgotten. | Folk think the Houses are all silver and manners. I know better, and that's all I'll say.
+b : Go on, then. | What did you see? | That's not all, surely.
+a : Not for all the mutton in the town. It stays behind my teeth. | Something. And that's the whole of what you'll get from me. | It is. I like my head where it is. #bc_ha#
+b : You're a terrible tease. | Fair enough. | Now I'll wonder all night.
+a : I am. It's my one fault. Two, with #draughts#. | #good.capitalize#. #saying.capitalize#. | Wonder away. Wondering's free, #address#.
+
+scene pit_dig
+when topic=work self.working=yes self.job=miner
+does tell.self / react.self / assess
+a : #clay.capitalize# came up lovely today. Grey as a rain cloud and twice as slippery. | Eleven barrows before noon. #oath#, my arms are singing. | Lost a boot in #pit# this morning. It's down there still, making friends.
+b[job=miner|laborer] #dig : Good clay's worth the sweat. | Eleven's a fair morning. | We've all left a boot somewhere.
+b : Sounds hard going. | Eleven! | A whole boot?
+a@dig : It is, and the potters know it, even if they don't say. | It is. I'll be no use to anybody by supper. | Mine's the third this year. #oath#.
+a : Hard, but honest, and I laugh at it. #bc_ha# | Eleven, and every one heavier than the last. | The whole boot. I hopped home singing.
+
+scene pit_rain
+when topic=weather|work self.job=miner here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# on #clay#. You can't stand straight in #pit# for sliding. | Wet days #pit# turns to soup. I came home grey to the ears.
+b : Can't you wait it out? | I'd stay home.
+a : Not when we're paid by the barrow. Slide or go hungry, #address#. | I'd love to. The purse won't hear of it.
+
+scene creaky_knees
+when topic=health self.age>=45
+does tell.complaint / sympathise / assess
+a : #knees.capitalize# creak like an old cart, and they're louder than I am, which takes doing. | I'm a #very# young wolf with a very old pair of knees.
+b : That sounds a trial. | Mine are going too.
+a : It is. Still, they've carried me this far, and they can grumble all they like. | Then we'll creak along together, #knees# and yours, and nobody will hear either of us.
+
+scene mutton_pot
+when topic=food
+does tell.self / react.self / assess
+a : There's #pot# on the fire since noon. You can smell it from the lane. | Nothing in the world beats #pot# on a #cold# night. Nothing. | I'd walk a mile for #pot#. I'd walk back for seconds.
+b : It does smell good. | Not even cake? | Two miles for stew?
+a : Come and have a bowl. Sit wherever you like, but #seat#. | Not even cake. Cake's for after. | Three, if there's bread to mop it.
+
+scene stale_loaf
+when topic=food|prices
+does tell.complaint / react.complaint / assess
+a : Bought a loaf yesterday and it was #stale# by the time I got home. | I'll eat most things. #stale.capitalize# isn't one of them.
+b : They keep the old ones for last thing. | Toast it.
+a : Then I'll go first thing and fight for a fresh one. #bc_ha# | I did. It still tasted like a doorstep.
+
+scene draughts_game
+when topic=pastimes
+does invite / accept_invite / tease / tease.return / laugh
+a : Fancy #draughts#? I'll even let you have white. | I've got the board out. Sit down and lose to me, #address#.
+b : Go on, then. | You'll lose this time.
+a : Sit there, then. No, the other chair. I need #door#. | We'll see. I've won forty in a row against everybody on my street.
+b : Fussy, aren't you. | Forty? I don't believe it.
+a : Particular. Not the same thing, and the difference wins me games. | Forty-one, after this one. #bc_ha#
+
+scene feast_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : When #bells# go, I'm out #door# before the second peal. | Hear that? #bells.capitalize#. I could dance on a dead knee. | Give me one day of dancing over a month of rest. I've tried both.
+b : They do lift you. | Mind the knee. | Which won?
+a : They do. Even #knees# join in. | I'll mind it after. Dancing first. | The dancing, by a mile. #bed.capitalize# is still sulking.
+
+scene white_morning
+when topic=weather|season here.time=dawn here.season=autumn|winter here.weather=clear
+does tell.feeling / react.self / assess
+a : Look at that. #frost.capitalize# on everything, and the air like a #cold# apple. | A morning like this, I take the long way to work, just to crunch #frost#. | I love a #cold# clear morning. Everything sounds closer.
+b : It's lovely, if you're dressed for it. | The long way? In this? | It does.
+a : I'm dressed for it. Two shawls and a grin. | The long way. Work isn't going anywhere. | #oath#, I could hear a mouse across the field.
+
+scene too_many
+when topic=smalltalk|day here.crowd=busy|crowd
+does tell.complaint / react.self / assess
+a : Too many folk in one place. I can't see #door# for heads. | #crush.capitalize#. I'll stand by the wall, thanks, where I can breathe. | I like folk one at a time. Ten at once, I want my own kitchen.
+b : It is a bit much. | Can't blame you. | One at a time is better.
+a : A bit much and then some. I'll go round the back. | #bc_ha# I'll be the one in the corner, waving. | It is. You count as one. A #good# one.
+
+scene married_lucky
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : I'd not swap my #self.spouse_word# for a House and all its silver. | I married the one who lets me have #seat#. That's love, that is. | Married all these years and I still talk too much at #supper#.
+b : That's a lovely thing to say. | Or patience. | You do talk.
+a : It's true, so it's easy to say. | Patience, then. Either way, I'm lucky. | I do. And I'll keep at it till the green ground takes me.
+
+scene old_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I go back years. I'd trust #self.friend# with my last penny. | If I had one friend left in the world, I'd want it to be #self.friend#.
+b : That's a rare thing. | That's a good friend to have.
+a : It is. I don't say it enough, #address#. | The best kind. #saying.capitalize#.
+
+scene light_purse
+when topic=prices|times self.wealth=poor|destitute
+does tell.complaint / sympathise / assess
+a : I work all week and still count my #money# for bread. Somebody's doing well; it isn't me. | The purse is lighter every week, and the work's no lighter at all.
+b : It's hard for a lot of folk. | Nobody up the hill notices.
+a : It is. Still, I've a laugh left, and they can't tax that. | They don't. I notice enough for all of them, #oath#.
+
+scene theft_talk
+when topic=crime|gossip topic.claim_kind=theft
+does tell.gossip / react.self / assess
+a : They say #topic.subject# #topic.claim#. I'd lock my door, if I had a door worth locking. | Folk are saying #topic.subject# #topic.claim#. I'm sitting facing #door# tonight, I can tell you.
+b : I'd heard something of it. | You always do.
+a : Well, now you've heard it twice. Mind your purse. | I do. Tonight I'll mean it, #address#.
+
+scene chapel_singing
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One hears my thanks on the walk home. It's quieter than chapel, and there's no plate going round. | I go to chapel for the singing. The praying I can do anywhere, #address#.
+b : There's sense in that. | The singing's good.
+a : Plenty of sense, and no collection. #bc_ha# | It is, when nobody's flat. Mostly I'm the flat one.
+
+scene full_cottage
+when topic=home
+does tell.self / react.self / assess
+a : Our house is #very# full. Somebody's always cooking, somebody's always singing. | I like a house with noise in it. Quiet makes me listen for #door#.
+b : Sounds a happy house. | That's the habit again.
+a : Happy and crowded, and I'd have it no other way. | It is. I can't help it, #address#. #bc_ha#
+
+scene same_fields
+when topic=memories|land here.region=southmeadow self.from=southmeadow self.age>=30
+does tell.memory / react.self / assess
+a : I gleaned these same fields when I was a #child#. Now I just walk past them and wave. | I've lived in #here.town# all my days. I know which gate squeaks on every lane.
+b : You'd know them better than most. | Every gate?
+a : Every furrow. They've known me just as long. | Every one. I could find my way home by the squeaks alone, #oath#.
+
+story first_day_pit [topic=work|memories self.job=miner self.age>=30]
+  : My first day at #pit#, I stepped where the ground looked firm and went in up to my middle.
+  : The old diggers stood round the edge of #pit# and laughed till they cried, and then they pulled me out.
+  ask : Do you know what I did then?
+  b : Went home and never came back, I'd guess.
+  : Laughed louder than any of them, and went back in with a spade. #saying.capitalize#.
+
+story uncle_milk [topic=memories|family self.age>=25]
+  : #uncle.capitalize# sat with his back to #door# at a wedding supper.
+  : A pup with a jug of milk came up behind, tripped on the step, and down it went, all of it, inside his collar.
+  ask : Can you guess where I've sat ever since?
+  b : Facing the door, I'd say. Did he laugh?
+  : Not that night. The next year, he told it louder than anyone. And I've faced #door# since.
+
+story the_house_tale [topic=gossip|memories self.age>=40]
+  : Years ago I saw a thing at the back door of a big House that I was never meant to see.
+  : I've carried it ever since, the way you'd carry a hot coal in a spoon.
+  ask : Would you tell a thing like that, if it were yours?
+  b : I don't think I would. Will you tell me, though?
+  : Not if you poured me cider till dawn. That's why I'm still here to laugh about it.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Come in, sit down. Not that chair; that one faces #door#, and it's mine. | #greet#. A new face. Pull up a stool and tell me who you are.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Sit where I can see you. | #topic.player#! #greet#. Back for more of my talk?
+dlg @3 resident.hub [here.time=night] : #greet#. Late, isn't it? I heard #door# and had to look.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. I'll keep my seat and you keep your distance, and we'll get on fine.
+dlg @1 resident.job [self.job=miner] : #clay.capitalize#. I dig it, barrow it and ache from it. #self.trade_words.capitalize#, if you want it proper. | #clay.capitalize#, all day long. The potters get the glory and I get the mud.
+dlg @2 resident.job : A bit of everything, and too little #money# for any of it. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask me again on a feast day. | Nothing worth the breath. I've a story, but it isn't news, and it isn't yours.
+dlg @1 resident.gossip [here.gossip!=yes] : I know one tale worth telling, and I'll not tell it. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Mind #door# on your way; I'll be watching it. | #farewell#. Come back with a story.
+graft resident.hub
+choice Why do you always sit facing the door? -> door
+node door
+say So I can see who's coming and wave first. And so nobody pours milk down my collar. An old uncle taught me that, the hard way.
+mood pleased
+free
+choice Milk down your collar? -> door_milk
+choice Goodbye. -> bye
+node door_milk
+say Down his collar, at a wedding supper. He never sat with his back to a door again, and nor have I. Sit where you like, only not there.
+choice I'll sit elsewhere. -> hub
+choice Goodbye. -> bye

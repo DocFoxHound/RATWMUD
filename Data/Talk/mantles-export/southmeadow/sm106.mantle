@@ -1,0 +1,396 @@
+# sm106, the doubting giver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm106
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for tn_sm_varg_meadowfield
+written_by claude
+title the doubting giver
+fits stage=young|adolescent|adult|old
+prefers job=child warmth=warm honesty=guarded
+traits temper=even talk=plain warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes warm_bread whittling festival_bells first_snow
+dislikes waiting early_bells
+fears being_cheated_by_a_smooth_talker a_graft_that_doesn_t_take
+hopes an_orchard_grafted_with_my_own_knife a_loaf_for_everyone_at_the_table
+topics food +0.4 pastimes +0.3 festival +0.3 season +0.3 newcomer +0.2 travel -0.3 gossip -0.3
+styles comfort=food gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# shares the last of the bread without being asked and trusts nothing that came off a city cart without turning it over twice: warm, wary and plain, never far from a whittling knife, and set on grafting trees of one's own.
+
+words
+oath! = Crumbs and kindling | Bread and bark
+saying! = Look at the underside first | Made here, mended here | Halve the loaf and it's still bread
+bread = warm bread | bread with the steam still on it
+loaf = loaf | cob
+city = the city | Ridgemere
+oven = the oven | the bread oven
+cockerel = the cockerel | that loud cockerel
+shiny = shiny | bright as a new pin
+whips = apple whips | little grafted whips
+crust = the crust | the heel of the loaf
+whittle = my whittling | a knife and a bit of apple wood
+knife = my knife | the good little knife
+bells = the festival bells | feast-morning bells
+snow = snow on the stubble | the year's first snow
+citystuff = city stuff | things off the city carts
+graftings = my graftings | the little grafted trees
+waiting = hanging about | waiting while folk make up their minds
+share = half my bread | a share of whatever I've got
+catch = the catch | what's wrong with it
+counter = the store counter | the counter at the store
+
+any
+opinion @1 dole for 1 : There's grain enough in #here.town# that nobody should lie down #hungry#. I'd give #share# first.
+opinion @2 festivals for 1 : #bells.capitalize#, music, and #bread# on every table. Nobody counts what you eat on a feast day.
+opinion @3 newcomers for 1 : There's room here for anybody who'll put their paws to #work#. I'll share my bench with them.
+opinion @4 city against 1 : #citystuff.capitalize# looks fine till you turn it over. I always turn it over. #saying#.
+opinion @5 merchants mixed 1 : A thing made here I'll buy and trust. #citystuff.capitalize# I'll look at twice, whoever's selling it.
+opinion @6 strangers mixed 1 : A #stranger# can have #share#. They can't have my trust till I've seen what they do with it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. You'll have walked a way. | #greet#. There's bread in the house, if you're hollow.
+line @2 greet [here.time=dawn] : #greet#. The oven's lit, by the smell of it. | #greet#. Early, and frost on the gate.
+line @3 kin.open [pair.kin!=no] : Come in. I've kept you #crust#. | There you are. Sit, and have some #bread#.
+line @4 again.open : #welcome_back#. I've not gone anywhere. | You again. I'm glad of it, #address#.
+line @5 greet.return : #greet#. | #greet#, #address#. There's bread if you've not eaten.
+line @6 greet.return [pair.band=friends|family] : #greet#. Sit down; I'll cut you a slice. | #greet#. You look #hungry#.
+line @7 farewell : #farewell#. | #farewell#. Take a crust for the road.
+line @8 farewell.return : #farewell#. | #farewell#, #address#. Mind the gate.
+line @9 react.news.new : #surprise#. I'd not heard. Who says so? | #oath#. That's new. I'll turn it over a bit.
+line @10 react.news.known : #knew#. It came round the yard last week. | I'd heard. I turned it over then, and I'm still not sure, #address#.
+line @11 react.news.doubt : #doubt#. Where did that come from? The city? | I'll want to see that before I trust it. #saying#.
+line @12 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll take them a loaf. | That's #bad#. Is anybody seeing to them?
+line @13 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be bread to bake, then. | That's #good#. I'd bake a cake for that.
+line @14 answer.how : #fine#. Fed and busy. | Well enough. I've eaten #bread#, so I'm well.
+line @15 ask.how : And you? Have you had your #grub# today? | How are you keeping, #address#?
+line @16 decline : #hedge#, no. I've trees to see to before dark, and they won't wait. | I'd not like to, #address#. I don't know enough about it yet.
+line @17 accept_decline : #no_matter#. I'll ask another day. | Fair enough. I'd want to turn it over, too, #address#.
+line @18 thank : #thanks#. | That's kind. I'll pay it back in #bread#.
+line @19 deflect_thanks : #deflect#. It was only a loaf. | It's nothing. #saying#.
+line @20 sympathise : #sympathy#. Sit, and eat something. | That's hard. Have #crust#; it won't mend it, but it helps.
+line @21 preclose : #preclose#. | I'd best see to #graftings#.
+line @22 ack : #bc_it_is# | #bc_maybe#.
+scene g_turn_it_over
+when topic=prices|work|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : A pedlar off a cart from #city# wanted me to buy a knife. I turned it over twice. | #citystuff.capitalize# always looks better than it lasts. I've learned that the slow way. | I'll give you #share#, but I'll not buy a thing I haven't turned over.
+b : Was it any good? | How so? | Why turn it over?
+a : The edge was painted on, near enough. I kept my #money# and #knife#. | A buckle that snapped, boots that split. Made here, I'd have got a #good# season more. | Because the bottom's where #catch# is, every time.
+b : #bc_wise# | #bc_true# | #bc_fair_enough#
+
+scene g_bread_shared
+when topic=food self.likes=warm_bread
+does tell.feeling / offer / accept
+a : There's #bread# on the table. Have the first piece. | Nothing better than the first slice off the #loaf#, when the steam comes up. | I baked too much again. #oven.capitalize# gets the better of me. You'll have to help.
+b : Thank you. I will. | It smells lovely. | I'll help, gladly.
+a : Take the heel. It's the #good# bit, and I'll not fight you for it. | It does. #tasty.capitalize#, and plenty of it. | That's what it's for. #saying#.
+
+scene g_orchard_rows
+when topic=dreams|land
+does confide / ask.detail / answer.detail / assess
+a : I've grafted a row of #whips#. When they take, I'll graft another row. | One day there'll be an orchard I grafted every tree of, with #knife#. | I keep #graftings# behind the house where the wind can't find them.
+b : How many have taken? | How long does that take? | Why behind the house?
+a : Seven of nine. The other two I'll try again in spring, with #knife#. | Years. I don't mind. Trees aren't in a hurry, and I'm not either, #address#. | The wind's #thief.a#. It'll snap a graft and not even say sorry.
+b : #bc_good# | #bc_wise# | #bc_ha#
+
+scene g_knife_work
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : I've #whittle# going by the fire most nights. Spoons, pegs, a bird now and then. | #knife.capitalize# was made here, in #here.town#. It's kept its edge longer than any I've seen. | I take up #whittle# when I'm thinking. When I'm thinking hard, there's a lot of shavings.
+b : A bird? | Made here's best. | What were you thinking about?
+a : For whoever wants one. I don't keep them, #address#. | #saying#. No blade from #city# could match it. | Whether to trust somebody. I'm still whittling, #oath#.
+
+scene g_snow_stubble
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : I wait all autumn for #snow#. Then it comes in the night and I miss it. | #snow.capitalize# makes the whole world one colour. I like that. | First thing I do when it snows is check #graftings# are wrapped.
+b : You'll catch it next time. | It does go quiet. | Are they?
+a : I sit up for it every year. Never once caught it falling, #oath#. | Quiet, and no city cart can get through. #good.capitalize#. | Wrapped in sacking. They'll do. I'll check #graftings# again at noon.
+
+scene g_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #bells.capitalize# this morning. I was up and dressed before the second stroke. | When #bells# go, I put a fresh loaf on, and anyone who comes in gets some. | There's no sound better than #bells#. Not even the oven door.
+b : Keen. | That's a good custom. | Not even that?
+a : Keen as anything. Best day going, and #good# from the first stroke. | My #gran# did the same. I keep it going. | Close. #bells.capitalize# win by a crust.
+
+scene g_dawn_bell
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : That early bell. Who decided #here.town# all needs waking at once? #annoyed#. | The bell went before #cockerel#. Even #cockerel# looked put out. | I like #bells# on a feast day. Not a bell every day before light.
+b : It's for the workers. | Ha. | Fair enough.
+a : I'm a worker, and I wake myself. #annoyed#. | #cockerel.capitalize# and I agree on that. | #bells.capitalize# are a gift. Dawn bells are a chore.
+
+scene g_waiting_about
+when topic=smalltalk|day self.dislikes=waiting
+does tell.complaint / react.self / assess
+a : Half the morning gone, #waiting#. I could have grafted three trees. | I don't mind #work#. I mind standing about while somebody decides. | Tell me yes or tell me no, #address#. Just don't make me wait on it.
+b : Folk take their time. | Some can't help it. | That's fair.
+a : They do. #whips.capitalize# take theirs too, but at least they're growing. | I know. I take #whittle# with me now, for while they're at it. | #saying#. A plain yes is worth a long maybe.
+
+scene g_newcomer
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : There's a new face in #here.town#. I took them a #loaf#. I'll see what they do with it. | A #stranger# asked me the way. I showed them, and I watched which way they went after. | I'll give #share# to anyone. Trusting's another thing, and it takes longer.
+b : What did they do? | Where did they go? | Fair enough.
+a : Said thank you, and meant it, I think. That's a #good# start. | Where they said. That's one thing in their favour, #oath#. | It does. It's not a race, #address#.
+
+scene g_faith_plain
+when topic=faith
+does give.opinion / react.self / assess
+a : Every #loaf# that rises is one more reason to bless the Bright One. Most of them rise. | I go to chapel on a Restday and sit near the door, with the #oven# lit at home. | The Bright One gave us #bread# and #good# earth. The rest is up to us.
+b : That's a fair prayer. | Near the door? | I'd agree.
+a : It's the one I mean, so it's the one I say, #address#. | So I'm first out to #oven#. | Most of it. The rest is #rain#, or none.
+
+scene g_work_plain
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I'm on #work# till the light goes. Then it's the fire and #whittle#. | I like a job I can see the end of, #address#. Rows done, sacks filled. | I'll do #work# as it should be done, and I'll not be hurried into doing it badly.
+b : Long day. | That's honest work. | Good.
+a : Long, but I'll sleep for it on #bed#. | It is. And I can count it at the end, #oath#. | #saying#. Made right, it stays made.
+
+story g_the_city_knife [topic=prices|memories self.age>=20]
+  : When I was young a pedlar off a city cart sold my #dad# a knife that shone like a mirror.
+  : It snapped the first time he cut a rope with it. #annoyed#, he said. He kept the handle on the shelf, to remind him.
+  ask : Would you have bought it, #address#, if it shone like that?
+  b : I might have, I'll be honest.
+  b[old] : I've a shelf like that myself. Every house does.
+  : That's why I turn things over. #saying#.
+
+rule @g_bread_bark
+when concept=bark here.time=dawn self.likes=warm_bread
+does aside
+cooldown 12h
+say Smell that. #bread.capitalize#. | #oven.capitalize#'s hot. Who wants the first slice?
+
+dlg @1 resident.hub : #greet#. Have you eaten? I've bread, if not. | #greet#, #address#. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. There's a slice put by, if you'll take it.
+dlg @3 resident.job [self.working=yes] : I'm at #work#. I'll do it right, or not at all. | Whatever #work# wants doing, done properly.
+
+young
+line @1 greet : #greet#! I've got bread. You can have some. | #greet#. I'm minding the oven. Nearly.
+line @2 greet [pair.band=strangers] : #greet#. You're not from here. From the city, I'd guess. | #greet#. Who are you? I've not seen you.
+line @3 kin.open [pair.kin!=no] : I saved you #crust#! It's only a #little# squashed. | Look what I whittled with #knife#. It's a pig. Nearly.
+line @4 greet.return : #greet#! | #greet#. I'm that hungry I could eat the gate.
+line @5 farewell : Bye! I've got to see to #whittle#. | #farewell#! Don't go to the city.
+line @6 farewell.return : Bye, #address#! | #farewell#. Come back for bread.
+line @7 react.news : What? Tell me properly, #address#. | Is that true? #surprise#. Say it again.
+line @8 react.news.new : #surprise#! I didn't know that! | Really? Who said? I'll ask #mum#.
+line @9 react.news.doubt : That's not true, I think. Somebody's fibbing to you. | I don't believe it. That's #nonsense#.
+line @10 answer.how : I'm #hungry#. That's all. | Good! I had #bread#.
+line @11 decline : No. I'm not allowed, and #mum# would know. | I won't. #mum# says I mustn't.
+line @12 accept_decline : All right. You can say no, #address#. | Fine. I'll ask #mum# instead.
+line @13 thank : #thanks#! | Thank you. I'll give you #share#.
+scene y_first_crust
+when topic=food
+does tell.self / react.self / assess
+a : I had #crust# this morning. The heel's the best bit. | I can carry a whole #loaf# by myself now. Both arms. | I gave half my bread to the hens. Then I was #hungry#.
+b[stage=adult|old] #grown : It is. The crust's where the good is. | Mind you don't drop it in the yard. | That was kind of you. Silly, but kind.
+b : The best bit? | Both arms? | Silly sprout.
+a@grown : I know. I always ask #mum# for it. | I didn't drop it. Only a #little# bit nearly. | They looked #hungry# too. They're always hungry.
+a : The very best. It's crunchy and #tasty#. | Both arms and my chin. #oath#, it was heavy. | I'd do it again. The hens thought it was #tasty#.
+
+scene y_city_cart
+when topic=prices|smalltalk
+does tell.self / react.self / assess
+a : A cart came from #city# with #shiny# things on it. I didn't trust it. | The man on the cart from #city# gave me a sweet. I looked at it a long time. | #mum# says city things break. I think so too.
+b[stage=adult|old] #grown : Shiny doesn't mean good. You're right there. | Did you eat it, in the end? | Some do. Not all.
+b : Why not? | Did you eat it? | Do they?
+a@grown : I know. #shiny.capitalize# is for magpies. | In the end. It was all right. I still didn't trust it, #address#. | Most, I think. I'm watching #citystuff#.
+a : It was too #shiny#. That's for magpies. | In the end. It tasted a bit of #city#. | I think so. I'm keeping count of #citystuff#.
+
+scene y_snow
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : When's #snow# coming? I want to see it land. | It snowed! I made a snow wolf. It's got a stick for a tail, from #whittle#. | I'm going to catch the very first bit of #snow#. On my nose.
+b[stage=adult|old] #grown : Soon enough. You'll feel the cold come first. | A stick for a tail! That's a fine one. | Mind it doesn't make your nose #cold#.
+b : Soon, I hope. | A snow wolf! | On your nose?
+a@grown : I'll sit by the window all night, #address#. | It's falling over. I'll give it another stick. | I don't mind being #cold#. Noses get warm again.
+a : Me too. Soon. | It's the best one in the yard. #oath#. | On my nose. That's the rule.
+
+scene y_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : It's a feast day! I heard #bells#! | I'm going to stay up the whole feast. All of it, #oath#. | There's honey #bread# on feast days. I'm having two.
+b[stage=adult|old] #grown : You'll be asleep in a corner by dusk. | All of it? We'll see. | Two, and then you'll be sticky.
+b : The best day. | All of it? | Two?
+a@grown : I won't. I'll keep my eyes open with my paws, #address#. | All of it. I've practised. | Sticky's fine. Sticky's #tasty#.
+a : The very best. | Every bit. | Two. Maybe three.
+
+rule @y_bark
+when concept=bark
+does aside
+cooldown 8h
+say I made a peg with #knife#! Look! | Is #oven# done yet? Is it bread yet?
+
+
+adolescent
+line @1 greet : #greet#. Don't mind me; I'm only passing. | #greet#, #address#.
+line @2 greet [pair.band=strangers] : #greet#. You look like you came a long way. The city, maybe. | #greet#. I've not seen you about.
+line @3 greet [here.time=dawn] : #greet#. I've been up since the oven. | #greet#. Early out, for a #stranger#.
+line @4 kin.open [pair.kin!=no] : You're here. I've #crust# kept for you. | Sit. I've a slice of the #loaf# put by for you.
+line @5 again.open : #welcome_back#. I've not moved. | You again, #address#. That's twice. I'm not complaining.
+line @6 greet.return : #greet#. | #greet#. Sit. There's bread if you've not eaten.
+line @7 greet.return [pair.band=friends|family] : #greet#. I was hoping you'd come. | #greet#. Sit; there's bread.
+line @8 farewell : #farewell#. Take a crust with you. | #farewell#. Mind the ruts in the lane.
+line @9 farewell.return : #farewell#. | #farewell#, then.
+line @10 react.news : Go on. #listen#. | Say that again, #address#. Slowly.
+line @11 react.news.new : #surprise#. I hadn't heard. Who told you? | #oath#. That's news to me.
+line @12 react.news.known : I'd heard. Somebody said it at #counter#. | #knew#. I wasn't sure I believed it, though.
+line @13 react.news.doubt : #doubt#. Where's it from? Not the city, I hope. | Not till I've seen it. #saying#.
+line @14 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Somebody should take them bread. | That's #bad#. It turns my belly over.
+line @15 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'm glad. Truly. | That's #good#. There'll be a feast, maybe.
+line @16 answer.how : #fine#. I've eaten. | All right. #busy.capitalize#. Nobody asks me what I think, but I'm all right.
+line @17 ask.how : You? Have you had #grub# today? | How are you, #address#?
+line @18 decline : #hedge#, no. I don't know you well enough yet, and I'd want to. | I'd rather not, #address#. I've trees to see to, and they'll not wait.
+line @19 accept_decline : #no_matter#. You can say no. | Fair enough. I'd have turned it over twice too.
+line @20 thank : #thanks#. | That's kind. I'll bring you #bread# for it.
+line @21 deflect_thanks : #deflect#. It was only a crust. | It's nothing. #saying#.
+line @22 sympathise : #sympathy#. Sit; have something to eat. | That's rotten. I've #crust#, if it helps.
+line @23 preclose : I'd best go. #graftings.capitalize# want watering. | #preclose#.
+line @24 accept_preclose : Go on, then. #farewell#. | Off with you, then, #address#. Go careful.
+line @25 ack : #bc_it_is# | Mm. #bc_maybe#.
+scene ad_the_catch
+when topic=prices|smalltalk|newcomer
+does tell.self / ask.detail / answer.detail / assess
+a : A pedlar came through with #citystuff#. I turned every one of them over, and he didn't like it. | Somebody gave me a coin from #city#. It felt light. I bit it. | Everybody wants the #shiny# stuff off the carts. I want to know #catch# first.
+b : Did you find anything? | Was it real? | And what is wrong with it?
+a : A crack in a jug, a buckle that bent in my paw. He stopped smiling, #oath#. | Real enough. I still spent it first, before the #bread# money. | Something, mostly. #saying#.
+b : #bc_ha# | #bc_wise# | #bc_maybe#
+
+scene ad_learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning a trade now. Nobody calls me #child# when I've a tool in my paw. | I spoiled a piece this morning. I did it again, slower, and got it right, #oath#. | They say I'm #slow#. I say I'm careful. It's not the same thing.
+b : Good for you. | That's how you learn. | It isn't.
+a : I'd like it noticed, that's all. #oath#. | I know. I'm still cross about the first one. #annoyed#. | Careful's what keeps a thing from breaking. #saying#.
+
+scene ad_bread_first
+when topic=food self.likes=warm_bread
+does tell.self / offer / accept
+a : There's #bread# just out. Have some before it's gone. | I made the #loaf# myself this morning. It's lopsided, but it's mine. | I always cut the first slice for whoever's nearest. Today that's you, #address#.
+b : I'll not say no. | Lopsided's fine. | Thank you.
+a : #good#. Take the heel; it's the best bit. | It tastes the same either way. #tasty.capitalize#, if you made it. | #deflect#. Bread's for halving.
+
+scene ad_orchard_plan
+when topic=dreams|land
+does confide / ask.detail / answer.detail / assess
+a : #vent#: I'm going to graft an orchard. Every tree of it with my own knife. | I've #graftings# behind the house. Seven took. | Nobody believes I'll do it. I've started anyway, with #knife#.
+b : How many trees? | Out of how many? | How?
+a : So many rows the far end's lost in the haze, #someday#. That's the size. | Nine #whips#. Two didn't. I'll try them again in spring. | One whip at a time. You can't hurry a tree, and you can't hurry me. #oath#.
+b : #bc_i_hope_so# | #bc_good# | #bc_fair_enough#
+
+scene ad_whittling
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : I've a bird half done in #whittle#. It's got one wing so far. | I whittled a spoon for #mum#. It's crooked, but it holds soup. | When I can't sleep I take up #knife#. There were shavings everywhere this morning.
+b : One wing? | Crooked's fine. | What kept you up?
+a : The other's in the wood somewhere. I'll find it, #address#. | It holds soup. That's what a spoon's for. #saying#. | Thinking. About whether to trust somebody. #dunno.capitalize#.
+
+scene ad_city_folk
+when topic=travel|land|accent
+does give.opinion / react.self / assess
+a : Folk from #city# talk too quick. You can't turn what they say over fast enough. | I'd not go to #city#. Everything there's for sale, and half of it's broken. | A #stranger# laughed at how I talk. I didn't laugh back.
+b : Some of them are all right. | Half? | Good for you.
+a : Some. I'll find out which, one at a time, #address#. | Half, at least. The other half costs #money# you'd not believe. | I gave them #crust# anyway. Then I watched them eat it.
+
+scene ad_snow_first
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : I sat up for #snow# again. I fell asleep at the window and woke to it. | #snow.capitalize# came. I went out before breakfast and walked the whole field. | I wrapped #graftings# in sacking before the snow came. All seven.
+b : You'll catch it falling one year. | The whole field? | All seven?
+a : One year. I'm not giving up, #address#. | Every row. My tracks are the only ones on #snow#. | All seven. A graft's a #little# thing; the cold would have them.
+
+scene ad_feast_bells
+when topic=festival self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #bells.capitalize#! I was dressed before the first stroke stopped. | On feast days I bake extra, so nobody walks past the door #hungry#. | I'm too old to run when #bells# go. I still walk quickly.
+b : Keen! | That's kind. | Ha. Quickly?
+a : Keen as mustard. Best day there is, #address#. | My #gran# did it. Somebody has to keep it going. | Very quickly. Almost running. Not quite, #address#.
+
+scene ad_early_bell
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : That bell again. I was already up, and it still made me jump. #annoyed#. | Who needs a bell to tell them it's morning? The sky says so, and #cockerel#. | Dawn bells. I'd take them down if I could reach, #oath#.
+b : It's for everyone. | The sky does. | You'd be in trouble.
+a : Everyone's already up. Ask them. #annoyed#. | The sky, and #cockerel#, and my belly. That's three. | Only if they caught me. I'd find #catch# in it first.
+
+scene ad_waiting
+when topic=smalltalk|day self.dislikes=waiting
+does tell.complaint / react.self / assess
+a : I've been standing about all morning while grown-ups talk. #waiting.capitalize# is the worst. | Tell me yes or tell me no, #address#. Don't make me wait. | I could have grafted a tree in the time it took to decide about #supper#.
+b : You'll learn patience. | Fair. | Ha. A tree?
+a : I've patience for trees. Not for #waiting#. | Fair, and I'm right, #oath#. | A whole tree. And it would have taken, too. #saying#.
+
+scene ad_mother
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : #self.mother# works harder than anyone I know. I try to keep up, and I'm #tired# by noon. | #self.mother# taught me #oven#. I burned the first six loaves. | I don't say it, but I'd do anything #self.mother# asked.
+b : Something to look up to, that. | Six? | You should say it.
+a : I know it. I'll get there, #someday#. | Six. The seventh was nearly right, and #tasty#. | Maybe. When nobody else is listening.
+
+scene ad_friend_home
+when topic=friends|family self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd share #crust# with. And have. | If #self.friend# says a thing's true, I don't need to turn it over. | #self.friend# and me have a den in the hedge. Nobody else knows where.
+b : That's a good friend. | That's trust. | I'll not ask where.
+a : The best I've got. #good.capitalize# as they come. | It is. I haven't much of it to give, #address#. | #good#. #secret#.
+
+scene ad_gossip_held
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I heard something at #counter#. I'm not sure it's true, so I'm not saying it. | Folk tell me things because they think I'm young and won't understand. I understand. | There's talk going round. That's #nonsense# till I've turned it over.
+b : Go on, a little. | What sort of things? | Fair enough.
+a : No. If it's wrong, I'd have passed on a lie. | Things. I keep them. #secret#. | Fair, and right. Gossip's like #citystuff#. It looks better than it is.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+story ad_the_light_coin [topic=prices|memories]
+  : A #stranger# paid me for a carved bird once, in a coin from #city#.
+  : It was too light. I knew it the moment it touched my paw. #oath#.
+  ask : A coin like that, what's a body to do with it, would you say?
+  b : Given it back, I suppose.
+  b[stage=adult|old] : I'd have kept the bird. Did you tell them?
+  : I gave the coin back and gave them the bird anyway. They looked ashamed. That was better.
+
+story ad_first_graft [topic=dreams|work|memories]
+  : My first graft, I tied it so tight it choked the whip. #annoyed#.
+  : I cried about it, and I didn't tell anyone, and the next spring I tied one loose and it took.
+  ask : Have you ever got a thing right the second time, that way?
+  b : More than once. That's how it's done.
+  b[stage=adult|old] : Most of what I know, I learned that way. Is that tree still growing?
+  : Behind the house. It's the tallest of #graftings# now.
+
+rule @ad_bark_city
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 8h
+say #citystuff.capitalize#. Turn it over, I would. | #shiny.capitalize#. That means there's #catch# somewhere.
+
+rule @ad_bark_bread
+when concept=bark here.time=dawn self.likes=warm_bread
+does aside
+cooldown 12h
+say Smell that. #bread.capitalize#. | #oven.capitalize#'s hot. First slice to whoever's nearest.
+
+dlg @11 resident.hub : #greet#. Have you eaten? I've bread, if you haven't. | #greet#. What is it you want?
+dlg @12 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I kept a slice back. It's yours if you want it.
+dlg @13 resident.hub [pair.disposition=hostile|wary] : What's that you're carrying? From #city#, is it?
+dlg @14 resident.job : I'm learning #work#. I'll not say I'm #good# yet, but I'm careful. | Whatever wants doing at home. And #bread#. I bake the bread.
+dlg @15 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nobody tells me much. | Not that I trust, #address#. Ask somebody older.
+dlg @16 resident.bye : #farewell#. Take a crust. | #farewell#. Mind the ruts in the lane.
+graft resident.hub
+choice Why do you turn everything over before you buy it? -> catch
+node catch
+say Because there's always a catch, and it's always on the bottom. #citystuff.capitalize# most of all. Made here, I'll trust.
+mood calm
+free
+choice Do you trust anything from the city? -> catch_city
+choice Goodbye. -> bye
+node catch_city
+say Some. After I've turned it over twice. I'm not unkind about it. I'll still give you bread while I make up my mind.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

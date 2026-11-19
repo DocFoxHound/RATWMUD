@@ -1,0 +1,276 @@
+# sm113, the wagering grinder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm113
+revision 1
+state ready
+dialect southmeadow
+accent broad light
+tier standard
+written_for cty_emrys_stillshore
+written_by claude
+title the wagering grinder
+fits stage=adult|old
+prefers temper=even warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk cannot_resist_a_wager
+likes honey_cakes roof_birds festival_bells summer_evenings
+dislikes night_noise early_bells
+fears saying_too_much_about_a_certain_house a_debt_called_in_at_the_wrong_time
+hopes one_wager_that_sets_me_up quiet_nights_and_a_shut_door
+topics pastimes +0.4 work +0.3 weather +0.3 animals +0.2 gossip +0.2 newcomer -0.3 faith -0.2
+styles comfort=blunt gossip=hints refuse=short tease=none
+marks oath saying
+persona #self.first# grinds corn and keeps the door shut: cold, blunt and guarded, will lay a penny on anything from the rain to which rook leaves the roof first, and knows a thing about one of the great Houses that is never said aloud.
+
+words
+oath! = Grit and groat | By the upper stone
+saying! = Lay your penny and hold your tongue | The stone grinds slow and grinds it all | A sure thing is a thing nobody bet on
+wager = a penny on it | a copper says so
+odds = two to one | three to one
+stones = the stones | the millstones
+flour = flour | flour dust
+wheel = the wheel | the mill wheel
+grist = the grist | a sack of grist
+penny = a penny | a copper
+ahouse = a certain House | one House I could name
+secret = what I know | a thing I'll not repeat
+cakes = honey cakes | a honey cake or two
+racket = a racket after dark | noise when decent folk are abed
+rooks = the rooks on the ridge | the birds on the roof
+lateglow = an evening that stays light past supper | a summer dusk that dawdles
+dawnpeal = the dawn bells | bells at first light
+feastpeal = the festival peal | bells on a feast day
+
+any
+opinion @1 strangers against 2 : A face I've not seen before gets a shut door from me. I'd lay #wager# I'm right more than I'm wrong.
+opinion @1 houses against 1 : The Houses wouldn't give my sort a stool to sit on. And I know #secret#, so that's all from me.
+opinion @1 merchants against 2 : My purse gets no fatter, and the loaf gets dearer every week. #oath#.
+opinion @1 dole against 1 : Hand it out and folk queue for it. I've never queued for a thing in my life, #address#.
+opinion @1 newcomers against 1 : New faces mean less work for old ones. #odds.capitalize# they're gone by the next harvest anyway.
+opinion @1 city against 1 : Smoke, elbows and pickpockets. I'd lay #odds# on the pickpockets, every time.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Say your business. | #greet#. I don't know you, so say what you want.
+line @2 greet [self.working=yes self.job=none] : #greet#. Shout; #stones# are loud. | #greet#. I'm at #work#. Quick, then.
+line @3 greet [here.time=dawn] : #greet#. Bells woke you too, did they. | #greet#. Early. I'd #wager# you're after something.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be knocking. | #greet#. Dark out. You'd best have a reason.
+line @1 kin.open [pair.kin!=no] : You. In, and shut the door behind. | Oh. You. Sit, then, #address#.
+line @1 again.open : You again. I'd have laid #odds# against it. | Twice. I'll start charging #penny# a visit.
+line @1 greet.return : #greet#. | #greet#. Out with what you want, then I'll get back.
+line @2 greet.return [pair.band=friends|family] : #greet#. Shut the door behind you. | #greet#. Sit if you're stopping.
+line @3 greet.return [self.working=yes] : #greet#. Make it short; #stones# don't wait. | #greet#. Talk over the noise, then.
+line @4 greet.return [here.time=dusk|night] : #greet#. It's late. Keep your voice down. | #greet#. Quick, and quiet.
+line @1 farewell : #farewell#. | #farewell#. Shut the gate.
+line @2 farewell [here.time=dusk|night] : #s8_night#. | #farewell#. And no #racket# on your way.
+line @1 farewell.return : #farewell#. | #s8_byeback#.
+line @1 react.news : #ack#. | #howso#?
+line @1 react.news.new : #surprise#. Didn't know that. | #oath#. I'd have bet against it.
+line @1 react.news.known : #knew#. | I had that. Won a #penny# on it, near enough.
+line @1 react.news.doubt : #doubt#. It's half wrong, #wager#. | I'd not lay #penny# on that being true.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's #bad#. Nobody'd have bet on that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. | #good.capitalize#. I'd have given you two to one against.
+line @1 answer.how : #fine#. | Grinding on. | #notsobad.capitalize#. Could be worse; I'd not bet it'll stay so.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. The grist won't wait. | Flat out. #stones.capitalize# are hungry today.
+line @1 ask.how : And you? | What's your news, then?
+line @1 sympathise : #sympathy#. | That's a #bad# draw. Sit a while.
+line @1 decline : #refuse#. I've #work# till dark and no wish to be out after. | No, #address#. I'll not, and I've my reasons, and they're mine.
+line @1 accept_decline : #no_matter#. | Fair. Ask some other #fool#.
+line @1 thank : #thanks#. | Right. I owe you, and I pay what I owe.
+line @1 deflect_thanks : #deflect#. | Don't mention it. I mean that, #address#.
+line @1 preclose [self.working=yes] : Well. #excuse#. | #stones.capitalize# are calling.
+line @2 preclose : Well. #preclose#. | That's enough. I've said more than I meant.
+line @1 accept_preclose : Go on, then. | #s8_okay#.
+line @1 ack : #ack#. | #bc_right#
+rule @stones
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Grind, you beauty. Grind that #grist#. | #flour.capitalize# up my nose again. #oath#.
+
+rule @dawnpeal
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #dawnpeal.capitalize#. Somebody ought to sit on that ringer. | There it goes. #annoyed#.
+
+rule @nightnoise
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Some of us sleep, you know. Or we'd like to, #bc_every_night# | #racket.capitalize#. #annoyed#, every night.
+
+rule @rookbet
+when concept=bark working=no self.likes=roof_birds
+does aside
+cooldown 8h
+say The big one goes first. #wager.capitalize#. Go on. | #odds.capitalize# on the rook. Always the rook.
+
+scene rain_wager
+when topic=weather|land here.weather=clear here.region=southmeadow
+does tell.self / ask.detail / answer.detail
+a : No rain before Restday. #wager.capitalize#. Want to take it? | Clear sky again. I've had #penny# on dry weather all month, and I've not lost yet. | Folk pray for rain. I bet on it. Same result, but I'm sometimes richer.
+b : I'll not take that. | All month? | Do you win?
+a : Wise. I'd have had #penny# off you. | All month. #wheel.capitalize# is slower for it, but my purse is heavier. | When it stays dry. Which is most of the time, round here.
+
+scene rook_odds
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail / assess
+a : I watch #rooks# of an evening. I bet myself which one goes first. | Two rooks on the barn roof. The left one flies before the right. #wager.capitalize#. | There's a crow on the mill roof that always leaves last. I've won #penny# off that crow more than once.
+b : Who wins? | Which one did? | Off who?
+a : Me, or me. I can't lose a bet with myself. Can't win much, either. | The right one. I owe myself #penny#. | Off any #fool# daft enough to bet against it.
+b : Ha. | Shame. | #bc_ha#
+
+scene any_wager
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : I'll bet on anything. Rain, rooks, how long a sermon runs. Ask anyone. | I'll give you #odds# that cart sticks at the ford. Fair odds. | A wager keeps a day honest. You say what you think, and you put #penny# behind it.
+b : Anything at all? | I'll pass. | Hard way to live.
+a : Anything with an end to it. Sermons have an end. Eventually. | Your loss. It stuck, too. I'd have had you. | Only way I know. Talk's cheap. A penny's not.
+
+scene the_lost_week
+when topic=pastimes|memories self.age>=25
+does confide / ask.detail / answer.detail
+a : I lost a week's #wages# once on a goose. Never again, I said. I've said that a lot since. | Worst bet I ever made, I made sober. #bad.capitalize#, that. | I once won a pig on a wager. Then I lost it on another. Same afternoon.
+b : On a goose? | What was it? | Same day?
+a : A goose race. It stopped to eat. The other one didn't. #oath#. | That I'd keep my mouth shut for a month. I lasted a day. | Same day. Easy come. I never even saw the pig. #bc_ha#
+
+scene grinding
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I'm #self.trade_words#. #stones.capitalize# turn, the corn goes in, and the flour comes out. That's my day. | You can hear #stones# from the lane when they're going. That's me. | I set the gap between #stones# by ear. Nobody taught me. I got it wrong a lot first.
+b : Every day the same? | Loud work. | By ear?
+a : Every day. I'd lay #odds# on it, if anybody'd take the bet. | Loud and dusty. #flour.capitalize# in every whisker. | A #good# grind sings. A #bad# one grumbles. You learn the difference or you go hungry.
+
+scene flour_cough
+when topic=health self.working=yes self.job=none
+does tell.self / sympathise / assess
+a : I cough #flour# half the night. Comes with the trade. | My chest's full of dust. #cakes.capitalize# in hot milk see it off. | My eyes are always red. Folk think I drink. I don't. Much.
+b : #sympathy#. | That's a good remedy. | Much?
+a : It's nothing. I'll grind till I drop, and I'd bet that's a while yet. | It's #cakes# that do it. The milk's for show. | Much. That's all I'll say, #address#.
+
+scene dry_wheel
+when topic=land|work here.region=southmeadow here.season=summer
+does tell.worry / reassure / assess
+a : The stream's low. #wheel.capitalize# goes slow, and so do my wages. | No rain means a slow wheel. A slow #wheel# means a short loaf for everyone. | I've laid #penny# on the stream lasting till harvest. I'm not sure of this one.
+b : It'll rain. | Hard on everyone. | You might lose.
+a : I'd want better odds than that before I believed it. | Hard on the ones at the bottom. That's me, #skint# as ever. | Might. First time this year. #saying.capitalize#.
+
+scene house_secret
+when topic=gossip|lore
+does tell.gossip / ask.detail / answer.detail
+a : I know a thing about #ahouse#. I'll not say which. I'll not say what. | There's #secret# about one of the Houses. Wiser to keep it, so I keep it. | Ask me about #ahouse# and I'll tell you the weather. That's all you'll get.
+b : Go on, tell. | Is it bad? | Why the weather?
+a : No. You'd tell somebody by supper, #wager#, and then where would I be. | Bad enough to keep. That's all the answer you'll have. | The weather's safe. Houses aren't. #saying.capitalize#.
+
+scene door_shut
+when topic=newcomer|smalltalk
+does give.opinion / react.self / assess
+a : New face in the lane. I've shut my door on #stranger#. They can knock if they want something. | I don't know them, so I don't trust them. That's not unkind. It's sense. | Somebody new, they say. #odds.capitalize# they're after #work#, and it's thin.
+b : They might be decent. | Seems hard. | It is thin.
+a : Might. I'll let them prove it. Slowly. | Hard's safer. I've never regretted a shut door. | Thin, and getting thinner. #grumble#.
+
+scene honey_cakes
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess
+a : #cakes.capitalize#. That's the one soft thing about me. Don't spread it about. | I won a whole tray of #cakes# once on a bet. Ate them myself. Every one. | Give me #cakes# and keep the meat. Strange for a big wolf, they say. I don't care.
+b : Your secret's safe. | Every one? | Each to their own.
+a : It'd better be. I know where you live. | Every one. Took two days. Worth it. | Each to their own, and mine's #cakes#.
+
+scene feast_peal
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : #feastpeal.capitalize#. That's a bell worth getting up for. | I like #feastpeal#. Other days I'd have the bells melted. | #feastpeal.capitalize#. I bet myself how many peals before the priest gives up. I'm usually close.
+b : What's the difference? | Melted? | How many, usually?
+a : A feast bell means cake. A dawn bell means work. | Into #money#. I'd lay it all on the feast. | Thirty-one, most feasts. Thirty-four once. I lost that one.
+
+scene dawn_bell
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : #dawnpeal.capitalize#. I'd pay #penny# to have that ringer sleep in. | Bells before light. Does anybody not know it's morning? #oath#. | I was having a #good# dream. I'd won something. Then the bells.
+b : They're for the chapel. | Not everyone wakes early. | What had you won?
+a : The chapel can ring them at noon, then. | Then they can sleep through it. I can't. | I never found out. That's the worst of it.
+
+scene night_racket
+when topic=home here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : There's always somebody up at night, banging about. I've #work# at dawn. | #racket.capitalize#. Doors, feet, somebody singing. #annoyed#. | I sleep like #stones#, if folk let me. They don't.
+b : Have you told them? | Singing? | That's hard.
+a : Told them. Didn't take. I'll tell them louder. | Singing. Badly. I'd bet #penny# on it being the same tune every night. | Hard and #tired#. I'll live. I always do.
+
+scene summer_glow
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : #lateglow.capitalize#. I'll sit outside and say nothing to anyone. | The best of the year, this. #stones.capitalize# stopped, the air warm, nobody wanting anything. | Long light. I bet myself when it'll be dark. I'm always too early.
+b : Sounds peaceful. | Nobody? | Too early?
+a : It is, if you keep your mouth shut. | Nobody. That's the beauty of it, #address#. | Every time. The summer cheats. I don't mind losing that one.
+
+scene hard_grind
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Lean times. Nobody's buying flour they can't pay for. #stones.capitalize# sit idle half the day. | Bread's up and my #wages# aren't. I'd bet the Houses haven't noticed. | Hard weeks. I've stopped betting. That's how hard. Nearly stopped.
+b : It's hard everywhere. | Bet they haven't. | Nearly?
+a : Hard here is what I know. Everywhere else can mind itself. | I'd not take your bet. We'd both be on the same side. | Nearly. A copper on the rooks doesn't count. #bc_it_does#
+
+scene faith_odds
+when topic=faith
+does give.opinion / react.self / assess
+a : I'd lay #penny# the Bright One plays fair. I'm less sure about some who preach. | Feast days I'm in chapel. #feastpeal.capitalize#: worth the sermon. Just. | I never bet on what the Bright One means. That's a game with no end in sight.
+b[job=priest] #priest : We do our best. | The sermon's the point. | Wise, that.
+b : That's a bold thing to say. | Just? | Wise, that.
+a@priest : Some do. I'll not say which. | Your point. Mine's the bells. | Wise, or #slow#. I'll not risk it.
+a : Bold, maybe. I'd still lay #penny# on it. | Just. Depends how long it runs. | Wise is cheaper than wrong.
+
+scene friend_odds
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one wolf I'd never lay #penny# against. | I don't trust many. I trust #self.friend#. That's the whole list. | #self.friend# knows better than to take a bet off me. Smart, that one.
+b : That's a lot of trust. | Short list. | Smart indeed.
+a : It is. I don't give it twice. | Short and #good#. It stays short. | Smarter than me. Don't say I said so.
+
+scene gossip_odds
+when topic=gossip topic.claim_kind!=death
+does tell.gossip / react.news / assess
+a : I hear #topic.subject# #topic.claim#. Half true, I'd say. #wager.capitalize#. | They're saying #topic.subject# #topic.claim#. I'd give you #odds# against. | Word is #topic.subject# #topic.claim#. I'll not bet on it. Not yet.
+b : Which half? | Against it? | Why not?
+a : The dull half. The dull half's always true. | Against. Folk add to a tale. They never take away. | Not enough to go on. #saying.capitalize#.
+
+story goose_race [topic=pastimes|memories self.age>=30]
+  : Years back there was a goose race on the green at harvest. I put a week's #wages# on a big grey gander.
+  : Halfway round he stopped, found a crust, and ate it while the rest went by.
+  : I've never trusted a goose since. Or a crust.
+  ask : Have you ever put money on something daft?
+  b : Once or twice. Never a goose.
+  b[old] : I remember that race. That gander was always greedy.
+
+story dry_year [topic=lore|memories here.region=southmeadow]
+  : My #grandad# told of a summer the stream dried right down and the wheel stood still for a month.
+  : Folk ground corn by paw on stones in their yards. The whole town, scraping away.
+  : He said the first night the wheel turned again, nobody slept for the noise and nobody minded.
+  b : I'd not like a month of that. Did they manage?
+  : They did. They always do here. I'd lay #odds# on that over most things.
+
+story tray_of_cakes [topic=food|pastimes self.likes=honey_cakes]
+  : A baker bet me I couldn't carry a sack of #grist# round the green without stopping.
+  : I did it twice, to be sure, and won a whole tray of #cakes#.
+  : I ate them in two days, and never told a soul where they went.
+  b : Ha. Did the baker bet you again?
+  : Never. I'd have done it a third time.
+
+dlg @1 resident.hub : #greet#. What's your business? | #greet#. Say it quick; I don't stand on the step all day.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. #greet#. Back again, then. | #greet#, #topic.player#. I'd have bet you'd come back.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I don't know what you're after. Say it and go.
+dlg @1 resident.job : I'm #self.trade_words#. It pays #little#, and I bet the rest. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing. If there were, I'd sell it you for #penny#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I know things. I don't sell them.
+dlg @1 resident.bye : #farewell#. | #farewell#. Shut the gate after you.
+graft resident.hub
+choice Do you really bet on everything? -> bets
+node bets
+say Near enough. Rain, rooks, how long the sermon runs. #wager.capitalize#, I say, and I'm usually right. Want to try me?
+mood calm
+free
+choice What's the oddest bet you've won? -> oddest
+choice Goodbye. -> bye
+node oddest
+say A whole tray of #cakes#, for carrying a sack round the green without stopping. I did it twice, to be sure. Don't bet me you can.
+choice I won't. -> hub
+choice Goodbye. -> bye

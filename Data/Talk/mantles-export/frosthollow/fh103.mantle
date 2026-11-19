@@ -1,0 +1,293 @@
+# fh103, the downhill carter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh103
+revision 1
+state ready
+dialect frosthollow
+accent light broad
+tier standard
+written_for cty_ebba_coalgate
+written_by claude
+title the downhill carter
+fits stage=adult|old
+prefers job=carter humour=dry
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes barley_soup draughts new_boots frosty_mornings
+dislikes early_bells bad_manners
+fears a_brake_giving_on_the_top_bend a_load_that_runs_away
+hopes a_young_one_of_the_family_in_a_great_house a_winter_with_no_ditch_in_it
+topics work +0.4 pastimes +0.3 food +0.2 dreams +0.2 travel +0.2 faith -0.3
+styles comfort=quiet gossip=dry refuse=soft tease=dry
+marks oath saying
+persona #self.first# drives the carts up and down the pass road and sits with a wall behind and the door in view, the way a carter watches the bend: quiet, dry as a biscuit, warm under it, and hard to beat at draughts.
+
+words
+oath! = Brake and bend | Whoa, there | Ruts and runners
+saying! = Downhill's where it gets you | Slow on the ice, quick to the fire | Every load's heavier going down
+cart = the cart | my cart
+load = the load | a load of ore
+brake = the brake | the brake shoe
+bend = the top bend | the bend with no name worth saying
+road = the pass | the long road down
+ruts = the ruts | frozen ruts
+soup = barley soup | barley soup thick as mortar
+draughts = draughts | the draughts board
+boots = new boots | boots with the stiff still in them
+whitedawn = a hard white morning | frost on the ruts at first light
+dawnbell = bells before light | the dawn bell
+cornerseat = the corner seat | a seat with a wall behind it
+lowinn = the inn below the pass | the low inn
+dry = Well | There we are
+
+any
+opinion @1 road for 1 : #road.capitalize# feeds me. It tries to kill me now and then, but it feeds me first. #dry#.
+opinion @1 merchants against 1 : I carry the bread up #road# and I still can't afford it. There's a joke in that somewhere. I've not found it.
+opinion @1 houses against 1 : The Houses have never ridden on #cart#. I'd take them, mind. Slowly. Over #ruts#.
+opinion @1 festivals against 1 : A feast is a lot of folk in one place, all with their backs to the door. I'll watch from #cornerseat#.
+opinion @1 strangers for 1 : A stranger fed is a stranger who'll help you push #cart# out of a ditch. I've done the sums.
+opinion @1 times against 1 : Thinner loads up, same loads down. That's how I can tell. #dry#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the step, it's the only one we've got. | #greet#, #address#. You look like you walked up. Sit.
+line @2 greet [self.working=yes self.job=carter] : #greet#. Talk while I load. | #greet#. If you're coming down, there's room on top of #load#.
+line @3 greet [here.time=dawn] : Morning. #whitedawn.capitalize#. Best hour there is. | Morning, #address#. I'm off down #road# before the thaw.
+line @4 greet [here.time=dusk|night] : #greet#. Back up the hill in one piece, I see. | #greet#. Late for a walk.
+line @1 kin.open [pair.kin!=no] : There you are. #soup.capitalize#'s on. Don't take #cornerseat#. | You. Good. Sit by the wall with me.
+line @1 again.open : Back again. I'll start charging you for the stool. #dry#. | Twice in a day. People will talk.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. I kept the corner. You can't have it. | #greet#. The board's set, if you're brave.
+line @3 greet.return [self.working=yes] : #greet#. Hold this rope, would you. | #greet#. Mind the wheel.
+line @4 greet.return [here.time=dusk|night] : #greet#. You'll want a lantern on that lane. #dry#. | #greet#. You're late, but so am I.
+line @1 farewell : #farewell#. | #farewell#. Don't take the bend fast.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the ice on the way. | #farewell#. Keep to the wall side.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news.new : #surprise#. Nobody tells a carter anything. | #dry#. That's new up the hill.
+line @1 react.news.known : I heard it at #lowinn#. Two days ago. | #knew#. It came up on my cart, near enough.
+line @1 react.news.doubt : #doubt#. News gets bigger the further it travels. | It came up #road#, did it? Then it's had time to grow.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry. Truly. | That's #bad#. No joke in that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Something to carry home that's light. | #good.capitalize#. That's a load worth the hauling.
+line @1 answer.how : Upright. That's a #good# day, up here. | #fine#. Wheels on, feet warm.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three loads down and the light going. | Loading. Ask me again at the bottom of #road#.
+line @1 ask.how : And you? Feet warm, #address#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit down. Soup first, talk after. | That's heavy, #address#. I'll not make a joke of it.
+line @1 reassure : #reassure#. Slow and steady gets down the hill. | You'll manage. You've managed worse, I'd guess.
+line @1 decline : #hedge#. I've a load due down at first light and I'll want my sleep. | I'd come, #address#, but #road# won't wait and neither will they.
+line @1 accept_decline : #no_matter#. The board will keep. | That's all right. Ask me when #road# shuts.
+line @1 thank : #thanks#. That's a kindness. | That's #good# of you. Don't let it get about.
+line @1 deflect_thanks : #deflect#. It was on my way. | It was nothing. #cart.capitalize# was going downhill anyway.
+line @1 preclose [self.working=yes] : Well. #load.capitalize# won't drive itself. | I'd best check #brake# before the light goes.
+line @2 preclose : Well. #preclose#. | There we are. #soup.capitalize# won't eat itself.
+line @1 accept_preclose : Go on, then. | Off you go. #dry#.
+line @1 tease [pair.band=friends|housemates] : You walk like #cart# with one wheel off. | You'd lose at #draughts# to a frozen hen.
+line @1 tease.return : Says the one in boots that squeak. | #dry#. I'll remember that at the board.
+line @1 ack : #dry#. | #bc_right#
+line @1 give.advice : #advise#: going down, look at the bend, not the drop. | Always take #cornerseat#. Then nothing comes up on you sideways.
+line @1 warn [world.bandits=near] : #warn#. Don't take #road# alone this week. | #bandits.capitalize# on the lower road. Wait for a cart with company.
+rule @cart_bark
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 6h
+say Easy. Easy. Down #road# we go. | #oath#. Who packed this load lopsided?
+
+rule @bells_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 10h
+say #dawnbell.capitalize#. Somebody's never driven a cart all night. | Bells. Before light. #dry#. Lovely.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter|autumn here.outdoors=clear
+does aside
+cooldown 10h
+say #whitedawn.capitalize#. That's the stuff. | Breath like smoke. #very.capitalize# fine morning.
+
+rule @snow_bark
+when concept=bark here.weather=snow
+does aside
+cooldown 10h
+say No carts today. #dry#. A holiday. | #snow.capitalize# to the axle. I'll have a bowl and a game, then.
+
+scene corner_seat
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : I'll take #cornerseat#. Wall behind, door in front. | Swap with me? I can't sit with the door at my back. | You'll see me in #cornerseat# in any room. It's not shyness.
+b : Why the corner? | What's wrong with the door? | What is it, then?
+a : I like to see trouble coming. Gives me a head start leaving. | Nothing, if you can see it. Same as #bend#. | Carting. You watch #road# ahead your whole life. Hard to stop.
+b : #bc_ha# | Fair enough. | #bc_wise#
+
+scene icy_bend
+when topic=work self.job=carter self.working=yes here.season=winter|autumn
+does tell.self / react.self / assess / ack
+a : Ice on #bend# this morning. I took it at walking pace and still felt the cart slide. | #bend.capitalize#'s had three carts off it this winter. Not mine. | Going down, you lean back and pray. Coming up, you lean forward and swear.
+b : You held it, though. | Not yet. | Which works better?
+a : I held it. My heart didn't, #address#. | Not yet. #oath#, I'll not say it twice. | Swearing. The Bright One's busy elsewhere on that road.
+b? : #bc_good# | #bc_hope_so# | #bc_ha#
+
+scene brake_shoe
+when topic=work self.job=carter
+does tell.worry / reassure / assess / ack
+a : #brake.capitalize#'s worn thin. I'll have it seen to before I go down again. | #brake.capitalize# squealed all the way down. Either it's going or it's singing. | I check #brake# three times before a load goes down. Twice isn't enough. Four is mad.
+b : Get it seen to, then. | #reassure# | Three's sensible.
+a : I will. #saying#. | It held. #brake.capitalize# always holds, till the day it doesn't. | Three. I counted once and it was four. I'm not mad yet.
+b? : #bc_good# | #bc_wise# | #bc_ha#
+
+scene ore_down
+when topic=work|travel self.job=carter
+does tell.self / ask.detail / answer.detail / assess
+a : Ore goes down, flour comes up. That's #work#, top to bottom. | Took #load# down to the smelter road and came back with candles and salt. | Six hours down, eight back. #road.capitalize# doesn't care which way you're going.
+b : Which way's worse? | Candles? | Why longer back?
+a : Down. Up's slow, but nothing tries to kill you. #dry#. | Candles, salt and a sack of somebody's letters on top of #load#. I don't read them. | Uphill's honest. It's hard, and it says so.
+b : #bc_fair_enough# | #bc_i_hope_so# | #bc_true#
+
+scene wagons_late
+when topic=caravan|work world.wagons=late
+does tell.worry / react.self / assess
+a : The carts from below are late. I'd worry, but I'm one of them. #dry#. | Nothing up from the lowlands in days. I'd go and look, but I'd be late too. | Late carts, empty shelves. Everyone looks at me like I've eaten the flour.
+b : They'll come. | Stay put, then. | Have you?
+a : They will. Carts always come, eventually. Like #bad# news. | I will. One of us should be home. | Not yet. Ask me on Restday.
+
+scene wagons_raided
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+tone serious / tender / even
+a : A cart was robbed on #road#. I'll be driving in daylight for a while. | They took a load on the lower road. I know that stretch. Trees right up to #ruts#. | Robbed carts. That's the one thing that stops me joking.
+b : Go careful. | That's a bad stretch. | #sympathy#.
+a : I always do. Now I'll go careful and early. | It is. I'll go past it in company or not at all. | #bc_thank_you#. Somebody's load. Somebody's living.
+
+scene barley_soup
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize#, after a day on #road#. That's my wages, really. | I make #soup# you could stand a spoon in. Then I eat the spoon. | There's #soup# on the hob. I made too much, the way I always do.
+b : Sounds good. | The spoon? | I'll help you with it.
+a : It is. The only thing up here warmer than me. | Near enough. It's that thick, #address#. | #good.capitalize#. Bring a bowl. Don't take my seat.
+
+scene draughts_board
+when topic=pastimes
+does invite / accept / assess
+a : #draughts.capitalize# after supper? I'll go easy. That's a lie. | The pieces are out for #draughts#. Fancy losing? | One game. Loser scrubs the #soup# pot.
+b : Go on, then. | I'll not lose. | Done.
+a : #good.capitalize#. Black or white? It won't matter. | Everyone says that. Sit. | Then wash your paws now. Save time.
+
+scene draughts_won
+when topic=pastimes pair.band=friends|family|housemates
+does tease / tease.return / insist / laugh
+a : Four games of #draughts# running. I'll have to start losing on purpose. | You moved backwards last night. Backwards. In draughts. | I could beat you with my eyes shut. I've half a mind to try.
+b : Next time. | It was a plan. | Try it, then.
+a : That's what you said last time. #dry#. | It was a plan for losing. It worked. | Not tonight. I like winning too much.
+b : #bc_ha# | Ha. #bc_fair_enough# | #bc_we_will_see#
+
+scene new_boots
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : #boots.capitalize#. I can hear myself coming a mile off. | Bought #boots# on Marketday. They've not decided if they like me yet. | My old boots let the snow in. These let nothing in, including my feet.
+b : They'll soften. | Give them time. | That's tight boots.
+a : By spring. If I live. | Time, and a lot of grease. #dry#. | Tight, but dry. I'll take dry.
+
+scene white_morning
+when topic=weather|day here.time=dawn here.season=winter|autumn here.outdoors=clear
+does tell.feeling / react.self / assess
+a : #whitedawn.capitalize#. You can hear the whole valley breathing. | Frost on everything. #ruts.capitalize# are hard, #cart# runs sweet. Best morning for driving. | I like a #cold# clear morning. Nothing hides on a morning like this.
+b : It's #cold#, though. | Sweet? | Nothing at all?
+a : It is. That's the good part. | Hard ground, no mud. A carter's dream. Short dream. | Not a thing. Not even me, and I've tried.
+
+scene dawn_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : Somebody rang #dawnbell# again. I'd been in bed an hour. | Bells before light ought to be against the law. I'd not arrest anyone, just look at them. | I've driven all night to be woken by a bell. #dry#. Lovely.
+b : It's for the shift. | You'd look at them? | Lovely.
+a : The shift can have a bell. It can have a quiet one. | Look at them. Long. Till they felt it. | Lovely. I'll be lovely all day now.
+
+scene pass_shut
+when topic=weather here.weather=snow here.region=frosthollow
+does tell.self / react.self / assess
+a : Pass is shut. No carts. #dry#. I'm on holiday. | #snow.capitalize# up to the axles. I'll not get down till it softens. | Snowed in again. I've #soup# and a board. I'll survive.
+b : Lucky you. | Can't you dig through? | You'll go mad.
+a : Lucky till the #money# runs out. Then less lucky. | Dig a whole pass? I'd sooner wait for spring. | Mad and warm. There's worse.
+
+scene great_house
+when topic=dreams|family
+does tell.self / react.self / assess
+a : If ever a young one of ours went into service with a House, I'd drive them down myself. Slowly. | I'd like one of the family in a great House. Clean floors, warm rooms, three meals. | Somebody from our hearth in a House livery. I think about that more than I'd say.
+b : Why slowly? | It's a good life. | It could happen.
+a : So I'd have longer to be proud of them. | Better than #road#. Most things are. | It could. I'll keep a seat on #cart# for it.
+
+scene manners
+when topic=smalltalk|friends
+does tell.complaint / react.complaint / assess
+a : A fellow pushed past me at the inn door. No word. I let him have the door. And the ice behind it. | Somebody took #cornerseat# and didn't move when I stood there. I stood there a long time. | Manners are free. That's why folk value them so little.
+b : Serves him right. | Did they move? | That's true.
+a : I didn't push. The ice did that. | Eventually. I can stand longer than most. | True. And still I notice who pays.
+
+scene gossip_dry
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : Heard at #lowinn#: #topic.subject# #topic.claim#. That's how it was told me. | They say #topic.subject# #topic.claim#. I only carry it, I don't load it. | Word up the road is #topic.subject# #topic.claim#. Take it with salt.
+b : Is it true? | Who loaded it, then? | With salt.
+a : True as anything off #cart#. Check it. | Somebody at the bottom of #road#. They always do. | A good pinch. It's travelled.
+
+scene new_face
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody new in town. I passed them on #road#, walking uphill like they meant it. | Somebody new at #lowinn#. Sat with their back to the door. Brave. | New folk always look up at the peaks. You stop after a week.
+b : Did you offer a ride? | Brave or daft. | Do you?
+a : I did. They said no. They'll learn. | Both, usually. We'll see which. | I stopped. Now I look at #ruts#.
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the only one I'd let take the corner seat. Once. | I'd drive the whole pass at night for #self.friend#. I'd complain, but I'd drive it. | If I'm ever in a ditch, I'd want #self.friend# finding me.
+b : Once? | You would complain. | That's a friend.
+a : Once. I'm fond, not daft. | Loudly, all the way down. | It is. Rarer than a dry day on #road#.
+
+scene faith_road
+when topic=faith
+does give.opinion / react.self / assess
+a : I nod to the Bright One going over the brow, and again at the bottom. Nothing in between; I'm busy. | The chapel's warm. I go for that, and stay for the rest. | I'd thank the Bright One for #brake# before anything. It's earned it.
+b : That's enough, I'd say. | Honest. | Before your soup?
+a : It's got me down #road# every time so far. | Honest's all I've got. #dry#. | Before #soup#. Just.
+
+story first_load [topic=work|memories self.job=carter self.age>=25]
+  : My first load down the pass, the old carter with me sat the whole way with his eyes shut.
+  : I thought he was asleep. At the bottom he opened them and said I'd do.
+  ask : Do you know why he kept them shut?
+  b : He trusted you?
+  b[job=carter] : So he'd not see you take the bend.
+  : He said if he'd watched he'd have grabbed the reins, and I'd never have learned. I've thought about that a lot.
+
+story ditch_night [topic=memories|travel self.job=carter self.age>=25]
+  : One winter a wheel went into the ditch below the bend, after dark, with snow coming.
+  : I sat on #load# and played #draughts# with myself by the lantern till a cart came up.
+  ask : Can you guess who won?
+  b : You, I suppose.
+  b[stage=young] : Did you win both sides?
+  : Black, by two pieces. White never forgave me. The cart that found me was carrying #soup#. I'm not making that up.
+
+story the_corner [topic=memories|smalltalk self.age>=25]
+  : When I was young I sat anywhere. Then one night at an inn a door blew open behind me and I near jumped through the ceiling.
+  : Everybody laughed. I laughed too. Then I moved to #cornerseat#.
+  b : I'd have moved as well.
+  b[old] : I've seen folk do worse than jump.
+  : I've been in the corner since. Better view, and nobody laughs from behind.
+
+dlg @1 resident.hub : #greet#. Pull up a stool. Not that one. | #greet#, #address#. What can I do you for?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You found the corner, I see. It's mine. | #topic.player#. #good.capitalize#. Sit facing the door, then.
+dlg @3 resident.hub [here.time=night] : Late, isn't it. I've #load# at dawn. Quick, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from there. I can hear you over the wheels.
+dlg @1 resident.job [self.job=carter] : I drive the carts up and down #road#. Ore down, flour up. #saying#. | #self.trade_words.capitalize#. If it's heavy and it needs going downhill, it's mine.
+dlg @2 resident.job : Load, drive, unload, soup. Then #cornerseat#. #dry#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd know; it all comes up on a cart.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing on #cart# today.
+dlg @1 resident.bye : #farewell#. Don't take the bend fast. | #farewell#, #address#.
+graft resident.hub
+choice What's the road down the pass like? -> road
+node road
+say Long, steep and icy, with a bend at the top that's had more carts than I've had soup. Go slow, look ahead, never at the drop.
+mood calm
+free
+choice Have you ever gone off it? -> road_off
+choice Goodbye. -> bye
+node road_off
+say Once, into the ditch, with snow coming. I sat on the load and played draughts with myself till help came up. I won.
+mood pleased
+choice Glad you're still here. -> hub
+choice Goodbye. -> bye

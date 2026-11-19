@@ -1,0 +1,282 @@
+# oh106, the logger who begs the tree's pardon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh106
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier standard
+written_for cty_ulla_rusthand
+written_by claude
+title the logger who begs the tree's pardon
+fits stage=adult|old
+prefers job=woodcutter warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=sly piety=ordinary drive=steady
+quirk asks_each_tree_s_pardon_before_the_cut
+likes mutton_stew old_tales full_larder misty_dawns
+dislikes wet_floors stale_bread
+fears the_axe_passing_to_nobody an_empty_larder_in_midwinter
+hopes a_fourth_name_on_the_haft a_larder_that_never_sees_its_back_wall
+topics work +0.4 food +0.3 lore +0.3 family +0.3 home +0.2 memories +0.2 prices -0.2
+styles comfort=feed_them gossip=sly refuse=soft tease=none
+marks oath saying
+persona #self.first# fells timber at the cut with an axe that has three names burned in the haft, and asks every tree's pardon before the first stroke: warm, quick to feed a stranger, shrewd as a squirrel about a full larder, and fond of an old tale told by the fire.
+
+words
+oath! = Haft and heartwood | By the three on the haft | Pardon and fall
+saying! = Ask the tree, then take it | A full larder never lies awake | Feed the face first; the name will follow
+axe = the family axe | the old axe with three names on the haft
+haft = the haft | three names burned in the haft
+stew = mutton stew | mutton stew with turnip
+larder = the larder | a larder full to the latch
+tale = an old tale | a tale from the old growth
+mist = mist lying in the cut | first light with mist between the trunks
+cut = the cut | the cut in the north-east wood
+logs = the logs | the day's logs
+pardon = the tree's pardon | a word to the tree first
+heel = bread gone hard | a heel like a stone
+kindling = kindling | a barrow of kindling
+chips = the chips | a heap of chips
+mud = a floor swimming in mud | wet boards from door to hearth
+
+any
+opinion @1 merchants against 2 : I fell the wood that builds their counters, and I still can't buy a loaf without counting twice. #bad.capitalize#.
+opinion @1 houses against 1 : The wood belongs to the Houses on paper and to us in the arms. Three of my family fed it, and none got so much as a thank-you.
+opinion @1 watch against 1 : They've their noses in every larder but their own. Let them come and swing #axe# for a morning.
+opinion @1 church against 1 : The plate goes past quicker than the hymn does. I'll give the Bright One a tree's pardon instead; it's cheaper.
+opinion @1 dole for 1 : Nobody in a town with this much wood and this much mast should go to sleep #hungry#. Fill the pot.
+opinion @1 strangers for 1 : A stranger's a neighbour you've not fed yet. Sit them down and give them #stew#; the rest comes after.
+opinion @1 times against 1 [world.times=hard|lean] : Every week #larder# shelf shows a bit more wood behind the jars. Nobody up the hill counts that.
+
+grown
+scene pardon_first
+when topic=work self.job=woodcutter self.working=yes
+does tell.self / ask.detail / answer.detail / assess / ack
+a : I put my paw on the bark and ask #pardon# before I swing. Every tree. | That big oak by the stream took me a whole morning. I spent the first hour just asking. | Folk laugh when I talk to the trees at #cut#. I don't stop.
+b : What do you say to it? | An hour? | Why not?
+a : That it's been a #good# tree, and I'll see it goes to something worth it. | It was older than the town. It deserved the hour, and more. | Because my #gran# did, and my #mum#, and the trees have never once complained.
+b : That's a kind thing. | Fair enough, for that one. | Hard to argue.
+a : Kind or not, they come down cleaner. #oath.capitalize#. | #bc_it_is# The old ones want asking twice. | Nobody's managed it yet. #bc_nobody#
+
+scene three_names
+when topic=work|family self.job=woodcutter
+does tell.feeling / react.self / assess
+a : There's three names burned in #haft#. My #gran#'s, my #mum#'s, and mine. | I'm the third to swing #axe#. I feel the other two watching every stroke. | Some days I swing short, and I swear I hear my #gran# tut.
+b : That's a lot to live up to. | Do they approve, do you think? | Ha. Does she?
+a : It is. It'll not drop on my watch. | Most days. Not the day I split the wedge. | Every time. I swing again, harder, and say sorry to the tree, and to my #gran#.
+
+scene kindling_side
+when topic=work|prices self.job=woodcutter
+does tell.self / react.self / assess
+a : I bring home a barrow of #chips# every night. The foreman calls it waste. I call it #kindling#, a copper a bundle. | Never tell the foreman how fast you can really fell. Keep a bit back for a bad day. | The good offcuts go in my barrow with #chips# before the counter-folk get a look at them.
+b : Clever. | That's sly. | Is that allowed?
+a : Clever's what pays for #stew#, #address#. | Sly's a word for it. Steady's another, #address#. | Nobody's said it isn't. I'd not ask, mind.
+
+scene mutton_pot
+when topic=food
+does tell.self / react.self / assess
+a : #stew.capitalize#, simmering since noon. You can smell it from the lane. | Nothing sets a logger right like #stew# and a heel to wipe the bowl. | I'd swap the whole day for a bowl of #stew# and a quiet hour after.
+b : Is there enough to go round? | Smells grand. | Who wouldn't.
+a : There always is. I put in one more turnip for whoever turns up. | Sit down, then. You'll have a bowl, #address#, and I'll not hear no. | #bc_nobody# I'd fell another oak for a second bowl.
+
+scene larder_latch
+when topic=home|food
+does tell.self / react.self / assess
+a : #larder.capitalize#. Jars to the ceiling, and a sack of mast under the bottom shelf. | I count the jars in #larder# before I sleep. Not because I'm worried. I just like the number. | I keep a second shelf behind the first one. Nobody knows about it. Well, you do now.
+b : That's a lot of jars. | What's the number? | Your secret's safe.
+a : It's winter that's a lot. Jars only look like a lot in summer. | Forty-one tonight. It was forty-four last week, #oath#. | I know it is, or you'd not get a bowl again. #oath.capitalize#.
+
+scene hard_heel
+when topic=food|smalltalk
+does tell.complaint / give.advice / assess
+a : I can't abide #heel#. I'd sooner eat bark. | Somebody's left the loaf out again, and now it's #heel#. | They sold me a loaf at the market that was stale before I'd got it home.
+b : Soak it in the stew. | Toast it, then. | Take it back.
+a : That's what it's good for. Never on its own. #bc_never# | Toasted, it's only hot stone. In #stew#, it's supper. | I did. I got a fresh one and a sorry. I'll take both.
+
+scene muddy_house
+when topic=home here.weather=rain pair.band=housemates
+does tell.complaint / react.complaint / assess
+a : Look at the floor. #mud.capitalize#, and every pair of boots in the house to blame. | I laid strips of bark at the door to wipe on. Nobody wipes on them. | I'll not cook on a floor like this. Somebody fetch the broom.
+b : Not my boots. | They're nice strips, at least. | I'll fetch it.
+a : Every pair says that. Then whose? #bc_nobody# | They are. Good oak bark. Walked straight over. | Bless you. There's an extra spoon of #stew# in it for whoever sweeps.
+
+scene old_tale
+when topic=lore|pastimes here.region=oakhaven
+does tell.story / ask.detail / answer.detail / assess / ack
+a : There's #tale# my #gran# told, of an oak so big the whole town sheltered under it in a flood. | You know the one about the wolf who slept under the old oak and woke up a hundred rings later? | My #mum# swore there's a tree in the deep wood that still has an axe in it. Nobody can pull it out.
+b : Is it still there? | What did they find when they woke? | Whose axe?
+a : There's a stump past the stream wide as a cart. I like to think that's it. | Their own grandchildren, grey in the muzzle, wanting their supper. | Nobody knows. Some say it was the first logger's. Some say it's waiting for the last.
+b : I'd like to see that stump. | Ha. A fine tale. | That's a shiver of a tale.
+a : I'll take you on the Restday. Mind the roots. | #bc_it_is# One for under the branches, that. | It is. I tell #tale# on the longest night, never before.
+
+scene mist_trunks
+when topic=weather|day here.weather=fog here.time=dawn here.region=oakhaven
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. The trunks step out of it one by one, like guests arriving. | Fog in #cut# at first light. You hear the stream before you see it. | I walked to #cut# through the mist and spoke to every trunk I passed. Nobody saw me.
+b : Sounds eerie. | Peaceful, though. | Lucky nobody did.
+a : Not eerie. It's the trees' hour. We only borrow it. | The finest hour going, before #axe# wakes everyone. | They'd only say I'm #daft#, and they'd be half right.
+
+scene rain_slick
+when topic=weather|work here.weather=rain self.job=woodcutter
+does tell.worry / reassure / assess
+a : #rain.capitalize# on the bark. A wet haft slips. I wrap it in rag and go #slow#. | No felling in this. The ground's soft and the oaks don't fall where you ask them. | Rain at #cut#. We drag #logs# and leave the felling for a dry day.
+b : Sensible. | You'll be wet through anyway. | Better safe.
+a : My #gran# lost a finger to a wet haft. I'll keep all mine. | Wet through and whole. That's #good# enough. | Better safe, and home for #stew# by dusk.
+
+scene spouse_beside
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# and I can work a whole day without a word. I know the rhythm without looking. | My #self.spouse_word# and I split the house fair: one minds the fire, one minds #larder#. Mostly fair. | I'd not swap #self.spouse# for a cart of gold and the whole wood thrown in.
+b : That's a good match. | Mostly? | High praise.
+a : It is. Not a crossed word all month, and that's a record. | Mostly. I eat more than my share of the stew. #bc_it_is# | It's the highest I've got, and I mean every leaf of it.
+
+scene friend_hearth
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd ask to finish #haft#, if I couldn't. | I'd give #self.friend# the last jar in #larder# and not count it. | #self.friend# and I barely speak at #cut#. We've no need.
+b : That's trust. | That's a deal of jars. | Some friends are like that.
+a : That's trust. I hand it out like the last jar: rarely. | One jar. The last one. That's how I know who matters. | The best ones. You just swing, and it's understood.
+
+scene stranger_bowl
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : A new face at the gate? Sit them down and feed them. #saying.capitalize#. | I gave a traveller a bowl of #stew# yesterday. Never got a name. Didn't need one. | Strangers come up the road #hungry#. I'd not send one off with an empty belly.
+b : Not everyone's so kind. | Was it good stew? | That's generous.
+a : More fool them. A fed stranger's a friend, mostly. | The best. They said so twice, with their mouth full. | Generous is easy with #larder# behind you. I'll not pretend otherwise.
+
+scene merchant_loaf
+when topic=prices|times
+does tell.complaint / react.complaint / assess
+a : I fell the wood that builds their shelves, and I still count coins over a loaf. | A copper more for flour again. The miller's not felling oaks, is he? | Folk who sell things never go short. Folk who cut things do.
+b : That's how it goes. | Not that I've seen. | True enough.
+a : That's how it goes, and I'll grumble every time it does. | No. And yet it's the miller's purse that's fat. | #bc_true# So I keep my own larder, and I keep it full.
+
+scene noses_watch
+when topic=crime|smalltalk
+does give.opinion / react.self / assess
+a : The Watch came round asking whose barrow that was. Mine. Of course it's mine. | They've noses in every larder in town but their own. | I've nothing to hide from the Watch. I'd just like them to knock.
+b : They're only doing their job. | Ha. Fair. | They should.
+a : Their job's thieves, not loggers with #chips#. | I'd show them my larder, and they'd not find the second shelf. #oath.capitalize#. | They should. My #gran# made them wipe their feet, the Watch.
+
+scene winter_kindling
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : Winter. Every house wants #kindling#, and I've a barrow by the door priced fair. | #cold.capitalize# in the cut. The sap's down and the wood splits clean. | Long nights. I tell #tale# by the fire till somebody falls asleep.
+b : Fair to who? | Good felling, then. | Who falls asleep first?
+a : Fair to me, and fair enough to them, #oath#. | The best. A frost and a sharp axe, and the oaks fall like they're glad. | Whoever asked for the tale. Every time.
+
+scene autumn_mast
+when topic=season|land here.season=autumn here.region=oakhaven
+does tell.self / react.self / assess
+a : Mast season. I've a sack of beech-nuts in #larder# and another hid behind it. | Pigs rooting under every oak, and the town smells of acorns and woodsmoke. | Leaves coming down in #cut#. You can see where every tree stands again.
+b : Two sacks? | A grand smell. | Easier felling.
+a : One for winter and one for whoever needs it. I'll decide who, #later#. | It is, near enough. Second only to #stew#. | Easier seeing. #logs.capitalize# fall the same, leaves or none.
+
+scene faith_tree
+when topic=faith
+does give.opinion / react.self / assess
+a : The plate's quicker round the pews than the hymn is. I ask the Bright One's pardon the way I ask a tree's: quiet, and first. | I go to chapel at the feasts. The rest of the year the wood's my chapel. | According to my #gran#, the Bright One lives in the heartwood. I've never cut one open without looking.
+b : That's a fair way to pray. | The wood's a good chapel. | Have you ever seen anything?
+a : That's my way of it. #bc_it_is# | Quieter, and nobody passes a plate. | Rings. Lots of rings. That's near enough for me, #oath#.
+
+scene hard_larder
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. I can see the back wall of #larder# again. That's never a good sight. | Fewer jars every week. I counted thirty-one this morning. | Hard times. I've been setting snares as well as felling, just to keep the pot full.
+b : It'll fill again. | It'll turn. | Clever.
+a : It will. I'll fill #larder# myself if I have to. | It'll turn by spring. It always has, mm. | Clever and #tired#. But the pot's full.
+
+story gran_great_oak [topic=memories|lore self.age>=25]
+  : My #gran# felled the great oak that stood where the market is now. Took her three days.
+  : She asked its pardon for the whole first morning. Folk thought she'd lost her wits.
+  ask : Do you know what she said to it?
+  b : Something about where it'd go, maybe?
+  b[old] : I'd guess it was a thank-you.
+  : She told it it would be the market's beams, and it is. You've stood under it, likely.
+
+story first_fell [topic=work|memories self.job=woodcutter self.age>=20]
+  : The first tree I felled on my own, I forgot to ask its pardon. I was that proud of myself.
+  : It came down a full yard off where I'd meant, and near took the barrow with it.
+  b : That's a lesson. Did you ever forget again?
+  : Never. I asked the stump's pardon after, for good measure. #saying.capitalize#.
+
+story stuck_axe [topic=lore|pastimes here.region=oakhaven]
+  : They say there's an axe still stuck in a tree in the deep wood, and nobody can pull it.
+  : Every logger who tries says sorry to the tree first. Every one fails. The axe stays.
+  ask : Would you try it, knowing that?
+  b : Not for anything.
+  b[job=woodcutter] : I'd ask the tree nicely first. Then I'd still fail.
+  : Me, I've decided it's waiting for whoever asks the right way. I've not found the words yet.
+
+line @1 greet [pair.band=strangers] : #greet#. You've a #hungry# look; the pot's on. | #greet#. Sit down; there's #stew#.
+line @2 greet [self.working=yes self.job=woodcutter] : #greet#. Back a step; there's an oak leaning. | #greet#. Mind the chips.
+line @3 greet [here.time=dawn] : #greet#. Off to the cut. | #greet#. #mist.capitalize#, and you up in it.
+line @4 greet [pair.band=friends] : #greet#. Come in. There's a bowl going spare. | #greet#. Good timing; the pot's on.
+line @1 kin.open [pair.kin!=no] : #greet#. Sit. I'll fetch you a bowl. | You. #greet#. There's stew.
+line @1 again.open : Twice in a day. You'll be wanting #stew#. | #welcome_back#. The pot's still warm.
+line @1 greet.return : #greet#. | #greet#, and welcome.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Wipe your feet. | And you. #greet#. Wipe your feet.
+line @3 greet.return [self.working=yes self.job=woodcutter] : #greet#. Mind #axe#. | #greet#. Stand back a step.
+line @1 farewell : #farewell#. Mind the roots. | #farewell#. Come back for stew.
+line @1 farewell.return : #farewell#. | #farewell#, and eat something.
+line @1 react.news : #oath.capitalize#. I'll tell that one by the fire. | Is that so. That'll keep the house talking.
+line @1 react.news.new : #marvel#. I hadn't heard. | #surprise#. That's a new one.
+line @1 react.news.known : #knew#. Heard it at the cut. | I'd heard. The loggers had it by noon.
+line @1 react.news.doubt : #doubt#. Sounds like an old tale to me. | I'll believe that when I see it with my own eyes, mm.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll take them a pot. | #oath.capitalize#. That's hard. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be a feast. | #good.capitalize#. I'll bring stew.
+line @1 answer.how : #fine#. Fed, and the larder's full. | Well. Arms ache, as they should.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three oaks before dusk. | #busy.capitalize#. Ask me at supper.
+line @1 sympathise : #sympathy#. Come and eat something. | That's #bad#. Sit down; I'll fetch a bowl.
+line @1 reassure : #reassure#. Things grow back. | Feed it and wait. Most hurts heal that way.
+line @1 decline : #hedge#. Not today; I've a tree half down and it won't wait. | I'd rather not. My larder's spoken for this week, every jar.
+line @1 accept_decline : #no_matter#. Another day. | Then I'll ask again when #larder#'s full.
+line @1 thank : #thanks#. I'll put an extra spoon in your bowl. | #thanks#. That's kind.
+line @1 preclose : Well. #stew.capitalize# wants stirring. | #preclose#. The cut won't fell itself.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. Eat something.
+line @1 ack : Mm. | #ack#.
+line @1 warn [world.bandits=near] : #warn#. #bandits.capitalize# about. Keep to the town. | Keep inside the wall. I'll keep to #cut#.
+rule @felling_call
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 6h
+say Stand clear! She's coming down! | Mind your heads! Timber!
+
+rule @pardon_mutter
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 8h
+say There now. You've stood a long while. Forgive me. | #pardon.capitalize#, and then the axe. Always.
+
+rule @stew_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say Stew's on. Who's #hungry#? | Mutton and turnip. Come and get it.
+
+rule @mud_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe your feet on the bark! That's what it's there for! | Boots off at the door. All of you.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You've a hungry look. What can I do, besides feed you? | #greet#. New, are you? Sit a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Eaten today? What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say your piece. I've an axe to put back on my shoulder.
+dlg @1 resident.job [self.job=woodcutter] : I'm a #self.trade_words#. Third of my family to swing #axe# there. | I fell oaks at #cut#, and I ask every one's pardon first.
+dlg @2 resident.job : I work hard and eat well. That's most of it. | This and that, and a full larder for my trouble.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. The loggers had it by noon.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing but the trees, and they're keeping their own counsel.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd repeat. Not for free, anyway.
+dlg @1 resident.bye : #farewell#. Mind the roots on your way. | #farewell#. Come back when you're hungry.
+graft resident.hub
+choice Do you really talk to the trees you cut? -> trees
+node trees
+say Every one. I put my paw on the bark and ask its pardon before the first stroke. My gran did, and my #mum#, and now me.
+mood warm
+free
+choice Do they answer? -> trees_answer
+choice Goodbye. -> bye
+node trees_answer
+say They fall clean, and where I ask them to. That's answer enough. The one I forgot to ask near took my barrow.
+choice I'll remember to ask, then. -> hub
+choice Goodbye. -> bye

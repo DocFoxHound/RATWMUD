@@ -1,0 +1,431 @@
+# sm117, the potter who walked back (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm117
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier full
+written_for tn_sm_orrin_appleley
+written_by claude
+title the potter who walked back
+fits stage=adult|old
+prefers role=merchant job=crafter talk=quiet
+traits temper=calm talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk trusts_nothing_without_a_makers_mark
+likes plum_tart dancing sharp_knife autumn_wind
+dislikes drizzle gulls
+fears a_cracked_kiln_load having_to_go_north_again
+hopes a_learner_at_the_wheel a_kiln_that_draws_true
+topics work +0.5 travel +0.3 food +0.3 festival +0.2 weather +0.2 gossip -0.4 prices -0.2
+styles comfort=gentle gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# throws pots behind the kilns, slow and careful, with a thumb pressed into the foot of every one: quiet, warm and plain, wary of anything made in the city since that long walk north and back, and never without a plum tart to share.
+
+words
+oath! = Wheel and kiln | By the slow wheel
+saying! = A thumbprint is a promise in clay | A slow wheel throws a true pot
+clay = the clay | the red clay off the pits
+wheel = the wheel | my old kick-wheel
+kiln = the kiln | the kiln out back
+glaze = the glaze | a honey-brown glaze
+jug = a jug | a fat-bellied jug
+pots = the pots | a shelf of pots drying
+tart = a plum tart | plum tart with the juice running out
+gust = an autumn gale | the wind across the stubble in autumn
+drizzle = this half-hearted drizzle | a rain that can't decide
+gulls = the gulls | those thieving gulls
+trimknife = my trimming knife | the little knife I trim with
+citycup = a city cup | crockery from up north
+thumb = my thumbprint | the mark of my thumb
+northwalk = that long walk north | the walk north and home again
+shelf = the drying shelf | the shelf by the window
+yard = the yard | the yard behind the kilns
+lane = the lane | the lane past the kilns
+fiddle = the fiddle | the fiddler's tune
+sill = the sill | my windowsill
+bucket = the slop bucket | the clay bucket
+upnorth = up north | in the city
+ring = the ring of it | the note a good pot gives
+
+any
+opinion @1 city against 2 [self.age>=25] : I walked all the way to Ridgemere once. I came back. That's the whole of my opinion, #address#.
+opinion @2 city against 1 [self.job=crafter] : #citycup.capitalize# looks fine on the table and cracks the first time it meets a hot kettle.
+opinion @1 strangers for 1 : A stranger's only somebody who hasn't had #tart# with me yet.
+opinion @1 newcomers for 1 : There's space in this town for any willing pair of paws. And every new house wants #jug#.
+opinion @1 dole for 1 : A town this small can feed everyone in it. I'd put in a bowl, if a bowl would help, and fill it with #tart#.
+opinion @1 times against 1 : Each week's a pinch tighter than the last. Folk mend #pots# now instead of buying. I mend them too.
+opinion @1 watch for 1 : Nobody's lifted a thing from #shelf# since they started walking #lane#. I'm grateful, though I never say it.
+opinion @1 road against 1 [world.wagons=late|raided] : Late carts and robbed carts. I'm glad #clay# comes from just down the lane.
+opinion @1 festivals for 1 [self.likes=dancing] : I say very little all year. At a dance I don't need to say anything. #fiddle.capitalize# says it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in, if you like. There's nothing here that bites. | #greet#. You've a kind face. Stop a while, #address#.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Mind your coat; #clay# gets everywhere. | #greet#. #wheel.capitalize# keeps turning, but my ears are yours.
+line @3 greet [here.time=dawn] : #greet#. #kiln.capitalize#'s still warm from last night. Stand by it. | #greet#. This is the quiet hour. I like it best.
+line @4 greet [here.time=dusk|night] : #greet#. Late for you to be about. Warm yourself by #kiln#. | #greet#. Evening. I was just washing #clay# off.
+line @5 greet [here.weather=rain] : #greet#. Come under. #drizzle.capitalize# will soak you slower than you think. | #greet#. Wet. Shake it off; the floor's only earth.
+line @1 kin.open [pair.kin!=no] : Ah, it's you. I kept a slice of #tart# back for you. | Oh. You came. Sit by #kiln#, it's warm.
+line @1 again.open : You came back. #welcome_back#. | Twice in a day. I'm glad of it, #address#.
+line @1 hail [pair.band=friends] : Here. Come and look at this one; I think it's #good#. | #address.capitalize#. A word, if you've the time.
+line @1 greet.return : #greet#. | #greet#. It's good to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I hoped you'd come by. | #greet#. There's #tart#, if you want it.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. Give me a breath; this one's nearly centred. | #greet#. I can talk and throw. Mostly.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but welcome. | #greet#. The lamp's lit; come in.
+line @1 farewell : #farewell#. | #farewell#. Go gently.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep warm going home. | #farewell#. The lane's dark past the kilns; go slow.
+line @1 farewell.return : #farewell#. | #farewell#. Come again soon.
+line @2 farewell.return [here.time=dusk|night] : #farewell#. Sleep well. | #s8_nightback#.
+line @1 react.news : Oh. #oath#. | That's a lot to take in. Give me a moment, #address#.
+line @1 react.news.new : #surprise#. I'd not heard. | I'd not heard that. I don't hear much, out by #kiln#.
+line @1 react.news.known : #knew#. It reached even me. | Somebody told me at the well. I didn't know if it was true, #address#.
+line @1 react.news.doubt : I'd want to see that with my own eyes first. #doubt#. | Maybe. Things change shape on the road, like #clay# left out wet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. #pity#. | That's a sad thing. I'm sorry, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's #good#. That's very good. | #gladnews#. I'm glad, #address#. Truly.
+line @1 answer.how : Well. Quiet, and well, like #kiln# after a firing. | #fine#. #kiln.capitalize# drew true last night, so I'm happy.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. A whole shelf to trim before it dries. | Busy, but the slow sort. #good.capitalize# sort.
+line @1 ask.how : And you? Are you keeping #snug#? | How are you, #address#? Truly?
+line @1 sympathise : #sympathy#. Sit. I'll put the kettle on. | Oh, that's hard. Stay by #kiln# a while; you needn't talk.
+line @1 reassure : #reassure#. It mends, mostly, given time. | It'll come right. Most things do, if you go slowly with them, like #clay#.
+line @1 decline : #hedge#, I can't. #kiln.capitalize#'s lit, and it can't be left. | I'm sorry, no. I've #shelf# to trim before it dries, and it won't wait.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. It'll keep, #address#.
+line @1 thank : #thanks#. | Thank you. I'll keep that, the way #clay# keeps a thumb.
+line @1 deflect_thanks : #deflect#. | It was nothing. Really. I was glad to, #address#.
+line @1 preclose [self.working=yes self.job=crafter] : I'd best get back. #wheel.capitalize# won't wait. | #pots.capitalize# are drying. I should turn them.
+line @2 preclose : #preclose#. | Well. I've kept you, #address#.
+line @1 accept_preclose : Go on, then. It was #good# to talk. | Of course. #farewell#.
+line @1 ack : #bc_i_know# | #bc_it_is#
+line @1 give.advice : Slowly. Whatever it is, slowly. #saying#. | #advise#: never buy a pot you haven't tapped. Listen for #ring#.
+line @1 warn [world.bandits=near] : Stay off the north road a while. #warn#. | Go with others, if you must go. Please, #address#.
+line @1 congratulate : #congrats#. You've earned it. | That's wonderful. Ripe news. I'm proud of you, if I may be.
+scene centring
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #clay.capitalize#'s fighting me this morning. It won't sit in the middle. | I've thrown eleven bowls since dawn. Two of them are #good#. | You have to go slower than you want to with #clay#. Slower than that, even.
+b : Why won't it? | Only two? | How slow?
+a : Too wet, or I'm too quick. It's usually me. #saying#. | Two is a #good# morning. The rest go back in the bucket. Nothing's wasted. | Slow as a cloud crossing. Then #clay# listens.
+b : #bc_fair_enough# | #bc_i_know# | #bc_wise#
+
+scene kiln_night
+when topic=work self.job=crafter
+does tell.plan / ask.detail / answer.detail / assess
+a : #kiln.capitalize# goes on tonight. I'll sleep beside it. | Firing tonight. Two hundred #pots# in one go, and one of me to watch them. | I light #kiln# at dusk and I don't leave it till grey light.
+b : Beside it? | Two hundred? | All night?
+a : On a sack by the door. I'd not sleep upstairs anyway, listening for #kiln#. | Near enough. Cups, #jug# or two, bowls. All of them waiting. | All night. It needs feeding, and it needs company. #oath#.
+b : Rather you than me. | That's a lot of waiting. | #bc_somebody_has_to#
+
+scene kiln_opened
+when topic=work self.job=crafter
+does tell.feeling / sympathise / assess
+a : Opened #kiln# this morning. Two cracked right through. | Most of the load came out whole. One #jug# I'll keep for myself; the #glaze# ran like honey. | I open #kiln# slow. Every time, I'm afraid. Every time, it's mostly fine.
+b : Only two, though. | Keep it, then. | That's brave.
+a : Only two. I still grieve them a little. #bc_poor_soul# | I will. It's the one I'll pour my #ale# from. | Not brave. I just want to see. #saying#.
+
+scene thumbprint
+when topic=work|smalltalk self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : Turn any of my pots over. There's #thumb# in the foot. | Every pot off #wheel#, I press my thumb in the foot before it dries. | You'll know mine by the bottom. #thumb.capitalize#, every one.
+b : Why do that? | A sort of name, then? | Every one?
+a : So it's known who made it. If it fails, you know whose #yard# to bring it back to. | A sort of promise. #clay.capitalize# remembers. | Every one. Even the ugly ones. Those especially.
+
+scene city_cup
+when topic=travel|smalltalk
+does give.opinion / react.self / assess
+a : Somebody brought #citycup# in to show me. Thin as paper, and the glaze only skin-deep. | Tap #citycup#. Hear that? Flat. No #ring# in it. | #upnorth.capitalize# they make a thousand cups a day. Nobody's thumb is in any of them.
+b[from=ridgemere] #city : We've good potters in the city too. | It holds tea well enough. | Folk need cups.
+b : It looked pretty enough. | I don't hear it. | It's cheaper, though.
+a@city : Very likely. The ones I met #upnorth# were the other kind. Forgive me. | It does, till it doesn't. I'd sooner #ring# lasted. | They do. I'd only want them to last, like #jug# should.
+a : Pretty to look at. I'd not trust it with a hot kettle. | Listen to one of mine after. You'll hear #ring#. | Cheaper today. Dearer by the third time you buy one. #saying#.
+
+scene walked_north
+when topic=travel|memories self.age>=25
+does tell.memory / ask.detail / answer.detail / react.story / assess
+a : I walked to Ridgemere once. All the way, with a pack of #pots# on my back. | I've been #upnorth#. Walked there. I don't talk about it much. | #northwalk.capitalize#. Twelve days up and eleven back. I hurried the back half.
+b : What happened? | Why not? | Why hurry?
+a : Nobody wanted them. They had #citycup# cheaper, and shinier, and nobody's thumb in any. | It wasn't for me. Too many wolves, and none of them looked at their #supper# bowls. | I'd seen enough. I wanted to sleep where I knew the sound of the wind. #oath#.
+b : That's a long way for nothing. | I can see that. | I'd hurry too.
+a : Not for nothing. I learned I'd rather be here, by #kiln#. | #bc_i_know# I came home quieter than I left. | It's the best walk I ever took, the back half. #gust#, all the way.
+
+scene too_many
+when topic=travel|land
+does give.opinion / react.self / assess
+a : It's too loud #upnorth# for me. I couldn't hear myself think, and I think slowly. | Everybody #upnorth# is in a hurry. I never found out where to. | They eat off plates #upnorth# that nobody made. Plates from nowhere. It troubled me.
+b : It's a different life. | They work hard up there. | Somebody made them.
+a : It is. I'm glad some like it. I'm glad I'm not one. | I'm sure they do. I just wish they'd look up from it, once in a while. | Somebody, yes. Nobody who knew who'd eat off them. That's what I mean.
+
+scene glad_back
+when topic=home|dreams here.region=southmeadow
+does tell.feeling / react.self / assess
+a : I've been where the road goes. I don't need to go again. I'm content with #lane#. | Some folk dream of the city. I dreamed of #wheel# the whole time I was there. | #kiln.capitalize#, #wheel#, the lane, the fields. That's enough world for me.
+b : Content's a rare thing. | Funny how that goes. | It's a good place.
+a : Rare, maybe. It came to me late, on #northwalk#. | It is. You don't know a place till you've left it. | It is. I'd not trade it for every #citycup# in Ridgemere.
+
+scene no_gulls
+when topic=animals here.region=southmeadow self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : One thing about home: no #gulls#. I saw enough of them up north. | I don't like #gulls#. They're loud and they take what isn't theirs. | There's a gull on my weathervane in my dreams sometimes. I wake up cross, and the day's #bad# from the start.
+b : What's wrong with gulls? | Did they take something of yours? | Cross? You?
+a : Shrieking, all day, and snatching. Like #upnorth#. No offence to it. | My bread, once, right out of my paw. I've not forgiven #gulls#. | Even me. #gulls.capitalize# will do it. #bc_ha#
+
+scene drizzle_days
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize#. Nothing dries in it. #pots.capitalize# just sit there, sulking. | I'd sooner a proper storm than #drizzle#. At least a storm means it. | It's been like this since dawn. Not #rain#, not dry. Just damp.
+b : The fields will like it. | Storms are worse. | It'll clear.
+a : They will. I'm glad for the fields. Sorry for #shelf#. | Worse, but honest. #drizzle.capitalize# is neither one thing nor the other. | I hope so. I've #shelf# full of cups going soft at the rim.
+
+scene autumn_gale
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : Feel that? #gust.capitalize#. It dries #pots# by noon and blows the dust off me. | I stand in #yard# with my face to the wind and don't think of anything. | Best weather in the year. Leaves going past, and everything dry for #kiln#.
+b : It's a cold one. | Lucky you. | It's good drying weather.
+a : #cold.capitalize#, but clean. I'll take clean. | It's the one time I'm not thinking about #clay#. That's restful. | The best. #oath#, I'd keep it all year if I could.
+
+scene dry_bright
+when topic=weather here.weather=clear here.region=southmeadow
+does tell.self / react.self / assess
+a : Clear again. Good for #pots#, bad for the barley. I feel guilty liking it. | Every pot on #shelf# dry by noon. The fields would give anything for a cloud. | Bright and dry. #clay.capitalize# hardens in the bucket if I look away.
+b : You can't help the sky. | It's hard on the farmers. | Keep a lid on it.
+a : No. But I can be sorry about it, quietly, at #wheel#. | It is. I've nothing to give them but #jug# to carry water in. | I do. I forget. I always forget.
+
+scene storm_shelf
+when topic=weather here.weather=storm self.job=crafter
+does tell.worry / reassure / assess
+a : Storm coming. I've moved every pot off #shelf# by the window. | Hear it? I've covered #kiln# with sacking. It doesn't like the wet. | I lost #shelf# to a storm once, every pot on it. I don't sleep easy when it thunders.
+b : They'll be safe now. | It'll pass. | They'll be fine this time.
+a : I hope so. I'll check #pots# again in an hour anyway. | It will. I'll sit up with #kiln# till it does. | I know. I'll still lie awake. #oath#.
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does offer / accept / assess / ack
+a : There's #tart# on the side. Have a slice, please. | I bake #tart# once a week and give most of it away. Take some. | I made #tart# this morning. The plums came from the tree at the end of the lane.
+b : Go on, then. | Thank you, I will. | Just a little.
+a : Mind the juice; it runs. That's how you know it's #tasty#. | #good.capitalize#. It's better shared. Everything is. | Take the bigger one. I made it for sharing.
+b : #bc_lovely# | #bc_thank_you# | That's good.
+
+scene own_dish
+when topic=food|work self.job=crafter
+does tell.self / react.self / assess
+a : I bake #tart# in a dish I threw myself. It tastes better for it. I'm sure of it. | Food from your own bowl tastes of something. I can't say what. #home.capitalize#, maybe. | I made my plates and my cups and my #jug#. Everything I eat from, I've touched before.
+b : That's a nice thought. | I believe you. | That sounds right.
+a : It's true, I think. #clay.capitalize# remembers the fire, and so does the tart. | Thank you. Not everybody does. | It does. That's why I can't trust #citycup#.
+
+scene quiet_dancer
+when topic=festival|pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail / assess
+a : I don't say much at a dance. I don't need to. My feet talk to #fiddle#. | Folk are surprised I dance. I'm quiet, they say. I am. Not with #fiddle# going. | Come harvest, I'll be dancing. Slow ones, mostly. I like a slow one.
+b : What do they say? | Why not at a dance? | Why slow?
+a : That I'm glad to be there. Feet are honest that way. | Because #fiddle# does the talking for everyone. I only have to follow it. | Because you can hear #fiddle# properly. And you don't tread on anybody.
+b : Nicely put. | #bc_ha# | #bc_wise#
+
+scene trimming_knife
+when topic=work|smalltalk self.likes=sharp_knife
+does tell.self / react.self / assess
+a : #trimknife.capitalize#. Sharper than you'd think, for something so small. | A blunt knife tears #clay#. A sharp one lifts it off clean, like peel. | I hone my knife every evening. It's the last thing I do before #supper#.
+b : It's a fine little thing. | Like peel. | Every evening?
+a : My #gran# gave me the blade. I've worn out three handles. | Like peel off an apple. It's the best part of the day, trimming #pots#. | Every one. Then the day's finished, and so am I.
+
+scene before_the_kiln
+when topic=faith
+does tell.self / react.self / assess
+a : I ask the Bright One's blessing before I light #kiln#. Just a small one. | I'm not much for the chapel. I'd guess my asking reaches the Bright One from #yard# just as well. | When #kiln# gives up a whole load, I say thank you. Out loud, though nobody's there.
+b[job=priest] #priest : The chapel's door is always open to you. | The Bright One hears in every place. | That's a good habit.
+b : That's a good habit. | I'd think so. | That's a fine thing.
+a@priest : Thank you. I'll come, some Restday. I mean it, #address#. | I'm glad. #yard.capitalize#'s where I do my best work, and my best asking. | It's the only one I've kept since I was a #child#.
+a : It doesn't cost anything. And #kiln# seems to like it. | I hope so. It's quieter than the chapel, and there's #clay# to keep my paws busy. | It is. Thanks costs nothing, and it keeps you honest. #saying#.
+
+scene upstairs_alone
+when topic=home self.married=no
+does tell.self / react.self / assess
+a : I live up over #kiln#, on my own. The floor's warm in winter. | There's a cup on every #sill# upstairs. The ones that came out wrong, but too pretty to break. | It's quiet up there. Just me and the sound of the wind. I like it.
+b : That sounds snug. | Wrong how? | Not lonely?
+a : #snug.capitalize#. I'd not trade it for a grand house. | Lopsided, mostly. I like them better than the straight ones. #saying#. | Sometimes. Then I come down and talk to #clay#, or to whoever passes.
+
+scene not_a_carrier
+when topic=gossip
+does tell.gossip / react.self / assess
+a : I'm told #topic.subject# #topic.claim#. I don't know if it's true. | They were saying at the well that #topic.subject# #topic.claim#. I went back to #wheel# before the rest. | I don't carry tales, as a rule. But #topic.subject# #topic.claim#, they say. That's all.
+b : Do you believe it? | Why not? | That's all you know?
+a : I don't know enough to believe it. Time will tell me, like #kiln# does. | I had #clay# going soft in the bucket. And I'd sooner not know. | That's all I'll say. I'd want somebody to be as careful of me.
+
+scene careful_now
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's frightening. I'll lock #yard# tonight. | I heard #topic.subject# #topic.claim#. I hope nobody's hurt. | #topic.subject.capitalize# #topic.claim#, I'm told. I'll keep #pots# inside for a while.
+b : Lock it well. | I hope so too. | That's wise.
+a : I will. I never used to. #uneasy#. | So do I. #pots.capitalize# break, but wolves don't mend so easy. | Maybe. I just feel better with #shelf# in sight.
+
+scene new_house
+when topic=newcomer
+does tell.news / react.news / assess
+a : Somebody new, I hear. #topic.subject#. Every new house needs #jug#; I'll take one round. | #topic.subject.capitalize# is new here. I hope somebody shows #topic.them# where the well is, and #lane#. | They say #topic.subject# has come to stay. I'll bring #tart#, when the plums are in.
+b : That's kind of you. | Somebody will. | That'll be welcome.
+a : It's only #jug#. But a jug's a start, in a new house. | I'll go myself, then. I remember being new #upnorth#, and nobody showing me anything. | I hope so. Food's the best welcome I know.
+
+scene market_stall
+when topic=day|work here.day=market self.job=crafter
+does tell.self / react.self / assess
+a : Market day. I've #pots# laid out, and I tap every one for anybody who asks. | Folk pick up my cups and turn them over to find #thumb#. I like that. | I sell more jugs at the market than all week in the yard. #good.capitalize# day.
+b : Do they ask? | They know your mark. | Busy, then.
+a : Some do. The ones who've had #citycup# crack on them. | Some do now. It took years of #thumb# on every foot. | #busy.capitalize# enough. I'll be hoarse from talking by noon, and I don't talk much.
+
+scene grey_light
+when topic=day here.time=dawn
+does tell.feeling / react.self / assess
+a : This is the best hour. #kiln.capitalize#'s ticking as it cools, and nobody's up. | Grey light, and #lane# all quiet. I always mean to sleep later. I never do. | I come down at dawn and #clay#'s cold and the yard smells of ash. I love it.
+b : It's peaceful. | Sleep's overrated. | That's a good smell.
+a : It is. I wish it lasted till noon. | Maybe. I'd only miss this. | It is. Ash and wet #clay#. Home.
+
+scene washing_up
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : Dusk. I wash #clay# off to the elbow and it's like taking off a coat. | The light's going. #pots.capitalize# go under cloth, and I go up for #tart#. | This is when I think about the day. Slowly, like #wheel# winding down.
+b : Well earned. | Sounds a good end. | Was it a good one?
+a : #bc_it_is# My paws are pink again for an hour. | It is. The same end every day, and I've never tired of it. #saying#. | Quiet and good. That's the best sort.
+
+scene folk_mend
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Folk bring me cracked #pots# to mend now instead of buying new. I mend them for nothing. | Lean times. I'm selling less, and eating less, and #kiln#'s cold half the week. | I've a pile of bowls by #wheel# I can't sell. I'll give some to those who've none.
+b : That's good of you. | It'll turn. | That's generous.
+a : What else would I do? I'd not turn anybody away with a cracked bowl. | I hope so. #wheel.capitalize# doesn't like standing still. Nor do I. | A bowl's no use on #shelf#. It wants soup in it.
+
+scene clay_down_the_lane
+when topic=caravan world.wagons=late|raided
+does tell.self / react.self / assess
+a : Late carts don't trouble me much. #clay.capitalize# comes from just down the lane. | I hear the wagons are late. I'm sorry for the shop. I'm glad #wheel# makes my own things. | Nothing comes up the road, they say. Everything I need is under my feet, in #clay#.
+b : Lucky you. | Not everyone's so lucky. | That's a tidy life.
+a : Lucky, yes. And I know it. I try to be grateful. | No. I'd lend #clay# if it was the sort of thing that's lent. | It's all I've ever known. It's kept me.
+
+scene harvest_jugs
+when topic=harvest|season here.season=autumn
+does tell.self / react.self / assess
+a : Harvest. Everybody wants #jug# for the cider, all at once. | I've thrown more jugs this week than all summer. My wrists know it. #oath#. | At harvest I make #jug# with a thin neck for the cider. Keeps it cool in the field.
+b : Busy time for you, too. | Rest them after. | That's clever.
+a : #busy.capitalize#, but glad. Every jug's going somewhere it's wanted. | I will, after the dance. Not before. | It's only old knowledge. My #gran# made them so.
+
+scene cracked_paws
+when topic=health
+does tell.self / sympathise / assess
+a : #clay.capitalize# dries my paws out. They crack in winter, right across the pads. | My back's bent from #wheel#. I straighten up at dusk like an old gate. | I'm well. A bit tired. Kiln nights take it out of you.
+b : Goose fat helps. | Stretch more. | Sleep, then.
+a : I'll try it. I've tried everything else. #bc_thank_you# | I mean to. I forget, with #clay# in front of me. | I will. Tonight, early, in #bed#.
+
+story long_walk [topic=travel|memories self.age>=25]
+  : Once I carried a pack of #pots# all the way north to the city. I thought they'd sell like warm bread.
+  : Nobody looked twice. They had shops full of #citycup#, all from the same mould.
+  : I slept under a bridge and walked home. My pack felt lighter going back to #lane#, though it held the same.
+  ask : Have you ever gone far for something, and found you had it at home?
+  b : Once or twice. It's a lesson that sticks.
+  b[from=ridgemere] : I've done it the other way round. Come south looking.
+
+story first_pot [topic=work|memories self.job=crafter self.age>=30 self.stage=adult|old]
+  : The first pot I ever threw leaned like a tired sheaf. I wanted to put it back in #bucket#.
+  : My #gran# took it off me and kept spoons in it. Twenty years, it stood on her table.
+  : When she went, it came back to me. It's on #sill# now, still leaning.
+  b : She saw something in it. That's lovely.
+  : She saw her grandchild in it. That was #good# enough, for her.
+
+story gull_bread [topic=animals|travel self.age>=25 self.dislikes=gulls]
+  : #upnorth.capitalize#, by the river wall, I bought a heel of bread and sat down to eat it.
+  : A gull came down, took it out of my paw, and stood on the wall to eat it in front of me.
+  ask : Would you have chased it?
+  b : I would. I'd have lost, but I'd have chased it.
+  b[old] : No. Gulls always win. I learned that young.
+  : I didn't. I just went home to #wheel#. That was the day I decided, I think.
+
+story storm_firing [topic=work|weather self.job=crafter self.age>=25]
+  : I fired #kiln# once with a storm coming. I thought it would hold off. It didn't.
+  : All night the #rain# came at it and the kiln roared back. I sat in the door and fed it wood.
+  : In the morning every pot was whole. Every one. I've never had a load like it since. #saying#.
+  b : Maybe it liked the company. Did you sleep after?
+  : Two days. #oath#, two whole days.
+
+story slow_dance [topic=festival|memories self.age>=20 self.likes=dancing]
+  : At one harvest I danced the whole night with somebody who never said a word. Nor did I, to #fiddle#.
+  : We danced every slow one, and some of the quick. At the end we nodded, and went #home#.
+  ask : Has that happened to you? A whole friendship in one night?
+  b : I think so. You don't forget those.
+  b[stage=young] : Not yet. I'd like to.
+  : No, you don't. I think of it every harvest, and I smile.
+
+rule @wheel_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Steady, steady. There, #wheel#. | Centre, and hold. #oath#.
+
+rule @kiln_bark
+when concept=bark working=yes self.job=crafter here.time=dusk|night
+does aside
+cooldown 8h
+say #kiln.capitalize#'s drawing well tonight. | Hear it breathe. #good.capitalize#.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 8h
+say Make up your mind, sky. #drizzle.capitalize#. | Nothing dries in this. #annoyed#.
+
+rule @gale_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 8h
+say There's the wind. #pots.capitalize# will be dry by noon. | Blow, then. I like #gust#.
+
+rule @market_bark
+when concept=bark here.day=market working=yes self.job=crafter
+does aside
+cooldown 6h
+say Jugs, bowls, cups. Made here in #yard#, by these paws. | Tap it. Hear #ring#? That's a true pot.
+
+rule @tart_bark
+when concept=bark here.time=dusk self.likes=plum_tart
+does aside
+cooldown 12h
+say #tart.capitalize#. Smell that. | The plums have run again. #tasty.capitalize#.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Look all you want. Pick them up; they're meant to be held. | #greet#. #shop_offer#
+dlg @2 shop.greet [self.job=crafter here.shop!=bare] : #greet#. Every one made out back, with #clay# from down the lane. Tap any you like. | #greet#. Turn them over. #thumb.capitalize#'s on every one.
+dlg @3 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. I'm glad you came back. | #topic.player#. #good.capitalize#. I hoped you would.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : #greet#. Look, if you want. I'll not hurry you. | You're welcome to look. Please don't drop #jug#.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #shop_bare# #kiln.capitalize#'s cooling; there'll be more soon.
+dlg @1 shop.prices : #shop_dear# I ask what it cost me, and a little for the wheel. | Nothing's dear here, I hope. I'd sooner sell cheap than leave #pots# on #shelf#.
+dlg @2 shop.prices [self.job=crafter] : The big jugs are dearer. They take twice the clay and twice the care in #kiln#.
+dlg @1 shop.bye : #farewell#. Use it gently and it'll outlive us both. | #shop_bye# Go carefully with it, #address#.
+dlg @1 resident.hub : #greet#. What can I do for you? | #greet#. Stop a while, if you like.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You came back. I'm glad.
+dlg @3 resident.hub [here.time=night] : It's late. Come in, then. Quietly; #kiln#'s cooling.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Is there something you need? I'll help if I can.
+dlg @1 resident.job [self.job=crafter] : I'm #self.trade_words#. I throw #pots#, I fire them, and I sell what comes out whole. | I make #pots#. Jugs, bowls, cups. Slowly, and one at a time.
+dlg @2 resident.job : #job_busy# Quietly, as best I can. | A little of everything. I do it slow, #address#.
+dlg @1 resident.business [business=thriving] : Better than I deserve. #kiln.capitalize#'s never cold. | Folk are buying. I'm grateful, every day, #address#.
+dlg @2 resident.business [business=failing] : #poorly.capitalize#. Folk mend their pots instead of buying. I don't blame them. | Not well. #shelf.capitalize# is full and nobody's buying.
+dlg @3 resident.business [business!=thriving|failing] : Steady. Enough for flour and plums for #tart#, and that's enough. | It does well enough. I don't need much, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I hear very little, out by #kiln#. | Nothing that's come my way. I'm the last to know most things, out in #yard#.
+dlg @2 resident.news [world.wagons=raided] : A wagon was robbed, they say. Please be careful on the road. #oath#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry tales. Pots, yes. Tales, no, #address#.
+dlg @1 resident.bye : #farewell#. Go gently. | #farewell#. Come back when you like.
+graft resident.hub
+choice Why don't you trust anything from the city? -> city
+node city
+say Because nobody's thumb is in any of it. It's made fast, by nobody, for nobody. I like to know whose paws a thing came through.
+mood calm
+free
+choice Have you been there? [self.age>=25] -> city_walk
+choice Goodbye. -> bye
+node city_walk
+say Once. I walked there with a pack of #pots# and walked home with the same pack. I'd seen enough. I don't need to see more.
+choice I understand. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Why is there a thumbprint on the bottom? [self.job=crafter] -> thumb
+node thumb
+say That's #thumb#. Every pot gets one before it dries. If it fails you, bring it back; you'll know who made it.
+mood warm
+choice That's a fine promise. -> greet
+choice Do they often fail? -> thumb_fail
+node thumb_fail
+say Hardly ever. #clay.capitalize# from down the lane is good, and I'm slow with it. Tap one and listen.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

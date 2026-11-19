@@ -1,0 +1,436 @@
+# oh109, the backward-reading printer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh109
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier full
+written_for tn_sm_moss_blossomwell
+written_by claude
+title the backward-reading printer
+fits stage=adult|old
+prefers role=merchant job=merchant warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_things_under_the_breath
+likes honey_cakes whittling market_bustle warm_rain
+dislikes rats waiting
+fears a_misprint_that_cannot_be_called_back rats_in_the_paper
+hopes a_year_with_no_wrong_letter an_almanac_in_every_house_in_town
+topics work +0.4 pastimes +0.3 food +0.2 weather +0.3 newcomer -0.3 player -0.2 gossip -0.4 memories +0.2 travel +0.2
+styles comfort=practical gossip=closed refuse=flat tease=none
+marks oath saying
+persona #self.first# keeps a country press and counts every sheet under the breath: cold to a face not known, sparing with words and exact with letters, honest to a fault, and never without a block of wood and a gouge by the fire.
+
+words
+oath! = Ink and oak | By quire and ream | Set and pulled
+saying! = Ink can't take a word back | Read it backward before it goes forward | What's printed is promised
+press = the press | my old press
+ink = the ink | my black ink
+sheets = the sheets | good rag sheets
+quire = a quire | twenty-four sheets, counted
+type = the type | my cases of letters
+bills = the bills | handbills for the market
+block = a block of pear-wood | the block on my knee
+gouge = my gouge | the little gouge
+honeycake = a honey cake | honey cakes, still sticky
+crowd = the market at full cry | a market day, elbow to elbow
+softrain = soft rain on dry dust | rain after a dry spell, warm as milk
+rats = the rats | rats in the paper store
+paper = the paper | rag paper from the mill
+pond = the mill pond | the pond above the paper mill
+door = my door | my front door
+almanac = the almanac | next year's almanac
+letters = the letters | letters, all backward
+proof = the proof | a first pull, still wet
+waiting = waiting on ink | standing idle with my paws clean
+city = the city | the city at the foot of the road
+oaks = the oaks | the old oaks round the press-house
+wood = the wood | the old wood
+acorns = acorns | little acorns
+fire = my fire | the hearth with a block drying by it
+cat = the cat | my useless cat
+
+any
+opinion @1 strangers against 1 : Faces I can't put a name to stay the far side of #door#. Something always goes missing after strangers.
+opinion @1 city against 1 : I walked to #city# once. Loud, and nobody knew the wolf next to them. I walked home.
+opinion @1 dole against 1 : It teaches folk to queue. I'd sooner they came and folded #sheets# for a copper a quire.
+opinion @1 newcomers for 1 : A new face is a new reader. I'll sell them #almanac#, and keep my eye on them.
+opinion @1 road against 1 : Every late wagon is ink I haven't got and #paper# I can't print on. I count the days. Eleven, last time.
+opinion @1 merchants for 1 : A wagon of rag #paper# costs more than folk think. I'll not begrudge any trader a margin.
+opinion @1 watch for 1 : The Watch read every notice I post, and they keep thieves off the lane. Two good things. #bc_true#
+opinion @1 church mixed 1 : I print the chapel's notices. I'll not print what the chapel can't stand behind, and nor should they.
+opinion @1 festivals mixed 1 [self.job=merchant] : Feasts mean bills, and bills mean coin. They also mean the whole town in my doorway. #bc_fair#
+
+grown
+scene quire_count
+when topic=work self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess / ack
+a : Twenty-two, twenty-three, twenty-four. #quire.capitalize#. Don't speak till I've tied it. | I count every sheet that goes through #press#. I'd know if one walked. | Four hundred and eighty sheets in a ream. I've counted this one twice and got four hundred and seventy-nine.
+b : What happens if you lose count? | Would one sheet matter? | Where did the last one go?
+a : I start again. I'll not guess. #saying.capitalize#. | It would to me. A sheet's a bill or a notice, and somebody paid for it. | Under #press#, curled. I found it with a candle and a stick, mm.
+b : That's patient. | Fair enough. | All there now, then.
+a : It's not patience. It's counting. #bc_true# | #bc_it_is# I'd not sleep for one. | All there. Four hundred and eighty, root and branch.
+
+scene backward_letters
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : I read #letters# backward all day. When I go home I read the bread sign backward too. | Somebody brought me a bill with three words spelt wrong. I printed it right and said nothing. | I set a whole notice yesterday and found a "b" where a "d" should be. Pulled it, set it again.
+b : That'd send me cross-eyed. | They'll not notice. | Only one letter.
+a : It did, the first year. Now I can't read forward without stopping to check. | They'd notice if I'd left it. Ink keeps a mistake for good. | One letter. That's all a lie needs, in print, #oath#.
+
+scene honest_bill
+when topic=work|prices self.job=merchant
+does tell.self / ask.detail / answer.detail / praise / deflect_praise
+a : A pedlar wanted a bill saying "the finest in the realm". I asked which realm he'd tried. | I turned work away today. They wanted me to print a price that wasn't the price. | Folk ask me to make a thing sound better than it is. I print it as it is. That's my trade.
+b : What did the pedlar say? | Did it cost you? | Does anyone thank you for that?
+a : That I was #very# stubborn. I printed "good honey, fair price" and charged the same. | A morning's work. I'd sooner lose the coin than see my own letters on a lie, #oath#. | Not often. The ones who do come back, and my door's open to them.
+b : Well done. | That's dear honesty. | Then you keep the good ones.
+a : It's only what's so. #saying.capitalize#. | It's the only kind I can afford, #oath#. | The good ones, and #door# stays shut to the rest.
+
+scene ink_waiting
+when topic=work|smalltalk self.working=yes self.job=merchant
+does tell.complaint / react.complaint / assess
+a : I've a run of #bills# drying on the line, and nothing to do but wait. I hate #waiting#. | #proof.capitalize# on the table, and I can't touch it for an hour. I've counted the knots in the floor. Sixty. | Ink won't dry when the air's wet. #grumble#. I've walked the shop end to end eleven times.
+b : Go and have a cake. | Sixty knots? | Leave it and come back.
+a : I'd only come back early and smudge #proof#. | Sixty-one. I'd missed one by #door#. | Eleven, now twelve. I can't leave a thing half done.
+
+scene paper_late
+when topic=caravan|prices world.wagons=late self.job=merchant
+does tell.complaint / react.complaint / assess
+a : No wagon yet, and I'm down to a quarter-ream. I've counted it: a hundred and twenty sheets. | No ink up the road for a week. I'm mixing soot and oil, and it shows. | I've three orders waiting on #paper# that's still somewhere on the south road.
+b[job=carter] #cart : We'll get it up to you. | Soot and oil's not so bad. | The road's slow this time of year.
+b : They'll come soon. | Can you make do? | That's bad luck.
+a@cart : When, though. A slow cart I can bear; not knowing I can't, #address#. | It's grey. Folk want black. | Slow I can count. Late I can't.
+a : Soon's no number, #address#. I'd like a number. | I'll make do. I'll not make it good. | It's not luck. It's the road, every year, #oath#.
+
+scene paper_in
+when topic=caravan world.wagons=in self.job=merchant
+does tell.self / react.self / assess
+a : The wagons are in. Two reams of rag, a cask of ink, and I counted both before I paid. | Fresh #paper# from the mill and the road both. The shop smells right again. | They brought the ink at last. I've #bills# to pull from now till dark.
+b : All there? | Smells right? | Busy, then.
+a : All there. Nine hundred and sixty sheets and not one short. | Rag and lampblack. You'd not want it on your supper, but I like it. | #busy.capitalize#, and glad of it, mm.
+
+scene rats_paper
+when topic=animals
+does tell.complaint / give.advice / assess
+a : #rats.capitalize# got at the paper store again. Chewed a ream to lace. | I heard a rat in the wall last night and I didn't sleep after. I counted its scratches. | I can't abide #rats#. They don't eat the paper; they just ruin it, for the nest.
+b : Get a cat. | Set a trap. | That's a waste.
+a : I've a cat. The cat's frightened of them. #bc_it_is# | I've set four. #rats.capitalize# walk round all four. | A waste and a stink. I'll burn the lot and count what's left.
+
+scene soft_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : #softrain.capitalize#. I stood in the yard in it, and I'll not say for how long. | The lane smells like bread after #softrain#. | The first rain in a dry week. I opened every shutter and let it in.
+b : You're soaked. | I like that smell. | Mind the paper.
+a : I'm wet. I'll dry. It's rare enough to stand in. | So do I. It's the only thing I'll say I love out loud. | I moved #paper# first. I'm soft about rain, not daft.
+
+scene pond_fills
+when topic=weather|land here.weather=rain here.region=oakhaven
+does tell.self / react.self / assess
+a : Rain's filling #pond#. The mill will turn properly again #later#. | #rain.capitalize# off the oaks all morning. The mill wants it; I want it for the mill. | The pond was a hand low last week. I measured. It'll be up by tomorrow.
+b : Good for the paper. | Good for everyone. | You measured the pond?
+a : Good for #paper#, and good for me. | Most of us. Not the ones with leaking roofs. | With a stick and a knot on it. I like to know.
+
+scene market_crowd
+when topic=day|smalltalk here.day=market
+does tell.feeling / react.self / assess
+a : Market day. #crowd.capitalize#, and I'm in the thick of it with #almanac# under my arm. | I don't like folk. I like a crowd. There's a difference, and it's this: nobody stops to talk. | I counted the stalls this morning. Thirty-one, and two empty.
+b : I'd not have thought it of you. | A fine difference. | Two empty?
+a : Nobody does. #crowd.capitalize# asks nothing of me. | It's the only difference I need, #oath#. | Two. One's the cooper, poorly. The other I don't know.
+
+scene honey_cake
+when topic=food
+does tell.self / react.self / assess
+a : I bought #honeycake# at the market and ate it before I'd paid. The baker let me off. | A honey cake on the Restday, with tea. That's my one soft thing. I'll not have it mocked. | There's honey on my sleeve and I don't care. #very.capitalize# good cake.
+b : Generous baker. | Nobody's mocking. | Lucky sleeve.
+a : Generous, or used to me. I paid double the next week, #oath#. | Good. Then you may have a bite. Just the one. | It'll wash. Or it won't, and I'll smell of honey all week.
+
+scene whittle_block
+when topic=pastimes
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I cut #block# by the fire of an evening. An oak leaf for the almanac's cover. | I've been whittling a border for a week. Forty little acorns, and I've done thirty-one. | Give me #gouge# and a quiet fire and I'll not speak till midnight.
+b : Is it hard? | Why acorns? | Does nobody bother you?
+a : You cut it backward. Everything I do is backward. You get used to it. | Because folk here like #acorns#. I'll sell more almanacs with #acorns# on. | Nobody. That's the second reason I do it, #oath#.
+b : Sounds slow. | Clever. | And the first?
+a : #slow.capitalize#, and that's the point. | Clever's a big word for #acorns#. | I like the shape coming out of #wood#. That's all.
+
+scene door_shut
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : Another new face at the well. I'll keep #door# shut till I know it. | #stranger.a.capitalize# stood in my doorway an hour ago. I didn't ask them in. | Faces I don't know, I count. Three this week. I like to know where they go.
+b : That's cold. | Did they want anything? | Why count them?
+a : It's careful, #address#. Cold's what you are after the first loss. | A bill printed. I printed it with #door# open and an eye on them. | So I know if one doesn't leave. I've lost a till to #stranger.a# before.
+
+scene city_walk
+when topic=travel|memories self.away=no self.age>=20
+does tell.memory / ask.detail / answer.detail / assess / ack
+a : I walked to #city# once. All the way. I counted the milestones down and back. | I went down to #city# to see the big presses. They run all night. I couldn't sleep for them. | I stood in #city# for three days and nobody said my name. I came home.
+b : How many milestones? | Were they better presses? | Did you not like it?
+a : Too many to be worth it. I'll keep the number to myself. | Bigger. Not better. Their ink's thin and their letters wander. | I liked #paper#. I didn't like the rest. Home's here, under the oaks, mm.
+b : At least you went. | Ha. Good. | Fair enough.
+a : I went. I'll not go again. Once tells you all it'll tell. | Bigger and worse. That's the city, #oath#. | #bc_it_is# I'll keep my oaks.
+
+scene fog_damp
+when topic=weather here.weather=fog here.region=oakhaven
+does tell.complaint / react.self / assess
+a : #fog.capitalize# in the trees, and every sheet in the shop has gone soft at the edges. | Fog. The ink won't dry and #paper# won't stay flat. I'll print nothing today. | Mist on the lane. I like how it shuts the town off. I don't like what it does to #paper#.
+b : A day off, then. | It'll clear. | Can't win.
+a : A day off with nothing to do. I'll count #type# instead. | It'll clear by noon, and I'll have lost the morning's #bills#. | I can't, mm. I'll like the mist and mind #paper#.
+
+scene winter_almanac
+when topic=season here.season=winter self.job=merchant
+does tell.self / react.self / assess
+a : Winter's #almanac# time. I set the moons and the feast days and count them twice. | Short days and long nights, and the press going by lamplight. My eyes are #tired# by dusk. | Folk want next year in their paws before this one's done. I've two hundred almanacs to fold.
+b : That's a lot of moons. | Rest your eyes. | Two hundred?
+a : Twelve moons, thirteen some years. I count them three times. | When #almanac#s are folded. Not before. | Two hundred and ten. I'll know if I've sold two hundred and nine.
+
+scene autumn_oaks
+when topic=season|land here.season=autumn here.region=oakhaven
+does tell.self / react.self / assess
+a : Acorns pattering on #press#-house roof all night. I counted till I slept. | The oaks are turning. I took a leaf in to cut the almanac block from. | Autumn. The pigs are out in the mast and #wood# smells of it.
+b : How far did you get? | Smart. | A good smell.
+a : Three hundred and something. I'd lost count, which is rare. | It's the only way to get the veins right on #block#. | #good.capitalize# bark and wet leaves. The best smell there is, after fresh ink.
+
+scene spring_letters
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : Spring. Every wedding in the valley wants cards, and every card wants the names spelt right. | New leaf on #oaks#, and I've the shutters off for the first time since autumn. | The swallows are back under the eaves. Seven. Last year, nine.
+b : Busy season. | Lovely. | Fewer this year.
+a : #busy.capitalize# and careful. A wrong letter at a wedding is never forgotten. | It lets the light in on the type. I can see #letters# without a lamp. | Fewer. I've counted twice. Next week I'll look again.
+
+scene summer_heat
+when topic=weather here.weather=clear here.season=summer
+does tell.complaint / react.self / assess
+a : #hot.capitalize#. The ink goes thin as water and runs off the type. | It's a #very# close day. I've the door open and I don't like it. Anyone could walk in. | Sun's on the drying line. #bills.capitalize# will be dry in no time, at least.
+b : Close the door, then. | Leave it open; it's too hot. | That's a mercy.
+a : Then #press#-house is an oven. I'll stand guard instead. | I'll leave it, and watch it. #bc_i_will# | A small one. The only good thing about this heat.
+
+scene faith_notices
+when topic=faith
+does give.opinion / react.self / assess
+a : I print the chapel's notices. I'll not print a word on them the Bright One would blush at. | I go to chapel on the Restday and count the hymns. Four, always four. | I say my prayers short. The Bright One can read; I don't need to say it twice.
+b[job=priest] #priest : We're grateful for the notices. | Four's the custom. | Short prayers are heard.
+b : That's a fair rule. | Always four? | Fair enough.
+a@priest : Then spell your names clearer when you bring them, #address#. | It's a #good# custom. I like a thing that's always the same. | #bc_i_hope_so# I've no time for long ones.
+a : It's the only rule I have. #saying.capitalize#. | Always. I'd notice if they sang five. | #bc_fair# I keep it short and I keep it honest.
+
+scene gossip_closed
+when topic=gossip
+does decline / react.self / assess
+a : I don't pass talk. I print what's signed, and I say what I've seen. That's all. | Folk bring me gossip to put on a bill. I tell them to sign it. They never do. | #hedge#. I heard something. I'll not repeat it; it's not mine to repeat.
+b : Not even a little? | Clever trick. | Fair.
+a : Not a letter of it, #oath#. | It's not a trick. A name on a thing makes it honest, or it makes it vanish. | It's how I keep the town from printing itself, mm.
+
+scene theft_lock
+when topic=gossip|crime topic.claim_kind=theft
+does tell.worry / reassure / assess
+a : Thieving again. I've counted #type# and locked the cases. You can't print without letters. | They say #topic.subject# #topic.claim#. #door.capitalize# gets two bars tonight. | I lost a till to #stranger.a# once. Now I count the coin box every hour when there's thieving about.
+b : They'll be caught. | Two bars? | That's careful.
+a : Maybe. My letters will be counted either way. | Two. I'm not one to trust a single bar, #oath#. | Careful's cheaper than sorry. I learned that the dear way.
+
+scene glad_cards
+when topic=gossip|news topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news / assess
+a : #gladnews#: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#. That's a bit of #good# news, for once. | Here's something worth setting in #type#: #topic.subject# #topic.claim#.
+b : That's good to hear. | It is, for once. | Worth printing, that.
+a : It is. I don't say so often. | For once. I'll take it, and not ask for more. | I'll set it if they ask me. And I'll spell it right, #oath#.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean
+does tell.complaint / sympathise / assess
+a : Lean times. Nobody prints #bills# when they've nothing to sell. | I've folded the same almanacs three weeks. Nobody's buying next year when this one's hard enough. | Folk pay me in eggs now. I count the eggs. Nine this week.
+b : Everyone's feeling it. | It'll turn. | Eggs aren't bad.
+a : They are. I'll print for a copper less till it turns. | It will. I'll have #almanac# ready when it does. | They're not. They don't buy #paper#, though.
+
+scene good_times
+when topic=times world.times=good|boom self.job=merchant
+does tell.self / react.self / assess
+a : Good times. Everyone wants a bill, a card, a notice. I've ink to the elbow and I'm glad of it, #oath#. | Coin about. I've sold more almanacs since the new moon than the whole of last spring. | Folk are printing #bills# for things they've not made yet. I'll print them; I'll not believe them.
+b : Lucky. | Well done. | Sensible.
+a : Not luck. I've been here every day the press was, #oath#. | It's the #acorns# on the cover. I knew they'd sell. | Sensible's the only way to stay in work when the good times stop.
+
+scene neighbour_light
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# is next door. I'd trust that one. I don't say that of many. | #self.neighbour#'s wall is next to mine. It's a #good# wall; I can't hear a thing. | I'd lend #self.neighbour# my last quire. I've never said that aloud before.
+b : High praise, from you. | A good wall's worth a lot. | You've said it now.
+a : From me that's a medal, mm. | It is. The best neighbours are the quiet ones. | I have. Forget I did.
+
+scene ink_paws
+when topic=health
+does tell.self / sympathise / assess
+a : My paws are black to the wrist and they'll not wash clean. Nobody shakes them. | By dusk the small letters swim. I count to sixty with my eyes shut. | I'm well. I've not missed a day at #press# in nine years.
+b : That suits you, maybe. | Does it help? | Everyone falls ill.
+a : It does. Fewer paws to shake. | A little. Sixty's enough to start again. | Not me. I count the days, and none are missing.
+
+scene press_flat
+when topic=home self.job=merchant
+does tell.self / react.self / assess
+a : I live over #press#. When it's quiet I can hear the type settling in its cases. | Upstairs is two rooms and a shelf of #block# I've cut. Nothing else. | I've a bed, a fire, a chair and a lock on #door#. That's a home.
+b : Does it ever stop? | Just blocks? | And a lock.
+a : At night. Then it's only me and the rats. #bc_it_is# | Blocks and a cake tin. The cake tin's empty. | A lock first. Then the rest.
+
+scene dusk_count
+when topic=day here.time=dusk self.job=merchant
+does tell.self / react.self / assess
+a : Locking up. Twelve cases of type, all counted. One press, wiped. #door.capitalize#, barred. | Dusk. I've pulled ninety #bills# today and I've counted all ninety twice. | The light's going. I'll not set type by lamp; that's how #letters# go wrong.
+b : A good day's work. | Twice? | Wise.
+a : A #good# day. I'll have a cake and nothing else. | Twice. Once for the order, once for me. | It's not wisdom. I learned it on a funeral card.
+
+story wrong_letter [topic=work|memories self.job=merchant self.age>=25]
+  : The worst thing I ever printed was a funeral card with one letter wrong in the name.
+  : Fifty cards, and I'd counted every one, and not read one. The family found it at the graveside.
+  ask : Would you ever have forgiven yourself, in my place?
+  b[old] : In time. Not soon.
+  b : I hope so. It was one letter.
+  : One letter. I printed fifty more for nothing, and I've never set type by lamplight since. #saying.capitalize#.
+
+story city_and_back [topic=travel|memories self.away=no self.age>=20]
+  : I walked to #city# once, all the south road, just to see the big presses.
+  : They ran all night and never stopped, and the wolves at them never looked up. I counted three hundred sheets a minute.
+  ask : Have you ever seen a thing you'd only ever heard of, and found it wasn't for you?
+  b : Once or twice. It's a good lesson.
+  b[old] : More times than I can count.
+  : I walked home. Took me eleven days. I didn't mind one of them.
+
+story first_block [topic=memories|pastimes self.age>=25]
+  : When I was a #child# I cut my name into a bit of oak with a stolen knife.
+  : I pressed it in ink and on the wall, and there it was, backward. My #mum.capitalize# made me scrub it off.
+  b : Did you ever cut it the right way round?
+  : Years after. I cut it backward still, because that's how it comes out right. Most things are like that.
+
+story rats_ream [topic=animals|work self.job=merchant]
+  : One winter the rats got into a whole ream I'd saved for #almanac#s.
+  : Four hundred and eighty sheets, and not one whole. I counted the scraps, I was that angry.
+  b : How many scraps?
+  : Too many. I bought a cat after. The cat's frightened of #rats#. I keep it anyway; it's good company.
+
+story bad_coin [topic=newcomer|memories self.age>=25]
+  : In my first year at #press#, a stranger paid me for a run of bills in coin that bent in my teeth.
+  : I'd printed #bills# already. They were for a fair that never came.
+  ask : Do you trust a face you don't know?
+  b : Not with my coin.
+  b[talk=chatty] : I'd like to. I don't always.
+  : I don't. That's why #door# stays shut till I know who's at it.
+
+line @1 greet [pair.band=strangers] : #greet#. Say your business; I'm busy. | #greet#. I don't know you. Say what you want.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. Mind the drying line. | #greet#. Don't touch #proof#; it's wet.
+line @3 greet [here.time=dawn] : #greet#. Early. I've the press going already. | #greet#. You're up before the ink's dry.
+line @4 greet [here.time=dusk|night] : #greet#. I'm locking up, but go on. | #greet#. Late. Be quick.
+line @5 greet [pair.band=friends] : #greet#. Come in. Shut #door# behind you. | #greet#. Good. I thought it was a stranger.
+line @6 greet [here.weather=rain] : #greet#. Shake off outside; there's paper in here. | #greet#. #rain.capitalize#. I'm not sorry for it.
+line @1 kin.open [pair.kin!=no] : #greet#. Sit. There's bread on the side. | You. #greet#. Get by the fire.
+line @1 again.open : Twice today. I'm counting, #address#. | #welcome_back#. Shut the door.
+line @1 greet.return : #greet#. | #greet#. I'm at the press. Be quick.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in. | And you. #greet#.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. I've ink on my paws; don't come close. | #greet#. Quick, while it dries.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late. | #greet#. I'm locking up.
+line @1 farewell : #farewell#. Shut #door# on your way. | #farewell#. Mind the wet bills.
+line @2 farewell [here.time=night] : #farewell#. Go by the lamps. | #s8_night#. Bar your door.
+line @1 farewell.return : #farewell#. | #farewell#. Go on, then.
+line @2 farewell.return [here.time=night] : #s8_nightback#. | #farewell#. Mind the dark.
+line @1 react.news : #oath.capitalize#. I'll remember that. | That's news to me. I'll not repeat it.
+line @1 react.news.new : #marvel#. I hadn't heard. | #surprise#. That's new.
+line @1 react.news.known : #knew#. Somebody wanted it on a bill. | I'd heard. I didn't print it.
+line @1 react.news.doubt : #doubt#. Bring me somebody who saw it. | I'll not believe that till it's signed, and maybe not then.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard for them. | #oath.capitalize#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | #good.capitalize#. I'll spell the names right if they want cards.
+line @1 answer.how : Well enough. I've counted everything twice. | #fine#. Ink on my paws, as ever.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. A run of bills drying. | Busy. Come back when the ink's dry.
+line @1 ask.how : Are you well, #address#? | And you? You look #tired#.
+line @1 sympathise : #sympathy#. I'm sorry for it. | That's #bad#. Sit, if you want.
+line @1 reassure : #reassure#. It'll come right. | It'll pass. Most things pass, #later#.
+line @1 decline : #hedge#. Not this week; I've three orders waiting. | I'd rather not. No time, and haste spoils type.
+line @1 accept_decline : #no_matter#. Another time. | Then that's settled, mm.
+line @1 thank : #thanks#. I'll remember. | #thanks#. I'll owe you that, and pay it.
+line @1 deflect_thanks : It was nothing. Leave it be. | #deflect#. It was on my way.
+line @1 preclose : Well. #press.capitalize# won't pull itself. | #preclose#. I've type to count.
+line @2 preclose [self.working=yes self.job=merchant] : There's ink drying that wants watching. | #excuse#. I've a proof to read backward.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I've #letters# to set.
+line @1 ack : Mm. | #ack#.
+line @1 give.advice : #advise#: read it twice before you sign it. | Count it before you trust it.
+line @1 warn [world.bandits=near] : #warn#. There's #bandits# about. Bar your door. | Don't walk the south road alone. Not now.
+line @1 hail [pair.band=friends] : Here. #greet#. | Over here. I've something to show you.
+line @1 insist : #insist#. I've counted it. | No. I've checked it, and I'm right.
+rule @press_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say #bills.capitalize#, cards and notices. Spelt right. | #almanac.capitalize#, with the moons in. Counted twice.
+
+rule @count_sheets
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Twenty-two, twenty-three, twenty-four. #quire.capitalize#. | Four hundred and seventy-nine... no. Again.
+
+rule @rat_scratch
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say There. In the wall. Blight #rats#. | Scratch, scratch. Knots and knots.
+
+rule @rain_glad
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 8h
+say Rain. Proper warm rain. | Let it come down. The pond wants it.
+
+rule @market_bark
+when concept=bark here.day=market
+does aside
+cooldown 8h
+say Almanacs. Moons, feasts and fairs. | #crowd.capitalize#. Good.
+
+rule @whittle_bark
+when concept=bark working=no here.time=dusk|night
+does aside
+cooldown 8h
+say Steady with the gouge. Steady. | Thirty-two #acorns#. Eight to go.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. I don't know you. Say what you want. | #greet#. You're new. Be quick.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What is it today? | #topic.player#. #greet#. Shut #door#.
+dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. I'd counted you gone.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Stand where I can see you and say it plain.
+dlg @5 resident.hub [here.time=night] : It's late. #door.capitalize#'s barred for a reason. What is it?
+dlg @1 resident.job [self.job=merchant] : I'm the #self.trade_words#. Bills, cards, notices, almanacs. Spelt right. | I set #type# backward and print it forward. Every letter counted.
+dlg @2 resident.job : A bit of everything, done properly, #oath#. | Steady work. I count it all.
+dlg @1 resident.business [business=thriving] : Thriving. I've ink to the elbow and orders to Restday. | #good.capitalize#. I'll not say how good.
+dlg @2 resident.business [business=failing] : Badly. Nobody prints a bill when there's nothing to sell. | Poorly. I'll not pretend it's otherwise.
+dlg @3 resident.business [business!=thriving|failing] : Steady. Enough comes in for #paper# and ink. | Steady. The sums come out level, month on month.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I've not printed it. I'll not, till it's signed.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words#. Three folk have asked me for a bill about it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing worth setting in type.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's said, not signed. Mind the difference.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I print what's signed. Nobody's signed anything.
+dlg @1 resident.bye : #farewell#. Shut #door# behind you. | #farewell#. Mind the wet bills.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Bills, cards, almanacs. Don't touch the wet ones. | #greet#. Say what you want printed, and spell it for me.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Your order's counted and ready. Or it will be.
+dlg @3 shop.greet [here.shop=bare] : #greet#. #shop_bare# The wagons are late with the paper. I'll still take orders, for when it comes.
+dlg @1 shop.prices : Fair, and written on the wall. I don't haggle. | #shop_dear# Paper's dear this season.
+dlg @1 shop.bye : #farewell#. It's counted; you'll not be short. | #shop_bye#
+graft resident.hub
+choice You're muttering numbers. What for? -> numbers
+node numbers
+say Sheets, mostly. Letters. Steps. If I count a thing, I know it's all there. I lost a till once to #stranger.a#, and I've counted since.
+mood calm
+free
+choice Do you count everything? -> numbers_all
+choice Goodbye. -> bye
+node numbers_all
+say Everything that matters, and a few things that don't. You've said thirty-one words to me. That's more than most.
+choice I'll try to say fewer. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What are you carving there? -> block
+node block
+say A block for the almanac's cover. An oak leaf, cut backward, so it prints the right way round. I've done the stem and half the veins.
+mood calm
+free
+choice Why backward? -> block_why
+choice Let me see your wares. -> greet
+node block_why
+say Because ink turns everything over. You cut it wrong to print it right. Most honest work's like that.
+choice I'll remember that. -> greet
+choice Goodbye. -> bye

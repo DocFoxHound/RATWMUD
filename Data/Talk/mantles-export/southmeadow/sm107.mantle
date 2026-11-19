@@ -1,0 +1,289 @@
+# sm107, the cellar proverb-maker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm107
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for cty_briar_cornby
+written_by claude
+title the cellar proverb-maker
+fits stage=adult|old
+prefers job=none humour=dry honesty=sly
+traits temper=even talk=plain warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk quotes_old_sayings_for_everything
+likes roast_pork stars full_larder frosty_mornings
+dislikes haggling early_bells
+fears the_old_stones_forgetting a_cellar_gone_sour
+hopes a_seat_by_the_stones_on_midsummer_night a_larder_that_outlasts_the_winter
+topics lore +0.4 work +0.3 food +0.3 season +0.3 faith -0.2 gossip +0.2
+styles comfort=dry gossip=sly refuse=sly tease=dry
+marks oath saying
+persona #self.first# keeps the casks in the press-house cellar: dry, sly and plain, with an old saying for everything, half made up on the spot and sworn to be ancient, and a firm belief that the standing stones on the downs remember all of it.
+
+words
+oath! = Stones remember | By the old stones | Cork and cobweb
+saying! = What's buried isn't gone | The cellar keeps what the sun forgets | Old stones have long ears
+oldword = As my old gran said, a slow cask is a sweet cask | The old folk say a dry cellar breeds a dry tongue | There's an old saying: never trust a pig that won't look at you | As they say on the downs, frost on the vine is silver in the press | My grandad always said the stones count the years so we needn't
+cellar = the cellar | the cool dark among the casks
+vats = the vats | the big oak vats
+must = the must | the sweet grape must
+pork = a joint of roast pork | pork with the crackle still on it
+stars = the stars | the stars coming out over the slopes
+frost = a hard white morning | frost on the vine rows
+shelves = shelves that groan | the larder stacked to the beams
+stones = the old stones | the standing stones up on the downs
+haggling = haggling | a body haggling over a copper
+candle = my candle | a stub of tallow candle
+wry = Fancy | So they tell me
+vinehands = the vine hands | that lot up on the slopes
+
+any
+opinion @1 church against 1 : The plate's round the pews faster than the prayers are. #oldword#, or near enough.
+opinion @2 houses against 1 : The Houses keep their benches for their own. #wry#. I'll mind #vats# and not wait to be asked.
+opinion @3 merchants against 2 : Same coin coming in, and the loaf's a penny dearer every month. #oath#. Somebody's cellar is filling, and it isn't mine.
+opinion @4 watch against 1 : The watch have a nose in every door but their own. #saying#, and so do noses.
+opinion @5 times against 1 : It's a #little# leaner every week. Up north they'll notice when the stones do, which is to say never.
+opinion @6 newcomers against 1 : There's only so many casks to turn in #here.town#. Every new paw at the casks is one less for mine.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be lost, or thirsty. | #greet#, #address#. Mind the cellar steps if you're coming down.
+line @2 greet [self.working=yes self.job=none] : #greet#. Shut the door; you're letting the warm in. | #greet#. Come down, if you can see in the dark.
+line @3 greet [here.time=dawn] : #greet#. #frost.capitalize#, if we're lucky. | #greet#. The old stones were up before either of us.
+line @4 kin.open [pair.kin!=no] : Sit, then. I'll not ask what you want; you'll tell me, #pet#. | There you are. #oldword#.
+line @5 again.open : #welcome_back#. You'll wear the lane out. | Back already. #wry#. The lane will gossip.
+line @6 greet.return : #greet#. | #greet#, #address#. Still standing.
+line @7 greet.return [pair.band=friends|family] : #greet#. About time you showed your face. | #greet#. Sit; mind the cat.
+line @8 greet.return [self.working=yes] : #greet#. Mind #vats#. | #greet#. Down here, by #candle#.
+line @9 farewell : #farewell#. | #farewell#. #saying#.
+line @10 farewell [here.time=dusk|night] : #farewell#. #stars.capitalize# will see you home. | #farewell#. #warn#, going home in the dark.
+line @11 farewell.return : #farewell#. | #farewell#, and don't trip on anything old.
+line @12 react.news : #howso#? Go on. | Hm. Tell it slow, #address#; I'll pick out the true bits.
+line @13 react.news.new : #surprise#. That's new, and I like new. | #oath#. News to me, and most news finds its way down #cellar#.
+line @14 react.news.known : #knew#. The casks had it before you. | Heard it yesterday. #wry#.
+line @15 react.news.doubt : #doubt#. Who's it come from? That's half the tale. | #hearsay#. I'll wait for somebody with less to gain.
+line @16 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. The stones will remember them. | That's #bad#. I'll say nothing clever about it.
+line @17 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll open something old for that. | Now that's #good#. #oldword#.
+line @18 answer.how : Even. Damp as #cellar#, but even. | #fine#. #shelves.capitalize#, and no complaints I'd say aloud.
+line @19 ask.how : And you? Still dodging the bell? | How's your lot, #address#? Sweet or sour?
+line @20 sympathise : #sympathy#. Sit; I've a drop put by for this. | That's a sour cask. #oldword#, for what it's worth.
+line @21 decline : #hedge#, no. #vats.capitalize# need turning, and they don't turn themselves. | I'd like to, #address#, only I've a cellar that won't mind itself.
+line @22 accept_decline : #no_matter#. #saying#. | Fair. I'll ask somebody with less sense.
+line @23 thank : #thanks#. | That's handsome. I'll remember it, and so will #stones#.
+line @24 deflect_thanks : #deflect#. It cost me nothing, which is my favourite price. | #wry#. Pay me in news.
+line @25 tease [pair.band=friends] : You walk like a cask with a loose hoop, #fool#. | #cheek#. You've cobwebs in your ears again.
+line @26 tease.return : #cheek#. | Says the one who's never been down a cellar.
+line @27 preclose [self.working=yes] : Well. #vats.capitalize# won't wait. | I'd best get back down to #cellar#.
+line @28 preclose : #preclose#. | The light's going, and so am I. #excuse#.
+line @29 ack : #wry#. | #bc_it_is#
+scene down_the_cellar
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : Down in #cellar# it's the same cool all year. The only honest place in #here.town#. | I turn #vats# by #candle#. Nobody bothers me but the spiders. | #oldword#. There's my trade in a nutshell, and the rest is lifting.
+b : Doesn't the dark bother you? | The spiders? | Is that true?
+a : The dark's an old friend, #address#. It never asks me how I am. | We've an arrangement. They catch the flies; I don't sweep. | True as I made it. #wry#. It sounds old, doesn't it?
+b : #bc_ha# | #bc_fair_enough# | Ha.
+
+scene the_must
+when topic=work|harvest self.working=yes self.job=none here.season=autumn
+does tell.self / react.self / assess
+a : Pressing time. #must.capitalize# runs, and the whole cellar smells like a feast. | #vinehands.capitalize# bring the grapes down, and we make them into something worth keeping. | I've been stirring #must# since dawn. My arms are #tired#.
+b : It smells wonderful from here. | Something worth keeping? | Sit, then.
+a : Wait till it's turned. Then it smells like #money#. | Grapes are for eating. Wine's for remembering. #oldword#. | I'll sit when #vats# are full. #saying#.
+
+scene made_up
+when topic=lore|smalltalk
+does tell.self / challenge / concede / ack
+a : #oldword#. | You know what the old folk say about a cold cellar? They say plenty. I say more. | There's a saying for everything, and if there isn't, I'll have one by supper.
+b : I've never heard that one. | Do they? | You make them up.
+a : It's very old. Older than you. Older than this morning, at least. | They do. I'm one of the old folk, near enough, and I'm saying it. #wry#. | Some. The good ones are older than me. The rest will be, given time.
+b? : #bc_ha# | #bc_i_know# | Ha.
+
+scene standing_stones
+when topic=lore|faith here.region=southmeadow
+does tell.story / ask.opinion / give.opinion / assess
+a : #stones.capitalize# remember things. Ask anybody old enough to have sat with them. | I went up to #stones# at midsummer and sat with my back to one. I'll swear it was warm at midnight. | Every stone up there was put there for a reason. The reason's gone. The stones haven't.
+b : Remember what? | Warm from the day, maybe? | Do you think they mean anything?
+a : Everything said near them. That's why I never say much up there. | Maybe. Maybe it was glad of the company. #wry#. | Mean? They mean we were here. That's enough for a stone. #saying#.
+b : #bc_maybe# | #bc_ha# | #bc_so_they_say#
+
+scene stars_over_slopes
+when topic=pastimes|weather here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : I come up out of #cellar# at night and there's #stars#. Worth the stairs. | Clear tonight. I'll sit on the step under #stars# and count nothing at all. | My #grandad# said the stars are the old stones' cousins. He'd a saying for that too.
+b : Lovely, isn't it. | Nothing at all? | What was it?
+a : When you've been in the dark all day, it's like somebody lit every candle in #here.town# at once, #address#. | Nothing. It's the only time I don't make sayings. #wry#. | Stars and stones, both keep their own counsel. Or he'd have said so, if I'd asked.
+
+scene frosty_morning
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : #frost.capitalize#. My favourite kind of morning, and I'll not be argued out of it. | The vine rows are all white. #oldword#. | My breath's a cloud, and the grass crunches. That's a proper morning.
+b : Cold, though. | Is that one of yours? | Crunches?
+a : Cold's honest. Cold never pretends to be anything else, #address#. | One of mine? It's ancient. I heard it last week. | Like crackling. Every step. I could walk on it all day, #oath#.
+
+scene crackling
+when topic=food self.likes=roast_pork
+does tell.feeling / ask.detail / answer.detail / assess
+a : #pork.capitalize#. There isn't a better smell in the world, and I've smelt the must. | Somebody's got a roast on. I can smell it from #cellar#, and I'm going to pretend I've an errand. | #oldword#. I'd go further for crackling than for coin.
+b : Where's it coming from? | What errand? | Even coin?
+a : Up the lane, and I'll be there in a minute, #address#. | Any errand that passes their door. I'm not proud. | Coin buys crackling. Crackling buys nothing. But I'd still choose crackling.
+b : #bc_ha# | Ha. | #bc_fair#
+
+scene groaning_shelves
+when topic=food|home self.likes=full_larder
+does tell.self / react.self / assess
+a : #shelves.capitalize#. That's what I want to see when I open the door. | We've a full house and #shelves#, and I've counted both twice. | #oldword#. And a shelf with a ham on it is better still.
+b : Every house wants that. | A full house? | Ham's a good shelf.
+a : Every house, and few get it. Ours has, this week. | A houseful under one roof. The larder works harder than any of us. | The best kind. #saying#, and so does ham, if you hang it right.
+
+scene no_haggling
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / insist / ack
+a : There's a buyer at the press who haggles over every cask. #annoyed#. | I can't abide #haggling#. Say a price, take a price, and go home. | A cellar's no place for a market. #oldword#.
+b : Some folk enjoy it. | It's the custom. | Fair enough.
+a : Then they can enjoy it with somebody else. I've #vats# to turn. | The custom's older than me, and I still don't like it. | Fair, and I said it first. #wry#.
+b : #bc_ha# | #bc_true# | #bc_fair#
+
+scene bell_before_light
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : That bell before dawn. #oldword#, and the bell's never heard it. | Somebody rang the bell an hour before light. #stones.capitalize# don't need a bell, and nor do I. | I was asleep. Then I was awake and cross. #annoyed#.
+b : Somebody needs it. | The stones? | Cross is fair.
+a : Let it clang by their own pillow and leave mine be. | They know when it's morning. They've seen enough of them. | Cross is the least of it. I'll be cross till noon.
+
+scene house_full
+when topic=home|friends self.friend
+does tell.self / react.self / assess
+a : We're a full house. Somebody's always up and somebody's always sleeping. | #self.friend# could have #candle# off me, the very last one, and that's a saying of mine too. | There's no quiet in our house, but there's no loneliness either. #saying#.
+b : Sounds lively. | That's a good saying. | That's a fair trade.
+a : Lively's one word. I've others, but I'll keep them. #wry#. | It's a new one. I'll make it old. | It is. I come down #cellar# for the quiet anyway.
+
+scene the_neighbour
+when topic=friends|home self.neighbour
+does give.opinion / react.self / assess
+a : #self.neighbour# is a decent one to have next door, #address#. I'll say that, and no more. | I'd trust #self.neighbour# with a cask of the old stuff. That's a lot, from me. | Living near #self.neighbour# is no hardship. #wry#. I've had worse walls.
+b : No more? | That's high praise. | Worse walls?
+a : No more. Praise spoils, like an open cask. | It is. Don't repeat it. | Worse walls and worse ears behind them.
+
+scene gossip_corked
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I've heard something, down in #cellar#. I'll keep it corked for now. | There's talk going up and down the lane. #oldword#. | Somebody's been saying something about somebody. I know who. I'll not say.
+b : Go on, uncork it. | And? | Not even a hint?
+a : Not yet. It wants to age a bit first. Like everything. | And that's the saying. The talk you'll get elsewhere. | A hint? It's someone with a name. There. That's all.
+b : #bc_ha# | Ha. | #bc_fair_enough#
+
+scene gossip_true
+when topic=gossip|news topic.claim_kind=marriage|promise_kept|newcomer
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. That one I'll pass on, and gladly. | #topic.subject.capitalize# #topic.claim#, I hear. #oldword#. | Word in the lane is #topic.subject# #topic.claim#. I'll drink to it, later.
+b : That's nice to hear. | Is that one of yours? | So will I.
+a : Nice news is rarer than old wine, #address#. I keep it when I find it. | It is now. #wry#. | Make it two of us, then, and a cask between us.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Nothing more coming in, and still the bread's gone up. Somebody's laughing. | It's thinner every week. #oldword#, and the old folk never went hungry like this. | The cellar's fuller than the larder this month. That's backwards.
+b : Not us, then. | Did they not? | That's hard.
+a : Not us. And it's not the stones, either. | Probably they did. They just made a saying of it after. | Hard, but it'll pass. #saying#.
+b? : #bc_true# | #bc_ha# | #bc_i_hope_so#
+
+scene chapel_plate
+when topic=faith
+does give.opinion / react.self / assess
+a : The plate goes round the chapel faster than the blessing does. I've timed it. | Up by #stones# I have my word with the Bright One. No plate up there. | I've nothing against the chapel. I've nothing in my purse for it, either.
+b[job=priest] #priest : The plate keeps the roof on. | All are welcome at the chapel. | The chapel asks nothing you haven't got.
+b : I've noticed that too. | Quiet up there. | Fair enough.
+a@priest : It does that. A thank-you from the roof now and then wouldn't hurt. | I know. I come, sometimes. I sit near the door. | Then it'll get nothing, and we'll both be content.
+a : Everybody has. Nobody says. #wry#. | Quiet, and the stones listen better. | #saying#. And so's my purse.
+
+scene the_watch
+when topic=crime here.region=southmeadow
+does give.opinion / react.self / assess
+a : The watch poke their snouts in every door save their own. #oldword#. | A watchman wanted to know what I keep in #cellar#. I said casks. I told no lie. | A #thief# could walk off with half the town while the watch are asking who's courting.
+b[role=guard] #guard : We ask to keep folk safe. | Casks of what? | We catch them, mostly.
+b : They do pry. | Clever. | Ha.
+a@guard : Safe from a polite distance would suit me better. | Old wine, young wine, and a cask of nothing much. All honest. | Mostly. #wry#. I'll believe it when I see one caught.
+a : They do. And they never pry where it'd do any good. | Clever's free. Lies cost. | Laugh. It's true, though.
+
+scene city_and_us
+when topic=travel|land|accent
+does give.opinion / react.self / assess
+a : Up in the city a wolf could die and next door never know. Here, the latch tells me who's about. | City folk say we talk like farmers. We are farmers, near enough. #wry#. | I've no use for the city. #oldword#.
+b : Some like it. | Fair point. | Is that one of yours?
+a : Some like sour wine. I'll not argue with them, either. | Most of mine are. #wry#. | Mine, and it's old already. I made it last summer.
+
+story the_warm_stone [topic=lore|memories here.region=southmeadow self.age>=25]
+  : Midsummer night, years back, I sat up with #stones# till dawn.
+  : Every one of them was cold, but the one I leaned on. That one stayed warm till the sun came.
+  ask : What would you make of a stone like that?
+  b : The day's heat, I'd say. Stones hold it.
+  b[old] : My gran said the same of a stone up there. Did you go back?
+  : Every midsummer since. Same stone. Still warm. #saying#.
+
+story the_saying_that_stuck [topic=pastimes|memories|lore]
+  : I made up a saying once, at the press, about frost on the vine being silver in #vats#.
+  : A year later a vine hand told it to me, swearing a great-grandmother said it.
+  ask : Now, should I have told them the truth of it?
+  b : Ha! No. Let them keep it.
+  b[humour=dry] : Never. That's how they all start. Did they believe you, after?
+  : I didn't try. It's an old saying now. It's earned it.
+
+story the_cask_that_waited [topic=work|memories self.job=none self.age>=30]
+  : There's a cask at the back of #cellar# that nobody's opened since before my time.
+  : Nobody knows what's in it. Every new hand asks, and every old hand says it isn't ready.
+  ask : Would you open it, if it were yours?
+  b : I'd want to know. I'd open it.
+  b[old] : Some things are better wondered about.
+  : That's what I say. #oldword#.
+
+rule @cellar_bark
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Mind the step down to #cellar#. It's older than you are. | #vats.capitalize# want turning, and here's me with two paws.
+
+rule @proverb_bark
+when concept=bark
+does aside
+cooldown 8h
+say #oldword#. | There's a saying for that. There's a saying for everything.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter
+does aside
+cooldown 12h
+say #frost.capitalize#. Lovely. | Hear that grass crunch? That's a morning.
+
+rule @pork_bark
+when concept=bark here.time=dusk self.likes=roast_pork
+does aside
+cooldown 12h
+say Somebody's roasting pork. #oath#, and it isn't me. | Smell that. Crackling. I'm finding an errand.
+
+rule @haggle_bark
+when concept=bark here.crowd=busy|crowd self.dislikes=haggling
+does aside
+cooldown 10h
+say Say a price and stick to it. No #haggling#. | Haggling again. #annoyed#.
+
+dlg @1 resident.hub : #greet#. Speak up. I've a saying ready either way. | #greet#, #address#. Speak up; I've been in the dark.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. #oldword#.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm listening, #address#. I don't promise to believe you.
+dlg @4 resident.job [self.working=yes self.job=none] : I keep the casks in #cellar#. I turn them, I tap them, I tell them sayings. | #vats.capitalize# and #must#, mostly. And the dark.
+dlg @5 resident.job : This and that. Whatever wants a steady paw and a closed mouth. | A #little# of everything, and a saying for each.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Quiet as #stones#, and so's this one. | Nothing I'd swear to. #oldword#.
+dlg @7 resident.gossip [here.gossip!=yes] : I know a thing or two. I'll not uncork them for you. #saying#. | #gossip_none#
+dlg @8 resident.bye : #farewell#. #saying#. | #farewell#, #address#. Mind the step.
+graft resident.hub
+choice Is that saying really old? -> saying_old
+node saying_old
+say Old as you like. Older than the stones, nearly. Or older than this morning. One of those.
+mood pleased
+free
+choice You made it up, didn't you? -> saying_made
+choice Goodbye. -> bye
+node saying_made
+say Every saying was made up once, by somebody. Why not me? Give it a year and you'll be quoting it to your own young.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

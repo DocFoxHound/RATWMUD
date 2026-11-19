@@ -1,0 +1,276 @@
+# sm116, the knotted-string reaper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm116
+revision 1
+state ready
+dialect southmeadow
+accent broad light
+tier standard
+written_for cty_myrtle_larkcombe
+written_by claude
+title the knotted-string reaper
+fits stage=adult|old
+prefers job=farmer talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_a_tally_on_a_knotted_string
+likes plum_tart riddles sharp_knife frosty_mornings
+dislikes salt_wind smoke
+fears the_string_running_out_before_the_harvest losing_what_is_put_by
+hopes a_secret_kept_till_it_is_ready a_hard_frost_every_winter
+topics pastimes +0.4 work +0.3 weather +0.2 food +0.2 gossip -0.5 family -0.2
+styles comfort=blunt gossip=closed refuse=blunt tease=none
+marks oath saying
+persona #self.first# reaps in the barley out of the granary and ties a knot in a length of string for every sheaf, day and coin: blunt, tired and frank, fond of a hard riddle and a white frost, and putting something by that nobody is told about.
+
+words
+oath! = By the ninth knot | Frost and flail
+saying! = A knot holds what a word lets slip | Say less and keep more
+string = my knotted string | the tally string
+knots = the knots | a knot for every one
+tart = plum tart | a wedge of plum tart
+riddle = a riddle | a riddle with a sting in it
+blade = my sickle blade | an edge that bites
+hoar = hoarfrost | frost thick on the gate
+smoke = stubble smoke | the smoke off the burning fields
+putby = what I put by | my bit put by
+sheaves = the sheaves | sheaf on sheaf
+rick = the rick | the stacks
+knees = my knees | these old knees
+mm = Mm | Hm
+
+any
+opinion @1 merchants against 3 : A week of my #wages# buys half a basket. I've never seen a shopkeeper's ribs. #mm#.
+opinion @1 houses against 1 : Every one of #sheaves# I've cut went to their barns. I couldn't pick one of them out of a crowd.
+opinion @1 times against 1 : Harder every week. Count it on #string#, if you like. I have.
+opinion @1 newcomers against 1 : Work's short already. Each new pair of paws in #sheaves# is one less wage for us.
+opinion @1 festivals for 1 [self.married=yes] : My wedding had a fiddle and I wore my feet out. I'll not speak against a feast. #mm#.
+opinion @1 city against 1 : Smoke and noise, they tell me. I hate #smoke#. That's enough to know.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're not from the granary. | #greet#. Speak up if you want something, #address#.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Talk if you must. I'll keep cutting. | #greet#. Mind #blade#.
+line @3 greet [here.time=dawn] : #greet#. Cold one. Good. | #greet#. Early, #address#. Like me.
+line @4 greet [here.time=dusk|night] : #greet#. Long day. Short talk, then. | #greet#. I'm for #bed#, near enough.
+line @1 kin.open [pair.kin!=no] : You. Sit. There's #tart#. | There you are. I'd a knot on #string# for you, counting you missing.
+line @1 again.open : You again. #welcome_back#. | Twice in a day. That's two of #knots#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Took your time. | #greet#. Sit down, then.
+line @3 greet.return [self.working=yes] : #greet#. Busy. Go on anyway. | #greet#. Keep it short; #sheaves# won't wait.
+line @1 farewell : #farewell#. | #farewell#. Mind the ruts.
+line @1 farewell.return : #farewell#. | #farewell#. Go careful.
+line @1 react.news : #mm#. That's a thing. | #oath#. Well. Now I know.
+line @1 react.news.new : #surprise#. Didn't know that. | That's new. I'll tie a knot on #string# for it.
+line @1 react.news.known : #knew#. Heard it twice already. | I had that yesterday, #address#.
+line @1 react.news.doubt : #doubt#. Show me, then I'll credit it. | I'd not trust that. Too many mouths between it and you.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | Hard news. I'm sorry for it, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #good#. That's #good#. | #gladnews#. Glad to hear it, #address#.
+line @1 answer.how : #tired.capitalize#. Same as always. Still standing. | #fine#. #knees.capitalize# complain. I don't listen.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Forty sheaves since dawn. | Busy. Don't ask me to count it aloud, #address#.
+line @1 ask.how : And you? #mm#. | You keeping well, #address#?
+line @1 sympathise : #sympathy#. Sit. Don't talk if you don't want to. | That's #bad#. It'll ease. Slow, but it eases.
+line @1 decline : #hedge#, no. #sheaves.capitalize# won't cut themselves, and I'm behind. | I can't. I've work till dark, and #knees# for after.
+line @1 accept_decline : #no_matter#. Another time. | Fine. I'll not ask twice, #address#.
+line @1 thank : #thanks#. | Thank you. I'll remember it. That's one of #knots#.
+line @1 deflect_thanks : #deflect#. | Don't. It was nothing. Truly, #address#.
+line @1 preclose : #preclose#. | Well. That's enough talk for me. Back to #sheaves#.
+line @1 accept_preclose : Go on, then. | Right. #farewell#.
+line @1 ack : #mm#. | #bc_it_is#
+scene knot_a_sheaf
+when topic=work self.job=farmer self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Sixty-one #knots# today. Sheaves, I mean. One for every sheaf I've cut. | #string.capitalize#'s nearly full. I'll start another by harvest's end. | I don't count aloud. I tie it. #knots.capitalize# don't argue.
+b : Sixty-one? | How long is it? | Why not aloud?
+a : Sixty-one. The farmer says sixty. The farmer's wrong. #oath#. | Long as my arm, near enough. Two harvests on #string#, once. | Folk talk while you count, and you lose it. #knots.capitalize# stay put.
+b : #bc_ha# | That's a lot of sheaves. | #bc_wise#
+
+scene why_the_string
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : Everyone asks about #string#. It's for counting. That's all. | I tie a knot for things I want to keep track of. Days, sheaves. Other things. | You're looking at #string#. Go on, ask.
+b : Counting what? | What other things? | What's it for, then?
+a : Whatever wants counting. Today it's #sheaves#. Tomorrow, who knows. | Other things. #saying#. | Keeping count. My head's full. #string.capitalize# isn't.
+
+scene riddle_neck
+when topic=pastimes|smalltalk self.likes=riddles
+does tease / clarify / laugh / assess
+a : Here's #riddle#: what has a neck and no head, and wears a cork for a cap? | #riddle.capitalize# for you. What gets wetter the more it dries? | Try this. I go into the field gold and come out of the mill white. What am I?
+b : I don't know. A goose? | Rain? | Bread?
+a : A bottle. You were near with the goose. Not very. #mm#. | A drying cloth. Think on it at the washing, #address#. | Near. The corn. Bread comes after. #mm#.
+b : #bc_clever# | Oh, that's good. | #bc_ha#
+
+scene riddle_back
+when topic=pastimes self.likes=riddles
+does ask.detail / answer.detail / assess
+a : You have a riddle for me? I've heard most. Try. | I'll take a riddle off anyone. I won't pay for one, #address#. | I like a riddle with a sting in it. Not the soft ones they tell #child.s#.
+b : What has keys but opens no doors? | I've none. Sorry. | Why the sting?
+a : Keys, and no doors. #mm#. Give me till dusk; I'll have it. | Then I'll tell you mine. Another time. | A soft one's forgotten by supper. A sting stays, like #hoar# on the gate.
+
+scene putting_by
+when topic=dreams|work
+does confide / react.self / assess
+a : I've #putby#. Don't ask me what for. | Every coin I don't need, I put by. A knot for each. #saying#. | Folk ask what I'm saving for. I don't tell them. I'll not tell you either, #address#.
+b : I won't ask. | That's a lot of knots. | Fair enough.
+a : Good. When it's finished, you'll see it. Everyone will. #oath#. | It's getting there. Slow. Most #good# things are slow. | It is. It's mine to know. #oath#.
+
+scene white_morning
+when topic=weather|season here.season=winter here.time=dawn self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #hoar.capitalize#. Look at it. Every stalk white. Best morning there is. | #cold.capitalize#. I like it so. The ground rings when you walk. | First frost. I walked out just to hear the grass crunch, #address#.
+b : Too cold for me. | It does ring. | Was it worth it?
+a : Not for me. #knees.capitalize# don't mind frost; they mind wet. | It does. You can hear a wolf coming half a field off. | Worth it. Every step. Then back for tea.
+
+scene smoke_on_the_wind
+when topic=season|weather here.season=autumn self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : They're burning the stubble again. #smoke.capitalize# in my fur, my bed, my bread. | I hate #smoke#. I can taste it for a week after. | Wind's turned. #smoke.capitalize# coming our way. Shut your door.
+b : It clears the fields. | That's hard. | Thanks for the warning.
+a : It does. I'd still sooner they burned it somewhere else. | It is. I'll wash everything, and it'll still be there. #mm#. | Mind your washing too, #address#.
+
+scene keep_an_edge
+when topic=work|smalltalk self.likes=sharp_knife
+does tell.self / react.self / assess
+a : #blade.capitalize#. I hone it every night. Ten strokes, then ten more. | A blunt sickle tires you. #blade.capitalize# tires the barley. | I'll lend you anything but #blade#. Don't ask for it.
+b : That's careful. | I'll remember that. | I won't.
+a : That's sense. A dull edge costs a day, #address#. | Do. It's the best thing I know about work. | Good. It knows my paw. It'd not know yours.
+
+scene tart_slice
+when topic=food self.likes=plum_tart
+does offer / accept / assess
+a : There's #tart#. Have some. I'll not ask twice. | #tart.capitalize#, from the stall. I bought one slice. I'll halve it with you. | #tart.capitalize#. Only sweet thing I spend on.
+b : Go on, then. | That's kind. | Only one?
+a : Good. Eat it while it's warm. #mm#. | It's not kind. I'll want it back some day. | Only one. The rest goes to #putby#. You'll not ask.
+
+scene the_spouse
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# talks enough for both of us. Suits me. | #self.spouse# and me have been wed a long time. We don't need many words now. | I'll say it once: I married well. Don't make me say it twice, #address#.
+b : That works. | That's a good thing. | I won't.
+a : It does. I listen, mostly. Sometimes I count #knots#. | It is. #good# enough for me. | Good. #saying#.
+
+scene good_company
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is #good# company. Doesn't talk too much. | I'd trust #self.friend# with #string#. That's saying a lot. | #self.friend# and me work the same rows. We don't talk. We don't need to.
+b : That's rare. | It is. | Sounds peaceful.
+a : It is. I've a knot for every time I've been glad of it. Many knots. | More than you'd know. #mm#. | It is. The best sort of company, #address#.
+
+scene old_knees
+when topic=health self.age>=45
+does tell.complaint / sympathise / assess
+a : #knees.capitalize# ache in the wet. They've done a lot of bending. | I'm #tired#. Always am. I get up anyway. | Back's stiff from the rows. I'll walk it off. I always do.
+b : Rest them. | That's hard. | Take care of it.
+a : When the harvest's in. Not before. #oath#. | It's work. Work tires you. Then you sleep. | I will. In my way, #address#.
+
+scene not_on_my_pay
+when topic=prices|times
+does tell.complaint / react.complaint / assess
+a : I count my #wages# on #string#. Takes less string every month. | A loaf's dearer and my #wages# aren't. Somebody's getting the difference. Not me. | Prices go up. I tie fewer knots. That's the whole sum.
+b : It's the same for everyone. | Somebody always is. | That's a sad sum.
+a : Not for everyone. Not the ones who sell. | Always somebody. Never us, #address#. | It is. I'll still put by what I can. #saying#.
+
+scene their_shadow
+when topic=times|land
+does give.opinion / react.self / assess
+a : All my days in their fields. Never once seen a face from the big houses. | The Houses own every row I cut. Wouldn't know me from a scarecrow. | I've cut more of their barley than they've eaten. They'll never know. #mm#.
+b : They keep to themselves. | They wouldn't. | That's the way of it.
+a : They do. So will I, then. #mm#. | No. I'd know them, though. By their soft paws. | It is. It's not right, but it is.
+
+scene little_said
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Folk say #topic.subject# #topic.claim#. I'll add nothing to it. #mm#. | I heard #topic.subject# #topic.claim#. I don't care much. | #topic.subject.capitalize# #topic.claim#, they're saying. #mm#.
+b : That's all? | You don't care? | Is it true?
+a : That's all. I've told you. Now you know as much as me. | Not much. It's not mine to care about, #address#. | Couldn't say. I'll not guess, either.
+
+scene last_sheaf
+when topic=harvest|season here.season=summer|autumn self.job=farmer
+does tell.self / react.self / assess
+a : #work.capitalize#. I've a new string for it. I'll fill it by the end. | Last of #sheaves# in today. I tied the last knot and sat down in the stubble. | #tired#. The lot of us. Still, it's in. That's what counts.
+b : That's a lot of knots. | You'd earned it. | It is.
+a : It's a lot of sheaves, #address#. The knots are only telling. | I had. #knees.capitalize# had too. | It is. Then the supper. Then sleep. #oath#.
+
+scene day_tied_off
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : Dusk. I'll tie off the day and go home. | Day's done. One more of #knots#. One more day. | Light's going. #knees.capitalize# know it before my eyes do.
+b : Was it a fair one? | That's a lot of days. | Go rest, then.
+a : Fair. No worse. #mm#. | It is. I've strings of them at home, in a box. | I will. #tart# first, if there's any, #address#.
+
+scene dry_rows
+when topic=weather here.weather=clear here.season=summer here.region=southmeadow
+does tell.complaint / react.self / assess
+a : Dry again. The barley's thin, and the dust gets in your teeth. | No cloud. My throat's straw by noon. I drink and drink, #address#. | #hot.capitalize#. I'd give a week's knots for #hoar#. Wrong season. I know.
+b : We need rain. | Drink more. | A frost? In summer?
+a : We do. It'll come or it won't. #mm#. | I do. Then I'm back in the rows, sweating it out. | I know. A wolf can want, #address#.
+
+scene work_short
+when topic=newcomer
+does tell.worry / react.self / assess
+a : #topic.subject# is new here. There's not much work going. That's all I'll say. | Newcomer, #topic.subject#. I hope #topic.they# can find work. Not ours. | Another one. #topic.subject#. I'll count how long #topic.they# stays.
+b : There's room enough. | That's hard of you. | You would.
+a : Maybe. #string.capitalize# says otherwise. | It's honest. I'll still say good morning. | I would. #string.capitalize# doesn't lie, #address#.
+
+story the_long_count [topic=work|memories self.age>=40 self.job=farmer]
+  : One harvest I tied every sheaf on one string. Nine hundred and four #knots#.
+  : #boss.capitalize# said nine hundred. We counted #rick# together, three days it took.
+  : Nine hundred and four. The farmer paid me four sheaves' worth extra, and never argued again.
+  ask : Would you have said anything, for four sheaves?
+  b : I'd have kept quiet, I think. But you were right to.
+  b[job=farmer] : Every time. Four sheaves is four sheaves.
+
+story riddle_for_a_knife [topic=pastimes|memories self.age>=30 self.likes=riddles]
+  : At a harvest supper a tinker said nobody could beat his riddles. He'd bet a knife on it.
+  : I beat him on the third. He couldn't get mine at all. I've had #blade# off that knife ever since.
+  ask : Do you want to hear the one that beat him?
+  b : Go on, then. I'll not get it either.
+  : What has roots nobody sees, is taller than trees, and never grows? A mountain. He was furious.
+
+story first_frost [topic=weather|memories self.age>=30]
+  : My #mum# woke me before dawn, the first frost of one winter, and took me out in it.
+  : We walked the lane and didn't say a word. Just the crunch of it under us, and our breath.
+  : I've done the same every first frost since. Alone now, mostly. I don't mind.
+  b : A good habit to hold on to. Do you still walk the same lane?
+  : The same lane. #hoar.capitalize# on the same gate. #mm#.
+
+rule @knot_bark
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Forty. Knot. Forty-one. #mm#. | #mm#. Lost count. Back to the last knot.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn self.likes=frosty_mornings
+does aside
+cooldown 12h
+say #hoar.capitalize#. Good. | Ground's ringing. Good morning for it.
+
+rule @smoke_bark
+when concept=bark here.season=autumn self.dislikes=smoke
+does aside
+cooldown 8h
+say #smoke.capitalize#. Again. #annoyed#. | Shut the door. They're burning.
+
+rule @riddle_bark
+when concept=bark working=no self.likes=riddles
+does aside
+cooldown 10h
+say No head, but a neck. No, I know that one. | What's heavier, the sheaf or the knot? #mm#.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Say what you need, #address#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Go on.
+dlg @1 resident.job [self.job=farmer] : I'm #self.trade_words#. I cut #sheaves#. I count them. That's the work. | Reaping, mostly. And keeping count on #string#.
+dlg @2 resident.job : #job_busy# Steady, every day. | Whatever's put in front of me, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I've heard. I don't listen much, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. Ask a #busybody#; they've the mouth for it.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the ruts, #address#.
+graft resident.hub
+choice What's the knotted string for? -> string
+node string
+say Counting. A knot for every sheaf, every day, every coin. #knots.capitalize# don't forget and they don't argue. Folk do both.
+mood calm
+free
+choice What are you counting the coins for? -> string_coins
+choice Goodbye. -> bye
+node string_coins
+say That's mine to know. You'll find out when it's done. Everyone will. #saying#.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

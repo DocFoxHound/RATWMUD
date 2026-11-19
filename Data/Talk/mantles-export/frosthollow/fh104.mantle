@@ -1,0 +1,286 @@
+# fh104, the lime-reckoner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh104
+revision 1
+state ready
+dialect frosthollow
+accent light broad
+tier standard
+written_for cty_leif_driphand
+written_by claude
+title the lime-reckoner
+fits stage=adult|old
+prefers job=miner drive=ambitious
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk distrusts_anything_from_the_city
+likes spiced_cider wrestling new_boots first_snow
+dislikes deep_mud smoke
+fears the_deep_woods_after_dark a_kiln_that_cracks_in_the_frost
+hopes a_kiln_of_my_own a_name_on_the_lime_sacks
+topics work +0.4 dreams +0.3 pastimes +0.3 prices +0.2 travel -0.3 lore -0.2
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# burns lime up at the high quarry, sums up every load in one's head and means to own a kiln one day: calm, plain and unhurried, slow to warm, and quietly certain that nothing made in the city lasts up here.
+
+words
+oath! = Kiln and quarry | White stone, hot fire | Quick and slaked
+saying! = Slow fire, sound lime | Ask where it came from before you ask the price | Home-quarried or not at all
+kiln = the kiln | the draw-kiln
+lime = quicklime | good white lime
+limestone = the limestone | the grey stone off the quarry
+slaking = the slaking | the slaking trough
+whitedust = white dust | lime dust in every hair of my coat
+cider = spiced cider | a cup of cider with the spice still in it
+wrestle = a wrestling bout | a fall on the green
+goodboots = good boots | boots with no city stitching in them
+firstwhite = the first snow | the first white of the year
+mud = deep mud | mud to the hocks
+citymade = city-made | made down in Ridgemere
+ownkiln = a kiln of my own | my own kiln
+pines = the deep woods | the dark under the pines
+reckon = my reckoning | the sums in my head
+quarry = the quarry | the high quarry
+reek = smoke | kiln smoke
+
+any
+opinion @1 city against 2 : I've never owned a thing #citymade# that saw out a winter. #saying#.
+opinion @1 houses against 2 : They own the hill and the stone in it, and they've never stood at #kiln#. One day some of it will be mine.
+opinion @1 merchants against 2 : The store pays a coin a sack for #lime# and sells it on for three. I've done the sums. I'll do them better.
+opinion @1 newcomers against 1 : New paws up the pass take the little work going. I'd sooner train a #child# from here.
+opinion @1 dole against 1 : Every coin I have, I burned for. #reckon.capitalize# comes out straighter that way.
+opinion @1 church against 1 : A sermon never once drew #kiln#. I'll thank the Bright One myself, at the fire.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're not from up here. | #greet#, #address#. You're not from up here.
+line @2 greet [self.working=yes self.job=miner] : #greet#. Stand clear of #kiln#. It bites. | #greet#. Mind #whitedust#. It burns wet eyes.
+line @3 greet [here.time=dawn] : Morning. #kiln.capitalize#'s been burning all night. | Morning, #address#. Cold start.
+line @4 greet [here.time=dusk|night] : #greet#. Long day at #kiln#. | #greet#. Late to be about.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. There's #cider#. | You. #good.capitalize#. I've been doing sums. I'll tell you later.
+line @1 again.open : Back again. I've not moved from #kiln#. | You again. I'd only just started #reckon# over.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit down. I'll pour. | #greet#. You're the one I wanted.
+line @3 greet.return [self.working=yes] : #greet#. Wait while I close the draw. | #greet#. Talk from upwind.
+line @4 greet.return [here.time=dusk|night] : #greet#. Bring a lamp; the lane's black. | #greet#. Late for it.
+line @1 farewell : #farewell#. | #farewell#. Mind the ruts.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lane, not the trees. | #farewell#. Straight home in the dark.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news.new : #surprise#. First I've heard. | That's new. Who brought it up #quarry#?
+line @1 react.news.known : #knew#. A day old already. | #knew#. I'm still deciding what I think.
+line @1 react.news.doubt : #doubt#. Did it come up from the city? Then I'll wait. | Where did that start? Find me that and I'll weigh it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That's #bad#. I'm sorry for them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize#. | That's #good# news. Earned, I hope.
+line @1 answer.how : #fine#. Steady. The sums are coming right. | Well enough. A bit nearer #ownkiln#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #kiln.capitalize#'s ready to draw. | Working. #lime.capitalize# doesn't wait.
+line @1 ask.how : And you? How's #work#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit. Take your time. | That's heavy. I'll listen, if you want it.
+line @1 reassure : #reassure#. You'll come through. Slow does it. | One load at a time, #address#. That's how it's done.
+line @1 decline : #hedge#. #kiln.capitalize# draws at dawn and I need my sleep for it. | Not this time, #address#. I've a load due and I said I'd have it.
+line @1 accept_decline : #no_matter#. Another time. | #no_matter#. I'll ask again.
+line @1 thank : #thanks#. That's a debt. I'll pay it. | That's #good# of you. I'll remember.
+line @1 deflect_thanks : #deflect#. It cost me nothing. | It was owed, near enough.
+line @1 preclose [self.working=yes] : Right. #kiln.capitalize# wants watching. | Well. #limestone.capitalize# won't burn itself.
+line @2 preclose : Well. #preclose#. | I've sums to finish. #farewell#.
+line @1 accept_preclose : Go on, then. | #bc_right#
+line @1 ack : #bc_right# | So it is.
+line @1 give.advice : #advise#: buy what was made up here. It's made for up here. | Never stand downwind of #slaking#. Ask me how I know.
+line @1 warn [world.bandits=near] : #warn#. Stay off the pass road for now. | #bandits.capitalize# about. Walk in company.
+rule @kiln_bark
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 6h
+say Draw's ready. Stand back from #kiln#. | #oath#. That's good #lime#. White as a tooth.
+
+rule @smoke_bark
+when concept=bark working=yes self.dislikes=smoke
+does aside
+cooldown 8h
+say #annoyed#. Wind's turned the smoke on me again. | #reek.capitalize# in my eyes, in my fur. I hate it. I burn #lime#.
+
+rule @snow_bark
+when concept=bark here.weather=snow here.season=autumn|winter
+does aside
+cooldown 12h
+say Snow. There it is. #good.capitalize#. | #firstwhite.capitalize#. Look at it come down.
+
+rule @mud_bark
+when concept=bark here.weather=rain here.season=spring|autumn
+does aside
+cooldown 10h
+say #mud.capitalize#. #annoyed#. | That's #goodboots# gone, then.
+
+scene kiln_draw
+when topic=work self.job=miner self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Drew #kiln# at dawn. Twelve sacks of #lime#, white right through. | Three days and nights for one burn. Then you rake #kiln# out and hope. | #limestone.capitalize# goes in grey. It comes out white and light, like the fire took the weight.
+b : Is twelve good? | Hope for what? | Lighter?
+a : Twelve's #good#. Fourteen's better. I'll have fourteen by spring. | That it's burnt through. Half-burnt #lime# is no use to anyone. | Lighter by half. You can feel it in the sack, #address#.
+b : #bc_good# | #bc_fair_enough# | #bc_clever#
+
+scene slaking
+when topic=work self.job=miner
+does tell.self / react.self / assess
+a : You pour water on #lime# and it boils without a fire. Hisses like a cat. | #slaking.capitalize# is the bit that bites. One splash and your eye's gone. | Slaked for mortar, quick for the fields. It's all #limestone#.
+b : Without a fire? | Your eye? | The same stone?
+a : No fire. The heat's in #limestone# already. I've stopped thinking it strange. | Gone. Not mine. I watched it happen to a wolf once. I wear a cloth now. | Same stone. Different fire, different water. That's #lime#.
+
+scene smoke_curse
+when topic=work|health self.job=miner
+does tell.complaint / react.complaint / assess
+a : I can't abide #reek#. And I burn #lime#. I know. | Wind swung round at noon and #kiln# smoked me like a ham. | #whitedust.capitalize#, then smoke on top. I come home grey and white.
+b : Odd trade for you. | You smell of it. | You do look it.
+a : It pays. #reek.capitalize# doesn't care what I like. | I'll wash. Twice. #annoyed#. | I'll look better with #ownkiln#. I'll build it upwind.
+
+scene own_kiln
+when topic=dreams|work self.job=miner
+does tell.plan / ask.plan / answer.plan / assess
+a : I'll have #ownkiln# one day. I've the spot picked out. | Three more winters of saving and I'll build. #reckon.capitalize# says so. | When I've a kiln, the sacks will have my mark on them. Nobody else's.
+b : Where? | Three winters? | What mark?
+a : Up past #quarry#, out of #wind#. I'll not say closer. | Three. If bread holds and #limestone# holds. | Plain. A line and a circle. You'll know it when you see it.
+b : #bc_good# | #bc_i_hope_so# | #bc_we_will_see#
+
+scene reckoning
+when topic=work|prices self.working=no
+does tell.self / react.self / assess
+a : I keep #reckon# by heart. Sacks in, sacks out, what's owed. | Somebody shorted me a sack last month. I knew before I'd unloaded. | #reckon.capitalize# says another kiln pays for itself in two years.
+b : All in your head? | You noticed? | Two years?
+a : Paper's #citymade#. My head isn't. | Always. #reckon.capitalize# is never wrong. I said nothing. I'll say it if it happens twice. | Two years. Three if the winters are hard. I've allowed for that.
+
+scene city_goods
+when topic=prices|smalltalk
+does give.opinion / disagree / insist / ack
+a : That knife's #citymade#. It'll snap the first cold morning. | They sell #citymade# lamps at the store now. Pretty things. They'll crack. | I asked where the rope came from. The fellow didn't know. I didn't buy it.
+b : It looks well made. | Some are good. | Rope's rope.
+a : Looks. It's made for a warm room. Up here we've #cold# rooms. | Some. I've not met one yet. | It isn't. Up here, rope's your life. You'd want to know.
+b : #bc_maybe# | #bc_fair_enough# | #bc_fair#
+
+scene city_trip
+when topic=travel|accent
+does give.opinion / react.self / assess
+a : I've never been down to the city, #address#. Never needed to. | Folk come up from the city and tell us how to burn lime. I let them talk. | Everything I need is between #quarry# and the pass.
+b : You might like it. | Do they know anything? | Everything?
+a : I might. I'll not find out. #lime.capitalize# doesn't need a city. | They know how to buy it. That's not the same. | Near enough. #cider.capitalize# and a good bout. And the snow.
+
+scene first_snow
+when topic=weather|season here.weather=snow here.season=autumn|winter
+does tell.feeling / react.self / assess
+a : #firstwhite.capitalize#. I stood out in it like a pup. | #snow.capitalize# on #quarry#. Everything clean for once. Even the slag. | I like #firstwhite#. The mud freezes and the whole valley goes quiet.
+b : It's #cold#. | Clean for a day. | Quiet's good.
+a : It is. That's the point of it. | A day's enough. I'll take a day. | Quiet. I can hear #reckon#.
+
+scene thaw_mud
+when topic=weather|season here.weather=rain here.season=spring|autumn
+does tell.complaint / react.complaint / assess
+a : #mud.capitalize# all the way up to the quarry. The cart sank to the axle. | The thaw makes a bog of everything. I'd take #snow# over this. | I lost a boot in the lane. Just pulled my foot out and walked on.
+b : Did you get it out? | Every year. | You walked on?
+a : With three of us and a plank. #annoyed#. | Every year. I'll never like it. | Went back for it. It was a #good# boot.
+
+scene cider_cup
+when topic=food
+does tell.self / react.self / assess
+a : #cider.capitalize# after a burn. That's my wage, the rest is just coin. | The inn heats #cider# till it steams. I'll have two. | One cup. Warm through. Then home. That's how I like an evening.
+b : Just one? | Two? | That's sensible.
+a : One. Then I can still do #reckon#. | Two. The second's for the walk home. | It's cheaper, too. #reckon.capitalize# likes that.
+
+scene wrestling
+when topic=pastimes
+does tell.self / react.self / assess
+a : There's #wrestle# on the green Restday. I'll be in it. | I wrestled the big hand from #quarry# last week. Took him in three falls. | Wrestling's honest. Nobody's lying when they're on their back.
+b : Will you win? | Three falls? | That's true enough.
+a : I'll try. I don't lose cheap. | Three. He's heavy. I'm patient. | True. It's the only honest talk some folk ever have.
+
+scene wrestle_bout
+when topic=pastimes pair.band=friends|family|housemates
+does invite / accept / assess
+a : Come out on the green with me after #supper#. One fall. | You said you'd give me #wrestle#. I've not forgotten. | I'll give you a fall, if you'll give me a try.
+b : One fall, then. | I've not forgotten either. | Go on, then.
+a : #good.capitalize#. I'll go gentle. Gentle-ish. | #good.capitalize#. Boots off; I'll not lose a boot to you. | Then roll your sleeves. I'll wait.
+
+scene good_boots
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : New boots, made up here, by a wolf who knows what #snow# does. | I'll pay double for #goodboots#. Cheap boots cost more by spring. | Look at the stitching. Up-valley stitching. You can tell.
+b : They look good. | Double? | Can you?
+a : They'll be better in a month. | Double. #reckon.capitalize# says it's cheaper. | I can. #citymade.capitalize# stitching's tight and short. It splits.
+
+scene deep_woods
+when topic=lore|memories here.region=frosthollow
+does confide / keep_confidence / assess
+tone serious / tender / even
+a : I'll say this once. I don't like #pines# after dark. Born here and I don't. | The woods below #quarry#. I go round them, even when it's longer. | I've walked the pass in a blizzard. I'll not walk the woods at dusk. I can't tell you why.
+b : Nobody'll hear it from me. | Round is fine. | You needn't.
+a : #good.capitalize#. I'd not want it known. | It's longer. I've counted it. I still go round. | No. I don't think I could anyway.
+
+scene spouse
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# is the warm one in our house. I'm the one who does the sums. | When I build #ownkiln#, #self.spouse# will be the first to see it. | I'm not a talker. #self.spouse# never asked me to be.
+b : That's a good match. | Before anyone? | That's a gift.
+a : It works. Most days it's #good#, through and through. | Before anyone. That's settled, #address#. | It is. I'd not trade it for #citymade# silver.
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one wolf I'd show my sums to. | I'd trust #self.friend# with the spot I've picked for #ownkiln#. | #self.friend# and I don't talk much. We don't need to.
+b : That's trust. | That's a secret, then. | That's the best kind.
+a : It is. I don't give it often. | It is. Keep it that way. | It is. The quiet kind lasts.
+
+scene newcomers
+when topic=newcomer|player
+does tell.self / react.self / assess / ack
+a : New paws up the pass. Looking for #work#, I'd guess. There isn't much. | A stranger asked me how much a sack of #lime# fetches. I didn't say. | Somebody new at the inn. #citymade.capitalize#, by the boots.
+b : They'll find something. | Why not? | By the boots?
+a : Maybe. I hope it's not mine. | It's my business. They can ask the store. | By the boots. Short stitching. #citymade.capitalize#.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_ha#
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / reassure / ack
+a : Hard times. Nobody's building, so nobody wants #lime#. | #reckon.capitalize# had me building next spring. Now it's the spring after. | The store's paying less a sack of #lime#. I'll not sell at that. I'll stack it and wait.
+b : It'll turn. | That's hard. | Can you wait?
+a : It will. #reckon.capitalize# is ready when it does. | It is. #saying#. I'll get there. | I can. #lime.capitalize# keeps. So do I.
+b? : #bc_true# | #bc_i_hope_so# | #bc_good#
+
+story first_kiln [topic=work|memories self.job=miner self.age>=25]
+  : My first burn on my own, I fired #kiln# too hot, too fast, wanting it done.
+  : When I drew it, half the stone was glass and half was still grey. A week of work, worth nothing.
+  ask : Can you guess what the old burner said to me?
+  b : Something hard, I'd bet.
+  b[job=miner] : Slow fire, I'd guess.
+  : He said nothing at all. Handed me a shovel. I've burned #lime# slow ever since.
+
+story pines_night [topic=memories|lore self.age>=20 here.region=frosthollow]
+  : When I was a #child# I went into the woods below the quarry after a lost goat.
+  : The dark came down faster than I'd thought. Every pine looked like the one before. I heard something breathing.
+  ask : Would you have run?
+  b : I would. Fast.
+  b[old] : Stood still. That's what my mam taught me.
+  : I stood still till my #dad# came with a lamp. It was the goat breathing. I've never liked the woods since.
+
+story city_pick [topic=memories|prices self.age>=25]
+  : I bought a pick once, #citymade#, shining like a new coin. Cheap, too.
+  : First frost, I swung it at the face and the head snapped clean off.
+  b : What did you do? Did you take it back?
+  b[job=smith] : City iron. Too much brittle in it.
+  : Down to the city? For a pick? I bought one from the smithy here. I still have it.
+
+dlg @1 resident.hub : #greet#. Where are you from? | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you're stopping. | #topic.player#. #good.capitalize#. Still here, then.
+dlg @3 resident.hub [here.time=night] : It's late. #kiln.capitalize# draws at dawn. Quickly, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it plainly and I'll answer it plainly. That's all.
+dlg @1 resident.job [self.job=miner] : I burn #lime#. Stone in, fire, three days, white out. #saying#. | #self.trade_words.capitalize#. One day the kiln will be mine.
+dlg @2 resident.job : I work, and I save toward #ownkiln#. That's all there is to me.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd not trust it if there were, not if it came up from the city.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk, #address#. Ask someone who does.
+dlg @1 resident.bye : #farewell#. Keep to the lane. | #farewell#, #address#.
+graft resident.hub
+choice What's wrong with things from the city? -> city
+node city
+say Made for warm rooms and soft paws. Up here the cold finds every weak stitch. I ask where a thing came from before I ask the price.
+mood calm
+free
+choice Is anything good made up here? -> made_here
+choice Goodbye. -> bye
+node made_here
+say Boots from the cobbler, picks from the smithy, and lime from my kiln, one day. Things made by wolves who've seen a winter.
+mood pleased
+choice Fair enough. -> hub
+choice Goodbye. -> bye

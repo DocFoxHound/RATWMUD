@@ -1,0 +1,295 @@
+# sm105, the long-road pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm105
+revision 1
+state ready
+dialect southmeadow
+accent broad light
+tier standard
+written_for tn_sm_brisk_plumby
+written_by claude
+title the long-road pot hand
+fits stage=adult|old
+prefers job=farmer temper=calm talk=quiet
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_things_under_the_breath
+likes honey_cakes whittling festival_bells misty_dawns
+dislikes wet_floors smoke
+fears legs_that_give_out_before_the_work_does
+hopes a_quiet_bench_and_a_sharp_knife_when_the_work_is_done
+topics work +0.3 pastimes +0.4 food +0.3 travel +0.3 festival +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# scrubs pots and floors with a patience worn smooth: quiet, tired and plain, counting each pot under the breath, notching a whittled tally stick by the fire, and never boasting of the long walk north and home again.
+
+words
+oath! = Suds and splinters | Knife and notch
+saying! = Every road has a back half | Slow feet still get home | A pot's only clean till supper
+pots = the pots | the greasy pots
+tub = the wash tub | the scullery tub
+stick = my tally stick | the notched stick
+notch = a notch | one more notch on the stick
+whittle = a bit of whittling | a knife and a stick of willow
+cakes = honey cakes | a honey cake still warm from the tin
+mist = the white mist on the fields | a morning gone white to the hedges
+flags = the flagstones | the scullery floor
+wetflags = wet flags | a floor somebody's tracked half the lane across
+smoke = smoke | the kitchen smoke
+longroad = the long road north | the road north, every mile of it
+feet = my feet | these old feet
+bells = the feast bells | the bells of a feast morning
+suds = the suds | a tub of grey suds
+
+any
+opinion @1 festivals for 1 : At my wedding I kept dancing after the fiddle gave up. Don't talk to me against a feast, nor against #bells#.
+opinion @2 houses against 1 : I've scrubbed under their tables my whole life, near enough. Never once had a face to put to the name.
+opinion @3 merchants against 2 : I can't get a loaf for what #pots# pay me, and the ones selling it never go #hungry#. That's all I'll say.
+opinion @4 newcomers against 1 : There's only so many #pots# in #here.town#, and every new pair of paws wants a share of them.
+opinion @5 times against 1 : Every week it's a #little# harder to make the coin stretch. Nobody up the long road notices, I'd wager.
+opinion @6 city against 1 : Folk who've walked #longroad# say the city's a fair sight from the hill. The hill's near enough for me, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind #flags#; they're slick. | #greet#, #address#. You'll be wanting the keeper, not me.
+line @2 greet [self.working=yes here.place=tavern] : #greet#. Mind where you tread; I've just done #flags#. | #greet#. Pardon the #suds#.
+line @3 greet [here.time=dawn] : #greet#. Up with the cockerel, are we both. | #greet#. There's #mist# still, if you look.
+line @4 kin.open [pair.kin!=no] : Come in. Sit; I can stop a while for you. | Come here, #pet#. I've a honey cake put by.
+line @5 again.open : #welcome_back#. I've not moved far. | You again. #feet.capitalize# haven't stopped since.
+line @6 greet.return : #greet#. | #greet#, #address#. I'm well enough.
+line @7 greet.return [pair.band=friends|family] : #greet#. I'm glad it's you. | #greet#. Sit down; you look like I feel.
+line @8 greet.return [self.working=yes] : #greet#. One more and I'm with you. | #greet#. Mind #suds#.
+line @9 farewell : #farewell#. | #farewell#. Mind #flags# going out.
+line @10 farewell [here.time=dusk|night] : #farewell#. #s8_night#. | #farewell#. I'll be off to #bed# myself, soon.
+line @11 farewell.return : #farewell#. | #s8_byeback#.
+line @12 react.news : #listen#. Go on, slow. | I've put the pot down. Tell me.
+line @13 react.news.new : #surprise#. Well, I'd not heard. | #oath#. That's news to me, and I'm hardly anywhere.
+line @14 react.news.known : #knew#. It came through the scullery. | I'd heard, over #tub#. I didn't say.
+line @15 react.news.doubt : #doubt#. I'll wait and see who else says it. | Scullery talk. Half of it washes out, #address#.
+line @16 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. | That's #bad#. I'm sorry for them, truly.
+line @17 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's something to hear. | Oh, that's #good#. I'll tell #self.spouse# tonight.
+line @18 answer.how : #tired.capitalize#, but upright. | Even. #feet.capitalize# ache, and that's all, #address#.
+line @19 answer.how.busy [self.working=yes] : #busy.capitalize#. Forty #pots# and the floor still to do. | I've counted thirty so far. There's more.
+line @20 ask.how : And yours? Holding up? | How's your day weighing on you, #address#?
+line @21 sympathise : #sympathy#. Sit a while; it won't go anywhere. | That's a heavy load, #address#. Give your legs a rest, at least.
+line @22 decline : #hedge#, I can't. #pots.capitalize# won't wash themselves, and I'm slow tonight. | I'd like to, #address#, but my legs have done their day.
+line @23 accept_decline : #no_matter#. You've your own load. | Never mind it. Some other day, when your back's better.
+line @24 thank : #thanks#. | Kindly done, #address#. That'll stay with me.
+line @25 deflect_thanks : #deflect#. It was only a pot. | Nothing to it. My paws were wet anyway.
+line @26 preclose [self.working=yes] : Well. #pots.capitalize# are waiting. | #tub.capitalize#'s calling me back.
+line @27 preclose : #preclose#. | #feet.capitalize# are telling me it's time.
+line @28 accept_preclose : Go on, then. #farewell#. | Off you go. I'll not keep you.
+line @29 ack : #bc_it_is# | Mm. #bc_true#.
+scene pot_count
+when topic=work self.working=yes here.place=tavern
+does tell.self / ask.detail / answer.detail / assess
+a : Twenty-eight, twenty-nine. #pots.capitalize# never end, but I count them anyway. | I count every pot into #tub# and every pot out. Forty-one tonight. | One more #notch# when I'm done. That's how I know the day's gone somewhere.
+b : Why count them? | Forty-one? All alone? | What's the stick for?
+a : It makes the night shorter. Thirty's nearly forty, and forty's nearly done. | Alone, and slow. Slow feet still get there. | A notch a night. When it's full, I start another. I've a drawer of them.
+b : #bc_wise# | #bc_poor_soul# | #bc_lovely#
+
+scene slick_flags
+when topic=work|home self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : I'd just done #flags#, and in comes a carter off the lane with mud to the knee. | There's nothing I hate like #wetflags#. You can't sit, you can't walk, you can't get dry. | Wet floor, wet hem, wet feet. I've been damp since noon.
+b : Did you say something? | It's a misery. | Sit down by the fire a while.
+a : I looked. A look does more than a word, with carters. | It is. And it's always me on my knees after. | I will. Only till #flags# dry, #address#.
+
+scene the_smoke
+when topic=work|home|health self.dislikes=smoke
+does tell.complaint / ask.detail / answer.detail / assess
+a : The chimney's drawing badly again. My eyes have been running since dawn. | I can't abide #smoke#. It gets in my fur and I smell of the hearth for a week. | Somebody lit wet wood in the kitchen. #annoyed#. I had to stand out in the yard.
+b : Can it be swept? | Even a week? | Who did it?
+a : It wants a sweep. It's wanted one since the feast. | Near enough. I wash it out and it's back by supper. | I'll not say. They know, and they'll not do it twice.
+b : #bc_i_hope_so# | #bc_bad_luck# | Good.
+
+scene honey_tin
+when topic=food self.likes=honey_cakes
+does tell.feeling / react.self / assess
+a : I'll walk the length of #here.town# for #cakes#. Further, if they're warm. | My #gran# made #cakes# with a spoon of honey on top, and a lick for the one who stirred. | I keep one honey cake back on a Restday, for the end of the night.
+b : Warm's best. | A lick for the stirrer! | Only one?
+a : Warm and sticky, and eaten standing up. #tasty.capitalize#. | It was always me stirring. I made sure of that. | One. Any more and I'd stop looking forward to it.
+
+scene the_stick
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail / assess
+a : When #feet# give out, it's #whittle# by the hearth. | I've whittled every tally stick I own. Forty-odd, in a drawer. | My #grandad# said a knife keeps the paws honest while the head rests.
+b : What do you make? | What do you count on them? | Did it work?
+a : Sticks, mostly. Now and then a peg, or a little bird for somebody's #child#. | The days. The pots. Whatever wants keeping count of. | It does. My head rests, and the stick gets shorter.
+b : #bc_lovely# | #bc_wise# | #bc_ha#
+
+scene white_mornings
+when topic=weather|day here.weather=fog here.time=dawn
+does tell.feeling / react.self / assess / ack
+a : Look at it. #mist.capitalize#. You can't see the next gate. | I came up the lane in it this morning and counted the fence posts by touch. Thirty-two. | This is my hour. Everything quiet and white, and nobody wanting a pot.
+b : I can't see a thing. | By touch? | It is peaceful.
+a : That's what I love in it. The world's gone, and only the lane's left. | Thirty-two. I know them like my own paws. | Peaceful till the cockerel. Then it's #pots#.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene feast_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : I wake before #bells# on a feast day. I lie there and wait for them. | When #bells# go, I count the strokes, and I never once want them to stop. | There's no pot I'd not leave half washed for #bells#.
+b : You wait for them? | How many are there? | Not even the pots?
+a : Every feast. It's the only morning I'm glad to be up. | Twenty-one. I count them on my fingers twice. | Not even #pots#. They'll be there when the bells are done.
+
+scene the_long_walk
+when topic=travel|memories self.age>=25
+does tell.memory / ask.detail / answer.detail / assess
+a : I walked #longroad# once, every step of it. Nineteen days, there. | I counted the milestones all the way north. I still know the number. | I went to see the city once. I stood on the hill above it, and I turned round.
+b : Nineteen days on foot? | What's the number? | Why turn round?
+a : On foot. I'd no coin for a cart, and I'd more patience than sense. | Two hundred and six. #saying#. | I'd seen it. Smoke and roofs, and none of them mine. Home was the other way.
+b : #bc_poor_soul# | #bc_ha# | #bc_fair_enough#
+
+scene city_hill
+when topic=travel|land|accent
+does give.opinion / react.self / assess
+a : The city's a fair sight from the top of the hill. I'd not go nearer. | Folk up there don't know their neighbours. I know every wolf on our lane by their step. | They talk fast up north. I couldn't count my words fast enough to keep up.
+b : Never went down into it? | That's a good thing to know. | They do talk fast.
+a : No. The hill was enough. Home I went, and slept two days. | It is. You know who's coming before you see them. | Too fast. Slow talk's honest talk, #address#.
+
+scene spouse_at_home
+when topic=family|home self.married=yes
+does confide / react.self / assess
+a : #self.spouse# and I have had a roof between us a long while. I'd not trade my #self.spouse_word# for all the barley in the south. | When I get home it's #self.spouse# I want to see first, and then my #bed#. | I keep a honey cake back for #self.spouse#. It's the only thing I don't count.
+b : That's a good thing to have. | In that order? | That's sweet of you.
+a : It is. #luck.capitalize#, that. | Mostly. Some nights the bed wins. | It's nothing. A cake's a small thing, and it gets eaten.
+
+scene fair_boss
+when topic=work|friends self.boss
+does give.opinion / react.self / assess
+a : #self.boss# is fair to work for. That's more than I can say of some I've had. | I'd not swap #self.boss# for any master in #here.town#. #oath#. | Some nights I'd drop, and it's #self.boss# I think of then, and I keep going.
+b : Fair's worth a lot. | That's a good word to say. | That's loyalty.
+a : Fair's worth more than #wages#, near enough. | It's a true one, or I'd not say it. | It's habit, as much as anything. A #good# habit, I'd say.
+
+scene old_feet
+when topic=health
+does tell.self / react.self / reassure
+a : #feet.capitalize# are the first thing to go, they say. Mine went long since and kept walking. | My back's #hurt# from bending over #tub#. Nothing a night won't half mend. | I've a cough from #smoke#. #remedy.capitalize#, and early to bed.
+b : Rest them, then. | Only half? | Does it work?
+a : I rest them at night. They complain all day, regardless. | Half's enough to start again on. | It works if I believe it. I mostly do, #address#.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : I counted out the week's coin on the table last night. It came up three short of bread. | Everything's dearer, and #pots# pay the same. | We've had thinner winters. Not many, mind.
+b : That's hard. | It's always the way. | You'll get through.
+a : It's hard, but I've a knife and a stick, and those cost nothing. | Always. Nobody up there notices. | We will. Slow feet still get home.
+b? : #bc_true# | #bc_i_know# | #bc_i_hope_so#
+
+scene chapel_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : When the chapel's empty I sit and count the pews. Fourteen. It settles me. | I give what I can at the feast. It isn't much, and the Bright One knows why. | I'm not much for prayers out loud. I say mine over #tub#, in my head.
+b : That's a good quiet. | Little's enough. | Nobody hears them there.
+a : It is. The quiet's half of what I go for. | I hope so. I'd give more if #pots# paid more. | The Bright One does. Or the suds do, at least.
+
+scene dry_spell
+when topic=weather here.weather=clear here.region=southmeadow here.season=spring|summer
+does tell.worry / react.self / assess
+a : Not a drop since the new moon. The well's down to the last ring of stones. | Dust in #suds#, dust on #flags#. I sweep it out and the wind sweeps it in. | The barley's going pale. You can tell from the lane.
+b : It'll come. | It's everywhere. | That's a worry.
+a : It will. #reassure#. I'll still watch the sky. | Everywhere. I've stopped counting the sweeps. | It is. We all eat off that barley, one way and another.
+
+scene the_rain
+when topic=weather here.weather=rain|storm here.region=southmeadow
+does tell.news / react.news / assess
+a : #rain.capitalize#! I stood in the yard till I was soaked through. | Rain on the roof. I'll forgive it every wet floor, this once. | Listen to it. The barley's drinking, and so's the well.
+b : You'll catch your death. | Every one? | I can hear it.
+a : Not today. It's warm, and it's ours. #oath#. | This once. Tomorrow I'll be back to cursing #wetflags#. | We'll eat this winter. That's what that sound is.
+
+scene winter_kitchen
+when topic=season|work here.season=winter
+does tell.self / react.self / assess
+a : The water in #tub# had ice on it this morning. I broke it with my elbow. | Winter's when I'm glad of the kitchen fire, smoke and all. | Short days and long nights. I get a whole stick notched by midwinter.
+b : Your poor elbow. | Smoke and all? | A whole stick?
+a : It's had worse. It's a scullery elbow, #address#. | Smoke and all. #cold.capitalize#'s worse than smoke, just. | A whole stick. I'll show you, if you like. Every notch is a night.
+
+scene keep_it_close
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty, bent over #tub#. Folk forget I'm there. | A tale's been doing the rounds of the kitchen. I've let it go down the drain with #suds#. | I don't carry tales. They're heavy, and I've enough to carry.
+b : Not a word of it? | Down the drain? | Fair enough.
+a : Not one. #secret#. | That's where it belongs. Somebody'll fish it out, but not me. | Fair, and true. #feet.capitalize# are tired enough.
+b : #bc_fair_enough# | #bc_ha# | #bc_fair#
+
+scene new_paws
+when topic=newcomer|work
+does give.opinion / react.self / assess
+a : There's a new face asking after a place at #tub#. I'll not pretend I'm glad. | Every newcomer wants a share of the same #pots#. There's only so many. | I've nothing against new folk. I'd only like the work to stretch further.
+b : They need work too. | That's harsh, that. | It never does.
+a : They do. So do I. That's the trouble, #address#. | It's the way I see it, after a long life at #tub#. | Never. #saying#.
+
+story walk_north_and_back [topic=travel|memories self.age>=25]
+  : I walked #longroad# once, nineteen days on foot, counting every milestone.
+  : I stood on the hill and looked down at the city, all smoke and slates, and I didn't go in.
+  ask : Would you have gone in, after all that way?
+  b : I'd have had a look, at least.
+  b[from=ridgemere] : You missed nothing you'd have liked. Why didn't you?
+  : I'd seen enough. Then back I went, nineteen days home. I've not been north since.
+
+story first_tally [topic=memories|pastimes self.age>=30]
+  : My #grandad# gave me my first tally stick and a blunt knife when I was a #child#.
+  : He said, a notch for every good day, and see how long it gets.
+  ask : What would yours have looked like, a stick like that?
+  b : Short, some years. Long, others.
+  b[old] : Mine would be a tree trunk by now. Is it still in the drawer?
+  : Right at the back. It's the longest one I own.
+
+story danced_it_through [topic=festival|family|memories self.married=yes self.age>=25]
+  : At my wedding I outdanced the fiddler. His arm went long before my feet did.
+  : Then I danced without the fiddle, and my #self.spouse_word# danced with me, counting the steps out loud.
+  b : That's a wedding worth having. Did your feet forgive you?
+  : Not for a week. I'd dance it all again.
+  b[pair.band=friends] : I remember. You wore holes in your good shoes.
+
+rule @pots_bark
+when concept=bark working=yes here.place=tavern
+does aside
+cooldown 6h
+say Twenty-nine, thirty. #pots.capitalize# never end. | Mind #flags#. I've just done them.
+
+rule @wet_bark
+when concept=bark here.weather=rain|storm self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Wipe your feet. Please. I'm begging you. | There goes #flags#. #annoyed#.
+
+rule @smoke_bark
+when concept=bark here.outdoors=clear|overcast self.dislikes=smoke here.time=dusk
+does aside
+cooldown 10h
+say Somebody's burning wet wood again. #oath#. | #smoke.capitalize#. I'll smell of it for a week.
+
+rule @mist_bark
+when concept=bark here.weather=fog here.time=dawn self.likes=misty_dawns
+does aside
+cooldown 12h
+say There's #mist#. Lovely. | Can't see the gate. Just as I'd have it.
+
+rule @bells_bark
+when concept=bark here.day=festival self.likes=festival_bells
+does aside
+cooldown 12h
+say There go #bells#. Nineteen, twenty, twenty-one. | Listen to that. #bells.capitalize#, at last.
+
+dlg @1 resident.hub : #greet#. I'm only the pot hand, mind. | #greet#, #address#. Say on; I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a stool and a minute, if you want them.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm only here for #pots#. Say what you need and go.
+dlg @4 resident.job [self.working=yes] : I work at #self.workplace#. #pots.capitalize#, #flags#, whatever wants washing. | Scrubbing, mostly. Every pot counted, #oath#.
+dlg @5 resident.job : Whatever #work# wants doing. #feet.capitalize# do the rest. | A #little# of everything, done slow.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I hear nothing but #suds#. | Not a word. Ask at the tap.
+dlg @7 resident.news [world.news] : Word from #world.news_from#: #world.news#. I had it in the kitchen.
+dlg @8 resident.gossip [here.gossip!=yes] : Head over #tub#, ears shut. #gossip_none# | #secret#. I don't carry tales.
+dlg @9 inn.greet [here.inn_helper=yes] : #greet#. I only do #pots#. #here.innkeeper# has the keys to the beds. I can find you a bite. | #inn_helper#
+dlg @10 inn.bye : #farewell#. Mind #flags#, they're wet. | #farewell#. Come back when the floor's dry.
+dlg @11 resident.bye : #farewell#. Mind the step. | #farewell#, #address#. Slow feet still get home.
+graft resident.hub
+choice What's that stick you keep notching? -> stick
+node stick
+say My tally stick. A notch for every night at #tub#. When it's full I start another. I've a drawer of them.
+mood calm
+free
+choice Why keep count? -> stick_why
+choice Goodbye. -> bye
+node stick_why
+say Because a night's long, and counting makes it shorter. And when I'm old I'll open the drawer and know I wasn't idle.
+choice That's a good reason. -> hub
+choice Goodbye. -> bye

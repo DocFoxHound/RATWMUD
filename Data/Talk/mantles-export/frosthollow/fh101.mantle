@@ -1,0 +1,314 @@
+# fh101, the riddler by the wall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh101
+revision 1
+state ready
+dialect frosthollow
+accent none
+tier standard
+written_for cty_marl_craghearth
+written_by claude
+title the riddler by the wall
+fits stage=adult|old
+prefers talk=quiet warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes plum_tart riddles festival_bells warm_rain
+dislikes gulls bad_manners
+fears a_clamp_breaking_out_in_the_night a_door_opening_behind_me
+hopes a_quiet_hearth_with_the_door_in_sight a_riddle_nobody_can_answer
+topics pastimes +0.4 work +0.3 festival +0.3 food +0.2 home +0.2 gossip -0.5
+styles comfort=quiet gossip=closed refuse=soft tease=none
+marks oath saying
+persona #self.first# burns charcoal up at the hearths and always takes the seat facing the door: quiet, warm and close-mouthed, slow to say a thing twice, with a riddle kept back for anyone who sits long enough.
+
+words
+oath! = Back to the wall | Eyes on the latch | Door and corner
+saying! = A shut mouth gathers no dust | Sit where the door can't surprise you | Answer late and answer once
+door = the door | that door
+seat = my corner | the seat by the wall
+latch = the latch | the door latch
+riddle = a riddle | a good riddle
+tart = plum tart | a slice of plum tart
+tin = the tart tin | the tin on the high shelf
+clamp = the clamp | the burning stack
+skin = the turf skin | the sods over the clamp
+charcoal = charcoal | good black charcoal
+hearths = the hearths | the upper hearths
+bells = the feast bells | bells on a feast day
+softrain = warm rain | a soft warm rain
+gulls = gulls | those gulls
+mm = Mm | Hm
+well = the old well | the well at the top of the lane
+smoke = the smoke | the clamp smoke
+
+any
+opinion @1 city against 1 : Too many doors in a city, and every one at your back. #mm#. I'll stay up here.
+opinion @1 merchants against 2 : The bread goes up a penny and nobody can tell me why. Not a word of it is in my pocket.
+opinion @1 houses against 1 : The Houses want a back to bend, not a face to know. I keep mine straight and stay out of their way.
+opinion @1 dole for 1 : A town this small can spare a bowl. Nobody should lie down #hungry# in the #cold#.
+opinion @1 times against 1 : Each week the pot's a bit lighter, and the ones up the hill never look down. #saying#.
+opinion @1 strangers mixed 1 : I'll nod to a stranger. I'll not turn my back on one till I've seen them eat.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Sit if you like. Not that chair. | #greet#, #address#. Come in where I can see you.
+line @2 greet [self.working=yes self.job=none] : #greet#. Stand upwind of #clamp#. | #greet#. Talk if you want. I'm watching the smoke.
+line @3 greet [here.time=dawn] : Morning. The frost's still on #latch#. | Morning, #address#. Early for both of us.
+line @4 greet [here.time=dusk|night] : #greet#. Shut #door# behind you. | #greet#. Late to be out, #address#.
+line @1 kin.open [pair.kin!=no] : There you are. I kept you the stool by the fire, #address#. | You. Sit. There's #tart# left, just.
+line @1 again.open : You again. #good.capitalize#. The chair's still free. | Twice in a day. I'll start keeping you a seat.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Pull a stool round this side. | #greet#. I saw you at #door# before you knocked.
+line @3 greet.return [self.working=yes] : #greet#. Mind the smoke. | #greet#. I'll talk, but I'm watching #clamp#.
+line @4 greet.return [here.time=dusk|night] : #greet#. Bring the lamp in with you. | #greet#. Late one.
+line @1 farewell : #farewell#. | #farewell#. Mind the step down.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the middle of the lane. | #farewell#. Bar #door# when you're home.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news.new : #surprise#. I'd not heard a word. | #mm#. That's new to me.
+line @1 react.news.known : I'd heard. Not from who you'd think. | #knew#. I kept it to myself.
+line @1 react.news.doubt : I'll wait to hear that twice before I believe it once. | #doubt#. I've heard louder things come to nothing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for them. | That's #very# hard. I'll say nothing light about it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll take #tart# round. | #good.capitalize#. Somebody's luck turned, then.
+line @1 answer.how : Well enough. #tired.capitalize#, but well. | #fine#. Can't grumble, so I won't.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #clamp.capitalize#'s burning wrong and I'm the one awake. | Watching #smoke#. It's harder than it sounds.
+line @1 ask.how : And yourself? Eating? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit with me a while. You needn't talk. | Here. Have the warm side. #sympathy#.
+line @1 reassure : #reassure#. Things settle, given time. | It'll pass, #address#. Most things do, if you let them.
+line @1 decline : #hedge#. I'd come, but #clamp# won't watch itself tonight. | Not this time, #address#. I'm promised elsewhere, and a promise holds.
+line @1 accept_decline : #no_matter#. Another day. | That's all right. The offer keeps.
+line @1 thank : #thanks#. I'll remember it. | That was #good# of you, #address#.
+line @1 deflect_thanks : #deflect#. You'd have done the same. | Nothing to it.
+line @1 preclose [self.working=yes] : Well. #clamp.capitalize# wants looking at. | I'd best see to #skin# before it cracks.
+line @2 preclose : Well. #preclose#. | I'll be off home before the light goes.
+line @1 accept_preclose : Go on, then. | #bc_right#
+line @1 ack : #mm#. | #bc_right#
+line @1 give.advice : Sit where you can see the room. You'd be surprised what you learn. | Say it once, plainly, and then stop. #saying#.
+line @1 warn [world.bandits=near] : #warn#. Don't walk the pass alone this week. | Keep off the road after dark, #address#.
+rule @door_bark
+when concept=bark working=no
+does aside
+cooldown 8h
+say Who left #door# wide? #oath#. | Somebody's at #latch#. #mm#. Only the wind.
+
+rule @clamp_bark
+when concept=bark working=yes self.job=none here.region=frosthollow
+does aside
+cooldown 6h
+say #clamp.capitalize#'s breathing too fast. More turf on the windward side. | Smoke's gone blue. #oath#. Somebody fetch a shovel.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 10h
+say #softrain.capitalize#. I'll stand in it a minute. | Rain like a warm bath. That's my weather.
+
+rule @bells_bark
+when concept=bark here.day=festival
+does aside
+cooldown 12h
+say There go #bells#. #good.capitalize#. | #bells.capitalize#. I'd get up for those, any morning.
+
+scene door_seat
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : That's my seat, facing #door#. Take any other. | I'll swap with you, if you'll sit there. I like to see #latch#. | Everyone asks why I sit like this, facing #door#.
+b : What's wrong with this one? | Why the latch? | Well, why do you?
+a : Nothing. It just has its back to #door#. | I like to know who's at #latch# before they know I'm here. | Because a door opens, sooner or later. I'd like to see it when it does.
+b : #bc_fair_enough# | Fair enough. | #bc_wise#
+
+scene riddle_lamp
+when topic=pastimes
+does raise / ask.detail / answer.detail / laugh
+a : Here's #riddle#. I eat and eat, and the more I eat the hungrier I grow. Give me a drink and I die. | Try this. I've a mouth and never speak, a bed and never sleep. | One for you. The more of me you take, the more of me you leave behind.
+b : A pig? No. Is it fire? | Is it a river? | Is it money?
+a : Fire. You're quicker than you look, #address#. | A river. Most folk say a drunkard first. #mm#. | No. Footsteps. Mind you don't take too many in #snow#.
+b : #bc_ha# | Ha. I'd have said a drunkard. | #bc_clever#
+
+scene riddle_back
+when topic=pastimes pair.band=friends|family|housemates
+does tell.self / challenge / concede / insist / ack
+a : I've had #riddle# going round my head since #supper#. Nobody's got it yet. | You never got last week's. I'll not tell you the answer. | I made a new one up at #clamp# last night. It's a hard one.
+b : Try me. I'll get it. | I worked it out. It was a shadow. | Then ask me. I'm sharp tonight.
+a : What has one eye and sees nothing? A needle. You'd not have got it. | #oath#. A shadow it was. Who told you? | What gets wetter the more it dries? Take your time.
+b : I'd have got it. | Nobody. I'm cleverer than you think. | A towel. Easy.
+a : You'd not. #bc_ha# | Then I'll make #riddle# harder still. | #mm#. I'll do better tomorrow.
+
+scene clamp_night
+when topic=work self.working=yes self.job=none here.region=frosthollow
+does tell.self / react.self / assess / ack
+a : Three nights I've sat by #clamp#. You learn its breathing like a sick friend's. | I sleep in the hut by #hearths# when a burn's on. Sleep's the wrong word. | You watch #smoke# all night. White is good. Blue means trouble.
+b : Three nights? | Do you sleep at all? | And when it goes blue?
+a : Three. Wood goes in, #charcoal# comes out, and in between you sit. | In pieces. An ear open, always. | Then you run with turf and a shovel for #skin#, and you don't stop.
+b? : #bc_poor_soul# | #bc_i_know# | #bc_wise#
+
+scene clamp_breaking
+when topic=work self.working=yes self.job=none here.region=frosthollow here.weather=storm|clear
+does tell.worry / reassure / assess / ack
+a : The wind got under #skin# last night. Flame came through on the north side. | I patched #clamp# twice before dawn. If it breaks out, a week's wood is ash. | A clamp that catches proper burns to nothing. I'll not let it.
+b : You caught it in time. | #reassure# | You won't.
+a : This time. I'll sit closer tonight. | It held. My paws don't think so. | No. Not while I'm awake.
+b? : #bc_good# | #bc_lucky# | #bc_hope_so#
+
+scene black_paws
+when topic=health|work self.job=none self.working=yes
+does tell.self / react.self / assess
+a : Look at these paws. Black to the elbow with #charcoal#. It won't come out till spring. | My eyes sting from #smoke# all day. They stop at night, mostly. | I cough up #charcoal# some mornings. Everyone at #hearths# does.
+b : Scrub them. | Does it hurt? | That can't be good.
+a : I did. It's not dirt any more. It's me. | Not much. #mm#. I'm used to it. | No. But it's the work, and the work feeds us.
+
+scene tart_tin
+when topic=food
+does tell.self / ask.detail / answer.detail / assess
+a : There's #tart# in #tin#. I keep it up high where hands can't wander. | #tart.capitalize#'s the one thing I'll queue for. | I had the last of #tart# for breakfast. I'm not sorry.
+b : Can I have some? | Why plum? | For breakfast?
+a : A slice. Don't tell the rest of the house about #tin#. | Plums are sour till they're cooked. Then they're the best thing there is. | Breakfast, #supper#, any hour. It's never the wrong time.
+b : #bc_thank_you# | #bc_fair_enough# | #bc_ha#
+
+scene tart_shared
+when topic=food|friends pair.band=friends|family|housemates
+does offer / accept / assess
+a : Here. I saved you a corner of #tart#. | I've #tin# under my arm. Don't ask where I'm going with it. | Sit. There's #tart#, and I won't eat it all if you're watching.
+b : You saved me some? | Where are you going with it? | Then I'll watch.
+a : I did. I don't, often. Eat it before I change my mind. | To you, as it happens. Here. | #good.capitalize#. Have the bigger slice, then.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : #softrain.capitalize#. I'd stand out in it all day if they let me. | Smell that? The dust going down under #softrain#. | After a dry week, rain like this is a kindness.
+b : You'll be soaked. | I can smell it. | I'd sooner be dry.
+a : It's warm. Soaked doesn't count when it's warm. | #good.capitalize#. Then we've both smelled it. | You're welcome to dry. I'll stay out here.
+
+scene cold_sleet
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : That's not rain, that's ice that can't decide. | #rain.capitalize# again. It finds the gap at the back of my collar. | The good rain's a summer thing. This is the other kind.
+b : #cold.capitalize#, too. | Every collar. | It is.
+a : Bone-deep. I'll be in #seat# by the fire. | Every one. #mm#. | Give me the warm kind, or nothing.
+
+scene snow_door
+when topic=weather|home here.weather=snow
+does tell.self / react.self / assess
+a : Snow up to #latch# this morning. I dug #door# out before I could see it. | #snow.capitalize#. Everything's quiet. You hear anyone coming a long way off. | I like #snow#. Footprints tell you who's been by.
+b : Before breakfast? | Quiet's nice. | Who's been by, then?
+a : Before anything. A door you can't open is no door, #address#. | Quiet's safe. That's why it's nice. | Nobody I didn't expect. #good.capitalize#.
+
+scene dawn_frost
+when topic=day|weather here.time=dawn here.season=winter|autumn
+does tell.self / react.self / assess
+a : Frost on everything. Even the inside of the window. | Up before the light again. #clamp.capitalize# doesn't care what hour it is. | I like the dark before dawn. Nobody's about to surprise you.
+b : Inside? | Nor does anything else. | That's one way to look at it.
+a : Inside. I scratched my name off it. Then I put it back. | No. You get used to it, or you don't stay. | It's my way, #address#.
+
+scene feast_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / ask.opinion / give.opinion / assess
+a : I wake for #bells# even when I've sat up all night. | When #bells# go I stand at #door# and listen till the last one stops. | Nothing in the year sounds like #bells#.
+b : All night, and you still get up? | Every time? | You like the bells that much?
+a : Every year. Sleep can wait. #bells.capitalize# won't. | Every time. I don't know why. I've stopped asking. | More than the food, and I like the food.
+b? : #bc_lovely# | #bc_every_year# | #bc_fair_enough#
+
+scene bad_manners
+when topic=smalltalk|friends
+does tell.complaint / react.complaint / assess
+a : Somebody walked in yesterday without knocking and sat in #seat#. Didn't even say good day. | A wolf spat in the lane in front of me. I said nothing. I'm still saying nothing. | Manners cost nothing. That's why I notice when they're missing.
+b : And what did you do? | Rude of them. | They do cost nothing.
+a : Stood behind them till they moved. It didn't take long. | Rude, and they'll be rude again. I'll know them. | Nothing at all. And still some folk won't pay it.
+
+scene the_well
+when topic=home|gossip here.region=frosthollow
+does tell.self / ask.detail / answer.detail / assess
+a : See #well#? Half the street says it's theirs. | Folk have quarrelled over #well# since before I was born. | I won't say who's right about #well#. I'll only say I draw from it.
+b : Whose is it, then? | What's the quarrel? | And do they let you?
+a : Nobody's. That's the trouble. Everybody wants to be the one who owns nobody's well. | Who dug it, who mended it, who drinks first. All of it and none of it. | I don't ask. #saying#.
+b? : #bc_ha# | #bc_poor_soul# | #bc_wise#
+
+scene spouse_quiet
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# is the one soul I'll sit with my back to a door for. | I don't say much. I think #self.spouse# likes me the better for it. | I'd not trade #self.spouse# for all the tart on the hill.
+b : That's love, then. | Lucky. | All of it?
+a : #mm#. I'd not say it so loud. | #very.capitalize# lucky. I know it. | Most of it. Don't repeat that.
+
+scene full_house
+when topic=home pair.band=housemates
+does tell.self / react.self / assess
+a : A full house, and I'm the only one who checks #latch# twice at night. | Every chair in our house is spoken for. Mine faces #door#. Nobody argues now. | It's loud with all of us in. I like it more than I let on, #address#.
+b : Somebody has to. | Nobody dares. | You do hide it.
+a : Somebody does. It's me. | They learned. #good.capitalize#. | I hide most things. That's the trick of it.
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I heard something by #hearths#. I'll not say what. | You'd be surprised what I hear from #seat#. I keep it there. | Somebody told me a thing yesterday. It was theirs to tell, not mine.
+b : Go on. Just the start. | Like what? | Fair enough.
+a : No. Not the start, not the end. It'll keep. | Things folk say when they think nobody's listening. That's all you'll get. | It's the only way anyone ever tells me anything.
+b : #bc_ha# | Ha. #bc_fair_enough# | #bc_wise#
+
+scene stranger_watch
+when topic=newcomer|player
+does tell.self / react.self / assess / ack
+a : There's a new face about. I watched them come up the lane. | A stranger came in and stood with their back to #door#. Brave, or new. | I don't mind strangers. I like to see them first, is all.
+b : What did you make of them? | Which was it? | You see everyone first.
+a : Too early to say. I'll watch a while longer. | New. Nobody here would do it twice. | That's the idea, #address#.
+b? : #bc_maybe# | #bc_ha# | #bc_wise#
+
+scene faith_bells
+when topic=faith
+does give.opinion / react.self / assess
+a : I say a word to the Bright One at #door# every morning. Short. It doesn't need long. | I'm no chapel-goer, but I go when #bells# ring. | I keep my prayers like my business. Quiet, and to one listener.
+b : What do you say? | Only for the bells? | That's prayer enough.
+a : Keep the roof up and #clamp# lit. That's the whole of it. | The bells, and the warm. #mm#. And the singing, a bit. | I hope so. It's the only kind I've got.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Bread's up again. I've stopped asking why. #mm#. | Less in the pot this week. Nobody at home says it, but we all see it. | The wood costs more and #charcoal# fetches the same. I don't do the sums any more.
+b : Everyone's short. | #bc_i_know# | You'd rather not know.
+a : #bc_i_know#. Doesn't fill the pot. | We'll manage. We always have. #reassure#. | No. I'd rather sleep.
+b? : #bc_true# | #bc_hope_so# | #bc_fair_enough#
+
+story grandad_riddle [topic=memories|pastimes self.age>=25]
+  : My #grandad# never gave a straight answer in his life. Ask him the time and he'd give you a riddle.
+  : He told me one when I was small and never told me the answer. He died with it.
+  ask : Shall I tell you it? You might be the one who gets it.
+  b : Go on, then. I'll try.
+  b[old] : I knew a wolf like that once. Go on.
+  : What's always coming and never arrives? I've had forty answers. None of them sounded like his.
+
+story gull_tart [topic=memories|animals self.age>=25]
+  : I went down to the lake once, years back. Sat on the shore with a slice of #tart#.
+  : A gull came out of nowhere and took it clean out of my paw. Didn't even slow down.
+  ask : Do you know what I did?
+  b : You chased it, I'd bet.
+  b[stage=young] : Did you throw a stone at it?
+  : I sat there, sore and hungry, and I swore I'd never trust a bird again. I haven't. #gulls.capitalize# know what they did.
+
+story first_burn [topic=work|memories self.job=none self.age>=25]
+  : My first burn, I turned my back on #clamp# to eat. One minute, no more.
+  : When I turned round, flame was coming out of #skin# like a door left open.
+  ask : Can you guess what I learned that night?
+  b : Not to turn your back.
+  b[job=miner] : To eat standing up, I'd say.
+  : Never to turn my back on anything. Not #clamp#, not #door#. I've not since.
+
+dlg @1 resident.hub : #greet#. Come round this side, where I can see you. | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You know which chair's mine. Take another. | #topic.player#. #good.capitalize#. Sit down.
+dlg @3 resident.hub [here.time=night] : It's late. Shut #door# and say it quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you want from there by #door#. I can hear you fine.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. You sit up with the burn, and you don't take your eyes off the smoke. | I make #charcoal#. Slow work, and #cold# at night.
+dlg @2 resident.job : I work, I come home, I sit facing #door#. That's most of me.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And if there were, you'd not get it from me first.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear things from #seat#. I keep them.
+dlg @1 resident.bye : #farewell#. Mind #door# on your way out. | #farewell#, #address#.
+graft resident.hub
+choice Why do you always sit facing the door? -> door
+node door
+say Habit. Old habit. A door opens, sooner or later, and I'd sooner see it. #mm#. That's all I'll say about it.
+mood calm
+free
+choice Have you a riddle for me instead? -> riddle
+choice Goodbye. -> bye
+node riddle
+say All right. What can you hold in your left paw but never in your right? Think about it. Come back with the answer.
+mood pleased
+choice I'll think on it. -> hub
+choice Goodbye. -> bye

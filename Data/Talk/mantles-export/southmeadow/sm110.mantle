@@ -1,0 +1,299 @@
+# sm110, the proverb beekeeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm110
+revision 1
+state ready
+dialect southmeadow
+accent none
+tier standard
+written_for cty_aster_cornley
+written_by claude
+title the proverb beekeeper
+fits stage=adult|old
+prefers job=farmer humour=dry
+traits temper=even talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=restless
+quirk quotes_old_sayings_for_everything
+likes roast_pork cards full_larder first_snow
+dislikes early_bells crowds
+fears a_hive_lost_to_the_cold an_empty_shelf_in_the_larder
+hopes someone_of_my_blood_in_a_house_s_livery twice_the_hives_by_next_summer
+topics work +0.4 food +0.3 pastimes +0.3 dreams +0.3 season +0.2 newcomer +0.2 gossip -0.2
+styles comfort=practical gossip=dry refuse=soft tease=dry
+marks oath saying
+persona #self.first# keeps bees along the hedges and the larder full to the rafters: dry, plain and restless, never short of an old saying for any occasion, happiest with a hand of cards by the fire and a roast on the spit.
+
+words
+oath! = Comb and candle | By the queen's own wings
+saying! = Wax remembers every flower | The bee that strays far comes home lighter | A shut hive gathers nothing
+oldsaw = an idle hive is a hungry hive | you can't hurry wax | honey never asks who's paying | a bee in the paw is worth a swarm on the wind | the hive that hums at dusk wakes rich | sting once and they remember you
+bees = the bees | my bees
+hives = the hives | my hives along the hedge
+shed = the hive shed | the shed
+comb = the comb | a frame of comb
+honeyjar = a jar of honey | a jar of the clear honey
+pork = roast pork | roast pork, crackling and all
+cards = a hand of cards | a game of cards by the fire
+larder = the larder | my larder
+firstsnow = the first snow | the first snow of winter
+crowd = a crowd | folk packed elbow to elbow
+dawnbell = that bell before sunup | the dawn bell
+livery = a House's livery | service with one of the Houses
+wax = wax | good yellow wax
+honey = honey | good honey
+swarm = a swarm | a swarm on the wing
+cat = the cat | that cat of mine
+jar = a jar | a jar of honey
+queen = queen | old queen
+game = a game | a card game
+
+any
+opinion @1 dole against 1 : I pay into it, and I've watched who comes back for a second helping. #oldsaw.capitalize#, as they say.
+opinion @1 newcomers for 1 : Somebody had to be new here once. I'd have gone off and been new myself, with a bit more nerve, #address#.
+opinion @1 road for 1 : A road's only a road. Watch your #money# and keep walking, and it'll take you where it goes.
+opinion @1 times for 1 : I've a full larder and a hedge of hives. Complaining now would be tempting the Bright One.
+opinion @1 houses for 1 : The Houses take on good folk and keep them well. I'd like to see one of ours in #livery#.
+opinion @1 city mixed 1 : The city buys #wax# by the crate and pays on time. I'll say that for it, and not much else.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If you're here for honey, you've come to the right hedge. | #greet#. Stand still near #hives#; they don't like strangers to fidget.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Talk low, the bees are listening. | #greet#. I'm elbow-deep in #comb#, so you'll forgive me not shaking paws.
+line @3 greet [here.time=dawn] : #greet#. Up before the bees, I see. | #greet#. Early. #oldsaw.capitalize#.
+line @4 greet [here.time=dusk|night] : #greet#. The bees are abed. I'm nearly. | #greet#. A late caller. I'll put the lamp up.
+line @1 kin.open [pair.kin!=no] : There you are. Sit; there's something in #larder# for you. | You'll be #hungry#. You always are.
+line @1 again.open : Twice in a day. #oldsaw.capitalize#, and you're proof of it. | You again. I'll start charging #money# for the company.
+line @1 greet.return : #greet#. | #greet#. Well enough to grumble, which is well.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down before the cat takes your seat. | #greet#. You've timed it for supper again.
+line @3 greet.return [self.working=yes] : #greet#. Mind your step; there's comb on the floor. | #greet#. Talk while I work, then.
+line @1 farewell : #farewell#. | #farewell#. Don't step on any bees on your way.
+line @2 farewell [here.time=dusk|night] : #s8_night#. | #farewell#. Mind the hedge, it bites in the dark.
+line @1 farewell.return : #farewell#. | #s8_byeback#.
+line @1 react.news : #ack#. Well, there it is. | Is it now. #oldsaw.capitalize#, they say.
+line @1 react.news.new : #surprise#. That's new to me. | #marvel#. Nobody brought that past #hives#.
+line @1 react.news.known : #knew#. The bees had it before me. | Heard that yesterday. Old news travels slower than #bees#.
+line @1 react.news.doubt : #doubt#. I'll wait for a second telling. | Bring me an eyewitness and I'll listen. #honey.capitalize#'s honest; gossip isn't.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's #bad#. There's no saying fits that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That deserves a jar of the good honey. | #good.capitalize#. I'll drink to that tonight.
+line @1 answer.how : #fine#. | Busy as #bees# and twice as cross. | #good.capitalize#. #larder.capitalize# is full, so I can't complain.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Bees don't keep Restday. | Up to my elbows. #oldsaw.capitalize#.
+line @1 ask.how : And you, #address#? Keeping busy? | How's the world treating you, #address#?
+line @1 sympathise : #sympathy#. Sit; I'll find you something sweet. | That's #bad#. Honey won't fix it, but it won't hurt.
+line @1 decline : #hedge#, but no. The bees want me, and they sting when they're kept waiting. | Not today. I've #wax# to strain and the light's going.
+line @1 accept_decline : #no_matter#. | Fair. Another day, then.
+line @1 thank : #thanks#. | That's good of you. I'll find #jar# for it.
+line @1 deflect_thanks : #deflect#. | Nothing to it. #bees.capitalize# did most of the work.
+line @1 preclose [self.working=yes] : Well. #excuse#. | #bees.capitalize# won't mind themselves.
+line @2 preclose : Well. #preclose#. | That's enough talk for one day, as my #gran# would have said.
+line @1 accept_preclose : Go on, then. | #s8_okay#.
+line @1 tease [pair.band=friends] : You look like you lost a fight with a hedge. | That face of yours. A bee in #jar# looks happier.
+line @1 tease.return : #cheek#. | Said the one with #honey# down the front.
+line @1 ack : #ack#. | #bc_it_is#
+rule @hum
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Easy, easy. Nobody's taking any #honey# you'll miss. | #oath#. One in my sleeve again.
+
+rule @dawnbell
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #dawnbell.capitalize#. Whoever rings it can come and calm the bees. | There it goes. #annoyed#.
+
+rule @crowds
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 8h
+say Too many folk and not enough air. #grumble#. | #crowd.capitalize#. I'll be at the edge, thank you.
+
+rule @snowfall
+when concept=bark here.weather=snow self.likes=first_snow
+does aside
+cooldown 1d
+say Look at that. #firstsnow.capitalize#, or near enough. | Snow on #hives#. The bees will sleep #snug#.
+
+scene hive_check
+when topic=work self.job=farmer self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Third hive's #queen# is laying well. I'll have another swarm off them by midsummer. | I lift the lid on #hives# once a week and listen before I look. | Two hives quiet this morning. #oldsaw.capitalize#, and I don't like quiet.
+b : Another swarm? | Listen for what? | What's wrong with quiet?
+a : If I catch it, another hive. If I don't, somebody's chimney gets #bees#. | A #good# hive hums like a kettle. A sick one sounds like a sigh. | Quiet's a hive thinking about sending off #swarm#. I'll give them a reason to stay.
+b : #bc_good# | I'll listen next time. | Good luck with them.
+
+scene honey_off
+when topic=harvest|work here.season=summer|autumn self.job=farmer
+does tell.self / react.self / assess
+a : Taking #honey# this week. Forty jars off the long row, if the weather holds. | #comb.capitalize# came off heavy today. The heather's been #good# to them. | I always leave them more than they need. #oldsaw.capitalize#.
+b : Forty! | Good year, then. | That's fair of you.
+a : Forty, and I've buyers for thirty already. The rest is for #larder#. | A #good# year. I'll not say so near the hives; they'll want a raise. | Fair keeps them. A #hungry# hive moves house in spring.
+
+scene swarm_time
+when topic=work|season here.season=spring self.job=farmer
+does tell.worry / ask.detail / answer.detail
+a : Swarming time. I sleep with one ear open for #swarm#. | #swarm.capitalize# went off over the hedge yesterday. I chased it two fields in my apron. | Spring's when #bees# get restless. I know the feeling.
+b : The roar? | Did you catch it? | Do you?
+a : Like #crowd# cheering in the next field. You don't mistake it. | Caught it in a hat. Not my hat. I've not given it back. | Every spring. #bees.capitalize# are braver about it than I am.
+
+scene wax_trade
+when topic=prices|work self.job=farmer
+does tell.self / ask.detail / answer.detail / assess
+a : The chapel buys #wax# by the stone for candles. Good steady trade. | I sell the dark #honey# to the city and the light to the lane. Each thinks they've the better bargain. | #honeyjar.capitalize# fetches more than it did. I'm not complaining.
+b : By the stone? | Who's right? | Why's that?
+a : Every candle in that chapel came off #bees#. The Bright One owes me a little. | Me. I've the #money# from both. | Folk have a sweet tooth when times are easy. #oldsaw.capitalize#.
+b : Ha. | #bc_ha# | #bc_fair_enough#
+
+scene first_snowfall
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : Snow. I've been waiting all autumn for #firstsnow#. | #firstsnow.capitalize# always catches me at the window, like a pup. | #hives.capitalize# are capped white this morning. They look like iced cakes.
+b : You like it? | Like a pup? | Are the bees all right?
+a : It's clean. Nothing's trodden on it yet. That's #very# rare. | I'll deny it if you tell anyone. | #snug.capitalize# as you like. Snow's a blanket, if you've stored them right.
+
+scene winter_cluster
+when topic=season|work here.season=winter self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : #bees.capitalize# are balled up at the heart of the hive now, keeping each other warm. | I put my ear to #hives# on frosty mornings. If they hum, they're alive. | Winter's the worry. I lost a hive to the cold once and I still think about it.
+b : All of them in a ball? | And if they don't? | How do you stop it?
+a : Thousands. Taking turns on the outside, the #cold# side. Kinder than most families. | Then I've lost them, and I lift the lid in spring and count the cost. | Feed them sugar, wrap the hives, and pray. #oldsaw.capitalize#.
+
+scene roast_night
+when topic=food
+does tell.self / react.self / invite / accept_invite
+a : There's #pork# on the spit tonight. I've been basting it since noon. | The best thing about #money# is roast pork. Second best is the crackling. | I eat plain all week so I can eat #pork# on Restday.
+b : Sounds like a feast. | Only the second best? | That's sensible.
+a : Come and share it, if you like. I can't eat a whole pig alone, though I'd try. | Third best is the dripping on bread next morning, #tasty# as anything. Come by and I'll show you. | It is. And you're welcome to the Restday part, #address#, if you come by.
+b : I'll be there. | I'll come. | I might, at that.
+
+scene stocked_larder
+when topic=home|food
+does tell.self / react.self / assess
+a : I counted #larder# last night. Honey, ham, flour, pickles. I sleep better for it. | A stocked shelf's a sound night, my #gran# always said. She was right about that and nothing else. | I can't abide a gap in #larder#. I'll go to market for one jar.
+b : That's a lot of food. | Nothing else? | One jar?
+a : For one wolf, aye. I'm not ashamed of it. #oldsaw.capitalize#. | My #gran# thought cats could see ghosts. Loved her, but no. | One jar. It's the gap I can't sleep with, not the hunger.
+
+scene card_table
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : #cards.capitalize# of an evening, and I'm content. Well, nearly. | I win more than I lose at #cards#. I'll not say how. | There's #game# on Restday, and I've already worked out who's bluffing.
+b : Nearly? | How, then? | Who's bluffing?
+a : I'm only content when I'm winning. | Watch faces, not cards. Folk can't help it. #oldsaw.capitalize#. | Everyone. The trick is knowing how much.
+b : #bc_ha# | I'll remember that. | Ha. Fair.
+
+scene sayings_tease
+when topic=smalltalk|accent
+does tell.self / react.self / assess
+a : Folk say I've a saying for everything. #oldsaw.capitalize#, so they may be right. | My #gran# had a saying for every day of the year. I've kept most of them, and made up the rest. | Somebody asked me to go a day without a saying once. I lasted till breakfast.
+b : You do, you know. | Made them up? | Till breakfast?
+a : I know. Mostly I do it to annoy them now. | Nobody's ever caught me. An old saying is only a new one that lasted. | Till breakfast. #saying.capitalize#, I said, and that was that.
+
+scene crowd_edge
+when topic=festival|smalltalk self.dislikes=crowds
+does give.opinion / react.self / assess
+a : I'll come to the feast, but I'll stand at the edge, away from #crowd#. | #crowd.capitalize# makes my fur stand up. Too many paws on the one floor. | #bees.capitalize# can live a thousand to a box. I can't live three to a room.
+b : The middle's where the fun is. | It does get busy. | Bees are better at sharing.
+a : The middle's where somebody steps on you. I'll have my fun at the edge. | Busy is fine. Packed is not. | They're better at most things. Don't tell them I said so.
+
+scene dawn_bell
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : #dawnbell.capitalize# again. The bees don't need it, and nor do I. | Who rings a bell before sunup? Somebody with no #hives# to calm, that's who. | I was dreaming of roast pork. Then the bell. #oath#.
+b : Somebody likes it. | The bees mind it? | Bad luck.
+a : Somebody likes nettles too. I don't plant them. | #bees.capitalize# wake cross, and they take it out on me. | The worst. I never find out how the dream ends.
+
+scene livery_hope
+when topic=dreams|family
+does tell.plan / ask.detail / answer.detail
+a : I'd like to see one of ours in #livery# before I'm too old to brag about it. | The Houses take on youngsters for #livery#, if they're sharp. I've my eye on one of the family. | There's no shame in service, whatever folk say. #oldsaw.capitalize#.
+b : Why the Houses? | Is the youngster willing? | Who says there's shame?
+a : Steady pay, a good coat, and a name worth something. Better than #bees#, some days. | Willing enough. It's the Houses I've to convince. | Folk who've never had a full larder, mostly.
+
+scene restless_feet
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I want twice #hives# by next summer. Then twice that. | Some days I think I'll sell up and see what's past the hills. Then I eat #supper# and stay. | I've never once sat still on a Restday. My #gran# said I'd itch in my own grave.
+b : Twice that? | What stops you? | Did she?
+a : Why not? The flowers don't run out. #saying.capitalize#. | #supper.capitalize#, mostly. And the bees. And #cards#. | Every time I fidgeted. She was right, and I'll do it anyway.
+b : #bc_we_will_see# | Ha. | #bc_ha#
+
+scene newcomer_welcome
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : A new face in the lanes? Good. We've had the same faces too long. | I like a newcomer. They buy #honey# before they know whose is best. | Somebody new, they say. I'll take a jar round. #oldsaw.capitalize#.
+b : Not everyone thinks so. | Whose is best? | Is that wise?
+a : Not everyone has to. I'll be friendly enough for two. | Mine, of course. They work it out by the second #jar#. | Wise and sweet. #jar.capitalize# buys a lot of goodwill.
+
+scene times_easy
+when topic=times|prices world.times=good|boom|ordinary
+does give.opinion / react.self / assess
+a : Not a grumble from me. A wolf with a full larder who grumbles wants slapping. | The jars sell, #larder#'s full, and nobody's sick. I'll take that. | Good times, they say. Buy honey while you can, then.
+b : Lucky you. | That's all you need. | Ha. Always selling.
+a : Luck's half of it. #bees.capitalize# are the other half. | Nearly. #cards.capitalize# and I'd want nothing. | Always. #oldsaw.capitalize#.
+
+scene times_tight
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Nobody buys #honey# when bread's dear. I've jars stacking up. | Hard weeks. I've put #jar# on the step for whoever needs one. | Times are thin. #larder.capitalize# will see me through, but not everyone has one.
+b : They'll come back to it. | That's kind. | Not everyone does.
+a : They will. Honey keeps; it's patient. #reassure#. | Kind's cheap when #larder#'s full. I'd sooner not be thanked. | No. I keep that in mind, and I give where I can.
+
+scene gossip_dry
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I hear #topic.subject# #topic.claim#. Make of that what you will. | Word is #topic.subject# #topic.claim#. I'll believe half and wait for the other. | They're saying #topic.subject# #topic.claim#. #oldsaw.capitalize#, which is all I'll add.
+b : Which half? | Wise. | That's all?
+a : The half that's dull. Dull's usually true. | Wise or lazy. Waiting's easy work. | That's all. I've #hives# to see to, not tales.
+
+scene faith_bees
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One helps those who mind their own hives. I mind #hives#. | I give the chapel #wax#, and they give me a sermon. A fair swap, mostly. | I say my thanks in the morning, over #hives#. The bees seem to approve.
+b : That's a fair view. | Mostly? | Do they?
+a : Fair is all I ask of anything. | The sermons run long. The candles run short. | #bees.capitalize# hum. I take it as yes.
+
+scene alone_house
+when topic=home self.married=no
+does tell.self / react.self / assess
+a : I live alone, with #bees# and a cat that thinks it owns the house. | Nobody to argue with but #cat#, and it always wins. | I like my own company. It agrees with me, mostly.
+b : Is it quiet? | Always? | Mostly?
+a : As quiet as I like, and as loud as I need. #bc_it_is# | Always. It sits on #cards#. | Mostly. We fall out over who ate the last of the ham.
+
+story first_sting [topic=memories self.age>=25]
+  : The first time a bee stung me I was small, and I cried till my #gran# gave me a spoon of honey.
+  : So the next day I went and got stung on purpose. For #honey#.
+  : She worked it out by the third sting, and I got nothing but a lecture.
+  b : Ha! Clever little thing. Did it stop you?
+  : Stop me? It started me. I've been after honey ever since.
+
+story chapel_swarm [topic=lore|faith]
+  : My #gran# told of a swarm that came down on the chapel roof the morning of a wedding.
+  : The priest wanted it gone. The bride said leave it, it was luck.
+  : They married under a humming roof, and the honey from that swarm lit the chapel candles for years.
+  ask : Would you have let them stay?
+  b : I would. Luck like that you don't shoo away.
+  b[job=priest] : I'd have prayed for them to move along, quietly.
+
+story winning_hand [topic=pastimes|work self.job=farmer]
+  : I won my fourth hive at #cards#. Fair and square, whatever anybody says.
+  : The fellow who lost it came round the next week to visit them. Every week, for a year.
+  : In the end I gave him #jar# off them every time he came, to stop him looking so sad.
+  b : That's generous. Did he ever stop coming?
+  : When he got #bees# of his own. I sold him the #queen#.
+
+dlg @1 resident.hub : #greet#. Honey, wax, or a bit of advice? | #greet#. Keep your paws by your sides near #hives#. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back for more? #oldsaw.capitalize#. | #topic.player#. #greet#. I'd wondered when you'd turn up.
+dlg @1 resident.job [self.job=farmer] : I'm the one who #self.trade_words#. #honey.capitalize#, #wax#, and swarms when they're feeling ambitious. | I mind #hives# and keep #shed#. The bees do the hard part.
+dlg @2 resident.job : #job_busy# | A bit of everything. Never enough of anything.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new. #oldsaw.capitalize#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty and keep less. #hives.capitalize# are quieter.
+dlg @1 resident.business [business!=thriving|failing] : Steady. The jars go out and the money comes in. #oldsaw.capitalize#.
+dlg @1 resident.bye : #farewell#. | #farewell#. Don't step on any bees on your way out.
+graft resident.hub
+choice You have a saying for everything, don't you? -> sayings
+node sayings
+say Nearly everything. #oldsaw.capitalize#, for one. My gran had a saying for every day of the year, and I've kept most of them.
+mood pleased
+free
+choice Did you make any up? -> madeup
+choice Goodbye. -> bye
+node madeup
+say A few. An old saying is only a new one that lasted. Give mine long enough and nobody will know the difference.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

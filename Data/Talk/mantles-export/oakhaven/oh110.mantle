@@ -1,0 +1,306 @@
+# oh110, the bird-carving potter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh110
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier standard
+written_for tn_oh_ludo_beechshaw
+written_by claude
+title the bird-carving potter
+fits stage=adult|old
+prefers job=crafter talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes barley_soup old_tales market_bustle warm_rain
+dislikes stale_bread cold_tea
+fears a_city_crack_in_a_good_pot growing_old_where_no_tree_stands
+hopes a_wooden_bird_on_every_sill_in_town a_grove_to_sit_under_again
+topics lore +0.4 pastimes +0.4 work +0.3 memories +0.3 food +0.2 prices -0.3
+styles comfort=talk gossip=sly refuse=slippery tease=none
+marks oath saying
+persona #self.first# carves little wooden birds of an evening to give away, talks a long tale and trims the truth to fit it, and knocks on anything off a city cart before trusting it an inch.
+
+words
+oath! = Knot and kiln | Sawdust and slip
+saying! = Trust what you can knock on | A carved bird always finds a sill
+birds = the little birds I carve | a wooden wren or two
+knife = my carving knife | the knife I brought from home
+wheel = the wheel | my old kick-wheel
+kiln = the kiln | the kiln out the back
+clay = fen clay | the grey clay off the pits
+oak = good oak | a bit of seasoned oak
+trees = the trees at home | the old wood where I grew
+soup = a bowl of barley | a barley broth so thick the ladle stays put
+tale = an old tale | a tale from under the trees
+market = market day | the market at full roar
+cityware = city-made rubbish | anything off a city cart
+boards = the boardwalk | the wet boards
+drips = a warm rain after the dry | warm drips off the thatch
+crust = stale bread | bread like old bark
+tea = cold tea | tea with the warmth gone out of it
+pots = my pots | the pots on the shelf
+reeds = the reeds | the reed beds
+lights = the fen lights | the lights out on the fen
+
+any
+opinion @1 city against 2 : Anything off a city cart, I knock on first. Most of it rings hollow as a #bad# log. | I've had city nails rust in a week and a city jug crack on a warm day. I'll trust #oak#, thank you.
+opinion @1 church against 1 : The dish goes round quicker than the sermon ends, mm. I'll say mine under a tree, when I can find one out here.
+opinion @1 watch against 1 : Noses in every pot but their own, the watch. I've turned three of them away from my door already.
+opinion @1 festivals for 1 : One day the whole place is out and talking. I'll be out among them with a bag of #birds# and a tale for each.
+opinion @1 merchants mixed 0 : A fen trader I'll deal with on a nod. A city trader I'll count my fingers after, #address#.
+opinion @1 newcomers mixed 0 : Welcome, mm, as long as they didn't come down from the city with ideas and a cart of #cityware#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. A new face. Not from the city, I hope. | #greet#. Come in out of the wet, #address#, and tell me where you're from.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Mind the wet pots; they've feelings yet. | #greet#. I'll talk, but I'll not stop #wheel# for it.
+line @3 greet [here.time=dawn] : #greet#. Early. The day's still deciding what it wants to be. | #greet#. Up with the herons, you and me.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out, #address#. | #greet#. I was just about to light the lamp and carve.
+line @1 kin.open [pair.kin!=no] : There you are. Sit; there's #soup# on. | #greet#. I've a bird for you somewhere. Hold on.
+line @1 again.open : You again. I'd not finished #tale#. | Back already. #good.capitalize#; I'd thought of a better ending.
+line @1 greet.return : #greet#. | #greet#, #address#. You look well, mm.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down; I've a tale half told. | #greet#. #good.capitalize# to see you. Truly, this time.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. Clay to the elbows, ears wide open. | #greet#. Talk away; #wheel# doesn't mind.
+line @1 farewell : #farewell#. Watch your footing out there. | #farewell#. Take a bird; somebody should.
+line @2 farewell [here.time=dusk|night] : #farewell#. Follow the lamps, not the lights. | #farewell#. Sleep sound, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, and keep dry.
+line @1 react.news : #ack#. I'll chew on that. | Well, branch me. There's a thing.
+line @1 react.news.new : #marvel#. That's new to me, and I hear most of what comes up the road. | #surprise#. Nobody's told me that.
+line @1 react.news.known : #knew#. It came by on market day. | I'd heard it. I'd heard a longer one, too, mind; that's #nonsense# for you.
+line @1 react.news.doubt : #doubt#. Where did it come from? If it's the city, halve it. | Hollow, that. I'd knock on it before I'd lean on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a #bad# wind. | That's hard, #address#. I'm sorry for them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #congrats#. I'll carve them a bird. | That's #good# news. Proper good.
+line @1 answer.how : Well enough, mm. Sawdust on me, bird in my pocket. | #fine#. Better for the asking.
+line @1 answer.how.busy [self.working=yes self.job=crafter] : #busy.capitalize#. #kiln.capitalize# wants feeding and #wheel# wants turning. | Up to the wrists in #clay#, and glad of it.
+line @1 ask.how : And you? Keeping out of the mud, #address#? | How's it with you, #address#? The long answer; I've time.
+line @1 sympathise : #sympathy#. Sit, have some #soup#. | That's a #bad# business. Take a bird; it helps, a little.
+line @1 reassure : #reassure#. Slow, but it grows right. | It'll come round, mm. Slow as sap, but it comes.
+line @1 decline : I'd say yes, #address#, but I've work on that won't mind itself. | #refuse#. I've a promise to keep elsewhere, and I keep the ones I make.
+line @1 accept_decline : #no_matter#. Another time. | Fair. I'd have found a reason too, #address#.
+line @1 thank : #thanks#. I'll carve you something. | #thanks#. That was #very# kind.
+line @1 deflect_thanks : #deflect#. | Nothing to it. I owed you a kindness, or will.
+line @1 preclose : Well. #preclose#. | #excuse#. #birds.capitalize# won't carve themselves.
+line @1 accept_preclose : Off you go, then. #farewell#. | Go on. I'll keep the rest of #tale# for next time.
+line @1 ack : Mm. | #bc_it_is#. | #ack#.
+line @1 give.advice : Knock on a thing before you buy it. If it rings hollow, walk on. #saying.capitalize#. | Never trust a glaze that shines too bright. It's hiding something #bad#.
+line @1 warn [world.bandits=near] : Wood-robbers about, they say. Keep to the paths and keep your purse low. | #warn#. There's trouble on the roads.
+rule @wheel_turn
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Round and round, and stay centred, you lump of #clay#. | #oath#. Off-centre again. Start over.
+
+rule @city_cart
+when concept=bark here.place=market|street
+does aside
+cooldown 8h
+say Off a city cart, is it? I'll knock on it first, #address#. | #cityware.capitalize#. Shiny on top, hollow underneath.
+
+rule @warm_drips
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 10h
+say #drips.capitalize#. That's the smell of home, near enough. | Warm leaf-rain. Lovely. Let it come.
+
+rule @bird_done
+when concept=bark working=no here.time=dusk|night
+does aside
+cooldown 10h
+say There. A little wren. Somebody'll want it, with #tale# tied on. | One more for the pocket. That's #birds# for the week.
+
+scene carving_birds
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Every one of #birds# goes out with a tale tied on. The tale's half the gift. | Here, take this. A bittern, near enough. I carve whatever bird I've watched longest. | I've given away more #birds# than I've sold anything. Don't tell my purse.
+b : What's this one's tale? | Why that one? | Why not sell them?
+a : This bittern stood so still a heron tried to perch on it. Mostly true, mm. | To learn it. You can't carve a thing till you've watched it a season, #address#. | Never. A bird with a price on it won't fly, #address#.
+b : That's a good tale. | That's patient of you. | You're a soft one.
+a : It is. Better every time I tell it. #bc_ha# | Patient's the only way, with #oak# or with birds. #saying.capitalize#. | Soft as heartwood. Don't spread it about.
+
+scene bird_for_you
+when topic=friends|smalltalk pair.band=friends|family
+does offer / accept / assess
+a : I've carved you something from #oak#. A heron. Its legs are wrong, but it stands. | Hold out your paw. There. A wren, and it's yours, #address#. | I made this one thinking of you. Don't ask how I knew it was yours.
+b : It's lovely. Thank you. | Oh, it's perfect. | I won't ask. Thank you.
+a : The legs will grow on you, mm. | Put it by the window. #birds.capitalize# like a view. | #good.capitalize#. A carver never tells how. That's half the trade.
+
+scene city_knock
+when topic=prices|caravan
+does give.opinion / react.self / assess
+a : #cityware.capitalize#: I knock on it first. If it rings hollow, I walk on. | A trader tried to sell me a city jug today. Shiny as a beetle and thin as a leaf. | City nails. They rust before the plank's even wet. #bad.capitalize# iron.
+b[from=ridgemere] #city : Some of it's good work. | City jugs are fine enough. | Rust's the damp, not the city.
+b : Sounds wise. | Did you buy it? | That bad?
+a@city : Some, maybe. I've not met it yet, #address#. | Fine till it's warm. Then it sings and cracks, #very# sudden. | The damp, and the city that didn't think of it. Both.
+a : Wise, or stubborn as an old root. Folk can't tell the difference with me. | I knocked on it. It rang like an empty belly. No. | Worse. Give me a peg of #oak# any day, mm.
+
+scene glaze_city
+when topic=work self.job=crafter here.region=fens
+does tell.complaint / react.complaint / assess
+a : Somebody brought me a city glaze to try. Bright as a magpie's eye. It crazed in #kiln#. | #toffs.capitalize# make glazes that shine. They shine right up until the first frost, then they flake.
+b : That's a waste of a firing. | Shine sells, though.
+a : A whole shelf of good pots, crazed like old ice. #oath#. | It sells once. Then folk come back with the pieces of #pots#, and it's me they blame.
+
+scene at_the_wheel
+when topic=work self.working=yes self.job=crafter here.region=fens
+does tell.self / react.self / assess
+a : Twelve bowls off #wheel# this morning, and only one went lopsided. | #clay.capitalize# came up lovely from the pits. Smooth as butter, and it holds its shape. | I hum to #wheel#. It doesn't help. I do it anyway.
+b[job=crafter] #craft : One in twelve's a good morning. | Good clay's half the work. | Everyone has a habit.
+b : That's a lot of bowls. | Lucky. | Does it mind?
+a@craft : It is. The lopsided one I'll keep for my own #soup#. | Half, and the other half is not talking while you throw. | Mine's humming. And talking. And carving. Too many habits, mm.
+a : Somebody needs #pots#. Every house wants a bowl. | Not luck. I picked #clay# myself, every lump. | It's never said so. #bc_ha#
+
+scene firing_night
+when topic=work self.job=crafter here.time=dusk|night
+does tell.worry / reassure / assess
+a : Firing tonight. I'll sit up with #kiln# till it's done. Can't trust it alone. | #kiln.capitalize# is roaring. Every firing I think, this is the one where it all cracks.
+b : It'll come out well. | It never does crack, though, does it?
+a : It usually does. I'll carve one of #birds# while I wait. | Once. Once was enough to keep me up by #kiln# every time since.
+
+scene wood_to_clay
+when topic=work|memories self.job=crafter self.from=oakhaven
+does tell.self / react.self / assess
+a : I was raised to wood. Clay's its wet cousin, and twice as moody. | Back home I'd have made you a chair of #oak#. Out here I make you a jug. Same paws. | Wood tells you where it wants to split. Clay just sulks.
+b : Do you miss the wood? | A useful pair of paws. | Clay sulks?
+a : Every day, mm. That's why #knife# lives in my pocket and shavings by my bed. | Useful enough. They've had to learn #clay# like a new language. | Sulks, cracks, slumps. #oak.capitalize# never did that to me.
+
+scene home_trees
+when topic=memories|land self.away=yes self.from=oakhaven
+does tell.memory / react.story / assess
+a : Where I grew up, in #self.from_town#, the trees were so old you could hear them think. | Out here nothing grows so tall. At home the light came down green. | I miss walking under #trees#. You'd go a whole day and not see the sky.
+b[from=oakhaven] #wood : I know that green light. I miss it too. | Nothing so tall out here. I never settle to it. | Not a scrap of sky. Ah, I remember.
+b : That sounds a fine place. | Green light? | You don't miss the sky?
+a@wood : Then you know what I mean, old root. Nobody here does. | Nor me, and I've tried, mm. | You'd go out under the branches and come home a different shape.
+a : It was. Is. I'll get back one green year. | Green. Through the leaves. Like being inside an emerald, mm. | Not when #trees# are better company than the sky.
+
+scene home_rain
+when topic=weather here.weather=rain self.away=yes self.from=oakhaven
+does tell.memory / react.self / assess
+a : #drips.capitalize#, and I'm back home under the oaks for a moment. | At home the rain took an hour to reach the ground. The leaves passed it down slow.
+b : That's a nice way to hear it. | An hour?
+a : It's the only way I can bear it, mm. Out here it just falls straight on you. | Near enough. #saying.capitalize#, and that goes for rain too.
+
+scene warm_rain_fen
+when topic=weather here.weather=rain here.season=spring|summer here.region=fens
+does tell.feeling / react.self / assess
+a : #drips.capitalize#. Best weather there is, and I'll argue it with anyone. | Listen to it on #reeds#. That's the fen saying thank you. | I left my door open just to hear the drips. Let the damp come.
+b : It's welcome after the dry. | I'd not have thought of it like that. | You'll get damp in the house.
+a : #very.capitalize# welcome. #clay.capitalize# throws better for it, too. | Nor did I, till I'd been here a while. | Damp's nothing. A potter lives in damp, and #clay# loves it.
+
+scene boards_mud
+when topic=land|smalltalk here.region=fens
+does tell.complaint / react.self / assess
+a : Mud on #boards#, mud on the floor, mud in my boots. I came from a place with roots underfoot. | I miss solid ground, mm. The fen moves under you, like it's breathing.
+b : You stop noticing, after a while. | It takes some getting used to.
+a : I keep waiting to stop. I'm still waiting, #slow# as it goes. | It does. I've got used to most things. Not #boards# moving.
+
+scene barley_bowl
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize#. I'll have it every night of the year and not complain. | There's a pot on. Barley, a bit of onion, and a crust for mopping. | I eat my #soup# out of my old brown bowl. Tastes better from it, I'll swear.
+b : Simple and good. | Sounds lovely. | Does it, though?
+a : Simple's the best kind, #address#. | Sit down, then. There's enough #soup# for two. | It does. I'd not lie about soup. About other things, maybe.
+
+scene stale_and_cold
+when topic=food
+does tell.complaint / react.complaint / assess
+a : Bought a loaf at market. #crust.capitalize# by the time I got it home. #annoyed#. | #tea.capitalize#. Nothing worse. I'd sooner drink fen water.
+b : The early bake's the only safe one. | That bad?
+a : Then I'll be up for it tomorrow, before the herons. No more #crust#. | That bad. Fen water at least doesn't pretend to be anything.
+
+scene old_tale
+when topic=lore|memories
+does tell.story / ask.detail / answer.detail / react.self / assess
+a : There's #tale# of an old oak that took itself off for a drink at the river one night, and was home by dawn. | Did you ever hear the one about the carver who made a bird so true it flew off the bench? | My old master swore the oldest of #trees# remembered every wolf who'd sat under it.
+b : An oak that walked? | Did it really fly? | Remembered them how?
+a : That's what they say. Found it a yard nearer the bank, roots wet. | So #tale# goes. I've been trying to make one ever since. | By their weight, mm. It knew who'd sat heavy and who'd sat light.
+b : That's a good one. | You'll get there. | Lovely tale.
+a : It's true, every word. Most of them. | Not yet. #birds.capitalize# just sit there and look smug. | It is. I may have added a branch or two. #bc_ha#
+
+scene market_roar
+when topic=day|pastimes here.day=market
+does tell.feeling / react.self / assess
+a : Market day. #market.capitalize#, and me right in it with a pocket of #birds#. | I love #market#. Everybody shouting, nobody listening, and folk buy twice as much. | I'll go to market for the noise alone. The selling's a bonus.
+b : It's loud, though. | Twice as much? | Just the noise?
+a : Loud's the point, #address#. Quiet markets sell nothing. | Folk buy more when they can't hear themselves think. I've watched it, #address#. | Mostly. And to see who's selling #cityware#, so I can warn folk off.
+
+scene trim_truth
+when topic=smalltalk|lore pair.band=friends|family
+does confide / react.self / assess
+a : #vent#: every tale I tell, I trim a bit and add a bit. Never the important part. | I'll tell you a secret, old root. Half the birds I give away, I say I carved for that one wolf. I didn't. | I've never told a lie that hurt anybody. A few that helped a tale along.
+b : I'd guessed. | Doesn't matter if they love them. | That's fair.
+a : Course you had. You've heard #tale# of the walking oak four times. | It doesn't, does it. #birds.capitalize# are all for whoever needs one. | Fair, mm. And it keeps folk listening.
+
+scene gossip_slow
+when topic=gossip
+does tell.gossip / react.self / assess
+a : They say #topic.subject# #topic.claim#. I'm only telling you what I heard, mind. | Word going round is #topic.subject# #topic.claim#. I'll say no more. Well, a bit more.
+b : Who told you? | Go on, then.
+a : A #busybody# on the boards. I'd not swear by it, but I'd not swear against it. | That's all. I'd add a branch, but I'll leave this one bare.
+
+scene newcomer_where
+when topic=newcomer
+does tell.self / react.self / assess
+a : There's a newcomer about. First thing I'll ask is where they came from. | A new face about. If it's the city, I'll count #pots# tonight.
+b[from=ridgemere] #city : I came from the city, you know. | Not every city wolf's a thief.
+b : That's a bit hard. | You'll scare them off.
+a@city : Did you? Then I'll knock on you, and see. You ring true enough. | No. Just most of their #cityware#, mm.
+a : Hard, maybe. I've been let down by city things before. | I'll give them one of #birds# after. That usually mends it.
+
+scene faith_trees
+when topic=faith here.region=fens
+does give.opinion / react.self / assess
+a : I talk to the Bright One under trees. Out here I make do with #reeds#. | The chapel on the stilts is pretty enough. I'll not pretend I pray best there.
+b : The Bright One hears you anywhere. | Where do you, then?
+a : I hope so. The reeds don't carry it as far, mm. | Under #trees#, if I'm home. Otherwise by the fire, where it's #snug#.
+
+scene marsh_lights
+when topic=lore here.region=fens here.time=night
+does tell.self / react.self / assess
+a : #lights.capitalize# are out again. At home we had nothing like it. Owls, and that was all. | Folk here won't look at #lights#. I look. I just don't follow.
+b : Best not to. | Wise.
+a : I know. I've carved one, though. A little lamp-bird of #oak#. It sits on my sill. | Wise, or nosy. Both, with me. #saying.capitalize#.
+
+story first_bird [topic=memories|pastimes self.age>=25 self.from=oakhaven]
+  : When I was a #child# back home, an old joiner let me sit in the shop and sweep.
+  : One day he handed me a knife and a scrap of #oak# and said, make me a wren.
+  : It looked like a pinecone somebody had sat on. I gave it to a pup in the lane that same afternoon.
+  ask : Do you know what the pup said?
+  b : That it was the best wren in the wood, I hope?
+  : That it was a lovely pinecone. I've been giving them away ever since.
+
+story city_jug [topic=memories|prices self.age>=30]
+  : Years back I bought a jug off a city cart. Painted flowers, a lovely blue.
+  : First warm day it sang a little note, like a cricket, and split right down the side.
+  ask : Can you guess what I did with the handle?
+  b : Threw it in the fen? Or kept it?
+  : Kept it on a nail by my door, to remind me. I knock on all #cityware# now.
+
+story walking_oak [topic=lore self.from=oakhaven]
+  : In the old wood at home there's an oak with its roots half out of the ground, like it was caught mid-step.
+  : My gran said it walked down to the river every hundredth summer, to drink.
+  : Nobody ever saw it go. But one autumn the bank was nearer, and the roots were wet.
+  b[old] : I've heard that one told. Did you believe it?
+  b : That's a fine tale. Do you believe it?
+  : I believe the roots were wet. The rest I add for company, #address#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. A new face. Where are you from? Not the city, I hope. | #greet#. Come in, mind the wet pots, and tell me who you are.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Have I given you a bird yet? | #topic.player#. #greet#. Sit; I've a tale half told.
+dlg @3 resident.hub [here.time=night] : #greet#. Late, mm. I'm only up with the carving knife.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll talk, but I'll keep #pots# behind me. Say your piece.
+dlg @1 resident.job [self.job=crafter] : I throw pots. #self.trade_words.capitalize#, by trade, and a carver by nature. | Bowls, jugs, the odd lamp. And #birds#, but those aren't for sale.
+dlg @2 resident.job : A bit of this, a bit of that. #job_busy# | I keep my paws busy, mm. Ask anyone.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd tell you a tale instead, if you've time. | Nothing's come along worth the telling, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty, mm. Most of it's #nonsense#.
+dlg @1 resident.bye : #farewell#. Take a bird for the road. | #farewell#. Go careful, #address#.
+graft resident.hub
+choice Is it true you carve birds and give them away? -> birds
+node birds
+say True as oak. Wrens, finches, the odd owl if I'm feeling grand. I've given away more birds than I've sold anything else.
+mood pleased
+free
+choice Why not sell them? -> birds_why
+choice Goodbye. -> bye
+node birds_why
+say A bird with a price on it won't fly. Here, take this one. It's a wren, mostly. Put it where it can see out.
+choice Thank you. I'll keep it. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,287 @@
+# sm121, the hand who keeps step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm121
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for tn_sm_hob_meadowfield
+written_by claude
+title the hand who keeps step
+fits stage=adult|old
+prefers job=farmer talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes hard_cheese whittling tidy_house autumn_wind
+dislikes waiting bad_manners
+fears a_job_done_half a_stack_that_falls_when_nobody_is_looking
+hopes a_granary_kept_better_than_any_in_the_south to_walk_the_long_road_once_more
+topics work +0.4 travel +0.3 weather +0.2 food +0.2 pastimes +0.2 gossip -0.4
+styles comfort=practical gossip=avoids refuse=plain tease=none
+marks oath saying
+persona #self.first# does every job square and once, hums the old marching songs under the breath, carves pegs of an evening, and is proud of it all without saying so.
+
+words
+oath! = Left, right, and home | By the drum and the dust
+saying! = Keep step and you'll keep up | A square stack never falls
+songs = the old marching songs | a tune for the long road
+drum = the drum song | the one with the drum in it
+granary = the granary | the granary floor
+sacks = the sacks | sacks stacked square
+cheese = hard cheese | a cheese with some bite to it
+stack = the stack | a stack built square
+track = the track | the farm track
+carts = the carts | the grain carts
+knife = my good knife | the knife I keep sharp
+pegs = the pegs I carve | a peg or two, neat as you like
+gust = an autumn wind with some push in it | a wind that strips the hedges
+waiting = waiting about | standing about for somebody late
+road = the long road north | the city road
+boots = my boots | boots I've worn through twice
+yard = the yard | a swept yard
+manners = manners | a civil tongue
+
+any
+opinion @1 city against 1 : Smoke and shoving, and nobody with #manners# to spare. I'd not go back for wages. | All that way for a place where nobody says good day. Blighted, I call it.
+opinion @1 watch mixed 0 : The watch march well enough. I'd like to see them catch somebody now and then, #address#.
+opinion @2 watch against 1 [self.robbed=yes] : Whoever robbed me is still walking about. The watch took my name very neatly, mind. That's all they did.
+opinion @1 newcomers mixed 0 : A newcomer's welcome if they wipe their #boots# and say good day. Most do. Some don't.
+opinion @1 festivals mixed 0 : I'll go for the music. I leave when #manners# go, and they go early.
+opinion @1 times for 1 : There's work, and there's #cheese#, and the roof's sound. A ripe year's no time for grumbling.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your #boots#, if you're stopping. | #greet#. You'll be wanting the farmhouse; it's up the track.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Mind the stack; it's square and I'd like it to stay so. | #greet#. Stand clear of #sacks#.
+line @3 greet [here.time=dawn] : #greet#. Out with the light. #good.capitalize#. | #greet#. First up, first done.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be walking. | #greet#. I was just locking up #granary#.
+line @1 kin.open [pair.kin!=no] : There you are. #boots.capitalize# off; I've swept. | #greet#. Sit down. There's #cheese# on the board.
+line @1 again.open : You again. Twice, and both on time. #good.capitalize#. | Back already. Right; I've a minute, #address#.
+line @1 greet.return : #greet#. | #greet#. Keeping well, I hope.
+line @2 greet.return [pair.band=friends|family] : #greet#. #good.capitalize# to see you. | #greet#. I'd hoped you'd come by.
+line @3 greet.return [self.working=yes] : #greet#. Talk away; #sacks# won't mind. | #greet#. Talk while I stack.
+line @1 farewell : #farewell#. Mind your step on the track. | #farewell#. Keep step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Sleep sound. | #farewell#. Mind the ditch in the dark.
+line @1 farewell.return : #farewell#. | #farewell#. Go steady.
+line @1 react.news : Is that right. I'll mind it, #address#. | #surprise#. Well, there it is.
+line @1 react.news.new : That's new to me. #granary.capitalize# hears nothing till #carts# come. | #surprise#. I'd not heard.
+line @1 react.news.known : #knew#. Heard it at the gate this morning. | Yes, I'd heard it on #track#. I kept it to myself.
+line @1 react.news.doubt : #doubt#. I'll wait for somebody who saw it. | I don't hold with that till it's proved, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a #bad# business. | Hard news, #address#. I'd not wish that on anybody.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good# news. I'll drink to it, the once.
+line @1 answer.how : Well, thanks. Steady as #stack#. | #fine#. Busy, but steady.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Forty sacks to shift by noon. | #busy.capitalize#, but it's going right.
+line @1 ask.how : And yourself? Keeping well, #address#? | How's it going with you, #address#?
+line @1 sympathise : #sympathy#. Sit a while. | That's #bad#, and no mistake. Sit down.
+line @1 reassure : It'll come right. One step, then the next, like #songs#. | #reassure#. Keep step and it passes.
+line @1 decline : I'd rather not. #sacks.capitalize# are waiting on me, and I don't leave a thing half done. | #refuse#, #address#. Somebody has my word for tonight already.
+line @1 accept_decline : Right. Another time, then. #bc_fair_enough#. | #no_matter#. You said so plainly; that's fair.
+line @1 thank : #thanks#. | #thanks#. That was well done.
+line @1 deflect_thanks : It needed doing, #address#. | #deflect#.
+line @1 preclose : Right. I'd best be off to #granary#. | #excuse#. #sacks.capitalize# won't stack themselves.
+line @1 accept_preclose : Go on, then. Keep step. | Right you are. #track.capitalize# is yours.
+line @1 take_offence : There's no call for that. #manners.capitalize# cost nothing. | That's poor #manners#, and I'm telling you so plainly.
+line @1 ack : Right. | #bc_right#. | #bc_fair_enough#.
+line @1 give.advice : Do it once, do it square, and you'll not do it twice. #saying.capitalize#. | Oil #knife# before you put it away. It'll thank you in the spring.
+rule @hum
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Dum, da-dum, da-dum... left, and right, and lift. | #drum.capitalize#, under my breath, so nobody minds.
+
+rule @wind
+when concept=bark here.season=autumn here.weather!=indoors
+does aside
+cooldown 10h
+say There's #gust#. Lovely. | Hear that wind in the hedges. That's a #good# autumn.
+
+rule @late
+when concept=bark here.place=street|market|gate
+does aside
+cooldown 10h
+say I said noon. It's past noon. #annoyed#. | #waiting.capitalize#. Again.
+
+rule @rude
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 8h
+say A pardon me costs nothing at all. | No #manners#, some folk. None at all.
+
+scene hum_work
+when topic=work|smalltalk self.working=yes
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : #oath#. Forty sacks and I've not dropped the tune once. | You'll hear #songs# out of me. Pay it no mind; it keeps my feet in time. | Dum, da-dum. Sorry. I don't know I'm humming #drum#, half the time.
+b : What tune is that? | What is it you hum? | What is it?
+a : One of #songs#. My grandad's. It's got a long road in it. | #drum.capitalize#. It was for marching. Now it's for sacks. | An old marching song. It's older than #granary#, and steadier.
+b : It suits the work. | Steady work, then. | It's a good tune.
+a : It does. Step, lift, step, #stack#. | #very.capitalize# steady. Like the song. | It is. I'll not sing it, mind. Only hum, #oath#.
+
+scene grandad_songs
+when topic=memories|family self.age>=18
+does tell.memory / react.self / assess
+a : My grandad marched in his day. Came home with one ear deaf and #songs# in his head. | I learned #songs# sitting on my grandad's knee. I couldn't talk yet, but I could hum. | My grandad would hum #drum# while he mended boots. I hum it while I stack.
+b[old] #elder : We had a few of those come home. Hard men, most of them. | I know some of those songs. Not the words. | That's how songs keep.
+b : He sounds a character. | Before you could talk? | Same tune, different work.
+a@elder : Hard, and soft underneath. That was him. | Nobody knows the words now. #drum.capitalize# is enough. | It is. Hand to hand, hum to hum.
+a : He was. Square as #stack#, and twice as stubborn. | So they tell me. I believe it, #address#. | Same tune. Same step, near enough. #saying.capitalize#.
+
+scene square_stack
+when topic=work self.job=farmer here.region=southmeadow
+does tell.self / react.self / assess
+a : I stacked #granary# end to end today. You could lay a rule on it. | #sacks.capitalize# go corner to corner, label out. Nobody else bothers. | I swept #granary# twice. Once for the grain, once for me.
+b[job=farmer|laborer] #hand : A rule? Show off. | Label out's sensible. | Twice is a lot of sweeping.
+b : That's neat work. | Does it matter? | Twice?
+a@hand : Proud, not showing off. There's a difference, and it's square. | It is. You find #sacks# in the dark that way. | Twice is right. Once is nearly.
+a : It's how it should be. #saying.capitalize#. | It matters to me. And when #carts# come, it's quick. | Twice. The second time is so I can sleep.
+
+scene haul_harvest
+when topic=harvest|work self.job=farmer here.region=southmeadow here.season=summer|autumn
+does tell.self / react.self / assess
+a : #work.capitalize# is in full swing. Every sack I lift, I hum a bar. | The grain's coming in heavy. #good.capitalize# year, if the weather holds. | We filled #granary# to the beams yesterday. I counted the rows twice.
+b : That's a lot of humming. | Let's hope it holds. | To the beams!
+a : It is. The whole song, a hundred times over. | It'll hold. I've asked it nicely, #oath#. | To the beams, and square. Not one of #sacks# out of line.
+
+scene autumn_gust
+when topic=weather|season here.season=autumn here.weather!=indoors
+does tell.feeling / react.self / assess
+a : Listen to that. #gust.capitalize#. Best weather there is. | The wind's stripping the hedges. I could walk all day in it. | I love an autumn blow. It clears the head and #yard# both.
+b : It's a bit wild for me. | All day? In this? | It does clear the head.
+a : Wild's what I like about it, #address#. | All day, and back again. I've done it. | And the chaff off #yard#. Saves me a sweep.
+
+scene cheese_board
+when topic=food
+does tell.self / react.self / assess
+a : #cheese.capitalize# and an apple. I'll not want more than that. | Soft cheese is for pups. Give me one you have to work at. | I cut my cheese with #knife#. Thin as a leaf, every slice the same.
+b : Simple supper. | Soft's all right. | The same?
+a : Simple's best. You know where you are with #cheese#. | For some. Not for me. #good.capitalize# cheese bites back. | The same. It's tidier, and it lasts longer.
+
+scene peg_carving
+when topic=pastimes here.time=dusk|night
+does tell.self / react.self / assess
+a : I carve #pegs# of an evening. Every one the same length. | I've made enough pegs for every line on #track#. Folk still ask for more. | I'll sit with #knife# and a bit of ash wood and not notice the dark come in.
+b : Sounds restful. | They must be good pegs. | It goes quick, that sort of thing.
+a : It is. Nobody's late for a peg. No #waiting#. | They hold. That's all a peg's for. | It does. I hum, and the shavings pile up.
+
+scene my_corner
+when topic=home
+does tell.self / react.self / assess
+a : My corner of the house is the tidy one. Nobody touches it twice. | #boots.capitalize# by the door, toes to the wall. Somebody always moves them. | A place for everything, and everything in it. We're getting there.
+b : Every house needs one tidy corner. | Annoying, that. | It takes time.
+a : It does. Mine's it, #oath#. | It is. I put them back. Every time, #oath#. | It does. I've patience for that. Not for #waiting#.
+
+scene long_road
+when topic=travel self.age>=20
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I walked #road# once, all the way to the city. Just to say I had. | Folk said I'd never walk there and home again. I did both, on the same pair of #boots#. | I've seen the end of #road#. I touched the city gate, turned round, and came home.
+b : Why go so far? | How long did it take? | Why not go in?
+a : Somebody said I couldn't. That was reason enough. | Eleven days up, nine down. The way home's shorter. | I'd done what I set out to do. The rest was their business.
+b : That's pride. | That's a long walk. | Fair enough.
+a : It is. I'll own it. #saying.capitalize#. | It is. I hummed #songs# the whole way, start to finish. | It was. And I'd do it again, #oath#.
+
+scene city_view
+when topic=travel|land
+does give.opinion / react.self / assess
+a : Smoke and shoving, that city. Nobody gave me so much as a good day. | I'd not live in the city for any wages. Too many folk, too few #manners#.
+b[from=ridgemere] #city : We're not all like that. | Some of us are civil.
+b : That's the city for you. | It's not for everyone.
+a@city : Could be. I must have met the other sort. | I'll take your word, and keep to #track#.
+a : It is. I'll keep to the fields, thank you. | Not for me. One look was enough, #address#.
+
+scene kept_waiting
+when topic=day|smalltalk
+does tell.complaint / react.complaint / assess
+a : I was at the gate at the hour. The carter came an hour after. #waiting.capitalize#. | #waiting.capitalize#. I'd rather lift sacks all day than stand still for one hour. | If I say I'll be there, I'm there. I expect the same from others.
+b : Some folk are always late. | Standing's harder, somehow. | That's only fair.
+a : They are. Their hours aren't mine, though. | It is. Your feet go to sleep and your temper wakes up, #address#. | It is fair. Seldom happens, though.
+
+scene no_manners
+when topic=smalltalk|day here.place=street|market|tavern
+does tell.complaint / react.self / assess
+a : A fellow pushed past me at the store today. Not a word. No #manners# at all. | Some folk wouldn't know #manners# if they tripped on them. | I held a door for somebody this morning. Not even a nod. #bad.capitalize# manners.
+b : Rude. | Some folk. | That's poor.
+a : It is. I said #greet# to the back of him, loud. | They'd fall flat, and blame the floor. | It is. I'll hold it again tomorrow, mind.
+
+scene mother_proud
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I'd not hear a word said against #self.mother#. Not one. | Everything I know about doing a thing right, I learned at #self.mother#'s side.
+b : That's good to hear. | That's a good start in life.
+a : I mean every word of it. | It is. I mean to do it credit.
+
+scene robbed_once
+when topic=crime self.robbed=yes
+does tell.complaint / sympathise / assess
+a : Somebody robbed me, and the watch wrote my name down very neatly. That was the end of it. | I've stopped asking the watch about it. They look at their boots.
+b : That's hard. | They've a lot on.
+a : It is. I keep my door barred now, and #knife# on my belt. | So have I. I'd like them to have a thief on, now and then.
+
+scene chapel_hum
+when topic=faith
+does tell.self / react.self / assess
+a : I hum #songs# under the hymns in chapel. Nobody's said anything yet. | I thank the Bright One for a #good# day's work. I don't ask for more than that.
+b : As long as it's in tune. | That's a fair prayer.
+a : It's in tune. It's the hymn that wanders. | It's what I've got. It's honest.
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.job=farmer
+does tell.complaint / react.self / assess
+a : #sacks.capitalize# stacked for the carts, and no carts. Two days now. | Late again, #carts#. A granary full and nowhere to send it.
+b : They'll come. | That's the road for you.
+a : They'd better. I'll not restack #stack# for anybody. | It is. I walked #road# faster than they drive it.
+
+scene dawn_march
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : I walk out to the fields humming #drum#. The birds don't seem to mind. | First light, boots on, step and step. #good.capitalize# way to start.
+b : They'd tell you if they did. | It's early for me.
+a : They would. They're louder than #drum#. | Early's the best of it. Nobody's late yet.
+
+scene pride_plain
+when topic=smalltalk pair.band=friends|family
+does confide / react.self / assess
+a : I know I'm particular. I'd rather be that than wormy with it. | Folk call me proud. I suppose I am. I don't mind it. | I can't leave a thing half done. It sits on me all night, #oath#.
+b : Better particular than careless. | Proud of good work's fair. | That's no bad thing.
+a : It is. I've stacked behind a few careless ones. | It is. I'll keep at it, #oath#. | It isn't, mostly. Except when it's two in the morning.
+
+story the_long_walk [topic=travel|memories self.age>=20]
+  : Somebody at a harvest supper said I hadn't the legs for the city road, there and home.
+  : I set off the next morning with #cheese#, a spare pair of socks and #drum# in my head.
+  : Eleven days later I put my paw on the city gate, turned round, and walked home.
+  ask : Do you know what they said when I got back?
+  b : That you were daft? Or did they buy you a drink?
+  : They bought me a cup and never said I couldn't do a thing again. #saying.capitalize#.
+
+story grandad_drum [topic=memories|family self.age>=20]
+  : My grandad kept the old drum from #songs# on a nail over the hearth.
+  : When I was a #child#, he'd take it down at #supper# and beat out the old step, slow, so I could follow.
+  ask : Have you anything like that, from your own old folk?
+  b[old] : A thing or two. Have you still got the drum?
+  b : Not much. What became of the drum?
+  : It's on our wall. I don't beat it. I just hum #drum#, and that's enough.
+
+story first_stack [topic=work|memories self.job=farmer self.age>=20]
+  : My first week as a hand, I built a stack in a hurry and it came down in the night.
+  : The old hand made me take every sack off and put it up again, square, by lamplight. #very.capitalize# long night.
+  b : That's hard on a new hand. Did you hold it against them?
+  : Not for a minute. Not one of my stacks has fallen since. #oath#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Wipe your #boots# and say what you need. | #greet#. You'll want the farmhouse, most likely. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. On time, as ever. I like that. | #topic.player#. #greet#. You're welcome back, #address#.
+dlg @3 resident.hub [here.time=night] : #greet#. It's late. I've the granary to lock, so be quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll keep #manners# if you will. That's my whole offer.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. #sacks.capitalize#, the stacks, and the granary floor kept square. | I lift, I stack, I sweep #yard#. And I do it right.
+dlg @2 resident.job : I work, and nobody has to do it after me. #job_busy# | Whatever needs doing. Done square, done once.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd have heard it at the gate. | Nothing's come up the track today, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't carry tales. #gossip_none# | Not my business, and I keep to mine. #saying.capitalize#.
+dlg @1 resident.bye : #farewell#. Keep step. | #farewell#. Mind the track; it's rutted.
+graft resident.hub
+choice What's that tune you're always humming? -> tune
+node tune
+say One of the old marching songs. My grandad brought it home from his marching days. It keeps my feet in time when I'm lifting.
+mood calm
+free
+choice Will you sing it for me? -> tune_sing
+choice Goodbye. -> bye
+node tune_sing
+say No. Humming's for working; singing's for folk who can. But you can have the first bar. Dum, da-dum, da-dum. There.
+choice Thank you. -> hub
+choice Goodbye. -> bye

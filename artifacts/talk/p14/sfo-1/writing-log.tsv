@@ -1,0 +1,38 @@
+mantle	writer	started	finished	items	alternatives	note
+sm104	S1	2026-11-18T17:35:11-07:00	2026-11-18T17:47:00-07:00	127	550	full innkeeper: inn tree nodes and fact nodes gated per case; work gated self.job=innkeeper
+sm105	S1	2026-11-18T17:46:37-07:00	2026-11-18T17:49:34-07:00	74	309	pot hand filed job=farmer: pot work gated self.working=yes here.place=tavern
+sm106	S1	2026-11-18T17:49:34-07:00	2026-11-18T17:54:48-07:00	111	465	adolescent: young, adolescent (largest) and grown sections; learner talk gated self.apprentice=yes
+sm107	S1	2026-11-18T17:54:48-07:00	2026-11-18T17:58:12-07:00	70	308	cellar hand, job none: work gated self.working=yes self.job=none; invents "old" sayings
+lf138	S5	2026-11-18T17:51:15-07:00	2026-11-18T17:54:22-07:00	99	313	larkfield, accent none, lives in Frosthollow; home talk gated self.away=yes self.from=larkfield
+sm108	S1	2026-11-18T17:58:12-07:00	2026-11-18T18:04:37-07:00	68	282	vine hand (job farmer); calm, frank; pocket stone from a wood stream
+oh102	S6	2026-11-18T17:52:40-07:00	2026-11-18T17:58:12-07:00	73	337	terse devout feller, tally stick, riddles; work gated self.job=woodcutter
+sm109	S2	2026-11-18T17:46:31-07:00	2026-11-18T17:49:04-07:00	71	275	farm resident: oath/saying checked by eye (§8.8); farm talk gated self.job=farmer
+cw162	S6	2026-11-18T17:48:30-07:00	2026-11-18T18:03:33-07:00	78	379	Coldwater-born mine captain in Frosthollow: captain talk gated self.job=miner self.class=middle|upper; home gated self.away=yes self.from=coldwater
+fh101	S5	2026-11-18T17:38:05-07:00	2026-11-18T17:40:26-07:00	95	339	collier, job none: work gated self.working=yes self.job=none; accent none; quiet guarded riddler who watches the door
+sm110	S2	2026-11-18T17:49:34-07:00	2026-11-18T17:52:31-07:00	74	307	accent none; made-up plain sayings; beekeeping words kept clear of sm101
+sm111	S2	2026-11-18T17:36:53-07:00	2026-11-18T17:45:47-07:00	119	481	full (master): master.* nodes gated like the tree; work gated self.job=farmer
+oh103	S6	2026-11-18T17:55:20-07:00	2026-11-18T17:58:12-07:00	72	330	warm, fretful sky-watcher; storms, wrong maps
+sm112	S2	2026-11-18T17:52:31-07:00	2026-11-18T17:55:22-07:00	72	284	dry, terse; feeds sparrows; keeper-vs-hand claims removed
+sm113	S2	2026-11-18T17:55:22-07:00	2026-11-18T17:58:22-07:00	70	279	job none: millstone work gated self.working=yes self.job=none; wagers carry the voice
+sm114	S3	2026-11-18T17:35:11-07:00	2026-11-18T17:53:44-07:00	119	362	full merchant, the dancing storekeeper; shop and resident trees gated per case; work gated self.role=merchant
+fh102	S5	2026-11-18T17:40:26-07:00	2026-11-18T17:43:27-07:00	93	305	miner; short-tempered then sorry; watches the pass road in winter
+sm115	S3	2026-11-18T17:54:20-07:00	2026-11-18T17:57:36-07:00	69	216	the thrice-told farmhand: three stories that the scenes replay
+sm116	S3	2026-11-18T17:58:07-07:00	2026-11-18T18:00:20-07:00	68	209	knotted-string reaper; quiet, blunt; quirk turned to keeps_a_tally_on_a_knotted_string
+sm117	S3	2026-11-18T17:48:49-07:00	2026-11-18T17:53:53-07:00	110	337	full potter (merchant, crafter); pottery gated self.job=crafter; quirk turned to trusts_nothing_without_a_makers_mark
+sm118	S3	2026-11-18T18:01:03-07:00	2026-11-18T18:03:48-07:00	71	218	carter who comes late; work gated self.job=carter
+fh103	S5	2026-11-18T17:43:27-07:00	2026-11-18T17:45:48-07:00	93	303	carter; dry, quiet; wagons late/raided scenes gated on the world
+fh104	S5	2026-11-18T17:45:48-07:00	2026-11-18T17:48:17-07:00	92	290	lime burner (job miner); calm, ambitious, does sums
+fh105	S5	2026-11-18T17:48:17-07:00	2026-11-18T17:51:15-07:00	100	290	charcoal burner (job miner); chatty, prickly, counts everything; robbery gated self.robbed=yes
+fh106	S6	2026-11-18T17:38:54-07:00	2026-11-18T17:47:32-07:00	108	517	merchant full: shop greet/prices/bye and business/news per case; quirk turned to reads_a_customer_by_the_boots (four in town had the door quirk)
+fh107	S6	2026-11-18T17:43:00-07:00	2026-11-18T17:48:10-07:00	111	512	innkeeper full: every inn node incl. helper case; work gated self.job=innkeeper; quirk turned to carves_little_birds_to_give_away
+oh104	S6	2026-11-18T17:58:20-07:00	2026-11-18T18:02:40-07:00	75	347	dry, content, argues with the weather; debt scene gated self.owes=yes
+oh105	S7	2026-11-18T17:58:18-07:00	2026-11-18T18:03:00-07:00	69	213	carter who knows your gran; debt gated self.owes=yes; warmth reserved->warm (personality)
+oh106	S7	2026-11-18T18:01:07-07:00	2026-11-18T18:07:11-07:00	71	219	logger; quirk turned to asks_each_tree_s_pardon_before_the_cut (third counter in town)
+oh107	S7	2026-11-18T17:38:37-07:00	2026-11-18T17:46:53-07:00	119	363	full innkeeper: inn nodes gated (inn_helper, lodging); work gated self.job=innkeeper
+oh108	S7	2026-11-18T17:46:53-07:00	2026-11-18T17:53:00-07:00	112	356	full storekeeper, accent none; store talk gated self.role=merchant; shop nodes per case
+oh109	S7	2026-11-18T17:55:10-07:00	2026-11-18T18:00:30-07:00	111	347	full printer filed job=merchant: press talk gated self.job=merchant; counts sheets and quires
+sm119	S4	2026-11-18T17:43:27-07:00	2026-11-18T17:51:40-07:00	76	215	accent none; clay work gated self.job=miner; no #self.workplace# (a district)
+sm120	S4	2026-11-18T17:48:47-07:00	2026-11-18T17:55:16-07:00	73	225	frank, short-tempered vine-keeper; a stone in a crock per coin saved; vine work gated self.job=farmer
+sm121	S4	2026-11-18T17:51:40-07:00	2026-11-18T17:59:08-07:00	73	218	meticulous hand, marching songs; robbed stance gated self.robbed=yes (facts say no)
+sm122	S4	2026-11-18T17:35:13-07:00	2026-11-18T17:43:17-07:00	116	353	pup: young, adolescent and grown sections; names quirk via #other.first# [pair.named=yes]; mother talk gated self.mother
+oh110	S4	2026-11-18T17:55:16-07:00	2026-11-18T18:01:39-07:00	75	228	Oakhaven-born potter in Fenshore: home talk gated self.away=yes self.from=oakhaven; fen words only in fens-gated items

@@ -1,0 +1,460 @@
+# oh107, the taproom tally-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh107
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier full
+written_for tn_fh_tamsin_icefell
+written_by claude
+title the taproom tally-keeper
+fits stage=adult|old
+prefers role=merchant job=innkeeper temper=nervy
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk counts_things_under_the_breath
+likes warm_bread singing a_full_till thunder
+dislikes flies waiting
+fears the_south_road a_short_till
+hopes a_room_in_the_city a_jar_full_enough_for_the_fare
+topics work +0.4 dreams +0.4 food +0.3 weather +0.3 travel +0.2 pastimes +0.2 prices +0.2 caravan +0.2 gossip -0.1
+styles comfort=practical gossip=blunt refuse=short tease=none
+marks oath saying tally
+persona #self.first# keeps a taproom and counts everything in it under the breath, cups and coppers and the gap before the thunder: blunt, jumpy, honest at the taps, and saving every spare copper for the city.
+
+words
+oath! = Hoops and staves | By cask and cedar | Spigot and stave
+saying! = Count it twice and pour it once | A heavy till sleeps sound | What's counted can't wander off
+tally! = one, two, three | nine, ten, eleven | twenty, twenty-one
+bread = bread warm off the peel | a loaf with the heat still in it | new bread
+till = the till | my cash drawer
+fulltill = a till too heavy to lift at closing | a drawer that rattles when you shut it
+thunder = thunder over the treetops | a storm drumming on a sound roof
+flies = the flies | summer flies on the bar
+casks = the casks | my barrels
+cups = the cups on their hooks | my tankards
+taproom = the taproom | my taproom
+benches = the long benches | my benches
+fare = the fare south | a seat on a cart going down
+jar = the jar under my bed | my coin jar
+city = the city | the city down the hill
+waiting = standing about waiting | waiting on folk
+roof = a good tight roof | sound shingles over my head
+lamps = the lamps | my nine lamps
+counter = the counter | my counter
+cellar = the cellar | my cellar
+beams = the beams | the old beams overhead
+regulars = the regulars | my regulars
+copper = a copper | one copper
+fire = the fire | my fire
+step = my step | the front step
+song = a song with friends round a fire | a song at closing, with the stools up
+
+any
+opinion @1 city for 1 : I'll go down to #city# #someday# and stay. Nobody there will know how many cups I own.
+opinion @2 city mixed 1 [self.away=yes] : #city.capitalize#'s loud and it's dear, and I'd still not swap it back. Nobody counts my business here but me.
+opinion @1 road against 2 : Not the south road, not now. #bandits.capitalize# and mud, and not a roof between here and the bottom of it.
+opinion @2 road against 3 [world.wagons=raided] : There, you see. Another wagon stripped. I'll stay behind my own door, #oath#.
+opinion @1 merchants for 1 : A trader carries the wagon, the wet week and the empty shelf. I count my own casks; I'll not grudge them a margin.
+opinion @1 watch for 1 : They keep light paws off #till#, and they pay for what they drink. I'll not hear a word against them.
+opinion @1 drink for 1 [self.job=innkeeper] : #ale.capitalize# is my living and I'll not apologise for it. But when I say that's your last, it's your last.
+opinion @1 strangers mixed 1 : A stranger's #copper# counts the same as anyone's. It's the stranger I keep an eye on.
+opinion @1 festivals for 1 : I like a feast. Loud, and #song#, and #fulltill# at the end of it.
+opinion @1 times mixed 1 [world.times=hard|lean] : #till.capitalize#'s lighter every week. I count it, and I don't like what I count.
+
+grown
+scene till_at_close
+when topic=work|day here.time=dusk|night self.working=yes self.job=innkeeper
+does tell.self / ask.detail / answer.detail / assess
+a : Forty-one, forty-two... sorry. I count #till# before I sit down, and I lose my place if anyone speaks. | Last cup washed. Now #till#, then my feet up, in that order. | I've counted #till# three times tonight and it's come out three different ways.
+b : How much is in it, then? | Do you never leave it till morning? | Which of the three do you believe?
+a : Enough for flour and a cask, and a few coppers over. #very.capitalize# good, for a weekday. | Never. I'd lie upstairs under #beams# hearing coins all night. | The middle one. Then I'll count again at dawn, #oath#.
+b : A good night, then. | I'd sleep fine, myself. | Sounds like you'll count it a fourth time.
+
+scene cups_on_hooks
+when topic=work self.working=yes self.job=innkeeper
+does tell.worry / ask.detail / answer.detail / reassure
+a : There's one missing off #cups#. Twenty-three, and there ought to be twenty-four. | Somebody walked off with one of #cups# last night. I'd swear to it. | I've counted #benches# twice. One's been shifted, and nobody's owning up.
+b : Could it be under a table? | Who'd want an old tankard? | Does it matter where a bench stands?
+a : I've looked under every one. On my knees, with a candle, root and branch. | Some #drunk# joker who thinks it's a keepsake. It's my tankard. | It does to me. I like to come down at dawn and find #taproom# as I left it.
+b : It'll turn up, I'd wager. | It'll come back when they sober up. | Then shove it back and say no more.
+
+scene warm_loaf
+when topic=food
+does tell.feeling / react.self / assess
+a : #bread.capitalize#, butter sinking into it, and nobody wanting anything of me. That's my whole wish. | I tore the heel off #bread# on the way home and ate it in the lane. Couldn't help it. | The bakery ovens open at dawn and I can smell them from my window, #very# cruel.
+b : Nothing to beat it. | Best part of the loaf, the heel. | Cruel, before breakfast.
+a : #bc_it_is# It goes cold, and so do I, but there's that first minute. | Still steaming, it was. I'd fight you for the next one, #oath#. | Cruel's the word. I'm up and dressed before I've decided to be, #hungry# as a log.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.feeling / ask.detail / answer.detail / assess
+a : Hark at it. #tally.capitalize#... it's coming closer. | I love a storm, so long as there's #roof# between it and me. | #thunder.capitalize#. I could listen all night, dry under #beams#.
+b : You count the gap? | And if the roof leaks? | You're not frightened of it?
+a : Always. Under four and it's over the wall. Seven, and it's still out in the trees. | Then I'd count the drips into a bucket and like it a deal less, mm. | Of the road, aye. Not of a noise in the sky with #roof# on.
+b : Clever. | Fair. | Each to their own fears.
+
+scene leaf_rain
+when topic=weather here.weather=rain here.region=oakhaven
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# off every leaf in the wood, and all of it comes in on somebody's boots. | It's rained since cockcrow. I've wiped #step# nine times. | Wet fur steaming by every #fire# in town, and the whole street smells of it.
+b : Better in than out. | Leave the step be. | It'll dry by supper.
+a : Better in and dripping, I suppose. #bad.capitalize# for the floor, mind. | Ten, then. I'll stop at ten and not a wipe more, #oath#. | It will, and then it'll start again. #saying.capitalize#.
+
+scene flies_bar
+when topic=weather|season here.season=summer
+does tell.complaint / give.advice / disagree
+a : #flies.capitalize#. I've swatted eleven since noon, and more coming in than going out. | It's warm, and the warm brings #flies#. I can't abide them. | Same every summer. I hang mint by the door and #flies# laugh at it.
+b : Keep the door shut, then. | They're only flies. | Try a dish of vinegar.
+a : Then it's #hot# as a bread oven and nobody comes in. Eleven, and that's my count. | Only flies, walking on everything you'll eat. I'll not have it, #oath#. | I've tried it. They drink it and stay, the #worthless# things.
+
+scene waiting_wagons
+when topic=caravan|prices world.wagons=late self.job=innkeeper
+does tell.complaint / react.complaint / assess
+a : The wagons are late again and I'm down to my last two #casks#. I hate #waiting#. | I've stood at the gate twice this morning looking down the south road. Not a leaf stirring. | Late. I've a list of what #cellar#'s short of, and it grows every time I count it.
+b[job=carter] #cart : The road's no kinder for being waited on. | Standing at the gate won't fetch it. | We come when the road lets us.
+b : They'll come. | Nothing for it but wait. | That's a poor business.
+a@cart : I know. It's #waiting# that does for me, not you carters. | I know it won't. My feet take me there anyway, sense or none, #oath#. | Then I'll count #casks# again and try for patience.
+a : They'd better. Two casks won't see out a Marketday, #oath#. | Waiting's the worst work there is. I'd sooner haul #casks# up myself. | #bad.capitalize#, and nothing I can do but count what's left.
+
+scene wagons_in
+when topic=caravan|prices world.wagons=in self.job=innkeeper
+does tell.self / react.self / assess
+a : The wagons are in. I counted every cask off the back of them and they're all there, root and branch. | Fresh barrels in #cellar#, and I can breathe again. | The carters rolled in at noon. I had #cellar# door up before they'd stopped.
+b : That's a weight off. | Busy night ahead, then. | Eager, weren't you.
+a : A whole wagonload off my back. I'll sleep tonight, under #beams#, like a stone. | #bc_i_hope_so# Full casks want a full room. | I was. I'd waited long enough, #oath#.
+
+scene city_far
+when topic=dreams|travel self.away=no
+does confide / ask.detail / answer.detail / assess
+a : #vent#: I mean to go down to #city# one day, and stay there. | I've #jar#. Every copper in it is for #fare#. | I dream about #city# more than I ought. Streets you can't see the end of.
+b : What's down there for you? | How full is it? | What do you do there, in the dream?
+a : Nothing I can name. That's the pull of it: nobody knows me, not a soul, mm. | Thirty-one coppers. I count it every Restday, and it's never more than I hoped. | Walk. Just walk, and never see a face I've known since I was a #child#.
+b : I hope you get there. | You'll get there, slow. | Sounds lonely, to me.
+
+scene road_fright
+when topic=travel|bandits
+does tell.worry / ask.detail / answer.detail / assess
+a : I'd go south tomorrow, if it weren't for the road. It's trees and #bandits# the whole way. | Every carter has a tale of #bandits#. I count the tales. Nine this year. | The road's safe in daylight, so they tell me. Leaf-talk, mm, that's all.
+b : What frightens you most about it? | Nine's a lot of tales. | You'd not take their word?
+a : The long stretch with no #roof#. Anything could come out of the trees. | Nine too many. I'd sooner stay rooted and keep my pelt, #oath#. | Not for that road. I'd want it carved on the gatepost, #very# deep.
+b : I can see that. | It is a lot. | Ha. Carved, then.
+
+scene song_alone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I sing when I'm scrubbing and the room's empty. Never when there's an ear. #bc_not_me# | Give me #fire# and #song#, and I'll forget I've feet. | There's a song with eleven verses. I count them off on my claws so I don't drop one, #very# careful.
+b : I'd like to hear it. | Sing one now, then. | Eleven's a long song.
+a : You'll have to stand outside the window, then. Slow now, and quiet. | Not sober, and not before #cups# are washed. | It is. Verse seven's the best, the one about the miller's daughter. #bc_lovely#
+
+scene sing_after_close
+when topic=pastimes|festival pair.band=friends|family|housemates self.job=innkeeper
+does invite / accept_invite / assess
+a : Come by after close. We'll have #song#. | Sing with me at the feast? I'll not stand up alone. #bc_not_me# | A few of #regulars# stay on for a song after the last cup. Stay too.
+b : I'll bring the tune if you bring the words. | If you stand at the front. | Gladly, if I'm asked nicely.
+a : Done. I've the words, every verse, counted. #good.capitalize#. | Behind you, then. I'm braver behind somebody. | You're asked. Nicely, even. #bc_go_on_then#
+
+scene regulars_count
+when topic=work|friends self.working=yes self.job=innkeeper
+does tell.self / react.self / assess
+a : I know who's in by counting #benches#. Six regulars of a weekday, and one's not come. | Same faces every night. I could pour for #regulars# blind. | I count heads when I come up from #cellar#. It's a habit, mm.
+b : Maybe that one's poorly. | Easy trade, then. | Nobody's slipped off without paying, then.
+a : Could be. I'll keep a seat warm and fret till they show, #oath#. | Easy till somebody orders something new and I've to go down to #cellar#. | Not yet. Not on my count, #oath#.
+
+scene dawn_boards
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : Up before light. I swept, and counted the boards I swept, and that's thirty-eight. #bc_every_day# | The trees are still dripping and I've #fire# lit already. | Dawn's when I like myself best. Nobody's #waiting# on me yet.
+b : Thirty-eight boards? | You're an early one. | Enjoy it while it lasts.
+a : Thirty-eight. Same as yesterday. It settles me. #bc_it_does# | I can't lie abed on #bed#. My head starts counting the day. | I will. In an hour it's all elbows and empty #cups#.
+
+scene mist_walls
+when topic=weather|day here.weather=fog here.region=oakhaven
+does tell.self / react.self / assess
+a : #fog.capitalize#, so thick I counted my steps from the door to the well. Forty. | You can't see the top of the wall for #fog# this morning. | Fog in the oaks. Folk'll stay in and drink, and that suits #till#.
+b : Forty's a long way blind. | It'll burn off. | Good for trade, then.
+a : Long enough. I kept a paw on the fence the whole way, #very# slow. | By noon. Then it's #hot# as an oven under the leaves. | #bc_it_is# Fog's #good# for the till.
+
+scene winter_lamps
+when topic=season|weather here.season=winter self.job=innkeeper
+does tell.self / react.self / assess
+a : Winter, and nobody wants to go home from #fire#. I sweep them out at closing like leaves. | #cold.capitalize# out. I've a pot on the fire from dawn to closing now. | Short days. I light #lamps# at four and count them, one to nine.
+b : Better than an empty room. | What's in the pot? | Nine lamps?
+a : Much better. I only grumble from habit. | Turnip and whatever's left. It's hot and it's #grub#; that's what counts. | Nine. One to a window. I've never let one go out, #oath#.
+
+scene spring_door
+when topic=season here.season=spring
+does tell.feeling / react.self / assess
+a : Spring. I propped the door open today for the first time, and only #wind# came in. | New leaf on the oaks, and the whole wood humming with it, #very# loud. | First warm day, and the shutters off. I counted the swallows back. Four.
+b : No flies yet, at least. | Lovely time of year. | Only four?
+a : Not yet. Give it a month and I'll be swatting #flies#. | It is. I'll not complain for a fortnight, #oath#. | Four, and more coming. They're #slow#, like everything here.
+
+scene autumn_mast
+when topic=season|land here.season=autumn here.region=oakhaven
+does tell.self / react.self / assess
+a : Acorns down all over the lane. The pigs are out under the oaks and fat as #casks#. | The leaves come in on every boot now. I sweep a heap a day off #step#. | Cellar-filling time. I've counted what's in #cellar# and it's not enough for winter.
+b : A good year for the pigs. | Leaves everywhere, this time of year. | It never feels like enough.
+a : A #good# year for bacon, come the cold. | And every one of them on my floor. #bc_every_one# | It never is. I'll count again next week and feel worse, mm.
+
+scene bright_beams
+when topic=faith
+does give.opinion / react.self / assess
+a : Every storm, I give the Bright One thanks for #roof#. That's most of my praying. | I go when the bells go, sit at the back, and count #beams#. | The Bright One sees I keep honest measure. That's prayer enough for a weekday.
+b[job=priest] #priest : A roof's a good thing to be thankful for. | Count the prayers instead. | Honest measure's a fine start.
+b : That's a fair prayer. | How many beams? | Honest's honest.
+a@priest : It's the one I mean every time, root and branch. | I'll try. #beams.capitalize# are easier to keep hold of. | A start's all I'm fit for, #address#.
+a : Short, but I mean it, #oath#. | Twenty-two. I've counted them every Restday since I was a #child#. | #bc_it_is# I'll not short anyone a drop.
+
+scene gossip_blunt
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I'll say it straight, since everyone else whispers it: #topic.subject# #topic.claim#. | It came over #counter# last night: #topic.subject# #topic.claim#. That's all I know. | You'll hear it anyway, so hear it right. #topic.subject.capitalize# #topic.claim#, mm.
+b : You're sure of that? | Over the counter, was it? | Straight from you, then.
+a : Sure as I'm told. I'll not add a leaf to it. | Between the third cup and the fourth, mm. Folk talk when they're #drunk#. | Straight, and once. I'll not tell it twice, #oath#.
+
+scene theft_till
+when topic=gossip|crime topic.claim_kind=theft
+does tell.worry / reassure / assess
+a : Thieving. I've moved #till# under #counter# and I count it on the hour now. | #topic.subject.capitalize# #topic.claim#, they say. I've a bar on #cellar# door tonight. | I heard of the thieving and I've not slept right since. I counted the bolts twice, #very# slow.
+b : The Watch will see to it. | A bar's sensible. | Bolts don't move on their own.
+a : I hope so. Till then I'll count, and count, and count #till# again. | Sensible or #daft#, it's going on. | No. But I'll check them a third time, all the same. #bc_i_will#
+
+scene glad_news
+when topic=gossip|news topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news / assess
+a : #gladnews#: #topic.subject# #topic.claim#. We could do with some. | #topic.subject.capitalize# #topic.claim#. I'll set a cup by for that one, out of #casks#. | Somebody's had a #good# turn: #topic.subject# #topic.claim#.
+b : That's good to hear. | A cup's generous. | High time.
+a : It is. I'm not much for gladness, but I'll own to a twig of it. | One cup. I'll count it as #good# coin spent. | High time, and no harm in saying so.
+
+scene hard_till
+when topic=times|prices world.times=hard|lean
+does tell.complaint / sympathise / assess
+a : #till.capitalize#'s lighter every week. Folk come in and nurse one cup all night. | I counted the week's take and counted it again. It doesn't grow for counting. #bc_it_does# | Times like these, I water nothing and sell less. I'd not have it the other way.
+b : Everyone's feeling it. | It never does. | Honest of you.
+a : They are. I'll not turn anyone out from #fire# for nursing a cup. | It doesn't. #bad.capitalize#, and I'll count it again tomorrow anyway. | Honest's all I've got that's free, mm. #saying.capitalize#.
+
+scene good_till
+when topic=times|prices world.times=good|boom
+does tell.self / react.self / assess
+a : Coin about, and #fulltill# three nights running. I don't trust it. | Good times. I've put more in #jar# this month than all last season. | Folk are spending. I keep looking over my shoulder for the catch. #uneasy#.
+b : Enjoy it, for once. | That's the fare coming nearer. | There's no catch.
+a : I'll try. Enjoying's harder than counting. | A good step nearer, #oath#. | There's always a catch. I'll find it by Restday. #bc_i_will#
+
+scene new_faces
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A new face in town? I'll count their coin before I learn their name. That's not rude; it's sense. | Somebody new took a corner seat yesterday and sat all evening. I watched every one of #cups#. | New folk mean new talk. I don't mind it, so long as they pay, #oath#.
+b : Fair enough. | Every cup? | They mostly do.
+a : #bc_fair# A name's no good to my till. | Every cup. Four, and paid for each. I liked them after that. | They do. The one who doesn't, I remember, root and branch.
+
+scene neighbour_wall
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# is next door, and I'd trust that one with my keys. | I'd not say I'm close with #self.neighbour#. But it's a comfort, a light on next door, #very# late. | #self.neighbour# and I nod across the lane most mornings. That's plenty, mm.
+b : Good to have. | A light's a good thing. | A nod's enough, some days.
+a : Better than a bolt. I count fewer locks for it, #oath#. | #bc_it_is# I sleep the better for it. | It is. I'm not one for long talks over a fence. #bc_not_me#
+
+scene nerves_beams
+when topic=health
+does confide / sympathise / assess
+a : I don't sleep well. I lie on #bed# and count #beams#. Fourteen. | My paws shake when I'm #waiting# on anything. They always have. | #vent#: I worry. Every night I'm sure I've left a tap running.
+b : That sounds wearing. | Have you tried #remedy#? | And have you ever?
+a : It is. Some nights I get to fourteen a dozen times, and wake #tired#. | I have. It helps the paws and not the head. #bc_it_does# | Once, years back. I've checked every night since, #oath#.
+
+scene room_over
+when topic=home self.job=innkeeper
+does tell.self / react.self / assess
+a : I live over #taproom#. I hear every chair scrape till midnight. | My room's above #casks#. It smells of malt and I've stopped noticing. | Upstairs is mine. Two rooms, one window, and the stair counted: sixteen. #bc_every_one#
+b : That'd keep me awake. | Not bad, malt. | Sixteen's a lot of stairs at night.
+a : It does, some nights. I count the scrapes and drop off by fifty, #snug# enough. | Not bad at all. Better than #flies#. | It is, when you're #tired#. I've never once tripped, mind.
+
+scene robin_crumbs
+when topic=animals
+does tell.self / react.self / assess
+a : There's a robin comes to #step# for crumbs. Three a morning, I give it, no more. | Wasps in the eaves again. I've counted eight going in. #uneasy#. | A squirrel ran off with a heel of #bread#. I'd have shared, if it had asked.
+b : Only three? | Eight's a nest. | Cheeky thing.
+a : Three. More and it'd get greedy, and so would the rest of the yard. | It is. I'll have them smoked out before the feast, #oath#. | Cheeky and #hungry#. I know how that is.
+
+scene first_pull
+when topic=memories|work self.job=innkeeper self.age>=25
+does tell.memory / ask.detail / answer.detail / react.self / assess
+a : The first cask I ever tapped myself sprayed #beams#. I was soaked to the tail. | When I first kept the taps I counted every cup out loud. Folk thought I was praying. | My first night alone behind #counter# I didn't sit down once. Not once.
+b : What did you do? | Did you stop? | Why not?
+a : Laughed, after. Then mopped it, and counted the mop strokes. #bc_every_one# | Only aloud. I still count; I just keep it under my breath. | Fright. I thought if I sat, something would go #bad#.
+b : Ha. A proper start. | Better under the breath. | And did it?
+a : The best sort. I've never forgotten which way the bung goes since, #oath#. | #bc_it_is# Nobody minds a mutter. | Nothing went wrong. I still don't sit till close. #bc_not_me#
+
+scene mud_floor
+when topic=weather|smalltalk here.weather=rain|snow self.job=innkeeper self.working=yes
+does tell.complaint / react.self / assess
+a : Every wolf through that door brings half the lane in with them. #bad.capitalize#. | I put sawdust down at noon, and it's mud now, root and branch. | Snow melting off fifteen coats by #fire#. I counted the coats.
+b : Can't be helped. | Put more down. | Fifteen's a full house.
+a : No. But I can grumble, mm. | I will. That's the third barrow today. | Full and dripping. I'll take it, for #till#'s sake.
+
+scene stormy_night
+when topic=weather|smalltalk here.weather=storm here.time=dusk|night self.job=innkeeper
+does tell.self / react.self / assess
+a : Storm's kept everyone in. Not one of them is going home in this. #bc_nobody# | #thunder.capitalize# and a full room. I couldn't ask for a better night. | #lamps.capitalize# flicker every time it cracks. I've counted twenty cracks since supper.
+b : They'll want beds. | Good for you. | Twenty's a lot.
+a : They'll want #benches#, more like. I'll find them blankets. | It's #good# for the till and good for me. I like the noise. | Twenty, and I'll count every one till it passes, #oath#.
+
+story first_storm [topic=memories self.age>=25]
+  : When I was a #child# a storm took half the shingles off our roof. I sat under the table and counted.
+  : I got to four hundred before it moved off. #mum.capitalize# found me asleep there in the morning, still counting in my sleep.
+  ask : Do you have a trick of your own, for when the fright comes?
+  b[old] : Work. Always work. It leaves no room for fright.
+  b : I hum. Never so far as four hundred.
+  : Now I love storms. It was #roof# I needed, not the quiet.
+
+story short_copper [topic=work self.job=innkeeper self.age>=25]
+  : One night #till# came up #copper# short. One. I counted it eleven times.
+  : I was still counting at dawn when I found it, wedged in the crack of #counter# where it had rolled.
+  b : All night for a copper? Was it worth it?
+  : It was. I'd not have slept with it missing. I'd sooner lose the sleep than the coin, #oath#.
+
+story nearly_went [topic=dreams self.away=no]
+  : I nearly went south once. Had my pack on and #fare# counted out in my paw.
+  : Got to the gate and saw the road go into the trees. Couldn't take one step past the post.
+  ask : Have you ever turned back from something you wanted?
+  b : Once or twice. It's no shame.
+  b[old] : More often than I'll say.
+  : The coins went back in #jar#. #someday.capitalize# the road'll look different, or I will.
+
+story counting_gran [topic=memories|family]
+  : My #gran# counted everything too. Eggs, stitches, the steps to the chapel.
+  : I used to think it was a game. Then I caught myself doing it at the taps, and I knew it was in the roots.
+  b : Some things run in families.
+  : It does. #bc_it_is# I'd like to think it's the useful kind.
+
+story the_wasp [topic=memories|animals self.age>=20]
+  : I got stung by a wasp at the summer feast once, on the nose, in the middle of #song#.
+  : I finished the song. Every verse. My nose was the size of a plum by the end of it.
+  ask : Would you have stopped?
+  b : At the first verse, and run.
+  b[talk=chatty] : Never. I'd have made it a verse of its own.
+  : Folk still mention it. I tell them I counted the verses to keep my mind off it.
+
+line @1 greet [pair.band=strangers] : #greet#. Step in, if you're stepping in; the wind's at the door. | #greet#. Wipe your feet; I've only just swept.
+line @2 greet [self.working=yes self.job=innkeeper] : #greet#. Sit where you like; I'll be over. | #greet#. #casks.capitalize# are fresh, if you're thirsty.
+line @3 greet [here.time=dawn] : #greet#. You're up as early as me, then. | #greet#. #fire.capitalize#'s barely caught yet.
+line @4 greet [here.time=dusk|night] : #greet#. Late for you, isn't it. | #greet#. Mind #step#; the lamp's not lit there.
+line @5 greet [pair.band=friends] : There you are. #greet#. | #greet#. I'd counted you missing.
+line @6 greet [here.weather=storm] : #greet#. Hark at that sky. | #greet#. Get in under #roof#, quick.
+line @1 kin.open [pair.kin!=no] : #greet#. You look like you've not eaten today. | You. #greet#. Sit down before you fall down.
+line @1 again.open : Twice in a day. I've counted you both times. | #welcome_back#. I'd not have bet on it.
+line @1 greet.return : #greet#. | #greet#, and the same to you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping it'd be you. | And you, #greet#.
+line @3 greet.return [self.working=yes self.job=innkeeper] : #greet#. Quick, while there's nobody waiting. | #greet#. I've a minute, no more.
+line @4 greet.return [here.time=dusk|night] : #greet#. Long day, for both of us. | #greet#. #lamps.capitalize# are lit, at least.
+line @1 farewell : #farewell#. Mind #step#. | #farewell#. Don't be a stranger.
+line @2 farewell [here.time=night] : #farewell#. Mind the roots on the dark path. | #s8_night#. Bar your door.
+line @1 farewell.return : #farewell#. | #farewell#, and mind how you go.
+line @2 farewell.return [here.time=night] : #s8_nightback#. | #farewell#. Get home dry.
+line @1 react.news : #oath.capitalize#. Well, I've heard it now. | That's one for the week's count, mm.
+line @1 react.news.new : #marvel#. That's new to me. | #surprise#. Nobody's told me that.
+line @1 react.news.known : #knew#. It's been over #counter# twice. | I'd heard. Folk talk over a cup. #bc_they_do#
+line @1 react.news.doubt : #doubt#. I'll wait for somebody sober to say it. | I'd not count on that till someone saw it with their own eyes.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a cruel thing. | #oath.capitalize#. I'm sorry to hear it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll pour one for that. | Good. We could do with some of that, #oath#.
+line @1 answer.how : Jumpy, same as ever. But well. | #fine#. I counted my blessings this morning; there were enough.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Ask me at closing. | Run off my feet, and three #cups# behind.
+line @1 ask.how : How are you keeping, #address#? | Are you well? You look #tired#.
+line @1 sympathise : #sympathy#. Sit down a minute. | That's #bad#. I'm sorry for it, truly.
+line @1 reassure : #reassure#. Things mostly come right. | It'll be well. I've done the worrying already, for the pair of us.
+line @1 decline : #hedge#. I can't spare it, not this week. My counts are short already. | I'd rather not. I've too much on, and I'd only do it #bad#.
+line @1 accept_decline : #no_matter#. Another time. | Then I'll not ask again this week. #bc_i_wont#
+line @1 thank : #thanks#. I'll remember that. | #thanks#. That's one I owe you.
+line @1 deflect_thanks : It was nothing, #address#. Don't count it. | #deflect#. I'd do it again.
+line @1 preclose : Well. I've #cups# to count. | #preclose#. #fire.capitalize# wants seeing to.
+line @2 preclose [self.working=yes self.job=innkeeper] : There's somebody waiting at #counter#. | #excuse#. The taps won't pour themselves.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I've plenty to count.
+line @1 ack : Mm. | #ack#.
+line @1 give.advice : #advise#: count it before you spend it, and count it after. | Keep #roof# over your head and your coin under it.
+line @1 warn [world.bandits=near] : #warn#. There's #bandits# about; keep off the south road. | Bar your door tonight. I'm barring mine twice, #oath#.
+line @1 hail [pair.band=friends] : Here! #greet#. | Over here, #address#. I kept you a stool.
+line @1 insist : #insist#. I've counted it, and I'm right. | No, I mean it. I'll not be talked round. #bc_i_wont#
+rule @taps_cry
+when concept=bark working=yes self.job=innkeeper
+does aside
+cooldown 6h
+say Cups up. Who's dry, then? #casks.capitalize# are open. | #casks.capitalize# are fresh. Speak up if you want one.
+
+rule @tally_mutter
+when concept=bark
+does aside
+cooldown 8h
+say #tally.capitalize#... no. Start again. | Twelve, thirteen... where was I. Knots and knots.
+
+rule @fly_swat
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Get off. Off! That's twelve of #flies#. | Blight these flies, every one of them.
+
+rule @hark_thunder
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say One, two, three, four... there. Closer. | Hark at it. #very.capitalize# grand.
+
+rule @wagons_late
+when concept=bark world.wagons=late self.job=innkeeper
+does aside
+cooldown 12h
+say Still nothing on the south road. Not a leaf. | Two #casks# left. Two.
+
+rule @closing_time
+when concept=bark here.time=night working=yes self.job=innkeeper
+does aside
+cooldown 1d
+say Last cups. I'm counting heads, #address#. | #benches.capitalize# up, if you please. I'd like my bed.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. I don't know your face. Say what you're after. | #greet#. New in, are you? Speak up.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I'd counted you missing a day or two. | #topic.player#. #greet#. What is it?
+dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. What brings you round again?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Out with your business, plain and short. I've my eye on you.
+dlg @5 resident.hub [here.time=night] : It's late. I've #till# half counted. What is it?
+dlg @1 resident.job [self.job=innkeeper] : I keep the taproom at #self.workplace#. Pour, wipe, count, and pour again. #bc_every_night# | I keep #taproom#. You'll find me behind #counter# till #lamps# go out.
+dlg @2 resident.job : A bit of everything, and I count it all. #bc_every_one# | Steady work, #address#. I keep my own tally of it.
+dlg @1 resident.business [business=thriving] : #fulltill.capitalize# most nights. I don't trust it, but I'll take it. | Couldn't be better. I keep waiting for it to turn. #uneasy#.
+dlg @2 resident.business [business=failing] : Badly. I count the take every night and it's always less. | #bad.capitalize#. I'll not pretend otherwise.
+dlg @3 resident.business [business!=thriving|failing] : Steady. Enough in #till# for the next cask, and #copper# or two for #jar#. | Steady enough. I count it and it comes out the same. #bc_every_time#
+dlg @1 resident.news [world.news] : Word off the carts from #world.news_from#: #world.news#. That's what came over #counter#.
+dlg @2 resident.news [world.event_words] : It's all talk of #world.event_words# at the taps. I've heard it twenty times tonight.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not even over a cup. | Nothing I'd count as news, #address#. Same faces, same talk.
+dlg @1 resident.gossip [here.gossip=yes] : I'll say it plain: they say #topic.subject# #topic.claim#. Don't ask me more, #address#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing worth repeating, #address#. And I'd say if there was.
+dlg @1 resident.bye : #farewell#. Mind #step# on your way out. | #farewell#. Shut the door; #flies# get in.
+dlg @1 inn.greet [here.inn_helper!=yes] : #greet#. A bed, a cup, or a seat by #fire#? Say which; I'm counting cups. | #greet#. Sit where you like. #inn_offer#
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes] : #greet#, #topic.player#. Your usual's waiting. I counted you in.
+dlg @3 inn.greet [here.inn_helper=yes] : #greet#. I only pour. Ask #here.innkeeper# about a bed.
+dlg @1 inn.rooms : A bed's #here.bed_night#p a night, #here.bed_week#p the week. The whole upstairs is #here.upstairs_night#p, if it's empty. I've counted the sheets.
+dlg @1 inn.roomed : Up the stair, second door. Sixteen steps; the eleventh creaks. #bc_it_does# | Your #bed#'s made. I counted the blankets twice: there's three.
+dlg @1 inn.rest [here.lodging!=yes] : Sit by #fire# as long as you like. I'll not count your time. | Warm yourself. There's a bed upstairs if you want one, #address#.
+dlg @2 inn.rest [here.lodging=yes] : Rest as long as you like. Your #bed#'s upstairs when you want it.
+dlg @1 inn.refused : #topic.why# I'll not bend on it, #address#. | Sorry. #topic.why# There's still a seat by #fire#.
+dlg @1 inn.bye : #farewell#. Mind #step# on your way out. | #farewell#. Come back when you're dry again.
+graft resident.hub
+choice What are you counting? -> counting
+node counting
+say Everything. Cups, coins, steps, the gap before the thunder. If I count it, I know where it is.
+mood calm
+free
+choice Doesn't it wear you out? -> counting_why
+choice Goodbye. -> bye
+node counting_why
+say Not counting wears me out worse. Then I lie awake wondering what's gone. This way I sleep, mostly.
+choice I hope you do. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Is that fresh bread I smell? -> bread
+node bread
+say It is. From the bakery at dawn. I keep four loaves back for the house, and I've eaten the heel off one already.
+mood pleased
+free
+choice Could I have some? -> bread_some
+choice Goodbye. -> bye
+node bread_some
+say Sit down, and I'll bring you a slice with butter. Don't tell the others; I've counted what's left.
+choice Thank you. -> greet
+choice Goodbye. -> bye

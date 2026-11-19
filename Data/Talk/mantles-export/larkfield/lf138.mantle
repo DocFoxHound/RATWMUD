@@ -1,0 +1,309 @@
+# lf138, the late collier (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf138
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for cty_iris_fernhaven
+written_by claude
+title the late collier
+fits stage=adult|old
+prefers warmth=warm talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk is_always_a_little_late
+likes roast_pork long_walks sharp_knife thunder
+dislikes flies night_noise
+fears letting_down_the_ones_before_me a_door_shut_because_i_came_late
+hopes a_whole_night_of_sleep a_wide_sky_again_one_day
+topics pastimes +0.4 food +0.3 memories +0.3 work +0.2 weather +0.2 gossip -0.4
+styles comfort=giving gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# burns charcoal up at the hearths, gives away the best of every supper and turns up everywhere a little after everyone else: quiet, warm and tired to the bone, with a sharp knife always on the belt and an eye for a wide sky.
+
+words
+oath! = Oh, the hour | Bless my slow feet | Late, late
+saying! = Late is still arrived | Get there, and the hour forgives you | The road keeps its own time
+knife = my knife | the little sharp knife
+whet = the whetstone | my grey whetstone
+pork = roast pork | pork with the fat gone crisp
+walk = a long walk | a walk with no end in mind
+downs = the downs | the open downs
+sky = a wide sky | sky right down to the grass
+storm = a storm overhead | lightning on the peaks
+flies = the flies | flies on everything
+hearths = the hearths | the burning ground
+clamp = the clamp | the earth mound
+before = the ones before me | my mother and hers
+clatter = clatter after dark | noise at night
+sorry = sorry, sorry | I know, I'm late
+peaks = the peaks | the mountains
+late = late | a bit behind
+charcoal = charcoal | good ringing charcoal
+gate = a gate | somebody's gate
+warmseat = the warm seat | the seat nearest the fire
+loaf = a bit of bread | the end of the loaf
+
+any
+opinion @1 merchants against 2 : Nothing extra comes into our house, and still the bread goes up. #sorry.capitalize# to grumble. It's true, though.
+opinion @1 houses against 1 : The Houses have never once looked at a wolf like me twice, #address#. I don't need them to.
+opinion @1 strangers for 1 : I was a #stranger# up here once. Somebody fed me. I'll feed the next one.
+opinion @1 dole for 1 : Nobody in a town so small should go to #bed# #hungry#. I'd give my own bowl first.
+opinion @1 city against 1 : Too loud, too close, and nobody knows the wolf next door. Give me #sky# instead.
+opinion @1 times against 1 : Every week it's a little harder, and the ones who could help never seem to notice. #tired.capitalize# of it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Sorry, I hope you've not been waiting long. | #greet#, #address#. Come and sit; you look #cold#.
+line @2 greet [self.working=yes self.job=none] : #greet#. I've only just got up here. Talk while I catch up. | #greet#. Mind #clamp#; it's warm all through.
+line @3 greet [here.time=dawn] : Morning. I'm #late# already. | Morning, #address#. I meant to be up an hour ago.
+line @4 greet [here.time=dusk|night] : #greet#. I'm only just home. | #greet#. Late for both of us.
+line @1 kin.open [pair.kin!=no] : There you are. I saved you some #supper#. | You. Come here. I've kept #warmseat#.
+line @1 again.open : Back again. I'm still here, #address#. | Twice in a day. I'm glad. #good.capitalize#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit down. There's a bite going if you want it. | #greet#. #sorry.capitalize#, I was miles away.
+line @3 greet.return [self.working=yes] : #greet#. One moment, I'm behind. | #greet#. Stand up the hill of #clamp#, the smoke's this way.
+line @4 greet.return [here.time=dusk|night] : #greet#. Long day. | #greet#. In you come; it's black out.
+line @1 farewell : #farewell#. | #farewell#. Take care on the ice.
+line @2 farewell [here.time=dusk|night] : #farewell#. Sleep well, if they let you. | #farewell#. Mind the dark corners.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news.new : #surprise#. I'd not heard. I'm always last. | Oh. #marvel#.
+line @1 react.news.known : #knew#. Even I'd heard that one. | I heard. #late.capitalize#, like everything.
+line @1 react.news.doubt : #doubt#. I'd want to hear it from someone who saw. | I'll wait and see, I think. Things change on the way up #peaks#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll take them something. | Oh, no. That's #very# hard.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'm so glad. | Oh, that's #good#. I'll bring something round.
+line @1 answer.how : #tired.capitalize#, but well. Always #tired#. | #fine#. A bit behind. I'll catch up.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. I'm behind, as ever. | Running to stand still. #clamp.capitalize# doesn't wait for me.
+line @1 ask.how : And you? Have you had #supper#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit. I'll bring you something warm. | Oh, come here. Take #warmseat#.
+line @1 reassure : #reassure#. You'll get there. Late's still there. | It'll come right, #address#. Give it time.
+line @1 decline : #hedge#, I can't tonight. I'm behind at the hearths and I promised. | I'd love to, #address#, but I'm already late for somewhere else. As usual.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. #no_matter#.
+line @1 thank : #thanks#. You didn't have to. | That's #good# of you. Truly.
+line @1 deflect_thanks : #deflect#. It was nothing. | Oh, it was the least I could do, #address#.
+line @1 apologise : #sorry.capitalize#. I didn't mean to keep you. | #sorry.capitalize#. I lost track of the hour again.
+line @1 preclose [self.working=yes] : I'd best go. #clamp.capitalize# needs me. | Well. I'm #late# already; I'd better be less so.
+line @2 preclose : Well. #preclose#. | I should go. #excuse#.
+line @1 accept_preclose : Go on. Don't let me keep you. #farewell#. | Off you go, then.
+line @1 ack : #bc_right# | Mm. #agree#.
+line @1 give.advice : #advise#: keep your knife sharp. A blunt one cuts you, not the wood. | Don't hurry for the sake of it. #saying#.
+line @1 warn [world.bandits=near] : #warn#. Don't walk the pass alone. | Stay near the houses after dark, #address#.
+rule @late_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say #oath#. Late again. | I'm coming, I'm coming. #sorry.capitalize#.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Go away. Go on. #flies.capitalize#. | #annoyed#. #flies.capitalize# in the bread.
+
+rule @storm_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say Listen to it roll over #peaks#. Oh, that's lovely. | #storm.capitalize#. I could watch it for hours.
+
+rule @whet_bark
+when concept=bark working=no
+does aside
+cooldown 10h
+say Round and round on #whet#. There. Sharp enough to split a hair. | #knife.capitalize#'s gone dull. That won't do.
+
+scene late_again
+when topic=smalltalk
+does apologise / accept_apology / assess
+a : #sorry.capitalize#. I meant to be here an hour since. I don't know where it goes. | I'm #late#. I know. I was on time until I wasn't. | Have you been waiting? I stopped to help with #gate#. Then a second gate.
+b : You're here now. | It happens. | Two gates?
+a : I am. That's something. #saying#. | It happens to me every day. You'd think I'd learn. #oath#. | Two. Nobody up here can shut a gate. I'll not complain; it made me late, and I like being useful.
+
+scene late_shift
+when topic=work self.working=yes self.job=none here.region=frosthollow
+does tell.self / react.self / assess
+a : I got up to #hearths# after the others again. #clamp.capitalize# hadn't missed me, at least. | #late.capitalize# for #work#. I took the steep way to make it up and lost my breath instead. | They've stopped saying anything when I come in #late#. That's worse, somehow.
+b : It waited for you. | Did it help? | They don't mind.
+a : #clamp.capitalize# is patient. More patient than wolves. | No. I'll go the long way tomorrow and be #late# anyway. | Maybe not. I mind, though.
+
+scene ones_before
+when topic=work|family self.working=yes self.job=none
+does confide / keep_confidence / assess
+tone serious / tender / even
+a : #before.capitalize# did this work. Every turf I lay, I think one of them's watching. | I'm the third to burn #charcoal#, counting back. Some days that's a comfort and some days it's a weight. | I lay #clamp# the way I was shown, and I can hear exactly who showed whoever showed me.
+b : They'd be proud. | Which today? | That's a long line.
+a : I hope so. I'm #late# more than #before# ever were. | Today it's a weight. Tomorrow I'll say a comfort. | It is. I'd like to be worth the end of it.
+
+scene clamp_quiet
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : I sit by #clamp# in the night and listen. It ticks as it cools. | You learn to smell when #clamp#'s going wrong. Sweet is good. Sour is not. | Opening #clamp# is like opening a gift. You never quite know.
+b : Ticks? | What do you do then? | What's inside?
+a : Like a slow clock. I nap to it sometimes. Don't tell. | Run for turf and close the gap. Even I'm quick then, #address#. | Black, light, ringing #charcoal#, if you're lucky. Grey dust, if you're not.
+b : #bc_ha# | #bc_good# | #bc_lucky#
+
+scene wide_sky
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.feeling / react.self / assess
+a : Where I grew up the sky came down to the grass on every side. Up here it stops at #peaks#. | I miss #downs# most in the evening. You could watch the light go for an hour. | In #self.from_town# you could see weather coming half a day off. Here it falls on you over a ridge.
+b : Do you miss it? | An hour? | That's a change.
+a : The sky, yes. Not much else. #home# is here now. | An hour, and nobody calling you in. #good.capitalize# hours. | It is. I've stopped jumping at #storm#, mostly.
+
+scene market_days
+when topic=memories|travel self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : Market day in #self.from_town# you could hear from the hill. Everyone shouting prices. | My #gran# would take me to the market and buy me one thing. I always took too long choosing. | I learned to haggle at #downs# market before I could read. Up here nobody haggles. I've forgotten how.
+b : Loud, then. | Late even then? | Is that a loss?
+a : Loud and cheerful. Up here a crowd is three wolves and a cart. #very.capitalize# different. | #late.capitalize# even then. She'd wait. She always waited. | Not really. I never won much.
+
+scene mountains
+when topic=land|home here.region=frosthollow self.away=yes
+does tell.self / react.self / assess
+a : #peaks.capitalize# frightened me when I first came up. Now I'd miss them, I think. | Everything up here is steep. Even the conversations. | I walked up the valley on my first day and couldn't breathe. Now I'm only #late#, not breathless.
+b : They grow on you. | Steep how? | That's progress.
+a : They do. Slowly. Like me. | Short and to the point. I like it, mostly. | It is. Small steps, #address#.
+
+scene long_walk
+when topic=pastimes
+does tell.self / react.self / assess
+a : I went for #walk# up the valley on Restday. No reason. That's the best kind. | When I can't sleep I take #walk#. Up the lane, round the slag heap, back. | I like a walk with nowhere at the end. Then you can't be #late# for it.
+b : Where did you go? | Every night? | That's clever.
+a : Up past the last house, till the path gave out under #peaks#. Then I sat. | Most nights. My feet know the way in the dark. | It's the only thing I'm never #late# for.
+
+scene walk_invite
+when topic=pastimes pair.band=friends|family|housemates
+does invite / accept / assess
+a : Walk with me after #supper#? Just up the valley and back. | I'm going up to look at #peaks# in the last light. Come with me. | There's a path past the quarry nobody uses. I'll show you. I'll be #late#.
+b : I'd like that. | I'll come. | I'll wait for you.
+a : #good.capitalize#. Bring a coat. It turns #cold# up there. | #good.capitalize#. Don't let me dawdle. You'll have to. | Thank you. I'll try not to keep you long.
+
+scene sharp_knife
+when topic=smalltalk|work
+does tell.self / ask.detail / answer.detail / assess
+a : I sharpen #knife# every night on #whet#. Never once do I put it off. | A dull knife is a danger. #knife.capitalize# does what I ask. | My #gran# gave me this knife. The handle's new; the blade's older than me.
+b : Every night? | You'd think it the other way round. | Older than you?
+a : Every night. If I'm #late# for everything else, not for that. | Everyone does. A dull one slips, and then it's your paw. | Older than my #mum#, near enough. Still the best blade on the hill.
+b : #bc_good# | #bc_wise# | #bc_lovely#
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : #pork.capitalize# on Restday, if we can afford it. I give the crisp bits away, though I love them. | Smell that? Somebody's got #pork# in. I could follow it home. | I'd walk a mile for #pork#. I'd be late, but I'd walk it.
+b : Why give them away? | Go on, then. | And then you'd eat it all.
+a : Because it makes somebody else's face do that, #address#. Worth more than a mouthful. | I won't. I'd only stand at their door looking sorry. | Not all. I'd save some. I always do.
+
+scene share_supper
+when topic=food|friends
+does offer / accept / assess
+a : Here. Have mine. I'm not that #hungry#. I am, but have it anyway. | There's #supper# left. I made too much on purpose. | Take the bigger piece of #loaf#. Go on. I'll not eat it if you don't.
+b : Are you sure? | On purpose? | All right, then.
+a : Sure. I'd rather see you eat it. | On purpose. Somebody always turns up #late#. Usually me. | #good.capitalize#. There. Now we're both happy.
+
+scene thunder_peaks
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Come to the door and look. #storm.capitalize#. It's beautiful. | I love thunder. Up here it bounces off #peaks# and comes back round. | On #downs# you'd see a storm walk across the whole sky. Here it jumps out at you.
+b : I'd sooner be inside. | Twice the noise. | Which is better?
+a : I'm only at the door. Inside enough. | Twice, and I love it twice as much. | Both. I've a soft spot for anything loud and bright that isn't a wolf.
+
+scene summer_flies
+when topic=animals|weather here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#. On the bread, on the butter, on me. | I can't abide flies. The one thing I don't miss about #downs#. Turns out they came up with me. | Swatted four this morning, and still #flies# are winning.
+b : Every summer. | They followed you? | Four's good.
+a : Every summer. #annoyed#. | Seems so. Loyal things. #annoyed#. | Four out of four hundred. I'll stop counting.
+
+scene night_noise
+when topic=home here.time=dusk|night
+does tell.complaint / react.complaint / assess
+a : Somebody was shouting in the lane at midnight. I'd just got to #bed#. | I can't sleep through #clatter#. Every cart, every door. | I'm so #tired#, and still the inn wakes me. I'm not angry. I'm too tired to be angry.
+b : That's hard. | Every door? | That's tired.
+a : It is. I'll sleep at #hearths#, then. Next to the clamp. | Every one. My ears are better than they ought to be. | It is. I'll be #late# tomorrow. That's how it goes.
+
+scene always_tired
+when topic=health|smalltalk
+does tell.self / react.self / reassure
+a : I'm always #tired#. I don't think I've had a whole night since I came up the hill. | My bones ache from the #cold#. I'll feel better by spring. I say that every spring. | I fell asleep sitting up at #supper#. Nobody woke me. Kind of them.
+b : You need a rest. | Do you? | Kind or lazy?
+a : I do. One day. Maybe on Restday. Maybe. | Mostly. #reassure#. I'll be well. | Kind. They left me a blanket. That's the kindest thing.
+
+scene spouse
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# always keeps me a seat, however late I am. | I'm late for everything but #self.spouse#. I try, there. | #self.spouse# and I are quiet together. I just like being near.
+b : That's good of them. | That's love. | That's the best kind.
+a : It is. I'd be lost without it. | It is, I think. #good.capitalize# word for it. | It is. I wouldn't change it.
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : There's somebody new in town. I took them #loaf#. I was new here once. | I saw a #stranger# looking lost. I walked them halfway and then I was #late#. Worth it. | New faces are frightened of #peaks#. I tell them it passes.
+b : That was kind. | Halfway? | Does it?
+a : Somebody did it for me. That's all. | Halfway. Then they knew the way and I didn't. | It does. Slowly. It did for me.
+
+scene first_snow
+when topic=weather here.weather=snow self.away=yes
+does tell.self / react.self / assess
+a : My first winter here I thought #snow# would never stop. It didn't, much. | #snow.capitalize# on the peaks, snow in the lane, snow in my boots. #sorry.capitalize#, I'm complaining. | Where I grew up, on #downs#, snow was a day's wonder. Up here it's a season.
+b : You got used to it. | Complain away. | A long one.
+a : I did. Or I gave up. Same thing. | #thanks#. I'll stop now. Or soon. | A long one. I'm learning to like it. #very.capitalize# slowly.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I say thank you to the Bright One every night. #late.capitalize#, usually. Still counts. | I'm always #late# into chapel. I sit at the back where I can't be seen sliding in. | My #gran# said the Bright One keeps no clock. I've held on to that.
+b : It still counts. | The back's fine. | That's a comfort.
+a : I hope so. I'd hate to be #late# for that. | It's the best seat. Nobody turns round. | It is. Especially for me.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / reassure / ack
+a : Less in the pot this week. I'll go without #supper#; I'm used to it. | Bread's up again. I gave half a loaf away and now I wish I hadn't. No. I don't wish it. | It's hard everywhere. Up here it's hard and #cold#.
+b : Don't go without. | You don't. | Hard and cold.
+a : I'll try not to. #reassure#. | I don't. It was the right half to give. | We'll manage. We always do.
+b? : #bc_good# | #bc_true# | #bc_i_hope_so#
+
+story late_wedding [topic=memories|family self.married=yes self.age>=20]
+  : I was #late# to my own wedding. I'd stopped to help an old wolf with a load of wood.
+  : By the time I got there, everyone was sitting down. Somebody had started on the #grub#.
+  ask : Can you guess what was said, when I walked in?
+  b : Something about the hour?
+  b[pair.band=spouses] : I remember exactly what was said.
+  : Just: there you are. That's all. I've loved that wolf more for it every year since.
+
+story first_climb [topic=memories|travel self.away=yes self.age>=20]
+  : The day I came up to #peaks#, I set out at dawn and got here after dark. Should have taken half a day.
+  : I kept stopping. The view, the cold, a goat on a rock. I'd never seen anything so big.
+  ask : Do you remember the first time you saw the mountains?
+  b : I've always seen them.
+  b[from=frosthollow] : I was born under them. I've never once looked properly.
+  : Then look tomorrow. Properly. You'll be late for something, but it's worth it.
+
+story gran_knife [topic=memories|pastimes self.age>=25]
+  : When I was small my #gran# gave me #knife# and made me promise it would never go dull.
+  : She said a dull knife and a late wolf are the same: no use to anyone. I was hurt for a week.
+  b : That's hard to hear. Were you angry with her?
+  b[old] : Old wolves say hard things they don't mean.
+  : No. She was half right. I've kept #knife# sharp ever since. The other half I'm still working on.
+
+dlg @1 resident.hub : #greet#. Sorry, were you waiting? What is it? | #greet#, #address#. Sit, if you've a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're here before me again. | #topic.player#. #good.capitalize# to see you. Have you eaten?
+dlg @3 resident.hub [here.time=night] : It's late. I'm only just home myself, #late# as ever. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'd rather you said it plainly. I'm too #tired# to guess.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. I lay the clamp, I watch it burn, I open it. A little late, mostly. | I make #charcoal# up at #hearths#, like #before#.
+dlg @2 resident.job : I work, and I'm #late# to it, and I'm sorry about it. That's most days.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'm always the last to hear, though.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd pass on, #address#.
+dlg @1 resident.bye : #farewell#. Mind the ice. | #farewell#, #address#. Sorry if I kept you.
+graft resident.hub
+choice Why are you always late? -> late
+node late
+say I don't know. I stop. A gate wants shutting, a view wants looking at, somebody needs a hand. Then the hour's gone. I'm sorry for it. Mostly.
+mood warm
+free
+choice Does anyone mind? -> late_mind
+choice Goodbye. -> bye
+node late_mind
+say Some do. The ones who matter wait. I've learned that's how you know who they are. Late is still arrived.
+mood calm
+choice That's a kind way to see it. -> hub
+choice Goodbye. -> bye
