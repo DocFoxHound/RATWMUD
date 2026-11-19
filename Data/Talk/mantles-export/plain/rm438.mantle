@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_silas_brinemore
-title the passenger in the clean pocket
+title the pocket passenger
 fits stage=adult|old
 prefers warmth=warm drive=restless
 traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
-quirk keeps_a_pocketful_of_coal_for_luck
+quirk wraps_the_smallest_coal_twice_for_its_journey
 likes smoked_eel evening_line fresh_straw frosty_mornings
 dislikes salt_wind night_noise
 fears letting_a_possible_voyage_pass_unseen

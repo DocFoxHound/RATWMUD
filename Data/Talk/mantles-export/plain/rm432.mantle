@@ -4,11 +4,11 @@ dialect plain
 accent broad light
 tier standard
 written_for rm_imogen_tarcot
-title the smith who listens to the pan
+title the listening smith
 fits stage=adult|old
 prefers job=smith
 traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
-quirk takes_the_long_stairs_two_at_a_time
+quirk judges_the_progress_of_household_jobs_by_ear
 likes fried_fish digging full_larder thunder
 dislikes waiting night_noise
 fears spoiling_a_good_piece_by_hurrying

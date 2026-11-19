@@ -4,11 +4,11 @@ dialect plain
 accent broad light
 tier full
 written_for rm_desmond_grantham
-title the brewer who counts stars in pairs
+title the brewer's paired stars
 fits stage=adult|old
 prefers role=merchant job=brewer
 traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk remembers_every_debt_owed_or_owing
+quirk pairs_stars_into_debtors_and_creditors
 likes plum_tart stars tidy_house autumn_wind
 dislikes cold_tea wet_floors
 fears owing_more_than_the_house_can_stand

@@ -4,7 +4,7 @@ dialect plain
 accent light broad
 tier standard
 written_for rmx_palle_brinewell
-title the stall on a coal map
+title the coal-map stall
 fits stage=young|adolescent|adult|old
 prefers quarter=sump
 traits temper=calm talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady

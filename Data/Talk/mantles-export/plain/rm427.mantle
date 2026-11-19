@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_agna_dripridge
-title the facsimile on the pantry shelf
+title the pantry facsimile
 fits stage=adult|old
 prefers temper=calm honesty=frank
 traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
-quirk takes_the_long_stairs_two_at_a_time
+quirk stores_the_clean_second_copy_on_a_pantry_shelf
 likes pickled_herring swimming fresh_straw frosty_mornings
 dislikes drizzle smoke
 fears being_told_a_filed_request_never_existed
