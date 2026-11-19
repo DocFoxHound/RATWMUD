@@ -1,6 +1,6 @@
-# fh102, the pebble-pocket (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# fh102, the pebble-pocket (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle fh102
-revision 1
+revision 2
 state ready
 dialect frosthollow
 accent light broad
@@ -230,7 +230,7 @@ when topic=prices|times
 does tell.complaint / react.complaint / insist / ack
 a : Bread's up again. I'll not even ask why, I'll only shout. | A week's #wages# and the shelf's half empty already. | They say the carts are dear. The carts were dear last year, and the bread was cheaper.
 b : Everything's up. | #bc_i_know# | They always say that.
-a : Not my #wages#. Those stay put. #annoyed#. | #insist#: something wants changing, and soon. | They do. And I always believe them less.
+a : Not #wages#. Those stay put. #annoyed#. | #insist#: something wants changing, and soon. | They do. And I always believe them less.
 b? : #bc_true# | #bc_we_will_see# | #bc_they_always_do#
 
 scene gossip_plain

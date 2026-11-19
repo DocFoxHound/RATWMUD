@@ -1,6 +1,6 @@
-# fh107, the bird-carver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# fh107, the bird-carver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle fh107
-revision 1
+revision 2
 state ready
 dialect frosthollow
 accent broad light
@@ -53,17 +53,17 @@ pit = the pit | the pit below
 any
 opinion @1 drink for 1 : A jar of #ale# at the end of a shift is an honest thing, and I'll not hear it called otherwise under my roof.
 opinion @1 strangers for 2 : Every stranger who comes through #taproom# leaves a story by #fire#. I've never once been sorry to hear one.
-opinion @1 newcomers for 2 : There's room in #valley# for anybody who'll pull a share. I've a #bench# long enough for all of them.
+opinion @1 newcomers for 2 : There's room in #valley# for anybody who'll pull a share. I've #bench# long enough for all of them.
 opinion @1 watch for 1 : #watch.capitalize# keep the rough ones off my door, and they drink their #ale# quiet. I've no quarrel with them.
 opinion @1 merchants for 1 : Anyone who's paid a carter for a barrel up #pass# knows what a counter costs. I'll not begrudge another wolf a fair price.
-opinion @1 road against 1 : The barrels come up late more than they come up early, and it's my #regulars# who go dry for it.
+opinion @1 road against 1 : The barrels come up late more than they come up early, and it's #regulars# who go dry for it.
 opinion @1 city against 1 : Down there they say a neighbour's name once a year. Up here I hear every name on #bench# every night, #address#.
 opinion @1 festivals for 1 : I'd open #taproom# for nothing on a feast day, just to hear #peal# from the step.
 opinion @1 dole for 1 : Nobody in #valley# should sleep hungry. I'll put out the end of the pot for anyone, and so should we all.
 opinion @1 times for 1 [world.times=good|boom|ordinary] : While #hearth# is lit and #bench# is full, grumbling would be #daft#, #address#.
 
 grown
-line @1 greet [pair.band=strangers] : #greet#, #address#. Come in out of the #wind# and take your time. | #greet#. You look like you've walked a long way. Sit, sit.
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come in out of #wind# and take your time. | #greet#. You look like you've walked a long way. Sit, sit.
 line @2 greet [self.working=yes self.job=innkeeper] : #greet#. There's a seat by #hearth# and #bowl# if you want it. | #greet#. Take #bench# nearest #fire#, #address#.
 line @3 greet [here.time=dawn] : #greet#. You're up early. #fire.capitalize#'s only just caught. | #greet#. I've the kettle on and nobody to share it with.
 line @4 greet [here.time=dusk|night] : #greet#. Come in; the lamp's lit for you as much as anyone. | #greet#. You're out late, #address#. Warm your paws first.

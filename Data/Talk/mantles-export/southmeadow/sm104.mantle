@@ -1,6 +1,6 @@
-# sm104, the quiet tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm104, the quiet tally (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm104
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -82,7 +82,7 @@ line @11 greet.return [here.time=dusk|night] : #greet#. Long day, by the look of
 line @12 farewell : #farewell#. | #farewell#, #address#. Mind the lane.
 line @13 farewell [here.time=dusk|night] : #farewell#. Keep to the lit side going home. | #farewell#. I'll bolt up behind you.
 line @14 farewell.return : #farewell#. | #farewell#. Come back when the casks are new.
-line @15 farewell.return [here.time=night] : #farewell#. #s8_nightback#. | Sleep sound. I'll be counting the #takings# a while yet.
+line @15 farewell.return [here.time=night] : #farewell#. #s8_nightback#. | Sleep sound. I'll be counting #takings# a while yet.
 line @16 react.news : #hush.capitalize#. Say that again, slower. | I'm listening. I've put the #jar# down.
 line @17 react.news.new : #surprise#. I'd not heard that. | #oath#. That's new to me, and #regulars# tell me everything.
 line @18 react.news.known : #knew#. It came over the tap last night. | I'd heard it at the #bench#. It stopped with me.
@@ -95,7 +95,7 @@ line @24 ask.how : And you? Are the days adding up, #address#? | How's your lot,
 line @25 sympathise : #sympathy#. Sit; I'll bring you something warm. | That's a #bad# row to hoe. Sit, and don't count anything.
 line @26 reassure : #reassure#. Most things come right if you give them a season. | It'll add up. These things usually do, given a #good# season.
 line @27 decline : #hedge#, no. I can't leave the tap with nobody to watch it. | I'd like to, #address#. Only there's casks to count before the carts come.
-line @28 accept_decline : #no_matter#. It'll keep. | Fair enough. Another day, when the #work#'s done.
+line @28 accept_decline : #no_matter#. It'll keep. | Fair enough. Another day, when #work#'s done.
 line @29 thank : #thanks#. | Kind of you, #address#. I'll remember it at the tap.
 line @30 deflect_thanks : #deflect#. You'd do the same. | It was nothing. One #jar#, one kindness.
 line @31 preclose [self.working=yes] : Well. #casks.capitalize# won't count themselves. | I'd best get back behind the tap before #regulars# start pouring their own.
@@ -207,7 +207,7 @@ when topic=home self.married=no self.job=innkeeper
 does tell.self / react.self / assess
 a : I live #upstairs#. One room, one window, and the noise of the tap through the boards. | Up there I answer to nobody. I count the #stair# going up. Seventeen. | I hear the last of #regulars# go and the bolt go, and then it's all mine.
 b : Is it noisy? | Seventeen? | Sounds peaceful.
-a : Till the last #jar#. Then it's quiet as a field. | Seventeen. The ninth one creaks, so I step over it, #pet#. | Peaceful enough. Some nights a #little# too peaceful.
+a : Till the last #jar#. Then it's quiet as a field. | Seventeen. The ninth one creaks, so I step over it, #pet#. | Peaceful enough. Some nights #little# too peaceful.
 
 scene next_door
 when topic=friends|home self.neighbour
@@ -359,7 +359,7 @@ when topic=smalltalk|day
 does tell.self / ask.detail / answer.detail / ack
 a : #tally.capitalize#... Sorry. I was counting. I'm always counting something. | I count things without meaning to. Stairs, #cups#, birds on a roof. | Somebody spoke to me once while I was counting, and I said "nine" right at them, #address#.
 b : What was it this time? | Can't you stop? | What did they say back?
-a : Steps from the door to #well#. Thirty-one, same as yesterday. | I've tried. Then I count how long I've stopped for. #tally.capitalize#. | Nothing for a #little# while. Then "ten", to be kind.
+a : Steps from the door to #well#. Thirty-one, same as yesterday. | I've tried. Then I count how long I've stopped for. #tally.capitalize#. | Nothing for #little# while. Then "ten", to be kind.
 b : #bc_ha# | Ha. | #bc_lovely#
 
 scene cool_cellar
@@ -461,7 +461,7 @@ dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Your stool'
 dlg @3 resident.hub [here.time=night] : Late, #address#. Say it quick and I'll not lose my count.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm listening, #address#. From over here, if it's all the same to you.
 dlg @5 resident.job [self.job=innkeeper] : I keep the taproom at #self.workplace#, and I live over it. Beds, #ale#, and a lot of counting. | Casks, cups, beds and #slate#. I keep the count of all of it.
-dlg @6 resident.job : Whatever #work# wants doing, and I count it as I go. | A #little# of everything. I keep a tally of the lot.
+dlg @6 resident.job : Whatever #work# wants doing, and I count it as I go. | #little.capitalize# of everything. I keep a tally of the lot.
 dlg @7 resident.business [business=thriving] : Every bench full, and I can't count fast enough. #good.capitalize# trouble to have.
 dlg @8 resident.business [business=failing] : Thin. I count the takings and wish I hadn't. #reassure#, I tell myself.
 dlg @9 resident.business [business!=thriving|failing] : Steady. #casks.capitalize# go down and the coin comes in, near enough even.

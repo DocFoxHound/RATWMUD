@@ -1,6 +1,6 @@
-# oh110, the bird-carving potter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# oh110, the bird-carving potter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle oh110
-revision 1
+revision 2
 state ready
 dialect oakhaven
 accent light broad
@@ -73,7 +73,7 @@ line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] :
 line @1 answer.how : Well enough, mm. Sawdust on me, bird in my pocket. | #fine#. Better for the asking.
 line @1 answer.how.busy [self.working=yes self.job=crafter] : #busy.capitalize#. #kiln.capitalize# wants feeding and #wheel# wants turning. | Up to the wrists in #clay#, and glad of it.
 line @1 ask.how : And you? Keeping out of the mud, #address#? | How's it with you, #address#? The long answer; I've time.
-line @1 sympathise : #sympathy#. Sit, have some #soup#. | That's a #bad# business. Take a bird; it helps, a little.
+line @1 sympathise : #sympathy#. Sit, have #soup#. | That's a #bad# business. Take a bird; it helps, a little.
 line @1 reassure : #reassure#. Slow, but it grows right. | It'll come round, mm. Slow as sap, but it comes.
 line @1 decline : I'd say yes, #address#, but I've work on that won't mind itself. | #refuse#. I've a promise to keep elsewhere, and I keep the ones I make.
 line @1 accept_decline : #no_matter#. Another time. | Fair. I'd have found a reason too, #address#.
@@ -196,7 +196,7 @@ a : I keep waiting to stop. I'm still waiting, #slow# as it goes. | It does. I'v
 scene barley_bowl
 when topic=food
 does tell.self / react.self / assess
-a : #soup.capitalize#. I'll have it every night of the year and not complain. | There's a pot on. Barley, a bit of onion, and a crust for mopping. | I eat my #soup# out of my old brown bowl. Tastes better from it, I'll swear.
+a : #soup.capitalize#. I'll have it every night of the year and not complain. | There's a pot on. Barley, a bit of onion, and a crust for mopping. | I eat #soup# out of my old brown bowl. Tastes better from it, I'll swear.
 b : Simple and good. | Sounds lovely. | Does it, though?
 a : Simple's the best kind, #address#. | Sit down, then. There's enough #soup# for two. | It does. I'd not lie about soup. About other things, maybe.
 

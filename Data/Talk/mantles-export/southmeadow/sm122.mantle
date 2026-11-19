@@ -1,6 +1,6 @@
-# sm122, the pup who keeps names (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm122, the pup who keeps names (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm122
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -48,7 +48,7 @@ opinion @1 festivals for 2 : Festivals are the #very# best days. Music, and lant
 opinion @1 strangers for 1 : A #stranger# is somebody whose name I haven't got yet. That's all. | I'd always say hello. You never know who'll end up among #names#.
 opinion @1 times for 1 : There's bread, and #hens#, and a roof. I don't see what else to wish for, except #snow#.
 opinion @1 watch mixed 0 : The watch are all right. I know every one of their names, and they don't know I know. #oath#.
-opinion @1 merchants mixed 0 : Some traders give you the #little# apple for nothing. Some don't. I keep the pips either way.
+opinion @1 merchants mixed 0 : Some traders give you #little# apple for nothing. Some don't. I keep the pips either way.
 
 grown
 line @1 greet [pair.band=strangers] : #greet#. I don't believe we've met; I'd remember. | #greet#. A new face. I'll have your name before you go.
@@ -197,7 +197,7 @@ line @1 reassure : It'll come right. Things mostly do, #address#. | Don't worry.
 line @1 decline : I'd better not. I'm not allowed past #gate# without asking. | I can't, sorry. I'd get told off, and I don't like being told off.
 line @1 accept_decline : All right. You don't have to. | That's all right. I'll ask #hens# instead.
 line @1 thank : #thanks#. I'll remember you did that. | #thanks#! You're on my list now. The #good# list.
-line @1 deflect_thanks : It was only a #little# thing. | You don't have to thank me. I wanted to.
+line @1 deflect_thanks : It was only #little# thing. | You don't have to thank me. I wanted to.
 line @1 preclose : I'd best go. #hens# will want me. | I have to go in a minute. I'm not supposed to stay long.
 line @1 accept_preclose : All right. #farewell#, then. | Go on, then. I'll still be here.
 line @1 ack : Mm. | #bc_i_know# | #bc_it_is#
@@ -205,7 +205,7 @@ rule @y_hens
 when concept=bark here.region=southmeadow
 does aside
 cooldown 6h
-say Here, chook chook. I know all your names. | One, two, three... where's the #little# brown one gone?
+say Here, chook chook. I know all your names. | One, two, three... where's #little# brown one gone?
 
 rule @y_flies
 when concept=bark here.season=summer
@@ -217,7 +217,7 @@ rule @y_snow_wait
 when concept=bark here.season=winter here.weather!=snow
 does aside
 cooldown 10h
-say Come on, #snow#. Just a #little# bit. | I'm watching the sky for #snow#. Nothing yet.
+say Come on, #snow#. Just #little# bit. | I'm watching the sky for #snow#. Nothing yet.
 
 rule @y_dice
 when concept=bark working=no
@@ -240,7 +240,7 @@ does tell.plan / react.self / assess
 a : I keep #pips# in #tin#. Forty-three. One day they'll be #orchard#. | When I'm big I'm going to plant #orchard#. With a swing in the middle. | I planted a pip by the well. It hasn't come up yet. I check every morning.
 b[stage=adult|old] #grown : Forty-three trees will want a lot of land. | That's a lot of digging for one pair of paws. | Pips take their time.
 b : Forty-three! | The biggest one of all? | Nothing yet?
-a@grown : I'll ask for the land when I'm grown. Somebody will say yes. | I'll dig a #little# bit every day. That's how it gets done. | That's all right. I'm #good# at waiting.
+a@grown : I'll ask for the land when I'm grown. Somebody will say yes. | I'll dig #little# bit every day. That's how it gets done. | That's all right. I'm #good# at waiting.
 a : Forty-four tomorrow. I'm having an apple after #supper#. | The #very# biggest. You'll be able to get lost in it. | Not yet. I think it's thinking about it.
 
 scene y_fried_fish
@@ -264,7 +264,7 @@ when topic=home here.region=southmeadow
 does tell.self / react.self / assess
 a : I like it when there's #straw# down. It smells like sunshine. | We put #straw# in the loft. I lay in it and it crackled all over. | There's a spot in #barn# where the straw is deepest. That's my thinking place.
 b : It does smell good, clean straw. | Itchy, though. | A thinking place?
-a : Better than soap. I'd sleep in it if they let me. | Only a #little# bit itchy. The crackling is worth it. | For thinking up names. You need quiet for names.
+a : Better than soap. I'd sleep in it if they let me. | Only #little# bit itchy. The crackling is worth it. | For thinking up names. You need quiet for names.
 
 scene y_snow_waiting
 when topic=season|weather|dreams here.season=winter here.weather!=snow
@@ -297,7 +297,7 @@ a : Because it's true. I say it at bedtime too, in #bed#. | The second time I ru
 scene y_siblings
 when topic=family|home here.region=southmeadow
 does tell.self / react.self / assess
-a : Our house is never quiet. Somebody's always singing or stamping or losing a boot. | I've got the #little# bed by the window. I can see #saplings# from it. | At #supper# everybody talks at once. I just listen, and I remember it all.
+a : Our house is never quiet. Somebody's always singing or stamping or losing a boot. | I've got #little# bed by the window. I can see #saplings# from it. | At #supper# everybody talks at once. I just listen, and I remember it all.
 b[pair.kin=siblings] #sib : Mostly it's you losing the boot. | You only got it because you cried. | You do. It's a bit much, sometimes.
 b : Sounds a busy house. | A good spot. | You don't talk?
 a@sib : Only once. Twice. It was a #very# big boot. | I didn't cry. I asked #very# nicely. Twice. | I can't help it. It just stays in.
@@ -343,7 +343,7 @@ b : Lots of folk are cutting it thin just now. | That's all right. Crusts are fo
 a : I didn't say anything. I just ate slowly, so it lasted. | Next time I'll give them half. Maybe, #oath#.
 
 story y_lost_hen [topic=animals|memories here.region=southmeadow]
-  : One night the #little# brown hen didn't come in, and everyone said a fox had her.
+  : One night #little# brown hen didn't come in, and everyone said a fox had her.
   : I went out with the lamp and said her name #very# quietly, and she came out from under the cart.
   ask : Do you think hens know their names?
   b[stage=adult|old] : I'd not have said so, but maybe yours do. Was she hurt?
@@ -352,7 +352,7 @@ story y_lost_hen [topic=animals|memories here.region=southmeadow]
 
 story y_first_pip [topic=dreams|memories]
   : The first pip I ever planted, I put in a cup on the windowsill and watered every day.
-  : It came up! A #little# green thing with two leaves, like ears.
+  : It came up! #little.capitalize# green thing with two leaves, like ears.
   : Then the cat sat on it.
   b : Oh no. Did you plant another?
   : Eleven more. #saying.capitalize#.
@@ -371,7 +371,7 @@ dlg @3 resident.hub [here.time=night] : I'm meant to be in #bed#. #greet#, but q
 dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm not supposed to talk to folk who look cross. Sorry, #address#.
 dlg @1 resident.job : I'm only a #child#. I mind #hens# and keep #pips#. That's my job. | No job yet. When I'm big I'll grow #orchard#.
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nobody tells me news. I'm only a #child#. | I don't know any news. I know lots of names, though.
-dlg @1 resident.gossip [here.gossip!=yes] : I don't tell secrets. Not even the #little# ones.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't tell secrets. Not even #little# ones.
 dlg @1 resident.bye : #farewell#. I'll remember your name. | #farewell#. Mind the ditch by #gate#.
 graft resident.hub
 choice How do you remember everyone's name? -> names
@@ -406,7 +406,7 @@ does confide / react.self / assess
 a : I've started writing #names# in a book. Everybody laughs, so I keep it under my pillow. | Folk forget my name all the time. I never forget theirs. It's a #bad# bargain. | Somebody called me by the wrong name at market. I said theirs back, right first time.
 b[stage=young|adolescent] #pup : Am I in it? | They forget mine too. | Good. They deserved that.
 b : That's nothing to laugh at. | That's not right at all. | Bet they went red.
-a@pup : Near the front. In #good# ink. | Then I'll remember it for both of us. | I didn't mean it unkind. Only a #little#.
+a@pup : Near the front. In #good# ink. | Then I'll remember it for both of us. | I didn't mean it unkind. Only #little#.
 a : I know. I'll show them when #book# is full. | It isn't. I've stopped minding much. | Red as a radish. I felt #bad# after.
 
 scene t_orchard_plans

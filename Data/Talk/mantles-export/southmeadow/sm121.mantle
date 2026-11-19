@@ -1,6 +1,6 @@
-# sm121, the hand who keeps step (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm121, the hand who keeps step (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm121
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -45,12 +45,12 @@ any
 opinion @1 city against 1 : Smoke and shoving, and nobody with #manners# to spare. I'd not go back for wages. | All that way for a place where nobody says good day. Blighted, I call it.
 opinion @1 watch mixed 0 : The watch march well enough. I'd like to see them catch somebody now and then, #address#.
 opinion @2 watch against 1 [self.robbed=yes] : Whoever robbed me is still walking about. The watch took my name very neatly, mind. That's all they did.
-opinion @1 newcomers mixed 0 : A newcomer's welcome if they wipe their #boots# and say good day. Most do. Some don't.
+opinion @1 newcomers mixed 0 : A newcomer's welcome if they wipe their boots and say good day. Most do. Some don't.
 opinion @1 festivals mixed 0 : I'll go for the music. I leave when #manners# go, and they go early.
 opinion @1 times for 1 : There's work, and there's #cheese#, and the roof's sound. A ripe year's no time for grumbling.
 
 grown
-line @1 greet [pair.band=strangers] : #greet#. Wipe your #boots#, if you're stopping. | #greet#. You'll be wanting the farmhouse; it's up the track.
+line @1 greet [pair.band=strangers] : #greet#. Wipe your boots, if you're stopping. | #greet#. You'll be wanting the farmhouse; it's up the track.
 line @2 greet [self.working=yes self.job=farmer] : #greet#. Mind the stack; it's square and I'd like it to stay so. | #greet#. Stand clear of #sacks#.
 line @3 greet [here.time=dawn] : #greet#. Out with the light. #good.capitalize#. | #greet#. First up, first done.
 line @4 greet [here.time=dusk|night] : #greet#. Late to be walking. | #greet#. I was just locking up #granary#.
@@ -264,7 +264,7 @@ story first_stack [topic=work|memories self.job=farmer self.age>=20]
   b : That's hard on a new hand. Did you hold it against them?
   : Not for a minute. Not one of my stacks has fallen since. #oath#.
 
-dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Wipe your #boots# and say what you need. | #greet#. You'll want the farmhouse, most likely. What is it?
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Wipe your boots and say what you need. | #greet#. You'll want the farmhouse, most likely. What is it?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. On time, as ever. I like that. | #topic.player#. #greet#. You're welcome back, #address#.
 dlg @3 resident.hub [here.time=night] : #greet#. It's late. I've the granary to lock, so be quick.
 dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll keep #manners# if you will. That's my whole offer.

@@ -1,6 +1,6 @@
-# oh107, the taproom tally-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# oh107, the taproom tally-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle oh107
-revision 1
+revision 2
 state ready
 dialect oakhaven
 accent light broad
@@ -428,9 +428,9 @@ dlg @1 inn.greet [here.inn_helper!=yes] : #greet#. A bed, a cup, or a seat by #f
 dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes] : #greet#, #topic.player#. Your usual's waiting. I counted you in.
 dlg @3 inn.greet [here.inn_helper=yes] : #greet#. I only pour. Ask #here.innkeeper# about a bed.
 dlg @1 inn.rooms : A bed's #here.bed_night#p a night, #here.bed_week#p the week. The whole upstairs is #here.upstairs_night#p, if it's empty. I've counted the sheets.
-dlg @1 inn.roomed : Up the stair, second door. Sixteen steps; the eleventh creaks. #bc_it_does# | Your #bed#'s made. I counted the blankets twice: there's three.
+dlg @1 inn.roomed : Up the stair, second door. Sixteen steps; the eleventh creaks. #bc_it_does# | Your bed's made. I counted the blankets twice: there's three.
 dlg @1 inn.rest [here.lodging!=yes] : Sit by #fire# as long as you like. I'll not count your time. | Warm yourself. There's a bed upstairs if you want one, #address#.
-dlg @2 inn.rest [here.lodging=yes] : Rest as long as you like. Your #bed#'s upstairs when you want it.
+dlg @2 inn.rest [here.lodging=yes] : Rest as long as you like. Your bed's upstairs when you want it.
 dlg @1 inn.refused : #topic.why# I'll not bend on it, #address#. | Sorry. #topic.why# There's still a seat by #fire#.
 dlg @1 inn.bye : #farewell#. Mind #step# on your way out. | #farewell#. Come back when you're dry again.
 graft resident.hub

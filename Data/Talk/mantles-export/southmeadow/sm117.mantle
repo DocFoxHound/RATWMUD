@@ -1,6 +1,6 @@
-# sm117, the potter who walked back (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm117, the potter who walked back (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm117
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -116,7 +116,7 @@ b : Rather you than me. | That's a lot of waiting. | #bc_somebody_has_to#
 scene kiln_opened
 when topic=work self.job=crafter
 does tell.feeling / sympathise / assess
-a : Opened #kiln# this morning. Two cracked right through. | Most of the load came out whole. One #jug# I'll keep for myself; the #glaze# ran like honey. | I open #kiln# slow. Every time, I'm afraid. Every time, it's mostly fine.
+a : Opened #kiln# this morning. Two cracked right through. | Most of the load came out whole. One #jug# I'll keep for myself; #glaze# ran like honey. | I open #kiln# slow. Every time, I'm afraid. Every time, it's mostly fine.
 b : Only two, though. | Keep it, then. | That's brave.
 a : Only two. I still grieve them a little. #bc_poor_soul# | I will. It's the one I'll pour my #ale# from. | Not brave. I just want to see. #saying#.
 
@@ -205,7 +205,7 @@ b : #bc_lovely# | #bc_thank_you# | That's good.
 scene own_dish
 when topic=food|work self.job=crafter
 does tell.self / react.self / assess
-a : I bake #tart# in a dish I threw myself. It tastes better for it. I'm sure of it. | Food from your own bowl tastes of something. I can't say what. #home.capitalize#, maybe. | I made my plates and my cups and my #jug#. Everything I eat from, I've touched before.
+a : I bake #tart# in a dish I threw myself. It tastes better for it. I'm sure of it. | Food from your own bowl tastes of something. I can't say what. #home.capitalize#, maybe. | I made my plates and my cups and #jug#. Everything I eat from, I've touched before.
 b : That's a nice thought. | I believe you. | That sounds right.
 a : It's true, I think. #clay.capitalize# remembers the fire, and so does the tart. | Thank you. Not everybody does. | It does. That's why I can't trust #citycup#.
 

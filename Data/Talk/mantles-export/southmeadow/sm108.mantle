@@ -1,6 +1,6 @@
-# sm108, the river-led vine hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm108, the river-led vine hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm108
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -47,7 +47,7 @@ opinion @2 festivals for 1 : A feast's the one day the whole town looks up from 
 opinion @3 houses against 1 : I've worked in the shade of the Houses all my days and never seen one of their faces. That's the truth, #straight#.
 opinion @4 merchants against 3 : Some weeks my #wages# won't run to a loaf, while those who bake it never miss a meal. I'll say that to any of them.
 opinion @5 newcomers against 1 : There's only so much to do on #slope#. Each newcomer on the rows means a regular hand stood idle.
-opinion @6 times against 1 : It's harder every week, a #little# at a time. I'd say so to anybody up north, if they asked. They don't.
+opinion @6 times against 1 : It's harder every week, #little# at a time. I'd say so to anybody up north, if they asked. They don't.
 
 grown
 line @1 greet [pair.band=strangers] : #greet#, #address#. You'll be off the north road. | #greet#. You look like you've walked a way.
@@ -57,7 +57,7 @@ line @4 kin.open [pair.kin!=no] : Sit down. I've #bread#, and nothing to hide. |
 line @5 again.open : #welcome_back#. I've not gone far. | Twice in one morning, #address#. Something's afoot.
 line @6 greet.return : #greet#. | #greet#, #address#. Well enough, thank you.
 line @7 greet.return [pair.band=friends|family] : #greet#. Sit; I was hoping it'd be you. | #greet#. You're a #good# sight.
-line @8 greet.return [self.working=yes] : #greet#. One more row. | #greet#. Mind the #shears#.
+line @8 greet.return [self.working=yes] : #greet#. One more row. | #greet#. Mind #shears#.
 line @9 farewell : #farewell#. | #farewell#. #saying#.
 line @10 farewell [here.time=dusk|night] : #farewell#. Keep to the lane; the ditches are deep. | #farewell#. #s8_night#.
 line @11 farewell.return : #farewell#. | #farewell#, #address#. Go careful.
@@ -204,7 +204,7 @@ a : Then they can have it, and welcome. I'll keep #slope#. | Coughs, and footste
 scene winter_pruning
 when topic=season|work here.season=winter
 does tell.self / react.self / assess
-a : Winter's for pruning. Cold paws, and the #shears# stiff in the morning. | Bare #vines# under the snow. You'd not think there'd ever be fruit again. | I like the slope in winter. Quiet, and the crows for company.
+a : Winter's for pruning. Cold paws, and #shears# stiff in the morning. | Bare #vines# under the snow. You'd not think there'd ever be fruit again. | I like the slope in winter. Quiet, and the crows for company.
 b : Sounds cold work. | Will there be? | Crows?
 a : Cold, and slow. I don't mind slow. | There will. There always has been. #saying#. | Crows, and the odd hare. They don't mind me.
 

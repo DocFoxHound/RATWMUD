@@ -1,6 +1,6 @@
-# cw165, the bone-giver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw165, the bone-giver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw165
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -117,7 +117,7 @@ when topic=food self.likes=mutton_stew
 does tell.self / react.self / assess
 a : #stew.capitalize# on the hob. The neck end, the bones, an onion. All day. | I make #stew# out of what nobody buys. Best thing in the shop. | Nothing's better than #stew# when the cold's in your bones. Nothing.
 b : Smells good. | What nobody buys? | Not even fish?
-a : It is good. You can't have any. Not from my #pot#. | The neck, the shin, #scraps#. Slow fire does the rest. | Not even fish. I grew up on fish by #lake#. I'll take mutton.
+a : It is good. You can't have any. Not from #pot#. | The neck, the shin, #scraps#. Slow fire does the rest. | Not even fish. I grew up on fish by #lake#. I'll take mutton.
 
 scene the_dice
 when topic=pastimes self.likes=dice

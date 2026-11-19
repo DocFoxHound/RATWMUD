@@ -1,6 +1,6 @@
-# sm107, the cellar proverb-maker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm107, the cellar proverb-maker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm107
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -43,7 +43,7 @@ opinion @1 church against 1 : The plate's round the pews faster than the prayers
 opinion @2 houses against 1 : The Houses keep their benches for their own. #wry#. I'll mind #vats# and not wait to be asked.
 opinion @3 merchants against 2 : Same coin coming in, and the loaf's a penny dearer every month. #oath#. Somebody's cellar is filling, and it isn't mine.
 opinion @4 watch against 1 : The watch have a nose in every door but their own. #saying#, and so do noses.
-opinion @5 times against 1 : It's a #little# leaner every week. Up north they'll notice when the stones do, which is to say never.
+opinion @5 times against 1 : It's #little# leaner every week. Up north they'll notice when the stones do, which is to say never.
 opinion @6 newcomers against 1 : There's only so many casks to turn in #here.town#. Every new paw at the casks is one less for mine.
 
 grown
@@ -271,7 +271,7 @@ dlg @1 resident.hub : #greet#. Speak up. I've a saying ready either way. | #gree
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. #oldword#.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm listening, #address#. I don't promise to believe you.
 dlg @4 resident.job [self.working=yes self.job=none] : I keep the casks in #cellar#. I turn them, I tap them, I tell them sayings. | #vats.capitalize# and #must#, mostly. And the dark.
-dlg @5 resident.job : This and that. Whatever wants a steady paw and a closed mouth. | A #little# of everything, and a saying for each.
+dlg @5 resident.job : This and that. Whatever wants a steady paw and a closed mouth. | #little.capitalize# of everything, and a saying for each.
 dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Quiet as #stones#, and so's this one. | Nothing I'd swear to. #oldword#.
 dlg @7 resident.gossip [here.gossip!=yes] : I know a thing or two. I'll not uncork them for you. #saying#. | #gossip_none#
 dlg @8 resident.bye : #farewell#. #saying#. | #farewell#, #address#. Mind the step.

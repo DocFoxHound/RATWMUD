@@ -1,6 +1,6 @@
-# cw170, the berth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw170, the berth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw170
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -98,7 +98,7 @@ line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #
 line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. We're owed some of that. | Good. I'm glad of it, #address#.
 line @1 answer.how : #fine#. #tired.capitalize#. I'm always that. | Calm enough. #tide.capitalize#'s kept its hours. | Steady. Nothing's sunk today.
 line @1 answer.how.busy [self.working=yes self.job=sailor] : Every berth spoken for, and #ledger# open. | #busy.capitalize#, and going at it #slowly#.
-line @1 ask.how : And you? Keeping out of the #wind#? | How's the water with you, #address#?
+line @1 ask.how : And you? Keeping out of #wind#? | How's the water with you, #address#?
 line @1 sympathise : #sympathy#. Sit a while; I'm in no hurry. | #pity#. That's a heavy line to haul.
 line @1 reassure : #reassure#. Most knots come loose with patience. | It'll ease. Things do, come #turn#.
 line @1 decline : I'd help if I could, #address#. Only I'm spoken for till dark, and I don't go back on that. | #hedge#, but no. I've a thing to finish, and I finish things #slowly#.
@@ -175,7 +175,7 @@ a : Not that mud. #mud.capitalize# keeps what it takes. | Went in after it. Nobo
 scene storm_lines
 when topic=weather here.weather=storm self.job=sailor
 does tell.worry / ask.detail / answer.detail / assess
-a : Storm coming in. I've doubled every line on #quay#. | Hear that #wind#? I'll be up all night counting #hulls#. | A blow like this, I walk #berths# with #blade# in my paw.
+a : Storm coming in. I've doubled every line on #quay#. | Hear #wind#? I'll be up all night counting #hulls#. | A blow like this, I walk #berths# with #blade# in my paw.
 b : Will they hold? | All night? | In your paw?
 a : The doubled ones will. It's the lines #skipper# tied up that I fret over. | Every hour. Count, sit, count again, till I'm #tired# through. | A line parting is #bad#. A line that won't part with a #hull# dragging is worse.
 b? : #bc_i_hope_so# | #bc_poor_soul# | #bc_wise#

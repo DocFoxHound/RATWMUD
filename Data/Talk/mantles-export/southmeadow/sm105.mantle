@@ -1,6 +1,6 @@
-# sm105, the long-road pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm105, the long-road pot hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm105
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent broad light
@@ -44,12 +44,12 @@ opinion @1 festivals for 1 : At my wedding I kept dancing after the fiddle gave 
 opinion @2 houses against 1 : I've scrubbed under their tables my whole life, near enough. Never once had a face to put to the name.
 opinion @3 merchants against 2 : I can't get a loaf for what #pots# pay me, and the ones selling it never go #hungry#. That's all I'll say.
 opinion @4 newcomers against 1 : There's only so many #pots# in #here.town#, and every new pair of paws wants a share of them.
-opinion @5 times against 1 : Every week it's a #little# harder to make the coin stretch. Nobody up the long road notices, I'd wager.
+opinion @5 times against 1 : Every week it's #little# harder to make the coin stretch. Nobody up the long road notices, I'd wager.
 opinion @6 city against 1 : Folk who've walked #longroad# say the city's a fair sight from the hill. The hill's near enough for me, #oath#.
 
 grown
 line @1 greet [pair.band=strangers] : #greet#. Mind #flags#; they're slick. | #greet#, #address#. You'll be wanting the keeper, not me.
-line @2 greet [self.working=yes here.place=tavern] : #greet#. Mind where you tread; I've just done #flags#. | #greet#. Pardon the #suds#.
+line @2 greet [self.working=yes here.place=tavern] : #greet#. Mind where you tread; I've just done #flags#. | #greet#. Pardon #suds#.
 line @3 greet [here.time=dawn] : #greet#. Up with the cockerel, are we both. | #greet#. There's #mist# still, if you look.
 line @4 kin.open [pair.kin!=no] : Come in. Sit; I can stop a while for you. | Come here, #pet#. I've a honey cake put by.
 line @5 again.open : #welcome_back#. I've not moved far. | You again. #feet.capitalize# haven't stopped since.
@@ -148,7 +148,7 @@ a : No. The hill was enough. Home I went, and slept two days. | It is. You know 
 scene spouse_at_home
 when topic=family|home self.married=yes
 does confide / react.self / assess
-a : #self.spouse# and I have had a roof between us a long while. I'd not trade my #self.spouse_word# for all the barley in the south. | When I get home it's #self.spouse# I want to see first, and then my #bed#. | I keep a honey cake back for #self.spouse#. It's the only thing I don't count.
+a : #self.spouse# and I have had a roof between us a long while. I'd not trade my #self.spouse_word# for all the barley in the south. | When I get home it's #self.spouse# I want to see first, and then #bed#. | I keep a honey cake back for #self.spouse#. It's the only thing I don't count.
 b : That's a good thing to have. | In that order? | That's sweet of you.
 a : It is. #luck.capitalize#, that. | Mostly. Some nights the bed wins. | It's nothing. A cake's a small thing, and it gets eaten.
 
@@ -274,7 +274,7 @@ dlg @1 resident.hub : #greet#. I'm only the pot hand, mind. | #greet#, #address#
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a stool and a minute, if you want them.
 dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm only here for #pots#. Say what you need and go.
 dlg @4 resident.job [self.working=yes] : I work at #self.workplace#. #pots.capitalize#, #flags#, whatever wants washing. | Scrubbing, mostly. Every pot counted, #oath#.
-dlg @5 resident.job : Whatever #work# wants doing. #feet.capitalize# do the rest. | A #little# of everything, done slow.
+dlg @5 resident.job : Whatever #work# wants doing. #feet.capitalize# do the rest. | #little.capitalize# of everything, done slow.
 dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I hear nothing but #suds#. | Not a word. Ask at the tap.
 dlg @7 resident.news [world.news] : Word from #world.news_from#: #world.news#. I had it in the kitchen.
 dlg @8 resident.gossip [here.gossip!=yes] : Head over #tub#, ears shut. #gossip_none# | #secret#. I don't carry tales.

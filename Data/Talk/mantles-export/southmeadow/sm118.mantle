@@ -1,6 +1,6 @@
-# sm118, the carter who comes late (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm118, the carter who comes late (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm118
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -44,7 +44,7 @@ opinion @1 road for 1 : #track.capitalize# feeds me. Most weeks it's the same ol
 opinion @2 road against 2 [world.bandits=near] : There's trouble on the road, they say. I'll still drive it. Only with company, #address#.
 opinion @1 dole for 1 : A town this size can spare a bowl for anybody hungry. Nobody should sleep #hungry# here.
 opinion @1 strangers for 1 : A stranger's a friend who's not had #soup# with you yet. I've given more lifts than I can count.
-opinion @1 houses against 1 : I've hauled their #grain# all my life and never once had a nod from them. Still, I'd not say no to their service.
+opinion @1 houses against 1 : I've hauled their grain all my life and never once had a nod from them. Still, I'd not say no to their service.
 opinion @1 festivals for 1 : A feast is the one place nobody minds if I turn up late. #fiddle.capitalize#'s still going.
 
 grown

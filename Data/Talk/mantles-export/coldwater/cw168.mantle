@@ -1,6 +1,6 @@
-# cw168, the hour-keeper at the needle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw168, the hour-keeper at the needle (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw168
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -95,7 +95,7 @@ b : #bc_wise# | Good for you. | #bc_poor_soul#
 scene counted_short
 when topic=work|prices self.working=yes self.dislikes=haggling
 does tell.complaint / react.complaint / insist / ack
-a : Nine bells' pay for ten, again. I hate haggling, and #shop# makes me do it every week. | I stood and argued over half a bell's #wages#. I'd sooner have sewn another seam. | Short by one bell. It's not the #coin#. It's being taken for a fool.
+a : Nine bells' pay for ten, again. I hate haggling, and #shop# makes me do it every week. | I stood and argued over half a bell's #wages#. I'd sooner have sewn another seam. | Short by one bell. It's not #coin#. It's being taken for a fool.
 b : Did you get it? | That's a shame. | Same thing, really.
 a : Got it. I had #count#; they hadn't one. #saying#. | It is. Pay me right and I'd never open my mouth. | Not the same. The coin I can go without. Being #cheated# I can't.
 b : #bc_good# | #bc_true# | Fair point.

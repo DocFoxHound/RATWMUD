@@ -1,6 +1,6 @@
-# cw179, the humming preserver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw179, the humming preserver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw179
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -144,7 +144,7 @@ a : I'd take pouring. At least a downpour's honest, like a good #jar#. | You did
 scene deep_mud
 when topic=weather|season here.season=spring|autumn here.outdoors=rain|overcast|fog
 does tell.complaint / ask.detail / answer.detail
-a : The lane to my door's gone to #mud#. I came in brown to the knees this morning. | I lost a clog in the #mud# on the way here. Went back for it; it didn't want to come. | Every cart through the market churns it worse. By noon it'll be #mud#, all of it.
+a : The lane to my door's gone to #mud#. I came in brown to the knees this morning. | I lost a clog in #mud# on the way here. Went back for it; it didn't want to come. | Every cart through the market churns it worse. By noon it'll be #mud#, all of it.
 b : Brown to the knees? | And the clog? | Can't they lay boards?
 a : Near enough. I've scrubbed twice and I'm still #bad#. #annoyed#. | Came out eventually, with a sound I'll not repeat, #address#. | They could. They'd sooner sell boards than lay them. #dryly#.
 
@@ -195,7 +195,7 @@ a : Not since spring. #hum.capitalize#. I hum to keep my place. | Left at the ja
 scene counter_kept
 when topic=work|family self.role=merchant
 does tell.plan / ask.plan / answer.plan
-a : This #counter# came free and I took it with both paws. It stays in the family, if I've a say. | I'd like to hand #counter# on one day to somebody of mine. Somebody who'll stir properly. | Folk have asked to buy my corner of #hall#. I tell them it isn't for sale.
+a : #counter.capitalize# came free and I took it with both paws. It stays in the family, if I've a say. | I'd like to hand #counter# on one day to somebody of mine. Somebody who'll stir properly. | Folk have asked to buy my corner of #hall#. I tell them it isn't for sale.
 b : Which family? | Who'll that be? | Not even for a good price?
 a : Whatever family I find. A cousin, a niece. Somebody. #dryly#. | I don't know yet. But I'll know them when they stir #pan#. | Not for any price. A counter's not a coat, #address#.
 
@@ -293,7 +293,7 @@ a : Pickled. A lean #jar#, but it keeps, and folk buy it. | Soft by tomorrow. Th
 scene fruit_in
 when topic=caravan|work world.wagons=in self.role=merchant
 does tell.news / ask.detail / answer.detail / assess
-a : The fruit came in at dawn, and it's the good stuff for once. | Baskets up to the rafters out back. #hall.capitalize# smells like an orchard. | I spent half my #takings# on #fruit# off the carts this morning, and I'd do it again.
+a : The fruit came in at dawn, and it's the good stuff for once. | Baskets up to the rafters out back. #hall.capitalize# smells like an orchard. | I spent half #takings# on #fruit# off the carts this morning, and I'd do it again.
 b : What did you get? | All of it yours? | Half?
 a : #plums.capitalize#, a basket of quince, and pears soft enough for butter. | Every basket. I'll be stirring till my arms drop off. | Half. Good #fruit# pays itself back by the new moon.
 b? : #bc_lovely# | #bc_ha# | #bc_wise#
@@ -317,7 +317,7 @@ when topic=gossip|smalltalk
 does tell.self / react.self / insist / ack
 a : Folk tell a jam seller all sorts. They think I'm part of #counter#. | Talk comes to me over the tasting spoons. I seal it like #jar.a# and put it on a high shelf. | A customer began on somebody's neighbour this morning. I offered a taste of #pickles# instead.
 b : You must know everything. | A high shelf? | Did it work?
-a : Everything, and none of it leaves this #counter#. | Where nobody can reach it, me included. #dryly#. | It did. Vinegar stops a mouth, #address#.
+a : Everything, and none of it leaves #counter#. | Where nobody can reach it, me included. #dryly#. | It did. Vinegar stops a mouth, #address#.
 b : #bc_ha# | #bc_wise# | Ha.
 
 scene feast_cider

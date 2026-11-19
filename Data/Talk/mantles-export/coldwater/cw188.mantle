@@ -1,6 +1,6 @@
-# cw188, the bathhouse reckoner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw188, the bathhouse reckoner (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw188
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -56,7 +56,7 @@ any
 opinion @1 houses against 2 : #vent#, nobody rises here unless #house# says so. I've seen good wolves stuck for want of a nod.
 opinion @1 church against 1 : I've never known a sermon pay #coin# into anybody's #tin#. I'll keep my own counsel, and my own day of rest.
 opinion @1 city against 1 : Everyone in a hurry and nobody knowing who's on the stair below them. I keep my door bolted, #oath#.
-opinion @1 drink against 1 : A cup loosens tongues, and a loose tongue says what it can't take back. I'll keep my head and my #coin#.
+opinion @1 drink against 1 : A cup loosens tongues, and a loose tongue says what it can't take back. I'll keep my head and #coin#.
 opinion @1 newcomers against 1 : A new face on #street# could be anybody at all. I'll be civil, and I'll be careful.
 opinion @1 road against 1 : I'd not walk the roads out of here for any #coin#. Not for double, and I need double.
 opinion @1 strangers against 1 : A stranger brings a past with them, and maybe somebody following. I'll wait and see which.
@@ -222,7 +222,7 @@ when topic=animals self.dislikes=gulls here.region=ridgemere
 does tell.complaint / react.complaint / assess
 a : #gulls.capitalize# scream from first light. I hear them over #steam#, and I'm not even outside. | One of #gulls# took #oatcake# right off my windowsill. Bold as you like. | I can't stand #gulls#. Sly eyes, and they laugh at you.
 b : They're a pest. | Bold things. | Laugh?
-a : A loud, filthy pest. #oath#. | Bold, and fat on my #oatcake#. | They do. Listen. That's laughing, if ever I heard it.
+a : A loud, filthy pest. #oath#. | Bold, and fat on #oatcake#. | They do. Listen. That's laughing, if ever I heard it.
 
 scene fog_home
 when topic=weather here.outdoors=fog here.region=ridgemere
@@ -324,7 +324,7 @@ when topic=times|prices world.times=good|boom
 does tell.news / ask.detail / answer.detail
 a : Good weeks! Folk are paying for #hotwater# twice a week, some of them. | Coin's moving, and some of it's even stopping in my pocket. | Busy, and paid on time. I'm not used to it.
 b : What changed? | Some of it? | Put it by.
-a : Work's about. Folk with work like to wash. | A little. Enough to make the #sums# smile, once. | I already have. Every extra copper's in #tin#.
+a : Work's about. Folk with work like to wash. | A little. Enough to make #sums# smile, once. | I already have. Every extra copper's in #tin#.
 
 scene gossip_held
 when topic=gossip
@@ -438,7 +438,7 @@ dlg @1 master.work : Long days and hot ones. You'll be #tired#. You'll be paid. 
 dlg @1 master.wages : Nobody pays a wage to learn. You'd work at my side, and what you make by your own paws, you keep.
 dlg @1 master.takes [here.take_on=yes] : I only ever take the one, and only somebody I trust. You'd do. Ask me, and it's done. | I could take you. I'd want you on time, every day. Ask.
 dlg @2 master.takes [here.take_on=no] : Never more than one learner at my elbow. #here.take_on_why#
-dlg @1 master.taken : #good.capitalize#. Be early. I'm always early. | Done, then. Don't let me down; you're in my #sums# now.
+dlg @1 master.taken : #good.capitalize#. Be early. I'm always early. | Done, then. Don't let me down; you're in #sums# now.
 dlg @1 master.refused : #topic.why# | I'm sorry. #topic.why#
 dlg @1 master.bye : #farewell#. Think it over. | #farewell#. Come back if you decide.
 graft resident.hub

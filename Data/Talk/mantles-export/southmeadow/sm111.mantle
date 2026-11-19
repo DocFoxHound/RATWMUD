@@ -1,6 +1,6 @@
-# sm111, the north-road doubter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm111, the north-road doubter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm111
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -73,7 +73,7 @@ line @1 again.open : You again. #welcome_back#. | Twice in one day, #address#. I
 line @1 greet.return : #greet#. | #greet#. Well enough, thank you.
 line @2 greet.return [pair.band=friends|family] : #greet#. I'd hoped it was you. | #greet#. Sit a minute, then.
 line @3 greet.return [self.working=yes] : #greet#. I can't stop long. | #greet#. Walk with me down the row.
-line @4 greet.return [here.time=dusk|night] : #greet#. It's late for visiting. | #greet#. Quick, then; I'm for my #bed#.
+line @4 greet.return [here.time=dusk|night] : #greet#. It's late for visiting. | #greet#. Quick, then; I'm for #bed#.
 line @1 farewell : #farewell#. | #farewell#. Keep to the field path.
 line @2 farewell [here.time=dusk|night] : #s8_night#. | #farewell#. Keep your lantern low.
 line @1 farewell.return : #farewell#. | #s8_byeback#. | #farewell#, #address#.
@@ -99,7 +99,7 @@ line @2 preclose : Well. #preclose#. | That'll do me for talk today.
 line @1 accept_preclose : Go on, then. | #s8_okay#.
 line @1 ack : #ack#. | #bc_it_is#
 line @1 tease.return : Say what you like. I've heard worse in #rows#. | #cheek#.
-line @1 give.advice : #advise.capitalize#: buy your #seed# off a neighbour, never off a cart from the north. | Keep #whetstone# in your pocket and the edge looks after itself.
+line @1 give.advice : #advise.capitalize#: buy your seed off a neighbour, never off a cart from the north. | Keep #whetstone# in your pocket and the edge looks after itself.
 line @1 warn [world.bandits=near] : There's trouble on the roads, they say. Go in company, #address#. | #warn#. And keep off #northroad# after dark.
 line @1 hail [pair.band=friends] : Here. Spare me a minute, if you can. | #address.capitalize#. Over here.
 rule @whet
@@ -253,7 +253,7 @@ when topic=health
 does tell.self / sympathise / assess
 a : My back's one long ache, shoulders to tail. #bc_every_day# | I'm #weary#. Every night. And every morning I get up anyway. | Cut my paw on a thistle stalk. It's mending, but #slow#.
 b : #sympathy#. | That's hard work for you. | Keep it clean.
-a : Kind of you. A night's sleep and some #stew#, and I'll do. | It is. Nobody ever said #work# would be easy. | I wash it every night. It stings worse than the cut did, #oath#.
+a : Kind of you. A night's sleep and #stew#, and I'll do. | It is. Nobody ever said #work# would be easy. | I wash it every night. It stings worse than the cut did, #oath#.
 
 scene bad_manners
 when topic=smalltalk|day self.dislikes=bad_manners

@@ -1,6 +1,6 @@
-# cw174, the lime-burner in the wind (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw174, the lime-burner in the wind (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw174
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent broad light
@@ -91,7 +91,7 @@ line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #
 line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | #good.capitalize#. Something clean, for once.
 line @1 answer.how : #fine#. Tired. Smoky. Same as ever. | Middling. #kilns.capitalize# are drawing; that's most of what I ask.
 line @1 answer.how.busy [self.working=yes self.job=crafter] : #busy.capitalize#. Three burns going and #carts# late. | No time to stand. #lime# won't wait on talk.
-line @1 ask.how : And you? Keeping your #paws# dry? | You've the look of a long day, #address#.
+line @1 ask.how : And you? Keeping your paws dry? | You've the look of a long day, #address#.
 line @1 sympathise : #sympathy#. Sit. I'll not ask more than you want to say. | That's rough water. I'm sorry.
 line @1 reassure : #reassure#. It'll burn through. Most things do. | Give it a night, #address#. It'll look smaller.
 line @1 decline : Not today, #address#. #kilns.capitalize# can't be left, and nobody else knows #draw#. | #hedge#, but no. It's not mine to give, and I'll not pretend it is.
@@ -150,7 +150,7 @@ when topic=work self.job=crafter self.role=merchant
 does tell.self / react.self / assess
 a : Nothing leaves #yard# that isn't in #tally#, and nothing comes in unwritten. | I answer for #kilns# to the House. A sack goes missing, it's my name on it. | #steward.capitalize# came down again today. Counted #sacks# twice. Said nothing.
 b : That's a lot to carry. | Is that fair? | Said nothing?
-a : It's what I'm paid for. I'd not want it otherwise; I know where I stand. | Fair enough. It's their #lime#. I only burn it. | Nothing. That's how I know it was right.
+a : It's what I'm paid for. I'd not want it otherwise; I know where I stand. | Fair enough. It's their lime. I only burn it. | Nothing. That's how I know it was right.
 
 scene carts_late
 when topic=caravan|work world.wagons=late self.job=crafter
@@ -201,7 +201,7 @@ b? : #bc_wise# | #bc_poor_soul# | #bc_wise#
 scene fog_and_smoke
 when topic=weather here.weather=fog here.region=ridgemere
 does tell.complaint / react.complaint / assess
-a : #fog.capitalize# and smoke together. You can't see your paw, and you can taste the city. | On a day like this #reek# just sits. Nowhere to go. | Fog off the Sound holds every chimney's smoke down in the streets.
+a : #fog.capitalize# and smoke together. You can't see your paw, and you can taste the city. | On a day like #reek# just sits. Nowhere to go. | Fog off the Sound holds every chimney's smoke down in the streets.
 b : Horrible. | Nowhere at all. | It does, doesn't it?
 a : Horrible's the word. I'll be coughing it up till Restday. | Nowhere, so it comes to me. I'm used to it. Not fond. | Every one. And mine's among them, which I don't forget.
 

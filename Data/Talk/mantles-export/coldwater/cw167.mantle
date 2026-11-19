@@ -1,6 +1,6 @@
-# cw167, the lamplighter who counts the drowned (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw167, the lamplighter who counts the drowned (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw167
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -112,7 +112,7 @@ a : It shouldn't. The sky's only shifting its furniture. #bc_ha# | Both at once.
 scene fog_lamps
 when topic=weather here.weather=fog
 does tell.self / react.self / assess
-a : In this #fog# my lamps are only smudges. You'd walk into a post before you saw the light on it. | #fog.capitalize# nights I light them anyway. Somebody might need #smudge#. | I lost my way on #round# last fog. Counted #posts# to find it again.
+a : In #fog# my lamps are only smudges. You'd walk into a post before you saw the light on it. | #fog.capitalize# nights I light them anyway. Somebody might need #smudge#. | I lost my way on #round# last fog. Counted #posts# to find it again.
 b : What's the use, then? | Kind of you. | Counted posts?
 a : #smudge.capitalize#'s more than nothing. Folk steer by it. | It's the job. Kind doesn't come into it, #address#. | Forty of them. I know #posts# like my own teeth.
 
@@ -164,7 +164,7 @@ does tell.memory / react.story / assess
 a : I grew up by #camp#. Smoke all day and #hush# all night. | Up in the woods over #self.from_town# the only sound at night was the heaps ticking. | I miss #hush# more than anything. More than the lake, even.
 b[from=coldwater] #cw : The burners up in the woods? | I know that quiet. | More than the lake? Strong words.
 b : And now? | Ticking? | Will you go back?
-a@cw : The same. You'd see their smoke from the jetty, a #little# grey line. | Then you'll know why #din# gets to me. | I mean them. I'd swap #lamps# for it tomorrow.
+a@cw : The same. You'd see their smoke from the jetty, #little# grey line. | Then you'll know why #din# gets to me. | I mean them. I'd swap #lamps# for it tomorrow.
 a : Now it's #din# all night and I'm out in it with #pole#. | The heaps settling as they burn. Like a slow clock in #gloom#. | Not to stay. Not till I've made something here first. #saying.capitalize#.
 
 scene lamp_keeper

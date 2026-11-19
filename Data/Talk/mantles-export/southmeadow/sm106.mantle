@@ -1,6 +1,6 @@
-# sm106, the doubting giver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm106, the doubting giver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm106
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -142,7 +142,7 @@ a : Said thank you, and meant it, I think. That's a #good# start. | Where they s
 scene g_faith_plain
 when topic=faith
 does give.opinion / react.self / assess
-a : Every #loaf# that rises is one more reason to bless the Bright One. Most of them rise. | I go to chapel on a Restday and sit near the door, with the #oven# lit at home. | The Bright One gave us #bread# and #good# earth. The rest is up to us.
+a : Every #loaf# that rises is one more reason to bless the Bright One. Most of them rise. | I go to chapel on a Restday and sit near the door, with #oven# lit at home. | The Bright One gave us #bread# and #good# earth. The rest is up to us.
 b : That's a fair prayer. | Near the door? | I'd agree.
 a : It's the one I mean, so it's the one I say, #address#. | So I'm first out to #oven#. | Most of it. The rest is #rain#, or none.
 
@@ -174,7 +174,7 @@ dlg @3 resident.job [self.working=yes] : I'm at #work#. I'll do it right, or not
 young
 line @1 greet : #greet#! I've got bread. You can have some. | #greet#. I'm minding the oven. Nearly.
 line @2 greet [pair.band=strangers] : #greet#. You're not from here. From the city, I'd guess. | #greet#. Who are you? I've not seen you.
-line @3 kin.open [pair.kin!=no] : I saved you #crust#! It's only a #little# squashed. | Look what I whittled with #knife#. It's a pig. Nearly.
+line @3 kin.open [pair.kin!=no] : I saved you #crust#! It's only #little# squashed. | Look what I whittled with #knife#. It's a pig. Nearly.
 line @4 greet.return : #greet#! | #greet#. I'm that hungry I could eat the gate.
 line @5 farewell : Bye! I've got to see to #whittle#. | #farewell#! Don't go to the city.
 line @6 farewell.return : Bye, #address#! | #farewell#. Come back for bread.
@@ -191,7 +191,7 @@ does tell.self / react.self / assess
 a : I had #crust# this morning. The heel's the best bit. | I can carry a whole #loaf# by myself now. Both arms. | I gave half my bread to the hens. Then I was #hungry#.
 b[stage=adult|old] #grown : It is. The crust's where the good is. | Mind you don't drop it in the yard. | That was kind of you. Silly, but kind.
 b : The best bit? | Both arms? | Silly sprout.
-a@grown : I know. I always ask #mum# for it. | I didn't drop it. Only a #little# bit nearly. | They looked #hungry# too. They're always hungry.
+a@grown : I know. I always ask #mum# for it. | I didn't drop it. Only #little# bit nearly. | They looked #hungry# too. They're always hungry.
 a : The very best. It's crunchy and #tasty#. | Both arms and my chin. #oath#, it was heavy. | I'd do it again. The hens thought it was #tasty#.
 
 scene y_city_cart
@@ -303,7 +303,7 @@ when topic=season|weather here.season=winter
 does tell.feeling / react.self / assess
 a : I sat up for #snow# again. I fell asleep at the window and woke to it. | #snow.capitalize# came. I went out before breakfast and walked the whole field. | I wrapped #graftings# in sacking before the snow came. All seven.
 b : You'll catch it falling one year. | The whole field? | All seven?
-a : One year. I'm not giving up, #address#. | Every row. My tracks are the only ones on #snow#. | All seven. A graft's a #little# thing; the cold would have them.
+a : One year. I'm not giving up, #address#. | Every row. My tracks are the only ones on #snow#. | All seven. A graft's #little# thing; the cold would have them.
 
 scene ad_feast_bells
 when topic=festival self.likes=festival_bells

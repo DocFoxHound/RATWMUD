@@ -1,6 +1,6 @@
-# cw176, the smith who never coughs (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw176, the smith who never coughs (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw176
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent broad light
@@ -69,7 +69,7 @@ grown
 line @1 greet [pair.band=strangers] : #greet#. Mind the sparks; they don't know you either. | #greet#, #address#. Stand off the anvil and you'll keep your whiskers.
 line @2 greet [self.working=yes self.job=smith] : #greet#. Talk loud, #hammer#'s louder. | #greet#. Give me a breath; this link's still cherry-red.
 line @3 greet [here.time=dawn] : #greet#. You're up before #fire#'s drawn. | #greet#. Dawn's the one hour #works# keeps quiet.
-line @4 greet [here.time=dusk|night] : #greet#. Late to be out among the #soot# and shadows. | #greet#. #fire.capitalize#'s banked, so I'm all yours.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out among #soot# and shadows. | #greet#. #fire.capitalize#'s banked, so I'm all yours.
 line @5 kin.open [pair.kin!=no] : There you are. Sit; #cheese# is out. | Oh, it's you. Shut the door, you're letting #damp# in.
 line @6 again.open : #welcome_back#. Nothing's changed but #fire#. | You again. I'll start charging rent on that bench, #address#.
 line @7 hail [pair.band=friends] : #address.capitalize#! Over here, on the warm side. | Oi, #address#. Spare me a breath till the next heat.
@@ -90,7 +90,7 @@ line @21 answer.how : Steady. #fire.capitalize# draws and #larder#'s half full. 
 line @22 answer.how.busy [self.working=yes self.job=smith] : #busy.capitalize#. Anchors owed and one pair of arms. | Up to my elbows in #chain#, and glad of it.
 line @23 answer.how.poorly [self.mood=low|sore] : #poorly.capitalize#. Not the chest, before you ask. | #bad.capitalize#. I'll mend; #iron# does.
 line @24 ask.how : You, then? Staying clear of #damp#? | How's your day going, #address#?
-line @25 sympathise : #sympathy#. Sit by #fire# a bit. | That's a heavy weight. Have some #cheese#. Fixes nothing, but it helps.
+line @25 sympathise : #sympathy#. Sit by #fire# a bit. | That's a heavy weight. Have #cheese#. Fixes nothing, but it helps.
 line @26 reassure : #reassure#. Things mend, the same as #iron#. | It'll come right. Heat it again and it bends, #address#.
 line @27 decline : #hedge#, but no. There's a heat on and it won't wait for anybody. | I'd like to, #address#, only I've work promised and #fire#'s lit.
 line @28 accept_decline : #no_matter.capitalize#. Another day. | #bc_fair_enough#. It'll keep, like good #iron#.
@@ -239,7 +239,7 @@ a : Four, and #tired# by every one of them. My feet still say so. | It never has
 scene works_air
 when topic=smalltalk here.region=ridgemere
 does tell.complaint / react.complaint / assess
-a : The ironworks ran all night again. I could taste it in #bed#. | Hung my shirt out and fetched it back grey. That's #works# washing for you. | You can tell a works wolf by the whites of the eyes. That's all that stays white under the #soot#.
+a : The ironworks ran all night again. I could taste it in #bed#. | Hung my shirt out and fetched it back grey. That's #works# washing for you. | You can tell a works wolf by the whites of the eyes. That's all that stays white under #soot#.
 b : Never stops, does it? | Grey? | Ha. True.
 a : Never. Not on a feast, not on a Restday. #annoyed#. | Grey with a black collar. I've given up on white. | And even those go pink by dusk. #dryly#.
 
@@ -427,7 +427,7 @@ dlg @9 resident.hub [here.time=night] : Late, this. If it's #iron#, come back at
 dlg @10 resident.hub [pair.disposition=hostile|wary] : What is it, then? Say it plain, #address#.
 dlg @11 resident.job [self.job=smith] : I'm #self.trade_words#. #chain.capitalize#, anchors, and anything else that wants hitting. | Anchor smith. I make the heavy end of #ship#.
 dlg @12 resident.job : #busy.capitalize#, #address#. Heat, hammer, eat, sleep. | #job_busy#
-dlg @13 resident.business [business=thriving] : Busy enough that #larder#'s full. That's my measure. | Can't keep up. I'm not complaining, #address#.
+dlg @13 resident.business [business=thriving] : Busy enough #larder#'s full. That's my measure. | Can't keep up. I'm not complaining, #address#.
 dlg @14 resident.business [business=failing] : Thin. Thin as #link# worn through. | #bad.capitalize#. I'll not dress it up.
 dlg @15 resident.business [business!=thriving|failing] : Steady. #iron.capitalize# in, chain out, and the coal bill in between. | It keeps #fire# lit. That's enough.
 dlg @16 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# #forge.capitalize#'s louder than the gossip down here. | Nothing new, unless you count the weather. #dryly#.

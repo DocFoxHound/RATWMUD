@@ -1,6 +1,6 @@
-# sm114, the dancing storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sm114, the dancing storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sm114
-revision 1
+revision 2
 state ready
 dialect southmeadow
 accent light broad
@@ -177,7 +177,7 @@ b : #bc_ha# | That's a record. | Half's a start.
 scene dance_tonight
 when topic=festival here.day=festival self.likes=dancing
 does tell.plan / ask.detail / answer.detail / assess
-a : Tonight's the dance. I had my #work# done by noon so nothing could keep me. | There's #fiddle# tuning. Hear it? My feet heard it an hour ago. | Dance tonight. I'll be first on the boards and last off them.
+a : Tonight's the dance. I had #work# done by noon so nothing could keep me. | There's #fiddle# tuning. Hear it? My feet heard it an hour ago. | Dance tonight. I'll be first on the boards and last off them.
 b : By noon? You? | Your feet have ears now? | You'll be dead on your feet.
 a : Once a year I'm quick. Don't spread it about; #shelves# will expect it. | Tonight they do. The rest of the year they just carry me about in #boots#. | Dead on my feet and happy. I'll be #slow# tomorrow, and I'll not care.
 b : #bc_ha# | #bc_ha# | Fair enough.
@@ -345,7 +345,7 @@ a : I'll rest them when #fiddle# stops. | I do. My back hasn't heard. | Do. And 
 
 story first_dance [topic=memories|festival self.age>=20]
   : My first harvest dance I was #child.a# of five, and my #gran# swung me round till I was sick on the fiddler's boots.
-  : The fiddler played on. Didn't miss a note. I decided then that #dance# was serious business.
+  : The fiddler played on. Didn't miss a note. I decided then #dance# was serious business.
   ask : Do you remember your first?
   b[old] : Too long ago. I remember the cider.
   b : Barely. I remember being dizzy.
@@ -415,7 +415,7 @@ rule @fiddle_bark
 when concept=bark here.day=festival self.likes=dancing
 does aside
 cooldown 6h
-say Is that #fiddle#? It is. | Somebody start #reel# before my feet go without me.
+say Is #fiddle#? It is. | Somebody start #reel# before my feet go without me.
 
 rule @cider_dusk
 when concept=bark here.time=dusk here.season=autumn|winter
