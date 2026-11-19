@@ -432,6 +432,7 @@ Value saveStoryline(const Storyline& s)
     for (const auto& st : s.steps)
     {
         auto j = Value::object();
+        if (st.missions.isArray()) j.add("missions", st.missions);
         j.add("title", st.title); j.add("text", st.text); j.add("brief", st.brief); j.add("distinct", st.distinct);
         if (st.marker.set())
         {
@@ -500,6 +501,7 @@ Storyline loadStoryline(const Value& o)
     for (const auto& j : o.array("steps"))
     {
         Step st;
+        if (const auto* missions = j.find("missions"); missions && missions->isArray()) st.missions = *missions;
         st.title = j.string("title"); st.text = j.string("text"); st.brief = j.string("brief"); st.distinct = j.boolean("distinct");
         if (const auto& m = j.object("marker"); m.isObject())
             st.marker = {m.string("cell"), m.string("label"), m.number("x", -1), m.number("y", -1), m.number("radius")};

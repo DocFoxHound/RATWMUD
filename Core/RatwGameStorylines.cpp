@@ -253,7 +253,39 @@ Value Game::journalView(const std::string& viewer)
             j.add("title", storyWords(viewer, st.title));
             j.add("state", st.done() ? "done" : i == at ? "current" : "later");
             if (s->source == "storykeeper")
+            {
                 j.add("text", storyWords(viewer, st.text));
+                auto missions = Value::array();
+                for (const auto& mission : st.missions.items())
+                {
+                    const auto mode = mission.string("mode");
+                    const auto& track = mission.object("tracks")[mode == "individual" ? viewer : "group"].items();
+                    const auto& objectives = mission.array("objectives");
+                    if (objectives.empty())
+                        continue;
+                    const auto index = track.size() == 2 ? std::size_t(std::clamp(track[0].asNumber(), 0., double(objectives.size()))) : 0;
+                    const auto& team = mission.array("contributors");
+                    auto entry = Value::object();
+                    entry.add("title", mission.string("title"));
+                    entry.add("mode", mode);
+                    entry.add("done", index == objectives.size());
+                    entry.add("optional", mission.boolean("optional"));
+                    entry.add("completed", mission.number("completed"));
+                    entry.add("required", mission.number("required", 1));
+                    entry.add("credited", mode == "individual" ? index == objectives.size() :
+                        mission.boolean("ready") && std::any_of(team.begin(), team.end(), [&](const auto& id) { return id.asString() == viewer; }));
+                    entry.add("contributors", int(team.size()));
+                    entry.add("requiredContributors", mission.number("requiredContributors", 1));
+                    if (index < objectives.size())
+                    {
+                        entry.add("instruction", objectives[index].string("label"));
+                        entry.add("amount", track.size() == 2 ? track[1].asNumber() : 0.);
+                        entry.add("goal", objectives[index].number("goal", 1));
+                    }
+                    missions.push(std::move(entry));
+                }
+                if (missions.size()) j.add("missions", std::move(missions));
+            }
             if (i == at && open)
             {
                 j.set("text", storyWords(viewer, st.text));
@@ -412,7 +444,10 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     }
     if (!story.steps.empty() && !story.steps.back().objectives.empty())
         story.steps.back().objectives.front().doneAt = now();
+    if (!story.steps.empty() && !p.array("previousMissions").empty())
+        story.steps.back().missions = p["previousMissions"];
     storylines::Step step;
+    step.missions = p["missions"];
     step.title = p.string("phase");
     step.text = p.string("journal");
     storylines::Objective wait;

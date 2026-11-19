@@ -1,21 +1,24 @@
 import {useState} from 'react';
+import {StoryMissions, type Mission, type EventType} from './StoryMissions';
 
 type Effect = Record<string,string | number>;
 interface Exit {
+    missions?:string[];
     on:string; to:string; match?:Record<string,string>; afterDays?:number; percent?:number; players?:number; participant?:boolean;
 }
-interface Phase {guestVoices?:string[]; id:string; journal:string; effects:Effect[]; exits:Exit[]}
+interface Phase {missions?:Mission[]; guestVoices?:string[]; id:string; journal:string; effects:Effect[]; exits:Exit[]}
 export interface WorldProgram {id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
-export interface ProgramCatalogue {events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
+export interface ProgramCatalogue {eventTypes:EventType[]; missionEvents:string[]; missionMeasures:Record<string,string[]>; events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
 
 function newExit(on:string, to:string):Exit {
+    if (on==='missions completed') return {on,to,missions:[]};
     if (on === 'clock') return {on,to,afterDays:1};
     if (on === 'dm signal') return {on,to,match:{detail:'direction'}};
     return {on,to};
 }
 
 const numeric = new Set(['x','y','days','inDays','points','count','disposition']);
-export function StoryPhaseEditor({program,catalog,onEdit}: {program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void}) {
+export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:string)=>void; program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void}) {
     const [index,setIndex] = useState(0);
     const at = Math.min(index,program.phases.length-1);
     const phase = program.phases[at];
@@ -38,13 +41,19 @@ export function StoryPhaseEditor({program,catalog,onEdit}: {program:WorldProgram
             onEdit({...program,phases:[...program.phases,{id:'phase-'+n,journal:'',effects:[],exits:[]}]}); setIndex(program.phases.length);
         }}>Add phase</button>
         <label>Player journal<textarea rows={3} value={phase.journal} onChange={e=>update({journal:e.target.value})}/></label>
+        <StoryMissions events={catalog.eventTypes} triggers={catalog.missionEvents} measures={catalog.missionMeasures} missions={phase.missions ?? []}
+            change={missions=>update({missions,exits:phase.exits.map(edge=>edge.on==='missions completed'
+                ? {...edge,missions:edge.missions?.filter(id=>missions.some(m=>m.id===id))}:edge)})} start={start}/>
         <h4>Phase triggers</h4>
         {!phase.exits.length && <p>This phase ends the story.</p>}
         {phase.exits.map((edge,i)=><fieldset key={i}><label>When<select value={edge.on} onChange={e=>exit(i,newExit(e.target.value,edge.to))}>
-            {catalog.events.map(on=><option key={on}>{on}</option>)}</select></label>
+            {[...catalog.events,'missions completed'].map(on=><option key={on}>{on}</option>)}</select></label>
             <label>Continue to<select value={edge.to} onChange={e=>exit(i,{...edge,to:e.target.value})}>
                 {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label>
-            {edge.on==='clock' ? <label>After game days<input type="number" min={1/1440} step="any" value={edge.afterDays ?? 1} onChange={e=>exit(i,{...edge,afterDays:e.target.valueAsNumber || 0})}/></label>
+            {edge.on==='missions completed' ? <fieldset><legend>Required missions</legend>{(phase.missions ?? []).map(m=><label key={m.id}>
+                <input type="checkbox" checked={edge.missions?.includes(m.id) ?? false} onChange={e=>exit(i,{...edge,missions:e.target.checked?
+                    [...(edge.missions ?? []),m.id]:(edge.missions ?? []).filter(id=>id!==m.id)})}/>{m.title}</label>)}</fieldset>
+            : edge.on==='clock' ? <label>After game days<input type="number" min={1/1440} step="any" value={edge.afterDays ?? 1} onChange={e=>exit(i,{...edge,afterDays:e.target.valueAsNumber || 0})}/></label>
             : edge.on==='dm signal' ? <label>Named direction<input value={edge.match?.detail ?? ''} onChange={e=>exit(i,{...edge,match:{detail:e.target.value}})}/></label>
             : <><label>Participation<select value={edge.percent!==undefined?'percent':edge.players!==undefined?'players':edge.participant?'participant':'any'}
                 onChange={e=>{const {percent,players,participant,...base}=edge; const mode=e.target.value;

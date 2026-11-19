@@ -48,6 +48,7 @@ struct Step
     Marker marker;
     bool distinct = false;                          // Each objective by a different wolf (doc 48, 6.8: two angles).
     std::vector<Objective> objectives;
+    json::Value missions;                          // Reached world-story missions, with private progress per participant.
     bool done() const;
 };
 

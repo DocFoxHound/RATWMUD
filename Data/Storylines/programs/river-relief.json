@@ -1,0 +1,553 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "river-relief",
+  "title": "When the ferries stop",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "survey",
+  "phases": [
+    {
+      "id": "survey",
+      "journal": "The ferry is tied up. Two jobs come first: learn who is stranded and get word upriver. Anyone with time can copy the passenger list.",
+      "missions": [
+        {
+          "id": "passengers",
+          "title": "Account for the passengers",
+          "mode": "individual",
+          "objectives": [
+            {
+              "label": "Ask the carter how many passengers missed the crossing.",
+              "on": "conversation",
+              "match": {
+                "target": "rm111"
+              }
+            },
+            {
+              "label": "Report the number to the innkeeper.",
+              "on": "conversation",
+              "match": {
+                "target": "rm112"
+              }
+            }
+          ],
+          "percent": 60
+        },
+        {
+          "id": "dispatch",
+          "title": "Send word upriver",
+          "mode": "either",
+          "objectives": [
+            {
+              "label": "Send two letters asking the upstream landings to hold their boats.",
+              "on": "letter sent",
+              "goal": 2
+            }
+          ]
+        },
+        {
+          "id": "manifest",
+          "title": "Copy the passenger list",
+          "mode": "individual",
+          "objectives": [
+            {
+              "label": "Copy the stranded passengers’ names at the archive.",
+              "on": "archive work",
+              "match": {
+                "item": "copy"
+              }
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "kind": "npc.line",
+          "npc": "rm111",
+          "text": "The rope parted in the night. Count those waiting before we promise a place."
+        }
+      ],
+      "exits": [
+        {
+          "on": "missions completed",
+          "missions": [
+            "passengers",
+            "dispatch"
+          ],
+          "to": "rigging"
+        }
+      ]
+    },
+    {
+      "id": "rigging",
+      "journal": "The upstream landings are waiting. Get a line across the river and buy supplies for the ferries. Volunteers can also tend the injured.",
+      "missions": [
+        {
+          "id": "ferry-line",
+          "title": "Rig a new ferry line",
+          "mode": "group",
+          "objectives": [
+            {
+              "label": "Bring the carter four coils of rope between you.",
+              "on": "gift",
+              "match": {
+                "target": "rm111",
+                "item": "rope"
+              },
+              "goal": 4,
+              "measure": "quantity"
+            },
+            {
+              "label": "Deliver two lengths of canvas to the carter for the landing shelter.",
+              "on": "gift",
+              "match": {
+                "target": "rm111",
+                "item": "canvas"
+              },
+              "goal": 2,
+              "measure": "quantity"
+            }
+          ]
+        },
+        {
+          "id": "provisions",
+          "title": "Buy provisions for the crossing",
+          "mode": "either",
+          "objectives": [
+            {
+              "label": "Buy four units of supplies at market stalls.",
+              "on": "stall sale",
+              "goal": 4,
+              "measure": "quantity"
+            }
+          ]
+        },
+        {
+          "id": "first-aid",
+          "title": "Tend the landing crew",
+          "mode": "individual",
+          "objectives": [
+            {
+              "label": "Tend an injured wolf.",
+              "on": "tended"
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "exits": [
+        {
+          "on": "missions completed",
+          "missions": [
+            "ferry-line",
+            "provisions"
+          ],
+          "to": "accounts"
+        }
+      ]
+    },
+    {
+      "id": "accounts",
+      "journal": "The ferry is carrying passengers again. Return the borrowed kit and file a public account of the closure. The crew would welcome a meal.",
+      "missions": [
+        {
+          "id": "borrowed-kit",
+          "title": "Return the borrowed kit",
+          "mode": "individual",
+          "objectives": [
+            {
+              "label": "Return a loan to its owner.",
+              "on": "loan returned"
+            }
+          ]
+        },
+        {
+          "id": "public-account",
+          "title": "File the public account",
+          "mode": "either",
+          "objectives": [
+            {
+              "label": "Copy the relief account at the archive.",
+              "on": "archive work",
+              "match": {
+                "item": "copy"
+              }
+            },
+            {
+              "label": "Post a public notice with the final account.",
+              "on": "notice posted"
+            }
+          ]
+        },
+        {
+          "id": "crew-meal",
+          "title": "Share supper with the crew",
+          "mode": "individual",
+          "objectives": [
+            {
+              "label": "Share a meal with another wolf.",
+              "on": "shared meal"
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "exits": [
+        {
+          "on": "missions completed",
+          "missions": [
+            "borrowed-kit",
+            "public-account"
+          ],
+          "to": "reopened"
+        }
+      ]
+    },
+    {
+      "id": "reopened",
+      "journal": "The new ferry line holds. The account is posted and the borrowed kit is home.",
+      "effects": [],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Three volunteers reopen the ferry",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "events": [
+        {
+          "id": "fact-1",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-2",
+          "kind": "conversation",
+          "actor": "player-birch",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-3",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-4",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-5",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm112"
+        },
+        {
+          "id": "fact-6",
+          "kind": "archive work",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "copy"
+        },
+        {
+          "id": "fact-7",
+          "kind": "conversation",
+          "actor": "player-birch",
+          "day": 0,
+          "target": "rm112"
+        },
+        {
+          "id": "fact-8",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111",
+          "item": "rope",
+          "quantity": 4
+        },
+        {
+          "id": "fact-9",
+          "kind": "stall sale",
+          "actor": "player-birch",
+          "day": 0,
+          "quantity": 4
+        },
+        {
+          "id": "fact-10",
+          "kind": "gift again",
+          "actor": "player-elm",
+          "day": 0,
+          "target": "rm111",
+          "item": "canvas",
+          "quantity": 2
+        },
+        {
+          "id": "fact-11",
+          "kind": "notice posted",
+          "actor": "player-ash",
+          "day": 0
+        },
+        {
+          "id": "fact-12",
+          "kind": "shared meal",
+          "actor": "player-birch",
+          "day": 0
+        },
+        {
+          "id": "fact-13",
+          "kind": "archive work",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "copy"
+        },
+        {
+          "id": "fact-14",
+          "kind": "loan returned",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-15",
+          "kind": "notice posted",
+          "actor": "player-birch",
+          "day": 0
+        }
+      ],
+      "expect": [
+        "survey",
+        "rigging",
+        "accounts",
+        "reopened"
+      ],
+      "expectMissions": {
+        "borrowed-kit": [
+          "player-elm"
+        ],
+        "public-account": [
+          "player-ash",
+          "player-birch"
+        ],
+        "crew-meal": [
+          "player-birch"
+        ]
+      },
+      "expectMissionVisits": [
+        {
+          "visit": 1,
+          "phase": "survey",
+          "credits": {
+            "passengers": [
+              "player-ash",
+              "player-birch"
+            ],
+            "dispatch": [
+              "player-elm"
+            ],
+            "manifest": [
+              "player-ash"
+            ]
+          }
+        },
+        {
+          "visit": 2,
+          "phase": "rigging",
+          "credits": {
+            "ferry-line": [
+              "player-ash",
+              "player-elm"
+            ],
+            "provisions": [
+              "player-birch"
+            ],
+            "first-aid": []
+          }
+        },
+        {
+          "visit": 3,
+          "phase": "accounts",
+          "credits": {
+            "borrowed-kit": [
+              "player-elm"
+            ],
+            "public-account": [
+              "player-ash",
+              "player-birch"
+            ],
+            "crew-meal": [
+              "player-birch"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "One passenger report leaves the survey open",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "events": [
+        {
+          "id": "fact-1",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-2",
+          "kind": "conversation",
+          "actor": "player-birch",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-3",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-4",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-5",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm112"
+        },
+        {
+          "id": "fact-6",
+          "kind": "archive work",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "copy"
+        }
+      ],
+      "expect": [
+        "survey"
+      ],
+      "expectMissions": {
+        "passengers": [
+          "player-ash"
+        ],
+        "dispatch": [
+          "player-elm"
+        ],
+        "manifest": [
+          "player-ash"
+        ]
+      }
+    },
+    {
+      "name": "A single rigger needs a second contributor",
+      "cohort": [
+        "player-ash",
+        "player-birch",
+        "player-elm"
+      ],
+      "events": [
+        {
+          "id": "fact-1",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-2",
+          "kind": "conversation",
+          "actor": "player-birch",
+          "day": 0,
+          "target": "rm111"
+        },
+        {
+          "id": "fact-3",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-4",
+          "kind": "letter sent",
+          "actor": "player-elm",
+          "day": 0
+        },
+        {
+          "id": "fact-5",
+          "kind": "conversation",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm112"
+        },
+        {
+          "id": "fact-6",
+          "kind": "archive work",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "copy"
+        },
+        {
+          "id": "fact-7",
+          "kind": "conversation",
+          "actor": "player-birch",
+          "day": 0,
+          "target": "rm112"
+        },
+        {
+          "id": "fact-8",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111",
+          "item": "rope",
+          "quantity": 4
+        },
+        {
+          "id": "fact-9",
+          "kind": "stall sale",
+          "actor": "player-ash",
+          "day": 0,
+          "quantity": 4
+        },
+        {
+          "id": "fact-10",
+          "kind": "gift again",
+          "actor": "player-ash",
+          "day": 0,
+          "target": "rm111",
+          "item": "canvas",
+          "quantity": 2
+        }
+      ],
+      "expect": [
+        "survey",
+        "rigging"
+      ],
+      "expectMissions": {
+        "ferry-line": [],
+        "provisions": [
+          "player-ash"
+        ],
+        "first-aid": []
+      }
+    }
+  ]
+}

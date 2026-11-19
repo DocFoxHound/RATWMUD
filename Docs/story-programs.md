@@ -7,9 +7,30 @@ Open **Dungeon Master → Story Creator → World stories**. Choose a story, edi
 | A wheel for the south road | Speak to the carter, then hand that resident an actual cart wheel. Its maker and quality can vary. The wolf who delivers it earns the deed. |
 | The small blanket | Follow two witnesses in order. The teacher can receive a guest line if the DM invites a guest author for that visit. The authored clue works on its own. |
 | Before the Wardens arrive | Each volunteer must check supplies with the provisioner and then report to the innkeeper. At 60%, the town schedules a festival. The last journal entry follows two game days later. |
+| When the ferries stop | Survey the stranded passengers, rig a ferry line, then settle the accounts. Each of the three playable phases has two required missions and an optional one. |
 | The cost of holding the road | A volunteer brings a bandit camp into play. The blockade changes market conditions and the watch’s stance toward the road company. A camp clearance begins recurring watches. A caravan or an authorized accord can bring peace. |
 
 The bundled programs are templates. Use **World references for an author** to find the intended residents, cells and factions on the destination world. In particular, the war example needs the two named factions or their local replacements. Approval checks resident, player, map and faction IDs used by effects. The game makes the final decision on current world conditions, including placement, eligibility and economic rules.
+
+## Event library and campaign missions
+
+Under **Event library**, search the 100 templates by title, objective or subject, or filter by scale and play style. **Start a story from this event** builds a standalone draft with its opening trigger, ending effects and rehearsals. **Add its mission to this phase** copies the objectives into the selected phase. Set the campaign’s opening, consequences and rehearsal cases for the combined story. **Write a custom mission** starts with a blank objective.
+
+A phase can offer up to 16 concurrent missions, each with one to eight objectives in order. A matching fact can advance one objective in each open mission. Set the required amount to count occurrences or add the units or coins recorded by an event. For example, four ropes can arrive in several gifts, and a marked or crafted rope counts toward a base rope request. Use filters to identify a recipient, item, place or detail when the action must be specific. A general letter or notice objective counts any matching letter or notice. A later objective can also match a field from the first objective using `sameAsFirst`. The missing-wagon search binds the notice ID in `detail`, so an answer to a different notice leaves the search open. The tool-chest mission uses the same rule for loan IDs.
+
+| Play style | Who makes progress | When the mission is ready |
+| --- | --- | --- |
+| Individual | Each eligible character has a separate checklist. | The configured number or percentage has finished all its objectives. Other players can still finish while the phase stays open. |
+| Group | Eligible contributors share one ordered checklist. | All objectives are complete and the specified number of distinct characters has contributed. The minimum is two. |
+| Either | One character can finish the checklist, or several can share it. | All objectives are complete. Every contributor receives credit. |
+
+Standalone individual templates keep the mission open for every character in the opening audience. Choose **Specific players** to run one for a single character, or change the finish threshold for a wider campaign.
+
+Choose **missions completed** as a phase trigger, select the required missions, and choose the next phase. All selected missions must be ready. Leave a mission unchecked to offer a side quest. Other exits can branch the story or enforce a deadline. Each new visit to a phase opens fresh missions, including a return for a recurring event. Player journals show the character’s own instructions, amounts and credit. The DM can inspect archived progress by visit.
+
+**When the ferries stop** shows how these rules fit together. In its first phase, 60% of the opening audience must each interview the carter and report to the innkeeper. Meanwhile, anyone can send the two dispatches, and a volunteer can separately copy the manifest. In the next phase, one wolf can purchase all the provisions, but at least two must contribute to the ferry line. The final phase opens once both jobs are done.
+
+The catalogue is available in [event-library.json](../Data/Storylines/event-library.json). The complete campaign and its rehearsal cases are in [river-relief.json](../Data/Storylines/programs/river-relief.json).
 
 ## Writing a program
 
@@ -29,7 +50,7 @@ Approval requires passing scenarios covering every reachable phase. The digest c
 
 The runner observes checkpointed world events, persists its cursor and votes, and queues each entry’s journal message and effects in order. It waits for a receipt before sending the next effect. A refusal or expiry pauses the run and records the reason. Refresh **Releases** to inspect votes, phase history, queue receipts and delegated lines. **Stop run** cancels future phases and queues journal closure. Previously delivered effects, including faction changes, persist under their normal game rules. Once the underlying condition has been corrected, **Retry refused action** resubmits that one effect and preserves earlier progress. A changed program requires a new approval.
 
-The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. The runner needs PostgreSQL migration 0067 and a server build that understands world-story actions. It uses no model or AI key.
+The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Campaigns with missions require PostgreSQL migration 0068 and the corresponding game server, client and Studio builds. It uses no model or AI key.
 
 ```sh
 python3 tools/story_runner.py --world WORLD_KEY
@@ -43,6 +64,7 @@ Run `python3 tools/story_author.py` as a JSON-lines subprocess. Send one JSON ob
 | --- | --- |
 | `{"op":"catalog"}` | Event and effect catalogue and complete examples |
 | `{"op":"draft","example":"wagon"}` | A portable program to edit and return to the human |
+| `{"op":"draft","eventType":"war-footing-at-the-gates"}` | A standalone event program with objectives and playable rehearsal cases |
 | `{"op":"validate","program": …}` | Version fingerprint, or a validation error |
 | `{"op":"rehearse","program": …}` | Expected and actual phase paths, effects and optional speakers |
 | `{"op":"atlas.search","query":"bridge"}` | Up to 100 matching resident, area and faction names and IDs |
@@ -61,3 +83,5 @@ A trusted bridge launched with `--world WORLD_KEY` can redeem tickets over its s
 Direction tickets expire in one hour and can be redeemed once. A voice ticket sets one line of up to 200 characters for the selected resident’s conversations with participants in that phase. Moving on retires it. An author holding a voice ticket can read a separately authorized resident context, compose the line and submit it. Keep a fallback authored line for runs that never receive a guest contribution.
 
 Studio uses authenticated `POST /api/dm/story-program` with `target`, `op` and operation-specific fields. The human operations include `approve` (program and reviewed digest), `status` (optional run ID), `stop` (run), `signal-ticket` (run and signal) and `voice-ticket` (run and NPC). Only the human-facing DM interface issues tickets. The offline author bridge has no approval operation.
+
+The catalogue exposes `eventTypes`, `missionEvents` and `missionMeasures`. Studio also accepts `draft-event` with an `eventType` ID. Each rehearsal returns `missionVisits` with the credited player IDs for each mission by visit. Use `expectMissionVisits` to assert the entire sequence of mission credits, including repeated phases. Use `expectMissions` in a case to assert credits in the final active mission phase or the mission phase immediately preceding the ending.

@@ -45,6 +45,7 @@ import map_editor
 import talk_files
 import world_db
 import story_program
+import story_library
 import story_runner
 import world_store as S
 
@@ -2720,11 +2721,13 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body(1024 * 1024)
                 target = self.posted(data)
                 op = data.get('op')
-                if op not in ('catalog', 'rehearse') and RANK[who['role']] < RANK['dm']:
+                if op not in ('catalog', 'draft-event', 'rehearse') and RANK[who['role']] < RANK['dm']:
                     raise DMError('A Dungeon Master account is required.', 403)
                 try:
                     if op == 'catalog':
                         return self.reply(200, story_runner.catalogue())
+                    if op == 'draft-event':
+                        return self.reply(200, {'program': story_library.draft(data.get('eventType'))})
                     if op == 'rehearse':
                         return self.reply(200, story_program.review(data.get('program')))
                     with dm.connect(target) as conn, conn.transaction():

@@ -1463,6 +1463,23 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         else
             outcome = {false, "No such world story.", target};
     }
+    else if (kind == "story.missions")
+    {
+        json::Value payload;
+        std::string problem;
+        auto* story = storylines_.find(target);
+        if (!row[4] || !json::parse(*row[4], payload, problem) || !story || story->source != "storykeeper" ||
+            !story->live() || story->steps.empty() || payload.number("visit") != std::strtod(story->sourceRef.c_str(), nullptr) ||
+            !payload["missions"].isArray() || payload.array("missions").size() > 16)
+            outcome = {false, "Mission update does not belong to the current phase.", target};
+        else
+        {
+            story->steps.back().missions = payload["missions"];
+            storylines_.touch();
+            record(StoryBook);
+            outcome = {true, "Mission progress recorded.", target};
+        }
+    }
     else if (kind == "story.phase")
     {
         json::Value payload;

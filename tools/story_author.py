@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+import story_library
 import story_program as rules
 import story_runner as runner
 
@@ -14,6 +15,8 @@ def request(data, snapshot, world_key=None, read_world=False):
     op = data.get('op')
     if op == 'catalog':
         return runner.catalogue()
+    if op == 'draft' and 'eventType' in data:
+        return {'program': story_library.draft(data['eventType'])}
     if op == 'draft':
         examples = runner.catalogue()['examples']
         name = data.get('example', 'wagon')

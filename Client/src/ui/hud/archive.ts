@@ -61,11 +61,26 @@ export function renderStoryline(box: HTMLElement, s: GameState, t: Json) {
     steps.forEach((st, i) => {
         const state = str(st, 'state');
         el('div', state === 'current' ? 'small' : 'muted small', box, `${state === 'done' ? '✓' : state === 'current' ? '●' : '○'} ${str(st, 'title')}`);
+        for (const m of arr(st, 'missions').filter(isObject)) {
+            const current = state === 'current';
+            const finished = bool(m, 'done');
+            const label = bool(m, 'credited') ? 'You completed this mission' : finished ? 'Group completed' : current ? '' : 'Unfinished';
+            el('div', 'small', box, str(m, 'title') + (bool(m, 'optional') ? ' · Side mission' : '') + (label ? ' · ' + label : ''));
+            if (current && str(m, 'mode') === 'individual' && num(m, 'required', 1) > 1)
+                el('div', 'muted small', box, 'Finishers · ' + num(m, 'completed') + '/' + num(m, 'required'));
+            if (current && !finished) {
+                const goal = num(m, 'goal', 1);
+                el('div', 'muted small', box, str(m, 'instruction') + (goal > 1 ? ' · ' + num(m,'amount') + '/' + goal : ''));
+                if (str(m,'mode') === 'group') el('div','muted small',box,
+                    'Contributors · ' + num(m,'contributors') + '/' + num(m,'requiredContributors'));
+            }
+        }
         if (state !== 'current') return;
         if (str(st, 'text')) el('p', 'small', box, str(st, 'text'));
         if (str(st, 'marker')) el('div', 'gold small', box, `◆ ${str(st, 'marker')}`);
         if (bool(st, 'distinct')) el('div', 'muted small', box, 'Each part by a different wolf.');
         arr(st, 'objectives').filter(isObject).forEach((o, k) => {
+            if (str(o,'kind') === 'world phase' && arr(st,'missions').length) return;
             const row = el('div', 'story-row', box);
             el('span', 'small', row, `${bool(o, 'done') ? '✓' : '·'} ${str(o, 'line')}${str(o, 'by') ? ` (${str(o, 'by')})` : ''}` +
                 `${!bool(o, 'done') && str(o, 'taken') ? ` · ${str(o, 'taken')} ${str(o, 'taken') === 'you' ? 'are' : 'is'} on it` : ''}` +

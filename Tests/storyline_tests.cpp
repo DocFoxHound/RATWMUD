@@ -137,6 +137,22 @@ void inTheGame()
         expect(t.g.applyDmAct({"2","story.voice","world-run-test","dm",guest}).ok &&
                t.g.worldStoryLine("u1", ash) == "I lost it on the bridge.", "a delegated line belongs to this phase");
         expect(t.g.storylineBook().tick("world-run-test", 0, 0, ash, 42, true).empty(), "a manual tick cannot finish a world phase");
+        auto mission = parsed(R"({"visit":1,"missions":[{"id":"rig","title":"Rig the line","mode":"individual","objectives":[{"label":"Deliver four ropes.","goal":4}],"tracks":{},"contributors":[]}]})");
+        auto tracks = json::Value::object();
+        tracks.add(ash, parsed("[0,2]"));
+        tracks.add("another-volunteer", parsed("[1,0]"));
+        auto snapshot = mission.array("missions").front();
+        snapshot.set("tracks", tracks);
+        auto ledger = json::Value::array();
+        ledger.push(snapshot);
+        mission.set("missions", ledger);
+        auto sendMissions = [&]() { return t.g.applyDmAct({"4", "story.missions", "world-run-test", "dm", json::dump(mission)}); };
+        expect(sendMissions().ok && sendMissions().ok, "repeated mission snapshots are harmless");
+        const auto personal = t.selfOf(t.ash).array("journal").front().array("steps").front().array("missions").front();
+        expect(personal.string("instruction") == "Deliver four ropes." && personal.number("amount") == 2 &&
+               !personal.boolean("credited") && !contains(json::dump(personal), "another-volunteer"),
+               "the journal shows only this participant’s track");
+        phase.set("previousMissions", ledger);
         phase.set("visit", 3);
         expect(!deliver().ok, "out-of-order visit refused");
         phase.set("visit", 2);
@@ -147,6 +163,9 @@ void inTheGame()
         storylines::Book restored;
         restored.load(t.g.storylineBook().save());
         expect(restored.find("world-run-test")->state == "done", "world story survives a save and load");
+        expect(!sendMissions().ok && restored.find("world-run-test")->steps.front().missions.items().size() == 1 &&
+               restored.find("world-run-test")->steps.front().missions.items().front().object("tracks")[ash].items()[1].asNumber() == 2,
+               "closed visits keep their ledgers through save and load and refuse stale updates");
         t.g.storylineBook().erase("world-run-test");
         auto cast = json::Value::object();
         cast.add("resident", "u1");
@@ -154,6 +173,7 @@ void inTheGame()
         const auto given = t.g.giveStoryline(ash, "the-debt", cast, "dm", "");
         expect(given.ok, "the DM gives Ash \"The debt\": " + given.message);
         id = given.targetId;
+        t.run(2); // Allow a fresh full journal snapshot after the preceding campaign update.
         const auto self = t.selfOf(t.ash);
         const auto& journal = self["journal"].items();
         expect(journal.size() == 1 && journal[0].string("title") == "The debt", "in her journal");

@@ -13,7 +13,7 @@ import story_runner as runner
 class AuthorTests(unittest.TestCase):
     def test_examples_and_gate(self):
         examples = runner.catalogue()['examples']
-        self.assertEqual(set(examples), {'wagon', 'wardens', 'hidden-pup', 'road-war'})
+        self.assertEqual(set(examples), {'wagon', 'wardens', 'hidden-pup', 'road-war', 'river-relief'})
         for p in examples.values():
             self.assertTrue(rules.review(p)['passed'])
         p = examples['wardens']
@@ -23,6 +23,88 @@ class AuthorTests(unittest.TestCase):
         case['events'][2]['actor'] = 'other'
         with self.assertRaisesRegex(ValueError, 'different contents'):
             rules.review(p)
+
+    def test_event_library_is_playable_and_searchable(self):
+        catalog = story_author.request({'op': 'catalog'}, {})
+        events = catalog['eventTypes']
+        self.assertEqual(len(events), 100)
+        self.assertEqual(len({e['id'] for e in events}), len(events))
+        self.assertEqual(len({e['title'] for e in events}), len(events))
+        self.assertEqual({e['scale'] for e in events}, {'small', 'local', 'regional', 'realm'})
+        self.assertEqual({e['mode'] for e in events}, {'individual', 'group', 'either'})
+        self.assertEqual(len({e['category'] for e in events}), 10)
+        items = {row['id'] for row in json.loads((runner.DATA / 'Items/items.json').read_text())['items']}
+        for event in events:
+            with self.subTest(event=event['id']):
+                for objective in event['objectives']:
+                    if objective['on'] in (
+                        'gift',
+                        'forage',
+                        'stall sale',
+                        'loan returned',
+                    ) and 'item' in objective.get('match', {}):
+                        self.assertIn(objective['match']['item'], items)
+                draft = story_author.request({'op': 'draft', 'eventType': event['id']}, {})['program']
+                report = rules.review(draft)
+                self.assertTrue(report['passed'])
+                self.assertEqual(report['uncovered'], [])
+                if event['mode'] != 'individual':
+                    self.assertEqual(len(report['tests']), 2)
+                    self.assertEqual(
+                        report['tests'][1]['path'][-1], 'work' if event['mode'] == 'group' else 'resolved'
+                    )
+
+    def test_returning_to_a_phase_reopens_its_missions(self):
+        program = runner.catalogue()['examples']['river-relief']
+        edge = program['phases'][1]['exits'][0]
+        edge['to'] = 'survey'
+        # Keep the ordinary route to accounts reachable as an alternative branch.
+        program['phases'][1]['exits'].append({'on': 'clock', 'afterDays': 7, 'to': 'accounts'})
+        rules.validate(program)
+        case = program['tests'][0]
+        state = rules.begin(program, case['cohort'], 0)
+        for ev in case['events']:
+            rules.advance(program, state, ev, 0)
+            if state['visits'] == 3:
+                break
+        self.assertEqual(state['phase'], 'survey')
+        self.assertEqual(rules.mission_credits(state['previousMissions'])['ferry-line'], ['player-ash', 'player-elm'])
+        missions = rules.mission_snapshot(program['phases'][0], state)
+        self.assertTrue(all(not m['ready'] and not m['tracks'] for m in missions))
+        self.assertEqual([m['id'] for m in missions if m['optional']], ['manifest'])
+
+    def test_wrong_notice_or_loan_cannot_satisfy_a_linked_objective(self):
+        for name in ('the-shared-tool-chest', 'the-missing-return-wagon'):
+            program = story_author.request({'op': 'draft', 'eventType': name}, {})['program']
+            case = program['tests'][0]
+            first = next(e for e in case['events'] if e['kind'] in ('notice posted', 'lent'))
+            closing = next(e for e in case['events'] if e['kind'] in ('notice answered', 'loan returned'))
+            self.assertEqual(first['detail'], closing['detail'])
+            closing['detail'] = 'unrelated-record'
+            result = rules.review(program)['tests'][0]
+            self.assertFalse(result['passed'])
+            self.assertEqual(result['path'][-1], 'work')
+            self.assertEqual(result['missionCredits'][name], [])
+
+    def test_campaign_tracks_each_visit_and_optional_missions(self):
+        campaign = runner.catalogue()['examples']['river-relief']
+        test = campaign['tests'][0]
+        test['events'].insert(0, {'id': 'outsider', 'kind': 'letter sent', 'actor': 'outsider', 'day': 0})
+        test['events'].insert(1, copy.deepcopy(test['events'][1]))
+        visits = rules.review(campaign)['tests'][0]['missionVisits']
+        self.assertEqual([v['phase'] for v in visits], ['survey', 'rigging', 'accounts'])
+        self.assertEqual(
+            visits[0]['credits'],
+            {'passengers': ['player-ash', 'player-birch'], 'dispatch': ['player-elm'], 'manifest': ['player-ash']},
+        )
+        self.assertEqual(
+            visits[1]['credits'],
+            {'ferry-line': ['player-ash', 'player-elm'], 'provisions': ['player-birch'], 'first-aid': []},
+        )
+        self.assertEqual(visits[2]['credits'], test['expectMissions'])
+        campaign['phases'][0]['missions'][0]['objectives'][0]['measure'] = 'coins'
+        with self.assertRaisesRegex(ValueError, 'does not record coins'):
+            rules.validate(campaign)
 
     def test_author_capability_boundary(self):
         for op in ('approve', 'publish', 'signal-ticket', 'signal', 'stop', 'execute'):
@@ -134,6 +216,95 @@ class RuntimeTests(unittest.TestCase):
         self.assertIn(first, self.status()['history'][0]['receipts'])
         runner.direct(self.conn, self.world, 'stop', {'run': self.run, 'operator': 'human'})
         self.assertEqual(self.status()['actions'][-1]['kind'], 'story.stop')
+
+    def test_campaign_journal_receipts_and_archives(self):
+        self.launch('river-relief')
+        self.answer()
+        ash, birch, elm = self.cohort
+        self.fact('conversation', ash, 'rm112')  # Out of order.
+        self.fact('conversation', ash, 'rm111')
+        self.fact('letter sent', elm)
+        self.fact('letter sent', 'outsider')
+        self.tick()
+        partial = self.status()
+        self.assertEqual(partial['actions'][-1]['kind'], 'story.missions')
+        missions = {m['id']: m for m in partial['history'][0]['missions']}
+        self.assertEqual(missions['dispatch']['tracks']['group'], [0, 1])
+        self.assertEqual(missions['passengers']['tracks'], {ash: [1, 0]})
+        self.tick()
+        self.assertEqual(self.status()['actions'], partial['actions'])
+        self.answer('refused')
+        self.tick()
+        self.assertEqual(self.status()['status'], 'paused')
+        pending = partial['actions'][-1]['id']
+        retry = runner.direct(self.conn, self.world, 'retry', {'run': self.run, 'operator': 'human'})['receipt']
+        self.assertNotEqual(pending, retry)
+        self.assertEqual(self.status()['history'][0]['receipts'][-2:], [pending, retry])
+        self.answer()
+        self.fact('conversation', ash, 'rm112')
+        self.fact('letter sent', elm)
+        self.fact('conversation', birch, 'rm111')
+        self.fact('conversation', birch, 'rm112')
+        self.tick()
+        detail = self.status()
+        self.assertEqual(detail['state']['phase'], 'rigging')
+        archived = detail['history'][1]['missions']
+        self.assertEqual(
+            rules.mission_credits(archived), {'passengers': [ash, birch], 'dispatch': [elm], 'manifest': []}
+        )
+        self.assertTrue(all(not m['tracks'] for m in detail['history'][0]['missions']))
+        payload = self.conn.execute(
+            'SELECT payload FROM dm.actions WHERE id=%s', (detail['actions'][-1]['id'],)
+        ).fetchone()[0]
+        self.assertEqual(payload['previousMissions'], archived)
+        self.answer()
+        self.fact('gift', ash, 'rm111', item='rope~fine', quantity=4)
+        self.fact('stall sale', elm, quantity=4)
+        self.fact('gift again', ash, 'rm111', item='canvas', quantity=2)
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'rigging')
+        self.answer()
+        self.fact('gift', birch, 'rm111', item='canvas', quantity=1)
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'accounts')
+        self.answer()
+        self.fact('archive work', ash, item='copy')
+        self.fact('loan returned', birch)
+        self.fact('notice posted', ash)
+        self.tick()
+        self.answer()
+        self.tick()
+        final = self.status()
+        self.assertEqual(final['status'], 'complete')
+        self.assertEqual([row['phase'] for row in final['history']], ['reopened', 'accounts', 'rigging', 'survey'])
+        self.assertEqual(rules.mission_credits(final['history'][2]['missions'])['ferry-line'], [ash, birch])
+
+    def test_unreachable_group_publication(self):
+        campaign = self.examples['river-relief']
+        campaign['phases'][1]['missions'][0]['contributors'] = 4
+        campaign['phases'][0]['missions'][0]['percent'] = 50
+        # Rehearse a successful four-member crew, then try to launch with the actual three-member audience.
+        for case in campaign['tests']:
+            case['cohort'].append('player-larch')
+        case = campaign['tests'][0]
+        case['expectMissionVisits'][1]['credits']['ferry-line'] = sorted(case['cohort'])
+        index = next(i for i, e in enumerate(case['events']) if e.get('item') == 'canvas')
+        for actor in ('player-birch', 'player-larch'):
+            case['events'].insert(
+                index,
+                {
+                    'id': 'canvas-' + actor,
+                    'kind': 'gift',
+                    'actor': actor,
+                    'target': 'rm111',
+                    'item': 'canvas',
+                    'quantity': 1,
+                    'day': 0,
+                },
+            )
+        ticket = runner.approve(self.conn, self.world, 'human', campaign, rules.digest(campaign))['ticket']
+        with self.assertRaisesRegex(ValueError, 'audience'):
+            runner.publish(self.conn, self.world, ticket)
 
     def test_direction_bound_to_one_run_visit_and_factions(self):
         self.launch('road-war')

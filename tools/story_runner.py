@@ -8,6 +8,7 @@ import time
 import uuid
 from pathlib import Path
 
+import story_library
 import story_program as rules
 
 DATA = Path(__file__).resolve().parents[1] / 'Data'
@@ -24,6 +25,9 @@ def world_id(conn):
 def catalogue():
     return {
         'events': rules.EVENTS,
+        'missionEvents': rules.MISSION_EVENTS,
+        'missionMeasures': rules.MISSION_MEASURES,
+        'eventTypes': story_library.entries(),
         'filters': rules.FIELDS,
         'effects': rules.EFFECTS,
         'examples': {f.stem: json.loads(f.read_text()) for f in sorted(EXAMPLES.glob('*.json'))},
@@ -58,7 +62,35 @@ def references(conn, world, program):
     }
     refs.update(('npc', npc) for s in program['phases'] for npc in s.get('guestVoices', []))
     refs.update(('player', p) for p in program['audience'].get('players', []))
+    if any(phase.get('missions') for phase in program['phases']):
+        rules.require(
+            conn.execute(
+                "SELECT 1 FROM information_schema.columns WHERE table_schema='dm' AND "
+                "table_name='story_transitions' AND column_name='missions'"
+            ).fetchone(),
+            'Apply database migration 0068 before approving campaign missions.',
+        )
+    for phase in program['phases']:
+        for mission in phase.get('missions', []):
+            for objective in mission['objectives']:
+                filters = objective.get('match', {})
+                if filters.get('cell'):
+                    refs.add(('cell', filters['cell']))
+                if objective['on'] == 'enter place' and filters.get('target'):
+                    refs.add(('place', filters['target']))
+                if objective['on'] in ('conversation', 'gift', 'gift again') and filters.get('target'):
+                    refs.add(('character', filters['target']))
     for key, value in sorted(refs):
+        if key == 'character':
+            rules.require(
+                conn.execute(
+                    'SELECT 1 FROM dm.story_residents WHERE world_id=%s AND id=%s '
+                    'UNION ALL SELECT 1 FROM game.characters WHERE world_id=%s AND key=%s',
+                    (world, value, world, value),
+                ).fetchone(),
+                f'Unknown mission character in this world: {value}',
+            )
+            continue
         if value == '$actor':
             continue
         table, column = tables[key]
@@ -111,6 +143,13 @@ def queue(conn, who, kind, target, payload):
 
 def enter(conn, run, program, who, state, cursor, cause):
     phase = rules.phase_of(program, state)
+    previous = state.pop('previousMissions', [])
+    if previous:
+        conn.execute(
+            'UPDATE dm.story_transitions SET missions=%s::jsonb WHERE run=%s AND visit=%s',
+            (json.dumps(previous), run, state['visits'] - 1),
+        )
+    opening = rules.mission_snapshot(phase, state)
     receipt = queue(
         conn,
         who,
@@ -124,6 +163,8 @@ def enter(conn, run, program, who, state, cursor, cause):
             'visit': state['visits'],
             'end': not phase['exits'] and not phase['effects'],
             'guestVoices': phase.get('guestVoices', []),
+            'missions': opening,
+            'previousMissions': previous,
             'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'],
         },
     )
@@ -136,6 +177,12 @@ def enter(conn, run, program, who, state, cursor, cause):
         'INSERT INTO dm.story_transitions(run,visit,phase,game_day,cause,receipts) VALUES (%s,%s,%s,%s,%s,ARRAY[%s]::bigint[])',
         (run, state['visits'], state['phase'], state['entered'], cause, receipt),
     )
+
+    if opening:
+        conn.execute(
+            'UPDATE dm.story_transitions SET missions=%s::jsonb WHERE run=%s AND visit=%s',
+            (json.dumps(opening), run, state['visits']),
+        )
 
 
 def publish(conn, world, ticket):
@@ -198,7 +245,16 @@ def publish(conn, world, ticket):
     for phase in program['phases']:
         exits = phase['exits']
         rules.require(
-            not exits or any(edge.get('players', 1) <= len(cohort) for edge in exits),
+            not exits
+            or any(
+                edge.get('players', 1) <= len(cohort)
+                and all(
+                    max(m.get('players', 1), m.get('contributors', 2) if m['mode'] == 'group' else 1) <= len(cohort)
+                    for m in phase.get('missions', [])
+                    if m['id'] in edge.get('missions', [])
+                )
+                for edge in exits
+            ),
             f'Phase {phase["id"]} needs more distinct players than the opening audience contains.',
         )
     enter(conn, run, program, who, rules.begin(program, cohort, day), cursor, 'published')
@@ -293,6 +349,18 @@ def tick_run(conn, world, run, clock):
         return
     p, state, cursor, who, receipts = row
     phase = rules.phase_of(p, state)
+    if 'missionReceipt' in state:
+        pending = state['missionReceipt']
+        delivery, message = conn.execute('SELECT status,result FROM dm.actions WHERE id=%s', (pending,)).fetchone()
+        if delivery != 'applied':
+            if delivery != 'queued':
+                conn.execute(
+                    "UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
+                    (f'Mission journal {pending} {delivery}: {message}', run),
+                )
+            return
+        del state['missionReceipt']
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
     if not delivered(conn, world, run, phase, state, who, receipts):
         return
     if not phase['exits']:
@@ -305,6 +373,7 @@ def tick_run(conn, world, run, clock):
                            WHERE world_id=%s AND id>%s ORDER BY id LIMIT 128""",
         (world, cursor),
     ).fetchall()
+    before = json.dumps(state.get('missions', {})) if phase.get('missions') else None
     for row in rows:
         fact = dict(zip(EVENT_COLUMNS, row))
         if rules.advance(p, state, {'kind': 'clock'}, fact['day']):
@@ -319,6 +388,14 @@ def tick_run(conn, world, run, clock):
     if day is not None and len(rows) < 128 and rules.advance(p, state, {'kind': 'clock'}, day):
         enter(conn, run, p, who, state, cursor, 'clock')
     elif rows:
+        if before is not None and before != json.dumps(state.get('missions', {})):
+            snapshot = rules.mission_snapshot(phase, state)
+            receipt = queue(conn, who, 'story.missions', run, {'visit': state['visits'], 'missions': snapshot})
+            state['missionReceipt'] = receipt
+            conn.execute(
+                'UPDATE dm.story_transitions SET missions=%s::jsonb,receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
+                (json.dumps(snapshot), receipt, run, state['visits']),
+            )
         conn.execute(
             'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s WHERE id=%s', (json.dumps(state), cursor, run)
         )
@@ -366,11 +443,16 @@ def direct(conn, world, op, data):
     if op == 'retry':
         rules.require(status == 'paused' and receipts, 'Choose a paused run with a refused action.')
         previous = conn.execute(
-            'SELECT status,kind,target_id,payload FROM dm.actions WHERE id=%s', (receipts[-1],)
+            'SELECT status,kind,target_id,payload FROM dm.actions WHERE id=%s',
+            (state.get('missionReceipt', receipts[-1]),),
         ).fetchone()
         rules.require(previous and previous[0] == 'refused', 'Only an explicitly refused game action can be retried.')
         receipt = queue(conn, data['operator'], *previous[1:])
-        receipts[-1] = receipt
+        if 'missionReceipt' in state:
+            state['missionReceipt'] = receipt
+            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        else:
+            receipts[-1] = receipt
         conn.execute(
             "UPDATE dm.story_releases SET status='running',problem='',receipts=%s WHERE id=%s", (receipts, run)
         )
@@ -401,7 +483,8 @@ def direct(conn, world, op, data):
             'No such direction in this phase.',
         )
     rules.require(
-        len(receipts) == 1 + sum(e['kind'] != 'npc.line' for e in phase['effects'])
+        'missionReceipt' not in state
+        and len(receipts) == 1 + sum(e['kind'] != 'npc.line' for e in phase['effects'])
         and conn.execute('SELECT status FROM dm.actions WHERE id=%s', (receipts[-1],)).fetchone()[0] == 'applied',
         'Wait for the game to acknowledge the phase and its effects.',
     )
@@ -451,8 +534,12 @@ def status(conn, world, run=None):
     ).fetchone()
     rules.require(row, 'Unknown run.')
     st, state, problem, ids, program = row
+    mission_program = any(p.get('missions') for p in program['phases'])
+    if state and 'missionReceipt' in state:
+        ids = [*ids, state['missionReceipt']]
+    projection = ',missions' if mission_program else ''
     history = conn.execute(
-        'SELECT visit,phase,game_day,cause,receipts FROM dm.story_transitions WHERE run=%s ORDER BY visit DESC LIMIT 100',
+        f'SELECT visit,phase,game_day,cause,receipts{projection} FROM dm.story_transitions WHERE run=%s ORDER BY visit DESC LIMIT 100',
         (run,),
     )
     return {
@@ -472,7 +559,7 @@ def status(conn, world, run=None):
         'signals': [e['match']['detail'] for e in rules.phase_of(program, state)['exits'] if e['on'] == 'dm signal']
         if state and st == 'running'
         else [],
-        'history': [dict(zip(('visit', 'phase', 'day', 'cause', 'receipts'), r)) for r in history],
+        'history': [dict(zip(('visit', 'phase', 'day', 'cause', 'receipts', 'missions'), r)) for r in history],
         'actions': [
             dict(zip(('id', 'kind', 'status', 'result'), r))
             for r in conn.execute('SELECT id,kind,status,result FROM dm.actions WHERE id=ANY(%s) ORDER BY id', (ids,))
