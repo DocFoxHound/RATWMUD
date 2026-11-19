@@ -1,0 +1,261 @@
+mantle rm399
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_frederick_pitchcot
+title the threshold fold
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk folds_a_map_till_the_shop_door_stands_on_the_edge
+likes smoked_eel long_walks old_maps frosty_mornings
+dislikes smoke bad_manners
+fears a_ship_that_returns_to_rain a_caller_who_will_not_knock
+hopes a_warm_dry_port a_map_large_enough_for_the_long_way
+topics travel +0.6 lore +0.4 pastimes +0.5 family +0.3 dreams +0.4
+styles comfort=practical gossip=guarded refuse=cheerful tease=playful
+marks oath saying
+persona #self.first# folds old maps into little standing doorways, has a booming welcome and knows how to send an impertinent caller a remarkably long way round without ever misdirecting a step.
+
+words
+oath! = Turn the lintel over | Blow the fold straight
+saying! = Every honest entrance has an outside | Fold the near streets last
+map = my much-travelled map | the fraying street sheet
+crease = the upright fold | a paper door jamb
+fish = the smoky eel tail | my long curl of eel
+threshold = the sill line | the raised lip
+pole = a thin map rod | the narrow stick
+chalk = a crescent of chalk | my white nick
+cold = a lace of frost | the pin-fine ice
+port = a sunny stone quay | a dry distant port
+curve = a wide printed bend | the fat ink turn
+latch = the polished catch | the small iron clasp
+pocket = a broad coat pocket | a hiding place up my sleeve
+puff = that blinding puff | a nasty dark drift
+
+any
+opinion @1 city for 2 : Ridgemere fits on a fair-sized map but you'll never get all the good things to say in the margins.
+opinion @2 church for 1 : I have heard the right words spoken when an ordinary visit turned into the last farewell. That earns my respect.
+opinion @3 road against 1 : I'm fond of roads on paper and in daylight among known faces. Some roads can conduct their other business without my help.
+opinion @4 strangers for 1 : A polite stranger may hear my best directions. A rude one gets an equally accurate route with far more exercise.
+opinion @5 festivals for 2 : It's a joy to watch a whole street give itself permission to linger in every doorway.
+opinion @6 houses mixed 0 : House colours are easy to spot at the door. Manners are harder to predict and far more important inside.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome on the proper side of the sill! | New arrival. There's the door as properly advertised.
+line @2 greet [here.time=dawn] : Morning to each side of my sill. | A fine early start to a long way round.
+line @3 greet [here.weather=snow] : Welcome out of the white paper weather. | Your route comes nicely drawn in the snow.
+line @4 greet.return : That was a knock of the polite variety. Welcome. | A welcome promptly returned over the same threshold.
+line @5 greet.return [pair.band=friends|family] : A familiar face makes an excellent door key. | I'll spare you the ceremonial round of the houses.
+line @6 farewell : Have a fine broad trip round the outside. | Let the turns find their proper order underfoot.
+line @7 farewell.return : Safe out under your own compass. | I'll fold your road home uppermost.
+line @8 again.open : A return ticket already honoured! | The next fold opens on the very same face.
+line @9 kin.open [pair.kin!=no] : The family shortcut's open. Come inside it. | Our own get the route that fits on half a page.
+line @10 hail [pair.band=friends] : Straight on to the booming voice! | Door's here, quite impossible to lose!
+line @11 react.news : Tell the journey as well as what came to the door. | I'd hear how the news negotiated the final turning.
+line @12 react.news.new : Entirely new territory for this pair of ears. | I've no earlier crease for that business.
+line @13 react.news.known : That parcel has knocked at my door previously. | There's the old route with fresh mud on its feet.
+line @14 react.news.doubt : Show me the printed road between these two statements. | The account's travelled an ambitious distance without leaving many tracks.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Come in. That's no piece of news to stand in a doorway with. | I'll fold the jokes away a while.
+line @16 react.news.glad [topic.kind=birth|marriage] : Open wide and let that welcome word through! | There's a door I'd cross the city to knock on.
+line @17 answer.how : Able for a splendid detour yet. | In tolerable alignment with the nearest upright.
+line @18 decline : My map won't stretch to covering that particular piece of business. | I should have to leave an earlier obligation standing out in the street.
+line @19 accept_decline : A shut road is quite a clear instruction. | I'll go the interesting way about the problem.
+line @20 sympathise : Come take the weight off just inside this doorway. | A bit of good company can shorten an ugly stretch of road.
+line @21 thank : You've saved me an unprofitable turning. | I'll chalk that kindness in a handsome credit column.
+line @22 deflect_thanks : I believed in getting the right visitor to the right door. | Quite ordinary navigation with a bit of courtesy attached.
+line @23 preclose : I must fold up some of my loose geography. | Another turning of the day wants minding.
+line @24 accept_preclose : Go before I can recommend a longer road. | Quite so. Follow the part that runs toward home.
+line @25 farewell [here.time=night] : Keep the good lamp on the near side of your hat. | A friendly latch waiting beyond these dark turnings.
+
+scene doorfold
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I stand #crease# on the street where a door ought to rise. | If I fold #map# correctly there's a little door a bread crumb could walk through.
+b : Does the paper door actually lead anywhere?
+a : Round onto the sheet's blank reverse. A whole uncharted country without leaving the sill. | To #curve#, where a starving crumb ought to be hunting for a warm bowl.
+
+scene eelstrip
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : #fish# makes a handsome winding river laid out on a plate. | I take a strip of eel along a road that follows the water.
+b : Where does the river go at dinner time?
+a : Straight round the corner of a mouth. Quite the shortest journey ever recorded. | A bite at a bend and a bit between bends. Home before the last meander.
+
+scene walk
+when topic=travel self.likes=long_walks
+does tell.plan / ask.detail / answer.detail
+a : I shall take a walk with three opportunities to change my mind about the destination. | I'd like a route where the outward half and the homeward half are scarcely acquainted.
+b : Can you come home before a good supper goes cold?
+a : Every change of mind has to turn the road one street nearer the smell of fish. | Fold it round a market stall and eat halfway. Then there wasn't a deadline to miss.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #cold# runs under a sill and announces a door somebody has forgotten. | Frost makes a curious map of all the entrances a building means to keep warm.
+b : Do the entrances look different from outside?
+a : The warm ones leave a thin dark line under the lintel. A particularly legible invitation. | An empty doorway grows white right to the lip. An occupied one remembers a little warmth.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #puff# has obstructed an otherwise perfectly civil word. | I've lost my good map's distant corner in a yardful of smoke.
+b : How could a puff of smoke send you anywhere?
+a : Turns one's head sharply the wrong way just when somebody wants an accurate direction. | Hides the turning and sends me feeling blindly for a street I thought I knew.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / disagree / concede
+a : A knock is remarkably cheap for what a good one purchases. | A caller can always spare the tiny pause between a knock and an entrance.
+b : What if the caller's in a frightful hurry?
+a : Then a single bright tap will serve for three polite ones, provided it precedes the elbow. | A quick pause is still welcome. I don't require a whole speech with every button.
+
+scene working
+when topic=work self.job=merchant self.working=yes self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words#. A wolf on a threshold can tell a new errand by which paw first comes forward. | #self.trade_words#. I put #chalk# beside a catch that wants a little work.
+b : What's the first sign you look for?
+a : One hand kept under a parcel. I open wide enough to spare the corner, after a civil word. | A caller tugs twice at the same place. Little chalk tells me to look there when the crowd clears.
+
+scene rival
+when topic=gossip
+does give.opinion / disagree / concede
+a : I see a rival badge and recall where polite enquiries should be made. | I never let the pride of a House carry a parcel past the latch without a question.
+b : Is the badge a complete answer then?
+a : Not at all. I like the bearer to provide a better one. | The badge can announce its own kind of business. Who takes delivery is quite another matter.
+
+scene childletter
+when topic=family self.parent=yes self.child
+does tell.plan / ask.detail / answer.detail
+a : I'd send #self.child# a map with a joke hidden under the return fold. | I've kept a perfectly dry quarter of paper for #self.child#.
+b : What would go in that little space?
+a : A door drawn on the inside where an impatient reader would look through to a whole blank sea. | A sketch of #port#, with the gate open and no rain drawn. It's the best part.
+
+scene friendvisit
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd keep the inside corner of my folded map for #self.friend#. Look at the far one if you will. | I'd take #self.friend# on my favourite long walk. Have the shorter route today, if your boots want it.
+b : Glad to have the loan of a direction.
+a : Yours to keep. I can draw another just by setting my feet going. | Begin by the dry market paving. Thereafter call only at sunlit doors.
+
+scene dryport
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd sign on for a berth with a dry locker where my map would lie flat without my sitting on it. | I want to work a door on a ship with nowhere to send a rude caller but right round the deck.
+b : Wouldn't such a ship still get wet on the way?
+a : The water is allowed to use the outside. My sheet gets a dry inside corner. | Indeed. But I'm thinking of a splendidly dry destination where one can take the whole joke ashore.
+
+scene commons
+when topic=land self.quarter=commons
+does tell.self / react.self / assess
+a : The Commons is very accommodating to a wolf in search of an unnecessary extra turn. | The Commons can readily fill an afternoon just deciding which door best begins a story.
+b : Which extra turning would earn your approval?
+a : One that takes in a fish stall just past the last curl of smoke. | A door where the caller has time for an opinion and the keeper has a chair.
+
+scene paperlesson
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What's your trick for a nice sharp fold in #map# without tearing the old corner? | Where's a sensible place to draw a door on a page full of intersecting streets?
+b : Try the unused margin before committing your best street.
+a : Right. A rehearsal in an unpopulated field can save a busy town a dreadful accident. | Good. Leave a little peace on both sides of an entrance. Crowds can come after.
+
+scene price
+when topic=food
+does offer / accept / assess
+a : Have a strip of the eel to keep you occupied over my directions. | I could share the thin end of this parcel if your bread is seeking a bit of company.
+b : A small piece, please. I've not got coin out for lunch.
+a : It's an edible compass point. No seller could tell me the rate for one of those. | Fair enough. I take payment in supper talk and you've already settled my bill.
+
+scene straddle
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new visitor may have toured six entrances before finding the right one in this city. | I like to listen to how a traveller first saw our streets.
+b : Suppose the first impression's a little mixed?
+a : That's usual. Put it into a map and you can at least distinguish where the trouble began. | A mixed impression tells me which corner of the map has been folded too many times.
+
+old
+
+scene oldshoe
+when topic=travel self.age>=55
+does tell.self / ask.detail / answer.detail
+a : My longest map has outlived several pairs of boots. | At my age the whole trip must be worth the aftercare of two rather opinionated knees.
+b : Which road still deserves its place?
+a : The one with sun on the outward side and a seat on the long return. | A road with old friends at the end. My knees tend to be better tempered once they've sat there.
+
+scene oldwatch
+when topic=family self.age>=55 self.parent=yes
+does tell.self / react.self / assess
+a : A parent with some years of practice knows a door is no good if nobody's free to come through it. | I have a doorway in my head for every age my child has been.
+b : Which one do you leave open longest?
+a : The present one. I'd lose my manners keeping a grown caller waiting on all the older visitors first. | The broadest. Family can come in carrying whatever the intervening years have put into a pair of paws.
+
+scene oldink
+when topic=dreams self.age>=55
+does tell.feeling / sympathise / assess
+a : After so many wet mornings I want to come in smelling of sun-warmed rope. | My feet have had years enough to wear a hole in the road to that imaginary dry ship.
+b : Would you miss this old stretch of pavement?
+a : From a dry berth I'd be delighted to miss the rain properly for a week or two. | I'm willing to risk a little homesickness to see that road end at a gangway.
+
+grown
+
+story backward_map [topic=lore]
+  : I lent a visitor a map with the river side folded in and the gate folded over the top. It made perfect sense to me.
+  : The visitor came back looking pleased, with a bit of eel in a wrapper.
+  b : Was the river where it belonged?
+  : No idea. The fellow had opened the food street by accident and decided that was the best introduction to town.
+
+story frost_knock [topic=weather]
+  : There was a tap at a door just before dawn in a frost. I went to open, found a perfect white pavement and no paws marked anywhere near it.
+  : I waited through the next tap with the door already open.
+  b : What was trying to come in?
+  : A knot in the frame coming to terms with the cold. I invited it in out of courtesy but it retained its post.
+
+story ship_key [topic=dreams]
+  : I dreamed a ship had taken me on to mind the gangway at a bright dry port. The captain offered me a key as long as an eel.
+  : I asked where the key went on a ship with scarcely a door in sight.
+  b : Where were you meant to put it?
+  : Across the map, to keep the wind from starting her home again before I'd had time to see the place.
+
+rule @door
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Knock as though you mean to hear an answer. | Wide parcels to the wide side.
+
+rule @fold
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say Straight fold for a gloriously crooked road. | Little paper door's quite ready.
+
+rule @white
+when concept=bark here.season=winter
+does aside
+cooldown 8h
+say Cleanest threshold on the street today. | Frost's chalked both corners for me.
+
+rule @fish
+when concept=bark self.likes=smoked_eel
+does aside
+cooldown 8h
+say A tail's all the direction finder I need at supper. | Follow the smoky curve with your teeth.
+
+dlg @1 resident.hub [topic.meeting=stranger] : The welcome's a perfectly straight road. We'll see how your errand proceeds from there.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're on the short route through my introductions.
+dlg @3 resident.hub [here.time=night] : Even the polite caller knocks a shade softer with the moon up.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll have the knock before the entrance, however urgent your errand appears.
+dlg @5 resident.job [self.job=merchant self.trade_words] : #self.trade_words#. A fine occupation for a wolf with an exact sense of inside and out.
+dlg @6 resident.job : I'm an authority on which way round a doorway opens.
+dlg @7 resident.bye : May the proper turning find you before the scenic one does.
+
+graft resident.hub
+choice How long is the polite way round? -> welcome_fold
+node welcome_fold
+say A single step. A knock, a word, a step. I can unfold a route twice the length of a city street for a caller who begins by pushing.
+choice Would that route still reach the right place? -> long_manner
+choice I shall stick to the short way in. -> hub
+node long_manner
+say Most certainly. I take pride in accurate directions. Besides, a long walk can give a wolf time to prepare a perfectly courteous arrival at the far end.
+choice I admire your faith in the exercise. -> hub
+choice An easy road to your door. -> bye

@@ -1,0 +1,255 @@
+mantle rm393
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_montague_kettlecote
+title the iron flood atlas
+fits stage=adult|old
+prefers job=merchant
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk draws_the_flooded_streets_with_spare_nails
+likes fried_fish evening_line old_maps thunder
+dislikes rats crowds
+fears a_private_sight_pinned_up_for_sale
+hopes a_dry_track_for_every_delivery
+topics land +0.6 weather +0.5 work +0.4 travel +0.3
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona persona #self.first# sets nails on an old map to show where the streets first go under and covers a private sight with a closed paw.
+
+words
+oath! = Bend my flood nail | Rust that atlas shut
+saying! = One bad drain can turn a map over | Mark the road and leave the traveller alone
+nail = a short blunt nail | a crooked nail
+point = the dark nail point | the flat head
+atlas = a limp old atlas | a patched map
+runoff = a quick sheet of water | a muddy runnel
+float = a small cork float | a dark quill
+fish = a golden strip of fish | a hot fillet
+pan = a black iron pan | a shallow skillet
+grease = a bright spot of fat | a twist of greasy paper
+bundle = a corded bundle | a tied parcel
+thunder = a long thunder roll | a low angry crack
+sill = a dry narrow sill | a raised lip
+hole = a rat hole | a gap in the skirting
+rack = a plain iron rack | a grid of rods
+
+any
+opinion road for 2 : One passable street is worth a pretty map of ten that have rivers where the doors should be.
+opinion houses mixed 1 : A high seat is a poor place to hide a face. Give its occupant some ordinary privacy.
+opinion merchants mixed 1 : A bar sold by weight is either there or missing. Give me trade I can check with my own paws.
+opinion strangers mixed 1 : I'll give a visitor a dry route. No charge and no requirement to walk it at my elbow.
+opinion times against 2 [world.times=lean|hard] : A bad spell makes everybody with a dry store think twice before moving anything out of it.
+opinion sump for 1 : The low streets taught me more about drains than the maps kept in dry rooms ever did.
+
+grown
+line greet : Dry patch here by my map elbow. | You can stand here without moving the pins.
+line greet.return : A level greeting coming back uphill.
+line again.open : We haven't lost the road between us yet.
+line farewell : Take the one high turn and save your socks. | Don't let a short map sell you a long soak.
+line farewell.return : Dry iron and a dry doorstep to you too.
+line react.news : Lay the news where I can put a point on it. | Start with the street it reached you on.
+line react.news.new : That wants a fresh mark entirely.
+line react.news.known : I recognise the dent that story left.
+line react.news.doubt : It doesn't sit square on what I know.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd keep a stranger's hurt out of the public window.
+line react.news.glad [topic.kind=birth|marriage|work] : That's a bright nail for a decent stretch of road.
+line ask.how : Any rising trouble at your end today?
+line answer.how : More or less above water. Feet still restless.
+line sympathise : Come out of the press. I'll stand in the gap.
+line reassure : There's another track round the blocked part.
+line refuse : My boots have a journey promised to them already.
+line accept_decline : Leave it there. I dislike a second hard sell myself.
+line preclose : Need to catch the road before it fills with elbows.
+line accept_preclose : Go now, there's still a clear line ahead.
+line ack : I've set a point beside your meaning.
+
+scene exchange1
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# even the bent nails have a job. | I keep long bars off the floor at work.
+b : Can you sell them? | Rodents?
+a : I use them as pins for the roads I don't recommend. | Floodwater. Rats don't commonly rust my stock.
+
+scene exchange2
+when topic=land self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A nail point means water and a flat head means stone. | My old map lies flatter with three nails on its corners.
+b : What's between? | What about the fourth?
+a : The route I'm still trying out. | That corner's got a road I turn back to often.
+
+scene exchange3
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder tells me to set my iron map out. | I like the low roll before a shower.
+b : Expecting a flood? | Why?
+a : Expecting a chance to check where I've been wrong. | An honest announcement. A blocked drain makes less noise and does more damage.
+
+scene exchange4
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fried fish belongs on a dry bit of paper. | I eat the thin crisp piece before I unfold my map.
+b : Not a plate? | Afraid of greasy prints?
+a : I like to start walking before it cools. | I don't want a cod-shaped lake on an important corner.
+
+scene exchange5
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I take one nail on an evening's fishing. | I watch the float for an hour without fuss.
+b : For a weight? | Same wolf who hates standing in a crowd?
+a : For hanging my wrapper where a rising tide won't reach it. | A cork has never yet jabbed my ribs.
+
+scene exchange6
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I read the stockroom by its smallest gaps. | A rat can walk behind my dry goods without moving the front row.
+b : Counting rat holes? | How do you know?
+a : Counting the ones I haven't closed yet. | A loose straw stays at the back to tell me.
+
+scene exchange7
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I won't shoulder through a packed crossing. | An empty lane a street over is worth a detour.
+b : Too polite? | Even in rain?
+a : Too short of temper. I go round before it shows. | Provided I've checked the drains.
+
+scene exchange8
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once witnessed sorrow where high business was carried on. | Some things don't go into my atlas.
+b : What was the grief? | A road you've forgotten?
+a : Private is the entire description it gets. | A face I remember very clearly. A face isn't mine to mark.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with a tray of map nails. | A friend can sit by the line without counting every missed fish.
+b : To leave your routes in place? | Does that happen often?
+a : To ask before moving one. All I need. | I miss plenty. I speak of fewer.
+
+scene exchange10
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My map gets put away before the frying pan comes out. | I touch the threshold with my boot before carrying a parcel across.
+b : Where does it live? | Even at home?
+a : High where iron can't drip on it. | Habits that get you home work best practised there too.
+
+scene exchange11
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A cheap nail is dear if the head flies off. | I keep the price near the length of iron it belongs to.
+b : Do you test the batch? | Why the fuss?
+a : One at each end. Even a good bundle can have a poor end. | A finger or two short is a large difference in a small repair.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. Don't expect a second name from me. | Water's journeys are easier to discuss than where a wolf went.
+b : Why mention it? | Out of caution?
+a : So you'll know how much is hearsay before carrying it any farther. | Water hasn't a private life.
+
+scene exchange13
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Lean weeks have me counting my dry corners first. | A short order still gets a long look at the weather.
+b : Not your stock? | Worth the trouble?
+a : Wet stores can make the finest account worthless. | The buyer of one bar may need it worse than a buyer of ten.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I walk a strange lane twice before recommending it. | A map turns light in my pocket when the way's good.
+b : Both directions? | The weight changes?
+a : Once when dry. Once after it's had time to prove itself. | I stop needing to feel for it.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want one well-tested delivery track to every street. | I'd like a night by the float after every crowded day.
+b : Including the lowest ones? | The crowds too tiring?
+a : Especially those. People still need a sound hinge in bad weather. | It's the mixing of them and quiet that keeps me tolerable.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I undo my fingers separately after hefting a heavy bar. | A long walk clears my temper sooner than a chair.
+b : Stuck closed? | What about a resting place?
+a : Sometimes they want to keep the shape of the day's work. | Once I've walked the grudge out I can use the chair with good grace.
+
+scene exchange17
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can give a hurt wolf privacy without needing to know a name. | I leave chapel by the thin side of the crowd.
+b : Is that a belief? | To get away?
+a : As much as any I can say without looking at a book. | So I'll leave in the quiet frame of mind I came to find.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I turn the heads up on the map before I put it by. | At daybreak I check what the sky did overnight.
+b : Why bother with pins at night? | And if it did nothing?
+a : I'd like to keep all my fingers on friendlier terms tomorrow. | I can eat my fried fish without an errand chasing the steam.
+
+story tale1 [topic=land self.likes=old_maps]
+  : I dropped a whole handful of old nails on my map over breakfast. The scattered iron looked like a grand fleet heading straight up a hill.
+  : I was planning the harbour when I noticed the last nail rolling off the page.
+  b : Did your fleet make land?
+  : One ship reached my boot. The rest went back in their tin and returned to the less glorious job of marking blocked drains.
+
+story tale2 [topic=pastimes self.likes=evening_line]
+  : I once watched my cork go slowly inland. I rubbed my eyes, then looked down and saw my hook caught in an edge of wrapping paper.
+  : A breeze was carrying the paper ashore, together with my perfectly obedient float.
+  b : What did you catch?
+  : The wrapper of my own supper. First time I've landed a fish that had been fried already.
+
+story tale3 [topic=memories]
+  : A heavy spring shower changed the course of a little stream right outside my door. I put down a nail to mark the new turn on my map.
+  : By evening a leaf had floated free of the drain and the stream had become respectable again.
+  b : What became of the nail?
+  : It lies crosswise now. I use it for 'ask in the morning'.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Long iron up off the boards please. | Count the sound heads before tying the bundle.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say This rain will have its favourites among the streets. | Check the lower turn before pushing a load in.
+
+rule @call3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Time for a cork and an empty patch of shore. | A dark nail point looks much like a pond at dusk.
+
+rule @call4
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say Room to lay my parcel level, that's all. | A clear width between those shoulders would do me.
+dlg resident.hub : I'll move the map for a sensible question.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I remember which turning brought you through last time.
+dlg resident.hub [here.time=night] : My eyes have finished reading for tonight. My ears still work.
+dlg resident.hub [pair.disposition=wary|hostile] : Stay clear of my marked roads till I've heard your errand.
+dlg resident.job [self.job=merchant] : I keep the iron dry and counted at #self.workplace#.
+dlg resident.job : Give me work I can set straight before rain gets into it.
+dlg resident.news [world.news] : The report that made it up my street was #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody put #topic.subject# #topic.claim# into circulation. I've no extra particulars for you.
+dlg resident.bye : Take the road with the clear runnel.
+
+graft resident.hub
+choice Why put a bent nail on a street? -> nail_map
+node nail_map
+say Because the trouble round that turn never runs straight. It also feels different under a thumb when I'm reading the map by a poor light.
+free
+choice Does it stay marked for ever? -> nail_map_again
+choice Goodbye. -> bye
+node nail_map_again
+say Only till the place drains twice in a proper shower. I can change my mind when the gutter changes its habits.
+choice I'll watch which way you turn it. -> hub
+choice Goodbye. -> bye

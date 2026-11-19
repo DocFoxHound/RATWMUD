@@ -1,0 +1,257 @@
+mantle rm411
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_soren_ashcote
+title the uncut moon
+fits stage=adult|old
+prefers quarter=works
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk leaves_the_last_slice_of_a_carved_moon_uncut_till_the_bells_finish
+likes smoked_eel whittling festival_bells misty_dawns
+dislikes flies night_noise
+fears the_factor_at_the_door a_full_night_without_sleep
+hopes a_paid_account a_morning_with_the_shutters_open
+topics work +0.4 prices +0.4 pastimes +0.4 weather +0.3 dreams +0.3
+styles comfort=quiet gossip=guarded refuse=dry tease=light
+marks oath saying
+persona #self.first# counts chapel strokes with a half-carved wooden moon, keeps the last shaving in place and prefers to be consulted before any fresh reckoning is added to the day.
+
+words
+oath! = Split the press handle | Sour the last drop
+saying! = A moon needn't hurry to finish  |  Count what comes after the stroke
+moon = my wooden moon | the notched crescent
+chip = the uncut chip | my last bit of pale wood
+stroke = the low chapel stroke | a faint toll
+eel = a narrow smoked tail | the dark eel end
+stave = a strip of cask wood | the saved stave end
+press = the pressing board | the stained wooden face
+juice = the running juice | the first thin trickle
+haze = a white morning haze | the low harbour mist
+wing = an impertinent fly | the little winged speck
+clock = the long shadow | my slow sun mark
+bill = the folded account | the creased receipt
+lid = a well-fitting cover | the quiet wooden lid
+
+any
+opinion @1 church for 1 : A bell is a neighbourly sound. A meal handed through the chapel door was an even more convincing argument.
+opinion @2 dole for 2 : Take the hunger off a waiting wolf before trying to settle all the rest of the world's account.
+opinion @3 houses against 1 : A House would sooner let a bench lie idle than have the wood learn the shape of the wrong wolf.
+opinion @4 merchants against 2 : Bread has acquired notions rather above its plain brown station. My pay has remained admirably modest.
+opinion @5 city for 1 : Between the mist at the water and the bells coming down the hill, Ridgemere has ways of declaring a morning without assistance.
+opinion @6 times against 2 : It is a remarkable economy that leaves the whole weight on the board and takes a slice off the meal.
+
+grown
+line @1 greet [pair.band=strangers] : Take a place clear of the last drop. Welcome. | New voice. The bells have paused to let you try it.
+line @2 greet [here.time=dawn] : Morning. Slow as a first clean trickle. | Welcome between the mist and the first call.
+line @3 greet [here.weather=fog] : Come into the nearer patch of the morning. | A face comes out of the white. Welcome.
+line @4 greet.return : That's reached me quite distinctly through the other noises. | A civil opening and no account attached.
+line @5 greet.return [pair.band=friends|family] : I've a spare pause before the stroke for you. | Here comes the voice I can bear before breakfast.
+line @6 farewell : Keep the last slice of your day for yourself. | A quiet roof over the final stroke.
+line @7 farewell.return : That leaves my reckoning pleasantly even. | We'll hear where the next set of strokes takes us.
+line @8 again.open : A familiar note comes round the second time. | We appear on the same face of the clock again.
+line @9 kin.open [pair.kin!=no] : No admission charged for family at this end. | Bring your home voice up beside me.
+line @10 hail [pair.band=friends] : Over here before the next bell! | This side of the long shadow!
+line @11 react.news : Tell me what was left when the pressing was done. | I'll hear it while the noisy part drains off.
+line @12 react.news.new : That's a fresh mark on my bit of timber. | Unfamiliar tone in the usual account.
+line @13 react.news.known : I've heard the earlier stroke of that same bell. | That slip has been folded under my nose already.
+line @14 react.news.doubt : I suspect the account has been pressed rather harder than the facts. | The mark looks fresh for something claimed to be settled so long ago.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Set the slip down. That's a weight for more than one shoulder. | We'll sit until the next sound is welcome again.
+line @16 react.news.glad [topic.kind=birth|marriage] : One more bell could ring for that without offending me. | Fine news. It can have the whole bright side of the wood.
+line @17 answer.how : In no imminent danger of gaining a fortune. | Moderately close to my proper shape.
+line @18 decline : I'd better pay the promise already holding my last hour. | I'm keeping a small margin between myself and another obligation.
+line @19 accept_decline : Fair. No new notch for that. | I can let a well-made refusal stand.
+line @20 sympathise : I'll see to the small job while you take your time. | The pressure will wait over here by my bench.
+line @21 thank : Credit where a quietly decent turn belongs. | You've cut away an awkward bit for me.
+line @22 deflect_thanks : An entirely manageable scrap of time. | The thing came loose under my hand. No ceremony.
+line @23 preclose : I've a last shaving still holding on. | Time to put a little order in the ordinary work.
+line @24 accept_preclose : Go on. You've kept the account square. | Your next occupation may have the pleasure of you.
+line @25 farewell [here.time=night] : May no loose shutter discover your window tonight. | A generous allowance of silence after dark.
+
+scene woodmoon
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #moon# keeps #chip# till the chapel's done ringing. | I can cut a whole moon with one shaving left for the next set of bells.
+b : Why not finish the job while the knife's sharp?
+a : It's the only moon that will wait on my word. I take a certain pleasure in that. | I enjoy finding the job where I left it. There are plenty that don't ask my preference.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : #eel# ought to arrive on the bread in one long curve. | I can make one smoked eel reach round two crusts without arguing with the fish.
+b : What's the clever part of that?
+a : Leaving the skin on till it's laid out. The ordinary part is what I do with the bread. | A shallow cut and a gentle lift. No great profit in an argument with supper.
+
+scene mistbell
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #haze# hides a bell tower without doing any harm to the note. | The mist gives the far chapel's bell a surprisingly intimate voice.
+b : How do you tell where the tower's standing?
+a : I listen for the return from stone. That bit comes from nearer ground. | I don't especially need the address of the thing. The sound arrives for nothing.
+
+scene festnote
+when topic=season self.likes=festival_bells
+does tell.self / react.self / assess
+a : A feast peal is the one payment in town made entirely in sound. | I enjoy the untidy little interval when all the festival notes have struck and none has finished.
+b : Does everybody get the same share?
+a : Within earshot, yes. Rather an excellent arrangement for the poorest listener. | The wolf under the tower gets the jangle. I prefer the portion arriving among the roofs.
+
+scene fly
+when topic=smalltalk self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #wing# has already decided it holds a share in my dinner. | A fly at a working board confuses a trade with an invitation to supper.
+b : Could you not divide the business amicably?
+a : Certainly. The fly may have the wrong side of #lid# and the fish remains inside. | I've offered all the air outside the room. Quite a handsome settlement for a small appetite.
+
+scene afterdark
+when topic=smalltalk self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : A loose board at midnight gets more replies than one does in working hours. | Somebody ought to engage night noise in a proper daytime trade.
+b : Would you be the wolf paying it to stop?
+a : I'd go so far as the price of a felt pad under the board. No salary beyond that. | Only if the wage was for silence. I won't subsidise its present line of business.
+
+scene pressboard
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I look for #juice# before I take the next pull. | I give #press# time to settle in the work at #self.workplace#.
+b : Does waiting pay?
+a : The liquid has to come out somewhere. It earns more going in the right direction. | It spares a second lift to straighten everything. My shoulders appreciate an occasional dividend.
+
+scene factor
+when topic=dreams self.owes=yes
+does tell.feeling / sympathise / assess
+a : I'd like the account settled before the moon goes dark. I'd like a longer piece of sky. | The thinning side of the moon does little for me just now.
+b : Are you counting nights with those cuts?
+a : Close to it. I'd sooner be reckoning a completed payment. | The cuts are my own. A due date takes rather less notice of an artist's preference.
+
+scene drycash
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : I cannot make a copper stretch any further by applying the press to it. | A supper price appears to have a better prospect of growth than my little coin pile.
+b : Wouldn't more effort bring a little extra?
+a : I'll put effort where it might get somebody fed. Flattening a coin only improves its view. | A little. It'd be pleasant if the loaf didn't take the same exercise at a brisker pace.
+
+scene works
+when topic=land self.quarter=works
+does tell.self / react.self / assess
+a : The Works can keep a long note going even while the chapel's between strokes. | At my Works window you can tell when the metal and the timber have both quit for the evening.
+b : What comes after all that sound?
+a : A blessed interval in which I can hear the little curl coming off my knife. | Usually somebody decides to drop a small object in the room overhead. I endeavour to entertain charitable thoughts.
+
+scene palbench
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd save my moon's single last shaving to show #self.friend#. | I'd put aside the bench end furthest from the racket for #self.friend#.
+b : What makes it a good place to wait?
+a : Waiting costs my guest nothing and the carving gets a little more interesting while a friend watches. | The line of the morning bell comes down there without rattling a single cup.
+
+scene longminute
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : #clock# can move clear across #stave# while I pare one curve. | I get a different sort of crescent if I let the knife follow the wood's own bend.
+b : Does the finished thing show how long it took?
+a : The thin end keeps the slower part of the morning about it. At least, my own eye can find it. | Only that I left enough time for an unhurried inspection of the grain.
+
+scene latewagon
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : An overdue wagon makes a fine clock if you don't care what hour it says. | I don't mind a slow cart so much as a late one pretending there is no difference.
+b : Where does the delay show in your afternoon?
+a : In the job I'm doing with my idle fingers. I've got quite a collection of late wagon moons. | In the little pool of daylight left after the loading. Less time for a quiet evening bite.
+
+scene souphelp
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Take the thicker piece of bread. I've got the fish oil for the thinner one. | I've a strip of smoked supper to stretch across two bites.
+b : I'll take a corner and leave you a generous margin.
+a : The oil has gone right through. My margin's actually very well provided for. | Best possible use of an edge. Two decent dinners recognise the same boundary.
+
+scene bigword
+when topic=gossip
+does give.opinion / disagree / concede
+a : I like a promise sized to the shoulders taking its weight. | A rumour can travel from dockside to the hilltop without paying a single step of its own fare.
+b : Would you have somebody pay before you'll listen?
+a : Only in information about what actually happened. No coin required. | I'd take an honest witness as a reasonable contribution to the account.
+
+scene newwork
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new wolf can learn plenty from the direction the juice goes. | If a newcomer asks the way uphill, I point out the dry boards first.
+b : What matters most about the direction?
+a : Don't put an open sleeve between the run and the bucket. A simple rule that a wet cuff teaches slowly. | A new arrival has enough to think about without developing an opinion on our wet cobbles.
+
+scene bound
+when topic=dreams
+does ask.advice / give.advice / assess
+a : What's a sound way to stop a price slip getting mixed up with a nice scrap for whittling? | Which edge of #bill# would you mark to help your fingers find the fold in the dark?
+b : Fold the bad news under once and keep the smooth side for better business.
+a : I might. Then a wood chip would be the only thing in my pocket ready to brighten a room. | One fold is enough. No need to decorate a sensible price.
+
+scene windbell
+when topic=lore
+does tell.self / react.self / assess
+a : An old tale says every tower keeps a private note for the wolf obliged to be up before dawn. | There's a bell in a story that waited once until a poor debtor got a decent night's sleep.
+b : That's a considerable courtesy for a lump of bronze.
+a : Much finer than shouting the common hour right through a thin wall, I'd say. | I'd be interested in the name of its maker. Might be in the market for a household size.
+
+story thin_wood [topic=pastimes]
+  : I carved a crescent so thin on its inner side that the last cut lifted the whole thing in a curl. It settled round my thumb like a ring.
+  : I kept it there for an afternoon, the nearest I've come to owning a piece of sky outright.
+  b : What became of the ring?
+  : It broke as I reached for supper. Given a choice I preferred having the use of my thumb.
+
+story press_ghost [topic=work]
+  : I once laid a circle of clean cloth over a board that had held dark fruit. There was no juice left to see. I put the pressure on.
+  : The cloth came away marked with a faint purple crescent.
+  b : Was that how you began carving moons?
+  : No. That was how I began looking twice at things reported quite empty.
+
+story late_sound [topic=lore]
+  : A chapel bell rang while I was lifting a spoon of broth. I couldn't hear the last thin stroke, only a little tapping at my own doorstep.
+  : Set the spoon down and the sound came clear again.
+  b : What had been interrupting the bell?
+  : My spoon striking the cup each time I lifted to listen. There's such a thing as excessive activity in pursuit of quiet.
+
+rule @pressure
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Wait till the run changes colour. | Ease up. The board can keep up now.
+
+rule @chips
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Nearly a new moon. Still holding a shaving. | A good curve left on that end.
+
+rule @haze
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say There's the farther bell through the white. | Sound has its own way past a shutter.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say One noise less would be a proper kindness. | Let the last note earn its quiet end.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Speak between the strokes and I'll have room to listen.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your voice is more welcome than a knocking creditor.
+dlg @3 resident.hub [here.time=night] : The price of a word has gone down with the volume. Speak softly.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : State the business without leaning on anything of mine.
+dlg @5 resident.job [self.job=none self.workplace] : I work at #self.workplace#. Soon as the pressure is right I prefer to let the fruit do the talking.
+dlg @6 resident.job : I manage the part where a little time can spare a great deal of effort.
+dlg @7 resident.bye : Keep your quiet hours out of the general account.
+
+graft resident.hub
+choice Why leave the wood moon almost finished? -> last_moon
+node last_moon
+say The sky changes an important letter's meaning from soon to now without consulting a soul. My bit of wood stays where I left the knife.
+choice Will more time make it more valuable? -> no_tender
+choice We can set the account aside. -> hub
+node no_tender
+say Perhaps to its carver, who put those minutes in. The pleasure of one small curve still costs me less than anything else in the pocket.
+choice I'll let you keep the last shaving. -> hub
+choice I hope the work goes easily. -> bye

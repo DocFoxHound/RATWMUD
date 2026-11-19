@@ -1,0 +1,263 @@
+mantle rm385
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_erland_plankwell
+title the coal on the hinge
+fits stage=adult|old
+prefers job=servant drive=ambitious
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=ambitious
+quirk keeps_a_coal_chip_for_marking_the_latch_that_squeaks
+likes warm_bread dancing new_boots summer_evenings
+dislikes bad_manners gulls
+fears a_call_from_an_empty_room a_key_turned_too_late
+hopes to_keep_a_house_in_perfect_quiet_order
+topics work +0.6 dreams +0.3 pastimes +0.3 food +0.2 gossip -0.4
+styles comfort=practical gossip=discreet refuse=civil tease=none
+marks oath saying
+persona #self.first# leaves a fine coal mark beside any hinge that squeaks, arrives quietly in well-kept boots, and has ambitions that never get written on the duty slate.
+
+words
+oath! = Bright brass black coal | Hinge in my pocket
+saying! = Mark the fault while it speaks | Let the good hinge keep its own counsel
+coalpoint = my pointed coal chip | a dark wedge of coal
+smudge = a crescent of soot | a narrow black stroke
+inneredge = the door's hidden edge | the jamb beside the hinge
+polishrag = a soft cloth | a folded chamois
+freshheel = the warm heel of bread | a piece from the oven end
+turnshoe = a pair with polished toes | my good dancing shoes
+guestmark = a chalk cross | a temporary little mark
+saltbird = a gull perched by the glass | a white gull
+lampfoot = the foot of a lamp | a lamp base
+twobars = two bars of a dance | one quiet double turn
+longsun = summer light lasting on stone | a pale late glow
+
+any
+opinion houses against 1 : Serving a great House and belonging to one are two distinct arrangements.
+opinion dole against 1 : I'd rather earn a loaf with my hands if there's a day's work to be had.
+opinion watch against 1 : A patrol looking in at a lamp cannot see who trimmed it. I wish patrols remembered the limits of windows.
+opinion merchants against 1 : A little extra charge for a little extra wrapping has a way of becoming permanent.
+opinion strangers mixed 0 : One may open a door a convenient distance. The width is a matter of judgement.
+opinion festivals for 1 : Two clean shoes on a good floor make excellent use of a feast.
+opinion city for 1 : Ridgemere has doors enough for someone willing to consider the next one.
+
+grown
+line greet : Enter the conversation at your convenience.
+line greet [pair.band=strangers] : There is space in the doorway to introduce yourself.
+line greet [here.time=dawn] : Morning. The brass shows rather well.
+line greet [here.time=dusk|night] : Evening. The hinges have fallen quiet.
+line greet.return : I heard the greeting before the latch.
+line greet.return [pair.band=friends|family] : A known voice is generally worth opening for.
+line greet.return [self.working=yes] : Come a little towards the lamp while my hands are occupied.
+line greet.return [here.time=dusk|night] : The hour favours a quiet exchange.
+line kin.open [pair.kin!=no] : Kin may use the convenient entrance.
+line again.open : I retained your place in the order of things.
+line hail [pair.band=friends] : Here in the patch of polished light!
+line farewell : Leave the door in a kindly humour.
+line farewell.return : And go with a comfortable tread.
+line react.news : I have an ear available for your report.
+line react.news.new : Nobody had brought that to this particular ear.
+line react.news.known : An earlier caller left much the same account.
+line react.news.doubt : Some part of the story has been polished too vigorously.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would close a door softly on such news.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is an arrival worth a little extra light.
+line ask.how : Does the day open easily for you?
+line answer.how : Everything is running on a fairly quiet hinge.
+line thank : You have left the awkward part easier to manage.
+line deflect_thanks : A small adjustment can appear very generous.
+line sympathise : There is privacy here if it would serve.
+line reassure : You may leave a little space before answering.
+line decline : I must keep that hour available for an earlier engagement.
+line accept_decline : An answer freely given saves us both a wasted visit.
+line preclose : One last obligation waits behind my own door.
+line accept_preclose : I shall release you before either of us grows late.
+
+scene hinge_mark
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : A hinge tells its fault just once sometimes. | #coalpoint.capitalize# does the work of a page.
+b : You remember the sound? | Where do you write?
+a : I remember the little black crescent I put beside it. | On #inneredge#. A caller sees only the good manners of the door.
+
+scene coal_before
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I put a fault right before the room fills up with advice. | An empty dining room has a rather precise music.
+b : Does advice do harm? | What can disturb it?
+a : It does lengthen the interval before anyone fetches oil. | A chair that rocks on the floor. I like to know the chair by sight.
+
+scene future_keys
+when topic=dreams
+does confide / react.self / assess
+a : I'd like to hold a set of keys that no wolf hears coming. | I would like an evening to end in good order at my own direction.
+b : You'd line the ring with cloth? | You're ambitious.
+a : Better. I'd plan the whole round before choosing the keys. | I mentioned an evening. My ambitions are a private concern.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Pass #freshheel# with nothing laid on it. | I like a loaf at the moment its crust starts ticking.
+b : No butter? | Bread ticks?
+a : When it's that warm the crumb supplies the luxury. | Faintly, like the last guests getting their coats.
+
+scene dance_step
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : A quiet heel can dance an unexpectedly lively figure. | I think #twobars# can redeem half a dull evening.
+b : What marks the time? | And the other half?
+a : The toes. A heel needs less attention than a dancing master supposes. | A tactful departure.
+
+scene book_bright
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #turnshoe.capitalize# can make an old coat look deliberate. | Boots newly blacked ought to rest before stepping out.
+b : Does it work the other way? | Do they tire?
+a : Fine coats do little to explain a hole in a shoe. | The polish marks a carpet. I should be blamed for tiring the carpet.
+
+scene summer_stone
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : In summer an outside stair holds its warmth longer than the air does. | #longsun.capitalize# lends ordinary brass an expensive look.
+b : You sit there? | And after dark?
+a : Just long enough for the last glow to reach my ankles. | After dark the polishing is my own affair.
+
+scene gull_tray
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull sees very little difference between a tray and a supper invitation. | I reserve a cool look for a gull near any sill.
+b : How do you explain? | Has it the desired effect?
+a : I put a cloth over the tray and omit the explanations. | The gull remains unmoved. My manners remain intact.
+
+scene good_manners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / react.self / assess
+a : Knocking with the knob half turned is a curious understanding of courtesy. | A voice pitched to the back of a room needlessly involves the front.
+b : Impatient callers? | What if the room is noisy?
+a : Callers who would prefer the reply already decided. | Step nearer to the wolf whose ear you actually require.
+
+scene heights_order
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : In the Heights even a gate sounds rather important. | From above a row of roofs looks most beautifully settled.
+b : How can a gate manage that? | Not so inside?
+a : Brass well fixed to costly wood. It still needs its hinges seen to. | Somebody must keep each roof's appearance from being a fiction.
+
+scene family_silence
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd take #self.spouse# to a dance where nobody needed me to see to the lamps. | For my #self.spouse_word# I would keep the warmest slice.
+b : Would you still inspect the lamps? | As a courtesy?
+a : Once. I should then put the light to better use. | A habit which gives me rather more pleasure than courtesy usually does.
+
+scene scarce_wage
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : It costs little to polish a buckle one already owns. | Sound stitching deserves more credit when coin runs short.
+b : Does it help in lean times? | More than fine cloth?
+a : A little polish can get a paw past a doubtful first impression. | Fine cloth with an open seam lacks a considerable virtue.
+
+scene road_caller
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A cart behind time imposes on the gate quite as much as the kitchen. | I'd leave room on a shelf for the late load.
+b : Who waits there? | Even after dusk?
+a : Anybody anxious about a delivery. One paw can wear a knob bright. | Room costs little if it has already been cleared.
+
+scene polite_arrival
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I like an introduction somewhere neither party owns the door. | Offer a stranger the convenient chair.
+b : What difference can that make? | The grand one?
+a : You can tell whether the wolf likes the company or merely desires entrance. | Grand chairs may not be comfortable. I meant what I said.
+
+scene bright_new
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. I received it by way of #world.news_from#. | My account is from #world.news_from#: #world.news#.
+b : Has it changed in the telling? | Nothing from inside the doors?
+a : Not in my keeping. I am careful about returning what is entrusted. | That is quite enough business for one open door.
+
+scene other_side
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I have heard the talk in passing. It passed on without acquiring my assistance. | A private account went by with a familiar name attached.
+b : Was it about the household? | Did you mark it down?
+a : The pleasure of discretion lies in leaving that unanswered. | My coal is reserved for hinges. They do not take offence.
+
+scene no_key
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Once I spent an hour studying a lock that belonged to no door. | I once thought possession of a key settled who might enter.
+b : What was its purpose? | Now you doubt it?
+a : A drawer had come apart. A little observation before considerable speculation would have helped. | There is usually a second door. Good houses are full of surprises.
+
+scene small_change
+when topic=dreams|home
+does tell.self / ask.detail / answer.detail
+a : Give me a room whose door stays exactly where I leave it. | A single shelf high enough for a private letter would serve me.
+b : Open or shut? | Without a lock?
+a : Either. I only ask that the choice stay mine. | Height discourages curiosity almost as effectively. Almost.
+
+story pocket_cloud [topic=memories]
+  : I let a very clean chair wear my jacket, quite forgetting its pocketful of coal.
+  : The chair delivered me back a broad black crescent when I stood up.
+  b : Who had to clean it?
+  : A certain wolf with entirely too much interest in coal. The chair was beyond reproach.
+
+story two_mirrors [topic=pastimes|memories]
+  : I practised a dance in front of two bright serving trays propped on a shelf.
+  : One warped tray bent my knee so far I feared for my balance.
+  b : Did you stop practising?
+  : I changed partners. The unbent tray was a kinder judge.
+
+story letter_dry [topic=travel|memories]
+  : I once wrapped a blank sheet for a journey more carefully than my lunch.
+  : By the time I arrived the bread was wet but the sheet spotless.
+  b : What did you write?
+  : A timely reminder to put lunch inside the next wrapping.
+
+rule @rub_hinge
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say A mark small enough for the jamb, large enough for my memory.
+
+rule @step_late
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Enough daylight on the toe to show the polish.
+
+rule @gull_lid
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Cover the plate before the sky makes a claim.
+
+rule @quiet_visit
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The latch is the final caller this evening.
+
+dlg resident.hub : There is a moment free before the next little necessity.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Your previous call left a favourable impression.
+dlg resident.hub [here.time=night] : Within earshot, if you please. We can spare the night a disturbance.
+dlg resident.hub [pair.disposition=hostile|wary] : Stand there and the room will hear only what is needed.
+dlg resident.job [self.job=servant] : My time is spent #self.trade_words#. I preserve the privacy which the work requires.
+dlg resident.job : The most satisfactory work is seldom noticed at the instant of completion.
+dlg resident.news [world.news] : Here is what reached my door from #world.news_from#: #world.news#.
+dlg resident.gossip [here.gossip=yes] : Private talk travels far too readily in a caller's ears. I prefer to give it a quiet room.
+dlg resident.bye : I hope your own latch gives no trouble when you arrive.
+
+graft resident.hub
+choice Why hide the mark inside the jamb? -> inner_mark
+node inner_mark
+say A mark on the front would point out the fault to every caller. I wish to point it out to the one person carrying the oil.
+choice Does the coal rub off? -> oil_mark
+choice That is neatly arranged. -> hub
+node oil_mark
+say Certainly. A fault put right deserves a clean jamb to its credit. It is agreeable when very little evidence of one's industry remains.
+choice I shall listen for the difference. -> hub
+choice I will leave the hinge in peace. -> bye

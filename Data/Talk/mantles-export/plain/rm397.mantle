@@ -1,0 +1,263 @@
+mantle rm397
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_linden_sedgeditch
+title the missing bench
+fits stage=adult|old
+prefers job=sailor temper=calm
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk counts_empty_places_first_and_sums_the_moving_ones_later
+likes crisp_apples long_walks market_bustle first_snow
+dislikes flies salt_wind
+fears a_head_count_that_misses_one_quiet_passenger
+hopes a_walk_with_nothing_left_to_count
+topics ships +0.5 travel +0.5 pastimes +0.4 animals -0.2
+styles comfort=room gossip=quiet refuse=patient tease=dry
+marks oath saying
+persona #self.first# counts empty places under the breath before counting anything in motion and regards a clear patch of bench as an unusually reliable witness.
+
+words
+oath! = A bench adrift | Five spare elbows
+saying! = Count the quiet gap twice | An empty seat stays counted
+place = the spare place | a broad gap
+thwart = a boat bench | the cross seat
+cord = a short painter | the mooring line
+step = a low footboard | the boarding step
+loadbag = a soft bundle | the lashed sack
+apple = a crisp little apple | one sharp green apple
+score = my quiet score | the muttered count
+heel = the waiting heel | a wet heelprint
+shelter = the lee seat | a corner beyond the draught
+snowband = a pale rim | a cap of first snow
+fly = a brisk nuisance | a harrying fly
+turn = the outer circuit | my unhurried route
+
+any
+opinion houses mixed 0 : There's no advantage in putting a House crest on a bench. It still only takes so many backsides.
+opinion merchants for 1 : I enjoy the sound of a market in full business. Every seller has a claim and sometimes one even has an apple to match.
+opinion church mixed 0 : A little room left on a bench does quiet credit to the first arrival.
+opinion dole for 1 : A share laid out for a latecomer costs rather less than an evening explaining why none remains.
+opinion road for 2 : After a stretch afloat a long walk offers the considerable pleasure of ground that stays where it was put.
+opinion watch mixed 0 : I'd go for a count of actual empty seats before asking several excited witnesses how many sailed.
+
+grown
+line greet : Here's a free place. Hello to you. | Welcome. You've saved me counting that gap.
+line greet [pair.band=strangers] : I don't recall that face among the seated yet. | First meeting. Have yourself a bit of room.
+line greet [here.time=dawn] : Morning. The unoccupied places are still in the majority. | Early feet and an agreeable amount of elbow room.
+line greet.return : Heard you. I was just finishing with the gaps. | Hello returned without changing the total.
+line greet.return [pair.band=friends|family] : A familiar face fills the place rather nicely. | You've come within counting distance again.
+line greet.return [here.time=night] : Late hello. I do a fair amount by ear now. | Evening has thinned the company out considerably.
+line again.open : I seem to have accounted for you twice now. | We've met again without the space being measurably larger.
+line hail [pair.band=friends] : There's a place with your name very conspicuously absent. | Come stand where the moving bits look interesting.
+line farewell : Walk comfortably while the ground permits it. | May a dry seat await you when the travelling's done.
+line farewell.return : I'll mark the space empty when you've gone. | Take a comfortable piece of quiet along.
+line react.news : I've interrupted a much less interesting count for your news. | Let the tale arrive in its own good time.
+line react.news.new : That didn't appear in my earlier count. | Entirely new company for my thoughts.
+line react.news.known : I've counted those particulars once before. | Yes. It occupies about the same space as the earlier report.
+line react.news.doubt : There's an empty place halfway through your account. | I can count several claims and rather fewer facts.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Leave your things here and sit a good while. | Heavy hearing. No reason for you to take it straight off again.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's news worth making extra room for. | I'd give that a very satisfactory place on today's count.
+line ask.how : How's the room about you today? | Managed to get a comfortable seat anywhere?
+line answer.how : Still afloat this end, broadly speaking. | My count is modest and my appetite sound.
+line decline : I'd be pencilling in a place that's already promised elsewhere. | I can't see enough clear space in my day to do that properly.
+line accept_decline : An empty place is admirably easy to record. | Fair. I'll leave the space quite clear.
+line preclose : I should move on before sitting becomes my whole occupation. | I'd like to walk while there's a little room ahead.
+line accept_preclose : Go on. No fare due for the seat. | Your place will probably continue to exist without you.
+line thank : You saved me from counting everybody a third time. Thanks. | I value a helping paw that knows where it will fit.
+line deflect_thanks : I had room enough to shift along. | Didn't alter the count by more than a comfortable fraction.
+line sympathise : This place remains yours till you feel ready to move. | No need to explain why you'd like to sit quietly.
+line reassure : Let's count what we have left before dining on worry. | A little breathing space can often be found sideways.
+line ack : I see how that total came about. | Yes. The spare place agrees with you.
+line give.advice : Count the still things before the lively ones. | Leave a bit of bench unoccupied till the last bundle's aboard.
+
+scene quietgap
+when topic=ships self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : An empty bench will sit admirably still for a count.
+b : Not when the boat rolls. | Why count an empty bit?
+a : Quite. But it won't generally take an interest in another bench halfway through. | To check against the number aboard. Two counts approach the same business from opposite ends.
+
+scene bagsit
+when topic=work self.job=sailor self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A parcel sitting quietly on a seat can lead to an alarming surplus of passengers on paper.
+b : Surely you'd notice the parcel? | Does it count as empty or occupied?
+a : I should hope so. I look for the feet below before declaring a cargo sack a tourist. | Occupied space with no passenger. Two columns prevent a great deal of confusion.
+
+scene edgefloat
+when topic=ships self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I prefer an empty finger's width between the last seated wolf and an edge. | My idea of a full boat allows a little movement without an argument.
+b : Would you leave another passenger behind? | How much movement?
+a : I'd wait or shift things honestly. Claiming an imaginary seat helps nobody travel. | Enough to turn a shoulder without bringing the whole neighbourhood along.
+
+scene walkshore
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : On foot I enjoy a stationary bank and the satisfaction of providing my own movement.
+b : Seems the same sort of movement. | Ever wish for a ride back?
+a : My legs have a quite distinct opinion about the difference. | Often. Then I sit awhile and discover legs will vote differently after an apple.
+
+scene busyplace
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : At a busy market you can count the stalls by watching where all the gaps disappear.
+b : You actually enjoy the crush? | Looking for a bargain?
+a : I enjoy it best from a little outside the thick part. The bustle can do the hard labour. | A green apple and free entertainment. Some days the same stall provides both.
+
+scene crispapple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : An apple fresh enough to crack cleanly buys me a quiet interval.
+b : How long an interval? | Quiet with all that crunching?
+a : A bite, a chew and time to consider whether the present question requires an answer. | For conversation, yes. The apple may make its own remarks.
+
+scene saltface
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / ask.detail / answer.detail
+a : Salt wind gets far too grand an account in certain songs. | I approve of the sea right up to the bit that arrives on my nose.
+b : It sounds romantic. | Would you rather sail in still air?
+a : I can't hear romance through the sound of my eyes watering. | A breeze is useful. I'd take the propelling service without the extra seasoning.
+
+scene snowseats
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : Fresh snow declares every empty bench with admirable impartiality.
+b : Can you tell the duration of the vacancy? | Not everyone wants to sit in snow.
+a : My knowledge begins and ends with the snow. Since it fell, roughly. | That's a gap with a reasonably plain explanation. A dry cloth might adjust the answer.
+
+scene fliesroll
+when topic=animals self.dislikes=flies
+does tell.complaint / ask.detail / answer.detail
+a : I never count flies. One possesses all the inconvenience usually attributed to a dozen.
+b : Would knowing the number help? | What if there's only one?
+a : Only if I could enter the lot in a book and shut it on them. | Then it's a remarkably diligent specimen and I wish it a long career elsewhere.
+
+scene flowmarket
+when topic=prices
+does give.opinion / react.self / assess
+a : A gap where a fine crate of apples stood is information. It doesn't prove they were cheap.
+b : They all sold, didn't they? | What else would you check?
+a : Or went back on a cart. I saw the gap, not the money changing paws. | A buyer willing to share the price. The crate itself has become rather unavailable.
+
+scene welcomebank
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer offered a seat generally tells a clearer story about the road. | I keep a bench end open for a new arrival to choose an end.
+b : Which end would you choose? | Expecting a story in exchange?
+a : The sheltered one. An appeal that becomes rather obvious after a sea breeze. | No. That's part of what leaves the conversation so pleasant when it does arrive.
+
+scene quietfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to remind me the walk ought to go somewhere. | I can enjoy a long interval on a seat beside #self.friend#.
+b : Would you go too quickly? | How long's a long interval?
+a : Quite the reverse in an interesting market. I'd start counting all the gaps again. | Long enough for each of us to decide about another apple. I'm in no desperate hurry.
+
+scene housewhisper
+when topic=gossip
+does give.opinion / react.self / assess
+a : An unoccupied bench can keep several exceedingly grand secrets without effort.
+b : Do you mean a particular secret? | You could sit and tell me one.
+a : I mean the useful example set by the bench. | I could sit and join it in remaining quiet. That's what I have in mind.
+
+scene quietprayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : In my prayer after a crossing I remember the quiet passenger as carefully as the loud company.
+b : Can a passenger escape your count? | You pray for all aboard?
+a : On one count, certainly. I try to make sure the last look includes the easy-to-miss places. | It takes no extra weight aboard to wish every one of the party home in peace.
+
+scene leanferry
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Sparse company at a stall can hide a surprising number of empty purses at home.
+b : So you wouldn't judge a week's trade by the crowd? | Do you count the quiet gaps there too?
+a : Not without asking somebody who had been making actual sales. | I notice them. I'd need to hear the reasons before presuming to speak for an entire street.
+
+scene shelterdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My perfect evening ends with a seat to spare without any more arithmetic expected. | I'd like a walk that ends before my legs propose a vote on the route.
+b : Where's your ideal resting place? | Would you pick the short route?
+a : Where I'd have a crisp apple to eat and surf providing the music. | A different one. Familiar ground tends to include too many interesting things to inspect.
+
+scene drizzleland
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A light rain alters the market count considerably faster than the town population. | The number of occupied awnings goes up exactly when the uncovered benches go empty.
+b : Where does everybody shelter? | Does rain bother your calculations?
+a : Under the deepest overhangs. Somebody sells shelter very successfully without charging for it. | It simply adds a column for moving sideways at a brisk pace.
+
+scene latecart
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : An overdue wagon gives an excellent opportunity to observe the difference between empty space and free time.
+b : How so? | You can sit, can't you?
+a : An empty place in the yard and a day spent waiting aren't equally available for use. | Certainly. It's a borrowed seat when my mind remains harnessed to the missing wagon.
+
+grown
+
+story applecount [topic=food|memories]
+  : I bought several apples, counted them in my bag and ate one on the way home. When I counted again there was still the same number.
+  : Turned out the largest apple had been sitting in the bottom fold where I'd missed it.
+  b : A free apple, then?
+  : A paid apple and an entirely free lesson about folded cloth.
+
+story silentbench [topic=work|memories self.job=sailor]
+  : I once remarked on a passenger's remarkable patience while I finished a small count. A bundled coat never shifted an inch on the bench.
+  : No feet beneath. No ears above. An unusually economical traveller.
+  b : Did you charge the coat?
+  : I moved it onto a bundle. Its fare was more than adequately covered by the subsequent saving in seat space.
+
+story wrongwalk [topic=travel|memories]
+  : I went for a walk promising myself I wouldn't count anything. During my return I felt very pleased with how well I'd done.
+  : I caught myself counting the number of corners where I'd resisted temptation.
+  b : A successful outing anyway?
+  : Entirely. I went out on two legs and returned on the agreed number without having to recount them.
+
+rule @gap
+when concept=bark
+does aside
+cooldown 8h
+say Count the clear bit before it fills with somebody's hat. | One uncovered spot. That's a useful beginning.
+
+rule @work
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Bundles down where they won't acquire passenger status, please. | Look under that coat for a pair of feet before confirming the count.
+
+rule @apple
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say An excellent crack to that bite. No further commentary needed. | One apple for the walk and a spare in case the road proves interesting.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe this end first if you mean to sit. | The sheltered seat has become unexpectedly popular.
+
+dlg resident.hub : I've finished with the empty spaces and would gladly hear from one that's occupied.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your arrival always calls for a modest adjustment to my arithmetic.
+dlg resident.hub [here.time=night] : After dark I let footfalls to stand in temporarily for the view.
+dlg resident.hub [pair.disposition=wary|hostile] : Take the end of the bench if you mean to ask. The gap between us is free too.
+dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I'd give a spare seat a second look before promising it to anybody.
+dlg resident.job : My work generally improves when every empty place has been noticed.
+dlg resident.bye : I hope there's a dry bit of bench waiting beyond the last mile.
+
+graft resident.hub
+choice How can an empty seat help you count passengers? -> gapcount
+node gapcount
+say First count seats without any wolf in them, then account for the parcels. It's a check on the moving heads. One head may take a lively interest in three seats.
+free
+choice Does that always give the right answer? -> headagain
+choice I'll watch the parcels. -> hub
+node headagain
+say If both answers agree I take a last look. If they differ, I take two. The system has yet to produce an extra traveller merely because I wrote one down.
+choice I'll take the extra look. -> hub
+choice Goodbye from one occupied place. -> bye

@@ -1,0 +1,374 @@
+mantle rm396
+state ready
+dialect plain
+accent light broad
+tier full
+written_for cty_kell_reedwade
+title the skipper's unfinished plait
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes plum_tart knots sharp_knife misty_dawns
+dislikes waiting smoke
+fears losing_a_private_hope_to_public_bets
+hopes enough_saved_to_choose_in_quiet
+topics pastimes +0.6 travel +0.5 work +0.4 prices +0.2
+styles comfort=practical gossip=guarded refuse=plain tease=dry
+marks oath saying
+persona #self.first# runs a thumb across a flat three-strand plait, hums a marching air under the breath, and refuses to name the thing the saved coins might buy.
+words
+oath! = Fray my neat plait | Sink the spare cork
+saying! = A plait has two ends | Money can keep quiet
+flatwork = a flat plait | a three-strand band
+shorttail = the stubby end | a short grey tail
+seamknife = a narrow sharp blade | a knife with a blunt back
+tartbit = a sticky plum corner | a purple half-moon of pastry
+fogline = a lead-grey outline | a faint pale streak
+shorepin = a fixed shore mark | a bare rock point
+firstbeat = a low heel beat | a long marching note
+bagmouth = the mouth of a purse | a little leather opening
+linenrag = a strip of linen | a square of coarse cloth
+coinceil = a saved copper | a small brass coin
+smallcoil = a coil no wider than a paw | a close loop
+ropepath = the right-hand strand | the upper strand
+binder = a little whipping | a flat final binding
+woodcheck = a pale line in wood | a dark split in grain
+mistdrop = a bead of fine mist | a little hanging pearl
+waitingrail = a smooth low rail | a square elbow rest
+
+grown
+
+opinion merchants mixed 1 : A seller can quote a fair figure without also requesting command of my intentions.
+opinion road mixed 1 : A route looks quite different from the end where somebody's still expecting you.
+opinion strangers mixed 1 : A stranger gets plain directions. My purse doesn't get opened as part of the demonstration.
+opinion city mixed 1 : A city gets a great deal of credit for things that came in already made aboard boats.
+opinion dole for 2 : There should be some supper to land on after a whole day's weather has taken the expected one.
+opinion church for 1 : A quiet prayer needs no more room between my teeth than the first note of an old tune.
+opinion festivals mixed 1 : Give me just enough of the music to keep time. Somebody else can have the crush.
+opinion newcomers for 1 : Every experienced pair of hands once needed to see where the first strand went.
+line greet : Take the easy side. My pockets need no introduction.
+line greet [pair.band=strangers] : There's an unclaimed slice of bench you can see.
+line greet [here.time=dawn] : Morning. Sound carries well before the day gets its boots on.
+line greet.return : I've let the tune run on inside my head.
+line greet.return [self.working=yes] : Finishing this turn before my fingers can spare a nod.
+line greet.return [pair.band=friends|family] : A known step fits the old tune nicely.
+line again.open : We've come round to the same end of the coil.
+line kin.open [pair.kin!=no] : I've a bit more room set aside for a familiar shoulder.
+line hail [pair.band=friends] : Over here by the unfinished piece.
+line farewell : Go steady where the landing changes underfoot.
+line farewell.return : I hope you come in before the last note's done.
+line react.news : I'll see where the first strand of that came from.
+line react.news.known : I recognise the lay of those words already.
+line react.news.new : Another strand where I'd only counted two.
+line react.news.doubt : That account would pull crooked with a very small weight on it.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could take a turn at whatever needs doing for the hurt household.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's a tune I could hum with a lighter foot for that.
+line answer.how : A trifle worn in the joints. They still know the figure.
+line answer.how.busy [self.working=yes] : Working, with just enough spare time for a civil sentence.
+line ask.how : Is anything chafing where the day's work pulls?
+line decline : Those savings and their purpose both belong inside my private purse.
+line accept_decline : We'll leave that end loose and come away.
+line thank : You took the pull without tightening the wrong loop.
+line deflect_thanks : I had a thumb free at the necessary moment.
+line reassure : One strand at a time will let the whole thing loosen.
+line sympathise : You needn't hold the heavy end alone until it's sorted.
+line ack : I can follow the way that piece crosses.
+line preclose : The loose ends are beginning to outnumber my fingers.
+line accept_preclose : No need to keep my tune company on your account.
+line offer : I could hold it level while you find the proper end.
+line give.advice : See where the strand first crossed before you pull on anything.
+
+scene pastimes_1
+when topic=pastimes self.likes=knots
+does tell.self / ask.detail / answer.detail
+a : A flat plait will lie beside the skin without arguing at every step.
+b : Do the ends need an unusual knot? | Can you recover a missed crossing?
+a : Three strands kept level. The end knot's where a little argument tends to reappear. | Set it flat and see which strand hasn't had its turn. My fingers remember better than my tongue.
+
+scene work_1
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I hang a short length where a learner can practise without putting anything dear on the line.
+b : Why not start with a real load? | What do you want taught first?
+a : A mistake should only embarrass a paw at first. A full load would take a louder interest. | Letting the thing go again. There are a surprising number of ways to make two ropes hate each other permanently.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a shore mark that looks different when I've gone past it.
+b : Wouldn't a bright mark do? | What will mist let you see?
+a : Bright tells me where to look. A different silhouette tells me where I've got to. | I give the mark more room and move less quickly. Mist can make a very neat liar of a familiar rock.
+
+scene weather_1
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : A misty start leaves the far water undecided for a little while.
+b : Does a skipper like uncertainty? | How far out can you see?
+a : For admiring, yes. For giving orders I'll wait until there's a fact or two in view. | Far enough to know the limit of my sight. I try to keep that distance shorter than my claims.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : There's a resemblance between a well-crimped tart and a well-finished rope end.
+b : Should I pull on the tart? | Does the resemblance improve the taste?
+a : I'd consider that wilful waste of a good crimp. Break it across the soft middle. | It gives me the pleasure of admiring it twice before I eat the bit that proves me right.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I put a little money by without telling it what to call itself in company.
+b : Saving for a boat? | Why keep the object secret?
+a : A coin asked to confirm that would have to speak, which mine stubbornly decline to do. | I want the choice to be mine even if my mind changes while the purse is filling.
+
+scene work_2
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I pass a learner a crosswise plait with one error left in it.
+b : Should you show the right one first? | Do you point to the error?
+a : Side by side, yes. A hand remembers the difference in pull better than it remembers a speech about rightness. | Only after the fingers have gone looking. It takes separate skill just to see a problem clearly.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Fatigue turns the tune under my breath slower before it changes what I'm doing.
+b : Do you sing louder to stay awake? | When do you call a halt?
+a : I listen instead for the drag and put the exacting job somewhere safe before I forget why I meant to. | When the marching tune becomes one long shuffling foot. My crew of fingers has voted.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I hum a marching air with no particular desire to march after anybody.
+b : What do you like about it? | Remember much of the verse?
+a : A reliable beat. The feet can keep it while the mind goes where it pleases. | A few. The tune generally gets better treatment without my help above a whisper.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I roll this bit of plait flat before putting it in a drawer.
+b : Can't you let a drawer have some disorder? | What if it won't stay flat?
+a : Of course. Most of the rest have earned the privilege through long service. | Then the error's inside the work. A drawer lid won't put manners into a twisted strand.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Waiting turns pleasant when my fingers have three loose ends of equal length.
+b : And if they haven't? | What are you making while you wait?
+a : Shorten the longest or spend a few very solemn minutes working out a reason not to. | The wait smaller. Selling the resulting bit of string would be an unexpected benefit.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can pray in the gap where an old marching song expects its loudest note.
+b : Isn't that peculiar timing? | What do you say?
+a : It leaves a memorable space. My thoughts might wander otherwise. | What belongs there that day. A prayer doesn't have to be printed on the outside of my teeth.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A gull on a post can appear extraordinarily important when the rest of the coast is in mist.
+b : Would you steer by the gull? | What gives the truth away?
+a : Only if I fancied a landmark free to leave on personal business. | The coast doesn't scratch its nose with a foot. At least I have yet to see such a coastline.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend can ask about my savings once without making it an evening's work.
+b : How will a friend know to stop? | Would you lend coin to a friend?
+a : I'll say the reason is private, just as I would to a stranger. A friend generally believes I mean it. | Out of another pocket if I can. Lending the hope is a different agreement altogether.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a pinched week I may set by one half of what I'd planned.
+b : Does the hope shrink too? | Would you take from the purse to eat?
+a : No. The calendar lengthens. I can manage that with a quieter tune and an occasional grumble. | Certainly. My future plans depend on the continued existence of an interested belly.
+
+scene travel_2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A sharp edge at the right time is kinder to a tired rope than sawing at it with bad steel.
+b : Why not mend every rope? | Who keeps the blade?
+a : Sometimes the chafed part needs to go so both sound ends can take a decent new binding. | Whoever has both the task and a safe place to put it down afterwards. I like those two together.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Smoke and sea mist part company as soon as I take a breath.
+b : Which do you trust? | How far away can you tell?
+a : Mist to be itself and smoke to be somebody's fire. Neither one offers much beyond its edges. | I can't always. One fine reason to give a confident explanation a moment's more travel.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I keep my slice from the side with the darker purple mark. | A plum tart that leaks in one spot is generally advertising the best bite.
+b : Isn't the pastry spoilt there?
+a : If it's sodden all through, yes. One little purple streak is a legitimate invitation. | Only if you're measuring pastry in terms of how well it would hold lamp oil.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember which hand first made a knot feel easy, without remembering the speech that came with it.
+b : Can you repeat the lesson? | What does your hand remember?
+a : Slowly. My learning depended rather heavily on being able to stop the teacher's fingers halfway. | The weight of the free end under the nail. Once I'd felt that, the rope seemed to explain itself.
+
+scene work_3
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I hum a different beat for mending than for getting a load away.
+b : Do you choose the tune? | Can others hear it?
+a : The task generally picks from the shelf. A hurry has no business choosing a tune for a repair. | If anybody hears it from shore I'm exerting myself far beyond my wishes.
+
+scene health_2
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Sleepy thumbs and sharp blades ought to spend separate evenings.
+b : Do you put work off? | Why not drink something strong?
+a : A cut made tomorrow with steady eyes will take less time overall than patching the damage tonight. | I'd prefer all ten fingers to be making their own decisions.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A little saved coin can make a loud noise in an otherwise empty pocket.
+b : Afraid it will be heard? | Do you wrap your coins?
+a : More weary of explaining than afraid. A bit of cloth can save a great many clever remarks. | The savings, yes. A coin bound on an errand may ring out its ambitions freely.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A meal tastes better after someone has shown me a trick I didn't know.
+b : Even if it proves you wrong? | What would you offer to teach back?
+a : Especially. Taking one's pride down a notch can improve the appetite. | A flat plait or a neat finish. Eating the tart comes quite naturally without a demonstration.
+
+scene day_2
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I hate being kept waiting on a decision already made. | An hour awaiting clear water costs less temper than a minute waiting for an answer somebody knows.
+b : Would you demand an answer?
+a : I'd ask if the decision was made. A quiet yes saves both parties the exhibition of my patience. | If it concerns the safety of a crew, plainly. If it concerns a price, I've feet to walk elsewhere.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I tie my purse with a fussy little tuck on dull days. | An awkward purse string has prevented me making some very convenient purchases.
+b : On purpose?
+a : Mainly for the pleasure of undoing it. I don't want the days getting all their interest from the coin inside. | The first time was an accident. The second knot was a deliberate intervention on behalf of my hope.
+
+scene travel_3
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A good landing has some way to climb out with stiff legs and a wet sleeve.
+b : What else would you put there? | Do you mind a rough view?
+a : A clear spot where another traveller can wait without pressing down on the first pair of hands. | If I can land safely, I'll let the view attend to its own grooming.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd teach a new arrival one simple knot worth remembering rather than impress anyone with seven.
+b : Which one? | What if the first try fails?
+a : The one that will hold the newcomer's own bundle and can be untied with cold fingertips. | Take it apart. The rope is a patient audience if I resist explaining its entire family history.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The tale come ashore is that #topic.subject# #topic.claim#.
+b : Is it holding together? | Would you send it back out?
+a : Under its own weight, perhaps. I wouldn't hang a reputation from it just yet. | I would first want to see where the teller has joined a guess onto the fact.
+
+story secret [topic=memories]
+  : I put a coin away in a rag and forgot which rag I'd used.
+  : On washday four little parcels sat in a row looking equally prosperous.
+  b : Did you open them all?
+  : I weighed them on my palm and went straight to the heavy one. It was a knot of old sinkers. I've since improved my bookkeeping.
+
+story plait [topic=pastimes]
+  : I made a long neat plait out of three scraps and held it up with some pride.
+  : I'd woven the middle strand straight through a buttonhole on my coat.
+  b : Did you have to cut it free?
+  : I wore my handiwork home. Nobody asked to buy it in that particular arrangement.
+
+story whistle [topic=work]
+  : I tried giving the marching tune a whistle instead of a hum while my hands were busy.
+  : The final note went astonishingly high just as I leaned over a board.
+  b : Did it startle you?
+  : My pocket had caught on a nail. The tune had acquired one extremely enthusiastic wind instrument.
+
+story tarts [topic=food]
+  : I used a flat strand to tie two little tart boxes together for a walk.
+  : The knot travelled less well than the pastry and both boxes arrived in one rather intimate heap.
+  b : Were the tarts ruined?
+  : A sweet success with the forks. I only had to give up my intention of presenting them as separate gifts.
+
+story distant [topic=weather]
+  : A point in the mist once looked so exactly like a familiar high post that I almost greeted it by name.
+  : Then it began to bob very slowly sideways.
+  b : A boat?
+  : A twig a few lengths from my foot. A most profitable reminder that fog leaves distance off the account.
+
+rule @plait
+when concept=bark
+does aside
+cooldown 8h
+say Centre strand over and let the shorter end breathe. | Nothing clever needed till the ends ask to be finished.
+
+rule @mist
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say Keep one certain point inside the grey. | No hurry to name a hull through that veil.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A marching tune suits the waking fingers. | Good hour for a quiet count of sound strands.
+
+rule @trade
+when concept=bark self.job=sailor
+does aside
+cooldown 8h
+say Give the loaded end room before handling the slack. | A firm landing is worth a little extra circuit.
+
+rule @teach
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Let the learner feel which turn is pulling crooked. | Nobody learns much by watching my knuckles go fast.
+
+rule @coin
+when concept=bark
+does aside
+cooldown 8h
+say Leave the pocket quiet a little longer. | A private purchase needn't name itself in advance.
+dlg resident.hub : I can keep one ear open while my fingers plait.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your particular step needs no introduction.
+dlg resident.hub [pair.disposition=hostile|wary] : Speak to the matter and keep the purse out of it.
+dlg resident.hub [here.time=dawn] : Soft voices carry well before the wind starts moving.
+dlg resident.job [self.job=sailor] : At #self.workplace# I prefer to test the loose end before anybody relies on the tight one.
+dlg resident.job : I do well with work that gives a steady pair of fingers a reason for showing up.
+dlg resident.news [world.news] : These words held together as far as this bench. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The strand I've heard says #topic.subject# #topic.claim#. I wouldn't call the whole rope tested.
+dlg resident.bye : Go out with a sound loop and enough slack for the turn.
+dlg master.work : Hands learn by touching the mistake and undoing it. A perfect piece kept behind glass will teach you remarkably little.
+dlg master.wages : No wages for learning. Working here beside me speeds your learning threefold. The pieces you produce are yours for selling.
+dlg master.bye : Loosen the practice knot before your fingers grow tired of it.
+
+graft resident.hub
+choice What's the plait for? -> plait_purpose
+node plait_purpose
+say To keep my fingers moving in a pattern I can trust while I think about a different one. It might make a fine purse tie in due time.
+choice What will the purse buy? -> plait_private
+choice I'll stay with the plait. -> hub
+node plait_private
+say There you have jumped from inspecting the rope to demanding the ship's cargo. I'll gladly show you the first crossing again.
+choice I'll stay with the plait. -> hub
+
+graft master.learn
+choice Can you show me where a knot went wrong? -> plait_wrong
+node plait_wrong
+say Lay it on something level. Move the free end a very little, and watch which turn grows tight instead of slack.
+choice What should I move first? -> plait_slack
+choice I'll try the free part. -> learn
+node plait_slack
+say The part still willing to budge. A battle with the tightest turn usually provides a very expensive lesson about fingernails.
+choice I'll try the free part. -> learn

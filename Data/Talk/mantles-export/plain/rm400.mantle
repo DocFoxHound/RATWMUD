@@ -1,0 +1,386 @@
+mantle rm400
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_karin_thornbury
+title the double harbour
+fits stage=young|adolescent|adult|old
+prefers warmth=warm talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk draws_each_ship_together_with_its_inverted_reflection
+likes oatcakes evening_line festival_bells first_warm_day
+dislikes waiting wet_floors
+fears a_lost_reflection a_slippery_step_in_a_hurry
+hopes an_album_of_the_evening_harbour warm_boards_beneath_a_fishing_line
+topics land +0.4 pastimes +0.5 travel +0.3
+styles comfort=company gossip=plain refuse=courteous tease=none
+marks oath saying
+persona #self.first# sketches a ship and its reflection on either side of a fold and speaks with particular affection for the inverted harbour under the evening light.
+
+words
+oath! = Mast through the margin | Ripple in my ink
+saying! = Give the water its own picture | The lower mast belongs to the breeze
+waterpage = the lower page | my reflected harbour
+skyline = my upright drawing | the upper half of the page
+maststroke = a narrow rising line | one dark mast stroke
+reflection = a wandering stroke below | a wavering dark stripe
+bluebook = my folded paper book | a leaf pressed in blue cloth
+oatquarter = a little oatcake quarter | the buttered corner
+linefloat = a painted fishing float | a speckled bit of cork
+stemmark = a charcoal fleck | a very short pencil stroke
+shutterlight = the last oblong of light | a bright strip on the water
+newgrass = the first green tip | a sheltered blade of grass
+
+any
+opinion city for 1 : I know some streets by seeing their windows in the water. How generous of a home to offer a second view.
+opinion festivals for 1 : A festival bell makes the listeners all face one way for a moment. I'd gladly keep that little part of the occasion.
+opinion houses for 2 : A good harbour needs years of work, and any House that funds the work deserves a clear line in the record.
+opinion dole for 1 : Sometimes a warm meal is the difference between a long cold afternoon and a life one can take an interest in again.
+opinion newcomers for 1 : A visitor who has seen the same ship somewhere else can give me a whole other page of harbour.
+
+grown
+
+young
+line greet : My upside-down boat can take your reflection aboard.
+line greet.return : Hello up here and hello down in the water.
+line farewell.return : I'll mind the little float for you.
+line react.news : Tell me before the water shakes all the pictures up.
+
+grown
+line greet : Come where the reflected light is comfortable.
+line greet.return : A greeting that reaches both halves of the little harbour.
+line farewell.return : I'll close the book once you're on your way.
+line react.news : Let me compare that account against the observed details.
+line decline : A private impression belongs in a closed album.
+line thank : You've kept a clear space for something easily overlooked.
+
+adolescent
+line greet : I've left a little space clear beside my book.
+line greet [pair.band=strangers] : Welcome. My sketch can wait in the book.
+line greet [here.time=dawn] : A pale light to meet in. I rather like it.
+line greet [here.time=dusk|night] : Your outline still shows against the fading light.
+line greet [self.working=yes] : My hands are occupied but your words are very welcome.
+line kin.open [pair.kin!=no] : Come and share the double view that I keep for us.
+line again.open : Our routes have made a pleasing little double stroke.
+line greet.return : Thank you. That little greeting crossed the water rather well.
+line greet.return [pair.band=friends|family] : I should know that voice without looking up.
+line greet.return [self.working=yes] : I heard. I shall keep a finger on this page.
+line greet.return [here.time=dusk|night] : A soft answer suits the hour rather well.
+line farewell : I hope a clear patch of water meets you on the way.
+line farewell.return : I can wait and put in the last reflection.
+line react.news : Would you give me the observation as you first received it?
+line react.news.new : A vessel I haven't seen in this particular light.
+line react.news.known : I had an earlier view of that matter.
+line react.news.doubt : Was the original sight a clear one?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A little quiet company from outside the unhappy circle might ease an hour.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a second bright line under that good account.
+line ask.how : Is there something you'd like a little company for today?
+line answer.how : Both halves of the harbour are tolerably peaceful.
+line sympathise : Losing a familiar shape from every day leaves such a gap.
+line reassure : We can stand here until the surface has quite settled.
+line decline : I can't promise another wolf's time along with my own.
+line accept_decline : Of course. I'll let that question rest quietly.
+line thank : You've been thoughtful about a very small concern of mine.
+line deflect_thanks : Give the view a proper look when you have time.
+line preclose : The lower masts will scarcely wait for me much longer.
+line accept_preclose : I'll keep the edge of the page free.
+line ack : Quite clear.
+
+adolescent
+
+scene double
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put a ship upright on one page and its reflection on the other.
+b : Couldn't you make one drawing and fold it? | Do the two always match?
+a : Then I'd miss a lovely piece of water which has had an entirely different idea of the mast. | At first sight, perhaps. Looking at the lower one a moment longer gives it a life of its own.
+
+scene eveningline
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : My fishing float has a little eye painted on each side.
+b : So the fish can see it? | Do the eyes help you fish?
+a : So I'll see a wink when the light catches one side. I doubt the fish care for my drawing. | If the dark eye vanishes altogether I know the float has turned. That's quite enough assistance.
+
+scene oatmeal
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I leave butter on the upper edge of my oatcake, like a small bright sail.
+b : Does the butter stay there? | Could you make the hull as well?
+a : Not once I've set the cake beside a warm cup. Then I have a particularly delicious shipwreck. | The cake itself does very well. I'd like to eat it before quite so much building is necessary.
+
+scene firstwarm
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : When spring first brings real warmth I lift my sketchbook and try the boards with my palm.
+b : Why feel them? | Is the surface warm already?
+a : I'd like to know that spring has reached the boards and not merely to my face. | Sometimes only a very little. I don't measure the day in large quantities.
+
+scene footing
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : My sketchbook cover holds a dry cloth.
+b : For the ink? | Surely the boards might be wetter than one cloth can help?
+a : For the bit of floor where I'll sit. It is much easier to draw a still vessel while one sits securely. | Often. Then I accept that today the harbour ought to be admired standing.
+
+scene waittime
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : If there's a delay I'd appreciate an estimate of the ripples I have time to draw before it ends.
+b : Can anybody estimate that? | Is drawing a pleasant way to wait?
+a : Not very exactly. But a short honest estimate helps more than an assurance of every instant being the last. | Yes, once I have decided I may open my book without hurrying to close it again.
+
+scene bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : A distant bell can make the sounds nearest the water stand out clearly.
+b : Wouldn't the bell drown those small noises? | Which sounds do you mean?
+a : For the first stroke. After that there's a gap when every ear is listening. | Water in a hollow under the landing, the pull of a wet line coming in. Little important things.
+
+scene fatherside
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd show my newest page to #self.father# while the ship is still in view.
+b : To compare the shapes? | Would the picture do on its own?
+a : Yes, but also to see how little time the lower image ever stays as I saw it. | I hope so. An ordinary page ought to preserve a little pleasure after the water has finished.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I draw a particularly hard word twice on a slate.
+b : Facing both ways? | How does repetition help?
+a : The second time I say it quietly and let the word face the proper way. Far harder than making it look attractive in reverse. | Good strokes are easier to remember than a picture of a whole page of untidy guesses.
+
+scene highview
+when topic=land self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : From the Heights a vessel seems a very small item in a large landscape.
+b : Is that a good view for drawing ships? | Is it the same ship when you're lower down?
+a : Very good for learning the scale of the whole water. For the vessel itself, I like to go down as far as I may. | Of course. But from down near the surface I can see where the lower ship trembles, and that is half my subject.
+
+scene quietvisitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer might recognise a boat by some detail invisible from shore here.
+b : What would you ask about? | Would you take another wolf's word?
+a : The figure at the bow, if there is one. My page generally has to make do with a dark mark. | As a note in the margin about what a visitor remembered. I'd never put a borrowed sight down as my own.
+
+scene thinwake
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A narrow wake will cut an inverted mast into two fine dark lines.
+b : Does it need a second mast in the upper drawing? | Can you catch the shape quickly enough?
+a : No. That's exactly why I keep the two sides separate. | I set one end down and leave space. If I've missed the lower tip, a little bare paper is the honest finish.
+
+scene tasteprices
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I'd rather spend a few extra coins on good firm paper than watch a day's work bleed through the back.
+b : Does the paper cost much? | Could you use the cheaper kind?
+a : Enough to remember that it is a choice I am fortunate to have. | For charcoal, certainly. I keep it dry with an old piece of cloth and use the good stuff for coloured marks.
+
+scene falsevoyage
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I won't invent a voyage for a ship just because its bow's turned outwards.
+b : Would it make a better tale? | Isn't that the way out?
+a : Perhaps. I'd be glad to draw a little tale and mark it as such, elsewhere on the page. | For the bow, yes. The vessel might only be waiting for a berth to clear.
+
+scene cloudbank
+when topic=weather here.weather=overcast
+does tell.self / ask.detail / answer.detail
+a : An overcast sky leaves the skyline almost the colour of an unmarked page.
+b : Where can you draw the horizon? | Do you put clouds on the lower page?
+a : I wait for a darker bit of water below it. A horizon is much easier to see with someone standing behind it. | If they are reflected, yes. The water often takes a little of their grey without their shapes.
+
+scene favourites
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I wish for a whole wall of small harbour pictures that would stir in a passing draught.
+b : You want the drawings to move? | Which half would you hang nearest the window?
+a : Only by a very little. I could almost believe the lower pictures had kept some water alive. | The reflected ones. The upright ships have a duty to look as though they will stay under their masts.
+
+scene secretnote
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I keep a blank quarter page for a note I might one day give #self.friend#.
+b : What sort of note? | Why would a quarter page be enough?
+a : An account of the nicest sight of the day, once I'm quite sure I've seen it. | Because if it takes much telling I'd rather give the whole book a visit in person.
+
+young
+
+scene doublepup
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My paper folds at the water and shuts the sky and the upside-down sky together.
+b : Do they get muddled? | Can the ships meet?
+a : If the ink is wet, yes. Then my book has had a very stormy day. | The masts can touch the other masts. I should think it would surprise both crews.
+
+scene oatboat
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I made a little sail out of an oatcake corner.
+b : What did you make the rest from? | Will the sail catch wind?
+a : On my plate, waiting till I've finished deciding how to launch my mouth at it. | If I blow on it hard enough. Then my lunch needs fetching home.
+
+scene floatgame
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put one lonely oat crumb beside my float and watched the pair travel.
+b : Which went quicker? | What's the game about?
+a : The crumb. It hasn't a whole line trailing behind to think about. | Whether the little hungry fish likes supper more than my prettily painted float.
+
+grown
+
+scene oldpages
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A sketch can remember a rail that has long since been replaced.
+b : Do you keep all the old pages? | Do you notice the rail or the vessel first?
+a : Even an indifferent one keeps some view the city might quietly take away. | Whichever has changed. After a few years the rail can have the more interesting history.
+
+scene bookdry
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I open a damp book halfway on a cloth so the fold can breathe.
+b : Won't the upper pages fall back? | Why avoid the hearth?
+a : A little loose cord across the cover holds them at rest. | The paper wrinkles into a harbour of its own if the heat dries one face before the other.
+
+scene floatstory
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : A float rides rather differently after I've repainted its sides.
+b : Would you weigh it? | Does the eye still matter?
+a : I'd put it in a bowl. A drop of water tells more than a handsome pair of scales at that size. | Yes. It gives me a mark to watch as well as a small companion for the waiting.
+
+scene shoremeal
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I cut a square of oatcake for a shore meal; the corners will stand the journey.
+b : Would a round cake not do as well? | What do you wrap around the cake?
+a : Better still once I've eaten the four corners. I ought to have been a little slower over that defence. | Waxed paper quite away from the little fishing line. I dislike having to untangle a meal.
+
+scene newgreen
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I draw the same little patch of shore at the first warmth of each year.
+b : Do you compare years? | Does anything change?
+a : With pleasure. No two springs have brought me quite the same beginning. | The bright bit on the water has never once been reliably where I expected.
+
+scene honestink
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I mark a remembered vessel in pencil, and a vessel drawn in its presence in ink.
+b : Is memory always inaccurate? | Can a pencil memory improve?
+a : Not always. The little mark tells a reader which sort of trust I am asking for. | Indeed, with another sight of the hull it's meant to be. My pencil deserves that opportunity to improve.
+
+scene highwater
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I choose my sightline and leave space for a retreat as the tide comes up.
+b : So the drawing won't get wet? | Will the angle be different?
+a : So the wolf holding it keeps a decent footing. A page can be redrawn. | Slightly. I put a small change of position in the margin. A careful reader can allow for it.
+
+scene kinview
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : On a page for #self.father# I'd leave a proper account of the weather round the picture.
+b : Would the lines alone be insufficient? | Which detail would you choose?
+a : For the vessel, quite sufficient. I want to leave the whole evening if I can. | The colour that goes from a white sail just as the last direct light is gone.
+
+scene wetwood
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wet plank and a plank merely polished by long use look remarkably alike under lamplight.
+b : How do you choose a sure route? | Would you continue sketching?
+a : By pressing one foot cautiously before trusting the other to follow. | From a secure seat. If none's available I go home and use the most useful of all pictures, the one in memory.
+
+scene waitingglass
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I don't much enjoy waiting for another wolf to decide when a journey starts.
+b : Have you found a way of easing it? | What if the delay is long?
+a : I name a task of my own that can fill the short time instead. A sky comes ready for drawing. | Then my sky has a harbour underneath and at last perhaps a little coastline. The time has gained a purpose.
+
+scene lowvoice
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd spend a whole moonlit sitting drawing both my harbours if the sky permitted.
+b : Could you see your marks? | Would the picture be only black?
+a : Only the bold ones. I'd leave the sharper work to a time when I could use the pen without squinting. | Silver also. The unmarked paper would need to do most of the work.
+
+scene clearshore
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar stretch of water comes into focus once I can place one familiar hull on it.
+b : Does the ship give a scale? | What if no hull is familiar?
+a : Yes, and a reason to look for the smaller landmarks beside its berth. | Then I'll take the nearest fisher's line as my first measure. An unknown place can be approached with something very small.
+
+adolescent
+
+story waterfold [topic=memories]
+  : I drew a mast on the lower side of a folded page and forgot the upper one altogether.
+  : On opening the book the next day I found a very clear ship which appeared to be sailing entirely under water.
+  b : Did you draw its upper half then?
+  : I left the page alone. It was a far better picture of my evening's distraction than a corrected drawing would have been.
+
+story tincup [topic=food]
+  : I'd taken an oatcake to eat beside my evening line and put it down by my cup.
+  : Water up the side of the cup caught a little reflection of my buttered cake. There were two suppers in view.
+  b : Did you leave the second one behind?
+  : I ate the first quite slowly and the reflected cake grew small at the same comfortable pace.
+
+story bendmast [topic=pastimes]
+  : One evening a fish rose just below a perfectly straight reflected mast. The reflection bent to make a hook.
+  : I sketched the curve so quickly that I hardly looked at the paper.
+  b : Did you catch the fish on your line?
+  : No, I got a new shape for my book instead. The fish and I both had a satisfactory evening.
+
+adolescent
+
+rule @mast
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say Line clear of the paper, please. | Take the float up before the hook comes home.
+
+rule @lamp
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say The lower mast is bending now. | A moment of light for this last stroke.
+
+rule @board
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Give the slick plank a little room. | Dry sitting place first, then the view.
+
+rule @bell
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say Listen between the festival strokes. | The whole harbour's facing the sound.
+
+adolescent
+dlg resident.hub : I'll turn the book towards you. There's a moment to talk while the ink settles.
+dlg resident.hub [topic.meeting=known] : It's a pleasure to share the view again, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : We may speak without disturbing the book between us.
+dlg resident.hub [here.time=night] : Little enough light to draw by. Quite sufficient for listening.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I enjoy having the time to get a difficult observation right.
+dlg resident.job : I try to notice which details stay the same when everything around them moves.
+dlg resident.bye : I hope you find something pleasant reflected along your way.
+
+adolescent
+
+graft @lowerpicture resident.hub
+choice Why does the mast on the lower page bend? -> lowerpicture
+node lowerpicture
+say Lift the fold a little. The upper mast is the ship's own. Below it the water's showing what a small breeze can do to the same straight line.
+choice Could you straighten it with your pencil? -> lowerpicture_more
+choice Give the page back gently. -> hub
+node lowerpicture_more
+say Certainly, at the cost of the little bit of wind I came to see. I should rather let the ship keep the straight mast and the water keep its own.
+choice Give the page back gently. -> hub
+choice Leave the lower mast to move. -> bye

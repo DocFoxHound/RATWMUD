@@ -1,0 +1,247 @@
+mantle rm408
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_florence_pennock
+title the seal that still has a journey
+fits stage=adult|old
+prefers piety=devout talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes honey_cakes dancing festival_bells thunder
+dislikes smoke haggling
+fears having_to_answer_for_a_broken_seal
+hopes placing_a_long_carried_letter_in_the_right_palm
+topics travel +0.6 faith +0.5 pastimes +0.3 work +0.3
+styles comfort=quiet gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# wraps the whetstone apart from any sealed letter and marks an unsuccessful call with a quiet turn of the heel.
+words
+oath! = Crumble my corner wax | Snarl my satchel seam
+saying! = A shut door is half a journey | Keep the seal facing air
+waxrim = a red rim of wax | a smooth wax mound
+stonewrap = a stout whetstone wrap | a strip of rough linen
+straploop = a padded loop | a leather keeper
+heelturn = a neat turning step | one quiet swivel
+honeybite = a golden cake end | a sweet honeyed crumb
+dryflap = a doubled dry flap | a tucked leather lip
+bellnote = a round answering note | a falling bell tone
+stepbeat = a single landing beat | a quiet toe tap
+knifecase = a firm working sheath | a thin wooden sleeve
+rainridge = a ridge of folded cloth | a small upright seam
+nameface = a neat direction line | a clear written address
+
+grown
+
+opinion houses mixed 1 : A great House might have the courtesy to arrange for one reliable palm at the door where it expects its letters.
+opinion watch mixed 1 : A seal in honest keeping deserves to travel without providing every curious uniform with entertainment.
+opinion church for 2 : My day's journeys are easier to face when I've left a few words with the Bright One before starting.
+opinion merchants mixed 1 : Say what the carrying costs. A wolf who haggles at every doorstep soon empties the whole day of anything else.
+opinion festivals for 1 : A bell that calls us to dance has earned a different answer from my feet.
+opinion road for 1 : Even a fruitless journey leaves the next corner a little better known.
+line greet : I have a moment between one door and the next.
+line greet [pair.band=strangers] : Welcome. We'll leave the satchel shut while we speak.
+line greet.return : You found me on a bit of level going.
+line farewell : May the right palm be waiting when your errand brings you to the door.
+line farewell.return : Take a dry turn where the eaves allow it.
+line answer.how : Tired in a way a small cake might improve.
+line ask.how : Did somebody open when your day's work came knocking?
+line react.news : I'll hold that as carefully as a folded sheet.
+line react.news.known : I recognise the direction written on that news.
+line react.news.new : That is a new delivery to my ears.
+line react.news.doubt : I'd look carefully at the seal on a tale so conveniently addressed.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd be happy to carry glad words another good stretch today.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd see that reached a quiet ear before a crowded room.
+line decline : No, that fold belongs to the one whose name is on it.
+line accept_decline : Then I'll carry my offer back unopened.
+line reassure : A closed door today can still receive you kindly tomorrow.
+line sympathise : I can stand beside you through the moment before the knock.
+line thank : You made a tired set of steps somewhat shorter.
+line deflect_thanks : My feet were already pointed towards the work.
+line ack : That direction is clear on the first reading.
+line accept_preclose : Walk on while you have an easy road.
+
+scene work_1
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a sealed thing and an interesting thing are often the same object.
+b : Do you ever wonder what's inside? | What stops you enquiring?
+a : Certainly. Looking after it well and wondering privately are duties that can coexist. | I remember somebody paid for a delivery, not an extra reader.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I know a grand door chiefly by its remarkable success at staying shut. | There's one fine entrance where I can perform my returning step almost from habit.
+b : Do you leave the letter there?
+a : I need the right palm, not a doorstep with a handsome view of the weather. | Not even on my weariest trip. A polished threshold never signed for anything.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Some mornings my shortest prayer is to finish with every seal as sound as it started.
+b : No request for lighter work? | What if a recipient stays away?
+a : A little energy for the ordinary load will suffice. My remaining route can be what it is. | Then the seal still faces the sky another morning. A prayer needn't end just because my first attempt has.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep my whetstone carefully parted from the letter flap.
+b : Afraid of the weight? | Why carry a stone on a walking errand?
+a : The rough face would abrade wax even if the whole thing weighed no more than a leaf. | It's a habit and it's useful for a working edge. Neither needs to rub a private crease raw.
+
+scene pastimes_1
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I can turn away from an unanswered door with a perfectly good little dance step.
+b : Does it ease the disappointment? | What if the door opens behind you?
+a : The feet remember being glad of a turning step. The rest of me sometimes follows. | I turn back in time. I've had much more practice at the first half than the second.
+
+scene faith_2
+when topic=faith self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : Festival bronze gives my feet permission to take some pleasure.
+b : Can you tell a festival peal from any other? | Do you put the satchel down?
+a : I can usually tell by the faces round me before the second stroke. | If its care has been handed over properly. I won't give a letter an unexpected evening of dancing.
+
+scene food_1
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : Honey cake and important paper need separate lodgings.
+b : Has a crumb ever got loose? | How do you eat on the road?
+a : A crumb can be shaken free. Honey will attach itself to the whole correspondence with alarming devotion. | Stop long enough to wrap the sweet bit and clean my fingers before moving the flap again.
+
+scene weather_1
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder can answer a timid knock on an entirely different scale.
+b : Would you wait for a gap? | Does the noise trouble you?
+a : If there's time. The grandest rumble in the world can't inform a household that I've reached its side door. | I like it from somewhere under sound boards with a good flap between the letter and the rain.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I won't pretend carrying over a hill costs the same effort as crossing one street. | If somebody bargains over the walk I invite a look at the soles.
+b : Suppose the figure startles somebody?
+a : I can explain it without a raised voice. Anybody can decline the service. | The hill will be waiting when tomorrow comes. An honest price will travel just as well then.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I let myself be tired until my boots reach the step, then stand straight before the knock.
+b : Why conceal it? | Does standing straight help?
+a : I don't need the household to feel indebted to my legs before we've found the right name. | It lets a full breath in and reminds the satchel where it's meant to hang.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend gets precisely the same unopened letter a stranger would receive.
+b : Wouldn't a friend tell you the contents? | Isn't there some favour you can do?
+a : That's a choice for after delivery. Till then I know as little as the stranger. | I can choose a quiet time to knock where my duty gives me the choice.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang my satchel with a finger's width between the wax and the wall.
+b : Does it need so much care at home? | What happens if the wall's warm?
+a : A letter can be handed in splendidly dry and be damaged in the final inch. I'd rather mind the inch. | I move the hook away from the warmth. A seal can lose its face without anybody breaking it.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I count an unanswered visit as some work done, even when the paper hasn't left my hands.
+b : What have you delivered? | Would the sender agree?
+a : Myself to the right place. The letter has been a blameless and inactive travelling companion. | I'd tell the truth about what I found and let that stand for itself.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A particular letter once became so familiar I recognised its corner through my coat.
+b : Did that make you want to open it? | Did you ever get used to the wait?
+a : No. Familiarity ought to make me a better keeper, not a second addressee. | Enough to remember a cake on the return journey. It didn't reduce the distance but improved the company.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Smoke is worse than ordinary dirt on a satchel flap.
+b : Does it get into the letter? | Can you brush the stain away?
+a : The smell can. I would hate to have a harmless delivery announce a fire to a worried nose. | Some. I'd sooner carry the bag round the nearest clear corner than spend all evening rubbing the flap.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In tight weeks I pack enough bread for an unsuccessful trip as well as the one I set out to finish.
+b : Why two pieces? | What if the door opens at once?
+a : It saves me buying a costly late supper because hope packed lighter than sense. | Then a spare bite can wait in its cloth or go to a hungrier palm.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I give a newcomer the way to a door and some idea of how best to announce a visit.
+b : Isn't knocking simple? | Would you go along?
+a : Which entrance and how loudly can be a puzzle at a grand house. A good direction can save a scolding. | As far as my own errand allows. Most of the trouble goes once a latch is in sight.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The open talk says #topic.subject# #topic.claim#. It wasn't read off anything I've carried.
+b : Do you put much faith in it? | Would you repeat a name from your satchel?
+a : Open talk can travel faster than written sense. I'll reserve judgment till it has travelled intact. | Not to decorate a public story. A name I carry under a flap stays under my care.
+
+story wax [topic=work]
+  : I once put a cake of hard wax beside a stone wrap and reached for the wrong one in poor light.
+  : The stone looked unusually festive by the time I'd rubbed the two together.
+  b : Did it damage a letter?
+  : Just my dignity. I was practising at my own table, which is the proper place for an expensive piece of foolishness.
+
+story return [topic=memories]
+  : I took my neat half turn at a shut door and found a little pup imitating it behind me.
+  : We did the half turn twice and ended up facing the closed door again.
+  b : Did anyone answer that time?
+  : Still no answer. At least the walk acquired a willing partner for one short figure.
+
+story sweet [topic=food]
+  : A bit of honey cake worked loose in an outer pocket and stuck to a dry whetstone wrapper.
+  : I sat on a low step and picked crumbs off the paper one at a time.
+  b : Was it worth rescuing?
+  : I found the pause was worth more than the crumbs. I ate the piece that had stayed in its own cloth.
+
+rule @seal
+when concept=bark
+does aside
+cooldown 8h
+say Wax facing out and rough stone turned away. | Some words travel better without a curious thumb on them.
+
+rule @storm
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Knock between the great noises and listen in the little space. | That thunder could announce a whole street of callers.
+
+rule @turn
+when concept=bark
+does aside
+cooldown 8h
+say A quiet heel turn and the letter keeps its journey. | An unanswered door needn't hear a temper leaving.
+
+rule @tired
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Long evening roads improve a small cake wonderfully. | There's a little more walking left in my soles.
+dlg resident.hub : Your voice carries nicely to the shoulder with the strap on it.
+dlg resident.job [self.job=official] : At #self.workplace# I keep track of what reached the right hands and what still calls for another journey.
+dlg resident.news [world.news] : What has come into open hearing is this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : A street account says #topic.subject# #topic.claim#. That's public talk, quite apart from anything sealed.
+dlg resident.hub [topic.meeting=known] : #topic.player#, this meeting has spared me at least one knock.
+dlg resident.bye : I hope the door you're bound for is ready for your hand.
+
+graft resident.hub
+choice Do you ever tire of carrying an undelivered letter? -> wax_route
+node wax_route
+say The legs do, certainly. But if I've failed three times to find the right person, the fourth attempt isn't an excuse for handing it to the wrong one.
+choice How long can you keep it safe? -> wax_wait
+choice Keep the seal safe. -> hub
+node wax_wait
+say On the next trip I'll look after the wax and bring back an exact account of how things stand. After that there will be another small decision to make.
+choice Keep the seal safe. -> hub

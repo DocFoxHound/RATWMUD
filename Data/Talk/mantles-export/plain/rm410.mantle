@@ -1,0 +1,255 @@
+mantle rm410
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_jasper_coalcot
+title the edge on the uphill side
+fits stage=adult|old
+prefers job=carter
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk wets_the_stone_on_the_walk_and_saves_the_clean_edge_for_work
+likes spiced_cider wrestling full_larder autumn_wind
+dislikes haggling drizzle
+fears losing_the_top_step_in_drizzle
+hopes a_place_above_the_loads
+topics work +0.6 dreams +0.5 pastimes +0.3 prices +0.2
+styles comfort=steady gossip=reserved refuse=quiet tease=none
+marks oath saying
+persona persona #self.first# feels the whetstone through a carrying coat and saves a clean edge and an uphill plan for the end of the working day.
+
+words
+oath! = Nick my porter strap | Roll my stone downhill
+saying! = Whet a little before the hard draw | Even the high shelf needs carrying up
+stone = my damp whetstone | a flat smooth stone
+edge = a clean knife edge | the bright edge
+strap = a broad carrying strap | a padded loop
+buckle = a blunt brass buckle | an old square clasp
+cider = a dark cider cup | a hot spiced drink
+fall = a careful fall | a low practice throw
+shelf = the highest shelf | a dry shelf
+sack = a quiet sack | a well-tied load
+weather = the fine grey drip | a worrying drizzle
+wind = the gust up the slope | a hard autumn gust
+coin = a thin bright coin | a spare copper
+crate = a slatted crate | a short carrying box
+hinge = a worn hinge | a banded hinge
+
+any
+opinion houses against 1 : The high streets need porters as much as the low ones, however seldom the fact comes up at a fine table.
+opinion dole for 2 : A full day's carrying on an empty stomach leaves the strap doing more than its share.
+opinion merchants mixed 1 : Tell me what a bundle weighs before telling me what you might pay to see it shifted.
+opinion sump for 1 : I got my footing there. I can picture those familiar roofs below a high window I could call mine.
+opinion road for 1 : A sound road makes a heavy job honest. A bad one adds work nobody thought to price.
+opinion strangers mixed 1 : I'll carry a strange parcel after inspecting the tie and the way it hangs.
+
+grown
+line greet : Clear of the load here. Welcome. | My quiet side's free just now.
+line greet.return : I heard that over the buckle. Welcome back in kind.
+line again.open : Back on the same patch before I've shifted much.
+line farewell : Take the easy grip up the next rise. | Don't carry a worry by its sharpest edge.
+line farewell.return : A clean road under your own weight too.
+line react.news : Put the news down slowly where I can judge it. | Tell me how the carrying has changed your tale.
+line react.news.new : That has a fresh-cut edge to it.
+line react.news.known : Same nick as the one I heard before.
+line react.news.doubt : I'd wait to feel how that claim balances.
+line react.news.sorrow [topic.kind=death|loss|assault] : I can take the parcel. Leave the hurting wolf a free paw.
+line react.news.glad [topic.kind=birth|marriage|work] : That's a piece of luck light enough to take uphill.
+line ask.how : Where's today's strap rubbing at you?
+line answer.how : Still carrying my own weight. No faster than I need.
+line sympathise : You can sit against this shoulder without telling me why.
+line reassure : Try the grip without lifting yet. There's time.
+line refuse : I'm promised to another load before the street clears.
+line accept_decline : Fair. One request ought to keep its own weight.
+line preclose : I should get the stone wet for the next errand.
+line accept_preclose : Go while your next turning's still clear to see.
+line ack : I can feel where that sits.
+
+scene exchange1
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : I wet the stone before opening a tie on a parcel. | I keep my knife wrapped under the strap.
+b : Why not after? | Reachable like that?
+a : One clean cut leaves more string worth keeping. | When I want it. Not when a crowded street bumps my elbow.
+
+scene exchange2
+when topic=dreams here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I carry up to the Heights more often than I stay. | A high window looks small from the Sump.
+b : Want a final delivery there? | Will it do from the inside?
+a : I want a key in my own paw on the return trip. | Even the smallest one looks out a fair way down.
+
+scene exchange3
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I practise falling with the strap off. | I like wrestling on patches without stones.
+b : Wouldn't think a bit of leather mattered. | Where's your whetstone then?
+a : It catches a shoulder and turns a chosen landing into somebody else's plan. | Safe in the coat. My practice partner deserves ordinary grass.
+
+scene exchange4
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : A spiced cider's best after the buckle's undone. | I turn the cup the way I'd turn a stone.
+b : Do you breathe it in? | To find an edge?
+a : I like my shoulders loose while the steam comes up. | To find the side that's warm enough to hold.
+
+scene exchange5
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I like a shelf heavy enough to creak under supper. | I test a pantry's plenty by going to the back.
+b : Worried it'll break? | What's hidden there?
+a : A sound creak says full. A crack says find another bracket. | Room for one more good thing, if the household can afford it.
+
+scene exchange6
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind comes up and gets behind the carrying strap. | Leaves blow uphill ahead of me.
+b : Makes the load lighter? | How does that strike you?
+a : For a step or two. Then it has another errand. | Some things get a little farther on a very small push.
+
+scene exchange7
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle takes the grip off my stone. | A little rain hides the grain on a carrying board.
+b : Thought you liked the stone wet. | How does the grain show again?
+a : The face wet. The bit I'm holding wants a different arrangement. | Lay the load down and wipe the place that's to take the weight.
+
+scene exchange8
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : My shoulders dislike a price that changes halfway up a stair. | If a wolf wants the carrying cheaper, the load can come in smaller portions.
+b : How do you fix it? | Isn't that more trips?
+a : Hear the job and settle the figure before the first tread. | Then we can both see why I named the first figure.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Food took over the markets and I found a new kind of steady weight. | I started with a worn strap and no plan beyond the next load.
+b : What was different? | What about now?
+a : A basket of food is going somewhere wolves are watching for it. | The strap's still plain. The plan runs a little farther up.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# which way round I hold the stone. | A quiet friend can walk beside a heavy load.
+b : Is there a wrong side? | Does that help if nobody lifts?
+a : A side I don't use. No need for a friend to find the rough patch by accident. | Company changes the count of the steps.
+
+scene exchange11
+when topic=work self.job=carter self.boss
+does tell.self / ask.detail / answer.detail
+a : I like to check an awkward load before asking #self.boss# where it's going. | I save cut string in my work pocket.
+b : Wouldn't the distance matter? | Every little end?
+a : The corners matter on the very first turn. | Only the pieces that could earn a second tie.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. My part ends with hearing it. | A rumour's a load that grows travelling uphill.
+b : Would you repeat that in the market? | How do you lighten it?
+a : I see no wage or kindness in doing so. | Put it down whole. Don't go cutting it into more parcels.
+
+scene exchange13
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean days can make the carrying strap feel easier than it ought. | I whet the old knife more carefully in a thin season.
+b : Less to haul? | Afraid of wearing it out?
+a : I'd prefer a little more weight and a better supper at home. | Afraid of spoiling a useful edge I can't replace.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I test the hill with an empty breath first. | I choose the outside of a sharp turn with a square load.
+b : How do you do that? | Longer that way?
+a : Let it out and see how soon I want another. Tells me my pace. | Shorter than going back for a dropped corner.
+
+scene exchange15
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rub the strap mark across the grain of my coat. | Weariness shows itself quietly in how long a simple knot takes.
+b : Does it hurt? | Do you hurry then?
+a : It reminds me not to buckle at quite that angle twice. | Slow down. A late parcel beats a spilled one.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A street looks different from under a basket rim. | I know the high end of a market by its runoff.
+b : How much can you see? | Isn't height easy to see?
+a : Mostly boots and the start of whatever slope my toes have found. | Not from inside a knot of bodies and parcels.
+
+scene exchange17
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't make a promise with the knife in my paw. | I leave a little quiet over supper.
+b : Why put it down? | Praying?
+a : I want a wolf hearing me to hear only what I'm saying. | Grateful, at any rate. That covers what I'm doing.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I touch the stone before I set off. | I close the day with one stroke on each face of the blade.
+b : Luck? | Just one?
+a : Checking it's still damp and still mine. | If I need a great many, I've been neglecting the earlier hours.
+
+story tale1 [topic=work self.job=carter]
+  : I once cut the neatest little knot I'd ever seen, only to discover it held two empty bags together. The actual parcel was tied under the next strap.
+  : I had to mend my fine cut with a very ordinary knot.
+  b : Did it hold?
+  : Better than my pride. I learned to feel which tie actually carried a weight before showing off my edge.
+
+story tale2 [topic=pastimes self.likes=wrestling]
+  : I left my whetstone on my coat for a practice bout, a good distance from both our feet. Halfway through I found myself studying it from inches away.
+  : I learnt with considerable speed how big a wrestling patch really is.
+  b : Were you hurt?
+  : My shoulder met grass. My eye found the stone. I put the coat farther back next time.
+
+story tale3 [topic=dreams]
+  : I carried an empty crate up the high street one evening. It framed a different patch of roof every time I shifted it on my shoulder.
+  : At the highest turn I looked back through the slats and saw a whole row of lights coming on below.
+  b : Did you stop at the highest turn?
+  : For a breath. I wanted to feel the view without the weight hanging round it.
+
+rule @call1
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 8h
+say Test the tie before taking the strain. | Light corner forward through the narrow turn.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One wet pass over the bright blade first. | Start the strap on a clean bit of shoulder.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Stone face wet, handle side dry. | Drizzle's got its own claim on the carrying cloth.
+
+rule @call4
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say Low grip and soft knees over rough ground. | A good throw ought to leave room to stand again.
+dlg resident.hub : I'll rest the carrying end of my shoulder while we talk.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you'll know why I keep this little space clear for my strap.
+dlg resident.hub [here.time=night] : A late parcel gets the same care and a quieter word.
+dlg resident.hub [pair.disposition=wary|hostile] : There's room to talk without reaching for a tie or a purse.
+dlg resident.job [self.job=carter] : I porter in the market. I find out how a load hangs before promising to move it.
+dlg resident.job : I work steadily towards a landing higher than my first.
+dlg resident.news [world.news] : The report I carried away was #world.news#.
+dlg resident.gossip [here.gossip=yes] : I'm told #topic.subject# #topic.claim#. I was carrying my own business when it came by.
+dlg resident.bye : I hope your grip stays comfortable right up to your own latch.
+
+graft resident.hub
+choice Why keep the stone wet? -> which_edge
+node which_edge
+say The cutting face works clean with a bit of water. I carry it in a wrapper so the rest of my pocket can lead a separate life.
+free
+choice Can you tell when the edge is ready? -> which_edge_again
+choice Goodbye. -> bye
+node which_edge_again
+say On a loose piece of cord. If it parts without dragging the other end the knife can go back into its cloth until the tie needs it.
+choice I'll leave the strap clear. -> hub
+choice Goodbye. -> bye

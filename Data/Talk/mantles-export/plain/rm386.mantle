@@ -1,0 +1,401 @@
+mantle rm386
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_lionel_pitchdale
+title the smoke in the soup ladle
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk tracks_a_stubborn_smoky_scent_from_sleeve_to_soup
+likes barley_soup wrestling fresh_straw thunder
+dislikes flies haggling
+fears a_winter_quarrel_that_divides_the_family_table
+hopes a_supper_round_enough_for_every_elbow
+topics food +0.6 family +0.5 work +0.4 pastimes +0.3
+styles comfort=warm gossip=sociable refuse=gentle tease=easy
+marks oath saying
+persona persona #self.first# sniffs each sleeve for smoke, gives the barley pot a cheerful wrestling hold and counts supper by the places round it.
+
+words
+oath! = Pin my ladle down | Singe my best soup cloth
+saying! = No ladle ever wrestled a full pot alone | Smoke finds the apron a wash has missed
+barley = plump barley grains | a handful of barley
+pot = my black soup pot | a deep old pot
+ladle = a broad wooden ladle | a bowl of horn
+smoke = a thin veil of smoke | the smoke caught in a cuff
+sleeve = my suspect cuff | the rolled sleeve
+handle = a wide pot ear | a loop of black iron
+bone = a good marrow bone | a joint end
+scrap = a small meaty trimming | a strip for simmering
+flare = a clean flare of flame | a brief blue lick
+straw = a clean straw twist | a straw bed
+fly = a single brazen fly | a buzzing speck
+cloth = a damp pot cloth | a thick folded cloth
+bench = a settled bench | a plank bench
+roll = a slow shoulder roll | a sharp little twist
+knees = two bent knees | a low stance
+bowl = an earthen bowl | a blue-edged dish
+brim = a blackened pot rim | the warm rim
+slate = a fresh price slate | a clean bit of board
+
+any
+opinion houses against 1 : If the Houses start wrestling before winter, I hope they'll settle whose pot gets knocked over first. I worry it'll be ours.
+opinion dole for 3 : I can thicken a bowl with barley. I cannot thicken an apology into a meal.
+opinion church for 1 : A blessing followed by a second ladleful is a substantial piece of comfort.
+opinion merchants mixed 1 : A good butcher can make a cheap cut sing. An honest one marks it cheap in the first place.
+opinion sump for 1 : A low street and a high one both lead to mouths needing supper. The pot doesn't ask directions.
+opinion strangers for 1 : Never seen an accent spoil the taste of decent barley.
+opinion festivals for 1 : A wrestling ring with hot soup nearby has a use for almost every talent.
+opinion watch mixed 1 : Crowds need room to move and a constable needs room to see. We can leave both without giving away the pot.
+opinion times against 1 [world.times=lean|hard] : The barley's doing a lot of the heavy wrestling these days. I miss what a bone used to cost.
+
+grown
+line greet : Slide in past the faint smell of smoke. | Welcome. My elbow has room for a companion.
+line greet.return : A generous spoonful of greeting back. | Your voice found the warm side of my ear.
+line again.open : Here again before the broth's gone flat.
+line farewell : Go with your coat warm and your supper warmer. | Take a sound foothold into the next turn.
+line farewell.return : And a deep bowl of comfort on your own table. | I'll carry that farewell with my spare spoon.
+line react.news : Stir the news up from the bottom for me. | I'll hear the meaty bit and the little bones too.
+line react.news.new : A fresh ingredient entirely.
+line react.news.known : I've fished that particular bit out once before.
+line react.news.doubt : There's rather more smell than meat in that version.
+line react.news.sorrow [topic.kind=death|loss|assault] : Sit somebody by that hurt. A bowl can come once there's a hand to hold it.
+line react.news.glad [topic.kind=birth|marriage|work] : That's good news to bring round the whole table.
+line ask.how : How much of today's weight have you got off your shoulders?
+line answer.how : Warm at the heart, very slightly smoked at the rim.
+line sympathise : Here's a place where a tired wolf needn't keep upright for show.
+line reassure : Once the steam clears, the two handles will still be there.
+line refuse : I've a prior promise warming on my own little fire.
+line accept_decline : No second throw required. I take the answer.
+line preclose : I'd best get a grip on the rest of my errands.
+line accept_preclose : Off you go before the light stops helping your feet.
+line ack : Yes, elbow-deep in the meaning now.
+line greet [here.time=dawn] : A first welcome before my sleeves have gathered their usual smoke.
+line greet [pair.band=strangers] : A new face gets the whole broad end of my welcome.
+line greet [pair.band=friends] : I can make elbow room without a measuring stick for you.
+line greet.return [pair.band=friends] : A known voice and a lovely familiar appetite for company.
+line hail [pair.band=friends] : Over where the smoke's got up on two legs!
+line answer.how.busy [self.working=yes] : Busy enough to mislay the smell of smoke among actual smoke.
+line thank : That's a good weight taken clean off my back.
+line deflect_thanks : The spare place was sitting here doing nothing useful.
+line give.advice : Find both handles before trying to impress anybody.
+line ask.how [pair.band=friends] : Have you got supper settled or still wrestling with it?
+
+scene exchange1
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I separate a fine roasting joint from a proper soup cut. | I use the blunt side of my thumb to point out a bone.
+b : What's proper about it? | Why the blunt side?
+a : A bit that gives its goodness slowly for less coin. | So nobody mistakes a helper's claw mark for a fault in the meat.
+
+scene exchange2
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : Barley soup runs a private wrestling school. | I give the soup time for a second smell.
+b : In your pot? | How many smells has it got?
+a : Each grain swells till there's no throwing any more in. | First the bone. Then the barley smells like supper in its own right.
+
+scene exchange3
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : A low grip on a pot's an excellent hold. | I wrestle as if there's a bowl behind each heel.
+b : Are you going to throw it? | To stop you stepping back?
+a : Only a fool throws the dinner before the guests arrive. | To persuade me to choose carefully where I'm putting myself.
+
+scene exchange4
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw tells my smoke-stained coat what cleanliness smells like. | I twist three stalks to lift a lid that's merely warm.
+b : Does the coat listen? | And a hot one?
+a : Through a couple of days. Then the old acquaintance returns. | I use the pot cloth. Pride's a poor remedy for blistered paws.
+
+scene exchange5
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder sounds better with the pot lid on. | I hold a ladle still for the big roll.
+b : Can you hear it rattle? | Worried it'll spill?
+a : It's the lid's one chance to join a great conversation. | I like feeling the tremble climb through the handle.
+
+scene exchange6
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly can find a bone through a whole market of fine perfumes. | I wait till the fly's outside before praising the broth.
+b : What do you do? | Does it understand the compliment?
+a : Keep a clean cloth over the board and save the fly the journey. | No need to put the idea into its silly head.
+
+scene exchange7
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I give the proper figure before a buyer gets a running start. | I can change the cut without changing the price per weight.
+b : Why take the fun out? | If a purse runs short?
+a : I'd sooner wrestle over grass than argue over supper. | Exactly. Nobody needs to be shamed into admitting it.
+
+scene exchange8
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I like leaving a warm bowl for #self.spouse#. | My smoky cuff seems a fair thing to confess to #self.spouse#.
+b : Won't it thicken while it waits? | Anything else to confess?
+a : Then I leave warm liquid as well. A marriage can stand a little practical thought. | The other cuff has exactly the same disreputable smell.
+
+scene exchange9
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.child# how to hold a heavy pot. | I leave room at table for #self.child# to tell things twice.
+b : Lift the whole weight? | The same tale twice?
+a : Begin with the empty vessel. Even a lesson in confidence ought to have handles. | First the events. Then the feeling underneath. The second usually tastes different.
+
+scene exchange10
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I start a learner with the least expensive cut. | I ask a learner where the weight sits in a joint.
+b : Because a mistake costs less? | Before cutting?
+a : Because skill makes a more noticeable difference where money is short. | Before lifting anything at all. A back deserves the first lesson.
+
+scene exchange11
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I loosen the shoulders with a little wrestle against thin air. | A smoky sleeve makes me stop and have a wash.
+b : Who comes off best? | Your fur too?
+a : The thin air's yet to lodge a complaint. | My own smell reaches my nose eventually. The delay has spared my vanity.
+
+scene exchange12
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say my thanks where the hot pot stands. | A charity bowl wants two hands as much as a fine glass does.
+b : Before you taste it? | Meaning what?
+a : Before I complain the barley's gone rather soft. | Give it steadily and look the receiver in the eye.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard the words #topic.subject# #topic.claim#. That's a single ladle taken in passing. | A rumour can put on a splendid smoky smell.
+b : Will you offer seconds? | Any nourishment behind it?
+a : Not until I know what's in the pot. | Sometimes the whole dish is smoke. I prefer a proper account.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean periods make me linger over the smallest bones. | A cheap bag of barley feels especially dear this week.
+b : Getting the last good out? | Will it stretch?
+a : There's flavour in a corner a full purse never needs to find. | I'll let it plump before I count the bowls.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I hope the Houses keep their elbows tucked come winter. | I'd like a table wide enough for the good wrestlers after a match.
+b : Do you expect them to shove? | They'd eat you bare.
+a : I'm afraid they might. It's a fear, not a seller's report. | I hope so. I'd cook to the occasion.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Commons is the right size for sharing a soup smell. | A market lane with a bit of rise lets the steam travel.
+b : What about the smoke? | To buyers up the street?
+a : You'll notice some of that coming round with me. | And to visitors who may only have the smell to spend a moment on.
+
+scene exchange17
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can walk with a bowl nearly full. | I turn the carrying cloth round two fingers.
+b : Trick of the wrist? | Doesn't it bite in?
+a : Let the shoulder go easy. It's the same as yielding to a heavier wrestler. | I loosen the knot before the fingers go pale.
+
+scene exchange18
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I washed an apron till there wasn't a mark on it. | I lost my first wrestling match to a slippery patch of grass.
+b : Did it still smell smoky? | Did the other wolf mind sharing credit?
+a : It smelt wonderfully clean. The smoke that time was my hair. | Nobody minded anything once I sat on the grass and started laughing.
+
+scene exchange19
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I hang the little soup pieces where they show plainly. | I can wrap a cut so its weight rests in the palm.
+b : Why give them prime space? | Worth the extra fold?
+a : Cheap suppers shouldn't have to wait shyly behind the dearer cuts. | Very much, on the third street of a walk home.
+
+scene exchange20
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I stir barley round the wall once before the centre. | I leave the smallest bowl by the pot.
+b : Why make the tour? | For testing?
+a : It's the grains at the rim that start sticking first. | For a second helping that needn't put a modest eater to a big choice.
+
+scene exchange21
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : A wrestler should know how to land on a friendly bit of grass. | I grip a sleeve fairly lightly when we're practising.
+b : Any grass friendly after a throw? | Afraid of ripping the cloth?
+a : More so than the little exposed stone beside it. | The owner deserves another match in that same sleeve.
+
+scene exchange22
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I can tell my coat from three on a peg with my eyes shut. | I put clean straw beside the back door.
+b : You sniff them all? | Where it gets wet?
+a : No. Mine announces itself as soon as I lift the first one. | Under cover. A warm smell deserves defending.
+
+scene exchange23
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I welcome a newcomer from behind the food instead of behind a speech. | I'd ask a traveller which way the weather is coming.
+b : What if there's no food ready? | More important than a name?
+a : I show where it'll be put. That makes a beginning. | A name can wait for the coat to come off.
+
+scene exchange24
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I reckon a bone's worth against its pot, not its looks. | I set the figure beside the wrapping before I tie.
+b : Show me how. | Does it change when wrapped?
+a : A little marrow and a whole lot of time can feed more than a lovely thin slice. | Only its visibility. That's what I'm arranging against.
+
+scene exchange25
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : In winter a common table wants room for coats too. | A summer stew goes out in smaller bowls.
+b : Do the coats get chairs? | Does the appetite shrink?
+a : They'll take them if I don't put hooks up in time. | The heat goes quicker from the small size. Mouths are hungry in any season.
+
+scene exchange26
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : A small guest may prefer to ladle a little stew independently. | Family meals are excellent at testing whether I've learnt patience.
+b : Don't you save time serving it? | How do you know?
+a : We lose a minute and gain a practiced paw. Cheap at the price. | My second helping cools while I listen and still tastes very fine.
+
+scene exchange27
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I want a learner to explain the use of each scrap. | A lesson goes best once the pupil has eaten.
+b : Even the bit with no meat? | So nobody grows distracted?
+a : It can teach what a bone feels like under the knife before anything dear is cut. | So both voices can consider a cut instead of hearing a stomach.
+
+scene exchange28
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I lean out of the steam to count the table places. | At closing time I like the deep sound my clean pot makes.
+b : Do they multiply in a cloud? | Do you knock on it?
+a : Usually by one. I allow for the ghost bowl and keep pouring. | One tap. I leave enough quiet for an answer.
+
+scene exchange29
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd have #self.friend# taste a doubtful spoonful. | A friend gets the unvarnished account of a lost match.
+b : Is it safe? | What's the varnished account?
+a : It's safe. I'm after a frank opinion on whether it's turned into paste. | I was inspecting the grass from a position of unusual closeness.
+
+scene exchange30
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I can smell smoke in a cold shower. | I like an oven wall when the street wind gets up.
+b : Your fire's out, surely? | For the fragrance?
+a : My sleeve appears to carry on the business independently. | For the shoulder I can warm without needing a cloak.
+
+story tale1 [topic=food self.likes=barley_soup]
+  : I set barley soaking in a bowl near supper time. I thought I'd left room for it to swell, and breakfast proved I had left it opinions but no room.
+  : The grains had lifted the lid at one side like someone peeping out.
+  b : Where could you put all that barley?
+  : Made a pot big enough to invite neighbours. I don't resent ambitions that come with their own supper.
+
+story tale2 [topic=pastimes self.likes=wrestling]
+  : I tried a new foot sweep beside a straw mat. My partner saw the sweep coming and stepped aside, leaving my foot to take on the mat alone.
+  : I carried a great piece of woven straw three steps round the ring before I could put my foot down.
+  b : Who won the bout?
+  : The mat kept my dignity. I got the foot back.
+
+story tale3 [topic=memories]
+  : I borrowed a second apron to give mine a proper airing. It was clean and had never been within a street of my particular fire.
+  : Before noon a fine curl of smoky scent was rising by my chin.
+  b : Was it your fur all along?
+  : That time it was an onion roasting behind the adjoining wall. I took the accusation back from both aprons.
+
+story tale4 [topic=work self.master=yes]
+  : I once taught the principle of weight with a joint on one side of a board and my elbow on the other. I let the elbow up to point out the trick.
+  : The joint sank neatly into a bowl I'd overlooked.
+  b : What did the learner take away?
+  : Always look past the board's far lip. A sounder lesson than the one I'd meant to give.
+
+story tale5 [topic=weather self.likes=thunder]
+  : A long thunder roll made the surface of my soup tremble into tiny circles. I tried drawing a pattern in them with my spoon.
+  : The next roll shook every ring into an entirely different arrangement.
+  b : Did you get the pattern you wanted?
+  : A perfectly lovely one with no more spoon in it. I attended to the eating instead.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say A meaty bone makes a fine patient supper. | Handle end of the parcel on top.
+
+rule @call2
+when concept=bark working=yes self.master=yes
+does aside
+cooldown 8h
+say Begin with the weight before thinking of the cut. | Clear board under the learner's elbows.
+
+rule @call3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say There's smoke on the clean sleeve before the sun's had a respectable look around. | An early bowl gets the fattest little grains.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say My smoky smell's survived another rinse. | Keep the pot cloth doubled over and dry.
+
+rule @call5
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say Steady feet first, glorious landing second. | A practice hold without spilling supper.
+
+rule @call6
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Cloth back over those soup bones. | No room at my board for six little feet apiece.
+dlg resident.hub : Come join the ordinary smoky end of a perfectly good conversation.
+dlg resident.hub [topic.meeting=known] : #topic.player#, even my steamy coat couldn't keep me from recognising you.
+dlg resident.hub [here.time=night] : The late callers get a quieter story and the same welcome.
+dlg resident.hub [pair.disposition=wary|hostile] : Let's keep both sets of elbows off the wrestling ground. Plain words will do.
+dlg resident.job [self.job=merchant] : I help at #self.workplace#. I know which pieces will make a generous pot after a slow afternoon.
+dlg resident.job : My working day goes well when the last visitor goes away with something useful.
+dlg resident.news [world.news] : The bit that's turned up at supper is #world.news#.
+dlg resident.gossip [here.gossip=yes] : An earful reached me that #topic.subject# #topic.claim#. It may want more than a pinch of caution.
+dlg resident.bye : Find the bowl that was set out with you in mind.
+dlg master.learn [here.teaches=yes] : I can explain a good deal about #here.trade_title# with both our hands on a clear board.
+dlg master.learn [here.teaches=no] : I've a learner in attendance. A little board remains where a curious question can rest.
+dlg master.work : You'll learn weight, patience and which shoulder needs a rest before it grows sore.
+dlg master.wages : A learner's pay comes by selling what's made. The lesson itself doesn't put a second wage in your paw.
+dlg master.takes [here.take_on=no] : I can't make a place yet. #here.take_on_why#.
+dlg master.taken : You're in, then. Stand where you can see my hands and I'll make a start.
+dlg master.refused : The place hasn't worked out this time. #topic.why#.
+dlg master.bye : Keep your grip easy and your appetite in decent shape.
+
+graft resident.hub
+choice Why do your sleeves smell of smoke? -> smoked_sleeve
+node smoked_sleeve
+say I'm hoping to learn that myself. Wash one, the other collects the scent. Wear neither and my shoulders seem willing to carry it instead.
+free
+choice Do you mind? -> smoked_sleeve_again
+choice Goodbye. -> bye
+node smoked_sleeve_again
+say Only when somebody thinks I've burnt the soup. The soup is very capable of laying that rumour to rest.
+choice I'll trust the soup. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice Why practise with an empty pot? [self.master=yes] -> hold_the_pot
+node hold_the_pot
+say A lesson needn't start with heat, dinner and an audience all in danger. Your footing needs my attention while there's still room to change it.
+free
+choice What changes when the pot's full? -> hold_the_pot_again
+choice Goodbye. -> bye
+node hold_the_pot_again
+say The way the weight answers a turn. I'll add water in small amounts until you can feel exactly where the wave goes.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

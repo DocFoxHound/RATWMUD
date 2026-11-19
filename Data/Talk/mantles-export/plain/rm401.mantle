@@ -1,0 +1,263 @@
+mantle rm401
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_njal_stanmore
+title the covered signature
+fits stage=adult|old
+prefers job=official warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk covers_the_crest_to_read_a_request_a_second_time
+likes oatcakes roof_birds new_boots summer_evenings
+dislikes drizzle night_noise
+fears a_good_request_lost_under_a_grand_signature
+hopes a_civil_reply_for_every_petitioner
+topics work +0.6 faith +0.4 family +0.4 animals +0.2
+styles comfort=listen gossip=restrained refuse=gracious tease=none
+marks oath saying
+persona #self.first# covers the crest with a strip of clean linen before rereading a request and gives an unfamiliar voice the same clear hearing as a familiar signature.
+
+words
+oath! = A tilted seal | My spare blotter
+saying! = Read past the crest | A civil answer travels far
+linen = the narrow linen strip | my spare blotter
+waxmark = a raised impression | the wax mark
+signature = the final flourish | a signed ending
+petition = a folded request | the modest petition
+envelope = a plain wrapper | the outer fold
+boot = a newly brushed boot | the clean boot
+blotch = a little ink shadow | a black fleck
+thrush = a small roof bird | the dark visitor
+oat = a square of oatcake | the buttered oat round
+sill = a broad sill | the window ledge
+shade = a strip of shade | the sheltered patch
+bellgap = a moment's quiet | the long interval
+
+any
+opinion houses for 1 : A House earns honour by answering a sound request even when the signature would not ordinarily be welcome.
+opinion city for 2 : A city can be judged by the courtesy of the shortest reply sent from its offices.
+opinion church for 2 : A plain request softly spoken carries even through fine doors. I hope my own ears remain as open as the chapel door.
+opinion watch mixed 0 : I prefer a clear statement from a witness to six uncertain claims arranged to look official.
+opinion dole for 2 : An explanation of hunger ought not to require the purchase of good writing paper.
+opinion newcomers for 1 : An unfamiliar writer may possess an entirely familiar need and an unfamiliar way of expressing it.
+
+grown
+line greet : Welcome. I've set a place aside for a quiet exchange. | Please stand where the light falls comfortably.
+line greet [pair.band=strangers] : Our first conversation deserves an open hearing. | I do not think we have met. You are welcome here.
+line greet [here.time=dawn] : Morning. The unhurried light is an advantage to us. | A new day and room for its first request.
+line greet.return : Yes, hello. I put the letter down quite willingly. | Your greeting came through most agreeably.
+line greet.return [pair.band=friends|family] : A familiar voice may dispense with its formal heading. | I'm very glad to hear you at leisure.
+line greet.return [here.time=night] : A greeting after dark is welcome in its own right. | Late company need not be noisy company.
+line again.open : It gives me pleasure to resume our acquaintance already. | Here we have a second occasion for a civil word.
+line hail [pair.band=friends] : Come look at a small habit of mine, if you have a moment. | Here beside the window. The view is quite distinct.
+line farewell : May you find a courteous hearing wherever you next apply. | Walk in the calmer part of the light.
+line farewell.return : I will put the matter gently to rest here. | May the Bright One attend your return.
+line react.news : Say the substance and leave the flourishes for later. | I am ready to hear how the affair actually stands.
+line react.news.new : I'll need an entirely fresh heading to enter that. | It is entirely new to me and deserves consideration.
+line react.news.known : I've considered an earlier account in much the same terms. | Yes. The essential fact has reached me before.
+line react.news.doubt : I would examine what remains when the signature is covered. | The stated confidence seems in excess of the evidence.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : May those bearing this loss find real company and some relief. | Take the time you require. My attention is firmly here.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Such news merits the warmest line on an otherwise ordinary page. | I'm heartened to hear an account with so happy a turn.
+line ask.how : Have others been generous listeners today? | Have you enjoyed a tolerably peaceful interval today?
+line answer.how : A little subdued, grateful for the company. | Quite able to attend, with several things still on my mind.
+line decline : I could not undertake that with the sincerity your request deserves. | It falls outside the responsibility I can honestly accept.
+line accept_decline : I respect the limit and appreciate your stating it. | Then the matter can rest entirely with you.
+line preclose : I must presently return to a request still awaiting consideration. | My remaining correspondence deserves a clear stretch of thought.
+line accept_preclose : I am grateful for the interval you've offered me. | Certainly. Please give your next obligation its due.
+line thank : You gave me time to reconsider a first impression. Thank you. | I value the care that went into that observation.
+line deflect_thanks : The question deserved an answer legible from your side. | I had the leisure to give it a second reading.
+line sympathise : No one requires a fair copy of grief before offering a seat. | I can hear the difficulty even when the words come slowly.
+line reassure : Let us read the simplest form of the question first. | We may find the request quite manageable beneath the elaborate beginning.
+line ack : Yes. That distinguishes the two matters clearly. | I see why that final observation is relevant.
+line give.advice : Leave a little room beneath a request for an ordinary answer. | Read a letter once for meaning and once for the person waiting.
+
+scene linenreading
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I cover a signature with linen for the second reading of a request.
+b : What does that change? | Is the name unimportant?
+a : Usually only my own expectations. They sometimes benefit from the correction. | For delivering the reply, essential. For deciding whether the question is sensible, rather less so.
+
+scene rivalseal
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I find an unfamiliar crest seems less unfamiliar after I've attended to the words above it.
+b : Would you rather it was a familiar crest? | Trust every signature equally?
+a : Naturally I like a familiar correspondent. I am trying to avoid giving that liking undue authority. | No. I am trying to distinguish my trust in a particular claim from a preference for a familiar shape.
+
+scene warmanswer
+when topic=work self.job=official self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A refusal needn't be written as if the writer were defending a wall.
+b : How would you begin one? | Wouldn't that give false hope?
+a : With the actual answer. Then I explain why and what, if anything, remains possible. | A clear refusal written kindly offers less false hope than an evasive paragraph.
+
+scene littlefold
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I understand the inconvenience of a modest petition slipping out of sight in an office.
+b : From the official side? | Why would a little page disappear?
+a : From both sides. A civil inquiry about progress is often a considerable kindness to the work itself. | It can sit inside a larger fold and lead a blameless invisible life. I'd like better arrangements.
+
+scene oatwalk
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I'd cut an oatcake into two comfortable pieces before buttering it for a walk.
+b : Why in two? | Likely to share it?
+a : One can be offered freely without needing a knife or an apology over the portion. | With pleasure if there is company. If not, the second half makes an excellent return journey.
+
+scene birdquiet
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I like watching the short interval in which a roof bird approaches a perch uncertainly.
+b : Can you see it decide? | Would a bird know you're looking?
+a : There is a small change in the wings before the feet come out. It suggests a whole deliberation. | Sometimes it looks straight at the window. I try to deserve a favourable judgement.
+
+scene glossboot
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : I should avoid an urgent errand for the first outing in new leather.
+b : Afraid of a blister? | Where would you go?
+a : Exactly. A good fit deserves a quiet trial before I trust it with a promise. | Anywhere near enough to turn back gracefully. A new boot should be allowed to introduce itself.
+
+scene duskair
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A long summer evening lends a degree of leisure no formal appointment can quite imitate.
+b : How is that leisure spent? | Have you no letters to write?
+a : Watch the birds, walk at an ordinary pace, allow a conversation to discover its own end. | Quite enough. I like to finish them before the last warmth goes out of the wall.
+
+scene drizzledate
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / ask.detail / answer.detail
+a : Fine drizzle puts a shadow on an address without ever admitting to being much of a shower.
+b : Could you wrap the page? | Won't the ink stay put?
+a : I do. It is the disagreeable need to rewrap it four steps from the door that I begrudge. | When dry it usually will. A new direction beneath a wet sleeve is a different matter.
+
+scene noisehouse
+when topic=day here.time=night self.dislikes=night_noise
+does tell.complaint / ask.detail / answer.detail
+a : Late knocking takes on an urgency it may not possess in daylight.
+b : Would you ignore a knock then? | What bothers you about it?
+a : Certainly not. A considerate caller may knock softly and still be answered. | Having an entire quiet house spring to attention for what may be very little.
+
+scene spousefold
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I need no seal on an invitation to share an evening with #self.spouse#. | I would clear my sill of correspondence for an unhurried meal with #self.spouse#.
+b : That sounds like a ceremonial request for supper. | What would you leave on the sill?
+a : The formality is entirely imaginary. The pleasure of giving the evening is genuine. | Room for a plate of oatcakes and the quiet that follows setting the work aside.
+
+scene childoat
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd reserve a particularly well-buttered corner of an oatcake for #self.child#. | A little shared walk with #self.child# is worth arranging without official business at the far end.
+b : You would take it along? | No errands at all?
+a : Yes. A walk improves an appetite, and I rather like to be prepared for the result. | Perhaps the selection of a pleasant doorstep on which to sit and divide our provisions.
+
+scene highdoor
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : A formal address in the Heights can make a perfectly ordinary invitation seem rather forbidding. | The more impressive the entrance up our way, the more clearly I like to indicate the actual door.
+b : Could there really be any doubt? | What would put the visitor at ease?
+a : If the useful entrance is at one side, certainly. Handsome stone can be most distracting. | A legible direction followed by a civil welcome. Neither is an expensive alteration.
+
+scene richreply
+when topic=prices self.wealth=rich
+does give.opinion / react.self / assess
+a : I can afford a handsome sheet. I try not to judge the contents of a letter by whether its writer could do the same.
+b : Not even the care of the writing? | Would a scrap do for a petition?
+a : Care is visible on plain paper too. It needn't be accompanied by a fine watermark. | If the necessary facts are there, I would gladly read them. Clear margins are a convenience, not a virtue.
+
+scene faithfelt
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When I pray, a name and a seal seem very small things to bring before the Bright One.
+b : What do you bring instead? | Does that change your working day?
+a : My actual concern, including the part that makes me uncomfortable. It takes rather less room. | Sometimes. I hope to hear a modest question a little more clearly when it comes wrapped in plain words.
+
+scene formalclaim
+when topic=gossip
+does give.opinion / react.self / assess
+a : The crest decorating a letter may stay in the memory after forgetting what the letter genuinely said.
+b : Would the crest prove anything? | How would you correct your memory?
+a : Only a limited fact about the paper. It wouldn't entitle me to retell an uncertain matter as news. | I'd reread it if entitled to do so. Otherwise I should keep the recollection private.
+
+scene tiredrequest
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In lean weeks a short note may represent considerable time taken away from paid work.
+b : You'd reply sooner to a short note? | How could you tell?
+a : I should reply plainly to both long and short. Nobody ought to make a second journey merely to discover what my answer meant. | I couldn't know in each case. The possibility encourages me to respect the trouble of every writer.
+
+scene pleasantdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd welcome a time when an ordinary reasonable request receives a single answer that actually settles it. | My notion of civic accomplishment would fit on a single side of paper.
+b : No monument required? | What would you write?
+a : A lasting improvement in somebody's day seems quite sufficient remembrance. | The precise next step, the place to take it, and whose responsibility it is. Those three would do.
+
+grown
+
+story spiderwax [topic=work|memories self.job=official]
+  : I once covered a seal with a strip of linen and reread a very short note with great seriousness. On lifting the linen I found a fly sitting on it.
+  : For a moment the office had received a perfectly respectable request under the image of a winged insect.
+  b : Did you still answer it?
+  : Certainly. Neither the seal nor its temporary occupant changed the business set out on the page.
+
+story bootpaper [topic=pastimes|memories]
+  : I set my new walking boots beside a folded plan of my intended walk and discovered an interesting resemblance between the two.
+  : Both appeared perfectly comfortable before I attempted the uphill part.
+  b : And afterwards?
+  : I shortened the route and gave the boots another day. Courtesy is not out of place in dealings with leather.
+
+story roofguest [topic=animals|memories]
+  : I put an empty saucer beside an ink pot to stop a draught blowing a page away. A roof bird looked at the assembly with evident interest.
+  : I withdrew the pot, and the bird withdrew the interest.
+  b : What had it seen?
+  : Possibly itself in the dark surface. I decided against entering an opinion for either party.
+
+rule @fold
+when concept=bark
+does aside
+cooldown 8h
+say Let me read the question once with the seal covered. | A plain request deserves an equally clear answer.
+
+rule @work
+when concept=bark working=yes self.job=official
+does aside
+cooldown 8h
+say Keep the reply with the original question until both are checked. | A little more space at the bottom for a useful direction.
+
+rule @birds
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say There is the little pause before the feet touch tile. | One quiet visitor on the outermost rooftile.
+
+rule @dusk
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The house is quiet. A soft knock will be sufficient. | I shall put down the letter and hear the late caller.
+
+dlg resident.hub : There's room to consider your words without a formal introduction.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I recognise the voice without reading down to a signature.
+dlg resident.hub [here.time=night] : A quiet hour is no disadvantage to a question that requires thought.
+dlg resident.hub [pair.disposition=wary|hostile] : I shall give a civil hearing from where you stand.
+dlg resident.job [self.job=official] : #self.trade_words.capitalize#. I try to make each reply understandable to whoever is expecting it.
+dlg resident.job : I find satisfaction in business that concludes with a definite, civil answer.
+dlg resident.bye : May your next request find an attentive reader.
+
+graft resident.hub
+choice Why read a letter twice with the crest covered? -> stripcrest
+node stripcrest
+say I notice the name on a first reading. On the next I cover it and see if the words seem kinder or harsher without it. That difference belongs to me to examine.
+free
+choice Do you then uncover the name? -> signedreturn
+choice I see why the strip is useful. -> hub
+node signedreturn
+say Indeed. The reply has to reach a real person. I simply prefer to know what reply is deserved before deciding how impressive a heading to put on it.
+choice Please keep the heading simple. -> hub
+choice Thank you for the hearing. -> bye

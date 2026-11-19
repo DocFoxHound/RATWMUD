@@ -1,0 +1,257 @@
+mantle rm405
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_rune_cinderwick
+title the shore inside the hone
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk finds_a_new_coastline_in_the_grain_of_a_whetting_stone
+likes honey_cakes whittling old_maps frosty_mornings
+dislikes wet_floors early_bells
+fears a_wet_floor_under_a_load a_clock_before_daybreak
+hopes a_dry_berth a_map_whittled_in_pale_wood
+topics travel +0.5 dreams +0.5 pastimes +0.4 food +0.3 weather +0.2
+styles comfort=quiet gossip=guarded refuse=soft tease=none
+marks oath saying
+persona #self.first# studies the lines in a whetting stone as an outline of a far coast and carves little wooden harbours in the hours before sleep.
+
+words
+oath! = Sand the shoreline | Blur my little cape
+saying! = Let the grain name the harbour | An edge needs an unhurried shore
+hone = my streaked hone | the blue-grey stone
+cape = the pale spur | a narrow point of grain
+cove = the little dark cove | my scooped wooden bay
+wood = the soft white chip | a flat scrap of alder
+burnish = a bright worn spot | the smooth hollow
+cake = a small honey cake | the golden half cake
+chart = my crooked old chart | a creased pilot sheet
+sail = a splinter of sail | the tapered shaving
+step = a dull floorboard | a dry patch for a heel
+ice = the faintest frost line | a fringed edge of ice
+bed = a narrow dry bunk | a berth with a wool cover
+knife = my whetted knife | the little carving blade
+
+any
+opinion @1 dole for 2 : A warm cake makes both paws feel they're fit for something again. Even plain bread will do much the same favour.
+opinion @2 church for 1 : A meal at a chapel once settled my hunger before I needed to say what sort it was. I've kept some quiet gratitude.
+opinion @3 houses against 2 : A fine House can own the wharf from end to end without having to stand on a greasy floor on the rough days.
+opinion @4 merchants against 2 : A honey cake gets far smaller once you look at it through the few coppers I've got.
+opinion @5 sump for 1 : The Sump is a place to learn which boards will carry dry weight on a wet morning. It's a useful thing to know.
+opinion @6 city for 1 : I can gaze clear out of Ridgemere on a little inward voyage without quite giving up my own familiar door.
+
+grown
+line @1 greet [pair.band=strangers] : Room for another quiet look at things. | Welcome on the dry side of this board.
+line @2 greet [here.time=dawn] : Early light makes even this bit of stone look awake. | A gentle beginning before the loud part.
+line @3 greet [here.weather=rain] : Stand on the dull patch. Welcome there. | Good to see company under the narrow bit of cover.
+line @4 greet.return : Your greeting's come softly ashore. | I've caught the sense of that welcome.
+line @5 greet.return [pair.band=friends|family] : Good. There's space in the cove for you. | A known voice on a little stretch of shore.
+line @6 farewell : May the planks hold firm all the way across. | Take the homeward path with dry boards beside it.
+line @7 farewell.return : I can let the thread of our talk pay out. | Good. There's safe water past the turn.
+line @8 again.open : Another little crossing completed. | We've come round by the narrow cape again.
+line @9 kin.open [pair.kin!=no] : Our own have the sheltered place inside the curve. | Family beside me makes a whole little harbour.
+line @10 hail [pair.band=friends] : Here by the clean bit of wood! | Inside the bend. There's room!
+line @11 react.news : I can wait till the whole account comes into view. | Give the words a little water to lie clear in.
+line @12 react.news.new : Fresh outline on a very old map. | My chart lacked that particular coastline.
+line @13 react.news.known : I've traced that curve on an earlier account. | Same bit of coast from a different angle.
+line @14 react.news.doubt : There's a bit of land in that account the old marks don't show. | I'd like a clearer look before I called that whole account sound.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll lay the work by while that hurt settles. | Here's somewhere still to sit with sad news.
+line @16 react.news.glad [topic.kind=birth|marriage] : There's a word with a warm coast behind it. | I'd put a little bright sail out for that.
+line @17 answer.how : Keeping my grip easy today. | Partway to a place I've imagined.
+line @18 decline : I don't have quite enough daylight to do it with care. | I'd leave the work rough if I promised to fit that in.
+line @19 accept_decline : We can leave that bend as it is. | It's your own little bit of road to choose.
+line @20 sympathise : You can sit by the still part while I mind the work. | Let the bad bit take its time passing out of sight.
+line @21 thank : You've given a rough edge a very gentle turn. | I shall remember the sheltered bit of that kindness.
+line @22 deflect_thanks : The grain ran in a friendly direction. That's all. | Only a shaving off the trouble for me.
+line @23 preclose : My little cape wants a look in the last light. | I ought to put another edge in order.
+line @24 accept_preclose : Go with a little calm under the keel. | Time enough to finish the rest on another shore.
+line @25 farewell [here.time=night] : Find a dry berth for the last stretch of night. | A soft place to lay your shoulders down.
+
+scene stonechart
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #cape# runs across #hone# like an old coast nobody goes to now. | I've got an entire imaginary harbour on the coarse side of my sharpening stone.
+b : Where do you put in with your little boat?
+a : At #burnish#. Years of careful work have made a quiet landing there. | In the little dark notch. Every time I work the edge the cove gets a breath wider.
+
+scene woodharbour
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I scoop #cove# out of #wood# and set it beside the hone. | A carved scrap can make a proper port for a boat without a thumb's width of sail.
+b : Does it need actual water?
+a : No. The grain's got a decent swell to it if I tip it toward the window. | A drop or two for a trial. I meant the place to be dry by the time the passengers arrive.
+
+scene cakebite
+when topic=food self.likes=honey_cakes
+does offer / accept / assess
+a : Take #cake# before the little bees in my imagination claim it back. | Here's a corner of honey cake with the prettiest part of its edge still there.
+b : Let me leave enough for you to bite.
+a : There's another bite folded in the paper near my cuff. No one's going short. | Divide it at the brown line. The shape of the two halves is much more interesting then.
+
+scene oldbend
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #chart# shows water where a cart can stand these days. | I enjoy a chart whose harbour has wandered away from the old ink.
+b : Doesn't the mistake make it harder to travel?
+a : On foot, perhaps. Sitting still I can choose between a street and a bit of open water. | I use my eyes going out. A map like this does better on the return when I want to keep the road a while.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / react.self / assess
+a : #ice# on a bit of wharf timber draws all the hidden grain out. | A clean frost will make a new harbour for me on the lid of a box.
+b : Can you keep the shape anywhere?
+a : A scratch on my nearest wood scrap lets me find the same narrow inlet again. | Only in my head at first. I'll spend an evening making the little piers clear.
+
+scene slip
+when topic=smalltalk self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : A wet floor can turn #step# into a voyage I never meant to take. | I like wood that gives my heel a bit of grain to catch.
+b : You prefer your voyages sitting down, then?
+a : Under a roof and with a fairly settled direction, if I'm carrying a load. | I should rather have some say about setting out. A slippery plank decides too quickly.
+
+scene earlybell
+when topic=smalltalk self.dislikes=early_bells
+does give.opinion / disagree / concede
+a : An early bell knocks the edge off the best half of a dream. | I should welcome a bell that gave a wolf one quiet minute to come ashore.
+b : Would you stay asleep the whole day without it?
+a : No. A good dream comes to a quay all by itself after a little while. | I'd get up when the light reached my window. The bell might spare itself some trouble.
+
+scene helper
+when topic=work self.job=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my fingers appreciate a knife that keeps to the chosen course. | I see to the little edges at #self.workplace# as well as the long ones.
+b : What sign do you trust on a finished edge?
+a : The wrapper cuts clean without a pull at the parcel. That's a good start. | I test it on a trimming and look along the stroke. A stray bright patch wants another pass.
+
+scene berthwish
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I want #bed# on a ship bound for a place where wood dries pale in the sun. | I'd like to wake above a real dry quay I've never traced out with a knife.
+b : What would you take on that trip?
+a : My hone. I'd compare my guessed shore with what the real one looks like. | A cake wrapper to sketch it on before the light changed round the real buildings.
+
+scene sump
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : A top window in the Sump gives me three roofs I can turn into a harbour while I rest. | In the Sump I've got the sense to try a floor before I give it all my weight.
+b : Doesn't all this water round home spoil your taste for travel?
+a : It's dry at my window where my head goes sailing. That makes all the difference. | I want a deck, then a dry port and a quiet bunk between them. A wet landing at home offers less choice.
+
+scene friendcarve
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I might carve a little schooner for #self.friend# if the right scrap falls my way. | I'd put a tiny wooden seat by the mouth of my harbour for #self.friend#.
+b : What kind of wood would you choose?
+a : A sliver that turns up like a bow at the end already. That's half the work done kindly for me. | Something with a pale stripe across the top. Even an imagined seat looks better in the sun.
+
+scene price
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : It takes all the calm out of eating a cake to know I bought a beautiful wrapper and a very thin middle. | I like to see what two coppers do to a portion before I spend either of mine.
+b : Would you leave the dear one behind?
+a : Yes. I can picture a better taste on the way home than an empty wrapper gives me. | I'd take a sound small one at its proper cost. There's no sweetness in having to guess about it.
+
+scene barrelwake
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : Old tales give small ships long shadows on the water. | In stories I can always picture the wake better than the vessel itself.
+b : What sort of line does it leave?
+a : One pale parting and the waves coming home to each other behind it. | Sometimes just a scoop out of the story, smooth where something weighty went through.
+
+scene wantrain
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : The rain's after the dry strip underneath my working elbow. | Drips keep running off my sleeve into the tiny port I'm carving.
+b : Will you manage another turn of the blade?
+a : I'll move to dry wood first. Nothing needs to be finished in the instant it wants to slip. | Just as soon as the little cove has had a chance to empty again.
+
+scene breadhelp
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : I can spare half the cake and the dry inside of its wrapper. | There's enough sweet crumbs in my hand for two decent last bites.
+b : I'd be glad to take the smaller piece.
+a : There's a grain line I like on the bigger half, so that works well. | I'll count the bites fairly. No wolf needs the whole taste of honey to be able to remember it.
+
+scene wander
+when topic=travel here.region=ridgemere
+does tell.self / react.self / assess
+a : You can watch a long white wake go out beyond Ridgemere without leaving a mark on the shore yourself. | I like to draw the Sound as a patch of open paper beyond the dark city outlines.
+b : Is the empty patch meant to lead somewhere?
+a : Out past the little boats, to a quiet place with a high dry beach at the end. | That's the good bit. A wolf can think up a whole road without adding a single mark.
+
+scene unknown
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new arrival with a dust-dry coat has got my quiet attention. | I like a traveller who can remember the colour of the quay where the journey began.
+b : Which detail of a distant port would interest you?
+a : How the boards sound under a fully rested paw. Dust has the right look. I'd like to hear about the rest. | Where the light fell in the morning. I could put that in a carving.
+
+scene wornstone
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What could I make of #sail# that's almost too thin to handle? | I've rubbed one side of #hone# lower than the other. Where should I begin now?
+b : Use the sound solid part and let the thin end ride free.
+a : A paper-thin stern flag, then. It'll move when I breathe on it. | Yes. Starting at the high end will give that dark little cape a bit longer before it goes under.
+
+story drowned_port [topic=pastimes]
+  : I carved a harbour tidy enough to take a drop of water under the end of my spoon. Then I spilt a whole spoonful over the rim.
+  : My little fleet got turned round and all the ships lay bow to shore at once.
+  b : Did they get safely clear?
+  : I put the scrap on a warm sill. By the next evening every ship had precisely the kind of port I'd been hoping for.
+
+story honey_map [topic=food]
+  : The paper round a cake had a corner of an old street map on the back. The honey had made one square almost clear enough to see through.
+  : I held it up by a window. A hill printed in dark ink appeared to have a sun climbing through it.
+  b : Did you work out which hill it was?
+  : Not the name. I could tell to the breadth of a thumb which hill had got the honey, though.
+
+story dull_bell [topic=dreams]
+  : I dreamed a bell was swinging in a tower by a dry inlet. It made barely a sound. I walked down to find out how they got the mornings so quiet.
+  : The clapper was a bit of felt resting inside an old cup.
+  b : What did it sound like when you reached it?
+  : A paw touching my elbow. I was awake before I heard the next proper bell. The dream had better manners.
+
+rule @edge
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Dry the hold before trying the edge. | That parcel needs a clean cut.
+
+rule @cold
+when concept=bark here.season=winter
+does aside
+cooldown 8h
+say A new map down the rail today. | Light as frost along the grain.
+
+rule @wood
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Just enough left for a little mast. | Keep the cove shallow at the mouth.
+
+rule @map
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say What a long trip to a dry corner. | That's where I'd put the end of the dock.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Come to this dry patch if you've a quiet word.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've a little clear water in my thoughts for you.
+dlg @3 resident.hub [here.time=night] : A familiar outline's still clear against a glimmer of lamplight. I'll listen for the rest.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Let the small space between us stay dry and clear.
+dlg @5 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. There's work enough in keeping a small edge true.
+dlg @6 resident.job : I find a use for most of the trimmings left beside my hand.
+dlg @7 resident.bye : I hope your last landing's a dry one.
+
+graft resident.hub
+choice Where's the harbour you see on that stone? -> blue_coast
+node blue_coast
+say Inside the long blue line. The pale bit worn down by the heel of my blade looks like the mouth of a quiet cove. I know where I'd put the quay.
+choice Is there room for one more boat? -> toy_berth
+choice Let's step back ashore. -> hub
+node toy_berth
+say The best of an imagined coast is you can make room by drawing the blade outward a little. I'd leave a little curve there to put your boat out of the weather.
+choice I'd take that berth. -> hub
+choice A fair crossing to you. -> bye

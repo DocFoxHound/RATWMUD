@@ -1,0 +1,386 @@
+mantle rm412
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_yrsa_kelpstack
+title the running shadow
+fits stage=young|adolescent|adult|old
+prefers drive=restless temper=nervy
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk chalks_a_small_coal_shadow_to_keep_company_on_a_doorstep
+likes mutton_stew wrestling new_boots misty_dawns
+dislikes flies crowds
+fears a_crush_at_the_pot an_empty_pocket_in_thick_mist
+hopes boots_that_outlast_a_race a_shadow_with_a_safe_place_to_sit
+topics pastimes +0.4 day +0.3 home +0.3
+styles comfort=practical gossip=wary refuse=firm tease=none
+marks oath saying
+persona #self.first# draws a shadow companion with a stub of coal and keeps shifting both feet until there is a clear way through.
+
+words
+oath! = Black knees | Coal crumbs in my stew
+saying! = Leave the shadow a doorway | Save the round end for running
+coalfriend = my little running shadow | the wolf I drew in coal
+blackfoot = a smudged back foot | a pawful of grey
+snubend = my stub of pocket coal | the blunt bit of coal
+coatseam = a deep pocket seam | the lowest fold
+fastboots = two quick boot toes | my racing heels
+stewlake = a round spoonful of stew | a bit of hot brown gravy
+miststripe = a grey band at ankle height | a pale drape of mist
+flycap = the lid for my bowl | an upturned cup
+turnpatch = the bare landing | a bit of smooth doorstep
+quickear = a sharp black ear | a narrow pointed mark
+
+any
+opinion dole for 2 : A hungry pup can smell a stew pot round two corners. I like the corner where they're actually dishing it out.
+opinion sump for 1 : I can draw a whole wolf on the black-streaked doorstep and all anybody says is mind the heel marks.
+opinion houses against 2 : A fine gate never opens for me. I'd draw a gate with a nice low handle if anybody asked my opinion.
+opinion merchants against 2 : I think the price of stew should have a small size for pups. My bowl's got one.
+opinion church for 1 : There was bread there when I wanted some. I can say that quite plainly even if there are big ears listening.
+opinion strangers against 1 : I keep the round end of my coal in my pocket till those unfamiliar heels settle.
+
+grown
+
+grown
+line greet : The coal's back in my pocket and I'm listening.
+line greet.return : Your greeting came clear through my fidgeting feet.
+line farewell.return : I'll let my little shadow finish the walk.
+line react.news : Give me a place on the ground to sit and turn that news over.
+line thank : My paws are steadier for your trouble.
+line decline : I've no intention of making a neighbourhood story out of a private worry.
+
+adolescent
+line greet : I've left the dry bit of wall clear for a word.
+line greet.return : That reached me before my feet moved again.
+line farewell.return : I'll save a little patch of shade for you.
+line react.news : I can wait out the telling before I choose a direction.
+
+young
+line greet : This is me and that's my coal shadow. Hello from us.
+line greet [pair.band=strangers] : I've got one ear sticking out. You may speak to that one.
+line greet [here.time=dawn] : There's enough light to give my coal wolf a nose.
+line greet [here.time=dusk|night] : I can't see two boot lengths. I can hear a hello.
+line kin.open [pair.kin!=no] : Our own folk get the seat closest to my drawing.
+line again.open : My drawing's paw is still wonky and here you are again.
+line greet.return : Hullo. Mine's the ear that's twitching.
+line greet.return [pair.band=friends|family] : A friendly voice beats the coal dust right out of me.
+line greet.return [self.working=yes] : I heard from way down here underneath the elbow.
+line greet.return [here.time=dusk|night] : Hello from where my little black wolf disappeared.
+line farewell : I hope you and your shadow get home together.
+line farewell.return : I'll let you run first this time.
+line react.news : Wait. I'm listening now I've got my foot still.
+line react.news.new : I'd need another piece of wall for that!
+line react.news.known : My little black wolf heard that already.
+line react.news.doubt : Were you looking yourself or were your ears just busy?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd bring my bowl over and sit real quiet.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I could jump clean over my own drawing for that!
+line ask.how : Has your day got a good solid step in it yet?
+line answer.how : My coal's still here. I'm doing a bit better.
+line sympathise : You don't have to stand where everybody keeps looking.
+line reassure : My drawing's a safe little place. You can sit there.
+line decline : I'd keep the lucky chunk for my own paw, please.
+line accept_decline : All right. I won't rub out your bit.
+line thank : You left the little black shape where I put it.
+line deflect_thanks : Wish my running wolf a good start.
+line preclose : I need a better place to put my heels.
+line accept_preclose : Go where your feet wanted to go.
+line ack : Got the shape.
+
+young
+
+scene fidget
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I draw a running wolf when my own feet can't decide where to go.
+b : Is it running very fast? | Where does it go?
+a : One smudgy foot says very fast and one long leg says there's a lot of running left. | As far as the clean part of the wall. I'll let you know when I get there.
+
+scene luck
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : One end of my coal is round and the other makes really good ears.
+b : Which end is the lucky end? | Does drawing ears use up the luck?
+a : The round one. It's had more time in my paw to learn what I like. | They listen for the luck I'm missing. I could never do all that listening myself.
+
+scene spoon
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A potato in my mutton stew can look like a little island.
+b : What's living there? | Will it sink?
+a : No flies, if the lid and I have been keeping proper watch. | When I eat the muddy sea round it, it's a hill. Then I eat the hill too.
+
+scene flychase
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I drew wings on a fly that wasn't there. Now the real ones can't tell who's invited.
+b : Does that scare them? | Which bit did you draw it on?
+a : Not yet. I haven't given it any really fierce eyes. | On the lid. If a fly lands down with it, at least the fly isn't in my stew.
+
+scene bootsmall
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : New boots are a little like a chalk outline of where you're going to put your feet.
+b : How do you get inside the outline? | Which boot goes first?
+a : I sit with both feet pointing where I want to go. Then I pull hard and hope the boots agree. | The less impatient one. Otherwise I'm up and running with only one boot done.
+
+scene wrestle
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : The wolf I drew always goes down when I put my thumb across its knees.
+b : Are you a fair wrestler? | Can it ever get up?
+a : Very. You can have a thumb turn and it'll come out the same for you. | Yes. I draw in more knees and a good straight foot for standing on.
+
+scene dawn
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : Mist at my knees makes me think somebody stole the doorstep.
+b : Would you go looking for it? | How do you find a way down?
+a : I keep a foot where I know it was. That makes it hard to carry off. | Bend down. The grey lifts off my eyes the closer I get to the step.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I count one narrow space after another when I have to get through a crowd.
+b : What counts as a space? | Do you squeeze through sideways?
+a : A place both ears will go without somebody's sleeve folding one flat. | Sometimes. My pocket goes on the inside so the coal doesn't get rubbed off on a big coat.
+
+scene sumpwall
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump a black mark on a door may just be me leaving a companion for later.
+b : What makes your mark different? | Is it always a wolf?
+a : Mine has an ear and the beginning of a second one. I'm saving the second ear for when I get back. | If it goes squiggly enough it can be a cloud. I'm not giving the cloud my lucky coal.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I leave the coal in a cloth when there's a lesson on.
+b : So the slate won't get dirty? | Does it stay in its cloth?
+a : Mostly so I have some spare luck to open when I reach the hard sums. | Yes unless I get my pocket inside out. The luck doesn't quite reach all the way to keeping my pockets right.
+
+scene quietfriend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd make the drawing's other ear point towards #self.friend#.
+b : Why in that direction? | Would you draw a whole friend as well?
+a : So when I'm not at home somebody has a coal ear ready for a quiet word. | Two whole wolves would take all my lucky end. I'll start with a pair of ears.
+
+scene fade
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain makes my drawn wolf look like it's been wrestling.
+b : And who won? | Doesn't the whole thing run?
+a : The rain got its tail down, but look at the legs. It's not done having a go. | For a bit. Then there's only one black toe left. That's enough to start it again later.
+
+scene private
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : If somebody cries they might be trying to get a bit of water out of an eye.
+b : Or might be sad? | Would you go for help?
+a : Yes. I can give the eyes a little room whichever it is. | If I'm asked. I wouldn't get a whole crowd just to see which eye was wet.
+
+scene window
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I wish my shadow wolf could climb right inside a coal lump when there's a crowd.
+b : Would it be lonely? | Where would you keep the lump?
+a : I'd knock on the coal. Then we'd both know there was somebody just out of sight. | Wrap it in cloth inside the pocket, near my knee so all my running comes along too.
+
+scene proportion
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I started my wolf's tail before its head and now the head won't fit.
+b : Can you turn the tail into a leg? | What if the head's looking round the corner?
+a : That's a thought. Then it needs three new ones and I'll have to bring more coal. | Yes! A wolf can learn a lot from that corner and save me a good piece of doorstep.
+
+scene steadybowl
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I want my stew in a bowl with a good lump of a bottom.
+b : Why so heavy? | Don't your two paws reach round it?
+a : So it will stick to a sill and wait while I get my feet to stop with me. | I can but then my coal paw makes a cloudy mark in the gravy. I don't think it seasons very well.
+
+scene headhome
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I draw my wolf's nose pointing home when there's very little light.
+b : Can you find the real way yourself? | Why just the nose?
+a : Yes. I know all the steps by how my feet keep wanting to jump them. | That's the bit that smells the mutton. If it goes right the rest will follow.
+
+adolescent
+
+scene pocketline
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The pocket's cleanest at the seam where I now keep the coal wrapped.
+b : Why bother wrapping it? | Has the luck faded?
+a : I'd like a clean cuff without giving up a good bit of company. | It lives inside the coal, I'd say. A little cloth couldn't get at it without knocking.
+
+scene markmap
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I've started drawing little arrows beside the old coal wolves.
+b : Where do arrows lead? | Which lasts longer in the wet?
+a : To the clear lane on a crowded afternoon. A drawing can do something beside keeping a lonely pup company. | The fat little arrow. A clear way out is well worth a firm mark.
+
+scene lineyield
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : In a bout I try moving the other wolf by making space to step into.
+b : Doesn't that let you get pushed back? | Would you use the move on a stair?
+a : A pace, perhaps, then I can turn on good footing. It's a measure better than shoving until we both sit down. | Never. I leave steps for going somewhere and a wrestling patch for landing safely.
+
+grown
+
+scene keepcoal
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I still keep one small piece of coal near a quiet seat.
+b : For a drawing? | For the fire?
+a : When the wall's fit for it. I like a thick mark that admits how the paw was feeling when it went down. | That would be the least imaginative use for something with such a good drawing edge.
+
+scene safequiet
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I measure a quiet space by whether my feet settle of their own accord.
+b : Is a silent room enough? | How does it feel with another wolf there?
+a : Not if it makes me think of all the eyes on the door. A little living sound can help. | Company that can sit awhile and let the feet settle is very welcome indeed.
+
+scene promisestep
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember being afraid that a crowd would rub the entire world off me.
+b : What part lasted? | Does drawing help with the memory?
+a : My marks lasted till the next rain. My recollection has done rather better. | Yes. Something under my control can come out of a very uneasy-looking black lump.
+
+scene stewgifts
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Two hot bowls and room to put one down make a meal feel properly shared.
+b : Why start with two bowls? | Does room matter as much as food?
+a : So there's something to pass across when a wolf trying to be polite hovers at the edge. | It can. A half-minute meal taken on a soggy step leaves a very different memory.
+
+scene moonrise
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk a dark drawing takes back the edges the light once gave me.
+b : Can you finish in twilight? | Do you like the change?
+a : I can mark where I'll begin when the day returns. I seldom make my best line with my face right against the plaster. | I do. A black wolf gets to run away into its own colour instead of waiting all night for me.
+
+scene wetplate
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I don't draw on a wet patch and hope it'll settle straight.
+b : Do the marks run? | Would you move elsewhere?
+a : They lose their edge and start to gather into a downward stream. Nice for rain, less nice for a standing figure. | If a drier bit of board is free. No need to hurry the weather with my sleeve.
+
+scene newsweather
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A charcoal outline is a poor witness to a living face.
+b : Because it may smear? | Would you ever draw a real event?
+a : Because I can change where it seems to be looking with one touch. I'd need more evidence than a thumb mark. | As an impression, labelled with a time and a place. I won't offer a likeness as a reason to blame a wolf.
+
+scene nearfriend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I save a place with a leaning post for #self.friend#.
+b : Why a leaning post? | Is the post for you as well?
+a : Two tired paws can have an honest rest there without anybody having to say the gossip's gone on long enough. | I'd rather have company at a comfortable slant than insist on a straight back and a grand chair.
+
+scene goodboots
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I turn my coat pocket in when I'm going through a narrow unknown lane.
+b : To keep the coal? | Is such a lane actually a short way?
+a : The coal and its dust. A stranger needn't go home with my portfolio on a clean sleeve. | Sometimes a wide long way takes less struggling. I've learned to count that distance too.
+
+scene footpeace
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I take restless feet for a walk instead of trying to talk them out of moving.
+b : Does a long walk help? | Can you do that when it's wet?
+a : Often two short circuits are enough. The legs want permission to go somewhere, not an order to wear out. | With comfortable shoes and a place to dry them, yes. I don't pretend the wet is pleasant to my toes.
+
+scene hushfly
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I keep a bowl covered till a meal has both somebody to share it and a place to be put.
+b : Does the cover keep the warmth? | Is there usually room?
+a : And keeps a fly from claiming the nicest patch. I'm quite content for the warmth to benefit only invited mouths. | A little space becomes a great deal larger once two wolves agree to eat at separate ends.
+
+scene newwall
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I imagine a house with one bit of pale wall set aside for marks that can be washed away.
+b : Why lose them again? | Would you let visitors add a mark?
+a : So tomorrow's uneasiness, or joy as it might be, has a clean place to begin. | If the wall was understood to be ours together, certainly. Some of the best lines on a journey come from two paws.
+
+young
+
+story coalnose [topic=memories]
+  : I rubbed my little black coal on a step and then scratched my nose with the same paw.
+  : I went round telling folks I'd made a drawing and everybody kept looking at my face instead.
+  b : How'd you find out?
+  : I saw the black nose in a clean bowl. The face was mine but the mark was just like my wolf's. I liked it better afterwards.
+
+story bowlfly [topic=food]
+  : I put my cover over the stew before going to look for a spoon.
+  : I heard a loud buzz. There was already a fly in residence under the cover.
+  b : Did it come out when you lifted the lid?
+  : Quicker than I got the spoon. I think it wanted its own bowl and a bit less roof.
+
+story bootpup [topic=pastimes]
+  : I drew the best boots I've ever seen right on my running wolf's feet.
+  : Then the picture looked so still I planted my toes opposite and set both feet moving double quick.
+  b : Did anybody win the race?
+  : My black wolf kept the boots and I kept my toes warm. I think we both did.
+
+young
+
+rule @run
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say Only on the soft patch, no shoving on steps. | Two feet down is one fair fall.
+
+rule @mist
+when concept=bark self.likes=misty_dawns
+does aside
+cooldown 8h
+say Leave one toe on the bit I know! | That's mist round the doorstep, not missing ground.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Lid on till the wings fly past. | The stew has enough little bits in it!
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One nose mark pointing home. | Last bit of black before it all goes dark.
+
+young
+dlg resident.hub : There's space beside my little wolf if you'll mind that nose with your toes.
+dlg resident.hub [topic.meeting=known] : My running shadow knows you, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Stay where both your shoes show. I'll mind the coal.
+dlg resident.hub [here.time=night] : Can't see the drawing now but I remember where the ears are.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I can make a little wolf out of two lines in the margin.
+dlg resident.job : I help the little black feet get where they're trying to go.
+dlg resident.bye : Take the clear bit of lane. The drawing and I can wait.
+
+young
+
+graft @blackpaws resident.hub
+choice Is the little shadow running towards something? -> blackpaws
+node blackpaws
+say It's running where the crowd opens up into a wolf-sized space. You can see where it's headed by the long nose. The feet sometimes start the wrong way.
+choice What does it do when it gets clear? -> blackpaws_more
+choice Leave the coal by the long nose. -> hub
+node blackpaws_more
+say Sit, I think. Till it remembers what sitting still feels like. I'll give it a really soft tail so it's got something nice to sit on.
+choice Leave the coal by the long nose. -> hub
+choice Go round the drawing. -> bye
