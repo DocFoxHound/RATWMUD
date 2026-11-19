@@ -750,6 +750,9 @@ def score_run(run: Run) -> dict:
         # too; the town's crime and news counted with the claims. Each talk once: one who hears it told is told it.)
         for cid, c in run.by_conv.items():
             people = {x for l in c for x in (l["who"], l.get("to", "")) if x}
+            # (Stage 4's end: a kin or friend who cuts in to defend the one spoken ill of, or the one talked of objecting, may
+            # have heard it before: the engine lets them, by design (Game::joiners), so they are not "told it again".)
+            people -= {l["who"] for l in c if any(m in ("join.defend", "join.object") for m in l.get("moves", []))}
             heard_here = set()
             for i, l in enumerate(c):
                 key = l.get("told_key")

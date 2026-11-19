@@ -3,7 +3,7 @@
   "rules": [
     {
       "id": "rain_now",
-      "match": "\\b(this rain|in this wet|(?<!when )(?<!unless )(?<!can't, )it's (?:still )?raining|it is raining|still raining|pouring down|drizzling|coming down in rods)\\b",
+      "match": "\\b(this rain|in this wet(?! (?:city|town|place|old city))|(?<!when )(?<!unless )(?<!can't, )it's (?:still )?raining|it is raining|still raining|pouring down|drizzling|coming down in rods)\\b",
       "needs_any": [
         "here.weather=rain|storm",
         "here.outdoors=rain|storm",
