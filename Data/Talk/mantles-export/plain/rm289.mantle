@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_mathis_slagwell
-title the bearer of the spare napkin
+title the spare napkin
 fits stage=adult|old
 prefers warmth=warm honesty=plain
 traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk smells_faintly_of_smoke_whatever_the_weather
+quirk rolls_a_spare_napkin_inside_a_smoky_cuff
 likes oatcakes riddles quiet_chapel autumn_wind
 dislikes gulls smoke
 fears embarrassing_somebody_in_public

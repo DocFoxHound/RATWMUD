@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for rmx_corra_gullford
-title the pebble for a missing road
+title the missing road
 fits stage=young|adolescent|adult|old
 prefers piety=devout temper=short
 traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
-quirk carries_a_wet_stone_whetting_knife_everywhere
+quirk pins_missing_roads_on_old_maps_with_a_whetstone
 likes hard_cheese wrestling old_maps first_warm_day
 dislikes bad_manners night_noise
 fears having_a_private_grief_drawn_for_show

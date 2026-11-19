@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_dorcas_rainford
-title the swimmer with the floating hood
+title the swimmer's floating hood
 fits stage=adult|old
 prefers talk=chatty humour=merry
 traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
-quirk never_goes_out_without_an_oilcloth_hood
+quirk floats_a_pebble_in_an_upturned_oilcloth_hood
 likes roast_pork swimming fresh_straw misty_dawns
 dislikes deep_mud early_bells
 fears losing_sight_of_a_swimmer

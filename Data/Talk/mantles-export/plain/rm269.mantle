@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier standard
 written_for rm_lotte_bilgeton
-title the player who keeps the captured pieces
+title the jury of draughtsmen
 fits stage=adult|old
 prefers warmth=warm talk=quiet
 traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
-quirk trusts_no_one_from_a_rival_house
+quirk sets_captured_draughtsmen_in_a_quiet_jury
 likes blackberries draughts quiet_chapel warm_rain
 dislikes gulls waiting
 fears losing_the_only_copy

@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_mathis_plankham
-title the porter with two empty straps
+title the porter's spare straps
 fits stage=adult|old
 prefers talk=plain honesty=guarded
 traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
-quirk swears_by_the_forge_and_the_sea
+quirk checks_beneath_a_load_before_using_the_spare_straps
 likes mutton_stew riddles sharp_knife autumn_wind
 dislikes smoke drizzle
 fears accepting_an_unseen_load
