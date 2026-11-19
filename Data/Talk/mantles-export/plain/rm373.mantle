@@ -16,7 +16,7 @@ hopes a_winter_service_with_the_doors_open
 topics faith +0.6 health +0.5 pastimes +0.3 day +0.3
 styles comfort=earnest gossip=reluctant refuse=hesitant tease=none
 marks oath saying
-persona persona #self.first# practises a blessing in the length of one breath and listens for the roof birds to finish the pause.
+persona #self.first# practises a blessing in the length of one breath and listens for the roof birds to finish the pause.
 
 words
 oath! = Rattle my cheese board | Turn my stool to the damp

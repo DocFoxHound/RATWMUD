@@ -60,13 +60,13 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 ## Voices
 
 - **rm346, the long way marked in blue.** This wolf marks the longer open way in blue and leaves an empty space on the map wherever a path disappears under branches.
-- **rm347, the count after the churn.** persona This wolf counts the turns inside the churn under one breath and spends the next breath making sure even the last wolf in line is heard.
+- **rm347, the count after the churn.** This wolf counts the turns inside the churn under one breath and spends the next breath making sure even the last wolf in line is heard.
 - **rm348, the sparrow steps.** This wolf makes small seed ledges at different heights and takes particular pleasure in noticing the first timid beak at the highest one.
 - **rm349, the coal that holds a note.** This wolf keeps a piece of charcoal pointed for writing choruses inside apple wrappers, sings toward the high windows and wants the next voice to ring out just as clearly.
 - **rm350, the candle bouts.** This wolf measures wrestling bouts against a candle notch and regards waking before the bell as a small victory better enjoyed in silence.
 - **rm351, the clerk of little wedges.** This wolf whittles smoke-scented little wedges to keep separate papers from travelling together.
 - **rm352, the hood on the peg facing out.** This wolf hangs an oilcloth hood facing the door and distinguishes a genuine welcome from a long description of one.
-- **rm353, the coal that walks.** persona This wolf balances a lucky coal on each hip and would sooner walk the length of a storm than sell a fish under a false description.
+- **rm353, the coal that walks.** This wolf balances a lucky coal on each hip and would sooner walk the length of a storm than sell a fish under a false description.
 - **rm354, the downhill map.** This wolf draws a stair as it looks to a wolf coming back down laden and has little patience for maps that stop at the destination.
 - **rm355, the line with two knots.** This wolf ties a tight knot for a debt and a loose one for a suspicion, fishes quietly at dusk and can turn a Northgate question aside without making the asker feel the hook.
 - **rm356, the borrowed echo.** This wolf tries a market cry against a wall, disguises a cough as a pause for breath, and knows what a quiet ending can do to a long tale.
@@ -75,18 +75,18 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 - **rm359, the margin cut clean.** This wolf keeps a hone for a paper knife, tests it on a stubborn margin and can give a detailed explanation of exactly why one private line should remain unwritten.
 - **rm360, the bark king.** This wolf keeps the bark on one draught piece, strives to see two moves past a crowded middle, and speaks with no patience for a price that changes halfway through a purchase.
 - **rm361, the dancer who leaves an extra bowl.** This wolf steps sideways as if making room in a dance and sets an extra bowl within reach of a visitor who might be too shy to ask.
-- **rm362, the straw tide gauge.** persona This wolf sets a bright straw at the rising edge of a gutter and measures every walk against a private date.
+- **rm362, the straw tide gauge.** This wolf sets a bright straw at the rising edge of a gutter and measures every walk against a private date.
 - **rm363, the price in a tune.** This wolf hums the prices of small wares just loudly enough to keep the parcels in order and carries the smoke of sealing string on both cuffs.
 - **rm364, the bird above the mast.** This wolf indexes vessels by the roofline over which each mast appears, regarding birds as excellent moving bookmarks and exceptionally unreliable permanent landmarks.
 - **rm365, the paper cradle.** This wolf folds paper cradles for glass stoppers, sings a quiet supporting part, and offers an unfamiliar customer the same steady hands as a friend.
 - **rm366, the hood pocket riddle.** This wolf carries a question in the dry fold of an oilcloth hood and gives a straight answer whenever a price or a promise is at stake.
 - **rm367, the dance step hidden in a hem.** This wolf rubs the charcoal off a thumb before marking a dance step in a spare hem and asks extremely particular questions about the rhythm.
-- **rm368, the halfway shout.** persona This wolf climbs two treads with every breath, talks readily across a market and keeps one unanswered question behind the teeth.
+- **rm368, the halfway shout.** This wolf climbs two treads with every breath, talks readily across a market and keeps one unanswered question behind the teeth.
 - **rm369, the missing hammerbeat.** This wolf makes a stoppage signal sound like a clearing throat and watches which heads turn before the next stroke.
 - **rm370, the three-turn storyteller.** This wolf rubs one of three notches in a paddle to bring back a story, takes an exact view of a butter pat, and treasures a little extra daylight for the walk home.
 - **rm371, the storm's reply.** This wolf addresses low questions to passing clouds, takes a quiet chapel for the best hearing place in town, and objects to any bell that speaks before a sleeper is ready.
 - **rm372, the latch in the corner of the eye.** This wolf chooses a bench with the gate in view and leaves the conversation open just wide enough for one civil question.
-- **rm373, the rest in the response.** persona This wolf practises a blessing in the length of one breath and listens for the roof birds to finish the pause.
+- **rm373, the rest in the response.** This wolf practises a blessing in the length of one breath and listens for the roof birds to finish the pause.
 - **rm374, the paper shoal.** This wolf folds spare paper into little fish whenever an oath nearly slips out and sometimes gives away an entire afternoon's temper as a cheerful bookmark.
 - **rm375, the hood held to the light.** This wolf inspects an oilcloth hood for pinpricks of light, keeps the counter tools in a private order and judges a promise by the side most people have neglected to turn over.
 - **rm376, the walking dividers.** This wolf walks a paper route with dividers, discusses a discrepancy at length and with relish, and draws a quiet breath before opening an account.

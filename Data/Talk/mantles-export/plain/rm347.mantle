@@ -16,7 +16,7 @@ hopes a_count_that_includes_the_lowest_voice
 topics work +0.6 food +0.4 pastimes +0.4 times +0.3
 styles comfort=frank gossip=expansive refuse=direct tease=none
 marks oath saying
-persona persona #self.first# counts the turns inside the churn under one breath and spends the next breath making sure even the last wolf in line is heard.
+persona #self.first# counts the turns inside the churn under one breath and spends the next breath making sure even the last wolf in line is heard.
 
 words
 oath! = Churn my buttons | Skim the tally clean

@@ -16,7 +16,7 @@ hopes a_dry_road_to_a_better_wage
 topics work +0.6 weather +0.5 dreams +0.4 prices +0.3
 styles comfort=quiet gossip=sparing refuse=careful tease=none
 marks oath saying
-persona persona #self.first# sets a bright straw at the rising edge of a gutter and measures every walk against a private date.
+persona #self.first# sets a bright straw at the rising edge of a gutter and measures every walk against a private date.
 
 words
 oath! = Float my last straw | Drown the short measure

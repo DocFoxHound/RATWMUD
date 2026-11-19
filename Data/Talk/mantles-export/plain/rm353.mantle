@@ -16,7 +16,7 @@ hopes a_map_with_a_walk_still_left_on_it
 topics travel +0.6 work +0.5 weather +0.4 prices +0.3
 styles comfort=direct gossip=exact refuse=firm tease=none
 marks oath saying
-persona persona #self.first# balances a lucky coal on each hip and would sooner walk the length of a storm than sell a fish under a false description.
+persona #self.first# balances a lucky coal on each hip and would sooner walk the length of a storm than sell a fish under a false description.
 
 words
 oath! = Split my thunder coal | Blacken the map border

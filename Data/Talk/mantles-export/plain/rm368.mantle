@@ -16,7 +16,7 @@ hopes an_oatcake_bought_with_unpromised_coin
 topics work +0.6 pastimes +0.4 prices +0.4 weather +0.2
 styles comfort=indirect gossip=selective refuse=equivocal tease=none
 marks oath saying
-persona persona #self.first# climbs two treads with every breath, talks readily across a market and keeps one unanswered question behind the teeth.
+persona #self.first# climbs two treads with every breath, talks readily across a market and keeps one unanswered question behind the teeth.
 
 words
 oath! = Halve my top stair | Crack my oat in two
