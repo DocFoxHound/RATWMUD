@@ -136,11 +136,12 @@ test('Talk opens the hub from afar after walking over; an older server keeps the
     commands.length = 0;
     assert.ok(s.sayDialogue('What brings you out in this weather?'));
     assert.deepEqual(commands.at(-1), {type: 'dialogue_say', session: 7, text: 'What brings you out in this weather?'}, 'free talk');
-    // No tree for them on this server: the talk target, as before.
+    // No tree for them on this server: nothing opens, and never the old talk target (doc 84 §13.2, Phase 12).
     s.dialogue = null;
     s.openDialogue('oda', 'talk');
     s.receiveEvent({type: 'dialogue_close', npc: 'oda', entry: 'talk', why: 'none'});
-    assert.ok(commands.some(c => c.type === 'action' && c.action === 'talk' && c.target === 'oda'), 'the old Talk');
+    assert.ok(!commands.some(c => c.type === 'action' && c.action === 'talk'), 'no old Talk');
+    assert.match(s.toast, /nothing to say/, 'said so');
 
     const old = onTheMap(false);
     old.state.openContextAt('bram', [120, 100]);

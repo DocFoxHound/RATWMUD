@@ -373,6 +373,9 @@ export class GameState {
     clientSight = false;
     private sightKey = '';
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
+    // A resident who glanced over at what was said in open chat (doc 84 §13.1.2, Phase 12): residents never answer chat,
+    // so the server says how to talk with them ("Talk to Myrtle (T)"), and T opens their window, for a minute.
+    talkHint: {npc: string; name: string; until: number} | null = null;
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
     // The World Map's scale (pixels a tile; 0 fits the whole realm, or the known places without it), its pan (tiles from
@@ -1200,6 +1203,11 @@ export class GameState {
             this.bookOpen = obj(e, 'book');
             return;
         }
+        if (type === 'talkHint') {
+            this.talkHint = {npc: str(e, 'npc'), name: str(e, 'name'), until: this.clock + 60};
+            this.showToast(str(e, 'text') || `Talk to ${str(e, 'name')} (T)`);
+            return;
+        }
         if (type === 'introducePrompt') {
             this.introducePrompt = {target: str(e, 'target'), text: str(e, 'text'), until: this.clock + num(e, 'seconds', 120)};
             return;
@@ -1885,6 +1893,13 @@ export class GameState {
             this.setChat(false);
             return;
         }
+        // While a dialogue window is open, words typed in the chat box are said in it (doc 84 §13.2, Phase 12): its free
+        // talk, answered there.
+        if (text && this.dialogue && this.channel === 'ic' && this.sayDialogue(text.replace(/^"(.*)"$/s, '$1'))) {
+            this.composer.text = '';
+            this.setChat(false);
+            return;
+        }
         if (text && this.channel === 'private' && !this.privateTo) {
             this.showToast('Choose a friend to write to, above the box.');
             return;
@@ -1894,7 +1909,7 @@ export class GameState {
             this.pendingDrafts.set(id, text);
             this.composer.text = '';
             this.send({type: 'chat', requestId: id, text, channel: this.channel, volume: this.volume,
-                ...(this.channel === 'ic' && this.talkTargets.length ? {targets: [...this.talkTargets]} : {}),
+                ...(this.channel === 'ic' && this.speakingTo().targets.length ? {targets: this.speakingTo().targets.map(t => t.id)} : {}),
                 ...(this.channel === 'private' ? {to: this.privateTo} : {}),
                 ...(this.channel.startsWith('circle:') ? {channel: 'circle', circle: this.channel.slice('circle:'.length)} : {})});
         }
@@ -2126,6 +2141,10 @@ export class GameState {
             this.sendAction('listen');
             return true;
         }
+        if (code === 'KeyT' && !this.dialogue && !this.battle) {
+            this.talkToNearby();
+            return true;
+        }
         if (code === 'Equal' || code === 'NumpadAdd' || code === 'Minus' || code === 'NumpadSubtract') {
             this.activate({rect: rect(0, 0, 0, 0), action: 'zoom', target: code === 'Equal' || code === 'NumpadAdd' ? 'in' : 'out'});
             return true;
@@ -2156,11 +2175,26 @@ export class GameState {
         if (id) this.send({type: 'artwork_report', id, reason: 'reported from a closer look'});
     }
 
-    /** A row of the In Sight list clicked: a resident is chosen (or let go) to speak to; anyone else, their menu. */
+    /** A row of the In Sight list clicked: their wheel (Talk on a resident's opens the dialogue window: residents are
+     *  never spoken to in open chat, doc 84 §13.2, Phase 12). */
     sightClicked(id: string, page: [number, number]) {
-        const e = this.entities.get(id);
-        if (e && e.kind === 'npc' && e.actions.includes('talk') && !e.beyond) this.toggleTarget(id);
-        else this.openContextAt(id, page);
+        this.openContextAt(id, page);
+    }
+
+    /** T: the window with the resident who last glanced over (a talk hint), else the one resident within reach. */
+    talkToNearby() {
+        const hinted = this.talkHint && this.talkHint.until > this.clock ? this.entities.get(this.talkHint.npc) : undefined;
+        const me = this.entities.get(this.selfId);
+        const near = me ? [...this.entities.values()].filter(e => e.kind === 'npc' && !e.self && !e.beyond && e.actions.includes('talk') &&
+            Math.hypot(e.x - me.x, e.y - me.y) <= 6).sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y)) : [];
+        const target = hinted && !hinted.beyond ? hinted : near[0];
+        if (!target) {
+            this.showToast('No one close enough to talk to.');
+            return;
+        }
+        this.talkHint = null;
+        if (this.dialogueServer()) this.openDialogue(target.id, 'talk');
+        else this.sendAction('talk', target.id);
     }
 
     toggleTarget(id: string) {
@@ -2170,7 +2204,8 @@ export class GameState {
 
     addTarget(id: string) {
         const e = this.entities.get(id);
-        if (!e || e.self || this.talkTargets.includes(id)) return;
+        // (Players only: a resident is talked with in the window, never as a target of open chat. Doc 84 §13.2.)
+        if (!e || e.self || e.kind === 'npc' || this.talkTargets.includes(id)) return;
         if (this.talkTargets.length >= MaxTargets) {
             this.showToast(`You can speak to ${MaxTargets} at once. Let one go first.`);
             return;
@@ -2180,12 +2215,9 @@ export class GameState {
 
     /** Who will hear the next words as meant for them, for the hint above the composer. */
     speakingTo(): {targets: EntityView[]; nearby: EntityView | null} {
-        const targets = this.talkTargets.map(id => this.entities.get(id)).filter((e): e is EntityView => !!e);
-        if (targets.length) return {targets, nearby: null};
-        // As the server decides: with no one chosen or named, the one resident close by, if there is only one.
-        const me = this.entities.get(this.selfId);
-        const near = me ? [...this.entities.values()].filter(e => e.kind === 'npc' && !e.self && Math.hypot(e.x - me.x, e.y - me.y) <= 6) : [];
-        return {targets, nearby: near.length === 1 ? near[0] : null};
+        // (No resident is ever "nearby" to be spoken to: residents don't answer open chat, doc 84 §13.2, Phase 12.)
+        const targets = this.talkTargets.map(id => this.entities.get(id)).filter((e): e is EntityView => !!e && e.kind !== 'npc');
+        return {targets, nearby: null};
     }
 
     /** The ground's wheel: what one can do here, on no one (commands.ts). */
@@ -2981,12 +3013,13 @@ export class GameState {
             return;
         }
         if (why === 'none' && entry && this.pendingDialogue?.target === npc) {
-            // No tree for them: the old way (the shop window; the talk target).
+            // No tree for them: the shop window for trade; for talk, nothing (never a talk target in open chat: doc 84
+            // §13.2, Phase 12).
             this.pendingDialogue = null;
             if (entry === 'trade') {
                 this.pendingTrade = {target: npc, until: this.clock + 20};
                 if (str(obj(this.snapshot, 'merchant'), 'id') === npc) this.openShopWindow(false);
-            } else this.sendAction('talk', npc);
+            } else this.showToast(str(e, 'text') || `${this.entities.get(npc)?.name ?? 'They'} has nothing to say to you just now.`);
             return;
         }
         if (entry) this.pendingDialogue = null;

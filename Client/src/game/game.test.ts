@@ -1044,42 +1044,47 @@ test('looking: the pointer names what is under it, from what the client already 
     assert.equal(at(2.5, 0.5), null);
 });
 
-test('talk targets: chosen from the list or a menu, sent with what is said, let go when out of sight or with Esc', () => {
+test('residents are talked with in the window, never as talk targets of open chat (doc 84 §13.2, Phase 12)', () => {
     const {state: s, commands} = testGame();
-    const snapshot: Json = {cell: {id: 'square'}, self: {id: 'me', x: 5, y: 5}, entities: [
+    const snapshot: Json = {cell: {id: 'square'}, self: {id: 'me', x: 5, y: 5}, dialogue: true, entities: [
         {id: 'ash', name: 'Ash', x: 6, y: 5, npc: true, actions: ['inspect', 'talk']},
         {id: 'bram', name: 'Bram', x: 14, y: 5, npc: true, actions: ['inspect', 'talk']},
         {id: 'wren', name: 'Wren', x: 5, y: 9, actions: ['inspect']}], time: 0, cellGeneration: 1};
     s.applySnapshot(snapshot);
     s.tick(0.016, 0.016);
-    assert.equal(s.speakingTo().nearby?.name, 'Ash', 'with no one chosen, the one resident close by');
+    assert.equal(s.speakingTo().nearby, null, 'no resident close by is spoken to');
     s.sightClicked('ash', [0, 0]);
-    s.sightClicked('bram', [0, 0]);
-    assert.deepEqual(s.talkTargets, ['ash', 'bram']);
-    s.sightClicked('wren', [10, 10]);
-    assert.deepEqual(s.talkTargets, ['ash', 'bram'], 'a player is not a talk target: their row opens a menu');
-    assert.equal(s.contextTarget, 'wren');
+    assert.deepEqual(s.talkTargets, [], 'a resident\'s row is not a talk target');
+    assert.equal(s.contextTarget, 'ash', 'it opens their wheel');
     s.contextTarget = '';
+    s.receiveEvent({type: 'talkTarget', id: 'ash'});
+    assert.deepEqual(s.talkTargets, [], 'nor does an older server\'s talk target make one');
     s.setChat(true);
-    s.composer.text = '"Good evening, both."';
+    s.composer.text = '"Good evening, all."';
     s.submitPost();
     const lastChat = () => commands.filter(c => c.type === 'chat').at(-1)!;
-    assert.deepEqual(lastChat().targets, ['ash', 'bram'], 'sent with what is said');
-    s.sightClicked('ash', [0, 0]);
-    assert.deepEqual(s.talkTargets, ['bram'], 'clicked again, let go');
-    s.receiveEvent({type: 'talkTarget', id: 'ash'});
-    assert.deepEqual(s.talkTargets, ['bram', 'ash'], 'the Talk menu item adds one');
-    s.receiveEvent({type: 'roleplay', id: 'r1', speaker: 'Ash', text: 'Evening.', to: ['you']});
-    assert.deepEqual(s.posts.at(-1)!.to, ['you'], 'a reply knows it was for you');
-    s.applySnapshot({...snapshot, time: 0.2, entities: [(snapshot.entities as Json[])[0]]});
-    s.tick(0.3, 0.016);
-    assert.deepEqual(s.talkTargets, ['ash'], 'out of sight, let go');
-    s.keyDown({code: 'Escape'});
-    assert.deepEqual(s.talkTargets, [], 'Esc on the map lets go of everyone');
+    assert.equal('targets' in lastChat(), false, 'said to no one in particular');
+    // A resident who glanced over: the hint, and T opens their window.
+    s.receiveEvent({type: 'talkHint', npc: 'bram', name: 'Bram', text: 'Talk to Bram (T)'});
+    assert.equal(s.toast, 'Talk to Bram (T)');
+    s.keyDown({code: 'KeyT'});
+    assert.equal(s.pendingDialogue?.target, 'bram', 'T: the hinted resident\'s window (walking over first)');
+    assert.equal(s.pendingDialogue?.entry, 'talk');
+    s.pendingDialogue = null;
+    s.keyDown({code: 'KeyT'});
+    assert.equal(commands.filter(c => c.type === 'dialogue_open').at(-1)?.npc, 'ash', 'without a hint, the one within reach');
+    // No tree for them: nothing opens, and no talk target is asked for.
+    s.receiveEvent({type: 'dialogue_close', why: 'none', npc: 'ash', entry: 'talk'});
+    assert.equal(commands.filter(c => c.type === 'action' && c.action === 'talk').length, 0, 'never the old talk target');
+    // With a window open, the chat box's words go to it.
+    s.receiveEvent({type: 'dialogue', session: 3, npc: 'ash', name: 'Ash', node: 'hub', line: 'Evening.', free: true, choices: []});
+    assert.ok(s.dialogue, 'the window is open');
     s.setChat(true);
-    s.composer.text = '"Anyone?"';
+    s.composer.text = '"Where is the smithy?"';
     s.submitPost();
-    assert.equal('targets' in lastChat(), false, 'with no one chosen, none are sent');
+    const said = commands.filter(c => c.type === 'dialogue_say').at(-1);
+    assert.equal(said?.text, 'Where is the smithy?', 'said in the window');
+    assert.equal(said?.session, 3);
 });
 
 test('regional weather: the weather where the wolf stands, its strength in words, and the field for drawing', () => {

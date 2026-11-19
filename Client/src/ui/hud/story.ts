@@ -438,7 +438,7 @@ export class StoryPanel {
         const s = this.s;
         const {targets, nearby} = s.speakingTo();
         const key = s.channel === 'private' ? JSON.stringify([s.privateTo, s.friends.map(f => [str(f, 'handle'), bool(f, 'online')])])
-            : s.channel !== 'ic' ? s.channel : JSON.stringify([targets.map(t => [t.id, t.name]), nearby?.name ?? '']);
+            : s.channel !== 'ic' ? s.channel : JSON.stringify([targets.map(t => [t.id, t.name]), nearby?.name ?? '', !!s.dialogue]);
         if (key === this.targetsKey) return;
         this.targetsKey = key;
         this.targets.replaceChildren();
@@ -463,7 +463,8 @@ export class StoryPanel {
         el('span', 'label muted', this.targets, targets.length ? 'TALKING TO' : 'SPEAKING TO');
         if (!targets.length) {
             el('span', nearby ? 'sage' : 'muted', this.targets, nearby ? `${nearby.name} (nearby)` : 'no one in particular');
-            el('span', 'muted small hint', this.targets, '· click a name in In Sight to choose');
+            // (Residents hear open chat but never answer it: they talk in their window. Doc 84 §13.2, Phase 12.)
+            el('span', 'muted small hint', this.targets, s.dialogue ? '· said in the open window' : '· to talk with a resident: Talk on them, or T');
             return;
         }
         for (const t of targets) {

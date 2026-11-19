@@ -57,7 +57,7 @@ test('in sight across a seam: one past it is listed while drawn, and the same wo
         'north', 2);
     assert.deepEqual(ids(s), ['bo', 'cy'], 'the same two, in the same order, the moment the wolf is over');
     assert.ok(s.entities.get('cy')!.beyond && !s.entities.get('bo')!.beyond, 'now Cy is the one past the seam');
-    // One past the seam is to be looked at, not spoken to: a click on its row opens its menu.
+    // A click on a row opens its menu (one past the seam, or any resident: doc 84 §13.2).
     s.entities.get('cy')!.actions = ['inspect', 'talk'];
     s.sightClicked('cy', [10, 10]);
     assert.deepEqual(s.talkTargets, [], 'not chosen to speak to');
