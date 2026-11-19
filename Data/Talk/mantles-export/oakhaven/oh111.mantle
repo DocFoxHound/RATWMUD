@@ -1,0 +1,307 @@
+# oh111, the notice-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh111
+revision 1
+state ready
+dialect oakhaven
+accent none
+tier standard
+written_for rm_wynn_fogworth
+written_by claude
+title the notice-reader
+fits stage=adult|old
+prefers job=official piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk reads_every_posted_notice_for_misprints
+likes hard_cheese stars old_maps thunder
+dislikes bad_manners cold_tea
+fears a_misprint_that_harms_somebody a_cloudy_winter
+hopes every_line_set_true a_clear_night_from_a_high_roof
+topics work +0.4 faith +0.3 weather +0.2 lore +0.2 family +0.2 gossip -0.4
+styles comfort=steady gossip=refuses refuse=plain tease=none
+marks oath saying
+persona #self.first# sets type at a press in the Commons and lives over it: devout, exact and plain-spoken, with no time for rudeness, who stops at every notice on every wall to read it for misprints, and saves the evenings for prayer, hard cheese, the stars and a storm heard from indoors.
+
+words
+oath! = Line and letter | Bright One keep the type true
+saying! = A misprint is a small lie | Set it right before it sets
+type = the type | a tray of letters
+proof = the proof | a proof sheet still wet
+notice = a notice | a notice on the wall
+misprint = a misprint | a letter set upside down
+stars = the stars | the stars over the roofs
+map = an old map | a map older than the roads on it
+cheese = a heel of hard cheese | a cheese hard enough to ring
+coldtea = cold tea | tea nobody drank in time
+manners = manners | plain good manners
+press = the press | the big press
+prayers = my prayers | evening prayers
+storm = a storm | thunder over the Commons
+ink = ink | fresh ink
+council = the Council | the Council clerks
+sheet = the sheet | today's sheet
+walls = the walls | every wall in the Commons
+lines = the lines | every line I set
+bright = the Bright One | the Bright One above
+notices = the notices | the posted notices
+city = the city | this city
+
+any
+opinion @1 church for 1 : #bright.capitalize# has carried me through worse winters than this one. I'll give an hour on Restday and not count it.
+opinion @2 dole for 1 : A full bowl for the hungry is the work #bright# asks of us. If #council# does it badly, at least it does it.
+opinion @3 city against 1 : Too many roofs, too much smoke, and half the street doesn't know the other half's name. #stars.capitalize# are the one thing it can't spoil.
+opinion @4 drink against 1 : I've watched drink empty a house faster than any thief. I'll take #coldtea# first, and I hate #coldtea#.
+opinion @5 houses mixed 1 : The Houses pay for half the notices we print, and they spell their own names right. #oath#, that's more than most.
+opinion @6 strangers mixed 0 : A stranger with #manners# is welcome at my door. One without can stand in the rain until they find some.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're welcome, if you're civil. | #greet#, #address#. Mind the fresh #ink# on the step.
+line @2 greet [self.working=yes self.job=official] : #greet#. I'll finish this line and then I'm yours. | #greet#. A moment; #proof# won't wait.
+line @3 greet [here.time=dawn] : #greet#. You're up before the lamps are out. | #greet#. #bright.capitalize# give you a straight day.
+line @4 greet [here.time=dusk|night] : #greet#. #stars.capitalize# are coming out, if the clouds allow. | #greet#. Late, but there's light enough to see you by.
+line @1 kin.open [pair.kin!=no] : There you are. Sit down; the pot's fresh, and there's no #coldtea# in this house. | Oh, it's you. Good. I've kept #cheese# back.
+line @1 again.open : #welcome_back#. Twice today; I'm glad you came. | You again. I'd have cut #cheese# if I'd known.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. It's good to see you. | #greet#. I was just saying #prayers# for the lot of us.
+line @3 greet.return [self.working=yes self.job=official] : #greet#. Go on; I can listen and set #type# at once. | #greet#. Mind your sleeve near #press#.
+line @1 farewell : #farewell#. | #farewell#. #bright.capitalize# keep you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Look up on your way, if it's clear. | #farewell#, and a quiet night to you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #go_ahead#. Tell it plainly, and I'll hear it plainly. | Go on. I'm listening, start to finish.
+line @1 react.news.new : #marvel#. That's not been on any #notice# I've read. | #oath#. I'd not heard a word of it.
+line @1 react.news.known : #knew#. It was on a wall by noon. | #knew#. It was pasted up before #ink# was dry.
+line @1 react.news.doubt : #doubt#. I'd want to see it written down, and spelled right. | Words get bent between one mouth and the next. I'll wait for #sheet#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll keep them in #prayers# tonight. | #sympathy#. #bright.capitalize# be near them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #bright.capitalize# is kind sometimes. | #congrats#. That's a happy thing to hear.
+line @1 answer.how : #fine#. Not one #misprint# all day. | Steady, thank #bright#. My eyes are tired, and that's the worst of it.
+line @1 answer.how.busy [self.working=yes self.job=official] : #busy.capitalize#. #council.capitalize# wants a sheet by dusk and it isn't set. | Busy, and the last pull hasn't dried yet.
+line @1 ask.how : And you? Keeping well, and not #poorly#? | How have you been, #address#, truly?
+line @1 sympathise : #sympathy#. Sit down. I'll pour you something hot. | That's a heavy thing. I'll take it to #bright# with you, if you'd like.
+line @1 reassure : #reassure#. #bright.capitalize# sees further than we do. | It'll set right. Most things do, with time and #bright#'s help.
+line @1 decline : #hedge#, but no. I've a sheet to finish and I'll not hand it in crooked. | I'm sorry; I can't tonight. I keep the evenings for #prayers#, and I won't skip them.
+line @1 accept_decline : #no_matter#. Another time, then. | That's fair. I'll ask again #later#.
+line @1 thank : #thanks#. That was kindly done. | Thank you. I'll remember it in #prayers#.
+line @1 deflect_thanks : #deflect#. It was only right. | There's no need. #bright.capitalize# saw it; that's thanks enough.
+line @1 preclose [self.working=yes self.job=official] : Well. #type.capitalize# won't set itself. | The #ink# will dry on the roller if I stand here.
+line @2 preclose : #preclose#. It's nearly time for #prayers#. | #excuse#. I've kept you long enough.
+line @1 accept_preclose : Go on, then. #bright.capitalize# keep you. | Of course. #bless#.
+line @1 ack : #bc_it_is# | Just so.
+line @1 give.advice : #advise#: read anything twice before you put your name to it. #saying#. | Say please. #manners.capitalize# open more doors than keys do.
+scene wall_notice
+when topic=smalltalk|times here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / ack
+a : There's #notice# on the corner with a word spelled wrong. I stood there reading it twice. | I read every notice on #walls#. I can't help it. Today there were two mistakes on one sheet. | Somebody pasted #notice# up the wrong way round. Not upside down. Back to front.
+b : Which word? | Two on one sheet? | How do you paste it back to front?
+a : Council, with one l. On a Council notice. #bright.capitalize# help us. | Two. Neither of them from #press#, I'm glad to say. | You paste the wet side out. I'll be up there in the morning with a fresh one.
+b : #bc_ha# | #bc_good# | #bc_fair_enough#
+
+scene setting_type
+when topic=work self.working=yes self.job=official
+does tell.self / react.self / assess / ack
+a : #self.trade_words.capitalize#. Every letter set by paw, one at a time, backwards. | I set #type# from the bell to the lamps. My back knows every hour of it. | #sheet.capitalize# runs about two thousand letters. I've counted, and I've set every one.
+b : Backwards? | Long days. | Two thousand?
+a : Backwards in the frame, so it comes out straight on #proof#. You stop noticing. | Long, and worth it. #lines.capitalize#, set true, go all over #city#. | Near enough. And if one is wrong, I'll find it, sooner or later.
+b? : #bc_clever# | #bc_true# | #bc_good#
+
+scene proof_twice
+when topic=work self.working=yes self.job=official
+does tell.self / ask.detail / answer.detail / assess
+a : I read every #proof# twice, once forward and once with my finger under each word. | The first pull off #press# goes to me, before anyone. | I found a whole line missing this morning. A whole line. Before it went out, thank #bright#.
+b : Why the finger? | What do you look for? | How did that happen?
+a : The eye skips. The finger doesn't. #saying#. | #misprint.capitalize#, mostly. Then the wrong word in the right place, which is worse. | A #tired# paw, late in a long day. Mine, I'm sorry to say.
+b : #bc_wise# | #bc_true# | #bc_poor_soul#
+
+scene hard_cheese_supper
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess / ack
+a : Supper is #cheese#, a heel of bread, and a quiet half hour. | I like #cheese#, the kind you argue with. The soft ones are no use to me. | I keep #cheese# wrapped in a cloth on the top shelf, out of reach of small paws.
+b : A quiet half hour sounds good. | Argue with it? | Small paws find a way.
+a : It's the finest half hour I have, after #prayers#. | You cut it thin and it lasts all week. That's an honest cheese. | They do. I've found the cloth on the floor twice this month.
+b : #bc_lovely# | #bc_fair_enough# | #bc_ha#
+
+scene tea_gone_cold
+when topic=food|day self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess / ack
+a : I poured a cup at noon, went to check one line, and came back to #coldtea#. | Nothing worse than #coldtea#. I'd rather go without. | Somebody left the pot standing and called it fresh. It was #coldtea#.
+b : That happens to me all the time. | I don't mind it cold. | That's bad manners, that.
+a : Then you know. One line is never one line. | Each to their own. I'll not drink it. #oath#. | It is. Two faults in one pot, and I'll say so.
+b : #bc_true# | #bc_fair# | #bc_ha#
+
+scene clear_night
+when topic=weather|dreams here.time=night here.weather=clear self.likes=stars
+does tell.feeling / react.self / assess / ack
+a : Look up. You can see the whole river of #stars# tonight, right over the Commons. | On a clear night I go up on the roof of #self.workplace# and stand there a while. | I've learned the names of the bright ones from an old book. I say them over at night.
+b : It is clear. | On the roof? | You know their names?
+a : Clear nights are few here. I take every one as a gift from #bright#. | Nobody bothers you on a roof. It's the nearest I get to a chapel at night. | A few. Not all. I'd not claim more than I know.
+b : #bc_lovely# | #bc_good# | #bc_wise#
+
+scene thunder_indoors
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / ask.detail / answer.detail / assess
+a : Listen to #storm#. I'd not trade that sound for any choir. | I've put the shutters to and sat by the window for #storm#. I want to hear every bit. | Thunder shakes the windows in their frames. I like it, #bright# forgive me.
+b : Doesn't it frighten you? | Every bit? | Won't they break?
+a : Not with a sound roof over me. Out in it, I'd feel different. | Every clap. It feels like the sky clearing its throat to say something. | Not these. They only shiver. So do I, a little.
+b : #bc_fair_enough# | #bc_lovely# | #bc_ha#
+
+scene rain_commons
+when topic=weather|day here.weather=rain here.region=ridgemere self.job=official
+does tell.complaint / react.complaint / assess / ack
+a : The rain's washed half #notices# off #walls#. | Damp gets into the paper and the #ink# won't take. I've a whole pile curling. | Rain on the roof all night. I'll be glad of a dry morning, and so will #press#.
+b : They'll have to print more. | Can you dry it out? | It'll pass.
+a : They will, and we'll set them again, and the rain will wash them off again. #oath#. | Near the stove, a sheet at a time. Slow work, but it's the only way. | It will. #bright.capitalize# never sends rain without an end to it.
+b? : #bc_ha# | #bc_good# | #bc_i_hope_so#
+
+scene old_maps
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I've #map# pinned over my table. Half its roads were never built. | I buy #map# whenever I find one cheap. I read them for the spelling. | There's a town on one of my maps that isn't anywhere. I've asked. Nobody's heard of it.
+b : Why keep it, then? | The spelling? | Maybe it's gone.
+a : Because somebody drew those roads with care. Care's worth keeping. | The old map-makers spelled every place three ways. I mark them in pencil, gently. | Maybe. Or maybe somebody set it wrong, a long time ago. #saying#.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene no_manners
+when topic=smalltalk|work self.dislikes=bad_manners self.job=official
+does tell.complaint / react.complaint / insist / ack
+a : A wolf came in today, threw a sheet on the bench and said "do this", nothing more. | I'll set anybody's words for them. I won't be shouted at while I do it. | Please and thank you cost nothing; #manners# never did. I can't see why some won't pay it.
+b : Did you do it? | Fair enough. | Some never learnt.
+a : I did it. Properly. Then I told them #manners# are customary here. | I'll stop #press# before I'll be shouted at. #oath#. | Then it's never too late. I'll teach them, one at a time.
+b : #bc_good# | #bc_true# | #bc_wise#
+
+scene evening_prayers
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail / assess
+a : I say #prayers# at dusk every day, even when #sheet# isn't finished. | I pray for #lines# to come out straight, and for clear sight. It may sound a small prayer. | I pray #bright# forgives my misprints, and to catch the ones I miss.
+b : Every day? | It doesn't sound small. | Does it catch them?
+a : Every day of my life. I'd feel the gap if I missed one. | It's the work I've been given. I'd like to do it well. | Some. The rest I find in the morning. That's an answer too.
+b : #bc_good# | #bc_true# | #bc_ha#
+
+scene spouse_press
+when topic=family|work self.married=yes self.spouse
+does tell.feeling / react.self / assess / ack
+a : There's no steadier paw in #city# than #self.spouse#'s. I've leaned on it for years. | My #self.spouse_word# says I read too much into every letter. It's true. | I'd trust #self.spouse# with any line I've set, and that is saying a great deal.
+b : That's a blessing. | Do you? | It is.
+a : It is. I thank #bright# for it, most nights. | I do. Somebody has to, or #city# would read nonsense. | From me, it is. I check my own work three times.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene little_one
+when topic=family self.parent=yes self.child
+does tell.feeling / reassure / assess / ack
+a : I pray for #self.child# every night, and twice when it rains. | I want #self.child# to have letters, the same as I had. I'm trying to be patient about it. | I worry about #self.child# more than I say. Less than I did, though.
+b : Every child needs that. | There's time. | Young ones are tougher than we think.
+a : I hope so. It's the one thing I'm sure I can give. | There is. I learned slowly too. #bright.capitalize# is patient with me. | I say so to myself, every evening, at the window.
+b : #bc_true# | #bc_good# | #bc_i_hope_so#
+
+scene under_the_trees
+when topic=home|memories self.away=yes self.from=oakhaven
+does tell.memory / ask.detail / answer.detail / assess
+a : Under the trees in #self.from_town#, you never saw the sky. I didn't see #stars# properly till I came to #city#. | I grew up in #self.from_town#. We had one book, at the chapel, and I read it to pieces. | Everything at home was slow. I liked it. I still walk slower than #city# wants.
+b[from=oakhaven] #home : That's so. You'd see a scrap of sky and call it a view. | One book. We had the same, and the same book, I'd guess. | You can take a wolf out of the trees.
+b : Never? | Only one? | Do you miss it?
+a@home : A scrap of sky, and we were glad of it. Here I get the whole thing. | Likely. The cover fell off long before I'd finished with it. | And the trees never quite out of the wolf. #bc_it_is#
+a : Only scraps of it, between the leaves. #city.capitalize# gave me the rest, and I'm grateful. | One. It taught me letters, and letters gave me #press#. | Some evenings. I say a prayer for it and go back to work.
+b : #bc_lovely# | #bc_good# | #bc_true#
+
+scene city_ways
+when topic=accent|travel self.away=yes self.from=oakhaven
+does tell.self / react.self / assess / ack
+a : In #city# folk talk so fast the words pile up. I wait, and say mine after. | In the Commons nobody says good morning to a stranger. I still do. | #city.capitalize# prints more in a week than my whole town read in a year.
+b : It's the city way. | Good for you. | That's a lot of reading.
+a : So I've learned. I still wait. #oath#. | Somebody has to. It might as well be me. | A lot of #misprint# too, I'm afraid. I find most of them.
+b? : #bc_true# | #bc_good# | #bc_ha#
+
+scene gossip_refused
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : There's talk going round the Commons. I'll not repeat it. | People bring us their gossip to print sometimes. #press.capitalize# doesn't print gossip. | There was a word at the pump this morning. I'll keep it until I know it's true.
+b : Not even a little? | Good. | And if it is true?
+a : Not even a little. A word said wrong can't be taken back. | We print what's signed and what's true. Talk is neither. | Then I'll still think twice. True things can do harm too.
+b : #bc_fair# | #bc_good# | #bc_wise#
+
+scene lean_sheets
+when topic=times|prices world.times=hard|lean self.job=official
+does tell.worry / reassure / assess / ack
+a : Hard weeks. Fewer notices, and most of them about the dole. | Paper's dear and #ink# is dearer. We're setting smaller letters to save it. | Folk are hungry. I see it in #notices# before I see it in the street.
+b : #reassure#. | Smaller letters? | That's a hard thing to see.
+a : I pray so. I'll keep setting what's needed till it turns. | Smaller, closer, and harder on the eyes. Mine especially. | It is. I set every word of it carefully. That's what I can do.
+b : #bc_i_hope_so# | #bc_poor_soul# | #bc_true#
+
+scene good_sheets
+when topic=times|prices world.times=good|boom self.job=official
+does tell.news / react.news / assess / ack
+a : #press.capitalize# has hardly stopped all week. Fairs, sales, weddings. | Good times are good for printing. Everyone wants #notice# up. | We've printed three wedding notices this week. I set every name twice to be sure.
+b : Good for you. | Everyone? | Three!
+a : Good for all of us, thank #bright#. Long may it last. | Everyone with coin, and a few without. #oath#, it's busy. | Three, and not one #misprint#. I'm prouder of that than I should be.
+b : #bc_good# | #bc_ha# | #bc_lovely#
+
+scene winter_dark
+when topic=season here.season=winter self.job=official
+does tell.self / react.self / assess / ack
+a : Dark when I start and dark when I finish. I set #type# by candle half the winter. | Winter is the best time for #stars#, when the clouds let me see them. | Cold paws are slow paws. I keep a pan of coals by the trays.
+b : That's hard on the eyes. | When they let you. | Coals by the type?
+a : It is. I'll need spectacles by spring, at this rate. | Which is seldom, here. So I take every clear night I'm given. | Not too close. Warm metal sets easier than cold.
+b : #bc_poor_soul# | #bc_true# | #bc_clever#
+
+story first_letters [topic=memories|lore self.away=yes self.from=oakhaven self.age>=30]
+  : When I was small, the only book in reach was the chapel's, back under the trees.
+  : An old reader there let me turn the pages if my paws were clean. I washed them till they were raw.
+  ask : Do you remember who taught you your letters?
+  b : I do. I still think of them. | Nobody. I picked them up as I went.
+  b[old] : My grandsire, with a stick in the dirt. The best teacher I had.
+  : That chapel book is why I'm at #press# today. #bright.capitalize# works slowly, and surely.
+
+story the_one_letter [topic=work|lore self.job=official]
+  : We once set a notice for #council# about a new tax on tea. One letter was wrong.
+  : It went up all over #city# announcing a new tax on teeth.
+  ask : Can you guess how many wolves came to complain?
+  b : Dozens, I'd guess. | None. They thought it was true.
+  b[old] : I remember a notice like that. I thought the Council had gone mad.
+  : Forty. I counted. I've read every proof twice since.
+
+story first_stars [topic=memories|dreams self.away=yes self.from=oakhaven self.likes=stars]
+  : The night I first left the trees, I came out onto open ground and the whole sky was there.
+  : I sat down in the road and stayed until the cart driver called me back.
+  b : I'd have done the same. | You'd never seen it before?
+  b[from=oakhaven] : The first time you see it without leaves in the way, you don't forget it.
+  : I've looked up every clear night since. It's the nearest I come to seeing #bright#'s own paw.
+
+rule @notice_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Council with one l. #oath#. Again. | Who pasted #notice# up crooked? It's crooked.
+
+rule @press_bark
+when concept=bark working=yes self.job=official
+does aside
+cooldown 6h
+say Mind #proof#; it's still wet. | Nobody touch #type#. I've a line half set.
+
+rule @manners_bark
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 10h
+say A please wouldn't kill anyone. #oath#. | #manners.capitalize#, if you would. It costs nothing.
+
+rule @dusk_bark
+when concept=bark here.time=dusk self.piety=devout
+does aside
+cooldown 12h
+say Time for #prayers#. The sheet can wait an hour. | Bright One, keep the day's lines straight, and the night's.
+
+dlg @1 resident.hub : #greet#. What can I help you with? Ask plainly. | #greet#, #address#. Mind the #ink#; then tell me what you need.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. It's good to see a civil face again. | #topic.player#. Welcome back. Sit, if you like, and mind the #ink#.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'll hear you, so long as you keep a civil tongue. #manners.capitalize# first.
+dlg @1 resident.job [self.job=official] : #self.trade_words.capitalize#. I set the letters for every notice that goes up in #city#. | I set #type# at #self.workplace#. If you've read a wall this month, you've read my work.
+dlg @2 resident.job : I do my work as well as I can, and I thank #bright# for it. That's all there is.
+dlg @1 resident.bye : #farewell#. #bright.capitalize# keep you. | #farewell#, #address#. Read carefully.
+graft resident.hub
+choice Why do you stop and read every notice? -> notices
+node notices
+say For the mistakes. I can't pass a sheet on a wall without reading it for #misprint#. Most days I find one.
+mood calm
+free
+choice What do you do when you find one? -> notices_fix
+choice Goodbye. -> bye
+node notices_fix
+say If it's ours, I set it again and paste it up myself. If it's somebody else's, I say a small prayer for them and walk on.
+choice That's kind of you. -> hub
+choice Goodbye. -> bye

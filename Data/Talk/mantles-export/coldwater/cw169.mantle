@@ -1,0 +1,311 @@
+# cw169, the rain-bettor (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw169
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_fenwick_millmarsh
+written_by claude
+title the rain-bettor
+fits stage=adult|old
+prefers job=merchant humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk bets_a_copper_on_when_the_rain_will_stop
+likes barley_soup dice market_bustle summer_evenings
+dislikes crowds waiting
+fears ending_up_in_the_same_two_rooms a_queue_with_no_end_to_it
+hopes a_house_up_the_heights a_shower_that_stops_when_called
+topics weather +0.5 pastimes +0.4 family +0.3 work +0.2 food +0.2 faith -0.2
+styles comfort=cheer gossip=eager refuse=soft tease=merry
+marks oath saying
+persona #self.first# helps in the family shop in the Commons and watches every shower from the doorway as if it must stop any moment, a copper on it: warm, chatty, quick to tease, fond of a throw of the dice, set on ending up somewhere grand.
+
+words
+oath! = Bless the gutters | Sixes, by all that's dry
+saying! = It's only passing through | Throw again, it's bound to turn
+shower = this shower | the shower
+gutters = the gutters | the gutter spouts
+bet = a copper on it | a copper says so
+odds = two to one | three to one, and I'm generous
+dice = the dice | my old bone pair
+throw = a throw | a lucky throw
+soup = barley soup | a bowl of barley with plenty of pepper
+bustle = the market at full tilt | a market fit to burst
+crush = a crush | folk packed elbow to elbow
+queue = a queue | a line that never moves
+shop = the shop | our shop
+counter = the counter | our counter
+heights = the Heights | a house up the Heights
+evening = a summer evening | a long warm evening
+doorway = the doorway | the shop doorway
+step = the step | our front step
+copper = a copper | my last copper
+green = the green | the dancing green
+chatter = a bit of chatter | a good natter
+lamp = the lamp | the shop lamp
+puddles = the puddles | every puddle in the street
+string = string and candles | pegs and string and soap
+
+any
+opinion @1 festivals for 2 : One day's dancing does more for you than a week in bed. I'd lay #bet#.
+opinion @1 newcomers for 2 : Room for everyone who'll lift a sack, I say, and a stool at #counter# for after.
+opinion @1 strangers for 2 : A traveller buys #string#, tells you the news three streets off, and leaves you better than they found you.
+opinion @1 dole for 1 : Not a wolf in the Commons should sleep on an empty belly. I'll pay my share and a bit, gladly.
+opinion @1 drink for 1 : A jar with friends never did anybody harm. Two jars with friends, I'd still lay #odds# it's fine.
+opinion @1 city mixed 1 : Smoky, loud, and half of it's stairs. But there's #heights# at the top of it, and I mean to get there.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! Come in, come in, mind the step. | #greet#, #address#. I'd lay #bet# you've forgotten the #string#.
+line @2 greet [self.working=yes self.job=merchant] : #greet#! Whatever you came for, it's on the second shelf. | #greet#. Don't mind the boxes; we've just had a delivery.
+line @3 greet [here.time=dawn] : Morning! Fine one, so far. I've #bet# it holds. | Morning, #address#. Dry so far, and I'm counting on it.
+line @4 greet [here.time=dusk|night] : #greet#. The lamps are lit and here you are. Lovely. | #greet#. Late, but I'm glad of the company.
+line @5 greet [here.weather=rain] : #greet#! Get yourself under the eaves. It'll stop in a minute. | #greet#. Wet, isn't it? Not for long, mind.
+line @1 kin.open [pair.kin!=no] : Look who it is! I'd been telling #counter# I wanted a word. | Oh, it's you. Sit, sit. There's #soup#.
+line @1 again.open : Back again! I'll start charging you rent for #step#. | Twice today. You must like #chatter#.
+line @1 greet.return : #greet#! | #greet#, #address#. Good to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#! Just the face I wanted at #counter#. | #greet#. Sit down, I'll put the soup on.
+line @3 greet.return [here.time=dusk|night] : #greet#. Late one, isn't it? | #greet#. Come in, the lamp's still lit.
+line @1 farewell : #farewell#! | #farewell#. Don't be a stranger.
+line @2 farewell [here.weather=rain] : #farewell#. Run for it; it'll stop the moment you're home. | #farewell#. Keep under the eaves.
+line @1 farewell.return : #farewell#! | #farewell#, #address#. Come back soon.
+line @1 react.news : Go on, go on, #address#. I'm all ears. | Tell me everything. Start at the start.
+line @1 react.news.new : #surprise#! Well, that's a new one. | #oath#! Nobody tells me anything.
+line @1 react.news.known : #knew#. Heard it at #counter# this morning. | Oh, I had that one. Every customer brought it to #counter#.
+line @1 react.news.doubt : #doubt#. I'll lay #odds# against that. | That's been stretched a #very# long way.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, that's hard. | Oh no. I'm sorry, I truly am.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! Now that's worth hearing. | #good.capitalize#! We'll raise #drink# to that.
+line @1 answer.how : #fine#! Never better, near enough. | Can't complain. Well, I can, but I won't. | Happy as a wolf in a dry #doorway#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, and glad of it. | On my feet since #shop# opened. Mustn't grumble.
+line @1 ask.how : And how are you keeping? | You look well, #address#. Are you?
+line @1 sympathise : #sympathy#. Come and sit. There's soup, if you want it. | Oh, that's rotten. Sit a while and tell me.
+line @1 reassure : #reassure#. It's only passing over. | It'll come right. #saying#.
+line @1 decline : I'd love to, I would, but #shop# won't mind itself and there's nobody else in. | #hedge#, but not today. I promised I'd be at #counter# till close.
+line @1 accept_decline : #no_matter#. Another time! | Not to worry. Next time, #bet#.
+line @1 thank : #thanks#! You're a good sort. | That's #good# of you. You'll get the best pegs for that.
+line @1 deflect_thanks : #deflect#. You'd do the same. | Get away. It was nothing.
+line @1 preclose [self.working=yes] : Well, #counter#'s calling me. | That's #shop# door again. I'll have to go.
+line @2 preclose : Well. #preclose#. | Look at the time. I've worn you out with my chatter.
+line @1 accept_preclose : Go on, off you go. #farewell#. | Of course. Go, before I start another story.
+line @1 tease [pair.band=friends] : Your face is longer than #queue#. Cheer up, #address#. | I've seen snails get round quicker than you.
+line @1 tease.return : Says the wolf with #soup# on the chin. | You'll pay for that, #address#. In soup.
+line @1 ack : #bc_right# | #bc_ha#
+scene rain_bet
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail / assess
+a : #bet#, this lot stops before the next bell. | It's easing. Look at #gutters#. It's easing, I tell you. | I've watched #shower# from #doorway# an hour. Any minute now it'll give up.
+b : You'll lose that copper. | Is it? | An hour?
+a : I always lose #copper#. I'll bet again tomorrow. | Well, it was. #rain.capitalize#'s just having a think. | An hour, and I'd watch another. It's bound to tire before I do.
+b : #bc_ha# | #bc_we_will_see# | #bc_poor_soul#
+
+scene rain_doorway
+when topic=weather|day here.weather=rain here.time=dusk|night
+does tell.feeling / react.self / assess
+a : I like to stand in #doorway# when it's coming down. Somebody has to keep an eye on it. | #rain.capitalize# every evening this week. And every evening I've said it'll stop. | You can hear #gutters# going all the way down the street. Like a choir that won't finish.
+b : Keep an eye on it? | Has it? | A choir?
+a : In case it stops. I'd hate to miss it from #doorway#. | Not once. I'm a patient wolf. Patient and wrong. | A choir. Out of tune, but keen.
+
+scene rain_stopped
+when topic=weather here.weather=clear here.time=day
+does tell.news / react.news / assess
+a : See? Stopped. #oath#, I said it would. Nobody listens. | Dry! I had #bet# on it at dawn and I'm owed. | There, the sun's out. #saying#.
+b : It was bound to, sooner or later. | Who owes you? | Lucky guess.
+a : Sooner or later, and I said sooner. Close enough. | Myself. I bet myself. I'll buy myself #soup#. | A guess? I've been guessing for years. One of them was bound to land.
+
+scene dice_night
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : #dice.capitalize# tonight, if anyone's game. Coppers only; I'm not a fool. | I threw three sixes last Restday. Three! Nobody believed me. | #dice.capitalize# in my pocket, always. You never know when somebody's bored.
+b : I might be. | Three sixes? | Do you win much?
+a : Come by after #shop# shuts. I'll even let you throw first. | Three. Then I lost the lot on the next throw. That's #dice# for you. | Win? No. I lose cheerful. There's the whole secret.
+b : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene dice_luck
+when topic=pastimes|friends self.likes=dice
+does give.advice / react.self / assess / ack
+a : #dice.capitalize# can tell when you want it too much. Want it less. | Never pick up #dice# hungry. They know. | If you lose three in a row, stop and buy a round. That turns #luck#.
+b : They can tell? | Do they? | Does it?
+a : Swear to it. Want it less and they come round. #saying#. | Every time. #soup.capitalize# first, then throw. | Never once. But the round's good, so I keep doing it.
+b : #bc_ha# | #bc_maybe# | #bc_ha#
+
+scene market_bustle
+when topic=smalltalk|pastimes here.region=ridgemere self.likes=market_bustle
+does tell.feeling / ask.detail / answer.detail / assess
+a : Give me #bustle# on a Marketday. Shouting, haggling, a cart losing its apples. Lovely. | I love #bustle#. Everybody selling, everybody arguing. | The market at noon! You can hear it from #counter#. Finest din in Ridgemere.
+b : I'd have thought it too loud for you. | Arguing? | Best?
+a : Loud's fine. It's being packed in I can't bear. There's a difference. | Arguing's half the fun. The other half's the apples. | Finest racket going. Better than rain, even. Don't tell the rain.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene the_crush
+when topic=smalltalk|festival self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : There was #crush# at the market gate this morning. I couldn't move a paw. | I like a busy street. I don't like being a cork in #crush#. | Feast days I go early, before #crush#. After that it's elbows.
+b : It does get packed. | A cork? | Early's wise.
+a : Packed like the soup jars. I came home with somebody else's ribbon. | A cork, stuck tight, with a basket on my head. Never again. | Early, and home again before #crush#. That's my feast.
+
+scene the_queue
+when topic=smalltalk|work self.dislikes=waiting
+does tell.complaint / sympathise / assess
+a : I stood in #queue# at the Office half the morning. Half! | I hate waiting. I'd rather do anything else, and I've tried most things. | You'd think a wolf who watches #rain# would be good at waiting. I'm not.
+b : Half the morning? | Most things? | You're not?
+a : And at the front they pointed me at another #queue#. | Counting tiles, humming, talking to the wolf behind. It's still waiting. | #rain.capitalize#'s different. It's going somewhere. #queue.capitalize#'s going nowhere.
+
+scene shop_shelves
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : We sell everything nobody remembers to buy. #string.capitalize#. Somebody always needs string. | Behind #counter# all day, and I talk to every soul who comes in. It's the best part. | #shop.capitalize#'s the family's. I fetch, carry, chat, and count change. Mostly chat.
+b : Somebody always does. | Every soul? | Mostly chat, eh?
+a : Always. I could sell #string# to a spider. | Every one. Some of them even buy something. | Mostly. The change gets counted in the end.
+
+scene shop_folk
+when topic=work|newcomer self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : A traveller came in to #counter# for soap and stayed an hour telling me about the road. Nicest hour I've had all week. | We had a customer this morning who wanted candles and left with #dice#. I'm a bad influence. | There's an old wolf comes in every day for one peg. One. I think it's for the company.
+b : What did they say about the road? | Dice? | Only one peg?
+a : It's long, and it's wet, and there's a good pie at the far end. That's all I need to know. | My own spare pair. I'll get them back; everyone does. | One peg. I give him a second free, and we talk about the #rain#.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene family_shop
+when topic=family|work self.married=yes self.parent=yes self.job=merchant
+does tell.self / react.self / assess
+a : It's a family shop. My #self.spouse_word# and #self.child# and me, all under one roof and #counter#. | I've the best #self.spouse_word# in the Commons. I tell everybody, and everybody agrees with me. | Working with family's grand. You can't sulk; they know where you sleep.
+b : That's a lot of family in one place. | Lucky you. | Ha. True enough.
+a : It is, and we've not killed each other yet. That's love. | Lucky, and I'd say so to the Watch. I'd lay #bet#. | True, and there's always somebody to blame for #string#.
+
+scene child_proud
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : #self.child#'s cleverer than me by a mile. Keep that under your hat. | I'm proud of #self.child#. I say it so often folk have started saying it for me. | #self.child# runs rings round me with the sums. I just talk.
+b : Your secret's safe. | That's nice to hear. | Talking's a skill.
+a : It won't be. I'll tell them myself by teatime. | Nice to say, too. I recommend it. | It is! It's the one I've got, and I use all of it.
+
+scene barley_soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail / assess
+a : #soup.capitalize#, cold day, and nothing to do. That's my idea of luck. | I make #soup# on a Restday and it lasts till Hearthday. | Barley soup. Plenty of pepper. If it doesn't make you sneeze, it's not right.
+b : That's simple luck. | That long? | Sneeze?
+a : Simple's the best kind. You can count on it. | Till Hearthday, and better every day of it. | Sneeze, then smile. That's how you know.
+b : #bc_lovely# | #bc_good# | #bc_ha#
+
+scene summer_evening
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : #evening.capitalize#. Shop's shut, door's open, and the street smells of somebody's supper. | #evening.capitalize#. The light goes on forever and nobody hurries. | Summer evenings I'm out on #step# talking to everyone who passes. Everyone.
+b : It's a fine one. | Forever? | Everyone?
+a : Fine as they come. I'd bottle it if I could. | Near enough. You could read a letter at the tenth bell. | Everyone. Some of them stop. Most of them stop. I'm hard to get past.
+
+scene heights_dream
+when topic=dreams|travel here.region=ridgemere
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll have #heights#. A window that looks down on the rain instead of up at it. | I mean to end my days up the hill. #heights.capitalize#, for preference. | I walk up to the Heights on a Restday just to look at the doors. I've picked mine.
+b : And how's that to be done? | For preference? | Which one?
+a : Saving, and #dice#, and a good deal of hoping. | Well, I'd settle for the middle of the hill. But I'll aim for the top. | The green one with the brass knocker. They don't know it's mine yet.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : Back in #self.from_town# the #rain# came across the lake like a curtain. You could watch it coming. | I learned to bet on the rain on a jetty in #self.from_town#. My #grandad# took my coppers every time. | On the shore at #self.from_town# you could stand and see where the #rain# stopped. A line on the water.
+b[from=coldwater] #home : Like a curtain, yes. | Grandads always win. | I've seen that line.
+b : Do you miss it? | Every time? | A line?
+a@home : So you'll know why I stand in doorways. | Always. I think he could smell it. | Then you know. You could walk out of the rain into the sun.
+a : #rain.capitalize#, a bit. Here it just arrives without warning. | Every time. I've been trying to win them back since. | A line, straight across. Rain this side, sun that side. I've never seen the like since.
+
+scene no_accent
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : Nobody takes me for a lake wolf. I've talked city since I could reach #counter#. | I lost the lake from my voice years back. I kept #soup#, though. | Nobody hears #self.from_town# in me till I start on about the rain.
+b : You'd never know. | That's the important bit. | Then they know?
+a : That's what they all say. Then I mention fish. | It is. You can lose a voice and keep a recipe. | Then they know. Nobody else watches rain like a lake wolf.
+
+scene feast_day
+when topic=festival|season
+does tell.self / react.self / assess
+a : Feast day! I'll dance till my legs give out, then I'll dance sitting down. | A day's dancing beats a week abed. I've tried both, many times. | I'm first on #green# and last off it. Before the crowd, mind, and after.
+b : Sitting down? | Tested it? | Before the crowd?
+a : Sitting down, tapping, waving. It counts. | Many times. The dancing wins. I'm tired after either way. | Before the crowd and after. In the middle I hide behind the cider.
+
+scene good_news
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept topic.subject
+does tell.news / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#! I heard it at #counter#. | They're saying #topic.subject# #topic.claim#. Isn't that lovely? | Good news for once: #topic.subject# #topic.claim#. I've told six people already.
+b : I hadn't! | It is. | Six?
+a : Now you have. Pass it on; that's what it's for. | Lovely. The whole street's smiling. | Six, and you're seven. I'm aiming for twenty by dark.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : One candle a customer now, and it was three. I notice it at #counter#. | Lean times. We give credit at #counter# now. Can't not. | Hard week. Even #dice# are cheap; nobody's betting more than a penny.
+b : Hard for everyone. | Will they pay? | A penny?
+a : Everyone. But it'll turn. It always turns. #saying#. | They'll pay. Folk are good, mostly. I'd lay #bet#. | A penny. I lost it anyway. Some things never change.
+
+story the_grandad_bet [topic=memories self.from=coldwater self.age>=25]
+  : As a pup on the jetty I'd sit by my #grandad#, and he'd say, a copper says it stops before the boats come in.
+  : I took that bet every day for a whole summer. I never won once.
+  : The last day of summer he paid me the whole lot back, in a jar. Said I'd earned it for stubbornness.
+  ask : Did anybody ever let you lose, just to teach you something?
+  b : My mother, at cards. I'm still bitter.
+  b[old] : I've done it myself, to every pup I've had.
+
+story rain_feast [topic=festival|memories self.age>=20]
+  : One feast day it poured from first light. Everyone stayed in.
+  : I went out on #green# anyway, and danced on my own in the wet, sure it'd give over any minute.
+  : By noon there were thirty of us out there, dancing with it. Best feast I've had.
+  b : Thirty of you, in the rain? You're a bad influence.
+  b[friends] : I was one of them. I'm still damp.
+
+story the_long_queue [topic=smalltalk|memories self.dislikes=waiting]
+  : I stood in #queue# at the Office once, from the morning bell to the noon bell for a stamp.
+  : When I got to the front, the clerk said I'd been in the wrong line the whole time.
+  : I laughed so hard they gave me the stamp anyway, just to get rid of me.
+  ask : What's the longest you've ever waited for something small?
+  b : A whole day for a cart that never came.
+  b[wealth=rich] : I send somebody else to wait. Sorry.
+
+rule @shop_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say #string.capitalize#! Everything you forgot, and a few things you didn't! | Soap, pegs, candles! Come in off the street!
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 6h
+say Any minute now. #bet.capitalize#. | #oath#! It's easing. I'm sure it's easing.
+
+rule @crush_bark
+when concept=bark here.place=market self.dislikes=crowds
+does aside
+cooldown 10h
+say #crush.capitalize# again. Mind your elbows! | Too many feet in one street. #oath#.
+
+rule @evening_bark
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 12h
+say Now that's #evening#. | Out on #step#, then. Lovely.
+
+dlg @1 resident.hub : #greet#! Name it, and I'll find it. | #greet#, #address#. Come in, come in.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. I knew you would be. | #topic.player#! #greet#. Sit down.
+dlg @3 resident.hub [here.weather=rain] : #greet#. Get under the roof, quick. It'll stop soon; I've a copper on it.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Easy, now. There's no trouble in here. | Steady on. Say what you need.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Fetching, carrying, talking. Mostly talking. | #shop.capitalize#'s the family's. Whatever you forgot, it's in here.
+dlg @2 resident.job : #self.trade_words.capitalize#. Keeps me out of the #rain#. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new, and I'd know. Everything comes past #counter#.
+dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. It came in with the first customer. | From #world.news_from#: #world.news#. Isn't that something?
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Not from me, mind. Well, from me. | Folk are saying #topic.subject# #topic.claim#. That's all I know, honest.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing worth passing on, sadly. And I'd pass it.
+dlg @1 resident.bye : #farewell#! Come back soon. | #farewell#, #address#. Mind the puddles.
+graft resident.hub
+choice Do you think it'll stop raining? -> rain_bet
+node rain_bet
+say Any minute. I'd put #copper# on it. I've put a copper on it every rainy day for years, and I'm well behind, but this one feels different.
+mood pleased
+free
+choice Why do you keep betting? -> rain_why
+choice Goodbye. -> bye
+node rain_why
+say Because the day I'm right, I want to be stood in #doorway# to see it. It's only passing through. It always is.
+choice I hope you win. -> hub
+choice Goodbye. -> bye

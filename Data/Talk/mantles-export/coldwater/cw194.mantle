@@ -1,0 +1,495 @@
+# cw194, the rain-watcher at the bench (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw194
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for rm_imogen_cinderwell
+written_by claude
+title the rain-watcher at the bench
+fits stage=adult|old
+prefers role=merchant job=crafter piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk watches_the_rain_as_if_it_might_stop
+likes hard_cheese evening_line fresh_straw warm_rain
+dislikes gulls smoke
+fears a_spark_among_the_shavings green_wood_sold_as_seasoned
+hopes one_dry_week_in_ridgemere the_bench_handed_on_true
+topics weather +0.5 work +0.4 faith +0.4 food +0.2 memories +0.2 family +0.2 gossip -0.5
+styles comfort=prayer gossip=closed refuse=plain tease=none
+marks oath saying
+persona #self.first# cuts and fits wood at a Commons bench and lives over the shop: devout, blunt and plain-spoken, a grace said over every board, a hard cheese at noon, and one eye always on the rain at the window, waiting for it to stop.
+
+words
+oath! = Grain and grace | By the true grain | Bright One plane me smooth
+saying! = Rain finds the joint you skimped | Dry wood keeps its word
+easing = Easing off, that is | It's slackening, look | Lighter already
+bench = the bench | my bench by the window
+plane = the plane | my long plane
+shavings = shavings | curls off the plane
+timber = seasoned oak | timber a year in the stack
+joint = a joint | a good tight joint
+door = a sticking door | a door swelled tight in its frame
+glue = the glue pot | hot glue
+cheese = a hard old cheese | cheese with a rind you could plane
+line = a line | my old line and float
+straw = new straw | straw laid fresh under the bench
+warmrain = a warm rain, after dry days | rain with summer in it
+gulls = the gulls | those gulls on the ridge tiles
+sill = the sill | the window sill
+lake = the lake at home | the still lake
+jetty = the jetty | the old jetty back home
+damp = the damp | damp in the grain
+oak = oak | good oak
+window = the window | my window on the street
+step = the step | my front step
+city = the city | this city
+chapel = chapel | the corner chapel
+pine = pine | cheap pine
+wax = wax | a rub of beeswax
+
+any
+opinion @1 church for 2 : I take to chapel what I can't plane straight myself. #oath#, I've never once come out worse for it.
+opinion @1 dole for 1 : Bread for the hungry is the plainest prayer there is. I give to it at #chapel#, and I'll not be thanked for it.
+opinion @1 drink against 1 : I've watched a good joiner's paws shake from #drink#. I'll keep mine steady and my head clear.
+opinion @1 merchants for 1 [self.role=merchant] : I sell what I make over my own counter. #timber.capitalize# is paid for twice before anyone buys it: the cart, then the waiting.
+opinion @1 road against 1 : The carts come later by the month. Late #oak# is dear #oak#, and it's me the customer blames.
+opinion @2 road against 2 [world.wagons=raided] : Raiders on the road, and #timber# sat in a ditch somewhere. The Bright One mend it, for nobody else will.
+opinion @1 watch for 1 : Nobody's walked off with #plane# yet, and I put that down to the Watch on the corner. I'll speak well of them.
+opinion @1 city against 1 : All elbows and soot. Ridgemere has given me a living, #address#. It's never given me a dry week.
+opinion @1 houses mixed 0 : The Houses own the hill and half the timber in it. I plane what's brought to #bench# and leave the rest to them.
+opinion @1 festivals mixed 0 : A feast day's well enough. Chapel first, a bite of #cheese#, and the dancing I leave to others.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind #shavings#; they're slippery underfoot. | #greet#, #address#. Shut the wet out behind you, if you'd be so good.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Talk if you like; I'll keep planing. | #greet#. Stand off #bench#, there's glue drying on it.
+line @3 greet [here.time=dawn] : Morning. I've a grace said and #bench# swept already. | Morning, #address#. Early, and the better for it.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be about, #address#. | #greet#. The lamps are lit; I'm near done for the day.
+line @5 greet [here.weather=rain here.region=ridgemere] : #greet#. #easing.capitalize#, I'd say. | #greet#. Step in off the stones. It's thinning, mind.
+line @1 kin.open [pair.kin!=no] : There you are. Sit on #straw#; it's fresh down. | You. Good. The kettle's near on the boil, and #straw#'s down.
+line @1 again.open : #welcome_back#. You've a reason, I'd guess. | You again, and #shavings# not swept since. Something's on your mind.
+line @1 hail [pair.band=friends] : #address.capitalize#. Over here, out of the wet. | #address.capitalize#. Spare me a minute by #bench#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in and sit. | #greet#. Good. I knew that knock.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. Mind #glue#. | #greet#. I'll listen with my paws busy.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but you're welcome. | #greet#. Quick, though. I'm for my prayers and my bunk.
+line @1 farewell : #farewell#. | #farewell#. Bright One's grace go with you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the slick steps going down. | #farewell#. Sleep sound and dry.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [here.time=dusk|night] : #farewell#. Get home dry, if you can. | #farewell#. The Bright One light your way.
+line @1 react.news : Go on. I'm listening. | Say it plain, #address#. I'll hear it.
+line @1 react.news.new : #surprise#. That's new to me. | #oath#. First word of it, and most words reach #bench#.
+line @1 react.news.known : #knew#. It came past #bench# yesterday. | Old news. It came in with a broken stool for #bench#.
+line @1 react.news.doubt : #doubt#. I'll believe it in daylight. | I'll wait on that. Talk swells like wet wood, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll pray on it. | #oath#. That's cruel news, and it grieves me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. The Bright One be thanked. | Good. That's good. I'll say a grace for it at #chapel#.
+line @1 answer.how : #fine#. Steady. Damp, but steady. | Well enough. The paws ache in #damp#; the rest is sound.
+line @1 answer.how.busy [self.working=yes self.job=crafter] : #busy.capitalize#. Doors swelling shut all down the street. | No time to stand, #address#. #glue.capitalize#'s hot.
+line @1 ask.how : And you, #address#? Keeping dry? | You look worn. Sleeping, are you?
+line @1 sympathise : #sympathy#. Sit on #straw#. Tell what you like and keep the rest. | That's hard, #address#. I'll pray on it tonight, if you'll let me.
+line @1 reassure : #reassure#. Most things mend, like a split board glued true. | Give it a night. Things shrink once they're dry, same as #oak#.
+line @1 decline : #hedge#, but no. #bench.capitalize# is full and I've a promise to keep first. | Not this time, #address#. My word's promised to another job first, and it holds.
+line @1 accept_decline : #no_matter#. | Fair. #later.capitalize#, then.
+line @1 thank : #thanks#. | #thanks#. I'll not forget that.
+line @1 deflect_thanks : #deflect#. | It was nothing. I'd want the same done for me.
+line @1 preclose [self.working=yes] : Well. #bench.capitalize# is calling me back. | I'd best get back; #glue#'s setting.
+line @2 preclose : #preclose#. | That's my piece said. #bench.capitalize# wants me.
+line @1 accept_preclose : Go on, then. #farewell#. | Go on, and the Bright One's hand on you.
+line @1 ack : #bc_right# | #bc_true#
+line @1 disagree : #demur#. I've seen it go the other way. | I'd not say so, #address#. Not from what I've seen at #bench#.
+line @1 give.advice : Do it once and do it true. #saying#. | #advise.capitalize#: never hang a door in summer and trust it come autumn.
+line @1 warn [world.bandits=near] : Keep off the road just now. #warn#. | #uneasy.capitalize#. Bolt your door tonight.
+line @1 insist : #insist#. I said it plain. | I'll say it once more and no louder. That's how it stands.
+line @1 concede : #concede#. | Wrong, was I. Then I'll own it plain, #address#.
+line @1 put_off : #put_off#. After the glue's set. | Not now, #address#. When #bench# is clear.
+scene rain_easing
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #easing.capitalize#. Give it till noon and it'll stop. | I've had my eye on that cloud from #window# since breakfast. It's thinning out. | Look at the gutters, #address#. Half what they were an hour ago.
+b : Will it, though? | Thinning? It looks the same to me. | Half? They're still running.
+a : It must. Rain can't go on for ever, and I'll be stood at the window when it ends. | Thinning. I know rain. #lake.capitalize# taught me that much. | Running slower. That's a start. #oath#, the Bright One doesn't hurry.
+b : #bc_we_will_see# | #bc_i_hope_so# | #bc_maybe#
+
+scene doors_swell
+when topic=weather|work here.weather=rain here.region=ridgemere self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : Three folk in today with #door#. It's the wet. The wood drinks it. | Every door in this street sticks by now. I've planed half of them myself. | Rain's my bread, #address#. A dry city would have no use for #bench#.
+b : And you take a shaving off? | Half the street! | No use at all?
+a : A shaving off the edge and #wax#. Then it swings till spring. | Half, and the other half will be in by the week's end. #saying#. | Chairs, a little. But it's the wet that keeps #plane# warm.
+
+scene warm_rain
+when topic=weather|season here.weather=rain here.season=summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : This is the rain I like. #warmrain.capitalize#. You can stand in it. | Warm, this. Not the cold stuff off the Sound. I left #bench# just to feel it on my back. | It smells of the timber yards today. Warm wood and wet #straw#.
+b : You like rain? | Left your work for it? | It does smell good.
+a : This rain. Not the other kind, and the other kind's most of them. | For a minute. The Bright One sends few enough of these. #bench.capitalize# can wait. | It does. Even #city# smells clean for an hour. I'll take the hour.
+
+scene dry_morning
+when topic=weather|day here.weather=clear here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Clear sky. I've the window open and #timber# out on trestles to air. | Not a cloud over #gulls#. I don't trust it, but I'll use it. | Dry, for once. I swept #step# and nobody walked mud back over it.
+b : Out in the street? | Why not trust it? | Nobody at all?
+a : By the door, under my eye from #bench#. If a cloud comes, in it goes. | It's Ridgemere. Clear at breakfast, wet by supper. I've seen it a hundred times over. | Nobody. A small thing, #address#. It made my morning.
+b : #bc_wise# | #bc_true# | #bc_lovely#
+
+scene fog_damp
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.worry / reassure / assess
+a : #fog.capitalize# off the Sound. It gets into #timber# and lifts the grain. | Fog like this, I cover #timber# and say a word over it. | #fog.capitalize# to the doorstep. I'll not plane a thing true in this.
+b : It'll burn off by noon. | A word won't hurt it, anyway. | Too damp to work?
+a : It might. #oak.capitalize# stays covered till it has. | It helps me, at least. The wood takes its chances. | #damp.capitalize# swells it. Plane it now and it shrinks crooked once it's dry.
+
+scene snow_quiet
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow, #address#. The one weather that comes down without a sound. | Snow on #sill# this morning. I near thanked the Bright One out loud. | No rain today. Snow, mind, but snow's only rain that's made up its mind.
+b : You like it? | Near? | Ha. That's fair.
+a : The hush, mostly. #city.capitalize#'s loud enough when it's wet. | Near. I said it inside instead. The Bright One hears that just the same. | It's no joke to me. Snow lies down and stays. Rain never lies down.
+
+scene autumn_gutters
+when topic=season|weather here.season=autumn here.region=ridgemere
+does tell.complaint / react.complaint / concede
+a : Autumn. Leaves in every gutter, and every gutter over #step#. | The sashes start sticking in autumn. I could keep the calendar by them. | #gulls.capitalize# come inland in autumn. I hear them on the roof all night.
+b : Somebody ought to clear them. | Good for trade, though. | Noisy things.
+a : Somebody ought. I clear mine and the next door's, and that's my share. | Good for #bench#, bad for my temper. Both true. | Noisy and thieving. #sill.capitalize# stays bare from now till spring.
+
+scene bench_joint
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've a chest on #bench#. Dovetails at every corner, and not one nail. | Cut #joint# this morning you couldn't slide a hair into. | I'm making a cradle. #oak.capitalize#, pegged, and no iron in it at all.
+b : No nails at all? | Is that hard to do? | Why no iron?
+a : None. Nails rust in #damp# and split the board. #joint.capitalize# holds for good. | Hard enough that most won't bother. I bother. #saying#. | Iron rusts in #damp# and stains the wood. Oak and pegs, and it'll rock a grandchild.
+b : #bc_clever# | #bc_good# | #bc_lovely#
+
+scene seasoned_stack
+when topic=work|land self.job=crafter
+does tell.self / react.self / assess
+a : #oak.capitalize# wants a year in the stack before it's fit to cut. Folk never believe me. | I've #timber# under the stairs, drying slow. Next winter's work, that. | Green wood's a liar, #address#. It stands straight in the shop and twists in your house.
+b : A whole year? | Under your own stairs? | Twists how?
+a : A year for oak. Longer for the thick stuff. #saying#. | Where else is dry in Ridgemere? Under the stairs and nowhere else. | Like a wet rope. You'd hang a door and come back to find it gaping.
+
+scene counter_hurry
+when topic=work self.role=merchant self.working=yes
+does tell.complaint / react.complaint / concede
+a : A customer wanted a table for Restday. A fortnight, I said, and got a face like sour milk. | Everyone wants it by morning. Nobody wants to wait on #glue# to set. | Folk come in for a chair and go off cross it's not made yet. #oath#.
+b : A fortnight's fair. | Can't you hurry it? | You can't please everyone.
+a : Fair and true. A table that's hurried wobbles its whole life. | No. Hurried glue lets go, and then they're back, crosser. | I don't try. I please the chair. #saying#.
+
+scene hand_at_bench
+when topic=work|friends self.hand self.working=yes self.job=crafter
+does tell.self / react.self / assess
+a : #self.hand# holds the other end of every long board on #bench#. I'd be lost without that. | I trust #self.hand# with #glue# and the clamps. That's no small trust. | #self.hand# and I can work a whole morning at #bench# without a word between us.
+b : Good to have help. | Glue and clamps? | Quiet work, then.
+a : Good. Two strangers' paws couldn't do what that pair does. | #glue.capitalize# sets in a minute. A wrong clamp spoils a day. It's trust, that. | Quiet. #plane.capitalize# does the talking. I like it so.
+
+scene spouse_kept
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# keeps me steady as #jetty# in a blow. I'm not one for saying it, so I'll say it once. | If the Sound came up the street, it's #self.spouse# I'd reach for. I've thought about it. | I'd marry #self.spouse# again tomorrow, #address#. Plain as that.
+b : That's a kind thing. | The Sound up the street? | Plain and good.
+a : Once. Don't go spreading it about. | It's Ridgemere. Water's never far off. #self.spouse# first, and then #plane#. | Plain's how I've always said things, #address#.
+
+scene child_trade
+when topic=family self.parent=yes
+does tell.worry / reassure / assess
+a : I want #self.child# to have a trade. A dry one, if the Bright One allows. | I fret over #self.child# more than I let on, #address#. | I'd give #self.child# #bench# one day, if it's wanted. If not, I'd want it said plain.
+b : A trade's a good start. | Most do, more than they say. | That's a fair way to be.
+a : It is. A trade nobody can take off you. #oak.capitalize#'s that, if you're careful. | Most. I just don't say it out loud. Not often. | I've no other way of being, with anyone, #address#.
+
+scene straw_floor
+when topic=home|work self.likes=fresh_straw
+does tell.feeling / ask.detail / answer.detail / assess
+a : I lay #straw# every Restday. It catches the muck and the wet off folk's boots. | There's a smell to new straw that takes me straight back to #self.from_town#. | I sweep the old straw out and lay #straw#, and the place smells like a barn for an hour.
+b : Doesn't it get everywhere? | What does it smell of? | A barn? In the city?
+a : Everywhere. In my fur, in the glue. I'd still not do without. | Haylofts by #lake#. Being a #child# with nothing to mend. | In the city. It's the best hour of my week, and it costs a copper.
+b : #bc_fair_enough# | #bc_lovely# | #bc_ha#
+
+scene noon_cheese
+when topic=food self.likes=hard_cheese
+does tell.feeling / react.self / assess
+a : #cheese.capitalize# and a crust at #bench#. That's my noon, every day. | A hard old cheese keeps in #damp#. Soft cheese goes green on you by Marketday. | I cut my cheese with the one knife I keep for everything. Wiped clean first, mind.
+b : Every day the same? | Green, yes. | Wiped, I hope.
+a : Every day. I know what I like, and I've no time to find something new. | Green and furred. #damp.capitalize# gets into anything soft. Hard things last here. | Wiped and honed. You'll taste cheese and no #oak#.
+
+scene evening_line
+when topic=pastimes self.likes=evening_line here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I take #line# down to the river steps of an evening. Not for fish. For the quiet. | Nothing bites in the city water, #address#. I go anyway. | #line.capitalize# in my paw and water in front of me. It's the nearest thing to #lake# I've got.
+b : Never for fish? | Then why go? | Does it help?
+a : If a fish is fool enough to bite #line#, back it goes. We part friends. | For the sitting. Nobody brings me #door# down at the river. | It helps. An hour of it, and I can face #bench# again.
+b : #bc_wise# | #bc_ha# | #bc_lovely#
+
+scene gulls_thief
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull came in at the window and took my cheese off #bench#. Walked in like it paid rent. | I can't abide #gulls#. They scream, they steal, they foul #sill#. | There's one gull sits on the roof across the way and looks at me like I owe it.
+b : Shut the window, then. | They're only birds. | Maybe you do.
+a : And sit in the stuffy dark? I'd sooner lose the cheese, and I near did. | Only birds the way rain's only water. They're a plague, #address#. | I owe it nothing, and nothing's what it'll get.
+
+scene smoke_sparks
+when topic=smalltalk|times here.region=ridgemere self.dislikes=smoke self.job=crafter
+does tell.worry / reassure / assess
+a : A shop full of #shavings# and a city full of chimneys. I sweep twice a day for it. | I hate the smoke here. It gets into the grain; you can smell soot in a new chair. | A chimney spat a spark on the street this morning. I stood and watched it out.
+b : You're careful, at least. | Can you, really? | It went out, then.
+a : Careful's all I've got. The Bright One does the rest. | You can. A chair should smell of #oak# and #wax#, not soot. | Out, on the wet stones. I was grateful to the rain for once, #address#.
+
+scene faith_plain
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say a grace over #bench# before I cut. Every board. | I'm at chapel every Restday, #address#. Not for the sermon. For the asking. | The Bright One made the oak. I only finish it. #oath#.
+b : Every board? | Asking for what? | That's a humble way to see it.
+a : Every board. A board can't be uncut. It's worth asking first. | A dry week. Steady paws on #plane#. In that order, most weeks. | It's true, so it's humble. I'm not humble about #joint#, mind.
+
+scene faith_rain
+when topic=faith|weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : I've put it to the Bright One that this rain could stop. I've not been told no. | Every morning I look out of #window# and say, today, perhaps. | The Bright One sends this rain for a reason. I'd only like to know the reason.
+b : Nor yes, though. | Perhaps. | Maybe it's for the gardens.
+a : Not yet. Patience is a prayer too, #address#. | Perhaps. #easing.capitalize#, see. | The gardens up the Heights, maybe. Mine's a box of moss on #sill#.
+
+scene lake_rain_stops
+when topic=memories|weather self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : On #lake# the rain comes across the water like a curtain, and then it's past. It stops. | In #self.from_town# you'd watch a shower walk off down the lake and the sun come after. | The rain at home had an end to it. You could see the edge of it on the water.
+b[from=coldwater] #home : Like a grey curtain over the water. I miss it. | I know that walk. Right down to the far shore. | I know the edge you mean.
+b : And here it doesn't? | You'd see it go? | An edge to rain?
+a@home : So you'll know why my eyes are always on the window. | The far shore, and then still water. I'd give a week's pay to see it. | Then you know. I've looked for that edge here ever since.
+a : Here it just thins and thickens. It's never past. | Plain as a boat rowing off. Gone down the lake, and still water behind it. | An edge. I still watch for it here, every shower. That's the truth of me.
+
+scene jetty_mending
+when topic=memories|work self.from=coldwater self.job=crafter self.age>=25
+does tell.memory / react.story / assess
+a : First wood I ever worked was on #jetty#. New boards for the rotten ones, one a summer. | I learned to cut square on the jetty at home. Lake-wet oak and an old joiner shouting. | As a #child# I sat under #jetty# watching the joiner's paws. That's where it began.
+b : One a summer! | Shouting at you? | Lucky, to find it early.
+a : One a summer, and #lake# trying to take each one back. | Shouting at the saw, mostly. I learned #joint# from what made the old wolf shout. | Lucky. I've thanked the Bright One for that joiner more than once.
+
+scene accent_commons
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : Years in the Commons, and still folk hear #self.from_town# in my first word. | Folk on the street say "calm water" back at me, to tease. I let them. | I never trimmed my speech for #city#. Let it stretch its ears.
+b : It's a good sound. | Do you mind it? | Good for you.
+a : It's #lake# in it. I'd not lose that for anyone. | I don't. It's friendly enough. #greet#, I say back, and mean it. | It's not stubbornness. It's my speech. The Bright One gave it me by #lake#.
+
+scene city_elbows
+when topic=times|smalltalk here.region=ridgemere
+does give.opinion / disagree / concede
+a : Elbows and soot, this city, #address#. Nobody looks up. | I know my own street here, and my street's the whole of what I know. | Too many folk packed too close, and none would lend you #plane#.
+b : There's kindness here, if you look. | That's more than most. | I'd lend you one.
+a : There is. I've had some. I'd not call it common. | Maybe. I'd still swap the lot of it for #lake#. | Then you're the first, and I'll remember it.
+
+scene neighbour_kept
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# is good company on a wet evening. I'd say that to anyone. | #self.neighbour# could borrow #glue# without asking. I don't say that of many. | If I were ill, I'd knock for #self.neighbour# first.
+b : Good to have. | Without asking? | That's a good neighbour.
+a : Good and rare, in #city#. I'd not take it lightly. | Without asking. #glue.capitalize#'s my living, mind. | Good, and close by. That's all a neighbour needs to be.
+
+scene gossip_kept
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty across #bench#. It stays there. | I've seen things in my time I'll take to #grave#. I'll not start telling now. | Gossip's like green wood, #address#. It's warped by the time it reaches you.
+b : Not even a little? | What sort of things? | Ha. True enough.
+a : Not a shaving's worth. | The sort you keep. I keep them. #oath#. | It is. I'd not build so much as a stool on it.
+b? : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / ask.detail / answer.detail / ack
+a : They say #topic.subject# #topic.claim#. My bolts get a second look tonight. | I heard #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I'm told. The Watch will have work this week.
+b : Your tools too? | Is that certain? | Will they catch anyone?
+a : Bolts and the shutter both. #plane.capitalize# is my living. | #hearsay.capitalize#. I didn't see it with my own eyes. | They might. I've no quarrel with the Watch on the corner.
+b? : #bc_wise# | #bc_fair# | #bc_i_hope_so#
+
+scene death_heard
+when topic=gossip|crime topic.claim_kind=death topic.subject
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They say #topic.subject# #topic.claim#. I'll pray for #topic.them# on Restday. | #topic.subject.capitalize# #topic.claim#. #pity#. | I heard #topic.subject# #topic.claim#. The Bright One keep #topic.them#.
+b : #pity#. | That's hard news. | It's a sad thing.
+a : It is. I'll say it at #chapel#, plain, so it's heard. | Hard. #rest#. | Sad, and close. Every death's close, packed in as tight as we are.
+
+scene wedding_heard
+when topic=gossip topic.claim_kind=marriage topic.subject
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. The Bright One bless it. | Word came past #bench#: #topic.subject# #topic.claim#. #gladnews#. | I hear #topic.subject# #topic.claim#. Good. A house wants a pair in it.
+b : A wedding! | Good news for once. | It does.
+a : A wedding. No dancing for me, but a prayer for a dry roof over the pair. | Good news, and plenty more of it, I hope. #blessing#. | A pair, a roof, and a sound bed under it. That's a house.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean self.job=crafter
+does tell.worry / reassure / assess
+a : Lean times. Folk mend their own chairs, or burn them, and #bench# sits idle. | Nobody orders a chest when there's no bread to put in it. | I've #timber# stacked and nobody to cut it for.
+b : It'll come round. | Fair enough. | It'll keep, though.
+a : It will. Chairs break in lean years same as fat ones. | Fair. I'd not buy one either. I'll mend for less till it turns. | It'll keep. Seasoned #oak# keeps better than I do.
+
+scene good_times
+when topic=times world.times=good|boom self.job=crafter
+does tell.news / react.news / assess
+a : Orders on the slate past midsummer. The slate's never been so full. | Good times. Folk want new beds, new doors, new everything off #bench#. | Everyone's building. #bench.capitalize# hasn't been bare in a month.
+b : Good for you! | New everything? | That's good.
+a : Good, and tiring. A grace for it, and back to cutting. | New. Nobody mends in good times. They'll mend again soon enough. | Good while it lasts. I'll put some by against the lean.
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.job=crafter
+does tell.worry / ask.detail / answer.detail / assess
+a : The timber carts are late again. I've half an order and no oak to finish it. | No wood in off the road this week. #bench.capitalize# is bare to the grain. | A customer at the door, waiting, and no oak. I've said soon twice now.
+b : What will you do? | Can't you use something else? | How long can it wait?
+a : Wait, and pray. Then use #pine#, which I'd sooner not. | #pine.capitalize#, at a push. Oak's oak, though, and a customer knows it. | Another week, and the order goes elsewhere. I'd not blame anyone for it.
+b? : #bc_poor_soul# | #bc_fair_enough# | #bc_bad_luck#
+
+scene carts_in
+when topic=caravan world.wagons=in self.job=crafter
+does tell.news / react.news / assess
+a : Wood's in at last. #oak.capitalize# stacked to the ceiling. | The carts came. A week at #bench# from first light to the lamps. | Timber's in. I smelt #oak# before I saw it.
+b : About time. | A week of it? | You can smell it?
+a : Long past time. Still, it's here, and I'll not complain of it now. | A week, and glad of it. #timber.capitalize# won't cut itself. | It does. Like a dry autumn wood. Nothing smells better, to my nose.
+
+scene newcomers
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : Somebody new about the place. I'll know the face once it's been through my door. | I don't greet newcomers first. I don't turn them off #step# either. | Strangers come in for a chair leg and stay to talk weather. I let them, if they're quick.
+b : That's fair. | A middle way. | Do they talk long?
+a : Fair's the most I'll promise anyone, #address#. | The middle's where I stand on most things. | Some do. I keep #plane# going while they talk, and they take the hint.
+
+scene dream_dry
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt of a dry week. Seven days. I woke and it was raining on #sill#. | I dream of #lake# some nights. Flat calm, and me with #line#. | I dreamt I built a boat, #address#. I've never built a boat.
+b : Seven days? | Just you and the water? | Could you?
+a : Seven. I counted them in the dream. That's how much I want it. | Me and still water and nothing to fix. Then #gulls# woke me. | Maybe. #oak.capitalize#, pegged, no iron. I'd want it to float before I'd say so.
+b : #bc_poor_soul# | #bc_lovely# | #bc_ha#
+
+scene damp_paws
+when topic=health
+does tell.self / sympathise / assess
+a : My paws ache in #damp#. The knuckles, mostly. Holding #plane# all day. | A splinter of #oak# under the pad this morning. Dug it out with a needle. | The wet gets into my chest come autumn. #oath#, it always does.
+b : That sounds painful. | That smarts. | That's no good.
+a : It's work. Every trade leaves its mark. I'd sooner this than idle paws. | It was oak. Oak bites back. I'll live, #address#. | No good at all. A hot stone and honey, and back to #bench#.
+
+story first_joint [topic=work|memories self.job=crafter self.age>=25]
+  : The joiner who took me on had me cut #joint# for a month. The same one, every day, on scrap #pine#.
+  : On the last day it went together so tight I couldn't pull it apart. The joiner burnt the rest and kept that one.
+  : I've cut more than I could count since. I think of that pine every time I lift #plane#.
+  ask : Has anyone ever kept you at one thing until it came right?
+  b : Once. I hated it then. I'm glad of it now.
+  b[job=crafter|smith] : Every apprentice gets that month. Mine was nails.
+
+story lake_shower [topic=memories|weather self.from=coldwater self.away=yes self.age>=20]
+  : As a #child# I sat at the end of #jetty# and watched the showers come up #lake#.
+  : You'd see it on the water first, a grey wall walking. Then it was on you, cold. Then gone, and the sun on your back.
+  : I thought all rain went like that. Ridgemere's rain taught me otherwise.
+  ask : Has a place ever fooled you like that, when you first came to it?
+  b : My first big market. All that noise, and nobody looking at me.
+  b[from=coldwater] : The grey wall walking. I'd near forgotten that.
+  : So now you know what I wait for, each time I look out.
+
+story the_steps [topic=memories|gossip here.region=ridgemere self.age>=25]
+  : Years ago I took a chair up to a hall on the hill. Somebody in fine cloth sat on the back steps, weeping like a #child#.
+  : I set the chair down and went past without a word. I've never said who it was. I'll not start now.
+  ask : Would you have stopped?
+  b : I'd have wanted to. I don't know that I would.
+  b[old] : No. The grand ones don't like being seen. You did right.
+  : I said a prayer for that wolf, that night. That much I could do.
+
+story first_door [topic=work|memories self.job=crafter self.away=yes self.age>=30]
+  : My first city door went up in high summer. Planed it to a whisker. Proud as anything.
+  : By autumn it wouldn't open. The customer had to climb in at the window.
+  : I planed it again for nothing, and I've never hung a city door tight since. #saying#.
+  b : In at the window! I'd have been cross.
+  b[job=crafter] : The damp teaches everyone, sooner or later.
+  : Cross enough. I learned #damp# that week, and cheap at the price.
+
+story gull_noon [topic=animals self.dislikes=gulls self.job=crafter]
+  : I'd set my noon cheese on #sill# to keep it cool. Turned my back to pick up #plane#.
+  : A gull had it before I'd turned round. The whole wedge, rind and all, off over the roofs.
+  : I stood there with #plane# in my paw like a fool. I've not forgiven that bird, nor any of its kin.
+  ask : Have you ever been robbed by something with feathers?
+  b : A hen took a whole crust out of my paw once.
+  b[from=coldwater] : The lake gulls are worse. They'd take it out of your mouth.
+
+rule @shop_cry
+when concept=bark working=yes self.role=merchant self.job=crafter
+does aside
+cooldown 6h
+say Doors eased, chairs mended, chests of #oak# made to last. | Sticking door? Bring it in. I'll have it swinging by dusk.
+
+rule @rain_watch
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say #easing.capitalize#. No. Not yet. | It's thinning. It is. Give it an hour.
+
+rule @gulls_off
+when concept=bark self.dislikes=gulls here.region=ridgemere here.time=day
+does aside
+cooldown 10h
+say Off that sill, you thieving thing. | #gulls.capitalize# again. #annoyed#.
+
+rule @smoke_hangs
+when concept=bark self.dislikes=smoke here.weather=fog|overcast here.region=ridgemere
+does aside
+cooldown 10h
+say Smoke hanging in the street again. Shut #window# on it. | Soot in the air and #shavings# on the floor. Bright One keep us.
+
+rule @dawn_grace
+when concept=bark here.time=dawn self.piety=devout
+does aside
+cooldown 12h
+say Bright One, steady paws today, and a dry hour if you can spare it. | A grace for #bench#, and then to work.
+
+rule @door_stuck
+when concept=bark working=yes self.job=crafter here.weather=rain
+does aside
+cooldown 8h
+say There goes another door, swelled tight. #oath#. | #damp.capitalize# in the grain again. I'll be planing till dark.
+
+dlg @1 resident.hub : #greet#. Say what you need, plain. | #greet#, #address#. Pull the door to; the wet follows folk in.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in and stand on the straw. | #topic.player#. #greet#. Back again; good.
+dlg @3 resident.hub [here.time=night] : It's late, and I'm near my prayers. Quick, then. | #greet#. The lamps are lit, #address#. Say it short.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay by the door and say your business from there. | I don't know you well enough for more than that. What is it?
+dlg @1 resident.job [self.job=crafter] : Joinery. Doors, chairs, chests of #oak#, and every sticking sash in the street. | I cut it true and I don't hurry it. #saying#.
+dlg @2 resident.job : #self.trade_words.capitalize#, that's me. Honest work, and steady. | #job_busy#
+dlg @1 resident.business [business=thriving] : Busy as I've known it. The Bright One's been good to us. | Orders past the month's end. I'm not complaining.
+dlg @2 resident.business [business=steady] : Steady. Doors swell, and folk bring them to #bench#. | It pays its way. I ask no more of it.
+dlg @3 resident.business [business=failing] : Poorly. Folk mend their own, these days. | Thin. I'll pray at #chapel#, and I'll keep the door open.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's all that's come past #bench#. | From #world.news_from#, they say: #world.news#.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#. | Folk talk of nothing but #world.event_words#, and I let them.
+dlg @3 resident.news [world.wagons=raided] : Raiders hit a wagon out on the road. Keep off it. | Raiders out past the walls, they say. The Bright One watch over carters.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new has come past #bench#.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Not a shaving more from me. | Folk say #topic.subject# #topic.claim#. It's not mine to add to.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. I've enough to carry.
+dlg @1 resident.bye : #farewell#. Go careful, and the Bright One beside you. | #farewell#, #address#. Mind the step.
+dlg @1 shop.greet [here.shop!=bare self.job=crafter] : #greet#. Chairs, stools, chests, all pegged and true. | #greet#. If it's a door that sticks, I can see to it.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Look your fill. Ask before you touch. | #greet#, #address#. Take your time; I'll not rush you.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. You know the way round by now. | #topic.player#. #greet#. Something else for the house, is it.
+dlg @4 shop.greet [here.shop=bare] : #greet#. #shop_bare# The next pieces are still on #bench#. | #shop_bare# I'll make to order, mind.
+dlg @5 shop.greet [here.shop!=bare pair.disposition=hostile|wary] : Look with your eyes, not your paws. I'm watching.
+dlg @1 shop.prices [self.job=crafter] : #oak.capitalize#'s dear and the carts are slow. You're paying for both. | You pay for the year it dried and the day I cut it. #shop_dear#
+dlg @2 shop.prices : #shop_dear# | It costs what it cost me, and a little for my trouble.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Keep it out of #damp# and it'll outlast us both.
+graft resident.hub
+choice You keep looking out at the rain. [self.away=yes] -> rain
+node rain
+say It's easing. Look. Well. It was easing. I watch it the way you'd watch a pot. One day it'll stop, and I'll be stood here for it.
+mood calm
+free
+choice Has it ever stopped? -> rain_why
+choice Goodbye. -> bye
+node rain_why
+say At home, a shower walked off down the lake and the sun came after it. Here it only thins. I keep looking for the edge of it. The Bright One knows why.
+choice I hope you see it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you fix a door that sticks? [self.job=crafter] -> door
+node door
+say Bring it in, or I'll come to it. It's the damp; the wood drinks it and swells. A shaving off the edge, a rub of wax, and it'll swing till spring.
+mood calm
+free
+choice Why only till spring? -> door_why
+choice Let me see your wares. -> greet
+node door_why
+say Because it dries in summer and shrinks, and then it rattles, and you'll be back. I don't mind. It's honest work. The Bright One has an eye on that too.
+choice I'll bring it in. -> greet
+choice Goodbye. -> bye

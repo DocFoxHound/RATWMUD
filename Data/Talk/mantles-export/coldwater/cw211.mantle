@@ -1,0 +1,297 @@
+# cw211, the knife-row keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw211
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_orm_wickwick
+written_by claude
+title the knife-row keeper
+fits stage=adult|old
+prefers job=merchant drive=steady
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk lays_the_knives_out_by_length
+likes honey_cakes draughts sharp_knife summer_evenings
+dislikes early_bells stale_bread
+fears a_nicked_edge_nobody_noticed letting_down_the_one_who_took_me_on
+hopes a_trade_known_to_the_bone a_row_of_knives_of_my_own
+topics work +0.5 food +0.3 pastimes +0.3 friends +0.2 season +0.2 gossip -0.3
+styles comfort=steady gossip=reluctant refuse=careful tease=none
+marks oath saying
+persona #self.first# helps behind a butcher's counter in the Sump and lays every knife out by length before the first cut: careful, warm and plain, loyal to whoever gave the work, and fond of honey cakes, a slow game of draughts and the long light of a summer evening.
+
+words
+oath! = Edge and order | By the nine knives
+saying! = Every knife in its own place | Clean as you go or don't go at all | Measure by eye, cut by wrist
+knives = the knives | my nine knives
+row = the row | the knives laid out longest to shortest
+roll = the knife roll | my canvas roll
+edge = a keen edge | an edge that parts a hair
+stone = the whetstone | the grey stone
+slab = the slab | the scrubbed slab
+hooks = the hooks | the hooks, hung in a straight line
+cakes = honey cakes | a honey cake still sticky from the pan
+draughts = draughts | draughts on a board balanced on two knees
+evening = a summer evening | light that lasts till nearly ten
+earlybell = the early bell | a bell rung before anyone's up
+stale = bread gone hard | yesterday's loaf, gone to stone
+trade = the trade | the meat trade
+bay = the headland | the bay where I lodge
+lake = the lake | the lake at home
+thumb = a thumb's width | the width of my thumb
+
+any
+opinion @1 houses against 2 : I work in the shadow of their walls every day and not one face from those houses would I know. That's not right, #oath#.
+opinion @1 merchants against 2 : I can't buy a decent joint on what I'm paid for cutting them. Whoever owns the cart owns the supper.
+opinion @1 newcomers for 1 : Any wolf who works can have a place beside me. I came late to #trade#, and a place was made for me.
+opinion @1 strangers for 2 : Half the counter is folk off the ships. I like to hear where they've come from while I wrap.
+opinion @1 sump for 1 : Folk down here watch out for each other. I've had soup left on my step and never found out whose it was.
+opinion @1 watch against 1 : #watch.capitalize# walk down our stair for one reason: to walk back up with somebody. That's all I've seen.
+opinion @1 city against 1 : Smoke on everything and doors you've never seen opened. #oath#, it took me a year to learn one stair.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Say the word if I can help. | #greet#, #address#. You're welcome here.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. One moment while I set #row# straight. | #greet#. The knives are keen today, #address#. Name your cut.
+line @3 greet [here.time=dawn] : Morning. I've been here since before #earlybell#. | Morning, #address#. Still setting out, but ask.
+line @4 greet [here.time=dusk|night] : Evening, #address#. I'm putting #knives# away, but I can spare a minute. | #greet#. Late for meat, but come in.
+line @1 kin.open [pair.kin!=no] : You came. I've put #cakes# aside for you. | You. #good.capitalize#. Sit, I'm nearly done.
+line @1 again.open : #welcome_back#. The same as this morning, I expect. | Back again, #address#. You're always welcome.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. #good.capitalize# to see you. Sit down. | #greet#. I'd wondered when you'd come.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. Talk while I trim; I'll listen. | #greet#. Mind #slab#, it's wet.
+line @1 farewell : #farewell#. | #farewell#. Take care on the stairs.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go careful in the dark. | #farewell#. Sleep well, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind how you go home.
+line @1 react.news : #ack#. I'll mind that. | Is it, #address#? I'll think on it.
+line @1 react.news.new : #surprise#. I hadn't heard a word of that. | #oath#. Nobody's said that at the counter yet.
+line @1 react.news.known : #knew#. Somebody had it at the counter this morning. | I'd heard. The whole stair has, I'd think.
+line @1 react.news.doubt : #doubt#. I'll wait till it's been said twice by two different folk. | Two folk who saw it, #address#, and then I'll believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #bad#, and I'm sorry for whoever it touches. | I'm sorry for it, #address#. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's #very# #good#. | #good.capitalize#. I'm glad, #address#, truly.
+line @1 answer.how : #fine#. Steady, and everything in its place. | Well enough, #address#. Working, and glad of it.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Not a minute spare since dawn. | #busy.capitalize#. Talk on, I can trim and listen.
+line @1 ask.how : And you, #address#? Keeping well? | All well with you, #address#?
+line @1 sympathise : #sympathy#. If there's anything I can carry, say. | That's a weight, #address#. Sit down. The kettle's nearly boiled.
+line @1 reassure : #reassure#. One thing at a time, and it gets done. | It'll come right, #address#. Steady work puts most things right.
+line @1 decline : #hedge#, but I can't. There's work half done, and I never leave a thing half done. | I'm sorry, #address#. I gave my word somewhere else first, and I keep it.
+line @1 accept_decline : #no_matter.capitalize#. Another time. | Understood, #address#. Some other day, then.
+line @1 thank : #thanks#. I'll remember that. | That's #very# kind, #address#. Thank you.
+line @1 deflect_thanks : #deflect.capitalize#. It was no trouble. | It's nothing, #address#. It cost me a minute.
+line @1 preclose [self.working=yes self.job=merchant] : I'd better get back to #slab#. | Well. #hooks.capitalize# won't fill themselves.
+line @2 preclose : Well. #preclose#. | I'll not keep you, #address#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go, #address#. Take care.
+line @1 ack : #bc_right# | #bc_true#
+line @1 give.advice : #advise.capitalize#: keep #edge# up a little every day, never a lot once a week. | Put a thing back where you found it, #address#, and you'll never lose it.
+scene knife_row
+when topic=work|smalltalk self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Every morning I lay #knives# out on the cloth, longest to shortest, before the first cut. | Nine knives, and I know each by its weight in my paw. #oath#. | Somebody moved my boning knife to the wrong end of #row# today. I felt it before I saw it.
+b : Why in that order? | Nine? What for? | How did you know?
+a : So my paw finds the one it wants without my looking. #saying#. | Splitting, boning, skinning, trimming. A different blade for every job. | It was #thumb# out. My paw went for it and found the wrong handle.
+b : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene the_trim
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : I trim the fat to #thumb#, no more, no less. Folk can tell when you've cheated them. | A chop wants cutting square across. Lean it and it cooks crooked. | I came to #trade# late, but you'd not know it now. I've learnt it to the bone.
+b : That's careful. | Crooked? | You'd not know at all.
+a : Careful is the trade, #address#. The rest is lifting. | Crooked, and one end dry before the other's done. I'll not sell that. | Good. That was the idea. #bc_thank_you#.
+
+scene hooks_in_line
+when topic=work|day self.working=yes self.job=merchant here.time=dawn
+does tell.self / react.self / assess / ack
+a : Mutton at the left, pork in the middle, rabbit at the end. #hooks.capitalize#, the same every day. | I hang the joints so the drip runs into the trough, not on the floor. | First thing, I scrub #slab# with hot water and salt. Then the knives. Then the meat.
+b : The same every day? | Clever. | In that order?
+a : Every day. A customer knows where to look, and so do I. | It keeps the floor dry and the boss happy. #bc_good#. | That order, #address#. Clean first or you're cutting on yesterday.
+b? : #bc_good# | #bc_wise# | #bc_true#
+
+scene wiping_down
+when topic=day|work here.time=dusk self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : Last thing, I wipe every knife, oil it, and roll it up in #roll#. Nine pockets. | Dusk. I put #edge# back on everything before I go, so tomorrow starts right. | I never leave #slab# wet overnight. It warps, and then nothing sits flat on it.
+b : Every night? | That's dedication. | You'd notice?
+a : Every night, #address#. It takes the time it takes. | It's only habit, but it's a #good# one. | I'd notice in a morning. Half #thumb# of warp and the cleaver bounces.
+
+scene loyal_hand
+when topic=work|friends self.boss self.working=yes
+does tell.feeling / react.self / assess
+a : #self.boss# took me on when nobody else would look at me. I'll not forget it, ever. | I'd work for #self.boss# for less, if it came to that. #saying#. | Whatever #self.boss# needs done, I'll have it done before it's asked for.
+b : That's loyal. | You shouldn't have to. | Good worker.
+a : It's only owed. You stand by the ones who stood by you. | No. But I would, and that's the point, #address#. | I try to be. #self.boss# deserves no less.
+
+scene honey_cakes
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail / assess
+a : There's a cart up the stair sells #cakes# on Restday. I'm there before it stops. | I'd give my last copper for #cakes#. Not much else, but that. | There are always two of #cakes# in a cloth in my coat pocket.
+b : Are they good? | Your last copper? | Why two?
+a : Sticky enough to hold your teeth together. The best thing in the city. | Most weeks it's close to that. I don't regret one. | One for me and one for whoever needs it more, #address#.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene stale_loaf
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : They sold me #stale# at the stall and swore it was fresh. I could have knocked a nail in with it. | I can eat most things. Not #stale#. It sits in me like a stone. | A loaf goes hard by dusk in this damp. I buy small and eat it the same day.
+b : Soak it in soup. | It's all the same. | That's sensible.
+a : I did. The soup went soft and the loaf didn't, #address#. | It's not. Fresh bread is a kindness. #stale.capitalize# is a cheat. | Sensible's cheaper. #bc_true#.
+
+scene draughts_board
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail / assess
+a : I play #draughts# on the step most evenings. Slowly. I think three moves on. | I won a game last night with one piece left. I'd planned it from the start. #oath#. | I've a board I made from an old #slab# offcut. The squares are #thumb# exact.
+b : Who do you play? | From the start? | Exact?
+a : Whoever sits down. Most don't sit long. | From the start. I let them take the others. | Exact. I measured every one twice before I cut, #address#.
+b : #bc_ha# | #bc_clever# | #bc_good#
+
+scene summer_light
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : #evening.capitalize#. I'll sit out on the step till it's gone. | Work's done, the light won't leave, and summer's at its best. | I walk out to #bay# on evenings like this. The water goes gold.
+b : It's a fine evening. | It's lovely. | Gold?
+a : Fine. I'll not waste a minute of it indoors. | It is. I'd stretch it out if I could, #address#. | Gold, then pink, then grey. Then I walk back in the dark.
+
+scene early_bell
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess / ack
+a : #earlybell.capitalize# went before the light again. Woke the whole row. | Somebody up the hill rang #earlybell# twice this morning. I lost my place in a dream. | I'd rather wake to the carts than to #earlybell#. At least the carts mean work.
+b : It's for the service. | Lost your place? | Fair enough.
+a : I know. I'd still ask them to wait an hour, #address#. | Right in the middle. I'll never know how it ended. | The carts are honest. A bell's just loud.
+b? : #bc_ha# | #bc_bad_luck# | #bc_true#
+
+scene wet_floor
+when topic=weather here.weather=rain self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : #rain.capitalize# again. I've put sawdust down twice so nobody slips by #slab#. | Wet days, the knives want oiling twice. Damp gets in the steel. | Rain on the awning. It drums while I work, and it keeps time.
+b : Careful's right. | Twice? | Keeps time?
+a : One slip near #knives# is one too many, #address#. | Twice, or they spot. I'll not have a spotted blade on #row#. | A drop, a cut, a drop, a cut. You'd be surprised.
+
+scene cold_hands
+when topic=weather|season here.season=winter self.job=merchant
+does tell.self / react.self / assess
+a : #cold.capitalize# this morning. My paws were stiff on the first cut. | Winter's #good# for the meat and #bad# for the paws. | I warm my paws on the kettle before I pick up a blade. A cold paw slips.
+b : Wear mitts. | Hard either way. | That's wise.
+a : You can't cut in mitts, #address#. You lose the feel of #edge#. | It is. I'll take the meat keeping, though. | Wise is just having cut yourself once.
+
+scene lake_home
+when topic=memories|home self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# my #gran# kept every pot on its own nail, biggest to smallest. I learnt it there. | I grew up by #lake#. It was so still you could count the ripples off one stone. | Out of #self.from_town# I brought one bundle and my #gran#'s way of doing things. The bundle's long gone.
+b[from=coldwater] #cw : Every gran had her nails. | I've counted them too. | We all left with something.
+b : She sounds tidy. | That still? | And the way of doing things?
+a@cw : Then you'll see why a thing out of place nags at me. | Then you know. #good.capitalize# to meet somebody who does. | Some of us with less than others. I was lucky.
+a : Tidy as a shelf. I still hear her: everything has a nail. | That still, on a good morning. Nothing in the city sits quiet. | Still with me, every morning, #address#. I kept that much.
+
+scene the_headland
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : I lodge out on #bay#. It's a walk in, but there's water out my door instead of a wall. | It's a long way from the shop, but I like the walk. It puts my day in order. | Three of us in one house out on #bay#. We keep it tidy between us.
+b : That's a long walk. | Puts it in order? | Tidy's good.
+a : Long, but it's quiet, #address#. I think on the way. | Going in I plan the cuts. Coming back I let them go. | It's the only way three can live in two rooms.
+
+scene watch_take
+when topic=crime here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : #watch.capitalize# took a wolf off our stair last week. Nobody's said what for. | I've seen #watch# carry folk down from the Sump. I've never seen them carry anything up. | When #watch# come down here, every door on the stair shuts.
+b : They must have had a reason. | Some are decent. | Can you blame anyone?
+a : Maybe. A word of why would be decent, #address#. | Some, maybe. I've not met them yet. | No. I shut mine too, and I've done nothing.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_true#
+
+scene gossip_kept
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : There's talk at the counter, but I don't carry it. It's not mine to carry. | Folk tell you things across #slab#. I wrap the meat and forget them. | I heard something today. I'll keep it, #address#, if it's all the same.
+b : Go on. | All of it? | Not even a hint?
+a : No. True talk gets about soon enough without me helping. | Nearly. The good things I keep. | Not even that. #saying#.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene new_faces
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : There's a new family two doors up. I took them a bit of mutton and showed them the pump. | A traveller at the counter today didn't know one cut from another. I showed them. | New folk come down our stair every week. Most stay a month and move up.
+b : Kind of you. | Did they buy? | Up where?
+a : It was done for me, my first week. #thanks# is all it costs to pass on. | Two chops, done properly. They'll be back. | Anywhere with a window that shuts. I don't blame them, #address#.
+b? : #bc_good# | #bc_good# | #bc_true#
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I'm not much for services. Before the first job of the day, a quiet thank-you goes up to the Bright One. | The Bright One gave me steady paws. I try to keep them steady. That's my praying. | In a #bad# week the chapel put food on my table. I take them a bag of ends on Restday.
+b : That's enough, I'd think. | Good paws are a gift. | That's kind.
+a : That's my hope, #address#. Plain thanks is the prayer I know. | They are. I'll not waste them. | It's only fair. What's given, you give back.
+
+scene sleep_and_dreams
+when topic=dreams|health
+does tell.self / react.self / reassure
+a : I dreamt I had my own shop, and every knife was in the wrong place. I woke up tired out. | I sleep well, mostly. A day's work, a honey cake, and I'm gone. | My shoulder aches from all the lifting. I rub it with a hot cloth at night.
+b : What a dream. | Lucky you. | Does it help?
+a : I got up and counted #knives# twice before I believed it was a dream. | Lucky, and #tired#. Most nights those two go together. | It does. Most nights, #address#.
+
+story late_to_the_trade [topic=work|memories self.job=merchant self.age>=20]
+  : I came to #trade# late. Before that I did whatever paid, and none of it stayed.
+  : The first week I cut a side so badly the old butcher teaching me bought it back off the customer and sold it as stewing meat.
+  : Then I was shown how, slowly, cut by cut, and it stayed.
+  ask : Have you ever found the work that stayed?
+  b : Not yet. I'm still looking.
+  b[job=merchant|crafter|smith] : I have. It took me years too.
+
+story the_grey_stone [topic=memories|work self.away=yes self.from=coldwater self.age>=20]
+  : The grey stone I keep my edge on came off the shore at home. I picked it up the day I left.
+  : I didn't know then I'd be a butcher. I just liked how flat it was.
+  : Now every blade I own has been on it.
+  b : That's a good stone.
+  b[from=coldwater] : The lake stones are the best for it. Everyone knows.
+  : The best. #edge.capitalize# off it lasts a day.
+
+story the_long_game [topic=pastimes self.likes=draughts]
+  : I played one game of #draughts# with an old docker for three evenings running.
+  : We stopped each night when the light went and left the board on his step.
+  : On the third night I won. He shook on it and never played me again.
+  ask : Would you have played him again?
+  b : I'd have wanted a rematch.
+  b[old] : No. You quit while you've won.
+
+rule @knife_bark
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say #oath#. Who's touched #row#? | Nine knives, nine places. There.
+
+rule @cut_bark
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Trimmed to #thumb#, square across. Come and see. | Fresh on #hooks#, cut properly.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #earlybell.capitalize# again. Before the light. | There it goes. I was awake anyway.
+
+rule @evening_bark
+when concept=bark here.season=summer here.time=dusk self.likes=summer_evenings
+does aside
+cooldown 12h
+say Look at that light. Still day, nearly. | #evening.capitalize#. I'd have every day end like this.
+
+dlg @1 resident.hub : #greet#. What can I do, #address#? | #greet#. Ask away.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #good.capitalize# to see you again. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Ask it plain and you'll get it plain, #address#.
+dlg @1 resident.job [self.working=yes self.job=merchant] : #self.trade_words.capitalize#. I cut, I trim, I keep #knives# in order. | I came to #trade# late, but I know it to the bone now.
+dlg @2 resident.job : I work, and I do it properly. Nothing more to tell. | Whatever's wanted, done right the first time.
+dlg @1 resident.news [world.news] : Somebody had it at the counter: #world.news_from#, #world.news#. That's as it was told.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new, #address#. A quiet week, so far.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk, #address#. Not mine to carry.
+dlg @1 resident.bye : #farewell#. Take care. | #farewell#, #address#.
+graft resident.hub
+choice Why do you lay your knives out like that? [self.job=merchant] -> knives
+node knives
+say Longest to shortest, every morning, before the first cut. My paw finds the one it wants without my looking, and a knife in its place never cuts the wrong paw.
+mood calm
+free
+choice Could I see them? -> knives_see
+choice Goodbye. -> bye
+node knives_see
+say Look, but don't touch. Splitting, boning, skinning, trimming, and the rest. Every one keen, every one in its place. That's the whole trade, near enough.
+choice They're very fine. -> hub
+choice Goodbye. -> bye

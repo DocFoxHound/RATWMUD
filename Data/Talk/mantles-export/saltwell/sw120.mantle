@@ -1,0 +1,495 @@
+# sw120, the salt-taster at the benches (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw120
+revision 1
+state ready
+dialect saltwell
+accent none
+tier full
+written_for rm_karin_wetridge
+written_by claude
+title the salt-taster at the benches
+fits stage=adult|old
+prefers job=fisher honesty=sly
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=restless
+quirk tastes_every_sack_of_salt_and_names_its_pan
+likes hard_cheese cards fresh_straw misty_dawns
+dislikes salt_wind night_noise
+fears dying_on_somebody_else_s_bench
+hopes a_salting_shed_of_my_own
+topics work +0.4 prices +0.4 pastimes +0.3 memories +0.2 times +0.2 gossip +0.1 faith -0.3
+styles comfort=practical gossip=traded refuse=short tease=none
+marks oath saying
+persona #self.first# guts and salts at the long benches and tastes every sack of salt before it goes near a fish: watchful, close-mouthed and shrewd, quick to see an angle and slow to say it, and never done wanting a salting shed of one's own.
+
+words
+oath! = By the white pan | Pan and pinch | Salt on my tongue
+saying! = Taste it before you trust it | Salt never flattered anybody | A fish keeps only as well as its salt
+salt = the salt | the hall's grey salt | a sack of coarse salt
+pinch = a pinch on the tongue | a pinch off the top of the sack
+bench = the bench | my end of the bench | the long bench
+knife = the short knife | my gutting knife
+grit = grit | sand in the salt | grey grit
+whitepan = the white pans | the pans back home, white to the sky
+cheese = hard cheese | a heel of hard cheese | cheese you have to argue with
+cards = a hand of cards | the cards | a quiet game at the back table
+straw = fresh straw | an armful of clean straw | straw just brought in
+mistdawn = a misty dawn | a dawn with the mist lying on the Sound
+saltwind = the salt wind | a wet wind off the Sound, sitting in your fur
+racket = the racket | shouting under the window at all hours
+slip = a slip with a number on it | a paper slip and a come back next week
+tubs = the tubs | the gutting tubs
+quietly = quietly | between ourselves
+catch = the fish | the morning's landing
+hall = the hall | the gutting hall
+stair = the stair | the Sump stair
+purse = my purse | the purse sewn in my coat
+overseer = the overseer | the hall's overseer
+boats = the boats | the Sound boats
+lane = the lane | the lane under my window
+heights = the Heights | the folk up the hill
+tally = forty, forty-one | thirty-nine, forty
+city = the city | this city
+sump = the Sump | the low streets
+
+any
+opinion @1 houses against 2 : The Houses own #hall#, #boats# and #salt#, and not one of them has ever held #knife#. I notice. I don't say it loud.
+opinion @2 merchants against 2 : They buy salt fish off #bench# for a copper and sell it to #heights# for five. #quietly.capitalize#, I've done that sum twice.
+opinion @3 watch against 2 : #watch.capitalize# come down #stair# with their noses held. They smell #catch# and never once see a #thief#.
+opinion @4 dole for 2 : A bowl off the dole has kept more of #sump# breathing than any House has. Nobody says a word against it in my hearing.
+opinion @5 sump for 1 : The Sump is rough, and honest about being rough. Nobody down here pretends to be fed when they're #hungry#.
+opinion @6 times against 2 : Every week #salt# costs a little more and the pay stays where it was. Nobody up the hill salts, so nobody up there sees.
+opinion @7 times against 3 [world.salt_price=up] : Salt's up again. They'll take it out of our pay before they take it off their own tables. #oath#.
+opinion @8 city mixed 1 : #city.capitalize# pays, which the Waste never did. It also rains on me most days, which the Waste never did either.
+opinion @9 road for 1 : A road is only dangerous to the ones who stop watching it. Eyes up, and #purse# inside your coat.
+opinion @10 newcomers mixed 1 : New paws on #bench# work cheap. Good for #overseer#. Not so good for the rest of us already sitting there.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the floor here; it's all scales. | #greet#, #address#. You'll want to stand back from #tubs#.
+line @2 greet [self.working=yes self.job=fisher] : #greet#. I've #knife# in one paw, so I'll not shake. | #greet#. Say it over the noise; I'm still cutting.
+line @3 greet [here.time=dawn] : #greet#. The mist's still down on the water. | #greet#. First cart of #catch# isn't up yet.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be down this end of town. | #greet#. The lamps are lit and I'm off my feet at last.
+line @5 greet [here.outdoors=rain here.region=ridgemere] : #greet#. Wet again, as you'll know. | #greet#. Shake it off before you come in.
+line @1 kin.open [pair.kin!=no] : It's you. Sit, and keep your paws off #cards#. | You. Good. I'd been meaning to find you.
+line @1 again.open : You again. #bench.capitalize# hasn't moved since this morning. | Twice in a day. Something's wanted, then.
+line @1 hail [pair.band=friends] : Here. A word, when you can spare one. | Over here. #quietly.capitalize#, if you can.
+line @1 greet.return : #greet#. | #greet#. I see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down, then. | #greet#. I'd wondered when you'd come by.
+line @3 greet.return [self.working=yes self.job=fisher] : #greet#. Mind #knife#. | #greet#. Talk; I'm listening, I just can't stop.
+line @4 greet.return [here.time=dusk|night] : #greet#. It's late for it. | #greet#. Keep your voice down; #stair# is asleep.
+line @1 farewell : #farewell#. | #farewell#. Keep #purse# close.
+line @2 farewell [here.time=dusk|night] : #farewell#. Walk the middle of #lane#, not the edge. | #farewell#. Don't stop for anybody who calls you by name.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Come by when there's #cards#. | #farewell#. I'll keep a seat.
+line @1 react.news : #surprise#. That's worth knowing. | Is it. I'll remember who told me, #quietly#.
+line @2 react.news.new : Not a whisper of that reached me. | #surprise#. And I hear most things before #hall# does.
+line @3 react.news.known : I had that yesterday. It came along #bench#. | #knew#. Old news down here.
+line @4 react.news.doubt : Show me #slip# and I'll take it. | #doubt#. Somebody's salting that story heavy.
+line @5 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. #pity#. | That's #bad# news. I'm sorry for it.
+line @6 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's luck turned. | That's #good# to hear. It doesn't happen often down here.
+line @1 answer.how : Even. I've had worse weeks on #bench#. | #fine#. Paws sore, #purse# light, the usual.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Everything at once today. | No time to stop. #catch.capitalize# won't keep.
+line @1 ask.how : And you? Eating? | How's the week treating you, #address#?
+line @1 sympathise : #sympathy#. Sit a while; nobody's watching. | That's a heavy one. It goes no further than me.
+line @1 reassure : It'll come round. Wait it out and it usually does. | #reassure#. And if it doesn't, you'll find another way in.
+line @1 decline : #hedge#, but no. I'm on #bench# till the light goes, and I can't lose the place. | I'd like to, but not tonight. My paws are done and I've #stair# to climb.
+line @1 accept_decline : #no_matter.capitalize#. It'll keep. | Another time, then. I'll remember you asked.
+line @1 thank : #thanks#. | I'll remember that. #good.capitalize# of you.
+line @1 deflect_thanks : #deflect.capitalize#. You'd have done it. | It cost me nothing. Keep that between us.
+line @1 preclose [self.working=yes self.job=fisher] : Well. #tubs.capitalize# won't empty themselves. | Back to #bench# before somebody takes my end.
+line @2 preclose : Well. #preclose#. | That's my lot for tonight. My feet are #tired#.
+line @1 accept_preclose : Go on, then. | #bc_fair_enough#. Another time.
+line @1 tease.return : Laugh. I'll still be right about it. | Say that again once you've tasted #salt#.
+line @1 ack : #bc_it_is# | Mm.
+line @1 give.advice : #advise.capitalize#: taste anything you buy by weight. Sand weighs too. | Never show what you want. They put the price on what they see. #saying#.
+line @1 warn [world.bandits=near] : Keep off the roads out of the city a while. #warn#. | If you must go out of the walls, go in company.
+line @1 confide [self.job=fisher] : #vent#: I don't trust #overseer#'s scale, and I've a reason. | #quietly.capitalize#: I know which barrels in #hall# are short. I've not said.
+scene salt_taster
+when topic=work self.working=yes self.job=fisher
+does tell.self / ask.detail / answer.detail / assess
+a : A new sack came in this morning. I had #pinch# before anybody opened it wide. | I can tell you which pan any salt came off, by the taste. Not one overseer in #hall# can. | #salt.capitalize# is cut with something. I've known it a month.
+b : What did it taste of? | Truly? Any pan? | Cut with what?
+a : Grey, and a little bitter. #good.capitalize# enough for herring. Not for me. | The coarse ones, anyway. The fine stuff all tastes of #money#. | #grit.capitalize#. Not much. Enough that somebody up the line is a little richer.
+b : #bc_ha# | #bc_clever# | Somebody's richer, and you know who.
+
+scene salt_dear_and_thin
+when topic=work|prices self.working=yes self.job=fisher world.salt_price=up
+does tell.complaint / react.complaint / insist / ack
+a : Salt's dearer, so the sacks come lighter and greyer with #grit#. Half sand by spring, you watch. | They've put #salt# up and cut it at the same time. #oath#. Twice robbed. | I tasted the new sack and spat. They want us packing #catch# in that.
+b : They'd not dare. | Robbed twice? | Is it that bad?
+a : They dare anything that isn't written down. #quietly.capitalize#, I write it down. | Once at the price, once at the sack. I keep count of both. | Worse. The fish won't keep, and it's #bench# that gets the blame.
+b? : #bc_true# | #bc_poor_soul# | #bc_they_always_do#
+
+scene gutting_pace
+when topic=work self.working=yes self.job=fisher
+does tell.boast / react.self / assess
+a : #tally.capitalize# herring an hour, clean, and the guts in the right tub. Nobody on #bench# beats that. | I can gut a cod with my eyes shut. I don't, because they'd stop paying me to keep them open. | My end of #bench# is the end by the door. Draughty. I see who comes in.
+b[job=fisher|cook] #trade : That many? I'd lose a claw. | Eyes shut, and the guts still in the tub? | The draughty end. Clever.
+b : That's a lot of fish. | You'd have to be quick. | Why does that matter?
+a@trade : Not if you keep it moving. #knife.capitalize# only cuts what stops. | In the tub. Mostly. I don't say mostly to #overseer#. | Clever's warm enough. The fire end hears nothing.
+a : It is. My paws know it by dusk. | Quick, and quiet. Quick wolves get noticed by #overseer#. | You know who's in before they know you've seen them.
+
+scene the_dawn_landing
+when topic=day|work here.time=dawn self.working=yes self.job=fisher
+does tell.self / react.self / assess
+a : First cart's due up off #boats# any moment. #knife.capitalize#'s honed and my apron's on. | I'm always on #bench# before the fish. Whoever's first gets the clean tubs. | Grey light, grey water, grey fish. That's every morning in #hall#.
+b : You're early. | The clean tubs? | Sounds dreary.
+a : Early's the one edge I've got that nobody can sell out from under me. | The ones with fresh water in. Nobody else thinks of it till noon. | It is. It pays #little#, though.
+
+scene the_learners
+when topic=work self.master=yes self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've been asked to show a young one #bench#. I said I'd think. | Teaching a learner slows #bench# by half, and nobody pays for the half. | The trick of #knife# takes a season. The trick of keeping your place takes years.
+b : Will you do it? | Why do it, then? | What's the trick of the place?
+a : I will. Somebody showed me once, and I've not forgotten who. | Because one day I'll want a pair of paws I trust beside me. | Be on time, say little, and know more than you let on. #saying#.
+b? : #bc_wise# | #bc_fair# | #bc_true#
+
+scene boats_landed
+when topic=ships|work world.ships=in self.job=fisher
+does tell.news / ask.detail / answer.detail / assess
+a : #boats.capitalize# are in, and #hall#'s full to the doors. We'll be cutting till dark. | #boats.capitalize# came in heavy. I watched the carts come up from the wharf, one behind another. | Every boat's in. That means #catch# going cheap and #bench# going all night.
+b : A good catch, then? | How many carts? | Is that good for you?
+a : #good.capitalize# for #toffs#. For us it's sore paws and the same #wages#. | More than I counted. I stopped at nine. | #good.capitalize#, if #salt# holds out. If it doesn't, we stand about.
+b : #bc_poor_soul# | #bc_ha# | #bc_we_will_see#
+
+scene boats_late
+when topic=ships world.ships=late|lost
+does tell.worry / reassure / assess / ack
+a : #boats.capitalize# are late, and #tubs# are empty. Nobody's paid to stand and look at an empty tub. | No boats yet. There's a quiet in #hall# I don't like. | Late boats. Everybody on #bench# is watching the door and saying nothing.
+b : They'll come. #reassure#. | It'll pass. | Saying nothing?
+a : They'll come. Whether we're still paid #wages# when they do is the question. | It'll pass. I'd rather it passed quicker. | Saying nothing is how #sump# prays. I do it too.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will_see#
+
+scene fish_dear
+when topic=prices world.fish_price=up
+does tell.complaint / react.complaint / insist
+a : Fish is dearer up the hill, they say. Not a copper more of it reaches #bench#. | Salt fish has gone up again. I gut it, and I can't afford to eat it. | Herring's up. Ask anybody in #hall# whether the pay went with it.
+b : That's how it goes. | You can't afford it? | Did they?
+a : That's how it goes for #toffs#. I write down how it goes for me. | Not this week. I eat #cheese#, and I'm content with it. | They did not. #quietly.capitalize#, they went the other way.
+
+scene hard_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean, this month. Half #stair# is buying bread by the slice. | #hall.capitalize#'s laid off three. I'm still on, because I'm quick and I keep my mouth shut. | You can tell the times in #sump# by how long folk stand at the bakery window.
+b : It's hard everywhere. | Will they lay off more? | How long, now?
+a : Hard everywhere, but hardest where the floor's wet. | They'll try. #saying#. I'll be quicker. | Long. Longer than last month. I time it on the way to #hall#.
+b? : #bc_true# | #bc_we_will_see# | #bc_poor_soul#
+
+scene good_week
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Coin's moving. Even #overseer# smiled, and that's twice this year. | #good.capitalize# times, they say. I bought a whole cheese, not a heel. | There's #work# going everywhere. I've been asked to two other benches.
+b : Good for you. | A whole one? | Will you go?
+a : #good.capitalize# for now. I'll put it by for when it's not. | A whole one. I'll make it last a month. | Not yet. I'll let them ask a third time. It puts the price up.
+
+scene card_table
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : There's a game of #cards# most nights. I sit with my back to the wall. | I don't play #cards# for the cards. I play to watch faces. | I won a week's #wages# at cards once and told nobody. I'm telling you because you'll forget.
+b : Why the wall? | What do faces tell you? | What did you buy?
+a : So nobody stands behind me. You'd be surprised who stands behind people. | Who's lying, who's scared, and who owes who. #cards.capitalize# are the least of it. | Nothing. It's still sewn into #purse#. A purse nobody knows of is a purse that stays.
+b : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene cards_lost
+when topic=pastimes|friends self.likes=cards here.time=dusk|night
+does tell.complaint / react.complaint / react.self / assess
+a : Lost three hands of #cards# running tonight. Somebody at that table has learned to keep a still face. | I lost at #cards# tonight. I don't lose often, so I'm thinking about why. | Somebody marked the deck. I know because I mark it too, and theirs isn't mine.
+b : Bad luck. | Thinking what? | You mark it too?
+a : Luck's nothing to do with it. Somebody's been watching me watching them. | Who sat down new, and who smiled when I folded. | #quietly.capitalize#, yes. Only the corners. Everybody does, at that table.
+b : #bc_ha# | #bc_go_on# | #bc_ha#
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess
+a : I keep #cheese# in my coat. It's the one thing in #sump# that keeps longer than a debt. | Give me cheese so hard it squeaks. Soft cheese is for #heights#. | A heel of #cheese# and a heel of bread. That's #supper#, and a good one.
+b : In your coat? | It squeaks? | Sounds plain.
+a : Wrapped in a cloth, with #salt# on the rind. It won't come to harm. | Against the teeth. That's how you know it'll last. | Plain is cheap, and plain keeps. Clever food is no use to me.
+
+scene fish_supper
+when topic=food here.region=ridgemere self.job=fisher
+does tell.self / ask.detail / answer.detail / assess
+a : I don't eat fish. I've had my paws in #catch# since dawn. | Everybody in #hall# thinks I live on herring. I'd sooner eat my apron. | The best thing I ate this week was bread with #salt# on it. Good salt.
+b : What do you eat, then? | Not even herring? | Good salt on bread?
+a : #cheese.capitalize#, bread, and a pot of beans when the fire takes. | Not even herring. Not even the fat ones. | Salt from home. A pinch of the real stuff makes a crust taste like a feast.
+b? : #bc_fair_enough# | #bc_ha# | #bc_lovely#
+
+scene clean_straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : #straw.capitalize# on the floor of my room tonight. It's the one thing I spend on that isn't food. | I change #straw# every Restday. The room smells of the day otherwise, and so do I. | Clean straw underfoot and the door barred. That's as near to home as #sump# gets.
+b : Straw? Not boards? | Every week? | Barred?
+a : The boards in my room are too far gone. Straw hides it and smells of fields. | Every week. The rest of my life smells of #hall#. My bed won't. | Barred. I trust #stair#, mostly. Mostly isn't a bar.
+
+scene room_on_the_stair
+when topic=home|friends here.region=ridgemere self.class=lower
+does tell.self / ask.detail / answer.detail / assess
+a : My room's one floor up, over #lane#. It's mine, and it locks. | More of us on one floor than there should be, and the walls are thin. I know everybody's business on #stair#; they know none of mine. | I've lived in better and I've lived in worse. This one has a window that shuts.
+b : Mine doesn't lock. | How do you manage that? | Better where?
+a : Get a bar. A bar's cheaper than what you'll lose without one. #saying#. | I listen more than I talk. You'd be surprised how far that goes. | Somewhere that was mine. It went to somebody better placed. I'm not done asking about it.
+b : #bc_wise# | #bc_clever# | #bc_poor_soul#
+
+scene night_racket
+when topic=home|day here.time=night self.dislikes=night_noise here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : Somebody's shouting under my window on #lane# every night this week. Same voice. Same nonsense. | #racket.capitalize# off #lane# had me awake at the fourth hour. I'm on my feet at dawn. | #sump.capitalize# doesn't sleep. It argues till the bell and then starts again.
+b : Who is it? | Can't you sleep through it? | Every night?
+a : I know who. I'll keep that. It'll stop when the shouter runs short of friends. | Not through that. I lie and count barrels. It doesn't help. | Every night. I've stopped complaining. #quietly.capitalize#, I've started writing it down.
+b? : #bc_poor_soul# | #bc_ha# | #bc_go_on#
+
+scene mist_on_the_sound
+when topic=weather|day here.time=dawn here.outdoors=fog self.likes=misty_dawns
+does tell.feeling / react.self / assess / ack
+a : Look at that. #mistdawn.capitalize#. You can't see #boats#, only hear them. | I like #city# best like this. The mist hides the half of it I'd rather not see. | Mist all the way up the hill. Even #heights# are hidden this morning.
+b : It's thick. | You'd rather not see it? | Even the Heights.
+a : Thick as fleece. Everybody on #stair# walks quieter in it. | The soot, the stairs, the mess. In the mist it's all one grey, and grey's fair. | Hidden. For an hour they're no higher than the rest of us.
+b? : #bc_lovely# | #bc_true# | #bc_ha#
+
+scene salt_wind
+when topic=weather here.outdoors=storm|overcast here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. Wet in my fur till Restday. | #saltwind.capitalize#. You'd think salt would be friendly to me by now. | That wind comes straight off the water and up #stair#. It finds every gap in a coat.
+b : I hate it too. | It doesn't like you? | Every gap.
+a : Good salt's dry. This stuff's wet and sticky and it gets in the cuts. | It's the wrong salt. #whitepan.capitalize# give clean salt. This is sea-muck. | Every one. Mine has more gaps than coat this winter.
+
+scene rain_on_the_stair
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : #rain.capitalize# again. In the Waste we'd have called this a feast. Here they call it a weekday. | I came here thinking #rain# was a gift. I've been given too much of it. | #stair.capitalize# runs like a gutter in this. I came up it on four feet.
+b : It'll stop eventually. | Too much of a gift. | Four feet?
+a : I've stopped waiting for that. | Too much of anything stops being a gift. #city.capitalize# taught me that. | Four feet, and holding the rail. The Sump stairs don't forgive you.
+
+scene the_pans_back_home
+when topic=memories self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail
+a : Where I grew up, in #self.from_town#, #whitepan# were so bright at noon you had to squint. | I was raised on salt. Real salt, off #whitepan#. That's why I can taste a cheat. | Back in #self.from_town# you could see a cart coming a day off. Here you can't see the end of #lane#.
+b[from=saltwell] #sw : I remember the glare. You'd walk with your eyes half shut. | Off the pans. Then you'd know. | And the dust behind it like a flag.
+b : Do you miss it? | Is that where you learned? | Which do you prefer?
+a@sw : Half shut, and still seeing more than anybody in this city does. | You'd know too. You'd taste the sand in this. | A flag you could read. Here nobody signals anything.
+a : The light. Not the heat. Not the thirst. The light, some days. | My #gran# had me tasting it before I could read. | The far sight. A wolf who sees what's coming has an edge.
+
+scene saltwell_speech
+when topic=accent self.away=yes self.from=saltwell here.region=ridgemere
+does tell.self / react.self / assess
+a : #city.capitalize# thinks we talk slow where I come from. We talk the length we mean. | Nobody here blesses you on #stair#. I stopped doing it. It made them suspicious. | I can tell a Waste wolf in #hall# by the way they wait before they answer.
+b : Slow's not bad. | Suspicious of a blessing? | How do they wait?
+a : Not bad, no. Slow never told a secret by accident. | In #sump#, a kind word means somebody wants something. They're not always wrong. | A breath, before they speak. In #city# that breath is where you lose the argument.
+
+scene office_windows
+when topic=times|smalltalk here.region=ridgemere self.wealth=poor|destitute
+does tell.complaint / ask.detail / answer.detail / assess
+a : Ask the City Office for anything and you get #slip#. | There's a window at the Office I know better than my own door. | Clerks in #city# are paid to say one word, and the word is "next".
+b : What are you waiting on? | What's at the window? | And then what?
+a : A thing that's owed me. #vent#, I'll not say what. I'll say I mean to have it. | A clerk who knows my face and still asks my name. Every week. | Then you come back. And back. They count on you stopping. I don't stop.
+b? : #bc_go_on# | #bc_poor_soul# | #bc_good#
+
+scene lost_place
+when topic=memories|work self.age>=40 self.wealth=poor|destitute
+does tell.memory / sympathise / assess
+tone serious / tender / even
+a : I had a place once that was mine to run. It went to somebody better placed. | I worked my way off waged benches once. Then I worked my way back on. | #vent#, I don't grumble about it where anybody can hear. You're not anybody.
+b : I'm sorry. | That's a hard road. | I'll keep it.
+a : Save the sorry. Be careful instead. It can happen to anybody who trusts paper. | Hard, but I know the way now. I'll walk it again. | I know you will. That's why I said it.
+
+scene gossip_traded
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / insist / ack
+a : They're saying along #bench# that #topic.subject# #topic.claim#. You didn't hear it from me. | I heard #topic.subject# #topic.claim#. That's worth knowing, and worth something back. | #vent#: #topic.subject# #topic.claim#. I've known two days.
+b : Is that true? | Worth what? | Two days, and you said nothing?
+a : True enough to sell. I give it to friends for nothing, #quietly#. | A thing of your own, some day. I keep accounts. | Nothing to anybody who'd spread it. I'm telling you.
+b : #bc_ha# | #bc_fair_enough# | #bc_i_wont#
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear plenty at #bench#. I keep most of it in my coat with the cheese. | People talk over #tubs# as if the fish were listening and I weren't. | I know a thing or two about #hall#. I'll keep them till they're worth more.
+b : Go on, then. | You must hear everything. | Worth more to who?
+a : Not today. It keeps better than #catch#. | Most things. I say nearly none of it. That's why they keep talking. | To me, when I need a favour. #saying#.
+b : #bc_ha# | #bc_clever# | #bc_wise#
+
+scene thief_news
+when topic=crime|gossip topic.claim_kind=theft|wanted
+does tell.gossip / react.news / give.advice / ack
+a : There's talk that #topic.subject# #topic.claim#. Keep your coat buttoned on #stair#. | Somebody says #topic.subject# #topic.claim#. I've moved #purse# inside again. | Another one: #topic.subject# #topic.claim#. And #watch# will come asking in the Sump first.
+b : I'll mind myself. | Inside again? | That's how it goes.
+a : Do. A #thief# picks the ones who look tired. Don't look tired. | Inside, sewn in. A purse you can feel is a purse you still have. | Always. They'll ask, and nobody down here will say a word.
+b? : #bc_i_will# | #bc_wise# | #bc_true#
+
+scene newcomer_eyes
+when topic=newcomer
+does tell.self / react.self / assess
+a : New face on #stair# this week. I've not said a word yet. I'm watching first. | A newcomer took a place on #bench# yesterday. Quick paws. Too quick to be honest, maybe. | There's always somebody new in #sump#. Half are running from something. The other half haven't found out yet.
+b : Give them a chance. | Too quick? | Running from what?
+a : I will, once I know what's wanted. | Quick paws learned somewhere. I'd like to know where. | That's their business. Which half they're in is mine.
+
+scene a_friend_kept
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd let hold #cards# for me. That's as far as trust goes with me. | I'd trust #self.friend# with #purse#, and I say that of nobody else in #city#. | #self.friend# knows more about me than anybody does. I've decided that's all right.
+b : That's a lot. | High praise, from you. | Decided?
+a : It's everything. Don't tell #self.friend# I said so. | It is. Once is all you'll hear it. | Decided. It took some years. I'm slow with that, and glad to be.
+
+scene tide_bells
+when topic=faith here.region=ridgemere
+does give.opinion / react.self / assess
+a : I pay my tithe and mind my tongue, #oath#. That's as far as my praying goes. | They say the Bright One watches #bench#. I'd like a word about #wages#. | When #boats# are late I sit at the back of the chapel by the water. Not to pray. To hear who else is worried.
+b : That's prayer enough. | A word? | That's clever.
+a : I hope so. It's all I've time for. | A short one. I'd not waste the Bright One's evening. | Clever, and honest. I do say a word, on the way out.
+
+scene dream_of_a_shed
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dream of a salting shed with my own name on the door. Then I wake and it's #hall#. | Last night I dreamt the whole Sound had turned to #salt#, and only I could tell good from bad. | I dream of #whitepan#. Not the heat. The quiet.
+b : What would you do with it? | And what did you do? | The quiet?
+a : Buy my own salt, taste every sack, and never once be #cheated#. | Sold it by the pinch, and bought a House. Then I woke. | Nobody shouting. Nobody wanting. Only white, and sky.
+b : #bc_i_hope_so# | #bc_ha# | #bc_lovely#
+
+scene salt_cracked_paws
+when topic=health self.job=fisher
+does tell.self / react.self / reassure
+a : #salt.capitalize# gets in the cuts. My paws are cracked like a dry riverbed. | I've a cough off the wet wind from the Sound. It comes every year with #boats#. | My back's set like a hook from #bench#. I'll straighten it on Restday.
+b : Fat in the cracks helps. | #remedy.capitalize#? | Rest, then.
+a : I use the oil off #tubs#. Smells, but it works. | That, and keeping my mouth shut in the wind. | Rest, and #cheese#, and nobody asking anything of me.
+
+scene festival_coin
+when topic=festival|season
+does give.opinion / react.self / assess
+a : A feast means #hall# shuts a day and nobody pays me for it. I don't dance on that. | A feast day's good for one thing: everybody's too busy to watch #purse#. Theirs, not mine. | Feasts in #city# are louder than at home, and shorter on bread.
+b : Not one for dancing? | That's sly. | Shorter on bread?
+a : I'll watch. Watching costs nothing. | It's noticing. I don't take. I notice who'd be easy to take from. | More #ale# than bread. At home the bread came first.
+
+scene winter_benches
+when topic=season|weather here.season=winter here.region=ridgemere self.job=fisher
+does tell.complaint / react.complaint / assess
+a : Winter in #hall#. #tubs.capitalize# skin over, and you break the ice with the knife handle. | My paws don't warm up till noon this time of year. I gut by feel. | Winter's the one season the fish don't stink. That's all it has going for it.
+b : Ice in the tubs? | By feel? | That's something.
+a : Every morning. And the water underneath colder than the ice. | By feel, and by count. #tally.capitalize#. My fingers don't know which. | It is something. In #sump# you take what you're given.
+
+scene cats_and_scraps
+when topic=animals self.job=fisher
+does tell.self / react.self / assess
+a : There's a cat waits at the back door of #hall# every evening. I give it the heads. | The gulls get into #hall# when the doors are open. Nobody minds them but #overseer#. | There's a cat that's learned which end of #bench# is mine. Clever animal.
+b : Feeding it? | Doesn't the overseer like gulls? | It knows you?
+a : It keeps the rats off my end. A fair trade. I keep my trades fair. | #overseer.capitalize# counts the fish. A gull costs a fish. There's no more to it than that. | It knows who gives. That's more than most of #sump# knows.
+
+story first_pinch [topic=memories|lore self.age>=25 self.from=saltwell]
+  : My #gran# took me out to the pans when I was a #child#. Put a grain on my tongue and asked me where it came from.
+  : I said the pan. Wrong. #oath#, was I wrong. It came off the east bed, where the water runs bitter. I tasted forty more before I could tell.
+  : I can still tell. It's earned me more than any coin has.
+  ask : Do you have a thing you were taught that young?
+  b[old] : A few. Most of them gone now.
+  b : Not like that. I wish I had.
+
+story the_marked_deck [topic=pastimes self.likes=cards]
+  : There was a sailor at #cards# once who won every hand for a week. Nobody could see how.
+  : I watched #cards# instead of the sailor. Every card he dealt himself was a little warmer than the rest.
+  : He'd kept them up his sleeve against his arm. I said nothing. I just stopped sitting across from him.
+  ask : Would you have called him out?
+  b : I'd have shouted it to the table.
+  b[honesty=sly|guarded] : No. I'd have done what you did, and kept it.
+
+story the_bad_barrel [topic=work|memories self.job=fisher self.age>=25]
+  : A cart of salt came into a hall I worked once. I tasted it and said it'd rot the fish. Nobody listened.
+  : Three weeks on they opened the barrels and the whole yard stank. Forty barrels gone.
+  : They asked me after how I'd known. I said I'd tasted it. The look on them, as though I'd claimed I could fly.
+  b : Forty barrels! They'll listen next time. | They should have listened.
+  b[job=fisher|cook] : I've smelt a yard like that. You never forget it.
+
+story salt_carts [topic=lore|travel self.from=saltwell]
+  : Where I come from the salt goes out on carts, a long line of them, and the city never sees who loaded them.
+  : There was an old carter who said every sack had a little of the raker's sweat in it. That's why it's salty, he'd say.
+  : I think of him every time a sack comes in. Somebody far off lifted it in the heat.
+  b : That's a kind thing to think. | I never thought of that.
+  b[from=saltwell] : I knew carters like that. Every road has one.
+
+story first_rain [topic=memories|weather self.away=yes self.from=saltwell]
+  : My first week in #city# it rained six days. I kept waiting for it to stop, the way it does at home.
+  : On the seventh day it stopped for an hour. I went out and stood in the sun, and somebody asked me if I was ill.
+  : I said no. I said I was making sure the sky still worked.
+  ask : Do you remember your first week anywhere new?
+  b : I remember being lost every day of it.
+  b[from=ridgemere] : I've never been anywhere new. I'd like to.
+
+rule @bench_cry
+when concept=bark working=yes self.job=fisher
+does aside
+cooldown 6h
+say Clean knives before the next tub. #saying#. | Heads in that one, guts in this one. #oath#, it's not hard.
+
+rule @salt_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say #grit.capitalize# again. Somebody's been generous with the sand. | Taste it. Then come and call that salt.
+
+rule @mist_bark
+when concept=bark here.time=dawn here.outdoors=fog self.likes=misty_dawns
+does aside
+cooldown 10h
+say There. #mistdawn.capitalize#, and not a roof to be seen. | Mist on the Sound. The one hour #city# is quiet.
+
+rule @wind_bark
+when concept=bark here.outdoors=storm|overcast here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 8h
+say Wet salt. In my fur again. | That wind. Straight off the water and down my neck.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise here.region=ridgemere
+does aside
+cooldown 12h
+say Some of us are up at dawn for #work#. | Shout yourself hoarse, then. I'll still be first on #bench#.
+
+rule @boats_bark
+when concept=bark world.ships=late|lost self.job=fisher
+does aside
+cooldown 8h
+say Empty tubs. Nobody pays for #tubs# empty. | Still no boats. Still standing about.
+
+dlg @1 resident.hub : #greet#. What's wanted? Say it plain. | #greet#, #address#. Quickly, if you can; I've #stair# to climb.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. What brings you back? | #topic.player#. You're back. Sit, if you're staying.
+dlg @3 resident.hub [here.time=night] : It's late for questions. Ask one, and make it a good one.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. I know your face. Out with your business, and stand where I can see you.
+dlg @1 resident.job [self.job=fisher] : I gut and salt at #self.workplace#. #tally.capitalize# an hour, clean, and I taste the salt before it goes near them. | I'm on #bench# at #self.workplace#. Fish in, guts out, salt on.
+dlg @2 resident.job : #self.trade_words.capitalize#. It pays #little#. I'm looking for something that pays more. | I work. I watch. I wait for something better. That's most of it.
+dlg @1 resident.business [business=thriving] : Busy. Too busy to talk long. That's as #good# as it gets down here.
+dlg @2 resident.business [business!=thriving|failing] : Steady. It pays the rent and a heel of #cheese# a day.
+dlg @3 resident.business [business=failing] : Poorly, and I'll not dress it up. #bad.capitalize# weeks. I'm already looking elsewhere.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what came along #bench# today.
+dlg @2 resident.news [world.event_words] : It's all talk of #world.event_words# in #hall#. Nobody's cutting straight for it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing along #bench# worth repeating. | Nothing I'd give away. Ask me another day.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear things. I keep most of them. That's how I keep hearing them.
+dlg @2 resident.gossip [here.gossip=yes] : They say along #bench# that #topic.subject# #topic.claim#. You didn't have that from me.
+dlg @1 resident.bye : #farewell#. Keep #purse# inside your coat. | #farewell#, #address#. Mind #stair#.
+dlg @1 master.learn [here.teaches=yes self.job=fisher] : You want #bench#? It's #knife# first, then the salt, then knowing when to say nothing. Ask. | I can teach you to gut and salt. It's not pretty #work#. Ask.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? I can show you. It's the paws first and the eyes after. Ask what you need.
+dlg @1 master.work [self.job=fisher] : Dawn to dusk on #bench#, cold water, wet floor, and a knife that never stops. Honest, if not kind. | You stand all day and smell of it all night. It's still #work#.
+dlg @2 master.work : Long days at #work#. Most of the learning is watching and keeping your mouth shut.
+dlg @1 master.wages : Nobody pays #wages# to a learner. You work beside me; what you make, you sell. That's how I learned.
+dlg @1 master.takes [here.take_on=yes] : I take one learner, and only one I'd trust with a gutting knife. You'll do. Ask, and it's settled.
+dlg @2 master.takes [here.take_on=no] : I take one learner, and only one I'd trust with a gutting knife. #here.take_on_why#
+dlg @1 master.taken : Good. Be on #bench# before the fish, with a knife you've honed yourself. | Settled. First light, the end by the door. Don't be late.
+dlg @1 master.refused : #topic.why# | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Hone that knife before you come back. | #farewell#. Watch more than you talk.
+graft resident.hub
+choice Can you really tell salt by its taste? -> taste
+node taste
+say I can. Which pan, which bed, and whether somebody's thinned it with sand. A wolf raised on the real thing knows a cheat on the tongue.
+mood calm
+free
+choice Taste this, then. What's wrong with it? -> taste_test
+choice Goodbye. -> bye
+node taste_test
+say Hm. Grit, a little. Damp. Kept in a cellar near the water. Fair for a cook, not for a barrel. Don't pay full price, and don't say who told you.
+choice I won't. Thank you. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What do you teach first? [self.job=fisher] -> first
+node first
+say The knife: hold it so it does the work, not you. Then where the guts go, because the overseer counts. Then the salt, which nobody else can teach.
+mood calm
+choice Why can't anybody else teach the salt? -> first_salt
+choice Something else... -> learn
+node first_salt
+say Because they can't taste it. They read the sack. Sacks lie. A trained tongue doesn't. That part's worth learning from me.
+choice I'd like to learn that. -> learn
+choice Goodbye. -> bye

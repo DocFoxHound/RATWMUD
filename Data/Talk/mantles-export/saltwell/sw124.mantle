@@ -1,0 +1,465 @@
+# sw124, the host who quotes you back (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw124
+revision 1
+state ready
+dialect saltwell
+accent none
+tier full
+written_for rm_celestine_greatly
+written_by claude
+title the host who quotes you back
+fits stage=adult|old
+prefers class=upper temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk repeats_a_guest_s_own_words_back_word_for_word
+likes spiced_cider digging sharp_knife first_snow
+dislikes deep_mud haggling
+fears a_table_nobody_comes_to
+hopes a_house_every_house_still_visits
+topics gossip +0.4 friends +0.3 family +0.3 home +0.2 memories +0.2 pastimes +0.2 prices -0.3
+styles comfort=formal gossip=exact refuse=cool tease=none
+marks oath saying
+persona #self.first# keeps a great house and its long table: gracious, exact and unhurried, with a memory for every word a guest has ever said there and the patience to repeat it at the right moment.
+
+words
+oath! = By the long table | On my word and my table | Table and lamp
+saying! = A guest leaves something at every table | Words said over bread are words kept | Listen first and you need never ask
+table = the long table | my table
+guests = my guests | the guests at my table
+evenings = my evenings | the evenings at my table
+remark = a remark | a thing said in passing
+callers = callers | the callers at the door
+household = the household | the staff
+garden = the garden | the beds behind the house
+knife = the paring knife | a knife that keeps its edge
+cider = hot cider, spiced | cider with cinnamon in it
+firstsnow = the first snow | the year's first snow
+mud = mud | the mud of the lower streets
+estate = the Estate | these quiet streets
+heights = the Heights | the houses up the hill
+dryland = the Waste | the dry country I come from
+city = the city | this city
+lamps = the lamps | the long lamps in the hall
+seating = who sits beside whom | the seating
+precisely = Precisely | Exactly so
+house = the House | our House
+growing = where I grew up | where I was raised
+chair = a chair | a seat at my table
+cook = the cook | my cook
+lists = the lists | my morning lists
+greathouse = a great house | a house this size
+sump = the Sump | the low streets
+
+any
+opinion @1 houses for 1 : This city would fall down without the Houses, and that is not a figure of speech. Somebody built #city#. Somebody keeps it standing.
+opinion @2 houses for 2 [self.house=greatly_house] : #house.capitalize# laid half the walls of #city#. I don't say it to be thanked. I say it because it's true, and #city# forgets.
+opinion @3 dole against 1 [self.wealth=rich|comfortable] : My purse feeds the dole, and the same faces queue twice. #precisely#. I count them, as I count everything.
+opinion @4 sump against 2 : Below the rope sheds is not a walk I take by choice. #mud.capitalize# and noise, and nobody who'd be glad to see me.
+opinion @5 watch for 1 : #watch.capitalize# keep #estate# quiet of a night. I've never asked more of them than that, and they've never failed it.
+opinion @6 times for 1 [self.wealth=rich|comfortable] : Complaining would be foolish, and worse, it would be overheard by #callers#.
+opinion @7 merchants mixed 1 : A shop is a #good# thing. A shopkeeper who wants to argue a price at my door is not. Name it once, or leave.
+opinion @8 strangers for 1 : #growing.capitalize#, no stranger waited for a name before the bread came. #city.capitalize# could stand to learn that.
+opinion @9 city mixed 1 : #city.capitalize# talks before it eats and asks before it listens. I've lived here long enough to forgive it, nearly.
+opinion @10 festivals mixed 1 : A feast is #table# for the whole street. I approve of tables. I don't approve of everybody shouting across them.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're welcome here; sit first, and your name can follow. | #greet#, #address#. Come in from the street.
+line @2 greet [self.working=yes self.house] : #greet#. You find me between #callers#; I can spare you a little time. | #greet#. #household.capitalize# have the hall in hand, so I'm yours a while.
+line @3 greet [here.time=dawn] : #greet#. You're out before the lamps are cold. | #greet#. Not many call on me at this hour.
+line @4 greet [here.time=dusk|night] : #greet#. #lamps.capitalize# are lit; you're just in time. | #greet#. A late caller. I don't mind it.
+line @5 greet [here.outdoors=rain here.region=ridgemere] : #greet#. Leave the wet on the step, if you would. | #greet#. Come in out of that. #mud.capitalize# can stay outside.
+line @1 kin.open [pair.kin!=no] : Here you are at last. Sit by me, not across. | Good. I've been keeping #chair# for you.
+line @1 again.open : Twice today. I'm flattered, and #little# curious. | Back already. #precisely# as I thought you'd be.
+line @1 hail [pair.band=friends] : A moment, if you will. I've #remark# to pass on. | Come here. Not too loudly; #guests# are listening.
+line @1 greet.return : #greet#. | #greet#. I'm glad of you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit; you know where. | #greet#. You've been missed at #table#.
+line @3 greet.return [self.working=yes self.house] : #greet#. Forgive me if I watch the door. | #greet#. I'm keeping one ear on #household#.
+line @4 greet.return [here.time=dusk|night] : #greet#. The evening suits you. | #greet#. Late, and welcome.
+line @1 farewell : #farewell#. | #farewell#. Come again; I'll remember where we left it.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take a lamp from the hall; the street's dark. | #farewell#. Mind #mud# at the foot of the hill.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Don't leave it a month. | #farewell#. You'll be at #table# soon, I trust.
+line @1 react.news : #surprise#. I hadn't that. Who told you? Never mind; I'll find out. | #surprise#. I'll remember it, and who said it.
+line @2 react.news.new : That's news to #table#, and that happens seldom. | #surprise#. Something reached you before it reached #table#.
+line @3 react.news.known : I had that before #supper# yesterday. | #knew#. It was said at #table# two nights ago, in nearly those words.
+line @4 react.news.doubt : #doubt#. The one who first said it says a good many things. | I'd want it from somebody who saw it, not from #callers#.
+line @5 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's grievous. #pity#. | I'm sorry for it. I'll send something to the house. #rest.capitalize#.
+line @6 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll see they're asked to #table#. | That's #good# news. It deserves a cup of #cider#.
+line @1 answer.how : Well, thank you. #busy.capitalize#, as one is. | #fine#. #household.capitalize# are behaving, and so am I.
+line @2 answer.how.busy [self.working=yes self.house] : #busy.capitalize#. Twelve to dine tonight and the fish late. | Run off my feet, politely. #callers.capitalize# since breakfast.
+line @1 ask.how : And you? You look as if you've #remark# for me. | How are you keeping, #address#? Honestly, now.
+line @1 sympathise : #sympathy#. Sit; you needn't say any more of it. | That's a hard thing. It'll go no further than #table#.
+line @1 reassure : #reassure#. It's been weathered before, by worse placed than you. | It will look smaller in a week. Most things do, from #chair#.
+line @1 decline : #hedge#, but I can't. I've #guests# tonight and the seating isn't settled. | I'd like to, truly. Not this week; #household# needs me at home.
+line @1 accept_decline : #no_matter.capitalize#. I'll ask once more; asking costs me nothing. | Another time. #bc_i_will# I'll keep you to that.
+line @1 thank : #thanks#. | That's kindly done. #thanks#.
+line @1 deflect_thanks : #deflect.capitalize#. It was the least a host could do. | Nothing at all. Any host at #table# would have.
+line @1 preclose [self.working=yes] : Well. #household.capitalize# will be wanting me. | I must see to #seating#. Forgive me.
+line @2 preclose : Well. #preclose#. | I've kept you long enough, I think. #excuse#.
+line @1 accept_preclose : Of course. Go. | #bc_fair_enough#. Another evening.
+line @1 tease.return : You said much the same last spring at #table#. I remember. | Say it at #table# and see who laughs.
+line @1 ack : #precisely#. | #bc_it_is#
+line @1 give.advice : #advise.capitalize#: say less than you know at a dinner. Someone is always counting. | Never haggle at a door. Name the price once and mean it. #saying#.
+line @1 warn [world.bandits=near] : I'd not leave the walls this week. #warn#. | Send for an escort, if you must travel beyond #city#. It's cheaper than the other thing.
+line @1 confide [self.house] : #vent#: half the Houses come to #table# to find out what the other half know. | #vent#, I keep a book of who sat where, and when. It's never been wrong.
+line @1 praise : #wellsaid#. I'll repeat it, with your name on it. | You handled that #precisely# right.
+scene word_for_word
+when topic=smalltalk|gossip|friends
+does tell.self / react.self / assess
+a : You told me in spring you'd never touch eel. You've had two helpings at #table# tonight. | Last winter you said you'd never go back to that tailor. You're wearing the coat. #precisely#. | You said, at #table#, that you didn't care for cider. You've had two cups.
+b : You remember that? | I did say that. | It's a cold night.
+a : Every word. It's a habit of #table# I can't break, and don't try to. | You did. #precisely# like that, with a little shrug. | It is. I'll pour you a third #cider#. I'll not remark on it.
+
+scene who_said_what
+when topic=gossip|smalltalk self.house self.class=upper
+does tell.gossip / ask.detail / answer.detail / assess
+a : Something was said at #table# last night that I'm still turning over. | #guests.capitalize# think I don't hear what they say behind their cups. I hear the cups too. | #good.capitalize# evening is one where somebody says more than they meant to.
+b : What was it? | What do the cups say? | Who was it last night?
+a : I shan't repeat it yet. I'll repeat it when it's useful, and to the right ear. | When a cup goes down too fast, the speaker's lying. When it doesn't move, they're frightened. | I'd never say. That's why #guests# come back.
+b : #bc_wise# | #bc_clever# | #bc_ha#
+
+scene the_seating
+when topic=work|friends self.house self.working=yes
+does tell.self / react.self / assess
+a : I spent the morning on #seating#. Two of #guests# haven't spoken since a wedding, and one owes the other money. | #seating.capitalize# is harder than running a House. Ask anybody who's done both. | I put the quarrelsome ones side by side. They behave, out of spite.
+b : What will you do? | Harder? | Side by side?
+a : Put the debtor at my right paw at #table#. Nobody argues money within reach of the host. | Harder. #lists.capitalize# don't take offence at where it's sat. | Side by side, and both of them trying to seem the better guest. It works every time.
+
+scene salon_evening
+when topic=pastimes|day self.house here.time=dusk
+does tell.self / ask.detail / answer.detail / assess
+a : Lamps are lit and #callers# start within the hour. I like this part best: the quiet before. | Every House in #city# sent word for tonight. Every one. | I've had the cider put on to warm. People talk more freely with something hot in their paws.
+b : What's the quiet for? | Even the ones who quarrel? | Do they talk more?
+a : Remembering. I go over who said what at #table# last time, so I can ask after it. | Especially those. Nobody wants to be the one talked about in their absence. | Much more. A cold cup makes a careful guest; #cider# makes a talkative one.
+b? : #bc_wise# | #bc_ha# | #bc_clever#
+
+scene the_house_walls
+when topic=lore|work self.house=greatly_house here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #house.capitalize# laid the walls of #city#, and the bank stands on our ledgers. People forget the first and remember the second. | Brick, tile, lime, stone. Everything in #city# that stands up came through our yards first. | When a wall in #city# cracks, they send to us. When it holds, they forget our name.
+b : Which do you mind more? | Everything? | Does that trouble you?
+a : The forgetting. Debts are remembered; walls are taken for granted. | Very nearly. Ask any builder whose lime they slake. | It doesn't trouble me. I keep #lists# of both, which is better.
+b : #bc_fair_enough# | #bc_true# | #bc_wise#
+
+scene my_spouse
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# and I have an understanding. I do the talking at #table#, and I'm listened to. | I'd trust #self.spouse# with anything but #seating#. Some gifts are not shared in a marriage. | My #self.spouse_word# says I remember too much. I remember saying that I'd marry anyway.
+b : That sounds a happy house. | Which gift? | And you did.
+a : Happy enough, and quiet at breakfast, which is rarer in #greathouse#. | Knowing who will quarrel before they've met. #seating.capitalize# can't be taught. | I did. I remind my #self.spouse_word# of it now and then.
+
+scene my_child
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : #self.child# is cleverer than I was at that age, and kinder. I've made my peace with both. | I watch #self.child# at #table# and see my own habits looking back, better mannered. | I worry about #self.child# the way one worries about a lamp left lit: needlessly, and every night.
+b : You must be proud. | Better mannered? | Needlessly?
+a : Proud, and careful not to say so where #self.child# can hear. | Better. I was sharper. One can be too sharp, like #knife#. | Needlessly. #reassure#, I tell myself. A parent's privilege, not to listen.
+
+scene a_friend_close
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one person I don't quote back to. I've never needed to. | If I trust anybody in #city# with my own words, it's #self.friend#. | #self.friend# sits at my left at #table#. The left is for the ones I'd keep.
+b : Why not? | That's a short list. | And the right?
+a : Because #self.friend# never says a thing that needs repeating. A rare gift at #table#. | Short, and I prefer it, #precisely# so. Long lists of friends are lists of acquaintances. | The right is for the ones I'm watching.
+
+scene the_neighbour
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# has the house across from mine. I know the lamp in that window better than my own. | There's no one I'd sooner have across #estate# than #self.neighbour#. | #self.neighbour# is a good neighbour, which means I hear very little through the wall.
+b : You watch the window? | High praise. | Little?
+a : I notice it. When it's dark early, I wonder. I don't ask #household# either. | It is. I don't give it often. | Very little. A quiet neighbour is worth #cook#.
+
+scene garden_beds
+when topic=pastimes|home self.likes=digging here.region=ridgemere
+does tell.self / react.self / assess
+a : I dug the bean rows myself this morning. #household.capitalize# were horrified. | There's nothing like an hour in #garden# with my own paws in the earth. Nobody can talk to me there. | #growing.capitalize# nothing grew without a quarrel. Here I put a seed in and the rain does the rest.
+b : They'd do it for you. | Nobody? | Easier, then.
+a : They would. They'd do it wrong, and I'd not have had the hour. | Nobody dares. It's the only place in #city# I'm not asked a question. | Easier, and less satisfying. I like a thing that has to be argued into growing.
+
+scene paring_knife
+when topic=pastimes|home self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I keep #knife# in my own pocket. #household.capitalize# have theirs, and I have mine. | A dull knife in #greathouse# is a disgrace. I check them myself on Restday. | I hone #knife# every evening. It settles me better than prayer.
+b : Why your own? | All of them? | Better than prayer?
+a : Because I know where it's been. That's more than I can say for most things on a table. | Every one, and #cook# knows it. Nobody's ever been cut by a sharp knife; it's the dull ones that slip. | The Bright One won't mind. It's a quiet sort of prayer.
+
+scene hot_cider
+when topic=food|season self.likes=spiced_cider here.season=autumn|winter
+does tell.self / react.self / assess
+a : I have #cider# brought up when the weather turns. It's the only extravagance I own to. | #cider.capitalize# at dusk, and the day forgives itself. | Cider at #table# loosens tongues better than wine, and nobody wakes ill.
+b : Only one? | That's a pretty way to say it. | Better than wine?
+a : The only one I'll admit to. The rest at #table# are called hospitality. | Pretty and true. Have a cup, and see. | Better, for my purposes. A guest who wakes ill remembers nothing worth knowing.
+
+scene first_snow
+when topic=weather|season here.outdoors=snow here.region=ridgemere self.likes=first_snow
+does tell.feeling / react.self / assess / ack
+a : Look. #firstsnow.capitalize#. I'll never be used to it. | I'd never seen snow until I came to #city#. I stepped out in my house shoes. | Snow makes #estate# quiet. Even the carriages go softly.
+b : It's only snow. | In house shoes? | It's lovely.
+a : To you. #growing.capitalize# the sky never gave anything away, least of all this. | And stood in it till my paws ached. I'd do it again. | #bc_it_is# For one morning, every street in #city# looks the same.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene lower_mud
+when topic=weather|travel here.outdoors=rain here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : #mud.capitalize# again. One crosses a street and arrives with half of it. | I came back from the market with #mud# to my hocks. #household.capitalize# said nothing, loudly. | #rain.capitalize# I can bear. What it does to #sump# I can't.
+b : It's a wet city. | Loudly? | It's worse lower down.
+a : #bc_it_is# #growing.capitalize#, a wet street was a feast. I've lost the taste for it. | With their faces. They have very eloquent faces. | Much worse, I'm told. I go round by #estate#.
+
+scene haggling_door
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / insist / ack
+a : A carter tried to argue a price at my door with #household# watching this morning. I closed it. | I don't haggle. Name a price; I'll pay it or I won't. Anything else is theatre. | #household.capitalize# know never to bring a bargainer to me. They deal with it at the gate.
+b : Did they come back? | Some like the theatre. | Sensible.
+a : With a fair price, an hour later. #bc_they_do# | Then they can go to the theatre. My door is not one. | Sensible, and quicker. #saying#.
+b? : #bc_good# | #bc_fair_enough# | #bc_wise#
+
+scene where_i_was_raised
+when topic=memories self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town#, nobody talked business until the bread was broken. I keep that still, in #greathouse#. | I grew up in #dryland#, where you remember what's said because nobody writes it down. | Back in #self.from_town# the evenings were the only cool hours. Everyone talked then. I learned to listen there.
+b[from=saltwell] #sw : Bread first. My mother did it even for the tax man. | Nobody wrote anything. You kept it in your head or lost it. | The cool hours. You'd sit out till the stars came.
+b : Do they notice, here? | Did you learn it there? | Do you miss it?
+a@sw : So did mine. He left kinder than he came. #saying#. | Kept it, or lost it. I kept it, #precisely#. | Till the stars, and later. I still keep late hours for it.
+a : Some do. Those of #guests# worth knowing ask why. | It's where I learned everything worth keeping. | The quiet. Not the heat. Never the heat.
+
+scene the_accent_dropped
+when topic=accent self.away=yes self.from=saltwell self.accent=none
+does tell.self / react.self / assess
+a : I left my home vowels at the gate of #city# the year I came. I've not been sure since whether that was wise. | People in #heights# can't place me. I prefer it. A voice that can't be placed can't be dismissed. | I still wait a breath before I answer. It's the only thing of home in my speech now.
+b : You'd not know it. | Can't be dismissed? | I'd noticed that.
+a : No. That was rather the point, #precisely#. | They try. They can't place me, so they listen. | You'd be one of very few. I'm obliged to you for saying.
+
+scene stars_over_the_roofs
+when topic=weather|day here.time=night here.outdoors=clear here.region=ridgemere
+does tell.feeling / react.self / assess
+a : A clear night. Rare in #city#. At home there were more stars than sky. | I'll stand at the window a while. #household.capitalize# think I'm checking the street. | When it's clear I can see #lamps# of #city# right down to the water. They're the city's stars.
+b : More stars than sky? | Aren't you? | That's well put.
+a : #precisely#. You'd not believe it unless you'd stood under it. | Partly. One can look up and keep an eye down. | It's the one kindness #city# does me on purpose.
+
+scene grey_morning
+when topic=weather|day here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog. #heights# disappear and the whole city pretends to be equal. | In fog I can't see who's coming to the door till they knock. I find I mind it. | A grey morning. #guests# will arrive damp and cross, and stay late to dry.
+b : For a morning. | You like to know first? | Late's good for you.
+a : For a morning. It's refreshing, briefly. | #bc_always# A host who's surprised is a host who's not prepared. | Late is when things get said. I'll have #cider# put on.
+
+scene heights_society
+when topic=gossip|friends self.class=upper here.region=ridgemere
+does tell.gossip / react.self / insist
+a : There are perhaps forty wolves in #heights# worth knowing, and they all know each other's business. I know it a little better. | Society here is #table#, and everyone's watching the salt. | I've heard a thing about a House that would empty half the chairs in #city#. I'll keep it.
+b : Better how? | The salt? | Will you tell anyone?
+a : They tell me. Then they tell each other what they told me, slightly wrong. I keep the right version. | Who passes it to whom, and who's left reaching. It says everything. | Not yet. A thing like that is worth more kept than spent.
+
+scene topic_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess / ack
+a : I'm told #topic.subject# #topic.claim#. I'd heard a version of it before supper; this is the better version. | They say #topic.subject# #topic.claim#. Whoever said it first meant something by it. | #topic.subject.capitalize# #topic.claim#, or so it goes round. #precisely# the sort of thing that's never quite as said.
+b : Is it true? | Does it matter who? | You think it's wrong?
+a : True enough to repeat carefully at #table#. Not true enough to repeat loudly. | #bc_always# The first teller is the one who meant something by it. | Wrong in the details. They always are, by the third telling.
+b : #bc_wise# | #bc_fair_enough# | #bc_true#
+
+scene gossip_grief
+when topic=gossip|news topic.claim_kind=death
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : I heard that #topic.subject# #topic.claim#. I'll send to the house this evening. | #topic.subject.capitalize# #topic.claim#. I'm sorry to have it from the street and not from the family. | Word is that #topic.subject# #topic.claim#. There'll be an empty chair somewhere tonight.
+b : #sympathy#. | It's sad news. | That's hard.
+a : Something plain. Bread and a lamp, the way it was done #growing#. | Sad, and it'll be talked about badly. I'll say nothing more of it. | Hard. Empty chairs are the hardest thing #table# holds.
+
+scene gossip_wedding
+when topic=gossip|news topic.claim_kind=marriage
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. I'll need to think again about #seating#. | #topic.subject.capitalize# #topic.claim#. Good. I'd seen it coming across #table# since spring. | I hear #topic.subject# #topic.claim#. That's one quarrel ended, and two families obliged to dine together.
+b : You'll ask them both? | Since spring? | Is that good?
+a : Both, side by side, and nobody else between them for once. | They passed the salt a little too carefully. One notices. | #bc_very_good# Obliged families make the best #guests#.
+
+scene hard_times_below
+when topic=times|prices world.times=hard|lean self.wealth=rich|comfortable
+does tell.worry / react.self / assess
+a : Fewer lamps in the windows below the hill this month. One notices from up here. | #household.capitalize# say the bread's gone up again. I've told them to send what's left over down the hill. | Hard times are when people stop coming to #table#. I've had three regrets this week.
+b : That's kind. | Kind of you. | Three?
+a : It's observant. Kindness would be doing something about it. | Not kind. Bread that isn't eaten is a sin, my #gran# said. | Three. I'll call on them instead, with #cider#. A guest who can't come is a guest who's worried.
+
+scene good_times_above
+when topic=times world.times=good|boom
+does tell.news / react.news / assess
+a : Coin's moving. Every House wants a dinner, and every dinner wants a better one than the last. | Good times. #callers.capitalize# arrive in new coats and pretend they're old ones. | When the times are good the talk at #table# gets louder and says less.
+b : Good for you, surely. | Pretend? | Less?
+a : #good.capitalize# for #cook#. I'd rather have the quieter years; people say more in them. | They brush them to look worn. I notice the price tags they forgot. | Less worth remembering. #bc_i_know# I remember it anyway.
+
+scene below_the_hill
+when topic=smalltalk|travel here.region=ridgemere
+does give.opinion / ask.opinion / insist / ack
+a : The rope sheds are as low as I walk. Not pride; #mud#. | People think #estate# is cut off from the rest. We're not. Everything below comes up the hill as news. | I sent a basket down to #sump# once. It came back empty, with a note. I kept the note.
+b : Is it only the mud? | As news? | What did it say?
+a : Mostly. And being stared at. One gets enough of that at one's own table. | By supper. The lower streets talk faster than the upper ones, and better. | That the basket was welcome and the next should have salt in it. I thought that was #precisely# right.
+b? : #bc_true# | #bc_ha# | #bc_good#
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I go to chapel on Restday and listen, mostly for which #guests# aren't there. | Every morning I give the Bright One thanks for water. Nobody raised where I was raised ever stops. | The Bright One sees every table. I try to set mine as if that were so.
+b : That's one way to pray. | Every morning? | That's a high bar.
+a : It's mine. The Bright One knows where to find me: at #table#. | Every morning, even in a city that never runs dry. Especially here. | #bc_it_is# I don't always clear it. I try.
+
+scene dreams_at_table
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt last night #table# was laid and nobody came. I woke and counted the invitations. | I dream of sand sometimes. Miles of it, and one cup of water, and nobody to give it to. | I dreamt all #guests# I've ever had said the same sentence at once. I couldn't remember it.
+b : Had they all answered? | Nobody at all? | What was the sentence?
+a : All but two. I'll be sending #callers# again. | Nobody. I'd give it to the first who came. I always would. | That's what woke me. Not remembering. It's never happened awake.
+b : #bc_good# | #bc_poor_soul# | #bc_ha#
+
+scene a_host_s_health
+when topic=health self.age>=45
+does tell.self / react.self / reassure
+a : My knees mind the stairs more than they did. There are a great many stairs in #greathouse#. | I've a cough from the damp in #garden#. I'll not stop digging for it. | I sleep less than I did. I lie awake going over who said what at #table#. A poor habit.
+b : Take the stairs slowly. | Rest it, then. | A poor habit?
+a : I take them slowly and #household# call it dignity. | I'll rest it in the evening, with #cider#. | A poor habit, and the reason I'm never surprised. I'll keep it.
+
+scene newcomer_place
+when topic=newcomer here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : There's a new face in #estate#. I've already asked three people who it belongs to. | Somebody new took the house at the end of #estate#. No callers yet. I'll be the first. | A newcomer asked me the way this morning and told me half their life before I'd pointed.
+b : Did they know? | Why first? | Which half?
+a : Two of #callers# guessed. One knew, and didn't know they knew. That's usually the way. | Because the first caller sets the tone. And because I want to see inside. | The half they'll regret telling, I imagine. I'll be kind with it.
+b : #bc_ha# | #bc_wise# | #bc_good#
+
+scene festival_table
+when topic=festival|season
+does give.opinion / react.self / assess
+a : On a feast day I open the kitchen door to the lane. A table should be long enough for the whole street, once a year. | A festival is #table# nobody seated. That's why it ends in quarrels. | I'll put up lamps for the feast and keep my own counsel indoors. Everybody else will say plenty.
+b : The whole street? | Ends in quarrels? | Plenty?
+a : The whole street. Where I come from, nobody ate a feast alone. | #bc_always# Seat people badly and they'll find something to dispute. | Plenty, and most of it to somebody who'll repeat it to me by Restday.
+
+scene invitations
+when topic=work|pastimes self.house self.working=yes
+does tell.self / react.self / assess
+a : I've written twenty invitations for #table# this morning, every one by my own paw. | An invitation is a sentence. It has to say yes, and also who else is coming, without saying either. | I never invite on the same day I hear a quarrel. One waits a week, and sees who's still angry.
+b : By paw? All twenty? | Without saying it? | A week?
+a : All twenty. A clerk's hand, to #guests#, says the invitation is a duty. Mine says it's a wish. | In the paper, the hour, the seal. People read all three. | A week. By then the angry one at #table# has usually done something to regret.
+
+story the_first_dinner [topic=memories|friends self.away=yes self.from=saltwell self.age>=30]
+  : My first dinner in #city#, the guests began talking before they'd eaten a thing. I sat there waiting for somebody to break the bread.
+  : Nobody did. So I stood, broke it myself, and passed it down the whole table. The host looked as though I'd struck him.
+  : Afterwards three #guests# asked to call on me. I'd not said a word all night.
+  ask : Would you have broken it, in my place?
+  b : I'd have sat and waited, and been thirsty.
+  b[from=saltwell] : Of course. Nobody eats before the bread's shared.
+
+story the_misquoted_merchant [topic=gossip|pastimes self.house]
+  : A merchant from the coast told my table one spring that he'd never sell a ship to a House. Every word, I remember.
+  : The next winter he sat in the same chair and boasted of the ship he'd sold to one.
+  : I said: you told us last spring you never would. I gave him the day, and the dish, and the wine.
+  : He didn't come back. I didn't ask him to.
+  b : You remembered the dish? | That's sharp of you.
+  b[class=upper] : I've seen you do that. I've learned to choose my words at your table.
+
+story the_listening_lesson [topic=memories|lore self.from=saltwell self.age>=25]
+  : My #gran# used to sit by the town well and listen to everything said over the buckets.
+  : She told me a promise is only as good as the one who heard it. So be the one who heard it.
+  : I've been that one at #table# ever since. It's served me better than any dowry.
+  ask : Has anybody ever kept your words for you like that?
+  b[old] : One or two. They're gone now, and my words with them.
+  b : Not that I know of. That's a thought, though.
+
+story the_snow_year [topic=weather|memories here.region=ridgemere self.likes=first_snow]
+  : The first winter I spent here, I woke to everything white and thought the house had burned to ash in the night.
+  : I ran out into the street in my nightclothes. A carter laughed at me and threw a snowball.
+  : I've had #snow# every winter since. I still go out to it first thing, properly dressed now.
+  b : A snowball? At you? | You thought it was ash?
+  b[from=saltwell] : I did the same. Everyone from home does.
+
+story the_knife_from_home [topic=pastimes|memories self.likes=sharp_knife self.away=yes]
+  : My #dad# gave me a little knife the day I left home. Said a sharp blade and a long memory would see me anywhere.
+  : I've had it honed every week since. It's cut more bread in #city# than it ever did at home.
+  : Every great house I've been in has better silver. Not one has a better knife.
+  ask : Have you something you'd never part with, from a parting?
+  b : A coat, worn to threads. I'll not part with it.
+  b[from=ridgemere] : I've never left home. Perhaps that's why I keep nothing.
+
+rule @hall_orders
+when concept=bark working=yes self.house
+does aside
+cooldown 6h
+say The blue room for the late #guests#, not the green. | More lamps in the hall. #guests.capitalize# can't talk in the dark.
+
+rule @lamplight
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say #lamps.capitalize#. Now the evening begins. | Dusk. Put #cider# on.
+
+rule @snow_bark
+when concept=bark here.outdoors=snow here.region=ridgemere self.likes=first_snow
+does aside
+cooldown 12h
+say There it is. #firstsnow.capitalize#. | Snow on the steps. Leave it till noon; I want to look at it.
+
+rule @mud_bark
+when concept=bark here.outdoors=rain here.region=ridgemere self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #mud.capitalize# on the hall floor again. Boots off at the door, please. | Half of #sump# has come in on someone's hem.
+
+rule @bargain_bark
+when concept=bark working=yes self.dislikes=haggling
+does aside
+cooldown 10h
+say Name it once, and we'll see. #saying#. | Nobody argues a price on this step. #oath#.
+
+rule @memory_bark
+when concept=bark
+does aside
+cooldown 12h
+say Last spring, at #table#. Yes. I remember. | That's not what was said at #table#. Not quite.
+
+dlg @1 resident.hub : #greet#. Sit first; then tell me what brings you. | #greet#, #address#. Mostly I'll listen; begin when you like.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember our last talk, every word. What is it today? | #topic.player#. Welcome back. Take #chair#.
+dlg @3 resident.hub [here.time=night] : #greet#. It's late, but the lamps are still lit. Say what's needed.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. You're in a house that remembers. Be brief, and be civil.
+dlg @1 resident.job [self.house] : I keep #self.workplace#: the rooms, #household#, #table#, and #seating#, the hardest of them. | #self.trade_words.capitalize#. I keep a house, and I keep its memory.
+dlg @2 resident.job : #self.trade_words.capitalize#. It asks more care than it looks, #precisely# as much as a table. | I keep things in order and listen while I do it. #saying#.
+dlg @1 resident.business [business=thriving] : Thriving. Every chair at #table# filled, and more asking. I'll not complain.
+dlg @2 resident.business [business!=thriving|failing] : Steady, thank you. #household.capitalize# are paid and the lamps are lit.
+dlg @3 resident.business [business=failing] : Not well. A stranger gets no more than that from #table#.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. It was said at #table# last night, more or less.
+dlg @2 resident.news [world.event_words] : All #estate# is talking of #world.event_words#. I've heard four versions; I believe the second.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing that would bear repeating to a guest. | Nothing yet. Ask me after #supper#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear a great deal at #table# and repeat very little. That's why I go on hearing it.
+dlg @2 resident.gossip [here.gossip=yes] : It's said that #topic.subject# #topic.claim#. I'll not swear to the details, #precisely#.
+dlg @1 resident.bye : #farewell#. I'll remember what you said. | #farewell#, #address#. Come again; there's always a chair.
+dlg @1 master.learn [here.teaches=yes self.house] : You'd learn to keep #greathouse#? It's #lists#, patience and a long memory. Ask. | Keeping a great house can be taught. Remembering can only be practised. Ask.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? I can show you. Watch first, and ask after.
+dlg @1 master.work [self.house] : Long days. Lists in the morning, #callers# all afternoon, #table# at night. You'll remember everything, or you'll be no use to me. | It's never finished. #callers.capitalize# are always arriving.
+dlg @2 master.work : Steady #work#, and more care in it than you'd think. Watch, and you'll see.
+dlg @1 master.wages : A learner draws no #money# here. You work beside me and learn it in a third of the time; what it earns you after is yours.
+dlg @1 master.takes [here.take_on=yes] : I take a single learner, someone I know and trust. You'd do. Ask, and #household# will make room.
+dlg @2 master.takes [here.take_on=no] : I take a single learner, someone I know and trust. #here.take_on_why#
+dlg @1 master.taken : Good. Come at first light and bring nothing but a clean coat and a quiet tongue. | Settled. We begin with #lists#. Everything begins there.
+dlg @1 master.refused : #topic.why# | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Remember what you saw today. | #farewell#. Come back when you've practised.
+graft resident.hub
+choice Is it true you remember everything said at your table? -> remember
+node remember
+say Everything worth remembering, and most of what isn't. Where I grew up nothing was written; you kept it in your head or lost it. I kept it.
+mood calm
+free
+choice What did I say, last time? -> remember_me
+choice Goodbye. -> bye
+node remember_me
+say Every word. I'll not repeat it here. One day it'll matter, and then I'll repeat it exactly, and you'll be glad I kept it.
+choice I'll choose my words, then. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice How do you decide who sits where? [self.class=upper] -> seats
+node seats
+say Debtors beside the host. Quarrels side by side, so each must seem the better guest. Old friends apart, so they talk to somebody new. The rest by rank.
+mood formal
+choice And where would you put me? -> seats_me
+choice Goodbye. -> bye
+node seats_me
+say Near the end, in plain view of me. Not as a slight. The end of a table hears everything said along it.
+choice I'll take that. -> hub
+choice Goodbye. -> bye

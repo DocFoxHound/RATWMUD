@@ -1,0 +1,288 @@
+# cw182, the knot-tally ropemaker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw182
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_gunnar_wetcot
+written_by claude
+title the knot-tally ropemaker
+fits stage=adult|old
+prefers job=crafter warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk keeps_a_knotted_cord_for_every_debt_owed_or_owing
+likes blackberries whittling market_bustle summer_evenings
+dislikes haggling gulls
+fears dying_with_a_knot_still_on_the_cord
+hopes a_bare_cord_and_a_bench_by_the_lake
+topics work +0.4 prices +0.3 pastimes +0.2 food +0.2 gossip -0.4 newcomer -0.3
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# lays rope on the long walk down by the works: cold, careful and guarded, slow to trust a stranger, and keeps a cord in one pocket with a knot on it for every debt, owed or owing, till it's paid and picked out.
+
+words
+oath! = Strand and splice | Hemp and hawser
+saying! = Paid is paid, and owed is owed | Every knot comes out when it's paid
+cord = my tally cord | the knotted cord
+knot = a knot | a knot on the cord
+walk = the walk | the long shed
+hemp = hemp | raw hemp
+tar = tar | the tar pot
+strands = the strands | three strands laid up
+berries = blackberries | a cap full of blackberries
+whittle = a bit of whittling | a knife and a stick by the fire
+bustle = the market at full cry | a crowded market
+gulls = the gulls | those thieving gulls
+shift = the shift | a long shift
+lake = the lake | Glasswater
+cousin = my cousin | the cousin in the vineyards
+haggle = haggling | knocking a price down
+evening = a summer evening | the light after a long shift
+debt = a debt | a debt owed
+owed = owed | owing
+rope = rope | good laid rope
+fathom = fathom | fathom of rope
+
+any
+opinion @1 houses against 1 : I've laid rope for their ships my whole life and never once seen a House face on #walk#. #oath#.
+opinion @1 merchants against 1 : There's always a penny crept onto the price when they reckon nobody's looking. I'm always looking. #robbery#.
+opinion @1 strangers against 2 : My door's shut to a face till I've the measure of it. A stranger owes nothing and is owed nothing, and I like it plain.
+opinion @1 church for 1 : The chapel fed my house through a bad winter. That's #debt#, and I've #knot# for it.
+opinion @1 city against 1 : Too many folk, and hardly a soul among them pays what they owe on time. #annoyed#.
+opinion @1 newcomers mixed 0 : New faces at #walk# mean new hands. Some of them can lay #strands#. Most can't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. What is it?
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Mind the strands; they're under tension. | #greet#. Stand clear of the hook.
+line @3 greet [here.time=dawn] : Morning. #shift.capitalize#'s starting. | Morning. #tar.capitalize# is warming.
+line @4 greet [here.time=dusk|night] : Evening. #shift.capitalize#'s done. | #greet#. Late.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. #supper.capitalize#'s on. | You. #good.capitalize#. Shut the door.
+line @1 again.open : You again. Nothing on #cord# for you yet. | Back so soon. That's no debt; you can come free.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down. | #greet#. I'd wondered.
+line @3 greet.return [self.working=yes] : #greet#. Talk; I'm walking backwards. | #greet#. Quick, the strands won't wait.
+line @1 farewell : #farewell#. | #farewell#. Mind the tar on the step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep your purse close. | #farewell#. Watch the dark lanes.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #oath#. Go on. | That's a thing. Who says so?
+line @1 react.news.new : #surprise#. Not heard that. | Nobody told me that one.
+line @1 react.news.known : #knew#. Heard it on #walk#. | I'd heard. #hearsay#.
+line @1 react.news.doubt : #doubt#. I'll not believe it till I've seen it. | #hedge#. Talk's cheap. Proof isn't.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a hard tide. | That's #bad#. Poor souls.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's well. | #good.capitalize#. Somebody's lucky.
+line @1 answer.how : Steady. Every #debt# I've got, I can cover. | #fine#. Tired. The usual.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Rope doesn't lay itself. | Busy. Two hundred #fathom# today.
+line @1 answer.how.poorly : My back's knotted worse than #cord#. | #tired.capitalize#. Old bones on a long walk.
+line @1 ask.how : And you, #address#? Square with everybody? | How's it with you, #address#?
+line @1 sympathise : #sympathy#. Sit. | That's #bad#. I'll not pretend it isn't.
+line @1 reassure : #reassure#. Most debts get paid. | It'll come right. Things do, in time.
+line @1 decline [self.working=yes] : #hedge#, but no. The strands are laid up and I can't leave them. | Not now. The shift has an hour yet, and I don't cut shifts.
+line @2 decline : I'd rather not, and I'll not pretend I'd enjoy it, either. | Not today, #address#. I'm owed a quiet evening and I'm taking it.
+line @1 accept_decline : #no_matter#. | Fair. Another time.
+line @1 thank : #thanks#. I'll mark it. | That's a kindness. I'll tie #knot# for it.
+line @1 deflect_thanks : #deflect#. | Not worth #knot#. Not for that.
+line @1 preclose [self.working=yes] : Well. #walk.capitalize#'s waiting. | Back to #hemp#.
+line @2 preclose : Well. #preclose#. | I'm off. #tired.capitalize#, and a long shift tomorrow.
+line @1 accept_preclose : Go on, then. | #bc_fair_enough#
+line @1 ack : #bc_true# | Mm. #bc_right#
+line @1 give.advice : #advise#: never borrow off a friend. Borrow off a stranger and pay them first. | Write it down, or tie it on #cord# like me. Either way, don't forget it.
+line @1 warn [world.bandits=near] : #warn#. Stay inside the walls. | Keep inside the gates while it lasts. Whatever #wages# they're offering.
+scene the_tally_cord
+when topic=smalltalk|prices
+does tell.self / ask.detail / answer.detail / assess
+a : See #cord#? Every knot's a debt. Some I owe, some I'm owed. | I picked a knot out of #cord# this morning. Paid in full, three years late. | Seven knots on #cord#. Four mine, three theirs. I'll not sleep easy till it's bare.
+b : How do you tell which is which? | Three years? | Does it keep you up?
+a : Owed to me is a single knot. Owed by me is a double. My paws know them in the dark. | Three years, and the copper's still warm. #saying.capitalize#. | Some nights. I count them by feel till I'm #tired# enough to sleep.
+b : #bc_clever# | #bc_ha# | #bc_poor_soul#
+
+scene you_owe_nothing
+when topic=smalltalk|friends
+does tell.self / react.self / assess / ack
+a : You owe me nothing. #cord.capitalize# would know. | I owe you #drink# from Restday. Don't think I've forgotten. | Nobody here owes me. That's rare. I like it.
+b : Good to know. | I'd forgotten. | Is it rare?
+a : It's good to be square. Square's the best way to be. | I hadn't. It's on #cord#. I'll stand you it Marketday. | Rare as a gull that pays its way. Most folk owe somebody.
+b? : #bc_true# | #bc_good# | #bc_true#
+
+scene laying_rope
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I walk backwards all day down #walk#, paying out #hemp#. Miles of it, by the week. | Three strands, laid up hard. If one's slack, the rope's no good. #oath#. | Two hundred fathom of cable today. My legs know it.
+b : Backwards? | How do you know if it's slack? | Who's it for?
+a : Backwards. That's how #rope#'s made. You walk away from the hook. | You feel it in the paw. A slack strand hums wrong. | A ship. I don't ask which. I lay it and they take it.
+b : #bc_ha# | #bc_wise# | #bc_true#
+
+scene tar_in_fur
+when topic=work|health self.job=crafter
+does tell.complaint / react.complaint / assess
+a : #tar.capitalize# gets in everything. My fur, my bread, my bed. | I came home with #tar# on my nose once, and nobody said a word. | Years of tar. Black to the wrist, both paws.
+b : It's the job. | Nobody? | Can't you wash it?
+a : It is. I'll not complain twice. | Not a word. That's love, or not looking. | It doesn't wash. It wears, slowly.
+
+scene no_haggling
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / insist / ack
+a : A buyer stood at #walk# an hour #haggle#. I said the price once and left it. | I'll pay what's asked or walk away. #haggle.capitalize# is a waste of daylight. | Some folk think a price is a starting point. It's not. It's the price.
+b : Did they pay? | Some like it. | Fair enough.
+a : In the end. I didn't move. Not a farthing. | Let them. Not with me; I'd be #cheated# blind. | It's the price. #saying.capitalize#.
+b : #bc_good# | #bc_fair_enough# | #bc_true#
+
+scene thieving_gulls
+when topic=animals self.dislikes=gulls here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# had my dinner off the end of #walk# again. | A gull looked me in the eye and took the bread from my paw. | I keep a stone in my pocket for #gulls#. I've not thrown it yet. I will.
+b : They're bold. | In the eye? | Not yet?
+a : Bold, and owing. I've #knot# for every one. | In the eye, like it was owed. #oath#. | Not yet. I'm saving it for the big grey one.
+
+scene blackberries
+when topic=food|season here.season=summer|autumn self.likes=blackberries
+does tell.self / react.self / assess
+a : Picked #berries# on the hill road Restday. Ate half on the way back. | There's a bramble behind #walk# with the best blackberries in the city. I'll not say where. | My paws are purple. Blackberries. Worth it.
+b : Only half? | Where? | They look it.
+a : The other half went into a pie. Gone by dark. | I said I'll not say. That one's mine. | They'll stay purple a week. Still worth it.
+
+scene whittling_evenings
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : #whittle.capitalize# of an evening. It's the only time my paws aren't on #hemp#. | I whittle pegs. Tally pegs. One for every debt that's too big for #cord#. | I'm whittling a little boat. It looks more like a shoe.
+b : What do you make? | Too big for a knot? | A shoe?
+a : Pegs, spoons, nothing much. The knife's the point. | A few. I keep them in a jar. The jar's emptier than it was. | A shoe with a mast. I'll keep at it.
+
+scene market_watching
+when topic=smalltalk self.likes=market_bustle
+does tell.feeling / react.self / assess
+a : I like #bustle#. Everybody buying, everybody paying. | I take the corner by the fish stalls and watch the coin go round. | You learn who pays honest by watching #bustle#. I've learned a lot.
+b : You like crowds? | Just watching? | Who pays honest?
+a : Not crowds. Markets. A crowd's a crowd. A market's a ledger walking about. | Just watching. I keep my #money# inside my coat. | Fewer than you'd think. I'll not name them.
+
+scene long_light
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : #evening.capitalize#. Out on the doorstep, picking at #knot#. | Long light, and #walk#'s shut. Best part of the day. | Summer evenings are the only time the works go quiet.
+b : A good hour. | It is. | You like the quiet?
+a : It is. Nothing owed, nothing due, till morning. | It is. #oath#. Short as they are. | I do. I don't say much in it, either.
+
+scene the_wife
+when topic=family self.married=yes self.spouse
+does tell.self / react.self / assess
+a : #self.spouse# and I have never owed each other a copper. That's how I know. | I'd trust #self.spouse# with #cord#. Nobody else. | #self.spouse# says I count too much. #self.spouse# is right. I'll not stop.
+b : That's rare. | High trust. | Why not stop?
+a : It is. We keep it so. | It is. My whole life's on #cord#. | It's what I am. #saying.capitalize#.
+
+scene cousins_letter
+when topic=family|friends
+does tell.self / ask.detail / answer.detail / assess
+a : #cousin.capitalize# writes when the grapes are in. Two lines, no more. | I had a letter from #cousin#. Says the vines are good this year. | I owe #cousin# a letter. It's on #cord#. Three months now.
+b : What do they say? | Good vines? | Will you write?
+a : The weather, the grapes, and nothing else. Same as I'd write. | Good vines. Not that I'll taste the wine. | I will. When I've something worth two lines.
+b : #bc_ha# | #bc_good# | #bc_i_hope_so#
+
+scene lake_years
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : At home I could see clear across #lake# on a calm day. Here the smoke hides the far end of #walk#. | I left #self.from_town# owing nobody. I mean to go back the same way. | Still water at home. Here everything's on the move, rope and folk alike.
+b[from=coldwater] #home : Calm days on the lake. I remember. | Owing nobody. Hard to do. | The still water. I think of it often.
+b : Do you miss it? | Will you go back? | Restless, the city.
+a@home : Then you'll know the quiet I miss. | Hard, and I'll do it. #oath#. | So do I. More than I'd say to most.
+a : Some days. The quiet, mostly. | When #cord#'s bare. Not before. | Restless, and it never pays its debts.
+
+scene talk_slow
+when topic=accent self.away=yes self.from=coldwater
+does tell.self / react.self / assess
+a : The hands at #walk# say I talk like the lake. Slow, and no waves. | I say calm water to folk at the market. They look at me like I've wished them drowned. | I've kept my lake talk. It's paid for.
+b : Do you? | Drowned? | Paid for?
+a : I do. I'll not hurry it for them. | They don't know it's a blessing. I don't explain. | Years and years. It's mine, and I owe nobody for it.
+
+scene shut_door
+when topic=newcomer|smalltalk
+does give.opinion / disagree / insist / ack
+a : My door stays shut to faces I've not measured. They're owed nothing, and I'm owed nothing. | On the wharf a stranger wanted a loan off me. I walked on. | New faces every week at #walk#. I learn their names when they've paid a debt.
+b : That's cold. | Fair enough. | That's hard on them.
+a : It's plain. Plain's not cold. | Fair. I'd not ask it of them either. | It is. #saying.capitalize#. It's fair, though.
+b : #bc_fair_enough# | #bc_true# | #bc_fair#
+
+scene lean_shift
+when topic=times|work world.times=hard|lean self.job=crafter
+does tell.worry / reassure / assess / ack
+a : Short shifts on #walk#. They're laying off by the day. | Everybody's owing somebody this month. #cord.capitalize#'s heavy. | Hard times. I've had to put a knot on for bread.
+b : It'll turn. | Heavy how? | No shame.
+a : It will. Ships always want rope. #reassure#. | More knots than I've had in years. | No shame. But I'll pick it out first, before any other.
+b? : #bc_i_hope_so# | #bc_poor_soul# | #bc_true#
+
+scene chapel_debt
+when topic=faith
+does give.opinion / react.self / assess
+a : The chapel fed us one winter. I've a knot for it still. | I give at the chapel twice a year. It's #debt# I'll never pay out. | I'm not one for prayer. I'm one for paying what I owe. The Bright One's tally is better kept than mine.
+b : That's kind. | Never? | I hope so.
+a : It's owed. Kind's got nothing to do with it. | Never. Some knots stay. #oath#. | I'd think so. #bc_true#
+
+story first_debt [topic=memories self.age>=40 self.away=yes]
+  : My first debt was a copper off a boatwright in #self.from_town#, when I was small.
+  : I tied my first knot for it. It sat on #cord# a long, long while.
+  ask : Have you ever owed something that long?
+  b : Not that I'd admit.
+  b[old] : Longer. Some I'll take with me.
+  : I sent it back with a stranger going up the road. Two coppers, for the wait. #saying.capitalize#.
+
+story cable_held [topic=work|memories self.job=crafter self.age>=25]
+  : I laid a cable once that held a ship off the rocks in a blow. Or so the skipper said.
+  : He came to #walk# after and shook my paw. Wouldn't let go.
+  ask : Would you have believed him?
+  b : I'd want to.
+  : I did. I've no knot for it. Some things are paid in full the first time.
+
+story big_grey_gull [topic=animals|smalltalk self.dislikes=gulls]
+  : There's a big grey gull at the works with one bad foot. Took my bread three days running.
+  : Fourth day I brought two loaves. One for me, one for it.
+  ask : Could you have stayed cross with a thief like that?
+  b : Longer than you, I'd think. You fed it?
+  b[friends] : Not likely. You fed it, didn't you? Softest thing I've ever heard from you.
+  : It's paid for. No more knots. #oath#. It still takes mine, mind.
+
+rule @walk_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Mind the strands! Under tension. | #hemp.capitalize# up. Keep it moving.
+
+rule @gull_bark
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 10h
+say Off, you #thief#. | #gulls.capitalize#. I've a stone for you.
+
+rule @knot_bark
+when concept=bark
+does aside
+cooldown 8h
+say Another knot. #saying.capitalize#. | That's one out. #oath#. Square.
+
+rule @haggle_bark
+when concept=bark self.dislikes=haggling here.place=market
+does aside
+cooldown 10h
+say It's the price. Pay it or don't. | #haggle.capitalize# again. Waste of breath.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Be quick.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You owe me nothing, last I checked.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. Say it plain.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I don't know you. What do you want?
+dlg @1 resident.job [self.working=yes self.job=crafter] : I lay rope at #self.workplace#. Walk backwards all day. It's honest work.
+dlg @2 resident.job : #self.trade_words.capitalize#. That's the job. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I'd swear to.
+dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what's said.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'll take it as true once it's paid for.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Talk weighs nothing and costs plenty. I leave it lie.
+dlg @1 resident.bye : #farewell#. | #farewell#. We're square.
+graft resident.hub
+choice What's that knotted cord in your paw? -> cord
+node cord
+say My tally. A knot for every debt. Single, owed to me. Double, I owe. When it's paid, I pick it out. I'll die with it bare, if I can.
+mood calm
+free
+choice Is there a knot for me? -> cord_me
+choice Goodbye. -> bye
+node cord_me
+say Not yet. Keep it that way, and we'll get on.
+choice I'll keep it that way. -> hub
+choice Goodbye. -> bye

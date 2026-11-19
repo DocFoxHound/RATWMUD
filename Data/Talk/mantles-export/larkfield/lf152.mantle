@@ -1,0 +1,449 @@
+# lf152, the burr-picker at the forge (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf152
+revision 2
+state ready
+dialect larkfield
+accent none
+tier full
+written_for rm_rupert_ropehand
+written_by claude
+title the burr-picker at the forge
+fits stage=adult|old
+prefers job=smith talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk picks_burrs_from_the_ruff_mid_sentence
+likes blackberries roof_birds quiet_chapel thunder
+dislikes cold_tea rats
+fears the_forge_going_cold_for_good
+hopes one_more_summer_walking_the_downs
+topics work +0.4 family +0.3 weather +0.3 animals +0.3 smalltalk +0.3 faith +0.2 times +0.3 gossip +0.1
+styles comfort=company gossip=easy refuse=soft tease=none
+marks oath saying
+persona #self.first# shoes cart horses at a forge by the east gate and talks the whole while, loud and restless, plain as a nail, picking burrs out of a thick ruff mid-sentence and stealing off to sit in an empty chapel.
+
+words
+oath! = Hammer and horseshoe | By the bellows
+saying! = Every burr comes out in the end | A shoe fits or it lames
+shoe = a horseshoe | a shoe for a cart horse
+nails = the nails | a mouthful of nails
+forge = the forge | the fire
+bellows = the bellows | the old bellows
+anvil = the anvil | my anvil
+horse = a cart horse | some great cart horse
+hoof = a hoof | a hoof like a bucket
+burrs = the burrs | burrs in my ruff
+birds = the birds on the roofs | the starlings on the ridge tiles
+berries = blackberries off the bush | a fistful of blackberries
+chapel = a chapel with nobody in it | the chapel on a weekday
+thunder = a good thunderstorm | thunder, heard from under a roof
+coldtea = tea gone cold | cold tea
+gateroad = the east gate | the gate road
+yard = the yard | the shoeing yard
+ho = Ho | Ho, now
+
+any
+opinion @1 church for 1 : When my cupboard was bare, the chapel put bread on my table. I'll hear no word against it at #forge#.
+opinion @1 dole for 2 [self.on_dole=yes] : #dole.capitalize#'s on my table this month, and I'll say so out loud. No shame in bread, #address#. Shame's in going without.
+opinion @2 dole for 1 : #ho#! Better a loaf in every house than a sermon about pulling your weight. I've pulled mine since I was a pup.
+opinion @1 festivals for 1 : A feast's every door open and every tongue going. That's my kind of day, #address#. I'll out-talk the lot of them.
+opinion @1 houses against 1 : I've shod their horses at #forge# since I was young and never once seen a House face. Only their grooms, and the grooms pay late.
+opinion @1 times against 2 : Each week's a nail tighter than the last, and the hill never feels it. They'd feel it if their horses went unshod.
+opinion @1 watch for 1 : Nobody's lifted so much as a nail from #yard# while they're about. There's hot tea at #forge# for any of the Watch.
+opinion @1 city mixed 1 : Ridgemere's loud, and I'm loud. We suit each other. It's #rain# I'd send back if I could.
+opinion @1 newcomers mixed 1 : Come in by #gateroad# and you'll get a shout from me. What you do after is yours, #address#.
+opinion @1 merchants mixed 1 : I keep a counter of sorts myself. I know what iron costs at #anvil#. I don't know why bread costs what it does.
+
+grown
+line @1 greet [pair.band=strangers] : #ho#! Come in, come in, and pull the door to; #rain# gets everywhere. | #greet#! Don't stand in the doorway. In or out, #address#.
+line @2 greet [self.working=yes self.job=smith] : #ho#! Mind #anvil#, and mind the hot end. | #greet#! Can't stop, there's #hoof# in my lap. Talk anyway.
+line @3 greet [here.time=dawn] : #greet#! You're up with #birds#. Good. | #ho#, early! I've had #bellows# going an hour already.
+line @4 greet [here.time=dusk|night] : #ho#, late one! I was just banking #forge#. | #greet#. You've caught me with my coat half on.
+line @1 kin.open [pair.kin!=no] : There you are! Sit, sit. I've been talking to #horse# all day for want of you. | #ho#! Come in. Is there tea? Hot tea? Good.
+line @1 again.open : #ho#, back again! I've thought of three more things to tell you since. | Twice in one day. I'm a lucky smith, #address#.
+line @1 hail [pair.band=friends] : #ho#! Over here! I've news, or near enough. | Here! Come and stand by #forge#, it's warm.
+line @1 greet.return : #greet#! | #ho#! #greet#.
+line @2 greet.return [pair.band=friends|family] : #ho#, you! Come in and sit. | #greet#! I was just saying your name to #horse#.
+line @3 greet.return [self.working=yes self.job=smith] : #greet#! Talk to me while I nail. | #ho#! Mind the tail, it swings.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, and I'm glad of the company. | #ho#. Still up? So am I.
+line @1 farewell : #farewell#! | #farewell#! Mind #gateroad# puddles.
+line @2 farewell [here.time=dusk|night] : #farewell#! Straight home now; it's #cold# after dark. | #farewell#. Keep to the lamps, #address#.
+line @1 farewell.return : #farewell#! | #farewell#, and come back soon.
+line @1 react.news : #ho#! Is it? | Well! There's a thing to tell #horse#.
+line @1 react.news.new : #surprise#! I never heard a whisper of that. | #ho#! Nobody brought that through #gateroad# to me.
+line @1 react.news.known : #knew#. The grooms had it before noon. | Heard it at #forge# this morning, and twice since.
+line @1 react.news.doubt : #doubt#. I'd want it from somebody who was there, and sober. | #ho#, now. That's a tale that grew on the way here, I'd say.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. I'll say a word for them in #chapel#. | #ho#, no. That's #bad#. That's a heavy thing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #ho#! #gladnews#! I'll tell everyone who comes in. | Now that's #good# news. That's the best I've had all week.
+line @1 answer.how : #fine#! Busy, loud and still standing. | Well enough! #burrs.capitalize# again, but well. #notsobad#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#! Four horses waiting and #nails# to go round. | Run off my feet, and glad of it. #ho#.
+line @1 ask.how : And you? Eating? Sleeping? Out of the rain? | How's yourself, #address#? Tell me everything.
+line @1 sympathise : #sympathy#. Sit by #forge#; it warms more than paws. | #ho#, that's a #bad# turn. Pull up a stool and tell me the whole of it.
+line @1 reassure : #reassure#. These things come round, and you will too. | You'll mend, #address#. Iron does, with a bit of heat.
+line @1 decline : #hedge#. I'd come, but there's #horse# tied up waiting on me. | I can't, #address#, not today. #forge.capitalize# won't keep and nor will the horse.
+line @1 accept_decline : #no_matter#! Another day. | That's all right, #address#. I'll ask again, and louder.
+line @1 thank : #thanks#! | #thanks#. That's kind, and I won't forget it.
+line @1 deflect_thanks : #deflect#! | #ho#, it was nothing. I'd do it twice.
+line @1 preclose [self.working=yes self.job=smith] : #ho#, look at that, #forge#'s dropping. I'd best get back. | Well. #horse.capitalize# won't shoe itself, more's the pity.
+line @2 preclose : Well! #preclose#. | I'd talk all day, and I would, so I'd best go.
+line @1 accept_preclose : Go on, then! #farewell#. | Off you go. #farewell#. I'll save the rest for next time.
+line @1 ack : #ho#. | #ack#!
+line @1 give.advice : #advise#: never stand behind #horse# you don't know. | Keep your feet dry and your tea hot. That's all I know, #address#, and it's served me.
+line @1 warn [world.bandits=near] : Don't go out past #gateroad# on your own this week. #warn#. | The roads are #bad# this week. Go in company, #address#.
+line @1 insist : #insist#! And louder, if you need it twice. | I mean it. #saying.capitalize#.
+scene shoeing_talk
+when topic=work self.job=smith self.working=yes
+does tell.self / react.self / assess
+a : I've shod six horses since dawn and talked through every #hoof#. They like it, I think. | #hoof.capitalize# in my lap, #nails# in my teeth, and I'm still talking. That's a skill. | This one's a carter's horse from the Works. Feet like dinner plates and a temper to match.
+b : Six! | Doesn't it bother them? | Is it kicking?
+a : Six, and a seventh coming. #ho#. My back knows the number. | Calms them, a voice does. Any voice. Mine's the one going, #ho#. | Not yet. I talk to it about the weather. #horse.capitalize# likes the weather.
+
+scene nails_mouth
+when topic=work self.job=smith self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Can't talk, #nails# in my mouth. I'll talk anyway. | I swallowed a nail once. Only once. You learn quick at #forge#. | Count the nails. Eight to #shoe#, and not one more or less.
+b : How do you manage? | What happened? | Why eight?
+a : Round the side, like this. Years of practice, #address#. | Nothing! It came out the usual way. #oath#, I was frightened, though. | Eight holds. Seven slips. Nine splits #hoof#. #saying.capitalize#.
+b : #bc_ha# | #bc_poor_soul# | #bc_wise#
+
+scene big_horse
+when topic=animals|work self.job=smith
+does tell.self / react.self / assess
+a : #horse.capitalize# leaned on me all morning. You can't push a horse off you; you wait. | They brought in a grey this morning, older than me, I'd say. Gentle as a lamb. | I like a horse better than most folk. A horse doesn't argue the bill.
+b : How long did you wait? | Older than you? | Ha.
+a : An hour, near enough. My leg went to sleep before the horse did. | Old as the hills and shod like a lord. I took my time with it. | It's true! I've never once had #horse# say I charged too much.
+
+scene forge_heat
+when topic=work|weather self.job=smith here.season=summer
+does tell.complaint / react.complaint / assess
+a : #forge.capitalize# in summer, #ho#. I'm cooked through by noon. | Door open, shutters open, and still it's like standing in a bread oven. | I drink a bucket of water a day at #anvil# in summer. A bucket.
+b : Sit out the worst of it. | Sounds awful. | A whole bucket?
+a : Can't. #horse.capitalize# doesn't wait for the cool. | It is, and I'd never trade it for a desk. Never. | A whole one. And I still dry out like a nail.
+
+scene burr_picking
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : Hold on, there's #burrs# again. Every time I walk past a hedge I come back like a hedgehog. | I pick #burrs# out while I talk. Don't mind me. I've got one, look. | I've given up keeping my ruff clean. #saying.capitalize#, and so do I.
+b : Every time? | I see it. | Do you ever get them all?
+a : Every time! I could walk down the middle of a road and still find a hedge. | That's three today. I keep count, for no reason at all. | Never. There's always one more, right where I can't reach. #ho#.
+
+scene roof_birds
+when topic=animals|smalltalk self.likes=roof_birds
+does tell.feeling / ask.detail / answer.detail / assess
+a : I sit on the step at dusk and watch #birds#. Can't sit still any other time. | Look up! #birds.capitalize#, all in a row, gossiping. Worse than me. | There's a pair nesting under my eaves. I've named them both and I'll not tell you what.
+b : What do you watch for? | What do they gossip about? | Go on, tell.
+a : Nothing! Where they land, who chases who. It's better than the play, #address#. | The weather, and who's got the warmest chimney. Same as us. | No. They're private names. I'll tell you if they hatch anything.
+b : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene thunder_roof
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess
+a : Hear that? #ho#! #thunder.capitalize#. I could sit and listen all night. | I love #thunder#, I do, so long as there's a good roof between it and me. | The horses don't like it. I do. I stand in the doorway and shout back at it.
+b : It's loud. | Under a roof, yes. | You shout at it?
+a : Louder than me, and that's saying something! Good for it. | Under a roof, with hot tea in my paw. Then let it roar. | Every time. It never answers, but I feel better for it.
+
+scene rain_commons
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# again. Ridgemere rain gets in your ears and stays there. | Rain down the gate road like a river. The horses come in to me #very# wet and cross. | I've a hood for it and it still finds my neck. #oath#.
+b : It never stops. | Poor things. | It finds everybody's.
+a : It never does. I talk over #rain#. That's my answer to it. | Poor things is right. I dry them off before I shoe them. Takes an hour. | It does. Ridgemere's rain is a nosy thing, #address#.
+
+scene fog_gate
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog! I can hear #horse# coming down #gateroad# and can't see it till it's at the door. | I like a fog, oddly. Everybody's voice comes closer, and mine carries. | You can't see #birds# in this. They've gone quiet. I miss them.
+b : Sounds eerie. | Carries, does it? | They'll be back.
+a : Eerie, and then a great nose comes out of it. Makes me jump every time. | Carries clear to #gateroad#. They hear me coming a street off. | They will. When it lifts they'll all start up at once, #ho#.
+
+scene winter_forge
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : Winter's the one time I'm glad of #forge#. Everybody wants to stand near it and talk. | Ice on #gateroad#, and every horse slipping. I've been fitting frost nails all week. | #cold.capitalize# out there! In here it's summer. Come in and thaw.
+b : Popular, then. | Frost nails? | I'll come in.
+a : Popular! I've had half the street in my yard warming their paws. And talking, too. | Little studs on #shoe#. They grip the ice. A horse can't walk on glass any more than you can. | Come in! Stand by #forge#, and tell me something while you thaw.
+
+scene spring_clear
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : Spring! #birds.capitalize# are back on the ridges and nesting. I counted eleven. | Sun on the yard and the doors wide. I could shoe a horse a minute today. | First clear day in a month. I walked to #gateroad# and back twice, for no reason at all.
+b : Eleven! | You'd be quick. | Twice?
+a : Eleven, and two more I wasn't sure of. I'll count again tomorrow. | Quick and loud! #ho#. The horses don't mind. | Twice. Can't sit still on a day like this. I never can.
+
+scene dawn_bellows
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : Up before #birds# and #bellows# going. That's how a smith's day starts. | I wake the whole street at dawn. I don't mean to. I just start talking, #ho#. | First thing, a cup of tea, hot, and I drink it hot. Then #forge#.
+b : Early. | They must love you. | Hot, yes.
+a : Early, and loud! #ho#. The day's no good till it's started. | They've stopped complaining. Or they've stopped telling me. | Hot! #coldtea.capitalize# is a crime. I'll not have it in the house.
+
+scene dusk_banked
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : #forge.capitalize# banked, door shut, and I'm off to sit on the step. | Dusk's the only time I go quiet. Ask anyone. They'll say it's a wonder. | That's the last horse gone. Now I'll go and look at #birds# before bed.
+b : Sit a while. | A wonder, is it? | Good for you.
+a : A little while. Then the legs want walking again. They always do. | It is! Two hours a day I don't talk. I make up for it after. | Good for me! #ho#. They'll be settling on the ridges by now.
+
+scene blackberries
+when topic=food|season self.likes=blackberries here.season=summer|autumn
+does tell.self / react.self / assess
+a : Blackberries out past #gateroad#! I came back with #berries# and #burrs# both. | For #berries# I'll go any distance. I did, this morning, and came back purple. | There's a bush by the wall nobody's found. I'll not say where, not even to you.
+b : Worth it? | Purple! | Not even to me?
+a : Worth every burr. I'd go again tomorrow, and I will. | Purple to the elbow. #ho#. The street laughed till it had to sit down. | Not even to you, #address#. I'll bring you a fistful instead. That's fair.
+
+scene cold_tea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : Somebody left my tea on #anvil# and it's gone cold. #coldtea.capitalize#! There's nothing sadder. | I'd sooner drink rain than #coldtea#. Hot, or not at all. | I put my cup down for #horse# and it went cold on me. One horse!
+b : Make another. | It is sad. | That's quick.
+a : I will! And I'll stand over it this time, and drink it while it's hot. | It is! A cold cup's a small sorrow, but it's a sorrow. | Quick as anything. Ridgemere air's #cold# enough to chill a kettle.
+
+scene the_wife
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse#'s the only one who can make me stop talking. One look does it, #ho#. | I'd be nothing without #self.spouse#. I'd be a loud wolf with burrs, and that's all. | I married the best listener in Ridgemere, and I've kept #self.spouse# busy ever since.
+b : One look? | You'd still be loud. | Busy, I'd say.
+a : One look. I don't know how it's done, and I'm not asking. | Loud and lost. #self.spouse# keeps me found, #address#. | Busy! #ho#. There's not been a quiet evening since the wedding.
+
+scene the_child
+when topic=family self.parent=yes self.child
+does tell.feeling / react.self / assess
+a : #self.child#'ll read better than I ever could. I can barely write my name, #address#. | I want #self.child# to have a trade with clean paws. Not soot and #burrs# like me. | I go quiet when #self.child# comes into the yard. Nobody believes that, but it's true.
+b : A fine thing to hope for. | Clean paws. | I'd believe it.
+a : It is. And I'll want it louder than anyone. | Clean paws and a roof that doesn't leak. That's all I'm after. | It's true! Some things are bigger than talking. That's one of them.
+
+scene empty_chapel
+when topic=faith self.likes=quiet_chapel
+does confide / react.self / assess
+a : Don't tell anyone, but I go and sit in #chapel# of an afternoon. Not a word out of me. | #chapel.capitalize#'s the only place I'm quiet. The Bright One gets my silence, and nobody else does. | #chapel.capitalize#'s what I like best. No service, just the light and the dust.
+b : You? Quiet? | That's a good gift. | Just sitting?
+a : Me, quiet. An hour, sometimes. #ho#. I come out with a sore throat from not using it. | It's the best I've got. The rest of me's for the horses. | Just sitting. I don't pray much. I let the quiet do it for me.
+
+scene parish_loaf
+when topic=times|prices self.on_dole=yes
+does confide / sympathise / assess
+tone serious / tender / even
+a : I'll say it plain: #dole# is on my table this week. I'm not ashamed. | The forge doesn't pay what it did. We're on #dole# till it picks up. | A lifetime at #anvil#, and I stood in the line with my cap in my paw. #oath#.
+b : No shame in it. | It'll pick up. | That's hard.
+a : None. Bread's bread, and the chapel's kind with it, #address#. | It will. I'll be loud about that, too, when it does. | It was hard. Once. The second time I nodded to everyone in it and asked after their week.
+
+scene hard_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Nobody's paying for #shoe#. They're letting their horses limp. It's cruel, but it's cheap. | Each week's tighter. Talking keeps me from brooding on it, #address#. | Lean times. #ho#. Even #birds# look thin.
+b : It's the same everywhere. | Does talking help? | Thin birds?
+a : It is. The horses suffer first, and then the smith. #bad#. | It helps me. It might not help anyone listening. | Thin as nails. I put crumbs out on the sill, and I'll not be told off for it.
+b? : #bc_true# | #bc_ha# | #bc_poor_soul#
+
+scene good_week
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Coin about! Three carters paid me in #money# this week, on the day! | Every horse in the Works wants new shoes at once. #ho#, I'll be busy. | Good times. Even the grooms from the hill are paying what they owe.
+b : Good for you. | That's a lot of shoes. | About time.
+a : Good for the whole street! I'll stand everyone a cup of tea. Hot. | A lot of shoes and a lot of talk. My two favourite things. | About time is right. I've waited half my life for that.
+
+scene wagons_due
+when topic=caravan|travel world.wagons=in
+does tell.news / react.news / assess
+a : Wagons in through #gateroad#! Every horse of them wants a look at their feet. | The carts are in. I heard them a mile off and put #bellows# to it. | Wagons in. That means horses, and horses mean #anvil#.
+b : Busy day. | A mile off? | Good for trade.
+a : Busy! I'll be at #anvil# till dark, and talking all the while. | A mile off. Iron on stone. I'd know it in my sleep. | Good for trade and good for news. Carters are nearly my match for talk.
+
+scene downs_home
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : At #self.from_town# you could see three ways from the top of the downs, and I walked all three as a pup. | #self.from_town# market had a smith on every corner. I swept for the loudest. Guess who I learned from, #address#. | Sheep on the downs, and their bells at dusk. I can still hear them if I shut my eyes.
+b[from=larkfield] #lark : The long walk out past the chalk pits. I know it. | There was always one shouting louder than the stalls. | The bells came in all together at dusk.
+b : Did you walk far? | The loudest? | Sounds peaceful.
+a@lark : Then you've walked it too! Past the pits and on to the ridge, #ho#. | There was. Never a quiet one among them. | All together. You'd think they'd planned it. I miss it, I do.
+a : Far as my legs would go, and back before supper. I've never stopped walking since. | The loudest, and the best. He'd talk to a horse like it was his brother. | Peaceful! It was. I was the only noise for a mile.
+
+scene restless_legs
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : One more summer, I'd like, walking the downs again. Just walking. | I can't keep still, #address#. I'd walk to the sea and back if #forge# would mind itself. | I dream I'm walking. Every night, walking somewhere. I wake up tired.
+b : You should go. | It won't, though. | Tired from walking?
+a : I should. I'll say so every summer till I do. | It won't! It sulks if I leave it a day. #ho#. | Tired from walking all night and shoeing all day. Still, I'd not swap it.
+
+scene passed_on
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : #ho#! Have you heard? #topic.subject.capitalize# #topic.claim#. I've told six people already. | They're saying #topic.subject# #topic.claim#, and good luck to them, I say. | Good news through #gateroad# today: #topic.subject# #topic.claim#.
+b : I hadn't! | Good for them. | That's nice.
+a : Now you have, and you can tell six more. That's how it works. | Good for them! I'll shout it at the next one in, too. | It is. Nice news is the best kind to pass on, #address#.
+
+scene bad_word
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted
+does tell.gossip / react.news / assess
+tone serious / serious / even
+a : I heard #topic.subject# #topic.claim#. I don't like it. Keep your doors shut. | There's talk at #forge#: #topic.subject# #topic.claim#. Mind yourself out there. | #ho#, a bad thing: they say #topic.subject# #topic.claim#.
+b : I'll be careful. | I will. | That's a shame.
+a : Do. I'd not want to hear it was you next. | Good. I'll say it to everyone, loud, till it's sorted. | It is. I'll still say good morning to the street, mind. The street hasn't done anything.
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New face at #gateroad# this morning. I shouted good day and they jumped a foot. | A traveller asked me where to eat. I told them, and then I told them everything else, #ho#. | I like a stranger. Somebody who hasn't heard all my stories yet.
+b : You'd scare anyone. | Everything? | Have I heard them?
+a : I don't mean to! It's just how my voice comes out. | Everything. The weather, the horses, #birds#. They left better informed. | Not all of them. I've a few left. #ho#, sit down and I'll start.
+
+scene lost_accent
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I came from #self.from_town# talking like a market stall and lost the lot in a year. | City folk guess wrong every time. I talk like Ridgemere now, only louder. #ho#. | I can't do the way we talk at home any more. I try, and it comes out city.
+b : Do you miss it? | Only louder. | That's a shame.
+a : Sometimes. My voice stayed big, at least. That came with me. | Much louder! #ho#. Nobody's ever said I was hard to hear. | It's a small shame. I've plenty of words left. Too many, the street says.
+
+scene burnt_paws
+when topic=health
+does tell.self / react.self / assess
+a : Took the skin off my paw on #shoe# again. All these years and I still do it. | My back cracks like kindling every morning. Then I talk and forget it. | Never ailed a day. #forge.capitalize# burns it out of me, I'm sure.
+b : Still? | Forget it? | Lucky you.
+a : Still! You'd think the paw would learn. It's stubborn, like me. | Forget it till I bend. Then I remember, loud. #oath#. | Lucky, and loud about it. #ho#. I'll knock on #anvil# for luck.
+
+scene rats_yard
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : Rats in the oat bin again! I shouted at them and they stared back. | My rat trap's caught nothing but my own tail twice. The rats laugh, I swear it. | The horses hate rats worse than I do. One squeak and they dance.
+b : They stared? | Did the cat mind? | What do you do?
+a : Stared! Bold as grooms. I'll get a lid for that bin if it costs me a week. | It sulked at me for a week. I deserved it, #ho#. | Hold the hoof and talk them down. Talk's good for everything, #address#.
+b : #bc_ha# | #bc_poor_soul# | #bc_wise#
+
+scene the_letter
+when topic=smalltalk|memories self.errand=letter
+does confide / react.self / assess
+a : I've a letter for a lord up the hill, sealed, and every time I go the lord's out. Every time! | #ho#, that letter. I've worn a path to that door and the door's never once opened. | I carry a letter in my coat for somebody who's never home. It's getting soft at the corners.
+b : Keep trying. | Never once? | Leave it with somebody.
+a : I will. I'll go up again Restday and knock louder. | Never once. I've started to think the door's painted on. | I won't. I said I'd hand it over, and I will, to the right paw.
+
+scene neighbour_feel
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour#'s a good neighbour. Never once complained about the noise, and there's plenty. | #self.neighbour# could have the key to #forge# and my last cup of tea, and I'd sleep sound. | #self.neighbour#'s the best kind of neighbour: listens, and doesn't mind that I don't stop.
+b : That's rare. | High praise. | That's a gift.
+a : Rare as a quiet smith. #ho#. Lucky's the word, and I say it often. | It is high praise. Hot tea, mind. I'd not trust anyone with cold. | It is. I'll shoe that one's cart for nothing if one's ever needed.
+
+scene friend_kept
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I go back years. Years and years. I talked, and #self.friend# listened. | If I'm in trouble, #self.friend# is who I'd go to. First, before anyone. | #self.friend# says I'd talk to a stone. #ho#! I would, too.
+b : That's a long time. | Good to have. | You would.
+a : A long time, and I've not run out of things to say yet. | Good to have, and better to keep. I'll keep it. | I would! And the stone would get a word in sooner than anyone.
+
+story first_horse [topic=memories|work self.job=smith self.age>=30]
+  : The first horse I ever shod on my own was a big bay mare who'd been shod by better.
+  : She stood for it, all of it, and when I'd done she turned round and looked at me like a teacher.
+  ask : Have you ever been looked at like that, like you'd only just passed?
+  b : Once or twice. It stays with you.
+  b[old] : Every day of my first year at work.
+  : It stayed with me. I talk to every horse now, the way I wished somebody had talked to me then.
+
+story the_burr_coat [topic=memories|festival|smalltalk]
+  : I went to a wedding once in my best coat and came back with forty burrs in it. Forty!
+  : I'd taken a short cut through a hedge. #ho#. Nobody looked at the bride; they all looked at me.
+  ask : Have you ever been the talk of a wedding?
+  b : Not for burrs. That's a story.
+  b[friends] : I'd have counted them with you.
+  : I picked them out at the feast, one by one, and told the table about each one. Forty stories.
+
+story under_the_chapel [topic=weather|faith self.likes=thunder]
+  : The best storm I ever heard, I was sitting in #chapel# with nobody else in it.
+  : #thunder.capitalize# right over the roof, and the whole place hummed like a bell.
+  ask : Do you know the feeling, when a building sings round you?
+  b : I think I do. Once, in a barn.
+  : That's the one. I sat there till it stopped and didn't say a word. Not one. Nobody believes me.
+
+story the_kicker [topic=work|animals self.job=smith]
+  : There was a carter's horse once that kicked every smith in the city. They brought it to me last.
+  : I talked to it for an hour before I touched a foot. The weather, the price of oats, #birds#.
+  ask : What do you think it did?
+  b : Kicked you anyway? Or did it stand?
+  : It stood! Bored stiff, I'd say. Never kicked again, not for me.
+
+story father_forge [topic=memories|family self.away=yes self.from=larkfield self.age>=40]
+  : My father kept a forge at #self.from_town#, by the sheep pens, and talked less than any wolf alive.
+  : I swore I'd be different. #ho#. I've kept that promise every day since, loud.
+  ask : Have you ever sworn to be nothing like your own folk?
+  b : I did. I'm turning into them anyway.
+  b[old] : Every pup does. Every old one finds out.
+  : The quiet's come to me late. I sit in an empty chapel with it. I think that's his.
+
+rule @shoe_cry
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 6h
+say Shoes fitted, hoofs trimmed, nothing kicked! Bring #horse# in! | #ho#! Next horse, and mind its back end!
+
+rule @nail_bark
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 8h
+say Eight of #nails#. Eight. Where's the eighth? | #oath#, there's a nail in my paw again.
+
+rule @burr_bark
+when concept=bark here.place=street|market|work
+does aside
+cooldown 8h
+say Another one. #burrs.capitalize#, always #burrs#. | Hold still. There. Got you, #ho#.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say #ho#! Listen to that! Louder than me! | Go on, then. Shout. I'll shout back.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.place=work|home
+does aside
+cooldown 12h
+say Out of the oat bin! Out! | Rats again. Bold as you like.
+
+rule @dawn_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say Morning, birds! Morning, street! | #bellows.capitalize# up, kettle on. Here we go.
+
+dlg @1 resident.hub : #ho#! Come in, come in. Shut the door, the rain gets in. #talk_open# | #greet#! What can a smith do for you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! #ho#! Come in. I've been saving things to tell you.
+dlg @3 resident.hub [here.time=night] : Late, isn't it! Come in by #forge#. What's wanted?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. You've a look about you. Say what you came for, plainly.
+dlg @1 resident.job [self.job=smith] : #self.trade_words.capitalize#. Horses, mostly: #nails#, shoes, trimming, and a lot of talking. | I shoe cart horses and talk to them while I do it. They don't seem to mind.
+dlg @2 resident.job : A bit of everything, and loud with it. #job_busy# | #job_busy#
+dlg @1 resident.business [business=thriving] : #ho#! Couldn't be busier. I've horses tied up down the street.
+dlg @2 resident.business [business=steady] : Steady! It keeps #forge# lit and my tea hot. That's all I ask.
+dlg @3 resident.business [business=failing] : #bad.capitalize#, if I'm honest, and I am. The horses go elsewhere, or limp.
+dlg @1 resident.news [world.news] : #ho#, I heard this one at #forge#: from #world.news_from#, #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody at #gateroad# is on about #world.event_words#. I've talked of nothing else since breakfast.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd tell you if I had any, believe me. | Nothing new, and I've asked every carter through #gateroad#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# For once in my life. | Not a thing! I'd have told you already, #ho#.
+dlg @2 resident.gossip [here.gossip=yes] : #ho#, listen: they say #topic.subject# #topic.claim#. You didn't hear it from me. Everybody did.
+dlg @1 resident.bye : #farewell#! Mind the step. | #farewell#! Come back and tell me how it went.
+dlg @1 shop.greet [here.shop!=bare] : #ho#! Come in. Shoes, nails, a bit of ironwork. Look all you like, and talk while you do. | #greet#! Mind the hot end and have a look round.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Back again. #shop_offer#
+dlg @3 shop.greet [here.shop=bare] : #shop_bare# I've shod every horse in the street and sold the rest. | Not much on the bench today. #ho#. Bring me iron and I'll buy it.
+dlg @1 shop.prices : Iron's dear and coal's dearer. I don't set either. #shop_dear# | It's a fair sum for the work. I'll tell you exactly why, at length, if you ask.
+dlg @1 shop.bye : #farewell#! | #shop_bye# And tell your friends.
+graft resident.hub
+choice You've a burr in your ruff. -> burr
+node burr
+say Have I? #ho#! There it is. I pick them out all day. Every hedge in Ridgemere has its eye on me. #saying#.
+mood warm
+free
+choice Where do they all come from? -> burr_where
+choice Goodbye. -> bye
+node burr_where
+say The bushes out past the east gate. I go for #berries# and come back with the hedge. Worth it, every time.
+choice I'll leave you to them. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you shoe a cart horse? [self.job=smith] -> shoe
+node shoe
+say Can I! Bring it round to the yard. Eight nails a shoe, and I'll talk to it the whole time so it doesn't fret.
+mood keen
+choice Why eight? -> shoe_eight
+choice Let me see your wares. -> greet
+node shoe_eight
+say Eight holds. Seven slips. Nine splits the hoof. Every smith knows it and I say it anyway. #saying#.
+choice Thank you. -> greet
+choice Goodbye. -> bye

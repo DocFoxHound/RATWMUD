@@ -1,0 +1,289 @@
+# cw213, the stair-racer in a clean coat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw213
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for rmx_dunstan_sallow
+written_by claude
+title the stair-racer in a clean coat
+fits stage=adult|old
+prefers temper=short class=middle
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk races_up_every_stair_and_lets_nobody_pass
+likes warm_bread dancing fresh_straw misty_dawns
+dislikes night_noise haggling
+fears being_laughed_at_in_the_street a_stain_that_will_not_come_out
+hopes a_place_in_the_watch a_quiet_room_above_the_noise
+topics pastimes +0.4 memories +0.3 festival +0.3 work +0.2 home +0.2 gossip -0.4
+styles comfort=gruff gossip=scornful refuse=stiff tease=none
+marks oath saying
+persona #self.first# takes every stair at a run and lets nobody by, and keeps a coat so clean it shines: proud, prickly and quick to bristle, homesick for the hush of the charcoal mounds in the hills, fond of warm bread, a feast-night dance and a misty dawn.
+
+words
+oath! = By the cold mound | Smoke and stillness | Soot on my coat, never
+saying! = Nobody passes me on a stair | A clean coat answers for you | Quiet's worth more than scale-coin
+mounds = the charcoal mounds | the smoking mounds up the hill
+hush = the hill hush | a stillness where one leaf falling is loud
+hills = the hills | the hills over the lake
+coat = my coat | this coat, combed clean
+comb = my coat-comb | the little bone comb
+stairs = the stairs | every stair in the Commons
+loaf = bread warm off the oven | a loaf still steaming in the paper
+reel = a feast-night reel | a dance with the fiddles going
+straw = dry straw | new straw for the bed
+lakemist = a dawn with lake-mist on it | the grey before the sun's up
+row = the night row | folk bawling under my window
+dicker = dickering | a price argued down to nothing
+rents = the rents | my room up under the rents' roof
+splash = a cart splash | mud off a cart wheel
+watchhouse = the Watch house | the door of the Watch house
+burners = the burners | the old burners at the mounds
+fasttop = first to the top | up before anyone
+city = the city | this city
+
+any
+opinion @1 city against 1 : #city.capitalize# is all elbows and shouting, and nobody knows the wolf next door. Up at #mounds# you knew every voice by its cough.
+opinion @1 festivals against 1 : I'll dance #reel# all night, shore-friend. It's the spilt ale and the bawling after that I can't stand.
+opinion @1 watch for 1 : #watch.capitalize# keeps the streets fit to walk in. I'd wear the coat myself, and keep it cleaner than most.
+opinion @1 merchants against 1 : No stall gets me #dicker# for an hour. Say a fair price or I walk, and I walk quick.
+opinion @1 newcomers for 1 [self.away=yes] : I left #hills# knowing nobody down here. Give a new face a fair look before you laugh, that's all I ask.
+opinion @1 sump mixed 0 : There's rough folk low down, and decent ones. Same as up here, only muddier. #nonsense.capitalize# to say otherwise.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind my coat as you pass. | #greet#, #address#. You'll not be from round here.
+line @2 greet [here.time=dawn] : Morning. #lakemist.capitalize#. Best hour there is. | Morning, shore-friend. Up before #row# starts.
+line @3 greet [here.time=dusk|night] : Evening. #row.capitalize#'s starting already. | #greet#. Late, and the street's getting rowdy.
+line @4 greet [here.weather=rain] : #greet#. Stand back from the gutter, you'll splash me. | #greet#. #rain.capitalize#, and my coat just done.
+line @1 kin.open [pair.kin!=no] : Oh, you. In you come; wipe your feet, #address#. | You. #good.capitalize#. Sit on the straw, not the coat.
+line @1 again.open : Twice today, shore-friend. Fair enough. | Back already. #coat.capitalize#'s barely straight from last time.
+line @1 hail [pair.band=friends] : Oi! Race you up #stairs#. | #greet#! Up the stairs, last one's a herring.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. About time you showed. | #greet#. Took the stairs, did you? I'd have beaten you.
+line @3 greet.return [here.time=dusk|night] : #greet#. It's getting loud. | Evening, #address#. Mind the drunks on the corner.
+line @1 farewell : #farewell#. | #farewell#. Keep your coat dry.
+line @2 farewell [here.time=dusk|night] : Night. I'll be up top, trying to sleep through #row#. | #farewell#. Mind the noise on the way.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind yourself.
+line @1 react.news : Go on, then, #address#. | Right, I'm listening. Who says?
+line @1 react.news.new : #surprise#. That's news to me. | #surprise#. Never heard a whisper of it.
+line @1 react.news.known : #knew#. Heard it on the stairs. | Old news, shore-friend. It came up #rents# yesterday.
+line @1 react.news.doubt : #doubt#. Who saw it? Somebody saw it, or it's #nonsense#. | #hedge#, I'd not believe that from somebody who wasn't there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard, that. | #oath#. That's bad. I'm sorry to hear of it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize#. | Now that's worth hearing. #good.capitalize#.
+line @1 answer.how : #fine#. Coat's clean, so I'm well. | Well enough, #address#. Bit short on sleep.
+line @1 ask.how : How are you keeping, #address#? | You all right, shore-friend?
+line @1 sympathise : #sympathy#. Sit down a minute. | That's rough, #address#. I'm sorry.
+line @1 reassure : #reassure#. It'll pass, shore-friend. Most things do. | You'll be right. Head up, and up #stairs# with you.
+line @1 decline : #hedge#, but no. I've somewhere to be and I said I'd be there. | Not today, #address#. I'm going up to #watchhouse# again, and I'll not miss it.
+line @1 accept_decline : #no_matter#. | Fair enough. #agree.capitalize#.
+line @1 thank : #thanks#. | Ta, shore-friend. I'll remember that.
+line @1 deflect_thanks : #deflect#. | It was nothing, #address#. Don't go on.
+line @1 preclose : Right. I'm off up #stairs#. | #preclose#. I've stairs to climb.
+line @1 accept_preclose : Go on, then. | #farewell#. Off you go.
+line @1 ack : #bc_right#. | #bc_fair_enough#.
+line @1 take_offence : #annoyed#. I'll not be laughed at, shore-friend. | Watch your mouth. #annoyed#. I'll take that from nobody.
+line @1 accept_apology : #forgive#. Only, never again. | Fine. #agree.capitalize#. We'll say no more.
+line @1 warn [world.bandits=near] : Stay off the roads, #address#. I mean it. | #warn#. Nobody sensible's out on the road this week.
+rule @stairs
+when concept=bark here.region=ridgemere
+does aside
+cooldown 6h
+say #fasttop.capitalize#. Again. | Out the way. Coming through. #fasttop.capitalize#.
+
+rule @coat
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say #annoyed#. #splash.capitalize#, right up my coat. | Soot on my coat, in this? Not while I've #comb#.
+
+rule @row
+when concept=bark self.dislikes=night_noise here.time=night
+does aside
+cooldown 10h
+say #row.capitalize# again. Some of us want our sleep. | Quiet down there, you great herrings.
+
+rule @mist
+when concept=bark here.time=dawn here.weather=fog self.likes=misty_dawns
+does aside
+cooldown 12h
+say #lakemist.capitalize#. Like being back at #mounds#. | Still water, still air. #hush.capitalize#.
+
+scene stair_race
+when topic=smalltalk|pastimes here.region=ridgemere
+does tell.boast / react.self / assess
+a : Nobody's passed me on #stairs# since I left #hills#. Not one. | Some lump tried to get by me on the long stair today. I took them two at a time and left him puffing. | I'm up #rents# before the bells finish. Every morning. I count it.
+b[stage=adolescent|young] #pup : I'll race you one day. | Two at a time? | Before the bells? Really?
+b : Not one? | Who was it? | Why rush?
+a@pup : You can try, minnow. I'll not go easy. | Two at a time, and three on the short ones. | Really. Come and watch me on #stairs# tomorrow.
+a : Not one. I'd remember. #saying.capitalize#. | Never asked. He'll know me next time. | Because it's mine, shore-friend. #fasttop.capitalize#'s mine.
+
+scene coat_proud
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I comb #coat# every morning and every night. Folk laugh. I don't mind. Much. | Cart went by this morning, #splash#, right up my flank. I combed it out on the spot. | #coat.capitalize# is mine, properly mine, more than anything else I own. I'll keep it so.
+b : You don't mind? | Right there in the street? | That's fair.
+a : Not much. They laugh less when they see I'm cleaner than them. | Right there. I'll not walk round in mud for anyone. #oath#. | It's more than fair. #saying.capitalize#.
+
+scene offended
+when topic=smalltalk|accent self.away=yes
+does tell.complaint / react.complaint / assess
+a : Somebody on the stair laughed at the way I said "still water" today. I didn't laugh back. | A trader called me "hill-pup" this morning. I'm nobody's pup. I told them so, too. | Folk in #city# think the lake talk means you're slow. I'm quicker up a stair than any of them.
+b[from=coldwater] #cw : Still water's a good greeting. Let them laugh. | They'd not dare say that at home. | We're not slow. Just not shouting.
+b : What did you do? | Good for you. | You are, too.
+a@cw : It is. I'm keeping it, #address#. | They wouldn't. Calm water and good manners up there. | #agree.capitalize#. Not shouting, and not stopping.
+a : Looked at them till they stopped. Works every time. | They'll not call me it twice. #oath#. | I am. And my coat's cleaner. That's twice over.
+
+scene the_mounds
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : I was raised at #mounds# above #self.from_town#. You'd hear one bird, then nothing, for an hour. | Up at #mounds# #burners# slept by the fires, turn and turn about. Never a voice raised. | The smoke went straight up of a still evening, from every one of #mounds#. Like a row of threads to the sky.
+b[from=coldwater] #cw : Up in the hills? I've seen the smoke from the lake. | Turn and turn? All night? | I've seen that from the jetty.
+b : Was it lonely? | All night long? | Do you miss it?
+a@cw : That was us. That smoke was home. | All night. A mound's a pup, it wants watching. | Then you've seen the finest sight there is, shore-friend.
+a : Quiet. Not lonely. They're different, and #city# doesn't know it. | All night. You'd lie in the warm and listen to #hush#. | Every night. #hush.capitalize#. You can't buy that here.
+
+scene night_row
+when topic=home self.dislikes=night_noise here.time=dusk|night
+does tell.complaint / react.complaint / assess
+a : #row.capitalize# again last night, right till the bells. I counted every bawl. | Somebody under my window singing about a boat, wrong, at midnight. #annoyed#. | I'd give a week's bread for one quiet night in #city#.
+b : Did you shout down? | Wrong, how? | A week's bread?
+a : I did. They sang louder. #annoyed#. | Every word wrong. I know that song, and that wasn't it. | A week. I'd eat straw for #hush#.
+
+scene misty_dawn
+when topic=weather here.time=dawn here.weather=fog self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : #lakemist.capitalize# this morning. I stopped on the top step and just looked. | Grey and still. The whole street hushed under it, for once. | Mist like this and I'm back at #mounds#, smoke and fog, hard to tell one from the other.
+b : Cold, though. | For once. | That's a nice thought.
+a : Cold and quiet. I'll take that over warm and loud. | For an hour. Then the carts start. | It is. I'll keep hold of it till #row# starts.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : Got #loaf# first thing. Half of it went down on the climb, and not one crumb on #coat#. | Bread warm from the baker's, in the cold. Best thing in #city#, near enough. | The corner baker knows me now. Saves me #loaf#, the end of the batch.
+b : Not one? | Near enough? | That's good of them.
+a : Not one. I'm careful. #saying.capitalize#. | Near enough. A quiet night's better. | It is. I'd not #dicker# over it, so they don't make me.
+
+scene feast_reel
+when topic=festival|pastimes self.likes=dancing
+does tell.self / react.self / assess
+a : Danced every #reel# on the last feast night. Not a stumble, not a mark on me. | I'll dance till the fiddles stop. It's the bawling after I go home from. | Somebody bet I'd not last the night at #reel#. I lasted. They paid.
+b[stage=adolescent|young] #pup : Will you teach me? | Do you go home early? | How much did they pay?
+b : Every one? | Sensible. | They did?
+a@pup : If you'll keep your feet off mine, minnow. | Before the ale's spilt. Every time. | A loaf. Warm. Fair catch.
+a : Every one. Ask anyone who was there. | It is. I like #reel#, not the mess. | They paid. Grumbling, but they paid.
+
+scene straw_bed
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : #straw.capitalize# on my bed. Smells of the hill farms. I slept like the dead. | I'll go without a meal before I go without #straw#. That's just how it is. | Room up the top of #rents#, with new straw down. Smells like home.
+b : Lucky you. | That's a sacrifice. | Like home?
+a : I'd not call it luck. I carried it up four flights, #fasttop#. | It's no sacrifice. Straw's worth more than #supper#. | Like #mounds#, near enough. Smoke and straw.
+
+scene no_dicker
+when topic=prices self.dislikes=haggling
+does give.opinion / react.self / assess
+a : I'll not #dicker#. Say a fair price, I'll pay it. Say a daft one, I'm gone. | Stallholder wanted me to argue over a penny. I put the penny down and walked. | Haggling's for folk with nothing better to do. I've #stairs# to climb.
+b[job=merchant] #shop : That's how a market works, you know. | You'll pay more that way. | Some of us like it.
+b : Fair enough. | Did they call you back? | Ha.
+a@shop : Then it works without me. | Then I pay more. I'll keep my temper. | You're welcome to it, shore-friend.
+a : It's how I am, #address#. | They did. I kept walking. #oath#. | Laugh if you like. I'm right.
+
+scene watch_hopes
+when topic=work|dreams self.job=none self.working=no
+does tell.plan / ask.plan / answer.plan
+a : I've been up to #watchhouse# three times now. I'll get in. I'm the quickest up a stair in the Commons. | I want the Watch coat. I'd keep it cleaner than #coat#, even. | They said come back when I'm older. I'll be older every time I go back.
+b : Will they take you? | Cleaner how? | When will you go again?
+a : They'll take me. Nobody else wants it as much. | Combed every night. Brass shining. Not a splash. | Restday, to #watchhouse#. Same as last time. I don't give up, shore-friend.
+
+scene top_of_rents
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : I've the room at the very top of #rents#. Five flights. I'd not swap it for the ground floor. | Top of #rents# is the quietest, or it should be. Somebody's always shouting somewhere. | From up top you can see #hills#, on a clear day, past all the chimneys.
+b : Five flights every day? | Should be? | Which hills?
+a : Every day, #fasttop#. That's what it's for. | Should be. It's still better than the bottom. | The ones I came from. I'll not say I look. I do look.
+
+scene rain_coat
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# again, and every cart in #city# trying to splash me. | Wet through, and my coat just done. #annoyed#. | I ran up #stairs# so fast in the rain I hardly got wet. Hardly.
+b : Stay in, then. | It'll dry. | Hardly?
+a : And let the rain win? Not likely. | It'll dry, and I'll comb it again. #saying.capitalize#. | Hardly. A drop on the tail. #comb.capitalize# had it out.
+
+scene neighbour_wall
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# next along is the only quiet one on our floor. I'm grateful for it. | I'd trust #self.neighbour# with my door key and #comb# both. | #self.neighbour# is decent company on a long evening. #agree.capitalize#.
+b : That's worth a lot. | Both? | High praise, from you.
+a : It's worth more than gold, in #city#. | Both. And I don't trust easy, #address#. | High as I go. Not handed out often.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray at night, quick, before #row# starts, while the Bright One's got a chance of hearing. | Up at #mounds# #burners# asked the Bright One's blessing at every lighting. I still do it at my candle. | All that singing makes the chapel loud as a market. I slip in when it's empty.
+b[job=priest] #priest : The chapel's always open to you. | That's a good old custom. | Come at noon. It's empty then.
+b : #bc_fair_enough# | That's a nice habit. | Empty's peaceful.
+a@priest : When it's quiet I'll come. Not before. | It is. I'll not drop it, #address#. | Noon. I'll mind that.
+a : It's my way. Short and quiet. | It's all I've got from #burners#. I keep it. | It is. That's my hour for praying, with nobody listening but the Bright One.
+
+scene gossip_scorn
+when topic=gossip
+does tell.self / react.self / assess
+a : Somebody on the stair said #topic.subject# #topic.claim#. I said I'd believe it when I saw it. | I heard #topic.subject# #topic.claim#. Didn't see it, so it stops with me. | Folk up #rents# talk of nothing but #topic.subject#. I've better things to do.
+b : Fair enough. | You just did. | Like what?
+a : It's how I am. I don't hold with talk. | #annoyed#. Well. You'll hear no more of it from me. | Combing #coat#. Climbing #stairs#. Anything.
+
+scene hard_times
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Bread's dear and the baker's stopped saving me #loaf#. | Folk are short with each other. More shouting at night, if that's even possible. | Hard going. I'll get by. Always have.
+b : It'll turn. | Hard to sleep, then. | You will.
+a : It'd better. I miss that loaf. | Hard to sleep, and hard to keep #coat# clean when folk shove. | I will. I'll not ask anybody for help, either.
+
+scene good_times
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. Coin about, and more feasts. More #reel# for me. | Things are looking up. Even the baker's smiling. | Busy streets, busy #stairs#. I've been passed by nobody yet, mind.
+b : You'll be dancing, then. | That's something. | Yet.
+a : Every night they'll let me. | It is. Warm bread's back. #good.capitalize#. | Yet. And not ever, if I've a say.
+
+story the_mound_fire [topic=memories self.from=coldwater]
+  : Little as a #child#, I watched a mound at our camp catch proper fire one night and roar like a beast.
+  : #burners.capitalize# had it smothered with turf in no time. Not one shout. Just paws and earth.
+  ask : Could you keep that calm, with a fire going up beside you?
+  b : I hope so. I'd likely shout. Were you frightened?
+  : Not with them there. That's when I learned quiet's a kind of strength.
+
+story first_race [topic=memories|pastimes self.away=yes]
+  : My first week in #city# some big lump laughed at my coat on the long stair.
+  : So I raced them up #stairs#. Didn't say a word. Just went.
+  ask : Who do you think won?
+  b : You, I'd bet. Did they laugh after?
+  : Me. And they've held the door for me ever since.
+
+story the_dance [topic=festival|pastimes self.likes=dancing]
+  : First feast night I danced in #city#, I was so nervous I nearly turned back at the door.
+  : Then the fiddles went and my feet remembered the reels of #hills#, and I didn't stop.
+  ask : Have you ever nearly not done a thing, and been glad after?
+  b : More than once. Did anybody notice you?
+  : A few. One said I danced like the wind off the hill. I'll take that.
+
+dlg @1 resident.hub : #greet#. Mind my coat. What is it? | #greet#, shore-friend. Make it quick, I'm off up.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Fair enough. | #topic.player#. Still not passed me on a stair, have you.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Keep your distance and say your piece, #address#. | #greet#. I'll not be messed about, #address#.
+dlg @1 resident.job [self.job=none !self.trade] : Nothing yet. I'm going for #watch#, and I'll get in. | Between things, shore-friend. Not for long.
+dlg @2 resident.job : I keep busy. Don't you worry about me. | This and that. Mostly climbing #stairs#, ha. I'll find my place.
+dlg @1 resident.bye : #farewell#. Mind the puddles. | #farewell#. Race you down.
+graft resident.hub
+choice Why do you always run up the stairs? -> stairs
+node stairs
+say Because nobody passes me. Nobody ever has, not since I left the hills. You'd like to try?
+mood keen
+free
+choice Maybe one day. -> race
+choice Back to it. -> hub
+node race
+say Any day you like. I'll not go easy, and I'll not get a mark on my coat.
+mood pleased
+choice Fair. -> hub
+choice Goodbye. -> bye

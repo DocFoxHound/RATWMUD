@@ -1,0 +1,483 @@
+# sm132, the mud at the Court door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm132
+revision 1
+state ready
+dialect southmeadow
+accent none
+tier full
+written_for rm_osric_mossgrave
+written_by claude
+title the mud at the Court door
+fits stage=adult|old
+prefers class=upper temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk scrapes_the_mud_off_at_every_door
+likes barley_soup stars tidy_house frosty_mornings
+dislikes gulls wet_floors
+fears a_life_spent_indoors letting_the_house_down
+hopes a_sheep_run_of_my_own a_clear_night_every_week
+topics land +0.5 weather +0.3 home +0.3 family +0.3 animals +0.3 pastimes +0.2 travel +0.2 gossip -0.4 prices -0.2
+styles comfort=quiet gossip=reluctant refuse=polite tease=none
+marks oath saying
+persona #self.first# rides out on the House's business and comes home muddy to the hocks: easy-natured, kind and plain-spoken, assured in a quiet way, happier in a sheepfold than a hall, and forever scraping boots at the door.
+
+words
+oath! = Hoof and hearth | Mud and manners | By the scraper
+saying! = Leave the mud at the door | A tidy hall keeps a calm head | The same stars shine on a sheepfold
+scraper = the scraper | the iron scraper by the door
+boots = my boots | these boots
+mud = the mud | mud to the hocks
+floor = the floor | a clean floor
+wetfloor = a wet floor | puddles on the boards
+court = the Court | the house
+hall = the hall | the long hall
+ride = a ride out | a long ride
+mare = my mare | the grey mare
+fold = a sheepfold | a run of sheep on the hill
+soup = barley soup | barley broth on a raw day
+frostmorn = a frosty morning | frost on every blade
+stars = the stars | the stars coming out one by one
+skyclear = a clear night | a sky with no cloud in it
+gullcry = the gulls | those screaming gulls
+lanes = the lanes | the lanes between the fields
+estate = the Estate | our end of the city
+steward = the steward | the House steward
+errand = House business | the House's errands
+thehouse = the House | our House
+farms = the farms | the tenant farms
+tenants = the tenants | the tenant families
+fields = the fields | the open fields
+city = the city | this city
+sky = the sky | the open sky
+road = the road | the lanes out of town
+kitchen = the kitchen | the Court kitchen
+houses = the Houses | the old Houses
+walls = the walls | the city walls
+lowstreets = the Sump | the lower streets
+saddle = the saddle | my saddle
+servants = the servants | the house servants
+breakfast = breakfast | the breakfast table
+field = a field | a field of stubble
+lane = the lane | the farm lane
+ditch = the ditch | the roadside ditch
+gate = the gate | the city gate
+
+any
+opinion @1 houses for 1 [self.house] : The city leans on #houses# more than it knows. Take them away and half the roofs would be down by spring, #address#.
+opinion @2 houses for 1 : Say what you like of #houses#, they keep #walls# standing and the roads open. Somebody has to.
+opinion @1 dole mixed 1 : It's right nobody starves. I'd only like it run with more sense and fewer queues.
+opinion @1 sump against 2 : I keep to the upper streets, I'm afraid. I'd not know my way about #lowstreets#, and I'd only be in the way.
+opinion @1 times for 1 [self.wealth=rich|comfortable] : I've nothing to complain of, and I'd be a poor sort if I tried.
+opinion @1 watch for 1 : I sleep sound in my bed because somebody's walking the street in the dark. I'm grateful to them.
+opinion @1 city against 1 : The city's all walls and smoke. I could ride an hour and not see #field#, which is a sad thing.
+opinion @1 strangers for 1 : A stranger has #road# on their boots. I like to hear where they've been.
+opinion @1 festivals mixed 1 : A feast in #hall# means a week of floors to put right. I'll dance, mind, if I'm asked.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Your boots say you've travelled. | #greet#, #address#. Mind the step; it's slick.
+line @2 greet [self.working=yes self.house] : #greet#. I'm out on #errand#, but I've a minute. | #greet#. Forgive #mud#; I've been riding since dawn.
+line @3 greet [here.time=dawn] : #greet#. A fine morning for a ride, this. | #greet#. You're up with the birds, I see.
+line @4 greet [here.time=dusk|night] : #greet#. The stars will be out soon. | #greet#. Late to be about, #address#.
+line @5 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : There you are. Come in; I've only just wiped #floor#. | #greet#. Boots off at the door, if you would.
+line @1 again.open : Twice in one day. You'll think I've nowhere to be. | You again, and me still muddy. I apologise.
+line @1 hail [pair.band=friends] : Hello there! A moment, if you've one. | #address.capitalize#! Over here, a moment.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'm glad you've come. | #greet#. Come in and sit; I'll see to the kettle.
+line @3 greet.return [self.working=yes self.house] : #greet#. I'm on #errand#, but go on. | #greet#. Quickly, I'm afraid; #mare# is waiting.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but welcome. | #greet#. Go carefully on the stair; it's dark.
+line @1 farewell : #farewell#. | #farewell#. Mind the step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Look up on your way, if the sky's clear. | #farewell#. Keep to the lit streets.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. I hadn't heard. | Is that so? #oath#.
+line @1 react.news.new : #surprise#. That's not reached our end of #city#. | #oath#. I've been out riding and missed it all.
+line @1 react.news.known : #knew#. #steward.capitalize# had it at #breakfast#. | A whisper of it reached me. You've told it better.
+line @1 react.news.doubt : #doubt#. Bring me a wolf who saw it, and I'll listen. | Perhaps. Talk runs faster than truth in this city.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm very sorry to hear it. | That's a hard thing. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's the best of news. | #good.capitalize#. I'm glad, truly.
+line @1 answer.how : Well, thank you. A little muddy, as ever, #address#. | #fine#. I've been out in the air, and that always helps.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. I've two errands left and #mare# is tired. | Rather busy. #thehouse.capitalize# keeps me riding.
+line @1 ask.how : And yourself? Are you keeping #good#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit with me; nobody's rushing you. | I'm sorry, #address#. Is there anything I can do?
+line @1 reassure : #reassure#. These things come right. | It'll mend, I'm sure of it. Most things do, in time.
+line @1 decline : #hedge#, but I can't. #errand.capitalize# won't wait, I'm afraid. | I wish I could, but the day's spoken for elsewhere.
+line @1 accept_decline : #no_matter#. Another time. | Of course. I quite understand, #address#.
+line @1 thank : #thanks#. | That's very kind. #thanks#.
+line @1 deflect_thanks : #deflect#. | Please, it was nothing.
+line @1 preclose [self.working=yes] : Well. #mare.capitalize# won't stand all day. | I should be on my way; #thehouse# is expecting me.
+line @2 preclose : Well. #preclose#. | I'll let you go. I've kept you standing.
+line @1 accept_preclose : Of course. #farewell#. | Off you go. I enjoyed that. #farewell#.
+line @1 ack : #bc_right# | Mm. #bc_true#
+line @1 give.advice : #advise#: scrape your boots before you go in anywhere. It saves a world of trouble. | Ride early. #road.capitalize# is kinder before the carts.
+line @1 warn [world.bandits=near] : I'd keep off the roads for now. #warn#. | Ride in company, if you must ride at all.
+scene riding_out
+when topic=work|travel self.working=yes self.house
+does tell.self / ask.detail / answer.detail / assess
+a : I've been out on #errand# since first light. Three farms and a mill, and every lane deep in #mud#. | #thehouse.capitalize# sends me to see #tenants#. I'd ride it for nothing, if I'm honest. | I rode out past #walls# this morning and didn't see a soul for an hour. Bliss.
+b : What do you do there? | For nothing? | Bliss?
+a : Listen, mostly. Roofs, rents, a sick ewe. I write it down and carry it home. | Don't tell #steward#. The Court thinks it's a hardship. | Bliss. Just #mare#, the hedges and #sky#. I could have stayed out all day.
+b : #bc_good# | #bc_ha# | #bc_lovely#
+
+scene tenants_listened
+when topic=work|land self.house
+does tell.self / react.self / assess
+a : A tenant showed me a roof today that's been leaking since spring. I'll see it's mended. | #farms.capitalize# want the same as anyone: a dry roof and somebody to listen. | I'd rather walk #field# with a tenant than sit in a hall with a ledger.
+b : Will it be? | That's true. | Most would say the opposite.
+a : It will. I said so, and I keep my word, #address#. | It is. Listening's cheap. It's the mending that costs. | Most would. Most haven't stood in #field# at dawn, I expect.
+
+scene mud_at_door
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : I'm forever scraping #boots#. I come home muddy to the hocks, and the floors are spotless. | There's #scraper# at every door I use. I've worn one of them thin. | Forgive me a moment, I must get this mud off before I go in. #oath#.
+b : Why not ride less? | Thin? | Do you always?
+a : Ride less? I'd sooner eat less. The mud's the price of it. | Thin as a blade. The smith at the Court asked what I'd done to it. | Always. #saying#. A floor's somebody's work, and I'll not spoil it.
+b : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene wet_floors
+when topic=home|weather here.weather=rain self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Rain all day, and every soul who comes in leaves #wetfloor# behind them. | I can't abide #wetfloor#. I slipped on one as a pup and I've never forgiven it. | Somebody's walked straight in from the rain and across #floor#, still wet. I can see every step.
+b : It's only water. | Never? | Who was it?
+a : It's water today and a stain tomorrow. I'll fetch a cloth. | Never. I go round puddles the way some go round geese. #oath#. | I'll not say. I'll only leave #scraper# where they can't miss it.
+
+scene frost_morning
+when topic=weather|season here.time=dawn here.season=winter|autumn self.likes=frosty_mornings
+does tell.feeling / react.self / assess / ack
+a : #frostmorn.capitalize#. Best morning there is. The ground's hard and #mud#'s asleep. | Frost on every roof and every blade. I was out before #breakfast# to see it. | A frosty morning, and #mare#'s breath like smoke. I could ride all day in this.
+b : It's bitter, though. | Before breakfast? | Doesn't it chill you?
+a : Bitter and clean. I'll take it over warm and wet any day. | Before anyone. It doesn't last, the best of it, #address#. | Chills the paws. Warms everything else, #address#.
+b? : #bc_lovely# | #bc_wise# | #bc_ha#
+
+scene stars_out
+when topic=pastimes|weather here.time=night here.weather=clear self.likes=stars
+does tell.feeling / ask.detail / answer.detail / assess
+a : Look up. #stars.capitalize#. I come out every clear night to watch them. | I've a place on the roof where #city# lights don't reach. I go up there on #skyclear#. | I learned #stars# lying in #field# with sheep. I know them better than half the faces at #court#.
+b : Every night? | On the roof? | Better than faces?
+a : Every one that's clear. They're the only thing in #city# that doesn't change. | On the roof, with a blanket. Don't tell anyone. | Faces change. The stars keep their places, #address#. I like that in them.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene barley_broth
+when topic=food self.likes=barley_soup
+does tell.feeling / react.self / assess
+a : #soup.capitalize#. There are finer dishes, but give me that. | When I come in cold, I want barley broth and nothing else. The kitchen's stopped arguing. | There's no dish in #city# I'd trade for a bowl of barley on a raw day.
+b : Simple tastes. | They argued? | Not even a fine one?
+a : Simple, and nobody's ever been sorry after a bowl of it. | They wanted to make something with a sauce. I said no, politely. | Not even a fine one. The fine ones never warm you through, #address#.
+
+scene gulls_on_roof
+when topic=animals|weather here.region=ridgemere self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : #gullcry.capitalize# woke me at dawn again. Screaming on the roof like they're owed money. | A gull took a bread roll out of my paw on the steps today. Bold as a magistrate. | I'd not mind #city# half so much without #gullcry#.
+b : They're a menace. | Out of your paw? | They do get everywhere.
+a : They are. I've asked for spikes on the ridge. #oath#. | Snatched it clean, and looked back at me like I'd been the rude one. | Everywhere. Even #stars# can't get a word in over them.
+
+scene sheep_run
+when topic=dreams|land
+does tell.plan / ask.detail / answer.detail / assess
+a : If I could, I'd have #fold# out on the hills and never set foot in a hall again. | I dream of a sheep run. A cottage, a gate, a few hundred ewes. | One day I'll ride out and simply not come back till spring. I'll send word.
+b : Would they let you? | A few hundred? | Where would you go?
+a : They might. They know where my heart is, #address#. I've never hidden it. | A few hundred. And a good shepherd who'd laugh at me. | Somewhere the frost lies white on #fields#. That's all I ask of a place.
+b : #bc_i_hope_so# | #bc_ha# | #bc_lovely#
+
+scene meadow_childhood
+when topic=memories|land self.away=yes self.from=southmeadow
+does tell.memory / react.story / assess
+a : I grew up out in #self.from_town#. Fields of wheat and orchards, and nobody minded #mud#. | As a pup in #self.from_town# I ran #lanes# all day and came home filthy. Nobody scolded. | My earliest memory is a hay cart, a blue sky and somebody singing. I've wanted it back ever since.
+b[from=southmeadow] #meadow : I know those fields. | We all came home filthy. | Harvest carts. I remember the singing.
+b : That sounds a fine way to grow up. | Nobody? | Do you go back?
+a@meadow : Then you'll know why #city# sits badly with me. | Every one of us. It's how you knew a pup had a good day. | So do I. You never quite stop hearing it.
+a : It was. I didn't know how fine till I left it, #address#. | Nobody. Mud washes, they said. I believed them. | When I'm sent. I always find a reason to be sent.
+
+scene no_accent
+when topic=accent self.from=southmeadow self.away=yes self.class=upper
+does tell.self / react.self / assess
+a : Folk are surprised I grew up in the country. I was taught to talk like #city# as a pup. | They gave me a tutor for my vowels when I came here. I've kept the vowels and lost the country in them. | I sound like the Court and think like a farm, I'm told. Both true.
+b : You'd never know. | Do you mind? | That's not a bad mix.
+a : No. But #farms# know it, the minute I'm muddy. | A little. I'd like to sound like where I'm from, now and then. | I hope not. It keeps me honest at both ends, #address#.
+
+scene mother_leads
+when topic=family self.mother self.leader
+does tell.feeling / react.self / assess
+a : #self.mother# carries the whole House and makes it look easy. I couldn't do it. | Whatever #self.leader# wanted of me, I'd do. Even sit through a council. | There's nobody I admire more than #self.mother#. I'd tell the whole Council so.
+b : You're proud of that. | Even that? | That's good to hear.
+a : It's the truth. I'd not say it otherwise, #address#. | Even that. I'd fidget, but I'd sit. #oath#. | I mean it. I'm the muddy one; somebody has to be the steady one.
+
+scene father_friend
+when topic=family|friends self.father
+does tell.feeling / react.self / assess
+a : An hour beside #self.father# saying nothing is the best hour of my day. | I'd go to #self.father# before anyone, with any trouble. Always have. | There's nobody I'd sooner ride beside than #self.father#.
+b : That's rare. | Always? | That's a good thing.
+a : Rare. I don't take it lightly, #address#. | Always. It's never once been the wrong door. | It is. My family's kinder than I've earned, #address#.
+
+scene tidy_court
+when topic=home self.house self.likes=tidy_house
+does tell.self / react.self / assess
+a : #court.capitalize# is kept like a pin, and I like it so. I only wish I came home cleaner. | I put things back where they go. #servants.capitalize# think it's odd in one of the family. | A tidy house is a quiet head. #saying#.
+b : It sounds lovely. | Do they? | That's wise.
+a : It is, till I walk in. Then it's lovely and muddy. | They've said so. Kindly. I'll not change, #address#. | It's the only wisdom I'm sure of. #saying#.
+
+scene estate_quiet
+when topic=smalltalk|home here.region=ridgemere self.quarter=estate
+does tell.self / react.self / assess
+a : #estate.capitalize# is quiet at night. You can hear a horse three streets off. | Our end of #city# has gardens behind every wall. It's the nearest thing to fields I've found. | The Estate's pleasant enough. I'd still swap it for a cold barn and #field# of frost.
+b : Lucky you. | Gardens? | A cold barn?
+a : Lucky, I know. I try not to forget it, #address#. | Gardens. Small ones, and very tidy, but gardens. | A cold barn. I'm a strange sort of House wolf. #oath#.
+
+scene below_the_hill
+when topic=smalltalk|crime here.region=ridgemere
+does give.opinion / disagree / concede
+a : I'm afraid I don't go down to #lowstreets#. I'd not know the streets, and I'd only be in the way. | I've heard the lower streets are rough. I've never been, which isn't to my credit. | They tell me to keep to the upper streets. I mostly do as I'm told.
+b : It's not as bad as all that. | You should see it once. | You'd be fine.
+a : I'm sure it isn't. It's my ignorance talking, not my judgement. | Perhaps I should. I'd go with somebody who knew it, #address#. | Perhaps. I'd rather not find out by getting lost.
+
+scene watch_nights
+when topic=crime|smalltalk
+does give.opinion / react.self / assess
+a : Our street's quiet after dark, and that's the Watch's doing. I'm grateful, truly. | I passed a watchman on the wall at midnight and thanked him. He looked astonished. | Whoever walks the streets at night so I can sleep, I'll stand up for.
+b[role=guard] #guard : That's kind of you. | We're not thanked often. | We do our best.
+b : They do a hard job. | Astonished? | That's fair.
+a@guard : It's meant. I sleep #snug# because you don't. | You should be. I'll keep thanking, if you'll keep walking. | It's a good best. #good.capitalize# work, #address#.
+a : A hard, #cold# one. I'd not last a night of it. | Astonished. I don't think anyone had. | It's only fair. #saying#.
+
+scene houses_needed
+when topic=lore|times here.region=ridgemere self.house
+does give.opinion / disagree / insist / ack
+a : The city would fall down without #houses#. I'd know; I've seen the ledgers. | Somebody has to keep #walls# up and the roads open. That's #houses#, mostly. | I'm of a House, so I'll say it plainly: we keep a great deal standing.
+b : Some would say otherwise. | Not always well. | Easy for you to say.
+a : Some would, and fairly. I only say what I've seen, #address#. | Not always well. I'd mend that, if it were mine to mend. | Easy, yes. But it's still true, and I'll not pretend otherwise.
+b : #bc_fair_enough# | #bc_fair# | #bc_true_enough#
+
+scene dole_thoughts
+when topic=times|faith
+does give.opinion / react.self / assess
+a : It's right nobody goes hungry. I'd only like the dole run with more sense. | Some say the dole makes folk idle. I've never met an idle wolf on it, only tired ones. | I'd sooner pay for bread than walk past an empty bowl. It's that simple, #address#.
+b : That's kind. | Tired ones? | That's fair.
+a : It's only sense. A fed city's a quiet one. | #tired.capitalize#. I've ridden past the queue. Nobody stands in that for fun. | It's how I was raised, #address#. On a farm you feed whoever's at the door.
+
+scene good_times
+when topic=times|prices world.times=good|boom self.house
+does tell.news / react.news / assess
+a : #tenants.capitalize# say it's a good year. Rents paid and barns full. I'm glad. | Good times, they say. Even #steward# smiled at #breakfast#. | There's #money# moving. I hope it's moving to the ones who need it.
+b : Good to hear. | The steward smiled? | Is it?
+a : It is. I'd like it to last, #address#. | Briefly. I nearly fell off my chair. #oath#. | Some of it. Not all. It seldom is, #address#.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean self.house
+does tell.worry / react.complaint / reassure / ack
+a : #farms.capitalize# are struggling. I heard it at every door I knocked on this week. | Lean times. I can see it in the queue at the bread door, even from #saddle#. | Hard months. I've asked #thehouse# to go easy on the rents. I hope they listen.
+b : It's hard everywhere. | You notice it? | Will they?
+a : It is. I'll keep carrying the word home, for what it's worth. | You can't miss it, if you look. Most of us don't look. | I'll ask again if they don't. Politely, but again.
+b? : #bc_true# | #bc_true# | #bc_i_hope_so#
+
+scene road_robbed
+when topic=bandits|caravan world.wagons=raided
+does tell.worry / sympathise / assess
+a : A cart robbed on #road#. I ride those roads; it could have been anyone. | They've taken another cart. I'll ride in company for a while. | Robbers on the roads again. I'm sorry for whoever was driving.
+b : Be careful out there. | Wise. | Poor soul.
+a : I will. #mare.capitalize# is quick, and I'm not proud. | Wise or nervous. Both, I expect, #address#. | Poor soul. I hope they're #home# and whole.
+
+scene gossip_declined
+when topic=gossip
+does tell.self / ask.detail / answer.detail / assess
+a : I hear a great deal at table. I've learned not to carry it. | There's talk about, as always. I'd rather not add to it. | Somebody told me a thing at #breakfast# I'd rather not have heard. I'll keep it.
+b : Not even to me? | Why not? | Was it bad?
+a : Not even to you. It isn't mine to give. | Because it's always somebody's, and they're not here to answer. | Unkind, more than bad. I'll let it lie, #address#.
+b : #bc_fair_enough# | #bc_true# | #bc_wise#
+
+scene gossip_glad
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's news I'm happy to carry. | Have you heard? #topic.subject.capitalize# #topic.claim#. I was pleased to hear it. | Some good talk for once: #topic.subject# #topic.claim#.
+b : That's good news. | I hadn't heard. | For once.
+a : It is. Good news should travel faster than it does. | Now you have. Pass it on, #address#. | For once. I'll take it, #oath#.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray best under #stars#, quietly. It feels nearer there than in chapel. | Restday I sit in chapel. Other days I pray from #saddle#. | The Bright One made frost and fields. That's argument enough for me.
+b : That's a good place for it. | From the saddle? | That's simple.
+a : The best I know, #address#. | From #saddle#. It's quiet, and nobody's listening but the one who should. | Simple and sufficient. #oath#.
+
+scene city_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Rain again. I rode home through it and brought half #lane# in on #boots#. | City rain's dirty. It comes down grey and lies in the gutters. Country rain at least smells of something. | Another wet ride. #mare.capitalize# looked at me as if it were my doing.
+b : It never stops. | Of what? | Was it?
+a : It never does. I've given up being surprised, #address#. | Grass. Earth. Something growing. Here it smells of chimneys. | In a way. I asked to go out. #oath#.
+
+scene fog_ride
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Fog so thick I let #mare# find the way home. She did, too. | Couldn't see the hedge from #lane# this morning. I rode by the sound of #ditch#. | In fog the whole world goes small. Just you, #mare# and a few yards of road.
+b : Clever horse. | The ditch? | Do you like it?
+a : Cleverer than me, most days. I'd not argue. | Water runs loud in fog. Keep it on your left and you're home. | I rather do. Nobody can find me in it, #address#.
+
+scene summer_ride
+when topic=weather|season here.season=summer here.weather=clear
+does tell.feeling / react.self / assess
+a : A dry week at last. The lanes are hard and #mare# can stretch out. | Summer's good for one thing: no mud. I hardly know myself. | The fields will be gold by now, out past #walls#. I'd ride out just to look.
+b : Clean boots for once. | You hardly know yourself? | Why not go?
+a : Clean boots. Nobody at home believes it. | I keep reaching for #scraper# and finding nothing to scrape. | I may. If anybody asks, I've an errand.
+
+scene snow_ride
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow. #mare.capitalize# hates it and I love it. We've agreed to disagree. | The whole city's gone white and quiet. It almost looks like the country. | I took a ride in the snow before anyone else was up. Not a print but ours.
+b : Who won? | Almost? | Lovely.
+a : I did. She sulked all the way #home#. | Almost. Then the carts come out, and it's slush. | Lovely, and gone by noon. The #good# things go quickly.
+
+scene the_grey_mare
+when topic=animals|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : #mare.capitalize# knows every lane out of #city# better than I do. | I spent the morning in the stable. #mare.capitalize# had a stone in her hoof, and I'd not leave her to the grooms. | There's a ewe on one of #farms# that follows me about. I've no idea why.
+b : Does she? | Not to the grooms? | Do you feed her?
+a : She does. I only hold the reins and pretend to decide. | Not that one. I'd trust them with any horse but mine. | Once. That was enough. Now I've a friend for life, #address#.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene neighbour_well
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# is a good neighbour. Quiet, and always a nod. | I'd trust #self.neighbour# to watch over the place while I'm out. That's not something I say of many. | I've nothing but good to say of #self.neighbour#. It's rare, on a street like ours.
+b : That's worth a lot. | Not many? | Rare indeed.
+a : It is. A nod's worth more than a dinner, sometimes. | Not many. I'm careful, for all #mud#. | Rare. I count myself lucky, #address#.
+
+scene stranger_road
+when topic=newcomer|player
+does tell.self / react.self / assess / ack
+a : A traveller asked me the way at #gate# today. I rode half of it with them. | Somebody new has moved into our street. I took round a pot of barley. | I met a stranger on #road# with mud worse than mine. We got on at once.
+b : That was kind. | A pot of barley? | At once?
+a : It was the same way, near enough. It cost me nothing. | It's what you do for a neighbour, #address#. | At once. There's a fellowship of #mud#, #address#.
+b? : #bc_good# | #bc_ha# | #bc_ha#
+
+scene fell_off
+when topic=health
+does tell.self / react.self / reassure
+a : I came off #mare# at a ditch last week. Nothing broken, only my dignity. | My shoulder's stiff from riding in the cold. It'll pass. | I've a cough from all the wet. Honey and a hot cup, and it'll go.
+b : Be careful. | Rest it. | Will it?
+a : I will. She's forgiven me; I've not forgiven #ditch#. | I'll rest it on the next ride. #oath#. | It always has. It doesn't help #mud#, #address#.
+
+scene house_feast
+when topic=festival self.house
+does tell.self / react.self / assess
+a : There's a feast in #hall# next week. I'll dance, and then I'll help with the floors. | Feasts at #court# are lovely, and then there's a week of putting things right. | I like a feast where #farms# come in. Those are the only ones worth #floor#.
+b : You'll help with the floors? | A week? | The farms come in?
+a : Somebody has to, and nobody minds them more than me. | A week. Wine in the cracks and candle wax on #floor#. | At harvest. They bring their own songs, and better boots than mine.
+
+scene event_talk
+when topic=event|news world.event_words
+does tell.news / react.news / assess
+a : Everyone on our street is on about #world.event_words#. I heard it at #breakfast#. | #world.event_words.capitalize#. That's all anyone at #gate# could talk of. | All this about #world.event_words#. I'd rather hear how #farms# are doing.
+b : I've heard the same. | Is that right? | So would I.
+a : Then we're both as wise as the street, #address#. | So they say. My own eyes will tell me soon enough. | Then we're agreed. #oath#.
+
+story first_errand [topic=work|memories self.house self.age>=20]
+  : The first time #thehouse# sent me out alone, I rode to the wrong farm and spent the morning helping with the lambing.
+  : When I got to the right farm at dusk, I was covered to the ears and they thought I was a farmhand.
+  : They gave me supper before they knew. It's still the best welcome I've had.
+  ask : Have you ever been taken for somebody else and liked it better?
+  b : Now and then. I liked it too.
+  b[wealth=poor|destitute] : Never the other way round, I'll say that.
+
+story the_cade_lamb [topic=memories|animals self.from=southmeadow self.age>=20]
+  : When I was small in #self.from_town# I raised a lamb by the kitchen fire. Its mother had died.
+  : It followed me everywhere, even into the house, and it never once wiped its feet.
+  : That's where the boot-scraping started, I think. Somebody had to.
+  b : What became of it?
+  : It grew into the crossest ewe on the farm. I visit her when I'm sent that way.
+
+story the_roof_watch [topic=pastimes|memories self.likes=stars]
+  : There was a night I stayed up on a barn roof till dawn, counting falling stars.
+  : I got to forty and lost count, and then the cockerel started and I fell asleep in the hay.
+  ask : Have you ever stayed up just to watch #sky#?
+  b : Once, when I was young.
+  b[old] : Many times. You never get tired of it.
+
+story mud_on_the_council [topic=lore|work self.house here.region=ridgemere]
+  : I once walked into a council chamber straight off #mare#, mud to the knees, and left a trail of prints up to the table.
+  : Nobody said a word. They only looked at #floor#, and then at me, and then at #floor#.
+  : I've scraped #boots# at every door since, twice.
+  b : Ha! I'd have liked to see their faces.
+  : So would I. I was looking at #floor#, like everyone else.
+
+story frost_pond [topic=memories|season self.from=southmeadow self.away=yes]
+  : At home, the first hard frost turned the mill pond white, and every pup in #lanes# was out on it by dawn.
+  : I went through the ice once, right up to my middle, and walked home steaming.
+  : My #gran# didn't scold. She sat me by the fire with a bowl of barley and said frost was worth it.
+  ask : Was there a place like that where you grew up?
+  b : There was. I miss it.
+  b[from=southmeadow] : The mill pond. I went through it too.
+
+rule @scrape_bark
+when concept=bark here.weather=rain|fog|snow
+does aside
+cooldown 8h
+say Boots first. Scrape, scrape. There. | #scraper.capitalize#, and then in. #saying#.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere self.dislikes=gulls
+does aside
+cooldown 8h
+say Off, you screaming things. Off! #oath#. | #gullcry.capitalize#. Every morning, every blessed morning.
+
+rule @floor_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 10h
+say Who's tracked that in? Mind #floor#! | #wetfloor.capitalize#. #oath#.
+
+rule @stars_bark
+when concept=bark here.time=night here.weather=clear self.likes=stars
+does aside
+cooldown 12h
+say There they are. #stars.capitalize#, all present. | #skyclear.capitalize#. I'll be on the roof.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter self.likes=frosty_mornings
+does aside
+cooldown 1d
+say A white morning! Lovely. The mud's asleep. | Hard ground and a pale sky. Perfect.
+
+rule @ride_bark
+when concept=bark working=yes self.house
+does aside
+cooldown 8h
+say Steady, girl. Nearly home. | One more farm, then soup. #oath#.
+
+dlg @1 resident.hub : #greet#. Forgive #mud#. How can I be of use? | #greet#, #address#. How may I help?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Welcome back. | #topic.player#. Come in, if you've scraped your boots.
+dlg @3 resident.hub [here.time=night] : It's late, but #sky#'s clear, so I'm awake. What is it? | Night, #address#. I'm only out for #stars#. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You stand at #thehouse#'s door. State your business, plainly. | I'm listening. Courteously, if you please, #address#.
+dlg @1 resident.job [self.house] : #self.trade_words.capitalize#. Farms, tenants, roofs, rents, and a great deal of #mud#. | I carry #errand# out to #farms# and carry the answers home.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me out of doors, which is all I ask. | Work's work, #address#. #self.trade_words.capitalize#, mostly on horseback.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. #steward.capitalize# had it this morning. | I heard from #world.news_from#: #world.news#. I can't tell you more than that.
+dlg @2 resident.news [world.event_words] : Everyone at #court# is talking of #world.event_words#. I've heard nothing else all day.
+dlg @3 resident.news [world.wagons=raided] : A cart was robbed on #road#. I'd ride in company for now, #address#.
+dlg @4 resident.news [world.death=recent] : Somebody died this week. Our end of the city's gone quiet with it.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! The whole street turned out, and nobody minded #mud#.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# #farms.capitalize# are well, which is news enough for me. | Nothing new, I'm afraid. Only the weather and #mud#.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'd not repeat it further, #address#. | I've heard #topic.subject# #topic.claim#. I don't know that it's true, #address#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry tales, I'm afraid. They're always somebody's.
+dlg @1 resident.bye : #farewell#. | #farewell#. Careful of the step going out.
+graft resident.hub
+choice Why are your boots always so muddy? -> mud
+node mud
+say Because I ride out every day I can, and #lanes# are never dry. I scrape them at every door. #thehouse.capitalize# despairs of me, kindly.
+mood warm
+free
+choice Why not ride less? -> mud_why
+choice Goodbye. -> bye
+node mud_why
+say I'd sooner breathe less. Out there I can see #sky#. In here I can see the ceiling. I'll take #mud#, and the scraper.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice What does the House send you to do? [self.class=upper] -> errands
+node errands
+say I ride out to #farms# and #tenants#, hear what's wanted, and carry it home. Roofs, rents, a lame horse. Small things, mostly.
+mood calm
+choice Do they listen to you? -> errands_listen
+choice Goodbye. -> bye
+node errands_listen
+say Sometimes. More often if I've mud on #boots#; it proves I've been. I always tell them what I saw, plainly.
+choice Thank you. -> hub
+choice Goodbye. -> bye

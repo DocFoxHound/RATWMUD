@@ -1,0 +1,292 @@
+# cw208, the almoner in oilcloth (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw208
+revision 2
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_disa_raincot
+written_by claude
+title the almoner in oilcloth
+fits stage=adult|old
+prefers piety=ordinary temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk never_goes_out_without_an_oilcloth_hood
+likes oatcakes evening_line fresh_straw summer_evenings
+dislikes night_noise gulls
+fears a_cold_winter_with_an_empty_bowl turning_soft_and_saying_yes_to_everyone
+hopes a_berth_south_where_a_hood_is_only_for_show a_door_that_never_runs_out_of_bread
+topics work +0.4 faith +0.3 dreams +0.3 weather +0.3 pastimes +0.2 gossip -0.4
+styles comfort=blunt gossip=scornful refuse=flat tease=none
+marks oath saying
+persona #self.first# hands out bread at a door and never steps outside without an oilcloth hood, rain or shine: blunt, short-fused and honest to the crumb, stubborn as a stuck oar, happiest with a line in the water on a long summer evening, and set on a berth south one day.
+
+words
+oath! = Bowl and bread | By the poor box | Crust and candle
+saying! = Give it plain and give it now | A dry hood and a straight answer | Ask once, get once
+hood = my oilcloth hood | the old hood | this hood
+bowl = the alms bowl | the abbey's bowl
+almsdoor = the alms door | the almonry door
+queue = the bread queue | the line on the abbey step
+loaves = the loaves | the day's bread for the door
+poorbox = the poor box | the box by the door
+almsbook = the alms book | the almonry ledger
+rod = my rod at dusk | a line off the river steps
+straw = clean straw | straw new-laid on the floor
+longevening = a long summer evening | the light that won't go down
+racket = the racket after dark | shouting under the windows
+gulls = the gulls | gulls on the abbey roof
+southship = a berth south | a ship out of the Sound for somewhere it never rains
+lakedamp = lake-damp | a soft damp off the water
+pebble = lake-pebble | a pebble off our shore
+plain = plain | plain as bread
+city = the city | this city
+
+any
+opinion @1 city against 1 : #city.capitalize# packs folk in elbow to elbow and nobody learns a name. Up the lake I could name each house along the shore road.
+opinion @1 merchants against 1 : #oath#. A good half of every price goes on the trader's supper. I'll say that to a merchant's face, too.
+opinion @1 festivals against 1 : Feast days mean spilt ale, and a longer #queue# the morning after. I'll take an ordinary Restday, ta.
+opinion @1 sump against 1 : I'll go wherever #loaves# are needed. But I don't walk the low streets after dark, and I'm not ashamed to say it.
+opinion @1 church mixed 1 : The abbey feeds folk. That's the part I believe in. The singing I could do without, #plain#.
+opinion @1 dole for 1 : Give a #hungry# wolf bread and ask questions after. That won't float with everyone, and I don't care.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Tell me the need and I'll tell you if I can. | #greet#, #address#. New face. Hungry, or only passing.
+line @2 greet [self.working=yes self.job=none] : #greet#. One loaf each, and there's a line. | #greet#. If it's bread, it's #queue#; if it's talk, be quick.
+line @3 greet [here.time=dawn] : Morning. #loaves.capitalize# came in warm, for once. | Morning, #address#. Early as the gulls, and twice as welcome.
+line @4 greet [here.time=dusk|night] : Evening. I'm done, near enough; #tired#. | #greet#. Late. Hood up, it's turning damp.
+line @5 greet [here.weather=rain] : #greet#. Get under something; you've no hood. | #greet#, #address#. Told you. Oilcloth. Every time.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Sit, I'll not fuss, #address#. | You. #good.capitalize#. Shut the door, there's a draught.
+line @1 again.open : Back again. I've not changed my mind since, #plain#. | You again, #address#. Twice today. Fair enough.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. About time. | #greet#. Sit down; you look worn through.
+line @3 greet.return [self.working=yes] : #greet#. Wait, I'm counting. Right. | #greet#. Mind #poorbox#, it's heavier than it looks.
+line @1 farewell : #farewell#. | #farewell#. Get a hood, #address#.
+line @2 farewell [here.time=dusk|night] : Night. Keep to the lamps, and keep #hood# up if you've one. | #farewell#. Bed. I've #loaves# at first light.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind yourself.
+line @1 react.news : Out with the lot of it, #address#. | Right. Who told you, and did they see it.
+line @1 react.news.new : #surprise#. First I've heard. | Well, that's new. #nonsense.capitalize# or true?
+line @1 react.news.known : #knew#. #queue.capitalize# had it before the loaves ran out. | Heard it already. #almsdoor.capitalize# hears everything.
+line @1 react.news.doubt : #doubt#. Somebody saw it, or somebody made it up; I'd want to know which. | #hedge#. That smells like door-talk to me, and door-talk is mostly #nonsense#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Tell me who needs bread and I'll see to it. | #oath#. That's bad. What do they need, then?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. We could do with some. | #good.capitalize#. That's one less worry at the door.
+line @1 answer.how : #fine#. Dry, which is something. | Tired. Plain tired, #address#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #queue.capitalize#'s round the corner. | No time to be anything but busy at #almsdoor#.
+line @1 ask.how : You eaten, #address#? | How are you, really, #address#?
+line @1 sympathise : #sympathy#. Sit down. I'll fetch bread; you'll eat it. | That's hard. I won't say it isn't. Sit, #address#.
+line @1 reassure : #reassure#. Bad weeks end. I've watched a hundred of them end at the door. | You'll get through it, #address#. Most do. I see them come back fatter.
+line @1 decline : #hedge#, but no. I've #loaves# to count, and I promised the door. | Not today, #address#. I've given my word to the door, and I keep it.
+line @1 accept_decline : #no_matter#. Fair enough. | Right. #agree.capitalize#. Another time.
+line @1 thank : #thanks#. No need to go on about it. | Ta. That's good of you, #address#.
+line @1 deflect_thanks : Don't thank me. It's the abbey's #bowl#, not mine. | #deflect#. Bread's meant to go out. That's all.
+line @1 preclose : Right. #almsdoor.capitalize# won't open itself. | #preclose#. I've a line forming.
+line @1 accept_preclose : Go on, then, #address#. | #farewell#. Go.
+line @1 ack : #bc_right#. | #plain.capitalize#.
+line @1 give.advice : Get a hood, #address#. You'll thank me in a week. | Say what you mean the first time. Saves everybody an afternoon. #saying.capitalize#.
+line @1 warn [world.bandits=near] : Stay off the road out this week, #address#. I'm not joking. | #warn#. The road's not safe, #address#.
+rule @door
+when concept=bark self.working=yes self.job=none
+does aside
+cooldown 6h
+say One each. One. I've counted #loaves# twice. | Bread at #almsdoor#. Line up, and no shoving.
+
+rule @hood
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say #hood.capitalize# up. There. Dry as a sermon. | #lakedamp.capitalize# on everything. Good thing I'm wearing #hood#.
+
+rule @gulls
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 8h
+say #gulls.capitalize#. Off. That's not yours. | Shoo. You've had your share, you feathered #thief#.
+
+rule @racket
+when concept=bark self.dislikes=night_noise here.time=night
+does aside
+cooldown 10h
+say #annoyed#. Some of us work at dawn. | Quiet down there. #racket.capitalize# again.
+
+scene bread_queue
+when topic=work self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Sixty in #queue# this morning. Fifty-eight loaves. I did the sums twice. | Somebody came round twice with a different hat on. I gave them a loaf anyway, and told them I'd seen. | I don't ask why folk need bread. Need's the only question at #almsdoor#.
+b[wealth=poor|destitute] #poor : I've stood in that line. It's long. | You saw and gave anyway? | That's the right way round.
+b : Who went without? | Gave it anyway? | That's a kind rule.
+a@poor : It is. I'll keep it as short as #loaves# let me. | Hungry is hungry. The hat didn't fool anyone. | It's the only rule I'd fight for, #address#.
+a : Me, and one old stick who said he'd had breakfast. He hadn't. | Hungry is hungry. I'd rather be cheated than mean. | It's not kind, #address#. It's #plain# sense.
+
+scene alms_book
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I write every name in #almsbook#. Not to check on them. So somebody remembers they came. | Got told off for #almsbook# today. Ink on every page. I'll not write slower for it. | There's a page in #almsbook# for folk who won't give a name. It's the longest page.
+b : Who reads it? | Who told you off? | Why won't they?
+a : The almoner after me, one day. #almsbook.capitalize# is for them. | Nobody you'd know, #address#. And nobody I'll listen to. | Pride, mostly. I don't push. #loaves.capitalize# go out, name or no.
+
+scene the_hood
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : Folk ask why I wear #hood# when it's dry. I ask why they don't when it isn't. | I've had #hood# since I was little. Patched it nine times. I'll patch it ten. | Somebody laughed at #hood# on the step today. Then it rained. I didn't laugh back. Much.
+b : That's fair, I suppose. | Nine times? | Served them right.
+a : It's more than fair, #address#. It's dry. | Nine. I counted every patch. #saying.capitalize#. | It did. #agree.capitalize#. They'll not laugh next week.
+
+scene hood_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : #rain.capitalize# sideways again. Glad of #hood#. Told everyone so. | Wet as the lake bottom out there. #hood.capitalize#'s earning its keep. | Wet all day. Half #queue# came without a coat. I lent out three sacks.
+b : You'd tell anyone that. | You must be the only dry one. | Did you get the sacks back?
+a : I would. I'm right, and they're wet. #plain.capitalize#. | Very nearly. My paws are soaked through, mind. | Two. The third went home on somebody's back. #agree.capitalize#.
+
+scene hood_sun
+when topic=weather here.weather=clear here.season=summer
+does tell.self / react.self / assess
+a : Sun out, and I've #hood# up anyway. You never know with this city. | Hot under #hood#, aye. I'd still rather be hot than caught out. | Three folk told me it's not raining today. I said I'd noticed.
+b : You'll cook in that. | That's stubborn. | You did notice, I take it.
+a : I'll cook dry, then. #plain.capitalize#. | Stubborn keeps you dry. I'll take it. | I noticed. It'll turn by dusk; #city# always does.
+
+scene evening_rod
+when topic=pastimes self.likes=evening_line here.time=dusk
+does tell.self / react.self / assess
+a : #rod.capitalize#, after the door's shut. That's my hour, and nobody gets it. | Caught nothing again tonight. Didn't matter. It's the sitting, not the catching, #address#. | Of an evening I carry #rod# to the river. Same spot. Same stone.
+b[from=coldwater] #cw : Like the old jetty, near enough. | Sitting's half of it, aye. | Off the jetty, we did that. Every night.
+b : Catch much? | Then why bother? | Is it a good spot?
+a@cw : Nothing like it. But it'll float. | It's all of it, near enough. #agree.capitalize#. | Every night, still water and a bent pin. I miss it.
+a : Two little ones last week. Gave them to a cat. | Because at the river not a soul wants a loaf off me. | #good.capitalize# enough. Nobody else wants it, which makes it the best.
+
+scene summer_light
+when topic=season|weather here.season=summer here.time=dusk|night
+does tell.feeling / react.self / assess
+a : #longevening.capitalize#. I'd stay up till it's gone if I didn't have the door at dawn. | Summer's the only time #city#'s worth walking in, after dark. | Long light tonight. Nothing in the year beats it, and you'll not tell me different.
+b : The door can wait an hour. | Only summer? | No argument here.
+a : It can't. #queue.capitalize# doesn't. | Only summer. The rest of the year it's #lakedamp# and gulls. | #good.capitalize#. You've sense, then.
+
+scene night_racket
+when topic=home self.dislikes=night_noise here.time=dusk|night
+does tell.complaint / react.complaint / assess
+a : #racket.capitalize# again last night. Somebody singing a song with no end to it. | I was up at dawn for #almsdoor# and some #fool# was shouting the hour down at midnight. | I asked them nicely to be quiet. Then I asked them less nicely.
+b : Did you say anything? | That's hard on you. | And then?
+a : I opened the window and told them what I thought of their song. | It's hard on #queue#. I'm sharp with folk on no sleep. | Then they were quiet. #oath#, they were quiet.
+
+scene gulls_roof
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull had half a loaf off #bowl# table this morning. In front of sixty hungry folk. | #gulls.capitalize# are the only thing in #city# that steal and nobody minds. | I threw #hood# at a gull once. Missed. Had to go and fetch it off the roof.
+b : Cheeky thing. | Fair point. | Off the roof?
+a : Cheeky and fat. It's not even #hungry#. | I mind. I mind #very# much. | Off the roof. Never again. Now I throw crusts the other way.
+
+scene south_berth
+when topic=dreams|travel
+does tell.plan / ask.plan / answer.plan
+a : One day I'll get #southship#. Somewhere the sun stays out. | I've asked at the Grayrock office about a berth twice. They laughed. I'll ask a third time. | I want to go somewhere with sun enough #hood# can hang on a peg for a week.
+b : And leave the door? | They laughed? | Only a week?
+a : Somebody else can hold it. I'd write. #plain.capitalize#. | They did. They'll stop, or I'll stop asking. Not before, #address#. | A week. Then I'd wear it anyway, out of habit.
+
+scene lake_home
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : At #self.from_town# #lakedamp# drifted up from the water every evening, soft as a breath. Here it comes in like a slap. | I was raised at #self.from_town#, by the water. Skipped #pebble# off the jetty every night. | Back home nobody went hungry long; you'd knock and somebody'd feed you. I'm trying to make #city# like that.
+b[from=coldwater] #cw : Soft lake-damp. I'd forgotten that. | How many skips? | It's not like that here.
+b : Do you miss it? | Every night? | That's a big job.
+a@cw : I hadn't. Not for a minute. #agree.capitalize#. | Seven, once. Still water helps. | Not yet. Give me time, #address#.
+a : #lakedamp.capitalize#, aye. Not much else. | Every night it didn't blow. Calm water and a flat stone. | Big jobs get done one loaf at a time, #address#.
+
+scene lake_words
+when topic=accent self.away=yes self.from=coldwater
+does tell.self / react.self / assess
+a : I said a thing "won't float" in the queue and somebody asked what I'd floated. | Folk here hear the lake in my voice and think I'm slow. I'm not slow, and I'm not #daft#. | #greet#, I say, and they stare as if I'd spoken to a fish.
+b : What had you floated? | Nobody'd think that. | That's a kind sort of hello.
+a : Nothing. I said it was #nonsense#, in our words. They got the point. | Some do. They learn otherwise by the second loaf from #bowl#. | It is. #city.capitalize# can get used to it.
+
+scene faith_bread
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One wants folk fed. Everything else in the abbey comes after that. | I pray. Short. The Bright One hears long prayers all day without mine. | A sermon never filled #bowl#. Bread does. I know which I'd rather hand out.
+b[job=priest] #priest : There's room for both, you know. | Short prayers are heard too. | We need both, the bread and the word.
+b : #bc_fair_enough# | Short's good. | Hard to argue with that.
+a@priest : There is. #loaves.capitalize# first, though. Always. | They'd better be. I've not time for long ones. | Both, then. But you'll not see me singing.
+a : Fair and true, #address#. | Short and meant. That's the kind I like, #address#. | Then don't argue. #plain.capitalize#.
+
+scene gossip_flat
+when topic=gossip
+does tell.self / react.self / assess
+a : Somebody in #queue# told me #topic.subject# #topic.claim#. I said to go and say it out loud where it can be answered. | I hear #topic.subject# #topic.claim#. If it's true, it'll keep, #address#. If it's not, it shouldn't be said. | Door-talk today: #topic.subject# #topic.claim#. I don't pass it on. There. I just did.
+b : Did they? | Fair enough. | You did, a bit.
+a : Never. Talk like that never goes where it can be answered. That's how you know. | It's the only rule for talk worth having. | I did. That's the last of it. #annoyed#.
+
+scene lean_door
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. #queue.capitalize#'s twice as long and #loaves# are the same. | Hard winter coming. I've started cutting #loaves# thinner. I hate it. | More folk at #almsdoor# that I've never seen before. Decent folk. Ashamed.
+b : You'll manage. You always do. | You've no choice. | They shouldn't be ashamed.
+a : I'll manage. Doesn't mean I'll like it. #annoyed#. | No. I still hate it. #plain.capitalize#. | I tell them that. They're ashamed anyway.
+
+scene good_door
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. Only twenty in #queue# this morning. I nearly danced. | Coin about, and #poorbox#'s heavier than it's been all year. | Fewer folk need bread. That's the best news there is, and nobody writes it down.
+b : Nearly? | Somebody's feeling generous. | You could write it down.
+a : Nearly. I don't dance. #oath#, I was tempted. | Somebody is. I'll not ask who. | I did. In #almsbook#, in big letters.
+
+scene learning_trade
+when topic=work self.apprentice=yes self.working=yes
+does tell.self / react.self / assess
+a : Still learning. #self.trade_words.capitalize#. Mostly I'm learning not to say what I think. | They're teaching me #almsbook# and patience. I'm better at the book. | My teacher says I've the heart for it and the temper of a wet cat.
+b : That's the hard part. | Patience comes. | Is that fair?
+a : It's the only hard part. The rest is counting #loaves#. | It'll have to. I'm not getting any sweeter. | It's fair. I've never been called sweet. #plain.capitalize#.
+
+scene straw_room
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : Put #straw# down in my room today. Smells like a barn. Best smell there is. | I'd give up most things before I'd give up #straw# on the floor. | New straw, clean floor, #hood# on its peg. That's a home, near enough.
+b : It does smell good. | Most things? | Near enough is plenty.
+a : It does. Dry and clean. #agree.capitalize#. | Most. Not #rod#. Not #hood#. | It's plenty for me. I'm not fussy, #address#.
+
+scene newcomer_door
+when topic=newcomer
+does tell.self / react.self / assess
+a : New face at #almsdoor# today. Didn't want bread, only directions to the Commons. Gave both. | Newcomers always come to #almsdoor# first. #good.capitalize#. That's what it's for. | Somebody new in the street. I'll see them at the door within the month, I'd bet.
+b : Both? | Is it, though? | That's a bit grim.
+a : Both. Nobody walks far #hungry#. | It is. Ask anyone who's been new. #plain.capitalize#. | It's not grim, it's true. I'll be glad to see them.
+
+story the_hood_story [topic=memories]
+  : Little as a #child#, I got caught on the lake shore in a storm with nothing on my head.
+  : My gran sewed me #hood# that week, out of an old boat cover. I've worn one ever since.
+  ask : Have you got something you'd never go out without?
+  b[stage=young|adolescent] : My lucky stone. It's in my pocket now.
+  b : My boots, I suppose. Was it this same hood?
+  : Pieces of it. Patched so often I couldn't tell you which bits are hers now.
+
+story first_catch [topic=pastimes|memories]
+  : The first fish I ever caught, I was so pleased I fell off the jetty with it.
+  : Came up still holding the line, and the fish still on it.
+  ask : What would you have let go of first, the line or your breath?
+  b : The line, I'd think. Did you keep the fish?
+  : Ate it that night. Best #supper# I've had, and me dripping on the floor.
+
+story two_hats [topic=work|memories self.working=yes self.job=none]
+  : One morning a wolf came to the door in a brown hat and took a loaf.
+  : An hour later the same wolf was back in a green hat, holding out a paw.
+  ask : Would you have given the second loaf?
+  b : Not me. I'd be cross. Did you?
+  : Gave a second loaf, and told them the brown suited better. Next morning they turned up bareheaded.
+
+dlg @1 resident.hub : #greet#. Out with it. | #greet#, #address#. What do you need?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. | #topic.player#. Get a hood yet? No. I can see.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say it straight or don't say it, #address#. | #greet#. I've no time for trouble, #address#.
+dlg @1 resident.job : #self.trade_words.capitalize#. I do it properly or not at all. | #self.trade_words.capitalize#. Long days, and worth them.
+dlg @2 resident.job [self.working=yes self.job=none] : Bread at #almsdoor#, names in #almsbook#, and no fuss. | I feed folk. Somebody's got to, and it may as well be me.
+dlg @1 resident.bye : #farewell#. Get a hood. | #farewell#, #address#.
+graft resident.hub
+choice Why do you always wear that hood? -> hood
+node hood
+say Because it rains. And when it doesn't, it's about to. My gran sewed the first one. I've worn one every day since.
+mood calm
+free
+choice Every day? -> everyday
+choice Back to what I asked. -> hub
+node everyday
+say Every day. Sun, snow, the lot. Laugh if you like. I'll be dry.
+mood stern
+choice Fair enough. -> hub
+choice Goodbye. -> bye

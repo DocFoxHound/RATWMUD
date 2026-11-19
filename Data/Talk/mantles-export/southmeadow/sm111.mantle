@@ -1,0 +1,460 @@
+# sm111, the north-road doubter (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm111
+revision 3
+state ready
+dialect southmeadow
+accent light broad
+tier full
+written_for cty_willa_wheatcombe
+written_by claude
+title the north-road doubter
+fits stage=adult|old
+prefers job=farmer talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk distrusts_anything_from_the_city
+likes mutton_stew singing quiet_chapel frosty_mornings
+dislikes bad_manners drizzle
+fears letting_the_old_ones_down city_folk_buying_up_the_fields
+hopes a_strip_of_ground_in_my_own_name a_winter_of_hard_frost_and_no_drizzle
+topics work +0.4 land +0.3 season +0.3 faith +0.2 memories +0.2 food +0.2 gossip -0.3 travel -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# works the fields out of the granary: quiet, tired and restless, slow to trust anything that came down the north road, singing low in the rows, and feeling the old ones of the family watching every cut.
+
+words
+oath! = By the whetstone and the stook | Stubble and frost
+saying! = Nothing from up north comes without a hook in it | The furrow knows who cut it | A row's only straight when you look back at it
+sickle = the old sickle | the sickle with the worn grip
+whetstone = the whetstone | the grey whetstone in my pocket
+northroad = the north road | the road up to the city
+citymade = city-made | stamped up north
+cityfolk = city folk | the ones from up north
+stew = mutton stew | a pot of mutton and barley
+frostmorn = a frosty morning | white frost on the stubble
+drizzle = this drizzle | thin wet drizzle
+rows = the rows | the long rows
+stooks = the stooks | the sheaves stood up in the stubble
+oldones = the old ones | my gran and hers before her
+fieldsong = a field song | an old song for the rows
+quietchapel = the empty chapel | the chapel with nobody in it
+nomanners = no manners | manners like a goat at a gate
+granary = the granary | the granary door
+weary = bone-weary | worn to the stalk
+strip = a strip of my own | a bit of ground with my name on it
+lane = the lane | our lane
+well = the well | the village well
+owls = the barn owls | the owls
+seed = seed corn | the seed
+tune = a tune | an old tune
+feast = the feast | the harvest feast
+learner = a learner | a youngster to teach
+
+any
+opinion @1 city against 3 : Everything that comes down #northroad# wants something back. I've not met the exception yet. | Cloth, seed or promises, if it's #citymade# I'll pass it by.
+opinion @2 city against 3 [world.times=hard|lean] : Lean weeks here, and still #cityfolk# want their share of our grain. #oath#.
+opinion @1 merchants against 2 : A loaf costs what it costs and my #wages# don't stir. Somebody's doing well out of that, and it's not me.
+opinion @1 houses against 1 : The Houses own a fair part of what I've ever cut, and not one of them has stood in #rows# to look at it.
+opinion @1 times against 1 : Each season's a notch tighter than the last. Up north they've never had to loosen a belt.
+opinion @1 road for 1 : A road's honest enough. It's what comes down it I keep an eye on, #address#.
+opinion @1 church for 1 : Give me #quietchapel# on a weekday. The Bright One hears me better without a crowd in the way.
+opinion @1 festivals for 1 : I'll stand at the back of #feast#, so long as somebody starts #tune#.
+opinion @1 newcomers against 1 : A new face is welcome once it's done a season in the fields. Not before, #address#.
+opinion @1 strangers mixed 0 : A #stranger#'s only a #stranger#. Tell me which road they walked in on and I'll tell you more.
+opinion @1 drink mixed 1 : One cup of #ale# at the harvest supper. Two, and I start singing, and then nobody gets home.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the stubble; it's sharp underfoot. | #greet#. You'll be wanting something, I expect.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Talk while I cut, if you like. | #greet#. I'm at #rows# till the light goes.
+line @3 greet [here.time=dawn] : #greet#. First light's the best of the day. | #greet#. Early for you, and late for me.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out on #lane#. | #greet#. The day's done, near enough.
+line @5 greet [here.time=dawn here.season=winter here.weather=clear] : #greet#. #frostmorn.capitalize#, and I'm glad of every bit of it.
+line @1 kin.open [pair.kin!=no] : There you are. Get off your feet before you drop. | You'll want feeding. There's #stew# on.
+line @1 again.open : You again. #welcome_back#. | Twice in one day, #address#. I'll start keeping count.
+line @1 greet.return : #greet#. | #greet#. Well enough, thank you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'd hoped it was you. | #greet#. Sit a minute, then.
+line @3 greet.return [self.working=yes] : #greet#. I can't stop long. | #greet#. Walk with me down the row.
+line @4 greet.return [here.time=dusk|night] : #greet#. It's late for visiting. | #greet#. Quick, then; I'm for #bed#.
+line @1 farewell : #farewell#. | #farewell#. Keep to the field path.
+line @2 farewell [here.time=dusk|night] : #s8_night#. | #farewell#. Keep your lantern low.
+line @1 farewell.return : #farewell#. | #s8_byeback#. | #farewell#, #address#.
+line @2 farewell.return [here.time=dusk|night] : #s8_nightback#. | #farewell#. Sleep sound.
+line @1 react.news : #surprise#. I'll think on that. | #ack#. Well. That's something to chew.
+line @1 react.news.new : #surprise#. First I've heard of it. | #oath#. Nobody brought that to the rows.
+line @1 react.news.known : #knew#. | I had that already, #hearsay#.
+line @1 react.news.doubt : Who said so? If it came down #northroad#, I'll wait a while. | #doubt#. Let somebody I know say it here, and then I'll think on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's #bad#. The Bright One keep them all.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. | #good.capitalize#. I'll sing for that one.
+line @1 answer.how : #fine#. | #tired.capitalize#. Always. Well, though. | #weary.capitalize#, but upright.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. The rows don't get any shorter. | #work.capitalize# never ends, and I've two paws for it.
+line @1 ask.how : And you, #address#? | How's your own row going, #address#?
+line @1 sympathise : #sympathy#. | That's a weight. Sit with it a while.
+line @1 reassure : #reassure#. | It passes. Most things pass by the next sowing.
+line @1 decline : #hedge#, but no. I've #rows# to finish before the light goes. | Not this time. I'm #weary# and there's an early start.
+line @1 accept_decline : #no_matter#. | Fair. Another day, #address#.
+line @1 thank : #thanks#. | That's kind. I'll not forget it, #address#.
+line @1 deflect_thanks : #deflect#. | It was nothing. Leave it there.
+line @1 congratulate : #congrats#. | #good.capitalize#. That's well earned.
+line @1 preclose [self.working=yes] : Well. #excuse#. | I'd best get back to #rows#.
+line @2 preclose : Well. #preclose#. | That'll do me for talk today.
+line @1 accept_preclose : Go on, then. | #s8_okay#.
+line @1 ack : #ack#. | #bc_it_is#
+line @1 tease.return : Say what you like. I've heard worse in #rows#. | #cheek#.
+line @1 give.advice : #advise.capitalize#: buy your seed off a neighbour, never off a cart from the north. | Keep #whetstone# in your pocket and the edge looks after itself.
+line @1 warn [world.bandits=near] : There's trouble on the roads, they say. Go in company, #address#. | #warn#. And keep off #northroad# after dark.
+line @1 hail [pair.band=friends] : Here. Spare me a minute, if you can. | #address.capitalize#. Over here.
+rule @whet
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Edge is going. Where's #whetstone#? | Three strokes a side. That's what #gran# always said.
+
+rule @drizzle
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 8h
+say #drizzle.capitalize#. Neither wet nor dry. #annoyed#. | Make your mind up, sky. #grumble#.
+
+rule @frost
+when concept=bark here.time=dawn here.season=winter here.weather=clear self.likes=frosty_mornings
+does aside
+cooldown 12h
+say Hear it crunch. #tasty.capitalize#, that. | #frostmorn.capitalize#. That's worth getting up for.
+
+rule @song
+when concept=bark working=yes self.likes=singing
+does aside
+cooldown 8h
+say Down the row and back again, and the sun on the barley. | #resume#. The verse about the ewe.
+
+rule @supper
+when concept=bark here.time=dusk working=no
+does aside
+cooldown 1d
+say #stew.capitalize#, then bed, then the rows again. | Home. #supper.capitalize#. Sleep. In that order.
+
+rule @manners
+when concept=bark here.crowd=busy|crowd self.dislikes=bad_manners
+does aside
+cooldown 8h
+say Push past me again and see what happens, #fool#. | #nomanners.capitalize#. Not a word of leave.
+
+scene frost_stubble
+when topic=weather|season here.season=winter here.time=dawn here.weather=clear
+does tell.feeling / react.self / assess
+a : #frostmorn.capitalize#. Best hour of the whole year, this. | Hear the ground crack under you? I'd get up for that alone. | Everything white and still, and nobody up but me and the crows.
+b : It's bitter, though. | I hear it. | And me, now.
+a : Bitter's honest. It's the wet I can't abide, #oath#. | Few stop to listen. Most folk hurry over it to get #snug#. | And you. Stand a minute; it'll be gone once the sun's up, #address#.
+
+scene drizzle_day
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize# again. It wets you through and does the fields no good at all. | I'd take a downpour over #drizzle#. At least a downpour means it. | My fur's damp from the inside out. #annoyed#.
+b : The ground wants water, though. | A downpour's no better. | Dry off by a fire, then.
+a : The ground wants proper #rain#. This is spit, #address#. | It is. It comes, it's done, and the ditches fill. | I will. Then back out to get #very# wet again.
+
+scene dry_sky
+when topic=weather|land here.weather=clear here.season=summer here.region=southmeadow
+does tell.worry / reassure / assess
+a : Not a cloud again. It's #hot# in the rows by mid-morning. | I keep looking south for #rain# like it owes me money. | #well.capitalize#'s lower than it was. I put a stick down it to see.
+b : It'll break soon. | Does it ever pay up? | How much lower?
+a : Maybe. I'll not hold my breath for it. | Late and short. Same as my #wages#. | A finger. I'll try again tomorrow, and it'll be two. #grumble#.
+
+scene city_seed
+when topic=work|land self.job=farmer
+does tell.self / ask.detail / answer.detail / assess
+a : A cart came round selling #seed# from the city. I sent it on its way. | They want us sowing #citymade# barley now. Bigger heads, they say. | Somebody asked what I thought of the new #seed#. I told them straight.
+b : What was wrong with it? | Bigger heads? | What did you say?
+a : Nothing I could see. That's what worried me, #address#. | Bigger heads on weaker stalks. One good #wind# and it's flat. | That my #gran#'s seed grew in this dirt, and the city's never has.
+b : #bc_fair_enough# | That'd be a waste. | Fair enough.
+
+scene city_stamp
+when topic=smalltalk|prices
+does tell.self / react.self / assess
+a : I turn a thing over before I buy it. If it says #citymade#, back on the stall it goes. | Bought a pail at market. Turned it over and it was #citymade#. Took it back. | Folk laugh at me for it. Let them. Nothing made down #lane# has ever cheated me.
+b : That's a lot of turning over. | What was wrong with the pail? | Nothing at all?
+a : A lot less work than being #cheated#. | It'd have rusted by spring. They always do, #oath#. | Not once. I can't say the same for #cityfolk#.
+
+scene north_road_news
+when topic=gossip|news
+does tell.self / ask.detail / answer.detail
+a : Somebody at #well# had news from the city. I let it go past me. | I don't trust a tale that's walked down #northroad#. It picks things up on the way. | Half what's said in the rows came from up north, and half of that's #nonsense#.
+b : Didn't you want to hear it? | Picks up what? | And the other half?
+a : I heard it. I'm only not keeping it. #bc_i_know# | Bits that weren't in it when it set out. #bc_they_always_do# | The other half's ours. That I'll listen to, #address#.
+
+scene carts_in
+when topic=caravan|harvest world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : The carts are in. Full ones going back up #northroad#, I'll be bound. | Carts in the yard, and every one of them will leave heavier than it came. | I count what the carts take away from #granary#, not what they bring.
+b : That's trade, isn't it? | Isn't that how it works? | What do they take?
+a : Trade for them. We get the sacks back empty, #address#. | It's how it works for #cityfolk#. | Our grain, mostly. And our best months with it. #grumble#.
+
+scene mutton_stew
+when topic=food
+does tell.self / react.self / assess
+a : Give me #stew# after a day in the rows. That's food that knows what work is. | There's a pot on at #home# since dawn. Mutton, barley, a turnip if I'm lucky. | #cityfolk.capitalize# put herbs in their stew. Little green bits. I pick them out.
+b : Sounds filling. | Lucky with a turnip? | Herbs are nice.
+a : It holds you till noon the next day. #bc_it_does# | Turnips cost #money#, these days. Some weeks it's mutton and hope. | Nice for them. A stew should taste of the sheep, #address#.
+
+scene field_song
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail / assess
+a : I sing at #work#. Low, so nobody hears. Keeps my paws in time. | There's #fieldsong# my #gran# sang, and hers before. I've kept every verse. | I don't talk much. I'll sing, though, given a reason and #tune# worth it.
+b : What do you sing? | How many verses? | What's a good reason?
+a : Old ones. The kind that go at the pace of #sickle#. | Fourteen. Eleven of them are about the same ewe, #address#. | A harvest in, a wedding, a pot of #stew#. Any of those.
+b : #bc_lovely# | Ha. | #bc_fair_enough#
+
+scene empty_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / react.self / assess
+a : I like #quietchapel#. A weekday, the sun on the wall, nobody talking. | I go in when there's no service. The Bright One and I get on better without a sermon between us. | I sing in #quietchapel# sometimes. It carries, in there.
+b[job=priest] #priest : The doors are open on service days too. | None taken. The Bright One hears both ways. | I'll leave the door shut for you.
+b : It's peaceful then. | Better without? | I'd like to hear that.
+a@priest : I know. I come when I can stand a crowd, #address#. | #good.capitalize#. Then we understand each other. | #thanks#. I'll sing the louder for it.
+a : Peaceful's the word. Nobody asks you anything. #bc_it_is# | No offence to the priest. I only say more when it's #little# quieter. | You won't. I stop the moment the door opens.
+
+scene faith_old_ones
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say a word for #oldones# every Restday. Somebody ought to. | Prayers aren't much in my line. A dry harvest gets a thank-you from me, and that's my lot. | The Dark One sends the blight, my #gran# said. The Bright One sends the frost to kill it.
+b : Do you think they hear? | Is that enough? | Is that true?
+a : I think it does me #good# to say it. That'll do. | It's honest. I'd sooner short and meant, #address#. | True or not, I'm glad of the frost. #bc_every_year#
+
+scene gran_sickle
+when topic=work|memories self.job=farmer self.age>=25
+does tell.memory / react.story / assess
+a : #sickle.capitalize# was my #gran#'s. The grip's worn to the shape of another paw. | My #mum# cut these same rows, and hers before that. Some mornings I feel them watching. | I was sharpening a blade before I could write my name. I still can't write it #very# well.
+b : That's a lot to carry. | Watching? | Blade first, letters after.
+a : It's light enough. It's the keeping of #oldones#' ways that's heavy. | Not unkindly. Counting how straight I cut, that's all, #address#. | That's the right order, out here. #bc_it_is#
+
+scene old_ones_watching
+when topic=dreams|family self.job=farmer
+does tell.feeling / ask.detail / answer.detail
+a : Some nights I dream #oldones# walk the rows behind me, checking my work. | I'd like to do one thing #oldones# never did. Just the one. | Some days I think of leaving the trade. Then I hear my #gran# and pick the sickle up.
+b : Do they find fault? | What thing? | What does your #gran# say?
+a : Never aloud. That's worse, #address#. | Hold #strip#. Not the farm's, not the House's. Mine. | Nothing. Only looks at me. Worse than any words, #oath#.
+
+scene with_spouse
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : With #self.spouse#, I don't need to talk. That's the best of it, #address#. | My #self.spouse_word# is the one I'd trust with my #gran#'s sickle. | I'd not have wed anybody from up north. I wanted one I could understand, #address#.
+b : That's a good sort of quiet. | That's trust. | That's sensible.
+a : The best sort. Words cost, after a #tired# day. | It is. I don't hand it out, #address#. | Sensible or stubborn. Both, likely. #bc_probably#
+
+scene restless_plan
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / assess
+a : I've a jar at #home#. A penny a week goes in it. | #someday.capitalize# I'll have #strip#, and grow what I like on it. | I can't sit still on Restday. I end up weeding somebody else's beans.
+b : For what? | What would you grow? | Whose beans?
+a : #strip.capitalize#. It'll take a lifetime at this rate. | Barley, same as now. Only mine, #address#. | Anybody's. Nobody's complained yet. #bc_ha#
+b : Worth it, though. | #bc_fair_enough# | Ha.
+
+scene tired_bones
+when topic=health
+does tell.self / sympathise / assess
+a : My back's one long ache, shoulders to tail. #bc_every_day# | I'm #weary#. Every night. And every morning I get up anyway. | Cut my paw on a thistle stalk. It's mending, but #slow#.
+b : #sympathy#. | That's hard work for you. | Keep it clean.
+a : Kind of you. A night's sleep and #stew#, and I'll do. | It is. Nobody ever said #work# would be easy. | I wash it every night. It stings worse than the cut did, #oath#.
+
+scene bad_manners
+when topic=smalltalk|day self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : A wolf pushed past me at #well# today. Not a word. #nomanners.capitalize#. | You can tell #cityfolk# by their elbows. Never a by-your-leave. | I'll forgive nearly anything but a wolf who won't return a greeting.
+b : Some folk are like that. | Not all of them. | That's fair.
+a : They are. I don't have to like it, #address#. | Not all. The ones I've met, though. #bc_mostly# | It costs no #money# to answer. None at all.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Lean weeks. I've had #stew# without the mutton twice now. | Everyone's tightening, and #cityfolk# don't feel it. | I count every penny twice. They don't stretch any further for it. #grumble#.
+b : Hard all round. | Do they know, up there? | Nobody's do.
+a : Hard here. I'd like to see it hard somewhere else for once, #address#. | They know. Knowing costs them nothing. #bc_they_always_do# | No. Except up #northroad#, where there's plenty.
+
+scene good_times
+when topic=times|prices world.times=good|boom
+does tell.self / react.self / assess
+a : Times are #good#, so folk tell me. My #wages# haven't heard yet. | Coin's about. I bought new boots. Made down #lane#, mind. | Everyone's cheerful. I keep waiting for the catch.
+b : Maybe this time. | Down the lane? | Maybe there isn't one.
+a : Maybe. I'll keep my purse shut till I'm sure. #bc_we_will_see# | Never a #citymade# boot on my feet. #oath#. | There's always one. It's not come down #northroad# yet.
+
+scene harvest_rows
+when topic=harvest|work here.season=autumn self.job=farmer
+does tell.self / react.self / assess / ack
+a : #work.capitalize#. Up before light, home after dark, and singing in between. | #stooks.capitalize#. Straight as a ruler, every row of them. | We're behind on the top field. I'll be out there by lantern if I must.
+b : You must be worn out. | Straight rows, then. | By lantern?
+a : #weary.capitalize#. Happy, though, in a #tired# sort of way. | Straighter than last year. #oldones.capitalize# would nod at that. | It's been done before. My #gran# did it most harvests.
+b? : #bc_lovely# | #bc_good# | #bc_poor_soul#
+
+scene spring_sowing
+when topic=season|work here.season=spring self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : Sowing. I walk the field with the bag and count my steps, #address#. | Spring's for sowing, and for hoping #seed#'s honest. | The furrows are in. Now we wait, and watch the sky.
+b : Count them? | Honest seed? | And then?
+a : Fourteen to the row, and a handful every fourth. My #gran# taught me that. | Seed from down #lane#. I know where it's been. | Then it comes up or it doesn't, and we start again. #saying.capitalize#.
+
+scene owls_dusk
+when topic=animals here.time=dusk|night
+does tell.self / react.self / assess
+a : #owls.capitalize# are out over the fields. I stop and watch them every time. | An owl came down so close tonight I felt the air move. #surprise#. | I like #owls#. They work the fields by night the way we do by day.
+b : They're good for mice. | Didn't it scare you? | Never thought of it that way.
+a : Better than any cat, and quieter, #address#. | No. It scared the mouse. #bc_ha# | Nobody does. They only see a bird.
+
+scene teaching
+when topic=work self.master=yes self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : I'm meant to take on #learner#. I'd want one who doesn't chatter. | The trick isn't the cutting. It's knowing when to stop. That takes years to teach. | Anyone can swing #sickle#. Swinging it all day without hurting yourself, that's the trade.
+b : Most learners chatter. | When to stop? | How long to learn that?
+a : I know. I'll teach the quiet ones first. #bc_i_will# | When the stalk's ripe, and not a day before. You feel it in the paw. | A season to learn it, and the rest of your life to stop forgetting it, #address#.
+
+scene gossip_death
+when topic=gossip topic.claim_kind=death
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. I'll say a word for #topic.them# in #quietchapel#. | Heard it in the rows: #topic.subject# #topic.claim#. #pity#. | #topic.subject.capitalize# #topic.claim#, they're saying. I keep thinking of the ones left.
+b : I'm sorry to hear it. | That's very hard. | It's a sad thing.
+a : So am I. It sits heavy, #address#. | It is. I'll not say more; it's not mine to tell. | It is. I'll sing for #topic.them#, quiet, when I'm alone.
+
+scene gossip_crime
+when topic=gossip topic.claim_kind=theft|violence|wanted
+does tell.gossip / react.news / assess
+a : Word is #topic.subject# #topic.claim#. I'm keeping my door barred. | They say #topic.subject# #topic.claim#. I'd want it from the watch before I believed it. | #topic.subject.capitalize# #topic.claim#, so they say. That's #bad# news for the lane.
+b : Sensible. | So would I. | It is.
+a : Barred and bolted. I sleep the better for it. | Gossip's cheap. Proof costs more, #address#. | Bad enough. I'll keep #sickle# by the door a while.
+
+scene gossip_glad
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : I hear #topic.subject# #topic.claim#. #good.capitalize#. I'll sing at that. | They say #topic.subject# #topic.claim#. Nice to hear something kind, for once. | #topic.subject.capitalize# #topic.claim#. That's news I don't mind passing on.
+b : That's lovely. | It is, for once. | Nor would I.
+a : It is. I've #tune# for it already. | Makes a change from the price of bread, #address#. | There's little enough of it. Pass it on, #address#.
+
+scene newcomer_where
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : New faces in #lane#. I'd like to know where from before I say good day. | There's talk of somebody new. I'll make up my own mind. | A newcomer's welcome in the fields. They can show what they're worth there.
+b : Does it matter where? | You'll meet them soon enough. | That's fair.
+a : To me it does. If they came down #northroad#, I'll watch them. | I will. And I'll take my time over it, #address#. | Slow and fair. That's how it's done here, #address#.
+
+scene feast_songs
+when topic=festival self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : There'll be singing at #feast#. I'll go for that, and not much else. | I like #feast# from the back of the room, where the songs are loudest. | Everyone's dancing. I'd rather sing. Leave me a bench and #tune#.
+b : You don't dance? | The back's the best spot? | I'll leave you one.
+a : Not if I can help it. Two left feet and both #weary#. | It is. You see everyone and nobody sees you, #address#. | #good.capitalize#. I'll sing the second verse for you.
+
+scene our_speech
+when topic=accent self.away=no
+does tell.self / react.self / assess
+a : #cityfolk.capitalize# say we sound like a barn door. I'd rather a barn door than a city mouth. | We wish each other #greet# here and mean it. Up north they say good day and don't. | I talk the way my #gran# talked. I'll not trade it.
+b : It's a good way to talk. | Do they not mean it? | Nor should you.
+a : #thanks#. It's served us this long. | Not that I've ever noticed, #address#. | I won't. Not for any #money#.
+
+scene field_lore
+when topic=lore here.region=southmeadow
+does tell.story / react.story / assess
+a : The chapel gets our opening sheaf every harvest. I've carried it twice, #address#. | They say the fields here once ran to the edge of the sky, and nobody owned a furrow. | My #gran# said the old wolves buried a sickle under the mill for luck. Nobody's dug to check.
+b : Twice? That's an honour. | Nobody? | Best not to.
+a : It's heavy, is what it is. The honour's lighter. #bc_it_is# | Nobody. Then the Houses came with their ledgers. #grumble#. | Best not. Luck's luck. #bc_it_is#
+
+scene stay_put
+when topic=travel
+does give.opinion / ask.detail / answer.detail
+a : Past the toll gate's #far# enough north for me. | Folk come back from the city talking different. I don't want to talk different. | A walk to the next farm is travel enough for me, #address#.
+b : Not even once? | Different how? | It's a long walk, mind.
+a : Once would be once too many. #bc_never# | Quicker. As if they've somewhere better to be. | Long enough to be glad I'm #home#. #oath#.
+
+scene first_light
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : Up before the cockerel. Always am. | First light's the only quiet I get all day, #address#. | First light, and the dew still on #rows#. That's my hour.
+b : Early riser. | Quiet's precious. | It's a good hour.
+a : Since I could walk. #oldones.capitalize# were the same. | It is. Then the day starts talking. #bc_every_day# | The best. Nobody's asked me for a thing yet.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s the one I'd want beside me in #rows#. | I don't keep many friends. #self.friend# is enough, #address#. | I'd trust #self.friend# with my #gran#'s sickle. That's as high as I go.
+b : That's a good friend. | One good one's plenty. | That's high.
+a : The best. I'd not say it out loud, mind. | It is. I'd not swap for ten. #bc_never# | It is. Nobody else gets near it.
+
+story gran_whetstone [topic=memories self.age>=25]
+  : My #gran# gave me a whetstone the day I first cut a whole row without stopping.
+  : Said it had kept three sickles sharp and would see out mine too.
+  : I've worn a dip in it since. It's kept #sickle# keen ever since.
+  ask : Have you anything handed down like that?
+  b[old] : A few things. Fewer every year.
+  b : Not a thing, sadly. You keep that one safe.
+
+story rain_charm [topic=lore|memories self.age>=30]
+  : Back when I was a #child#, a peddler came down #northroad# selling rain charms. Little tin suns on a string.
+  : My #mum# bought one and hung it on the door. Not a drop all summer.
+  : #mum.capitalize# kept it, after. Said it showed what the city's promises were worth.
+  b : Ha. Did it ever rain?
+  : The next spring. The charm took the credit, of course. #bc_ha#
+
+story first_frost [topic=season|memories self.likes=frosty_mornings]
+  : #frostmorn.capitalize#, the first I remember. I ran out and wrote my name in the white on the gate.
+  : By the time I fetched my #mum# to see, the sun had taken all but the first letter.
+  ask : What's the first weather you can remember?
+  b : Rain, I think. Rain on a roof.
+  b[old] : Snow higher than a door. Or I dreamt it.
+
+story chapel_heard [topic=faith|pastimes self.likes=singing]
+  : I was singing in #quietchapel# once, thinking I was alone.
+  : When I finished, somebody at the back said "again". I never saw who, #oath#.
+  : So I sang it again. Then I went out the side door, #very# quick.
+  b : Ha. Maybe it was the Bright One listening.
+  b[job=priest] : It might have been me. I'll never tell.
+
+story first_harvest [topic=work|harvest self.job=farmer self.age>=25]
+  : My first harvest, I cut faster than anyone in #rows#, to show them.
+  : By the third day my paws were raw and I could barely hold #sickle#.
+  : My #gran# said nothing. Only handed me a pot of grease and set a slower pace beside me.
+  ask : Did anybody ever teach you a thing without a word?
+  b : Plenty. The quiet ones teach best.
+  b[old] : Every lesson I kept, I learned that way.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Speak up; I've #rows# waiting.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're back. | #topic.player#. #greet#. What's wanted this time?
+dlg @3 resident.hub [here.time=night] : It's late. Be quick, and I'll be civil, #address#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What do you want? Forgive me if I don't smile, #stranger#.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. Cutting, binding, sowing, the lot, same as #oldones#. | Out past #granary# by dawn, home by dark. The rows don't care how #tired# you are.
+dlg @2 resident.job : #job_busy# | Whatever the day wants. I don't make it ask twice, #address#.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. #hearsay.capitalize#, mind.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# in #lane#. I keep my head down.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I'd trust. What there is came down #northroad#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry tales. #work.capitalize# is load enough.
+dlg @2 resident.gossip [here.gossip=yes] : Folk say #topic.subject# #topic.claim#. That's all I'll pass on, #address#.
+dlg @1 resident.business [business!=thriving|failing] : Steady. The fields don't hurry, and nor do I. #bc_it_is#
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the stubble on your way.
+dlg @1 master.learn [here.teaches=yes] : You want to learn the fields? #learn_offer# Ask, then. | It's not a trade you learn by talking. Still. #go_ahead#.
+dlg @2 master.learn [here.teaches=no] : I've #learner# already. Ask what you like, though.
+dlg @1 master.work : Up before light, a blade in your paw, and no stopping till the row's done. #bc_every_day# | Sowing, weeding, cutting, binding. Whatever the season wants, it wants now, #address#.
+dlg @1 master.wages : No #wages# for learning. You work beside me, learn it quicker than alone, and what you make is yours to sell.
+dlg @1 master.takes [here.take_on=yes] : One learner at a time, and one I trust. You'll do. Ask me straight, #address#.
+dlg @2 master.takes [here.take_on=no] : One learner at a time, and one I trust. #here.take_on_why#
+dlg @1 master.taken : #learn_taken# And no chatter in the rows.
+dlg @1 master.refused : #topic.why# | Not yet, #address#. #topic.why#
+dlg @1 master.bye : #farewell#. First light, if you want to watch.
+graft resident.hub
+choice Why don't you trust the city? -> city
+node city
+say Everything that comes down #northroad# wants something back. Seed, cloth, coin, news. I turn it over and look for the hook.
+mood calm
+free
+choice Is there always a hook? -> hook
+choice Goodbye. -> bye
+node hook
+say Not always. But my #gran# was never cheated by a thing made in #lane#, and nor have I been. I'll keep to that.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice Is that an old sickle? [self.job=farmer] -> sickle
+node sickle
+say Older than me. My #gran#'s, and my great-gran's before. The grip's worn to another paw, and I've grown into it.
+mood warm
+choice Would you teach me with it? -> sickle_teach
+choice Back to the trade. -> learn
+node sickle_teach
+say You'll learn on your own. This one stays with me. When you've earned #sickle# worth keeping, you'll know.
+choice Fair. -> learn
+choice Goodbye. -> bye

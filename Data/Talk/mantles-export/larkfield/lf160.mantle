@@ -1,0 +1,455 @@
+# lf160, the cask-chalker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf160
+revision 2
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for rm_gorm_rustmarsh
+written_by claude
+title the cask-chalker
+fits stage=adult|old
+prefers role=merchant job=merchant warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk chalks_the_day_on_every_cask_filled
+likes plum_tart cards full_larder summer_evenings
+dislikes early_bells stale_bread
+fears an_empty_larder_in_winter a_cask_with_no_date_on_it
+hopes a_larder_full_to_the_rafters a_press_of_my_own_one_day
+topics work +0.5 food +0.4 pastimes +0.3 newcomer +0.3 season +0.2 home +0.2 gossip -0.3
+styles comfort=feeding gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# works the fruit press and sells what it makes over the counter: warm, plain and careful to a fault, feeding anyone who stands still, chalking the day on every cask and keeping a larder full shelf by shelf.
+
+words
+oath! = Chalk and cask | By the dated cask | Screw and skin
+saying! = Date it, or you're only guessing | Press slow, pour honest | A thing written down is a thing kept
+press = the press | the big screw press
+cask = a cask | a chalked cask
+casks = the casks | every cask on the rack
+chalk = my chalk | a stub of chalk
+dayname = the day and the month | the day, in a fair round hand
+tart = a plum tart | plum tart, warm from the tin
+larder = my larder | the larder
+cards = the cards | a game after supper
+summer = a summer evening that won't end | the light still up at bedtime
+firstrun = the first run | the first juice off the press
+skins = the skins | the pressed skins
+counter = the counter | the press-house counter
+daybook = the day book | my day book
+earlybell = a bell before light | bells in the dark
+hardloaf = a loaf gone hard | stale bread, two days dead
+downs = the downs | the high downs
+cross = the market cross | the old cross in the square
+racks = the racks | the cask racks in the back
+northgate = Northgate | my end of Northgate
+fruit = the fruit | the fruit off the carts
+slice = a slice | a good thick slice
+fruitcarts = the fruit carts | the carts from the orchards
+loaf = a loaf | a good loaf
+cup = a cup | a cup of the new pressing
+screw = the screw | the press screw
+stove = the stove | the little stove
+board = the price board | the board by the door
+jar = a jar | a dated jar
+shelf = a shelf | a whole shelf
+
+any
+opinion @1 newcomers for 2 : There's room in this city for anybody who'll carry a crate. I've a stool and #tart# for any of them. | New faces want feeding. I've #tart# and a stool, so I do.
+opinion @1 strangers for 2 : A stranger at #counter# is a customer who hasn't learned my name yet. I'll have it in #daybook# before the week's out. | Strangers buy and talk, and I'm glad of both, full weight.
+opinion @1 dole for 1 : No soul in a place as rich as this ought to sleep hungry. I'll give to #dole# and say so out loud. | #larder.capitalize#'s full. I'd be a poor sort to grudge a loaf to someone with none.
+opinion @1 merchants for 1 : I keep #counter# myself. Anyone who calls traders thieves hasn't paid for a cart of fruit. | A fair trader marks the price plain on #board# and lets you weigh it. That's all the trade wants.
+opinion @1 watch for 1 : The Watch keeps the light-fingered off #racks#. I'll not complain about them. | A constable at the corner and I sleep sound. That's fair-priced, for what it costs me.
+opinion @1 road against 1 [world.wagons=late|raided] : Fruit that comes in late is fruit half spoiled. Every late cart is #skins# I throw away. | The roads are slow, and it's #press# that waits on them.
+opinion @1 city against 1 [self.away=yes] : The city's all elbows and shut doors. Back in #self.from_town# you'd know who lived next door before your first supper there. | Nobody here asks your name. I ask theirs and write it in #daybook#.
+opinion @1 drink mixed 1 : A cup of what we press is a kindness at #summer#. Three cups and it's a cost. | I sell it over #counter#. I'll not pretend it never did harm; I'll say it mostly does good.
+opinion @1 houses mixed 0 : The Houses keep the city in work. Whether they keep it fair-priced I'd weigh twice. | I press for a House and the House pays prompt. I'll say that much and no more.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Step in off the street. You'll want feeding, by the look. | #greet#. You look like you could do with something sweet.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. #counter.capitalize#'s open and the press is going. | #greet#. Mind the floor by #racks#; it's sticky.
+line @3 greet [here.time=dawn] : Morning. I've #press# going already; you'll smell it from the street. | Morning. Up with me, then. Sit, I'll find you #slice#.
+line @4 greet [here.time=dusk|night] : Evening. Late to be out, #address#. | Evening. I've just put #chalk# away.
+line @1 kin.open [pair.kin!=no] : Here you are at last. #slice.capitalize# is set by for you on the shelf. | You. Good. Sit down and eat #slice# before you say a word.
+line @1 again.open : #welcome_back#. You'll find the stool where you left it. | Back the same day. I'll put you in #daybook# as a regular.
+line @1 hail [pair.band=friends] : Over here, #address#. I've something for you. | You there. A minute, when you've one; I've #tart# going spare.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, come in. | #greet#. I was hoping you'd turn up.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Half a moment; this one wants its chalk. | #greet#. Talk while I work; I can do both.
+line @4 greet.return [here.time=dusk|night] : Evening. You're out late too; I've only just put #chalk# away. | Evening. #cards.capitalize# are out, if you'll sit.
+line @1 farewell : #farewell#. | #farewell#. Eat something on the way.
+line @2 farewell [here.time=dusk|night] : Good night. Stay where the lamps are, and count your change. | Good night, #address#. I'll have the press going at first light.
+line @1 farewell.return : #farewell#. | #farewell#, and mind how you go.
+line @2 farewell.return [pair.band=friends|family] : Off with you. Come back hungry; #larder# will be ready. | #farewell#. #counter.capitalize# misses you when you're gone.
+line @1 react.news : Is that right. Tell it me slowly; I like it weighed out properly. | Go on. I'll not interrupt.
+line @1 react.news.new : #surprise#. That's new to me, full weight. | Nobody's said it at #counter# yet. I'd remember.
+line @1 react.news.known : #knew#. I wrote it in the back of #daybook# this morning. | I had it with the first customer at #counter# today.
+line @1 react.news.doubt : #doubt#. Show me that in writing first. | Maybe. I'll wait for a second telling before it goes in #daybook#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. #pity#. | I'm sorry to hear it, I am. Sit; I'll find you #cup#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants #tart# and a toast. | Oh, good. Good. I'll drink #cup# to that tonight.
+line @1 answer.how : #fine#. Larder full, press turning, nothing to grumble at. | Well, thank you. Better for asking, and #larder# full.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. A cart of fruit came in and it won't wait. | Trading flat out, and glad of it.
+line @1 ask.how : And you? Eating properly? You look a lark's worth thinner. | How are you keeping, #address#? Honestly, now.
+line @1 sympathise : That's a dear price to pay, that. Sit a while. | #sympathy#. Here, have this, and don't argue.
+line @1 reassure : It'll weigh out right in the end. Most things do. | You'll be all right. I'd lay a silver on it.
+line @1 decline : #hedge#: I'd like to, but there's a cart of fruit that won't press itself. | I can't today, #address#. The fruit's in, and it spoils if it waits.
+line @1 accept_decline : #no_matter.capitalize#. Another day, then. | That's all right. I'll keep #slice# for you.
+line @1 thank : #thanks#. That's kind of you. | That's good of you. It's going in #daybook#, that.
+line @1 deflect_thanks : #deflect.capitalize#. You'd do the same. | It's only #tart#. There's more where it came from.
+line @1 preclose [self.working=yes] : Well. #casks.capitalize# won't chalk themselves. | #press.capitalize# is calling me back.
+line @2 preclose : Well. #preclose#. | I've kept you long enough. #excuse#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I'll see you at #counter#.
+line @1 ack : #bc_right# | #bc_true#
+line @1 give.advice : #advise.capitalize#: write it down, whatever it is. You'll thank yourself. | Keep #larder# one shelf ahead of the winter. That's all the advice I've got.
+line @1 warn [world.bandits=near] : Stay off the roads a while. #warn#. | If you're going out past the walls, go with company, #address#.
+line @1 offer : Here. Have #slice#. I made too much, I always do. | Take one of these for the road, #address#. Go on.
+line @1 accept : #agree#. Thank you kindly. | I will, then. #thanks#.
+line @1 refuse : #hedge#: I've eaten, honestly, and I'll not take food from your table. | No, thank you. I've a full larder at home and no room left in me.
+scene chalk_the_day
+when topic=work|pastimes self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Every cask that's filled gets #dayname# chalked on its head. Every one. | #chalk.capitalize# lives in my apron pocket. I'd sooner go out without my coat. | There's a cask on #racks# with no chalk on it, and it's been bothering me all morning.
+b : Why every one? | Not even your coat? | Whose is it?
+a : So you know what you're pouring, to the ounce. A cask without a date is only somebody's hope. | Coats I've two of. #chalk.capitalize# is the only thing I'd go back up the stairs for. | Nobody's, till I find who filled it from #press#. Then it'll be chalked, and so will they.
+b : #bc_wise# | #bc_ha# | #bc_fair_enough#
+
+scene first_run
+when topic=work|food self.working=yes self.role=merchant
+does tell.feeling / react.self / assess
+a : #firstrun.capitalize# came off #press# this morning. Sweet as you like. | The first juice of a cart is the best, and I keep #cup# of it back for myself. | I can tell a good cart by the smell of #skins# before the screw's even turned.
+b : Lucky you. | Just a cup? | By the smell?
+a : Lucky, and glad of it. I've been at #press# long enough to be glad of a morning like this. | One cup. The rest is for #counter#. I'm not a thief at my own trade. | By the smell. Sour means late fruit, sweet means fair weight. You learn.
+
+scene press_at_dawn
+when topic=work|day here.time=dawn self.working=yes self.role=merchant
+does tell.self / react.self / assess / ack
+a : I like the press at this hour. Nobody wants anything yet but #press# and me. | #racks.capitalize# get looked at before anything. Then #chalk#. Then the screw. | Fruit in at dawn, juice in the casks by noon, and #daybook# filled in by dusk.
+b : Peaceful. | In that order? | A long day.
+a : It is. By noon #counter# is a market, and I like that too, but differently. | Always. #racks.capitalize# first, so I know what I've got to fill. | Long and fair-priced. I'd not change it.
+b? : #bc_lovely# | #bc_every_day# | #bc_true#
+
+scene the_day_book
+when topic=work|prices self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Everything goes in #daybook#. Fruit in, casks out, who paid, who's owing. | A customer once told me I'd written down a price wrong. I hadn't. I showed them the page in #daybook#. | I write every sale twice: once at #counter#, once at night, fair copy.
+b : Even who's owing? | Were they cross? | Twice?
+a : Especially them. A debt nobody wrote down is a debt nobody pays. | Not cross. Surprised. Most folk don't keep a page. #saying#. | Twice. If the two don't match I sit up till they do, to the ounce.
+b : #bc_wise# | #bc_ha# | #bc_every_one#
+
+scene a_cart_of_fruit
+when topic=work|harvest self.working=yes self.role=merchant here.season=autumn
+does tell.news / react.news / assess
+a : #fruitcarts.capitalize# are coming in thick now. I've pressed since before light. | Three carts in today, all three full weight. | Autumn's my season. #press.capitalize# hardly stops for breath.
+b : Busy time. | Every one? | You must be worn out.
+a : The best time. I'll sleep when #racks# are full. | Every one. I weighed them myself; I don't take a carter's word. | #tired.capitalize#, and glad of it. It's the empty weeks that wear you.
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does offer / accept / assess / ack
+a : Here. #tart.capitalize#. I made two and I'll not eat both. | There's plum tart in the tin. Take a piece, #address#; I'll be cross if you don't. | Sit down. You look like someone who hasn't had #tart# in a month.
+b : I'd love some. | All right, if you insist. | Is it that obvious?
+a : Good. The plums were the last of #fruitcarts#, so it's a bit sharp. | I do insist. There. Now we're friends. | It is. Here. Top-weight piece. Don't argue.
+b? : #bc_lovely# | #bc_thank_you# | #bc_ha#
+
+scene stale_bread
+when topic=food|home self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : Somebody left the loaf out again. #hardloaf.capitalize#, and nobody owning up. | I can't abide #hardloaf#. I'd sooner go without. | #loaf.capitalize# costs a copper and a cloth costs nothing. Wrap it, I say.
+b : Toast it. | It's only bread. | Fair.
+a : Toasting stale bread is just pretending it's fresh. | #loaf.capitalize#'s never only bread. It's somebody's morning. | Wrap it and date it. I'd chalk the loaf if they'd let me.
+
+scene the_larder
+when topic=home|food self.likes=full_larder
+does tell.feeling / ask.detail / answer.detail / assess
+a : #larder.capitalize# is full. I stood in front of it last night just to look. | I keep the larder like #racks#: oldest at the front, every jar dated. | One shelf for every month to the spring. That's how I like #larder#.
+b : Just to look? | Every jar? | Every month?
+a : Just to look. A full larder's a quiet mind, near enough. | Every jar. If I can't read the date, it goes to the pigs. #bc_every_one# | Every month. I've been hungry once in my life. Once was plenty.
+b : #bc_lovely# | #bc_wise# | #bc_poor_soul#
+
+scene cards_after_supper
+when topic=pastimes self.likes=cards
+does invite / accept_invite / assess / ack
+a : #cards.capitalize#, tonight, if you're free. I keep the score in a book. | There's a game at my table after #supper#. Bring a copper and nothing else. | I've a new pack for #cards#. The old one had a corner off the king and everybody knew it.
+b : I'll come. | Only a copper? | Everyone knew?
+a : Good. I'll see there's #tart#. I play slow and I'll not be hurried. | One copper. Win or lose, you go home with a full belly. That's the rule. | Everyone. It made for honest play, oddly. Now we'll see who's really sharp.
+b : #bc_good# | #bc_fair# | #bc_we_will_see#
+
+scene summer_evening
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : This is it. #summer.capitalize#. I'd press all winter for one of these. | The light's still up and #press# is quiet. Sit out with me a while. | Summer evenings in #self.from_town# went on over #downs# till you forgot to go in.
+b : It's a fine evening. | I'll sit. | Did you forget often?
+a : It is. I'll stay out till #summer# is gone and not a minute less. | Good. Take the far end of the bench; the near end tips. I'll fetch two cups. | Every night of the summer. My #mum# would come and find me with a lamp.
+
+scene winter_larder
+when topic=season|weather here.season=winter
+does tell.worry / reassure / assess
+a : Winter's in. I count #larder# every Restday till the spring. | No fruit to press, #casks# all full, and the long dark. I don't like the waiting. | I keep the stove going in the press house so #casks# don't freeze.
+b : You'll be all right. | Spring's not far. | Do they freeze?
+a : I will. I counted, and I've enough and a shelf over. | No, it's not. I'll chalk the days off till it comes. | Once, the first winter. Never again. I learned that by the cask.
+
+scene rain_and_racks
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain again. #chalk.capitalize# runs on any cask left by the door. | Wet fruit presses thin. I'll get half the juice today. | It's been raining since I came to this city. I'm sure of it, near enough.
+b : It's always raining here. | Half? | Near enough.
+a : Always. I chalk twice in the wet. Once for the rain, once for the cask. | Half the juice and the same work. That's #rain#, here. | Back home it rained like it meant to stop. Here it doesn't bother pretending.
+
+scene fog_morning
+when topic=weather|day here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog so thick this morning I walked past the press house door. | You can't see across #northgate# this morning. I counted the doors to find mine. | Fog's good for one thing: nobody comes to #counter#, and I can do the books.
+b : Past your own door? | You counted? | Small blessings.
+a : Past it, and back. I'll not tell the others. | Seven doors. I knew it'd be seven. #bc_exactly# | Small and fair. I'll take it.
+
+scene early_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess / ack
+a : Somebody rang #earlybell# again, and for no reason I could find. | I was up anyway, but #earlybell# made me drop the chalk. | Bells before light. What's the use of a bell nobody's awake to hear?
+b : I heard it too. | Did it break? | It woke me.
+a : Then we've both lost an hour. I'll not forgive it till noon. | In two. I've a spare, I always have a spare. But still. | Then that's its use. Waking folk who didn't ask.
+b : #bc_ha# | #bc_bad_luck# | #bc_true#
+
+scene the_house_on_northgate
+when topic=home|friends here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : There are four of us under one roof on #northgate#. I do the cooking, mostly. | We share a house, a few of us. I keep #larder#; the rest keep out of it. | The house is loud of an evening, and I like it loud.
+b : You cook for everyone? | Do they keep out? | Loud?
+a : Somebody has to, and I like to. #larder.capitalize#'s my side of it. | Mostly. I know if a jar moves, mind. | Cards and talk and somebody singing. Better than an empty room.
+
+scene a_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the first I'd feed and the last I'd see go hungry. | I'd trust #self.friend# with #daybook#, and I've never said that of anyone. | When I'm low, #self.friend# is the one I want at the table.
+b : That's a good friend. | Your day book? | That's lucky.
+a : It is. I'd say so to anyone. | My day book. That's trust, for me. | Lucky. I count it every week.
+
+scene the_neighbour
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : I'd leave a key with #self.neighbour# without thinking twice. | #self.neighbour# is good to have through the wall. Quiet, and fair-spoken. | There's always #slice# set by for #self.neighbour#. It's how I am.
+b : That's worth having. | Quiet's good. | That's kind.
+a : It is, in this city. You'd be surprised how rare. | Quiet and fair. I'd ask no more of anyone next door. | It's only #tart#. It costs me nothing.
+
+scene newcomers_fed
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : Somebody new turned up at #counter# today, lost and asking the way. They got a cup before directions. | There's room in this city for anyone who'll work. I tell every newcomer so. | I wrote a new name in #daybook# this morning. I like a new name.
+b : That was kind. | Do they believe you? | A new customer?
+a : It's nothing. #cup.capitalize# costs me less than the asking does them. | Those who stay do, mostly. | A new name. Give it a month and they'll be a regular.
+b? : #bc_good# | #bc_true# | #bc_i_hope_so#
+
+scene home_downs
+when topic=memories|home self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I grew up in #self.from_town#, under #downs#. Sheep, wool and a fair price at every stall. | Back home nothing changed paws without the scales between. I still won't, even here. | I sometimes miss #cross# on a market morning more than I miss my own bed.
+b[from=larkfield] #lark : Nothing moves there without a weighing. | Everyone weighs everything there. | The cross on a market morning. I miss it too.
+b : Do you miss it? | Even here? | More than your bed?
+a@lark : And you'll know why I write everything down, then. | Then you know. It's not fussiness; it's manners. | Then we're two who'd go back for a morning.
+a : Some days. I miss the sky. You can't see much of it from #northgate#. | Even here. Folk think I'm fussy. I'm only from #self.from_town#. | More than my bed. Less than #larder#. #bc_ha#
+
+scene the_scales_lesson
+when topic=memories|lore self.away=yes self.from=larkfield self.age>=30
+does tell.memory / ask.detail / answer.detail / assess
+a : My #grandad# kept a stall at #cross#. He taught me to read the scales before I could read a page. | In #olddays# you sold a fleece by weight and a cheese by the eye. I learned both. | The very first word I ever wrote was a price. I was six.
+b : What did he teach you? | By the eye? | What price?
+a : That the scales are honest and the paw on them may not be. Watch the paw. | You look at a cheese and you know. A fleece you weigh, because a fleece will lie. | A penny for a turnip. My #mum# kept the slate; I still have it somewhere.
+b : #bc_wise# | #bc_ha# | #bc_lovely#
+
+scene the_accent
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I still count in #self.from_town# numbers under my breath. Score and half-score, like the sheep. | City folk say I talk like a market day. I take it kindly. | My customers have started saying full weight back to me. I count that a win.
+b : Score and half-score? | Kindly? | Have they?
+a : Twenty and ten. Write it in #daybook# and nobody else can read it. That's a fair use. | Market day's the best day there is. They meant it kindly, I'd guess. | Two of them. I've chalked their names in #daybook# for it.
+
+scene nobody_hungry
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Folk are buying by the cup now, not by the cask. Times are lean. | I've given away more #tart# this month than I've sold. I'd do it again. | There's a family down the street who've stopped buying bread. I've started leaving #loaf#.
+b : Hard for everyone. | That's good of you. | That's kind.
+a : Hard. But a city this fat can feed its hungry, and I'll say so to anyone. | Good or daft, I'm not sure which. I'll keep doing it. | It's not kind. It's #loaf#. I'd want the same.
+b? : #bc_true# | #bc_ha# | #bc_good#
+
+scene good_trade
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : I sold the whole rack this week. Every cask, dated and gone. | Folk are buying by the cask again. I've sent out twice for more fruit. | Good weeks, these. I've a spare shelf in #larder# for the first time in a year.
+b : Good for you. | More fruit? | A spare shelf?
+a : Good all round. A full rack is a full table somewhere. | More fruit, more pressing, more chalk. I'll not complain. | A spare shelf. I stood and looked at it.
+
+scene wine_dear
+when topic=prices|food world.wine_price=up self.role=merchant
+does tell.complaint / react.complaint / insist
+a : Everything we press is dearer this month, and I'm the one who has to say it at #counter#. | They're paying more for what I sell, and I'm paying more for #fruit#. Nobody's richer. | I had to chalk a new price on #board#. I don't like changing a price.
+b : That's not your fault. | Nobody at all? | Why not?
+a : No. But it's my face they see. I'll say it plain and they'll weigh it. | Nobody. The carter, maybe. Not me. | A price should mean something. Changing it makes it look like a guess.
+
+scene carts_late
+when topic=caravan|work world.wagons=late
+does tell.worry / reassure / assess
+a : The fruit carts are late. #press.capitalize# is sitting idle and I don't like it. | No carts today. I've chalked every cask twice for want of anything to do. | A late cart means bruised fruit, and bruised fruit presses sour.
+b : They'll come. | Twice? | Can you still use it?
+a : They will. I'll be standing at #counter# when they do. | Twice. I'll be on the third round by noon. | Some. Sour has its uses. Not many.
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : People say things at #counter#. I write down what they buy, not what they say. | I heard a thing this morning. It stops with me; it wasn't mine. | Gossip's like a cask with no date. You don't know how old it is or what it's turned into.
+b : Not even a little? | Fair. | That's true.
+a : Not a word. It's not in #daybook#, so it didn't happen. | Fair and plain. I'd want the same if it were me. | It is. I'll pour what I know, not what I've heard.
+b : #bc_ha# | #bc_fair_enough# | #bc_true#
+
+scene the_news_round
+when topic=news|event world.event_words
+does tell.news / react.news / assess
+a : It's all #world.event_words# at #counter# today. I've written it in the back of #daybook#. | #world.event_words.capitalize#. Every customer's had a word to say on it. | I've heard of nothing but #world.event_words# since I opened.
+b : I've heard. | Every one? | Nor have I.
+a : Then we've both heard it. I'll not add anything I don't know. | Every one, and no two the same. That's how you know it's news. | It'll be something else by Restday. It always is.
+
+scene faith
+when topic=faith
+does give.opinion / react.self / assess
+a : Every shelf in #larder# I owe to the Bright One, as I see it. | At the feasts I take a back pew in the chapel, and I leave #cup# of #firstrun# on the step. | My #gran# always held that the Bright One reads every ledger. I keep mine neat, just in case.
+b : That's a good prayer. | That's honest. | Just in case?
+a : It's the one I mean, every word. | Honest's all I've got. The Bright One can weigh it. | Just in case. A blot on that page would shame me.
+
+scene sore_arms
+when topic=health
+does tell.self / react.self / reassure
+a : My arms ache from #screw#. I'll be fine by supper. | I've a cough from the cellar damp. I'll take something hot for it. | Ill? Not once since the city took me in. Too busy for it, I think.
+b : Rest them. | Look after yourself. | Knock on wood.
+a : I'll rest them at #cards# tonight. That's rest, near enough. | I will. Honey and something hot. My #gran#'s cure. | Knocked. On a cask, even, for luck.
+
+scene dream_of_a_press
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I'd like a press of my own one day. A small one. My name on the door. | I dreamt #larder# went on forever, shelf after shelf, every jar dated in #chalk#. | Some nights I dream I've lost #chalk#, and every cask in the city is blank.
+b : What would you press? | A happy one? | What did you do?
+a : Plums. Nobody presses plums. I'd be the first, and I'd chalk every one. | The best I've had. I woke up hungry. | Wrote the days on them with my claw. I woke up and checked my pocket.
+b : #bc_i_hope_so# | #bc_ha# | #bc_ha#
+
+scene city_road
+when topic=travel self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : It's #far# from #self.from_town# to here. I walked it with a bag and a slate. | The work brought me here, and the work keeps me. | I've not been back in a long while. I write, when I can.
+b : A long walk. | And the work's good? | Do they write back?
+a : Long. I counted the milestones and chalked them on the slate. | It's fair work and fairly paid. That's all I asked. | When they can. I keep every letter, dated.
+
+story the_cousin [topic=memories|family self.age>=25]
+  : I had a cousin once who went to work the vineyards. Wrote to me every autumn, one page, never more.
+  : Every letter said the same: the grapes are in, the weather held, send news.
+  ask : Do you keep letters, yourself?
+  b : A few. Not like that.
+  b[old] : Every one. They're all that's left of some people.
+  : I've kept every one of those, dated, in a box under the bed.
+
+story first_wrong_cask [topic=work|memories self.role=merchant self.age>=25]
+  : The first season I pressed, I forgot to chalk one cask. Just one.
+  : A year later we tapped it for a feast and nobody knew if it was this year's or last.
+  ask : Would you have poured it?
+  b : I'd have tasted it first.
+  : It was last year's, and sour as a wet morning. I've chalked every cask since, and I'll chalk them till I die.
+
+story the_card_game [topic=pastimes|memories self.age>=25]
+  : I once played cards all night with a carter who swore he'd never lost a game.
+  : By dawn I'd won every copper he had. I gave them back and fed him breakfast.
+  b : Why give them back?
+  b[friends] : That's just like you. I'd have kept them.
+  : I don't play for coppers. I play to win. Breakfast was for the company.
+
+story the_market_cross [topic=lore|memories self.away=yes self.from=larkfield]
+  : In #self.from_town# they say the market cross was put up where two drovers met and struck a fair bargain.
+  : Neither of them could read, so they cut the price into the stone. You can still see it, worn smooth.
+  b[from=larkfield] : I've touched it. Everyone has.
+  b : A price in stone. That's a good tale.
+  : Every child in #self.from_town# puts a paw on it for luck. I did. I'd do it again.
+
+story summer_on_the_downs [topic=season|memories self.away=yes self.from=larkfield self.age>=20]
+  : One summer I stayed out on #downs# till the light went, counting sheep for a neighbour who'd lost three.
+  : I found all three, asleep under a hedge, and walked them home in the dark.
+  ask : Would you have gone out looking?
+  b : I'd like to think so.
+  : I got a plum tart for it. I've loved them since.
+
+rule @press_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say First run, fresh off #press#. Dated today. | Casks, cups and jugs. Every one chalked.
+
+rule @chalk_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Who moved #chalk#? | Not a cask leaves without a date. Not one.
+
+rule @larder_bark
+when concept=bark here.time=dusk self.likes=full_larder
+does aside
+cooldown 10h
+say Supper, and #larder# still full. Good. | One more jar for the top shelf.
+
+rule @bread_bark
+when concept=bark self.dislikes=stale_bread
+does aside
+cooldown 12h
+say Who left the loaf out? #hardloaf.capitalize#, again. | Wrap the bread, the lot of you.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #earlybell.capitalize#. Again. | Bells in the dark. What for?
+
+rule @carts_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no fruit carts. #press.capitalize# is standing idle. | Late again. #fruit.capitalize#'ll come in bruised.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Fresh off #press# today, every cask dated. | #greet#, #address#. Come and taste before you buy; that's fair.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. I've a cask set aside you'll like.
+dlg @3 shop.greet [here.time=dawn here.shop!=bare] : Morning. #firstrun.capitalize# is still running. You're the first through the door.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : #greet#. Name what you want; you'll have the price plain.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #shop_bare# The carts are behind; come back when the fruit's in.
+dlg @1 shop.prices : Every price is chalked on the board and in #daybook#. I'll not change it for anyone. | #shop_dear# I pay the carters fair and I charge you fair.
+dlg @1 shop.bye : #farewell#. Keep it cool and it'll keep. | #shop_bye# Mind the date on the cask.
+dlg @1 resident.hub : #greet#. Have you eaten? Sit, and tell me what you're after. | #greet#, #address#. What brings you to me?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You were in my thoughts this morning. What's wanted?
+dlg @3 resident.hub [here.time=night] : Late, #address#. Come in; the kettle's not cold yet.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Say what you've come to say, and I'll listen.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. Fruit in, juice out, every cask chalked with the day. And I sell it over #counter#. | I press fruit and keep #daybook#. Careful work. I like careful work.
+dlg @2 resident.job : I work, and I write down what I do. That's most of it. | #job_busy#
+dlg @1 resident.business [business=thriving] : Busy. I've sold every cask I've chalked this week. | Thriving, and I'll knock on a cask for saying it.
+dlg @2 resident.business [business=failing] : Poorly. #fruit.capitalize#'s dear and folk are buying by the cup. | Badly, if I'm honest. I'm not giving up yet.
+dlg @3 resident.business [business!=thriving|failing] : Steady. #press.capitalize# turns and the casks go out. | #fine#. Nothing to grumble at, and nothing to boast of.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask me when the fruit carts come in; they bring the news with them. | Nothing new at #counter# today.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #counter#. I've written it down, near enough.
+dlg @3 resident.news [world.news] : #world.news_from.capitalize# sends word: #world.news#. A customer brought it in.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I write down what folk buy, not what they say.
+dlg @1 resident.bye : #farewell#. Eat something on the way. | #farewell#, #address#. Come back hungry.
+graft resident.hub
+choice Why do you chalk the day on everything? -> chalk
+node chalk
+say Because a thing with no date is a guess. Every cask I fill has the day chalked on its head, and the month beside it. A cask that's chalked can't lie to you.
+mood warm
+free
+choice Has a cask ever lied to you? -> chalk_lied
+choice Goodbye. -> bye
+node chalk_lied
+say Once, the first year. I forgot one, and we poured it a year late at a feast. Sour as a wet morning. I've chalked every one since.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Which cask is the best? [self.role=merchant] -> best
+node best
+say The oldest that's still sweet. Look at #chalk#: the date tells you. I'd not sell you one I wouldn't pour for myself.
+mood pleased
+choice Then I'll take your word. -> greet
+choice Show me the dates. -> best_dates
+node best_dates
+say There. Every one chalked, oldest at the front. Taste before you buy; that's only fair.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

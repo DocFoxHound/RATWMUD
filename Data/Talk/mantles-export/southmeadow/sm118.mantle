@@ -1,0 +1,289 @@
+# sm118, the carter who comes late (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm118
+revision 3
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for cty_tor_chalkfield
+written_by claude
+title the carter who comes late
+fits stage=adult|old
+prefers job=carter warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk is_always_a_little_late
+likes barley_soup dancing new_boots autumn_wind
+dislikes night_noise crowds
+fears a_wheel_off_on_the_north_road
+hopes one_of_the_family_in_a_great_house a_cart_that_runs_on_time
+topics travel +0.4 work +0.4 family +0.3 food +0.2 weather +0.2 gossip -0.2
+styles comfort=warm gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# drives grain up the north road behind two patient oxen and gets everywhere a little after the hour, sorry every time: warm, steady and plain, glad of a bowl of barley soup, a turn at a dance and a stiff new pair of boots.
+
+words
+oath! = By the near ox | Axle and oats
+saying! = Better late in than spilt on the road | Late's only on time the long way round
+cart = the cart | my old cart
+oxen = the oxen | my two oxen
+track = the grain track | the road out of town
+grain = the grain sacks | a load of grain
+soup = barley soup | a bowl of barley soup when the nights draw in
+boots = new boots | a pair of boots still stiff
+blow = a good autumn blow | leaves going sideways
+racket = a racket after dark | shouting under the window at midnight
+crowd = a crowd | elbows on every side
+wheel = the wheel | the left wheel, the one that squeaks
+behind = late again | a bit behind, as ever
+easy = Easy, easy | Steady, steady
+fiddle = the fiddle | a fiddle and a floor
+ford = the ford | the ford past the mill
+
+any
+opinion @1 road for 1 : #track.capitalize# feeds me. Most weeks it's the same old road, and I know every rut by name.
+opinion @2 road against 2 [world.bandits=near] : There's trouble on the road, they say. I'll still drive it. Only with company, #address#.
+opinion @1 dole for 1 : A town this size can spare a bowl for anybody hungry. Nobody should sleep #hungry# here.
+opinion @1 strangers for 1 : A stranger's a friend who's not had #soup# with you yet. I've given more lifts than I can count.
+opinion @1 houses against 1 : I've hauled their grain all my life and never once had a nod from them. Still, I'd not say no to their service.
+opinion @1 festivals for 1 : A feast is the one place nobody minds if I turn up late. #fiddle.capitalize#'s still going.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! Welcome, welcome. You're new to me. | #greet#, #address#. Good to meet you. Sorry if I'm in your way.
+line @2 greet [self.working=yes self.job=carter] : #greet#! Mind #oxen#; they're gentle but they're wide. | #greet#. I'd stop, but I'm #behind#.
+line @3 greet [here.time=dawn] : #greet#. Up early. I meant to be on #track# an hour ago. | #greet#. Cool one. #oxen.capitalize# like it.
+line @4 greet [here.time=dusk|night] : #greet#. Late, and me later than usual. | #greet#. Evening. I'm just in off the road.
+line @1 kin.open [pair.kin!=no] : There you are. Sorry I'm late. I'm #behind#, always. | Oh, it's you! Come here, come here.
+line @1 again.open : Twice today! #welcome_back#. | You again. #good.capitalize#. I was late the first time, too.
+line @1 greet.return : #greet#. | #greet#. Welcome, welcome.
+line @2 greet.return [pair.band=friends|family] : #greet#! Good to see you, truly. | #greet#. I'd hoped I'd catch you. I nearly didn't.
+line @3 greet.return [self.working=yes] : #greet#. Walk with me; I'm behind. | #greet#. #easy#, I'll talk and drive.
+line @1 farewell : #farewell#. | #farewell#. I'll see you, sooner or later. Later, likely.
+line @1 farewell.return : #farewell#. | #farewell#. Go safe, #address#.
+line @1 react.news : #oath#. That's something. | Well. I'll mull that over on #track#.
+line @1 react.news.new : #surprise#. Nobody told me. Mind, I'm late for news too. | That's new to me, #address#.
+line @1 react.news.known : #knew#. I had it on #track# this morning. | Heard it at the inn yesterday. #behind.capitalize#, as ever.
+line @1 react.news.doubt : #doubt#. Road talk changes every mile. | I'd wait on that. Things grow in the telling, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's #bad#. #pity#. | I'm sorry. That's hard news to carry, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I'm glad, truly. | Oh, that's #good#. That warms me.
+line @1 answer.how : Well, thank you. #behind.capitalize#, as you'd guess. | #fine#. #oxen.capitalize# are well, so I'm well.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Two loads today, and I'm late on the first. | Busy, but steady. #easy#.
+line @1 ask.how : And how are you keeping? | You're well, I hope, #address#?
+line @1 sympathise : #sympathy#. #easy#, sit down. | Oh, that's #bad#. I'm here, if you want to talk.
+line @1 reassure : #reassure#. It'll get there, like my cart does. | It'll come right. Late, maybe, like #cart#, but right.
+line @1 decline : #hedge#, I can't. I've a load to get up #track#, and I'm behind already. | I'm sorry, no. #account#, and I'm late for it.
+line @1 accept_decline : #no_matter#. Another day. | That's all right. I'd have been late anyway, #address#.
+line @1 thank : #thanks#. | Thank you, truly. That's kind.
+line @1 deflect_thanks : #deflect#. | It was nothing. I was passing with #cart#. Late, but passing.
+line @1 preclose : #preclose#. | I'd best go. I'm #behind#.
+line @1 accept_preclose : Go on, then. Safe home. | Of course. #farewell#.
+line @1 ack : #bc_it_is# | #bc_i_know#
+scene sorry_late
+when topic=smalltalk|day
+does apologise / accept_apology / assess
+a : Sorry, sorry. I meant to be here an hour ago. #wheel.capitalize# again. | I'm late. I know. I'm always late. I'm sorry, #address#. | #behind.capitalize#. The ox lay down in the lane and wouldn't get up.
+b : It's no matter. | You're here now. | Again?
+a : Kind of you. I'll be early next time. I won't, but I'll mean it. | I am. That's the main thing, isn't it. #saying#. | Again. #oxen.capitalize# and I agree on most things but that.
+
+scene why_late
+when topic=smalltalk|work
+does tell.self / ask.detail / answer.detail / assess
+a : Folk say I'll be late to my own burying. They're likely right. | I've never once been on time, and I've never once not got there. | There's always one more thing before I go. A strap, #wheel#, a word with somebody.
+b : Why's that? | That's something. | A word?
+a : I couldn't tell you. I leave on time. #track.capitalize# just takes longer with me on it. | It is. #saying#. | A word, or three. I like talking to folk. #oxen.capitalize# wait for me.
+b : #bc_ha# | #bc_true# | Kind of them.
+
+scene two_oxen
+when topic=animals|work self.job=carter
+does tell.self / react.self / assess
+a : #oxen.capitalize# are the best of me. Slow and patient and never cross. | The near ox lies down when it's had enough. I sit down with it. We wait. #easy#. | I talk to #oxen# the whole way up #track#. They don't answer. They listen, though.
+b : They sound a good pair. | Patient of you. | Better than some folk.
+a : They are. I'd not swap them for horses, not for anything. | No sense pulling an ox. You only pull your arm out. #easy#. | Much better. #oxen.capitalize# never tell me I'm late.
+
+scene grain_up_north
+when topic=work self.job=carter self.working=yes
+does tell.self / react.self / assess
+a : #grain.capitalize# for the city. I'm loaded and off up #track#, only a bit late. | Up before dawn to load #grain#. I'm still the last cart out. Every time. | Long road north today. #oxen.capitalize# know it better than I do.
+b : Safe road. | Every time? | Good of them.
+a : Thank you. I'll be back by dark. A bit after, as ever. | Every time. The others wait for me at the ford now. #bc_ha# | It is. I'd be lost without them, #address#.
+
+scene no_worse
+when topic=travel|land self.job=carter
+does give.opinion / react.self / assess
+a : Folk say #track# is getting worse. I drive it every week. It's what it always was. | #track.capitalize# has the same ruts it had when I was #child.a#. I know them like old friends. | I've driven the north road more times than I can count. It's a #good# road, mostly.
+b : You'd know. | Old friends? | Mostly?
+a : I would. I've worn half of it down myself. | Old friends. The deep one past the mill, the one by #ford#. I greet them as I pass. | Mostly. There's a bend I don't like after #rain#. #easy#, then.
+
+scene trouble_on_the_road
+when topic=bandits|travel world.bandits=near self.job=carter
+does tell.worry / reassure / assess
+a : There's trouble on #track#, they say. I'll go with the others this week. | I'll not drive alone till it's quiet. #oxen.capitalize# can't run, and nor can I. | Somebody saw shapes by #ford# at dusk. I'll be early for once. Early and in company.
+b : Go careful. | That's wise. | Early, you?
+a : I will. #easy#. Home before dark, for once. | Wise or frightened. Both, maybe. | Early. I mean it this time. #oath#.
+
+scene not_me_this_time
+when topic=caravan world.wagons=late
+does tell.news / react.news / assess
+a : The wagons are late, and for once it's not me or #cart#. | Late wagons, they say. Folk looked at me first. I was home. | Everybody's waiting on the wagons. I know that feeling from the other side.
+b : That makes a change. | That's unfair. | You would.
+a : It does! I'll enjoy it while it lasts, #address#. | It's fair enough. I'd have looked at me too. #bc_ha# | I do. Waiting's harder than driving. I feel for whoever's counting on them.
+
+scene soup_nights
+when topic=food here.season=autumn|winter self.likes=barley_soup
+does tell.self / invite / accept_invite / assess
+a : #soup.capitalize#. Home off the road, cold paws, and a bowl of that. Nothing better. | There's #soup# on at home. I'll be late for it, and it'll be waiting anyway. | When it's #cold# out, I think about #soup# from the ford onward.
+b : Sounds good. | That's a good home. | I would too.
+a : Come by, if you like. There's always a bowl more. | It is. I'm lucky, and I know it. | Come and share it. It's better with company, #address#.
+b : I might. | #bc_i_know# | I'd like that.
+
+scene stiff_boots
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail / assess
+a : #boots.capitalize#. Look at them. Not a scuff yet. | I bought #boots# at the market. They pinch. I love them. | There's nothing like the smell of #boots#. Leather and wax.
+b : They're smart. | Why love them? | You'd smell boots?
+a : Smart for a week. Then they'll look like the old ones. | Because they'll fit in a month, and then they're mine for years. | Every time. I'll sit at the cobbler's just to smell it, #address#.
+b : #bc_ha# | Fair enough. | #bc_ha#
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #blow.capitalize#! Leaves across the road and #oxen# with their ears back. I love it. | Feel the wind? Best weather for driving. Cool, and nothing sticks. | Autumn wind up the north road. Pushes #cart# along. Nearly on time today.
+b : It's a fierce one. | It's cool, all right. | Nearly?
+a : Fierce and good. Hold your hat, #address#. | Cool and clean. I'd have it all year. | Nearly. I stopped to watch the leaves. #bc_ha#
+
+scene night_racket
+when topic=home|day here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : Somebody's shouting under my window again. #racket.capitalize#. I'm up before dawn. | #racket.capitalize#. I can't abide it. I've an early load and no sleep. | They were singing in the lane till all hours. Lovely voices. Wrong hour.
+b : That's not right. | Ask them to stop. | At least they could sing.
+a : It's not. I said nothing. I'll say nothing again. I'm too soft. | I did, once. They sang louder. #easy#. | They could. I'd have liked it at dusk, #address#.
+
+scene too_many_folk
+when topic=day|smalltalk here.crowd=busy|crowd self.dislikes=crowds
+does tell.complaint / react.self / assess
+a : #crowd.capitalize#. I can't get the cart through. I'll be later than ever. | Too many folk at once. I go quiet in #crowd#. | All these paws. #oxen.capitalize# hate it. So do I.
+b : It'll thin out. | Quiet, you? | Market's always like this.
+a : It will. I'll wait it out, like always. Late, like always. | Me. I'm better one at a time, #address#. | It is. I'll come back after noon. #saying#.
+
+scene late_to_the_dance
+when topic=festival|pastimes self.likes=dancing
+does tell.self / react.self / assess
+a : I'll be late to the dance. I'm always late to the dance. I still dance the most. | Give me #fiddle# and I'll not stop till they put the lamps out. | I can't sing and I can't play. I can dance, #address#.
+b : Late and the most? | Good for you. | That's a gift.
+a : #fiddle.capitalize#'s still going when I get there. It always is. | I'll be late in the morning after, too. #bc_ha# | It's my only one. I use it well.
+
+scene my_spouse
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# waits supper for me every night. Never once cross about it. | #self.spouse# knows me. Sets the table for when I'll come, not when I said. | I'm lucky, #address#. I married somebody patient with a late wolf.
+b : That's love. | That's wise. | You are.
+a : It is. I'd be lost without it. | Wise. Wiser than me. #bc_i_know# | I am. I say so, most nights, over #soup#.
+
+scene great_house_hope
+when topic=dreams|family self.married=yes
+does tell.plan / react.self / assess
+a : If we're blessed with a sprout, my hope is a great House's service for that little one. | A place in a House. That's what I'd want for any of ours. Steady work, and a roof. | They never see us, the Houses. I'd like one of ours to be seen.
+b : That's a big hope. | It's steady, they say. | That'd be something.
+a : It is. Hopes are free. I'll keep it. | Steady, and warm in winter. More than a cart gives. | It would. I'd be on time for that day, #address#. #oath#.
+
+scene good_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is #good# company. Never minds when I'm late. | I'd trust #self.friend# with my oxen. And I don't trust anybody with my oxen. | #self.friend# and me go back. I'd do anything asked of me there. #easy#.
+b : That's a fine thing. | High praise. | That's a good friend.
+a : It is. I'm lucky in my friends, #address#. | It is. #oxen.capitalize# would agree. | I'd want to be as good a friend back, #address#.
+
+scene lean_bowls
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Lean times. A town this small oughtn't to have anybody #hungry#. Some are, now. | Fewer loads to haul, and dearer bread. I'm thinner, and #oxen# are too. | I'd give a lift and a bowl to anybody short. I'm short myself, mind.
+b : It's hard everywhere. | Look after them. | That's good of you.
+a : It is. I'll share what's in the pot. That's all I can do. | I will. They come first, then me. | It's nothing. #soup# goes further than you'd think.
+
+scene lift_for_a_stranger
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : I gave a lift to somebody new on #track# this week. Fed them too. That's how you make a friend. | Every stranger's a friend once you've broken bread together, #address#. | Somebody new walking #track#? I'll stop. I always stop. That's why I'm late.
+b : That's kind. | That's a good way to see it. | That explains a lot.
+a : It's nothing. I was going that way anyway, slowly. | It's my #gran#'s way. I've kept it. | It does. #bc_ha# I'll not change.
+
+scene mud_on_the_track
+when topic=weather here.weather=rain here.region=southmeadow
+does tell.self / react.self / assess
+a : #rain.capitalize#! The fields will be glad. #track.capitalize# won't be. | #rain.capitalize# at last. I'll be mired to the axle before noon, and glad of it. | Wet road. #oxen.capitalize# slip and I go slow. Slower than usual, if you can believe it.
+b : It's needed. | Glad? | Slower?
+a : It is. Mud's a small price. | Glad. Southmeadow wants rain more than I want dry #boots#. | Slower. I'll get there by dark. A bit after, #address#.
+
+scene not_my_tale
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Word on #track# is that #topic.subject# #topic.claim#. Don't hold me to it. | I'm told #topic.subject# #topic.claim#. I'd sooner not say more. | Road talk: #topic.subject# #topic.claim#. That's all I know, #address#.
+b : On the road? | That's fair. | That's all?
+a : On #track#. News rides the carts. Not always right. | I shouldn't pass it on. I've passed it on anyway. I'm sorry. | That's all. I was late for the rest. #bc_ha#
+
+story late_wedding [topic=family|memories self.married=yes self.age>=20]
+  : I was late to my own wedding. The near one of #oxen# lay down in the lane, ribbons and all.
+  : I sat in the road beside it in my good coat and waited. Everybody else waited in the chapel.
+  : When I got there, my #self.spouse_word# just laughed. We were wed an hour after the time.
+  ask : Would you have waited for me?
+  b : I'd have waited. I'd have teased you after, though.
+  b[pair.band=spouses] : I did wait. I'd do it again.
+
+story wheel_off [topic=travel|work self.job=carter self.age>=20]
+  : One autumn #wheel# came off on #track#, miles from anywhere, and the grain tipped half into the ditch.
+  : A traveller came by, never said a name, and helped me lift it back on. Took till dark.
+  : I never saw them again. I've stopped for every stranger since. That's half of why I'm late.
+  b : That's a good reason to be late. Did you get all the grain?
+  : Most of it. The birds had the rest. They'd earned it, watching.
+
+story first_drive [topic=memories self.age>=20]
+  : When I was #child.a#, my #grandad# put the reins in my paws on the road home from market.
+  : I drove so slow the whole town passed us. He never said a word. Just smiled.
+  ask : Did anybody ever let you drive like that, when you were small?
+  b : Once. I drove us into a hedge.
+  b[old] : I let mine drive. It's how they learn.
+  : That's where I learned it. Slow is still the road. #saying#.
+
+rule @ox_bark
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 6h
+say Walk on, walk on. #easy#. | Up you get. Up. We're late.
+
+rule @wheel_bark
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 8h
+say There's that squeak. #wheel.capitalize# again. | Grease, I need grease. And an hour I haven't got.
+
+rule @late_bark
+when concept=bark here.time=day
+does aside
+cooldown 10h
+say Coming, coming! Sorry! #behind.capitalize#! | #behind.capitalize#. #oath#.
+
+rule @racket_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Some of us drive #cart# at dawn. | Hush, out there. Please.
+
+dlg @1 resident.hub : #greet#. Welcome, welcome. Something you need? | #greet#, #address#. Sorry, was I in your way?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Good to see you again. I'm late, but I'm here.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. #grain.capitalize# up north, goods back down, and #oxen# doing the real work. | I drive #cart#. Up #track# and back. Always a little late.
+dlg @2 resident.job : #job_busy# Steadily, and a bit behind. | Whatever's needed, #address#. I get there in the end.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing on the road this week. | Nothing new. I'd have heard it on #track#.
+dlg @2 resident.news [world.wagons=raided] : Somebody's wagon was robbed out on #track#. Go in company, please. #oath#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd pass on. I hear a lot on #track# and keep most of it.
+dlg @1 resident.bye : #farewell#. Safe road. | #farewell#. I'll see you later. Likely later than I said.
+graft resident.hub
+choice Why are you always late? -> late
+node late
+say I couldn't tell you. I leave on time. Then there's a strap, or a wheel, or somebody on the road who needs a lift. #saying#.
+mood warm
+free
+choice Do you mind it? -> late_mind
+choice Goodbye. -> bye
+node late_mind
+say Not much. I always get there. And the ones waiting are mostly glad to see me when I do. #easy#.
+choice That's a good way to be. -> hub
+choice Goodbye. -> bye

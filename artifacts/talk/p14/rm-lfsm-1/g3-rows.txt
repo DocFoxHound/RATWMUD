@@ -1,0 +1,168 @@
+[info] RATW_VOICE router on
+[info] RATW_TALK 10728 rules and scenes for residents' talk
+[info] RATW_SCRATCH a scratch server (pid 337877): nothing it does is saved, and it runs beside any other server. Stop it when you're done.
+[info] RATW_MANTLE loaded 269 mantles (21870 rules and scenes, 32007 rows) worn by 269 residents in 440 ms
+[info] RATW_TALK voices: 1084 residents (0 with words of their own, 0 with lines, 269 with a mantle), 7 dialects, 0 figures
+[info] RATW_DATABASE_WORLD_LOADED database=ridgemere3 world=upper_accord build=81 release=0 cells=1241 residents=775 streamed=1 loaded=727
+[info] RATW_SCRATCH_ACCOUNTS the save's central (ticket) accounts are set aside on this scratch server; it starts with fresh local accounts (nothing is written back).
+[info] RATW_RESTORE characters=4 summaries=2 ledger=1
+[info] RATW authoritative world ready; 20Hz; save=none (scratch: read from ridgemere3 database); dialogue=Authored offline dialogue
+ok      lf139 (rm_finn_wickby, ridgemere): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf139.grown.scene.lean_week
+  never heard: lf139.grown.scene.debt_due
+ok      lf140 (rm_una_plankton, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf140.grown.scene.lean_court
+ok      lf141 (rm_brenna_slaggate, ridgemere): 16 listeners; 36 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf141.grown.scene.theft_news
+  never heard: lf141.grown.scene.hard_times_wood
+  never heard: lf141.grown.scene.good_times_wood
+  never heard: lf141.grown.scene.wagons_late_oak
+ok      lf142 (rm_lionel_dripworth, ridgemere): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf142.grown.scene.leaner_every_week
+ok      lf143 (rm_gwen_brineby, ridgemere): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf143.grown.scene.lean_weeks
+ok      lf144 (rm_greta_gullton, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf144.grown.scene.hard_weeks
+ok      lf145 (rm_gunnar_mudstack, ridgemere): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf145.grown.scene.lean_weeks
+ok      lf146 (rm_frida_wickwell, ridgemere): 16 listeners; 33 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf146.grown.scene.till_light
+  never heard: lf146.grown.scene.till_heavy_times
+  never heard: lf146.grown.scene.theft_word
+ok      lf147 (rm_ingrid_saltstack, ridgemere): 16 listeners; 32 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf147.grown.scene.small_jars
+  never heard: lf147.grown.scene.sold_out
+  never heard: lf147.grown.scene.carts_late
+  never heard: lf147.grown.scene.carts_in
+ok      lf148 (rm_brand_cindermore, ridgemere): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf148.grown.scene.lean_week
+ok      lf149 (rm_gerrit_gullham, ridgemere): 16 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf149.grown.scene.houses_quarrel
+  never heard: lf149.grown.scene.ship_in
+  never heard: lf149.grown.scene.lean_mending
+ok      lf150 (rm_vigdis_rainmore, ridgemere): 16 listeners; 32 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf150.grown.scene.silver_sold_to_me
+  never heard: lf150.grown.scene.brooch_weeks
+  never heard: lf150.grown.scene.owing
+  never heard: lf150.grown.scene.short_today
+ok      lf151 (rm_wenna_naildale, ridgemere): 16 listeners; 29 of 37 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf151.grown.scene.wagons_in
+  never heard: lf151.grown.scene.wagons_late
+  never heard: lf151.grown.scene.raided_road
+  never heard: lf151.grown.scene.storm_headland
+  never heard: lf151.grown.scene.lean_times
+  never heard: lf151.grown.scene.good_times
+  never heard: lf151.grown.scene.lock_early
+  never heard: lf151.story.the_letter
+ok      lf152 (rm_rupert_ropehand, ridgemere): 16 listeners; 31 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf152.grown.scene.thunder_roof
+  never heard: lf152.grown.scene.hard_week
+  never heard: lf152.grown.scene.good_week
+  never heard: lf152.grown.scene.wagons_due
+  never heard: lf152.grown.scene.passed_on
+  never heard: lf152.grown.scene.bad_word
+  never heard: lf152.grown.scene.the_letter
+ok      lf153 (rm_disa_sootley, ridgemere): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf153.grown.scene.the_debt
+  never heard: lf153.grown.scene.lean_door
+ok      lf154 (rmx_percival_thornham, ridgemere): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf154.grown.scene.a_raided_road
+ok      lf155 (cty_bramble_hazeldell, ridgemere): 16 listeners; 34 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf155.grown.scene.restday_quiet
+  never heard: lf155.grown.scene.theft_talk
+  never heard: lf155.grown.scene.wedding_talk
+  never heard: lf155.grown.scene.lean_half_pounds
+  never heard: lf155.grown.scene.full_orders
+ok      lf156 (cty_pell_plumgarth, ridgemere): 16 listeners; 23 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf156.grown.scene.leaner_every_week
+ok      lf157 (rm_corwin_bilgestack, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf157.grown.scene.leaner_down_here
+ok      lf158 (rm_edmund_kelpstack, ridgemere): 16 listeners; 30 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf158.grown.scene.the_parish_loaf
+  never heard: lf158.grown.scene.coin_about
+  never heard: lf158.grown.scene.the_hops_are_late
+  never heard: lf158.grown.scene.the_wagons_in
+  never heard: lf158.grown.scene.a_death_told
+  never heard: lf158.grown.scene.a_wedding_told
+ok      lf159 (rm_egil_grantham, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf159.grown.scene.lean_winter
+ok      lf160 (rm_gorm_rustmarsh, ridgemere): 16 listeners; 31 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf160.grown.scene.nobody_hungry
+  never heard: lf160.grown.scene.good_trade
+  never heard: lf160.grown.scene.wine_dear
+  never heard: lf160.grown.scene.carts_late
+  never heard: lf160.grown.scene.the_news_round
+ok      lf161 (rm_mab_carlisle, ridgemere): 16 listeners; 30 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf161.grown.scene.fish_dear
+  never heard: lf161.grown.scene.storm_full_house
+  never heard: lf161.grown.scene.sailors_at_the_door
+  never heard: lf161.grown.scene.times_hard
+  never heard: lf161.grown.scene.times_good
+  never heard: lf161.grown.scene.gossip_passed
+  never heard: lf161.grown.scene.news_of_the_town
+  never heard: lf161.grown.scene.theft_heard
+  never heard: lf161.grown.scene.wagons_in
+ok      lf162 (rm_maren_grayrock_, ridgemere): 16 listeners; 30 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf162.grown.scene.thunder_from_under_a_roof
+  never heard: lf162.grown.scene.gossip_heard
+  never heard: lf162.grown.scene.town_talk
+  never heard: lf162.grown.scene.lean_times
+  never heard: lf162.grown.scene.good_times
+  never heard: lf162.grown.scene.ships_in
+ok      lf163 (rmx_philippa_pitchstack, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf163.grown.scene.lean_months
+ok      sm123 (rm_tobias_saltton, ridgemere): 16 listeners; 30 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sm123.grown.scene.flour_late
+  never heard: sm123.grown.scene.flour_in
+  never heard: sm123.grown.scene.road_robbed
+  never heard: sm123.grown.scene.lean_slate
+  never heard: sm123.grown.scene.good_weeks
+  never heard: sm123.grown.scene.festival_night
+  never heard: sm123.grown.scene.gossip_passed
+  never heard: sm123.grown.scene.theft_heard
+ok      sm124 (rm_theodora_ropemarsh, ridgemere): 16 listeners; 34 of 42 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: sm124.grown.scene.hard_times
+  never heard: sm124.grown.scene.good_times
+  never heard: sm124.grown.scene.wagons_late
+  never heard: sm124.grown.scene.wagons_in
+  never heard: sm124.grown.scene.raided_road
+  never heard: sm124.grown.scene.gossip_theft
+  never heard: sm124.grown.scene.market_day
+  never heard: sm124.grown.scene.event_talk
+ok      sm125 (rm_thyra_wetmarsh, ridgemere): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm125.grown.scene.lean_loads
+  never heard: sm125.grown.scene.good_loads
+ok      sm126 (rm_thyra_ashley, ridgemere): 16 listeners; 22 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm126.grown.scene.chapel_restday
+  never heard: sm126.grown.scene.gossip_pass
+ok      sm127 (rm_edmund_saltham, ridgemere): 16 listeners; 19 of 20 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm127.grown.scene.gossip_careful
+ok      sm128 (rmx_ebba_heath, ridgemere): 16 listeners; 17 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm128.grown.scene.lean_week
+  never heard: sm128.grown.scene.good_week
+  never heard: sm128.grown.scene.friend_square
+  never heard: sm128.grown.scene.gossip_plain
+ok      sm129 (rm_gorm_plankworth, ridgemere): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm129.grown.scene.hard_weeks
+  never heard: sm129.grown.scene.good_tides
+ok      sm130 (rm_corwin_kelpby, ridgemere): 16 listeners; 32 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm130.grown.scene.restday_service
+  never heard: sm130.grown.scene.thunder_roof
+  never heard: sm130.grown.scene.lean_weeks
+  never heard: sm130.grown.scene.good_weeks
+  never heard: sm130.grown.scene.gossip_grief
+  never heard: sm130.grown.scene.event_talk
+ok      sm131 (rm_liv_kelpmarsh, ridgemere): 16 listeners; 33 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm131.grown.scene.carts_late
+  never heard: sm131.grown.scene.carts_robbed
+  never heard: sm131.grown.scene.lean_times
+  never heard: sm131.grown.scene.good_times
+  never heard: sm131.grown.scene.gossip_rough
+  never heard: sm131.grown.scene.event_talk
+ok      sm132 (rm_osric_mossgrave, ridgemere): 16 listeners; 35 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm132.grown.scene.good_times
+  never heard: sm132.grown.scene.hard_times
+  never heard: sm132.grown.scene.road_robbed
+  never heard: sm132.grown.scene.gossip_glad
+  never heard: sm132.grown.scene.event_talk
+35 mantles worn; 902 of 1025 scenes heard by some listener; 0 holes in the core moves; W1 99.1379% (2300 of 2320 window lines at the hub, goodbye, job and the role's greeting are the wearers' own)

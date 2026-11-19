@@ -1,0 +1,300 @@
+# mb126, the window-book keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb126
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for rmx_bertil_slagwick
+written_by claude
+title the window-book keeper
+fits stage=adult|old
+prefers talk=chatty temper=calm
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk keeps_a_window_book_of_the_street
+likes fried_fish dice tidy_house autumn_wind
+dislikes wet_floors early_bells
+fears a_day_with_nothing_worth_writing_down the_wharf_taking_another_one
+hopes a_full_year_of_the_street_in_one_book a_quiet_old_age_by_the_window
+topics smalltalk +0.4 day +0.3 weather +0.3 newcomer +0.3 food +0.2 memories +0.2 gossip +0.1
+styles comfort=listening gossip=watchful refuse=polite tease=none
+marks oath saying noted
+persona #self.first# sits by the window with a pencil and a little book and writes down the street as it goes by: unhurried, curious and talkative about what is seen, careful about what is said, and fond of everything in its proper place.
+
+words
+oath! = Page and pane | By the window seat | Pencil and patience
+saying! = Watch the small things; the big ones announce themselves | Nothing's too small to write down | A street tells you everything if you let it finish
+noted! = Noted | Noted, and written down
+book = my window book | the little street book
+pencil = my pencil | the stub of pencil
+window = the front window | my window seat
+street = the street | our street
+passing = the street going by | everyone going about their business
+fish = fried fish | fish crisped in butter
+dice = dice | a cup of dice
+tidy = a tidy room | everything in its proper place
+wetfloor = a wet floor | wet prints across a clean floor
+earlybells = the early bells | bells before breakfast
+leafwind = a wind with leaves in it | a proper autumn blow
+lamplighter = the lamplighter | the wolf with the long pole
+carts = the morning carts | the carts from the gate
+
+any
+opinion @1 houses against 2 [self.age>=40 here.region=ridgemere] : I've no quarrel with most of the Houses. Grayrock I'll not forgive. The wharf took a brother of mine, and their ledger never noticed.
+opinion @2 houses mixed 0 : The Houses keep the city's works turning, and the works feed half of #street#. I'd only ask for more care on the wharf.
+opinion @1 newcomers for 1 : New faces are the best part of #book#, #address#. A street that never changes isn't worth the pencil.
+opinion @1 strangers for 1 : A stranger walks differently from a neighbour. I can spot one from #window# at fifty paces, and I'm generally glad to.
+opinion @1 festivals for 1 : Feast days fill #street# from end to end. I need two pages of #book# for one.
+opinion @1 times for 1 : We eat, we're dry, we're warm. I'd be ashamed to grumble, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. You're new to #street#. I'd have noticed you before. | #greet#. Not a face I know, which is a rare thing on this street.
+line @2 greet [here.time=dawn] : #greet#. You're out before #carts#, which is earlier than most. | #greet#. Early. I've only the baker's boy written down so far.
+line @3 greet [here.time=dusk|night] : #greet#. Late. #lamplighter.capitalize#'s only just been by. | #greet#. The street's gone quiet; you're the first in an hour.
+line @4 greet [self.working=yes] : #greet#. I'm minding the door at #self.workplace#, and watching, as usual. | #greet#. One moment; let me finish this line in #book#.
+line @1 kin.open [pair.kin!=no] : There you are. I saw you from #window# and put the kettle on. | Good. Sit here, by #window#. I've saved you the warm side.
+line @1 again.open : #welcome_back#. You're in #book# twice today now. | Twice today. #noted#, I'm afraid.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I saw you coming from two doors off. | #greet#. Sit down; you're just in time for the carts.
+line @3 greet.return [here.time=dusk|night] : #greet#. Late, but #window#'s still lit. | #greet#. I was about to close #book# for the night.
+line @1 farewell : #farewell#. I'll see you go, from #window#. | #farewell#, #address#. Mind the step; it's polished.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamplit side. | #farewell#. Straight home; I'll be watching till the corner.
+line @1 farewell.return : #farewell#. | #farewell#. I'll note the time.
+line @1 react.news : #noted#. That changes a page or two. | Well. I'll be watching #street# for that, then.
+line @1 react.news.new : #oath#. That's new to me, and very little is. | #surprise#. Nobody went past the window with that.
+line @1 react.news.known : I had that from #window# this morning, #address#. Folk talk as they walk. | #knew#. It went by the house at about ten.
+line @1 react.news.doubt : #doubt#. I'll wait till I see it go past myself. | I'd want a second witness for that, #address#. One's only a rumour.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a hard thing. #pity#. | I'm sorry. I'll put it in #book# properly, with the date, so it's not forgotten.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's good news. It deserves a whole line in #book#. | #gladnews.capitalize#. I'll underline it.
+line @1 answer.how : Steady, #address#. A full page today and nothing wet on the floor. | #fine.capitalize#. I've seen a great deal and none of it went wrong.
+line @1 ask.how : And you? I noticed you coming up #street# slower than usual. | How's your day been, #address#? Anything worth writing down?
+line @1 sympathise : That's hard, #address#. Sit by #window# a while; you needn't talk. | #sympathy#. I'll make tea, and we'll watch the street till it's easier.
+line @1 reassure : #reassure#. I've watched this street a long time; bad weeks pass along it like carts. | It'll pass, #address#. Most things go by in the end, if you watch long enough.
+line @1 decline : #hedge#; I've promised to mind the door, and I'd hate to miss the afternoon carts. | Another day, if I may. #window.capitalize# and I have an understanding, and my knees signed it.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | Of course. I'll be at #window#; I generally am.
+line @1 thank : #thanks#. That's noted, kindly. | #thanks#, #address#. I'll write that down, too.
+line @1 deflect_thanks : #deflect.capitalize#. It was nothing at all. | No need. I was sitting here anyway.
+line @1 preclose : Well. #preclose#. | I'll let you go, #address#. #carts.capitalize# are due, and I like to see them in.
+line @1 accept_preclose : Of course. Off you go; I'll watch you to the corner. | Go on, then. I've a page of #book# to finish.
+line @1 ack : #noted#. | #bc_it_is#
+line @1 give.advice : #advise.capitalize#: watch a thing a while before you decide about it. | Write things down. You'd be surprised what you forget otherwise. #saying#.
+line @1 warn [world.bandits=near] : If I were you, I'd not go past the gates just now, #address#. #warn#. | There's been talk of trouble on the road. I'd go with company, if I went.
+scene the_window_book
+when topic=smalltalk|day
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #book# by #window#. Who goes by, what they carry, what the weather does to them. | Forty pages this season, all of them #street#. Nobody else would read it. | I've written down every one of #carts# since the thaw. It started as a habit and became a hobby.
+b : Who goes by? | Nobody at all? | What's the difference?
+a : Not by name. The grey coat at nine, the baker's boy, the one who always stops to look at the sky. | Nobody. I read #book# back to myself of a rest day, like a letter from the week. | A habit you do without thinking. A hobby you'd miss. I'd miss it terribly.
+b : #bc_fair_enough# | #bc_lovely# | #bc_fair#
+
+scene the_morning_carts
+when topic=day|work here.time=dawn|day here.region=ridgemere
+does tell.self / react.self / tell.self / assess
+a : #carts.capitalize# were late today. Three minutes, by the chapel bell. I noted it. | Seven of #carts# by nine this morning. Six is usual. The seventh had cabbages. | The same carter's been past at the same hour every day this month. I've grown fond of him.
+b : Three minutes? | Cabbages? | Fond of him?
+a : Three. It doesn't sound much, but on #street# three minutes is a story. | Cabbages, and a goat tied on behind. The goat looked unhappy about it. | Fond, in the way you're fond of a clock. I'd notice if he stopped coming, #address#.
+b? : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene leaves_in_the_wind
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess / ack
+a : #leafwind.capitalize# today, and the whole street chasing its hats. I wait all year for a morning like it. | I love #leafwind#. Everyone walks faster, and their coats tell you which way it's going. | There's #leafwind# up. I've a page just for the hats I've seen go down the hill.
+b : You like the wind? | Their coats? | A whole page for hats?
+a : I do. It moves everything about, and things that move are worth watching. | Coats out behind them, flapping, like flags. You can read the weather off a street, #address#. | Eleven hats so far. One came back. I gave it a line of its own in #book#.
+b? : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene prints_on_the_floor
+when topic=weather|home here.outdoors=rain self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Rain all morning, and every caller leaves #wetfloor# behind them. | There's one mat at the door, and a second for those who miss the first. #tidy.capitalize# needs defending. | There's nothing I mind like #wetfloor#. I'll mop it twice and still see where it was.
+b : It's only water. | And a third? | Twice?
+a : Only water, and then mud, and then a slip, and then a doctor. I've seen it from #window#. | A third would look fussy. I've drawn the line at two, for now. | Twice, and I'd do a third if nobody was watching me, #address#.
+
+scene a_blank_page_of_murk
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Fog. I can't see past the gutter, so today's page of #book# is all footsteps. | Nothing in #book# this morning but "fog" and a question mark. | In weather like this I put what I hear in #book#. A cough, a cart, somebody humming.
+b : All footsteps? | A blank page, then. | Humming what?
+a : Footsteps, and guesses. Heavy one, quick one, one with a limp. I'll check them when it lifts. | Blank, apart from the guess about the cart. I'm fairly sure it was cabbages again. | Something slow. It went in #book# as "slow tune, going downhill", and that was all I had.
+
+scene bells_before_breakfast
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess / ack
+a : #earlybells.capitalize# again. I was awake anyway, but I like to choose it. | The chapel rang before light this morning. It's in #book#, underlined. | Whoever rings the bells at dawn has never had a good night's sleep in their life.
+b : They're calling folk to prayer. | Underlined? | Probably not.
+a : I know, and I'll go, later, when it's light. The Bright One keeps proper hours, I'd think. | Twice. It's the only complaint in #book#, and I want it to stand out. | Then I pity them, and I'll forgive them, after breakfast.
+b : #bc_fair# | #bc_ha# | #bc_ha#
+
+scene fish_in_butter
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail / assess
+a : There's #fish# for supper tonight. I've been thinking about it since noon. | Nothing in the world beats #fish#. I'll say that to anyone who'll stand still. | I can tell when the corner house is frying fish. #street.capitalize# turns its head.
+b : What kind? | Nothing at all? | Does it?
+a : Whatever came in fresh. I'm not particular, as long as there's butter and plenty of it. | Nothing. Not even a feast. A feast is just #fish# with more people in the way. | Every head, I've counted. Even the carters slow down.
+b : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene a_cup_of_dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : On Restday I play #dice# with whoever'll sit at the window table. | I keep a tally of every throw. I know which numbers this cup likes better than it does. | I lose at dice more than I win, and I've got it all written down to prove it.
+b : For money? | Which numbers? | Why write it down?
+a : For coppers, small ones. The talk's the real game; the dice are only the excuse. | Fours, mostly. It's a cup with a fondness for fours. I've no explanation for it. | So I can see I'm not unlucky, only patient. The page says patient, #address#.
+b : #bc_fair# | #bc_ha# | #bc_ha#
+
+scene in_its_proper_place
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : #tidy.capitalize# is a calm mind. I straighten the chairs before I sit in them. | #tidy.capitalize#, and I know where each place is. | Folk say I'd tidy the street if they'd let me. I would, too.
+b : Sounds restful. | Even the book? | Would you?
+a : It is. You can hear yourself think in a tidy room, #address#. | Especially #book#. Top of the sill, left side, with #pencil# on it. | I'd start with the gutters. Then the carts. Then I'd sit down, and enjoy it.
+
+scene the_one_i_married
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# keeps proper books all day. I keep improper ones, about #street#. | I'd trust #self.spouse# with #book#, and there's nobody else I'd say that of. | We've been married long enough that I can tell #self.spouse#'s step from the corner.
+b : Improper ones? | That's trust. | From the corner?
+a : Nothing in mine adds up, and that suits me. One of us should have figures that balance. | It is. Everything I've noticed for years is in there. That's a whole life. | From two corners, on a quiet day. I've timed it, #address#.
+
+scene minding_the_shop_door
+when topic=work self.working=yes self.workplace
+does tell.self / react.self / assess
+a : I help out at #self.workplace#. I fold, I fetch, and I watch the door, which is the part I'm good at. | Minding the door at #self.workplace# suits me. Everyone who comes in, I've already seen coming. | They'd pay me to watch #street#, if they knew how much I do it for nothing.
+b : That's useful. | Already seen? | Would they?
+a : More useful than the folding. My folding's not admired, #address#. | From #window#, before they've even crossed. I have the door open for them. | They'd pay me in tea. I'd accept, to be polite.
+
+scene the_brother_on_the_wharf
+when topic=memories|family self.age>=40 here.region=ridgemere
+does tell.memory / sympathise / assess
+tone grave / tender / even
+a : I had a brother who worked the wharf. A load came down that shouldn't have. There's no more to it than that. | I don't go down to the wharf. I lost a brother there, a long while back. | Every time a crane swings, I think of a brother of mine. I've never stopped.
+b : I'm sorry. | #sympathy#. | That's a hard thing to carry.
+a : Thank you. It's an old page now. I don't turn back to it often. | Thank you. I watch #street# instead. The street's never dropped anything on anyone. | It is. But it's mine to carry, #address#, and I'll carry it.
+
+scene where_i_grew_up
+when topic=memories|home self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail
+a : I grew up in #self.from_town#, where the houses stand on legs and the streets are made of planks. | My grandmother sat at a window over the water and knew every boat by its paddle. I take after her. | Back in #self.from_town# I learnt to watch the water. Up here I've only got #street#, but it moves too.
+b : Houses on legs? | Every boat? | It does, at that.
+a : On stilts, high as a wolf. In the floods we'd watch the water come up the legs and count the rungs. | Every one, by the splash. I've only #carts# up here, but I'm getting there. | It does. A street's a slow river, #address#. You just have to sit by it long enough.
+
+scene how_i_talk_now
+when topic=accent self.away=yes self.from=fenshore here.region=ridgemere
+does tell.self / react.self / assess
+a : I lost the way we talk at home years ago. The city sanded it off me. | Folk in the Office think I'm from up the road. I don't correct them; it saves a long story. | Now and then a word from home comes out when I'm tired, and I have to explain it.
+b : Do you miss it? | Saves a story. | Which words?
+a : Some days. It sounds like water to me now, a long way off. | It does. I'm a great one for stories, but not that one before breakfast. | Words for weather, mostly. They had a word for every kind of wet, #address#.
+
+scene a_new_face_on_the_street
+when topic=newcomer|player
+does tell.news / ask.detail / answer.detail / assess
+a : There's a new face on #street# this week. Walks like they're counting the doors. | Somebody new went past #window# twice yesterday, slowly. Looking for something, I'd say. | A stranger stopped under #window# and read the sign three times. #noted#.
+b : Counting doors? | Looking for what? | Three times?
+a : Counting, or looking for a number. I'll know which before the week's out, from #window#. | I couldn't say. They found it, though; the second time they were smiling. | Three. It's not a long sign. Perhaps it's a lovely one, #address#.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene what_i_see_i_keep
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I see a great deal from #window#. I write it down. I don't say it. | Folk forget there's someone behind the glass. They do all sorts. It's all in #book#, and it stays there. | People ask me who's calling on whom. I tell them the weather instead.
+b : Not even a hint? | All sorts? | The weather?
+a : Not one. A book's a promise, #address#. It doesn't gossip, and neither do I. | All sorts, and none of it my business, only my record. #saying#. | The weather's always true, and it never gets anyone into trouble.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene seen_from_the_window
+when topic=gossip|crime topic.claim_kind=theft|wanted
+does tell.gossip / react.news / give.advice
+a : They say #topic.subject# #topic.claim#. I've been keeping an eye out from #window#. | Word on #street# is that #topic.subject# #topic.claim#. I've written down every stranger since. | #topic.subject.capitalize# #topic.claim#, so I'm told. I'll not believe it till I've seen something myself.
+b : Seen anything? | Every one? | Fair.
+a : Nothing out of the way. But I'm watching, and I'd tell the Watch if I did. Lock up, #address#. | Every one. Most were only lost. Still, keep your door shut tonight. | Till then, mind your purse. #warn#.
+
+scene a_thin_month
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Fewer carts this month. Five by nine, where it was seven. #book.capitalize# doesn't lie about it. | Hard times show at #window#. Folk walk past the bakery and don't go in. | I've noticed the coats getting older on #street#. Nobody's buying new this winter.
+b : That's a sad thing to count. | Poor souls. | You notice everything.
+a : It is. But somebody ought to notice, and write it down, so it's remembered. | Poor souls. I've started buying an extra loaf and leaving it by the step. #noted#. | It's all I do, #address#. Better that than not noticing.
+
+scene the_bright_one_watches_too
+when topic=faith
+does give.opinion / react.self / assess
+a : I go to chapel when the bells allow it. Not the early ones. | I've always thought the Bright One must sit at a window too, watching us all go by. | I'm an ordinary sort of believer. I say thanks at supper, and do my best not to stare at #street#.
+b : Fair enough. | A window? | Try not to?
+a : The Bright One keeps proper hours, I'm sure of it. It's the ringers who don't. | A big one, with a very good view, #address#. I'd ask for the seat next to it. | Not always successfully. #saying#.
+
+scene the_book_runs_out
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt I'd run out of pages, and #street# went past without being written down. | Last night I dreamt #street# walked past my window backwards, all day. | I dream of a year in #book#, every day of it, nothing missed. It's my one ambition.
+b : What did you do? | Backwards? | Only one?
+a : Wrote on my paw. Then the other paw. I woke up looking for #pencil#. | Every one of them. The carters had to steer by looking over their shoulders. | Only one. I'm a content sort of wolf. One full book and a fried fish, #address#.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+story the_wolf_at_ten [topic=memories|pastimes]
+  : For a whole year a wolf went past #window# at ten every morning, with a basket and a blue scarf.
+  : Then one day, nothing. Nor the next. I worried about it for a week; I'd half written a sad ending.
+  : Then the scarf came by again, with a pup in the basket. I wrote a whole page that day.
+  ask : Do you ever wonder about the folk you see every day and never meet?
+  b : All the time. I've made up whole lives for some of them.
+  b[old] : I used to. Now I just nod, and they nod back.
+
+story my_grandmother_s_window [topic=memories|family self.age>=40 self.from=fenshore]
+  : My grandmother in #self.from_town# kept a slate by her window over the water, and chalked every boat that passed.
+  : When she died, they found a box of old slates under her bed. A lifetime of boats.
+  : Nobody else wanted them, so I took one. It's on my sill now, next to #book#.
+  b : That's a lovely thing to keep.
+  b[old] : My own grandmother kept nothing but grudges.
+  : It's where I got the habit. Some wolves get a nose or an ear from their elders. I got the window.
+
+story the_hat_in_the_harbour [topic=weather|season self.likes=autumn_wind]
+  : There was a gale one autumn that took my hat clean off my head and halfway down the hill.
+  : I chased it past six houses and a cart, and a pup caught it on the seventh step.
+  : I gave the pup a copper and wrote the date in #book#. I still have the hat. The pup must be grown by now.
+  ask : Would you have chased it that far?
+  b : Not past the cart. I'd have let it go.
+  b[stage=young] : I'd have caught it sooner.
+
+rule @book_bark
+when concept=bark here.time=day
+does aside
+cooldown 6h
+say Grey coat, nine o'clock. #noted#. | Seventh cart. Cabbages again, I'd say.
+
+rule @bells_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 10h
+say Bells. Before breakfast. Again. | #earlybells.capitalize#. #oath#.
+
+rule @floor_bark
+when concept=bark here.outdoors=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say The mat, please. The mat is there for a reason. | #wetfloor.capitalize#. I'll fetch the cloth.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind here.outdoors=clear|overcast|storm
+does aside
+cooldown 10h
+say There goes another hat. That's twelve. | #leafwind.capitalize#. Lovely. Everybody's walking fast.
+
+dlg @1 resident.hub : #greet#. Sit by #window#, if you like. What brings you? | #greet#, #address#. I saw you coming. Say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're in #book# from last time. What brings you back? | #topic.player#. Good. Sit down; I've a page about this street you'd enjoy.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I've seen you before, I think. Say what you've come for, plainly.
+dlg @1 resident.job [self.working=yes] : #self.trade_words.capitalize#. I fold, I fetch, and I mind the door, which is to say I watch the street. | I help where I'm wanted, and I watch #street# in between.
+dlg @2 resident.job : I sit by #window# and write down the street. Somebody ought to, and I've the time. | I watch #street#. It's the one thing I've always been good at.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I heard it go past #window# this morning.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Seven carts, two cats and a hat. That's today's news. | Nothing in #book# but the usual. A quiet street's a good street.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I see plenty from #window#. I keep it in #book#, and #book# keeps it to itself.
+dlg @1 resident.bye : #farewell#. I'll watch you to the corner. | #farewell#, #address#. Mind the step; it's polished.
+graft resident.hub
+choice What are you writing in that little book? -> book
+node book
+say The street. Who goes by, at what hour, carrying what. The weather, the carts, the hats the wind takes. Never names, mind. Just what I see.
+mood pleased
+free
+choice Why keep it? -> book_why
+choice Goodbye. -> bye
+node book_why
+say Because a street's like a slow river, and if you don't write it down it's gone. My grandmother did the same with boats. I'm only carrying on.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye

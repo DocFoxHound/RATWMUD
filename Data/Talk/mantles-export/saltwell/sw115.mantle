@@ -1,0 +1,302 @@
+# sw115, the Restday gate-gazer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw115
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for rm_dunstan_slagley
+written_by claude
+title the Restday gate-gazer
+fits stage=adult|old
+prefers job=crafter temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk walks_up_to_look_through_the_heights_gates_every_restday
+likes blackberries swimming market_bustle thunder
+dislikes cold_tea wet_floors
+fears a_quiet_yard_and_fewer_hands a_roof_that_lets_the_storm_in
+hopes a_window_over_the_gardens_on_the_heights to_die_somewhere_better_than_the_sump
+topics dreams +0.4 work +0.3 pastimes +0.3 weather +0.2 family +0.2 gossip -0.4
+styles comfort=gentle gossip=wary refuse=apologetic tease=none
+marks oath saying
+persona #self.first# mixes plaster at a works yard and lives low in the city: patient and anxious, reserved and courteous in the slow Saltwell way, a worrier who checks everything twice, walking up the hill every Restday to look through the gates of the Heights, meaning to die up there, fond of blackberries, a swim and thunder heard from under a sound roof.
+
+words
+oath! = By the white gate | Gate and garden
+saying! = A step a year is still a climb | Lime bites the paw in a hurry
+heights = the Heights | the gardens up top
+gate = the white gate | the gate at the top of the hill
+lime = the lime | quicklime
+sacks = the sacks | the plaster sacks
+yard = the yard | the plaster yard
+berries = blackberries | a pawful of blackberries
+market = the market | the market in full voice
+thunder = thunder | thunder rolling over a sound roof
+teacold = cold tea | a mug gone cold
+roof = the roof | our old roof
+burns = lime burns | old lime burns
+city = this city | Ridgemere
+sump = the Sump | the bottom of the hill
+shoulders = my shoulders | these old shoulders
+stairs = the stairs | the hill stairs
+
+any
+opinion @1 houses against 2 : Every wall I've plastered for a House has somebody grand behind it, and not one has ever said good day. I'd like a good day, just once.
+opinion @1 merchants against 2 : Bread costs a morning's mixing. I'd mind it less if the bakers looked hungry, and they don't, #very#.
+opinion @1 dole for 2 [self.on_dole=yes] : #dole.capitalize# kept us fed one hungry week. As long as I've breath, I'll bless it.
+opinion @2 dole for 1 : I've stood in the alms line, and felt no shame in it. Hunger's the shame, not the line.
+opinion @1 times against 2 : The coin buys less each week. I've counted. #heights.capitalize# haven't.
+opinion @1 watch against 1 : #watch.capitalize# comes down our stairs to take somebody. Not one time have I seen it come down to help carry.
+opinion @1 sump for 1 : #sump.capitalize# keeps its own warm. I'd leave it for #heights# tomorrow, mind, but I'd miss the neighbours.
+opinion @1 church for 1 : The chapel door stayed open the winter our shelf was empty. A copper goes in the box every Restday since.
+opinion @1 newcomers against 1 : New hands come to #yard# willing to mix for less. I don't blame them. I worry, that's all.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Mind the dust on my coat. | #greet#. Stand upwind of me; it's #lime#, not dirt.
+line @2 greet [self.working=yes] : #greet#. Careful; #lime#'s fresh. | #greet#. Mind your paws near #sacks#.
+line @3 greet [here.time=dawn] : #greet#. Up before the yard bell; I always am. | #greet#. A cool morning, good for mixing.
+line @4 greet [here.time=dusk|night] : #greet#. Late. I hope nothing's wrong. | #greet#. Getting dark; mind the stairs.
+line @1 kin.open [pair.kin!=no] : There you are. I was starting to worry, #address#. | You. Good. Come and sit, #address#.
+line @1 again.open : Back again. I hope that means #good# news. | Twice in a day, #address#. Nothing amiss, I hope.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'm glad it's you. | #greet#. Sit, sit.
+line @3 greet.return [self.working=yes] : #greet#. Mind #lime#. | #greet#. I can talk while I stir.
+line @1 farewell : #farewell#. | #farewell#. Mind how you go.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps going home. | #farewell#. Stars keep you, if there are any tonight.
+line @1 farewell.return : #farewell#. | #farewell#, and mind the stairs.
+line @1 react.news : Oh. Every bit of it, please, or I'll worry at the gaps. | #howso#.
+line @1 react.news.new : #surprise#. I'd not heard a word. | That's new to me. I'll be turning it over #later#.
+line @1 react.news.known : #knew#. I've worried about it since. | I'd heard. It came round #yard#.
+line @1 react.news.doubt : #doubt#. I hope it isn't true. | Maybe. I'll wait and see before I worry, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's a hard thing, #very#. Somebody should look in, and soon.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Oh, that's good to hear. | Good. Something going right in #city#, for once.
+line @1 answer.how : #fine#. #shoulders.capitalize# are sore, but they always are. | Getting on. I worry, but I'm getting on.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. #sacks.capitalize# to fill and #lime# won't wait. | Mixing since dawn. #shoulders.capitalize# know it.
+line @1 ask.how : And you? Keeping well, #address#? | You look #tired#, #address#. Are you sleeping?
+line @1 sympathise : #sympathy#. I'm sorry, truly. | That's heavy. Sit; I'll stay with you.
+line @1 reassure : #reassure#. It'll come right, #someday#. | Don't fret. I do the fretting for two.
+line @1 decline : #hedge#, I can't. #yard.capitalize# needs me till dusk, and I daren't be late. | I'd like to, I would. Only I've promised to be home, and I keep my promises.
+line @1 accept_decline : #no_matter.capitalize#. I understand. | Another day, then. #planless.capitalize#.
+line @1 thank : #thanks#. | Kindly done. I'll not forget it, #very#.
+line @1 deflect_thanks : #deflect.capitalize#. | It was nothing. You'd do the same, I hope.
+line @1 preclose [self.working=yes] : #lime.capitalize# won't wait for me, I'm afraid. | I should go; #yard# counts every minute.
+line @2 preclose : #preclose#. | I'd better be on my way before #stairs# go dark.
+line @1 accept_preclose : Of course. Go carefully. | Go, then. Peace on your road.
+line @1 warn [world.bandits=near] : #bandits.capitalize# are out. Keep inside the walls; I'd worry myself sick otherwise. | #warn#. The roads aren't safe.
+line @1 ack : #bc_i_hope_so# | Mm.
+line @1 give.advice : Wear gloves with #lime#. Always. I've the burns to prove it. | #advise.capitalize#: never stand downwind of a quicklime pit.
+scene the_white_gate
+when topic=pastimes|dreams|land here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Every Restday I walk up to the top of the hill and look through #gate#. Just look. | There's a garden behind #gate# with a fig tree in it. I check on it every Restday. | One day I'll live up there. I say it to myself each Restday, at #gate#.
+b : Just look? | A fig tree? | One day?
+a : Just look. Nobody minds, so long as I don't touch the bars. | A fig, like the trees by the well at home. It's grown a paw's breadth since spring. | #someday.capitalize#. #saying#.
+b : #bc_lovely# | #bc_i_hope_so# | #bc_wise#
+
+scene lime_arms
+when topic=work|health self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I've #burns# up both arms. I was careless, young. | #lime.capitalize# fresh from the kiln will take your fur off if it's wet. I tell every new hand twice. | I wear gloves every day now. I'm nervous of #lime#, and I'm right to be.
+b : Do they hurt? | Twice? | Right to be?
+a : Not now. They itch in the damp, that's all. | Twice, and then I watch. Somebody always forgets. | Right. #lime.capitalize# doesn't forgive, and I can't afford a week off.
+
+scene the_stirring
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I've mixed since dawn. Sand, lime, hair and water, and the stirring never stops. | #sacks.capitalize# go out by noon. I worry they won't be ready. | The trick is the water. Too much and it slumps; too little and it cracks.
+b : Hair? | Will they be? | And you know by eye?
+a : Horsehair, for the strength. You'd never guess it's in the walls. | They always are. I worry anyway. It's how I'm made, #address#. | By paw, #address#. You feel it come right, like dough.
+
+scene over_me
+when topic=work self.boss
+does give.opinion / react.self / assess
+a : I've had worse over me than #self.boss#. Much worse. | I'd not want #self.boss#'s worries for all the silver in #heights#. I'd never sleep.
+b : High praise. | You'd never sleep?
+a : It is. I'd say it to anyone who asked. | Never. I barely sleep as it is, with my own worries under #roof#.
+
+scene both_of_us
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : I worry for the both of us. #self.spouse# needn't; I've the job in paw. | When I get to #heights#, #self.spouse# is coming too. I've promised. | #self.spouse# is the one good thing that ever came easy to me.
+b : That's kind of you. | A promise, then. | That's lovely.
+a : Kind or daft. With me it's the same thing. | A promise. I keep mine, if it takes me till my last breath. | It is. I tell myself so most nights, under #roof#.
+
+scene last_copper
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : If I had to trust one soul with my last copper, it'd be #self.friend#. | #self.friend# and I go back further than I like to count.
+b : Good to have. | That's a long time.
+a : Good, and rare, at #sump#. I know my luck. | Long, and every year of it worth keeping.
+
+scene bramble_caps
+when topic=food self.likes=blackberries here.season=summer|autumn
+does tell.self / ask.detail / answer.detail
+a : There are brambles by the river steps. I go at dusk with my cap. | #berries.capitalize#. Black fingers for a week, and worth it. | I'd trade a day's #wages# for a bowl of blackberries and cream. I'd regret it after.
+b : Your cap? | Worth it? | Cream?
+a : A cap full, and half eaten on the way home. | Worth it, every one. #tasty.capitalize#. | Cream, once, at a feast. I still think of it.
+
+scene river_steps
+when topic=pastimes self.likes=swimming here.season=summer
+does tell.self / ask.detail / answer.detail
+a : I swim off the river steps when it's warm. Cold or not, it washes #lime# out. | I learned to swim late, grown. I'm still a little proud of it. | The water's the only place #shoulders# stop aching.
+b : Cold? | Proud? | The only place?
+a : Cold, and glad of it after #yard#. | A little. I'm careful, mind. I stay near the steps. | The only place. The worry sinks, and I float.
+
+scene storm_roof
+when topic=weather here.outdoors=storm self.likes=thunder
+does tell.feeling / ask.detail / answer.detail
+a : #thunder.capitalize#! Listen to it roll. I love it, so long as #roof# holds. | A good storm, and me indoors under #roof#. Nothing better. I'd sit up all night for it. | I worry about #roof# leaking, and I love the thunder. Both at once.
+b : So long as it holds? | All night? | Both?
+a : #roof.capitalize# held last time. I checked the slates twice. | All night, with the shutter cracked an inch. Don't tell anyone. | Both. That's me in a storm, and most other times.
+
+scene wet_steps
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail
+a : #rain.capitalize#. No plaster goes out in this; #sacks# would drink it. | The steps down to #sump# turn to a river in this. I go slowly. | A wet floor is my worst thing, and the whole of #city# is a wet floor today.
+b : A day off, then? | Slowly's wise. | It is.
+a : A day of stacking, more like. #sacks.capitalize# don't stack themselves. | Slowly, one paw on the wall. A fall would cost me a week, and I can't spare one. | It is. I'll dry my paws twice before bed.
+
+scene mug_gone_cold
+when topic=food|home self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : #teacold.capitalize# is a sad thing. I drink it anyway; I can't bear waste. | #teacold.capitalize#? Mine always goes cold while I'm worrying about something.
+b : Waste not? | Worrying about what?
+a : Waste not. It's the Waste in me, I suppose. Every drop counts. | Anything. #roof.capitalize#, the rent, #lime#. The tea's the only thing that suffers.
+
+scene market_noise
+when topic=pastimes|smalltalk self.likes=market_bustle here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Market day. I love the noise. A thousand voices, and none of them asking anything of me. | I walk through #market# slowly, just to hear it. I've nothing to buy. | #market.capitalize#'s the one crowd I like. Everyone's too busy to notice a worrier.
+b : Nothing asked? | Nothing to buy? | Too busy?
+a : Nothing. It's restful, oddly. | Nothing. Looking's free, and I'm good at looking. | Too busy. It's the best place to hide in #city#.
+
+scene sky_at_home
+when topic=memories self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail
+a : At #self.from_town# the sky was the biggest thing there was. Here it's a strip between roofs. | I hauled the well rope as a #child#. #shoulders.capitalize# were half worn out before I ever saw a plaster yard. | Sometimes I think I left a good thing for a hard one. Then I look up at #heights#.
+b[from=saltwell] #sw : And the stars, all the way down to the sand. | The well rope. My paws still remember it. | And still you'd not go back.
+b : A strip? | Worn out? | And then?
+a@sw : All the way down. I've not seen a sky like it since. | Mine too. A rope remembers you back, I think. | Not yet. Not till I've stood inside #gate#.
+a : A strip, and grey most days. I miss the stars. | Worn, and mended, and worn again. That's shoulders. | Then I think of #gate#. I've come this far; up's only the rest of it.
+
+scene one_window
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail
+a : I mean to die somewhere better than #sump#. #heights.capitalize#, if the stars allow. | I dream of a room with a window over #heights#. Just the one window. | If I ever reach #heights#, the first thing I'll do is sit down. Nothing else.
+b : The Heights? | Just one? | Sit down?
+a : Silly, maybe. But a wolf needs something to climb toward. | One, facing the morning. I'd want nothing more. | Sit, in a garden, with nobody needing anything of me. For an hour.
+
+scene new_hands
+when topic=newcomer
+does tell.worry / ask.detail / answer.detail
+a : New hands at #yard#, willing to mix for less. I don't blame them. I worry, that's all. | Somebody new on our stair. I hope the newcomer's decent.
+b : Worry about what? | Most are.
+a : About the next lean week, and whose name gets struck off first. | Most are, here. #sump.capitalize# is kinder than it looks.
+
+scene counting_coppers
+when topic=times|prices world.times=hard|lean
+does tell.worry / ask.detail / answer.detail
+a : Lean. I count my #money# three times now, as if it'd breed. | Lean weeks. I've stood in the alms line, and I'm not ashamed of it. | Hard times. The orders drop off, and #yard# goes quiet. I hate a quiet yard.
+b : Do they ever? | Nor should you be. | Quiet's bad?
+a : Never. But I count anyway. | No. I'd stand there again if I had to, #address#. | A quiet #yard# means fewer hands needed. I lie awake on it.
+
+scene a_copper_aside
+when topic=times world.times=good|boom
+does tell.self / ask.detail / answer.detail
+a : Good weeks. Everybody's building; #yard# can't mix fast enough. | Times are good. I've put a copper aside for #heights#. One a week. | Coin about. I bought a whole bowl of #berries# and didn't feel guilty.
+b : Busy, then. | One a week? | Good for you.
+a : #busy.capitalize#, and glad of it. Busy's safe. | One a week. #saying#. | A little guilty. Only a little.
+
+scene not_repeated
+when topic=gossip
+does tell.gossip / react.self / assess
+a : I hear things at #yard#. I'd rather not repeat them; I'd only worry I'd got them wrong. | Talk's cheap at #sump#, and it costs dear later. I keep out of it.
+b : Fair. | Wise.
+a : Fair, and safer. I sleep badly enough already. | Wise or scared. I've never known which, #address#.
+
+scene bar_twice
+when topic=gossip|crime topic.claim_kind=violence|theft
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. I've thought of nothing else all day. | I heard #topic.subject# #topic.claim#. #uneasy#.
+b : It's a worry. | It is.
+a : It is. I'll bar the door tonight, and check it twice. | It is. I hope it stops there.
+
+scene lost_traveller
+when topic=player
+does tell.self / react.self / assess
+a : There's a #stranger# on the stairs, looking lost. I hope somebody points the way. | Travellers look up at #heights# the way I do. I wonder if they're climbing too.
+b : You could point. | Maybe.
+a : I could. I'd only worry I'd sent the traveller wrong. | Maybe. Everybody's climbing something, #address#.
+
+story first_restday [topic=memories|dreams self.away=yes here.region=ridgemere]
+  : My first Restday in #city#, I walked uphill till the street ran out.
+  : There was #gate#, and a garden behind it with a fountain going. Water, just running, for nobody.
+  : I stood there till a guard asked me to move along. I've gone back every Restday since.
+  b : And they still let you look.
+  b[wealth=poor|destitute] : I know that gate. I've stood at it too.
+
+story fright_stroke [topic=pastimes|memories self.likes=swimming self.away=yes self.age>=30]
+  : I couldn't swim a stroke when I came down off the sand.
+  : A docker tipped me off the river steps for a joke, and I came up swimming out of pure fright.
+  ask : Have you ever learned a thing out of fright?
+  b : Too many things.
+  b[job=sailor] : That's how most of us learned.
+
+story lane_rope [topic=memories self.from=saltwell self.age>=25]
+  : When I was a #child# I hauled the well rope for the whole lane, morning and evening.
+  : #gran.capitalize# said I'd have shoulders like a pack-ox. I've the shoulders, and none of the ox's peace.
+  ask : What did they set you to, when you were small?
+  b : Sweeping. Always sweeping.
+  b[from=saltwell] : The well rope. Same as you. Every pup does.
+
+rule @lime_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Gloves on with #lime#. Gloves. | Mind the pit; it's fresh.
+
+rule @thunder_bark
+when concept=bark here.outdoors=storm self.likes=thunder
+does aside
+cooldown 10h
+say Listen to that! #surprise#. | There it goes. I hope #roof# holds.
+
+rule @restday_bark
+when concept=bark here.day=rest here.region=ridgemere
+does aside
+cooldown 12h
+say Restday. Up the hill to #gate#, then. | #oath#. A fine day for #gate#.
+
+rule @wet_bark
+when concept=bark self.dislikes=wet_floors here.outdoors=rain
+does aside
+cooldown 10h
+say Wet floor again. Mind your step. | Dry your paws, please. Please.
+
+dlg @1 resident.hub : #greet#. Is there something I can help with? Nothing wrong, I hope. | #greet#, #address#. Mind the dust.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you safe.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I don't want trouble, #address#. Say what you need.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. I mix, I fill #sacks#, and I mind #lime#. | Lime, sand and water, all day. #shoulders.capitalize# could tell you more.
+dlg @2 resident.job : Whatever #yard# needs. | I do #work#, I worry, and I get by.
+dlg @1 resident.business [business!=thriving|failing] : Not mine to know. I mix; somebody else counts #takings#.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I've been worrying at it since.
+dlg @2 resident.news [world.event_words] : #yard.capitalize# talks of nothing but #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : #bandits.capitalize# set on a wagon along the road. Please keep inside the walls.
+dlg @4 resident.news [world.death=recent] : A death among us this week. #rest#.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! It did my heart good to hear the drums from #sump#.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And quiet suits me; quiet means nothing to worry about.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I'd rather not say, #address#, in case I've got it wrong.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I hope it's not so.
+dlg @1 resident.bye : #farewell#. Mind how you go. | #farewell#, #address#. Mind the stairs.
+graft resident.hub
+choice Where do you walk on your day of rest? [here.region=ridgemere] -> heights
+node heights
+say Up the hill, to #gate#. I look at the gardens a while and come back down. One day I'll stay.
+mood warm
+free
+choice Why the Heights? -> heights_why
+choice Goodbye. -> bye
+node heights_why
+say Because it's the top. A wolf should want to get somewhere. I mean to die up there, not down here. That's all.
+choice I hope you make it. -> hub
+choice Goodbye. -> bye

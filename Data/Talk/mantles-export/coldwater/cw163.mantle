@@ -1,0 +1,291 @@
+# cw163, the tray-crier (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw163
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rmx_dirk_langstead
+written_by claude
+title the tray-crier
+fits stage=adult|old
+prefers job=laborer temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk cries_wares_to_the_tune_of_old_lake_songs
+likes smoked_eel wrestling market_bustle thunder
+dislikes cold_tea bad_manners
+fears an_empty_tray_by_noon being_shoved_off_the_corner
+hopes a_stall_with_a_roof a_letter_delivered_at_last
+topics work +0.4 pastimes +0.3 weather +0.2 memories +0.2 newcomer -0.2 festival -0.3
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# walks the rag stalls of the city with a tray of laces and buttons, crying wares to old lake tunes: quiet, short of temper, guarded, fond of a wrestling bout and a thunderstorm from under a roof, and carrying a letter nobody will take.
+
+words
+oath! = Needles and nails | Strap and tray | Pins in my paw
+saying! = A shout sells, a whisper steals | Keep your tray close and your mouth closer | Laces don't sell themselves
+tray = my tray | the tray on my strap
+laces = laces and buttons | laces, buttons and needles
+cry = my cry | the call I sing out
+tune = an old tune off the lake | a boat tune with new words
+ragrows = the rag stalls | the rows of rag stalls
+eel = smoked eel | a twist of smoked eel
+bout = a go on the grass | a wrestling bout
+thunder = thunder | a good crack of thunder
+coldtea = cold tea | a cup somebody let go cold
+manners = manners | a please and a thank you
+letter = the letter | that letter with the seal on it
+corner = my corner | the corner by the posts
+shove = elbows | shoving and elbows
+roofstall = a stall with a roof | four posts and a roof of my own
+
+any
+opinion @1 merchants against 2 : Stallholders with roofs look down at #tray# like it's a rat. They never go short. I do.
+opinion @1 newcomers against 1 : Every week another tray turns up on #corner#. Same laces, lower price. I was here first.
+opinion @1 strangers against 1 : I don't know your face, I don't owe you a smile. That's how I keep my purse on a #stranger#'s street.
+opinion @1 festivals against 1 : Feast days the rows are packed and nobody buys a lace. They buy ale and fall on #tray#.
+opinion @1 dole for 2 : The parish loaf kept me upright the first month I came. Nobody runs it down where I can hear, #address#.
+opinion @1 times against 2 : #laces.capitalize# cost me more to buy in and I can't ask more for them. Somebody's eating my #wages#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. Laces? No? Fine.
+line @2 greet [self.working=yes] : #greet#. Buy or stand; standing costs nothing. | #greet#. Mind #tray#.
+line @3 greet [here.time=dawn] : Morning. First on #corner#, as ever. | Morning. Not a soul buying off #tray# yet.
+line @4 greet [here.time=dusk|night] : #greet#. Packing up. | Evening. #tray.capitalize#'s nearly empty, for once.
+line @1 kin.open [pair.kin!=no] : Oh. It's you. #greet#. | You. #good.capitalize#. Sit.
+line @1 again.open : You again. #greet#. | Twice today. #tray.capitalize#'s got nothing new on it.
+line @1 greet.return : #greet#. | #greet#. What?
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Took your time. | #greet#. Good to see you, #address#.
+line @3 greet.return [self.working=yes] : #greet#. Quick, I'm crying. | #greet#. Step out of the way of #tray#.
+line @1 farewell : #farewell#. | #farewell#. Watch your pockets.
+line @2 farewell [here.time=dusk|night] : #farewell#. Stay off the dark stairs. | #farewell#. Get home.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #ack#. | Huh. #hearsay.capitalize#.
+line @1 react.news.new : #oath#. Didn't know that. | #surprise#. Nobody tells a tray-crier anything.
+line @1 react.news.known : #knew#. Heard it on the rows. | Old news. #ragrows.capitalize# had it yesterday.
+line @1 react.news.doubt : #doubt#. Folk on the rows will say anything. | Show me, then. Till then it's just noise, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #bad#. | #oath#. Rough for them.
+line @1 answer.how : #fine#. Sold a few. | Tired. #tray.capitalize#'s heavy and my feet hurt.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Can't stop. | Crying. Ask me at dusk, #address#.
+line @1 ask.how : You, #address#? | All right, #address#?
+line @1 sympathise : #sympathy#. That's hard. | Rotten luck, #address#. Truly.
+line @1 decline : Can't. I've #tray# to sell out before dark, and it won't sell itself. | #refuse#. Not today; I've not the coin and I won't pretend to.
+line @1 accept_decline : #no_matter#. | Fine. Another day, #address#.
+line @1 thank : #thanks#. | #thanks#. I'll not forget it.
+line @1 deflect_thanks : #deflect.capitalize#. | It's nothing. Forget it, #address#.
+line @1 preclose : Right. #excuse#. | I've #laces# to shift.
+line @1 accept_preclose : Go on, then, #address#. | #farewell#. Off you go.
+line @1 ack : #bc_right# | #ack#.
+scene the_cry
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I sing #cry# to #tune#. Folk stop for a tune when they won't stop for a shout. | Every lace on #tray# I've cried to a boat song. "Pull, and laces, pull, and pins." | Three hours crying today. My throat's raw and #tray#'s still half full.
+b : Does it work? | What's a boat song? | Why not stop?
+a : Better than shouting. A tune gets in their ears and stays. | A song they row to, where I'm from. Two beats and a pull. | Half full is half #wages#. I'll stop when it's empty.
+b : #bc_clever# | Ha. | #bc_fair_enough#
+
+scene slow_rows
+when topic=work|prices self.working=yes
+does tell.complaint / react.complaint / assess
+a : Not a lace sold since noon. #oath#. | Three trays on #corner# today, all with the same buttons. | They walk past #tray# like it's a puddle.
+b : It'll pick up. | Move somewhere else. | Some days are like that.
+a : Better. I've rent at week's end. | Somewhere else has three trays too, #address#. | Too many days, lately. #slow.capitalize#.
+
+scene market_noise
+when topic=smalltalk|pastimes here.region=ridgemere self.likes=market_bustle
+does tell.feeling / react.self / assess
+a : I like the rows at full shout. Everybody pushing. That's when this city's got a pulse, #address#. | Noon on Marketday's the best hour I know. Can't hear yourself think. Good. | Some folk hate the crush. I sell more in it.
+b : I can't stand the noise. | Good for you. | More, in the crush?
+a : Then come at dusk. I'll be packing. | It is. Nobody can hear me hum, either. | More. They grab a lace to get out of my way, #address#.
+
+scene no_manners
+when topic=smalltalk|work
+does tell.complaint / react.complaint / insist / ack
+a : A toff picked through #tray# and walked off without a word. Not a word. | One shoved #tray# with an elbow and said nothing. I nearly went after them. | I don't ask much. #manners.capitalize#. That's it.
+b : There's always one. | Don't. Not worth it. | That's not much to ask.
+a : One a day, at least. #toffs.capitalize#, mostly. | I didn't. I wanted to. #oath#. | No. And still I don't get it. #bc_mostly#.
+b? : #bc_true# | #bc_fair# | #bc_poor_soul#
+
+scene cold_tea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.self / assess
+a : Bought a cup off the tea stall. Stone cold. They still took the copper. #robbery#. | Left my tea on the post to sell a lace. Came back to #coldtea#. Every time. | There's nothing worse than tea gone off warm. Nothing, #address#.
+b : Ask for another. | Drink it quicker. | Plenty worse.
+a : I did. They laughed. I won't go back. | Can't. Somebody always wants a lace mid-sip. | Not on a cold morning. #bc_never#.
+
+scene smoked_eel
+when topic=food self.likes=smoked_eel
+does tell.self / react.self / assess
+a : #eel.capitalize# off the smokehouse barrow. Best copper I spend all week. | I'd sell my last lace for #eel#. Nearly. | There's an eel smoker by the gate who keeps the ends for me. Cheap.
+b : Eel? Ugh. | Nearly? | Nice of them.
+a : More for me. #bc_good#. | Nearly. I need the laces to buy the eel. | It is. I don't say so. They know, #address#.
+
+scene wrestling_green
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail / assess
+a : Had #bout# last Restday. Lost. Got up. Lost again. | I'll wrestle anybody my weight, on the grass. Not for money. Just to see. | There's #bout# behind the chapel field most rest mornings. I go when my feet let me.
+b : Did you win any? | Just to see what? | Who do you wrestle?
+a : One. The last one. They were tired by then, but it counts. | Who's stronger. It's honest. Nobody can talk their way out of a hold. | Anyone who'll step on the grass. #saying.capitalize#, but wrestling sells itself.
+b : #bc_ha# | #bc_fair# | #bc_good#
+
+scene thunder_roof
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess
+a : Hear that? #thunder.capitalize#. Give me a dry porch and I'd hear it out till dawn. | I packed #tray# when the sky went black. Now I'm under this porch, happy. | Folk run from thunder. I stop and listen, #address#.
+b : Gives me the shivers. | Happy, in this? | Even when it's close?
+a : Not me. It's the only thing in the city louder than the rows. | Dry and listening. That's a good day, near enough. | Closer the better. Under a roof, mind.
+
+scene rain_tray
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize#. #laces.capitalize# go limp in the wet. Who buys a limp lace? | I've an oilcloth over #tray# and still the buttons are swimming. | Nobody stops in the rain. They hunch and run.
+b : Pack up early. | Swimming? | Can't blame them.
+a : Can't. Early's no #wages#. | Swimming. #oath#. I'll dry them by the fire tonight. | I can. I'd run too if I'd a roof to run to.
+
+scene the_letter
+when topic=work|gossip here.region=ridgemere
+does confide / ask.detail / answer.detail / assess
+a : I've #letter# in my coat a year now. It's for a big house past the Commons. Nobody's ever in. | Every week I walk up to a big house and knock with #letter#. Every week, not home. | Somebody gave me #letter# to carry and I said I would. So I carry it.
+b : Who's it from? | Why not leave it? | A year?
+a : Not saying. Not mine to say, #address#. | Promised it'd go paw to paw. Not on a step. | A year. It's gone soft at the corners. I haven't.
+b : #bc_fair_enough# | #bc_wise# | #bc_poor_soul#
+
+scene lake_back
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# the only noise of a morning was the water. I couldn't sleep my first week here. | I came down from #self.from_town# with a sack and no plan. Got #tray# the first week. | Back home I'd swim before breakfast. Here there's nothing to swim in but soot.
+b[from=coldwater] #cw : Quiet as anything, mornings. | Same as me. Sack, no plan. | Swimming in the lake? Brave.
+b : And now? | Lucky, getting work. | Do you miss it?
+a@cw : Quiet. You'd forget it was quiet till you weren't. | And here we are, #address#. | Brave, or #daft#. Same thing at that age.
+a : Now I can't sleep without the rows shouting. | Lucky. Didn't feel lucky. Still doesn't. | Some days. Not enough to go back. Not yet.
+
+scene lake_tunes
+when topic=pastimes|memories self.from=coldwater
+does tell.self / react.self / assess
+a : Every tune I cry to came off the lake. The words are mine now. Buttons and pins. | Old folk on the rows stop sometimes and hum along. They know the tune, not the place. | I've only the one voice, but I've #tune# for every hour of the day.
+b : Nice, that. | Do they? | Every hour?
+a : It sells laces. That's what's nice about it. | Some. One cried. Said it was a song from their mother. | Every hour. Morning's quick, dusk's slow. Like the boats.
+
+scene strangers_purse
+when topic=newcomer|player
+does give.opinion / react.self / insist / ack
+a : Strange face at #corner#. I keep one paw on #tray# till they've gone. | Faces I can't place get nothing off me but a nod. Not on the rows. | Some traveller wanted directions off me. Gave them. Then counted my buttons.
+b : That's a bit cold. | Fair enough. | Were they all there?
+a : Cold, but my purse is full. Fuller. | It's how you keep anything in this city. | All there. This time. #bc_for_once#
+b? : #bc_maybe# | #bc_true# | #bc_ha#
+
+scene new_trays
+when topic=times|newcomer
+does tell.complaint / react.complaint / assess
+a : Another new tray on #corner# this morning. Same laces as mine, a copper cheaper. | They come up from the road every week now, looking for work. Whose work? Mine. | I was the new one once. I know. Still don't want them on #corner#.
+b : They've to eat too. | It's hard on everybody. | You remember, though.
+a : So do I. That's the trouble. | It is. Hardest on whoever's at the bottom. | I remember. Doesn't mean I'll give up #corner#, #address#.
+
+scene feast_crowd
+when topic=festival|season
+does give.opinion / react.self / assess
+a : Feast days are no good to me. Crowds, but nobody wants a lace. They want ale. | Somebody knocked #tray# over on the last feast day and laughed. #oath#. | They can keep the dancing. I'll take an ordinary Marketday.
+b : You could sell ribbons. | Did you get them back? | It's fun, though.
+a : Ribbons cost money first. I've not got money first. | Most. Lost a card of needles in the mud. | Fun for some. I'm working, #address#.
+
+scene parish_bread
+when topic=times self.on_dole=yes
+does confide / react.self / assess
+a : I take the parish loaf. Sticks in my throat to own it. There. | Some weeks #tray# doesn't cover the rent and the bread both. The parish covers the bread. | I'll pay it back one day. Somebody will get a loaf off me.
+b : No shame in it. | That's what it's for. | You will.
+a : Maybe. Feels like shame anyway. | I know it. I'm still glad of it. #bc_i_know#. | I will. #saying.capitalize#.
+
+scene my_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is about the only one I'd turn my back on. In this city that's a lot. | If I'm in trouble, it's #self.friend# I'd go to. Nobody else. | I don't say much to anyone. I say more to #self.friend#.
+b : That's something. | Good to have. | That's trust.
+a : It is. Don't tell #self.friend# I said so. | It is. One's plenty, #address#. | It is. Takes me a long time.
+
+scene young_plans
+when topic=dreams|work self.age<=25
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll have #roofstall#. Not a tray. Posts and a roof and a sign. | I'm putting by a copper a week. Not much. It'll add up. | I'm young. I can carry #tray# ten years if I have to. I'd rather not.
+b : How long will it take? | What will you buy? | What would you do instead?
+a : Longer than I'd like. I've time. | Four posts and canvas. Then a roof. Then I'll stop crying. | Wrestle. Sell eel. Anything with a roof over it.
+b : #bc_i_hope_so# | #bc_good# | #bc_ha#
+
+scene chapel_loaf
+when topic=faith
+does give.opinion / react.self / assess
+a : The chapel fed me my first month here. I don't pray much, but I'll not mock them. | When it thunders I give the Bright One a nod. Seems right, then. | I go in sometimes to get out of the rain. It's quiet. I like that.
+b : That's fair. | When it thunders? | Quiet's rare here.
+a : It's the least I owe them. #bc_true#. | When it's loud enough to mean it. | Rare. They don't charge for it, either.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Nobody's buying laces. They mend old ones. I'd do the same. | Lean weeks. I'm eating once a day and crying twice as loud. | #skint.capitalize#. Everyone on the rows is.
+b : It'll turn. | Twice as loud? | Everyone is.
+a : It better. Rent doesn't turn. | Loud's free. Bread isn't. | Everyone but the ones with roofs.
+
+story first_week [topic=memories|work here.region=ridgemere self.away=yes]
+  : When I was new to the city I stood on the wrong corner and got shoved off it three times.
+  : Fourth time I stood my ground and sang #cry# louder than the one shoving.
+  : They left. I've had #corner# since.
+  ask : Ever had to stand your ground like that?
+  b : Once or twice. It's never pleasant.
+  b[stage=young|adolescent] : Not yet. I'd like to think I would.
+
+story the_bout_lost [topic=pastimes self.likes=wrestling]
+  : I wrestled a big lump of a porter once, twice my size. Everyone laughed when I stepped on the grass.
+  : I lasted longer than any of them had. Then I was on my back looking at the sky.
+  b : Brave, though. Did they stop laughing?
+  : They stopped. One bought me #eel# after. #bc_good#.
+
+story storm_on_the_lake [topic=memories|weather self.from=coldwater self.likes=thunder]
+  : When I was small a black night blew up on the lake and every boat was in but one.
+  : We stood on the shore with lamps while the thunder went. Then it came in, slow, everyone on it soaked and singing.
+  ask : Have you ever waited like that, for somebody to come in?
+  b : I have. It's the longest kind of waiting there is.
+  b[old] : More times than I can count.
+  : That's when I learned to love thunder. It meant they were still out there to hear it.
+
+rule @cry_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Laces, buttons, needles, pins! Pull, and pull, and buy! #saying.capitalize#! | #laces.capitalize#! A copper and you're tied! #oath#.
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say #rain.capitalize#, and #laces# all limp. #annoyed#. | Under the cloth, #laces#. Stay dry.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 10h
+say There it goes. #thunder.capitalize#. | Louder. Go on. #bc_good#.
+
+rule @manners_bark
+when concept=bark here.region=ridgemere self.dislikes=bad_manners
+does aside
+cooldown 10h
+say #shove.capitalize#. Every time. #oath#. | A please would cost you nothing.
+
+dlg @1 resident.hub : #greet#. Laces? Buttons? No? What, then? | #greet#. Make it quick, #address#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back at #corner#. What now?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I don't know you, #stranger#. Say what you want and go.
+dlg @1 resident.job : #self.trade_words.capitalize#. #tray.capitalize#, a strap and a loud voice. | I sell #laces#. From a tray. Loudly.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I sell laces, not news. | Nothing. Ask the rows, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Talk's heavy and it gets you hit on #ragrows#. I leave it.
+dlg @1 resident.bye : #farewell#. Watch your pockets. | #farewell#.
+graft resident.hub
+choice Is that a boat song you're crying your wares to? -> cry
+node cry
+say It is. #tune.capitalize#. The rowers sang it where I grew up. I changed the words. Buttons where the oars were.
+mood calm
+free
+choice Will you sing it? -> cry_sing
+choice Goodbye. -> bye
+node cry_sing
+say Laces, buttons, needles, pins. Pull, and pull, and buy. There. That's a copper's worth. You can owe me.
+choice Thank you. -> hub
+choice Goodbye. -> bye

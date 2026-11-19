@@ -1,0 +1,308 @@
+# sm126, the door-minder at prayer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm126
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for rm_thyra_ashley
+written_by claude
+title the door-minder at prayer
+fits stage=adult|old
+prefers piety=devout warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk bars_the_door_to_anyone_in_house_livery
+likes oatcakes digging fresh_straw summer_evenings
+dislikes rats cold_tea
+fears a_house_quarrel_reaching_our_street
+hopes to_see_one_more_harvest_in_the_south
+topics faith +0.5 family +0.4 memories +0.4 home +0.3 food +0.2 gossip -0.2 crime -0.2
+styles comfort=prayer gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# sits by the shop door through the morning with a prayer for everyone who passes and a shut door for anyone wearing a House's livery: warm, plain, devout, and homesick for the southern orchards.
+
+words
+oath! = Bright One keep the bough | Sun on the stubble
+saying! = A shut door keeps more than draughts out | Dig deep and the Bright One waters it
+oatcake = an oatcake with butter | oatcakes warm off the griddle
+straw = fresh straw | clean straw on the floor
+plot = my bit of ground | the strip of garden out the back
+spade = the spade | my old spade
+door = the door | the shop door
+stool = my stool | the stool by the door
+livery = House livery | a House's colours on a coat
+orchard = the orchard | the old orchard back home
+prayers = my prayers | a prayer or two
+penny = a penny | my last penny
+steps = the step | my doorstep
+evening = a long summer evening | the warm end of a summer day
+coldcup = cold tea | a cup somebody let go cold
+gnawers = the rats | those grey thieves in the larder
+
+any
+opinion @1 church for 2 : Every hard year of my life, the Bright One carried me through it. While my legs work, I'll be in my pew on Restday.
+opinion @1 dole for 2 : A city as rich as this, and wolves still lie down #hungry#? The dole's the least we owe each other, #address#.
+opinion @1 drink against 1 : I've watched #drink# empty a house of everything but the shouting. The Bright One saw it too.
+opinion @1 houses against 2 : Every House smiles at its own and sharpens a knife for the rest. None of their livery comes through #door# while I'm on #stool#.
+opinion @1 road against 1 [self.age>=50] : You could walk the south road alone when I was a #child#. Nobody would let a pup do it now.
+opinion @1 strangers for 1 : A #stranger# is only a neighbour nobody's fed yet. I keep an oatcake by for them.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come in, if you've no House on your coat. | #greet#. The Bright One keep you, whoever you are.
+line @2 greet [here.time=dawn] : #greet#. You're up with the cockerel, #address#. | #greet#. I've said my morning prayers already, so you've come at the right time.
+line @3 greet [here.time=dusk|night] : #greet#. Late to be about. The Bright One see you home. | #greet#, #address#. I was just shutting #door#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit by me, #pet#, and give me your news. | Ah, bless you, it's you. Come here and let me look at you.
+line @1 again.open : #welcome_back#. I've said a prayer for you since this morning. | Twice in one day. That's a blessing, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Bless you for stopping. | #greet#. I was hoping you'd pass.
+line @3 greet.return [here.time=dusk|night] : #greet#. Mind the dark on the step. | #greet#. #bless#, at this hour.
+line @1 farewell : #farewell#. The Bright One keep you. | #farewell#. #bless#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Say your prayers before you sleep. | #farewell#. Mind the lamps going home.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. I'll pray on that. | #marvel#. Well, there's a thing.
+line @1 react.news.new : #surprise#. Nobody came by #door# with that. | #oath#. That's the first of it to reach me.
+line @1 react.news.known : #knew#. The street told me before noon. | I had it from #stool# this morning. Old by now.
+line @1 react.news.doubt : #doubt#. Till somebody who was there says it, I'll hold off. | Hm. #hearsay#. I'll not repeat it yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll say a prayer tonight. | Oh, that's hard. The Bright One hold them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. The Bright One be thanked. | Oh, that's #good#. I'll light a candle for it.
+line @1 answer.how : #fine#. Old, and thankful, and my knees know both. | Well enough, #address#. The Bright One's kept me another day.
+line @1 ask.how : And you? Are you eating properly, #pet#? | How are you keeping, #address#? Say truly.
+line @1 sympathise : #sympathy#. Sit with me; we'll say a word for it together. | Oh, my plum. Nobody should carry that by themselves.
+line @1 reassure : #reassure#. The Bright One doesn't drop what's handed up. | It'll come #good#. I've seen worse mend.
+line @1 decline : #hedge#, I'll not manage it. My legs won't take me that far now. | Not today, #address#. I'm minding #door# till noon.
+line @1 accept_decline : #no_matter.capitalize#. You've your own row to hoe. | Never mind it. The Bright One sends other days.
+line @1 thank : #thanks#. The Bright One sees a kindness. | Bless you for that, #address#.
+line @1 deflect_thanks : #deflect.capitalize#. It's what neighbours are for. | Hush, #pet#. You'd do the same for me.
+line @1 preclose : Well. #preclose#. | My knees want #stool#. I'll let you go.
+line @1 accept_preclose : Off you go. #bless#. | Go on, then. I'll keep a prayer for you.
+line @1 ack : #bc_it_is# | #bc_bless_you#
+scene morning_prayer
+when topic=faith|day here.time=dawn
+does tell.self / ask.detail / answer.detail / assess
+a : I've said #prayers# already. One for each of mine, and one for the street. | Each morning it's thanks for the night and a word for the day. Both go up together. | I prayed for you this morning, #address#, before I knew you'd come by.
+b : Every morning? | What do you ask for? | For me?
+a : Every one since I was a #child#. I'll not stop now. | Bread, peace, and nobody in #livery# on the step. In that order. | For whoever passed. You passed. That's how it works, #pet#.
+b : #bc_bless_you# | #bc_wise# | #bc_thank_you#
+
+scene chapel_restday
+when topic=faith here.day=rest
+does tell.feeling / react.self / assess
+a : Restday. I'll be in the second pew, same as every week, #prayers# ready. | I love the hymns most. I sing them louder than #little# old voice should. | #self.priest# gave a #good# sermon last Restday. I'll hear it again in my head all week.
+b : The same pew? | Loud is fine. | A good one?
+a : Same pew. My knees know the way even when my eyes don't. | The Bright One doesn't mind a cracked voice. #bc_bless_you# | About kindness. It always is, the #good# ones.
+
+scene faith_kept
+when topic=faith|memories self.age>=50
+does confide / react.self / assess
+tone tender / tender / even
+a : There were hard winters when I was young. The Bright One kept us through every one. | I've buried more than I'd like, and every time the Bright One stood by me. | I don't argue with the Bright One. I just keep asking.
+b : You've a strong faith. | I'm sorry. | That's wise.
+a : It's all I've had some years. It was enough. | Thank you. They're in the green ground, and I'll see them again. | Asking's never hurt anyone. The answer comes in its own season.
+
+scene shut_door
+when topic=gossip|times here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : A wolf in #livery# tried #door# this morning. I sat on #stool# and didn't move. | I let anybody in but House folk. They can take their #money# elsewhere. | I can tell #livery# from the end of the street. My eyes aren't what they were, but they're good for that.
+b : Didn't move? | Why not House folk? | How?
+a : Not a whisker. They went away, and I said a prayer for them. A short one. | A House is a smile on one side and a knife on the other. Their people follow orders, not consciences. | The way they walk. Like the street owes them. #saying.capitalize#.
+b : #bc_ha# | #bc_fair_enough# | #bc_wise#
+
+scene houses_fall_out
+when topic=times|gossip here.region=ridgemere
+does tell.worry / reassure / assess
+a : The Houses are glaring at each other again. When #toffs# quarrel, I fret. | When Houses fall out, it's the little streets that pay. I've seen it. | I pray the Houses keep their quarrels up the hill and away from #door#.
+b : They'll calm down. | Have you? | So do I.
+a : Maybe. I'll pray they do, and keep #door# shut till then. | Once, when I was a #child#. I'll not tell it today. | Then we'll both pray, #address#. Two's louder than one.
+
+scene children_mine
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : #self.child# keeps me fed and fussed over. #snug.capitalize# as a hen in #straw#. | I worry over #self.child# like a hen over one chick. Even now. | #self.child# is the best thing the Bright One ever gave me.
+b : Lucky you. | Parents always do. | That's lovely.
+a : I count it a blessing every day, #pet#. It's in #prayers#. | Every parent does, #address#. You'll see one day. | It's true. I'd say it in the chapel, bless it.
+
+scene mortar_downstairs
+when topic=home|family self.parent=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : We live above a shop. I sit by #door# so the young ones can work. | The smell of herbs comes up through the boards. Better than the street. | I can hear the pestle going from my chair. It's like a clock to me.
+b : Sounds snug. | Herbs? | A clock?
+a : #snug.capitalize# enough, with #straw# down. | Herbs and honey and something sharp I can't name. | It stops at noon and starts again after. I know the day by it.
+
+scene garden_plot
+when topic=pastimes|land|home self.likes=digging
+does tell.self / ask.detail / answer.detail / assess
+a : I've #plot# out the back. Beans and a few onions. It keeps my paws honest. | An hour with #spade# and I'm a pup again. Then I'm old again till #supper#. | I dug the onions this morning with #spade#. The earth here's thin, but it tries.
+b : Beans? | Is it worth it? | Thin?
+a : Beans, onions, and a row of marigolds for the Bright One. | Every bean. It's #spade# I'm there for, mind. | Thin and full of brick. Nothing like the soil back home.
+b : #bc_lovely# | #bc_good# | #bc_poor_soul#
+
+scene oatcake_offer
+when topic=food self.likes=oatcakes
+does offer / accept / assess
+a : Have #oatcake#. I made too many, as I always do. | There's #oatcake# in my apron pocket, and another. Take both. | I keep #oatcake# by for anyone who looks #hungry#. You look hungry.
+b : Thank you. | Two? | Do I?
+a : #bc_good# Butter's in the crock. Don't be shy of it. | Two. One won't stop you, and three would be greedy. | Everyone does, to me. Eat it and argue after.
+
+scene cold_cup
+when topic=food|smalltalk self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : Somebody brought me #coldcup# again. I sat and looked at it till it got colder. | I can forgive most things. Not tea let go #cold#. | I'd rather a cup of water than #coldcup#. Water means it.
+b : I'll fetch you a hot one. | Nor me. | Water's honest.
+a : Bless you. That's the kindest thing I've heard all morning. | Then we're agreed, #address#. There's hope for you. | It is. Tea should be hot or not at all.
+
+scene rats_larder
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : #gnawers.capitalize# have been at the oats again. Through the sack, bold as #toffs#. | I heard one in the wall last night. I said #prayers# and threw a slipper. | We had a cat once that wouldn't touch a rat. Ate my butter instead.
+b : Did you catch it? | Which worked? | What became of the cat?
+a : Not yet. They're clever, and I'm slow. The Bright One help us. | The slipper. The Bright One had other things to see to. | It sat in the sun till it was old. Kinder than a rat, at least.
+b : #bc_ha# | #bc_ha# | #bc_poor_soul#
+
+scene evening_bench
+when topic=season|weather here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : #evening.capitalize#. I'll sit out till the swallows go. | This is the hour I'd keep, if the Bright One let me keep one. | Warm stones, a long light, and nobody wanting anything. #bless#.
+b : It's a lovely hour. | Which hour would you keep? | Nobody?
+a : It is. It smells a bit like home, if you close your eyes. | This one. Every summer of my life, this one. | Nobody but the swallows, and they never ask much.
+
+scene rain_door
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : #rain.capitalize# again. I've put #straw# down at the threshold against slipping. | This city rains like it owes #money#. | I've watched the #rain# off this step for years now, and it hasn't run out.
+b : That's kind. | It does. | It never will.
+a : It's nothing. Fresh straw and a dry floor, that's my whole housekeeping. | Back home the #rain# came when the fields wanted it. Here it comes when it likes. | No. But the Bright One sends sun too, in the end.
+
+scene fresh_straw
+when topic=home|smalltalk self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I had #straw# put down this morning. The whole room smells of the barn back home. | Nothing makes a floor feel like a home like #straw#. | I change #straw# every week, whether it needs it or not.
+b : A barn? | I'll take your word. | Every week?
+a : A clean barn, mind. The kind you'd sleep in. | Take my word and come and smell it. | Every week. My #mum# did, and hers before her.
+
+scene home_orchard
+when topic=memories|land self.away=yes self.from=southmeadow
+does tell.memory / react.self / assess
+a : I grew up in #self.from_town#, among the apple rows. You could hear nothing but bees. | In #self.from_town# the quiet was so thick you could lean on it. Here there's always a cart. | I'd give a lot to see #orchard# in blossom once more before the green ground has me.
+b[from=southmeadow] #home : I remember the bees. The same rows, maybe. | That quiet. I miss it too. | The blossom. Yes. I'd go with you.
+b : It sounds peaceful. | Do you miss the quiet? | You might yet.
+a@home : Then we're neighbours twice over. Bless you, #address#. | We'll miss it together, then. That halves it. | Then we'll go together, and take #oatcake# each.
+a : Peaceful as #prayers#. I didn't know it till I left. | Every day. It goes into #prayers#, and the Bright One allows it. | I've asked the Bright One often enough. My wish is no secret up there.
+
+scene harvest_season
+when topic=season|harvest here.season=autumn self.away=yes self.from=southmeadow
+does tell.feeling / react.self / assess
+a : This time of year back home, the whole town was in the fields. I can still smell it. | Autumn. They'll be bringing the sheaves in, down south. I'll pray they get it in dry. | Harvest #supper#'s this month, back in #self.from_town#. I'll set a place in my head.
+b : What did it smell of? | I'll pray too. | A place in your head?
+a : Cut stalks and dust and apples. And #ale#, later on. | Bless you. Two prayers for the south. | Where I can sit with them all again. It's not foolish. It's how the old keep company.
+
+scene friend_kin
+when topic=friends|family self.friend
+does tell.self / react.self / assess
+a : #self.friend# could have my last penny and my last prayer, and I'd not ask why. | I'd rather have #self.friend# by me than a houseful of fine folk. | #self.friend# and I go back further than either of us likes to count.
+b : That's deep trust. | Fine folk are overrated. | That far?
+a : It is, bless it. Years of earning. | They are. Give me one who'll stay. | That far. And never a cross word that lasted.
+
+scene new_faces
+when topic=newcomer|player here.region=ridgemere
+does give.opinion / ask.opinion / give.opinion
+a : Somebody new on the street. I'll have #oatcake# ready. | I always ask a #stranger# their House first. If they've none, they're welcome. | #here.town# fills with new faces every spring, like rooks in a field. #bless#.
+b : Why an oatcake? | And if they have one? | Do you mind them?
+a : Because somebody fed me when I came, and I've not forgotten. | Then they're welcome on the street, but not past #door#. | Not a bit. A face is a face. It's #livery# I mind.
+
+scene gossip_pass
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / give.opinion
+a : I heard on #stool# that #topic.subject# #topic.claim#. I'll pray it's not so. | The street says #topic.subject# #topic.claim#. I pass it on only so you'll pray too. | They're saying #topic.subject# #topic.claim#. I'd sooner not have heard.
+b : Is it true? | I will. | Nor me.
+a : The Bright One knows. I don't, and I won't make it up. | Bless you. That's the right use of a rumour. | Some things are better unheard. #saying.capitalize#.
+
+story the_lost_lamb [topic=memories|faith self.away=yes self.from=southmeadow self.age>=40]
+  : A lamb strayed from our field the night before a storm. I was a #child# then.
+  : My #dad# said it was gone. I went out with a lantern and prayed the whole way to the ditch.
+  : It was there, under the hedge, dry as a loaf. I've never doubted since.
+  ask : Has a prayer of yours ever come back to you like that?
+  b : Once. I keep it to myself, mostly.
+  b[stage=young] : Not yet. I've only asked for small things.
+  : Small things count too. Keep asking.
+
+story the_livery_night [topic=crime|gossip|memories self.age>=50 here.region=ridgemere]
+  : Years ago, two Houses had a falling out, and their folk took it out on the street below.
+  : Windows went in all along our row. Nobody up the hill paid for one of them.
+  : That's when I started keeping the door against #livery#. I've never once regretted it.
+  ask : Would you have opened #door# to them, after that?
+  b : I'd keep it barred too.
+  b[old] : I remember those nights. I'd not open it either.
+  : No. So I sit here and keep #door# shut, with a prayer for them on the other side.
+
+story first_spade [topic=pastimes|memories self.likes=digging self.age>=40]
+  : My #gran# gave me #spade# when I was small enough to stand in the hole I'd dug.
+  : I dug a whole bed for her beans. Crooked as a hedge, and she planted every inch.
+  b : Did they grow? | That's a lovely thing.
+  b[old] : I had one like that. They wore down to nothing.
+  : Like weeds. She said it was the crooked rows that did it. I still dig crooked.
+
+rule @door_bark
+when concept=bark here.region=ridgemere here.time=dawn|day
+does aside
+cooldown 8h
+say Mind the step, now. #straw.capitalize#'s down. | Come in, come in. Not you, though, in the colours.
+
+rule @prayer_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Bright One keep this street the night through. | #prayers.capitalize# for every door on the row.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats
+does aside
+cooldown 12h
+say Out, you grey thief! Out of my oats. | #gnawers.capitalize# again. #annoyed#.
+
+rule @rain_bark
+when concept=bark here.outdoors=rain here.region=ridgemere
+does aside
+cooldown 8h
+say #rain.capitalize#, and more #rain#. We'll never go thirsty, bless us. | Mind the wet on the step, #address#.
+
+
+old
+line @1 answer.how.poorly : My knees are complaining, but they'll get me to Restday. | #poorly.capitalize#, #address#. The cold's in my bones today.
+line @1 give.advice : #advise.capitalize#: say your prayers, eat your oatcakes, and keep your door. | Never trust a smile in #livery#. I've lived long enough to know.
+scene knees_and_stool
+when topic=health|day
+does tell.self / react.self / reassure
+a : My knees are older than the rest of me. I sit on #stool# and let them rest. | I can't dig like I did. An hour with #spade# now, where it used to be a morning. | The Bright One's kept me all these years. I'll not complain of knees.
+b : Rest them, then. | An hour's still something. | That's a long time.
+a : I am. And I pray for them, though they don't thank me. | It is. Beans don't know the difference. | Long, and #good#. Mostly #good#.
+
+scene olden_days
+when topic=memories|times
+does tell.memory / react.self / assess
+a : #olddays.capitalize#, you knew every wolf on the street by name and by their mother's name. | In my young days a loaf cost half what it does, and we still thought it dear. | #olddays.capitalize#. We had less, and we said more prayers about it.
+b : It's not like that now. | Things change. | Did it help?
+a : No. The city's too big to know. I know my own, and I pray for the rest. | They do. I've stopped minding most of it. | It helped me. That's all I can speak for.
+
+dlg @1 resident.hub : #greet#. The Bright One keep you. What is it? | #greet#, #address#. Sit, if you like. I'm only minding the door.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bless you for coming back. What's wanted? | #topic.player#. I prayed for you this week. Sit down.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. Tell me quick, and then home with you safe.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain. And you'll not come past #steps#.
+dlg @1 resident.job : I mind #door#, I say my prayers, and I dig a little. That's plenty at my age. | Whatever my knees will let me do, #address#.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I'll put it in #prayers#.
+dlg @2 resident.news [world.event_words] : The whole street's talking of #world.event_words#. I've heard it from #stool# all morning.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I sit and watch, and nothing's happened yet. | Nothing new, bless you. The street's quiet, and the Bright One has my thanks for it.
+dlg @1 resident.gossip [here.gossip=yes] : The street says #topic.subject# #topic.claim#. I'd sooner pray than gossip, mind.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep my tongue for my prayers, #address#.
+dlg @1 resident.bye : #farewell#. The Bright One keep you. | #farewell#, #address#. Mind the step.
+graft resident.hub
+choice Why won't you let House folk past the door? [here.region=ridgemere] -> livery
+node livery
+say Because I've seen what their quarrels do to a street like this. A House is a smile on one side and a knife on the other, and House folk do as they're bid.
+mood stern
+free
+choice Isn't that hard on them? -> livery_why
+choice Goodbye. -> bye
+node livery_why
+say Perhaps. I pray for every one of them. I just do it with #door# shut. The Bright One can sort the rest.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

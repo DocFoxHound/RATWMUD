@@ -1,0 +1,310 @@
+# cw162, the travelled stone (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw162
+revision 2
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_fenwick_plankworth
+written_by claude
+title the travelled stone
+fits stage=adult|old
+prefers job=miner drive=restless
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=restless
+quirk collects_smooth_stones_from_the_riverbanks
+likes warm_bread roof_birds new_boots thunder
+dislikes stale_bread haggling
+fears a_roof_that_gives_no_warning dying_where_nobody_knows_my_name
+hopes one_more_road_before_the_last
+topics work +0.4 travel +0.3 animals +0.2 memories +0.2 weather +0.2 gossip -0.2 faith -0.2
+styles comfort=practical gossip=careful refuse=short tease=none
+marks oath saying
+persona #self.first# came up from the lake country and never quite stopped moving: shrewd and close, quick to weigh rock and wolves alike, forever turning a smooth stone in one paw while deciding something, and watching the birds on the roofs as if the birds knew the way out.
+
+words
+oath! = Lake and lode | Deep water, hard rock
+saying! = A stone goes where the water sends it | The smoothest stones came furthest
+stone = a smooth stone | a stone off the riverbank | a water-stone
+pocket = my coat pocket | the pocket with the stones in
+lode = the lode | the iron lode
+shaft = the shaft | the main shaft
+roster = the roster | the shift roster
+props = the props | the pit props
+stream = the stream | the stream under the scree
+roofbirds = the birds on the roofs | the jackdaws on the ridge-tiles
+newboots = new boots | boots with the stiff still in them
+warmloaf = bread warm from the bakehouse | a loaf that burns your paws
+greycrust = stale bread | a crust gone grey
+peals = thunder | thunder in the peaks
+haggle = haggling | haggling over a copper
+post = the post | the carrier's bag
+valley = this valley | the high valley
+lakehome = the lake | my old lake
+city = Ridgemere | the city
+row = the row | the miners' row
+crews = the crews | my crews
+carts = the ore carts | the carts
+cage = the cage | the pit cage
+
+any
+opinion @1 church against 1 : #props.capitalize# hold up the roof, not prayers. I'd give the plate a copper if it shored a single seam.
+opinion @1 city mixed 1 : I've no quarrel with #city#. It's one more road I've not been down yet, #address#.
+opinion @1 newcomers for 1 : I came up #valley# a stranger myself. A wolf who's moved once knows what it costs to arrive.
+opinion @1 road for 1 : #saying.capitalize#. Keep your wits on a road and it takes you somewhere; stay put and you only get older.
+opinion @1 watch against 1 : #watch.capitalize# know every wolf's business but their own. I'd rather they knew less of mine.
+opinion @1 merchants against 1 : I can't stand #haggle#. Name a fair price or don't name one; I've a shift to run.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. New hereabouts, by the look of you. | #greet#. You've the look of the road on you.
+line @2 greet [pair.band=strangers here.region=frosthollow] : #greet#. You'll be up from down the pass, then. | #greet#, #address#. New in #valley#, I'd say.
+line @3 greet [self.working=yes self.job=miner] : #greet#. Mind the cart rails; #shaft# is busy. | #greet#. Say it quick, #address#; I've a shift going down.
+line @4 greet [here.time=dawn] : #greet#. Up before #roofbirds#, #address#. | #greet#. You're up as early as I am.
+line @5 greet [here.time=dusk|night] : #greet#. The lamps are coming on along #row#. | #greet#. Late to be out walking, #address#.
+line @1 kin.open [pair.kin!=no] : Come in and sit. I've no news, as usual, #address#. | So it's you. #good.capitalize#. Pull the door to behind you.
+line @1 again.open : A second time today. The place is smaller than it looks, #address#. | #welcome_back#. I'd thought you'd gone off down the road.
+line @1 greet.return : #greet#. | #greet#, #address#. #good.capitalize# to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was thinking of you, near enough. | #greet#. Sit, if you've a moment.
+line @3 greet.return [self.working=yes self.job=miner] : #greet#. Walk with me to #shaft#. | #greet#. Quick, then; they're waiting on me below.
+line @1 farewell : #farewell#. Keep your feet dry. | #farewell#, #address#. Mind how you go.
+line @2 farewell [here.region=frosthollow] : #farewell#. Mind the scree on the way down. | #farewell#, #address#. Watch the cart rails.
+line @3 farewell [here.time=dusk|night] : #farewell#. Keep near the lamps along #row#. | #farewell#. Sleep sound, #address#.
+line @1 farewell.return : #farewell#. | And to you, #address#.
+line @1 react.news : #surprise#. Who had it first? | News is #very# rare where I stand. Go on.
+line @1 react.news.new : #surprise#. First I've heard of it, #address#. | That's not reached #row# yet.
+line @1 react.news.known : #knew#. It was all along #row# by noon. | Heard it last night. Old water, that.
+line @1 react.news.doubt : #doubt#. I'll wait for a wolf who was there. | Talk grows in the dark, #address#. I'll wait for daylight on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a #bad# thing to hear. #pity#. | #sympathy#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize#, that. | That's #good# news. We could all use some.
+line @1 answer.how : Steady, #address#. Nothing's broken that I know of. | #fine#. Restless, but that's nothing new.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Ask me when the day's done. | Up to the ears in it, #address#. Later.
+line @2 answer.how.busy [self.working=yes self.job=miner self.class=middle|upper] : Two crews short and #roster# in pieces. | #busy.capitalize#. The rock's moving and so am I.
+line @1 ask.how : And yourself, #address#? | How's the road been treating you, then?
+line @1 sympathise : #sympathy#. Sit a while; it'll keep. | That's #bad#. If there's a thing I can shift for you, say it.
+line @1 reassure : #reassure#. Rock settles. So do most things. | It'll hold, #address#. Give it time and a good prop.
+line @1 decline : #hedge#, I can't. There's a thing that won't wait, and it's mine to see to. | I'd like to, #address#, but not today. I've given the day away already.
+line @2 decline [self.working=yes self.job=miner] : #hedge#, but no. #roster.capitalize# is mine, and I'll not leave it to chance. | I'd like to, #address#, but I'm wanted below till the shift's up.
+line @1 accept_decline : #no_matter#. It'll keep. | Another day, then, #address#. No harm.
+line @1 thank : #thanks#. I'll mind that. | I owe you one for that, #address#.
+line @1 deflect_thanks : #deflect#. | A short walk, #address#. Nothing more.
+line @1 preclose [self.working=yes self.job=miner] : Well. #shaft.capitalize# won't wait on me. | I'd best get below before #crews# start without me.
+line @2 preclose : #preclose#. | Well. I've #stream# to walk before dark, #address#.
+line @1 accept_preclose : Go on, then. #farewell#. | Aye, off you go. #good.capitalize# talking.
+line @1 ack : #bc_right# | Hm. #agree#.
+line @1 give.advice : #advise#: never trust a roof that's gone quiet. | Buy #newboots# a size big and wear them in slow. #saying#.
+line @1 warn [world.bandits=near] : Don't take the road alone, #address#. There's word of robbers. | Wait for #carts# and walk with them. Safer in numbers.
+scene stone_in_paw
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : See this? #stone.capitalize#. I turn it over while I make my mind up about a thing. | I've a stone in #pocket# that's been with me longer than my boots. | Every stone I keep has been rolled smooth by water. I've no use for any other kind.
+b : What are you deciding now? | Where did it come from? | Why only those?
+a : Whether to trust you. It's still turning, #address#. | Off a bank three valleys back. It's moved as often as I have. | Rough rock I see all day. A smooth one's rock that's had the corners taken off it.
+b : #bc_ha# | #bc_fair_enough# | #bc_wise#
+
+scene travelled_stones
+when topic=memories|travel
+does tell.feeling / react.self / assess
+a : #saying#. A smooth stone's come a long way to get smooth. I like that about them. | Every stone in #pocket# was somewhere else once, further up. Same as me. | I can tell how far a stone's travelled by how round it is. A wolf's no different.
+b : You've come a long way too. | Same as you? | How round are you, then?
+a : Far enough to have lost my corners, #address#. Not far enough to stop. | Further up, and rougher. The water's been at me a while now. | Rounder than I was. Not round enough to sit still.
+
+scene riverbank_walk
+when topic=pastimes|land here.region=frosthollow
+does tell.self / react.self / assess
+a : Rest days I walk #stream# down from the tarn, looking at the bank for stones. | Found a white one in #stream# this morning, round as an egg. That's the best in a month. | The water up here is too quick for good stones. They don't get time to settle.
+b : Find many? | White? | Too quick?
+a : One a walk, if I'm lucky. I put back more than I keep. | White, with a grey band through it. I'll keep that one. | Too quick, and too cold. Down in #lakehome# the water had all the time in the world.
+
+scene reading_rock
+when topic=work self.job=miner self.working=yes self.class=middle|upper
+does tell.self / ask.detail / answer.detail / assess
+a : Down at the new face this morning, I put my paw on #lode#. It's good rock. | #lode.capitalize# turned west last week. I've moved two crews to follow it. | Rock talks, if you listen. This morning it said nothing, and I don't like quiet rock.
+b : How can you tell by the paw? | Two crews? | What does quiet mean?
+a : Warm rock's wet, cold rock's sound. Years, and you feel it before you know it. | Two crews and a cart. If it turns back, I'll look a fool. | It means listen harder. I pulled the crew back an hour, to be sure.
+b? : #bc_wise# | #bc_we_will_see# | #bc_good#
+
+scene the_roster
+when topic=work self.job=miner self.class=middle|upper
+does tell.complaint / react.complaint / insist / ack
+a : Everyone wants the dry face and nobody wants the wet. #roster.capitalize# makes me no friends. | Three crews, two good faces, and one wolf with a cough. I've been up half the night on #roster#. | Folk think a captain picks favourites. I pick who'll come back up.
+b : Somebody has to take the wet. | What about the cough? | That's the job, though.
+a : Somebody does, and they'll remember it was me who sent them. | Up top on the carts, and grumbling. Better grumbling than below. | It is. I'll not say I sleep easy on it, #address#.
+b : #bc_true# | #bc_fair# | #bc_i_know#
+
+scene first_cage
+when topic=work|day here.time=dawn self.job=miner self.class=middle|upper
+does tell.self / react.self / assess
+a : First cage at dawn. I count them on, and I'll count them off at dusk. | #shaft.capitalize#'s breathing cold this morning. That's a good sign, mostly. | I'm always last into the cage. Somebody has to see the top's shut.
+b : Every one? | Breathing? | Last in, first out?
+a : Every one, every day. I'll not trust another wolf's count. | Air comes up when the deep's clear. When it stops, we stop. | Last in, last out. That's what the brass is for.
+
+scene home_water
+when topic=memories|home self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : Back in #self.from_town#, on a still day, you could see across #lakehome# to the far shore. | I miss the flat of #lakehome#. Up here nothing's flat, not even the floors. | A morning of #fog# on the water, and nobody saying a word. That's what I think of.
+b[from=coldwater] #cw : I know that still. Nothing like it. | Flat water. I'd give a lot for it. | That's home, that.
+b : Do you miss it? | Nothing's flat? | It sounds peaceful.
+a@cw : Then you know why I can't sit still up here. | We're the same, then. Two flat wolves in a steep place. | It is, #address#. And neither of us is in it.
+a : Some mornings. Then I go down #shaft# and forget. | Not a stair, not a street, not a bed. I've stopped noticing. Nearly. | Peaceful, and slow. I left because it was slow. Now I miss it.
+
+scene no_letters
+when topic=family|memories self.away=yes
+does confide / react.self / assess
+tone even / tender / even
+a : #vent#: nobody from home writes. I stopped watching for #post# a while back. | Every time #post# comes up the pass I tell myself I'm not looking. | I write home twice a year. I've never once had a reply, #address#.
+b : That's hard. | Do you look anyway? | Maybe the letters go astray.
+a : It's quiet. I'm used to quiet. Mostly. | Every time, and I'd not admit it to most. | Maybe. I'd rather believe that than the other, so I do.
+
+scene roof_birds
+when topic=animals|pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail / assess
+a : There's a jackdaw on the ridge-tiles who watches me go down every morning. | I could watch #roofbirds# for an hour and not notice the time. | #roofbirds.capitalize# know a storm's coming before the sky does. They go quiet.
+b : Does it watch you come up too? | What do they do? | Do they?
+a : It's gone by then. I don't take it personally. | Squabble, mostly, and then all fly off at once, as if somebody called them. | Quiet as a roof that's going to fall. I've learned to listen for it.
+b : #bc_ha# | #bc_lovely# | #bc_wise#
+
+scene new_boots
+when topic=smalltalk|prices self.likes=new_boots
+does tell.self / react.self / assess
+a : I've #newboots#. My feet are angry, but my heart's glad. | Nothing like new boots to make a wolf think about walking somewhere. | Bought boots from the cobbler at a fair price, and didn't argue a copper of it.
+b : They'll soften. | Walking where? | No haggling?
+a : A week on the scree and they'll be mine. | Anywhere. That's the trouble with new boots, #address#. | None. I'd rather pay a copper too many than stand there arguing it.
+
+scene no_haggling
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / assess / ack
+a : The cobbler wanted to argue his price up and down. I told him to name it once. | Fighting at a stall over a copper? Life's too short, and so's the shift. | Every price up here comes with an argument attached. I'm #tired# of it.
+b : Did he? | Some like the fight. | It's how it's done.
+a : He did, and it was fair, and I paid it. He looked almost sorry. | Let them. I'll pay and go, and they can fight each other. | Not by me. I name it once, #address#. Then I walk.
+b? : #bc_ha# | #bc_fair_enough# | #bc_fair#
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : #warmloaf.capitalize#, before the shift. That's the only thing that gets me up the row. | I'll walk the long way round to pass the bakehouse door. | Somebody left #greycrust# in my snap tin. I'd sooner go down hungry.
+b : That's the way. | For the smell? | Who'd do that?
+a : That, and duty. But mostly the bread, #address#. | For the smell. I've no shame about it. | I've my guesses. They'll keep, #address#.
+
+scene thunder_peaks
+when topic=weather here.weather=storm here.region=frosthollow
+does tell.feeling / react.self / assess
+a : #peals.capitalize#, and me above ground for once. I'll stand out and watch it come. | I like a storm. It's the one noise in #valley# louder than the pit. | Hear it roll down #valley#? On #lakehome# it came across the water, low and long.
+b : You like it? | Louder than the pit? | Across the water?
+a : I do, with a roof over me. Below, I never think of it. | Louder, and it doesn't need feeding. | Across #lakehome#, and you'd see the rain walking towards you. Here it just falls on you.
+
+scene snow_country
+when topic=weather here.weather=snow here.region=frosthollow
+does tell.self / react.self / assess
+a : #snow.capitalize# again. Where I grew up, a snow like this was a story for a year. | They're shovelling out #row#. I'll be out there with a spade myself. | Snow, and the jackdaws gone in. I'll not see them till it stops.
+b : It's every week up here. | With a spade yourself? | Where do they go?
+a : Every week. I've given up telling it as news, #address#. | It's quicker than waiting for the spades to find me. | Under the eaves, all in a row. Wiser than us.
+
+scene grey_mist
+when topic=weather here.weather=fog|overcast here.region=frosthollow
+does tell.feeling / react.self / assess
+a : Cloud on the ground like this is the nearest thing up here to a morning on #lakehome#. | Cloud right down to the roofs. #row.capitalize# runs off into nothing. | Grey all day. #roofbirds.capitalize# have given up and so have I.
+b : You like this? | Can you see your way? | Give up on what?
+a : I like it. It's #lakehome# without the water, #address#. | By the lamps, and by memory. I could walk #row# blind. | On the day, near enough. I'll go indoors where the weather can't follow.
+
+scene itchy_feet
+when topic=dreams|travel
+does tell.feeling / ask.opinion / give.opinion / assess
+a : I've stopped in one place long enough. My feet are itching again. | I dream of roads. Not going anywhere, just walking one. | Some nights I count up how many places I've lived. It's more than I'd tell most.
+b : Would you leave? | Where to? | How many?
+a : Not yet. #lode.capitalize# still wants me. But one day, and not a word before. | Wherever the road goes, #address#. That's the dream. | More than you'd think. I'll stop when the water stops pushing.
+b : #bc_we_will_see# | #bc_lovely# | #bc_fair_enough#
+
+scene lean_times
+when topic=times|prices world.times=hard|lean self.job=miner
+does tell.worry / react.complaint / reassure / ack
+a : The ore buyers are paying less and the crews want more. I'm in the middle, as usual. | Lean month. Two of #crews# are sharing one pot of snap between them. | When times are lean, the crews take risks. I watch them closer.
+b : Hard on everyone. | That's a thin pot. | What sort of risks?
+a : Hard, but #lode# holds. #reassure#. | Thin, and I've put a loaf in it. A hungry crew's a careless crew. | Shortcuts on #props#. I'll not have it, and I'll say so twice.
+b? : #bc_true# | #bc_wise# | #bc_good#
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.job=miner
+does tell.worry / react.self / assess
+a : The carts didn't come up for the ore. We've a heap at the pithead going nowhere. | No carts, so no #props# from below. I've crews shoring with old timber. | The carts are late again. Every day late is a day the crews ask me why.
+b : They'll come. | Old timber? | And what do you say?
+a : They will. I'll be standing on the heap when they do. | Old, and I've checked every piece myself. Twice. | That I don't know. It's the one true thing I tell them some weeks.
+
+scene gossip_held
+when topic=gossip self.job=miner self.class=middle|upper
+does tell.gossip / react.news / insist / ack
+a : A captain hears everything at the cage. Most of it goes in #pocket# with the stones. | There's talk on the row about somebody. I'll not say who. | Folk tell me things to get a better face on #roster#. It doesn't work.
+b : Go on, then. | Not even a hint? | Does anyone try?
+a : No. It's safer with the stones, #address#. | Not even that. A loose word below gets a wolf hurt. | Every week. They get the face the rock says, and nothing else.
+b : #bc_ha# | #bc_fair_enough# | #bc_fair#
+
+scene lake_words
+when topic=accent self.away=yes self.from=coldwater here.region=frosthollow
+does tell.self / react.self / assess
+a : Folk up here laugh when I say #greet#. Lake words, at the top of a mountain. | Years up here and I still say #farewell# going out the door. They've stopped asking. | I've picked up the valley's words, but my own still come out when I'm #tired#.
+b : They'll get used to it. | They know what you mean. | Everyone's do.
+a : Some of them say it back now. I take that as a win. | They do. And it's good luck, so they let me. | Everyone's. Mine come out like water through a crack.
+
+story first_stone [topic=memories self.away=yes self.from=coldwater self.age>=25]
+  : The first stone I ever kept came off the shore of #lakehome#, the morning I left.
+  : I meant to throw it back. I put it in my pocket instead, and it's been in a pocket of mine ever since.
+  ask : Have you kept anything from the place you left?
+  b : Not a thing. I wish I had.
+  b[old] : A key to a door that isn't there any more.
+  : #saying#. It's rounder now. So am I.
+
+story the_quiet_prop [topic=work|memories self.job=miner self.age>=30]
+  : Years back I was on a face and heard #props# go quiet. Not a creak, not a tick.
+  : I pulled the crew out without a word. They cursed me every step to the cage.
+  ask : Would you have pulled them out, on nothing but a quiet?
+  b : I hope I would.
+  b[job=miner] : Every time. Quiet rock's the worst kind.
+  : An hour later the roof came down where we'd stood. Nobody cursed me after that.
+
+story jackdaw_thief [topic=animals|pastimes self.likes=roof_birds]
+  : I set #stone# down on a wall once while I tied my boot. A jackdaw had it before I'd stood up.
+  : It flew to the ridge-tiles and sat there looking at me with my stone in its beak.
+  b : Did it give it back?
+  : It dropped it on the roof and left it. I climbed up for it. Captain of a mine, on a roof, for a pebble.
+
+rule @cage_call
+when concept=bark working=yes self.job=miner self.class=middle|upper
+does aside
+cooldown 6h
+say Cage is going down. Lamps lit, and count off. | Mind #props# on the west face. Nobody touches them but me.
+
+rule @stone_bark
+when concept=bark
+does aside
+cooldown 10h
+say Hm. Where's my... there. In #pocket#. | #oath#. Smooth as the day I found it.
+
+rule @storm_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There it goes. #peals.capitalize#, and a good one. | Listen to that roll. Like a lake breaking.
+
+rule @birds_bark
+when concept=bark here.outdoors=clear self.likes=roof_birds
+does aside
+cooldown 10h
+say Look at #roofbirds#, squabbling. | There's that jackdaw again, watching me.
+
+dlg @1 resident.hub : #greet#, #address#. Say what you're after; I've a shift soon. | #greet#. You'll be wanting something, by the look.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've come round again. What's wanted today?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Speak plain and keep your distance. I've no time for games.
+dlg @1 resident.job [self.job=miner self.class=middle|upper] : #self.trade_words.capitalize#. I send the crews down, read the rock, and see them all back up. | I keep #roster# and the rock honest, and nobody hurt, while I've a say.
+dlg @2 resident.job : I work, and I walk #stream# on my rest days. There's no more to me than that, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing comes up #shaft# but ore. | Not a word worth carrying, #address#.
+dlg @1 resident.bye : #farewell#. Mind the rails. | #farewell#, #address#.
+graft resident.hub
+choice What's that stone you keep turning over? -> stone
+node stone
+say A water-stone, off a riverbank. Rolled smooth before I was born. I turn it while I think; it helps.
+mood calm
+free
+choice Why water-stones? -> stone_why
+choice Goodbye. -> bye
+node stone_why
+say Because they've travelled. Every one of them came a long way to get smooth. I've some sympathy with that.
+choice I see. -> hub
+choice Goodbye. -> bye

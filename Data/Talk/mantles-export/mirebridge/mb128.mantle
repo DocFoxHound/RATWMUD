@@ -1,0 +1,473 @@
+# mb128, the reed in every sack (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb128
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for rm_gudrun_ropeford
+written_by claude
+title the reed in every sack
+fits stage=adult|old
+prefers role=merchant warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk ties_a_twist_of_dry_reed_into_every_sack_for_luck
+likes oatcakes dice sharp_knife misty_dawns
+dislikes cold_tea wet_floors
+fears a_short_sack_nobody_can_account_for damp_in_the_flour
+hopes a_winter_with_the_back_wall_full one_more_white_morning_on_the_reeds
+topics work +0.4 food +0.3 prices +0.3 home +0.2 memories +0.2 caravan +0.2 gossip -0.3
+styles comfort=feeding gossip=discreet refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps the stores counted to the last sack and ties a twist of dry reed into the neck of each for luck: warm, plain and loyal, quick to feed whoever is at the counter and slow to say who owes what.
+
+words
+oath! = Reed and rye | By the dry reed | Sack and sedge
+saying! = A tied sack spills nothing | Put by in plenty, eat in want | Count it in, count it out, then sleep
+reed = a twist of dry reed | a reed from the bundle
+reeds = the reed bundle | my bundle of dry reed
+sacks = the sacks | every sack on the back wall
+stockbook = the stock book | my book of sacks
+oats = oats | good dry oats
+oatcakes = a batch of oatcakes | oatcakes off the griddle
+knife = my twine knife | the little bone-handled knife
+dice = dice | the bones
+whitedawn = a white morning on the reeds | first light with the mist down on the water
+cartsin = the gate carts | the carts off the High Road
+gateroad = the gate road | the north road in
+fen = the fen | the reed beds at home
+counter = the counter | my counter
+step = the step | my front step
+shutters = the shutters | the shop shutters
+lamp = the lamp | my counting lamp
+kettle = the kettle | the old black kettle
+coldcup = a cup gone cold as the step | tea left standing till it's cold
+wetfloor = a floor tracked with rain | wet paw-marks all over my boards
+putby = put by | put by and tied
+
+any
+opinion @1 strangers for 2 : A traveller buys one sack and leaves a story on #counter#. I'll take both, #address#, and thank them for the story.
+opinion @1 newcomers for 2 [self.away=yes self.from=fenshore] : I came up from #fen# with one bag and #reed# in it. Anyone who'll lift their share is welcome to the room I had.
+opinion @2 newcomers for 1 : There's room in #here.town# for any wolf who'll carry a sack. I've never asked one where they were from before they lifted, #address#.
+opinion @1 merchants for 1 [self.role=merchant] : I pay for every load before one grain of #oats# is sold. Anyone who thinks a counter's easy coin can stand behind mine a month.
+opinion @1 road against 1 [self.role=merchant] : Every load off #gateroad# comes in later than the last. Late #oats# are dear #oats#, and it's my neighbours pay for it, not me.
+opinion @2 road against 2 [world.wagons=raided] : #bandits.capitalize# on the road again. I'd sooner a short sack than a cart that never comes, and the driver with it.
+opinion @1 watch mixed 1 : The Watch keeps light paws off #counter#, and I'm grateful. Who keeps the Watch's own paws clean is a different sack, and I keep that one tied.
+opinion @1 houses mixed 0 : The Houses pay on the day, I'll say that for them. What else they pay, and who to, stays behind my teeth, #address#.
+opinion @1 dole for 1 : Nobody should lie down #hungry# with this many sacks in one city. I'd give a bowl before I'd give a lecture, #address#.
+opinion @1 city against 1 [here.region=ridgemere self.away=yes] : Up here nobody knows who sleeps on the next stair. In #fen# I knew whose boat it was by the sound of the pole.
+opinion @1 drink mixed 0 : #drink.capitalize# after a long day's lifting hurts nobody. I sell the #oats#; what folk brew of them is their own business.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come in and look; nothing on these shelves bites. | #greet#. A new face at #counter#. Take your time over it.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Step round #sacks#; I'm halfway through a count. | #greet#. One moment. I've #reed# to tie in, and then I'm yours.
+line @3 greet [here.time=dawn] : #greet#. First on #step# today; that's luck for somebody. | #greet#. Early. #kettle.capitalize#'s barely on.
+line @4 greet [here.time=dusk|night] : #greet#. Near shut, but there's light enough to find a sack. | #greet#. Late for #oats#. Never too late for a word.
+line @5 greet [here.outdoors=rain here.region=ridgemere] : #greet#. Shake off on the sacking, #address#; I've only now dried the boards. | #greet#. #rain.capitalize# again. Stand on the mat a moment.
+line @1 kin.open [pair.kin!=no] : Good, it's you. Sit on the oat sack; it's the softest seat in the house. | Come here. I've kept #oatcakes# back for exactly this.
+line @1 again.open : #welcome_back#. Nothing's moved since, bar two sacks. | Twice today. I'll start keeping a stool by #counter# for you.
+line @1 hail [pair.band=friends] : #address.capitalize#! Spare me a breath when your paws are free. | Over here, #address#. Come and stand on the warm side.
+line @1 greet.return : #greet#. | #greet#, #address#. Come in out of it.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'd a feeling it'd be you. | #greet#. Sit down, sit down. I'm nearly done.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. #counter.capitalize#'s yours when you want it. | #greet#. Tell me what's wanted and I'll reach it down.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but #lamp#'s still going. | #greet#. I'd #shutters# half up. Come in anyway.
+line @1 farewell : #farewell#. Mind #step# going out. | #farewell#, #address#. Come back hungry.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the busy streets this late. | #farewell#. Get yourself home and #good# before it's full dark.
+line @3 farewell [here.outdoors=rain] : #farewell#. Put a sack over your head, if you've nothing better. | #farewell#. Run between the doorways; it's #rain# all the way down.
+line @1 farewell.return : #farewell#. | #farewell#, and a full larder to you.
+line @1 react.news : #ack#. That wants thinking over. | Does it, now. I'll keep that by me a while.
+line @1 react.news.new : #oath#. That's new on me. | #surprise#. Nobody breathed it at #counter#.
+line @1 react.news.known : I had it at #counter# this morning, #address#. | #knew#. Half #gateroad# had it before I did.
+line @1 react.news.doubt : #doubt#. I'll weigh that before I pass it on. | Hm. That's carters' talk, and carters talk long#tag#
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. I'll see a sack goes round to that house. | #pity.capitalize#. Who's seeing to the house now?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's #good# news. I'll bake on the strength of it. | #gladnews.capitalize#. That's one sack I'm glad to tie.
+line @1 answer.how : Steady, #address#. Everything counted and nothing short. | #fine.capitalize#. My back's had better days, but #stockbook# balances.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three carts and one pair of paws. | Busy as a wet week. I've not sat since #shutters# came down.
+line @1 ask.how : And you? Eating properly? | How's your own house keeping, #address#?
+line @1 sympathise : Oh, #address#. Sit down; I'll put #kettle# on and you needn't talk. | #sympathy#. Take an oatcake at least. It sits lighter on a fed stomach.
+line @1 reassure : #reassure#. And there's always a sack here, if it comes to that. | It'll come right. Things mostly do, given #luck#.
+line @1 decline : #hedge#; I can't leave #counter# with the carts due. Another day, gladly. | I'd like to, but I've #sacks# to count before dark, and nobody else will.
+line @1 accept_decline : #no_matter.capitalize#. It'll keep. | Another day, then. I'll put it by till then.
+line @1 thank : #thanks#. That's a kindness, and I'll put it by. | #thanks#, #address#. You'll have it back in #oats#.
+line @1 deflect_thanks : #deflect.capitalize#. It was only a sack. | Go on with you. You'd have done it for me.
+line @1 preclose [self.working=yes] : Well. #sacks.capitalize# won't count themselves. | I'd better get on; #cartsin# will be at the door.
+line @2 preclose : Well. #preclose#. | I'll let you get off. #saying#.
+line @1 accept_preclose : Go on, then. I've had my share of you. | Off you go. Come back when #sacks# are fuller.
+line @1 ack : #bc_it_is# | #agree#.
+line @1 give.advice : #advise.capitalize#: buy your #oats# before the cold, not after it. | Keep your flour off the floor and your coin off the counter. #saying#.
+line @1 warn [world.bandits=near] : Keep off the High Road a while, #address#. #warn#. | If you're going out past the gate, go with company#tag#
+line @1 offer : Here. Take an oatcake for the road, #address#. | You'll have a cup with me. #kettle.capitalize#'s only just boiled.
+line @1 congratulate : #congrats.capitalize#. I'm glad for you, truly. | Well done. That's something worth putting by, #address#.
+scene reed_in_the_neck
+when topic=smalltalk|pastimes self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : There. #reed.capitalize# in the neck before I tie it. Every sack, every time. | You'll find #reed# in every sack I sell. Don't put it on the fire till the sack's empty. | I keep #reeds# under the counter. Six hundred sacks since the last one ran out.
+b : What's it for? | Why not burn it? | Six hundred?
+a : Luck. A dry reed keeps a sack dry, my #gran# said, and she never lost one to the damp. | Burn it early and you've burnt the luck before #oats# are eaten. After, it's only a reed. | Near enough. I don't count reeds, only #sacks#. The reeds count themselves.
+b : #bc_fair_enough# | Ha. I'll keep it, then. | #bc_clever#
+
+scene the_night_count
+when topic=work|day self.role=merchant here.time=dusk|night
+does tell.self / ask.detail / answer.detail / backchannel
+a : #shutters.capitalize# up, and now the count. #sacks.capitalize#, then the jars, then #stockbook#. | Forty-one oat sacks at dawn and thirty-four now. That's a #good# day, in one line of #stockbook#. | I'd know in my sleep if a sack walked. I've woken for less, #address#.
+b : Every night, the whole lot? | Seven gone in a day? That's trade. | You'd wake for one sack?
+a : Every night. Miss one and you're guessing by the week's end, and a guessing store goes #hungry#. | That's seven houses fed. I write it down as #sacks#, but that's what it is. | For one short sack I'd be up with #lamp#. #saying#.
+b : #bc_wise# | #bc_fair# | #bc_ha#
+
+scene carts_behind
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / reassure / tell.self / ack
+a : #cartsin.capitalize# are late again, and I've half a wall of #oats# left. | Nothing's come through the gate since yesterday. I keep looking up #gateroad#. | Late carts. I've marked three houses' #oats# as owing till they come.
+b : They'll turn up. They always have. | Looking won't bring them faster. | Will those houses manage?
+a : They always have. I'll still put #little# by against the time they don't. | No, but it gives my eyes something to do. #oath#. | They'll manage. There's a sack behind the door for the one that won't, #address#.
+b? : #bc_true# | #bc_ha# | #bc_bless_you#
+
+scene the_carts_came
+when topic=caravan|work world.wagons=in self.role=merchant self.working=yes
+does tell.news / ask.detail / answer.detail / assess
+a : #cartsin.capitalize# came in at first light, and every sack of it dry. | The carts are in. I've been lifting since dawn and I'd not swap it for a feast. | Loads in. #reeds.capitalize# is half gone already, with all the tying.
+b : All of it dry? | Doesn't your back mind? | How many sacks?
+a : #good.capitalize#, bar one I'll sell cheap to whoever asks first. | My back minds. I tell it there's #oats# in the house, and it hushes. | Enough that I stopped counting aloud. I'll count properly by #lamp# tonight.
+b : #bc_lucky_you# | #bc_ha# | #bc_good#
+
+scene a_cart_taken
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / tell.feeling / ack
+a : A cart taken on the road, they say. Somebody's #oats# are in a ditch tonight. | #bandits.capitalize# again. I'll be weighing what's left with a careful paw. | They took a cart. I keep thinking of whoever was driving it, #address#.
+b : It's a bad road. | Will you put the prices up? | #bc_poor_soul#
+a : #bad.capitalize#, and not a copper from up the hill goes to mending it. | Not on my neighbours. I'll eat the loss before I sell it on to them. | Whoever it was, I hope there's a fire and a bowl at the end of their day.
+b? : #bc_true# | That's decent of you. | #bc_i_hope_so#
+
+scene a_lean_month
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / ask.detail / answer.detail / assess
+a : Lean month. Folk are buying #oats# by the cup, not the sack. | I've a slate behind #counter# as long as a reed, and I'll not chase a line of it. | Hard times. You learn whose house is struggling by what they stop buying first.
+b : By the cup? | You'll not chase it? | What goes first?
+a : By the cup, and counting the coppers twice. I measure it generous. | Not this month. A slate's paid when the times turn, or it was never worth keeping#tag# | Butter. Then the tea. #oats.capitalize# go last, and when they go, I take a sack round.
+b : #bc_bless_you# | #bc_i_hope_so# | #bc_poor_soul#
+
+scene a_kind_month
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : Folk are buying by the sack again. Even the butter's moving. | #good.capitalize# weeks. I paid #cartsin# on the nail and had coin over. | Times are kind. Three slates cleared this week, and I never asked once.
+b : About time. | Coin over? Put it by. | Cleared themselves?
+a : About time is right. I've put the extra #oats# by, against the turn. | Every copper of it, #address#. #saying#. | Paid them off themselves. That's how I can tell the #good# times are real.
+
+scene paws_on_the_boards
+when topic=weather|home here.outdoors=rain here.region=ridgemere self.dislikes=wet_floors self.role=merchant
+does tell.complaint / react.complaint / assess / ack
+a : #rain.capitalize# again, and every customer brings it in on four paws. | Look at that. #wetfloor.capitalize#, and I swept at noon. | I've laid sacking at the door, and they step round it, every last one.
+b : It's the city. It rains. | Swept at noon? | Round it?
+a : It rains. They could still wipe their feet. I've said so, sweetly. | At noon, and twice before. I'll sweep again at dusk and pretend it's the last. | Round it. Next I'll lay it in front of #counter#, and see them step round that.
+b? : #bc_ha# | #bc_poor_soul# | #bc_ha#
+
+scene white_morning
+when topic=weather|day here.outdoors=fog here.time=dawn self.away=yes self.from=fenshore
+does tell.feeling / ask.detail / answer.detail / assess
+a : A mist like this, and I could be home. #whitedawn.capitalize#, and the eels moving under it. | I stopped on #step# a full minute this morning, just breathing. It smells nearly like #fen#. | Murk on the hill streets. Back in #self.from_town# we'd say the reeds were dreaming.
+b : You'd go back, then? | Nearly? | Dreaming of what?
+a : Some mornings. Then #cartsin# come and I've no time to want anything. | Nearly. This one's got smoke in it, and nobody's frying eels. | Of eels, my #gran# said. I never asked what the eels dream of.
+b? : #bc_fair# | Smoke instead of eels. | #bc_ha#
+
+scene murk_on_the_street
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Can't see the far end of the street. #cartsin.capitalize# will be feeling for the gate. | #fog.capitalize# down to the doorstep. I've lit the window lamp, so nobody walks past the door. | #fog.capitalize# on the city, and every voice comes out of it before the face does.
+b : They'll find it. | A lamp in the day? | Eerie, that.
+a : They will. Slowly, and swearing at the horses. | In the day. It's cheaper than losing the trade to a lit door. #saying#. | I like it. You hear who's coming, and have the sack ready, #address#.
+
+scene a_dry_day
+when topic=weather|day here.outdoors=clear here.region=ridgemere here.time=day self.role=merchant
+does tell.self / react.self / tell.self / assess
+a : Sun on the hill streets. Every doorstep in the Commons has someone sitting on it. | #good.capitalize# day. I've the door propped and #oats# breathing. | A clear one. I took my cup out to #step# and nobody came for ten whole minutes.
+b : Not you, though. | Breathing? | Ten minutes' peace.
+a : Not me. I've #counter#, and a counter doesn't sit. | Oats sweat in a shut shop. Give them air on a dry day and they keep, #address#. | And then three at once. #oath#. That's how it always goes.
+b? : #bc_ha# | #bc_clever# | #bc_always#
+
+scene shutters_arguing
+when topic=weather here.outdoors=storm here.region=ridgemere
+does tell.worry / reassure / assess
+a : Hear that wind. I've moved the flour off the floor in case the roof weeps. | Storm on the hill. I sat up with #lamp# and listened to #shutters# argue. | It's coming down sideways. Nobody will be out shopping in this, and quite right.
+b : The roof'll hold. | Did they win? | Have a quiet hour, then.
+a : It held last time. I moved the flour anyway. #saying#. | They always win. I lost a whole night's sleep to them, #address#. | A quiet hour, and a cup off #kettle# that's hot. I'll take both, gladly.
+
+scene grit_on_the_step
+when topic=weather|season here.outdoors=snow here.region=ridgemere self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Snow on the steps. I've gritted #step#, and left a sack of grit by the door for the neighbours. | First snow, and the whole street's in for #oats# as if it'll never stop. | Snow. I put my nose out this morning and took it straight back in.
+b : Grit for the neighbours? | Will it last? | Too cold?
+a : Somebody falls on my step, I'll hear about it all winter. Cheaper to grit it, #address#. | Long enough to clear #sacks#, and that's all I ask of it. | Too #cold# for my nose. The rest of me can work, #oath#.
+b? : #bc_ha# | #bc_ha# | #bc_fair#
+
+scene griddle_cakes
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail / assess
+a : I bake #oatcakes# every Restday for the week. By midweek they're gone. | #oats.capitalize#, water, a pinch of salt, and something hot to cook them on. That's all an oatcake is, and it's plenty. | Here, try one. The butter's on already; I don't trust folk to butter properly.
+b : Who eats them all? | Something hot? | You butter them for folk?
+a : Half go to whoever looks #hungry#. The rest I eat standing up. | A griddle, if you've one. In #self.from_town# we used a flat stone in the fire. | I do. Too many wolves spread it thin and call it buttered, #address#.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene the_cup_gone_cold
+when topic=food|home self.dislikes=cold_tea self.role=merchant
+does tell.complaint / react.complaint / assess
+a : I poured a cup at dawn, a cart came, and now look at it. #coldcup.capitalize#. | I'd drink rain off the gutter before #coldcup#. | Every day the same. I fill it off #kettle#, somebody wants a sack, and it's cold when I'm back.
+b : Drink it anyway. | Rain off the gutter? | Make it after, then.
+a : Never. I'll pour it on #step# and make another, and the same thing will happen. | Rain at least was cold to begin with. Tea's got no excuse. | After what? There's no after, #address#. There's only the next sack.
+
+scene restday_dice
+when topic=pastimes self.likes=dice self.married=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Restday nights it's #dice# with my #self.spouse_word#, a copper a throw. Nobody I'd sooner lose to. | I keep the dice score in #stockbook#, under oats. Nobody ever looks there. | I've a lucky cup for #dice#. Reed-woven. Don't touch it.
+b : You always lose? | Under oats? | Lucky, is it?
+a : Mostly. I count #sacks# all week; I'll not count pips on a Restday. | Between the barley and the salt. It's the safest page in #stockbook#. | Lucky enough. It's the throws that let me down#tag#
+b : #bc_ha# | #bc_clever# | Ha. Blame the cup.
+
+scene who_i_would_trust
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : I'd trust my #self.spouse_word# with the last sack in the city. That's the most I can say of anyone. | Some nights my #self.spouse_word# and I lie listening to #oats# settle. It's a comfort, oddly. | Married, and glad of it. A house is easier to keep with two paws on the rope.
+b : That's a good thing to have. | They settle? | #bc_lovely#
+a : It is. It's seldom said, so I'll say it plain to you, #address#. | They shift and sigh, like something breathing. You'd laugh, but you'd sleep. | It is. #saying#, and a house is no different.
+
+scene the_little_knife
+when topic=work|pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail / assess
+a : This is #knife#. It cuts twine, cheese and arguments. | I hone #knife# every morning before #shutters#. A dull one's a danger to whoever's holding it. | Whoever borrows #knife# brings it back sharper, or doesn't borrow it twice.
+b : Arguments? | Every morning? | Has anyone failed?
+a : Somebody says a sack was short. I cut it open in front of them. That ends it. | Every morning, ten strokes a side. Like saying your prayers, but useful#tag# | One. They buy their twine already cut now, #address#.
+b : #bc_ha# | #bc_wise# | #bc_ha#
+
+scene what_the_fen_smelt_of
+when topic=memories|home self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail / assess
+a : I grew up in #self.from_town#, on the boards, with eel smoke in everything we owned. | My #mum# kept the larder on stilts. Two steps up off the boards, and the floods never reached it. | You never forget the reed-cutting. Paws cut to ribbons, and the whole of #fen# smelling green.
+b : Do you still smell it? | On stilts? | Ribbons?
+a : On a wet day, off the smokehouses down the hill. Not the same, but near. | On stilts. When I first saw a city cellar, I couldn't believe folk would keep #oats# under the ground. | Ribbons. Reed's sharp on the edge. You learn to cut it the way it grows, or bleed.
+b : #bc_lovely# | #bc_ha# | #bc_wise#
+
+scene dry_feet_in_the_city
+when topic=accent self.away=yes self.from=fenshore here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : I say #greet# to every customer, and half of them check their boots. | A city wolf asked me what a tadpole was. I'd said it of a pup in front of its mother, and she laughed. | I've been up here years and #fen#'s still in my mouth. The carters can tell before I've sold a sack.
+b : Do you mind? | What did you say? | Do you mind it?
+a : Not a bit. Dry boots never hurt anybody. | I said it's what we call them before their legs come. They liked that, and they use it now. | No. Of everything I brought, the damp couldn't spoil that.
+b? : #bc_ha# | #bc_lovely# | #bc_fair#
+
+scene the_commons_crowd
+when topic=travel|smalltalk here.region=ridgemere self.away=yes
+does give.opinion / ask.opinion / insist / ack
+a : The Commons on a market day is more wolves than #self.from_town# holds in a year. | Up here you can live a whole winter beside someone and never learn their name. | I've lived in the city a long while, and I still walk like there's water either side of me.
+b : Do you like it? | Is that so bad? | Water either side?
+a : I like the trade. The crowds, I put up with, like the #rain#. | It's #bad# when somebody's ill and nobody knows to knock. I knock, #address#. | Down the middle of every lane. Old habit from #fen#; one step wrong and you're in.
+b? : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene not_saying_who
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear who's behind with their slate. I'll not say who to you or anyone else. | Folk talk at #counter# as if I'm one of #sacks#. I hear it all and tie it up tight. | #vent.capitalize#: half of what's said in this street is about who owes what.
+b : Go on, just one name. | You must hear plenty. | And the other half?
+a : Not one. A slate's between me and the house, and the Bright One. | Plenty. And it goes nowhere but into my head. #saying#. | Who's courting whom. That half I'll tell you, if you bring #oatcakes#.
+b : #bc_fair_enough# | #bc_wise# | #bc_ha#
+
+scene light_paws_about
+when topic=gossip|crime topic.claim_kind=theft|wanted
+does tell.gossip / react.news / give.advice / ack
+a : They say #topic.subject# #topic.claim#. I've moved the coin box back a stride. | Word at #counter# is that #topic.subject# #topic.claim#. Keep your purse inside your coat. | #topic.subject.capitalize# #topic.claim#, so they say. I'll lock up quicker than I'll swallow it.
+b : Is it true, do you think? | I'll mind it. | Lock up anyway?
+a : #hedge#. But a coin box a stride back costs me nothing. | Do. #warn#. Thieving's quick and coats are slow. | Anyway. A lock's cheaper than a lesson, #address#.
+b? : #bc_wise# | #bc_true# | #bc_wise#
+
+scene glad_word
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Did you hear? #topic.subject.capitalize# #topic.claim#. I'm that pleased. | #topic.subject.capitalize# #topic.claim#, they're saying at #counter#. #good.capitalize# news for once. | Word is #topic.subject# #topic.claim#. I'll put #oatcakes# by, in case there's a gathering.
+b : #bc_lovely# | About time we had some. | You bake for everything.
+a : Lovely, and nobody's #sacks# the poorer for it. | It is. I'll take good news over a full cart, some days. | Everything worth baking for. That's most things, if you look, #address#.
+
+scene a_new_face
+when topic=newcomer|player self.role=merchant
+does tell.self / react.self / assess / ack
+a : A stranger in this morning bought a sack of #oats# and asked where the cheap beds were. | Travellers come to #counter# for #oats# and leave with all my news. Fair trade. | I like a new face at #counter#. They pay cash, and they tell you how the road is.
+b : Did you tell them? | Fair enough, if the news is true. | Cash, and news.
+a : I told them which ones are clean. Cheap and clean aren't always the same house. | True as I can weigh it. I'll not sell short weight in news either. | Cash and news. And now and then they come back for a second sack, #address#.
+b? : #bc_wise# | #bc_true# | #bc_good#
+
+scene the_houses_and_the_watch
+when topic=times|crime here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : The Watch is good to my door. I'll say that, and leave the rest of it unsaid. | Some carts go up the hill at night and nobody weighs them. I notice. I say nothing. | The Houses keep the city fed and the Watch keeps it quiet. Who pays which is not my sack to open.
+b : That's a dark thing to hint. | You should say something. | It's everyone's business, surely.
+a : It's no hint. It's what I keep to myself, and I'm only telling you I keep it, #address#. | To who? The ones I'd say it to are the ones it's about. | Maybe so. But I've a store to keep open, and #sacks# to sell to all of them.
+b : #bc_fair_enough# | #bc_true# | #bc_fair#
+
+scene the_bright_one_and_the_sacks
+when topic=faith
+does give.opinion / react.self / assess
+a : I give a sack to the chapel when the year turns. That's my prayer, and it's a heavy one. | The Bright One sees an honest scoop, my #mum# said. I fill mine honest and hope that's noticed. | I'm no great one for pews. But I say thanks every night when the count in #stockbook# comes right.
+b : That's prayer enough. | It will be. | Thanks to who?
+a : I hope so. It's the one I can lift, #address#. | Then we're agreed. I'd sooner be noticed for that than for singing. | The Bright One first, then the carters, then my own two paws. Mostly in that order.
+
+scene water_in_the_flour
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt the water came up through the floor and I was carrying sacks up a ladder that kept getting longer. | I dream of #stockbook#, open, and every line short by one. | Last night I dreamt I was back on the boards with a sack on my head and no shore anywhere.
+b : Did you get them all up? | Short by one? | No shore at all?
+a : All but one. I woke and went down with #lamp#. Dry as a bone. | By one, every line. I woke and counted the back wall in my nightgown. | None. Just reeds, and me, and #oats# getting heavier.
+b : #bc_poor_soul# | #bc_ha# | #bc_poor_soul#
+
+scene lifting_wrong
+when topic=health
+does tell.self / react.self / reassure
+a : My back's tight from the oat sacks. I lifted a heavy one crooked and it told me so. | A cough's going round the street. I've a pot of honey and onion on for anyone who wants it. | I'm well, touch #counter#. I'm afraid to say it louder.
+b : Lift straight, then. | Honey and onion? | I'll touch it too.
+a : I know, I know. I lift how the sack's lying, and the sack's always lying wrong. | My #gran#'s cure. It tastes like a punishment, and it works. | #good.capitalize#. Two paws on the wood is twice the luck.
+
+scene feast_day_shutters
+when topic=festival|season here.day=festival
+does tell.feeling / ask.opinion / give.opinion / assess
+a : Feast day. I've #shutters# half up and #oatcakes# on a tray for whoever passes. | Everyone's out and nobody's buying, and I don't mind it one bit. | I'll shut at noon today. #sacks.capitalize# can count themselves for once.
+b : Giving them away? | You don't mind? | Can they?
+a : One each. It's a feast; I'll not sell a wolf a cake on a feast. | Not one bit. They'll all be in tomorrow, #hungry#. | No. I'll count them by #lamp# tonight. But I'll pretend till then.
+b? : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene the_one_who_lifts
+when topic=work self.hand self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : #self.hand# does the heavy lifting now. I do the counting, and the worrying. | I've #self.hand# on the carts today, and I can hear every sack land from here. | #self.hand# ties a fair knot. Not as fair as mine, but I've stopped saying so.
+b : That's a fair split. | Every one? | Generous of you.
+a : Fairer for my back. The worrying, nobody's offered to take. | Every one. A sack dropped wrong sounds different, and I'm out there before it's settled. | I've learnt it's quicker to keep quiet than to retie #sacks#.
+
+scene the_wolf_next_door
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour#'s the face on this row I'm gladdest of before the shutters go up. | A lamp in #self.neighbour#'s window at night is a comfort in a city this size. | I keep a sack back for #self.neighbour# when the carts are late. I've never been asked to.
+b : Gladdest? | A comfort? | That's neighbourly.
+a : Gladdest. A nod and no chatter, #address#; that's my sort. | It is. In #here.town#, you take your company where the walls are thin. | That's what neighbours are for. Up here, somebody has to remember it. #agree#.
+
+scene first_light_shutters
+when topic=day here.time=dawn self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : #shutters.capitalize# down, #kettle# on, #reeds# on the counter. That's my morning, and I'd not change it. | I like the first hour. Nobody wants anything yet, and #oats# smell sweet. | Up before the carts, every day. If they're ever early, I mean to see it.
+b : A good routine. | Sweet? | Are they ever early?
+a : It's kept me sane, #address#. Every morning the same, and the same mornings are the good ones. | Sweet as hay. By noon it's all dust and coin. | Twice since I've had #counter#. I'll be waiting for the third.
+
+story the_first_reed [topic=memories|lore self.age>=25 self.from=fenshore]
+  : My #gran# kept a larder on the boards back in #self.from_town#. Every sack she ever filled had a reed tied into it.
+  : The flood year, the water came in a hand deep and stood a week. Every sack she had was #good# inside. Every one.
+  : She never said it was the reed. She never said it wasn't, either.
+  ask : Does your house keep a luck of any kind?
+  b[old] : My mother hung a horseshoe. Upside down, mind.
+  b : Nothing I'd own to. Maybe I should start.
+
+story the_short_count [topic=work|memories self.role=merchant self.age>=25]
+  : My first winter at #counter#, I sent a sack out short. Counted twice, and still I got it wrong.
+  : I found it at dusk, in #stockbook#. I walked a scoop of #oats# across the city in the dark to make it up.
+  : The house was asleep. I left it on their step with #reed# in it so they'd know who'd been.
+  ask : Would you have walked it over, or waited for daylight?
+  b : Waited for daylight, I think. And slept badly for it.
+  b[job=merchant] : I'd have walked. You don't sleep with a short sack on the book.
+
+story up_from_the_fen [topic=travel|memories self.away=yes self.from=fenshore here.region=ridgemere]
+  : I came up from #fen# with one bag and a pair of boots that had never been dry.
+  : The first night I got lost in the Commons, three streets from where I was sleeping.
+  : An old carter walked me back, and wouldn't take a copper. Said I looked like a heron on a roof.
+  b : Ha. Did you find him again?
+  : Never. But I've walked a good many lost ones home since, and I tell them the heron bit.
+
+story the_won_sack [topic=pastimes self.likes=dice]
+  : I won a whole sack of barley at #dice# once, off a carter who swore he couldn't lose.
+  : He lost three throws running and paid up with a face like a wet week.
+  : I baked him #oatcakes# out of his own barley, and he laughed in the end.
+  b : That's fair, giving him the cakes.
+  b[friends] : That's you all over. Win it and feed it back.
+
+story the_eel_that_stayed [topic=lore|pastimes self.from=fenshore]
+  : There's a tale in #self.from_town# of an eel that swam into a larder in the flood and never left.
+  : It ate the mice, kept the frogs off #oats#, and slept in the butter crock.
+  : When the old wife who kept it died, they say it swam out the door and up the river after her.
+  ask : Have you heard one like it, where you're from?
+  b[old] : We had a cat like that. Not an eel. A cat.
+  b : Never. An eel in the butter? That one'll stay with me.
+
+rule @cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say #oats.capitalize# by the sack or the cup, and a reed for luck in every one. | Flour, oats, salt and barley. All of it #good#, all of it counted.
+
+rule @tying
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say #oath#. Who's had #reeds#? | There. Tied, and #putby#.
+
+rule @boards_bark
+when concept=bark here.outdoors=rain here.region=ridgemere self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Wipe your feet. Wipe them. #annoyed#. | #wetfloor.capitalize# again. I'll fetch the mop.
+
+rule @carts_bark
+when concept=bark working=yes world.wagons=late self.role=merchant
+does aside
+cooldown 8h
+say Still nothing up #gateroad#. | Late again. #sacks.capitalize# won't hold out past Restday.
+
+rule @mist_bark
+when concept=bark here.outdoors=fog here.time=dawn
+does aside
+cooldown 12h
+say Smell that. Like home, near enough. | #fog.capitalize#, and the street gone soft at the edges.
+
+rule @dusk_bark
+when concept=bark here.time=dusk self.role=merchant
+does aside
+cooldown 8h
+say #shutters.capitalize#, then the count. | Last sack out, and #stockbook#'s waiting.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Flour, salt, barley and #oats#, and #reed# in every sack. | #greet#, #address#. Have a look; everything on the shelf is #good#.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Your usual, or something new? | #topic.player#. Good. I've a sack of #oats# nobody's touched, if you're quick.
+dlg @3 shop.greet [here.outdoors=rain here.shop!=bare] : #greet#. Shake off on the sacking first, please. I've #sacks# to keep dry.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Say what you're after. I'll reach it down and we'll weigh it in front of you.
+dlg @5 shop.greet [here.shop=bare] : #greet#. The carts haven't come and the shelf's bare. I'll still buy, mind, if you've #oats#.
+dlg @1 shop.prices : #oats.capitalize# follow #cartsin#; when the carts are slow, oats are dear. #shop_dear# | Salt's fair, flour's fair, barley's high. I don't set what #gateroad# charges.
+dlg @1 shop.bye : #farewell#. Keep that sack off the floor at home. | #shop_bye# Come back when #cartsin# are in.
+dlg @1 resident.hub : #greet#. Sit on a sack, if you like. What is it? | #greet#, #address#. Say on; I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You'll take an oatcake while you talk. | #topic.player#. I hoped you'd come by. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late, but I'm still counting by #lamp#. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain and I'll answer it plain.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. I buy off the carts, count every sack, and see no house goes short. | I keep the stores. Flour, salt, #oats#. And #stockbook#, which is the hard part.
+dlg @2 resident.job : I work, I count, I feed whoever's #hungry#. That's most of a life. | Whatever's needed, and it's always more than I'd planned, #address#.
+dlg @1 resident.business [business!=thriving|failing] : Steady. The carts are slow, but folk still eat. | Steady enough. It keeps #sacks# full and the roof on.
+dlg @2 resident.business [business=thriving] : Busy every day. I can't keep the back wall full, and I'm not complaining.
+dlg @3 resident.business [business=failing] : Poorly, and I'll say so plain. Folk are buying #oats# by the cup.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. It came in on #cartsin#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #counter# today. Nobody's talking oats.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts brought #oats# and nothing else. | Nothing new. Ask me again when #cartsin# are in.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear a great deal at #counter#. I keep it all tied up.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's all you'll have from me.
+dlg @1 resident.bye : #farewell#. Mind #step#. | #farewell#, #address#. Come back hungry.
+graft resident.hub
+choice Why is there a reed in the sack? [self.role=merchant] -> reed
+node reed
+say For luck. A dry reed in the neck keeps a sack dry; that's what my old gran said, and she never lost one to the damp.
+mood warm
+free
+choice Does it work? -> reed_works
+choice Goodbye. -> bye
+node reed_works
+say I've never had a sack go damp yet. Could be the reed. Could be I keep them off the floor. I'll not risk finding out.
+choice I'll keep mine, then. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Do you really count every sack? -> count
+node count
+say Every sack, every night. Count it in, count it out, then sleep. If one walks, I know which one and when.
+mood pleased
+choice Has one ever walked? -> count_walked
+choice Let me see your wares. -> greet
+node count_walked
+say Once or twice. I won't say whose door it walked to. But I know, and that's usually enough to bring it back.
+choice Fair enough. -> greet
+choice Goodbye. -> bye

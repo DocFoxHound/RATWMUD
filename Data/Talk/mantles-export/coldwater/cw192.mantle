@@ -1,0 +1,303 @@
+# cw192, the swimmer who swears it's warm (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw192
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_gorm_pitchmarsh
+written_by claude
+title the swimmer who swears it's warm
+fits stage=adult|old
+prefers job=merchant temper=short humour=dry
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk swears_the_cold_water_is_warm_after_every_swim
+likes mutton_stew swimming old_maps first_warm_day
+dislikes night_noise gulls
+fears a_stall_saved_for_and_never_had a_winter_too_cold_even_for_me
+hopes a_stall_on_the_commons_with_a_board_over_it a_whole_night_without_singing_under_the_window
+topics pastimes +0.4 work +0.3 food +0.3 dreams +0.3 weather +0.2 festival -0.4 gossip -0.3
+styles comfort=blunt gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# hauls sacks and minds the counter at a Sump stores, swims off the river steps whatever the weather and climbs out swearing the water's warm: short-tempered, dry and stubborn, plain-spoken, saving copper by copper for a stall up on the Commons, fond of mutton stew and old maps that get the roads wrong.
+
+words
+oath! = Sacks and steps | Rot the river
+saying! = Cold's only a word | Nobody hands you a counter
+swim = a swim | a swim off the steps
+steps = the river steps | the steps down to the water
+water = the water | the river
+warm = warm as a bath | warm enough, if you're quick
+stew = mutton stew | a bowl of mutton stew you could stand a spoon in
+stores = the stores | the stores by the bridge
+sacks = the sacks | sacks of meal off the cart
+stall = a stall up the hill | my own stall, with a board over it
+coppers = my coppers | the coppers in my boot
+map = an old map | a map that's wrong about everything
+racket = the noise at night | some lump bawling at the shutters past midnight
+gulls = the gulls | the gulls on the ridge
+lump = some lump | a great lump
+sun = the first warm day | the first day the sun means it
+lake = the lake | the lake at home
+sump = the Sump | down here at the bottom
+commons = the Commons | the Commons market
+
+any
+opinion @1 houses against 2 : I haul their sacks and couldn't tell you what a House wolf looks like. They see the meal arrive, not who carried it.
+opinion @1 merchants against 2 : The big dealers eat well off folk like me. When I've #stall#, I'll price it so #lump# like me can eat too.
+opinion @1 dole for 2 [here.region=ridgemere] : One thin week the parish fed our lot and asked nothing for it. #oath#, nobody runs it down in front of me.
+opinion @1 festivals against 1 : Noise, spilt ale, #lump# sobbing in a doorway. I'd rather #swim#.
+opinion @1 watch against 1 [here.region=ridgemere] : #watch.capitalize# come down our way for one thing: to take somebody off. I don't wave.
+opinion @1 sump for 1 [here.region=ridgemere] : #sump.capitalize#'s home. A neighbour down here gives you half a loaf and doesn't want to know why.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Buying, or just looking about. | #greet#. Mind #sacks#.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. If it's meal, it's at the back. | #greet#. Say what you want; I've #sacks# to shift.
+line @3 greet [here.time=dawn] : Morning. I've had #swim# already. It was #warm#. | Morning. Up before #gulls#, for once.
+line @4 greet [here.time=dusk|night] : #greet#. Late. Don't be long. | #greet#. #stores.capitalize# are shut, if that's what you want.
+line @1 kin.open [pair.kin!=no] : You. Sit, then. There's #stew#. | You. #good.capitalize#. Shut the door.
+line @1 again.open : You again, #address#. Something's up, then. | #welcome_back#. You'll want something.
+line @1 hail [pair.band=friends] : #address.capitalize#. Here. | Oi. A word.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit if you're sitting. | #greet#. There's tea in the pot. Help yourself.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. Talk while I lift. | #greet#. Mind your feet; #sacks# are down.
+line @4 greet.return [here.time=dusk|night] : #greet#. It's late. | #greet#. Quick, then.
+line @1 farewell : #farewell#. | #farewell#. Mind #steps#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps. | #farewell#. Sleep, if #lump# next door lets you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Go on. | Hm. And, #address#?
+line @1 react.news.new : #surprise#. Didn't know that. | #oath#. News to me.
+line @1 react.news.known : #knew#. | Heard. Half #stores# heard it before you.
+line @1 react.news.doubt : #doubt#. Says who? | Show me, #address#. Then I'll swallow it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | #oath#. That's #bad#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | #good.capitalize#. About time somebody had some.
+line @1 answer.how : #fine#. Cold. I mean warm. | Same as ever. #sacks.capitalize#, #swim#, supper.
+line @1 answer.how.busy [self.working=yes self.job=merchant] : #busy.capitalize#. Cart's late and the queue's long. | No time. #sacks.capitalize# won't wait.
+line @1 ask.how : And you, #address#? | You eating, #address#?
+line @1 sympathise : #sympathy#. That's rotten. | Hard luck, #address#. Sit down a bit.
+line @1 reassure : #reassure#. Give it a week; weeks end. | It'll come right. Stubbornness helps; take it from me.
+line @1 decline : #refuse#. I can't spare the coin, and I'll not borrow it. | Not today, #address#. I'm at #stores# till dark and skint after.
+line @1 accept_decline : #no_matter#. | Fair enough. #later.capitalize#.
+line @1 thank : #thanks#. | #thanks#. I'll remember it.
+line @1 deflect_thanks : #deflect#. | It was nothing. Don't make a fuss.
+line @1 preclose [self.working=yes] : Right. #sacks.capitalize# want me. | Back to it. #stores.capitalize# don't run themselves.
+line @2 preclose : #preclose#. | Right. #steps.capitalize# and supper.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go.
+line @1 tease [pair.band=friends] : You look froze. Come for #swim#; it's #warm#. | You'd not last a minute in #water#, #address#.
+line @1 tease.return : Says you, #address#. | Ha. Try me in #water#.
+line @1 take_offence : Watch it. I heard that. | Say that again and we'll fall out, #address#.
+line @1 ack : #bc_right# | Hm.
+scene warm_water
+when topic=pastimes|weather self.likes=swimming here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Had #swim# off #steps# this morning. #warm#. | I go in #water# every morning. Every one. Don't ask me why. | Swam out to the post and back. #saying#.
+b : Warm? It's freezing. | Why, then? | Out to the post?
+a : #warm.capitalize#. My teeth only chatter from habit. | Because the day's no worse after, and I'm awake for it. #saying#. | And back. Somebody has to touch it, or how would we know it's there?
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene swim_winter
+when topic=weather|season here.season=winter self.likes=swimming
+does tell.self / react.self / assess
+a : Ice at the edge of #steps# at first light. Heel through it, and in I went. | Snow on #steps#, and in I went regardless. Somebody shouted I was mad. | Winter #swim#. You don't swim. You get in, swear, and get out.
+b : You're mad. | Were you? | Swear?
+a : I'm awake. That's not the same. It was #warm#, after. | Mad, maybe. Not #cold#, though. | Swear. Then say it was #warm#. Nobody believes the second part.
+
+scene first_warm
+when topic=weather|season here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : #sun.capitalize#. I took my coat off on #steps# and nearly cried. | Today's the one. The sun's warm on your back and #gulls# shut up for once. | First warm day. #water.capitalize# will still be cold. I'll still say it isn't.
+b : Nearly cried? | Even the gulls? | Ha. You would.
+a : Nearly. I'm not soft. It's been a long winter off #steps#. | Even #gulls#. Sat on the roof with their eyes shut. | I would. Because one day I'll be right, and you'll be sorry.
+
+scene sacks_day
+when topic=work self.job=merchant self.working=yes
+does tell.complaint / react.complaint / assess
+a : Forty #sacks# off a late cart, and all before noon. | I've meal in my fur, meal in my ears. #stores.capitalize# eat you alive. | The queue was out the door and somebody wanted change for a silver.
+b : Forty! | Doesn't it wash out? | Did you have it?
+a : Forty. My back's a stick of chalk. #tired.capitalize#. | It washes out in #water#. That's what the swim's for, half of it. | No. Sent them round the corner. #oath#, they didn't like it.
+
+scene counter_rude
+when topic=work self.job=merchant self.working=yes
+does tell.complaint / react.complaint / concede
+a : A fellow snapped his fingers at me across the counter. Snapped them. | Somebody asked was I simple because I took my time. | I'm short with rude ones. I know it. #saying#.
+b : What did you do? | What did you say? | Maybe you should.
+a : Served him last. Took my time over it, too. #oath#. | Told them I was counting, and they'd made me lose my place. | Maybe. Not this year. #saying#.
+
+scene learning_trade
+when topic=work self.apprentice=yes self.boss
+does tell.self / ask.detail / answer.detail / assess
+a : I'm learning the books under #self.boss#. I'd sooner carry #sacks#. | I'm learning the trade off #self.boss#. Prices, measures, who pays late. | Learning under #self.boss# means keeping my temper. Hardest part of the trade.
+b : The books? | Who pays late? | Can you keep it?
+a : The books. Little numbers in rows. I'll need them for #stall#, so I'll learn them. | That's the useful part. You can't eat a measure. You can eat what they owe you. | Most days. I'm working on it. #saying#.
+b : #bc_wise# | #bc_ha# | #bc_good#
+
+scene stall_plan
+when topic=dreams|work here.region=ridgemere
+does tell.plan / ask.detail / answer.detail / assess
+a : Some day there'll be #stall#. A board over it, and my name nowhere on it. | I've #coppers# in my boot for a stall. It's a thin boot. | I walk past #commons# every Restday and pick out where my stall'll go.
+b : Why no name? | How thin? | Where, then?
+a : Because folk should come for what's on the board, not who's behind it. | Thin enough to walk on. #coppers.capitalize# get thicker. Slowly. | By the pump, out of the wind. I've picked it every Restday since I came.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene stew_supper
+when topic=food self.likes=mutton_stew
+does tell.feeling / react.self / assess
+a : #stew.capitalize# tonight. That's all I've planned, and it's plenty. | A swim and then #stew#. Best order there is. | There's a pot-shop down by the bridge does #stew# that'd mend a broken heart.
+b : A good plan. | In that order? | Would it?
+a : Simple's best. Nobody gets a simple plan wrong. | That order. Cold, then hot. The cold's the price, the stew's the pay. | It mended mine. Twice. I'm not telling you about either.
+
+scene old_maps
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I bought #map# off a rag stall. It's got a road that's never been built. | I've three of #map# on my wall. Every one's wrong. I like them better for it. | There's a map of the city on my wall with half #sump# missing. Drawn before it sank, maybe.
+b : A road to where? | Why wrong ones? | Before it sank?
+a : Somewhere east. It just runs off the paper. I reckon it carries on. | Wrong ones are somebody's guess. I like a good guess. A right one's only a list. | Ha. Before anybody bothered drawing us, more like.
+b : #bc_lovely# | #bc_fair_enough# | #bc_ha#
+
+scene night_noise
+when topic=home|smalltalk self.dislikes=night_noise here.region=ridgemere
+does tell.complaint / sympathise / assess
+a : #racket.capitalize# again. Every night this week. | I've a wall like paper and #lump# on the other side of it with a fiddle. | Carts at midnight, singing at one, a fight at two. Then #gulls# at dawn.
+b : That's rotten. | A fiddle? | When do you sleep?
+a : It is. I banged on the wall. #lump.capitalize# sang louder. | A fiddle. Played badly, which is worse than played well. | Between the fight and #gulls#. About an hour. I'm used to it. I'm not.
+
+scene gulls_thieves
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull had the bread off me on #steps#. Right from the paw. | I can't abide #gulls#. Screaming at dawn, thieving all day. | One of #gulls# has learned the back door of #stores#. It waits for the cart.
+b : Bold things. | They're only hungry. | Clever bird.
+a : Bold. I keep a pebble handy for the next one. Not to throw. To look at it with. | So am I. I don't scream about it. | Clever and fat. It eats better than I do off #stores#, and works less.
+
+scene rain_steps
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain. #steps.capitalize# go slick and #water# comes up a step. | Wet day. Swam anyway off #steps#. You can't get wetter. | Rain, and #sump# lanes run like gutters. I take the upper way.
+b : You swam in the rain? | Mind your footing. | The upper way?
+a : Why not? I was going to be wet either way. | I mind it. I've gone down #steps# on my tail before. | The long way round. Dry feet cost a quarter hour. Worth it.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : I learned to swim in #lake# back home. My #dad# threw me off a boat and rowed away. | #water.capitalize# at home is properly cold. This river's a bath next to it. | In #self.from_town# you could swim out so far the town looked like a toy.
+b[from=coldwater] #home : Same for all of us, nearly. | It is cold, that. I never went in. | Out past the reeds? I never dared.
+b : He threw you in? | A bath? | How far did you go?
+a@home : Nearly. Did yours row back? Mine took his time. | You missed the best of it. | Past the reeds and further. Somebody had to.
+a : Rowed off a bit, then waited. I swam to him. I've not stopped since. | A bath. Which is why I say it's #warm# and mean it, near enough. | Far enough to hear nothing at all. I've not heard that since I came here.
+
+scene friend_boss
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s about the only one I don't lose my temper with. | I'd trust #self.friend# to hold #coppers#. That's the most I trust anyone. | #self.friend# knows when to leave me be. That's a rare thing.
+b : Good to have. | That's a lot, from you. | It is rare.
+a : Rare. Keep it from #self.friend# that I said so. | It's everything I've got. Literally. | Rare as a quiet night down here.
+
+scene watch_sump
+when topic=crime|times here.region=ridgemere
+does give.opinion / disagree / concede
+a : #watch.capitalize# were on our steps again. Took a fellow away. They're never down here to help. | Down here it's neighbours or nothing. Nobody else is coming. | Up the hill they blame #sump# for everything. Easier than looking.
+b : It's their work, though. | It's the same everywhere. | Some trouble does start down here.
+a : Then let them do the helping half, for once. | Maybe. I only know here. | Some. Not all. And not the half they say.
+
+scene feast_noise
+when topic=festival|season
+does give.opinion / react.self / assess
+a : Feast day. Noise, spilt ale, and #lump# crying by midnight. I'll pass. | Everyone's off to the dancing. I'll have #swim# and an early night. | There's always tears before the feast's done. I'd rather they weren't mine, so I stay in.
+b : You don't like feasts? | On a feast day? | That's a shame.
+a : No. Never have. Too many folk in too little room. | Feast day's the quietest morning on #steps#. Everyone's sleeping it off. | It's not. I like my own company. It doesn't spill on me.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean week. I've taken from #coppers# to eat. That's a step back. | Bread's up and my pay's not. #coppers.capitalize# don't grow. | #stores.capitalize# is quiet. Folk buy half a sack, not a whole one.
+b : It'll pick up. | It's hard all over. | They'll come back.
+a : Has to. #saying#, and I'll not go backwards for long. | It is. Doesn't make my boot any fuller. | They will. Hungry folk always do. That's the sad bit of the trade.
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. I sleep with #coppers# in my boot. | Heard #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I'm told. Down here, you're not surprised.
+b : In your boot? | That's bad. | No, I suppose not.
+a : Boot, on my foot. Let them try. | #bad.capitalize#. Somebody's going without. | Not surprised. Still angry. Both at once.
+
+scene newcomer_wary
+when topic=newcomer|player here.region=ridgemere
+does give.opinion / react.self / assess
+a : New face down #steps#. I'll know if they're trouble by the second time I see them. | Strangers are half the trade and all the news. I'll serve them. I'll watch them, too. | New folk down here don't last, or they stay for life. Nothing in between.
+b : The second time? | Fair. | Which are you?
+a : First time everyone's polite. Second time you see them. | Fair's my word for it. Watching costs nothing, #address#. | Stayed. So far. Ask me again when I've #stall#.
+
+story first_copper [topic=memories|work self.away=yes here.region=ridgemere]
+  : My first week here I found a copper in the mud on #steps#. I nearly bought a pie.
+  : I didn't. Into my boot it went. That was the first. There's more now, not a lot.
+  : Every time I want to spend one, I think of that pie I didn't have.
+  ask : Have you ever kept something just because you didn't spend it?
+  b : A coin my gran gave me. Never spent it.
+  b[wealth=poor|destitute] : Every copper I've got is like that.
+  : Then you know. It's not about the coin. It's that you didn't.
+
+story dad_boat [topic=memories self.from=coldwater self.age>=18]
+  : Small as I was, my #dad# rowed me out on #lake#. Said I'd swim or I'd sink, and threw me off the side.
+  : I went down, came up spitting, and he was rowing away. Not far. Far enough.
+  : I swam after him and caught the boat. He pulled me in and said the water was #warm#. It was not.
+  ask : Would you do that to a pup of yours?
+  b : Never. Not if you paid me.
+  b[stage=old] : We all did it. You turned out fine.
+  : Fine, and swimming every morning since. Maybe that's not fine.
+
+story wrong_road [topic=pastimes|lore self.likes=old_maps]
+  : The best map I own has a road from here to #lake# country that isn't there. Straight as a ruler.
+  : I asked a carter about it once. Laughed in my face. Said there's a hill in the way nobody's ever moved.
+  : I keep it anyway. Somebody drew that road. Somebody wanted it.
+  b : Maybe one day they'll build it.
+  b[job=carter] : That hill's still there. I've cursed it often enough.
+  : Maybe. I'll walk it the day they do.
+
+rule @stores_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say Meal, oats, salt. Back of #stores#. | #oath#. Who left #sacks# in the doorway?
+
+rule @gulls_bark
+when concept=bark self.dislikes=gulls here.time=dawn
+does aside
+cooldown 10h
+say #gulls.capitalize#. Every morning. Every one. | Shut up, you. #oath#.
+
+rule @night_bark
+when concept=bark self.dislikes=night_noise here.time=night here.region=ridgemere
+does aside
+cooldown 10h
+say Some of us sleep, you know. | #racket.capitalize#. #oath#.
+
+rule @swim_bark
+when concept=bark here.time=dawn self.likes=swimming here.region=ridgemere
+does aside
+cooldown 12h
+say In we go. It's #warm#. It's #warm#. | Brr. No. Warm. It's warm.
+
+dlg @1 resident.hub : #greet#. What d'you want? | #greet#. Say it; I've #sacks# to shift.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Fine. | #topic.player#. #greet#. What is it this time?
+dlg @3 resident.hub [here.time=night] : It's late. #tired.capitalize#. Make it quick. | #greet#. #stores.capitalize# are shut. What's wanted?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from there. | I don't know you. Paws out of my sacks.
+dlg @1 resident.job [self.job=merchant] : I help at #self.workplace#. Meal, oats, salt, rope. I lift what needs lifting. | #sacks.capitalize# in, sacks out, and the money counted twice.
+dlg @2 resident.job : #self.trade_words.capitalize#. It pays. Not much. | #job_busy#
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. | From #world.news_from#, so they say: #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody's on about #world.event_words#. | It's all #world.event_words#. I'm sick of it.
+dlg @3 resident.news [world.wagons=raided] : A wagon got robbed on the road. Our cart's late because of it. | Robbers out on the road. #warn.capitalize#.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing. #water.capitalize#'s cold. That's not news.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Don't quote me. | Folk say #topic.subject# #topic.claim#. That's all I've got.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't listen to talk. I've #sacks# to think about.
+dlg @1 resident.bye : #farewell#. Mind #steps#. | #farewell#.
+graft resident.hub
+choice Do you really swim in that cold water? [here.region=ridgemere] -> swim
+node swim
+say Every morning. Off #steps#, out to the post and back. And it's warm. Stop looking like that. It's warm.
+mood calm
+free
+choice It can't be warm. -> swim_why
+choice Goodbye. -> bye
+node swim_why
+say Cold's only a word. In, swear, out, and the whole day's warmer than #water# after. So it was warm. That's how I count it.
+choice I'll take your word. -> hub
+choice Goodbye. -> bye

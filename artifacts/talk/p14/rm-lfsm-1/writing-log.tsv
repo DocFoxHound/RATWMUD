@@ -1,0 +1,36 @@
+mantle	writer	started	finished	items	alternatives	note
+sm123	L1	2026-11-18T18:08:25-07:00	2026-11-18T18:37:23-07:00	118	573	full baker, accent none: work gated self.job=baker / role=merchant; window fact nodes per case
+sm124	L2	2026-11-18T18:10:42-07:00	2026-11-18T18:23:28-07:00	122	633	full butcher (merchant, filed laborer): meat talk gated self.role=merchant; shop.greet and fact nodes per case
+lf139	L3	2026-11-18T18:26:32-07:00	2026-11-18T18:29:29-07:00	69	298	shop help: work gated self.working=yes; House debt gated self.owes=yes; quirk turned to begs_the_bright_one_s_pardon_after_every_oath
+lf140	L3	2026-11-18T18:29:29-07:00	2026-11-18T18:32:46-07:00	69	295	King's household cook: kitchen talk gated self.job=cook; quirk turned to saves_the_kitchen_crusts_for_the_roof_birds
+lf141	L3	2026-11-18T18:12:16-07:00	2026-11-18T18:19:42-07:00	122	527	full shipwright (trade merchant), accent none: work gated self.job=merchant self.role=merchant; quirk turned to knocks_on_every_plank_another_house_sells
+lf142	L3	2026-11-18T18:32:46-07:00	2026-11-18T18:40:17-07:00	69	314	door minder (job merchant); Heights talk gated here.region=ridgemere; quirk turned to knows_the_heights_houses_by_their_door_knockers
+lf143	L4	2026-11-18T18:27:24-07:00	2026-11-18T18:35:47-07:00	73	312	crane hand, job none: work gated self.working=yes; quirk turned to chalks_every_card_debt_on_the_nearest_wall
+lf144	L4	2026-11-18T18:32:22-07:00	2026-11-18T18:35:47-07:00	72	288	crane hand, job none, accent none; quirk turned to blesses_every_load_before_it_leaves_the_ground
+lf145	L4	2026-11-18T18:36:20-07:00	2026-11-18T18:40:39-07:00	77	315	masons' yard labourer: job lines gated self.job=laborer; quirk turned to keeps_a_stick_notched_for_every_town_still_to_see
+sm125	L1	2026-11-18T18:16:45-07:00	2026-11-18T18:21:00-07:00	78	349	porter/carter, accent none; quirk turned to hums_hauling_songs_from_the_docks_while_carrying
+lf146	L3	2026-11-18T18:19:42-07:00	2026-11-18T18:26:04-07:00	117	496	full tinker (merchant, crafter): mending gated self.job=crafter; quirk turned to reads_the_house_stamp_before_the_crack
+sm126	L1	2026-11-18T18:20:11-07:00	2026-11-18T18:25:19-07:00	76	352	old, job none, devout: old section; quirk turned to bars_the_door_to_anyone_in_house_livery
+lf147	L4	2026-11-18T18:14:44-07:00	2026-11-18T18:31:55-07:00	113	464	full preserver (merchant): shop.greet per here.shop case; quirk turned to writes_the_day_and_the_weather_on_every_jar_lid
+lf148	L5	2026-11-18T18:26:01-07:00	2026-11-18T18:40:17-07:00	75	344	shop apprentice: counter work gated job=merchant (+apprentice=yes); quirk turned to asks_at_the_same_office_window_every_week
+lf149	L5	2026-11-18T18:28:20-07:00	2026-11-18T18:31:02-07:00	71	319	tailor's crafter: work gated self.job=crafter; quirk turned to sews_loose_buttons_back_on_for_nothing
+lf150	L4	2026-11-18T18:23:04-07:00	2026-11-18T18:31:55-07:00	113	465	full jeweler, accent none; debt gated self.owes=yes; quirk turned to reads_the_maker_s_mark_before_saying_a_word
+lf151	L5	2026-11-18T18:15:36-07:00	2026-11-18T18:20:32-07:00	111	518	full wheelwright (merchant): letter story gated self.errand=letter; quirk turned to spins_any_wheel_in_reach_to_hear_it_run_true
+sm127	L1	2026-11-18T18:25:19-07:00	2026-11-18T18:28:22-07:00	74	323	Estate chamber servant, genteel; quirk turned to carries_a_lucky_lump_of_coal_wrapped_in_a_handkerchief
+sm128	L1	2026-11-18T18:28:22-07:00	2026-11-18T18:31:20-07:00	78	345	tray-crier, poor, frank; quirk turned to chalks_every_debt_on_the_underside_of_the_tray
+lf152	L5	2026-11-18T18:21:02-07:00	2026-11-18T18:25:29-07:00	112	517	full smith, accent none: work gated self.job=smith; quirk turned to picks_burrs_from_the_ruff_mid_sentence
+lf153	L5	2026-11-18T18:31:02-07:00	2026-11-18T18:34:00-07:00	75	329	old door-minder: old section; quirk turned to weighs_every_coin_in_the_paw
+sm129	L1	2026-11-18T18:31:20-07:00	2026-11-18T18:37:23-07:00	80	343	docker (job sailor), Sump register; quirk turned to touches_a_pocket_coal_before_every_lift
+lf154	L6	2026-11-18T18:28:07-07:00	2026-11-18T18:33:10-07:00	76	352	carter apprentice: work gated self.job=carter, learning self.apprentice=yes; quirk turned to greets_every_milestone_on_the_road_like_a_neighbour
+lf155	L6	2026-11-18T18:12:24-07:00	2026-11-18T18:42:30-07:00	115	588	full, master, job none: master tree + graft; churn talk gated self.working=yes self.job=none
+lf156	L6	2026-11-18T18:33:10-07:00	2026-11-18T18:37:00-07:00	78	366	apple picker, job none, poor, accent none: picking gated self.working=yes self.job=none
+lf157	L6	2026-11-18T18:37:24-07:00	2026-11-18T18:43:18-07:00	78	342	lamplighter (job laborer), accent none: lamp claims gated self.job=laborer; quirk turned to pays_the_first_price_asked_and_never_haggles
+sm130	L2	2026-11-18T18:32:00-07:00	2026-11-18T18:38:15-07:00	128	590	full choir singer (job priest, master): church tree per here.day, master tree per case; quirk turned to smells_of_censer_smoke
+lf158	L6	2026-11-18T18:19:27-07:00	2026-11-18T18:41:00-07:00	118	567	full brewer (merchant), accent none: shop.greet per here.shop case; quirk turned to notches_the_flood_line_on_the_cellar_post
+lf159	L7	2026-11-18T18:39:22-07:00	2026-11-18T18:42:51-07:00	77	372	healer, accent none: work gated self.job=healer; quirk turned to trusts_no_remedy_mixed_in_a_house_still
+lf160	L7	2026-11-18T18:26:29-07:00	2026-11-18T18:33:05-07:00	113	566	full fruit presser (merchant): press talk gated self.working=yes self.role=merchant; quirk turned to chalks_the_day_on_every_cask_filled
+sm131	L2	2026-11-18T18:24:17-07:00	2026-11-18T18:31:20-07:00	129	595	full gate guard, accent none: watch talk gated self.job=guard; the whole watch tree per case; quirk turned to inks_the_true_roads_onto_old_maps
+lf161	L7	2026-11-18T18:17:32-07:00	2026-11-18T18:26:00-07:00	121	605	full innkeeper, Heights register: the inn tree per case; quirk turned to throws_the_crusts_to_the_roof_birds_at_closing
+lf162	L7	2026-11-18T18:33:47-07:00	2026-11-18T18:39:10-07:00	107	548	full House family: House claims gated self.house; quirk pencils_the_true_roads_onto_old_maps (brief had none)
+sm132	L2	2026-11-18T18:38:15-07:00	2026-11-18T18:44:07-07:00	108	587	full House family, job none, accent none: House claims gated self.house; quirk scrapes_the_mud_off_at_every_door (brief had none)
+lf163	L7	2026-11-18T18:43:09-07:00	2026-11-18T18:47:36-07:00	75	363	clerk (job scholar), accent none, dry; quirk turned to keeps_a_running_sum_of_stall_savings_in_a_margin

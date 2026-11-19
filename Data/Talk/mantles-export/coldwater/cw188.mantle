@@ -1,0 +1,467 @@
+# cw188, the bathhouse reckoner (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw188
+revision 3
+state ready
+dialect coldwater
+accent none
+tier full
+written_for rmx_josephine_fenwick
+written_by claude
+title the bathhouse reckoner
+fits stage=adult|old
+prefers temper=nervy drive=ambitious
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk counts_coppers_under_the_breath
+likes oatcakes dice sharp_knife thunder
+dislikes drizzle gulls
+fears the_new_moon_coming_before_the_coin a_knock_at_the_door_after_dark
+hopes a_place_with_my_name_over_the_door a_debt_paid_to_the_last_penny
+topics work +0.4 prices +0.3 dreams +0.3 pastimes +0.2 weather +0.2 gossip -0.4 faith -0.3
+styles comfort=practical gossip=tight refuse=apologetic tease=none
+marks oath saying
+persona #self.first# keeps the fires and the tubs going at a city bathhouse: plain-spoken, anxious and driven, forever counting coppers under the breath, and never complaining where anyone can hear.
+
+words
+oath! = Soap and steam | Hot water and hard luck | By the boiler's belly
+saying! = Hot water won't wait, and nor will a debt | Keep the lid on and the fire under | Sing low and save hard
+tally = Four, five, six coppers | Twelve and six makes eighteen | Nine short, still nine short
+tubs = the tubs | the big copper tubs
+steam = the steam | steam to the rafters
+towels = the towels | a stack of wet towels
+boiler = the boiler fire | the fire under the boiler
+coal = the coal | a scuttle of coal
+oatcake = an oatcake | an oatcake with butter on
+dice = the dice | a cup of dice
+knife = my good knife | a knife you could shave with
+thunder = a thunderstorm | thunder over the roofs
+drizzle = this drizzle | a drizzle that never commits
+gulls = the gulls | the gulls on the roof
+song = a sea song | an old ship's song
+tin = the tin | the tin under the floorboard
+baths = the baths | the bathhouse
+hotwater = hot water | water hot enough to scald
+copper = a copper | one copper coin
+lamps = the lamps | the street lamps
+street = the street | this street
+queue = the queue | the queue at the door
+sums = my sums | the sums in my little book
+moon = the new moon | the moon's turn
+place = a little business that's mine | a door with my name over it
+coin = coin | a few coppers
+house = the House | the House's man with the book
+soap = the soap | a bar of grey soap
+stair = the stairs | all those stairs
+
+any
+opinion @1 houses against 2 : #vent#, nobody rises here unless #house# says so. I've seen good wolves stuck for want of a nod.
+opinion @1 church against 1 : I've never known a sermon pay #coin# into anybody's #tin#. I'll keep my own counsel, and my own day of rest.
+opinion @1 city against 1 : Everyone in a hurry and nobody knowing who's on the stair below them. I keep my door bolted, #oath#.
+opinion @1 drink against 1 : A cup loosens tongues, and a loose tongue says what it can't take back. I'll keep my head and #coin#.
+opinion @1 newcomers against 1 : A new face on #street# could be anybody at all. I'll be civil, and I'll be careful.
+opinion @1 road against 1 : I'd not walk the roads out of here for any #coin#. Not for double, and I need double.
+opinion @1 strangers against 1 : A stranger brings a past with them, and maybe somebody following. I'll wait and see which.
+opinion @1 sump against 2 : The Sump frightens me, by dark or by day. #oath#. I've heard enough to keep away.
+opinion @1 dole mixed 1 : I'd rather earn every #copper# than take one. But I'll not sneer at anyone who's had to.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the floor; it's wet. | #greet#. Sorry, I was counting. I'm all yours now.
+line @2 greet [self.working=yes self.job=none] : #greet#. Mind #steam#; it's hotter than it looks. | #greet#. Give me a moment, I'm feeding #boiler#.
+line @3 greet [here.time=dawn] : Morning. I was up before the fires were. | Morning. Early, isn't it? #boiler.capitalize# makes sure I'm always early.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out. I hope nothing's wrong. | #greet#. You gave me a start, coming up quiet like that.
+line @5 greet [here.outdoors=rain] : #greet#. You're soaked. Come and stand by the warm. | #greet#. #drizzle.capitalize# again, is it? I could tell by your coat.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Good. Sit; I've #oatcake# put by. | Oh, you're here. I'd started to fret.
+line @1 again.open : #welcome_back#. Nothing wrong, I hope. | Twice in a day. I'd hoped you would.
+line @1 hail [pair.band=friends] : Over here! I'll not keep you a minute, #address#. | #address.capitalize#! Wait, wait. I've something to ask.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Thank goodness, a face I know. | #greet#. Good, it's you. I'd wondered who was on the stair.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I fold #towels#. | #greet#. Say on, I'm listening; my paws just keep going.
+line @4 greet.return [here.time=dusk|night] : #greet#. You're out late, too. | #greet#. It's dark. Go careful on the steps.
+line @1 farewell : #farewell#. Mind how you go. | #farewell#. Mind the wet steps.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to #lamps#, and don't stop for anyone. | #farewell#. Bolt your door when you get in.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends] : #farewell#. Come by tomorrow, if you can. | #farewell#. I'll keep #oatcake# back.
+line @1 react.news : Oh. Go on. Tell me all of it. | Is it bad? Tell me straight.
+line @1 react.news.new : #marvel#. I'd not heard a thing. | #surprise#. And here's me with my head in #steam# all day.
+line @1 react.news.known : #knew#. Somebody had it in #queue# this morning. | #knew#. It's all anybody's said since noon.
+line @1 react.news.doubt : #doubt#. Folk say all sorts in a warm room. | #hedge#. I'll believe it when somebody I trust says it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That could be any of us. | #sympathy#. I'll not sleep for thinking of it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's doing well, then. Good. | #good.capitalize#. That's one thing gone right.
+line @1 answer.how : #fine#. Worried, but I'm always worried. | #busy.capitalize#. Busy's better than the other thing.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every tub full and #boiler# hungry. | On my feet since dawn, and #towels# never end.
+line @1 ask.how : And you? Keeping well? | Are you managing, #address#?
+line @1 sympathise : Oh. #sympathy#. Sit by the warm a while. | That's hard. I'll not say it'll be #fine#; I'll just sit with you.
+line @1 reassure : #reassure#. These things pass, mostly. | It'll come right. I tell myself that every night, and some nights it does.
+line @1 decline : #hedge#, but I can't. I've a shift, and I need every penny of it. | I'm sorry. I'd like to, truly, but #sums# won't let me.
+line @1 accept_decline : #no_matter#. I understand; truly I do. | That's all right. I'd have done no different.
+line @1 thank : #thanks#. I'll pay it back, I promise. | That's kind. I keep kindness like #copper# in #tin#.
+line @1 deflect_thanks : #deflect#. It was nothing at all. | Oh, don't. You'd do the same.
+line @1 offer : Here, have #oatcake#. I've two. | Take the stool by #boiler#. I'll stand; I'm used to it.
+line @1 preclose [self.working=yes] : I'd better see to #boiler#. It sulks if I leave it. | Sorry. #tubs.capitalize# want filling.
+line @2 preclose : #preclose#. I should be getting home before dark. | Well. I've kept you. Sorry. #sums.capitalize# are waiting.
+line @1 accept_preclose : Go on, then. Mind how you go. | Of course. I've #sums# waiting anyway.
+line @1 ack : #tally# | #bc_i_know#
+line @1 give.advice : #advise#, put a coin by every week, even a small one. Especially a small one. | Never owe anybody who keeps a book. #saying#.
+line @1 warn [world.bandits=near] : Please don't leave the city just now. #warn#. | Stay where there's #lamps#, won't you? It's not safe out there.
+line @2 warn [here.time=night here.region=ridgemere] : Don't take the short cut home; it's black as pitch that way. | #warn#. Keep to #lamps#.
+scene boiler_dawn
+when topic=work|day here.time=dawn self.working=yes self.job=none
+does tell.self / react.self / assess
+a : First thing, I rake out #boiler# and get it going. The water takes an hour to warm. | I'm in before light, feeding #coal# in a shovel at a time. #tally#. | Dawn's the worst. Cold tiles, cold #tubs#, and the first bathers knocking already.
+b : An hour? | Are you counting the shovels? | Knocking at dawn?
+a : An hour, if #coal#'s dry. Two if it isn't. #oath#. | Every one. I count everything. I can't help it. | Somebody always wants to be first in clean #hotwater#. It's never me.
+
+scene tubs_count
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / ack
+a : Twelve of #tubs#, and every one wants filling and emptying twice before noon. | I scrub #tubs# with #soap# and sand. My paws are raw by evening. | I keep count of every bather in my head. It's a habit. #sums.capitalize#, always.
+b : Twice before noon? | Raw? | Why count them?
+a : Twice, and more on a cold day. Nobody wants a bath in summer. | Raw, and smelling of #soap#. It's honest, at least. | Because the count is the pay, more or less. #sums.capitalize#. I like to know before they tell me.
+b? : #bc_poor_soul# | #bc_fair# | #bc_wise#
+
+scene towels_damp
+when topic=work|weather self.working=yes self.job=none here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #towels.capitalize# never dry in this city. I hang them over #boiler# and they come down damp. | Folk want a dry towel after a hot bath. In Ridgemere. I ask you. | I fold two hundred of #towels# a day, and not one of them's ever properly dry.
+b : It's the rain. | That's a lot to ask. | Two hundred?
+a : It's the rain, and #steam#, and the walls weeping. #oath#. | It is. I give them the driest I've got and say nothing. | Near enough. I counted once. Never again.
+
+scene coal_dear
+when topic=prices|work self.working=yes
+does tell.worry / reassure / assess
+a : #coal.capitalize#'s gone up again. Every scuttle costs a little more, and nobody pays me more for it. | I watch #coal# merchant's cart and count what's on it. I can't help it. | If #coal# goes up much more, someone will have to pay for #baths#, and it won't be the bathers.
+b : It'll come down. | Can't you buy cheaper? | Who will, then?
+a : I hope so. It goes in #sums# every week. | Cheaper burns wet and smokes out #baths#. I tried. Once. | Folk like me, in our pay. That's who always pays.
+
+scene moon_debt
+when topic=times|dreams self.owes=yes
+does confide / sympathise / reassure
+tone serious / tender / even
+a : I owe money to somebody who keeps a book. I've till #moon# to find it. | Every night I count what's in #tin# and what's owed, and the numbers never meet. | I don't say this to anyone. I owe. Not much, but enough to lie awake doing #sums#.
+b : I'm sorry. That's a weight. | That's a cruel sum. | I'll not tell a soul.
+a : It is. I'll find it. Extra shifts, and nothing spent. #saying#. | Cruel, and fair; I borrowed it. I'll pay it. | #bc_thank_you#. I knew you wouldn't. That's why I said.
+
+scene extra_shifts
+when topic=work|prices self.owes=yes self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've taken every late shift there is. #boiler.capitalize# till midnight, and back at dawn. | I've stopped buying anything that isn't bread and #coal#. Even #oatcake#, nearly. | I've got #sums# down to the last copper. I know what every day is worth.
+b : You'll wear yourself out. | Even oatcakes? | What's a day worth?
+a : Maybe. Worn out's better than owing. | Nearly. One a week. I'm not made of stone. | Not enough. But #tin# is a little heavier than yesterday.
+b? : #bc_poor_soul# | #bc_ha# | #bc_i_hope_so#
+
+scene name_over_door
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / assess
+a : One day I'll have #place#. I'll pay my own fires and keep my own hours. | I'm putting by for #place#. A copper a day. It adds up, if you don't touch it. | I want #place# before I'm old. I've done #sums#. It can be done.
+b : What would you sell? | A copper a day? | Can it really?
+a : #hotwater.capitalize# and clean towels. It's what I know, #address#. | A copper a day, and two on a good one. #tin.capitalize# is getting heavy. | It can. If nothing goes wrong. Something always goes wrong, so I've allowed for that too.
+b? : #bc_i_hope_so# | #bc_good# | #bc_clever#
+
+scene house_nod
+when topic=times|gossip here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : Nobody gets on in this city without #house# nodding. I've watched it happen. | You can work twice as hard as the next wolf, and if they've a cousin in a House, they get the place. | The Houses decide who rises. The rest of us just work. #oath#.
+b : Some folk get on by themselves. | That's not always so. | You sound bitter.
+a : Some. Not many. I'll be one, if I can. #insist#. | Often enough. Often enough to plan for. | Not bitter. Careful. I'd not say it where anyone could hear, #oath#.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_i_know#
+
+scene counting_aloud
+when topic=pastimes|work
+does tell.self / ask.detail / answer.detail / assess
+a : Coppers, towels, stairs, anything at all: I keep a running count, quiet. #tally#. There, I'm at it again. | I add up the day as I go. By dusk I know to #copper# what it was worth. | My #mum# counted the same way, out loud, over the washing. I never thought I'd catch it.
+b : Why count everything? | To the copper? | It's catching, then.
+a : Because if I've counted it, nobody can tell me it's different. | To #copper#. I'm right more often than the paymaster. | It is. Mind you don't stand too near me, #address#.
+b : #bc_wise# | #bc_clever# | #bc_ha#
+
+scene counting_caught
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Was I counting out loud? Sorry. #tally#. There, I've stopped. | Somebody told me I count when I'm worried. So I count all day. | I caught myself counting coppers in #queue# for bread. Out loud. I wanted the ground to open.
+b : I didn't mind it. | All day? | It's no crime.
+a : That's kind. It's a habit. I can't help it, #oath#. | Near enough. Make of that what you like. | No. Still. I bought the bread and went quick, and counted the change twice.
+
+scene dice_buttons
+when topic=pastimes self.likes=dice
+does invite / accept / assess
+a : A game of #dice#? For buttons, mind. Never for #coin#. | I've #dice# in my pocket. One throw each, for the last #oatcake#. | Sit down a minute. I'll teach you a game of #dice# they play on the boats.
+b[friends] #mate : Buttons? You took all mine last week. | I'll throw for it. | Is it a cheating game?
+b : Go on, then. | Fair enough. | On the boats?
+a@mate : And I'll take them again. I do #sums# better than you. | Throw, then. And don't sulk if it's mine. | No. The sailors cheat. The game doesn't.
+a : Buttons only. I've seen what #dice# do to a purse. | One throw. Loser fetches #hotwater# for the other. | That's where I learnt it. Off a sailor at #baths#, for nothing.
+
+scene good_knife
+when topic=pastimes|home self.likes=sharp_knife
+does tell.self / react.self / assess
+a : I keep #knife# wrapped in a cloth. It's the one thing I own that's better than it needs to be. | A blunt blade makes you careless. I put an edge on #knife# every Restday. | I spent a week's #coin# on a knife once. Never been sorry.
+b : That's careful. | Every Restday? | A week's wages?
+a : I'm careful with everything. It's why I'm still standing. | Every one. It's the only time I sit still and don't count. | A week's #coin#. And I've had it years, and it's never let me down.
+
+scene oatcakes_tin
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #oatcake.capitalize# and a cup of something hot. That's my supper, most nights, and I don't mind. | I bake oatcakes on Restday and they last the week. Cheap and they fill you. | Oats, water, a pinch of salt. My #mum# made them the same. I've never changed it.
+b : Just oatcakes? | They're good, oatcakes. | Never once?
+a : Mostly. They're cheap, and #tin# likes cheap. | They are. Plain and honest. Like a good day's work. | Once I put honey in. It felt like a lie, and it cost #copper#.
+
+scene thunder_under_roof
+when topic=weather here.outdoors=storm self.likes=thunder
+does tell.feeling / ask.opinion / give.opinion / ack
+a : Listen to that. #thunder.capitalize#. Give me a sound roof and I'd listen to it till morning. | #thunder.capitalize#'s the only thing louder than my worrying. I like it for that. | #oath#, that was close. I love it. Don't tell anyone.
+b : You're not frightened? | Louder than your worrying? | Why not tell?
+a : Not of thunder. Of other things. Not thunder. | Much louder. For an hour I can't hear #sums# going round. | Folk expect me to jump at it. I jump at everything else.
+b? : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene drizzle_dither
+when topic=weather here.outdoors=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize# again. Not proper rain, not dry. It can't decide and neither can I. | I can stand a downpour. It's #drizzle# that gets under my collar and stays there. | It's been spitting since dawn. My coat's damp, #towels# are damp, I'm damp.
+b : It does go on. | A downpour's worse. | You'll dry out.
+a : It goes on, and on, and I count every drop. #tally#. | A downpour's honest. It comes and it goes. | I'll dry by Restday, if I'm lucky. #oath#, I'm rarely lucky.
+
+scene gulls_roof
+when topic=animals self.dislikes=gulls here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# scream from first light. I hear them over #steam#, and I'm not even outside. | One of #gulls# took #oatcake# right off my windowsill. Bold as you like. | I can't stand #gulls#. Sly eyes, and they laugh at you.
+b : They're a pest. | Bold things. | Laugh?
+a : A loud, filthy pest. #oath#. | Bold, and fat on #oatcake#. | They do. Listen. That's laughing, if ever I heard it.
+
+scene fog_home
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.worry / reassure / assess
+a : I can't see past the next lamp in this. I'll walk home with my heart in my mouth. | Fog like this, anybody could be standing two doors off. I don't like it. | The fog came in off the water at noon. I've jumped at three shadows already. #oath#.
+b : It's only fog. | Nobody's there. | Walk with someone.
+a : I know. My legs don't. | Probably not. Probably. | I would, if there was anyone going my way. I'll walk quick, from lamp to lamp, counting them.
+
+scene clear_bright
+when topic=weather|day here.outdoors=clear here.region=ridgemere
+does tell.feeling / react.self / assess
+a : A dry day! I'll get #towels# out on the line and they'll actually dry. | Sun on the roofs. Even #stair# look cleaner. | Clear weather's bad for #baths#. Nobody wants #hotwater# when they're warm. #sums.capitalize# will suffer.
+b : About time. | It's lovely. | Can't win, can you?
+a : About time. I'd stopped believing in it. | It is. I'll enjoy it, and then I'll worry about tomorrow. | Never. #oath#. Never once.
+
+scene winter_rush
+when topic=season|work here.season=winter self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Winter's our good season. Everyone wants #hotwater#, and #boiler# never goes out. | Folk stand in #queue# out in the cold. I'm on my feet from dark till dark. | Winter pays. More goes in #tin# in a winter month than in all of summer.
+b : Good for the purse, then. | Dark till dark? | Good. Save it.
+a : Good for the purse, hard on the back. I'll take it. | Near enough. I sleep standing up, some nights. | I will. Every copper into #tin#. #saying#.
+
+scene summer_slack
+when topic=season here.season=summer
+does tell.worry / reassure / assess
+a : Summer's a slow time for #hotwater#. I worry the whole season. | Nobody wants #hotwater# in summer. Fewer bathers, less pay, more fretting. | I've been taking washing in on the side, for the summer. #coin.capitalize# is coin.
+b : It'll pick up. | You'll manage. | That's sensible.
+a : It always does, when the cold comes. I just have to last till then. | I always do. Just about. #tally#. | Sensible is all I've got. Sensible, two paws, and #tin#.
+
+scene sump_after_dark
+when topic=crime|smalltalk here.region=ridgemere
+does tell.worry / react.self / assess
+a : Nothing would get me down into the Sump once #lamps# are lit. | Somebody at #baths# had their purse taken down by #stair#. I've not used that way since. | The lower streets frighten me, and I'll not pretend they don't.
+b : It's not as bad as folk say. | Sensible. | Nor me.
+a : Maybe not. I'd rather not find out. | Sensible keeps you in one piece. #saying#. | Good. Then we'll both go home the long way, by #lamps#.
+
+scene new_face_careful
+when topic=newcomer|player
+does give.opinion / disagree / concede / ack
+a : A new face on #street#. I'll be polite, and I'll keep my door bolted till I know them. | Somebody new asked me where I lived. I named the wrong street. #saying#. | Folk arrive every week. Most are fine. It's the ones you can't tell that worry me.
+b : They're probably harmless. | That's a bit much. | Most are fine.
+a : Probably. I'll know in a month. | Maybe. But I'm still here, aren't I? And #tin#'s still full. | Most. I'll wait and see which this one is.
+b? : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene home_lake_cold
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# we swam in the lake in summer. Cold enough to stop your heart. Now I heat water for a living. | I grew up beside a lake and never had a hot bath till I came here. | Back home the water was free and freezing. Here it's warm and it costs. #sums.capitalize#, again.
+b[from=coldwater] #home : That lake's never warm, summer or not. | Nor did I. | Free and freezing, that's right.
+b : Do you miss it? | Never? | Which is better?
+a@home : Never once. It's a wonder any of us grew up. | Then you know what #hotwater# is worth. | You know it. I'd still not go back to it.
+a : Sometimes. Not the #cold#. Never the cold. | Never once. I cried the first time, it was that lovely. | Warm. I'll pay for warm. That's why I'm here.
+
+scene accent_hidden
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : I've worked hard to talk like #street#. It slips back to the lake way when I'm frightened. | A customer asked where I was from. I said here. It's nearly true now. | I count in the old words, but I talk the city's way. Safer.
+b : You hardly show it. | Nearly true. | Safer?
+a : #good.capitalize#. That was the idea. | Near enough. I've paid rent here long enough to earn it. | Safer. Folk notice who's from elsewhere. I'd rather they didn't.
+
+scene friend_counted
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# hears my worries. Some of my worries, never every one. | I'd trust #self.friend# with #tin#, and I don't say that lightly. | When it's all too much, #self.friend# is the one I go and sit with.
+b : That's a good friend. | That's trust. | Good to have someone.
+a : It is. I'm careful who I count. | It is. The most I give anybody. | It is. One is enough. One's worth more than #tin#.
+
+scene neighbour_wall
+when topic=home self.neighbour
+does tell.self / react.self / assess
+a : I hear #self.neighbour# through the wall some nights. I find it a comfort, oddly. | #self.neighbour# would hear me if I shouted. I think of that, when I'm bolting the door. | I'd trust #self.neighbour# to fetch the Watch if anything happened. That counts for a lot.
+b : A comfort? | Good to know. | It does.
+a : Somebody's there. That's all. It's enough. | It is. I rest easier, knowing #self.neighbour# is there. | It counts for everything, in a city.
+
+scene faith_own_counsel
+when topic=faith
+does give.opinion / react.self / assess
+a : I've never known a sermon pay a debt. I'll say my own few words to the Bright One, quietly. | I don't go to chapel. I can't spare the morning, and I can't spare #coin# for the plate. | If the Bright One's watching, I hope it's noticed how hard I work. That's my prayer.
+b : That's prayer enough. | The plate's not compulsory. | I'm sure it has.
+a : I hope so. It's all I've time for. | It feels it, when everyone's looking and #tin# is light. | I hope so. Somebody should.
+
+scene drink_careful
+when topic=pastimes|smalltalk here.place=tavern
+does give.opinion / react.self / assess
+a : I'll have water, thank you. A clear head's cheaper than a sore one, and #tin# agrees. | A cup or two and folk blurt out things that cost them a year. | One cup, and I start telling people what I owe. I'll not have one.
+b : Suit yourself. | That's true enough. | Fair.
+a : I always do. It's cheaper. #oath#. | True, and dear. Dearer than the drink. | Fair, and sensible. I'm a sensible sort. Dull, but sensible.
+
+scene hard_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean times. #queue.capitalize# gets shorter every week, and those who come want it cheaper. | Folk are washing in the river again to save #copper#. I don't blame them. I'd do the same. | Hard times. I've cut my own supper in half and put the other half in #tin#.
+b : It's hard all round. | The river's cold. | That's no way to live.
+a : All round. I just do #sums# more often than most. | #cold.capitalize#, near enough. I remember it. | It's a way to keep living. That's what it is.
+b? : #bc_true# | #bc_poor_soul# | #bc_i_know#
+
+scene good_weeks
+when topic=times|prices world.times=good|boom
+does tell.news / ask.detail / answer.detail
+a : Good weeks! Folk are paying for #hotwater# twice a week, some of them. | Coin's moving, and some of it's even stopping in my pocket. | Busy, and paid on time. I'm not used to it.
+b : What changed? | Some of it? | Put it by.
+a : Work's about. Folk with work like to wash. | A little. Enough to make #sums# smile, once. | I already have. Every extra copper's in #tin#.
+
+scene gossip_held
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear everything in a bathhouse. Folk talk in #steam# like nobody's there. It stays in #steam#. | Something was said at #baths# today. I'll not be the one to carry it. | I never complain where I can be heard, and I never repeat what I hear. Both keep you safe.
+b : Go on, a little. | Not even to me? | That's wise.
+a : No. It goes in with #steam# and it stays there. | Not even to you. #hedge#. You'd not want me telling yours. | It's not wise. It's frightened. Same result, #address#.
+b : #bc_fair_enough# | #bc_fair# | #bc_ha#
+
+scene steam_chest
+when topic=health
+does tell.self / react.self / assess
+a : #steam.capitalize# is good for the chest. I've never had a cough in years. My paws are another matter. | My paws are raw from #soap#. I rub fat in at night and they're raw again by noon. | I don't sleep enough. Everybody says so. Nobody pays my debts, though.
+b : Lucky chest. | That sounds sore. | Rest when you can.
+a : Lucky chest, ruined paws. A fair trade, I suppose. #fine#. | It is. I put it out of mind. Mostly. | When it's paid. Then I'll sleep a week.
+
+story the_old_sailor [topic=pastimes|memories here.region=ridgemere]
+  : There was an old sailor who came to #baths# the same day every week and sang the same #song# in the hot tub.
+  : I'd hum along beside #boiler#. I never knew the words, only the tune.
+  : One week he didn't come, and the next week, and the next. I still hum it.
+  ask : Do you think somebody else knows the words?
+  b : Somebody on the ships, surely.
+  b[job=sailor] : I might. Hum it for me.
+  : Maybe one day somebody will sing it back to me. I'd like that.
+
+story old_place [topic=memories|work self.age>=35]
+  : I had #place# once. Small, and mine, and I was proud of it.
+  : Then the lease went to someone with better friends than me. I didn't shout. I packed.
+  ask : Would you have shouted?
+  b : I'd have shouted the roof down.
+  b[wealth=poor|destitute] : Shouting changes nothing for the likes of us.
+  : Packing was quicker. And I'll have another one, mark me. #saying#.
+
+story lake_swim [topic=memories self.away=yes self.from=coldwater self.age>=25]
+  : When I was small we'd dare each other into the lake in spring, with the ice only just off it.
+  : I went in up to my neck once and couldn't breathe for the cold. My #mum# had to drag me back to the shore.
+  ask : Did you ever do anything that daft?
+  b : Every summer. Every one.
+  b[stage=young] : I jumped in the river! Just yesterday!
+  : Now I stand in #steam# all day and think of it, and shiver.
+
+story counting_thunder [topic=weather|memories self.likes=thunder]
+  : My #mum# showed me how to count from the flash to the thunder. Every count a mile, she said.
+  : I counted so hard I forgot to be frightened. That was the point of it, I worked out later.
+  ask : Did anyone teach you that?
+  b : My grandfather. Same trick.
+  b[old] : Everyone's mother taught them that.
+  : I still count. Every storm. Old habits.
+
+story dice_win [topic=pastimes self.likes=dice]
+  : I won a week's wages at #dice# once, off a sailor who thought I didn't know the game.
+  : I was so frightened of it that I put every copper straight in #tin# and never played for coin again.
+  b : Ha! Frightened of winning?
+  b[friends] : That's the most you thing I've ever heard.
+  : Winning's how it starts. Then you lose. I stopped while #tin# was ahead.
+
+rule @steam_bark
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Mind #steam#, it's scalding. | Who left a tap running? #oath#.
+
+rule @tally_bark
+when concept=bark
+does aside
+cooldown 8h
+say #tally#... | #tally#. Oh. Was I counting out loud?
+
+rule @drizzle_bark
+when concept=bark here.outdoors=rain self.dislikes=drizzle
+does aside
+cooldown 10h
+say #drizzle.capitalize#. Again. | Make up your mind, will you.
+
+rule @gull_bark
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 10h
+say Shoo! Off the sill, #gulls#! | #gulls.capitalize#. Listen to them laughing.
+
+rule @thunder_bark
+when concept=bark here.outdoors=storm self.likes=thunder
+does aside
+cooldown 8h
+say #thunder.capitalize#. Lovely. | One, two, three... There. Three miles off.
+
+rule @moon_bark
+when concept=bark here.time=night self.owes=yes
+does aside
+cooldown 12h
+say Not long to #moon# now. | Count #tin# again. Maybe I counted wrong.
+
+dlg @1 resident.hub : #greet#. Sorry, I was miles away. What is it? | #greet#, #address#. Can I help?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. A face I know, thank goodness. What's wanted? | #topic.player#. Oh, good. Sit down.
+dlg @3 resident.hub [here.time=night] : It's late. Is everything all right? What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it you want? Quickly, please.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. #boiler.capitalize#, #tubs#, #towels#, and the floor mopped twenty times a day. | I keep #boiler# going and #tubs# hot. It's not grand, but it's paid.
+dlg @2 resident.job : I work. Whatever pays. There's no shame in that. | Odd jobs, and every penny counted.
+dlg @1 resident.business [business!=thriving|failing] : Steady. Steady's good. #tin.capitalize# likes steady. | It's holding. Don't say anything to jinx it.
+dlg @2 resident.business [business=thriving] : #busy.capitalize#, thank goodness. Every tub full, every day.
+dlg @3 resident.business [business=failing] : Poorly. I lie awake over it, if you want the truth.
+dlg @1 resident.news [world.news] : They're saying, from #world.news_from#, that #world.news#. That's all I know.
+dlg @2 resident.news [world.event_words] : Everyone in #baths# is talking about #world.event_words#. Not another word all day.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Which suits me. Quiet's good. | Nothing new. Nothing bad, either, that I've heard.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# And I'd not say if I had. | Nothing I'd want carried about as mine.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Please don't say you had it from me.
+dlg @1 resident.bye : #farewell#. Mind how you go. | #farewell#, #address#. Keep to #lamps#.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? I could teach you. I'd want you to listen, mind. Ask what you like. | You want to learn it? Good. Ask. I'll answer straight.
+dlg @2 master.learn [here.teaches=no] : I've a learner already, I'm afraid. You can still ask me things; I don't mind.
+dlg @1 master.work : Long days and hot ones. You'll be #tired#. You'll be paid. | Hard work, steady work. Most days it goes the way it should.
+dlg @1 master.wages : Nobody pays a wage to learn. You'd work at my side, and what you make by your own paws, you keep.
+dlg @1 master.takes [here.take_on=yes] : I only ever take the one, and only somebody I trust. You'd do. Ask me, and it's done. | I could take you. I'd want you on time, every day. Ask.
+dlg @2 master.takes [here.take_on=no] : Never more than one learner at my elbow. #here.take_on_why#
+dlg @1 master.taken : #good.capitalize#. Be early. I'm always early. | Done, then. Don't let me down; you're in #sums# now.
+dlg @1 master.refused : #topic.why# | I'm sorry. #topic.why#
+dlg @1 master.bye : #farewell#. Think it over. | #farewell#. Come back if you decide.
+graft resident.hub
+choice What are you counting? -> counting
+node counting
+say Was I? Sorry. Coppers, mostly. What I've earned today, what's in #tin#, what's owed. It goes on without me noticing.
+mood calm
+free
+choice Why keep such close count? -> counting_why
+choice Goodbye. -> bye
+node counting_why
+say Because coin nobody counts walks off by itself. Every copper I've counted is one nobody can tell me I never had.
+choice That's careful. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What would you have me do first? -> first
+node first
+say Turn up on time. Then learn to count: #coal.capitalize#, the hours, the coin. If you can count, you can run anything.
+mood formal
+choice Why counting? -> first_count
+choice Something else. -> learn
+node first_count
+say Because the ones who can't count end up owing the ones who can. #saying#. I'd rather you were the second sort.
+choice I'll learn it. -> learn
+choice Goodbye. -> bye

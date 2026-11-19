@@ -1,0 +1,296 @@
+# fh114, the orchard hummer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh114
+revision 1
+state ready
+dialect frosthollow
+accent light broad
+tier standard
+written_for cty_juniper_larkham
+written_by claude
+title the orchard hummer
+fits stage=adult|old
+prefers job=farmer warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk hums_old_marching_songs
+likes spiced_cider dice quiet_chapel summer_evenings
+dislikes wet_floors early_bells
+fears a_late_frost_on_the_blossom breaking_a_promise_once_made
+hopes every_row_bearing_in_the_same_year
+topics work +0.3 food +0.3 pastimes +0.3 season +0.3 faith +0.2 weather +0.2 newcomer +0.2 gossip -0.3
+styles comfort=feeding gossip=kind refuse=soft tease=none
+marks oath saying
+persona #self.first# works the orchard rows at a marching pace, humming the old songs under the breath to keep the step: warm, unhurried and open-pawed, quick to pour something hot and spiced for a visitor, fond of a throw of the dice, and true to a promise once it's made.
+
+words
+oath! = Bough and bugle | Drum and dew | Left foot and ladder
+saying! = A tune halves the row | Keep step, and the hill comes to you | A promise kept is a tree that bears
+tune = the old tune | a marching song
+drum = the drum | my grandda's drum
+rows = the rows | the long rows up the slope
+ladder = the ladder | the picking ladder
+blossom = the blossom | the white on the boughs
+cider = cider hot with cloves | a mug of the spiced stuff
+dice = the dice | a throw of the bones
+evening = a long summer evening | the light going slow over the hill
+cup = a cup | a warm mug
+crate = a crate | a crate of windfalls
+bells = the early bells | bells before the birds
+step = the step | left, right, and on
+hill = the hill | the slope
+trees = the trees | the old trees
+uphome = up home | back up the pass
+pass = the pass | the pass road
+chapel = the chapel | the little chapel
+market = market | the stalls in the city
+humming = humming | humming away
+hens = the hens | the yard hens
+
+any
+opinion @1 strangers for 1 : A stranger is somebody I've not poured #cup# for yet. Sit down, and that's soon mended.
+opinion @1 newcomers for 1 : There's room on #hill# for anybody who'll carry a crate. I'll teach them #tune# while they're at it.
+opinion @1 dole for 1 : Nobody near a town this size ought to go to bed #hungry#. I'd put a sack of windfalls at every door if I could.
+opinion @1 times for 1 : I've #supper# and a dry bed, #address#. #oath#, that's plenty, and I'll not grumble at it.
+opinion @1 houses for 1 [here.region=ridgemere] : The Houses buy the fruit and pay for it, near enough on time. Up #hill# that's all I ask of anyone.
+opinion @1 city against 1 [here.region=ridgemere] : I go down for #market# and come back up gladly. Too many elbows, and not one wolf with time to hum.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come and sit; there's #cup# going. | #greet#. You've walked up #hill#, so you'll want a sit-down.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Mind #ladder#, #address#. | #greet#. Walk with me down the row; I'll not stop or I'll lose #step#.
+line @3 greet [here.time=dawn] : Morning, #address#. The dew's still on the grass. | Morning. You're up with #hens#, and so am I.
+line @4 greet [here.time=dusk|night] : #greet#. The kettle's on, if you'll stop. | #greet#. A #good# hour to be walking, this.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Come in; I'll warm #cup# through. | You. #good.capitalize#. Take the chair with the cushion.
+line @1 again.open : Back up #hill# again today. I'll put the kettle back on. | #welcome_back#. #cup.capitalize#'s still warm, near enough.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was humming you a welcome before you got here. | #greet#. Sit down, sit down.
+line @3 greet.return [self.working=yes self.job=farmer] : #greet#. I'm in #rows#, but talk away. | #greet#. Pass me that crate as you come.
+line @1 farewell : #farewell#. | #farewell#, #address#. Mind the stones on the path.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take the lantern by the gate. | #farewell#. Sleep sound, #address#.
+line @1 farewell.return : #farewell#. | And yours, #address#.
+line @1 react.news : #surprise#. Well, I'd not heard that up here. | Is that so, now. I'll think on it down #rows#.
+line @1 react.news.new : #surprise#. That's not come up #hill# yet. | #oath#. First I've heard of it, #address#.
+line @1 react.news.known : #knew#. The carter told me with the empties. | I had that at #market#, #address#. Same story, near enough.
+line @1 react.news.doubt : #doubt#. Talk grows at #market#, like weeds. | I'll wait and see it before I hum about it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | #sympathy#. I'm sad to hear it, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll raise #cup# to that tonight. | That's #good# news. It puts #tune# in my head.
+line @1 answer.how : Content, thank you. #trees.capitalize# are standing and so am I. | #fine#. #humming.capitalize#, so I must be well.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Two rows done and the sun's barely up. | Up #ladder# and down again, #address#. All morning.
+line @1 ask.how : And you, #address#? Eaten today? | How are you keeping? Sit, and tell me, #address#.
+line @1 sympathise : #sympathy#. Stop here a while; there's no hurry up #hill#. | That's a weight. I'll pour you #cup# while you carry it.
+line @1 reassure : #reassure#. Things come round, like the seasons. | It'll right itself, #address#. Slow, but it will.
+line @1 decline : #hedge#, I can't today. #rows.capitalize# won't wait, and the weather's turning. | I'd come gladly another time, #address#, but I've given my word elsewhere today.
+line @1 accept_decline : #no_matter#. The kettle will be on another day. | Another time, then. No harm in it, #address#.
+line @1 thank : #thanks#. That's kind, and I'll remember it. | You're #good# to me, #address#.
+line @1 deflect_thanks : #deflect#. It was no trouble. | There's plenty. There's always plenty for a visitor up #hill#.
+line @1 preclose : #preclose#. | Well. #rows.capitalize# are waiting, and I'd best keep #step#.
+line @1 accept_preclose : Go on, then, and come back soon. #farewell#. | Of course. Take an apple for the road, #address#.
+line @1 ack : #bc_good# | Mm, #bc_true#
+line @1 give.advice : #advise#: keep a tune going and the work goes with it. | If you give your word, give it slow, #address#. Then keep it. #saying#.
+scene marching_hum
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : That tune? #tune.capitalize#, an old one. I hum it without noticing. | Folk tell me I hum all day. I'd not know; I only hear it when I stop. | I can't walk ten steps without #tune# starting. It's in the feet.
+b : Where's it from? | Does it bother you? | In the feet?
+a : Up #pass#, from the old days. My #grandad# had it off a drummer. | Not me. It bothers #hens#, maybe. They've learned it by now. | In the feet. #step.capitalize#, and the song comes with it.
+b : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene rows_in_step
+when topic=work self.working=yes self.job=farmer
+does tell.self / react.self / assess
+a : I work #rows# in step, one tune a row. Six tunes and the slope's done. | You'd be surprised how far #tune# gets you up #hill#. | I've a tune for pruning and a tune for picking. The pruning one's slower.
+b : Six tunes? | I'd believe it. | Slower?
+a : Six, and a short one for the corner where the old tree leans. | All the way, and it's #very# steep in places. #saying#. | You don't hurry a cut. A snip in the wrong place takes a year to mend.
+
+scene blossom_frost
+when topic=season|weather here.season=spring self.job=farmer
+does tell.worry / reassure / assess / ack
+a : #blossom.capitalize#'s out on the top rows. One #cold# night now and it's gone. | I sat up last night watching the sky. Clear means frost, and frost means no fruit on #trees#. | #blossom.capitalize#'s early this year. I'd sooner it were late and safe.
+b : It'll hold. | Did it come? | It might be fine.
+a : It'll hold or it won't, and I'll hum to #trees# either way. | Not this time. I went to bed at first light, thanking the Bright One. | It might. I'll still have the straw ready to light.
+b? : #bc_i_hope_so# | #bc_good# | #bc_we_will_see#
+
+scene picking_time
+when topic=season|harvest|work here.season=autumn self.working=yes self.job=farmer
+does tell.self / ask.detail / answer.detail / assess
+a : Picking's on. I'm up #ladder# from first light till the light goes. | Forty crates off the top of #rows# and the bottom ones not started. | Every apple through my paws this week. I'll be dreaming of them.
+b : Doesn't your back ache? | Forty? | Good dreams, at least?
+a : It aches, and I hum louder. #tune.capitalize# doesn't care about backs. | Forty, and every one #good#. The bottom rows are always last. | #good.capitalize# ones. Apples and nothing to do with them but eat.
+b? : #bc_ha# | #bc_good# | #bc_lovely#
+
+scene drying_house
+when topic=work|food self.working=yes self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : The windfalls go to #self.workplace#, sliced and strung. Nothing goes to waste up #hill#. | I took a cart of fruit down to be dried this morning. They'll keep through #snow#. | There's a smell in a drying shed I'd bottle if I could. Sweet and warm.
+b : Strung? | Through the winter? | Like what?
+a : On strings, by the hundred, in the warm. Like #little# brown lanterns. | All winter, and into spring if you hide them well. | Like #evening# put away in a jar.
+
+scene cider_cup
+when topic=food|pastimes self.likes=spiced_cider
+does tell.feeling / ask.opinion / give.opinion / assess
+a : #cider.capitalize#, with a stick of cinnamon in it. Nothing better on a #cold# evening. | I keep a pot of #cider# warming by the fire for whoever comes up #hill#. | My own apples, my own cloves. I'll not sell it. I'll give it away.
+b : You'll spoil me. | Whoever comes? | Why not sell it?
+a : Then you'll come back. That's the plan. | Whoever comes. #cup.capitalize# costs me a windfall and a clove. | Selling it would make it #work#. Giving it makes it a pleasure.
+b : #bc_ha# | #bc_lovely# | #bc_fair#
+
+scene dice_evening
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : I'll throw #dice# with anyone after dark. Stakes are apples, never #money#. | Double sixes three times running last week. Nobody's played me since. | I keep #dice# in my apron. Bone ones, older than I am.
+b : Apples? | Three times? | Where are they from?
+a : Apples. Then nobody goes home poorer, only a bit lighter of fruit. #bc_fair# | Three times. I swear on #drum# I didn't touch them. | Up #pass#, with the songs. Everything old I have came that way.
+b : #bc_fair# | #bc_ha# | #bc_lovely#
+
+scene summer_evening
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : #evening.capitalize#. I'll sit on the step and watch it go, and not move. | The swallows are low over #rows#. It'll be fine tomorrow. | Summer up #hill#, and nothing to do but hum and watch the shadows.
+b : It is lovely. | Will it? | That's the life.
+a : It is. #uphome.capitalize# a summer evening was over before you'd noticed it. | The swallows are never wrong. The sky is, sometimes. | It's mine for an hour. I'll not waste it on talk, mind. Sit.
+
+scene rain_rows
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : #rain.capitalize# on the hill again. #rows.capitalize# drink it up, at least. | Wet, and #ladder#'s slick. I'll stay off it today. | Soft rain this morning. I hummed under the eaves and waited it out.
+b : The trees like it. | Sensible. | Did it stop?
+a : They do. More than I do. #saying#. | A fall off #ladder# takes a summer to mend. #rain.capitalize# takes an hour. | By noon. Then I went back out and the grass soaked me anyway. #bc_always_is#
+
+scene fog_hill
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog in #rows# this morning. I could hear #tune# better than I could see #trees#. | You could lose #crate# in fog like this. I nearly did. | Fog on #hill# makes the whole world small. I like it, an hour at a time.
+b : Spooky. | Nearly? | Just an hour?
+a : Not to me. A tree in the fog is still a tree. | It was by my foot. I'd walked past it twice, #humming#. | An hour, and then I want the sun back on #trees#.
+
+scene early_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# again, and #hens# not even up. | Somebody down the hill rings a bell before light. I'd like a word with whoever it is. | I'd love #chapel# more if it rang later. That's my one complaint about it.
+b : It wakes everybody. | Will you? | It is early.
+a : Everybody, and the cider pot. I'll forgive it by noon. | No. I'll hum over it. That's my answer to most things. | Early, and loud, and on a rest morning too. #oath#.
+
+scene wet_floors
+when topic=home self.dislikes=wet_floors
+does tell.complaint / react.complaint / insist / ack
+a : Wipe your feet. A wet floor is the one thing I can't abide. | Somebody walked the yard into my kitchen. I've mopped it twice. #annoyed#. | I'd sooner sleep in the #rain# than walk on a wet floor in my stockings.
+b : Sorry. | Twice? | That's a strong view.
+a : No harm done. Just wipe them next time, and I'll pour you #cup#. | Twice, and #humming# through it, so it can't have been that bad. | It is, and #insist#. Dry floors, warm cups.
+b? : #bc_fair# | #bc_ha# | #bc_fair_enough#
+
+scene chapel_empty
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : I like #chapel# best on a weekday, with nobody in it. You can hear the beams. | I go in and sit, and I don't say anything to the Bright One. I think that's allowed. | I hum in #chapel# when it's empty. Quiet, mind. Just enough to fill it.
+b : It is peaceful. | I'm sure it is. | Hum what?
+a : Peaceful, and no #bells#. I'll take it. | I hope so. I've done it for years, and nobody's come to stop me. | #tune.capitalize#. A slow one. The Bright One's never complained.
+
+scene home_valley
+when topic=memories|home self.away=yes self.from=frosthollow
+does tell.memory / ask.detail / answer.detail / assess
+a : I grew up in #self.from_town#, under #snow# half the year. Not an apple tree in sight. | #uphome.capitalize# the shift marched to the pit singing. That's where I learned to hum. | In the valley I come from, you counted the warm days on one paw. Down here I've lost count.
+b[from=frosthollow] #fh : The pit songs. I know a few. | Not an apple, no. Turnips. | One paw, and it was a small paw.
+b : Do you miss it? | They sang going down? | Is it better here?
+a@fh : Then hum me one, and I'll hum one back. | Turnips, and you were glad of them. #bc_true# | A small paw. Ha. #bc_it_is#
+a : #snow.capitalize#, sometimes. Not the cold. | Going down and coming up. The coming up was louder. | Warmer. I'll not say better. Warmer. #bc_fair_enough#
+b? : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene accent_hill
+when topic=accent self.away=yes self.from=frosthollow here.region=ridgemere
+does tell.self / react.self / assess
+a : Folk at #market# hear me and say I'm from up #pass#. Every time. | I've lived down here years and I still say #greet# to the pigeons. | My voice came down the mountain with me. I never thought to leave it.
+b : They can tell? | To the pigeons? | Why would you?
+a : They can tell before I've said three words. I don't mind it. | They've not complained. Pigeons are #good# listeners. | I wouldn't. It's the one thing from #uphome# that never needed packing.
+
+scene friend_kept
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd walk down #hill# for in the middle of the night. | I keep #cup# by for #self.friend#, every evening, whether a visit comes or not. | #self.friend# and I, it's a long road now. That's all that needs saying.
+b : That's a good friend. | Every evening? | That's enough.
+a : The best kind. I'd want to be that, back. | Every evening. It's a habit, and a #good# one. | It is. Some things you don't explain.
+
+scene new_faces
+when topic=newcomer
+does give.opinion / ask.opinion / give.opinion
+a : Somebody new on #hill#. #good.capitalize#. I'll take #cup# down to them. | Newcomers want #work# and I want pickers. That's a match the Bright One made. | Somebody new at #market# asked me the way. I walked them halfway there, #humming#.
+b : You're kind. | Will they stay? | Did they mind?
+a : It's just #cup#. It costs less than a cold welcome. | If they can carry #crate# and keep #step#, there's room. | They hummed back by the end. That's how I knew they'd settle.
+
+scene gossip_kind
+when topic=gossip
+does tell.self / ask.detail / answer.detail / assess
+a : I've no ear for gossip. I'd sooner hum. | Folk tell me things at #market# and they've gone out of my head by the top of #hill#. | If I can't say a kind thing about somebody, I hum instead. You'll hear a lot of #humming#.
+b : Not even a little? | Forget them? | A lot?
+a : Not even a little. It sits badly with #cider#. | The climb takes it out of me. By the top there's nothing left but #tune#. | Some days, aye. It's #good# for the lungs.
+b : #bc_ha# | #bc_fair# | #bc_ha#
+
+scene good_weeks
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Fruit's selling well. I came home with an empty cart and a heavy apron. | Good times. Even the sour apples went at #market#, and they never go. | The jugs of #cider# go out warm and come back empty. I'll not complain.
+b : Good for you. | The sour ones? | Lucky.
+a : #good.capitalize# for #hill#. I'll pay the pickers a bit over. | The sour ones. Somebody's making a sauce, I'd guess. | Lucky, and grateful. I'll light a candle in #chapel# for it.
+
+story the_wedding_word [topic=memories|family self.age>=30]
+  : Years back, #uphome#, I stood up at a wedding for a pair I'd known since we were all #little#.
+  : I swore in front of the whole chapel to stand by them in a bad winter. I've meant it every day since.
+  ask : Have you ever given your word like that?
+  b : Once or twice. Not in front of a chapel, though.
+  b[old] : Often enough. Kept most of them.
+  : Then you know. A word given in #chapel# weighs more than one given at a gate.
+
+story grandad_drum [topic=memories|pastimes self.age>=25]
+  : My #grandad# had an old drum with the skin half gone. He'd beat a march on it every feast night.
+  : I was too small to carry #drum#, so I carried the tune instead. I've never put it down.
+  ask : Was there ever a song in your family?
+  b : Not that I remember. I wish there had been.
+  b[from=frosthollow] : The pit songs, aye. Every family had one.
+  : Then take one of mine. I've plenty, and they want carrying.
+
+story frost_fires [topic=season|work self.job=farmer self.age>=25]
+  : One spring the frost came down on #blossom# at midnight. I lit straw fires between #rows# till dawn.
+  : I walked them all night, #humming# to keep awake. We lost one row out of nine.
+  ask : Would you have stayed up for it?
+  b : For a whole year's fruit? I'd have tried.
+  b[job=farmer] : I've done the same, and lost more than one row.
+  : Eight rows saved. I've never slept so sound as the next night. #saying#.
+
+rule @hum
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Left, right, and up #ladder#. | Hm hm, hm hm. #step.capitalize#.
+
+rule @picking
+when concept=bark working=yes self.job=farmer here.season=autumn
+does aside
+cooldown 8h
+say Full crates to the cart first, if you please. | Another row done. #oath#.
+
+rule @bells
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #bells.capitalize#. Again. #oath#. | There they go, and #hens# not even up.
+
+rule @rainstop
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 10h
+say #rain.capitalize# on the boughs. #trees.capitalize# are content, anyway. | Off #ladder# till it lifts. #saying#.
+
+dlg @1 resident.hub : #greet#. Come and sit; what's wanted? | #greet#, #address#. There's #cup# going, if you'll take one.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back up #hill#. Sit down, and tell me.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Tell me what's brought you, and I'll listen.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. Pruning, picking, and #humming# the whole way down #rows#. | #trees.capitalize#, #address#. Apples in autumn, blossom in spring, and work in between.
+dlg @2 resident.job : I keep at #work#, and keep a tune going while I do. | This and that, in #step#.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. Take an apple as you go.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say An old marching song, from up the pass. My grandda had it off a drummer, and I've had it from him. It keeps the step on a hill.
+mood warm
+free
+choice Will you hum some of it? -> verse
+choice Goodbye. -> bye
+node verse
+say Hm-hm, hm-hm, hm hm-hm... That's the walking bit. The rest is for picking, and it's slower. Come back in autumn and you'll hear it.
+choice Something else. -> hub
+choice Goodbye. -> bye

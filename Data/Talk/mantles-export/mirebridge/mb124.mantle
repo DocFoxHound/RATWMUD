@@ -1,0 +1,453 @@
+# mb124, the warm-roll baker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb124
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for rm_bo_rainmarsh
+written_by claude
+title the warm-roll baker
+fits stage=adult|old
+prefers role=merchant job=baker warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk hands_a_warm_roll_to_anyone_who_comes_in_wet
+likes roast_pork riddles sharp_knife misty_dawns
+dislikes waiting rats
+fears the_oven_dying_with_a_batch_in_it rats_in_the_flour_loft
+hopes the_young_ones_never_once_hollow
+topics food +0.4 work +0.4 pastimes +0.3 weather +0.3 day +0.2 family +0.2 memories +0.1 gossip -0.3
+styles comfort=food gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# bakes for a city bakehouse and lives over the ovens, a long way from the fens of home: quiet and warm, slow to speak and quick with bread, fond of a mist at dawn, a keen blade and a riddle of home-made sort, and never lets anybody stand dripping at the counter without a warm roll in the paw.
+
+words
+oath! = Leaven and mist | By the first batch
+saying! = A wet coat and a warm roll cancel out | Bread won't be hurried, and I won't be kept
+oven = the oven | the big oven
+loaf = a loaf | a brown loaf
+roll = a warm roll | a roll still hot from the tray
+dough = the dough | the night's dough
+peel = the peel | the oven peel
+blade = my scoring blade | the little knife
+keen = keen enough to split a hair | sharp as a heron's look
+pork = roast pork | pork with a good crackle
+mistdawn = a misty dawn | a dawn the mist won't lift off
+greythieves = the rats | the grey thieves in the loft
+loft = the flour loft | the loft over the ovens
+flour = the flour | the sacks of flour
+dark = the oven hours | the dark before the bread
+standing = standing about | waiting on folk who said they'd come
+crumb = the crumb | an open crumb
+eat = Here, eat | Go on, eat
+dripping = dripping wet | dripping from the ears
+city = the city | this city
+queue = the queue | the dawn queue
+counter = the counter | my counter
+trough = the trough | the dough trough
+heel = the heel | the heel of the loaf
+street = the street | the street outside
+
+any
+opinion @1 dole for 2 : Nobody in #city# should lie down #hungry# while there's a heel of bread going spare. I give mine away, and the dole should give more.
+opinion @1 strangers for 2 : A stranger at my door is only somebody I've not fed yet. #eat#, I say, and ask after.
+opinion @1 newcomers for 1 : There's room for anybody who'll carry a sack of #flour# up a stair. Most of us came from somewhere.
+opinion @1 merchants for 1 : Folk see the loaf and never the firewood. I've paid for #flour# and fire both before the first crust sells.
+opinion @2 road against 2 [world.wagons=raided] : Another cart taken. That's #flour# that won't come, and bread that won't be baked. #oath#.
+opinion @1 road against 1 : Every load that comes up late costs me a batch. The road's a slow wolf, and I can't bake on a promise.
+opinion @1 city against 1 : #city.capitalize# is all smoke and hurry. At home you knew whose bread you were eating. Here they don't ask.
+opinion @1 houses for 1 : The Houses run the works, and the works send me #queue# at first light. I'll not curse my own custom.
+opinion @1 watch for 1 : They come by in #dark# for a roll and they keep the quick paws off #counter#. Fair trade, that.
+opinion @1 times for 1 : #oven.capitalize# is warm and nobody under my roof is #hungry#. That's a good year, by my count.
+opinion @1 drink mixed 1 : A jar with #pork# on Restday, yes. A jar before #dark#, never; the oven wants a steady paw.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Step in off #street#. | #greet#. You look like you want something warm.
+line @2 greet [self.working=yes self.job=baker] : #greet#. Mind #peel#; it swings. | #greet#. There's #roll# on the tray if you're #hungry#.
+line @3 greet [here.time=dawn] : #greet#. The first batch is just out. | #greet#. You're up with #mistdawn#, then.
+line @4 greet [here.time=dusk|night] : #greet#. I'm setting #dough# for the morning. | #greet#. Late, but #oven#'s still warm.
+line @5 greet [here.outdoors=rain|storm] : #greet#. You're #dripping#. Stand by #oven#. | #greet#. Shake off there, and take #roll#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit; I've kept you #heel#. | You. Good. #eat#; you've not had breakfast.
+line @1 again.open : #welcome_back#. The second batch is in since. | Twice in a day. I'll start baking for you, #address#.
+line @1 hail [pair.band=friends] : #address.capitalize#. A word, and #roll#. | Over here. I've something warm put by.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down. Have you eaten? | #greet#. I'm glad it's you, #pet#.
+line @3 greet.return [self.working=yes self.job=baker] : #greet#. Floury paws; I'll not shake. | #greet#. Give me a breath; #oven#'s open.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late for bread, early for #dough#. | #greet#. #oven.capitalize#'s banked, but I'm up.
+line @1 farewell : #farewell#. | #farewell#. Take a crust for the road.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep under the eaves going home. | #s8_night#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Come back #hungry#.
+line @1 react.news : #surprise#. That wants sitting down for. | Well. I'll think on that over #dough#.
+line @1 react.news.new : #oath#. Nobody's said. | #surprise#. That's not come in with #flour#.
+line @1 react.news.known : #knew#. It came over #counter# at dawn. | I'd heard. Half #queue# had it.
+line @1 react.news.doubt : #doubt#. Bread rises; rumours swell. Not the same thing. | I'll wait for a second mouth before I believe it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll send a loaf round to the house. | That's hard. Somebody will want feeding tonight, and #oven#'s hot.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants a cake. | That's #good# to hear. I'll bake something for it.
+line @1 answer.how : Warm, and floury. I've no complaint. | #fine#. #oven.capitalize#'s drawing well, and so am I.
+line @2 answer.how.busy [self.working=yes self.job=baker] : #busy.capitalize#. Two batches in and one proving. | Run off my paws since #dark#.
+line @3 answer.how.poorly [self.mood=low|sore] : #poorly.capitalize#. Bread first; I'll mend after. | Low. A bit of #pork# on Restday will set me right.
+line @1 ask.how : And you? Eaten today? | How are you keeping, #address#? Warm enough?
+line @1 sympathise : #sympathy#. Sit, and #eat#; it helps more than talk. | That's heavy. Sit by #oven# a while.
+line @1 reassure : #reassure#. It'll come right. | It'll rise in its own time, #address#. Most things do.
+line @1 decline [self.job=baker] : #hedge#. #dough.capitalize#'s on the turn, and nobody else can watch it. | I'd like to, #address#, only the next batch is due and nobody else can draw it.
+line @2 decline : #hedge#, but I'm needed elsewhere. Another day, gladly. | Not today, #address#, much as I'd like it. I'm promised to somebody.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | It'll keep. Bread keeps a day; so do I.
+line @1 thank : #thanks#. | That's kind. I'll owe you #loaf#.
+line @1 deflect_thanks : #deflect.capitalize#. It's only bread. | Never mind thanks. #eat#, that's thanks enough.
+line @1 deflect_praise : It's only #flour# and heat, and getting up early. | #modest.capitalize#. The oven did the work.
+line @1 preclose [self.working=yes self.job=baker] : Well. #oven.capitalize# won't wait. | That's the batch calling. I'd best draw it.
+line @2 preclose : #preclose#. | I'll let you go. Take #roll# with you.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. Mind the #rain#.
+line @1 ack : #bc_it_is# | Mm.
+line @1 give.advice : #advise.capitalize#: never cut a loaf while it's hot. It tears, and it sulks. | Keep your knife #keen#, #address#. A dull one does the damage.
+line @1 warn [world.bandits=near] : Keep to #city# a while. #warn#. | If you must go #far#, take bread and company both.
+line @1 offer : Here. #roll.capitalize#, and no arguing. | Take this. It's warm, and you're not, #address#.
+line @1 apologise : #sorry.capitalize#. I'd no right to say it. | Forgive me, #address#. I spoke before I thought.
+line @1 accept_apology : #forgive.capitalize#. | It's gone. Have #roll#.
+scene wet_arrival
+when topic=weather|smalltalk here.outdoors=rain|storm self.working=yes
+does offer / accept / assess
+a : You're #dripping#. Here, #roll#. Hold it; it'll warm your paws before it warms your belly. | Stand by #oven# and drip there. I'll not have you dripping on the bread. Take this. | Nobody stands wet at #counter#. That's the one rule I keep. #eat#.
+b : That's kind. Thank you. | I'll drip where I'm told. | I won't argue with that.
+a : It's only bread. And you look like the fen came to visit. | Good. Five minutes there and you'll steam like #dough#. | Nobody does. #saying#.
+
+scene oven_hours
+when topic=day|work here.time=dawn self.working=yes self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : I've been up since #dark#. The first batch went in before the lamplighter came round. | I like #dark#. Nobody wants anything but bread, and bread doesn't talk back. | By the time #street# is awake, I've done half a day and eaten #heel# of every batch.
+b : When do you sleep? | Doesn't it get lonely? | Every batch?
+a : Afternoons, a bit. And early. #bed.capitalize# by dusk, most nights. | Not with #oven# for company. It ticks and sighs like an old friend dozing. | One heel from every batch. A baker's wage, that, #address#.
+b : #bc_poor_soul# | #bc_ha# | #bc_fair#
+
+scene misty_dawn
+when topic=weather|day here.time=dawn here.outdoors=fog self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : Look at that. #mistdawn.capitalize#, and every roof gone soft. I took the first loaf to the doorstep just to see it. | I love a mist at this hour. The smoke from #oven# goes up into it and you can't tell which is which. | A dawn like this, you can hear a cart three streets off and not see your own paw.
+b : It's grey, that's all. | It is pretty. | #bc_lovely#
+a : Grey, and quiet, and kind. At #home# the mist came up off the water like this every day. | It is. I'd stand in it all morning if the bread let me. | It is. It's the one hour #city# looks like the fen.
+
+scene fen_mist_home
+when topic=memories|weather self.away=yes self.from=fenshore self.age>=25
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# the #fog# would lie on the reeds till noon, and the boats found the landing by the bakehouse smell. | My #gran# baked on a clay oven out on the boards. You could smell her bread from the far side of the dyke. | I learned to bake by smell before I learned by eye. In the fen you can't always see your own oven.
+b[from=fenshore] #fen : The bakehouse smell. I know it. You'd come in wet and follow your nose. | Clay ovens on the boards. We had one too. | That's the fen. Nose first, eyes after.
+b : By the smell? | Was she a good baker? | Can you, truly?
+a@fen : Follow your nose and you'd never sink. That's what my #grandad# said. | Then you'll know the taste. Nothing in #city# comes near it. | Nose first, and you'll not burn a batch in your life.
+a : By the smell. Bread carries further than a bell in a #fog#. | The best on the water. I still can't make her crust. | Truly. A loaf's done when it smells like #supper# and not like a field.
+
+scene blade_keen
+when topic=work|pastimes self.likes=sharp_knife self.job=baker
+does tell.self / react.self / tell.self / assess
+a : I sharpen #blade# every night before I bank #oven#. #keen.capitalize#, it has to be. | A dull knife drags #dough# and the loaf comes out torn. I'd sooner bake with my teeth. | Here. Look at the edge on #blade#. Mine since I was an apprentice, and never once dull.
+b : What's it for? | You'd bake with your teeth? | Mind your paw.
+a : Scoring. One cut down the back, so #loaf# opens where I say and not where it likes. | Near enough. A clean cut and the crust opens kind. A torn one and it splits all wrong. | I do mind it. That's why it's sharp. A blunt knife is what cuts you.
+b : #bc_clever# | #bc_ha# | #bc_wise#
+
+scene riddle_crumb
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : Here's one of mine. What's more hole than anything, and still holds a family's breakfast? | I've one for you. What's got a back that's cut before it's born, and is warmest the hour it's born? | Answer me this. What rises without legs, and falls if you peek too soon?
+b : A sieve? No... a loaf? | A loaf? | Dough?
+a : A good loaf. #crumb.capitalize#'s all holes, and that's the mark of a right one. | A loaf, scored and baked. You've the knack of it, #address#. | Dough. Open #oven# early and down it goes. I made that one up over #trough#.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene riddle_reed
+when topic=pastimes|memories self.likes=riddles self.away=yes
+does tell.self / ask.detail / answer.detail / assess
+a : A riddle from home. What stands up to its knees all year, and whistles when the wind comes? | Try this. What has a thousand heads and not one thought, and bows to every #wind#? | One the old ones tell at #home#. What's cut green, dried brown, and keeps a whole house #snug#?
+b[from=fenshore] #fen : A reed. Every pup knows that one. | The reed beds. That's easy for us. | Thatch. Reed thatch.
+b : I don't know. A heron? | A field of wheat? | I've no idea.
+a@fen : Every pup at home, yes. Here it stumps the lot of them. | Easy for us. Hard for #city#. I like that about it. | Thatch, yes. I miss a roof that smells of anything but soot.
+a : A reed. A heron stands to its knees too, but it doesn't whistle. | Near enough, but no. A reed bed. Wheat doesn't grow in water. | Reed thatch. Cut green, dried brown, and over every roof at #home#.
+b : #bc_ha# | #bc_fair# | #bc_clever#
+
+scene pork_restday
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess
+a : Restday I put #pork# in the bread oven after the last batch. The heat that's left does it slow. | Nothing beats #pork#. I'd trade a week's loaves for one good joint. | I've a joint of pork in #oven# as we speak. You'll smell it from the corner by noon.
+b : That's clever, using the heat. | A week's loaves? | You're making me hungry.
+a : Waste nothing, and #oven# pays you back twice. | Near enough. Don't tell #queue#. | Good. Come back at noon, and bring a plate, #address#.
+
+scene day_ends
+when topic=food|times self.working=yes self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : What's left at dusk goes out the back door. There's always somebody who needs it more than the pigs. | I never sell yesterday's bread. I give it. Selling stale feels like lying. | The last loaf of the day I keep for whoever's #dripping# at closing. There's always one.
+b : Who comes for it? | Isn't that money lost? | Every day?
+a : Folk who'd rather not be seen asking. I leave it on the step and go back in. | A copper or two. I sleep better for it, and that's worth more. | Every day. #city.capitalize# never runs short of wet wolves.
+b : #bc_bless_you# | #bc_wise# | #bc_true#
+
+scene grey_thieves
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : #greythieves.capitalize# were at #loft# again. Through a sack, neat as a cut. | I set a trap by #flour# and caught nothing but my own tail. | One ran over #trough# last night. I threw the whole batch out. #oath#.
+b : Did you get it? | Ouch. | The whole batch?
+a : Not yet. It's patient, and so am I. One of us will win. | It's still #hurt#. The rat's still fat. | The whole batch. I'll not sell bread a rat's walked on, not for any #money#.
+b : #bc_i_hope_so# | #bc_poor_soul# | #bc_right#
+
+scene no_waiting
+when topic=smalltalk|work self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : A wolf ordered six loaves for noon and came at three. I stood by the shelf the whole while. I can't abide #standing#. | Waiting's the worst part of baking, and #dough# does it for you. I just pace. | I'll do anything but stand and wait. Give me a sack of #flour# to carry instead.
+b : That's rude of them. | It's only an hour. | #bc_me_too#
+a : It was. I sold two of the six in the meantime and baked them fresh ones. | An hour's a batch, #address#. You can't get it back. | Good. Then you'll know why I'm always moving.
+
+scene young_ones
+when topic=family|home self.parent=yes self.child
+does tell.feeling / react.self / assess
+a : I bake a small loaf for #self.child# every morning, the first out of #oven#. | I'd go without before #self.child# went #hungry#. That's the whole of my prayer, near enough. | #self.child# is the reason I get up in #dark# and don't mind it.
+b : That's lovely. | Any parent would say the same. | #bc_bless_you#
+a : It's only a little loaf. But it's the first, and that matters. | Then any parent's right. #oath#. | I'd do it anyway. But it's easier with a reason, #address#.
+
+scene good_help
+when topic=work|friends self.hand self.working=yes
+does tell.self / react.self / assess
+a : I'd trust #self.hand# with #peel# and the second batch. That's all I'll say. | I've had help before. #self.hand# is the first I'd leave alone with #oven#. | With #self.hand# about, I get to sleep past #dark# now and then.
+b : That's worth a lot. | That's trust. | Lucky you.
+a : It is. #good.capitalize# help's rarer than good flour. | It is. #oven.capitalize#'s the whole shop, near enough. | Lucky, and grateful. I don't say it enough.
+
+scene city_rain
+when topic=weather here.region=ridgemere here.outdoors=rain
+does tell.self / react.self / concede
+a : #rain.capitalize# all day. Good for bread, bad for the till. Nobody comes out for a loaf in this. | The rain here runs down the hill like it's late for something. At #home# it sat and stayed. | I've the door propped so the heat of #oven# goes out to meet them. A few come in just for the warm.
+b : They'll come once it stops. | It does run. | That's kind.
+a : They will, all at once, and want it hot. #saying#. | It does. I miss rain that stays put. Odd thing to miss. | It's no cost to me. #oven.capitalize#'s hot either way.
+
+scene winter_door
+when topic=season|weather here.season=winter self.working=yes self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : In winter half #street# stands in my door for the warm and buys nothing. I don't mind. | The bakehouse is the warmest room on #street# come winter. I sleep over it like a cat on a hearth. | Winter #dough# is #slow#. Cold flour, cold water, cold paws. I stand it near #oven# to coax it.
+b : Doesn't it cost you? | Warm, then? | How long does it take?
+a : Nothing but the door. Heat goes out either way. | #snug.capitalize# as a nest. I'd not trade it for a fine house on the hill. | Twice as long as summer. I've learned not to stand over it. It doesn't like being watched.
+b : #bc_good# | #bc_lucky_you# | #bc_ha#
+
+scene summer_heat
+when topic=season|weather here.season=summer self.working=yes self.job=baker
+does tell.complaint / react.complaint / assess
+a : Summer, and #oven# on top of it. I bake in my fur and nothing else. | #dough.capitalize# rises so fast in this heat I can't keep up with it. | I open every shutter and still the bakehouse is #hot# as a pot.
+b : I don't envy you. | Too fast is a problem? | #bc_poor_soul#
+a : Nobody does in summer. In winter they're queuing at the door. | It runs and goes sour. Bread wants patience, and the heat won't give it. | It is. Still, a hot bakehouse is a working one, #address#.
+
+scene night_dough
+when topic=day|work here.time=night self.working=yes self.job=baker
+does tell.self / react.self / assess
+a : I'm setting #dough# for the morning. It works all night while I sleep. That's the best bargain in the trade. | Last thing every night: dough in #trough#, a cloth over it, the fire banked. Then #bed#. | At night I can hear #dough# sigh under the cloth. It's working. I like knowing that.
+b : Clever stuff, dough. | Sounds peaceful. | Sigh?
+a : It's alive, near enough. Feed it and keep it warm and it'll feed you back. | It is. The last quiet hour, and then #dark# comes round again. | It does. Little bubbles, breaking. You'd hear it too, if you lived over #oven#.
+
+scene flour_dear
+when topic=prices|work self.job=baker world.flour_price=up
+does tell.worry / reassure / assess
+a : #flour.capitalize#'s gone dear. I'll not cut the loaf smaller; I'd sooner cut my own #supper#. | The flour man wants more for every sack this month. The loaf will have to go up a little, and I hate it. | Dear flour, and the same coppers in every purse. Somebody goes short, and I'd sooner it wasn't the children.
+b : Everyone's paying more. | They'll understand. | #bc_true#
+a : They are. That's why I'll not add to it. | Some will. The ones who won't, I'll know by their faces at #counter#. | True. So the small loaves get smaller and the big ones stay as they are.
+
+scene flour_cheap
+when topic=prices|work self.job=baker world.flour_price=down
+does tell.news / react.news / assess
+a : #flour.capitalize#'s come down. I've put a bun on the side of every loaf this week. | Cheaper flour, so the loaf's back where it was. I like a price I'm not ashamed of. | Flour's cheap, and I've baked a tray of plain cakes for nobody in particular.
+b : That's good of you. | As it ought to be. | Nobody in particular?
+a : It's only fair. When it's dear, they paid; when it's cheap, they get it back. | It is. Bread shouldn't be a worry. | Whoever comes in first, or wettest. #eat#, I'll say.
+
+scene wagons_late
+when topic=caravan|work world.wagons=late self.job=baker
+does tell.worry / reassure / assess
+a : The flour carts are late. I've enough for two days, three if I'm careful. | No #flour# in this week. I've #oven# hot and nothing to put in it. #oath#. | I've been #standing# at the window since dawn for that cart. I hate it.
+b : They'll come. | That's no good at all. | Waiting's hard.
+a : They will. And I'll bake through the night when they do. | No good. I'll do half batches and hope. | Hard for me. Harder for #oven#; it doesn't like being kept hot for nothing.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean self.job=baker
+does tell.worry / sympathise / assess
+a : Folk buy half loaves now, and count the coppers twice. I see it at #counter# every morning. | More come to the back door at dusk than the front at dawn. That's how I know the times. | I've taken to baking a coarse loaf at a copper less. It's not my best, but it's bread.
+b : That's hard to see. | #sympathy#. | That's good of you.
+a : It is. I put an extra crust in the bag when I can. | It is. I leave more on the step than I used to. | It's what I can do. Bread's the last thing anyone should go without.
+
+scene good_times
+when topic=times|prices world.times=good|boom self.job=baker
+does tell.news / ask.detail / answer.detail
+a : Cake orders, three this week. Somebody's doing well. | Coin's about. They buy the good loaf and a bun for the walk home. | I've sold out every day this week before noon. I've baked an extra batch since.
+b : Who's ordering cakes? | Do you make more, then? | Will you take on help?
+a : Weddings and namings. Good times make for both. | More, and better. When there's #money# about, I use the good butter. | I've help enough, #address#. I'll just get up earlier.
+
+scene gossip_fed
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : They talk in #queue#. I don't pass it on. I ask if the one they're talking about has eaten. | Whatever it is, I hope somebody's fed them. That's all I'll say about gossip. | #hearsay.capitalize#. I'd sooner knead than talk.
+b : Tell me anyway. | You must hear plenty. | Not even a hint?
+a : No. Half of it's wrong and the rest is somebody's trouble. | Plenty, in #queue#. I let it pass like steam off the bread. | Not a crumb of it. #eat# your roll instead.
+b : #bc_fair_enough# | #bc_ha# | #bc_fair#
+
+scene sorrow_news
+when topic=gossip|news topic.claim_kind=death|violence|victim
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : I heard #topic.subject# #topic.claim#. I'll send a loaf to the house tonight. | They're saying #topic.subject# #topic.claim#. #pity.capitalize#. | Did you hear? #topic.subject.capitalize# #topic.claim#. I burnt a batch thinking on it.
+b : That's hard news. | #sympathy#. | It's a sad thing.
+a : It is. A loaf's not much, but a house in trouble forgets to eat. | It is. I'll bake something plain and take it round. | Sad, and close by. I'll bank #oven# early tonight.
+
+scene glad_news
+when topic=gossip|news topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news / assess
+a : I hear #topic.subject# #topic.claim#. That wants a cake, if anything does. | Good news over #counter#: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#; that came in with #queue#. It made my morning.
+b : #bc_good# | That's nice news. | That's lovely.
+a : It is. I'll put something sweet in the window for it. | It is. #queue.capitalize# was cheerful for once. | It is. #good.capitalize# news makes the dough rise easier, I'd swear.
+
+scene faith_loaf
+when topic=faith
+does tell.self / ask.detail / answer.detail / assess
+a : I say a thank you over the first loaf. That's my prayer. It's short, but it's every day. | Chapel's not really for me. I bake for the priest, and that's my part. | Wheat and fire are the Bright One's. I only put them together in #oven#.
+b : What do you say? | Do you go at all? | That's a nice way to see it.
+a : Thank you for #flour#, and keep the fire in. That's the lot. | On feast days, with a basket of buns. They're glad of the buns. | I've no better way to see it, #address#.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene accent_slow
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : City folk say I talk slow. I say I talk the speed of #dough#. | I still say #greet# to every customer. Half of them say it back now. | A wolf knew I was from the fen from one word. #greet#, I said, and that was all it took.
+b : The speed of dough? | That's catching on, then. | One word's enough, sometimes.
+a : Slow, and it gets there, and it's better for it. | It is. #city.capitalize# could do with wishing folk dry. | It is. The fen's in my mouth and it's staying.
+
+scene newcomer_roll
+when topic=newcomer|player self.working=yes self.job=baker
+does tell.self / react.self / assess
+a : A stranger came in today, lost and #dripping#. I gave them #roll# and the way, in that order. | New faces always ask what the cut on the loaf means. It means I made it. | Somebody new to #street# bought one loaf and stood smelling it on the step. I liked them at once.
+b : That's a good order. | Is that all it means? | Who wouldn't?
+a : Bread first. Directions go in easier after. | That's all. And that I'll stand by it. | Plenty. #city.capitalize# forgets what bread smells like. I don't.
+
+scene dream_oven
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dream #oven#'s gone cold with a batch in it, and I can't find the flint. Every few weeks, the same. | In a dream last week I was on the boards at #home#, baking in a mist, and every loaf floated. | Last night I baked a loaf in my sleep so big #street# had to eat it together.
+b : Do you wake up worried? | Floated? | Did they?
+a : I wake up and go and check. It's always warm. Then I sleep like a stone. | Off over the water, one after another, like boats. I woke up #hungry#. | They did. Everybody, even the ones who never say good morning.
+b : #bc_poor_soul# | #bc_ha# | #bc_lovely#
+
+scene the_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# with the keys and #oven# both. That's saying a lot, for me. | With #self.friend# I never need to dress a thing up. That's friendship, to me. | If I'm short a paw in #dark#, it's #self.friend# I'd send for.
+b : That's a good friend. | That's honest. | You're lucky.
+a : It is. I'd bake for #self.friend# for nothing, every day. | It is. Plain's the best kind. | I do know it. I tell #self.friend# so, now and then.
+
+story first_brick [topic=work|memories self.job=baker self.age>=25]
+  : The first loaf I baked on my own came out like a brick. You could have built a wall with it.
+  : The old baker I learned under ate the whole of it in front of me, slow, and said it would be better tomorrow.
+  ask : Would you have eaten it, in his place?
+  b : Not the whole thing. Did it get better?
+  b[job=baker] : I'd have eaten it. We all baked a brick once.
+  : It did. Every loaf since, I think of him chewing. Kindness, that was, #oath#, and good teeth.
+
+story mist_landing [topic=memories|lore self.away=yes self.from=fenshore self.age>=25]
+  : One year at #home# the mist came down for three days. No sun, no shore, nothing. The boats couldn't find the landing.
+  : My #gran# baked through all three nights, door open, so the smell would go out over the water.
+  ask : Have you a smell that means home to you?
+  b : Bread, now you say it. Did they find their way?
+  b[from=fenshore] : Bread and peat smoke. Always.
+  : Every one of them came in by the nose. They called her oven the lamp after that, the whole fen did.
+
+story no_answer [topic=pastimes|festival self.likes=riddles]
+  : At a wedding once, I told a riddle of my own and forgot the end of it halfway through.
+  : Nobody would let it go. They argued it all night, table to table. Four answers, and none of them mine.
+  ask : What do you think the answer should have been?
+  b : Whatever won the argument, I'd say.
+  b[stage=young] : A cake! It's always a cake.
+  : That's what I said, in the end. The bride liked it best of all. I've never made a better riddle than the one I forgot.
+
+story the_grand_one [topic=memories|lore here.region=ridgemere self.age>=30]
+  : I once saw somebody very grand weep, in a great room up the hill, where nobody was meant to see. I'd come with bread for a feast.
+  : I set the basket down quiet and went out the way I came. I've never said who, and I won't.
+  ask : Would you have told anybody?
+  b : No. Some things you just carry.
+  b[old] : I'd have done the same. You keep a thing like that.
+  : I carry it. It's not heavy. It only reminds me that everybody needs feeding, one way or another.
+
+story rat_trough [topic=animals|work self.dislikes=rats self.job=baker]
+  : My first winter at the ovens, a rat fell in #trough# in the night.
+  : I found it at first light, stuck fast and furious in a whole night's dough.
+  b : What did you do?
+  b[job=baker] : The whole trough? That's a day gone.
+  : Threw out the lot, scrubbed #trough# twice, and baked from dawn till dark. I've had a lid on every trough since.
+
+rule @bread_cry
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 6h
+say Bread, fresh and warm. Loaves and rolls. | Hot from #oven#. Come in before it cools.
+
+rule @wet_roll
+when concept=bark working=yes here.outdoors=rain|storm
+does aside
+cooldown 8h
+say Anybody #dripping#, there's #roll# here. | In out of the #rain#, and take a roll.
+
+rule @mist_out
+when concept=bark here.time=dawn here.outdoors=fog self.likes=misty_dawns
+does aside
+cooldown 12h
+say There it is. #mistdawn.capitalize#. | Mist on #street#. Like home, nearly.
+
+rule @rat_loft
+when concept=bark working=yes self.dislikes=rats
+does aside
+cooldown 12h
+say Out of #loft#, you. Out. | #greythieves.capitalize# again. #oath#.
+
+rule @kept_waiting
+when concept=bark working=yes self.dislikes=waiting
+does aside
+cooldown 10h
+say Noon, they said. It's well past noon, #grumble#. | #standing.capitalize#. I can't abide it.
+
+rule @no_flour
+when concept=bark working=yes self.job=baker world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no cart with #flour#. Half batches, then. | No carts. #oven.capitalize#'s hot for nothing.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Loaves, rolls, and something sweet on the end. | #greet#, #address#. Take your time; it's all warm.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. I've kept the good loaves back. | #topic.player#. Good. The second batch is just out of #oven#.
+dlg @3 shop.greet [here.shop!=bare pair.disposition=hostile|wary] : Bread's on the shelf. Say what you want and you'll have it, #address#.
+dlg @4 shop.greet [here.shop!=bare here.outdoors=rain|storm] : #greet#. You're #dripping#. Take #roll# first, then look.
+dlg @5 shop.greet [here.shop=bare] : #shop_bare# #flour.capitalize# didn't come. I'll buy, if you're selling.
+dlg @1 shop.prices : #shop_dear# Flour costs what it costs; I'll not skimp the loaf for it. | Fair, for bread made by paw before #street#'s awake.
+dlg @1 shop.bye : #shop_bye# Mind the wet. | #farewell#. Eat it before it cools; it's better so.
+dlg @1 resident.hub : #greet#. What's wanted? | #greet#, #address#. Step in off #street#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Have you eaten? Sit, then.
+dlg @3 resident.hub [here.time=night] : It's late; I'm setting #dough#. Ask, and I'll answer while I work.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak your piece, #address#. I'll listen.
+dlg @1 resident.job [self.job=baker] : I bake. Loaves at dawn, rolls by noon, and #dough# set at night. | Baker, here and over #oven#. I've been up since #dark#.
+dlg @2 resident.job : I keep folk fed, one way or another. That's most of what I do, #address#.
+dlg @1 resident.business [business=thriving] : Sold out by noon most days. I can't complain. | Busy. More loaves than I've paws for, and #queue# out the door.
+dlg @2 resident.business [business=failing] : Poorly. Folk buy half loaves, or none. | Thin. I bake less and give more away.
+dlg @3 resident.business [business=steady] : Steady. It pays for #flour# and the roof, and #pork# on Restday.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what #queue# was saying.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #counter#. The whole queue's full of it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only flour and weather, here.
+dlg @1 resident.gossip [here.gossip=yes] : They say in #queue# #topic.subject# #topic.claim#. I hope somebody's seen to a supper over it.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# I'd sooner knead.
+dlg @1 resident.bye : #farewell#. Take a crust for the road. | #farewell#, #address#. Come back #hungry#.
+graft resident.hub
+choice Why do you give a roll to everyone who comes in wet? [self.working=yes] -> roll
+node roll
+say Because nobody should stand dripping at a counter and be asked for coin. Where I grew up, you fed the wet ones first and asked their business after.
+mood warm
+free
+choice Is that a fen custom? -> roll_fen
+choice Goodbye. -> bye
+node roll_fen
+say It is. The water's everywhere there, and everybody comes in wet sooner or later. Here it's the rain. The roll's the same.
+choice Thank you. Something else. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Have you a riddle for me? [self.likes=riddles] -> riddle
+node riddle
+say One of my own. What's got a back that's cut before it's born, and is warmest the hour it's born?
+mood keen
+free
+choice A loaf. -> riddle_right
+choice I give up. -> riddle_right
+node riddle_right
+say A loaf, scored and baked. One cut down the back with a keen blade, so it opens where I say. Now, what'll you have?
+choice Let me see your bread. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,484 @@
+# cw183, the high-shelf provisioner (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw183
+revision 2
+state ready
+dialect coldwater
+accent none
+tier full
+written_for rm_elspet_saltmarsh
+written_by claude
+title the high-shelf provisioner
+fits stage=adult|old
+prefers role=merchant warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk knows_which_streets_flood_first
+likes roast_pork singing market_bustle autumn_wind
+dislikes gulls deep_mud
+fears water_under_the_door_at_night the_houses_falling_out
+hopes a_winter_with_a_dry_floor a_street_that_sings
+topics weather +0.4 work +0.3 prices +0.3 pastimes +0.2 food +0.2 home +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a provision store by the bridge and lives up the stair over it: quiet, warm and bone-tired, loyal to the ones who work alongside, with every sack on a high shelf and a map in the head of which streets go under first.
+
+words
+oath! = Gutter and grate | By the high shelf
+saying! = Rain goes where it went last time | Keep the sacks off the floor
+shelf = the high shelf | the top shelf
+sacks = the flour sacks | the meal sacks
+step = the shop step | my front step
+dip = the dip by the bridge | the low corner by the bridge
+gutters = the gutters | the corner gutter
+boards = the floorboards | the boards by the door
+pork = a pork roast with the skin done crisp | Restday pork, the crackling hard as toffee
+song = a song round the stove | a good sing of an evening
+bustle = the Commons on a full market day | a market so loud you can't hear your own till
+gust = a gusty autumn day | the first big gusts of autumn
+gulls = the gulls | those thieving gulls
+mud = deep mud | mud up to the hocks
+book = the order book | my order book
+bridge = the bridge | the old bridge outside
+lake = the lake at home | the lake I grew up beside
+mm = Mm | Mm-hm
+stove = the stove | the little stove upstairs
+crock = a stopped crock | a crock with the lid tied down
+road = the road | the long road in
+river = the river | the river under the bridge
+hill = the hill | the long hill
+water = the water | the floodwater
+flour = flour | good dry flour
+loaf = a loaf | a heel of bread
+street = the street | this street
+kettle = the kettle | the old black kettle
+wet = the wet | the wet outside
+
+any
+opinion @1 city against 1 : #vent#, a street here can go under by noon and half the folk on it couldn't tell you who lives three doors down.
+opinion @1 dole for 1 : A city with this much #flour# in it has no business sending a pup to sleep empty. I'd sooner give #loaf# away.
+opinion @1 merchants for 1 [self.role=merchant] : I keep a counter. I know what a late load costs, and it's never the buyer who pays for it first.
+opinion @1 newcomers for 2 : There's room in #here.town# for anyone who'll lift a sack and keep a promise. #mm#. That's all I'd ask of them.
+opinion @1 road against 1 : #road.capitalize# gets slower every month, and the city eats whatever #road# brings. Slow road, dear bread.
+opinion @2 road against 2 [world.wagons=raided] : Robbed on #road# again. That's somebody's #flour# and somebody's supper, gone off into the trees.
+opinion @1 strangers for 2 : A traveller tells you which way the weather's coming and what bread costs two towns off. I'll always hear one out over a cup.
+opinion @1 watch for 1 : Somebody has to stand out in #wet# all night, and it's never me. I'll pour any of them something hot.
+opinion @1 houses mixed 1 : Mark me, the Houses will fall out with each other before the winter's done. And when they quarrel, it's the low streets that get wet.
+opinion @1 sump mixed 1 : The Sump floods first and dries last. I'd not blame anyone down there for being sour about it, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your feet; #boards# take a week to dry. | #greet#, #address#. Come in off #bridge#.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Mind #sacks# by the door; I'm moving them up. | #greet#. #book.capitalize#'s open, and so am I.
+line @3 greet [here.time=dawn] : Morning. I've been up since #gutters# started. | Morning, #address#. First one over #step# today.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out on these streets. | #greet#. Mind #dip# on your way home; it's dark down there.
+line @5 greet [here.outdoors=rain] : #greet#. Shake off on the mat, not on #sacks#. | #greet#. You've brought half #street# in on your paws.
+line @1 kin.open [pair.kin!=no] : There you are. Sit down; I've #stove# going. | Come in. You look #tired#, near as #tired# as I feel.
+line @1 again.open : #welcome_back#. Nothing's moved since, only #water#. | Twice today. I'll put #kettle# on for you this time.
+line @1 hail [pair.band=friends] : #address.capitalize#! A word, before #gutters# start. | Over here, out of #wet#. #mm#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping it'd be you. | #greet#. Come up out of #wet#.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Say what you need; I'll reach it down off #shelf#. | #greet#. Mind #step#; it's slick.
+line @4 greet.return [here.time=dusk|night] : #greet#. A long day for both of us, then. | #greet#. You're out late, #address#.
+line @1 farewell : #farewell#. Keep to the high side of #street#. | #farewell#. Mind #dip#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go round by the top street; the bottom's dark and wet. | #farewell#. Sleep dry, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends] : #farewell#. Come by tomorrow. | #farewell#. I'll keep you a heel of bread.
+line @1 react.news : #mm#. Go on, then; I'm listening. | #mm#. Say it slow.
+line @1 react.news.new : #marvel#. Not a word of that reached #step#. | #surprise#. That's new to me, #address#.
+line @1 react.news.known : #knew#. Somebody had it on #bridge# this morning. | #knew#. The whole street had it by noon.
+line @1 react.news.doubt : #doubt#. Rumour runs downhill quicker than rain does. | #hedge#. Let somebody who stood and watched it tell me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll send #loaf# round. | #sympathy#. That's a cold thing to hear on a wet day.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants a song. | #good.capitalize#. I'll sing for that tonight, #oath#.
+line @1 answer.how : #tired.capitalize#, but dry. That's a good day in this city. | #fine#. Nothing came in under the door.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Everything's going up a shelf before the rain. | On my feet since first light. #sacks.capitalize# first, then everything else.
+line @1 ask.how : And you? Kept dry? | How's your street holding up, #address#?
+line @1 sympathise : Sit a while. I'll find you something to eat. | #sympathy#. Eat something first. Things look less grim on a full stomach.
+line @1 reassure : #reassure#. Water goes down. It always does. | It'll be dry by Restday, #address#. Most things are.
+line @1 decline : #hedge#, I'd better not. I've too much to carry before the rain comes. | I'd like to, truly. #account#, and the light's going.
+line @2 decline [self.role=merchant self.working=yes] : #hedge#, I can't leave the store. #sacks.capitalize# won't mind themselves. | Not today. The load's due and somebody has to count it in.
+line @1 accept_decline : #no_matter#. Another day. | That's all right. It keeps, like #flour# in #crock#.
+line @1 thank : #thanks#. I'll remember it. | That's kind of you. I mean it.
+line @1 deflect_thanks : #deflect#. You'd have done the same. | It's only #loaf#. Go on with you.
+line @1 offer : Take a bun; they're yesterday's, but they're dry. | Here. Sit on the crate and have something hot from #stove#.
+line @1 preclose [self.working=yes] : Well. #sacks.capitalize# won't climb #shelf# by themselves. | I'd best get back; the rain's turning.
+line @2 preclose : #preclose#. I'm wanted at home. | Well. The light's going, and so should I.
+line @1 accept_preclose : Go on, then. Mind #wet#. | Off with you, before #rain# catches you.
+line @1 ack : #mm# | #bc_true#
+line @1 give.advice : #advise#, never keep anything on the floor in this city. | Learn where #water# goes before you rent a room. #saying#.
+line @1 warn [world.bandits=near] : Keep off #road# a while. #warn#. | Past the walls, keep in company. #warn#.
+line @2 warn [here.outdoors=rain here.region=ridgemere] : Keep off the low street tonight; it'll be under by dark. | #warn#. #dip.capitalize# goes first.
+scene flood_order
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : This rain's set in. #dip.capitalize# will be under by noon, and the lane behind it an hour later. | #rain.capitalize# like this, the corner by the well goes second. Always second. | Three hours more of this and #water#'s over the bottom step on #hill#.
+b : How do you know? | Why second? | Which step?
+a : I've watched it every wet spring. #saying#. | It sits a stair lower than you'd think. You can't see it till it's wet. | The one with the crack. When there's water in the crack, I move #sacks# up.
+b : #bc_wise# | You've an eye for it. | #bc_clever#
+
+scene gutter_roar
+when topic=weather here.outdoors=storm here.region=ridgemere
+does tell.worry / reassure / assess
+a : Hear #gutters#? When they roar like that I go down and lift everything a shelf. | #wind.capitalize# like this, I don't sleep. I sit on the stair and listen for the door. | The drains by #bridge# are choked again. I told somebody. Nobody listens.
+b : It'll blow over. | You'll wear yourself out. | Somebody should clear them.
+a : It will. I'd still rather be dry when it does. | #bc_somebody_has_to#. Better me worn out than #flour# soaked. | Somebody should. It'll be me with a stick at first light, #oath#.
+
+scene fog_morning
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : #fog.capitalize# off the Sound so thick I can't see #bridge# from #step#. | Fog like this, the carts come over #bridge# by sound alone. | A grey morning. The kind where you can hear #river# and not see it.
+b : I nearly walked into a post. | Slow going for them. | I like a quiet morning.
+a : Everybody does, in this. Keep a paw out in front. | Slow, and loud. I can hear every wheel from #stove#. | So do I. Nobody hurries in it, not even #gulls#.
+
+scene dry_spell
+when topic=weather|day here.outdoors=clear here.region=ridgemere
+does tell.feeling / react.self / assess
+a : A dry day. I've the back door wide to air the place out. | Sun on the Commons. Everybody's out pretending they live somewhere warm. | A clear sky. I've half a mind to sit on #step# and do nothing at all.
+b : Make the most of it. | It won't last. | Do it, then.
+a : I will. #rain.capitalize#'s back by tomorrow, you'll see. | It never does. That's why you sit in it while it's here. | I might. The work can wait an hour, #mm#.
+
+scene autumn_gusts
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / ask.opinion / give.opinion / ack
+a : #gust.capitalize#. I could stand on #bridge# in it all afternoon. | Feel that? #gust.capitalize# blows the smoke off the city for once. | I love #gust#. Leaves everywhere, and nobody minds.
+b : Doesn't it chill you? | Blows the smoke where? | You love it?
+a : It does, a bit. It's a clean cold, though. | Up #hill# onto the Heights, where it belongs. | I do. It smells of somewhere far off.
+b? : #bc_fair_enough# | #bc_ha# | #bc_lovely#
+
+scene thaw_count
+when topic=weather here.outdoors=snow here.region=ridgemere
+does tell.worry / ask.detail / answer.detail / assess
+a : Pretty, the snow. #mm#. I'm already counting the days to the thaw. | Snow on every roof. When it goes, it all comes down at once. | Everyone's out throwing snow. I'm looking at the drifts and thinking of water.
+b : Why the thaw? | All at once? | Why water?
+a : A week after snow, #dip# floods worse than after any rain. | Off every roof and down every street to #bridge#. | Because that's what it'll be next week, and it'll want somewhere to go.
+b : #bc_i_know# | #bc_true# | Hm.
+
+scene dawn_bar
+when topic=day|work here.time=dawn self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : First thing, before the bar's off the door, I look at #gutters#. | I open at first light. The carters like a store that's open when they are. | Up before the bells. I've swept #step# and set #kettle# on #stove#.
+b : Looking for what? | Do they buy much? | Early, even for you.
+a : If they're running, I move the bottom row. If they're dry, I have breakfast. | Bread and salt pork for #road#. It adds up by the week. | Always. It's the only quiet hour I get, #mm#.
+
+scene dusk_count
+when topic=day here.time=dusk|night self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : The door's barred. I count #book# against the shelves before I go up. | I sold every loaf today and none of the salt pork. Strange city. | End of the day. My feet are #tired# and my back's worse.
+b : Does it ever match? | Why not the pork? | Go up and sit, then.
+a : Near enough. I'd worry if it matched exactly. | The rain. Nobody wants salt meat when they can't dry their coats. | I will, once the last crate's up on #shelf#.
+b? : #bc_ha# | #bc_fair_enough# | #bc_good#
+
+scene high_shelf
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / ack
+a : Nothing in my store sits on the floor. Not a sack, not a crate. | I had the shelves built a foot higher than the last keeper had them. Folk laughed. | Every row has its height. #flour.capitalize# highest, then meal, then the salt.
+b : Not even the heavy ones? | Do they laugh now? | Why the salt lowest?
+a : Those most of all. #sacks.capitalize# don't swim. | Not since the spring #water# came in over #boards#. | Salt in #crock# can sit in a puddle and never notice.
+b? : #bc_wise# | #bc_ha# | #bc_clever#
+
+scene loads_late
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / reassure / assess
+a : The loads are late again. I've two days of #flour# and four days of customers. | Nothing up #road# since Restday. I'm selling the salt by the half-measure. | Every day a load's late, somebody in #here.town# eats a little less.
+b : They'll come. | Can you get more elsewhere? | It's always the poor who eat less.
+a : They will. I'll still be at the window, watching. | Not up the river. Everything comes the same road. | Always. I keep a little back for them. Don't say I said so.
+
+scene loads_in
+when topic=caravan|work world.wagons=in self.role=merchant
+does tell.news / react.news / assess
+a : The loads are in. #sacks.capitalize# up to the rafters, and all of it dry. | Three wagons in this morning. #busy.capitalize#, and not sat down since. | #flour.capitalize#, meal, salt pork, candles. #road.capitalize# gave us everything at once.
+b : Good. That's a relief. | You'll sleep tonight. | All at once?
+a : It is. Now let it stay dry till it's sold. | I'll sleep like a stone. #good.capitalize#. | All at once, after a week of nothing. That's #road# for you.
+
+scene road_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.worry / sympathise / assess
+tone serious / even / even
+a : A wagon robbed on #road#. That's #flour# somebody here was counting on. | Robbed again, out past the walls. #uneasy#. | They say a load was taken. I don't know whose, and I'll not guess.
+b : Hard on everyone. | It's getting worse. | Best not to.
+a : Hardest on the ones at the bottom of #hill#. | It is. I've started keeping a week's worth back. | No. Guessing's how quarrels start in a queue.
+
+scene lean_slate
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / ask.detail / answer.detail / ack
+a : Folk are buying meal by the cup now, not the sack. | Lean weeks. I've let a few run a slate, and I shouldn't. | I can tell how bad it is by who stops coming in.
+b : It's the same everywhere. | Will they pay? | Who's stopped?
+a : #grumble#. And up #hill# they're still buying cake. | They'll pay. I know every door on #street#, and they know I do. | The ones I worry about. I send #loaf# round and say it was going stale.
+b? : #bc_true# | #bc_i_hope_so# | #bc_poor_soul#
+
+scene good_weeks
+when topic=times|prices world.times=good|boom
+does tell.news / ask.detail / answer.detail
+a : Coin's moving. Folk are buying a second loaf without counting. | Good weeks. I saw a wolf buy candles who already had candles. | Busy, busy, and nobody haggling. I'll not complain.
+b : What changed? | Why buy more? | Not even you?
+a : Work, I suppose. Full paws buy bread. | Because they could. That's what good times look like. | Not even me. I've #sacks# to fill while it lasts.
+
+scene market_noise
+when topic=pastimes|smalltalk self.likes=market_bustle here.region=ridgemere
+does tell.feeling / react.self / assess / ack
+a : I love #bustle#. Everybody shouting and nobody listening. | On market day I take an hour and just walk the Commons. | Some folk hate a crowd. I'm happiest in the middle of #bustle#.
+b : You? You're so quiet. | What do you buy? | Not me. Too many elbows.
+a : That's why. I don't have to say a word. | Nothing, mostly. I listen to what everyone else is charging. | Elbows are the best part. #mm#.
+b? : #bc_ha# | #bc_clever# | #bc_fair_enough#
+
+scene song_evening
+when topic=pastimes self.likes=singing
+does invite / accept / assess
+a : There's a sing at the tavern on the corner tonight. Come and stand at the back with me. | I've a slow song my #gran# taught me. I'd teach you, if you've the patience. | There's singing round #stove# some nights. You'd be welcome to come up.
+b[friends] #mate : Only if you sing louder than last time. | I've the patience. Not the voice. | Is there food?
+b : I can't sing. | I'd like that. | Will there be food?
+a@mate : Louder. I promise nothing. | The voice comes. The words matter more. | There's always food. #pork.capitalize#, if the week's been kind.
+a : Nobody can. That's not why we do it. | #good.capitalize#. It's slow, and it has a great many verses. | There's always food where there's singing. #oath#, there'd better be.
+
+scene pork_roast
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess / ack
+a : I've a bit of pork put by for Restday. I'll roast it slow and listen to the skin crack. | #pork.capitalize#. If there's a better smell in this city, I've not found it. | I saved all week for a pork roast, and now the oven's playing up.
+b : Save me the crackling. | What about new bread? | Can you mend it?
+a : The crackling's the cook's. Ask nicely and I'll share one piece. | A close second. Bread doesn't spit at you. | I'll mend it with a kick and a curse. #oath#, same as always.
+b? : #bc_ha# | #bc_fair# | #bc_good#
+
+scene gulls_thief
+when topic=animals self.dislikes=gulls here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : One of #gulls# took a bun right out of a pup's paw on #bridge#. | I can't leave a crate outside a minute. #gulls.capitalize# have learnt to open sacks. | They scream on the roof from first light. #annoyed#.
+b : They're bold this year. | Clever things. | Can't you shoo them?
+a : Bold and fat. They don't need #loaf#. They just like the taking. | Clever, and thieves with it. I'd sooner rats; at least rats look ashamed. | I shoo them. They come back sounding pleased with themselves.
+
+scene mud_path
+when topic=travel|weather self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail / ack
+a : I went down to the river path and left a boot in #mud#. | #road.capitalize# out past the gate is #mud# and nothing else this week. | Folk tramp it in on their paws and I'm scrubbing #boards# till dark.
+b : And the boot? | Will you go round? | Can't you lay straw?
+a : Still down there, for all I know. It wasn't worth the pulling. | Round, or not at all. I'll wait for a frost to firm #road#. | I've tried. The straw just turns into mud with ideas.
+b? : #bc_ha# | #bc_wise# | #bc_ha#
+
+scene home_lake
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# the water stayed in the lake where it belonged. Here it walks down #street#. | I grew up beside #lake#. We'd watch the mist lift off it of a morning. | Where I come from, a flood was the lake a hand higher. Nobody lost a sack to it.
+b[from=coldwater] #home : I miss that, a water that keeps still. | I know that mist. | Nobody had a sack to lose.
+b : Do you miss it? | Was it pretty? | Why leave, then?
+a@home : Every morning. #good.capitalize# to hear it from somebody who knows. | Then you know. You can't explain it to anyone here. | #bc_ha#. There's that, too.
+a : The stillness. Not the #cold#. | Prettier than I knew, till I left it. | Work. Coin. The usual reasons. Nothing grander than that, I'm afraid.
+
+scene accent_heard
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : A carter heard two words and asked if I came from up the lake. I didn't know I still showed. | City folk talk fast. I've learnt to, but I still think slow. | I've lost the way we spoke at home, nearly. It comes back when I'm cross.
+b : It shows a little. | Slow's no bad thing. | When you're cross?
+a : #good.capitalize#. I'd not want it gone altogether. | Not when you're stacking a shelf. You drop less. | And when I sing. Every word of #song# comes out the old way.
+
+scene friend_keys
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# with the till, the keys and my last coin. | #self.friend# and I have known each other longer than #street#'s been paved. | When #water# comes in at night, #self.friend# is the first one I'd wake.
+b : That's rare in this city. | A long way? | Good to have.
+a : It is. I hold on to it. #mm#. | Long enough not to need to say so. | It is. Everyone needs one wolf they'd wake.
+
+scene hand_shelves
+when topic=work self.hand self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I've been teaching #self.hand# the flood shelves. Which rows go up first. | Salt goes on the low shelf, I tell #self.hand#. Then you'll see why, the first wet week. | I walked #self.hand# round the corner to show where #gutters# back up.
+b : Picking it up? | What did that mean? | Why show that?
+a : Slowly. It took me a whole wet spring. | Salt keeps in #crock#. #flour.capitalize# drinks water like bread in soup. | So the next time it rains, I'm not the only one who knows.
+
+scene houses_quarrel
+when topic=times|gossip here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : Mark me, the Houses will be at each other before the winter's out. | Four Houses and one city. One of them's going to want a bigger share. | When the Houses fall out, it's the bottom streets that get wet first.
+b : They've managed this long. | They need each other. | They're nothing to do with the rain.
+a : Long enough to get greedy. #insist#. | Until they don't. That's how it always goes. | Money runs downhill the same as water. #saying#.
+b? : #bc_we_will_see# | #bc_maybe# | Hm.
+
+scene gossip_kept
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty in a day. I keep it. | Somebody told me a thing this morning. It's not mine to pass on. | Half of what's said in a queue is about somebody not in it. #mm#.
+b : Go on. | Not even a hint? | And the other half?
+a : No. It keeps better where it is, like #flour# on #shelf#. | Not a hint. I'd want the same if it were me. | About the price of #flour#. That half I'll tell you.
+b : #bc_fair_enough# | #bc_fair# | #bc_ha#
+
+scene gossip_lockup
+when topic=gossip|crime topic.claim_kind=theft|wanted
+does tell.gossip / react.news / assess
+a : They're saying #topic.subject# #topic.claim#. I'm only telling you so you'll lock up. | Word on #bridge# is that #topic.subject# #topic.claim#. #hearsay#. | I had it from two folk: #topic.subject# #topic.claim#. Bar your door tonight.
+b : I'll mind my door. | Is it true? | I'd heard something.
+a : #good.capitalize#. A barred door keeps honest folk honest. | I don't know. I only know who said it, and they're not liars. | Then it's true enough to be careful about.
+
+scene new_faces
+when topic=newcomer
+does give.opinion / ask.opinion / give.opinion / ack
+a : New faces on #street#. #good.capitalize#. There's room for anyone who'll lift a sack. | Somebody new moved in up #street#. I'll take them #loaf#. | A new wolf asked me where to rent. I said ask where #water# goes first.
+b : Not everyone's so welcoming. | Will they thank you? | Did they understand?
+a : Then they've forgotten being new. | They might. They'll remember either way. | Not yet. They will by spring.
+b? : #bc_true# | #bc_good# | #bc_ha#
+
+scene faith_dry
+when topic=faith
+does give.opinion / react.self / assess
+a : Every morning the floor's dry, the Bright One gets a word of thanks from me. Not much of a prayer, but honest. | I'm no chapel-goer. I light a candle when the river runs high, that's all. | The Dark One sends the rain, some say. I think it's only #hill#.
+b : That's prayer enough. | Does it help? | Only the hill?
+a : I hope so. It's the only one I keep. #mm#. | It helps me. I couldn't say about #river#. | Water runs down. The Dark One needn't bother with #gutters#.
+
+scene dream_water
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #water# came up the stair and I was stacking #sacks# on the bed. | I dream of a house on top of a hill where it never floods. Then I wake up. | Last night I dreamt I was singing on #bridge# and the whole street joined in.
+b : Did you save them? | Where's the hill? | Were you any good?
+a : Every one. Even dreaming I know the order. | Somewhere with no #gutters# at all. I can't even picture it. | Better than awake. Dreams are kind like that.
+b? : #bc_ha# | #bc_maybe# | #bc_ha#
+
+scene tired_through
+when topic=health
+does tell.self / react.self / assess
+a : My back's had enough of #sacks# for one week. | I've a cough from the damp. Everyone has, this time of year. | I'm #tired#. Not ill. Just #tired# right through.
+b : Lift with your legs. | Try something hot. | Rest, then.
+a : My legs are worn out too. The sacks don't care which. | #remedy.capitalize# and an early night. It mostly works. | When the rain stops. #oath#. So, never.
+
+scene neighbour_wall
+when topic=home|friends self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# is good to have through the wall. I sleep better for it. | I'd lend #self.neighbour# a cup of anything, and never ask it back. | When #street# floods, #self.neighbour# is the first door I knock on.
+b : Good neighbours are rare. | Never? | Before your own?
+a : Rarer in a city. I'd not swap. | Never. It comes back some other way. | Before I've even shut mine. #mm#.
+
+scene over_store
+when topic=home self.role=merchant
+does tell.self / react.self / assess
+a : I live over the store. I can hear #river# from my bed when it's high. | Two rooms up a steep stair. Everything I own is off the floor up there too. | I've #stove#, a window on #bridge#, and a bed that's never once been wet.
+b : Handy for work. | Off the floor? | That's a good bed.
+a : Too handy. A crate falls and I'm down the stair in my nightshirt. | Habit. I'd put the bed on bricks if there were room. | It's the best bed in #here.town#, and I'll stand by that.
+
+scene feast_singing
+when topic=festival|season
+does tell.feeling / react.self / assess
+a : A feast day, and the whole street singing by dusk. That's the city at its best. | I stop early on a feast and go and stand where the singing is. | I don't dance. I sing, at the back, where nobody can hear me go wrong.
+b : I like the dancing better. | Stop early? | I've heard you.
+a : Each to their own. I'll sing while you dance. | Early. Nobody wants #flour# on a feast day. | That's the reason I stand at the rear. #mm#.
+
+scene bottom_of_hill
+when topic=smalltalk|land here.region=ridgemere here.outdoors=rain
+does tell.worry / react.self / assess
+a : It's the Sump I think of when it rains like this. It all ends up down there. | The bottom of #hill# takes every drop the top lets go of. | Every gutter in the city runs down #hill# to somebody who can't afford a dry floor.
+b : They're used to it. | It's not fair. | Somebody should do something.
+a : Nobody gets used to it. They just stop saying so. | It isn't fair. It's only how #hill# runs, #oath#. | Somebody should. Somebody with dry paws and money to spare.
+
+story first_wet_spring [topic=memories|work self.role=merchant self.age>=25 here.region=ridgemere]
+  : My first spring in the store, I kept the #flour# on the bottom row like a fool.
+  : #water.capitalize# came in under the door at night, quiet as a cat. Twelve sacks, gone to paste.
+  ask : Would you have stayed, after a night like that?
+  b : I'd have thought hard about it.
+  b[role=merchant] : I'd have built the shelves higher, same as anyone.
+  : I had the shelves raised a foot the next morning. Nobody's laughed at them since.
+
+story chalk_marks [topic=lore|weather here.region=ridgemere]
+  : There was an old carter who chalked the walls where #water# reached. A line for every flood.
+  : When he died, somebody painted over the lot. The next spring, nobody knew where to stand.
+  ask : Do you know where the water reaches on your street?
+  b : I couldn't tell you.
+  b[old] : I remember a few of those lines, from long ago.
+  : Then come and look at my wall. I've chalked them back.
+
+story lake_ice [topic=memories self.away=yes self.from=coldwater self.age>=25]
+  : The winter I was small, #lake# froze edge to edge. My #grandad# walked us out to the middle.
+  : He stamped twice and said listen. You could hear the water under us, still going about its business.
+  ask : Have you ever stood on ice like that?
+  b : Never. I'd not dare.
+  b[from=coldwater|frosthollow] : I have. You don't forget the sound of it.
+  : I think of it when the river's loud here. Water never stops; it only goes quiet.
+
+story singing_carter [topic=pastimes|lore]
+  : There was a carter who sang every load in over #bridge#. You'd hear him three streets off.
+  : One day he came in silent, and I thought somebody'd died.
+  : He'd lost his voice shouting at a mule. He mimed the whole order at me, sack by sack.
+  b : Ha! Did you get it right?
+  b[job=carter] : I've shouted at a few mules myself.
+  : Two sacks of meal and a ham. I gave him a honey drop for the throat, free.
+
+story burnt_crackling [topic=food|festival self.likes=roast_pork]
+  : The first feast I cooked for friends, I fell asleep with the pork in.
+  : I woke to smoke and ran down the stair thinking the house was on fire.
+  : The crackling was black as a boot. We ate it anyway, and sang over it.
+  ask : What's the worst thing you've ever cooked?
+  b : Porridge. Don't ask me how.
+  b[job=cook|baker] : I won't say. A cook keeps quiet about such things.
+
+rule @stock_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say #flour.capitalize#, meal, salt pork and candles. All of it dry. | Everything off the floor and fairly weighed. Step in from #wet#.
+
+rule @gutter_bark
+when concept=bark here.outdoors=rain|storm here.region=ridgemere
+does aside
+cooldown 8h
+say Listen to #gutters#. #dip.capitalize# will be going. | #oath#. Up a shelf with the lot.
+
+rule @gull_bark
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 10h
+say Off, you. Off the crates. | #gulls.capitalize# again. #annoyed#.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast|storm self.likes=autumn_wind
+does aside
+cooldown 12h
+say There's the wind. #good.capitalize#. | Smell that. #gust.capitalize#, at last.
+
+rule @late_bark
+when concept=bark working=yes world.wagons=late self.role=merchant
+does aside
+cooldown 8h
+say Still nothing up #road#. | Late again. I'll be selling meal by the spoon.
+
+rule @dusk_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bar the door, and that's the day. #mm#. | Feet up soon. #mm#.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. #flour.capitalize#, meal, candles, salt pork; all of it off the floor. | #greet#, #address#. Wipe your paws and look all you like.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. The usual, or something new? | #topic.player#. Come in; it's wet out.
+dlg @3 shop.greet [here.outdoors=rain here.shop!=bare] : #greet#. Shake off on the mat, please. I've #sacks# to keep dry.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Tell me what you're after. I'll reach it down.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #road.capitalize#'s had the lot; the shelves are bare till the next load. I'll still buy, mind.
+dlg @1 shop.prices : #flour.capitalize#'s dear when #road#'s slow, and it's slow. #shop_dear# | Candles are cheap, salt's fair, and #flour# costs whatever #road# says.
+dlg @1 shop.bye : #farewell#. Keep to the high side going home. | #shop_bye#
+dlg @1 resident.hub : #greet#. Get yourself in from #wet#. What is it? | #greet#, #address#. Say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit on the crate; it's drier. | #topic.player#. Good. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late, but I'm still up. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain, and quick.
+dlg @1 resident.job [self.role=merchant] : I keep #self.workplace#. #flour.capitalize#, meal, candles, the things a street runs on. And I keep it dry. | #self.trade_words.capitalize#. I buy off #road#, sell to #street#, and watch #gutters#.
+dlg @2 resident.job : I work, I eat, I watch the weather. That's most of it. | Whatever wants doing, and before the rain, mostly.
+dlg @1 resident.business [business!=thriving|failing] : Steady. #road.capitalize#'s slow, but folk still eat. | Steady enough. It keeps the roof on and #sacks# dry.
+dlg @2 resident.business [business=thriving] : Busy as a market day, every day. I can't keep #shelf# full.
+dlg @3 resident.business [business=failing] : Poorly. I'll not pretend otherwise. Folk are buying by the cup.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what came over #bridge# today.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only #water#, and you can see that for yourself. | Nothing new. #gutters.capitalize# are running, if that counts.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty and keep it. That's how you keep a street's trust.
+dlg @2 resident.gossip [here.gossip=yes] : Folk on #street# say #topic.subject# #topic.claim#. That's all of it from me.
+dlg @1 resident.bye : #farewell#. Mind #dip# on your way. | #farewell#, #address#. Keep dry.
+graft resident.hub
+choice Which streets flood first? [here.region=ridgemere] -> floods
+node floods
+say #dip.capitalize# goes first, then the lane behind it, then the foot of #hill#. Then anything below a cracked step.
+mood calm
+free
+choice How do you know when it's coming? -> floods_how
+choice Goodbye. -> bye
+node floods_how
+say I watch the gutter on the corner. When it runs over, I've an hour. When the crack in #step# fills, I've ten minutes. #saying#.
+choice Thank you. That's worth knowing. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is your stock dry? -> dry
+node dry
+say Every sack. Nothing in here touches the floor; my shelves are a foot higher than any on #street#. #flour.capitalize# highest, salt lowest.
+mood pleased
+choice Why the salt lowest? -> dry_salt
+choice Let me see your wares. -> greet
+node dry_salt
+say Salt keeps in #crock#. #flour.capitalize# drinks water like a sponge. You learn the order the hard way, or from me.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

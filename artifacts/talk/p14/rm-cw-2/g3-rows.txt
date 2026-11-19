@@ -1,0 +1,115 @@
+[info] RATW_VOICE router on
+[info] RATW_TALK 10728 rules and scenes for residents' talk
+[info] RATW_SCRATCH a scratch server (pid 305936): nothing it does is saved, and it runs beside any other server. Stop it when you're done.
+[info] RATW_MANTLE loaded 234 mantles (18543 rules and scenes, 27917 rows) worn by 234 residents in 364 ms
+[info] RATW_TALK voices: 1084 residents (0 with words of their own, 0 with lines, 234 with a mantle), 7 dialects, 0 figures
+[info] RATW_DATABASE_WORLD_LOADED database=ridgemere3 world=upper_accord build=81 release=0 cells=1241 residents=775 streamed=1 loaded=727
+[info] RATW_SCRATCH_ACCOUNTS the save's central (ticket) accounts are set aside on this scratch server; it starts with fresh local accounts (nothing is written back).
+[info] RATW_RESTORE characters=4 summaries=2 ledger=1
+[info] RATW authoritative world ready; 20Hz; save=none (scratch: read from ridgemere3 database); dialogue=Authored offline dialogue
+ok      cw189 (cty_pike_acornshaw, ridgemere): 16 listeners; 22 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw189.grown.scene.theft_heard
+  never heard: cw189.grown.scene.hard_times
+ok      cw190 (rm_osric_slagstack, ridgemere): 16 listeners; 21 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw190.grown.scene.death_heard
+  never heard: cw190.grown.scene.good_times
+ok      cw191 (rmx_soren_cindermarsh, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw191.grown.scene.hard_times
+ok      cw192 (rm_gorm_pitchmarsh, ridgemere): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw192.grown.scene.hard_times
+  never heard: cw192.grown.scene.theft_heard
+ok      cw193 (rm_hollis_slagford, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw193.grown.scene.lean_household
+ok      cw194 (rm_imogen_cinderwell, ridgemere): 16 listeners; 34 of 41 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: cw194.grown.scene.theft_heard
+  never heard: cw194.grown.scene.death_heard
+  never heard: cw194.grown.scene.wedding_heard
+  never heard: cw194.grown.scene.hard_times
+  never heard: cw194.grown.scene.good_times
+  never heard: cw194.grown.scene.carts_late
+  never heard: cw194.grown.scene.carts_in
+ok      cw195 (rm_olaf_pitchmore, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw195.grown.scene.lean_petitions
+ok      cw196 (rm_soren_ropewick, ridgemere): 16 listeners; 20 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw196.grown.scene.lean_and_pledging
+  never heard: cw196.grown.scene.good_weeks_fetching
+  never heard: cw196.grown.scene.feast_and_knee
+ok      cw197 (rmx_desmond_hollis, ridgemere): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw197.grown.scene.heard_it_by_the_window
+  never heard: cw197.grown.scene.feast_noise
+ok      cw198 (rm_hanne_wickworth, ridgemere): 16 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw198.grown.scene.thunder_overhead
+  never heard: cw198.grown.scene.theft_bolts
+  never heard: cw198.grown.scene.lean_weeks
+ok      cw199 (rm_ivo_tarmarsh, ridgemere): 16 listeners; 29 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: cw199.grown.scene.pork_dearer
+  never heard: cw199.grown.scene.pork_cheaper
+  never heard: cw199.grown.scene.lean_weeks
+  never heard: cw199.grown.scene.good_weeks
+  never heard: cw199.grown.scene.light_paws_about
+  never heard: cw199.grown.scene.carts_not_in
+  never heard: cw199.grown.scene.feast_singing
+ok      cw200 (rm_maren_tarworth__, ridgemere): 16 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw200.grown.scene.feast_bells_morning
+  never heard: cw200.grown.scene.candles_counted
+  never heard: cw200.grown.scene.spoons_counted
+ok      cw201 (rm_runa_ropemarsh, ridgemere): 16 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw201.grown.scene.feast_bells_down
+  never heard: cw201.grown.scene.ate_the_cress
+  never heard: cw201.grown.scene.somebody_blamed
+ok      cw202 (rm_septimus_plankmarsh, ridgemere): 16 listeners; 15 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw202.grown.scene.ship_tied_up
+  never heard: cw202.grown.scene.ship_overdue
+  never heard: cw202.grown.scene.ship_gone_down
+  never heard: cw202.grown.scene.ship_out
+  never heard: cw202.grown.scene.feast_no_books
+  never heard: cw202.grown.scene.counter_talk
+  never heard: cw202.grown.scene.empty_lines
+ok      cw203 (rmx_cressida_wetherell, ridgemere): 16 listeners; 23 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw203.grown.scene.hard_week
+ok      cw204 (cty_aster_sheafby, ridgemere): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw204.grown.scene.hard_season
+ok      cw205 (rm_agna_tarham, ridgemere): 16 listeners; 32 of 42 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: cw205.grown.scene.storm_shutters
+  never heard: cw205.grown.scene.ship_in_talk
+  never heard: cw205.grown.scene.hard_times
+  never heard: cw205.grown.scene.good_times
+  never heard: cw205.grown.scene.feast_bells
+  never heard: cw205.grown.scene.gossip_passed
+  never heard: cw205.grown.scene.theft_heard
+  never heard: cw205.grown.scene.hard_news
+  never heard: cw205.grown.scene.road_robbers
+  never heard: cw205.grown.scene.friends_joke
+ok      cw206 (rm_beatha_millgate, ridgemere): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw206.grown.scene.thin_times
+ok      cw207 (rm_corwin_sootstack, ridgemere): 16 listeners; 29 of 39 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: cw207.grown.scene.larder_thin
+  never heard: cw207.grown.scene.larder_good
+  never heard: cw207.grown.scene.thunder_roof
+  never heard: cw207.grown.scene.ship_in_cook
+  never heard: cw207.grown.scene.ship_due_larder
+  never heard: cw207.grown.scene.ship_late_waiting
+  never heard: cw207.grown.scene.ship_lost_grieve
+  never heard: cw207.grown.scene.gossip_glad
+  never heard: cw207.grown.scene.gossip_hard
+  never heard: cw207.grown.scene.feast_roast
+ok      cw208 (rm_disa_raincot, ridgemere): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw208.grown.scene.lean_door
+  never heard: cw208.grown.scene.good_door
+ok      cw209 (rm_hilde_wetwick, ridgemere): 16 listeners; 18 of 20 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw209.grown.scene.lean_hall
+  never heard: cw209.grown.scene.good_hall
+ok      cw210 (rm_oda_harrowgate, ridgemere): 16 listeners; 22 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw210.grown.scene.hard_times
+  never heard: cw210.grown.scene.good_times
+ok      cw211 (rm_orm_wickwick, ridgemere): 16 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      cw212 (rm_philippa_fogwick, ridgemere): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw212.grown.scene.lean_kitchens
+  never heard: cw212.grown.scene.good_season
+ok      cw213 (rmx_dunstan_sallow, ridgemere): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw213.grown.scene.hard_times
+  never heard: cw213.grown.scene.good_times
+ok      cw214 (rmx_tobias_blackford, ridgemere): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw214.grown.scene.good_times
+  never heard: cw214.grown.scene.hard_times
+26 mantles worn; 565 of 644 scenes heard by some listener; 0 holes in the core moves; W1 98.7805% (1620 of 1640 window lines at the hub, goodbye, job and the role's greeting are the wearers' own)

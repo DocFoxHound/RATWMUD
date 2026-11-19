@@ -1,0 +1,435 @@
+# sm122, the pup who keeps names (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm122
+revision 2
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for tn_sm_lark_meadowfield
+written_by claude
+title the pup who keeps names
+fits stage=young|adolescent|adult|old
+prefers job=child warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk remembers_every_name_ever_heard
+likes fried_fish dice fresh_straw first_snow
+dislikes flies cold_tea
+fears forgetting_a_name a_young_tree_left_to_wither
+hopes the_biggest_orchard_in_the_south snow_that_settles
+topics animals +0.4 dreams +0.4 food +0.3 pastimes +0.3 family +0.2 season +0.2 prices -0.4 crime -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# is quiet and dreamy, knows the name of every hen, horse and neighbour ever met, keeps apple pips in a tin, and means to plant the biggest orchard in the south.
+
+words
+oath! = Pips and promises | Cross my pips
+saying! = Every orchard was one pip once | A name is a thing you keep
+names = every name I ever heard | all the names I keep
+hens = the hens | our speckly hens
+pips = my apple pips | the pips I saved
+tin = my pip tin | the tin under my bed
+orchard = my orchard | the biggest orchard in the south
+fish = fish done in butter | fried fish with the crispy edges
+dice = my two dice | the bone dice
+straw = new straw | a heap of clean straw
+snow = the first snow | real snow, the falling kind
+flies = the flies | the summer flies
+barn = the big barn | the grain barn
+horse = the big cart horse | the horse with feet like buckets
+saplings = the young trees | my saplings
+tea = cold tea | tea gone cold and grey
+lane = our lane | the lane past the barn
+gate = the gate | the yard gate
+cockerel = the cockerel | that loud cockerel
+book = my book of names | the names book
+
+any
+opinion @1 festivals for 2 : Festivals are the #very# best days. Music, and lanterns, and everybody remembers to smile. | A festival is #good# for learning names. Everybody comes out at once.
+opinion @1 strangers for 1 : A #stranger# is somebody whose name I haven't got yet. That's all. | I'd always say hello. You never know who'll end up among #names#.
+opinion @1 times for 1 : There's bread, and #hens#, and a roof. I don't see what else to wish for, except #snow#.
+opinion @1 watch mixed 0 : The watch are all right. I know every one of their names, and they don't know I know. #oath#.
+opinion @1 merchants mixed 0 : Some traders give you #little# apple for nothing. Some don't. I keep the pips either way.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. I don't believe we've met; I'd remember. | #greet#. A new face. I'll have your name before you go.
+line @2 greet [pair.named=yes] : #greet#, #other.first#. You're keeping well, I hope. | #other.first#. #greet#. I said your name to myself only this morning.
+line @3 greet [here.time=dawn] : #greet#. Early, but #saplings# don't mind. | #greet#. You're out before the dew's off.
+line @1 greet.return : #greet#. #good.capitalize# to see you. | #greet#, #address#. I was hoping you'd stop.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit a minute; I've missed you. | #greet#. I was only just thinking of you.
+line @1 farewell : #farewell#. I'll keep your name safe. | #farewell#. Mind the low branches going out.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Come back soon.
+line @1 react.news : #surprise#. I'll keep that in mind. | Well. That's one for #book#.
+line @1 react.news.new : I'd not heard. And I usually do. | That's new to me, #oath#.
+line @1 react.news.known : #knew#. Somebody told it me at the well. | I knew. I didn't like to say.
+line @1 react.news.doubt : #doubt#. I'd want to hear it from somebody who saw. | I'm not sure of that. Names get mixed in the telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I knew that name. | That's a heavy thing to hear. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. A name to write down. | Oh, that's #good#. I'm glad for them.
+line @1 answer.how : Well, thank you. #saplings.capitalize# are coming on. | Quiet and content. #good.capitalize# enough.
+line @1 decline : I'd like to, but I've promised the day elsewhere. #later#, maybe. | Not this time, #address#. I've young trees that won't water themselves.
+line @1 accept_decline : That's all right. Another day, then. | #no_matter#. I'd not have had the time either.
+line @1 thank : #thanks#. I'll not forget it. | #thanks#. You're kinder than you let on.
+line @1 preclose : Well. I'd best get on. | I mustn't keep you. #excuse#.
+line @1 accept_preclose : Of course. Go on. | Yes. I've kept you long enough, #address#.
+line @1 ack : #bc_i_know# | Mm. #bc_it_is#
+scene g_names_kept
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I've never forgotten a name. Not once since I was a #child#. | Folk test me at market. Point at somebody, and I tell them who. | I keep #book# still. It's on its third binding.
+b[pair.named=yes] #known : I'd bet you know mine, then.
+b : Never once? | And you always know? | Three bindings?
+a@known : #other.first#. I had it the first time you said it.
+a : Not once. It's the one thing I'm proud of. | Nearly always. It's a parlour trick, really, #oath#. | Three. And the cats are in the back.
+
+scene g_orchard_dream
+when topic=dreams
+does tell.plan / react.self / assess
+a : I still mean to plant #orchard#. I've the rows drawn out. | Every pip I ever saved, I've still got. One day they'll be #orchard#. | I'd like a hill of apple trees, so many you could lose a cart in them.
+b : You'll do it, I'd say. | That's a lot of pips. | That's a big dream.
+a : #oath#, I will. Slowly. #saying.capitalize#. | Hundreds. #tin.capitalize# had to become a box. | The biggest kind. #little.capitalize# dreams don't need planting.
+
+scene g_saplings_dry
+when topic=work|weather self.working=yes self.job=farmer here.region=southmeadow here.weather=clear
+does tell.worry / reassure / assess
+a : Another dry day. I've been carrying water to #saplings# since dawn. | #saplings.capitalize# are crisping at the leaf-tips. They want #rain#, and so do I.
+b : They'll pull through. Young things do. | Rain will come. It always does, in the end.
+a : I'll see they do, bucket by bucket. | It does. I'd just like it before the leaves drop.
+
+scene g_fish_supper
+when topic=food
+does tell.self / react.self / assess
+a : #fish.capitalize#. I could eat it every night and never tire. | I'd sooner go #hungry# than drink #tea#. | There's nothing like a #supper# you didn't have to cook.
+b : It's a good supper. | That bad? | That's the truth.
+a : The best. With the crispy edges and plenty of salt. | That bad. I'd walk to the next town for a warm cup. | #bc_it_is# Somebody else's pan is the sweetest.
+
+scene g_dice_evening
+when topic=pastimes here.time=dusk|night
+does invite / accept_invite / assess
+a : Will you throw #dice# with me tonight? Nothing on it but the fun. | I've #dice# in my pocket and an hour to waste.
+b : Go on, then. One game. | I'll waste it with you.
+a : One game. Then another, if you lose. | #good.capitalize#. Lowest buys the next #drink#.
+
+scene g_snow_still
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : I still watch for #snow# every winter. Some things you don't grow out of. | When #snow# comes I go out in it, whatever I'm meant to be doing.
+b : Nor should you. | Who'd blame you?
+a : I don't mean to try, #address#. | Nobody, so far. #bc_ha#
+
+scene g_flies_orchard
+when topic=animals|weather here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# are at the windfalls already. I can't abide them. | Every summer the same. #flies.capitalize#, and more #flies#.
+b : They come with the fruit. | It's the heat.
+a : I know. I'd still rather they went somewhere else. | Then I'll be glad when it turns #cold#.
+
+scene g_straw_home
+when topic=home
+does tell.self / react.self / assess
+a : I put #straw# down in every room in spring. It's the smell I like. | A clean floor and #straw#, and I'm content.
+b : It does make a place smell fresh. | Simple wants.
+a : Fresh and #snug#. It smells like being small. | The best kind. They're easy to meet.
+
+scene g_newcomer
+when topic=newcomer
+does tell.self / react.self / assess
+a : There's a new face come. I had the name before #supper#. | A newcomer, I hear. I've kept a space for them in #book#.
+b : You don't waste time. | In your book?
+a : Never with names. It's a kindness, knowing somebody's name. | Everybody I've met is in it. It'd be rude to leave one out.
+
+scene g_faith
+when topic=faith
+does give.opinion / react.self / assess
+a : I'm grateful to the Bright One for #little# things. A pip that takes. A name I didn't lose. | I don't ask for much in chapel. I ask for #rain#, and for #snow# once in a while.
+b : There's sense in praying like that. | Both at once?
+a : It's the only way I know. | Not at once. I'm not greedy, #oath#.
+
+scene g_gossip_held
+when topic=gossip
+does tell.gossip / react.self / assess
+a : I hear things. I keep them the way I keep #names#: quietly. | Folk say all sorts at the well. I'd not repeat it; #secret#.
+b : Not even to me? | Wise.
+a : Not even to you. That's how you know I'm safe to tell. | It keeps the peace. And my friends.
+
+scene g_hard_times
+when topic=times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : The bread's thinner on every table this season. I notice it more than I'd like. | It's a #bad# year. I'm saving every pip and every penny.
+b : It'll turn. These things do. | Everyone's the same.
+a : #saying.capitalize#. I'll hold on to that. | Then we'll get through it the same, I suppose.
+
+story g_horse_names [topic=animals|memories self.age>=20]
+  : When I was small, a carter told me the names of six horses and laughed when I said I'd remember.
+  : Months later the cart came back, and I said every name, in order.
+  ask : Do you know what the carter did?
+  b : Laughed again, I'd guess. Or gave you something?
+  : An apple, and a look I've never forgotten. I planted the pips by #gate#.
+
+dlg @6 resident.hub [topic.meeting=stranger] : #greet#. I don't know your name yet. I'd be glad to. | #greet#. I keep names, you know. Give me yours and it's safe.
+dlg @7 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I'd have known you anywhere. | #topic.player#. #greet#. Still the same name, I hope.
+dlg @2 resident.job [self.job=farmer] : #self.trade_words.capitalize#. And #saplings#, whenever I can steal an hour for them. | I work the land. Grain mostly, apples when I can.
+dlg @3 resident.job : Whatever needs doing. I'd rather be planting #saplings#. | #job_busy#
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nobody new to name, either. | Nothing I've heard, and I hear the names of most of it.
+dlg @2 resident.gossip [here.gossip!=yes] : I hear things. I keep them, like #names#. | #gossip_none#
+dlg @2 resident.bye : #farewell#. I'll remember you. | #farewell#. Your name's safe with me.
+
+young
+line @1 greet [pair.band=strangers] : #greet#. I don't know your name yet, but I will. | #greet#. You're new. I'll learn you.
+line @2 greet [pair.named=yes] : #greet#, #other.first#. See, I remembered. | #other.first#! I knew it was you from right over by #gate#.
+line @3 greet [here.time=dawn] : #greet#. I've been up since #cockerel#. | #greet#. The sun's only just up, and so am I.
+line @4 greet [here.time=dusk|night] : #greet#. I'm meant to be inside soon. | #greet#. The bats are out. I've named one.
+line @1 kin.open [pair.kin!=no] : Guess what. I counted #pips# again. | I've a new name for my list. You'll never guess whose.
+line @1 again.open : You again. That's twice today, and I'm counting. | Back already. I didn't go anywhere, #address#.
+line @1 greet.return : #greet#. I was hoping it was you. | #greet#. I'm being quiet, see.
+line @2 greet.return [pair.band=friends|family] : #greet#! Come and sit by me. | #greet#. I kept you a spot on #straw#.
+line @1 farewell : #farewell#. I'll remember you. | #farewell#. I've to go and count #hens#.
+line @2 farewell [here.time=dusk|night self.mother] : #mum# will be calling me in. #farewell#. | Night-night. I say it to the moon as well, and to #hens#.
+line @1 farewell.return : #farewell#! Don't forget me. | #farewell#. I won't forget you.
+line @1 react.news : Oh. I'll have to remember that. | That's a new thing. I'll keep it with #names#.
+line @1 react.news.new : #surprise#! Nobody ever tells me anything. | I didn't know. I'm only a #child#, so nobody says.
+line @1 react.news.known : I know. I heard it from under the table at #supper#. | I knew already. I listen when they think I'm asleep.
+line @1 react.news.doubt : #doubt#. Somebody's got it mixed up. | That sounds like a fib to me. A great big blighted one.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. I'll be extra good today. | Oh no. That makes my tummy go funny.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's #good#! Everyone will be smiling. | Oh, a new name to keep, maybe.
+line @1 answer.how : I'm all right. I was thinking about #orchard#. | #good.capitalize#. I found a pip in my apple.
+line @1 ask.how : Are you well? You look #tired#. | Have you had a #good# day?
+line @1 sympathise : I'll sit with you. I'm #good# at sitting still. | That's #bad#. You can hold one of #pips#, if it helps.
+line @1 reassure : It'll come right. Things mostly do, #address#. | Don't worry. Even #saplings# come back after a dry year.
+line @1 decline : I'd better not. I'm not allowed past #gate# without asking. | I can't, sorry. I'd get told off, and I don't like being told off.
+line @1 accept_decline : All right. You don't have to. | That's all right. I'll ask #hens# instead.
+line @1 thank : #thanks#. I'll remember you did that. | #thanks#! You're on my list now. The #good# list.
+line @1 deflect_thanks : It was only #little# thing. | You don't have to thank me. I wanted to.
+line @1 preclose : I'd best go. #hens# will want me. | I have to go in a minute. I'm not supposed to stay long.
+line @1 accept_preclose : All right. #farewell#, then. | Go on, then. I'll still be here.
+line @1 ack : Mm. | #bc_i_know# | #bc_it_is#
+rule @y_hens
+when concept=bark here.region=southmeadow
+does aside
+cooldown 6h
+say Here, chook chook. I know all your names. | One, two, three... where's #little# brown one gone?
+
+rule @y_flies
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Shoo, #flies#! Go and walk on somebody else. | A fly went up my nose. A whole one.
+
+rule @y_snow_wait
+when concept=bark here.season=winter here.weather!=snow
+does aside
+cooldown 10h
+say Come on, #snow#. Just #little# bit. | I'm watching the sky for #snow#. Nothing yet.
+
+rule @y_dice
+when concept=bark working=no
+does aside
+cooldown 8h
+say Six! Did anybody see that? It was a six. | Roll me a double, #dice#. Please.
+
+scene y_hen_names
+when topic=animals here.region=southmeadow
+does tell.self / react.self / assess
+a : I've named every one of #hens#. Fourteen. I know which is which by their feet. | #horse.capitalize# knows its name. I said it and its ears went up. | There's a new kitten in #barn#. Nobody's named it, so I've got to.
+b[stage=adult|old] #grown : By their feet? I can't tell them apart at all. | Horses are cleverer than folk think. | What will you call it?
+b : Fourteen names? That's a lot to keep. | It knows you, then. | What will you call it?
+a@grown : That's because you don't look. The bossy one has a bent toe. | This one is. It waits for me at #gate# every morning. | I'm going to watch it a whole week first. A name has to fit.
+a : Fourteen, and #cockerel#. He doesn't count, he's too loud. | It does. I tell it everything, and it never tells. | Not yet. A name has to fit, so I'm watching it first.
+
+scene y_pip_tin
+when topic=dreams
+does tell.plan / react.self / assess
+a : I keep #pips# in #tin#. Forty-three. One day they'll be #orchard#. | When I'm big I'm going to plant #orchard#. With a swing in the middle. | I planted a pip by the well. It hasn't come up yet. I check every morning.
+b[stage=adult|old] #grown : Forty-three trees will want a lot of land. | That's a lot of digging for one pair of paws. | Pips take their time.
+b : Forty-three! | The biggest one of all? | Nothing yet?
+a@grown : I'll ask for the land when I'm grown. Somebody will say yes. | I'll dig #little# bit every day. That's how it gets done. | That's all right. I'm #good# at waiting.
+a : Forty-four tomorrow. I'm having an apple after #supper#. | The #very# biggest. You'll be able to get lost in it. | Not yet. I think it's thinking about it.
+
+scene y_fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : #fish.capitalize# is the best #supper# there is. | Somebody was frying fish down #lane# and I could smell it from #gate#. | I hate #tea#. It tastes like a puddle.
+b : It is good, I'll give you that. | Did you get any? | Nobody likes it cold.
+a : I'd have it every day if I was allowed. Twice on festival days. | No. Smelling's free, though, and it's nearly as #good#. | Then nobody should let it go cold. That's what I think.
+
+scene y_dice_game
+when topic=pastimes
+does tell.boast / react.self / assess
+a : I've got #dice#. I rolled two sixes once, and nobody saw. | I play #dice# with myself. I'm both sides, so I always win. | I won three nuts off a bigger pup at #dice#. Then I gave them back.
+b[stage=young|adolescent] #pup : Bet you didn't. | That's cheating, that is. | Why'd you give them back?
+b : Nobody at all? | Always? | You gave them back?
+a@pup : I did! #hens.capitalize# saw. They just can't say so. | It isn't. I lose every time as well. | It made them sad. Nuts aren't worth sad.
+a : Only #hens#. And they can't tell anybody. | And I always lose. So it comes out fair. | They looked so sorry. I'd rather have a friend than nuts.
+
+scene y_straw_loft
+when topic=home here.region=southmeadow
+does tell.self / react.self / assess
+a : I like it when there's #straw# down. It smells like sunshine. | We put #straw# in the loft. I lay in it and it crackled all over. | There's a spot in #barn# where the straw is deepest. That's my thinking place.
+b : It does smell good, clean straw. | Itchy, though. | A thinking place?
+a : Better than soap. I'd sleep in it if they let me. | Only #little# bit itchy. The crackling is worth it. | For thinking up names. You need quiet for names.
+
+scene y_snow_waiting
+when topic=season|weather|dreams here.season=winter here.weather!=snow
+does tell.feeling / react.self / assess
+a : I'm watching the sky for #snow#. I've waited the whole year. | If #snow# comes, I'm going to catch it on my tongue. The #very# first bit. | An old carter told me snow is quiet when it falls. I want to hear the quiet.
+b : It might not come at all. | Mind it's clean snow, then. | It is quiet. Very.
+a : Then I'll wait for next winter. I'm #good# at waiting. | I'll catch it high up, where it's cleanest. | I'll stand #very# still and listen, then. I've practised.
+
+scene y_real_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : It's snowing! It's really, truly snowing! #oath#! | I caught some on my tongue. It tastes of nothing at all. | Everything's gone quiet. Even #hens#.
+b : So it is. Look at that. | What did you think it would taste of? | Snow does that.
+a : I'm staying out till my paws go numb. | Apples, a bit. Nothing is better, though, for #snow#. | It's like the whole world is holding its breath.
+
+scene y_summer_flies
+when topic=weather|animals here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# are everywhere. One sat right on my nose. | I hate #flies#. They walk on your food with dirty feet. | #horse.capitalize# swishes at #flies# all day. I wish I had a longer tail.
+b : Summer's always like that. | They do. | Yours is long enough.
+a : Then I like winter better. Winter doesn't buzz. | So I keep my paw over my bread. Like this. | Not for #flies#, it isn't. I've tried.
+
+scene y_mother
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I'd rather be with #self.mother# than anybody. | #self.mother# calls me in at dusk, and I always pretend I didn't hear the first time. | I tell #self.mother# every new name I learn. Every single one.
+b : That's a nice thing to say. | Only the first time? | Every one?
+a : Because it's true. I say it at bedtime too, in #bed#. | The second time I run. I'm not #daft#. | Every one. Even the names of #hens#.
+
+scene y_siblings
+when topic=family|home here.region=southmeadow
+does tell.self / react.self / assess
+a : Our house is never quiet. Somebody's always singing or stamping or losing a boot. | I've got #little# bed by the window. I can see #saplings# from it. | At #supper# everybody talks at once. I just listen, and I remember it all.
+b[pair.kin=siblings] #sib : Mostly it's you losing the boot. | You only got it because you cried. | You do. It's a bit much, sometimes.
+b : Sounds a busy house. | A good spot. | You don't talk?
+a@sib : Only once. Twice. It was a #very# big boot. | I didn't cry. I asked #very# nicely. Twice. | I can't help it. It just stays in.
+a : Busy and warm. I wouldn't swap it, #oath#. | The best spot. I wave the trees goodnight. | Not much. Somebody has to do the listening.
+
+scene y_chapel_sun
+when topic=faith here.region=southmeadow
+does tell.self / react.self / assess
+a : There's a sun painted on the chapel roof. I lie on the bench and look up at it. | I say thank you to the Bright One for #fish#. And #hens#. And #straw#. | I asked the Bright One for #snow#. I asked #very# politely.
+b[stage=adult|old] #grown : Don't let the priest catch you lying down in there. | That's a good list to be thankful for. | Polite is the best way to ask.
+b : It's a fine sun, that. | That's a long list. | Did it work?
+a@grown : I sit up quick when I hear feet. | I'm not done. It gets longer every night. | I'll ask again. The Bright One must be #busy#.
+a : It's yellow as butter. I'd like one over #bed#. | It's my list. I can make it as long as I like. | Not yet. I think it takes a while.
+
+scene y_harvest_help
+when topic=harvest|work here.region=southmeadow here.season=summer|autumn
+does tell.boast / react.self / assess
+a : I'm allowed to carry the water jug out to the field at #work#. I hardly spill. | I gleaned a whole apron of grain. It's for #hens#. | Everybody sings at the cutting. I know all the words. Nearly.
+b : That's a big job for you. | They'll love you for that. | Nearly all?
+a : It's heavy. I only spilled once, and it was so #hot# it dried up. | They already love me. This is extra. | I hum the bits I don't know. Nobody minds.
+
+scene y_names_list
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I know the name of everyone on #lane#. And their cats. | Somebody told me their name a whole year ago, and they were ever so surprised I still had it. | I keep #names# in my head. I go through them at night, like counting sheep.
+b[pair.named=yes] #known : Go on, then. Do you know mine?
+b : Every one of them? | That's a gift, that is. | Does it help you sleep?
+a@known : #other.first#. Easy. I'll never lose that one.
+a : Every one. And which cat belongs to who. | I thought everybody could. It turns out they can't. | It does. I'm asleep before the end of #lane#.
+
+scene y_newcomer
+when topic=newcomer
+does tell.plan / react.self / assess
+a : There's somebody new about! I'm going to learn their name before anybody. | I heard there's a new face come. I've got a space on my list ready.
+b : You'll beat everyone to it, I'm sure. | A space ready?
+a : I'll wait where they'll pass and say hello #very# politely. | Right at the end, after #horse#. It's a #good# place to be.
+
+scene y_thin_bread
+when topic=times|prices world.times=hard|lean self.mother
+does confide / sympathise / assess
+a : #self.mother# cuts the bread thinner this week. I'm not supposed to notice. | I gave my crust to #hens#. No, I didn't. I ate it. I was #hungry#.
+b : Lots of folk are cutting it thin just now. | That's all right. Crusts are for eating.
+a : I didn't say anything. I just ate slowly, so it lasted. | Next time I'll give them half. Maybe, #oath#.
+
+story y_lost_hen [topic=animals|memories here.region=southmeadow]
+  : One night #little# brown hen didn't come in, and everyone said a fox had her.
+  : I went out with the lamp and said her name #very# quietly, and she came out from under the cart.
+  ask : Do you think hens know their names?
+  b[stage=adult|old] : I'd not have said so, but maybe yours do. Was she hurt?
+  b : That one did, I think. Was she all right?
+  : Only cross. I say her name to her every morning now, so she won't forget it.
+
+story y_first_pip [topic=dreams|memories]
+  : The first pip I ever planted, I put in a cup on the windowsill and watered every day.
+  : It came up! #little.capitalize# green thing with two leaves, like ears.
+  : Then the cat sat on it.
+  b : Oh no. Did you plant another?
+  : Eleven more. #saying.capitalize#.
+
+story y_carter_horses [topic=animals|memories]
+  : A carter came through once and told me the name of every horse on the cart. Six of them.
+  : When the cart came back, months after, I said every name, and the carter nearly dropped the reins.
+  ask : Would you remember six horses' names?
+  b[stage=young|adolescent] : Maybe two. Did you get anything for it?
+  b : Not a chance. What did the carter say?
+  : Nothing at first. Then I got an apple. I kept the pips, #oath#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. I don't know your name yet. I'd like to keep it, if you'll say it. | #greet#. You're new. I collect names, you know.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! I remembered. #greet#. | #greet#, #topic.player#. I said your name to #hens# yesterday.
+dlg @3 resident.hub [here.time=night] : I'm meant to be in #bed#. #greet#, but quietly.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm not supposed to talk to folk who look cross. Sorry, #address#.
+dlg @1 resident.job : I'm only a #child#. I mind #hens# and keep #pips#. That's my job. | No job yet. When I'm big I'll grow #orchard#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nobody tells me news. I'm only a #child#. | I don't know any news. I know lots of names, though.
+dlg @1 resident.gossip [here.gossip!=yes] : I don't tell secrets. Not even #little# ones.
+dlg @1 resident.bye : #farewell#. I'll remember your name. | #farewell#. Mind the ditch by #gate#.
+graft resident.hub
+choice How do you remember everyone's name? -> names
+node names
+say I say it three times in my head, and then I put it somewhere. Yours is on a hen. Don't ask which.
+mood pleased
+free
+choice Which hen? -> names_hen
+choice Goodbye. -> bye
+node names_hen
+say The speckly one that won't sit still. It suits you. I mean that nicely.
+choice I'll take that kindly. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. I'm not #busy#. Well, a bit. | #greet#. I knew it'd be you; I know your step.
+line @1 farewell.return : #farewell#. Mind how you go. | #farewell#, then.
+line @1 react.news : #surprise#. I'll be thinking about that all day. | Is it? Nobody told me, and I'm always listening.
+line @1 answer.how : Well enough. Tired of being called a #child#. | All right. I've been reading the seed lists for #orchard#.
+line @1 decline : I can't, sorry. I've chores, and I'll hear about it if they're not done. | Not today. I promised I'd be back before the light goes, #address#.
+line @1 accept_decline : That's fair. Another time. | All right. I'd say no too, in your place.
+rule @t_names
+when concept=bark
+does aside
+cooldown 8h
+say Remembered that one. Two hundred and six in #book#. | I know that face. Give me a moment and I'll have the name.
+
+scene t_name_book
+when topic=smalltalk|friends
+does confide / react.self / assess
+a : I've started writing #names# in a book. Everybody laughs, so I keep it under my pillow. | Folk forget my name all the time. I never forget theirs. It's a #bad# bargain. | Somebody called me by the wrong name at market. I said theirs back, right first time.
+b[stage=young|adolescent] #pup : Am I in it? | They forget mine too. | Good. They deserved that.
+b : That's nothing to laugh at. | That's not right at all. | Bet they went red.
+a@pup : Near the front. In #good# ink. | Then I'll remember it for both of us. | I didn't mean it unkind. Only #little#.
+a : I know. I'll show them when #book# is full. | It isn't. I've stopped minding much. | Red as a radish. I felt #bad# after.
+
+scene t_orchard_plans
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / reassure / agree
+a : I've drawn #orchard# out on a slate. Rows and rows, and a path down the middle. | I'm saving to buy proper young trees. Not pips. Real ones. | I've asked the old orchard folk how they graft. Nobody wants to tell a #child#.
+b : Where will you put it? | How long will that take? | Did anybody show you?
+a : Wherever somebody lets me. I'll know the spot when I see it. | Years. I've worked it out. I don't mind, #oath#. | One did, in the end. My paws were shaking.
+b : You'll get there. | That's patient of you. | That's a start.
+a : #oath#, I will. | #saying.capitalize#. | It is. I've four grafts taking already on #saplings#.
+
+scene t_snow_still
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : I'm too old to wait at the window for #snow#. I still do it. | Every winter I tell myself I don't care about #snow#. Then I check the sky anyway.
+b : Nobody's too old for that. | Everyone does.
+a : #good.capitalize#. Then I'll stop pretending. | Then I'm in #good# company.
+
+scene t_teased
+when topic=smalltalk|pastimes
+does tell.complaint / reassure / assess
+a : The bigger ones tease me for talking to #hens#. | I lost at #dice# to a pup half my size. I'll never hear the end of it.
+b : Let them laugh. The hens don't mind. | Everyone loses sometimes.
+a : #hens.capitalize# are better company than them anyway. | I know. I just wish it hadn't been in front of everybody, #oath#.
+
+dlg @5 resident.hub : #greet#. I remember you; don't think I don't. | #greet#. Ask me anybody's name and I'll tell you.

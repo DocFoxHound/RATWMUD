@@ -1,0 +1,303 @@
+# cw175, the swept step (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw175
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_wynn_tarhand
+written_by claude
+title the swept step
+fits stage=adult|old
+prefers talk=chatty drive=restless
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk sucks_horehound_drops_for_a_cough_never_admitted
+likes spiced_cider wrestling tidy_house summer_evenings
+dislikes night_noise bad_manners
+fears staying_put_till_it_is_too_late a_cough_that_settles_in
+hopes a_bench_of_my_own_again rooms_with_a_door_that_locks_out_the_noise
+topics work +0.4 dreams +0.4 pastimes +0.3 home +0.3 times +0.2 health -0.4
+styles comfort=busy_paws gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# sweeps and carries at a city works and keeps two rooms in the Sump spotless: chatty, restless and earnest, always with a plan and a horehound drop, keen on a bout of wrestling, and never heard complaining in the street.
+
+words
+oath! = Grip and give | Shoulders down | By my two paws
+saying! = Complain at home, not in the street | A swept step tells the street you're still trying | Keep it tidy and keep it moving
+drops = a horehound drop | my horehound drops | a drop for the throat
+throat = a tickle | a bit of a tickle | the dust in my throat
+shift = the shift | a long shift
+scale = the scale off the anvils | the forge sweepings
+floor = the floor | the forge floor
+broom = the broom | my broom
+step = my step | the front step
+lane = the lane | our lane
+stair = the stair | our stair
+rooms = my rooms | my two rooms
+bench = a bench | a bench of my own
+evening = a summer evening | a long light evening
+cider = mulled cider | a mug of cider, spiced
+bout = a bout on the green | a wrestling match | a good throw on the grass
+green = the green | the wrestling green
+ribbon = the ribbon | my blue ribbon
+racket = the racket at night | shouting under the window | doors banging at midnight
+manners = manners | a nod and a please
+cousin = my cousin | a cousin out in the vineyards
+letter = a letter | a letter from the vineyards
+plan = a plan | my next plan
+dole = the dole | the dole bowl
+dryly = Well | So
+
+any
+opinion @1 houses against 2 : The Houses leave #bench# standing empty sooner than seat the likes of us. I know. I had one, once.
+opinion @2 merchants against 2 : Nothing extra coming in, and the bread goes up again. I'll say it in #rooms#, not out here.
+opinion @3 dole for 2 [self.on_dole=yes] : #dole.capitalize# saw us through a lean week. I'll not forget it, and I'll not need it forever. That's #plan#.
+opinion @4 festivals for 1 : Feast day the whole street turns out, and there's #bout# to watch. I'd not miss it.
+opinion @5 road for 1 : Roads don't frighten me. Eyes open, feet moving, and you arrive. #saying.capitalize#.
+opinion @6 sump for 1 : The Sump's rough, but folk here look out for each other. You'd not find that up the hill, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind #step#; I've just swept it. | #greet#, #address#. Not seen you on #lane# before.
+line @2 greet [self.working=yes] : #greet#. Talk while I sweep; I can do both. | #greet#. Mind the pile, it's #scale#.
+line @3 greet [here.time=dawn] : #greet#. Up before #shift#, same as me. | #greet#. Early start, then.
+line @4 greet [here.time=dusk|night] : #greet#. Late for the Sump. Keep your purse close. | #greet#. Dark already. The day went somewhere without me.
+line @5 kin.open [pair.kin!=no] : You! Inside, and wipe your feet on #step#. | There you are. I've #cider# on, if you want some.
+line @6 again.open : #welcome_back#. Twice today, then. | You again. Good. I'd thought of another bit of #plan# to tell you.
+line @7 greet.return : #greet#. | #greet#, #address#.
+line @8 greet.return [pair.band=friends|family] : #greet#. Come here, then. | #greet#. Good to see a friendly face.
+line @9 greet.return [here.time=dusk|night] : #greet#. Long one today. | #greet#. Still going, then.
+line @10 farewell : #farewell#. | #farewell#. Keep moving.
+line @11 farewell [here.time=dusk|night] : #farewell#. Mind yourself going home. | #s8_night#.
+line @12 farewell.return : #farewell#. | #farewell#, #address#. Same time tomorrow, maybe.
+line @13 react.news : #surprise#. Go on, then, all of it. | Is that right, #address#? I want the whole thing.
+line @14 react.news.new : #surprise#. That's not reached #lane# yet. | #dryly#. That's news to the Sump.
+line @15 react.news.known : #knew#. It was all round the works yesterday. | Heard it on #stair# this morning.
+line @16 react.news.doubt : #doubt#. Folk down here would say anything for a drink. | Not till somebody who stood there says so, #address#.
+line @17 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | Oh, no. That's a hard thing, #address#. I'm sorry.
+line @18 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. We could use some of that. | #congrats.capitalize#. That's lovely news, that.
+line @19 answer.how : Busy, and glad of it. #broom.capitalize# hardly gets a rest. | #fine#. Bit of #throat#, nothing more. #drops.capitalize# sees to it.
+line @20 answer.how.busy [self.working=yes] : #busy.capitalize#. I've swept #floor# twice and it's dirty again. | Run off my feet, #address#. Good. Keeps me from thinking.
+line @21 ask.how : And you? Getting on all right, #address#? | How's it going for you?
+line @22 sympathise : #sympathy#. Sit down. I'll put #cider# on. | That's rotten. Let me think what we can do about it, #address#.
+line @23 reassure : #reassure#. Things change. They always do. | It'll shift. Keep at it, #address#, and it'll shift.
+line @24 decline : #hedge#, but no. I've #shift# at dawn and #rooms# to see to. | I'd love to, #address#, only I've promised the evening already.
+line @25 accept_decline : #no_matter.capitalize#. Another time. | Fine. I'll ask again; I always do. #saying.capitalize#.
+line @26 thank : #thanks#. | That's good of you. I won't forget it, #address#.
+line @27 deflect_thanks : #deflect.capitalize#. Anybody would. | Nothing to it. Honestly, #address#.
+line @28 preclose [self.working=yes] : Well. #broom.capitalize# won't push itself. | Back to #floor# before the foreman notices.
+line @29 preclose : #preclose#. | Right. I'll let you be off, #address#.
+line @30 accept_preclose : Go on, then. #farewell#. | Off with you. Keep moving, #address#.
+line @31 ack : #bc_it_is# | #dryly#.
+line @32 give.advice : #advise.capitalize#: keep #step# swept and your mouth shut in the street. | Always have #plan#, #address#. Even a bad one beats standing still.
+line @33 warn [world.bandits=near] : The roads are bad this week. #warn#. | Past the gates? Not alone, #address#. Find company.
+scene sweeping_scale
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : #self.trade_words.capitalize#. Mostly I sweep #scale# and carry it out to the heap. | I swept #floor# four times today. You'd not know it to look at it. | My work's keeping #floor# clear, so nobody trips with hot iron in their paws.
+b : What's the scale for? | Four times? | That's important work.
+a : The heap. Somebody buys it for the roads, I'm told. I just push #broom#. | Four, and it'll be five before the bell. #saying.capitalize#. | It is. Nobody notices till somebody trips on #floor#. Then everybody does.
+b : #bc_ha# | #bc_poor_soul# | #bc_true#
+
+scene not_complaining
+when topic=work|times self.working=yes
+does confide / sympathise / assess
+tone serious / tender / even
+a : I had #bench# once. It went to somebody better placed. I don't say it in the street. | Between us, this isn't the work I'd choose. But nobody on #lane# hears me moan about it. | I went back to #shift# work when the old place went. Some days that's hard. Most days I just sweep.
+b : That's hard. | It's not easy. | That's a lot to swallow.
+a : It is. #saying.capitalize#. So I'm saying it to you, not the street. | No. But I'll get #bench# back. That's #plan#. | It was. It goes down easier with #cider#.
+
+scene next_plan
+when topic=dreams|work
+does tell.plan / ask.plan / answer.plan / assess
+a : I've #plan#. Save a bit each week, and by next winter I'll have #bench# again. | I'm not staying in the Sump forever. I've worked out #plan# to get out of it, step by step. | Every Restday I walk a different street and look at the shops to let. Just looking, for now.
+b : How much a week? | How? | Any good ones?
+a : A penny or two. It grows, so long as you leave it be. | Work, save, and don't stand still. That's all #plan# is. | One. Small, with a window. I'll not say where. Somebody'd take it.
+b : #bc_i_hope_so# | #bc_good# | #bc_ha#
+
+scene horehound
+when topic=weather|health here.weather=fog|rain|overcast here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #drops.capitalize#? Have one. I keep a twist of them in my pocket when it's damp like this. | It's not a cough. It's #throat#. There's a difference. | The damp gets into the works and settles on the chest. Not mine. Other folk's.
+b : For your cough? | What's the difference? | Not yours?
+a : For the taste. I like the taste. #dryly#. | A cough's a cough. Mine's just #throat#. | Not mine. I'm sound as a bell. Here, have #drops#.
+b : #bc_maybe# | #bc_ha# | #bc_thank_you#
+
+scene fog_morning
+when topic=weather|day here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : #fog.capitalize# so thick I walked into a post on #lane# this morning. | #fog.capitalize# in the works, and the forge glows like a lamp in a cellar. | #fog.capitalize# like this, everybody in the Sump goes quiet. Even the shouting stops.
+b : Are you hurt? | That sounds eerie. | That's something.
+a : Only my pride. And my nose. Mostly my pride. | It is. I like it, though. Like being under a blanket. | It is. Quietest the Sump ever gets. I'd have #fog# every night for that.
+
+scene summer_evening
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess / ack
+a : #evening.capitalize#. I sit on #step# after #shift# and watch the light go. | Best time of the year, #evening#. Light till late, and warm enough to sit out. | On evenings like this I nearly forget I'm in the Sump. Nearly.
+b : That sounds lovely. | It is. | Only nearly?
+a : It is. Swept step, #cider#, and the sky going gold. | Light till late. You can get so much done. | Then somebody shouts, and I remember. #dryly#.
+b? : #bc_lovely# | #bc_true# | #bc_ha#
+
+scene tidy_rooms
+when topic=home
+does tell.self / ask.detail / answer.detail / assess
+a : #rooms.capitalize# are small, but you could eat off the floor. I sweep them morning and night. | Everything in #rooms# has a place, and everything's in it. | Folk come in and say it's like a palace. It's two rooms in the Sump. But it's clean.
+b : Morning and night? | Doesn't that wear you out? | A palace?
+a : Morning and night. The Sump comes in on your feet if you let it past #step#. | No. It rests me. A tidy room's a quiet head. | Their words, not mine. I just keep #broom# busy.
+b : #bc_wise# | #bc_fair_enough# | #bc_ha#
+
+scene night_racket
+when topic=home|day here.time=night here.region=ridgemere self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : #racket.capitalize#, every night. Somebody's always got something to shout about down here. | Awake past midnight again. Doors, carts, singing on #lane#. | One night in a street where nobody shouts. That's all I'd ask.
+b : Can't you say something? | Singing? | One night?
+a : Say it to who? It's the whole street. I stuff my ears with wool. | Singing, badly, and always the same song under #rooms#. | One. Just to know what it sounds like. That's part of #plan#.
+
+scene wrestling_green
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail / assess
+a : I watch #bout# every Restday when there's one on. I wrestled a bit myself, once. | Wrestling's not about strength. It's about knowing when to give and when to grip. | I put a big carter on the grass once. Took him three throws, but he went down.
+b : Were you any good? | Which is it? | Three throws?
+a : Good enough to win #ribbon#. I've still got it. | Both. Give till they lean, then grip. #oath#. | Three. He was decent about it after. Bought me #cider#.
+b : #bc_lucky_you# | #bc_wise# | #bc_ha#
+
+scene cider_mug
+when topic=food|season here.season=autumn|winter
+does tell.self / react.self / assess
+a : I've #cider# warming on the hob. A stick of cinnamon and it's a feast. | #cider.capitalize#'s the one treat I don't count the cost of. Everything else I count. | A mug of spiced cider after #shift# and I'm a new wolf.
+b : That sounds good. | Only the one? | A new wolf?
+a : Have some. There's always enough for one more. | Only the one. Everybody needs one thing they don't count. | New enough to sweep #rooms# again, anyway.
+
+scene bad_manners
+when topic=smalltalk|newcomer
+does tell.complaint / react.complaint / assess
+a : A wolf pushed past me on #stair# today without a word. Not even a nod. | Folk can be poor, and tired, and still have #manners#. It costs nothing. | Somebody spat on #step# this morning, swept and all. On purpose, I think.
+b : That's rude. | Not everybody does. | On purpose?
+a : It is. I wished the back of that coat a good day, loud. #dryly#. | No. Some do, though, and I notice them. | I swept it again. Twice. Let them try a third time.
+
+scene the_dole
+when topic=times|smalltalk self.on_dole=yes
+does tell.self / react.self / assess
+a : #dole.capitalize# kept us fed this month. It's not forever. It's a step. | I took #dole# last week and said thank you, and meant it. | Nobody likes the dole queue. But I'd stand in it before I'd see anybody under my roof go short.
+b : There's no shame in it. | That's the way to take it. | That's right.
+a : None. And I'll be off it by spring. That's #plan#. | I did. Some day the ladle'll be in my paw, not the bowl. | I would. Every time. #saying.capitalize#.
+
+scene cousin_letters
+when topic=family|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I've #cousin# out in the vineyards who writes when there's a carter going. | Got #letter# this week. Grapes, sun, and too much work. | #cousin.capitalize# says the vineyards want hands every autumn. I've thought about it.
+b : What do they say? | Sounds nice. | Would you go?
+a : Sun, mostly. I read the sunny bits twice, on wet days. | Nice for #letter#. I'd want to see it before I believed the sun bit. | Maybe. It'd be a step. I'm always after the next bit of #plan#.
+b : #bc_lovely# | #bc_ha# | #bc_we_will_see#
+
+scene friend_close
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I tell #plan# to. Every one, even the daft ones. | After a rotten #shift#, I go knocking for #self.friend#. | I'd stand up for #self.friend# in any street in this city.
+b : Everybody needs one. | That's good to have. | That's a friend.
+a : Everybody does. Mine's a good one. #saying.capitalize#. | It is. And I'm let in every time. | It is. And it goes both ways, up #lane# and down.
+
+scene neighbour_good
+when topic=smalltalk|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# keeps a tidy step too. We nod every morning. That's a good neighbour. | I'd trust #self.neighbour# to mind #rooms# if I was away. That's saying something down here. | #self.neighbour# has #manners#, rain or shine. I like that.
+b : Sounds a good neighbour. | That's rare. | Manners.
+a : It is. Two swept steps on #lane#. That's a start. | It is, in the Sump. | #manners.capitalize#. Costs nothing, means everything.
+
+scene home_lake
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town# we wrestled on #green# by the lake every summer. I won #ribbon#. | In #self.from_town# the evenings were so still the lake was the loudest thing about. | In #self.from_town# everybody swept their own step. I brought the habit down with me.
+b[from=coldwater] #home : The green by the jetty? I remember the matches. | I remember that quiet. | We all did. It was a point of pride.
+b : What colour? | Do you miss it? | Still do it?
+a@home : That's the one. I could tell you every throw on #green#. | So do I. A week's #shift# for an hour of it, I'd trade. | It was. I've kept it. Somebody has to.
+a : Blue. Faded now. I keep #ribbon# in a drawer. | The quiet. Not much else. I'd not go back. Too still for me. | Every morning. The Sump's not stopping me sweeping #step#.
+b? : #bc_lovely# | #bc_true# | #bc_good#
+
+scene the_accent
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : Nobody down here guesses I'm a lake wolf. I talk like #lane# now. | I lost my home voice on the road down. Picked up the city one fast. | Sometimes a word from home slips out and the whole works looks round.
+b : Do you mind? | Fast? | What word?
+a : No. Fitting in's half of getting on. | Had to. You can't get a job sounding lost. #dryly#. | #greet#. They all hunt about for a lake. I just keep sweeping.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Bread's up again and nothing extra coming in. I'll not say more out here. #saying.capitalize#. | Lean, this month. Half the works is looking over their shoulder at #shift# end. | Everybody's cutting back. I've stopped buying #cider#. It's that bad.
+b : Hard for everyone. | Will they cut hands? | No cider?
+a : It is. I'll say the rest in #rooms#. | Maybe. I sweep faster. Nobody cuts the one who sweeps fast. | None. Well, one mug. On Restday. A wolf has to have something.
+b? : #bc_true# | #bc_i_hope_so# | #bc_ha#
+
+scene feast_bout
+when topic=festival|pastimes world.festival=today|soon
+does tell.plan / ask.plan / answer.plan / assess
+a : Feast's nearly here, and with it wrestling on #green#. I'll be at the front. | Feast day. I've swept #rooms# twice already so I can be out all afternoon. | They're roping off #green# for the feast bouts. I might put my name down.
+b : Just watching? | All afternoon? | Would you?
+a : Watching, shouting, and maybe #bout# if they're short. | All afternoon, and the evening if it's light. #evening.capitalize#, with any luck. | I might. Haven't for years. #oath#, grip and give. I remember.
+b : #bc_ha# | #bc_good# | #bc_go_on_then#
+
+story ribbon_bout [topic=pastimes|memories self.likes=wrestling self.age>=20]
+  : The year I won #ribbon#, I was up against a wolf twice my size who'd won it three years running.
+  : I let them push and push, and when they leaned too far, I turned.
+  ask : Do you know the trick of it, letting the big one do the work?
+  b : I've heard of it. Never managed it.
+  b[old] : Oldest trick there is. Works every time.
+  : Over they went, flat on #green#. I still have #ribbon#. Blue.
+
+story lake_swim [topic=memories|season self.from=coldwater self.age>=20]
+  : One summer at home I swam out to the far reeds on a dare, and the lake was colder than I'd ever felt.
+  : I touched the reeds and came back across with my jaw chattering like a loom.
+  b : That's brave. Or daft. Did you win the dare?
+  : Won it. Coughed for a week after. That's the only cough I've ever had, mind. #drops.capitalize# ever since, for the taste.
+
+story first_letter [topic=family|memories]
+  : The first #letter# #cousin# sent from the vineyards, I couldn't read the half of it for grape stains.
+  : I took it to a neighbour who reads, and we spent an evening guessing the purple bits.
+  b : What did it say, in the end?
+  b[friends] : I remember that letter. You framed it.
+  : That the sun was hot and the work was hard and I should come. I'm still thinking about #plan#.
+
+rule @works_bark
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Mind your feet, I've just swept #floor#. | Pile of #scale# coming through. Out the way.
+
+rule @drop_bark
+when concept=bark here.weather=fog|rain|overcast
+does aside
+cooldown 8h
+say Where's #drops#? Not for a cough. For the taste. | Hem. #throat.capitalize#, that's all.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Every night on #lane#. Every single night. | Some of us have #shift# at dawn!
+
+rule @sweep_bark
+when concept=bark
+does aside
+cooldown 10h
+say There. Swept. #saying.capitalize#. | One more corner of #step#, and that's tidy.
+
+dlg @1 resident.hub : #greet#. Mind #step#. What's wanted? | #greet#, #address#. Come in, if you've wiped your feet.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late for the Sump. Say what you need and get home safe.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Out with it, and mind #step#.
+dlg @5 resident.job : #self.trade_words.capitalize#. I sweep, I carry, and I keep #floor# safe. | Whatever needs doing. Mostly #broom#.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Down here it's all bread prices and who's shouting. | Nothing new, #address#. Quiet week, by Sump standards.
+dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep street talk off #step#.
+dlg @8 resident.bye : #farewell#. Keep moving. | #farewell#, #address#. Mind #step#.
+graft resident.hub
+choice Is that a cough you've got? -> drops
+node drops
+say A cough? No. #throat.capitalize#. Here, have a horehound drop. I keep them for the taste. Only for the taste.
+mood calm
+free
+choice They're for a cough, though. -> drops_cough
+choice Goodbye. -> bye
+node drops_cough
+say They're for whatever I say they're for. I'm sound as a bell. Now, was there something you wanted, or are you a healer now?
+choice Never mind. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,299 @@
+# cw193, the hummer on the back stair (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw193
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_hollis_slagford
+written_by claude
+title the hummer on the back stair
+fits stage=adult|old
+prefers job=servant drive=ambitious
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk hums_sea_songs_under_the_breath
+likes barley_soup swimming tidy_house summer_evenings
+dislikes cold_tea stale_bread
+fears being_turned_off_without_a_character a_quarrel_between_the_houses_that_falls_on_the_servants
+hopes a_steward_s_keys_of_my_own
+topics work +0.5 times +0.3 pastimes +0.3 home +0.2 memories +0.2 gossip -0.3
+styles comfort=practical gossip=discreet refuse=soft tease=none
+marks oath saying
+persona #self.first# is in service in a great household on the hill: chatty below stairs and correct above, ambitious for a steward's keys one day, fond of barley broth, a tidy room and a cold swim, and always humming an old sea song under the breath.
+
+words
+oath! = Brass and beeswax | By the good silver
+saying! = A house is run from the back stair | Polish what you can and hum through the rest
+silver = the silver | the good silver
+backstair = the back stair | the servants' stair
+household = the household | the family upstairs
+tune = a sea song | an old shanty, under my breath
+soup = barley broth | a bowl of barley soup
+swim = a swim | a dip before the house wakes
+tidy = a tidy room | every corner squared and dusted
+coldtea = cold tea | a cup left standing
+crust = stale bread | yesterday's loaf
+evening = a summer evening | the long light after service
+keys = the keys | a steward's ring of keys
+lake = the lake | the big lake
+grates = the grates | every grate in the house
+steward = the steward | the old steward
+hill = the hill | the top of the hill
+kitchen = the kitchen | the kitchen below
+bell = the bell | the drawing-room bell
+below = below stairs | the servants' hall
+fires = the fires | the morning fires
+
+any
+opinion @1 houses against 1 : The Houses keep this city the way a cellar keeps wine: cool, dark and locked. They'll quarrel over the key before winter, you'll see.
+opinion @1 merchants against 2 : #wages.capitalize# stay where they are and the loaf climbs #hill# without me. The shops never seem to go short. #oath#.
+opinion @1 times against 2 : Every week the purse is a little lighter and the work a little heavier. Nobody #household# counts either, #address#.
+opinion @1 dole for 2 : There was a lean week the parish bread kept my table set. I'll not hear it run down, #address#.
+opinion @1 festivals for 1 [self.married=yes] : The night I was wed I wore out a fiddler and a pair of shoes. Feasts have my good word ever since. #oath#.
+opinion @1 sump against 1 : I keep above the ropewalk when I'm sent on errands. One hears enough about the lower streets in #kitchen#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. One moment; let me set this down. | #greet#, #address#. You'll forgive the apron.
+line @2 greet [self.working=yes self.job=servant] : #greet#. I'm on an errand for #household#, but I've a minute. | #greet#. Quickly, if you would; #bell# may go.
+line @3 greet [here.time=dawn] : #greet#. The house is still asleep, and you ought to be. | #greet#. You've caught me before #fires# are lit.
+line @4 greet [here.time=dusk|night] : #greet#. Service is done, and I'm my own again. | #greet#. Late, but the lamps on #hill# are still in.
+line @1 kin.open [pair.kin!=no] : There you are. I'd been listening for you on #backstair#. | Ah. Come in, and mind the step; it's just been scrubbed.
+line @1 again.open : #welcome_back#. Twice now, and both times I'm carrying something. | You again. I shall begin to think you're following me, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping I'd see you today. | #greet#. There's a stool by #fires#; take it.
+line @3 greet.return [self.working=yes] : #greet#. Forgive me if I keep moving. | #greet#. I'm wanted upstairs shortly.
+line @1 farewell : #farewell#. | #farewell#. Mind how #hill# takes you.
+line @2 farewell [here.time=dusk|night] : #farewell#. It gets dark early on #hill#. | #s8_night#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Good of you to stop.
+line @1 react.news : #surprise#. One hears nothing #below#, and then everything at once. | Now that I hadn't heard, #address#.
+line @1 react.news.new : #marvel#. That hasn't come down #backstair# yet. | #surprise#. I'll have that round #kitchen# by supper.
+line @1 react.news.known : #knew#. #kitchen.capitalize# had it at breakfast. | I'd heard. Very little gets past #below#.
+line @1 react.news.doubt : #doubt#. I'd want to hear it from a second mouth. | I should think that's been dressed up a good deal on its way up #hill#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's grievous news. | #sympathy#. I'm truly sorry to hear it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll raise a cup to that in #kitchen# tonight. | #congrats.capitalize#. The best I've heard all week.
+line @1 answer.how : #very.capitalize# well, thank you. Run off my feet, which suits me. | #fine#. #silver.capitalize#'s clean, and so am I.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three rooms to turn out before #household# is up. | Run ragged, but one doesn't say so where the family can hear.
+line @1 ask.how : And yourself? Keeping well? | And how are you finding the day, #address#?
+line @1 sympathise : #sympathy#. Sit a moment; nobody will miss me for a moment. | I'm sorry. That's heavier than any tray I carry.
+line @1 reassure : #reassure#. These things come straight. | It'll come right. A house sets itself in order, given time.
+line @1 decline : #hedge#, but I can't. #household.capitalize# dines at six and I'm wanted. | I'd like nothing better. Only my time isn't my own till #bell# has done with me.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | Of course. One understands, #address#.
+line @1 thank : #thanks#. | That's handsomely done. It'll not be forgotten #below#.
+line @1 deflect_thanks : #deflect.capitalize#. Being useful is my whole trade. | Not at all. It was no trouble to me.
+line @1 preclose [self.working=yes] : I must go; #bell# won't ring itself twice. | Forgive me, I'm wanted upstairs.
+line @2 preclose : #preclose#. | Well. I mustn't keep you standing, #address#.
+line @1 accept_preclose : Of course. #farewell#. | Go on, then. I've #silver# waiting anyway.
+line @1 ack : #bc_it_is# | Quite.
+line @1 give.advice : #advise.capitalize#: keep your boots clean and your opinions folded. | Learn the name of everyone #below#. They run the house, whatever the family thinks.
+scene silver_and_tune
+when topic=work self.working=yes self.job=servant
+does tell.self / ask.detail / answer.detail / ack
+a : I've done #silver# since five. Forty-two spoons, and I hummed every one of them bright. | I polish to #tune#. A verse a fork, and the chorus for the big dish. | The housekeeper says my polishing's the best on #hill#. My humming she won't speak of.
+b : Forty-two spoons? | A verse a fork? | Why not?
+a : Forty-two, and two of them bent where some guest sat on them. One doesn't ask who. | It keeps the strokes even. Hurry a fork and #silver# streaks. | Humming isn't done above stairs. #below.capitalize#, I'm afraid, it very much is.
+b? : #bc_ha# | #bc_wise# | #bc_ha#
+
+scene the_bell
+when topic=work self.job=servant
+does tell.self / react.self / assess
+a : I can tell which room #bell# is from by the note of it. The library's flat, the morning room sharp. | When #bell# goes I'm on #backstair# before it can ring again. A second ring is a black mark. | I hear #bell# in my sleep now. My feet go for #backstair# before I'm awake.
+b : That's a knack. | Before it rings again? | That sounds tiring.
+a : Eleven bells in the house, and I know them all like voices. | Always. I've only missed it twice, and I remember both. | It is. But the one quickest to #bell# is the one who's noticed.
+
+scene caught_humming
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I was humming on the main stair this morning and walked straight into #steward#. Mid-chorus. | Somebody asked me what #tune# I was humming. I'd no idea I'd started. | I hum when I'm thinking, and I'm always thinking, so you can see the difficulty.
+b : And what was said? | What was it? | Can't you stop?
+a : Nothing at all. A look like a #cold# hearth, and on we went. | An old sea song about a ferryman and the moon. Not cheerful, but it keeps time. | I've tried. It goes quiet for an hour and comes back in the next room.
+b? : #bc_ha# | #bc_lovely# | #bc_poor_soul#
+
+scene the_keys
+when topic=dreams|work self.job=servant
+does tell.plan / ask.plan / answer.plan / ack
+a : One day I'll carry #keys#. Every lock in a great house, on one ring at my belt. | I watch how #steward# does it. The accounts, the wine book, the hiring. I'm learning it all. | They'll want a new steward on #hill# within ten years. I mean to be standing nearest.
+b : Every lock? | Will they let you? | Ten years?
+a : Every lock. #silver.capitalize# cupboard first, I should think. That's the one that matters. | Nobody lets you. You make yourself the obvious one, and then they've no choice. | Ten, or fewer. I'm patient, #address#, but I'm not idle.
+b? : #bc_good# | #bc_wise# | #bc_we_will_see#
+
+scene houses_falling_out
+when topic=times|smalltalk|gossip here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : Mark me, the four Houses won't see next winter in on speaking terms. You can feel it at #household#'s table. | There's only so much city to go round, and every House wants more than its share. | The carriages go up and down #hill# later every night. That's never a #good# sign.
+b : They've always argued. | That's how it's always been. | Late suppers, perhaps.
+a : Argued, yes. This is the quiet kind. The quiet kind is worse. | Always, and always someone's tried. I'd keep my head down this year. | Perhaps. I've served late suppers. These aren't those, #address#.
+b? : #bc_we_will_see# | #bc_maybe# | #bc_maybe#
+
+scene view_from_the_hill
+when topic=smalltalk|day here.region=ridgemere self.quarter=heights here.weather=clear
+does tell.feeling / react.self / assess
+a : From the garden steps the whole Sound shows when it's this clear. I stop every time. | On a clear day at #hill# you'd hardly know the city had a smoke to it. | I take the long way round by the terrace when it's clear. Two minutes for the view, and nobody the wiser.
+b : The whole Sound? | Not from down here. | Two minutes is fair.
+a : Every sail on it. I don't know their names, but I know the shapes now. | No. It's the one thing #hill# has that nobody can buy off it. | Two minutes, then back to #silver#. One mustn't get a taste for idling.
+
+scene broth_below_stairs
+when topic=food
+does tell.self / ask.detail / answer.detail / assess
+a : Our supper #below# is #soup#, most nights. Upstairs they eat six courses and I'd trade the lot. | I can make #soup# from a ham bone and two fists of barley. My one talent in #kitchen#. | Cook puts the barley on at noon, and #backstair# smells of it by four.
+b : You'd give up six courses? | Is it good? | Hungry work, waiting.
+a : For a bowl of that, gladly. Six courses is mostly carrying. | It is, if I say so myself. The trick is patience and a heavy lid. | It is. I count the hours till four by the smell, #address#.
+b? : #bc_ha# | #bc_good# | #bc_true#
+
+scene tea_gone_cold
+when topic=food|work self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : I poured myself #coldtea# this morning without meaning to. Made it at six and drank it at ten. | Nothing worse than #coldtea#. It tastes like a promise that wasn't kept. | Every cup I make, #bell# rings before I've had a mouthful. I've not had a hot one in a week.
+b : That's the job, I suppose. | That's a sour way to put it. | A week?
+a : That is the job. I've stopped making it, and I sulk instead. | It's how it tastes. One mouthful and the whole morning's sour. | A week. I've begun to think #household# can hear the kettle.
+
+scene morning_swim
+when topic=pastimes self.likes=swimming here.season=spring|summer|autumn
+does tell.self / ask.detail / answer.detail
+a : I had #swim# before anyone was up. #cold.capitalize# as anything, and worth every shiver. | I swim before the house wakes. It's the one hour nobody owns but me. | As a #child# I swam in #lake# every day the ice was off it. I've not lost the habit.
+b : Cold, this time of year? | Where do you go? | Every day?
+a : #cold.capitalize# enough that I came back and did #grates# in half the time. | Down #hill# to the water, and back up before #fires#. I'll not say exactly where. | Every day. Here I make do with three a week, and I count myself lucky.
+
+scene everything_squared
+when topic=home self.likes=tidy_house
+does tell.feeling / react.self / assess
+a : Nothing pleases me like #tidy#. A house set right is a kind of quiet. | I can't sit in a room till I've squared the chairs. It's a sickness, I'm told. | Hand me an untidy room for an hour and you'll have #tidy# back.
+b : Restful, I suppose. | I'd not mind that sickness. | That's a gift.
+a : It is. Everything where it should be, and nothing asking to be done. | It's useful in service, I'll say that. Less so at a friend's house. | A trade, rather. Gifts don't get paid, and I do, #very# slightly.
+
+scene my_own_fireside
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : After service I'd sooner sit by the fire with my #self.spouse_word# than at any feast on #hill#. | My #self.spouse_word# and I have one room and one window, and it's the best room I've ever been in. | I hum less at home. I've nothing to keep time to but the kettle, and my #self.spouse_word#.
+b : There's no better end to a day. | One room? | Just the kettle?
+a : None, after a day of other people's fires. | One room. #tidy.capitalize#, mind. I'd want it no other way. | The kettle, and the quiet. Upstairs I'm trying to look busy; at home I needn't.
+
+scene songs_off_the_boats
+when topic=memories|pastimes self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : I learned #tune# from the boatmen on #lake# in #self.from_town#. They'd never seen the sea, and they sang about it all day. | In #self.from_town# there was an old boatman who'd been to sea once, and he sang about nothing else after. | All my sea songs were learned on #lake# at #self.from_town#. Funny, that. A lake full of songs about the sea.
+b[from=coldwater] #home : The boatmen sang the same ones when I was small. | I knew that one. He'd sing to anyone. | They still sing them out there, every one.
+b : They'd never seen it? | Only once? | Do you know many?
+a@home : Then you'll know the ferryman who rowed after the moon. I hum that one most. | Then you'll have heard his moon song a hundred times, as I have. | #good.capitalize#. I'd hate to be the last who knew them.
+a : Never. They sang it bigger than it is, I expect. The real sea's rather grey. | Once was enough to fill him up for the rest of his days. | Thirty, perhaps. I know the middles best; the ends are sad.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene lake_left_in_my_voice
+when topic=accent self.away=yes self.from=coldwater self.accent=none
+does tell.self / react.self / assess
+a : When I first came to the city I had #lake# all through my voice. The housekeeper had it out of me in a month. | I speak as the house speaks now. My own #mum# would hardly know me on #backstair#. | I've a city voice for upstairs. I'd thought I'd keep the old one for home, but it went too.
+b : Do you mind? | Would she not? | It went?
+a : Sometimes. I hear it in a carter on the road up #hill# and stop to listen. | Not on the stair. She'd know me by the humming, though. | It went. One can't keep two voices; one always wins, #address#.
+
+scene lean_household
+when topic=times|work world.times=hard|lean self.job=servant
+does tell.worry / reassure / assess / ack
+a : There's talk of letting a maid go. When a great house economises, it starts with #below#. | Candles are counted now. I've been told to burn them down to the stub. | #wages.capitalize# came late this month. Only a day, but in service a day is a long time.
+b : Not you, surely. | It's the same everywhere. | It came, though.
+a : Not me. I've made myself too useful to lose. I hope. | Everywhere, yes. Even on #hill#, where you'd least think it. | It came. I'd still rather it hadn't kept me waiting.
+b? : #bc_i_hope_so# | #bc_true# | #bc_true#
+
+scene the_long_light
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess / ack
+a : #evening.capitalize#, and #household# is out at supper. I've the terrace to myself. | On #evening.a# like this I'd walk up and down #hill# just to stay in it. | If service let me keep one hour of the day, it'd be this one.
+b : Lucky you. | Just walking? | Why this one?
+a : For an hour. Then they're back, and so am I. | Just walking, and humming, and not carrying anything for once. | The light's going gold, and nobody's rung #bell# yet.
+b? : #bc_lovely# | #bc_lovely# | #bc_true#
+
+scene winter_grates
+when topic=season|work here.season=winter self.job=servant
+does tell.complaint / react.complaint / assess
+a : Winter means #grates#. Eleven of them before dawn, and every one wants blacking. | In this #cold# #household# wants a fire in every room they might walk through. | My knuckles are black till spring. No amount of scrubbing gets #grates# out of them.
+b : Eleven before dawn? | Every room? | Gloves might help.
+a : Eleven. I hum through the first six and grit my teeth through the rest. | Every room. They walk through very few, but they like to know they could. | Gloves in service? One would be laughed off #backstair#.
+
+scene wet_boots_on_my_floors
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# all day, and every visitor walks it straight across the floor I've just done. | Wet on #hill# again. I've a row of boots at the back door steaming like puddings. | It rains differently up here. Sideways, mostly, and straight into the hall when the door goes.
+b : They don't wipe their feet? | Puddings? | Sideways?
+a : Visitors to great houses never wipe their feet. That's what I'm for. | Steaming, and smelling worse. Somebody's always walked through a stable yard. | Sideways, and with intent. #hill.capitalize# catches every #wind# off the Sound.
+
+scene below_stairs_ears
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : One hears a great deal at table. One repeats none of it, if one wants to keep the place. | #kitchen.capitalize#'s full of talk. I listen to all of it and carry none of it upstairs. | You'll not get a word out of me about #household#. Not a syllable.
+b : Not even a little? | None of it? | Go on.
+a : Not a crumb. A servant who talks is a servant looking for work. | None. I'd rather carry coal than tales. | No. I'd sooner keep a clean character than tell a good tale, #address#.
+b? : #bc_fair_enough# | #bc_wise# | #bc_ha#
+
+scene new_hands_hired
+when topic=newcomer here.region=ridgemere
+does tell.worry / react.self / assess
+a : Three new faces #below# this month. Every one of them after the same few places as me. | They're hiring newcomers on #hill# because they come cheap. It does none of us any good. | A new girl started in #kitchen# and already knows more sea songs than I do.
+b : Good for them, though. | It's the way of it. | That's no bad thing.
+a : For them, perhaps. I'd want it for me first, I'm afraid. | It is. I'll just have to be worth more than the cheap ones. | It's dreadful, actually. I'm teaching her the middles out of spite.
+
+story first_morning_in_service [topic=work|memories self.job=servant self.age>=25]
+  : My first morning in service I laid the table with every fork on the wrong side. Every one.
+  : #steward.capitalize# walked the length of it, said nothing, and turned each one over himself.
+  ask : Would you rather be scolded, or have it done in silence like that?
+  b : Scolded. The silence would stay with me.
+  b[old] : Silence. A scolding's over quicker, but you learn more from the other.
+  : I've never laid a fork wrong since. I still hear those footsteps when I set a table.
+
+story the_moon_ferryman [topic=memories|pastimes self.from=coldwater self.age>=25]
+  : There's a song they sang on #lake# about a ferryman who rowed out after the moon's face on the water.
+  : My #grandad# swore the ferryman was real, and still rowing. On flat nights we'd watch the moon's path for a boat.
+  : I never saw one. But I hum the song every day, and that's near enough.
+  b : Perhaps he only rows for the ones who keep singing.
+  b[from=coldwater] : I watched for that boat too, as a pup. Everyone did.
+
+story the_empty_room [topic=smalltalk|work self.job=servant]
+  : One winter #bell# from the blue room kept ringing, three nights running, and nobody was in it.
+  : I went up every time, and every time the window was open and the curtain was on the bell-pull.
+  ask : What would you have thought, the first night?
+  b : That somebody was having fun with me.
+  b[stage=young|adolescent] : A ghost. Definitely a ghost.
+  : I thought the same, and so I closed the window. Ghosts don't argue with a latch.
+
+rule @hum_at_work
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 6h
+say Hm, hm-hm... and out he rowed, after the moon. | Dum, dee-dum. #silver.capitalize#, then the brass.
+
+rule @bell_going
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say That's the morning room. Coming. | #oath#. Second ring. I'm coming.
+
+rule @boots_at_the_door
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say Boots off at the door, if you please. | #oath#, my clean floor.
+
+rule @fires_at_dawn
+when concept=bark here.time=dawn self.job=servant
+does aside
+cooldown 10h
+say #grates.capitalize# first, then the lamps, then a cup. If I'm lucky. | Up before #household#. Always up before them.
+
+dlg @1 resident.hub : #greet#. I've a moment, if it's brief. What is it? | #greet#, #address#. How can I help?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're back. What can I do for you?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Yes? I'm expected back shortly. Please be quick.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. #silver.capitalize#, #grates#, the doors, #bell#. Whatever the house asks. | I'm in service on #hill#. I keep a great house running so nobody notices it running.
+dlg @2 resident.job : I work, and I mean to rise at it. That's the short of it.
+dlg @1 resident.news [world.news] : Word came up #hill# from #world.news_from#: #world.news#. That's as much as I heard at table.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's come down #backstair# today. | Nothing I'm at liberty to repeat, and nothing else besides.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | One hears things in service. One doesn't repeat them.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. Mind #hill# going down.
+graft resident.hub
+choice What's that song you're humming? -> song
+node song
+say Was I? I'm sorry. A shanty from home, about a ferryman rowing after the moon. It keeps my paws in time with the polishing.
+mood calm
+free
+choice Do you know many? -> song_more
+choice Goodbye. -> bye
+node song_more
+say Thirty or so. I know the middles of them all and the ends of very few. The ends are always somebody drowning, so I don't mind.
+choice I'll let you get back. -> hub
+choice Goodbye. -> bye
