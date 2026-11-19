@@ -1,0 +1,6 @@
+R8 (habit saturation (% of a speaker's lines, mean)): 0.349 regresses more than 10% from the baseline's 0.0622 (281 events against 52 at the baseline's rate; by chance 1.2e-34)
+C8 (conversations with a third speaker (%)): 0.106 regresses more than 10% from the baseline's 4.15 (26 events against 992 at the baseline's rate; by chance 2.7e-260)
+O1 (opinions given per 10 conversations): 0 regresses more than 10% from the baseline's 0.831 (0 events against 2003 at the baseline's rate; by chance 0)
+U2 (distinguishability of look-alike residents (%)): 32.4 regresses more than 10% from the baseline's 39.2
+K2 (largest topic's share (%)): 15.3 regresses more than 10% from the baseline's 13
+B1L (a director look: 99th percentile (ms)): 16.6 regresses more than 10% from the baseline's 8.4

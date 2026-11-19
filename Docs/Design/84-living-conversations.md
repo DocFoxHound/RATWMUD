@@ -5477,3 +5477,93 @@ claiming heard lines again.
 **For the writers** (the mantles are another session's; not touched here): cw105's `crowded_lane` renders "There's my
 #dear#" as "There's my my catch." (Coldwater's `dear!` is "my pearl | my catch | love"; talk_score's T2 read it as a
 fisher's catch); mb113's `jas_first_white` answers "Caught a beating." with `#bc_ha#` (C4's tone clash, by its words).
+
+## 44. Phase 12, window-only plumbing, as built (2026-11-18)
+
+Branch `r3-talk-p12`, on `ridgemere2` after U1 (`1b134b80`). **Why.** Goal 7, the user's words: "I do not expect NPCs to
+be responding to players in general conversation." Everything a resident says *to* a player is now said in the dialogue
+window (doc 83); open chat is heard, never answered.
+
+**What was built** (§13.1 and §13.2, one for one):
+1. **Chat.** `Options::residentsAnswerChat`, off by default (`--residents-answer-chat`, for tests that test what residents
+   answer). Off, the chat handler addresses no resident (chosen, named, "the one close by", a companion asked its thoughts,
+   the scout's road interjection), and `Game::talk` itself refuses any line not said in a window, so nothing else can
+   reach it. What stays: `publish` (the room hears the player, the "to" of a chosen resident shown as meant), `heardVoice`,
+   `noticeIntroduction` (a name given in chat is learned), `social_.record`.
+2. **Overheard, not answered** (`Game::overheard`, `Core/RatwGameWindowOnly.cpp`). A resident within hearing 0.5 of a
+   player's speech keeps the line in its memory of them (a memory with nothing of the resident's own is never sent to the
+   Mind to be summarised: `consolidate`). The router reads it, and what it was about goes in the talk ledger as a light
+   person fact for a quarter of a day, in the world's words only (`asking the way to the Grey Gull`, `asking after Myrtle
+   Stillford`, `asking what was for sale`, the hours, the day, trouble in town). `World::sceneTopics` hands it to
+   `talk.player` as `topic.asked`, and `h7_st_open_asked` lets residents talk of it to each other, never quoting: "That
+   grey stranger's been asking the way to the Grey Gull. Somebody ought to tell them." A resident named or chosen (or a
+   companion asked what it thinks) **glances over** (an action, never a word: "glances over.", "pricks up an ear.", "glances
+   over without breaking off." while it is speaking; once in 30 s for each pair) and the player gets
+   `{"type": "talkHint", "text": "Talk to Myrtle (T)"}`, at most once in ten minutes for each resident.
+3. **Talk opens the window**: the wheel's Talk (`action talk|speak`) is `dialogueOpen(..., "talk")`, never a talk target.
+4. **`react.customer`** is a look: the keeper "looks up from the anvil / the taps / the dough / the counter" (the counter
+   only for a merchant), else "glances up at the door", and `here.came_in` holds for 120 s, so the window's greeting fits:
+   `say[here.came_in=yes]` in `shop.greet`, `resident.hub` and `inn.greet` ("Come in, come in." / "Sit anywhere, I'll be
+   with you."). `here.came_in` is a greeting's flavour, not news: it is **cosmetic** for fix 8's window rule
+   (`cosmeticFact`, `mantle_check.py`'s `COSMETIC`), so the 145 mantles' hub lines need no new gate (without it G2
+   refused 387 of their lines).
+5. **`welcomeAtInn`** is gone. `tendEvenings` marks the newcomer's welcome due at that innkeeper for 30 minutes
+   (`welcomeDue_`); the keeper catches the newcomer's eye and the newcomer gets the hint. Opening the keeper's window,
+   the greeting is the welcome (`inn.tree`'s `say[here.newcomer=yes priority=12]`), and `Game::welcomeInWindow` then
+   points out the wolves here it knows, aloud as before (each listener hearing them as it knows them), with the same
+   introduce prompts, and adds the words to the window's line; the evening is done when it is said.
+6. **Companions.** `companionSays(npc, concept, words, facts)`: a line of the library's `companion.*` (22 concepts,
+   `Data/Talk/rules/companion.talk`, 33 rules: arriving with `topic.where`, trouble in sight, a mate hurt, a quiet road,
+   road talk, and every answer to an order, a hire, a refusal, an oath and a leaving), alone and repeated as barks are,
+   in the companion's dialect and tone; the old English stands where nothing fits. It is said **in the window** when the
+   player has the companion's open, else to the party as a bark. The scout's road interjection is now any companion's
+   unaddressed `companion.road` bark on road or danger talk (the remark cooldown). **"What do you think?"** is a choice in
+   `companion.tree` (node `think`, `ask companion.opinion`): `Game::companionOpinion` answers from the companion's own
+   stances, the strongest of up to four it holds (`op_strength` 1 or more), by `Library::answer` to an owed `give.opinion`
+   with the stance facts (a mantle's own opinion lines first); holding none, `companion.opinion`'s lines ("I've no strong
+   view either way."), then the node's own.
+7. **The storyline's `talk` event** fires only from the window (`dialogueSpeak`, the window's free talk); naming a resident
+   in chat no longer counts. A name said in the window (a choice or free talk: "I'm Kestrel.") is learned as in chat.
+8. **Removed**: the tavern's "The rain has eased along the sill..." line (`ambientAccumulator_`) and the five demo-NPC
+   branches of `authoredReply`.
+
+**The client** (§13.2): a resident's row in In Sight opens its wheel; residents are never talk targets (`addTarget`
+refuses them, `speakingTo` has no "nearby" resident, the composer sends players only, an older server's `talkTarget`
+for a resident is ignored); `talkHint` shows its words and **T** opens the hinted resident's window for a minute (else
+the nearest within reach); a resident with no tree for Talk says so in a toast (the old `sendAction('talk')` fallback is
+gone: with the server's Talk opening the window it would have looped); while a window is open, a line typed in the chat
+box is the window's free talk; the composer's hint says "to talk with a resident: Talk on them, or T". Introduce on a
+wheel still says "I'm <name>." aloud (learned; P13 makes it the window's `introduce`).
+
+**W3 = 0** (the hard gate, §15.3). `game_tests`' `residentsNeverAnswerChat` is its instrument: six chat lines to Rowan
+(named, the one close by, chosen, "What do you think, Rowan?", whispered, an introduction), counting resident lines in
+words said to the player: **0** with the option off, against 6 of 6 with it on (the control), and one glance or more,
+exactly one hint, what was asked after in the ledger, the name learned, Talk opening the window with a line. (talk_sim
+has no players, so the card has no W3 row of its own.)
+
+**Tests.** `game_tests` (the above; the talk-target and answer tests run with the option on), `dialogue_tests` (a keeper
+looks up as a customer comes in and never greets aloud, and the window's greeting knows it; "What do you think?"
+answered from the companion's stances or their words for having none), `newcomer_tests` (the welcome in the innkeeper's
+window, once, never on a fourth lonely evening; a vouch raised in the window; the matchmaking briefing still tested over
+answered chat, for P13 to move), `fame_tests`, `storyline_tests`, `troubles_tests` and `market_tests` speak to residents
+in their windows (`town_fixture.h`'s `sayInWindow`), `talk_tests` (companion concepts are one speaker's, like `react.*`);
+the full `ctest` (119; the 8 Postgres ones skipped); the client's typecheck, unit tests (224) and build.
+
+**The card** (`artifacts/talk/runs/p12`, every profile in both modes, the 145 worn from the files, 5 min 52 s), against
+U1's (§43), fixtures / frozen: unchanged within noise, as it should be (talk_sim has no players, and nothing between
+residents changed but `topic.asked`, which only a player's chat sets): U1 6.20 / 6.46 → 6.21 / 6.45%; C1 95.5 / 97.2 →
+95.3 / 97.4%; C3 99.8 / 100 both; C4, C6, T1, T2, R5, K3 and D2 0; T3 0.02 → 0 / 0; R1 6.57 / 2.30 → 6.55 / 2.30 h; R4
+508 / 2,305 → 513 / 2,312; K1 45.1 / 70.5 → 45.0 / 70.6%; K2 23.8 / 15.3 → 23.9 / 15.3%; X1 23.0 / 19.0 → 23.1 / 19.0%.
+`talk_card` breaks no hard gate; it exits 1 on the same soft rows §43 left (R8, C8, C9, D1A, O1, D1B, U2, K2, X1, the
+timings). Nothing refrozen.
+
+**For P13.** Chat is no longer a way in, so everything P13 adds lands in the window, and these are left for it: the
+innkeeper's matchmaking ("Try a brown wolf by the hearth...") and the other briefings (troubles, fame, vouches) work in
+the window's free talk, but `newcomer_tests`' matchmaking still asks over answered chat; Introduce on a wheel still says
+"I'm <name>." in chat (learned, never answered), to become the window's `introduce`; the `player.*` rules (bye, thanks,
+day, hours, wanted, where) are reached only through the window's free talk and its `ask player.*` nodes until P13's
+nodes and understanding; a newcomer who never opens the innkeeper's window within 30 minutes misses the welcome (the
+hint is a toast, the glance is seen only by one who can see the keeper); a world with no talk library has no window, so
+there its residents say nothing to players at all (every launcher passes the voice data); `--residents-answer-chat`
+exists for tests only and should not be given to a live world. A client release is needed for §13.2 on the desktop
+client (the browser client is served by the server).
