@@ -147,7 +147,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm185, rm193, rm215.
 - Friend also listed as kin — rm186, rm187, rm188, rm191, rm194, rm196, rm197, rm204, rm205, rm212, rm213, rm214, rm215.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm198, rm202, rm203, rm218, rm219. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm191, rm209, rm213, rm220. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 The source gives rm209 an usher's duties and rm213 nursing work despite an empty job classification. The dialogue follows their duties where the facts support them. The guard post in rm220's backstory has no corresponding job or post in the facts. The mantle concentrates on listening, devotion and companionship. The workplace is absent for rm191 and rm210. A seaworthy berth for rm196 and rm201 remains a wish. In rm216 the writer omitted a backstory accusation that would have assigned a death to a House.
