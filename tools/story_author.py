@@ -15,6 +15,12 @@ def request(data, snapshot, world_key=None, read_world=False):
     op = data.get('op')
     if op == 'catalog':
         return runner.catalogue()
+    if op == 'components':
+        entry = next((e for e in story_library.entries() if e['id'] == data.get('eventType')), None)
+        rules.require(entry, 'Choose a known event type.')
+        return {'components': story_library.components(entry)}
+    if op == 'draft' and data.get('blank') is True:
+        return {'program': story_library.blank()}
     if op == 'draft' and 'eventType' in data:
         return {'program': story_library.draft(data['eventType'])}
     if op == 'draft':

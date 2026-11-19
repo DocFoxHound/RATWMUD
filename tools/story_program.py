@@ -5,6 +5,8 @@ import json
 import math
 import re
 
+import story_triggers as triggers
+
 EVENTS = (
     'conversation',
     'arrival',
@@ -84,6 +86,76 @@ EVENTS = (
     'caravan lost',
     'caravan departs',
     'festival called',
+    'arrest',
+    'assault',
+    'bandit falls',
+    'bandits called',
+    'bandits creep',
+    'bandits demand',
+    'caravan dropped',
+    'caravan home',
+    'caravan passes',
+    'cart arrives',
+    'cart departs',
+    'cart missed',
+    'cart stocks the stalls',
+    'carter hurt',
+    'character created',
+    'cleared',
+    'contract given back',
+    'crier',
+    'deed revoked',
+    'downed',
+    'event added',
+    'event begins',
+    'event notice',
+    'event posted',
+    'event rolled',
+    'fight',
+    'harvest called',
+    'held for a story',
+    'letter returned',
+    'loan unreturned',
+    'matchmaking',
+    'milestone',
+    'mourning',
+    'nickname',
+    'nickname dropped',
+    'notice removed',
+    'nudge over',
+    'old age',
+    'prices reset',
+    'project cancelled',
+    'project posted',
+    'project proposed',
+    'project removed',
+    'promise',
+    'promise broken',
+    'released',
+    'resident letter',
+    'robbed',
+    'sermon',
+    'ship posted',
+    'ships cleared',
+    'spawn',
+    'stall closed',
+    'stolen goods smelt',
+    'stopped by the watch',
+    'story prize',
+    'storyline begun',
+    'storyline done',
+    'table game begun',
+    'tale begun',
+    'tale joined',
+    'tie ended',
+    'times cause',
+    'times nudged',
+    'vouch broken',
+    'wagon cancelled',
+    'wagon delayed',
+    'wagon posted',
+    'welcome',
+    'welcomed back',
     'clock',
     'dm signal',
 )
@@ -92,6 +164,13 @@ FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 EFFECTS = {
     'npc.line': ('npc', 'text'),
     'npc.move': ('npc', 'cell', 'x', 'y'),
+    'npc.protect': ('npc',),
+    'npc.unprotect': ('npc',),
+    'npc.revive': ('npc',),
+    'character.injury': ('player', 'add', 'severity'),
+    'ship.storm': ('ship',),
+    'harvest.override': ('area', 'word', 'days', 'words'),
+    'band.override': ('npc', 'band', 'days'),
     'festival.call': ('town', 'name', 'inDays'),
     'storyline.give': ('player', 'template', 'resident', 'place'),
     'faction.relation': ('faction', 'other', 'stance', 'disposition', 'reason'),
@@ -101,6 +180,11 @@ EFFECTS = {
     'deed.award': ('player', 'detail'),
     'project.post': ('town', 'project', 'cell', 'x', 'y', 'title'),
 }
+# Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
+INJURY_TYPES = ('torn_flank', 'bitten_foreleg', 'bitten_hindleg', 'torn_ear_acute', 'wrenched_neck', 'deep_gash', 'cut_foreleg',
+                'cut_muzzle', 'cut_shoulder', 'bruised_ribs', 'cracked_rib', 'sprained_foreleg', 'knocked_senseless', 'burned_paws',
+                'singed_coat', 'burned_muzzle', 'torn_ear', 'bent_tail', 'scarred_muzzle', 'scarred_flank', 'burn_scars',
+                'notched_nose', 'clouded_eye', 'permanent_limp', 'bad_back', 'stiff_shoulder')
 ID = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}\Z')
 
 
@@ -222,21 +306,34 @@ MISSION_MEASURES = {
 
 def validate_missions(phase):
     missions = phase.get('missions', [])
-    require(isinstance(missions, list) and len(missions) <= 16, 'Choose up to 16 missions in a phase.')
+    require(
+        isinstance(missions, list) and len(missions) <= 16,
+        'Choose up to 16 missions in a phase.',
+    )
     ids = set()
     for m in missions:
-        shape(m, ('id', 'title', 'mode', 'objectives'), ('players', 'percent', 'contributors'))
+        shape(
+            m,
+            ('id', 'title', 'mode', 'objectives'),
+            ('players', 'percent', 'contributors'),
+        )
         require(
             identifier(m['id']) and m['id'] not in ids and word(m['title'], 120),
             'Each mission needs a unique ID and title.',
         )
         ids.add(m['id'])
-        require(m['mode'] in ('individual', 'group', 'either'), 'Choose individual, group, or either.')
+        require(
+            m['mode'] in ('individual', 'group', 'either'),
+            'Choose individual, group, or either.',
+        )
         require(
             'contributors' not in m or (m['mode'] == 'group' and integer(m['contributors'], 2, 500)),
             'A group needs at least two contributors.',
         )
-        require(not ('players' in m and 'percent' in m), 'Choose a number or percentage for a personal mission.')
+        require(
+            not ('players' in m and 'percent' in m),
+            'Choose a number or percentage for a personal mission.',
+        )
         for key, limit in [('players', 500), ('percent', 100)]:
             require(
                 key not in m or (m['mode'] == 'individual' and integer(m[key], 1, limit)),
@@ -247,13 +344,20 @@ def validate_missions(phase):
             'A mission needs one to eight ordered objectives.',
         )
         for index, o in enumerate(m['objectives']):
-            shape(o, ('label', 'on'), ('match', 'goal', 'measure', 'sameAsFirst'))
+            shape(
+                o,
+                ('label', 'on'),
+                ('match', 'goal', 'measure', 'sameAsFirst', 'signal'),
+            )
             require(
                 'sameAsFirst' not in o or (index > 0 and o['sameAsFirst'] in FIELDS),
                 'Choose a field from the first objective to link a later objective.',
             )
             require(
-                word(o['label'], 180) and o['on'] in MISSION_EVENTS,
+                word(o['label'], 180)
+                and o['on'] in (*MISSION_EVENTS, triggers.SIGNAL)
+                and (o['on'] == triggers.SIGNAL) == ('signal' in o)
+                and ('signal' not in o or identifier(o['signal'])),
                 'Choose a participant event and a journal instruction.',
             )
             require(
@@ -262,7 +366,7 @@ def validate_missions(phase):
             )
             measure = o.get('measure', 'count')
             require(
-                measure == 'count' or o['on'] in MISSION_MEASURES[measure],
+                measure == 'count' or o['on'] == triggers.SIGNAL or o['on'] in MISSION_MEASURES[measure],
                 f'{o["on"]} does not record {measure}. Choose occurrences or another event.',
             )
             fields = o.get('match', {})
@@ -270,16 +374,21 @@ def validate_missions(phase):
                 isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
                 'Invalid mission event filter.',
             )
-    require(not missions or phase['exits'], 'A mission needs an ongoing phase.')
+    require(
+        not missions or phase['exits'] or phase.get('triggers'),
+        'A mission needs an ongoing phase.',
+    )
     return ids
 
 
-def track_missions(phase, state, event):
+def track_missions(phase, state, event, credited):
     actor = event.get('actor', '')
     if not phase.get('missions') or actor not in state['cohort']:
         return
     ledger = state.get('missions', {})
     for mission in phase['missions']:
+        if mission['id'] in credited:
+            continue
         individual = mission['mode'] == 'individual'
         record = ledger.get(mission['id'], {'tracks': {}, 'contributors': []})
         key = actor if individual else 'group'
@@ -291,7 +400,7 @@ def track_missions(phase, state, event):
         evidence = event
         if objective['on'] == 'gift' and event['kind'] == 'gift again':
             evidence = {**event, 'kind': 'gift'}
-        if not matches(objective, evidence):
+        if objective.get('signal') != evidence.get('signal') or not matches(objective, evidence):
             continue
         measure = objective.get('measure', 'count')
         gain = 1 if measure == 'count' else event.get(measure, 0)
@@ -316,6 +425,7 @@ def track_missions(phase, state, event):
         enough_wolves = mission['mode'] != 'group' or len(record['contributors']) >= mission.get('contributors', 2)
         if amount == goal and (step + 1 < len(objectives) or enough_wolves):
             step, amount = step + 1, 0
+        credited.add(mission['id'])
         record['tracks'][key] = [step, amount]
         ledger[mission['id']] = record
         state['missions'] = ledger
@@ -351,17 +461,91 @@ def mission_snapshot(phase, state):
     return result
 
 
+def validate_effect(effect, pid):
+    kind = effect.get('kind') if isinstance(effect, dict) else None
+    require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
+    shape(effect, ('kind', *EFFECTS[kind]))
+    for k in EFFECTS[kind]:
+        v = effect[k]
+        if k in ('x', 'y', 'inDays'):
+            ok = integer(v, 0, 30 if k == 'inDays' else 4095)
+        elif k == 'stance':
+            ok = v in ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
+        elif k == 'disposition':
+            ok = integer(v, -100, 100)
+        elif k == 'reason':
+            ok = word(v, 300)
+        elif k == 'count':
+            ok = integer(v, 1, 6)
+        elif k == 'skill':
+            ok = v in ('craft', 'commerce', 'labour', 'service', 'travel', 'watch')
+        elif k == 'points':
+            ok = integer(v, -100, 100) and v != 0
+        elif k == 'days':
+            ok = integer(v, 1, 112 if kind == 'band.override' else 366)
+        elif k == 'word' and kind == 'harvest.override':
+            ok = v in ('poor', 'fair', 'good', 'clear')
+        elif k == 'band':
+            ok = v in ('destitute', 'poor', 'comfortable', 'rich', 'clear')
+        elif k == 'add' and kind == 'character.injury':
+            ok = v in INJURY_TYPES
+        elif k == 'severity':
+            ok = integer(v, 1, 3)
+        elif k in ('text', 'name', 'title', 'detail', 'words'):
+            ok = word(v, 200 if k in ('text', 'detail') else 80)
+        else:
+            ok = identifier(v) or (k == 'player' and v == '$actor')
+        require(ok, f'{pid}: invalid {kind}.{k}.')
+    if kind == 'faction.relation':
+        require(
+            effect['faction'] != effect['other'],
+            'A faction needs a different counterpart.',
+        )
+
+
+def effective_phase(program, phase):
+    shared = program.get('triggers', [])
+    if shared and (phase.get('campaignRules', bool(phase.get('exits') or phase.get('triggers')))):
+        return {
+            **phase,
+            '_sharedIds': {t['id'] for t in shared},
+            'triggers': [*shared, *phase.get('triggers', [])],
+        }
+    return phase
+
+
+def phases_of(program):
+    return [effective_phase(program, phase) for phase in program['phases']]
+
+
+def possible_effects(phase):
+    return [
+        *phase['effects'],
+        *(a['effect'] for t in phase.get('triggers', []) for a in t['actions'] if a['do'] == 'effect'),
+    ]
+
+
 def validate(p):
-    shape(p, ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests'))
+    shape(
+        p,
+        ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests'),
+        ('triggers',),
+    )
     require(
         p['format'] == 'ratw-story-program' and type(p['version']) is int and p['version'] == 1,
         'Unknown story format or version.',
     )
-    require(identifier(p['id']) and word(p['title'], 100), 'Give this story an ID and title.')
+    require(
+        identifier(p['id']) and word(p['title'], 100),
+        'Give this story an ID and title.',
+    )
     a = p['audience']
     if isinstance(a, dict) and a.get('kind') == 'active':
         shape(a, ('kind', 'days'))
-        require(integer(a['days'], 1, 90), 'Active audience needs a lookback of 1–90 real days.')
+        require(
+            integer(a['days'], 1, 90),
+            'Active audience needs a lookback of 1–90 real days.',
+        )
     else:
         shape(a, ('kind', 'players'))
         require(
@@ -372,10 +556,29 @@ def validate(p):
             and len(set(a['players'])) == len(a['players']),
             'Choose distinct player character IDs.',
         )
-    require(isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100, 'A story has 1–100 phases.')
+    require(
+        isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100,
+        'A story has 1–100 phases.',
+    )
+    shared = p.get('triggers', [])
+    require(
+        isinstance(shared, list) and len(shared) <= 64,
+        'Choose up to 64 campaign triggers.',
+    )
+    # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
+    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared})
     ids = set()
     for phase in p['phases']:
-        shape(phase, ('id', 'journal', 'effects', 'exits'), ('guestVoices', 'missions'))
+        shape(
+            phase,
+            ('id', 'journal', 'effects', 'exits'),
+            ('guestVoices', 'missions', 'triggers', 'campaignRules'),
+        )
+        require(
+            isinstance(phase.get('triggers', []), list) and type(phase.get('campaignRules', True)) is bool,
+            'Invalid phase trigger settings.',
+        )
+        phase = effective_phase(p, phase)
         pid = phase['id']
         require(
             identifier(pid) and pid not in ids and word(phase['journal'], 600),
@@ -388,45 +591,29 @@ def validate(p):
             and len(voices) <= 8
             and all(identifier(v) for v in voices)
             and len(set(voices)) == len(voices)
-            and (not voices or phase['exits']),
+            and (not voices or phase['exits'] or phase.get('triggers')),
             f'{pid}: choose up to eight distinct guest speakers in an ongoing phase.',
         )
-        require(isinstance(phase['effects'], list) and len(phase['effects']) <= 12, f'{pid}: too many effects.')
+        require(
+            isinstance(phase['effects'], list) and len(phase['effects']) <= 12,
+            f'{pid}: too many effects.',
+        )
         speakers = set()
         for effect in phase['effects']:
-            kind = effect.get('kind') if isinstance(effect, dict) else None
-            require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
-            shape(effect, ('kind', *EFFECTS[kind]))
-            for k in EFFECTS[kind]:
-                v = effect[k]
-                if k in ('x', 'y', 'inDays'):
-                    ok = integer(v, 0, 30 if k == 'inDays' else 4095)
-                elif k == 'stance':
-                    ok = v in ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
-                elif k == 'disposition':
-                    ok = integer(v, -100, 100)
-                elif k == 'reason':
-                    ok = word(v, 300)
-                elif k == 'count':
-                    ok = integer(v, 1, 6)
-                elif k == 'skill':
-                    ok = v in ('craft', 'commerce', 'labour', 'service', 'travel', 'watch')
-                elif k == 'points':
-                    ok = integer(v, -100, 100) and v != 0
-                elif k == 'days':
-                    ok = integer(v, 1, 366)
-                elif k in ('text', 'name', 'title', 'detail', 'words'):
-                    ok = word(v, 200 if k in ('text', 'detail') else 80)
-                else:
-                    ok = identifier(v) or (k == 'player' and v == '$actor')
-                require(ok, f'{pid}: invalid {kind}.{k}.')
-            if kind == 'faction.relation':
-                require(effect['faction'] != effect['other'], 'A faction needs a different counterpart.')
+            validate_effect(effect, pid)
+            kind = effect['kind']
             if kind == 'npc.line':
-                require(effect['npc'] not in speakers, f'{pid}: two lines for the same resident.')
+                require(
+                    effect['npc'] not in speakers,
+                    f'{pid}: two lines for the same resident.',
+                )
                 speakers.add(effect['npc'])
-        require(isinstance(phase['exits'], list) and len(phase['exits']) <= 16, f'{pid}: too many exits.')
+        require(
+            isinstance(phase['exits'], list) and len(phase['exits']) <= 16,
+            f'{pid}: too many exits.',
+        )
         mission_ids = validate_missions(phase)
+        triggers.validate(phase)
         for e in phase['exits']:
             if isinstance(e, dict) and e.get('on') == MISSION_GATE:
                 shape(e, ('on', 'to', 'missions'))
@@ -454,19 +641,31 @@ def validate(p):
                     'prerequisites',
                 ),
             )
-            require(e['on'] in EVENTS and identifier(e['to']), f'{pid}: unknown trigger or destination.')
+            require(
+                e['on'] in EVENTS and identifier(e['to']),
+                f'{pid}: unknown trigger or destination.',
+            )
             m = e.get('match', {})
             require(
                 isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
                 f'{pid}: invalid event filter.',
             )
             require(
-                'participant' not in e or type(e['participant']) is bool, f'{pid}: participant must be true or false.'
+                'participant' not in e or type(e['participant']) is bool,
+                f'{pid}: participant must be true or false.',
             )
-            for key, hi in [('players', 500), ('percent', 100), ('minQuantity', 1000000), ('minCoins', 1000000000)]:
+            for key, hi in [
+                ('players', 500),
+                ('percent', 100),
+                ('minQuantity', 1000000),
+                ('minCoins', 1000000000),
+            ]:
                 if key in e:
                     require(integer(e[key], 1, hi), f'{pid}: invalid {key}.')
-            require(not ('players' in e and 'percent' in e), f'{pid}: choose one participation gate.')
+            require(
+                not ('players' in e and 'percent' in e),
+                f'{pid}: choose one participation gate.',
+            )
             if 'prerequisites' in e:
                 steps = e['prerequisites']
                 require(
@@ -487,16 +686,22 @@ def validate(p):
                         'Invalid prerequisite filter.',
                     )
             if 'afterDays' in e or e['on'] == 'clock':
-                require(number(e.get('afterDays'), 1 / 1440, 36500), f'{pid}: set a positive game-time delay.')
+                require(
+                    number(e.get('afterDays'), 1 / 1440, 36500),
+                    f'{pid}: set a positive game-time delay.',
+                )
             if e['on'] == 'clock':
-                require(not (set(e) - {'on', 'to', 'afterDays'}), f'{pid}: clock exits only take a delay.')
+                require(
+                    not (set(e) - {'on', 'to', 'afterDays'}),
+                    f'{pid}: clock exits only take a delay.',
+                )
             if e['on'] == 'dm signal':
                 require(
                     set(e) == {'on', 'to', 'match'} and set(m) == {'detail'} and word(m.get('detail'), 80),
                     f'{pid}: name the permitted DM signal.',
                 )
     require(identifier(p['start']) and p['start'] in ids, 'Unknown opening phase.')
-    phases = {s['id']: s for s in p['phases']}
+    phases = {s['id']: s for s in phases_of(p)}
     reached, todo = set(), [p['start']]
     while todo:
         pid = todo.pop()
@@ -504,11 +709,11 @@ def validate(p):
             continue
         require(pid in ids, 'Unknown destination ' + pid)
         reached.add(pid)
-        todo.extend(e['to'] for e in phases[pid]['exits'])
+        todo.extend(e['to'] for e in triggers.routes(phases[pid]))
     require(reached == ids, 'Unreachable phases: ' + ', '.join(sorted(ids - reached)))
-    for phase in p['phases']:
+    for phase in phases.values():
         if any(effect.get('player') == '$actor' for effect in phase['effects']):
-            incoming = [e for other in p['phases'] for e in other['exits'] if e['to'] == phase['id']]
+            incoming = [e for other in phases.values() for e in triggers.routes(other) if e['to'] == phase['id']]
             require(
                 phase['id'] != p['start']
                 and all(
@@ -518,10 +723,13 @@ def validate(p):
                 'A reward for $actor requires a participating player on every incoming path.',
             )
         require(
-            phase['exits'] or all(e['kind'] != 'npc.line' for e in phase['effects']),
+            phase['exits'] or phase.get('triggers') or all(e['kind'] != 'npc.line' for e in phase['effects']),
             'A speaking phase needs an exit.',
         )
-    require(isinstance(p['tests'], list) and 1 <= len(p['tests']) <= 32, 'Include 1–32 rehearsal cases.')
+    require(
+        isinstance(p['tests'], list) and 1 <= len(p['tests']) <= 32,
+        'Include 1–32 rehearsal cases.',
+    )
     return p
 
 
@@ -536,7 +744,7 @@ def begin(p, cohort, day):
 
 
 def phase_of(p, state):
-    return next(s for s in p['phases'] if s['id'] == state['phase'])
+    return effective_phase(p, next(s for s in p['phases'] if s['id'] == state['phase']))
 
 
 def matches(condition, event):
@@ -555,12 +763,85 @@ def matches(condition, event):
     )
 
 
-def advance(p, state, event, day):
-    """Consume one ordered fact. The caller commits its cursor together with votes and entry effects."""
-    if day < state['entered']:
+def advance(p, state, event, day, trace=None, elapsed=0):
+    """Dispatch one genuine fact and its named signals in FIFO order, within the current visit."""
+    if day < state['entered'] or event['kind'] == triggers.SIGNAL:
         return False
     phase = phase_of(p, state)
-    track_missions(phase, state, event)
+    if event['kind'] != 'clock':
+        return dispatch(p, phase, state, event, day, trace, elapsed)
+    clock = {'kind': 'clock', 'id': event.get('id')}
+    if dispatch(p, phase, state, clock, day, trace, elapsed):
+        return True
+    timers = state.get('timers', {})
+    for name, timer in sorted(
+        timers.items(),
+        key=lambda pair: (pair[1].get('clock', 'game'), pair[1]['at'], pair[0]),
+    ):
+        now = elapsed if timer.get('clock') == 'real' else day
+        if timer['at'] > now:
+            continue
+        if timers.get(name) is not timer:
+            continue  # An earlier timer cancelled or replaced this one.
+        if timer['interval']:
+            timer['at'] = now + timer['interval']
+        else:
+            del timers[name]
+        signal = {
+            **clock,
+            'kind': triggers.SIGNAL,
+            'signal': timer.get('signal', name),
+            'actor': timer['actor'],
+        }
+        if dispatch(p, phase, state, signal, day, trace, elapsed):
+            return True  # Remaining campaign timers are still due in the new visit.
+    return False
+
+
+def dispatch(p, phase, state, event, day, trace, elapsed):
+    queue = [event]
+    emitted, credited = set(), set()
+
+    def emit(name, source):
+        if name not in emitted:
+            emitted.add(name)
+            queue.append({**source, 'kind': triggers.SIGNAL, 'signal': name})
+
+    for fact in queue:
+        track_missions(phase, state, fact, credited)
+        target = triggers.fire(
+            phase,
+            state,
+            fact,
+            day,
+            elapsed,
+            lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']},
+            matches,
+            emit,
+            trace,
+        )
+        target = target or exit_for(phase, state, fact, day)
+        if target:
+            state.pop('previousMissions', None)
+            if phase.get('missions'):
+                state['previousMissions'] = mission_snapshot(phase, state)
+            state.pop('missions', None)
+            state.pop('fired', None)
+            if 'timers' in state:
+                state['timers'] = {k: v for k, v in state['timers'].items() if v.get('scope') == 'campaign'}
+            state.update(
+                phase=target,
+                entered=day,
+                votes={},
+                progress={},
+                visits=state['visits'] + 1,
+                actor=fact.get('actor', ''),
+            )
+            return True
+    return False
+
+
+def exit_for(phase, state, event, day):
     ready = None
     for index, edge in enumerate(phase['exits']):
         actor = event.get('actor', '')
@@ -587,16 +868,14 @@ def advance(p, state, event, day):
             votes = state['votes'].setdefault(str(index), [])
             if actor not in votes:
                 votes.append(actor)
-            needed = edge.get('players', max(1, math.ceil(len(state['cohort']) * edge.get('percent', 100) / 100)))
+            needed = edge.get(
+                'players',
+                max(1, math.ceil(len(state['cohort']) * edge.get('percent', 100) / 100)),
+            )
             if len(votes) < needed:
                 continue
-        state.pop('previousMissions', None)
-        if phase.get('missions'):
-            state['previousMissions'] = mission_snapshot(phase, state)
-        state.pop('missions', None)
-        state.update(phase=edge['to'], entered=day, votes={}, progress={}, visits=state['visits'] + 1, actor=actor)
-        return True
-    return False
+        return edge['to']
+    return None
 
 
 def record_entry(p, state, path, intended, visit_credits):
@@ -632,7 +911,15 @@ def review(p):
     reports = []
     for case in p['tests']:
         shape(
-            case, ('name', 'cohort', 'events', 'expect'), ('expectEffects', 'expectMissions', 'expectMissionVisits')
+            case,
+            ('name', 'cohort', 'events', 'expect'),
+            (
+                'expectEffects',
+                'expectMissions',
+                'expectMissionVisits',
+                'expectTriggers',
+                'expectCounters',
+            ),
         )
         require(
             word(case['name'], 100)
@@ -642,7 +929,10 @@ def review(p):
             'Invalid rehearsal name or cohort.',
         )
         if p['audience']['kind'] == 'players':
-            require(set(case['cohort']) == set(p['audience']['players']), 'Use the fixed audience in the rehearsal.')
+            require(
+                set(case['cohort']) == set(p['audience']['players']),
+                'Use the fixed audience in the rehearsal.',
+            )
         require(
             isinstance(case['events'], list)
             and len(case['events']) <= 256
@@ -652,11 +942,12 @@ def review(p):
         )
         state = begin(p, case['cohort'], 0)
         path, intended, last_day, seen = [], [], 0, {}
-        visit_credits = []
+        visit_credits, trace = [], []
+        elapsed = 0
 
         record_entry(p, state, path, intended, visit_credits)
         for ev in case['events']:
-            shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins'))
+            shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays'))
             require(
                 identifier(ev['id'])
                 and ev['kind'] in EVENTS
@@ -670,11 +961,22 @@ def review(p):
                 continue
             require(ev['day'] >= last_day, 'Rehearsal game time must move forward.')
             seen[ev['id']] = ev
+            require(
+                number(ev.get('elapsedDays', elapsed), elapsed, 1e8),
+                'Rehearsal elapsed real days must move forward.',
+            )
+            elapsed = ev.get('elapsedDays', elapsed)
             last_day = ev['day']
-            if ev['kind'] not in ('clock', 'dm signal') and advance(p, state, {'kind': 'clock'}, last_day):
-                record_entry(p, state, path, intended, visit_credits)
-            if advance(p, state, ev, last_day):
-                record_entry(p, state, path, intended, visit_credits)
+            dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock'}, ev]
+            for fact in dispatch:
+                while True:
+                    source_phase = state['phase']
+                    moved = advance(p, state, fact, last_day, trace, elapsed)
+                    intended.extend({'phase': source_phase, **effect} for effect in state.pop('triggerEffects', []))
+                    if moved:
+                        record_entry(p, state, path, intended, visit_credits)
+                    if not moved or fact['kind'] != 'clock':
+                        break
         missions = mission_snapshot(phase_of(p, state), state)
         credits = mission_credits(missions or state.get('previousMissions', []))
         if missions:
@@ -687,7 +989,11 @@ def review(p):
                 'passed': path == case['expect']
                 and expected_effects == intended
                 and credits == case.get('expectMissions', credits)
-                and visit_credits == case.get('expectMissionVisits', visit_credits),
+                and visit_credits == case.get('expectMissionVisits', visit_credits)
+                and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
+                and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {})),
+                'triggers': trace,
+                'counters': state.get('counters', {}),
                 'missionCredits': credits,
                 'missionVisits': visit_credits,
                 'path': path,
@@ -696,11 +1002,25 @@ def review(p):
             }
         )
     covered = {phase for case in reports for phase in case['path']}
+    fired = {
+        (t['scope'], t['phase'] if t['scope'] == 'phase' else '', t['trigger'])
+        for case in reports
+        for t in case['triggers']
+    }
     return {
         'digest': digest(p),
+        'uncoveredTriggers': [
+            'Campaign / ' + t['id'] for t in p.get('triggers', []) if ('campaign', '', t['id']) not in fired
+        ]
+        + [
+            s['id'] + '/' + t['id']
+            for s in p['phases']
+            for t in s.get('triggers', [])
+            if ('phase', s['id'], t['id']) not in fired
+        ],
         'uncovered': [s['id'] for s in p['phases'] if s['id'] not in covered],
         'passed': all(r['passed'] for r in reports),
         'tests': reports,
         'voices': [{'phase': s['id'], 'npc': npc} for s in p['phases'] for npc in s.get('guestVoices', [])],
-        'effects': [{'phase': s['id'], **e} for s in p['phases'] for e in s['effects']],
+        'effects': [{'phase': s['id'], **e} for s in phases_of(p) for e in possible_effects(s)],
     }

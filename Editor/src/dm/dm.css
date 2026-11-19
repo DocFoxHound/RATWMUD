@@ -171,3 +171,40 @@
 .story-context { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; }
 .story-context dt { color: var(--muted); }
 .story-context dd { margin: 0; }
+
+/* Campaign authoring. Keep the phase and the event/condition/action sequence visible together. */
+.story-columns.program-workspace { grid-template-columns: minmax(0, 4fr) minmax(190px, 1fr); }
+.program-workspace:has(> section:only-child) { grid-template-columns: minmax(0, 1fr); }
+.program-workspace > section > h3 { font-size: clamp(20px, 2vw, 29px); line-height: 1.15; margin-bottom: 0; }
+.story-filebar, .phase-strip, .rule-scope, .trigger-toolbar { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.story-filebar label { flex: 1 1 190px; }
+.story-filebar input { width: 100%; }
+.program-workspace summary { cursor: pointer; padding: 6px 0; }
+.phase-strip { border-top: 1px solid var(--line); margin-top: 7px; }
+.phase-strip h4 { margin: 12px 0 4px; width: 100%; }
+.story-workspace .phase-strip nav { margin: 0; gap: 3px; }
+.phase-strip [aria-current="step"], .rule-scope [aria-pressed="true"] { border-color: var(--amber-2); color: var(--amber-2); }
+.phase-journal { color: var(--muted); margin: 6px 0 12px; }
+.rule-scope { gap: 4px; }
+.story-trigger-editor h4 { margin: 12px 0 7px; }
+.trigger-ledger { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.trigger-head, .story-workspace .dm-panel .trigger-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1.2fr); gap: 12px; text-align: left; }
+.trigger-head { padding: 7px 12px; color: var(--muted); font-size: 12px; background: #101916; }
+.story-workspace .dm-panel .trigger-row { width: 100%; margin: 0; padding: 9px 12px; border: 0; border-radius: 0; border-top: 1px solid var(--line); color: var(--text); background: transparent; overflow-wrap: anywhere; align-items: center; }
+.trigger-row strong, .trigger-row small { display: block; }
+.trigger-row small { color: var(--muted); }
+.story-workspace .dm-panel .trigger-row[aria-pressed="true"] { background: #253126; box-shadow: inset 3px 0 #dbb369; }
+.trigger-toolbar { margin: 6px 0; }
+.component-library, .phase-tools { border-block-start: 1px solid var(--line); margin-top: 8px; }
+.trigger-inspector { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; align-items: start; }
+.story-workspace .trigger-inspector > fieldset { padding: 8px; border: 1px solid var(--line); border-radius: 5px; background: #121c19; }
+.trigger-inspector legend { padding: 0 3px; font-weight: 600; color: var(--amber-2); }
+.trigger-inspector details, .trigger-inspector fieldset > fieldset { margin: 4px 0 8px; }
+.trigger-inspector input, .trigger-inspector select { width: 100%; }
+.trigger-inspector input[type=checkbox] { width: auto; }
+@media (max-width: 1020px) { .story-columns.program-workspace { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 680px) { .trigger-inspector { grid-template-columns: minmax(0,1fr); } .trigger-head,.story-workspace .dm-panel .trigger-row { gap: 6px; font-size: 12px; } }
+.program-workspace > .dm-panel { min-width: 0; }
+.program-workspace > aside { grid-template-columns: minmax(0, 1fr); }
+.program-workspace > aside button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.program-workspace pre { overflow: auto; max-width: 100%; }

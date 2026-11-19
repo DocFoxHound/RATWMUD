@@ -1,9 +1,11 @@
 # World stories in Dungeon Master
 
-Open **Dungeon Master → Story Creator → World stories**. Choose a story, edit its phases, and run **Rehearse all paths**. A player can also write and rehearse a program offline and give its JSON file to a DM. A Studio viewer can draft and rehearse. A DM can approve a release for the selected world. On a hosted world, a faction-relation change needs a builder or owner.
+Open **Dungeon Master → Story Creator → World stories**. Choose **New blank story**, compose triggers in a phase, and run **Rehearse all paths**. Use **Start from a story** to inspect a worked example. A player can also write and rehearse a program offline and give its JSON file to a DM. A Studio viewer can draft and rehearse. A DM can approve a release for the selected world. On a hosted world, a faction-relation change needs a builder or owner.
 
 | Example | What makes it advance |
 | --- | --- |
+| Ninety days on the winter ferries | A weekly watch and a spring council continue across phase changes. The winter changes household prosperity. At day 90 the ferry stores determine the market outcome. |
+| Two ways across Reed Ford | Deliver rope or negotiate passage. Both routes send the same signal and award the wolf who opens the crossing. A notice or a two-day timer settles the story. |
 | A wheel for the south road | Speak to the carter, then hand that resident an actual cart wheel. Its maker and quality can vary. The wolf who delivers it earns the deed. |
 | The small blanket | Follow two witnesses in order. The teacher can receive a guest line if the DM invites a guest author for that visit. The authored clue works on its own. |
 | Before the Wardens arrive | Each volunteer must check supplies with the provisioner and then report to the innkeeper. At 60%, the town schedules a festival. The last journal entry follows two game days later. |
@@ -12,9 +14,38 @@ Open **Dungeon Master → Story Creator → World stories**. Choose a story, edi
 
 The bundled programs are templates. Use **World references for an author** to find the intended residents, cells and factions on the destination world. In particular, the war example needs the two named factions or their local replacements. Approval checks resident, player, map and faction IDs used by effects. The game makes the final decision on current world conditions, including placement, eligibility and economic rules.
 
-## Event library and campaign missions
+## Composing triggers
 
-Under **Event library**, search the 100 templates by title, objective or subject, or filter by scale and play style. **Start a story from this event** builds a standalone draft with its opening trigger, ending effects and rehearsals. **Add its mission to this phase** copies the objectives into the selected phase. Set the campaign’s opening, consequences and rehearsal cases for the combined story. **Write a custom mission** starts with a blank objective.
+Story Creator opens in **World stories**. Select a phase in the campaign strip. The trigger table shows its events, conditions and actions side by side. Select a row to edit it. **Signal connections** opens the triggers that send or receive a signal and identifies its journal listeners. Start with **New trigger** or open **Components from the 100 examples**. Search by event, objective, title or subject, select a component, and copy it into the current phase. The example picker exposes 205 objective components, 17 opening events, 100 participation rules, and 13 outcomes. Each objective component supplies both an event rule and a journal listener. You can use either piece on its own. **Complete mission examples** also opens a whole editable example with its rehearsals.
+
+To give players two ways to achieve the same outcome:
+
+1. Add a trigger for a gift. Set its recipient and item filters, choose **participant** as its audience, and add the event’s quantity to a story counter named `rope`. Add a second action that sends `inspect`.
+2. Add another trigger for a sealed pact. Set a story counter named `charter` to 1 and send the same `inspect` signal.
+3. Have a third trigger listen for `inspect`. Under **Conditions**, choose **any** and compare `rope >= 4` and `charter >= 1`. Send `open-crossing` when either passes.
+4. Listen for `open-crossing`, award the participating wolf a deed, then enter the next phase. A journal objective can listen for the same signal. **Rehearsal cases** lets you supply the character cohort, facts, game days and expected path. Open **Trigger trace** to see which rules actually fired.
+
+[Complete Reed Ford example](../Data/Storylines/programs/reed-ford.json)
+
+| Rule part | Available choices |
+| --- | --- |
+| Event | World events from the catalogue, a named story signal, a phase timer, or a named timer set against the world calendar or elapsed real time. |
+| Conditions | Nest **all**, **any** and **not**. Compare event fields or counters, or check a mission’s completion threshold. |
+| Actions | Set or add to a counter, emit a named signal, start or cancel a timer, apply a world effect, or enter a phase. Set resident dialogue in the destination phase to give it a defined lifetime. |
+| Participation | Use the whole world or the opening cohort. Fire on every match, once per visit, or once per eligible character per visit, once per campaign, or once per eligible character for the entire campaign. |
+| Memory | Story counters are shared. Player counters belong to the acting cohort member. Both start at zero, survive phase transitions and persist across runner restarts. A counter set to 0 or 1 works as a switch. |
+
+Within one phase visit the engine evaluates triggers in display order. Counter changes are visible to subsequent rules. Named signals retain the originating actor, item, target, place, quantities and detail. The engine delivers them in emission order after the rules for the current event, once per signal name per world fact. It rejects signal cycles. A phase transition ends dispatch in the old phase, including any queued signals for that visit. Put **Enter a phase** last in a chain. Each journal mission can credit at most one objective per originating fact.
+
+**Phase triggers** belong to one phase. **Campaign triggers** are shared across listening phases and run before local rules. The checkbox in the campaign tab controls whether the selected phase listens. By default, a phase with local rules or exits listens, and an ending stays closed. A campaign rule can set a counter in one phase and act on it in another. Mission-completion conditions refer to the journal of the current phase and belong in local rules.
+
+To schedule work after an arbitrary event, choose **Start a named timer**. Set a signal, delay, clock, lifetime and optional repetition. A timer can live for one visit or cross phase boundaries. Starting the same name for the same owner replaces its deadline. The signal carries the scheduling character. **Cancel a named timer** stops future expirations. A real timer counts 24-hour days since publication and keeps time while the game calendar stands still. Missed repeats coalesce into one firing when the runner resumes. Independent overdue campaign timers survive a transition and are processed in the next listening phase. A release that has ended no longer dispatches timers.
+
+The winter-ferries example includes two endings and a rehearsal that jumps directly from opening to day 98. To rehearse against wall time, set **Elapsed real days** on each fact where real time advances. **Game day** is a separate input. [Winter campaign](../Data/Storylines/programs/winter-ferries.json)
+
+World effects go through the existing approval and receipt system. An effect can run while a phase stays open. A trigger that also enters a phase delivers its effects before that phase’s ordinary queued effects. The journal opens the new phase first. Available consequences include changes to NPC speech, location, protection and revival, character injuries and practice, public works, household prosperity, harvests, shipping, festivals, faction relations and markets. The game applies its usual eligibility and placement rules. Rehearsal traces list trigger IDs, resulting counters, intended effects and rules omitted by the scenarios.
+
+## Campaign missions
 
 A phase can offer up to 16 concurrent missions, each with one to eight objectives in order. A matching fact can advance one objective in each open mission. Set the required amount to count occurrences or add the units or coins recorded by an event. For example, four ropes can arrive in several gifts, and a marked or crafted rope counts toward a base rope request. Use filters to identify a recipient, item, place or detail when the action must be specific. A general letter or notice objective counts any matching letter or notice. A later objective can also match a field from the first objective using `sameAsFirst`. The missing-wagon search binds the notice ID in `detail`, so an answer to a different notice leaves the search open. The tool-chest mission uses the same rule for loan IDs.
 
@@ -36,7 +67,7 @@ The catalogue is available in [event-library.json](../Data/Storylines/event-libr
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.
 
-* A phase has a unique `id`, player-facing `journal`, entry `effects` and ordered `exits`. An empty exit list ends the run. Revisit a phase to run its entry effects and start its timers and participation counts again. Only reached entries enter the player’s journal.
+* A phase has a unique `id`, player-facing `journal`, entry `effects` and ordered `exits`. A phase with neither exits nor triggers ends the run. A phase with triggers can stay open indefinitely. Revisit a phase to run its entry effects and start its timers and participation counts again. Only reached entries enter the player’s journal.
 * An exit requires `on` and `to`. Its optional `match` object compares exact actor, target, cell, item or detail. `minCoins` and `minQuantity` test a single transaction. A gift filter with a base item ID accepts crafted and marked variants. Use `arrival` for signing in and `enter place` for walking across a boundary or entering through a door.
 * Use `participant: true` for any member of the release audience. Use `players: 3` for three different participants or `percent: 60` for a percentage, rounded up. A fixed audience of one makes a personal run. Active audiences are player **characters** with recorded activity in the chosen lookback of 1–90 real days. Publication freezes the set. A player disconnecting leaves the denominator intact. Each run supports up to 500 characters. Add ordered `prerequisites` to a participation gate to require several events from the same character before counting them. Each prerequisite has an event type in `on` and optional `match` filters.
 * Use a `clock` exit with `afterDays` for a deadline or repeat interval in game days. A delay on another event requires that event to occur after the delay. The first qualifying exit wins. When a recorded event arrives at a deadline, the clock is evaluated first. A daily recurrence resumes from the observed game day after a long outage.
@@ -50,7 +81,7 @@ Approval requires passing scenarios covering every reachable phase. The digest c
 
 The runner observes checkpointed world events, persists its cursor and votes, and queues each entry’s journal message and effects in order. It waits for a receipt before sending the next effect. A refusal or expiry pauses the run and records the reason. Refresh **Releases** to inspect votes, phase history, queue receipts and delegated lines. **Stop run** cancels future phases and queues journal closure. Previously delivered effects, including faction changes, persist under their normal game rules. Once the underlying condition has been corrected, **Retry refused action** resubmits that one effect and preserves earlier progress. A changed program requires a new approval.
 
-The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Campaigns with missions require PostgreSQL migration 0068 and the corresponding game server, client and Studio builds. It uses no model or AI key.
+The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Mission journals require migration 0068. Trigger programs require migration 0069, the matching runner and Studio, and a game server and client with world-story support. The runner and native game exchange receipts through the world database. It uses no model or AI key.
 
 ```sh
 python3 tools/story_runner.py --world WORLD_KEY
@@ -63,6 +94,8 @@ Run `python3 tools/story_author.py` as a JSON-lines subprocess. Send one JSON ob
 | Request | Result |
 | --- | --- |
 | `{"op":"catalog"}` | Event and effect catalogue and complete examples |
+| `{"op":"draft","blank":true}` | An empty, rehearsable program |
+| `{"op":"components","eventType":"axle-at-the-ford"}` | Copyable event rules, journal objectives, participation and outcomes for one example |
 | `{"op":"draft","example":"wagon"}` | A portable program to edit and return to the human |
 | `{"op":"draft","eventType":"war-footing-at-the-gates"}` | A standalone event program with objectives and playable rehearsal cases |
 | `{"op":"validate","program": …}` | Version fingerprint, or a validation error |
@@ -85,3 +118,11 @@ Direction tickets expire in one hour and can be redeemed once. A voice ticket se
 Studio uses authenticated `POST /api/dm/story-program` with `target`, `op` and operation-specific fields. The human operations include `approve` (program and reviewed digest), `status` (optional run ID), `stop` (run), `signal-ticket` (run and signal) and `voice-ticket` (run and NPC). Only the human-facing DM interface issues tickets. The offline author bridge has no approval operation.
 
 The catalogue exposes `eventTypes`, `missionEvents` and `missionMeasures`. Studio also accepts `draft-event` with an `eventType` ID. Each rehearsal returns `missionVisits` with the credited player IDs for each mission by visit. Use `expectMissionVisits` to assert the entire sequence of mission credits, including repeated phases. Use `expectMissions` in a case to assert credits in the final active mission phase or the mission phase immediately preceding the ending.
+
+Portable phase rules use the `triggers` array. Each rule has a unique `id`, an `on` event, and an ordered `actions` array. The optional `if` is a condition tree. Action names are `add`, `set`, `emit`, `schedule`, `cancel`, `effect` and `enter`. A signal listener uses `"on":"story signal"` with a separate `signal` name. The catalogue exposes the vocabulary under `triggerRules` and the components under each `eventTypes` entry. Rehearsal cases can assert `expectTriggers` (ordered fired rule IDs) and `expectCounters` (the final story and player values). The Reed Ford program contains working examples of both.
+
+The optional top-level `triggers` array defines campaign triggers. A phase can set `campaignRules` to opt in or out explicitly. A `schedule` action accepts `days`, `signal`, optional `clock` (`game` or `real`), `owner` (`story` or `player`), `scope` (`visit` or `campaign`) and `repeat`. The frozen eligible cohort supports personal credits and percentage gates throughout a run. Releases support up to 100 phases and up to 64 active triggers per phase, counting shared rules.
+
+Choose **Separate timer for each participant** for an individual deadline within a shared campaign. A second player can start the same named timer and keep a different deadline. Cancelling a personal timer affects the character who caused that event. A shared timer has one deadline for the whole campaign.
+
+**Live trigger history** records the phase visit, actor, event or timer, fired rule and actions in the transaction that advances the cursor. Inspect counters, active deadlines and game receipts in **Releases**. The DM status API accepts `beforeVisit` and `beforeTrigger` cursors to page through earlier visits and trigger firings. Player journals show the most recent 32 visits. Older visits remain available in the DM history.

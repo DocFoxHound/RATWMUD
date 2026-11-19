@@ -32,7 +32,7 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
     const [fileError, setFileError] = useState('');
     const [catalogError, setCatalogError] = useState('');
     const [roster, setRoster] = useState<Npcs | null>(null);
-    const [mode, setMode] = useState<'write' | 'rehearse' | 'program'>('write');
+    const [mode, setMode] = useState<'write' | 'rehearse' | 'program'>('program');
     const [eventPlace, setEventPlace] = useState('');
     const world = useWorld(target, setCatalogError);
     useEffect(() => {
@@ -92,14 +92,14 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
     }
     return <main className="story-workspace">
         <header><div><h2>Story Creator</h2><p className="hint">Drafts and rehearsals save in this browser for {worldName(target)}.</p></div>
-            <label>Story library<select aria-label="Story library" value={book.selected} onChange={e => {persist({...book, selected: e.target.value}); setEventPlace('');}}>
-                {book.files.map(f => <option key={f.draft.id} value={f.draft.id}>{f.draft.title || 'Untitled draft'}</option>)}</select></label>
-            {editable && <button onClick={() => {const d = newStory(); persist({selected: d.id, files: [...book.files, {draft: d, run: null}]}); setMode('write');}}>New story</button>}
+            {mode!=='program' && <label>Story library<select aria-label="Story library" value={book.selected} onChange={e => {persist({...book, selected: e.target.value}); setEventPlace('');}}>
+                {book.files.map(f => <option key={f.draft.id} value={f.draft.id}>{f.draft.title || 'Untitled draft'}</option>)}</select></label>}
+            {mode!=='program' && editable && <button onClick={() => {const d = newStory(); persist({selected: d.id, files: [...book.files, {draft: d, run: null}]}); setMode('write');}}>New story</button>}
         </header>
         {store.error && <p role="alert">{store.error} <button onClick={() => setStore(read(key))}>Reopen saved version</button></p>}
-        <nav aria-label="Story workspace"><button aria-pressed={mode === 'write'} onClick={() => setMode('write')}>Write draft</button>
+        <nav aria-label="Story workspace"><button aria-pressed={mode === 'program'} onClick={() => setMode('program')}>World stories</button>
+            <button aria-pressed={mode === 'write'} onClick={() => setMode('write')}>Write draft</button>
             <button aria-pressed={mode === 'rehearse'} onClick={() => setMode('rehearse')}>Inspect rehearsal</button>
-            <button aria-pressed={mode === 'program'} onClick={() => setMode('program')}>World stories</button>
             <button onClick={openPersonal}>Personal storylines and storytellers</button></nav>
         {mode === 'program' ? <StoryProgramPanel canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
             <fieldset disabled={!editable}><label>Story title<input value={draft.title} onChange={e => edit({title:e.target.value})}/></label>

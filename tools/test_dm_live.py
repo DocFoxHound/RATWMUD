@@ -98,6 +98,178 @@ class DungeonMasterLive(unittest.TestCase):
                 with W.connect('dev', 'owner', dbname=self.name) as owner:
                     WS.set_state(owner, 'running')
 
+    def test_story_trigger_rewards_a_returning_player(self):
+        """The native login event runs approved rules; the game acknowledges the deed and saves its actual owner."""
+        import sys
+        import story_library
+        import story_program as rules
+        import story_runner as runner
+
+        server, port = self.start(120)
+
+        def player(seconds):
+            return subprocess.Popen(
+                [
+                    NODE,
+                    '--experimental-strip-types',
+                    '--no-warnings',
+                    str(ROOT / 'tools/client/hold.ts'),
+                    '--port',
+                    str(port),
+                    '--identity',
+                    'ferryhand',
+                    '--seconds',
+                    str(seconds),
+                ],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+
+        first = player(2)
+        returning = None
+        try:
+            out, _ = first.communicate(timeout=15)
+            wolf = next(
+                row['in'] for line in out.splitlines() if line.startswith('{') and 'in' in (row := json.loads(line))
+            )
+            # Clean shutdown checkpoints the first visit so publication can bind the character and event watermark.
+            server.send_signal(signal.SIGTERM)
+            server.communicate(timeout=40)
+            program = story_library.blank()
+            program['audience'] = {'kind': 'players', 'players': [wolf]}
+            program['phases'][0]['triggers'] = [
+                {
+                    'id': 'join-watch',
+                    'on': 'arrival',
+                    'audience': 'participant',
+                    'actions': [
+                        {'do': 'schedule', 'signal': 'winter', 'days': 28, 'scope': 'campaign'},
+                        {'do': 'schedule', 'signal': 'thaw', 'days': 90, 'scope': 'campaign'},
+                        {'do': 'enter', 'phase': 'watch'},
+                    ],
+                }
+            ]
+            program['triggers'] = [
+                {
+                    'id': 'storm',
+                    'on': 'story signal',
+                    'signal': 'winter',
+                    'audience': 'participant',
+                    'actions': [
+                        {
+                            'do': 'effect',
+                            'effect': {
+                                'kind': 'character.injury',
+                                'player': '$actor',
+                                'add': 'cracked_rib',
+                                'severity': 1,
+                            },
+                        },
+                        {'do': 'enter', 'phase': 'ice'},
+                    ],
+                },
+                {
+                    'id': 'homecoming',
+                    'on': 'story signal',
+                    'signal': 'thaw',
+                    'audience': 'participant',
+                    'actions': [
+                        {
+                            'do': 'effect',
+                            'effect': {'kind': 'deed.award', 'player': '$actor', 'detail': 'Reed Ford homecoming'},
+                        },
+                        {'do': 'enter', 'phase': 'home'},
+                    ],
+                },
+            ]
+            for pid in ('watch', 'ice', 'home'):
+                program['phases'].append(
+                    {'id': pid, 'effects': [], 'exits': [], 'journal': pid, 'campaignRules': pid != 'home'}
+                )
+            program['tests'] = [
+                {
+                    'name': 'Return',
+                    'cohort': [wolf],
+                    'events': [
+                        {'kind': 'arrival', 'actor': wolf, 'day': 0, 'id': 'return'},
+                        {'kind': 'clock', 'day': 28, 'id': 'ice'},
+                        {'kind': 'clock', 'day': 90, 'id': 'thaw'},
+                    ],
+                    'expect': ['opening', 'watch', 'ice', 'home'],
+                    'expectTriggers': ['join-watch', 'storm', 'homecoming'],
+                }
+            ]
+            with W.connect('dev', 'dm', dbname=self.name) as dm, dm.transaction():
+                world = runner.world_id(dm)
+                grant = runner.approve(dm, world, 'fixture', program, rules.digest(program))
+                run = runner.publish(dm, world, grant['ticket'])['run']
+            server, port = self.start(90)
+            returning = player(50)
+            deadline = time.monotonic() + 55
+            status = None
+            # Each tick is a new Python process. Advance only its observed clock; world events, actions,
+            # character effects, checkpoints and receipts all pass through the actual game server.
+            tick_script = """
+import sys
+import story_runner as runner
+import world_db
+database,world,run,observed = sys.argv[1:]
+with world_db.connect('dev','dm',dbname=database) as conn,conn.transaction():
+    def clock():
+        return float(observed) if observed else runner.game_day(conn,world)
+    runner.tick_run(conn,world,run,clock)
+"""
+            while time.monotonic() < deadline:
+                observed = ''
+                if status:
+                    timers = status['state'].get('timers', {})
+                    if status['state']['phase'] == 'watch':
+                        observed = str(timers['winter']['at'])
+                    if status['state']['phase'] == 'ice':
+                        observed = str(timers['thaw']['at'])
+                subprocess.run(
+                    [sys.executable, '-c', tick_script, self.name, world, run, observed],
+                    check=True,
+                    cwd=ROOT,
+                    env={**os.environ, 'PYTHONPATH': str(ROOT / 'tools')},
+                    timeout=10,
+                )
+                with W.connect('dev', 'dm', dbname=self.name) as dm:
+                    status = runner.status(dm, world, run)
+                if status['status'] in ('complete', 'paused'):
+                    break
+                time.sleep(0.3)
+            self.assertEqual(status['status'], 'complete', str(status))
+            self.assertEqual([v['phase'] for v in reversed(status['history'])], ['opening', 'watch', 'ice', 'home'])
+            self.assertAlmostEqual(status['history'][0]['day'] - status['history'][2]['day'], 90)
+            self.assertTrue(any(a['kind'] == 'deed.award' and a['status'] == 'applied' for a in status['actions']))
+            server.send_signal(signal.SIGTERM)
+            server.communicate(timeout=40)
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                character = conn.execute(
+                    'SELECT data FROM game.characters WHERE world_id=%s AND key=%s', (world, wolf)
+                ).fetchone()[0]
+                self.assertIn('cracked_rib', [i['type'] for i in character.get('injuries', [])])
+                deeds = conn.execute(
+                    "SELECT payload::jsonb #> '{people,deeds}' FROM game.checkpoints WHERE world_id=%s", (world,)
+                ).fetchone()[0]
+                self.assertEqual([d['doers'] for d in deeds if d.get('detail') == 'Reed Ford homecoming'], [[wolf]])
+                recorded = conn.execute(
+                    "SELECT actor FROM game.events WHERE world_id=%s AND kind='deed' AND detail LIKE 'Reed Ford homecoming (%%'",
+                    (world,),
+                ).fetchall()
+                self.assertEqual(recorded, [(wolf,)])
+        finally:
+            if returning is not None:
+                if returning.poll() is None:
+                    returning.terminate()
+                returning.communicate(timeout=15)
+            if server.poll() is None:
+                server.send_signal(signal.SIGTERM)
+                server.communicate(timeout=40)
+
     def test_an_injury_given_online_and_offline(self):
         port = free_port()
         server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(port), '--for', '120', '--dev-identity'],

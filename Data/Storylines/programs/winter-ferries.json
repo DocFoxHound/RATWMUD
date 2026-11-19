@@ -1,0 +1,344 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "winter-ferries",
+  "title": "Ninety days on the winter ferries",
+  "audience": {
+    "kind": "active",
+    "days": 14
+  },
+  "start": "enrol",
+  "triggers": [
+    {
+      "id": "open-winter-ledger",
+      "on": "arrival",
+      "actions": [
+        {
+          "do": "schedule",
+          "signal": "watch-round",
+          "days": 7,
+          "repeat": true,
+          "scope": "campaign"
+        },
+        {
+          "do": "schedule",
+          "signal": "first-freeze",
+          "days": 28,
+          "repeat": false,
+          "scope": "campaign"
+        },
+        {
+          "do": "schedule",
+          "signal": "spring-council",
+          "days": 90,
+          "repeat": false,
+          "scope": "campaign"
+        },
+        {
+          "do": "enter",
+          "phase": "ferry-watch"
+        }
+      ],
+      "once": "campaign",
+      "audience": "participant"
+    },
+    {
+      "id": "offer-a-coil",
+      "on": "gift",
+      "actions": [
+        {
+          "do": "add",
+          "key": "stores",
+          "scope": "story",
+          "value": "quantity"
+        }
+      ],
+      "match": {
+        "item": "rope",
+        "target": "rm111"
+      },
+      "audience": "participant"
+    },
+    {
+      "id": "log-watch-round",
+      "on": "story signal",
+      "actions": [
+        {
+          "do": "add",
+          "key": "watches",
+          "scope": "story",
+          "value": 1
+        }
+      ],
+      "signal": "watch-round"
+    },
+    {
+      "id": "stocked-at-thaw",
+      "on": "story signal",
+      "actions": [
+        {
+          "do": "enter",
+          "phase": "ferries-reopen"
+        }
+      ],
+      "signal": "spring-council",
+      "if": {
+        "test": "counter",
+        "key": "stores",
+        "scope": "story",
+        "op": ">=",
+        "value": 5
+      }
+    },
+    {
+      "id": "short-at-thaw",
+      "on": "story signal",
+      "actions": [
+        {
+          "do": "enter",
+          "phase": "limited-crossings"
+        }
+      ],
+      "signal": "spring-council"
+    }
+  ],
+  "phases": [
+    {
+      "id": "enrol",
+      "journal": "The city is taking names for the winter ferry watch.",
+      "triggers": [],
+      "effects": [],
+      "exits": [],
+      "campaignRules": true
+    },
+    {
+      "id": "ferry-watch",
+      "journal": "Bring rope to the carter. The crews meet every seven days; the deep freeze is expected on day 28.",
+      "triggers": [
+        {
+          "id": "begin-deep-freeze",
+          "on": "story signal",
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "deep-freeze"
+            }
+          ],
+          "signal": "first-freeze"
+        }
+      ],
+      "effects": [],
+      "exits": []
+    },
+    {
+      "id": "deep-freeze",
+      "journal": "Ice has closed the landing. Keep the stores ready for the spring council on day 90.",
+      "triggers": [],
+      "effects": [
+        {
+          "kind": "band.override",
+          "npc": "rm111",
+          "band": "comfortable",
+          "days": 60
+        }
+      ],
+      "exits": [],
+      "campaignRules": true
+    },
+    {
+      "id": "ferries-reopen",
+      "journal": "The ice has broken. The stores are full and regular crossings resume.",
+      "triggers": [],
+      "effects": [
+        {
+          "kind": "times.nudge",
+          "market": "ridgemere",
+          "points": 8,
+          "days": 14,
+          "words": "Stored ferry supplies reach market"
+        }
+      ],
+      "exits": []
+    },
+    {
+      "id": "limited-crossings",
+      "journal": "The ice has broken, but the stores are short. The market has fewer crossings for a fortnight.",
+      "triggers": [],
+      "effects": [
+        {
+          "kind": "times.nudge",
+          "market": "ridgemere",
+          "points": -12,
+          "days": 14,
+          "words": "Passage is scarce after the ice breaks"
+        }
+      ],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Volunteers provision the whole winter",
+      "cohort": [
+        "player-ash",
+        "player-birch"
+      ],
+      "events": [
+        {
+          "id": "arrive",
+          "kind": "arrival",
+          "day": 0,
+          "actor": "player-ash"
+        },
+        {
+          "id": "supplies",
+          "kind": "gift",
+          "day": 10,
+          "actor": "player-birch",
+          "target": "rm111",
+          "item": "rope",
+          "quantity": 5
+        },
+        {
+          "id": "week-14",
+          "kind": "clock",
+          "day": 14,
+          "actor": ""
+        },
+        {
+          "id": "week-21",
+          "kind": "clock",
+          "day": 21,
+          "actor": ""
+        },
+        {
+          "id": "week-28",
+          "kind": "clock",
+          "day": 28,
+          "actor": ""
+        },
+        {
+          "id": "week-35",
+          "kind": "clock",
+          "day": 35,
+          "actor": ""
+        },
+        {
+          "id": "week-42",
+          "kind": "clock",
+          "day": 42,
+          "actor": ""
+        },
+        {
+          "id": "week-49",
+          "kind": "clock",
+          "day": 49,
+          "actor": ""
+        },
+        {
+          "id": "week-56",
+          "kind": "clock",
+          "day": 56,
+          "actor": ""
+        },
+        {
+          "id": "week-63",
+          "kind": "clock",
+          "day": 63,
+          "actor": ""
+        },
+        {
+          "id": "week-70",
+          "kind": "clock",
+          "day": 70,
+          "actor": ""
+        },
+        {
+          "id": "week-77",
+          "kind": "clock",
+          "day": 77,
+          "actor": ""
+        },
+        {
+          "id": "week-84",
+          "kind": "clock",
+          "day": 84,
+          "actor": ""
+        },
+        {
+          "id": "thaw",
+          "kind": "clock",
+          "day": 90,
+          "actor": ""
+        }
+      ],
+      "expect": [
+        "enrol",
+        "ferry-watch",
+        "deep-freeze",
+        "ferries-reopen"
+      ],
+      "expectEffects": [
+        {
+          "phase": "deep-freeze",
+          "kind": "band.override",
+          "npc": "rm111",
+          "band": "comfortable",
+          "days": 60
+        },
+        {
+          "phase": "ferries-reopen",
+          "kind": "times.nudge",
+          "market": "ridgemere",
+          "points": 8,
+          "days": 14,
+          "words": "Stored ferry supplies reach market"
+        }
+      ]
+    },
+    {
+      "name": "An unattended winter reaches the spring council after a long outage",
+      "cohort": [
+        "player-ash",
+        "player-birch"
+      ],
+      "events": [
+        {
+          "id": "arrive",
+          "kind": "arrival",
+          "day": 0,
+          "actor": "player-ash"
+        },
+        {
+          "id": "return",
+          "kind": "clock",
+          "day": 98,
+          "actor": ""
+        }
+      ],
+      "expect": [
+        "enrol",
+        "ferry-watch",
+        "deep-freeze",
+        "limited-crossings"
+      ],
+      "expectEffects": [
+        {
+          "phase": "deep-freeze",
+          "kind": "band.override",
+          "npc": "rm111",
+          "band": "comfortable",
+          "days": 60
+        },
+        {
+          "phase": "limited-crossings",
+          "kind": "times.nudge",
+          "market": "ridgemere",
+          "points": -12,
+          "days": 14,
+          "words": "Passage is scarce after the ice breaks"
+        }
+      ]
+    }
+  ]
+}

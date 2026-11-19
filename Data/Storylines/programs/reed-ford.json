@@ -1,0 +1,317 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "reed-ford",
+  "title": "Two ways across Reed Ford",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "start": "landing",
+  "phases": [
+    {
+      "id": "landing",
+      "journal": "The landing needs four coils of rope. Bring them to the carter, or seal a pact for passage with another crew.",
+      "effects": [],
+      "exits": [],
+      "triggers": [
+        {
+          "id": "receive-rope",
+          "on": "gift",
+          "actions": [
+            {
+              "do": "add",
+              "key": "rope",
+              "scope": "story",
+              "value": "quantity"
+            },
+            {
+              "do": "add",
+              "key": "hauled",
+              "scope": "player",
+              "value": "quantity"
+            },
+            {
+              "do": "emit",
+              "signal": "inspect"
+            }
+          ],
+          "audience": "participant",
+          "match": {
+            "target": "rm111",
+            "item": "rope"
+          }
+        },
+        {
+          "id": "negotiate-passage",
+          "on": "pact sealed",
+          "actions": [
+            {
+              "do": "set",
+              "key": "charter",
+              "scope": "story",
+              "value": 1
+            },
+            {
+              "do": "emit",
+              "signal": "inspect"
+            }
+          ],
+          "audience": "participant",
+          "once": "player"
+        },
+        {
+          "id": "inspect-landing",
+          "on": "story signal",
+          "actions": [
+            {
+              "do": "emit",
+              "signal": "open-crossing"
+            }
+          ],
+          "signal": "inspect",
+          "if": {
+            "test": "any",
+            "conditions": [
+              {
+                "test": "counter",
+                "scope": "story",
+                "key": "rope",
+                "op": ">=",
+                "value": 4
+              },
+              {
+                "test": "counter",
+                "scope": "story",
+                "key": "charter",
+                "op": ">=",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "open-crossing",
+          "on": "story signal",
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "deed.award",
+                "player": "$actor",
+                "detail": "Secured passage at Reed Ford."
+              }
+            },
+            {
+              "do": "enter",
+              "phase": "crossing"
+            }
+          ],
+          "signal": "open-crossing",
+          "audience": "participant"
+        }
+      ]
+    },
+    {
+      "id": "crossing",
+      "journal": "Passage is secured. Post a notice to spread the word. In two days the crossing will join the regular route.",
+      "effects": [],
+      "exits": [],
+      "triggers": [
+        {
+          "id": "post-crossing",
+          "on": "notice posted",
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "regular-service"
+            }
+          ],
+          "audience": "participant"
+        },
+        {
+          "id": "resume-service",
+          "on": "clock",
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "regular-service"
+            }
+          ],
+          "afterDays": 2,
+          "once": "visit"
+        }
+      ]
+    },
+    {
+      "id": "regular-service",
+      "journal": "Reed Ford is back on the regular route.",
+      "effects": [],
+      "exits": [],
+      "triggers": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Two workers pool ropes and post the news",
+      "cohort": [
+        "player-ash",
+        "player-birch"
+      ],
+      "events": [
+        {
+          "id": "ropes",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "rope",
+          "target": "rm111",
+          "quantity": 2
+        },
+        {
+          "id": "ropes",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "rope",
+          "target": "rm111",
+          "quantity": 2
+        },
+        {
+          "id": "second",
+          "kind": "gift again",
+          "actor": "player-birch",
+          "day": 0,
+          "item": "rope~fine",
+          "target": "rm111",
+          "quantity": 2
+        },
+        {
+          "id": "news",
+          "kind": "notice posted",
+          "actor": "player-birch",
+          "day": 0
+        }
+      ],
+      "expect": [
+        "landing",
+        "crossing",
+        "regular-service"
+      ],
+      "expectTriggers": [
+        "receive-rope",
+        "receive-rope",
+        "inspect-landing",
+        "open-crossing",
+        "post-crossing"
+      ],
+      "expectEffects": [
+        {
+          "phase": "landing",
+          "kind": "deed.award",
+          "player": "player-birch",
+          "detail": "Secured passage at Reed Ford."
+        }
+      ],
+      "expectCounters": {
+        "story": {
+          "rope": 4
+        },
+        "player": {
+          "player-ash": {
+            "hauled": 2
+          },
+          "player-birch": {
+            "hauled": 2
+          }
+        }
+      }
+    },
+    {
+      "name": "A charter opens the same crossing and the timer closes the story",
+      "cohort": [
+        "player-ash",
+        "player-birch"
+      ],
+      "events": [
+        {
+          "id": "pact",
+          "kind": "pact sealed",
+          "actor": "player-ash",
+          "day": 0
+        },
+        {
+          "id": "early",
+          "kind": "clock",
+          "actor": "",
+          "day": 1
+        },
+        {
+          "id": "time",
+          "kind": "clock",
+          "actor": "",
+          "day": 2
+        }
+      ],
+      "expect": [
+        "landing",
+        "crossing",
+        "regular-service"
+      ],
+      "expectTriggers": [
+        "negotiate-passage",
+        "inspect-landing",
+        "open-crossing",
+        "resume-service"
+      ],
+      "expectEffects": [
+        {
+          "phase": "landing",
+          "kind": "deed.award",
+          "player": "player-ash",
+          "detail": "Secured passage at Reed Ford."
+        }
+      ]
+    },
+    {
+      "name": "Outsiders and duplicate receipts cannot finish a delivery",
+      "cohort": [
+        "player-ash",
+        "player-birch"
+      ],
+      "events": [
+        {
+          "id": "ropes",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "rope",
+          "target": "rm111",
+          "quantity": 2
+        },
+        {
+          "id": "ropes",
+          "kind": "gift",
+          "actor": "player-ash",
+          "day": 0,
+          "item": "rope",
+          "target": "rm111",
+          "quantity": 2
+        },
+        {
+          "id": "visitor",
+          "kind": "pact sealed",
+          "actor": "outsider",
+          "day": 0
+        }
+      ],
+      "expect": [
+        "landing"
+      ],
+      "expectTriggers": [
+        "receive-rope"
+      ],
+      "expectEffects": []
+    }
+  ]
+}

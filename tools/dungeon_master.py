@@ -192,11 +192,7 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # (The staged economy's acts, doc 79, 12, are added below from the one list of them: LIVE_ACTS.)
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
-# Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
-INJURY_TYPES = ('torn_flank', 'bitten_foreleg', 'bitten_hindleg', 'torn_ear_acute', 'wrenched_neck', 'deep_gash', 'cut_foreleg',
-                'cut_muzzle', 'cut_shoulder', 'bruised_ribs', 'cracked_rib', 'sprained_foreleg', 'knocked_senseless', 'burned_paws',
-                'singed_coat', 'burned_muzzle', 'torn_ear', 'bent_tail', 'scarred_muzzle', 'scarred_flank', 'burn_scars',
-                'notched_nose', 'clouded_eye', 'permanent_limp', 'bad_back', 'stiff_shoulder')
+INJURY_TYPES = story_program.INJURY_TYPES
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -2737,7 +2733,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         if op == 'approve':
                             if hosted and RANK[who['role']] < RANK['builder']:
                                 program = story_program.validate(data.get('program'))
-                                if any(e['kind']=='faction.relation' for ph in program['phases'] for e in ph['effects']):
+                                if any(e['kind']=='faction.relation' for ph in story_program.phases_of(program) for e in story_program.possible_effects(ph)):
                                     raise DMError('A builder or owner must approve changes to faction relations on this world.', 403)
                             result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'))
                         elif op == 'publish':
@@ -2745,7 +2741,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):
                             result = story_runner.direct(conn, world, op, {**data, 'operator':who['username']})
                         elif op == 'status':
-                            result = story_runner.status(conn, world, data.get('run'))
+                            result = story_runner.status(conn, world, data.get('run'), data.get('beforeVisit'), data.get('beforeTrigger'))
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

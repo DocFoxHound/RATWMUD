@@ -1,12 +1,13 @@
 import {useEffect, useState} from 'react';
 import {storyProgram, worldName, type Target} from './api';
+import {editableRule} from './StoryTriggerEditor';
 import {download} from '../lib/api';
 
 import {StoryPhaseEditor, type WorldProgram as Program, type ProgramCatalogue as Catalogue} from './StoryPhaseEditor';
 
-interface Report {uncovered:string[]; voices:{phase:string;npc:string}[]; digest: string; passed: boolean; tests: {missionVisits?:{phase:string;visit:number;credits:Record<string,string[]>}[]; name:string; passed:boolean; path:string[]; expected:string[]; effects:Record<string,unknown>[]}[]; effects: Record<string,unknown>[]}
+interface Report {uncoveredTriggers?:string[]; uncovered:string[]; voices:{phase:string;npc:string}[]; digest: string; passed: boolean; tests: {triggers?:{phase:string;trigger:string;event?:string;on:string;signal?:string}[]; counters?:Record<string,unknown>; missionVisits?:{phase:string;visit:number;credits:Record<string,string[]>}[]; name:string; passed:boolean; path:string[]; expected:string[]; effects:Record<string,unknown>[]}[]; effects: Record<string,unknown>[]}
 interface Release {run:string; title:string; status:string; phase:string; problem:string}
-interface Details {guestVoices:string[]; directions:{npc:string;visit:number;receipt:number;status:string}[]; status:string; state:{cohort:string[]; votes:Record<string,string[]>} | null; signals:string[]; history:{visit:number;phase:string;day:number;cause:string;missions?:{id:string;title:string;completed:number;required:number;ready:boolean}[]}[];
+interface Details {trace?:{id:number;visit:number;phase:string;trigger:string;actor:string;day:number;actions:string[]}[]; beforeVisit?:number;beforeTrigger?:number;guestVoices:string[]; directions:{npc:string;visit:number;receipt:number;status:string}[]; status:string; state:{counters?:Record<string,unknown>;timers?:Record<string,{at:number;clock?:string}>;cohort:string[]; votes:Record<string,string[]>} | null; signals:string[]; history:{visit:number;phase:string;day:number;cause:string;missions?:{id:string;title:string;completed:number;required:number;ready:boolean}[]}[];
     actions:{id:number;kind:string;status:string;result:string}[]}
 const pretty = (value: unknown) => JSON.stringify(value,null,2);
 
@@ -27,7 +28,7 @@ export function StoryProgramPanel({target, storageKey, canDirect}: {target:Targe
     useEffect(() => {
         let active = true;
         storyProgram<Catalogue>(target,'catalog').then(c => {
-            if (active) {setCatalog(c); setSource(previous => previous || pretty(c.examples.wagon));}
+            if (active) {setCatalog(c); setSource(previous => previous || pretty(c.blank));}
         }).catch(e => {if (active) setFeedback(e.message);});
         return () => {active = false;};
     }, [target]);
@@ -53,15 +54,26 @@ export function StoryProgramPanel({target, storageKey, canDirect}: {target:Targe
         setRuns(list.runs);
         if (run) {setDetails(await storyProgram<Details>(target,'status',{run})); setSelected(run);}
     }
-    const editableGraph = program && typeof program.title === 'string' && program.audience && typeof program.audience.kind === 'string' && Array.isArray(program.phases) && program.phases.every(p=>
+    async function earlier(kind:'beforeVisit'|'beforeTrigger'){
+        if(!details?.[kind]) return;
+        const page=await storyProgram<Details>(target,'status',{run:selected,[kind]:details[kind]});
+        setDetails(kind==='beforeVisit'?{...details,history:[...details.history,...page.history],beforeVisit:page.beforeVisit}
+            :{...details,trace:[...(details.trace ?? []),...(page.trace ?? [])],beforeTrigger:page.beforeTrigger});
+    }
+    const editableGraph = program && (program.triggers===undefined || (Array.isArray(program.triggers) && program.triggers.every(editableRule))) && Array.isArray(program.tests) && program.tests.every(c=>c && typeof c.name==='string'
+        && (c.expectEffects===undefined || (Array.isArray(c.expectEffects) && c.expectEffects.every(e=>e && typeof e.phase==='string')))
+        && (c.expectMissionVisits===undefined || (Array.isArray(c.expectMissionVisits) && c.expectMissionVisits.every(v=>v && typeof v.phase==='string')))
+        && Array.isArray(c.cohort) && Array.isArray(c.expect) && Array.isArray(c.events) && c.events.every(f=>f && typeof f.kind==='string'))
+        && typeof program.title === 'string' && program.audience && typeof program.audience.kind === 'string' && Array.isArray(program.phases) && program.phases.every(p=>
         p && typeof p.id==='string' && typeof p.journal==='string' && (!p.guestVoices || Array.isArray(p.guestVoices)) &&
+        (p.triggers === undefined || (Array.isArray(p.triggers) && p.triggers.every(editableRule))) &&
         (p.missions === undefined || (Array.isArray(p.missions) && p.missions.every(m=>m && typeof m.id==='string' && typeof m.title==='string' &&
             ['individual','group','either'].includes(m.mode) && Array.isArray(m.objectives) && m.objectives.every(o=>o && typeof o.label==='string' && typeof o.on==='string')))) &&
         Array.isArray(p.exits) && p.exits.every(e=>e && typeof e.on==='string' && (e.missions===undefined || Array.isArray(e.missions))) &&
         Array.isArray(p.effects) && p.effects.every(e=>e && typeof e.kind==='string'));
     const reviewed = report?.passed && !report.uncovered?.length && program;
-    return <div className="story-columns"><section className="dm-panel"><h3>World story program</h3>
-        <fieldset disabled={busy}><label>Start from a story<select defaultValue="" onChange={e => {
+    return <div className="story-columns program-workspace"><section className="dm-panel"><h3>{program?.title || 'World story'}</h3>
+        <fieldset disabled={busy}><div className="story-filebar"><button disabled={!catalog} onClick={()=>{if(catalog && window.confirm('Replace this draft with a blank story?')) edit(pretty(catalog.blank));}}>New blank story</button><label>Start from a story<select defaultValue="" onChange={e => {
             const example = catalog?.examples[e.target.value];
             if (example && (!source || window.confirm('Replace this draft with the selected story?'))) edit(pretty(example));
             e.target.value='';
@@ -72,7 +84,7 @@ export function StoryProgramPanel({target, storageKey, canDirect}: {target:Targe
                 if (!source || window.confirm('Replace this draft with the imported story?')) edit(await f.text());
             });
         }}/></label>
-        {catalog && program && editableGraph &&
+        </div>{catalog && program && editableGraph &&
             <StoryPhaseEditor start={id=>{if(window.confirm('Replace this draft with the selected event story?'))
                 void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))}/>}
         <details><summary>Program JSON and rehearsal cases</summary><label>Program JSON<textarea rows={18} spellCheck={false} value={source} onChange={e => edit(e.target.value)}/></label></details>
@@ -82,10 +94,13 @@ export function StoryProgramPanel({target, storageKey, canDirect}: {target:Targe
         {catalog && <details><summary>Available triggers and effects</summary><p>{catalog.events.join(', ')}</p>
             <ul>{Object.entries(catalog.effects).map(([kind,fields]) => <li key={kind}><code>{kind}</code> ({fields.join(', ')})</li>)}</ul></details>}
         {report && <section><h4>Rehearsal results</h4><ul>{report.tests.map((t,i) => <li key={i}>{t.passed?'Pass':'Fail'} · {t.name}<br/>{t.path.join(' → ')}{!t.passed && <p>Expected {t.expected.join(' → ')}</p>}
+                {!!t.triggers?.length && <details><summary>Trigger trace</summary><ol>{t.triggers.map((f,i)=><li key={i}>{f.phase} · {f.trigger} ← {f.signal ?? f.on}{f.event?' ('+f.event+')':''}</li>)}</ol></details>}
+                {t.counters && Object.keys(t.counters).length>0 && <details><summary>Final counters</summary><pre>{pretty(t.counters)}</pre></details>}
                 {!!t.missionVisits?.length && <details><summary>Mission credit by phase</summary>{t.missionVisits.map(v=><div key={v.visit}>
                     <strong>{v.phase} · visit {v.visit}</strong><ul>{Object.entries(v.credits).map(([id,players])=><li key={id}>{id} · {players.join(', ') || 'No finishers'}</li>)}</ul></div>)}</details>}
                 {!!t.effects?.length && <details><summary>Effects in this run</summary><ol>{t.effects.map((e,n)=><li key={n}><code>{JSON.stringify(e)}</code></li>)}</ol></details>}</li>)}</ul>
             {!!report.uncovered?.length && <p>Phases awaiting rehearsal · {report.uncovered.join(', ')}.</p>}
+            {!!report.uncoveredTriggers?.length && <p>Triggers awaiting rehearsal · {report.uncoveredTriggers.join(', ')}</p>}
             <h4>Effects for approval</h4>{report.effects.length ? <ul>{report.effects.map((e,i) => <li key={i}><code>{JSON.stringify(e)}</code></li>)}</ul>:<p>Journal entries only.</p>}
             {report.voices?.map(v=><p key={v.phase+v.npc}>Optional guest voice · {v.npc} during {v.phase}</p>)}
             <p>Audience · {program?.audience.kind === 'active' ? 'Players active in the last '+program.audience.days+' days' : program?.audience.players?.join(', ')}</p>
@@ -103,7 +118,14 @@ export function StoryProgramPanel({target, storageKey, canDirect}: {target:Targe
         <ul>{runs.map(r=><li key={r.run}><button disabled={busy} aria-pressed={r.run===selected} onClick={()=>void perform(async()=>{setDirection(''); await refresh(r.run);})}>{r.title} · {r.status}</button>
             {r.problem && <p>{r.problem}</p>}</li>)}</ul>
         {details && <>{details.state && <p>{details.state.cohort.length} eligible players
-            {Object.entries(details.state.votes).map(([i,players])=> <span key={i}> · Trigger {Number(i)+1} has {players.length} participants</span>)}</p>}<h4>Run history</h4><ol>{details.history.map(h=><li key={h.visit}>{h.phase} · day {h.day.toFixed(2)} · {h.cause}{!!h.missions?.length && <ul>{h.missions.map(m=><li key={m.id}>{m.title} · {m.ready?'complete':m.completed+' / '+m.required+' completions'}</li>)}</ul>}</li>)}</ol>
+            {Object.entries(details.state.votes).map(([i,players])=> <span key={i}> · Trigger {Number(i)+1} has {players.length} participants</span>)}</p>}
+            {details.state?.counters && <details><summary>Story and player counters</summary><pre>{pretty(details.state.counters)}</pre></details>}
+            {details.state?.timers && Object.keys(details.state.timers).length>0 && <details><summary>Active timers</summary><ul>{Object.entries(details.state.timers).map(([name,t])=><li key={name}>{name} · {t.clock==='real'?'real day since publication':'world day'} {Number(t.at.toFixed(3))}</li>)}</ul></details>}
+            <h4>Run history</h4><ol>{details.history.map(h=><li key={h.visit}>{h.phase} · day {h.day.toFixed(2)} · {h.cause}{!!h.missions?.length && <ul>{h.missions.map(m=><li key={m.id}>{m.title} · {m.ready?'complete':m.completed+' / '+m.required+' completions'}</li>)}</ul>}</li>)}</ol>
+            {details.beforeVisit && <button disabled={busy} onClick={()=>void perform(()=>earlier('beforeVisit'))}>Earlier phase visits</button>}
+            {!!details.trace?.length && <details><summary>Live trigger history</summary><ol>{details.trace.map(t=><li key={t.id}>{t.trigger} · {t.phase} · day {Number(t.day.toFixed(2))}
+                {t.actor?' · '+t.actor:''}<br/>{t.actions.join(' → ')}</li>)}</ol>
+                {details.beforeTrigger && <button disabled={busy} onClick={()=>void perform(()=>earlier('beforeTrigger'))}>Earlier trigger firings</button>}</details>}
             <ul>{details.actions.map(a=><li key={a.id}>{a.kind} · {a.status} {a.result}</li>)}</ul>
             {details.signals.map(signal=><button key={signal} disabled={busy} onClick={()=>void perform(async()=>{
                 const r=await storyProgram<{ticket:string}>(target,'signal-ticket',{run:selected,signal}); setDirection(r.ticket);

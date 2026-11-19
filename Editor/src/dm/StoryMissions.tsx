@@ -1,13 +1,14 @@
 import {useState} from 'react';
+import type {Component} from './StoryTriggerEditor';
 
 export type MissionMode = 'individual' | 'group' | 'either';
 export interface Objective {
-    label:string; on:string; sameAsFirst?:string; match?:Record<string,string>; measure?:'count'|'quantity'|'coins'; goal?:number;
+    label:string; on:string; signal?:string; sameAsFirst?:string; match?:Record<string,string>; measure?:'count'|'quantity'|'coins'; goal?:number;
 }
 export interface Mission {
     id:string; title:string; mode:MissionMode; objectives:Objective[]; contributors?:number; players?:number; percent?:number;
 }
-export interface EventType extends Mission {category:string; scale:string; opening?:{journal:string}; ending?:{kind:string}[]}
+export interface EventType extends Mission {components:Component[]; category:string; scale:string; opening?:{journal:string}; ending?:{kind:string}[]}
 interface Props {
     events:EventType[]; triggers:string[]; measures:Record<string,string[]>; missions:Mission[];
     change:(missions:Mission[])=>void; start:(id:string)=>void;
@@ -26,7 +27,7 @@ export function StoryMissions({events,triggers,measures,missions,change,start}:P
         for(let n=2;missions.some(e=>e.id===next);n++) next=m.id+'-'+n;
         change([...missions,{...m,id:next}]);
     }
-    return <section><h4>Event library</h4>
+    return <section><details><summary>Complete mission examples</summary>
         <label>Search event types<input value={text} onChange={e=>setText(e.target.value)}/></label>
         <label>Play style<select aria-label="Play style" value={mode} onChange={e=>setMode(e.target.value)}>
             <option value="">All play styles</option>{['individual','group','either'].map(k=><option key={k}>{k}</option>)}</select></label>
@@ -41,7 +42,7 @@ export function StoryMissions({events,triggers,measures,missions,change,start}:P
             <button type="button" onClick={()=>start(selected.id)}>Start a story from this event</button>
             <button type="button" disabled={missions.length>=16} onClick={()=>add({id:selected.id,title:selected.title,mode:selected.mode,
                 objectives:structuredClone(selected.objectives)})}>Add its mission to this phase</button></>}
-        <h4>Missions in this phase</h4>
+        </details><h4>Journal missions in this phase</h4>
         {missions.map((m,i)=><details key={m.id}><summary>{m.title || m.id} · {m.mode}</summary>
             <label>Mission title<input value={m.title} onChange={e=>revise(i,{...m,title:e.target.value})}/></label>
             <label>Who completes it<select value={m.mode} onChange={e=>{
@@ -60,9 +61,10 @@ export function StoryMissions({events,triggers,measures,missions,change,start}:P
                 const update=(patch:Partial<Objective>)=>revise(i,{...m,objectives:m.objectives.map((x,n)=>n===j?{...x,...patch}:x)});
                 return <fieldset key={j}><legend>Objective {j+1}</legend>
                     <label>Journal instruction<input value={o.label} onChange={e=>update({label:e.target.value})}/></label>
-                    <label>Evidence<select value={o.on} onChange={e=>update({on:e.target.value,measure:o.measure && measures[o.measure]?.includes(e.target.value) ? o.measure : 'count'})}>{triggers.map(t=><option key={t}>{t}</option>)}</select></label>
+                    <label>Evidence<select value={o.on} onChange={e=>update({on:e.target.value,signal:e.target.value==='story signal'?'route-open':undefined,measure:o.measure && measures[o.measure]?.includes(e.target.value) ? o.measure : 'count'})}>{[...triggers,'story signal'].map(t=><option key={t}>{t}</option>)}</select></label>
+                    {o.on==='story signal' && <label>Journal signal<input value={o.signal ?? ''} onChange={e=>update({signal:e.target.value})}/></label>}
                     <label>Measure<select value={o.measure ?? 'count'} onChange={e=>update({measure:e.target.value as Objective['measure']})}>
-                        <option value="count">Occurrences</option>{measures.quantity.includes(o.on) && <option value="quantity">Units recorded</option>}{measures.coins.includes(o.on) && <option value="coins">Coins recorded</option>}</select></label>
+                        <option value="count">Occurrences</option>{(o.on==='story signal'||measures.quantity.includes(o.on)) && <option value="quantity">Units recorded</option>}{(o.on==='story signal'||measures.coins.includes(o.on)) && <option value="coins">Coins recorded</option>}</select></label>
                     <label>Required amount<input type="number" min={1} value={o.goal ?? 1} onChange={e=>update({goal:Number(e.target.value)})}/></label>
                     {j>0 && <label>Match the first objective’s<select value={o.sameAsFirst ?? ''} onChange={e=>update({sameAsFirst:e.target.value || undefined})}>
                         <option value="">No linked field</option>{['actor','target','cell','item','detail'].map(k=><option key={k}>{k}</option>)}</select></label>}
