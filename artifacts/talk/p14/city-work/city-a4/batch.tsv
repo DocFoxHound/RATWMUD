@@ -1,0 +1,43 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm221	rm_orm_fogmore	Orm Fogmore	plain	standard	light broad	young	ridgemere	sump	4	at lessons	Data/Talk/mantles-export/plain/rm221.mantle
+rm222	rm_torvald_slagton	Torvald Slagton	plain	full	light broad	adult	ridgemere	sump	20	helping at The Grey Gull Inn	Data/Talk/mantles-export/plain/rm222.mantle
+rm223	rm_corra_ropewick	Corra Ropewick	plain	standard	light broad	young	ridgemere	sump	35	at lessons	Data/Talk/mantles-export/plain/rm223.mantle
+rm224	rm_josephine_wetmore	Josephine Wetmore	plain	standard	light broad	young	ridgemere	sump	47	at lessons	Data/Talk/mantles-export/plain/rm224.mantle
+rm225	rm_elspet_ropewick	Elspet Ropewick	plain	standard	none	adolescent	ridgemere	sump	54	at lessons	Data/Talk/mantles-export/plain/rm225.mantle
+rm226	rm_ulla_greymore	Ulla Greymore	plain	full	none	adult	ridgemere	sump	62	washing at the Washhouse	Data/Talk/mantles-export/plain/rm226.mantle
+rm227	rmx_kjell_coalham	Kjell Coalham	plain	standard	light broad	adult	ridgemere	sump	78	carrying from Sump Stairs	Data/Talk/mantles-export/plain/rm227.mantle
+rm228	rm_ivo_fogstack	Ivo Fogstack	plain	standard	broad light	adult	ridgemere	sump	80	keeping the Washhouse	Data/Talk/mantles-export/plain/rm228.mantle
+rm229	rm_mab_saltgate	Mab Saltgate	plain	standard	light broad	young	ridgemere	sump	82	at lessons	Data/Talk/mantles-export/plain/rm229.mantle
+rm230	rm_liv_cinderby	Liv Cinderby	plain	standard	broad light	adult	ridgemere	sump	83	helping at The Wharf Tannery	Data/Talk/mantles-export/plain/rm230.mantle
+rm231	rm_signe_brineworth	Signe Brineworth	plain	standard	light broad	adult	ridgemere	sump	84	washing at the Washhouse	Data/Talk/mantles-export/plain/rm231.mantle
+rm232	rm_agna_dripgate	Agna Dripgate	plain	standard	none	young	ridgemere	sump	87	at lessons	Data/Talk/mantles-export/plain/rm232.mantle
+rm233	rm_sybil_tardale	Sybil Tardale	plain	standard	light broad	adult	ridgemere	sump	88	works at The Timberland Foundry	Data/Talk/mantles-export/plain/rm233.mantle
+rm234	rmx_rika_gullwell	Rika Gullwell	plain	standard	light broad	adult	ridgemere	sump	91	washing at the Washhouse	Data/Talk/mantles-export/plain/rm234.mantle
+rm235	rm_aldric_rustgate	Aldric Rustgate	plain	standard	light broad	young	ridgemere	sump	92	at lessons	Data/Talk/mantles-export/plain/rm235.mantle
+rm236	rm_ansel_wickdale	Ansel Wickdale	plain	standard	light broad	adult	ridgemere	sump	93	helping at The Lamp & Wick	Data/Talk/mantles-export/plain/rm236.mantle
+rm237	rm_brenna_greyworth	Brenna Greyworth	plain	standard	light broad	adult	ridgemere	sump	94	helping at Wickham's Chandlery	Data/Talk/mantles-export/plain/rm237.mantle
+rm238	rm_jorunn_ropewick	Jorunn Ropewick	plain	full	broad light	adult	ridgemere	sump	96	pawnbroker at The Pawn and Ledger	Data/Talk/mantles-export/plain/rm238.mantle
+rm239	rm_mogens_greycot	Mogens Greycot	plain	standard	light broad	adult	ridgemere	sump	101	works at The Greatly Tileworks	Data/Talk/mantles-export/plain/rm239.mantle
+rm240	rm_ivar_nailham	Ivar Nailham	plain	standard	light broad	adult	ridgemere	sump	104	driving for the carters	Data/Talk/mantles-export/plain/rm240.mantle
+rm241	rm_ivo_dripworth	Ivo Dripworth	plain	standard	none	adult	ridgemere	sump	105	helping at Gullgut Fish	Data/Talk/mantles-export/plain/rm241.mantle
+rm242	rmx_gorm_saltstack	Gorm Saltstack	plain	full	light broad	adult	ridgemere	sump	109	baker at The Penny Loaf	Data/Talk/mantles-export/plain/rm242.mantle
+rm243	rmx_orm_nailhand	Orm Nailhand	plain	standard	light broad	adult	ridgemere	sump	117	helping at Rainford's Store	Data/Talk/mantles-export/plain/rm243.mantle
+rm244	rm_brenna_milldale	Brenna Milldale	plain	standard	broad light	adult	ridgemere	sump	118	unloading ships at the piers	Data/Talk/mantles-export/plain/rm244.mantle
+rm245	rm_frida_rainhand	Frida Rainhand	plain	standard	broad light	adult	ridgemere	sump	119	working at the Greatly works	Data/Talk/mantles-export/plain/rm245.mantle
+rm246	rm_rune_wickwell	Rune Wickwell	plain	standard	broad light	old	ridgemere	sump	123	none	Data/Talk/mantles-export/plain/rm246.mantle
+rm247	rm_corwin_sootton	Corwin Sootton	plain	standard	broad light	adult	ridgemere	sump	131	unloading ships at the piers	Data/Talk/mantles-export/plain/rm247.mantle
+rm248	rm_isolde_brineton	Isolde Brineton	plain	standard	light broad	adult	ridgemere	sump	133	helping at Southway Provisions	Data/Talk/mantles-export/plain/rm248.mantle
+rm249	rm_kjell_wickmore	Kjell Wickmore	plain	standard	light broad	adult	ridgemere	sump	134	helping at The Rain Pot	Data/Talk/mantles-export/plain/rm249.mantle
+rm250	rm_ivo_cinderham	Ivo Cinderham	plain	standard	light broad	adult	ridgemere	sump	137	working the cranes	Data/Talk/mantles-export/plain/rm250.mantle
+rm251	rm_magnus_greycot	Magnus Greycot	plain	standard	broad light	adult	ridgemere	sump	139	washing at the Washhouse	Data/Talk/mantles-export/plain/rm251.mantle
+rm252	rm_maren_tarhand	Maren Tarhand	plain	standard	light broad	adult	ridgemere	sump	140	printing at The Council Press	Data/Talk/mantles-export/plain/rm252.mantle
+rm253	rmx_disa_bilgemarsh	Disa Bilgemarsh	plain	standard	broad light	old	ridgemere	sump	148	none	Data/Talk/mantles-export/plain/rm253.mantle
+rm254	rmx_petra_ashgate	Petra Ashgate	plain	full	light broad	adult	ridgemere	sump	150	washing at the Washhouse	Data/Talk/mantles-export/plain/rm254.mantle
+rm255	rmx_sigrun_wickham	Sigrun Wickham	plain	standard	broad light	old	ridgemere	sump	151	none	Data/Talk/mantles-export/plain/rm255.mantle
+rm256	rm_gerrit_ropewick	Gerrit Ropewick	plain	standard	light broad	adult	ridgemere	sump	153	works at The Greatly Masons' Yard	Data/Talk/mantles-export/plain/rm256.mantle
+rm257	rm_gwen_sootmore	Gwen Sootmore	plain	standard	broad light	adult	ridgemere	sump	154	helping at The Cedar Phial	Data/Talk/mantles-export/plain/rm257.mantle
+rm258	rm_lars_wickwell	Lars Wickwell	plain	standard	light broad	adult	ridgemere	sump	156	helping at Mend & Make Do	Data/Talk/mantles-export/plain/rm258.mantle
+rm259	rm_ingrid_ashwell	Ingrid Ashwell	plain	standard	light broad	adult	ridgemere	sump	161	printing at The Council Press	Data/Talk/mantles-export/plain/rm259.mantle
+rm260	rmx_ansel_kelpford	Ansel Kelpford	plain	standard	light broad	adult	ridgemere	sump	163	helping at Needle & Drip	Data/Talk/mantles-export/plain/rm260.mantle
+rm261	rmx_una_brineridge	Una Brineridge	plain	standard	none	adult	ridgemere	sump	164	helping at Greywool	Data/Talk/mantles-export/plain/rm261.mantle
+rm262	rmx_winifred_nailton	Winifred Nailton	plain	standard	broad light	adult	ridgemere	sump	165	helping at Wickham's Chandlery	Data/Talk/mantles-export/plain/rm262.mantle

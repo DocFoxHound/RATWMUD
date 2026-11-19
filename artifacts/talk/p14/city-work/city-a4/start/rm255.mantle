@@ -1,0 +1,28 @@
+# rm255, TODO title (doc 84 P14, batch city-a4): written for rmx_sigrun_wickham (Sigrun Wickham: none, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm255
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_sigrun_wickham
+title TODO
+fits stage=adult|old
+prefers TODO
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk hums_sea_songs_under_the_breath
+likes mutton_stew riddles fresh_straw first_warm_day
+dislikes night_noise bad_manners
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

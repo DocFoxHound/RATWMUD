@@ -1,0 +1,28 @@
+# rm254, TODO title (doc 84 P14, batch city-a4): written for rmx_petra_ashgate (Petra Ashgate: washing at the Washhouse, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm254
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_petra_ashgate
+title TODO
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes crisp_apples whittling full_larder misty_dawns
+dislikes crowds early_bells
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

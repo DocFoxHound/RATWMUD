@@ -1,0 +1,28 @@
+# rm261, TODO title (doc 84 P14, batch city-a4): written for rmx_una_brineridge (Una Brineridge: helping at Greywool, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm261
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_una_brineridge
+title TODO
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk hums_sea_songs_under_the_breath
+likes crisp_apples singing sharp_knife summer_evenings
+dislikes drizzle crowds
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

@@ -1,0 +1,28 @@
+# rm302, TODO title (doc 84 P14, batch city-a5): written for rm_oda_greywell (Oda Greywell: carrying from Sump Stairs, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm302
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_oda_greywell
+title TODO
+fits stage=adult|old
+prefers TODO
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk swears_by_the_forge_and_the_sea
+likes spiced_cider wrestling full_larder autumn_wind
+dislikes waiting flies
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

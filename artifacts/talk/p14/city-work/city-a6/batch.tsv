@@ -1,0 +1,42 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm305	rm_edmund_sootdale	Edmund Sootdale	plain	standard	broad light	young	ridgemere	office	34	at lessons	Data/Talk/mantles-export/plain/rm305.mantle
+rm306	rm_leif_fogcot	Leif Fogcot	plain	full	light broad	adult	ridgemere	wharf	51	helping at The Grey Gull Inn	Data/Talk/mantles-export/plain/rm306.mantle
+rm307	rm_brand_mudridge	Brand Mudridge	plain	standard	light broad	adult	ridgemere	office	79	keeping the Watch's weapon racks	Data/Talk/mantles-export/plain/rm307.mantle
+rm308	rm_ottilie_sootdale	Ottilie Sootdale	plain	standard	light broad	adult	ridgemere	office	86	helping at Wetink Lane Scriveners	Data/Talk/mantles-export/plain/rm308.mantle
+rm309	rm_soren_kelpcot	Soren Kelpcot	plain	standard	light broad	adult	ridgemere	office	108	clerking at the Records Office	Data/Talk/mantles-export/plain/rm309.mantle
+rm310	rm_gerrit_mudhand	Gerrit Mudhand	plain	full	none	adult	ridgemere	office	113	chancellor of the Council	Data/Talk/mantles-export/plain/rm310.mantle
+rm311	rm_osric_plankford	Osric Plankford	plain	standard	light broad	adult	ridgemere	heights	115	minding the shop door	Data/Talk/mantles-export/plain/rm311.mantle
+rm312	rm_jasper_bilgeford	Jasper Bilgeford	plain	standard	none	adult	ridgemere	office	120	collecting the Crown's customs	Data/Talk/mantles-export/plain/rm312.mantle
+rm313	rm_erland_cinderridge	Erland Cinderridge	plain	standard	light broad	adult	ridgemere	estate	132	serving in the hall	Data/Talk/mantles-export/plain/rm313.mantle
+rm314	rm_erland_ashworth	Erland Ashworth	plain	standard	none	adult	ridgemere	office	135	hearing cases	Data/Talk/mantles-export/plain/rm314.mantle
+rm315	cty_millicent_pitchby	Millicent Pitchby	plain	standard	broad light	adult	ridgemere	-	136	cowherd at Hillside	Data/Talk/mantles-export/plain/rm315.mantle
+rm316	rm_bertil_slagley	Bertil Slagley	plain	full	light broad	adult	ridgemere	estate	144	singing in the cathedral choir	Data/Talk/mantles-export/plain/rm316.mantle
+rm317	rm_mab_coalridge	Mab Coalridge	plain	standard	broad light	adult	ridgemere	works	162	serving in the King's household	Data/Talk/mantles-export/plain/rm317.mantle
+rm318	rm_berit_coalworth	Berit Coalworth	plain	full	light broad	adult	ridgemere	estate	166	sexton of the cathedral	Data/Talk/mantles-export/plain/rm318.mantle
+rm319	rm_wynn_sootworth	Wynn Sootworth	plain	full	light broad	adult	ridgemere	works	171	smith at Timberland's Nailers' Forge	Data/Talk/mantles-export/plain/rm319.mantle
+rm320	rm_wystan_mudcot	Wystan Mudcot	plain	standard	light broad	adult	ridgemere	heights	172	working at Cinder Wheelwrights	Data/Talk/mantles-export/plain/rm320.mantle
+rm321	rmx_cedric_rook	Cedric Rook	plain	standard	light broad	adult	ridgemere	office	173	royal secretary	Data/Talk/mantles-export/plain/rm321.mantle
+rm322	cty_mogens_mudstack	Mogens Mudstack	plain	standard	none	adult	ridgemere	-	177	cuts wood at the Rainwood coppice	Data/Talk/mantles-export/plain/rm322.mantle
+rm323	rmx_harriet_platt	Harriet Platt	plain	standard	light broad	adult	ridgemere	office	183	clerking at the Records Office	Data/Talk/mantles-export/plain/rm323.mantle
+rm324	cty_beatha_slagby	Beatha Slagby	plain	full	light broad	adult	ridgemere	-	184	herds the cattle at Rainrun	Data/Talk/mantles-export/plain/rm324.mantle
+rm325	rm_corra_coalcot	Corra Coalcot	plain	full	none	adult	ridgemere	works	185	runs The Fish Hall	Data/Talk/mantles-export/plain/rm325.mantle
+rm326	rmx_lionel_platt	Lionel Platt	plain	full	light broad	adult	ridgemere	office	191	runs The Timberland Sawmill	Data/Talk/mantles-export/plain/rm326.mantle
+rm327	rm_maren_brineford	Maren Brineford	plain	standard	light broad	adolescent	ridgemere	wharf	194	at lessons	Data/Talk/mantles-export/plain/rm327.mantle
+rm328	rm_theodora_driphand	Theodora Driphand	plain	standard	light broad	adult	ridgemere	office	197	keeping order in court	Data/Talk/mantles-export/plain/rm328.mantle
+rm329	rmx_oda_cinderby	Oda Cinderby	plain	standard	broad light	adolescent	ridgemere	estate	210	at lessons	Data/Talk/mantles-export/plain/rm329.mantle
+rm330	rmx_ivo_wainwright	Ivo Wainwright	plain	full	none	adult	ridgemere	works	219	butcher on Market Square	Data/Talk/mantles-export/plain/rm330.mantle
+rm331	rmx_desmond_rook	Desmond Rook	plain	full	light broad	adult	ridgemere	office	230	clerking in the Administrative Wing	Data/Talk/mantles-export/plain/rm331.mantle
+rm332	rmx_orm_carlisle	Orm Carlisle	plain	full	none	adult	ridgemere	heights	232	keeping the Carters' Yard	Data/Talk/mantles-export/plain/rm332.mantle
+rm333	rm_josephine_brineford	Josephine Brineford	plain	standard	light broad	young	ridgemere	wharf	251	at lessons	Data/Talk/mantles-export/plain/rm333.mantle
+rm334	rmx_dagfinn_wainwright	Dagfinn Wainwright	plain	standard	light broad	adult	ridgemere	works	256	working the cranes	Data/Talk/mantles-export/plain/rm334.mantle
+rm335	rmx_una_thackeray	Una Thackeray	plain	standard	broad light	adult	ridgemere	works	261	none	Data/Talk/mantles-export/plain/rm335.mantle
+rm336	rm_edric_cindermarsh	Edric Cindermarsh	plain	standard	light broad	adult	ridgemere	works	266	works at The Timberland Ironworks	Data/Talk/mantles-export/plain/rm336.mantle
+rm337	rmx_magnus_wetherell	Magnus Wetherell	plain	full	none	adult	ridgemere	works	275	helping at The Lamp & Wick	Data/Talk/mantles-export/plain/rm337.mantle
+rm338	rm_silas_wickford	Silas Wickford	plain	standard	light broad	adult	ridgemere	heights	287	minding the shop door	Data/Talk/mantles-export/plain/rm338.mantle
+rm339	rm_vidar_ashhand	Vidar Ashhand	plain	full	broad light	adult	ridgemere	estate	288	serving in the hall	Data/Talk/mantles-export/plain/rm339.mantle
+rm340	rm_frida_brineford	Frida Brineford	plain	full	light broad	adult	ridgemere	wharf	295	provisioner at The Bung Hole	Data/Talk/mantles-export/plain/rm340.mantle
+rm341	rm_ilse_cindercot	Ilse Cindercot	plain	standard	light broad	adult	ridgemere	office	297	clerking at the City Office	Data/Talk/mantles-export/plain/rm341.mantle
+rm342	rm_dagfinn_ropeby	Dagfinn Ropeby	plain	standard	light broad	adult	ridgemere	wharf	304	works at The Greatly Lime Kilns	Data/Talk/mantles-export/plain/rm342.mantle
+rm343	rm_gudrun_pitchridge	Gudrun Pitchridge	plain	standard	broad light	adult	ridgemere	works	321	works at The Timberland Ironworks	Data/Talk/mantles-export/plain/rm343.mantle
+rm344	rm_oskar_gullworth	Oskar Gullworth	plain	standard	broad light	adult	ridgemere	office	322	Chancellor of Ridgemere	Data/Talk/mantles-export/plain/rm344.mantle
+rm345	rmx_millicent_wickwick	Millicent Wickwick	plain	standard	none	adult	ridgemere	works	324	driving for the carters	Data/Talk/mantles-export/plain/rm345.mantle

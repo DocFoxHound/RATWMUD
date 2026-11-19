@@ -1,0 +1,28 @@
+# rm291, TODO title (doc 84 P14, batch city-a5): written for rm_runa_ashridge (Runa Ashridge: printing at The Council Press, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm291
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_runa_ashridge
+title TODO
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk watches_the_rain_as_if_it_might_stop
+likes plum_tart whittling market_bustle warm_rain
+dislikes smoke bad_manners
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

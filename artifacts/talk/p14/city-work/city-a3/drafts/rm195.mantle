@@ -1,0 +1,316 @@
+# rm195, the copyist who sings the low part (doc 84 P14, batch city-a3): written for rmx_hollis_shaw (Hollis Shaw: copying at the Records Office, Ridgemere-born). Name-free. A Northgate wolf with a copyist's soft, sparing speech: few words, said gently, the Bright One in passing, and a damp-weather cough passed off as practice for the choir's bass line.
+mantle rm195
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_hollis_shaw
+title the copyist who sings the low part
+fits stage=adult|old
+prefers job=scholar talk=quiet piety=devout
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=devout drive=steady
+quirk swallows_a_cough_and_turns_it_into_a_hymn_note
+likes oatcakes singing new_boots misty_dawns
+dislikes flies crowds
+fears a_blot_on_the_last_line a_voice_gone_for_good
+hopes a_window_desk_with_good_light to_sing_the_low_part_at_the_feast
+topics work +0.4 faith +0.4 pastimes +0.3 food +0.2 weather +0.2 gossip -0.5 newcomer -0.2
+styles comfort=prayer gossip=closed refuse=gentle tease=none
+marks oath saying
+persona #self.first# copies for the city in a square, patient hand, says little and says it softly, keeps the door shut to faces not yet known, sings the bottom line in the Restday choir, and turns every damp-weather cough into a low note as if warming up.
+
+words
+oath! = Bright One steady my hand | Mercy on the margin | Light keep the lamp
+saying! = What's copied fair needs no defending | Slow ink is sure ink | One line, then the next
+nib = my nib | the steel nib
+copy = a fair copy | a clean fair copy
+hand = my hand | a square hand
+choir = the choir | the Restday choir
+note = the low note | the bottom line of the hymn
+oatcakes = oatcakes | oatcakes with a scrape of butter
+boots = the new boots | boots that still creak on the stair
+mist = the dawn mist | mist lying on the gate road
+flies = flies | the summer flies on the sill
+crush = a crush of folk | the press at the gate on market mornings
+desk = my desk | the copying desk under the high window
+lamp = the lamp | my little desk lamp
+damp = the damp | the damp in the stairwell
+gate = the gate | the north gate
+
+any
+opinion church for 2 : The Bright One has kept me through winters that should have finished me. I owe the chapel more than a Restday's singing. | I sit in the second row, and I'd not miss it.
+opinion dole for 1 : Bread for the hungry is holy work. I'll not argue with it. | The chapel loaf has fed folk I'd not have guessed were hungry. That's enough said.
+opinion drink against 1 : I've watched a jar take a good wolf and leave a poor one. I'll have water, thank you. | Ale at noon makes a crooked line by two.
+opinion strangers against 1 : I keep my door latched until I know the face. It's no insult; it's my habit. | A stranger may be kind. I'd like to know first.
+opinion city for 1 : Ridgemere's damp gets in my chest, and still I'd not live under any other sky.
+opinion festivals mixed 0 : A feast brings a crowd, and I can't abide a crowd. It brings the choir out too, and I'd not miss that.
+opinion newcomers mixed 0 : New folk at the gate every week. Some stay and learn the place. I give them time before I give them my name.
+
+grown
+line greet : #greet#. | #greet#. Quiet morning, so far.
+line greet [pair.band=strangers] : #greet#. You'll forgive me; I don't know you. | #greet#. We've not met, I think.
+line greet [self.working=yes] : #greet#. Let me finish the line first. | #greet#. One moment. The ink's wet.
+line greet [here.time=dawn] : Morning. The light's still grey. | Morning. I'm early for the desk.
+line greet [here.time=dusk|night] : Evening. I'm on my way home. | Evening. Mind the wet cobbles.
+line greet.return : #greet#. | #greet#. Kindly met.
+line greet.return [pair.band=friends|family] : Ah. You. Good. | Glad to see you, truly.
+line greet.return [self.working=yes] : #greet#. I'm copying, but say on. | #greet#. Softly, if you would.
+line greet.return [here.time=dusk|night] : Evening. | Evening. Late for you, too.
+line kin.open [pair.kin!=no] : Sit. I'll put the kettle near the fire. | You've come. That's good.
+line again.open : Twice today. I'd not complain of it. | You've come back. I'd hoped so.
+line farewell : #farewell#. #bless#. | #farewell#. Keep dry.
+line farewell [here.time=dusk|night] : Rest well. #bless#. | Goodnight. Bolt your door.
+line farewell.return : And you. #bless#. | #farewell#.
+line react.news : Tell it slowly. | Go on. I'm listening.
+line react.news.new : I'd not heard. | New to me. I'll keep it to myself.
+line react.news.known : Somebody spoke of it at the gate this morning. | I'd heard. Briefly.
+line react.news.doubt : Perhaps. I'll wait for it to be written down. | I'd want to see it in a fair hand first.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bright One keep them. That's hard news. | I'll remember them on Restday.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a blessing. I'm glad. | Good. The Bright One is kind sometimes.
+line answer.how : Well enough. | Steady. My chest's a little tight. It's nothing.
+line answer.how.busy [self.working=yes] : Three pages behind. I'll catch up. | Busy. The ink won't wait.
+line ask.how : You're keeping well? | Are you warm enough, in this?
+line sympathise : I'm sorry. I'll keep you in my prayers. | That's a sorrow. Take your time with it.
+line reassure : It will pass. Most things do, with patience. | You'll come through. The Bright One sees to more than we know.
+line decline : I'd rather not. It isn't mine to speak of. | Forgive me. I keep out of such things, always have.
+line accept_decline : Of course. No need to say why. | That's quite all right.
+line thank : Thank you. That was kind. | I'm grateful. I'll not forget it.
+line deflect_thanks : It was little enough. | Don't mention it, please.
+line preclose [self.working=yes] : The page is waiting. Forgive me. | I should get back to the desk.
+line preclose : I'll go on, if you don't mind. | The bell will be going soon.
+line accept_preclose : Go well. | Of course. Another time.
+line ack : Mm. | Yes. | I see.
+line give.advice : Write it down. Memory's a poor clerk. | Keep your feet dry and your door latched.
+
+scene sc_cough_note
+when topic=health|weather here.weather=rain|fog|overcast
+does tell.self / react.self / clarify / backchannel / assess
+a : Mm. Hm-mm. Just warming the voice. | Ahem. Low note. For Restday. | There. The bottom of the hymn. I keep losing it.
+b : That sounded like a cough. | A cough, surely. | That was a cough.
+a : Not at all. It's the low part. It wants practice in this weather. | It's the hymn. The second verse sits right down at the floor. | It's the note. It comes out rough in the damp, that's all.
+b : If you say so. | #bc_ha# | #bc_right#
+a : I do say so. Let's speak of something else. | I'll have it smooth by Restday. | Bright One willing, it'll come right.
+
+scene sc_fair_copy
+when topic=work self.job=scholar|official self.working=yes
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : I'm copying a deed today. Four pages, no blots. | Fair copies, all morning. Same deed, three times over. | The office wants this by dusk. It'll have it.
+b : Is it hard on the eyes? | Why three times? | Will you manage?
+a : By the afternoon, yes. I rest them on the window. | One for the office, one for the house, one for the court. | I will. I don't hurry. Hurry makes blots.
+b : #bc_wise# | #bc_right# | #bc_true#
+a : #saying#. | Three, and each as clean as the first. | One line, then the next. That's all it is.
+
+scene sc_the_blot
+when topic=work self.job=scholar|official
+does tell.complaint / sympathise / tell.self / backchannel / assess
+a : A blot on the last line yesterday. The whole page, gone. | I'd copied two pages clean and my sleeve caught the ink. | Somebody slammed the door and my nib jumped. One blot.
+b : You can't scrape it? | That's cruel. | Only one?
+a : Not on a deed. A scraped deed looks like a forged one. | It was. I said nothing and began again. | One is enough. One spoils it all.
+b : #bc_poor_soul# | #bc_true# | #bc_true#
+a : So I begin again. It's the only honest way. | The second copy was better. They often are. | I've asked them to close it gently. They won't.
+
+scene sc_not_reading
+when topic=work|gossip self.job=scholar|official
+does tell.self / ask.detail / answer.detail / backchannel / assess
+a : Folk think a copyist must know every secret in the city. | I copy what's put in front of me. I try not to read it. | They gave me a will to copy last week. I'll say no more than that.
+b : Don't you, though? | Is that possible? | Whose will?
+a : I know the shape of the letters. That's all I let myself know. | After years, yes. The eye sees the words; the mind looks away. | I said no more, and I meant it.
+b : #bc_fair_enough# | #bc_wise# | #bc_fair#
+a : It's safer for everyone. | It's a discipline. The Bright One helps with it. | Forgive me. It isn't mine to tell.
+
+scene sc_choir
+when topic=pastimes|faith
+does tell.self / react.self / tell.self / backchannel / assess
+a : I sing in #choir#. The bottom line. Nobody hears it, but they'd miss it. | Restday I stand at the end of the second row and sing low. | I'd rather sing than speak. It's easier.
+b : I'd like to hear you. | Low? You? | Easier?
+a : Come on Restday. Don't look for me; listen for the floor of it. | Lowest of us. The hymn sits on it, like a house on stone. | Nobody answers a song back. You only join in.
+b : #bc_i_might# | #bc_lovely# | #bc_ha#
+a : I'll be there. I always am. | It's a small thing. It matters to me. | So. I sing.
+
+scene sc_sing_with_friend
+when topic=friends|pastimes self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# and I sing together some evenings. The old hymns, mostly. | I'd trust #self.friend# with anything. I don't say that lightly. | If I'm ill, #self.friend# is the face I'd want at the door.
+b : That's a good friend. | That's rare. | Good.
+a : The best I have. The Bright One's kind to give me one. | It is. I'm careful who I trust. | It's a comfort, knowing.
+
+scene sc_oatcakes
+when topic=food
+does tell.self / react.self / tell.self / backchannel / assess
+a : #oatcakes.capitalize#. That's my breakfast, most days. | I keep a tin of oatcakes in my desk drawer. Nobody knows. | Butter on an oatcake, still warm. I ask for nothing more.
+b : Every day? | Nobody? | Simple.
+a : Every day the oven's lit. A plain stomach's a steady hand. | Now you do. I'd be glad if it went no further. | Simple's best. Rich food and fine copying don't go together.
+b : #bc_ha# | #bc_i_wont# | #bc_true#
+a : I'm a creature of habit. I don't mind it. | Thank you. The tin's my own small comfort. | So. Oatcakes.
+
+scene sc_dawn_oatcake
+when topic=food|day here.time=dawn
+does tell.self / react.self / assess
+a : I eat my oatcake walking down from the gate. The crumbs go to the sparrows. | First light, and the bakehouse ovens just warm. Oatcakes then are best. | I'm out before the carts. Breakfast in one paw, my case in the other.
+b : The sparrows must know you. | Early. | Busy paws.
+a : They wait on the same wall each morning. I'd not disappoint them. | It's the quiet I go for, more than the oatcake. | Both full, and the day not yet begun. That's how I like it.
+
+scene sc_new_boots
+when topic=pastimes|smalltalk
+does tell.self / react.self / tell.self / backchannel / assess
+a : I've #boots#. I saved since autumn. | New boots. They squeak on the office stair. Everyone knows when I arrive. | I had my boots made, not bought. First time in my life.
+b : They look well. | Do they mind the squeak? | Made for you?
+a : Thank you. I've not said that to anyone. I'm a little proud of them. | They mind. I mind less than I thought I would. | Measured and stitched. I stood very still while it was done.
+b : #bc_good# | #bc_ha# | #bc_lovely#
+a : So. Dry feet for a winter. A small thing. | They'll soften. So will the clerks. | Bright One forgive me, I keep looking down at them.
+
+scene sc_misty_gate
+when topic=weather here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. You can't see the gate from the bottom of the street. | The bells come muffled in fog. I like them best so. | A morning like this, the city holds its breath.
+b : It's eerie. | Muffled? | It does.
+a : Not to me. It's peaceful. Like the moment before a hymn. | Softer. As if they're praying too. | And then the carts start, and it's over. I walk slowly while it lasts.
+
+scene sc_damp_stair
+when topic=weather|home here.weather=rain
+does tell.complaint / react.complaint / tell.self / backchannel / assess
+a : #damp.capitalize# again. The walls sweat. | Rain on the office roof all morning. The ink wouldn't dry. | Wet. I've a towel on the sill and another on the floor.
+b : #grumble# | Did you lose any pages? | Two towels?
+a : It's a wet city. The Bright One made us for it, I suppose. | One. I set it by the stove and prayed. | The sill leaks. I've asked. They've not come.
+b : #bc_true# | #bc_ha# | #bc_poor_soul#
+a : Mm. Hm. Pardon me. Low note. | It dried. The Bright One's good about small things. | They'll come in summer, when it's dry, and see nothing.
+
+scene sc_summer_flies
+when topic=season|weather here.season=summer
+does tell.complaint / react.self / tell.self / backchannel / assess
+a : #flies.capitalize#. One walked across my wet ink this morning. | Summer, and the flies come in at the high window. I can't reach to shut it. | I've hung a sprig of mint at the desk. The flies don't care.
+b : Did it smudge? | Can't someone shut it? | Mint?
+a : A line of little footprints, right through the word. I had to begin again. | I've asked. I'm told it lets the air in. It lets flies in. | My old teacher swore by it. Bless him, he was wrong.
+b : #bc_poor_soul# | #bc_ha# | #bc_ha#
+a : I'd forgive most creatures. Not flies. | I'll bring a long stick. | So. I wave them off and go on.
+
+scene sc_gate_crush
+when topic=day|smalltalk here.region=ridgemere here.day=market
+does tell.complaint / sympathise / assess
+a : Market morning. #crush.capitalize#. I went round by the back lanes. | So many folk at the gate I couldn't get through to my own street. | I can't bear a crowd. Too many voices, and none of them stop.
+b : It's always like that on market day. | Did you get through? | #bc_i_know#
+a : Always. I should know by now. I leave earlier each week. | Eventually. I stood against a wall till it thinned. | I'd sooner be in an empty chapel than a full square.
+
+scene sc_closed_door
+when topic=newcomer|player
+does give.opinion / react.self / tell.self / backchannel / assess
+a : A new face knocked at my door this week. I didn't answer. | Folk come in at the gate every day. I don't open my door to any of them. | There's a newcomer on the street. I'll learn their name in time.
+b : That's a bit cold. | Why not? | In time?
+a : Not cold. Careful. They'll have the same welcome once I know them. | I've nothing against them. I'd only like to know who I'm talking to. | Months. I'm slow to know folk. Slow, and then for good.
+b : #bc_fair_enough# | #bc_fair# | #bc_ha#
+a : The Bright One judges hearts. I've only faces. | So. Patience. | That's my way. Few, but kept.
+
+scene sc_first_line_prayer
+when topic=faith
+does confide / react.self / assess
+a : Before the first line of the day I say a short prayer. Not aloud. | I ask the Bright One for a steady hand every morning. It's been granted, mostly. | I keep a little prayer folded in my case. My own words, in my own hand.
+b : What do you pray? | Mostly? | What does it say?
+a : That the line be true and the hand not shake. That's all of it. | Except the mornings I'm proud. Then I blot. | That's between me and the One it was written for.
+
+scene sc_bread_line
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / tell.self / backchannel / assess
+a : The line at the chapel door's longer this week. I counted on my way past. | Times are pinched. I've seen clerks skip their dinner. | I put a few coins in the box. It doesn't feel like enough.
+b : #sympathy# | Even clerks? | It helps.
+a : The Bright One sees them. I hope the city does too. | Even clerks. They're too proud to say. I notice anyway. | I hope it does. I'll do it again next week.
+b : #bc_i_hope_so# | #bc_true# | #bc_good#
+a : We'll come through. We always have. | I've started bringing two oatcakes. One's never for me. | So. A little, every week.
+
+scene sc_gossip_closed
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : They were saying at the gate that #topic.subject# #topic.claim#. I'll not add to it. | I heard it said #topic.subject# #topic.claim#. I don't know more, and I'd rather not. | You'll have heard. #topic.subject.capitalize# #topic.claim#. That's how it came to me.
+b : Do you believe it? | Not even a guess? | I'd heard.
+a : I believe nothing I haven't seen written. And not all of that. | Not even a guess. Guesses are how harm gets done. | Then that's the end of it. We needn't speak of it further.
+
+scene sc_carts_gate
+when topic=caravan world.wagons=late here.region=ridgemere
+does tell.self / react.self / assess
+a : The carts are late at the north gate again. I hear the drovers grumbling under my window. | No carts on the gate road this morning. The street's too quiet. | Late wagons. The paper's due up from the mill, and it isn't here.
+b : They'll come. | Too quiet? | No paper?
+a : I expect so. They usually do, eventually. | I'd not complain of quiet, but this kind's a worry. | A day or two's store. Then I write smaller.
+
+scene sc_quiet_rooms
+when topic=home
+does tell.self / react.self / assess
+a : My rooms are small, and very quiet. That suits me. | I've a lamp, a chair and a shelf of hymnals at home. Enough. | I latch my door at dusk and I don't unlatch it till morning.
+b : Not lonely? | Enough? | Very careful.
+a : Sometimes. Then I sing, and it passes. | More than enough. I've known less. | Careful, yes. It's not fear. It's how I am.
+
+scene sc_learned_letters
+when topic=memories self.age>=30
+does recall / react.self / tell.self / backchannel / assess
+a : I learned my letters at the abbey, from an old brother with a stiff paw. | When I was a pup I copied hymns onto slate, over and over. | The first word I ever wrote clean was the Bright One's name.
+b : A good teacher? | Over and over? | That's fitting.
+a : A patient one. He'd make me write a line ten times and praise the eleventh. | Till the slate wore smooth. It taught me to be slow. | I thought so too. I still write it slowest of all.
+b : #bc_lovely# | #bc_wise# | #bc_lovely#
+a : I think of him most mornings. | So. That's where the hand came from. | So. That's where it began.
+
+story st_solo_cough [topic=memories|pastimes self.age>=25]
+  : Once I was given a verse to sing alone at a feast. Just the low part, all by itself.
+  : In the middle of it the damp caught my chest, and out came a cough in the quiet.
+  ask : Can you guess what I did?
+  b : Stopped, I'd think. Didn't you?
+  : No. I turned it into the next note and went on. Afterwards folk said it was the best they'd heard me.
+
+story st_first_wages [topic=work|memories self.job=scholar|official self.age>=25]
+  : My first copying wages came in a little cloth bag. I didn't open it for a week.
+  : When I did, I counted it twice, and then I took it to the chapel and gave a tenth away.
+  ask : What would you have bought?
+  b : Something to eat, I'd say. And what did you buy with the rest?
+  : Boots. Good ones. I'd walked all winter on soles thin as paper.
+
+story st_misty_bells [topic=weather|faith self.age>=25 here.region=ridgemere]
+  : One morning the mist was so thick I lost the street on my way to the desk.
+  : I stood still and listened, and the abbey bells found me. I walked toward them.
+  b : That's a strange kind of guide. Were you afraid?
+  : A little. Then not at all. I've thought of it as a kindness ever since.
+
+rule @bk_cough
+when concept=bark here.weather=rain|fog|overcast
+does aside
+cooldown 8h
+say Hm-mm. Low note. | Ahem. Practising.
+
+rule @bk_flies
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 10h
+say Off. Off the ink. | Another fly. Bright One give me patience.
+
+rule @bk_line
+when concept=bark self.working=yes self.job=scholar|official
+does aside
+cooldown 8h
+say One line, then the next. | Steady. Steady, now.
+
+rule @bk_evening
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say The bell. Time to latch the door. | Lamps lit. Home, then.
+
+dlg resident.hub : #greet#. Softly, if you would. What is it? | #greet#. I've a moment.
+dlg resident.hub [topic.meeting=known] : #topic.player#. You've come back. What do you need? | #greet#, #topic.player#. Kindly met.
+dlg resident.hub [pair.disposition=hostile|wary] : I'd rather keep this short. Say what you need. | I don't know you. Please, say your business.
+dlg resident.job [self.job=scholar|official] : I make fair copies for the city. Deeds, wills, petitions. Slowly. | #self.trade_words.capitalize#. One line, then the next.
+dlg resident.job : I work quietly and I don't talk about it much. | Steady work. I'm grateful for it.
+dlg resident.bye : #farewell#. #bless#. | Go gently. #farewell#.
+dlg resident.news [world.news] : From #world.news_from#, I heard: #world.news#. I don't know more. | They spoke of it at the gate: #world.news#, from #world.news_from#.
+dlg resident.news [world.event_words] : Everyone's speaking of #world.event_words#. I've only heard it in passing. | #world.event_words.capitalize#, they say. I keep out of the talk.
+dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing that I know of. I keep to my desk. | I've heard nothing. I'd not be the first to hear, in any case.
+dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'll say no more of it. | It was said at the gate that #topic.subject# #topic.claim#. I'd not repeat it further.
+dlg resident.gossip [here.gossip!=yes] : I don't carry tales. Forgive me. | Nothing I'd care to repeat.
+
+graft resident.hub
+choice Was that a cough just now? -> cough
+node cough
+say No. The low note. The hymn on Restday goes right down to the floor, and it wants practice in this weather.
+mood calm
+free
+choice It sounded like a cough to me. -> cough_two
+choice Back to what we were saying. -> hub
+node cough_two
+say Hm. Perhaps. Don't tell the choir. And don't fuss over me; I'll have it smooth by Restday.
+choice I won't fuss. -> hub
+choice Goodbye. -> bye

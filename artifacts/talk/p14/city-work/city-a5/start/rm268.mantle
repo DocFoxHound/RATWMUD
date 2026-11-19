@@ -1,0 +1,28 @@
+# rm268, TODO title (doc 84 P14, batch city-a5): written for rm_vigdis_pitchmarsh (Vigdis Pitchmarsh: works at The Greatly Colour Works, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm268
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_vigdis_pitchmarsh
+title TODO
+fits stage=adult|old
+prefers job=crafter
+traits temper=even talk=plain warmth=warm humour=none honesty=sly piety=ordinary drive=steady
+quirk swears_by_the_forge_and_the_sea
+likes mutton_stew dancing old_maps misty_dawns
+dislikes deep_mud cold_tea
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

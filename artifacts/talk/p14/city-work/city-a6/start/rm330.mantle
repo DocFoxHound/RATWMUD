@@ -1,0 +1,28 @@
+# rm330, TODO title (doc 84 P14, batch city-a6): written for rmx_ivo_wainwright (Ivo Wainwright: butcher on Market Square, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm330
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_ivo_wainwright
+title TODO
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk can_name_every_ship_in_the_sound
+likes mutton_stew draughts fresh_straw misty_dawns
+dislikes flies crowds
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

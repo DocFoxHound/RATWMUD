@@ -1,0 +1,473 @@
+469 placed, living residents wear no mantle and have none written (town ridgemere)
+by town / quarter / dialect: ridgemere/-/plain 28, ridgemere/commons/plain 161, ridgemere/estate/plain 41, ridgemere/heights/plain 37, ridgemere/office/plain 26, ridgemere/sump/plain 144, ridgemere/wharf/plain 8, ridgemere/works/plain 24
+tiers: full 130, standard 339; pups and adolescents 84
+rank	id	name	town	quarter	dialect	accents	tier	stage	sex	age	work
+1	rmx_orm_blackwood	Orm Blackwood	ridgemere	commons	plain	broad light	standard	old	male	81	none
+2	rm_rosamund_tarridge	Rosamund Tarridge	ridgemere	commons	plain	light broad	full	adult	female	30	keeping the inn
+3	rm_wenna_tarford	Wenna Tarford	ridgemere	commons	plain	light broad	full	adult	female	20	provisioner in the Rag Market
+4	rm_orm_fogmore	Orm Fogmore	ridgemere	sump	plain	light broad	standard	young	male	11	at lessons
+5	rmx_gerrit_hollis	Gerrit Hollis	ridgemere	commons	plain	broad light	standard	old	male	67	none
+6	rmx_maren_hatherley	Maren Hatherley	ridgemere	commons	plain	broad light	standard	old	female	82	none
+12	rm_wynn_rustworth	Wynn Rustworth	ridgemere	commons	plain	broad light	full	adult	female	21	butcher in the Market Hall
+16	rmx_gunnar_farrow	Gunnar Farrow	ridgemere	commons	plain	broad light	standard	old	male	73	none
+17	rmx_dagfinn_kettlecote	Dagfinn Kettlecote	ridgemere	commons	plain	broad light	standard	old	male	80	none
+19	rm_imogen_ashby	Imogen Ashby	ridgemere	commons	plain	broad light	full	adult	female	55	teaching letters
+20	rm_torvald_slagton	Torvald Slagton	ridgemere	sump	plain	light broad	full	adult	male	59	helping at The Grey Gull Inn
+21	rm_ulf_cinderley	Ulf Cinderley	ridgemere	commons	plain	none	standard	adult	male	23	helping at Oilcloth & Wool
+22	rm_winifred_pitchdale	Winifred Pitchdale	ridgemere	commons	plain	light broad	full	adult	female	45	butcher at Mutton Lane Butchers
+24	rmx_oda_cotton	Oda Cotton	ridgemere	commons	plain	light broad	full	adult	female	59	keeping the Long Store
+28	rmx_ivar_netherworth	Ivar Netherworth	ridgemere	commons	plain	broad light	standard	old	male	65	none
+32	rmx_desmond_toft	Desmond Toft	ridgemere	commons	plain	light broad	full	adult	male	38	runs The Greatly Yard
+33	rm_winifred_cinderworth	Winifred Cinderworth	ridgemere	commons	plain	light broad	full	adult	female	40	baker on Market Square
+34	rm_edmund_sootdale	Edmund Sootdale	ridgemere	office	plain	broad light	standard	young	male	9	at lessons
+35	rm_corra_ropewick	Corra Ropewick	ridgemere	sump	plain	light broad	standard	young	female	6	at lessons
+36	rmx_montague_kettlewick	Montague Kettlewick	ridgemere	commons	plain	light broad	standard	adolescent	male	14	at lessons
+37	rm_gwen_pitchdale	Gwen Pitchdale	ridgemere	commons	plain	broad light	standard	young	female	12	at lessons
+38	rmx_jasper_brackham	Jasper Brackham	ridgemere	commons	plain	light broad	standard	adolescent	male	14	at lessons
+39	rmx_greta_thornworth	Greta Thornworth	ridgemere	commons	plain	light broad	standard	young	female	9	at lessons
+40	rmx_philippa_coldby	Philippa Coldby	ridgemere	commons	plain	broad light	standard	adult	female	41	clerking for the magistrate
+41	rm_rune_greyby	Rune Greyby	ridgemere	commons	plain	light broad	standard	young	male	12	at lessons
+42	rmx_delphine_brackwick	Delphine Brackwick	ridgemere	commons	plain	light broad	standard	adult	female	31	driving for the carters
+43	rm_rune_pitchhand	Rune Pitchhand	ridgemere	commons	plain	broad light	standard	adolescent	male	14	at lessons
+44	rm_silas_brinegate	Silas Brinegate	ridgemere	commons	plain	broad light	standard	young	male	9	at lessons
+46	rmx_bo_gilbey	Bo Gilbey	ridgemere	commons	plain	broad light	full	adult	male	48	runs The Greatly Tileworks
+47	rm_josephine_wetmore	Josephine Wetmore	ridgemere	sump	plain	light broad	standard	young	female	9	at lessons
+49	rmx_brenna_abbot	Brenna Abbot	ridgemere	commons	plain	none	full	adult	female	52	herald of the Great Palace
+50	rmx_vidar_kettleham	Vidar Kettleham	ridgemere	commons	plain	none	standard	young	male	8	at lessons
+51	rm_leif_fogcot	Leif Fogcot	ridgemere	wharf	plain	light broad	full	adult	male	59	helping at The Grey Gull Inn
+52	rmx_lionel_lowe	Lionel Lowe	ridgemere	commons	plain	broad light	standard	adult	male	35	working at The Eastgate Stables
+53	rmx_ebba_netherby	Ebba Netherby	ridgemere	commons	plain	light broad	standard	young	female	8	at lessons
+54	rm_elspet_ropewick	Elspet Ropewick	ridgemere	sump	plain	none	standard	adolescent	female	14	at lessons
+55	rmx_lothar_abbot	Lothar Abbot	ridgemere	commons	plain	broad light	standard	adult	male	25	clerking at the Records Office
+56	rm_elspet_sootley	Elspet Sootley	ridgemere	commons	plain	broad light	standard	young	female	6	at lessons
+58	rmx_ilse_netherby	Ilse Netherby	ridgemere	commons	plain	light broad	standard	adolescent	female	14	at lessons
+60	rmx_hanne_ash	Hanne Ash	ridgemere	commons	plain	broad light	standard	adult	female	33	carrying for the Couriers' Office
+62	rm_ulla_greymore	Ulla Greymore	ridgemere	sump	plain	none	full	adult	female	50	washing at the Washhouse
+63	rm_ilse_nailridge	Ilse Nailridge	ridgemere	commons	plain	light broad	standard	young	female	10	at lessons
+64	rm_palle_bilgemarsh	Palle Bilgemarsh	ridgemere	commons	plain	light broad	full	adult	male	35	preserver on Market Square
+65	rm_isolde_ropehand	Isolde Ropehand	ridgemere	commons	plain	light broad	standard	adolescent	female	14	at lessons
+68	rm_jorunn_cindermore	Jorunn Cindermore	ridgemere	commons	plain	light broad	full	adult	female	59	smith at Eastgate Ironmongers
+69	rm_tove_brinegate	Tove Brinegate	ridgemere	commons	plain	light broad	full	adult	female	58	baker at The Morning Oven
+70	rmx_sybil_pickering	Sybil Pickering	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+71	rm_orla_wickby	Orla Wickby	ridgemere	commons	plain	none	full	adult	female	48	butcher at Moss & Marrow
+77	rm_mathis_saltton	Mathis Saltton	ridgemere	commons	plain	light broad	standard	adult	male	50	helping at Grist & Crust
+78	rmx_kjell_coalham	Kjell Coalham	ridgemere	sump	plain	light broad	standard	adult	male	46	carrying from Sump Stairs
+79	rm_brand_mudridge	Brand Mudridge	ridgemere	office	plain	light broad	standard	adult	male	34	keeping the Watch's weapon racks
+80	rm_ivo_fogstack	Ivo Fogstack	ridgemere	sump	plain	broad light	standard	adult	male	20	keeping the Washhouse
+82	rm_mab_saltgate	Mab Saltgate	ridgemere	sump	plain	light broad	standard	young	female	7	at lessons
+83	rm_liv_cinderby	Liv Cinderby	ridgemere	sump	plain	broad light	standard	adult	female	32	helping at The Wharf Tannery
+84	rm_signe_brineworth	Signe Brineworth	ridgemere	sump	plain	light broad	standard	adult	female	25	washing at the Washhouse
+86	rm_ottilie_sootdale	Ottilie Sootdale	ridgemere	office	plain	light broad	standard	adult	female	49	helping at Wetink Lane Scriveners
+87	rm_agna_dripgate	Agna Dripgate	ridgemere	sump	plain	none	standard	young	female	7	at lessons
+88	rm_sybil_tardale	Sybil Tardale	ridgemere	sump	plain	light broad	standard	adult	female	49	works at The Timberland Foundry
+90	rmx_egil_blackcombe	Egil Blackcombe	ridgemere	commons	plain	none	standard	young	male	10	at lessons
+91	rmx_rika_gullwell	Rika Gullwell	ridgemere	sump	plain	light broad	standard	adult	female	43	washing at the Washhouse
+92	rm_aldric_rustgate	Aldric Rustgate	ridgemere	sump	plain	light broad	standard	young	male	12	at lessons
+93	rm_ansel_wickdale	Ansel Wickdale	ridgemere	sump	plain	light broad	standard	adult	male	32	helping at The Lamp & Wick
+94	rm_brenna_greyworth	Brenna Greyworth	ridgemere	sump	plain	light broad	standard	adult	female	48	helping at Wickham's Chandlery
+95	rm_imogen_nailridge	Imogen Nailridge	ridgemere	commons	plain	light broad	full	adult	female	31	cartographer at Soundings
+96	rm_jorunn_ropewick	Jorunn Ropewick	ridgemere	sump	plain	broad light	full	adult	female	43	pawnbroker at The Pawn and Ledger
+97	rmx_aud_kemp	Aud Kemp	ridgemere	commons	plain	broad light	standard	old	female	80	none
+98	rmx_desmond_farrow	Desmond Farrow	ridgemere	commons	plain	none	standard	adult	male	19	usher in the Antechamber
+99	rm_theodora_bilgeridge	Theodora Bilgeridge	ridgemere	commons	plain	none	full	adult	female	50	butcher at The Hook and Cleaver
+100	rm_gudrun_targate	Gudrun Targate	ridgemere	commons	plain	none	full	adult	female	44	weaver at Greywool
+101	rm_mogens_greycot	Mogens Greycot	ridgemere	sump	plain	light broad	standard	adult	male	32	works at The Greatly Tileworks
+102	rmx_hollis_kendrick	Hollis Kendrick	ridgemere	commons	plain	light broad	standard	young	male	10	at lessons
+103	rmx_magda_orme	Magda Orme	ridgemere	commons	plain	light broad	standard	adult	female	27	working at Grayrock Shipwrights
+104	rm_ivar_nailham	Ivar Nailham	ridgemere	sump	plain	light broad	standard	adult	male	36	driving for the carters
+105	rm_ivo_dripworth	Ivo Dripworth	ridgemere	sump	plain	none	standard	adult	male	53	helping at Gullgut Fish
+107	rm_dagfinn_gullham	Dagfinn Gullham	ridgemere	commons	plain	light broad	full	adult	male	44	tailor at Needle & Drip
+108	rm_soren_kelpcot	Soren Kelpcot	ridgemere	office	plain	light broad	standard	adult	male	50	clerking at the Records Office
+109	rmx_gorm_saltstack	Gorm Saltstack	ridgemere	sump	plain	light broad	full	adult	male	31	baker at The Penny Loaf
+112	rm_egil_targate	Egil Targate	ridgemere	commons	plain	none	full	adult	male	58	helping at Greywool
+113	rm_gerrit_mudhand	Gerrit Mudhand	ridgemere	office	plain	none	full	adult	male	55	chancellor of the Council
+114	rm_liv_slagstack	Liv Slagstack	ridgemere	commons	plain	broad light	full	adult	female	42	preserver at The Honey Crock
+115	rm_osric_plankford	Osric Plankford	ridgemere	heights	plain	light broad	standard	adult	male	25	minding the shop door
+116	rm_rupert_fogton	Rupert Fogton	ridgemere	commons	plain	broad light	full	adult	male	32	apothecary at Hollis Physic
+117	rmx_orm_nailhand	Orm Nailhand	ridgemere	sump	plain	light broad	standard	adult	male	31	helping at Rainford's Store
+118	rm_brenna_milldale	Brenna Milldale	ridgemere	sump	plain	broad light	standard	adult	female	57	unloading ships at the piers
+119	rm_frida_rainhand	Frida Rainhand	ridgemere	sump	plain	broad light	standard	adult	female	28	working at the Greatly works
+120	rm_jasper_bilgeford	Jasper Bilgeford	ridgemere	office	plain	none	standard	adult	male	47	collecting the Crown's customs
+121	rm_kjell_cinderwell	Kjell Cinderwell	ridgemere	commons	plain	light broad	standard	adult	male	60	helping at Pennock & Sons
+123	rm_rune_wickwell	Rune Wickwell	ridgemere	sump	plain	broad light	standard	old	male	67	none
+124	rm_rupert_sootley	Rupert Sootley	ridgemere	commons	plain	light broad	standard	adult	male	38	helping at The Lamp & Wick
+127	rm_gerrit_sootgate	Gerrit Sootgate	ridgemere	commons	plain	none	full	adult	male	57	rag-and-bone dealer, Rag Market
+129	rm_kjell_cinderley	Kjell Cinderley	ridgemere	commons	plain	none	full	adult	male	46	preserver at The Apple Loft
+131	rm_corwin_sootton	Corwin Sootton	ridgemere	sump	plain	broad light	standard	adult	male	44	unloading ships at the piers
+132	rm_erland_cinderridge	Erland Cinderridge	ridgemere	estate	plain	light broad	standard	adult	male	21	serving in the hall
+133	rm_isolde_brineton	Isolde Brineton	ridgemere	sump	plain	light broad	standard	adult	female	49	helping at Southway Provisions
+134	rm_kjell_wickmore	Kjell Wickmore	ridgemere	sump	plain	light broad	standard	adult	male	52	helping at The Rain Pot
+135	rm_erland_ashworth	Erland Ashworth	ridgemere	office	plain	none	standard	adult	male	58	hearing cases
+136	cty_millicent_pitchby	Millicent Pitchby	ridgemere		plain	broad light	standard	adult	female	36	cowherd at Hillside
+137	rm_ivo_cinderham	Ivo Cinderham	ridgemere	sump	plain	light broad	standard	adult	male	40	working the cranes
+138	rm_kari_bilgehand	Kari Bilgehand	ridgemere	commons	plain	none	full	adult	female	48	ropemaker at the ropewalk
+139	rm_magnus_greycot	Magnus Greycot	ridgemere	sump	plain	broad light	standard	adult	male	28	washing at the Washhouse
+140	rm_maren_tarhand	Maren Tarhand	ridgemere	sump	plain	light broad	standard	adult	female	40	printing at The Council Press
+141	rmx_frida_netherby	Frida Netherby	ridgemere	commons	plain	light broad	full	adult	female	47	runs The Greatly Masons' Yard
+142	rmx_halvard_fenworth	Halvard Fenworth	ridgemere	commons	plain	broad light	standard	adolescent	male	15	at lessons
+143	rmx_ingrid_kendrick	Ingrid Kendrick	ridgemere	commons	plain	broad light	standard	old	female	68	none
+144	rm_bertil_slagley	Bertil Slagley	ridgemere	estate	plain	light broad	full	adult	male	34	singing in the cathedral choir
+145	rm_ingrid_millton	Ingrid Millton	ridgemere	commons	plain	broad light	standard	adult	female	26	helping at Staves & Hoops
+146	rm_montague_pitchhand	Montague Pitchhand	ridgemere	commons	plain	light broad	standard	adult	male	31	helping at The Sugar Loaf
+148	rmx_disa_bilgemarsh	Disa Bilgemarsh	ridgemere	sump	plain	broad light	standard	old	female	73	none
+150	rmx_petra_ashgate	Petra Ashgate	ridgemere	sump	plain	light broad	full	adult	female	43	washing at the Washhouse
+151	rmx_sigrun_wickham	Sigrun Wickham	ridgemere	sump	plain	broad light	standard	old	female	80	none
+153	rm_gerrit_ropewick	Gerrit Ropewick	ridgemere	sump	plain	light broad	standard	adult	male	36	works at The Greatly Masons' Yard
+154	rm_gwen_sootmore	Gwen Sootmore	ridgemere	sump	plain	broad light	standard	adult	female	58	helping at The Cedar Phial
+155	rm_halvard_ashley	Halvard Ashley	ridgemere	commons	plain	light broad	full	adult	male	23	apothecary at The Mortar and Pestle
+156	rm_lars_wickwell	Lars Wickwell	ridgemere	sump	plain	light broad	standard	adult	male	41	helping at Mend & Make Do
+158	rm_desmond_bilgeridge	Desmond Bilgeridge	ridgemere	commons	plain	none	standard	young	male	11	at lessons
+160	rm_gudrun_wickby	Gudrun Wickby	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+161	rm_ingrid_ashwell	Ingrid Ashwell	ridgemere	sump	plain	light broad	standard	adult	female	47	printing at The Council Press
+162	rm_mab_coalridge	Mab Coalridge	ridgemere	works	plain	broad light	standard	adult	female	30	serving in the King's household
+163	rmx_ansel_kelpford	Ansel Kelpford	ridgemere	sump	plain	light broad	standard	adult	male	25	helping at Needle & Drip
+164	rmx_una_brineridge	Una Brineridge	ridgemere	sump	plain	none	standard	adult	female	18	helping at Greywool
+165	rmx_winifred_nailton	Winifred Nailton	ridgemere	sump	plain	broad light	standard	adult	female	23	helping at Wickham's Chandlery
+166	rm_berit_coalworth	Berit Coalworth	ridgemere	estate	plain	light broad	full	adult	female	41	sexton of the cathedral
+168	rm_mathis_plankham	Mathis Plankham	ridgemere	sump	plain	light broad	standard	adult	male	53	carrying from Sump Stairs
+170	rm_sten_ropeford	Sten Ropeford	ridgemere	commons	plain	light broad	standard	adult	male	33	helping at Rainford's Store
+171	rm_wynn_sootworth	Wynn Sootworth	ridgemere	works	plain	light broad	full	adult	female	33	smith at Timberland's Nailers' Forge
+172	rm_wystan_mudcot	Wystan Mudcot	ridgemere	heights	plain	light broad	standard	adult	male	29	working at Cinder Wheelwrights
+173	rmx_cedric_rook	Cedric Rook	ridgemere	office	plain	light broad	standard	adult	male	44	royal secretary
+175	rmx_delphine_redfern	Delphine Redfern	ridgemere	commons	plain	light broad	standard	adult	female	43	helping at Clearwater Glass
+176	rmx_dorcas_brineley	Dorcas Brineley	ridgemere	sump	plain	light broad	standard	adult	female	23	crying wares in the Rag Market
+177	cty_mogens_mudstack	Mogens Mudstack	ridgemere		plain	none	standard	adult	male	30	cuts wood at the Rainwood coppice
+178	rm_edric_millton	Edric Millton	ridgemere	commons	plain	light broad	full	adult	male	25	cooper at Staves & Hoops
+179	rm_finn_saltwell	Finn Saltwell	ridgemere	sump	plain	broad light	standard	adult	male	57	unloading ships at the piers
+180	rm_hilde_rainmore	Hilde Rainmore	ridgemere	commons	plain	light broad	standard	young	female	7	at lessons
+181	rm_piet_slagcot	Piet Slagcot	ridgemere	commons	plain	broad light	full	adult	male	38	baker in the Market Hall
+182	rmx_edda_muddale	Edda Muddale	ridgemere	sump	plain	broad light	standard	old	female	65	none
+183	rmx_harriet_platt	Harriet Platt	ridgemere	office	plain	light broad	standard	adult	female	33	clerking at the Records Office
+184	cty_beatha_slagby	Beatha Slagby	ridgemere		plain	light broad	full	adult	female	54	herds the cattle at Rainrun
+185	rm_corra_coalcot	Corra Coalcot	ridgemere	works	plain	none	full	adult	female	22	runs The Fish Hall
+187	rm_gwen_pitchcot	Gwen Pitchcot	ridgemere	commons	plain	light broad	standard	young	female	6	at lessons
+188	rm_soren_coaldale	Soren Coaldale	ridgemere	sump	plain	light broad	full	adult	male	58	portering in Market Square
+190	rm_vigdis_pitchmarsh	Vigdis Pitchmarsh	ridgemere	sump	plain	broad light	standard	adult	female	46	works at The Greatly Colour Works
+191	rmx_lionel_platt	Lionel Platt	ridgemere	office	plain	light broad	full	adult	male	32	runs The Timberland Sawmill
+192	rm_desmond_cindermore	Desmond Cindermore	ridgemere	commons	plain	broad light	standard	old	male	70	none
+194	rm_maren_brineford	Maren Brineford	ridgemere	wharf	plain	light broad	standard	adolescent	female	14	at lessons
+195	rm_rosamund_slagstack	Rosamund Slagstack	ridgemere	commons	plain	none	standard	adolescent	female	13	at lessons
+196	rm_rupert_pitchford	Rupert Pitchford	ridgemere	commons	plain	light broad	full	adult	male	34	apothecary on Market Square
+197	rm_theodora_driphand	Theodora Driphand	ridgemere	office	plain	light broad	standard	adult	female	45	keeping order in court
+198	rm_una_pitchcot	Una Pitchcot	ridgemere	commons	plain	light broad	full	adult	female	26	baker at The Eastgate Bakehouse
+199	rm_yrsa_nailridge	Yrsa Nailridge	ridgemere	commons	plain	light broad	standard	adult	female	52	helping at Soundings
+203	rm_cressida_tarham	Cressida Tarham	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+204	rm_delphine_saltwick	Delphine Saltwick	ridgemere	commons	plain	light broad	full	adult	female	64	vintner at The Fell Wine Vaults
+205	rm_gerrit_nailford	Gerrit Nailford	ridgemere	commons	plain	light broad	full	adult	male	30	barber at The Barber's Pole
+206	rm_lotte_bilgeton	Lotte Bilgeton	ridgemere	sump	plain	none	standard	adult	female	22	helping at The Wharf Tannery
+207	rm_moll_dripdale	Moll Dripdale	ridgemere	sump	plain	none	standard	adult	female	28	helping at The Wharf Tannery
+208	rm_runa_nailton	Runa Nailton	ridgemere	sump	plain	light broad	standard	adult	female	45	serving in the King's household
+210	rmx_oda_cinderby	Oda Cinderby	ridgemere	estate	plain	broad light	standard	adolescent	female	14	at lessons
+212	rm_florence_millmarsh	Florence Millmarsh	ridgemere	commons	plain	light broad	standard	adult	female	64	none
+214	rm_mab_pitchcot	Mab Pitchcot	ridgemere	commons	plain	light broad	standard	adult	female	47	keeping the New Store
+215	rm_mogens_dripley	Mogens Dripley	ridgemere	commons	plain	light broad	full	adult	male	47	greens stall on Market Square
+216	rm_rosamund_coalford	Rosamund Coalford	ridgemere	sump	plain	broad light	full	adult	female	55	runs The North Wharf Smokehouse
+217	rm_rune_fogworth	Rune Fogworth	ridgemere	commons	plain	light broad	full	adult	male	51	printer at The Council Press
+218	rmx_hollis_shaw	Hollis Shaw	ridgemere	commons	plain	light broad	standard	adult	male	48	copying at the Records Office
+219	rmx_ivo_wainwright	Ivo Wainwright	ridgemere	works	plain	none	full	adult	male	58	butcher on Market Square
+220	rmx_magnus_millley	Magnus Millley	ridgemere	sump	plain	light broad	standard	adult	male	40	working at Grayrock Shipwrights
+221	rmx_ottilie_dripdale	Ottilie Dripdale	ridgemere	sump	plain	light broad	standard	adult	female	25	helping at Commons Sundries
+223	rm_frida_kelpford	Frida Kelpford	ridgemere	sump	plain	broad light	standard	adult	female	23	helping at The Rain Pot
+224	rm_gerrit_tarmore	Gerrit Tarmore	ridgemere	sump	plain	none	standard	adult	male	52	helping at Needle & Drip
+225	rm_godfrey_dripmore	Godfrey Dripmore	ridgemere	commons	plain	light broad	full	adult	male	50	potter at The Rain Pot
+226	rm_liv_pitchhand	Liv Pitchhand	ridgemere	commons	plain	light broad	full	adult	female	60	baker at The Sugar Loaf
+227	rm_ottilie_nailmarsh	Ottilie Nailmarsh	ridgemere	sump	plain	light broad	standard	adult	female	45	carrying from Sump Stairs
+229	rmx_bartholomew_sootmore	Bartholomew Sootmore	ridgemere	sump	plain	broad light	standard	adult	male	52	washing at the Washhouse
+230	rmx_desmond_rook	Desmond Rook	ridgemere	office	plain	light broad	full	adult	male	49	clerking in the Administrative Wing
+231	rmx_magnus_saltford	Magnus Saltford	ridgemere	sump	plain	none	standard	adolescent	male	14	at lessons
+232	rmx_orm_carlisle	Orm Carlisle	ridgemere	heights	plain	none	full	adult	male	31	keeping the Carters' Yard
+233	rmx_philippa_rainford	Philippa Rainford	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+234	rmx_sigrun_mudmore	Sigrun Mudmore	ridgemere	sump	plain	light broad	full	adult	female	59	helping at The Round and Rind
+235	rm_eleanor_wetby	Eleanor Wetby	ridgemere	sump	plain	light broad	full	adult	female	42	teaching at the abbey school
+237	rm_hanne_sootham	Hanne Sootham	ridgemere	sump	plain	light broad	standard	adult	female	39	unloading ships at the piers
+238	rm_hester_fogstack	Hester Fogstack	ridgemere	sump	plain	light broad	full	adult	female	43	provisioner at Harbour Provisions
+240	rm_lavinia_brinemarsh	Lavinia Brinemarsh	ridgemere	sump	plain	light broad	standard	adult	female	49	carrying from Sump Stairs
+242	rm_theodora_fogdale	Theodora Fogdale	ridgemere	sump	plain	light broad	standard	adult	female	22	washing at the Washhouse
+244	rmx_bettany_bilgehand	Bettany Bilgehand	ridgemere	sump	plain	light broad	standard	young	female	9	at lessons
+245	rmx_florence_gullworth	Florence Gullworth	ridgemere	sump	plain	broad light	standard	old	female	82	none
+246	rmx_roald_greyham	Roald Greyham	ridgemere	sump	plain	light broad	standard	adult	male	55	working at the Bathhouse
+248	rm_clemence_rustham	Clemence Rustham	ridgemere	commons	plain	broad light	full	adult	female	59	cooking for Northgate
+249	rm_edda_ropeton	Edda Ropeton	ridgemere	commons	plain	light broad	full	adult	female	46	provisioner at The Round and Rind
+251	rm_josephine_brineford	Josephine Brineford	ridgemere	wharf	plain	light broad	standard	young	female	8	at lessons
+253	rm_mathis_slagwell	Mathis Slagwell	ridgemere	sump	plain	light broad	standard	adult	male	48	carrying from Sump Stairs
+254	rm_osric_wetford	Osric Wetford	ridgemere	sump	plain	light broad	standard	adult	male	25	helping at The Grey Goose
+255	rm_runa_ashridge	Runa Ashridge	ridgemere	sump	plain	light broad	standard	adult	female	34	printing at The Council Press
+256	rmx_dagfinn_wainwright	Dagfinn Wainwright	ridgemere	works	plain	light broad	standard	adult	male	52	working the cranes
+257	rmx_grete_dunn	Grete Dunn	ridgemere	commons	plain	light broad	standard	adult	female	23	clerking at the Wharf Office
+258	rmx_mab_fogham	Mab Fogham	ridgemere	sump	plain	light broad	standard	adult	female	54	working at Grayrock Shipwrights
+259	rmx_tobias_rainley	Tobias Rainley	ridgemere	sump	plain	light broad	standard	adult	male	48	helping at The Penny Loaf
+261	rmx_una_thackeray	Una Thackeray	ridgemere	works	plain	broad light	standard	adult	female	62	none
+263	rm_agnes_wetley	Agnes Wetley	ridgemere	sump	plain	broad light	full	adult	female	31	priest at the cathedral
+265	rm_dorcas_rainford	Dorcas Rainford	ridgemere	sump	plain	light broad	standard	adult	female	23	helping at The Lamp & Wick
+266	rm_edric_cindermarsh	Edric Cindermarsh	ridgemere	works	plain	light broad	standard	adult	male	61	works at The Timberland Ironworks
+268	rm_percival_rustford	Percival Rustford	ridgemere	sump	plain	broad light	standard	adult	male	53	serving in the King's household
+273	rmx_dirk_mallory	Dirk Mallory	ridgemere	commons	plain	light broad	standard	adolescent	male	15	at lessons
+274	rmx_knut_sootley	Knut Sootley	ridgemere	sump	plain	light broad	standard	adult	male	42	unloading ships at the piers
+275	rmx_magnus_wetherell	Magnus Wetherell	ridgemere	works	plain	none	full	adult	male	57	helping at The Lamp & Wick
+276	rmx_olaf_stoneley	Olaf Stoneley	ridgemere	commons	plain	light broad	standard	young	male	12	at lessons
+278	rm_cressida_dripmore	Cressida Dripmore	ridgemere	commons	plain	light broad	full	adult	female	57	helping at The Rain Pot
+279	rm_cressida_millstack	Cressida Millstack	ridgemere	commons	plain	light broad	full	adult	female	56	perfumer at The Cedar Phial
+282	rm_hollis_greydale	Hollis Greydale	ridgemere	sump	plain	light broad	standard	adult	male	49	helping at Rainford's Store
+283	rm_hollis_gullmore	Hollis Gullmore	ridgemere	commons	plain	broad light	full	adult	male	59	keeping the taproom
+284	rm_lionel_ropestack	Lionel Ropestack	ridgemere	sump	plain	light broad	full	adult	male	46	abbot of the cathedral
+285	rm_magda_rainmarsh	Magda Rainmarsh	ridgemere	commons	plain	light broad	standard	young	female	9	at lessons
+286	rm_ragnar_roperidge	Ragnar Roperidge	ridgemere	commons	plain	none	full	adult	male	25	runs The Eastgate Stables
+287	rm_silas_wickford	Silas Wickford	ridgemere	heights	plain	light broad	standard	adult	male	33	minding the shop door
+288	rm_vidar_ashhand	Vidar Ashhand	ridgemere	estate	plain	broad light	full	adult	male	42	serving in the hall
+290	rmx_corra_coldridge	Corra Coldridge	ridgemere	commons	plain	light broad	standard	adult	female	21	usher in the Antechamber
+291	rmx_corra_gullford	Corra Gullford	ridgemere	sump	plain	none	standard	young	female	8	at lessons
+295	rm_frida_brineford	Frida Brineford	ridgemere	wharf	plain	light broad	full	adult	female	60	provisioner at The Bung Hole
+296	rm_gwen_fogstack	Gwen Fogstack	ridgemere	sump	plain	broad light	standard	old	female	69	minding the shop door
+297	rm_ilse_cindercot	Ilse Cindercot	ridgemere	office	plain	light broad	standard	adult	female	35	clerking at the City Office
+298	rm_magda_rustham	Magda Rustham	ridgemere	commons	plain	broad light	standard	old	female	68	minding the shop door
+299	rm_mogens_ashley	Mogens Ashley	ridgemere	commons	plain	light broad	full	adult	male	43	helping at The Mortar and Pestle
+300	rm_njal_ashford	Njal Ashford	ridgemere	commons	plain	light broad	full	adult	male	48	carpenter at Cedar Row Joiners
+301	rm_theodora_wickley	Theodora Wickley	ridgemere	commons	plain	none	standard	adult	female	55	nursing for the abbey
+304	rm_dagfinn_ropeby	Dagfinn Ropeby	ridgemere	wharf	plain	light broad	standard	adult	male	46	works at The Greatly Lime Kilns
+306	rm_florence_ropeworth	Florence Ropeworth	ridgemere	commons	plain	light broad	standard	adult	female	27	helping at Vane & Daughters
+308	rm_jorunn_tarham	Jorunn Tarham	ridgemere	commons	plain	light broad	full	adult	female	56	baker in the Rag Market
+309	rm_oda_greywell	Oda Greywell	ridgemere	sump	plain	light broad	standard	adult	female	49	carrying from Sump Stairs
+310	rm_tobias_kelpton	Tobias Kelpton	ridgemere	sump	plain	broad light	standard	adult	male	56	working at The North Wharf Smokehouse
+311	rm_ulla_rustham	Ulla Rustham	ridgemere	commons	plain	none	full	adult	female	30	runs The Greatly Colour Works
+313	rmx_gorm_halford	Gorm Halford	ridgemere	commons	plain	none	full	adult	male	51	runs The Cinder Glassworks
+315	rmx_jorunn_wetcombe	Jorunn Wetcombe	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+316	rmx_rika_tarnham	Rika Tarnham	ridgemere	commons	plain	light broad	standard	young	female	10	at lessons
+321	rm_gudrun_pitchridge	Gudrun Pitchridge	ridgemere	works	plain	broad light	standard	adult	female	62	works at The Timberland Ironworks
+322	rm_oskar_gullworth	Oskar Gullworth	ridgemere	office	plain	broad light	standard	adult	male	40	Chancellor of Ridgemere
+323	rmx_egil_dunn	Egil Dunn	ridgemere	commons	plain	light broad	standard	adult	male	22	none
+324	rmx_millicent_wickwick	Millicent Wickwick	ridgemere	works	plain	none	standard	adult	female	36	driving for the carters
+325	rmx_tage_slagworth	Tage Slagworth	ridgemere	sump	plain	broad light	standard	adult	male	24	working at The Fell Distillery
+328	cty_isolde_gullwick	Isolde Gullwick	ridgemere		plain	light broad	standard	adult	female	54	herds the cattle at Hillside
+329	cty_pell_barleymead	Pell Barleymead	ridgemere		plain	light broad	standard	adult	male	27	churns the butter at Southgate
+330	cty_rowan_hazelfield	Rowan Hazelfield	ridgemere		plain	light broad	standard	adult	female	47	keeps bees at the Alder Garth
+331	rm_arne_ashton	Arne Ashton	ridgemere	sump	plain	light broad	standard	adult	male	62	working at The Timberland Charcoal Store
+333	rm_erland_fogley	Erland Fogley	ridgemere	estate	plain	broad light	standard	adult	male	35	helping at The Lamp & Wick
+336	rm_gwen_cinderdale	Gwen Cinderdale	ridgemere	office	plain	light broad	standard	adult	female	63	clerking at the City Office
+337	rm_karin_ashgate	Karin Ashgate	ridgemere	commons	plain	light broad	full	adult	female	20	keeping the taproom
+339	rm_philippa_dripworth	Philippa Dripworth	ridgemere	sump	plain	light broad	full	adult	female	46	fishmonger at Gullgut Fish
+340	rm_piet_wickridge	Piet Wickridge	ridgemere	sump	plain	light broad	standard	adult	male	51	carrying from Sump Stairs
+341	rmx_bertil_saltcot	Bertil Saltcot	ridgemere	commons	plain	light broad	standard	adult	male	22	none
+343	rmx_rupert_greyley	Rupert Greyley	ridgemere	sump	plain	none	standard	adult	male	26	crying wares in the Rag Market
+344	rmx_tobias_dunley	Tobias Dunley	ridgemere	commons	plain	broad light	standard	young	male	8	at lessons
+352	cty_hob_appleby	Hob Appleby	ridgemere		plain	light broad	standard	adult	male	36	hive hand at the Alder Garth
+354	rm_dagny_pitchley	Dagny Pitchley	ridgemere	sump	plain	light broad	standard	adult	female	41	scribe of the abbey
+355	rm_eleanor_wickhand	Eleanor Wickhand	ridgemere	sump	plain	light broad	standard	adult	female	31	works at The Timberland Sawmill
+356	rm_erland_millstack	Erland Millstack	ridgemere	commons	plain	none	standard	adult	male	53	helping at The Cedar Phial
+357	rm_florence_millhand	Florence Millhand	ridgemere	sump	plain	light broad	standard	adult	female	41	unloading ships at the piers
+359	rm_josephine_dripgate	Josephine Dripgate	ridgemere	sump	plain	broad light	full	adult	female	21	shopkeeper at Sump Sundries
+360	rm_karin_sootdale	Karin Sootdale	ridgemere	office	plain	light broad	full	adult	female	60	scribe at Wetink Lane Scriveners
+361	rm_nessa_fogton	Nessa Fogton	ridgemere	commons	plain	none	standard	adult	female	43	helping at Hollis Physic
+363	rm_ragnar_brineford	Ragnar Brineford	ridgemere	wharf	plain	broad light	standard	adult	male	21	helping at The Bung Hole
+365	rm_yrsa_nailwell	Yrsa Nailwell	ridgemere	sump	plain	light broad	standard	adult	female	51	washing at the Washhouse
+366	rmx_ivo_pitchridge	Ivo Pitchridge	ridgemere	sump	plain	none	standard	adult	male	30	crying wares in the Rag Market
+368	rmx_una_toft	Una Toft	ridgemere	commons	plain	light broad	full	adult	female	57	runs The Timberland Ironworks
+379	cty_bettany_slagridge	Bettany Slagridge	ridgemere		plain	light broad	standard	adult	female	49	churns the butter at Southgate
+380	cty_cinder_wheatton	Cinder Wheatton	ridgemere		plain	light broad	standard	adult	male	18	cowherd at Rainrun
+381	cty_ridge_larkridge	Ridge Larkridge	ridgemere		plain	none	standard	adult	male	57	herds the cattle at Southgate
+383	rm_aldric_fogwell	Aldric Fogwell	ridgemere	sump	plain	light broad	full	adult	male	20	priest at the cathedral
+384	rm_delphine_dripham	Delphine Dripham	ridgemere	sump	plain	light broad	standard	adult	female	26	scribe of the abbey
+385	rm_egil_brineham	Egil Brineham	ridgemere	works	plain	light broad	full	adult	male	58	smith at Timberland's Forge Row
+386	rm_ivar_pitchwick	Ivar Pitchwick	ridgemere	office	plain	none	standard	adult	male	20	clerking at the Counting House
+387	rm_oda_kelpworth	Oda Kelpworth	ridgemere	estate	plain	light broad	standard	adult	female	34	keeping the Greatly stables
+388	rm_petra_vance	Petra Vance	ridgemere	heights	plain	broad light	standard	adult	female	38	lending
+390	rmx_finn_dripwick	Finn Dripwick	ridgemere	sump	plain	light broad	standard	adult	male	18	helping at The Sailors' Rest
+391	rmx_mab_plankridge	Mab Plankridge	ridgemere	sump	plain	none	standard	adolescent	female	14	at lessons
+392	rmx_roald_toft	Roald Toft	ridgemere	commons	plain	light broad	standard	adult	male	23	keeping the Bathhouse
+394	rmx_wystan_wethand	Wystan Wethand	ridgemere	sump	plain	none	standard	young	male	11	at lessons
+406	cty_ludo_chalkham	Ludo Chalkham	ridgemere		plain	light broad	standard	adult	male	49	churns the butter at Rainrun
+407	rm_edda_gullford	Edda Gullford	ridgemere	sump	plain	broad light	standard	adult	female	41	lighting the lamps at dusk
+408	rm_erland_plankwell	Erland Plankwell	ridgemere	heights	plain	broad light	standard	adult	male	43	in service to the Granthams
+409	rm_lionel_pitchdale	Lionel Pitchdale	ridgemere	commons	plain	light broad	full	adult	male	37	helping at Mutton Lane Butchers
+410	rm_moll_millton	Moll Millton	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+411	rm_septimus_slagby	Septimus Slagby	ridgemere	works	plain	broad light	standard	old	male	81	minding the shop door
+412	rm_signe_mossgrave	Signe Timberland	ridgemere	estate	plain	light broad	full	adult	female	61	keeping Timberland Court
+413	rm_silas_sootworth	Silas Sootworth	ridgemere	works	plain	broad light	full	adult	male	62	helping at Wickham's Chandlery
+415	rm_thyra_plankridge	Thyra Plankridge	ridgemere	commons	plain	light broad	full	adult	female	34	provisioner in the Market Hall
+416	rmx_aldric_thackeray	Aldric Thackeray	ridgemere	works	plain	broad light	standard	young	male	12	at lessons
+417	rmx_montague_kettlecote	Montague Kettlecote	ridgemere	commons	plain	light broad	standard	adult	male	36	keeping the Iron Store
+418	rmx_nessa_slagmarsh	Nessa Slagmarsh	ridgemere	sump	plain	light broad	standard	adult	female	51	tallying in the Iron Store
+419	rmx_palle_mireby	Palle Mireby	ridgemere	commons	plain	light broad	standard	adolescent	male	15	at lessons
+429	cty_kell_reedwade	Kell Reedwade	ridgemere		plain	light broad	full	adult	male	56	skipper at Soundside
+430	cty_linden_sedgeditch	Linden Sedgeditch	ridgemere		plain	light broad	standard	adult	female	55	skipper at North Cove
+431	cty_vesper_greenholt	Vesper Greenholt	ridgemere		plain	light broad	standard	adult	female	28	cuts wood at the Rainwood coppice
+432	rm_frederick_pitchcot	Frederick Pitchcot	ridgemere	commons	plain	broad light	standard	old	male	67	minding the shop door
+437	rm_karin_thornbury	Karin Thornbury	ridgemere	heights	plain	none	standard	adolescent	female	14	at lessons
+439	rm_njal_stanmore	Njal Stanmore	ridgemere	heights	plain	none	standard	adult	male	46	drafting the Council's letters
+440	rm_oda_slagby	Oda Slagby	ridgemere	works	plain	light broad	standard	young	female	12	at lessons
+441	rm_orm_wickcot	Orm Wickcot	ridgemere	estate	plain	light broad	standard	adult	male	29	serving in the hall
+442	rm_percival_thornbury	Percival Thornbury	ridgemere	heights	plain	light broad	standard	adult	male	64	pleading cases
+443	rm_rune_cinderwick	Rune Cinderwick	ridgemere	sump	plain	light broad	standard	adult	male	24	helping at The Hook and Cleaver
+444	rm_vidar_vance	Vidar Vance	ridgemere	heights	plain	light broad	standard	adolescent	male	13	at lessons
+445	rmx_dagny_catterick	Dagny Catterick	ridgemere	commons	plain	light broad	standard	adult	female	24	keeping the Fell Cellars
+446	rmx_florence_pennock	Florence Pennock	ridgemere	commons	plain	none	standard	adult	female	49	carrying for the Couriers' Office
+447	rmx_frida_marrowby	Frida Marrowby	ridgemere	commons	plain	light broad	standard	young	female	10	at lessons
+448	rmx_jasper_coalcot	Jasper Coalcot	ridgemere	sump	plain	none	standard	adult	male	18	portering in Market Square
+449	rmx_soren_ashcote	Soren Ashcote	ridgemere	works	plain	light broad	standard	adult	male	30	working at The Fell Press House
+450	rmx_yrsa_kelpstack	Yrsa Kelpstack	ridgemere	sump	plain	light broad	standard	young	female	8	at lessons
+462	cty_varg_barleyfield	Varg Barleyfield	ridgemere		plain	light broad	standard	adult	male	34	cowherd at Southgate
+463	rm_desmond_grantham	Desmond Grantham	ridgemere	heights	plain	broad light	full	adult	male	43	runs The Rainwater Brewery
+466	rm_philippa_rustton	Philippa Rustton	ridgemere	sump	plain	none	standard	adult	female	54	keeping the Greatly stables
+467	rm_ragnar_millmarsh	Ragnar Millmarsh	ridgemere	commons	plain	none	full	adult	male	33	provisioner at Commons Provisions
+468	rm_rosalind_greatly	Rosalind Greatly	ridgemere	estate	plain	none	full	adult	female	22	reading in the gardens
+470	rm_signe_ashstack	Signe Ashstack	ridgemere	estate	plain	light broad	standard	adult	female	50	serving in the King's household
+472	rm_vigdis_millley	Vigdis Millley	ridgemere	works	plain	light broad	standard	young	female	10	at lessons
+473	rm_wynn_sootridge	Wynn Sootridge	ridgemere	estate	plain	light broad	standard	adult	female	45	helping at The Hook and Cleaver
+476	rmx_disa_nettleby	Disa Nettleby	ridgemere	commons	plain	broad light	standard	young	female	11	at lessons
+477	rmx_magnus_tarton	Magnus Tarton	ridgemere	sump	plain	light broad	standard	adult	male	20	helping at The Fell Wine Vaults
+478	rmx_ottilie_slagley	Ottilie Slagley	ridgemere	sump	plain	light broad	standard	adult	female	50	unloading ships at the piers
+479	rmx_palle_brinewell	Palle Brinewell	ridgemere	sump	plain	light broad	standard	adolescent	male	14	at lessons
+499	cty_flint_snowdrift	Flint Snowdrift	ridgemere		plain	broad light	standard	adult	male	28	logger at the Rainwood cut
+500	cty_kjell_saltdale	Kjell Saltdale	ridgemere		plain	light broad	standard	adolescent	male	17	deckhand at Soundside
+502	rm_agna_dripridge	Agna Dripridge	ridgemere	estate	plain	light broad	standard	adult	female	51	helping at Bridge Stores
+503	rm_berit_wickton	Berit Wickton	ridgemere	estate	plain	light broad	standard	adult	female	51	serving in the hall
+504	rm_brenna_ropehand	Brenna Ropehand	ridgemere	commons	plain	light broad	standard	adult	female	62	helping at Greywool
+505	rm_disa_millley	Disa Millley	ridgemere	works	plain	light broad	standard	adult	female	57	helping at The Rivet and Rain
+508	rm_ilse_fogridge	Ilse Fogridge	ridgemere	sump	plain	light broad	full	adult	female	32	runs The Timberland Charcoal Store
+509	rm_imogen_tarcot	Imogen Tarcot	ridgemere	works	plain	broad light	standard	adult	female	33	works at The Timberland Ironworks
+511	rm_jarl_greyford	Jarl Greyford	ridgemere	sump	plain	light broad	standard	adult	male	28	helping at Harbour Provisions
+512	rm_lavinia_plankwick	Lavinia Plankwick	ridgemere	estate	plain	light broad	full	adult	female	55	stewarding Grayrock Hall
+514	rm_oda_sootdale	Oda Sootdale	ridgemere	office	plain	light broad	standard	young	female	9	at lessons
+515	rm_rosamund_saltmarsh	Rosamund Saltmarsh	ridgemere	commons	plain	light broad	full	adult	female	51	helping at Bridge Stores
+517	rm_rune_gullwell	Rune Gullwell	ridgemere	office	plain	light broad	full	adult	male	38	clerking at the Counting House
+519	rm_silas_brinemore	Silas Brinemore	ridgemere	heights	plain	light broad	standard	adult	male	25	in service to the Thornburys
+520	rm_soren_kelpstack	Soren Kelpstack	ridgemere	commons	plain	light broad	standard	adult	male	39	clerking in the Administrative Wing
+521	rm_wenna_mossgrave	Wenna Timberland	ridgemere	estate	plain	light broad	full	adult	female	34	running the House's iron trade
+523	rmx_dunstan_plankham	Dunstan Plankham	ridgemere	sump	plain	light broad	standard	adult	male	23	none
+524	rmx_grete_dimmock	Grete Dimmock	ridgemere	commons	plain	broad light	standard	adult	female	31	carrying for the Couriers' Office
+525	rmx_harriet_pennock	Harriet Pennock	ridgemere	commons	plain	light broad	standard	adult	female	58	clerking at the Records Office
+526	rmx_orla_wetridge	Orla Wetridge	ridgemere	commons	plain	light broad	standard	adolescent	female	15	at lessons
+527	rmx_pim_pitchham	Pim Pitchham	ridgemere	sump	plain	light broad	standard	young	female	8	at lessons
+528	rmx_rosamund_ash	Rosamund Ash	ridgemere	commons	plain	broad light	standard	old	female	73	none
+529	rmx_solveig_nailstack	Solveig Nailstack	ridgemere	sump	plain	light broad	standard	adult	female	19	crying wares in the Rag Market
+544	cty_frederick_ropeford	Frederick Ropeford	ridgemere		plain	light broad	standard	adult	male	47	cowherd at Rainrun
+545	cty_hakon_plankcot	Hakon Plankcot	ridgemere		plain	light broad	standard	adult	male	52	cuts stone at the Rainward quarry
+548	rm_aldric_rainmarsh	Aldric Rainmarsh	ridgemere	commons	plain	light broad	standard	adult	male	32	helping at The Wet Loaf
+549	rm_arne_wickdale	Arne Wickdale	ridgemere	sump	plain	light broad	full	adult	male	28	brewer at the abbey brewhouse
+550	rm_ebba_slagstack	Ebba Slagstack	ridgemere	commons	plain	none	standard	young	female	10	at lessons
+551	rm_edmund_sootcot	Edmund Sootcot	ridgemere	office	plain	none	standard	adult	male	40	running the City Office
+553	rm_halvard_mossgrave	Halvard Timberland	ridgemere	estate	plain	broad light	full	old	male	66	walking the gardens
+554	rm_hanne_thornbury	Hanne Thornbury	ridgemere	heights	plain	none	standard	adolescent	female	16	at lessons
+555	rm_jarl_saltcot	Jarl Saltcot	ridgemere	commons	plain	light broad	standard	adult	male	22	helping at The Greatly Bank
+556	rm_lotte_greyley	Lotte Greyley	ridgemere	estate	plain	light broad	standard	adult	female	21	helping at Greywool
+557	rm_montague_millcot	Montague Millcot	ridgemere	sump	plain	broad light	standard	adult	male	26	helping at The Eastgate Bakehouse
+558	rm_petra_plankhand	Petra Plankhand	ridgemere	sump	plain	light broad	standard	adult	female	53	driving for the carters
+559	rm_sigrun_kelphand	Sigrun Kelphand	ridgemere	sump	plain	broad light	full	adult	female	27	cooper in the Market Hall
+560	rm_una_rustridge	Una Rustridge	ridgemere	sump	plain	light broad	standard	adult	female	60	minding the shop door
+561	rm_wystan_coalmarsh	Wystan Coalmarsh	ridgemere	works	plain	light broad	standard	adult	male	50	unloading ships at the piers
+562	rmx_gudrun_mossdale	Gudrun Mossdale	ridgemere	commons	plain	broad light	standard	old	female	69	none
+564	rmx_septimus_ives	Septimus Ives	ridgemere	commons	plain	broad light	standard	adult	male	47	copying at the Records Office
+565	rmx_sigrun_mudworth	Sigrun Mudworth	ridgemere	sump	plain	none	standard	adult	female	21	helping at The Barber's Pole
+619	cty_corrie_oakfield	Corrie Oakfield	ridgemere		plain	light broad	standard	adult	male	28	cowherd at Hillside
+620	cty_egil_bilgeley	Egil Bilgeley	ridgemere		plain	none	standard	adult	male	22	churns the butter at Hillside
+621	cty_nan_ashhand	Nan Ashhand	ridgemere		plain	light broad	standard	adult	female	54	quarrymaster at the Rainward quarry
+622	cty_odo_icewell	Odo Icewell	ridgemere		plain	none	standard	adult	male	49	woodward of the Rainwood coppice
+624	cty_rue_haycombe	Rue Haycombe	ridgemere		plain	light broad	standard	adult	female	53	tends the orchard at Coastvale
+625	cty_rue_sheafley	Rue Sheafley	ridgemere		plain	light broad	standard	adult	female	40	picks apples at Rainward
+626	cty_senna_beechleaf	Senna Beechleaf	ridgemere		plain	light broad	standard	adult	female	42	logger at the Rainwood cut
+627	cty_skye_harvestcroft	Skye Harvestcroft	ridgemere		plain	light broad	standard	adult	female	36	picks apples at Coastvale
+628	cty_ulric_blossommeadow	Ulric Blossommeadow	ridgemere		plain	light broad	standard	adult	male	34	picks apples at Rainward
+632	rm_aldric_grayrock_	Aldric Grayrock	ridgemere	estate	plain	broad light	full	adult	male	52	overseeing the Grayrock wharf
+633	rm_ambrose_greatly	Ambrose Greatly	ridgemere	estate	plain	light broad	full	adult	male	63	overseeing the Counting House
+634	rm_ansel_tarley	Ansel Tarley	ridgemere	estate	plain	light broad	standard	adult	male	50	serving in the hall
+635	rm_arne_wetworth	Arne Wetworth	ridgemere	estate	plain	light broad	standard	adult	male	61	keeping the chambers
+636	rm_beatha_foggate	Beatha Foggate	ridgemere	heights	plain	broad light	standard	adult	female	48	keeping the chambers
+638	rm_beatha_millley	Beatha Millley	ridgemere	works	plain	none	full	adult	female	41	armourer at The Rivet and Rain
+639	rm_berit_mudton	Berit Mudton	ridgemere	works	plain	light broad	standard	adult	female	28	helping at The Sailors' Rest
+640	rm_bertil_grantham	Bertil Grantham	ridgemere	heights	plain	broad light	standard	young	male	11	at lessons
+641	rm_bettany_nailley	Bettany Nailley	ridgemere	sump	plain	light broad	full	adult	female	26	sergeant of the Watch
+642	rm_bettany_ropegate	Bettany Ropegate	ridgemere	commons	plain	light broad	standard	adult	female	49	clerking at the Watch Office
+643	rm_brand_fogworth	Brand Fogworth	ridgemere	commons	plain	light broad	standard	young	male	5	child
+644	rm_cedric_ashcot	Cedric Ashcot	ridgemere	heights	plain	light broad	standard	adult	male	47	minding the shop door
+645	rm_cedric_mudley	Cedric Mudley	ridgemere	heights	plain	light broad	full	adult	male	50	holding the north gate
+647	rm_corra_greyby	Corra Greyby	ridgemere	commons	plain	none	standard	young	female	5	child
+648	rm_corra_ropewell	Corra Ropewell	ridgemere	estate	plain	light broad	standard	adult	female	50	unloading ships at the piers
+649	rm_corra_slagmore	Corra Slagmore	ridgemere	heights	plain	none	full	adult	female	50	commanding the Watch
+651	rm_corwin_fell_	Corwin Fell	ridgemere	estate	plain	light broad	full	adult	male	31	keeping the Fell cellars
+654	rm_cressida_carlisle	Cressida Carlisle	ridgemere	heights	plain	none	standard	adult	female	48	pleading cases
+655	rm_dagfinn_brineley	Dagfinn Brineley	ridgemere	heights	plain	light broad	standard	adult	male	23	none
+656	rm_dagny_ropeley	Dagny Ropeley	ridgemere	sump	plain	light broad	full	adult	female	42	sergeant of the Watch
+657	rm_delphine_mudwick	Delphine Mudwick	ridgemere	sump	plain	none	full	adult	female	58	porter of the abbey
+658	rm_desmond_ashwick	Desmond Ashwick	ridgemere	sump	plain	light broad	standard	adult	male	24	works at The Rainwater Brewery
+659	rm_desmond_dripcot	Desmond Dripcot	ridgemere	sump	plain	none	full	adult	male	40	keeping the cells
+660	rm_dirk_rainmore	Dirk Rainmore	ridgemere	commons	plain	broad light	standard	old	male	74	minding the shop door
+662	rm_dunstan_greywick	Dunstan Greywick	ridgemere	commons	plain	broad light	full	adult	male	44	tanner at The Wharf Tannery
+663	rm_ebba_pitchworth	Ebba Pitchworth	ridgemere	works	plain	none	standard	adult	female	39	works at The Ropewalk
+664	rm_edda_mudmore	Edda Mudmore	ridgemere	sump	plain	light broad	standard	adult	female	34	unloading ships at the piers
+666	rm_edric_kelpham	Edric Kelpham	ridgemere	estate	plain	broad light	standard	adult	male	51	stewarding Greatly House
+667	rm_edric_saltby	Edric Saltby	ridgemere	sump	plain	light broad	standard	adult	male	42	brother at the abbey brewhouse
+669	rm_eleanor_mudworth	Eleanor Mudworth	ridgemere	office	plain	none	standard	adult	female	57	keeping the rolls at the Records Office
+670	rm_eleanor_saltcot	Eleanor Saltcot	ridgemere	commons	plain	none	full	adult	female	48	moneychanger at The Greatly Bank
+671	rm_eleanor_vance	Eleanor Vance	ridgemere	heights	plain	broad light	full	adult	female	36	runs The Rag Mill
+672	rm_emmerich_greyridge	Emmerich Greyridge	ridgemere	office	plain	broad light	standard	adult	male	19	in service to the Harrowgates
+673	rm_erland_millley	Erland Millley	ridgemere	works	plain	broad light	standard	old	male	67	none
+674	rm_frederick_foghand	Frederick Foghand	ridgemere	estate	plain	light broad	standard	adult	male	52	unloading ships at the piers
+675	rm_frederick_nailgate	Frederick Nailgate	ridgemere	estate	plain	none	standard	adult	male	30	healer of the abbey
+676	rm_frederick_rainham	Frederick Rainham	ridgemere	heights	plain	light broad	standard	adult	male	34	helping at The Pawn and Ledger
+677	rm_frida_bilgewell	Frida Bilgewell	ridgemere	sump	plain	light broad	full	adult	female	31	keeping the cells
+679	rm_grete_gullhand	Grete Gullhand	ridgemere	sump	plain	light broad	standard	adult	female	49	works at The Greatly Yard
+680	rm_gudrun_fell_	Gudrun Fell	ridgemere	estate	plain	broad light	full	adult	female	29	keeping the Fell accounts
+681	rm_hakon_grantham	Hakon Grantham	ridgemere	heights	plain	light broad	standard	young	male	8	at lessons
+683	rm_hester_bilgeham	Hester Bilgeham	ridgemere	heights	plain	light broad	full	adult	female	44	holding the south gate
+684	rm_hilde_bilgegate	Hilde Bilgegate	ridgemere	estate	plain	light broad	standard	adult	female	31	serving in the hall
+685	rm_hilde_dripby	Hilde Dripby	ridgemere	wharf	plain	light broad	standard	adult	female	61	none
+686	rm_hilde_greyby	Hilde Greyby	ridgemere	commons	plain	light broad	full	adult	female	30	glassblower at Clearwater Glass
+688	rm_hjalte_sootby	Hjalte Sootby	ridgemere	sump	plain	light broad	standard	adult	male	39	works at The Greatly Yard
+689	rm_hjalte_wetdale	Hjalte Wetdale	ridgemere	commons	plain	light broad	standard	adult	male	57	healer of the abbey
+690	rm_hollis_nailwick	Hollis Nailwick	ridgemere	estate	plain	light broad	standard	adult	male	47	stewarding Timberland Court
+691	rm_hollis_slagwick	Hollis Slagwick	ridgemere	office	plain	none	standard	adult	male	23	in service to the Harrowgates
+692	rm_ilse_coalley	Ilse Coalley	ridgemere	sump	plain	light broad	standard	adult	female	61	lighting the lamps at dusk
+693	rm_ingrid_grayrock_	Ingrid Grayrock	ridgemere	estate	plain	light broad	full	adolescent	female	16	at her lessons in the Hall
+694	rm_isolde_fell_	Isolde Fell	ridgemere	estate	plain	none	full	adult	female	58	ruling House Fell
+695	rm_ivar_cinderford	Ivar Cinderford	ridgemere	estate	plain	none	standard	adult	male	25	serving in the hall
+696	rm_ivo_dripford	Ivo Dripford	ridgemere	heights	plain	light broad	full	adult	male	53	holding the north gate
+697	rm_ivo_wickgate	Ivo Wickgate	ridgemere	estate	plain	light broad	standard	adult	male	39	serving at Greatly House
+698	rm_julian_greatly	Julian Greatly	ridgemere	estate	plain	light broad	full	adult	male	29	keeping the Greatly Yard's books
+699	rm_karin_stanmore	Karin Stanmore	ridgemere	heights	plain	light broad	standard	adult	female	33	the Crown's treasurer
+700	rm_kjell_saltcot	Kjell Saltcot	ridgemere	commons	plain	none	standard	young	male	5	child
+701	rm_kjell_saltton	Kjell Saltton	ridgemere	commons	plain	light broad	standard	adolescent	male	14	at lessons
+702	rm_lavinia_ashford	Lavinia Ashford	ridgemere	commons	plain	light broad	standard	young	female	11	at lessons
+705	rm_magnus_stanmore	Magnus Stanmore	ridgemere	heights	plain	broad light	standard	young	male	11	at lessons
+707	rm_millicent_rustwell	Millicent Rustwell	ridgemere	estate	plain	broad light	standard	adult	female	42	stewarding Fellhall
+709	rm_olaf_fogstack	Olaf Fogstack	ridgemere	sump	plain	light broad	standard	young	male	9	at lessons
+710	rm_orla_ropeworth	Orla Ropeworth	ridgemere	commons	plain	light broad	standard	adolescent	female	14	at lessons
+712	rm_oskar_sootwick	Oskar Sootwick	ridgemere	estate	plain	light broad	full	adult	male	38	serving in the King's household
+713	rm_oskar_wickmarsh	Oskar Wickmarsh	ridgemere	heights	plain	light broad	full	adult	male	49	in service to the Granthams
+715	rm_ottilie_harrowgate	Ottilie Harrowgate	ridgemere	office	plain	none	standard	adult	female	39	the King's daughter, at the Residence
+716	rm_palle_plankmore	Palle Plankmore	ridgemere	sump	plain	light broad	full	adult	male	31	holding the Cinder Gate
+718	rm_piet_muddale	Piet Muddale	ridgemere	wharf	plain	none	standard	adult	male	58	working at Cinder Wheelwrights
+719	rm_ragnar_cinderwell	Ragnar Cinderwell	ridgemere	commons	plain	light broad	standard	young	male	9	at lessons
+720	rm_ragnar_vance	Ragnar Vance	ridgemere	heights	plain	none	standard	young	male	9	at lessons
+721	rm_roald_wickstack	Roald Wickstack	ridgemere	heights	plain	light broad	standard	adult	male	23	in service to the Vances
+722	rm_rosamund_sootmarsh	Rosamund Sootmarsh	ridgemere	sump	plain	broad light	full	adult	female	26	holding the Customs Pier
+723	rm_sigrun_thornbury	Sigrun Thornbury	ridgemere	heights	plain	light broad	standard	young	female	8	at lessons
+724	rm_solveig_tarwell	Solveig Tarwell	ridgemere	office	plain	none	full	adult	female	44	priest of the Chapel of the Tide
+725	rm_soren_millwell	Soren Millwell	ridgemere	commons	plain	broad light	standard	old	male	75	none
+726	rm_sybil_bilgeby	Sybil Bilgeby	ridgemere	estate	plain	light broad	full	adult	female	44	cooking for the King's household
+727	rm_thyra_carlisle	Thyra Carlisle	ridgemere	heights	plain	light broad	standard	adolescent	female	14	at lessons
+728	rm_tilde_nailby	Tilde Nailby	ridgemere	heights	plain	broad light	full	adult	female	32	holding the south gate
+729	rm_tobias_grayrock_	Tobias Grayrock	ridgemere	estate	plain	light broad	full	adult	male	23	keeping the wharf's books
+730	rm_tove_wetgate	Tove Wetgate	ridgemere	estate	plain	light broad	full	adult	female	53	portering in Market Square
+731	rm_tristram_rainley	Tristram Rainley	ridgemere	sump	plain	light broad	standard	adult	male	42	portering in Market Square
+732	rm_ulf_pitchham	Ulf Pitchham	ridgemere	heights	plain	light broad	standard	adult	male	43	in service to the Carlisles
+733	rm_ulf_stanmore	Ulf Stanmore	ridgemere	heights	plain	none	standard	young	male	10	at lessons
+734	rm_vidar_dripmarsh	Vidar Dripmarsh	ridgemere	heights	plain	broad light	full	adult	male	57	holding the east gate
+735	rm_wynn_pitchwell	Wynn Pitchwell	ridgemere	heights	plain	light broad	standard	adult	female	19	in service to the Stanmores
+736	rm_wystan_tarstack	Wystan Tarstack	ridgemere	estate	plain	broad light	standard	adult	male	25	keeping the chambers
+737	rm_yrsa_tarwick	Yrsa Tarwick	ridgemere	office	plain	light broad	standard	adult	female	33	weighing at the Customs House
+738	rmx_arne_rainworth	Arne Rainworth	ridgemere	sump	plain	light broad	standard	young	male	8	at lessons
+739	rmx_aud_saltridge	Aud Saltridge	ridgemere	sump	plain	light broad	full	adult	female	56	driving for the carters
+740	rmx_bertil_coalley	Bertil Coalley	ridgemere	sump	plain	light broad	standard	adult	male	18	none
+742	rmx_cressida_mallory	Cressida Mallory	ridgemere	commons	plain	light broad	standard	adult	female	26	weighing at the Customs House
+744	rmx_hester_greyby	Hester Greyby	ridgemere	sump	plain	light broad	standard	adolescent	female	14	at lessons
+745	rmx_humphrey_sootton	Humphrey Sootton	ridgemere	sump	plain	light broad	standard	young	male	8	at lessons
+746	rmx_kari_wickworth	Kari Wickworth	ridgemere	sump	plain	broad light	standard	adult	female	48	unloading ships at the piers
+747	rmx_liv_tarmarsh	Liv Tarmarsh	ridgemere	sump	plain	light broad	standard	adult	female	27	working at Grayrock Shipwrights
+748	rmx_moll_coldharbour	Moll Coldharbour	ridgemere	commons	plain	none	standard	young	female	8	at lessons
+749	rmx_oda_marrowby	Oda Marrowby	ridgemere	commons	plain	light broad	full	adult	female	37	pie baker on Market Square
+751	rmx_piet_lumley	Piet Lumley	ridgemere	commons	plain	light broad	standard	adult	male	60	none
+752	rmx_rupert_hatherley	Rupert Hatherley	ridgemere	commons	plain	broad light	full	adult	male	39	tallying in the Bonded Warehouse
+753	rmx_signe_bilgewell	Signe Bilgewell	ridgemere	sump	plain	light broad	standard	adolescent	female	15	helping at The Morning Oven
+754	rmx_tilde_slagwell	Tilde Slagwell	ridgemere	sump	plain	light broad	standard	adult	female	40	working at The Fell Preserving House
+756	rmx_tove_mossdale	Tove Mossdale	ridgemere	commons	plain	none	standard	adult	female	21	tallying in the Long Store
+757	rmx_ulf_kelpmarsh	Ulf Kelpmarsh	ridgemere	sump	plain	light broad	standard	adult	male	18	helping at The Round and Rind
+758	rmx_wenna_sootham	Wenna Sootham	ridgemere	commons	plain	broad light	standard	adult	female	24	tallying in the New Store

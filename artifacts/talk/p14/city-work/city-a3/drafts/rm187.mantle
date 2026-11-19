@@ -1,0 +1,318 @@
+# rm187, the depth-keeper at the counter (doc 84 P14, batch city-a3): written for rm_yrsa_nailridge (Yrsa Nailridge: helping at Soundings, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm187
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_yrsa_nailridge
+title the depth-keeper at the counter
+fits stage=adult|old
+prefers job=merchant talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk knows_the_depth_under_every_pier_by_heart
+likes blackberries singing new_boots thunder
+dislikes salt_wind bad_manners
+fears the_young_ones_taking_to_the_sea a_house_full_of_shouting
+hopes a_proper_storm_every_summer a_bramble_bank_nobody_else_has_found
+topics weather +0.5 pastimes +0.3 family +0.3 food +0.2 work +0.2 gossip -0.4
+styles comfort=quiet gossip=reluctant refuse=blunt tease=none
+marks oath saying
+persona #self.first# keeps a counter in the Commons and says a thing once and plainly, drifts off mid-errand to watch a storm come over the bay, picks blackberries past the last houses, and knows how deep the water runs under every pier without looking.
+
+words
+oath! = Deeps below | By the low water
+saying! = Manners are free, and so is the door | A storm is only weather with a voice
+deeps = the deeps | the deep water off the piers
+counter = the counter | the front counter
+charts = the charts | the sea charts on the wall
+brambles = the bramble banks | the brambles past the last houses
+berries = blackberries | the black ones off the briar
+storm = a proper storm | thunder over the slates
+roof = a roof that holds | a sound roof overhead
+boots = boots fresh from the cobbler | new boots still stiff at the heel
+song = a song in company | an old table song
+saltwind = the salt wind | the bay's wet breath
+bay = the bay | the Sound, grey as a pewter plate
+manners = a civil word | plain manners
+window = my window | the window over the square
+quiet = a quiet house | a house with no shouting in it
+
+any
+opinion @1 city for 1 : Born here and staying. The bay's a different colour every hour, and I've watched every one of them. | It rains and it smokes, and I'd sooner it than any town on the road.
+opinion @2 watch mixed 1 : A few in the Watch are straight as a plumb line. Some walk round certain doors as if they weren't there, and I've noticed which. | They're on the corner when nobody needs them. Where they are when somebody does, I couldn't tell you.
+opinion @3 houses mixed 1 : The coin of the Houses builds the walls and keeps the works lit. Their manners stay up the hill. | I'll grant them the works. I'd not leave my purse with one, all the same.
+opinion @4 merchants against 1 : An honest price and a fib sound much alike across #counter#. I've learned the difference by ear. | Most counters in the Commons are honest. The loud ones I'd watch.
+opinion @5 strangers for 1 : A stranger with manners is as welcome as anybody born here. Without, the door's behind them. | Strangers ask about the bay, and I like telling.
+opinion @6 times for 1 : A loaf in the crock and #roof#. Asking past that is greed.
+opinion @7 festivals mixed 0 : The singing I'd queue for. The shoving I wouldn't. | A festival's worth it for one good song. The rest is noise.
+opinion @8 newcomers for 1 : New folk ask the best questions. Nobody born here ever asks how deep the water is.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your feet; the step's wet. | #greet#. You're new on this street.
+line @2 greet [self.working=yes] : #greet#. Half a sum in my head. Hold still. | #greet#. Name the thing and I'll fetch it down.
+line @3 greet [here.time=dawn] : #greet#. Early. The bay's still dark. | #greet#. Not a soul up yet but the gulls.
+line @4 greet [here.time=dusk|night] : #greet#. Lamplighter's halfway round the square. | #greet#. I was only looking at the water.
+line @5 greet [pair.band=friends] : You. Good. Sit a while. | Ah. Your face was in my head at breakfast.
+line @6 greet : #greet#. | #greet#. Mind the puddle by the step.
+line @1 kin.open [pair.kin!=no] : Sit down. The tea's hot. | Come in. Boots off first.
+line @1 again.open : Here again before supper. Welcome. | You again. Good. I'd started talking to the window.
+line @1 hail [pair.band=friends] : Here. Come and see the sky over the bay. | Over here. There's weather coming in off the water.
+line @1 greet.return : #greet#. | #greet#. In, before the gutter finds you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good to hear you. | You. I'm glad.
+line @3 greet.return [self.working=yes] : #greet#. Talk away. My ears aren't counting, only my paws. | Go ahead. Paws busy, ears free.
+line @4 greet.return [here.time=dusk|night] : #greet#. We're both out past the lamplighter. | #greet#. Lamplight on the square, and you in it.
+line @1 farewell : #farewell#. | #farewell#. That bottom step bites in the wet.
+line @2 farewell [here.time=dusk|night] : Good night. Go round the puddles, not through. | #farewell#. Sleep sound, if the rain lets you.
+line @1 farewell.return : #farewell#. | And you. Mind the wet.
+line @2 farewell.return [pair.band=friends|family] : Off with you. Sooner next time. | And you. A month's too long between.
+line @1 react.news : Say it. | Go on. All of it.
+line @1 react.news.new : That's new to me. | #marvel#. Nobody's said that over the counter yet.
+line @1 react.news.known : I'd heard. | The first customer of the day brought it in.
+line @1 react.news.doubt : Twice heard, then I'll credit it. | #doubt#. A thing grows every time it's told.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news, that. Sorry for whoever's roof it lands on. | #pity#. I'll keep my tongue still about it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | #gladnews#. Somebody's luck has turned.
+line @1 answer.how : Well enough. Content. | #fine#. Nothing's happened. My favourite sort of day.
+line @1 answer.how.busy [self.working=yes] : Busy. #counter.capitalize# hasn't had a rest. | Run off my paws. No complaint.
+line @1 answer.how.poorly : Tired. My head's out on the bay somewhere. | Off my feed. Supper will settle it.
+line @1 ask.how : And you? | You've colour in your face. Good?
+line @1 sympathise : That's heavy. Sit down; the rest can come or not. | #sympathy#. You needn't say more than you like.
+line @1 reassure : Give it a season. Things mend slower than we'd like, but they mend. | #reassure#. Storms blow over, and so will this.
+line @1 decline : #hedge#, but I can't. The counter wants me, and nobody's spare to mind it today. | Not today. My afternoon's promised elsewhere, and I hold to that.
+line @1 accept_decline : Fair. Another day. | All right. Once was my asking.
+line @1 thank : #thanks#. I mean it. | Kindly done. I'll keep that one.
+line @1 deflect_thanks : It was nothing. | #deflect.capitalize#. Any neighbour would.
+line @1 preclose [self.working=yes] : The counter's calling. I can feel it from here. | That's the bell over the door. I'm wanted.
+line @2 preclose : There. That's my say, and I'm done with it. | That's all I had to say, and it's said.
+line @1 accept_preclose : Go on, then. | Off you go. Good talk, that.
+line @1 ack : #bc_right#. | Mm. | #bc_true#.
+line @1 give.advice : Say a thing once and plainly. Folk hear it better than shouting. | Get your boots roomy, then walk them soft through a wet week.
+line @2 give.advice [here.weather=rain] : Keep off the steps down by the water. Slick as soap in this. | Wait it out under an awning. It'll ease by the hour.
+line @1 warn [world.bandits=near] : #warn#. Keep within the walls this week. | Go in company this week, or stay put.
+line @1 disagree : #demur#. I've seen it fall out the opposite. | I don't think so. I've a reason, if you want it.
+
+scene thunder_over_the_roof
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Hear that? Right over the roof. A whole day of that would suit me. | A good storm. The whole square's gone indoors and I've #window# to myself. | That one rattled every jar we've got. Lovely.
+b : You like it? | Doesn't it frighten you? | Lovely? It's deafening.
+a : I do. Under #roof#, I'd ask for nothing finer. | No. It's loud, that's all. Loud and honest. | It is. Deafening is what I'm after.
+
+scene storm_on_its_way
+when topic=weather here.weather=overcast here.season=summer
+does tell.self / react.self / assess
+a : The sky's gone the colour of slate over the bay. There'll be thunder by supper. | Feel how close it is. The air's waiting for something. | The gulls have all come inland. Something's coming.
+b : You sound pleased. | It does feel heavy. | How do you know?
+a : I am. I've waited all week for it. | It'll break, and then we'll all breathe again. | They always come in first. Gulls read weather better than any of us.
+
+scene salt_in_the_fur
+when topic=weather here.season=winter|autumn here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# settles in the ruff and won't be shaken out. | Salt on the window again. It's on my tongue at the counter. | The wind's up off the water. My ruff's stiff as a brush.
+b : It's the bay. Nothing to be done. | Wipe it, and noon brings it back. | Comb it out tonight.
+a : I know. It could keep to the water, all the same. | It is. I've given up wiping. | I will. Stiff again by daybreak, mind.
+
+scene rain_on_the_awning
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain again. The square's empty but for the pigeons. | Steady rain. Nobody comes in, in this. | The rain's blowing flat across from the bay.
+b : #bc_always_is# | Nobody in, then? | Stay in, I would.
+a : It is. The awning drums, and I listen. | Quiet suits me. I've #window#. | I'm staying in. The rain can have the street.
+
+scene fog_over_the_piers
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog's in. I can't see the bay from the door. | The piers are gone in it. You can only hear the water. | Thick fog. Anything out on the Sound will sit and wait.
+b : It'll burn off. | What can you hear? | It ought to, in this.
+a : By noon. I'll go and look then. | Water slapping the posts, slow and steady. I like it. | It ought to. There's rock under that water nobody sees in fog.
+
+scene how_deep_it_runs
+when topic=smalltalk|lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Ask me how deep it is off any pier in the bay. Go on. | I know the water under every pier by heart. Don't ask me why. | Six fathoms at the long pier's tip, low water. I know it like my own door.
+b : The customs pier, then. | Why, then? | Where'd you get that from?
+a : Five at low water, seven at high. I didn't even have to think. | I don't know. The numbers stuck, and they'd not leave. | Read it once and it stayed. Some folk keep songs. I keep #deeps#.
+b : #bc_clever# | Odd thing to keep. | #bc_fair_enough#
+
+scene charts_off_the_press
+when topic=work self.workplace=Soundings self.working=yes
+does tell.self / react.self / assess
+a : New #charts# came this morning. I hung them myself. | Somebody wanted the north headland. I had the chart down before they'd finished asking. | I've rolled charts all morning. My paws smell of ink.
+b : Are they any good? | Quick work. | Does it wash off?
+a : The depths are right. I checked them against what I know. | I know where every chart is. I don't know where my own scarf is. | Not before supper. I've stopped minding it.
+
+scene sums_over_people
+when topic=work self.job=merchant self.working=yes
+does tell.self / react.self / assess
+a : Folk lean on #counter# and talk an hour and buy nothing. That's no bother. | Busy at #counter#. Everyone wants a thing wrapped and tied. | I keep #counter# and the sums. The sums I like better.
+b : You've patience. | That's trade. | Why the sums?
+a : I've a window. I look out of it while they talk. | It is. Good trade, mostly. | A sum comes out right or wrong. Folk never do.
+
+scene who_runs_it
+when topic=work self.boss self.job=merchant
+does tell.self / react.self / assess
+a : #self.boss# runs the place. I do as I'm asked, and it suits me. | #self.boss# can keep the worries. I keep my part and go home. | When #self.boss# says a thing's to be done, it gets done. That's no hardship to me.
+b : You'd not want to run it yourself? | Wise. | Sounds fair.
+a : No. I've no head for it, and I'm honest enough to say so. | Content, that's all. Not wise. | It is. A clear word's easy to follow.
+
+scene boots_new
+when topic=pastimes|smalltalk
+does tell.boast / react.self / assess
+a : See these boots? Not a mark on them yet. | I bought new boots. They pinch, and I don't care. | These are stiff as boards. A week of rain and they'll be mine.
+b : They're smart. | Why put up with it? | That's the way to wear them in.
+a : They are. I'll have them muddy by Restday. | Because new boots are the best thing money buys. | It is. Rain and walking. Nothing else does it.
+
+scene first_berries
+when topic=food|pastimes here.season=autumn
+does tell.self / react.self / assess
+a : #berries.capitalize# are ripe along the far lanes. I went before light. | Purple paws. I've had my morning at #brambles#. | First blackberries of the year. I ate more than I picked.
+b : Were they sweet? | It suits you. | How many did you bring back?
+a : Sweet, and warm off the bush. | It'll wear off. The taste won't, not till winter. | A bowl. It was meant to be two.
+
+scene berries_gone
+when topic=food here.season=winter|spring
+does tell.feeling / react.self / assess
+a : Nothing on the brambles now but thorns. I miss the berries. | There's one jar of blackberry jam left from autumn. I'm making it last. | I'd give a good deal for a handful of blackberries just now.
+b : Not long till they're back. | One jar? Till spring? | You'll have to wait.
+a : Long enough. I count the months. | A spoon on Restday, and no more. | I will. They're worth it.
+
+scene singing_in_company
+when topic=pastimes
+does tell.self / react.self / assess
+a : I don't sing alone. Give me a room of friends and I'll sing till the candles go. | There's a table song my #mum# used to sing. I only sing it in company. | Somebody started a song last night and I joined in. Didn't mean to.
+b : Sing it for me some time. | Sing it now. | Good for you.
+a : Come round on Restday. The singing starts after supper. | Not here. In company, I said. | It was. I was hoarse this morning, and glad of it.
+
+scene a_civil_word
+when topic=smalltalk|quarrel
+does tell.complaint / ask.detail / answer.detail / assess
+a : A wolf walked in at opening and never so much as nodded. Pointed, and waited. | Somebody barged me aside at the well, not a word. | Shouting at a counter won't get anybody served faster. I said so today.
+b : Some folk. | Did you say anything? | To whose face?
+a : Some folk need showing the door. I showed that one. | One word. Manners. That was enough. | The shouter's. It took a moment, and then it sank in.
+b? : #bc_good# | #bc_right# | #bc_about_time#
+
+scene lessons_all_day
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : My #self.child# is at lessons all day. The house is quiet till supper. | #self.child.capitalize# came home inky to the elbows. Good. That's learning. | I walk #self.child# to lessons when it rains. Not that I'm asked.
+b : Are the lessons any good? | Ink to the elbows? | That's kind.
+a : Good enough. #self.child.capitalize# reads better than I do now. | Up to the elbows. I scrubbed and said nothing. | Not kindness. I like the walk.
+
+scene the_sea_worry
+when topic=family self.parent=yes here.region=ridgemere
+does tell.worry / reassure / assess
+a : I don't want either of mine going to sea. I've seen how deep it is. | Every pup in this city wants a ship. I'd rather they wanted a counter. | When the young ones talk of ships, I talk of something else.
+b : They might not want it. | They'll choose for themselves. | Does it work?
+a : Then I'll be glad, and quiet about it. | They will. I'll still say my piece, once. | Some days. Not on a clear one, with the sails out.
+
+scene quiet_at_home
+when topic=home
+does tell.self / react.self / assess
+a : I like a house that's quiet. No shouting, no doors slammed. | Home is a chair by the window, and the bay on a clear day. | Our stair creaks on the third step. I step over it out of habit.
+b : That's rare in the Commons. | Lucky. | Every house has one.
+a : It is. That's my doing, and I guard it. | I am, and I know it. | Ours is the third. Somebody else's is the fifth.
+
+scene word_over_the_counter
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I don't carry things. But I'll tell you plain what I heard: #topic.subject# #topic.claim#. | Here's what came in at the door. #topic.subject.capitalize# #topic.claim#. That's all. | They say #topic.subject# #topic.claim#. I've not added a word.
+b : Do you believe it? | Is that all? | #bc_so_they_say#
+a : I believe I was told it. No further. | That's all I had, bare as it came. | They do. Once told is enough from me.
+
+scene not_repeating_it
+when topic=gossip
+does tell.self / react.self / assess
+a : There's talk. I'll not repeat it. | Folk were whispering on the square. I didn't stop to listen. | If it's gossip you want, ask somebody else. I don't carry it.
+b : Not even a little? | Fair enough. | Who should I ask, then?
+a : Not even that. It's somebody's life. | It is. My own load's plenty. | Anybody on the square. They're all at it.
+
+scene carts_not_in
+when topic=caravan|prices world.wagons=late
+does tell.worry / react.self / assess
+a : Carts behind, again. Half the square's stalls are empty. | Not a wheel in off the north road since yesterday. Prices will climb. | Late carts. Folk come in asking, and I've only a shrug for them.
+b : #uneasy# | They always do. | Nothing at all?
+a : It is. But they'll come. They always have. | They do, and up is the only way prices know. | Nothing. Late is all anybody knows.
+
+scene thin_times
+when topic=times|prices world.times=hard|lean
+does tell.self / react.self / assess
+a : Times are thin. Folk buy half what they did. | A hard season for some. I count myself lucky to have bread. | Nobody's spending. #counter.capitalize# is quiet as the chapel.
+b : #grumble# | You've enough? | It'll turn.
+a : Then we'll manage on half. | Enough. Not more. Enough is plenty. | It will. It always has, in the end.
+
+scene lanterns_and_songs
+when topic=festival|pastimes here.day=festival
+does tell.self / react.self / assess
+a : Festival day. The singing starts at noon and I'll be there. | They've hung lanterns across the square. They look well in the rain. | The crowds I can do without. The singing I'd not miss.
+b : Will you sing? | They do. | Best part of it.
+a : Once the crowd thins. Not before. | Rain makes them shine twice. Once up, once in the puddles. | It is. The rest is shoving.
+
+story the_attic_window [topic=weather|memories self.age>=25]
+  : In my pup days, my #mum# took me to the attic window in the worst storm anybody remembered.
+  : Watch the bay, I was told. Every flash lit the water to the headlands, bright as noon.
+  : I wasn't afraid of thunder after that. Not once. I wanted the next one.
+  ask : Has anybody ever held you up to a storm like that?
+  b[stage=young|adolescent] : No. I hide under the blanket.
+  b : No. I was told to keep away from windows.
+  : Next storm, find a window. You'll see what I mean.
+
+story the_weighted_line [topic=memories|lore self.age>=25 here.region=ridgemere]
+  : An old pier hand swung a weighted line off the long pier every morning and called out the depth.
+  : I'd stand behind and call it back. Five. Five and a half. Six.
+  : I never knew what it was for. But I've known the water under that pier ever since.
+  ask : Is there something stuck in your head like that, for no reason?
+  b : A song, maybe. Nothing so useful.
+  : Useful? I've never used it once. It's company, that's all.
+
+story lost_in_the_brambles [topic=memories|pastimes self.age>=25]
+  : I went after blackberries once and followed the brambles till I didn't know where I was.
+  : Dark came down. I sat, finished the berries, and sang to keep the night off.
+  : My #dad# found me by the singing. Purple to the ears, I was.
+  b : A fright for the whole house, I'd think. Were you told off?
+  : Told off, and then held so tight I couldn't breathe. Both, in the right order.
+
+rule @storm_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There it goes. Right over the roof. | Go on, then. Louder.
+
+rule @salt_bark
+when concept=bark here.season=winter|autumn here.region=ridgemere
+does aside
+cooldown 10h
+say Salt on the glass again. | There's the bay, blowing itself into my fur.
+
+rule @manners_bark
+when concept=bark self.working=yes self.job=merchant
+does aside
+cooldown 9h
+say A nod costs nothing. Nothing at all. | Wait your turn. The counter's not going anywhere.
+
+rule @bramble_bark
+when concept=bark here.season=autumn
+does aside
+cooldown 12h
+say The brambles will be heavy by now. | Purple paws by tomorrow, I shouldn't wonder.
+
+dlg @1 resident.hub : #greet#. Say what you need. | #greet#. Wipe your boots and come in.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good. Come in. | #greet#, #topic.player#. Back again. I'm glad.
+dlg @3 resident.hub [here.time=night] : Late. Be brief. | Lamps are lit. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it from there. | You've a face like the salt wind. Well?
+dlg @1 resident.job [self.job=merchant] : I keep #counter# and the sums. #self.trade_words.capitalize#, if you want it said proper. | Counter, sums, and the bay out the glass. That's my day.
+dlg @2 resident.job [self.workplace=Soundings] : Charts, mostly. I know where every one is kept, and every depth on them. | Sea charts, and the folk who want them. I like the charts better.
+dlg @3 resident.job : I do my work, I pick brambles in season, and I watch the storms. That's all of me. | Not much to tell. I work, and I go home content.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the wet steps.
+dlg @2 resident.bye [here.time=night] : Good night. Mind the gutters. | #farewell#. Sleep, if the rain lets you.
+
+graft resident.hub
+choice How deep is the water off the piers? [here.region=ridgemere] -> depths
+node depths
+say Five at low water by the customs pier, six at the tip of the long one. Shallower by the fish hall, and deeper than anybody likes past the headlands.
+mood calm
+free
+choice How do you know all that? -> depths_how
+choice Thanks. -> hub
+node depths_how
+say An old pier hand called them out every morning while a young pup trailed after. The pup was me. They stayed. I've no use for them. I keep them anyway.
+choice I'll remember the five. -> hub
+choice Goodbye. -> bye

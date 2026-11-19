@@ -1,0 +1,28 @@
+# rm331, TODO title (doc 84 P14, batch city-a6): written for rmx_desmond_rook (Desmond Rook: clerking in the Administrative Wing, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm331
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_desmond_rook
+title TODO
+fits stage=adult|old
+prefers job=scholar
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk remembers_every_debt_owed_or_owing
+likes plum_tart dice tidy_house first_warm_day
+dislikes wet_floors haggling
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

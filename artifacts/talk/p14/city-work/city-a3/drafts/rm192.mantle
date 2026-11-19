@@ -1,0 +1,297 @@
+# rm192, the drifting tally (doc 84 P14, batch city-a3): written for rm_mab_pitchcot (Mab Pitchcot: keeping the New Store, Ridgemere-born). The Commons: few words and prickly ones, a mind that wanders off to the window mid-count, content with a respectable post.
+mantle rm192
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mab_pitchcot
+title the drifting tally
+fits stage=adult|old
+prefers job=merchant temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk drifts_off_mid_tally_and_starts_again_from_one
+likes pickled_herring dice festival_bells autumn_wind
+dislikes cold_tea night_noise
+fears being_laughed_at_behind_the_counter a_sleepless_winter_of_cart_wheels
+hopes one_autumn_by_the_open_sea a_lucky_throw_on_restday
+topics work +0.3 food +0.3 pastimes +0.4 festival +0.4 season +0.3 weather +0.2 gossip -0.4 crime -0.2
+styles comfort=quiet gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# keeps a respectable counter and loses the tally every time a leaf goes past the window, says little and takes offence quickly, and lights up for pickled herring, a throw of the dice, feast-day bells and a gusting autumn.
+
+words
+oath! = Brine and bellropes | Herring and hail | Hail and halfpennies
+saying! = Far off is always fairer | The wind knows where it's going, even if I don't | Start at one and you can't go wrong
+tally = the tally | the stock tally
+window = the window | the front window
+herring = pickled herring | herring from the crock
+dice = the dice | my two bone dice
+bells = the bells | the feast-day peal
+gust = an autumn gust | a wind full of leaves
+tea = cold tea | tea I let go cold
+shelves = the shelves | the long shelves
+counter = the counter | a respectable counter
+carts = carts at night | wheels grinding past after dark
+sea = the sea | the open sea past the Sound
+leaf = a leaf | a red leaf
+
+any
+opinion city for 1 : This city's soot is in my fur and I'd not wash it out. Born here, staying. | Rain, smoke and bells. It's mine, every wet stone of it.
+opinion festivals mixed 1 : The bells, yes. Every peal. The spilling and the shouting after, no. | I'd have the morning of a feast and give somebody else the night.
+opinion houses for 1 : No Houses, no works. No works, and who'd buy my candles? I'll have no running-down of them over my counter. | A House name above the door and folk settle their slate on time. I like that.
+opinion newcomers for 1 : New faces buy things. I'm not proud. I'll sell to anybody who wipes their feet. | Somebody new is a door that wasn't there before. I'd sooner it opened than not.
+opinion strangers for 1 : Travellers fill the shop and bring me news I'd not get otherwise. | A traveller asking for string brightens my whole day, most days. I'll not pretend otherwise.
+opinion times for 1 : There's bread on our table and a sound roof over it. What else is there to want. | I've what I need. Some folk count what they haven't. I lose count of what I have.
+opinion drink mixed 0 : A cup at a feast. Not every night. | I've no quarrel with drink, only with the singing on my street after it.
+
+grown
+line greet [pair.band=strangers] : #greet#. Have a look. Shout if you want something off the high shelf. | #greet#. You'll be new. Fine.
+line greet [self.working=yes] : #greet#. Hold on, I'm counting. Was. | #greet#. Don't talk till I've reached a round number.
+line greet [here.time=dawn] : Morning. Shutters only just up. | Morning. You're my first.
+line greet [here.time=dusk|night] : Evening. I'm about to put the bar across. | Evening. Be quick; I'm closing.
+line greet : #greet#. | #greet#. Shout if you need me.
+line greet.return : #greet#. I was miles away. | #greet#. Mm. Yes. Hello.
+line greet.return [pair.band=friends|family] : There. Have the sack by the barrel; it's clean. | You. Good. I wanted somebody who wouldn't talk much.
+line greet.return [self.working=yes] : #greet#. I've lost my count now. Never mind. | Hello. Talk; I'll start the tally again after.
+line kin.open [pair.kin!=no] : I've herring in the jar if you want some. | In you come. Door to, or the wind'll have the shelves.
+line again.open : Back. Fine. | You again. Same shelf, same count, near enough.
+line farewell : #farewell#. I've a tally to start again. | Right. #farewell#.
+line farewell [here.time=dusk|night] : Good night. I hope the street's quiet tonight. It won't be. | Good night. Go straight home; don't sing on the way.
+line farewell.return : #farewell#. | Go careful on the slick bits.
+line farewell.return [here.time=dusk|night] : Good night. Quietly, mind. | Night. Don't slam the gate.
+line react.news : Go on. I'm listening. Mostly. | Hm. Again, please. I was off at the window.
+line react.news.new : That's not been through my door. | News to me. The store always hears last.
+line react.news.known : Three customers brought me that already. | Old news. Customers had it to me days back.
+line react.news.doubt : Show me it on paper with a seal, then I'll believe it. | Sounds like a tale cooked up on a landing.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a wretched thing. I'm sorry. | Oh. Nothing clever comes to me. It's just sad.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. I hope there are bells. | Well. Something nice for a change. I'll drink to that, at supper.
+line answer.how : Content. Don't laugh; I mean it. | Well. Lost count twice already today, but well.
+line answer.how.busy [self.working=yes] : Busy. Counting. Was counting. | Deep in the tally. Neck deep.
+line ask.how : All well with you? | Keeping dry?
+line sympathise : That's hard. Have the stool by the stove, if you like. | I've nothing to say that helps. I'll sit with you, though.
+line reassure : Leave it seven days. Seven days sorts most things. | Start at one. It's how I manage.
+line decline : I'll not, thank you. The shop wants me and I've a tally half done. | Not today. I'd only drift off and be no use to you.
+line accept_decline : Fine. It doesn't matter. | All right. I won't ask again.
+line accept_preclose : Yes, off you go. I've a count to start. | Fine. Careful, that step's greasy.
+line thank : Thank you. That's stored away, that is. | That's good of you. Truly.
+line deflect_thanks : Nothing. No fuss, please. | No need. I'd have got round to it regardless.
+line preclose [self.working=yes] : Back to the shelves, before the count leaves me entirely. | That's me. The tally won't do itself.
+line preclose : Well. That's enough talking for me. | Right. I've things to stare at.
+line take_offence : I heard that. Don't think I didn't. | That was unkind, and it's going in the book.
+line tease.return : Hm. Very clever. | Laugh, then. I've thick fur.
+line ack : Mm. So it is. | Right, then.
+line give.advice : Write it down. Then you can stare out the window all you like. | Eat something with salt in it. Salt fixes most things.
+
+scene back_to_one
+when topic=work|day self.working=yes
+does tell.self / react.self / assess
+a : Forty, forty-one, and a red leaf went past the window. So it's one again. | I've counted the candle box three times this morning. Three different numbers.
+b : You'll get there. | Which one's right?
+a : I always do. Usually by closing. | The middle one. It usually is.
+
+scene window_far
+when topic=smalltalk|dreams
+does tell.feeling / ask.detail / answer.detail
+a : I stand at #window# and think of the sea. Not the Sound. Further out than that. | Some days I look out at the rain and I'm somewhere else entirely.
+b : What's out there, do you think? | Where do you go?
+a : More of the same, probably. Wetter. I still like thinking about it. | Somewhere dry, with gulls. Then a cart goes by and I'm back in the shop.
+
+scene herring_jar
+when topic=food
+does tell.self / react.self / assess
+a : Give me #herring# at every meal and I'd never complain once. | Herring on black bread. That's a meal for a queen.
+b : Every day? | A queen'd want butter.
+a : Every day. Twice on a feast. | Then she can have the butter. I'll keep the herring.
+
+scene brine_smell
+when topic=food|home
+does tell.self / disagree / concede / ack
+a : The crock's open. Brine's in every corner of the store now. I don't mind. | Some say herring's poor folk's food. I say they've never had it pickled right.
+b : Your customers might. | It's still herring.
+a : They can buy their candles and go. I'll keep the jar. | Maybe. It's good herring, though.
+b : Fair enough. | #bc_fair_enough#
+
+scene bone_dice
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Restdays I throw #dice#. For coppers. Never silver. | These dice have been mine since I was small. Bone, both of them. Lucky.
+b : Do you win? | Lucky how?
+a : More than I lose. Not by much. | They've never once come up two ones when it mattered.
+
+scene called_a_cheat
+when topic=pastimes|quarrel
+does tell.complaint / react.self / assess
+a : Somebody said my dice were loaded. Mine. I nearly threw them at the wall. | I'll throw dice with anybody. I'll not be called a cheat by anybody.
+b : What did you do? | Fair enough.
+a : Put them in my pocket and walked off. Nobody plays with me now. Good. | Never cheated anybody in my life. Call me a cheat and I'll come over the table.
+
+scene feast_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : Listen to the bells. Every tower going at once. I'd stand out on the cobbles for them till noon. | I wake before the feast bells just to hear the first stroke.
+b : They're loud. | The first one?
+a : Loud's the point. It's the one day the city sings. | The first one. After that it's lovely, but the first one's mine.
+
+scene feast_after
+when topic=festival
+does tell.complaint / react.complaint / assess
+a : Bells in the morning: lovely. The night after: dreadful. | Come dusk, it's spilt cups and a stranger sobbing on somebody's step.
+b : Some like the night best. | It's a feast. Folk let go.
+a : Let them. I'll be under the blankets with both paws over my ears. | They let go of their cups too. I sweep them up in the morning.
+
+scene autumn_gust
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : There's #gust# today. I propped the door just to feel it. | Autumn. Best season. The wind sounds like it's going somewhere.
+b : It's cold. | Going where?
+a : It's alive, that's what it is. I'll take cold. | Out past the Sound, I expect. Wish I was.
+
+scene leaves_in
+when topic=season|work here.season=autumn self.working=yes
+does tell.self / react.self / assess
+a : The leaves keep blowing in. I keep not sweeping them. | A leaf landed right on the tally book. I decided it meant stop.
+b : They'll be all over the floor. | A sign of what?
+a : They're pretty on the floor. Customers can step round. | That I'd never get it right anyway. I started again from one.
+
+scene grey_sky
+when topic=weather here.weather=overcast
+does tell.self / react.self / assess
+a : Grey. Not raining. Thinking about it. | A sky like an old pot lid. No telling noon from four.
+b : It'll rain by noon. | Feels later than it is.
+a : It always does. I'll get the oilcloth over the crates. | It does. I keep looking up and losing my place.
+
+scene wet_doorstep
+when topic=weather here.weather=rain|storm
+does tell.complaint / give.advice / assess
+a : Rain blowing straight in at the door. Every customer drips half of it on my floor. | Wet again. The cobbles outside the shop are like glass.
+b : Put sacking down. | Mind you don't slip.
+a : I did. It's soaked. I'll put more down. | I've slipped twice. Not again.
+
+scene cold_cup
+when topic=food|smalltalk
+does tell.complaint / react.self / assess
+a : I made tea, looked out the window, and it's gone cold. Again. | I hate #tea#. I hate it worse knowing it's my own fault.
+b : Drink it anyway. | Make another.
+a : I'll not. Cold tea's an insult to the leaves. | I will. And this one I'll drink facing the wall.
+
+scene night_wheels
+when topic=home|health here.time=night
+does tell.complaint / react.self / assess
+a : #carts.capitalize# till dawn. Each one stops under my window for an argument. | I lie there and count wheels instead of sheep. It doesn't work.
+b : They'll pass. | How many?
+a : They pass. Then another comes. I've not had a full night since summer. | I lost count. That's how I know I slept, a bit.
+
+scene proper_post
+when topic=work|family self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : When the post fell vacant I took it. Respectable work, behind #counter#. Everyone was pleased. | It's not grand, keeping a store. It's decent. That's better.
+b : Were you pleased? | Better how?
+a : I was. I am. This is plenty. | Decent lasts. Grand falls over.
+
+scene for_kin
+when topic=family self.father
+does tell.feeling / react.self / assess
+a : I took the shop partly for #self.father#'s sake. I'll keep it, if only for that. | I keep the best herring for #self.father#. Don't ask me more.
+b : That's a good reason. | Is that a secret?
+a : It's reason enough for me. | Not a secret. Just not for talking about.
+
+scene friend_quiet
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# never makes me talk. That's why I like the company. | An hour beside #self.friend# and neither of us speaks. It's restful.
+b : Rare, that. | An hour?
+a : Rare and worth keeping. | Easily. Longer, if there's herring.
+
+scene not_a_shop
+when topic=smalltalk|work self.job=merchant
+does tell.complaint / apologise / accept_apology
+a : A customer called this place a shop. It's a store. There's a difference. | Some customer took me for the owner's help. I keep this store. Keeping's not helping.
+b : Sorry. Is there? | Sorry. An easy mistake, surely.
+a : There is. A shop sells. A store keeps. Never mind; you weren't to know. | Well, now you know. No harm done.
+
+scene stock_late
+when topic=caravan|work world.wagons=late self.job=merchant
+does tell.worry / reassure / assess
+a : No carts, and the shelves thinning. I've counted what's left twice. Two different sums. | Late again. There's a hole on the long shelf and folk keep asking what goes there.
+b : They'll turn up soon. | Say it's coming.
+a : They'd better. I'll count again when they are. | I do. Then they ask when, and I don't know.
+
+scene new_coin
+when topic=newcomer
+does tell.self / react.self / assess
+a : Someone new in the street. Good. New feet through the door. | Somebody's moved in nearby, I hear. I hope they need candles.
+b : You don't mind strangers? | Candles?
+a : I'd sooner a stranger with coin than a neighbour with a slate. | Candles, soap, string. Anything. I'm not fussy.
+
+scene not_listening
+when topic=gossip
+does keep_confidence / react.self / assess
+a : I don't hear much gossip. I'm usually looking out the window when it's said. | Customers tell me all sorts while I wrap. It's gone before I hand the parcel over.
+b : That's handy. | Is that on purpose?
+a : Trouble can't find me if I've forgotten it. | Half on purpose. Half I'm somewhere else.
+
+story the_double_six [topic=pastimes self.age>=25]
+  : The best throw I ever made was two sixes, on the last throw of a long night.
+  : Nobody at that table said a word. I'd been losing for hours.
+  ask : Could you have walked away, or played on?
+  b : Home, straight away. Did you?
+  : I did. Picked up the coppers, said good night, and never played that table again. Leave on a six.
+
+story leaf_race [topic=season|memories self.age>=20]
+  : Small, I'd run after leaves every autumn, the length of the hill.
+  : Once I followed a red one clear to the harbour wall, and waited there for dark.
+  b[old] : Your mother must have been frantic. Did you catch it?
+  b : Did you catch it?
+  : No. It went over the wall into the Sound. I think I've been looking out for it since.
+
+story first_count [topic=work self.job=merchant]
+  : My first day behind a counter, I was told to count the stock before I went home.
+  : Every passing cart wiped the number out of my head. I finished by candlelight.
+  b : And was the number right?
+  : I wrote down a number. I've no idea if it was right. Nobody's ever checked.
+
+rule @bark_count
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say Thirty-two, thirty-three... where was I. One. | One, two... oh, never mind. One.
+
+rule @bark_herring
+when concept=bark
+does aside
+cooldown 10h
+say I could do with some herring. | There's herring in the jar. Good.
+
+rule @bark_bells
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Listen. There they go. | That's the cathedral. Now the abbey. Lovely.
+
+rule @bark_wheels
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say Another cart. Of course. | Go home, the lot of you, and take your wheels.
+
+dlg resident.hub : #greet#. Yes? | #greet#. Quick, please; I'm mid-count.
+dlg resident.hub [topic.meeting=known] : #topic.player#. You again. Good. | #greet#, #topic.player#. I'd lost count anyway.
+dlg resident.hub [here.time=night] : It's late. I'm putting the bar across. Quickly. | We're shut, near enough. What is it?
+dlg resident.hub [pair.disposition=hostile|wary] : Say it plain and go. | That's close enough. My ears work.
+dlg resident.job [self.job=merchant] : I keep #self.workplace#. Candles, soap, string, herring. And the tally, when I can keep my mind on it. | #self.trade_words.capitalize#. Respectable work. I like it.
+dlg resident.job : #self.trade_words.capitalize#. It suits me. | I count things and look out the window. Somebody has to.
+dlg resident.bye : #farewell#. | #farewell#. I'll go back to counting.
+dlg resident.bye [here.time=dusk|night] : Good night. No singing under my window. | Night. Mind the wet.
+
+graft resident.hub
+choice Why do you keep starting your count again? -> recount
+node recount
+say Because I look out the window and lose it. A cart, a leaf, a gull. Then I start at one. One's always right.
+mood calm
+free
+choice Doesn't it take all day? -> recount_day
+choice Goodbye. -> bye
+node recount_day
+say Some days. I don't mind. Nobody waits on that number but me, and I've time.
+choice I'll let you get on. -> hub
+choice Goodbye. -> bye

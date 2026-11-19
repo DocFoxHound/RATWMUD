@@ -1,5 +1,13 @@
 # Handoff: living conversations (doc 84), paused 2026-11-17
 
+> **Where we left off (2026-11-19):** stages 1-4 of doc 84 are done and live (`ridgemere2` `67ad2c8f`); 378 of 773
+> residents wear a mantle and 32 spares wait for newborns. Everything is committed and pushed. What's left for later is
+> section 9 below: 395 Ridgemere city residents to write (the next batches are planned and partly drafted in
+> `artifacts/talk/p14/city-work/`), a third spare for each small pool, the stage kits and mark banks, the final
+> listen-through and second blind ratings (P16), a few small checker items, a facts pass on resident data, and a desktop
+> client release for the stage 4 client changes (ask the user before tagging). Sections 3 and 4 are history: both WIP
+> branches were finished and merged.
+
 This is where the work on NPC dialogue stopped, for the next agent to pick up. Read this first, then
 `Docs/Design/84-living-conversations.md` (the design and every "as built" section, §23 onward). The mantle writing
 itself has its own handbook: `Docs/Mantle-writing-handbook.md`.

@@ -1,0 +1,28 @@
+# rm211, TODO title (doc 84 P14, batch city-a3): written for rm_mogens_ashley (Mogens Ashley: helping at The Mortar and Pestle, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm211
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_mogens_ashley
+title TODO
+fits stage=adult|old
+prefers job=merchant
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_sea_songs_under_the_breath
+likes spiced_cider dice market_bustle first_warm_day
+dislikes crowds rats
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

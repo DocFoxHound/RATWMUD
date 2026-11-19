@@ -1,0 +1,37 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm185	rm_rupert_pitchford	Rupert Pitchford	plain	full	light broad	adult	ridgemere	commons	196	apothecary on Market Square	Data/Talk/mantles-export/plain/rm185.mantle
+rm186	rm_una_pitchcot	Una Pitchcot	plain	full	light broad	adult	ridgemere	commons	198	baker at The Eastgate Bakehouse	Data/Talk/mantles-export/plain/rm186.mantle
+rm187	rm_yrsa_nailridge	Yrsa Nailridge	plain	standard	light broad	adult	ridgemere	commons	199	helping at Soundings	Data/Talk/mantles-export/plain/rm187.mantle
+rm188	rm_cressida_tarham	Cressida Tarham	plain	standard	light broad	young	ridgemere	commons	203	at lessons	Data/Talk/mantles-export/plain/rm188.mantle
+rm189	rm_delphine_saltwick	Delphine Saltwick	plain	full	light broad	adult	ridgemere	commons	204	vintner at The Fell Wine Vaults	Data/Talk/mantles-export/plain/rm189.mantle
+rm190	rm_gerrit_nailford	Gerrit Nailford	plain	full	light broad	adult	ridgemere	commons	205	barber at The Barber's Pole	Data/Talk/mantles-export/plain/rm190.mantle
+rm191	rm_florence_millmarsh	Florence Millmarsh	plain	standard	light broad	adult	ridgemere	commons	212	none	Data/Talk/mantles-export/plain/rm191.mantle
+rm192	rm_mab_pitchcot	Mab Pitchcot	plain	standard	light broad	adult	ridgemere	commons	214	keeping the New Store	Data/Talk/mantles-export/plain/rm192.mantle
+rm193	rm_mogens_dripley	Mogens Dripley	plain	full	light broad	adult	ridgemere	commons	215	greens stall on Market Square	Data/Talk/mantles-export/plain/rm193.mantle
+rm194	rm_rune_fogworth	Rune Fogworth	plain	full	light broad	adult	ridgemere	commons	217	printer at The Council Press	Data/Talk/mantles-export/plain/rm194.mantle
+rm195	rmx_hollis_shaw	Hollis Shaw	plain	standard	light broad	adult	ridgemere	commons	218	copying at the Records Office	Data/Talk/mantles-export/plain/rm195.mantle
+rm196	rm_godfrey_dripmore	Godfrey Dripmore	plain	full	light broad	adult	ridgemere	commons	225	potter at The Rain Pot	Data/Talk/mantles-export/plain/rm196.mantle
+rm197	rm_liv_pitchhand	Liv Pitchhand	plain	full	light broad	adult	ridgemere	commons	226	baker at The Sugar Loaf	Data/Talk/mantles-export/plain/rm197.mantle
+rm198	rmx_philippa_rainford	Philippa Rainford	plain	standard	light broad	young	ridgemere	commons	233	at lessons	Data/Talk/mantles-export/plain/rm198.mantle
+rm199	rm_clemence_rustham	Clemence Rustham	plain	full	broad light	adult	ridgemere	commons	248	cooking for Northgate	Data/Talk/mantles-export/plain/rm199.mantle
+rm200	rm_edda_ropeton	Edda Ropeton	plain	full	light broad	adult	ridgemere	commons	249	provisioner at The Round and Rind	Data/Talk/mantles-export/plain/rm200.mantle
+rm201	rmx_grete_dunn	Grete Dunn	plain	standard	light broad	adult	ridgemere	commons	257	clerking at the Wharf Office	Data/Talk/mantles-export/plain/rm201.mantle
+rm202	rmx_dirk_mallory	Dirk Mallory	plain	standard	light broad	adolescent	ridgemere	commons	273	at lessons	Data/Talk/mantles-export/plain/rm202.mantle
+rm203	rmx_olaf_stoneley	Olaf Stoneley	plain	standard	light broad	young	ridgemere	commons	276	at lessons	Data/Talk/mantles-export/plain/rm203.mantle
+rm204	rm_cressida_dripmore	Cressida Dripmore	plain	full	light broad	adult	ridgemere	commons	278	helping at The Rain Pot	Data/Talk/mantles-export/plain/rm204.mantle
+rm205	rm_cressida_millstack	Cressida Millstack	plain	full	light broad	adult	ridgemere	commons	279	perfumer at The Cedar Phial	Data/Talk/mantles-export/plain/rm205.mantle
+rm206	rm_hollis_gullmore	Hollis Gullmore	plain	full	broad light	adult	ridgemere	commons	283	keeping the taproom	Data/Talk/mantles-export/plain/rm206.mantle
+rm207	rm_magda_rainmarsh	Magda Rainmarsh	plain	standard	light broad	young	ridgemere	commons	285	at lessons	Data/Talk/mantles-export/plain/rm207.mantle
+rm208	rm_ragnar_roperidge	Ragnar Roperidge	plain	full	none	adult	ridgemere	commons	286	runs The Eastgate Stables	Data/Talk/mantles-export/plain/rm208.mantle
+rm209	rmx_corra_coldridge	Corra Coldridge	plain	standard	light broad	adult	ridgemere	commons	290	usher in the Antechamber	Data/Talk/mantles-export/plain/rm209.mantle
+rm210	rm_magda_rustham	Magda Rustham	plain	standard	broad light	old	ridgemere	commons	298	minding the shop door	Data/Talk/mantles-export/plain/rm210.mantle
+rm211	rm_mogens_ashley	Mogens Ashley	plain	full	light broad	adult	ridgemere	commons	299	helping at The Mortar and Pestle	Data/Talk/mantles-export/plain/rm211.mantle
+rm212	rm_njal_ashford	Njal Ashford	plain	full	light broad	adult	ridgemere	commons	300	carpenter at Cedar Row Joiners	Data/Talk/mantles-export/plain/rm212.mantle
+rm213	rm_theodora_wickley	Theodora Wickley	plain	standard	none	adult	ridgemere	commons	301	nursing for the abbey	Data/Talk/mantles-export/plain/rm213.mantle
+rm214	rm_florence_ropeworth	Florence Ropeworth	plain	standard	light broad	adult	ridgemere	commons	306	helping at Vane & Daughters	Data/Talk/mantles-export/plain/rm214.mantle
+rm215	rm_jorunn_tarham	Jorunn Tarham	plain	full	light broad	adult	ridgemere	commons	308	baker in the Rag Market	Data/Talk/mantles-export/plain/rm215.mantle
+rm216	rm_ulla_rustham	Ulla Rustham	plain	full	none	adult	ridgemere	commons	311	runs The Greatly Colour Works	Data/Talk/mantles-export/plain/rm216.mantle
+rm217	rmx_gorm_halford	Gorm Halford	plain	full	none	adult	ridgemere	commons	313	runs The Cinder Glassworks	Data/Talk/mantles-export/plain/rm217.mantle
+rm218	rmx_jorunn_wetcombe	Jorunn Wetcombe	plain	standard	light broad	young	ridgemere	commons	315	at lessons	Data/Talk/mantles-export/plain/rm218.mantle
+rm219	rmx_rika_tarnham	Rika Tarnham	plain	standard	light broad	young	ridgemere	commons	316	at lessons	Data/Talk/mantles-export/plain/rm219.mantle
+rm220	rmx_egil_dunn	Egil Dunn	plain	standard	light broad	adult	ridgemere	commons	323	none	Data/Talk/mantles-export/plain/rm220.mantle

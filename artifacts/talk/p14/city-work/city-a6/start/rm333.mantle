@@ -1,0 +1,32 @@
+# rm333, TODO title (doc 84 P14, batch city-a6): written for rm_josephine_brineford (Josephine Brineford: at lessons, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm333
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_josephine_brineford
+title TODO
+fits stage=young|adolescent|adult|old
+prefers TODO
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk trusts_no_one_from_a_rival_house
+likes honey_cakes old_tales festival_bells warm_rain
+dislikes rats stale_bread
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown
+
+young
+
+adolescent
