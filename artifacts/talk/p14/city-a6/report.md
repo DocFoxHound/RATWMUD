@@ -170,7 +170,7 @@ The branch was assessed together with every export dialect and all earlier cloud
 ## Suggested whole-file review
 
 - **rm310** receives visitors in an official register while keeping the formal job title in a live field.
-- **rm316** gives distinct imagined singing parts to a fleet. Read across the wearer's life stages.
+- **rm316** gives distinct imagined singing parts to a fleet. Its cathedral choir work gives the imagined voyages an unusually musical vocabulary.
 - **rm324** supplies a rural voice in a section of the manifest that also includes residents from several city quarters.
 - **rm344** folds an oilcloth hood into a tray for one sheet. Its brief grants office and wealth, but it voices no invented ruling on behalf of the city.
 - **rm345** tucks straw around noisy parcels and uses their changing sound to describe the carter's work.
