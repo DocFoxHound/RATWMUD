@@ -1,0 +1,258 @@
+mantle rm458
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_montague_millcot
+title the baker with a fleet of draughtsmen
+fits stage=adult|old
+prefers job=baker
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk knows_the_ships_by_their_sheer
+likes pickled_herring draughts festival_bells first_warm_day
+dislikes salt_wind haggling
+fears the_clerk_leaving_before_closing a_board_with_a_missing_man
+hopes one_quiet_crossing a_stamp_with_next_weeks_date
+topics pastimes +0.5 work +0.4 food +0.3 smalltalk +0.2
+styles comfort=warm gossip=plain refuse=gentle tease=none
+marks oath saying
+persona #self.first# cuts game pieces from spent broom handles and names each for a ship; even a lost man gets a soft berth in the flour sack.
+
+words
+oath! = Split my last red piece | Butter the broom handle
+saying! = A captured piece needn't go hungry | Slow hands make an even fleet
+redman = my red counter | the madder-red man
+king = the double-height piece | my crowned draughtsman
+bag = a worn flour sack | the soft little bag
+mark = the nick on its edge | the cut in the rim
+flour = a dusting of white | a trace of meal
+rack = the cooling rack | our loaf shelf
+slice = the thin end slice | a heel cut fine
+onion = a pale onion ring | the smallest onion slice
+stern = a sloping stern | a dipped stern
+bow = the blunt bow | a high rounded nose
+fold = the clean paper fold | my sharp crease
+bell = the high festival bell | a bright bell note
+corner = the far left square | that outside square
+
+any
+opinion @1 dole for 3 : I ate every bit the kettle gave me and played on a full belly that week.
+opinion @2 houses against 2 : It would do me good to see a great household lift the same price of loaf I have to lift.
+opinion @3 city for 1 : I can cross this town by its bell notes. Even the cracked one's a good friend.
+opinion @4 strangers for 1 : A stranger can have red and the first move. That's an introduction without a speech.
+opinion @5 merchants against 2 : Somebody ought to try buying back a loaf with the pay for baking it.
+opinion @6 sump for 1 : The Sump can find four spare buttons for a board on a bad evening.
+
+grown
+line @1 greet [pair.band=strangers] : Step up. I've an idle red piece and an idle ear.
+line @2 greet [here.time=dawn] : Early light for a slow start.
+line @3 greet [here.weather=rain] : A little shelter on the lee side here.
+line @4 greet.return : Good to be within speaking distance again.
+line @5 greet.return [pair.band=friends] : I saved the better colour for you.
+line @6 farewell : May your next crossing be a gentle one.
+line @7 farewell.return : I'll put the pieces away when you're off.
+line @8 again.open : Back for a second game of talk, then.
+line @9 kin.open [pair.kin!=no] : There's always a home square left for kin.
+line @10 hail [pair.band=friends] : Over here with the bag of red men!
+line @11 react.news : Go easy. I've a full ear for particulars.
+line @12 react.news.new : That's a ship I hadn't marked coming in.
+line @13 react.news.known : That word got here with the last lot of flour.
+line @14 react.news.doubt : I'll hold the spare square until somebody's certain.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll clear this board and sit by you.
+line @16 react.news.glad [topic.kind=birth|marriage] : I'd ring a little bell myself for news like that.
+line @17 answer.how : Easy in my pace and sound on both feet.
+line @18 decline : I'd hate to keep you hanging about for such a doubtful promise.
+line @19 accept_decline : Another berth will turn up for the asking.
+line @20 sympathise : Lean here. A slow minute won't cost either of us.
+line @21 thank : I'd give a row of crowned pieces for a kindness like that.
+line @22 deflect_thanks : A piece more or less hardly weighs on my side.
+line @23 preclose : Time for me to gather the little fleet in.
+line @24 accept_preclose : Go comfortably. I'll see to the last red piece.
+
+scene heel
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I put the herring near the heel, right where the crust curves.
+b : Why put it clear out there?
+a : Brine goes through the middle too quickly. At the bend the crust holds till the last bite.
+
+scene broom
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : Every man in #bag# comes off a broom handle.
+b : Which one wears the crown?
+a : #king# has its own little ring above the crown. I could pick it blind.
+
+scene harbour
+when topic=travel
+does tell.self / react.self / assess
+a : I can name a ship from how the stern comes round behind the pier.
+b : Even with the letters covered in tar?
+a : They paint the letters after shaping the hull. Give me one clear look at #bow#.
+
+scene chime
+when topic=season self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : The tail of the big note gives away the bell's last swing.
+b : What's left to hear after the clang?
+a : A soft scrape like a loaf brushed over the board. That's my favourite part.
+
+scene first
+when topic=weather self.likes=first_warm_day
+does tell.plan / ask.detail / answer.detail
+a : On the first mild day I set the pieces outside for an airing.
+b : What makes a draughtsman need fresh air?
+a : Nothing in particular. I just want to be outside with something I like.
+
+scene salt
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : Salt blows up under my chin till even bread tastes of brine.
+b : A turn of the collar might spare your supper.
+a : I'll try it with the flap toward the Sound.
+
+scene haggle
+when topic=prices self.dislikes=haggling
+does give.opinion / disagree / concede
+a : I'd write the day's price large and leave the buyer in peace.
+b : Sometimes a second offer gets a bargain.
+a : That second offer's yours. I'd pay a fair penny to keep the first.
+
+scene stamped
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I keep the date of my last petition visit pencilled under #fold#.
+b : Does the clerk ever read that bit?
+a : It's meant for me. Saves me walking up a day too soon out of habit.
+
+scene bake
+when topic=work self.job=baker self.workplace
+does tell.self / ask.detail / answer.detail / assess
+a : At #self.workplace# I leave a hand's breadth between the loaves.
+b : Couldn't the little ones sit closer?
+a : Little ones still have a last breath of heat to let out. Close loaves sweat.
+b : Now I know why even the small ones get a clear berth.
+
+scene lean
+when topic=food world.times=hard|lean
+does tell.worry / reassure / assess
+a : I've begun cutting #slice# almost thin enough to bend.
+b : Would a hot water dip soften the crust too?
+a : It would, and I've enough herring liquor to give the dip some taste.
+
+scene captured
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : When a ship leaves the board I send it down into #bag#.
+b : Why give a counter a whole ship's name?
+a : I get to remember two pleasures from one old broom handle.
+
+scene friend
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : There's a blue button I'd like to offer #self.friend# for a missing piece.
+b : Will a button stand up to the wooden fleet?
+a : If the button wins, I'll do it the honour of painting its own sail.
+
+scene boss
+when topic=work self.boss self.job=baker
+does tell.self / ask.detail / answer.detail
+a : I like a clear nod from #self.boss# before I shift #rack#.
+b : Can't you tell when the crust is set?
+a : I can. I just don't know whether to start shifting from the wall end.
+
+scene night
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I dream an office stamp comes down on the piece I meant to crown.
+b : You must wake with that date on your mind.
+a : I do. I never can make out whether the game counts as settled.
+
+scene shelter
+when topic=smalltalk
+does offer / accept / assess
+a : I've a clean bit of sack you can put under that damp elbow.
+b : That would keep the chill off this ledge.
+a : Use the plain corner. #flour# still clings to the seam.
+
+scene late
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Waiting for a cart I sometimes mark the tide on the axle stone.
+b : What will the tide tell you about the cart?
+a : Nothing. But there's something pleasant to watch while the road stays empty.
+
+scene pair
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you mark a red man once the dye rubs away?
+b : Nick the edge instead of painting another coat.
+a : I'll feel #mark# on a bad light day as well. That's a good second use.
+
+scene memory
+when topic=family
+does tell.self / react.self / assess
+a : I remember drawing ship shapes on a board too damp for a match.
+b : Bet you gave them all a proper harbour.
+a : The split across the middle served. It even looked a bit like a tide creek.
+
+story burntseat [topic=work]
+  : I once saved the round end of a scorched loaf for a draughts piece.
+  : My fingers came away black on the first move.
+  b : How did the poor man finish the game?
+  : Under a scrap of paper. Made a handsome sail for the voyage home.
+
+story wrongdesk [topic=dreams]
+  : At the wrong office desk I once got a date for collecting an empty basket.
+  : I couldn't face an argument. I wrote the date beside my petition day.
+  b : Did you claim the basket?
+  : No. But I made sure the two dates didn't get confused.
+
+story bellgame [topic=pastimes]
+  : I tried to play one whole game at the pace of a festival bell.
+  : My fine red fleet hadn't crossed the middle when the bells stopped.
+  b : Did the game stop dead?
+  : I listened to the last note and carried on at my own pace. Still haven't found a nicer game.
+
+rule @flourshelf
+when concept=bark self.job=baker self.working=yes
+does aside
+cooldown 8h
+say Separate these two. They're still breathing steam.
+
+rule @herring
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say One strip of fish will reach round that curve.
+
+rule @homefleet
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Red fleet under sail. Don't roll off now.
+
+rule @festival
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say There's that scrape after the high note.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Plenty of room on the flour sack. I'm #self.first#.
+dlg @2 resident.hub [topic.meeting=known] : Come alongside, #topic.player#. There's a game still waiting.
+dlg @3 resident.hub [here.time=night] : The harbour lights will do for a late talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can keep a clear square between us for now.
+dlg @5 resident.job [self.job=baker self.workplace] : I help with the long racks at #self.workplace#. Hot loaves take room to breathe.
+dlg @6 resident.job : Give me ordinary lifting work and time to finish it.
+dlg @7 resident.bye : I'll leave your men the way you played them.
+
+graft resident.hub
+choice What ship is the red piece? -> redvessel
+node redvessel
+say A broad little coaster. See #mark# where the stern dips? On the board I can keep it near me all winter.
+choice How would you crown a ship? -> doublevessel
+choice I'd like another word. -> hub
+node doublevessel
+say Fit a spare ring round its mast. Gives the piece some height and still leaves its own shape in view.
+choice Let's talk on shore. -> hub
+choice Safe crossing. -> bye

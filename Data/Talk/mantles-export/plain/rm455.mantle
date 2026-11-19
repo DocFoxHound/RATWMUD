@@ -1,0 +1,338 @@
+mantle rm455
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_hanne_thornbury
+title the constellation in the peel
+fits stage=young|adolescent|adult|old
+prefers job=scholar
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk pares_an_apple_in_one_ribbon_while_recalling_the_camp_stars
+likes crisp_apples stars sharp_knife first_warm_day
+dislikes stale_bread drizzle
+fears a_cough_mistaken_for_the_whole_answer
+hopes a_quiet_hill_and_a_clear_place_to_stand
+topics memories +0.5 pastimes +0.5 weather +0.4 work +0.3
+styles comfort=discreet gossip=exact refuse=punctilious tease=dry
+marks oath saying
+persona #self.first# pares an apple beneath an elegant window and knows the stars by the old, quiet arrangement above a charcoal camp.
+
+words
+oath! = Snip my longest peel | Cloud my apple star
+saying! = A polished sill does not improve the stars | One unbroken peel is a tolerable claim to distinction
+peel = a narrow apple ribbon | a long red peeling
+core = a star-shaped core | a pale seedcase
+knife = a thin paring knife | a small bright blade
+camp = the high charcoal camp | the dark camp clearing
+ash = a little silver ash | a soft ash drift
+coal = a low banked coal | a black remnant
+blot = a spot of ink | a small square blot
+page = a clean page | a studied margin
+pane = the upper pane | the clearest glass
+breath = a guarded breath | a discreet pause
+apple = a ringing crisp apple | a ruddy hard apple
+star = a chilly point of light | a pale star
+damp = a needling dampness | a creeping drizzle
+
+any
+opinion houses mixed 1 : An abundance of well-appointed rooms does not confer an abundance of quiet. The distinction is worth making.
+opinion city for 1 : An excellent city for learning to recognise a star through a truly excessive assortment of roofs.
+opinion strangers mixed 1 : An introduction is preferable to an inspection. I reserve the right to request the former.
+opinion dole for 2 : A gift of sound bread scarcely requires any ornament beyond a civil hand offering it.
+opinion road mixed 1 : I know a way looks shorter in a recollection composed beside a warm fire.
+opinion festivals mixed 1 : I like a good occasion. I should like it better if it recognised the occasional virtue of stopping.
+
+any
+line greet : A little space by the clearer pane. | Welcome, the knife has been put away.
+line greet.return : And a greeting back in my plain voice.
+line again.open : This encounter has a second instalment.
+line farewell : May the air stay clear above your road. | A pleasant distance between yourself and the next shower.
+line farewell.return : I'll return that courtesy without any added ceremony.
+line react.news : Let me hear what was actually said. | I can spare a clean interval of attention.
+line react.news.new : That entry isn't in my notes.
+line react.news.known : I remember the original shape of that account.
+line react.news.doubt : I reserve judgement on that rather polished ending.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd draw the curtain a little round the wolves bearing that grief.
+line react.news.glad [topic.kind=birth|marriage|work] : A welcome sight through a somewhat clouded window.
+line ask.how : Did your day leave you a little air?
+line answer.how : Entirely present. My throat can answer for itself.
+line sympathise : A silent minute needn't be accounted for to me.
+line reassure : A clean pause generally improves a difficult undertaking.
+line refuse : I have something rather particular to finish first.
+line accept_decline : An answer does not improve simply by being extracted twice.
+line preclose : I must deal with the unfinished portion of my afternoon.
+line accept_preclose : Go before the weather develops a further opinion.
+line ack : I have your meaning clearly in hand.
+
+young
+line greet : You can see my best little apple star from here.
+line farewell : Go round the puddle with the grey skin on it.
+
+adolescent
+line greet.return : I heard you perfectly, thank you. Welcome in return.
+line farewell.return : And a clear light over your evening page.
+line react.news : I'd prefer the version that hasn't been dressed for the classroom.
+
+grown
+line greet.return : You bring a civil note into my not entirely civil weather.
+line farewell.return : A dry collar makes a reasonable parting wish.
+line react.news : Separate what reached your ears from what you saw, if convenient.
+
+young
+
+scene exchange2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : My apple's got a star inside. | I saved a pip for each clear night.
+b : How did it get in? | Have you many?
+a : I can't tell, but every seed has its own point. | Almost enough for both little paws.
+
+scene exchange3
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I like clear sky better than grey glass. | I wiped one small circle in the steam.
+b : Why grey glass? | To see which view?
+a : That's what a window looks like when I've breathed on it. | The high bit where a star might fit.
+
+scene exchange4
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A long apple peel curls like a sleeping animal. | I keep the roundest apple till the others are gone.
+b : Which animal? | Just admiring it?
+a : Whichever one wakes up when I let go. | Planning a truly magnificent crunch.
+
+adolescent
+
+scene exchange6
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I leave a small star by the line I want to question. | My notes acquire apple marks in one specific corner.
+b : Where does a second question go? | An unauthorised illustration?
+a : Discover a second star. The sky has managed very well so far. | It indicates where the lesson ceased to command my whole attention.
+
+scene exchange7
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I learnt the stars over a charcoal camp. | I can find the old camp pattern from this window.
+b : Do the Heights have a different set? | No trees nearby?
+a : The same set, with more architecture superimposed. | I know where the black outlines used to fall beneath it.
+
+scene exchange8
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I cut the apple across its middle for the seed star. | I want a fruit that cracks back when bitten.
+b : Is that the best way to eat it? | A rather argumentative preference?
+a : It's the most rewarding way to inspect it. | I can appreciate an apple prepared to defend its texture.
+
+scene exchange9
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I clear my throat between lines of a lesson. | If I turn towards the window while speaking, it means I want a little air.
+b : Does it hurt in damp air? | Only air?
+a : I would prefer to discuss the line, which is in considerably better order. | And possibly a moment in which nobody enquires about it.
+
+scene exchange10
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle appears to be writing a very small complaint on the glass. | I turn my chair away from a damp draught.
+b : Can you read it? | Away from the view as well?
+a : My collar has already received a copy. | A regrettable arrangement forced upon me by my entirely adequate throat.
+
+scene exchange11
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The first warm day lets me open the pane without a committee of gooseflesh. | A mild afternoon ripens my appetite for an apple.
+b : Are you going outside? | Did that need much ripening?
+a : I propose to test the open air at gradually less ridiculous distances. | It was exceptionally well prepared for advancement.
+
+scene exchange12
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Stale bread makes an impressive substitute for a paperweight. | I dislike needing a plan of attack for a crust.
+b : And for lunch? | Does your sharp knife help?
+a : I should choose an actual apple and let the bread pursue office work. | An admission of defeat disguised as cutlery.
+
+scene exchange13
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I pare fruit with a knife that doesn't drag. | The nick in my practice blade interrupts the ribbon.
+b : Can you keep the skin whole? | Could you simply cut thicker?
+a : Usually if nobody offers advice from the far elbow. | I could also learn to give the edge a proper finish.
+
+scene exchange14
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I miss the quiet where coals settled into their own ash. | A charcoal camp at night has no particular wish to impress a visitor.
+b : Did the smoke bother you? | Is that why you liked it?
+a : Less than people asking how I can possibly miss the place. | I found it wonderfully restful not to be introduced to every sound.
+
+scene exchange15
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could give #self.friend# the share with the clearest seed pattern. | A friend may be allowed to notice a bad cough exactly once.
+b : Does the pattern improve its flavour? | And the second time?
+a : It improves the giving, which is the matter under discussion. | I would hope we had found a second subject between us.
+
+scene exchange16
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : It is said #topic.subject# #topic.claim#. Remarking upon it will hardly complete the evidence. | A very fine account goes round in damp weather.
+b : Will you discuss it? | Are you dampening it further?
+a : I'd rather discuss the absence of evidence. | Merely wondering what will remain when the ornament dries.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd relish seeing those high stars again from the old clearing once more. | I should like my lessons to come with a little open hillside.
+b : All in a single evening? | What would you study there?
+a : I can be extravagantly ambitious with imaginary travel. | The difference between a quiet pupil and an empty-headed one.
+
+grown
+
+scene exchange19
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I mark an incomplete answer with a small broken ring. | I prefer the lesson that leaves a plain view beyond the window.
+b : Why a ring? | To neglect the work?
+a : I can close it when the matter has actually been understood. | To remember what the words ought eventually to describe.
+
+scene exchange20
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : A fresh apple sounds well even amid a roomful of argument. | I keep the paring so thin the light comes through.
+b : Can anybody hear it? | Quite an exacting meal.
+a : The eater can. A little privacy for the palate. | Only the first fruit. Hunger draws a sensible limit to technique.
+
+scene exchange21
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A bad patch of damp can make a conversation briefly one-sided. | I have learnt which breath to save for the last word.
+b : Your throat again? | Does it always need saying?
+a : A pause in the discussion. Our language accommodates such things. | Increasingly seldom. A fortunate discovery.
+
+scene exchange22
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I can draw the camp stars from memory on an apple skin. | I look for the familiar grouping before the brightest point.
+b : Does the skin lie flat? | Which one leads?
+a : The sky rarely obliges me by being conveniently flat either. | The shape is a better acquaintance than any single light.
+
+scene exchange23
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I choose a window for its view after a shower ends. | I keep the strip of open sky free from curtains.
+b : Not while it's falling? | Through winter too?
+a : Any window is competent to show me drops. I want the better qualification. | I draw wool over my shoulders rather than over the stars.
+
+scene exchange24
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I once thought a quiet interval had to be earned by a very long explanation. | I offer gratitude before judging the cooking.
+b : And now? | Can you keep those apart?
+a : A brief thanksgiving followed by actually listening has proved sufficient. | Gratitude for bread is quite compatible with preferring a fresh loaf.
+
+scene exchange25
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean season leaves more cores on the kitchen board. | A pinched purse changes which cut of bread one gets.
+b : Do you plant the pips? | Does the flavour change too?
+a : I start by seeing whether any unblemished fruit has been left on the cores. | It changes the care with which I offer the better half to a visitor.
+
+scene exchange26
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can walk towards the old camp without mistaking the turn. | A passage by road is best measured in dry resting places.
+b : Even after many years? | How many to your door?
+a : The road's changed. The inclination of the hill has remained good enough to consult. | Enough if I choose them in advance.
+
+scene exchange27
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I buy an apple for the firmness under its skin. | A poor knife is an expensive bargain.
+b : How do you judge without marking it? | Because it wants replacing?
+a : Light pressure and the sense to leave it lovely for another buyer. | Because a useful thing is ruined first before I'm persuaded to replace it.
+
+scene exchange28
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Heights can spend several hours without smelling coal from the camps. | An upper window gives a magnificent view of very many other upper windows.
+b : Do you miss that? | Disappointing?
+a : I miss distinguishing one banked fire from its neighbour. | I find a little sky sufficient to recommend the arrangement.
+
+scene exchange29
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The best of the old camp quiet travels surprisingly far. | I used to take a dry cough for a grave personal affront.
+b : In the ear? | And now?
+a : In the expectation that somewhere a fire is settling without demanding an opinion. | I reserve indignation for people who wish to discuss it at length.
+
+scene exchange30
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I finish a page when there's still daylight sufficient to judge its legibility. | I still keep an apple by the morning papers.
+b : Ever stop halfway? | For breakfast?
+a : Better than leaving a second half nobody can read. | To remind a very serious desk that the day might contain pleasure.
+
+story tale1 [topic=memories]
+  : At camp I once drew the night sky in ash on a board. In the morning a small draught had carried away the middle of my grand arrangement.
+  : The clearest star was still visible, protected in the shadow of my apple core.
+  b : Did you draw all the missing ones again?
+  : I ate breakfast and looked up the following evening. The original chart had sustained considerably less damage.
+
+story tale2 [topic=food self.likes=crisp_apples]
+  : I once produced a single apple ribbon long enough to circle the plate. I meant to record its exact length for a lesson in measurement.
+  : A curled peel is curiously unwilling to be measured without splitting.
+  b : Did it stay in one piece?
+  : It broke at the very last moment. Two pieces proved beautifully tractable and gave the same answer between them.
+
+story tale3 [topic=weather]
+  : I cleared my throat while a drip struck a metal jug across the room. The two sounds together had the elegance of a rather small bell.
+  : I turned very deliberately towards the jug as though expecting an announcement.
+  b : Did anybody announce anything?
+  : The jug supplied the next note by itself. I returned to my reading with my dignity and most of my breath still attached.
+
+rule @call1
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say A clean little star beside the questionable figure. | Leave the page room for a more exact account.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Pale sky makes the last camp star look very stubborn. | An early apple will improve the next early noise.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say This weather has lodged a remarkably damp objection. | My collar has heard quite enough from the eaves.
+
+rule @call4
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say The brightest little star sits behind an apple's skin. | One clean bite is an excellent beginning to a lesson.
+dlg resident.hub : I can attend to a question without moving my chair into the draught.
+dlg resident.hub [topic.meeting=known] : #topic.player#, it's pleasant to meet someone familiar amid all these questions.
+dlg resident.hub [here.time=night] : After the stars appear I am generally better disposed towards a quiet enquiry.
+dlg resident.hub [pair.disposition=wary|hostile] : If this concerns my throat, a different enquiry would be preferable.
+dlg resident.job [self.job=scholar] : I attend to my lessons. I prefer a question with a little open air between it and the official answer.
+dlg resident.job : I practise explaining a thing in plain words without removing any of its interesting edges.
+dlg resident.news [world.news] : The report available to me is #world.news#.
+dlg resident.gossip [here.gossip=yes] : The account is #topic.subject# #topic.claim#. Its fine appearance need not compel one's belief.
+dlg resident.bye : I hope your path affords a glimpse of the clearer sky.
+
+graft resident.hub
+choice Why look for stars in an apple? -> apple_sky
+node apple_sky
+say A lovely star shape sits precisely where a hungry wolf cuts the apple. Such a small pleasure can survive being ordinary.
+free
+choice Does it resemble the sky at camp? -> apple_sky_again
+choice Goodbye. -> bye
+node apple_sky_again
+say Not especially. It reminds me to look up once my afternoon's tasks are over, which is a considerable accomplishment for a piece of fruit.
+choice Enjoy the evening sky. -> hub
+choice Goodbye. -> bye

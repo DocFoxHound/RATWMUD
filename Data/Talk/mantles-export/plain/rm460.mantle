@@ -1,0 +1,418 @@
+mantle rm460
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_sigrun_kelphand
+title the chalk stair
+fits stage=adult|old
+prefers job=crafter piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk chalks_water_heights_on_a_scrap_stave_shaped_like_a_stair
+likes smoked_eel dice sharp_knife warm_rain
+dislikes drizzle haggling
+fears a_cellar_full_before_anybody_looks_down
+hopes one_room_above_the_highest_chalk_mark
+topics work +0.6 weather +0.6 home +0.4 prices +0.3
+styles comfort=practical gossip=reserved refuse=plain tease=dry
+marks oath saying
+persona #self.first# sets a little wooden stair on end, marking where rain would stand against each door.
+
+words
+oath! = Split hoops | A cask of ditchwater
+saying! = Ask the lowest step | Water writes uphill
+stepstick = a stair cut in scrap | my chalk stair
+bottomrise = the first riser | a low notch
+upperrise = the top cut | a dry ledge
+whitefleck = a chalk fleck | a chalk heel
+stavedrop = a sweating stave | a damp joint
+roundhead = a barrel head | the broad circle
+ironring = a knocking hoop | the high ring
+shavings = a pale curl | the thin scrap
+smokedeel = a dark eel strip | the oily end
+dicecup = the horn cup | a rattling corner
+moneybit = a bed copper | a dry-room penny
+justrain = a clean downpour | the warm soaking
+nastywet = a niggling drip | the sour drizzle
+oakedge = a tight bevel | a good seam
+dryhouse = a room above water | a sill above flood
+rankdoor = a painted door | the high doorstep
+
+any
+opinion sump for 2 : A wolf with wet floorboards knows plenty worth hearing about the fancy gutter farther up.
+opinion houses against 1 : I'd show a councillor the stain under the beds before I'd show off the clean pump.
+opinion dole for 2 : A supper you can carry upstairs beats one left at a door under water.
+opinion merchants mixed 0 : Give a sound measure and name a fair sum once. After that endless wheedling wears the hoops loose.
+opinion church for 2 : The Bright One hears through wet plaster as easily as through carved panels.
+opinion road for 1 : A raised footway pays back every stone the first time a load comes home dry.
+opinion watch mixed 0 : I'd be glad of more eyes on the low crossing when there's fast water in it.
+opinion newcomers for 1 : Tell a new tenant plainly which steps disappear before renting the room downstairs.
+opinion city mixed 0 : From below the terraces are a great many roofs sending their rain our way.
+opinion festivals mixed 0 : I'll join a table if there's space under it to keep everybody's dry shoes.
+
+grown
+line greet : Evening or morning, there's a dry place here. | Mind the scrap stave. You're welcome this side.
+line greet [pair.band=strangers] : Fresh feet, I see. Try the higher board. | Come where the standing water ends.
+line greet [here.time=dawn] : First light shows the tide line plain. | Morning. The upper edge looks clean so far.
+line greet.return : I hear you across the barrel heads. | A greeting in return, now I've put my chalk down.
+line greet.return [pair.band=friends|family] : Come closer. You know which notch is mine. | A voice I'd hear over any rattling hoop.
+line greet.return [here.time=night] : Late company can take the high step. | Good evening. Don't mistake that dark patch for dry stone.
+line again.open : A second visit fits without shifting the chalk. | Here again before the mark's rubbed off.
+line hail [pair.band=friends] : Look from here. Every rise shows plain from here! | Stand beside my stave a moment!
+line farewell : Dry soles and a good rise home. | May the wet stop one step short of your threshold.
+line farewell.return : Go high if you hear the gutter roaring. | I'll leave the upper board clear behind you.
+line react.news : Set it out in the order it reached you. | Give me the facts before the muddy bits settle.
+line react.news.new : A fresh mark. I've heard nothing like it lately. | That hasn't reached my little piece of timber.
+line react.news.known : Same water line as the earlier report. | I've chalked that particular change already.
+line react.news.doubt : There's a stain there without a clear source. | I'd inspect the first joint before swearing where it leaked.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sorrow gets up steps no flood can climb. | I'd put my best dry seat at your disposal today.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's earned a good bright chalk stroke. | Glad tidings. I'd raise my eel supper to that.
+line ask.how : How high has the day risen round you? | Got one comfortable place to put a foot?
+line answer.how : Working toward a drier sill. No complaint today. | On firm boards with my price settled.
+line decline : I won't promise what would leave a seam unfinished. | My working time is spoken for down to the last stave.
+line accept_decline : Then the bargain ends tidily there. | A straight refusal holds water with me.
+line preclose : Time I swept my chalk back into a heap. | These rings want hanging up before I leave.
+line accept_preclose : Take the sound boards on your way out. | Your time's your own once you've called the halt.
+line thank : You kept something precious dry. My thanks. | I'll count that help toward my next clean doorstep.
+line deflect_thanks : A spare dry board didn't cost me a cask. | Easy kindness when you know where the low ground lies.
+line sympathise : I've room to hear you without naming a remedy. | Stand on the high board beside me till the shaking settles.
+line reassure : One dry step gives you somewhere to look from. | Let's find the firmest patch within your reach.
+line ack : Yes. I see where that water runs. | That's one seam I'd call sound.
+line give.advice : Price a room after a whole wet week. | Look underneath a thing before admiring its polish.
+line kin.open [pair.kin!=no] : Family can stand by the little stair with me. | Kin have seen where I started from.
+line hail [here.time=night] : There's a dry landing up here! | Come up one rise before you stop!
+line farewell.return [here.time=dawn] : Early feet still need a sound footing. | First light on your next landing.
+line assess : It holds. I can say that much from inspection. | That finish is honest down past the polish.
+line give.opinion : I'd put the driest bed ahead of the handsomest window. | Wet timber deserves counting before fine promises.
+line again.open [pair.band=friends] : Back to compare chalk lines, I see. | A friend can watch the next mark go on.
+line greet [here.weather=rain] : Come off the runnel. There's space by this hoop. | You're welcome under my bit of cover.
+line thank [pair.band=friends] : That was worth a whole dry landing to me. | I'd trust you with my last piece of chalk.
+line answer.how [here.time=night] : Tired enough to dream of a high room. | I'd enjoy a warm bowl with dry boards beneath it.
+
+scene tinystair
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My spare stave has six steps cut along its edge. That's my piece of the low streets.
+b : Which end is home? | Can a cask still use it?
+a : Down by my thumb. Plenty of room above for the door I mean to have. | No. It was a bad stave before it was a good stair.
+
+scene rainorder
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : In a warm rain I watch the drain mouths till the first one starts to spit back.
+b : Which one goes first? | Why watch the mouths?
+a : The low one with street dirt banked against its lip. The rest have farther to go. | A drain swallowing water is working. One spitting it back wants a warning passed downhill.
+
+scene chalkwork
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I chalk a line across a hoop and a stave when I'm looking for a slip.
+b : What does a slip look like? | Won't rain erase it?
+a : Two short white strokes that no longer meet. Easier to see than to argue about. | Certainly. That's why I check after moving it, not a week after it's sold.
+
+scene round
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep flawed timber apart from sound stock even if both look lovely on top.
+b : What flaw hides best? | How do you mark rejects?
+a : A soft end under a handsome stripe. A finger knows before a coat of oil does. | On the end grain where it won't rub on the neighbouring piece. I've had enough false good news.
+
+scene sharpen
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp edge leaves a shaving I can see through. If the grain tears I stop blaming the wood first.
+b : Would you keep the curls? | What does tearing tell you?
+a : A few for packing the chalk. The rest sweep up better before they get underfoot. | To inspect my own edge and my own haste. Timber has enough honest faults without borrowing mine.
+
+scene hooptone
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A good hoop has a lower voice once it settles. I listen with one ear free of other business.
+b : Could you shut your eyes? | Can a note prove a barrel sound?
+a : I'd miss a crooked seat. Ears and eyes draw different wages on this job. | Each note suggests a seam to examine. Water's the one entitled to the last word.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / ask.detail / answer.detail
+a : Drizzle gets into the chalk till it pastes itself to my fingers.
+b : Is a downpour any better? | Why not bag the chalk?
+a : A downpour knows its business. I put the chalk away and go see the water work. | I wrap it in a dry shaving. Drizzle's trick is making you think you'll have time in a minute.
+
+scene warmdrop
+when topic=weather self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : Warm rain on my wrists feels almost lavish after a morning with dry timber.
+b : Even in a low street? | Would you stand out in it?
+a : On my wrists, yes. At the bedroom sill it can mind its manners. | With the timber properly covered and somewhere higher to go afterwards.
+
+scene eelfat
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoked eel leaves a shine on the fingers that doesn't belong on a buyer's barrel.
+b : What carries it off? | Does the skin go aside?
+a : A thorough wash and a clean rag. I take my meal after the last inspection if I can. | I enjoy that oily bite. The trick is giving supper and work separate places to land.
+
+scene dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I roll dice in a shallow hoop with a cloth underneath. Nobody crawls under the seats for a lost throw.
+b : Doesn't the hoop favour a side? | Any lucky number?
+a : Not when the cloth lies flat. We can lift it and look before a stake goes down. | Six steps on my stave. I like the top one, but I've never seen liking alter a die.
+
+scene bedroom
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'll have a high room one day where the damp line can't climb after me.
+b : Which terrace do you fancy? | Would you want a fine view?
+a : I'd start with the Heights and inspect the plaster before getting carried away. | My first inspection would be under the bed. Any view from the window comes second.
+
+scene hills
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Living low teaches you which upstairs voices carry best when a crossing fills.
+b : Who should be calling? | What does a good call give?
+a : Anyone who can see the landing from a dry position. No title needed for that. | The actual depth and the other way round. Shouting 'water' in a downpour adds very little.
+
+scene prayer
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : The Bright One deserves a prayer of thanks each time my morning starts on a dry board.
+b : Does damp make you forget? | Would a high house change the prayer?
+a : Damp makes me name what I'd like put right. I keep a place for thanks alongside that. | I'd have even more reason for it. High walls don't cut off the sound of low streets.
+
+scene frank
+when topic=prices self.dislikes=haggling
+does give.opinion / react.self / assess
+a : I quote a figure I could repeat under oath. Don't expect a second one because you've sighed.
+b : What if timber fell in price? | Do poor customers pay the same?
+a : Then I'd calculate a new figure and explain it before anybody paid the old one. | I'll show a smaller cask or a sound repair. Pretending a price is flexible wastes their afternoon.
+
+scene borrow
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with my chalk stair while I handle something wet.
+b : Is it precious timber? | Why part with it?
+a : No. The marks belong to years of looking. Nobody sells that by the foot. | I'd sooner lend it for a good look than keep all I know in my own pocket.
+
+scene handwork
+when topic=work self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd want #self.hand# able to point out a crooked hoop to me before the buyer does.
+b : Even with buyers listening? | Who sets it straight?
+a : Especially then. A buyer deserves to see the fault and the repair both. | Whoever laid it crooked can try the correction while another pair of eyes watches.
+
+scene pricepiece
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : My chalk heel comes cheap. The rise it marks on a clean wall can take a week's savings to reach.
+b : Then why mark it? | Do the figures discourage you?
+a : To keep the dry room measured in actual coppers. A dream needs somewhere to collect them. | A little. A blank scrap of wood would discourage me more.
+
+scene plantrip
+when topic=travel
+does warn / react.self / assess
+a : Leave a full cask on level ground before trying any of the low crossings in rain.
+b : What if the cask rolls? | Why leave it first?
+a : Put it soundly on its head and ask for proper help. I don't expect a paw to serve as a wheel chock. | A heavy load hides where the paving stops. My pride won't float me over a missing footway.
+
+scene shoptrade
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : My counter shows the underside of one finished cask as well as the handsome upright row.
+b : Why show its bottom? | Can somebody try it with water?
+a : That's where a slow weep can make a fool of the whole transaction. | I'd welcome a test before payment. I sleep better without wondering where my work has made a puddle.
+
+scene poor
+when topic=times self.wealth=poor
+does tell.self / ask.detail / answer.detail
+a : I save for a dry room in odd little pieces. A regular fine sum belongs to a finer purse.
+b : What counts as a piece? | Where does the spare copper live?
+a : What remains after food, materials, and a bit toward fuel. Sometimes that's only the thought of next time. | Apart from the dice money. A dry doorstep shouldn't have to depend on a good throw.
+
+scene gutter
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : You can hear the change when rain leaves stone and starts falling onto standing water.
+b : What changes in it? | Do you go by sound alone?
+a : The hard tap gets a hollow gulp underneath. That's when I raise my chalk a notch. | No. Sound up a narrow stair can tell you a lie with excellent conviction.
+
+scene opening
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Dawn lets me see last night's high-water stain before the daylight feet scuff it away.
+b : Why save the mark? | Would you wake neighbours for it?
+a : A morning of figures makes a better guide than six frightened guesses in the next storm. | For water still rising, yes. A stain on dry plaster can wait until a door opens.
+
+scene quiet
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : A barrel easing in the night makes a small hollow knock. I've mistaken it for a visitor.
+b : Do you answer it? | Would knocking mean a leak?
+a : I look first. Timber seldom needs a visitor's welcome, though it can keep some bad hours. | Not necessarily. A dry joint shifts too. Let daylight show me the seam.
+
+scene market
+when topic=newcomer
+does give.opinion / react.self / assess
+a : If you're new here, ask about the step below the door before you put down money for the room.
+b : What should I ask? | Does the paint tell you anything?
+a : Whether the bottom riser stays visible after a week's rain. An honest answer is worth having. | Fresh bright paint below old damp plaster makes me peer rather more closely.
+
+scene feast
+when topic=festival
+does tell.feeling / react.self / assess
+a : Give me an end seat when there's feasting. I watch whether anything's leaking off the long table.
+b : Can you enjoy your eel there? | Why trouble about a drip?
+a : Better with my elbows free. An end cut suits me particularly well. | Somebody has usually set spare shoes beneath. A little care costs less than damp feet.
+
+scene watchwork
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : Word from #world.news_from# reached me. #world.news#.
+b : Are you vouching for it yourself? | Will you repeat it farther?
+a : For where I heard it. Details need their own proper footing. | With its source attached. There's no honour in selling an echo like your own first-hand account.
+
+scene neighbour
+when topic=home self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd sooner agree a dry meeting place with #self.neighbour# before the low lane takes water.
+b : Why meet at all? | Would your own step serve?
+a : So we can account for who's made it past the low crossing without guessing from upstairs. | If it stays dry. I choose the higher place before the rain makes the choice for me.
+
+scene stare
+when topic=health
+does tell.feeling / react.self / assess
+a : A day bent over staves leaves my back remembering the shape long after supper.
+b : What straightens you out? | Does a walk help?
+a : I stand at a high sill and let my eyes take a longer level than a barrel's width. | If there's a dry turning handy. Nothing restorative about fetching my foot back out of a drain.
+
+scene soundland
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : From an upper terrace the Sound catches light like a hoop laid flat.
+b : Would that make a nice mark on your stair? | Can you pick out low doors from there?
+a : I'd like the real view. A little chalk circle won't pay for the room behind it. | Not their thresholds. A fine reason for going back down before passing judgement on the damp.
+
+scene newsrum
+when topic=gossip
+does give.opinion / react.self / assess
+a : If I haven't seen the wet boards myself I don't describe a house as flooded.
+b : Could a friend tell you? | Even if everybody says so?
+a : Yes, and I'd give my friend's words as heard. An ear can't inspect soaked plaster. | A crowd can all be looking at the same old stain. I'd like a fresh mark.
+
+scene faithwet
+when topic=faith
+does tell.plan / ask.detail / answer.detail
+a : I'd have a peg by the chapel door for a stranger's wet cloak given my choice of a fitting.
+b : What's devout about a peg? | Wouldn't it drip inside?
+a : A wet wolf shouldn't spend a whole prayer apologising for the floor. | I'd put a pan beneath. Prayer and good housekeeping get on well when they meet.
+
+grown
+
+story barrelboot [topic=work|memories]
+  : A little cask stood all morning over a wet patch. I chalked every seam and searched for the one I'd got wrong.
+  : I shifted it a pace. The old patch grew and the new boards stayed dry.
+  b : What was feeding the patch?
+  : My own soaked boot, set on a shelf above to dry. At least the cask passed inspection.
+
+story chalkdice [topic=pastimes|memories]
+  : I marked my place in a dice game with a chalk heel. Reached for it with wet fingers and came up with a white thumb.
+  : Pressed the thumb on the table. A very clear mark, just the shape of me.
+  b : Who could mistake that?
+  : Nobody until I leaned on the board to watch another throw and claimed five places unintentionally.
+
+story eelbill [topic=food|memories]
+  : I set my supper and a folded reckoning on opposite ends of a long board. A loose hoop underneath made it tip.
+  : Caught the fish in my lap. The figures landed face down in the oily wrapper.
+  b : Did you lose the price?
+  : No. I could read every copper backwards. Supper charged me nothing extra for the lesson.
+
+story stairturn [topic=home|memories]
+  : I made my first little stair with six beautiful equal steps. Held it to a real landing and the marks looked absurd.
+  : One real step had a worn hollow where a century of traffic took the inside turn.
+  b : Did you cut the model again?
+  : Just that notch. Water climbs the actual landing, never the pretty one I might prefer to show.
+
+story bestview [topic=dreams|memories]
+  : Once I climbed till I could see roofs nearly level with my chin. Turned straight round to see where a bed might fit behind the window.
+  : There wasn't any room behind it, only a remarkably fine painted shutter attached to a blank wall.
+  b : Did that spoil your plan?
+  : Improved it. My list for a high room starts with opening the actual window now.
+
+rule @chalk
+when concept=bark
+does aside
+cooldown 8h
+say That fleck wants rubbing off. The wet hasn't reached that rise. | Keep a dry corner clear for my stair.
+
+rule @hoop
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Turn the head toward the light for the seam check. | A sound hoop seats level on every stave.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say See which drain spits first. That's the useful mark. | Warm on the wrists, dirty past the ankles.
+
+rule @supper
+when concept=bark self.likes=smoked_eel
+does aside
+cooldown 8h
+say Save the dark shiny eel end for my plate. | I can smell decent smoke through that wrapper.
+
+rule @trade
+when concept=bark self.role=merchant
+does aside
+cooldown 8h
+say One plain price for a sound piece, thank you. | Inspect the joint before deciding on the finish.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say That pale mark shows where the next step begins. | Give the lower landing a wide turn in this light.
+
+dlg resident.hub : I've my little stair here. Choose the high end or the wet one for a closer look.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's still room to add another chalk mark.
+dlg resident.hub [here.time=night] : Watch the edge of the landing. It's harder to read the wet after dark.
+dlg resident.hub [pair.disposition=wary|hostile] : Speak straight from there. I've no wish to bargain over what either of us meant.
+dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. A good cooper looks underneath before charging for anything.
+dlg resident.job : I prefer to make a thing that can stand being filled and inspected on the spot.
+dlg resident.bye : Keep your dry shoes above the first chalk mark.
+dlg resident.gossip [here.gossip=yes] : I've heard that #topic.subject# #topic.claim#. That's word received, not an inspection I've made.
+dlg resident.gossip [here.gossip=no] : Only my own water marks to show today. I won't chalk up somebody else's story.
+dlg resident.news [world.news] : The report comes from #world.news_from#. #world.news#. Keep the source with the words, please.
+dlg shop.greet [here.shop=open] : Choose a sound place to set what you've brought. I can show the joints before we discuss the price.
+dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, back for another look. Turn a piece over if you'd like to inspect it.
+dlg shop.greet [here.shop=bare] : My stock's run low. I can still consider something sound you have to sell.
+dlg shop.greet [here.shop=asleep] : The counter's put to bed. Come back when I'm awake enough to inspect a seam.
+dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Look from that side. I'll give the same straight price to anyone.
+dlg shop.prices [here.shop=open] : You'll hear my actual figure first time. I allow for sound timber, tight work and a fair return.
+dlg shop.bye : May your purchase reach home sound on all its edges.
+dlg shop.bye [here.shop=asleep] : Leave the sleeping stock in peace till the counter opens.
+
+graft resident.hub
+choice Show me the little stair with its chalk marks. -> waterstair
+node waterstair
+say Set it upright. The nick by my thumb is where the first crossing takes water. Each higher one marks another way home cut off.
+free
+choice Why is there a rise above the last mark? -> sparestep
+choice I can picture the crossings. -> hub
+node sparestep
+say That's the dry room I'm saving for. I'll put the place on the stair when the rent and the reality agree.
+choice I hope the room has a sound window. -> hub
+choice I'll keep to the upper crossing. -> bye
+
+graft shop.greet
+choice Can I see how you check a barrel bottom? -> barrelbase
+node barrelbase
+say Give the head some daylight. Run your eyes along that ring where the head meets the staves. I want the line to look equally close all round.
+free
+choice What's the last test before buying? -> fulltest
+choice I'll look along those joints. -> greet
+node fulltest
+say Water in the cask and a dry patch underneath. Give a slow leak time to introduce itself before you hand over a copper.
+choice I'll look at the stock again. -> greet
+choice Thanks for showing the underside. -> bye

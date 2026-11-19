@@ -1,0 +1,255 @@
+mantle rm468
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_nan_ashhand
+title the chair with the clear approach
+fits stage=adult|old
+prefers job=miner
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk turns_the_chair_towards_the_door_before_counting_the_days_savings
+likes crisp_apples evening_line quiet_chapel misty_dawns
+dislikes drizzle flies
+fears being_surprised_by_an_unseen_weight
+hopes a_sum_sufficient_for_a_private_purpose
+topics work +0.6 home +0.4 prices +0.4 pastimes +0.3
+styles comfort=protective gossip=plain refuse=direct tease=none
+marks oath saying
+persona #self.first# keeps a clear view of the doorway, shares an apple readily and keeps a private purpose behind the saving of each coin.
+
+words
+oath! = Wedge my seat wrong | Tip my tidy apple pile
+saying! = Turn the chair before sitting down | A quiet purse needn't advertise the purchase
+chair = a low-backed chair | my stout chair
+edge = a free edge | a clean cut
+wedges = a row of wedges | the little iron row
+purse = my private purse | a tied pouch
+apple = a crisp red apple | a green sharp apple
+float = my red-topped float | a speckled float
+cliff = the quarry face | a long grey face
+slice = a clean apple slice | a white crescent
+fly = a black speck | a noisy visitor
+stream = a still run of water | a quiet pool
+chapel = the chapel hush | a quiet seat
+mist = a low morning mist | a pale strip of haze
+lintel = a solid lintel | the high beam
+
+any
+opinion merchants mixed 1 : A wolf buying one wedge and a wolf buying ten can both be told what good metal costs.
+opinion dole for 2 : I can spare an apple without consulting anybody's plan for the months beyond today.
+opinion road mixed 1 : The last turn to a job is every bit as important as the outward road. Let me see the load before it reaches my boots.
+opinion church for 1 : When I can hear a late visitor's foot and still keep my thoughts, that's a good quiet chapel.
+opinion houses against 1 : I'd have the grand owners come and stand underneath what their orders ask to be lifted.
+opinion strangers for 1 : A new face deserves the chair in good repair, with a clear walk to the outside.
+
+grown
+line greet : Step into view, boots and all. | A seat for you and clear ground between us.
+line greet.return : Welcome from a wolf already turned your way.
+line again.open : Here comes that step round the door again.
+line farewell : Go out with the way in plain view. | Take an apple's worth of comfort for the road.
+line farewell.return : And a clear approach to your own fireside.
+line react.news : Begin the news on firm ground. | I can move the chair round to hear you.
+line react.news.new : A fresh cut into that day's account.
+line react.news.known : I recall the direction of the first telling.
+line react.news.doubt : I'd look at the bottom before lifting that account.
+line react.news.sorrow [topic.kind=death|loss|assault] : There's room in my sight for the hurt as well as the work.
+line react.news.glad [topic.kind=birth|marriage|work] : I'd turn the best seat towards tidings like that.
+line ask.how : How's the day looked from behind your own pair of eyes?
+line answer.how : Steady as my chair when the floor's honest.
+line sympathise : Sit here and nobody will come up behind either of us.
+line reassure : There's a safe bit of ground between one load and the next.
+line refuse : I have a matter on hand that needs my whole attention.
+line accept_decline : All right. There's always a clean way back out.
+line preclose : I'd best use what's left of daylight while I have my eye on it.
+line accept_preclose : Go while you've room to turn without squeezing anybody.
+line ack : I've seen the face of that matter now.
+
+scene exchange1
+when topic=work self.job=miner
+does tell.self / ask.detail / answer.detail
+a : On a stone job I want every wolf visible before the load moves. | I set the spare iron away from the passage.
+b : Even the one with the wedge? | For tidiness?
+a : Especially that one. A wedge has a habit of changing the plan. | To see the foot coming round instead of seeing it stumble.
+
+scene exchange2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I turn a chair before I decide where to put my supper. | My favourite seat is plain as a block.
+b : Why face the door? | Particularly comfortable?
+a : I like to greet a visitor rather than discover one behind my spoon. | It faces the way I'll need to move.
+
+scene exchange3
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I have a little saving put by for a thing I mean to buy. | I count the money twice and say its purpose neither time.
+b : What sort of thing? | So the purpose stays secret?
+a : A thing with a price. The use of it remains my own. | So the money doesn't become a public meeting.
+
+scene exchange4
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I like a cut apple still loud enough for company to hear. | I cut my apple on a freshly wiped stone.
+b : Are you judging its voice? | Is the stone too hard on the knife?
+a : I judge the first bite. The second is for enjoying. | I turn the knife away clean. It doesn't have to argue with the quarry.
+
+scene exchange5
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I choose a fishing place where I see the path behind the reeds. | I keep a float with a red spot facing me.
+b : Waiting for company? | Can you turn a float at a distance?
+a : Making sure the waiting feels quiet. | I can turn my seat. Usually less bother.
+
+scene exchange6
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I like a bench that gives an unobstructed sightline to the entrance. | The quiet after a chapel door settles means a good deal to me.
+b : You watch visitors during prayers? | That the room's closed?
+a : I settle quicker once I know they're able to come in freely. | That the latch can be lifted again without a wrestling match.
+
+scene exchange7
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : Mist at dawn gives the quarry face a soft pale line. | I like the first clear patch in the mist.
+b : Safe to work in that? | Because the day's ready to start?
+a : Safe to stand and look until the working edge is clear enough. | Because I can see exactly where to put it.
+
+scene exchange8
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly can choose every acre of sky and it comes to my apple. | I lay a second plate over the apple ends.
+b : Would you share a piece? | For the midday meal?
+a : With a hungry visitor, yes. A fly can make its own arrangements. | For the fly that thinks my midday meal is a public opening.
+
+scene exchange9
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle makes a workface look dry right up to the moment of touching it. | I keep shifting my chair back from the drip.
+b : Do you test each piece? | Does it follow?
+a : Every grip. A call from the outside can't feel stone for the crew. | Far enough to persuade me to fetch the cloth.
+
+scene exchange10
+when topic=work self.working=yes self.job=miner
+does tell.self / ask.detail / answer.detail
+a : I like one clear word when a cut is ready. | I allow latecomers space to set the load down first.
+b : What word? | Why not ask for news?
+a : One all the wolves can hear and all understand the same way. | It weighs less after it hits the ground.
+
+scene exchange11
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A chair once had me facing a beautifully polished wall. | I remember my earliest saved copper by what I went without.
+b : Was that so bad? | Was it a meal?
+a : Very pretty. I spent the whole meal listening for the feet behind me. | Nothing that important. I've learnt to distinguish saving from going hungry.
+
+scene exchange12
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I rest by a track with a view of both bends. | I take the clear wide turn on the last hill.
+b : Expecting somebody from either side? | Short way's steeper?
+a : I'm expecting to rest and I mean to rest properly. | The short way shows me the load after it has already reached me.
+
+scene exchange13
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A level city seat is worth a moment's search. | I can watch a whole street from one good doorway.
+b : Tired of the quarry slope? | Don't you get bored?
+a : I like a clean distinction between sitting down and keeping myself uphill. | I'm finding out where the daylight strikes the stone.
+
+scene exchange14
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account coming towards me is #topic.subject# #topic.claim#. | I don't reckon I've seen a story just because I saw the speaker.
+b : Can you see behind it? | What's missing?
+a : Not well enough to promise you my weight on it. | The bit the speaker actually saw.
+
+scene exchange15
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When pay is tight I keep the apple and save half the next copper. | Lean days put the private purchase a little farther off.
+b : How do you save half a copper? | Does that make you cross?
+a : Wait till I have two. One stays in my own saving column. | Only when somebody tells me where to spend what's still in my hand.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I picture the day my little saving is ready. | I'd like a settled corner with a chair for whoever comes by.
+b : What will you set out for? | Why two chairs?
+a : I picture that too. I'll keep that part behind the picture frame. | I might just be able to afford to sit in the other.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I give a sore wrist the light end of the job. | The chair has a notch where my fingers rest.
+b : What if both wrists ache? | To steady yourself?
+a : Then I set the job down. A decision made before a wolf drops something is sound judgement. | To remind myself there's a moment when I can let the weight go.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I face the door even when putting the last coin away. | I leave the apple peel in view to see who comes investigating.
+b : To see if someone looks? | Still looking for flies?
+a : I can let a visitor know which part of the table is private. | Looking to get my own peaceful bite indoors.
+
+story tale1 [topic=work self.job=miner]
+  : I once arranged a line of stones by apparent weight, marvellous learners' exercise as I imagined. A very light-looking block took both my arms to budge.
+  : The lovely thing had been resting beneath one corner of my chair.
+  b : What did your learners learn?
+  : I moved the chair first and had another look at my own idea. That might be the most sensible lesson I ever gave.
+
+story tale2 [topic=pastimes self.likes=evening_line]
+  : I set my chair at the water so I could watch the path and the float together. A little twist of breeze sent my hat rolling behind my elbow.
+  : I reached backwards without looking and brought up a tuft of grass.
+  b : What became of the hat?
+  : It had stopped in plain sight across my knees. I watched the float till the evening was used up and gave my reputation a rest.
+
+story tale3 [topic=memories]
+  : I saved an attractive copper with a dent the shape of an apple bite. I put it away inside a little folded twist of clean paper.
+  : Months later I unwrapped a coin that looked perfectly plain.
+  b : Had it been changed?
+  : I'd remembered the dent on the other face. I turned my apple round and returned it to its private spot.
+
+rule @call1
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 8h
+say Keep the passage visible down the whole cut. | Hands clear of the wedge till the call.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Wait for the quarry rim to show through that grey. | Dawn mist's lifting the right way round.
+
+rule @call3
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say That's a splendid firm apple to split. | Skin tight enough for an honest snap.
+
+rule @call4
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say The cover goes down before the flies call a meeting. | One bite of apple spared for a decent mouth.
+dlg resident.hub : I've turned the chair so we can both see who's arriving.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I knew the way your feet came round the corner.
+dlg resident.hub [here.time=night] : I'll leave the door light where a visitor can see the sill.
+dlg resident.hub [pair.disposition=wary|hostile] : You're plainly in sight. Speak just as plainly as you please.
+dlg resident.job [self.job=miner] : I oversee the quarry cuts. I want every pair of paws in view before a weight starts moving.
+dlg resident.job : My best work depends on knowing who's standing where and what each is carrying.
+dlg resident.news [world.news] : The news in clear sight is #world.news#.
+dlg resident.gossip [here.gossip=yes] : Someone reports #topic.subject# #topic.claim#. I have the account in view, not the original event.
+dlg resident.bye : May everything approaching your door come from a kindly direction.
+
+graft resident.hub
+choice Why move a chair that's already comfortable? -> turned_chair
+node turned_chair
+say It might be a perfect fit for my backside. My eyes have to spend the evening somewhere too. I like the door in view and brick behind my coat.
+free
+choice What about a seat outdoors? -> turned_chair_again
+choice Goodbye. -> bye
+node turned_chair_again
+say A broad stone and a view of the path. The fish can do what they please on their own side of the float.
+choice I'll keep the path clear. -> hub
+choice Goodbye. -> bye

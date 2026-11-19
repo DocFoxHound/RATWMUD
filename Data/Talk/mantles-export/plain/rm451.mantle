@@ -1,0 +1,399 @@
+mantle rm451
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_arne_wickdale
+title the brewer's smoky float
+fits stage=adult|old
+prefers role=merchant job=brewer
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk smokes_a_cork_float_to_tell_it_from_the_bungs
+likes warm_bread evening_line market_bustle warm_rain
+dislikes waiting early_bells
+fears a_line_without_a_twitch a_blank_receipt
+hopes the_petition_for_once_in_sight a_quiet_evening_on_the_bank
+topics work +0.5 pastimes +0.4 dreams +0.3 food +0.3 travel +0.3
+styles comfort=practical gossip=guarded refuse=cautious tease=none
+marks oath saying
+persona #self.first# blackens one side of a fishing cork, distinguishes its smallest movement from the river lights and makes a weekly visit to a desk whose silence is considerably less restful.
+
+words
+oath! = Scald the bung | Sink my black cork
+saying! = Watch the half of the cork you know | A receipt ought to float
+cork = the smoked cork | my dark float
+flare = a white flash | the pale wink
+line = my fine evening line | the cord for dusk
+bung = a broad clean bung | the unused stopper
+rim = the damp rim | a ring of barrel wood
+barrel = a well-crozed cask | the clean barrel
+crumb = a brown bread crumb | the loose crust end
+warm = the steaming wedge | my warm heel of loaf
+stamp = the mark of receipt | an office stamp
+flap = the folded end | the rain flap
+smell = the malt smoke smell | my own hint of smoke
+ripple = a pair of rings | a round little tremble
+sheet = a narrow petition copy | my spare bit of paper
+post = the dry mooring stump | a square old post
+rain = a warm shower | the soft wet
+dip = a good deep dipper | the short copper ladle
+slate = my tap slate | the small dark slate
+reed = the yellow reed | a tall dry rush
+
+any
+opinion @1 church for 1 : A chapel meal came down hot one evening when I'd have been content with the smell. That's my own account to settle.
+opinion @2 dole for 2 : I've eaten from the pot when a lean week went thin to the bottom. I like to see it kept where hungry feet can reach.
+opinion @3 houses against 1 : A rich household can own a whole wet run of steps without coming down to see which one's worn through.
+opinion @4 road against 2 : If something's late on a road I can't even watch a float to tell me whereabouts it's stuck.
+opinion @5 merchants for 1 : A fair wet measure takes a steady hand. Even a plain cup can give a shop a good name or a bad one.
+opinion @6 watch for 1 : I'd rather have the night round going by than a curious paw at a store latch after dark.
+opinion @7 sump for 1 : The Sump teaches the difference between a doorstep for sitting and a doorstep that will put your supper afloat.
+opinion @8 city for 1 : There's both noise enough for a good morning's trade in this city and a little still water for the ears afterward.
+opinion @9 times against 1 : The wait between customers stretches while the food bought with their custom grows shorter.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome over there where the counter's dry. | A clear corner. Your business will fit.
+line @2 greet [here.time=dawn] : Early. I've left the lid off the conversation at least. | Morning, before the bang of work begins.
+line @3 greet [here.weather=rain] : Come out of the soft wet. Mind the cask. | Warm rain. You can dry off on this side.
+line @4 greet [self.working=yes] : Keep the dipper in reach. Welcome just there. | I've one ear free for a visitor.
+line @5 greet.return : I got the greeting without any spilling. | That's a fair quiet beginning between us.
+line @6 greet.return [pair.band=friends|family] : Ah. A voice I can mark by its ordinary weight. | There's some slow evening light saved for you.
+line @7 greet.return [here.time=dusk|night] : An evening word in the still stretch. | Easy company after the louder part.
+line @8 farewell : Keep the paper wrapped against the street. | Go easy past the water line.
+line @9 farewell.return : I shall watch the last ripple settle. | Your side's properly closed, then.
+line @10 again.open : Round comes the dark cork once more. | Back before the last ring's gone.
+line @11 kin.open [pair.kin!=no] : Come up by the clean end, family. | No receipt wanted from our own household.
+line @12 hail [pair.band=friends] : Over by the smoky float! | Here. A dry corner beyond the noise!
+line @13 react.news : I'll look for the little movement under the big report. | Best tell me what's come to the top by itself.
+line @14 react.news.new : That cork hadn't moved till you spoke. | Fresh mark for my quiet bit of slate.
+line @15 react.news.known : I've been watching that ring spread already. | The first telling had the same dark face on it.
+line @16 react.news.doubt : Whose thumb might have been on the end of that report. | A large commotion can be a small fish with a broad tail.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Set the empty cup where I can get to it. I'll stay. | There's a long quiet stretch after news like that.
+line @18 react.news.glad [topic.kind=birth|marriage] : Good. I'd draw a full warm measure for that lot. | A kind word rising to the light for once.
+line @19 answer.how : Still bobbing on a slack line. | A bit smoked, enough air left in me.
+line @20 decline : I haven't got a clean promise to put behind that request. | I'm keeping some time for a matter that won't settle by itself.
+line @21 accept_decline : Right. No second pull from me. | I'll let that particular line drift loose.
+line @22 sympathise : Stay beside me where the board's firm under both wrists. | Sit where the brew room's quieter.
+line @23 thank : A decent thing coming clean to the surface. | That steadies my hand more than you know.
+line @24 deflect_thanks : No need to send round a notice for that. | I already had my half of that load.
+line @25 preclose : I ought to see what's shifted while we talked. | There's a little matter for my slate's dark face.
+line @26 accept_preclose : Go on. We'll leave the cork in easy water. | A fair close with nothing left to settle.
+line @27 farewell [here.weather=rain] : Don't let the wrapped end dip in a gutter. | Shelter that paper well before opening it.
+line @28 greet [pair.band=friends] : There's my known face above the casks. | Cup or quiet, you're welcome here.
+line @29 farewell [here.time=night] : A soft night before the next bell has its say. | Put a quiet stretch of water between you and work.
+line @30 answer.how [self.working=yes] : Keeping a level face on the wet measure. | Steady enough while the bung stays put.
+line @31 preclose [here.time=dusk] : One cast left in this daylight. | My evening cork's due its chance in the water.
+
+scene sootfloat
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I smoke one face of #cork# and leave the other pale. | I've a little cork marked specially for the evening light.
+b : How does the smoke help with a bite?
+a : #flare# turns dark as it rolls. I can tell a tug from light on the water. | I can see the sharp divide move even with the banks gone grey. A fish doesn't have to ring a bell.
+
+scene brew
+when topic=work self.role=merchant self.job=brewer self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep my fishing cork a decent distance from #bung#. | I know #barrel# is well seated at #self.workplace# before I start to fill it.
+b : What tells you which one should stay put?
+a : A brew bung has a clean pale face all over. The smoked one can go and bring me supper. | An even pressing all round #rim#. It'll make an odd little sound if one side's gone slack.
+
+scene bread
+when topic=food self.likes=warm_bread
+does offer / accept / assess
+a : Take #warm# before it loses the baking smell. | I'll divide the loaf while the inside still gives a good puff of steam.
+b : Which bit do you keep yourself?
+a : The outside under the floury mark. It can wipe a drop of broth out of the bowl nicely. | One good warm bite and #crumb#. The latter may interest a fish by dusk.
+
+scene warmwet
+when topic=weather self.likes=warm_rain
+does tell.self / react.self / assess
+a : #rain# clears a lot of old smoke out of the street without freezing it into my coat. | I like a warm rain over the water on the hour before dusk.
+b : Can you still see the bite in all those little rings?
+a : Watch the two-coloured cork. Rain makes round circles. The dark face rolls sideways for a living thing. | Just enough. A good float lets the falling rain get on undisturbed.
+
+scene crowdfare
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I like a market where three different conversations can go past without expecting me to join. | #slate# under my elbow lets me stand still right where the market is busiest.
+b : Doesn't all that jostling make you nervous?
+a : Not half as much as waiting at a silent counter where nothing will move till I speak. | I know what the hands are after when there's bread and drink on a board. An idle hand's harder to place.
+
+scene waiting
+when topic=smalltalk self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : A float gives a waiting wolf something honest to watch. A shut office door offers wood. | I can spend a whole evening by water and lose patience in five minutes beside a desk.
+b : What makes the waits so different?
+a : Fish never told me my hook had been sent to another drawer. | One wait I've chosen. The other has my paper folded inside it somewhere and won't show where.
+
+scene bellstart
+when topic=smalltalk self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : An early clang outside can make a steady wrist start before it's even holding anything. | Somebody ought to damp the early bell with a clean bung.
+b : Wouldn't you be late starting the day's business then?
+a : I can wake to the change of river light. Gives me a whole breath to remember the work first. | I'd manage. The first wolf wanting a warm loaf has a perfectly serviceable knock.
+
+scene paperloop
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I'll try the City Office again next week, with #sheet# folded in a different direction. | I've got a petition to look for on my next free walk. No point in hurrying far-off petition day over it.
+b : What would you accept as proof somebody had found it?
+a : My first line, read back without my having to supply the words. That's the dark face of my float. | A proper stamp on the copy and the clerk's mark from the desk holding the original. Two simple bits to keep above water.
+
+scene askhand
+when topic=work self.role=merchant self.hand
+does tell.plan / ask.detail / answer.detail
+a : I'd offer #self.hand# a fresh dipper and take a second reading from the measure. | I'd take the new cover to #self.hand# for another opinion before a sale.
+b : Why put it through two sets of hands?
+a : If the lip's crooked two different grips show the fault before a customer puts down a coin. | One pair of hands can get accustomed to a little shove that ought not to be needed.
+
+scene quietpal
+when topic=friends self.friend
+does offer / accept / assess
+a : I have a dry seat kept in mind for #self.friend#. Take the one clear of the splash. | I'd take the good evening cork along for #self.friend#. You may handle the spare one if you want.
+b : I'd be careful to leave you a good one.
+a : The seat I want's by the post where I can reach the line. We're quite well divided. | The spare works. I rub soot on its side if the light begins to dance too hard.
+
+scene poorprice
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : My trade takes place in full measures but my own supper would fit a small cup. | I'd like fuel, bread and rent to agree which of them has first claim on my one bit of silver.
+b : Doesn't a full counter settle that question?
+a : The goods aren't mine to eat free. Keeping a business can be a very poor recipe. | A counter can have plenty standing on it and scarcely a thing left over underneath.
+
+scene sumpmark
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : In the Sump a water mark on a stair tells me more about an evening seat than any landlord's statement. | The Sump taught me early to set dry papers an arm's length clear of that topmost tide mark.
+b : Where would you stow anything you'd most hate to lose?
+a : I sit above the stripe with the little fishing box on my knee. The water may take the empty boards below. | Against my chest under #flap#. A petition is heavy work to fetch back when a clerk takes it; I'd hate to ask the river.
+
+scene wages
+when topic=work self.role=merchant
+does give.opinion / disagree / concede
+a : I don't charge for a mouthful that slopped over before it crossed the counter. | A customer can look right into #dip# while I fill it.
+b : What if there's a head of foam?
+a : Let it settle. I've time to spare for making a good measure look unambiguous. | The rim shows the line of liquid after the bubbles ease. That's what the price should cover.
+
+scene tightpot
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : There is bread where the brew room stays warm. I'll cut from the sound end for you. | I can dip any hungry visitor a cup of thin soup before asking which house the bowl came from.
+b : Will that cost you more than you can spare?
+a : One slice well within my means. I measure my own promises as well as the drink. | I've allowed for a small hot helping. It belongs in the hands of whoever's here to need it.
+
+scene unknown
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new wolf at a shop counter commonly wants the price before the welcome gets elaborate. | I give visitors the dry corner where they can put their bundle as soon as they arrive.
+b : You'd let a stranger set down a mysterious parcel?
+a : On the public side, yes. I wouldn't ask to go rummaging among another wolf's knots. | It might contain wet socks. I'd sooner spare the hands than spend a morning guessing.
+
+scene nightbait
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you keep #line# off a rough old post without letting the float go too far? | Where would you sit in the evening if a reed kept knocking against the cork?
+b : Shift one pace to the bankward side of the post.
+a : Good. The line will draw across water then without sawing the wood. | That clears #reed# and leaves the light side of the float still showing. I'll try the spot.
+
+scene officefog
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I sometimes think the paper's what stays quietest at the office while I'm asking after it. | If my lost petition could speak I imagine it'd have better directions than the last clerk.
+b : Do you take much comfort from the thought?
+a : Some. At least it isn't thinking it's been neglected on purpose. I can waste an evening quite easily on that idea. | I'd be glad of a laugh if I could have the directions first. A whole week is a long gap between answers.
+
+scene kneadsmell
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : The smell of smoke on my sleeve puts a new crust into a different sort of breakfast. | I can put warm bread to my nose and still catch a little of the brew hearth.
+b : Which smell do you notice in the crust?
+a : Hold the loaf away from the arm carrying it. Cuffs keep reckoning of yesterday's fire. | Ask a wolf with a clean coat. There's a limit to the value of my own second opinion.
+
+scene dockroad
+when topic=travel here.region=ridgemere
+does tell.self / react.self / assess
+a : A dock walk in Ridgemere offers sixteen kinds of rope and very few decent lengths of spare fishing line. | I hear a boat turn by the slap of loose water along the piles at the westward wall.
+b : Do you choose where to fish by that?
+a : I fish where the ropes aren't likely to come down on a patient cork. Plenty of the bad spots look inviting. | I move the line back out of the wake. Can't very well expect the whole harbour to mind a hook.
+
+scene floatbill
+when topic=gossip
+does give.opinion / disagree / concede
+a : An account without a source can go back in the water until somebody knows what tugged it. | I don't fish for somebody else's business just because a sleeve is damp.
+b : Would you pass it along as an interesting guess?
+a : Not with my mark attached. A guess can float quite a long way before anybody tries its weight. | A wet sleeve proves a wet sleeve. There's already a fair report on the cloth itself.
+
+scene handwipe
+when topic=work self.job=brewer
+does tell.self / ask.detail / answer.detail
+a : I wipe the inside of the lip before I judge anything about a stored brew. | A crooked ring of dried drink on a cask tells me which foot of the stand needs checking.
+b : You can tell a slant from a stain?
+a : If I can see another line on clean wood. I like two points before assuming the floor is the trouble. | I put clear water against that very slope. If the line agrees I can fetch a wedge instead of guessing.
+
+scene cheapwait
+when topic=prices
+does tell.self / react.self / assess
+a : Waiting can cost a day and not cost the office a single copper. | If I spend my free hours at a desk the fish don't come looking for me out of courtesy.
+b : What would be fair payment for those minutes?
+a : A straight answer and somewhere to sit as though I mattered while it was being found. | The name of the drawer and the bit of daylight left before the line must be put away.
+
+scene keenbite
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a little ledge where I can lift supper out of the water while a loaf's kept warm behind me. | One evening I mean to walk straight from a settled petition to the end of my fishing line.
+b : Which part do you imagine most distinctly?
+a : The few heartbeats between a fish coming up and my worrying about how best to settle it into hot fat. | The stamp. I know the way the fishing part feels already; it'd be good to have the other side as firm.
+
+scene oldcork
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : An old harbour tale has a brewer stopping a tiny leak with the very cork a fish had just pinched off a line. | There's a story where a trading boat gets home by means of one dark bung.
+b : What was it doing anywhere near the leaky boat?
+a : Fish spat it under the low side while the crew were hunting a cover. A courteous little invention for a winter night. | The tale makes a few twists before it gets to the important part. I like the version where the fish receives its supper.
+
+scene thincoat
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : A rain spot rather like an office stamp has come up on my petition copy. | I don't intend to spend my next visit asking a clerk to read a grey puddle.
+b : Would a second paper round it help?
+a : Clean dry paper outside #flap#, yes. I'll keep the damp side turned away from the ink. | Tuck it up here under the coat. My outer sleeve can keep a shower busy.
+
+scene milltidy
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can put ten small loose bungs into a box without making a sound. | A clean cork left on its side rolls in a surprisingly determined way.
+b : Why pay that much attention to something so light?
+a : So my black float can come out without waking another dozen questions at day's end. | I have lost several small useful pieces in the gap below the sill. It has a remarkable appetite for cork.
+
+scene gullnoise
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A very small ripple arriving after a whole row of boat wakes can still be a proper bite. | The water can lift the pale side of my float without the dark side turning.
+b : What tells you it's worth taking up?
+a : The little second twitch moving across the first. It's easiest to see after the louder show has passed. | A sideways tilt followed by a short still moment. Then I'm willing to find out if I've guessed right.
+
+scene ownring
+when topic=friends
+does tell.self / react.self / assess
+a : I prefer friends who'll sit a little without asking what the folded paper keeps inside. | A quiet fellow listener makes a long stint of market noise quite bearable.
+b : Do you ever tell a friend what you're waiting for?
+a : Yes, when the wish to talk is stronger than the wish to put the worry down for an hour. | Some of it. I'd like company to have an ordinary pleasant evening if the petition never turns up at all.
+
+scene gatecellar
+when topic=work self.role=merchant
+does ask.advice / give.advice / assess
+a : What's the most sensible thing to move first when water nears a cask rack? | If the bottom stair's wet, would you bring a parcel of papers up before a barrel?
+b : Move what can't be got back with drying.
+a : Papers and loose bungs then. A sealed barrel has already learnt what to do with liquid. | Precisely. If my account washes away I'll have to make an uncomfortable visit even before the petition's due.
+
+scene lowmark
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I could make do with a room that held dry bread, a clean measure and one good hook near the threshold. | I'd like a night when the smells of bread and clean water reach me before old smoke does.
+b : Would the petition be in that room too?
+a : Framed over the hook with received written plain. I should be entitled to a little display after the wait. | In a closed file somewhere I could name. My dreams don't need the whole business spread out on the supper board.
+
+story backwards_cork [topic=pastimes]
+  : I blackened the face of a cork and laid it by the little box where I keep my line. Then I took the clean bung from beside it and went out fishing.
+  : All evening the white float refused to tell me which way a fish had turned it.
+  b : Did you go back for the proper cork?
+  : Only after sitting a good hour arguing my grievance with a twig that had never agreed to fish for me.
+
+story bread_stroke [topic=food]
+  : I put hot bread near a closed cask and heard the smallest dry creak. Thought the hoop had shifted under my elbow.
+  : The cask was fine. The noise came again when I lifted the bread clear.
+  b : What was breaking on the table?
+  : The crust, cooling slowly from outside. An easier sort of damage to set right with a little butter.
+
+story paper_hook [topic=lore]
+  : A story says a clerk once lowered a line from an upper window into the office yard. Pulled it up with a petition hanging off the hook.
+  : The clerk read the top line and lowered it back down with a written request for a second copy.
+  b : What did the petitioner do?
+  : Tied the clerk's own note alongside and got a receipt for two documents. I find the story entirely too cheerful to rest my hopes on it.
+
+story wet_apron [topic=work]
+  : I wiped a wet board very thoroughly. A fresh drop appeared no matter how often I moved the cloth. For a while I took the roof apart in my mind.
+  : Then I rolled up the end of my apron. It was trailing inside the dipper whenever I leaned across.
+  b : What became of the mysterious leak?
+  : Some consider it important to finish a job on a dry bench. I now give some thought to a dry brewer as well.
+
+story first_receipt [topic=dreams]
+  : I dreamt I'd got a large red receipt for one small piece of paper. It took both hands to hold the thing. On the way home I tried to get it inside my coat.
+  : A great red corner was sticking out when I woke to find my hand round the blanket.
+  b : Had anyone written across the receipt?
+  : One word. Later. I turned the blanket over before going back to sleep.
+
+rule @tap
+when concept=bark working=yes self.job=brewer
+does aside
+cooldown 8h
+say Clear lip, steady measure. | No charge on what spills before the rim.
+
+rule @warm
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Here's something still breathing heat. | Leave the clean crust facing up.
+
+rule @float
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say That's the white face. Wait for the dark. | Line clear of the working ropes.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Paper first, then the outer sleeve. | Cork can take the wet well enough.
+
+rule @sill
+when concept=bark self.quarter=sump
+does aside
+cooldown 8h
+say One step higher for anything written. | Watch where the dark stripe ends.
+
+rule @market
+when concept=bark self.likes=market_bustle
+does aside
+cooldown 8h
+say Good noise to stand beside for a time. | A dry corner makes plenty of room.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You can lay out your errand where the board runs dry.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'll put my paper by for a familiar voice.
+dlg @3 resident.hub [here.time=night] : The street's dropped its voice. We can follow suit.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Please keep to your share of the counter. A statement will carry quite easily.
+dlg @5 resident.job [self.role=merchant self.job=brewer self.workplace] : I brew at #self.workplace#. A steady measure calls for a good deal of unhurried watching.
+dlg @6 resident.job : I mind the place where waiting becomes useful work.
+dlg @7 resident.news [world.news] : Here's what has actually reached the bank. #world.news#
+dlg @8 resident.bye : May your walk home have a quiet stretch.
+dlg @9 shop.greet [here.shop=open] : The measure and the price can both be seen. Tell me which you'd like closer.
+dlg @10 shop.greet [here.shop=bare] : Nothing ready to sell just now. I still have room to hear an offer on something you've brought.
+dlg @11 shop.greet [here.shop=asleep] : Mm. Lid down and eyes closed for the time being.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you're welcome to inspect the serving measure again.
+dlg @13 shop.prices : You'll see what the figure buys before committing a coin. #shop_offer#
+dlg @14 shop.bye : Mind the full measure on the way home.
+dlg @15 resident.hub [here.weather=rain] : Put the dry part of the errand forward. I'll keep the wet from the papers.
+
+graft resident.hub
+choice How do you know a float has really moved? -> black_face
+node black_face
+say I soot one half. A wave lifts all the cork together. A proper tug rolls the black face into view even if the water is crowded with rings.
+choice Could that work at the office too? -> office_float
+choice Leave the line quite still. -> hub
+node office_float
+say I'd be delighted to blacken one side of my petition and see exactly when somebody lifted it out of its drawer. I'm told such a receipt isn't customary.
+choice The water sounds more informative. -> hub
+choice Good luck with both sorts of waiting. -> bye
+
+graft shop.greet
+choice Why let the foam stand a moment? [here.shop=open] -> foam_mark
+node foam_mark
+say A buyer is paying for the liquid under it. I like the ring of the cup to agree with the figure on the board before accepting a coin.
+choice What about a splash at the edge? -> lost_drop
+choice Return to the counter. -> greet
+node lost_drop
+say I replace what never reached your side. The shop and the customer have their assigned portions of bad luck, and a wet hand holding the ladle is mine.
+choice That seems a fair distinction. -> greet
+choice Thank you for the measure. -> bye

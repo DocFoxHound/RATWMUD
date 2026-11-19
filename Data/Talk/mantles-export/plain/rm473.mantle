@@ -1,0 +1,247 @@
+mantle rm473
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_skye_harvestcroft
+title the nursery of borrowed names
+fits stage=adult|old
+prefers warmth=warm humour=merry
+traits temper=calm talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk remembers_every_name_ever_heard
+likes warm_bread dice fresh_straw summer_evenings
+dislikes stale_bread gulls
+fears forgetting_the_quietest_guest
+hopes a_good_introduction_for_a_young_wolf
+topics friends +0.6 pastimes +0.4 food +0.3 animals +0.2
+styles comfort=gentle gossip=plain refuse=soft tease=merry
+marks oath saying
+persona #self.first# gives windfalls temporary names, welcomes newcomers by remembered syllables, and has never persuaded a gull to respect either ceremony.
+words
+oath! = Bruise my best windfall | Roll my pips
+saying! = Call the apple before it rolls | Give a name a soft landing
+windfall = a soft-sided apple | a freckled windfall
+pipdie = a pale wooden die | a dotted bone cube
+neststraw = a curled straw nest | a hollow of fresh straw
+breadheel = a warm loaf heel | a piece of soft crust
+basketclasp = a bent willow tie | a woven grass loop
+gustmark = a slanting bruise | a scuff along the skin
+peelcap = a tiny peel hat | a twist of green skin
+suppercloth = a little bread wrap | a square of sacking
+leafsign = a folded apple leaf | a narrow green tag
+sunmark = a red sun patch | a pink apple cheek
+birdtax = a gull's unpaid bill | a very noisy claim
+
+grown
+
+opinion newcomers for 2 : An arrival has already earned the sound of a properly pronounced name by coming all that way.
+opinion houses mixed 1 : I'd like a great House to offer a promising young wolf a first introduction and a real chance to make good on it.
+opinion merchants mixed 1 : Names stick better than prices. I'd give a buyer both before setting a parcel in a basket.
+opinion dole for 2 : If supper's going to depend on whether somebody knows the right name, we had better make the cook acquainted with everybody.
+opinion festivals for 1 : There's no surer way to meet a whole flock of names than a happy crowd willing to repeat the chorus.
+opinion road for 1 : A walk home gives me time to settle every new syllable in its particular little nest.
+line greet : Come into calling distance. I've probably a perfectly good name here waiting to meet yours.
+line greet.return : There's a sound I can fit back into the proper straw nest.
+line greet [pair.band=strangers] : Welcome. I save one clean bit of memory for an introduction.
+line farewell : May no gull carry off the best bit of your evening.
+line farewell.return : I'll keep your syllables from rolling under the table.
+line ask.how : Has your name been called for anything nice today?
+line answer.how : Comfortable, with room for a few more introductions before supper.
+line thank : You've helped me put the right sound beside the right face.
+line deflect_thanks : I collect names very willingly and charge a most unreasonable rate of nothing.
+line decline : I couldn't promise that without first asking whose name it would put in somebody's mouth.
+line accept_decline : No obligation. My little ceremony can get along with one guest fewer.
+line sympathise : There's a quiet sitting place here where nobody has to say a name aloud.
+line reassure : A bruised bit doesn't decide the worth of the whole basket.
+line react.news : Let me find a soft bit of memory to put that down in.
+line react.news.new : There's a new arrival in the old basket.
+line react.news.known : I recognised that one's particular freckle before it rolled past.
+line react.news.doubt : I'd turn that apple round before describing its beautiful hidden side.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a name I'd gladly call across a sunny yard with the good news attached.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd use a softer voice than usual for whoever's carrying a hurt like that.
+line ack : The shape and the name agree nicely.
+line preclose : Better attend to my next task before the whole basket gets away.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I call each windfall something while I sort them.
+b : Even the really bruised ones? | Which feature sorts out the names?
+a : Especially those. It's harder to throw something carelessly when you've given it a moment of your attention. | The fat one leans left. The speckled one looks astonished. I very seldom require these particular names at a formal dinner.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My regular description is #self.trade_words#. I treat a basket like a room full of different arrivals.
+b : Do they get seats? | Which one gets your attention first?
+a : As much #neststraw# as keeps the tender sides away from an argument. I've never heard a complaint in plain language. | The one already bruised. One soft place needs company on a plate considerably sooner than in a basket.
+
+scene pastimes_1
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : A die dropped on straw has the world's shortest journey and a notably mysterious result.
+b : Do you allow that throw? | How's it recovered from the straw?
+a : If everybody can see the dots without rearranging a nest. Otherwise the straw is deemed to have borrowed the turn. | Briskly, before somebody starts giving the thing a family name and asking if it will stay till supper.
+
+scene food_1
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A warm loaf heel can stand a slice of apple up without requiring a plate.
+b : Why stand the apple up? | Would you give the whole thing a name?
+a : I can see the bite waiting through even a very long introduction. It keeps supper and me on friendly terms. | Breakfast. I've no objection to ordinary good descriptive naming where the subject is urgent.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : I keep a very careful count of the gulls I have formally asked to pay for their lunches.
+b : Do any pay? | What would you take as payment?
+a : None so far. I fear my little accounts office is admired primarily for its excellent bread. | An afternoon without having to inspect my basket from above every time a shadow crosses it.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I favour clean straw for welcoming something breakable.
+b : A parcel or a guest? | How deep a nest?
+a : A parcel may require quite a nest. A guest gets a seat and the right number of cushions, with no obligation to hatch an egg. | Just deep enough for the curve. Bury a nice apple and the straw starts getting all the credit for lunch.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I like enough summer light for the last player to throw fairly and take the clear road home.
+b : What if everybody wants another round? | Do you play by the light?
+a : Then somebody ought to bring supper and solemnly rename the whole affair an appointment. | Yes, by the light and by whether we can still tell a knuckle from a rather richly marked die.
+
+scene family_1
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : I'd like the first great door to open kindly for a young wolf looking to make a useful future.
+b : Would you make an introduction? | What if the young one hates service?
+a : If I could honestly name the good work already done. A grand flourish is a poor bit of straw under a new beginning. | Then let the door open outwards as well. The future needs to suit the shoulders that have to carry it.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A strange name generally comes right if I hear its first sound and give the last one enough breath.
+b : And if you mispronounce it? | Why go to the trouble?
+a : I ask the owner to give it back to me a piece at a time. A correction costs far less than losing the name altogether. | I'll remember how it felt to hear my own name kindly pronounced long after I've forgotten three lists of little courteous phrases.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a guest by where a pair of eyes went when I set down the bread.
+b : Was it a hungry guest? | Does it work with every name?
+a : A hungry glance needn't be a public matter. I remembered to put a second slice near that seat without an announcement. | Not quite. Some wolves watch the dice first. My table has room for a very varied company of appetites.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I don't care how cheap a stale loaf is if its crust has made a firm decision to remain in the street some years longer.
+b : Can you use a stale heel? | Would a gull want it?
+a : Softened underneath something good, yes. I'd still like the seller to refrain from describing it as fresh. | It would attempt a noisy negotiation with six rivals first. I decline to employ gulls as my bakers' inspectors.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can carry directions better if a friend gives me something with a name on each corner.
+b : Like the names of streets? | What if there isn't a sign?
+a : Even better, the spot that smells of peel and the place where three stools are always in the way. A road can introduce itself. | I'll name a doorstep for its peculiar crack. The doorstep won't mind a private identity while I'm finding my way.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks for knowing whom to call when there's room at the table.
+b : Suppose the name's unfamiliar? | Do you remember every prayer?
+a : Call a welcome instead. The name can come when the mouth has finished the piece of warm bread. | The names come more readily than the exact words. A generous prayer can travel quite safely despite a missing syllable. At least that's my hope.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When my arms grow tired I lower my basket as though it were full of very large eggs.
+b : Do you imagine names for the eggs too? | Wouldn't putting it down quickly be easier?
+a : Only if my arms have got enough strength left to entertain the idea of borrowing several chickens. | Briefly. A bruised basket can keep my elbows busy all the way to supper.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I can turn an ordinary afternoon into a very small feast with a hot heel and a lucky apple.
+b : What makes an apple lucky? | How small's the feast?
+a : Being the one that rolls towards my bread instead of being taken away by a bird with violent ambitions. | Enough for two tastes and a respectable chat between them. A feast isn't sold by weight.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When the week runs lean I cut a little apple into a lot of nice names.
+b : Isn't that more words than food? | What would you call the smallest piece?
+a : Yes. I also cut the bread to match. I won't try to feed a hungry neighbour on amiability alone. | The cook's portion. There's a private benefit to somebody else getting the larger slice without a debate over who's worthy.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll ask a newcomer whether the name I heard is also the one that feels right when called from down the road.
+b : Isn't that a little personal? | And if you can't pronounce it?
+a : I'd ask once with room for no answer. A familiar call isn't a liberty I get simply by being interested. | Practise on an apple before letting my voice out after a person. The apple is generous about mistakes.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The talk carried in today's basket says #topic.subject# #topic.claim#.
+b : Did the name come with proof? | Will you remember the account?
+a : It came on the top, same as a nice-looking apple. I haven't yet seen what's under it. | I shall remember that I heard it at second hand. A good memory mustn't polish away the doubtful places.
+
+story russet [topic=memories]
+  : I named one especially freckled apple after the side of a rusty kettle and called a second one its cousin.
+  : By evening I'd forgotten which one had first acquired the family relationship.
+  b : How could you have forgotten two names?
+  : I hadn't. I had eaten one of the family before thinking to enquire which member had come to tea.
+
+story wooddie [topic=pastimes]
+  : A wooden die went down in a basket and I counted four black points showing between the stalks.
+  : I declared a splendid result with rather more confidence than I should have done.
+  b : What upset your reckoning?
+  : Three were the die. The fourth was a very little beetle independently deciding to alter the score.
+
+story hotheel [topic=food]
+  : I wrapped the warm heel of a loaf in a clean cloth and put a single apple beside it.
+  : When I unwrapped them at dusk the peel was warm and the bread smelt beautifully fruity.
+  b : Had they kept well?
+  : They had made excellent introductions. I ate them together to avoid parting company that had begun so promisingly.
+
+rule @basket
+when concept=bark
+does aside
+cooldown 8h
+say Set the speckled one in the little straw hollow. | Plenty of chance to meet the rest after the bruise is looked at.
+
+rule @dice
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say Dots up and hands clear of the score. | A beetle has no right to improve the throw.
+
+rule @birds
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say That particular customer has not been granted an account. | Eyes on the loaf whenever a gull clears its throat.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Long enough to learn one more name before supper. | Evening light's good for finding a rosy face.
+dlg resident.hub : Let me find just the pleasant word to fit an arrival like yours.
+dlg resident.job [self.trade_words] : It's put down as #self.trade_words#. Some baskets require enough tact for a family dinner.
+dlg resident.news [world.news] : This turned up clear among the day's ordinary pieces. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The account I heard has #topic.subject# #topic.claim#. A name that stays in my ear doesn't make the claim good.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your name's been kept in excellent company.
+dlg resident.bye : Let the homeward stretch be warm and entirely free of hungry gulls.
+
+graft resident.hub
+choice Do you really practise names on an apple? -> windfall_guest
+node windfall_guest
+say When I mean to pronounce one right I like an agreeable audience. A rosy apple is an excellent listener with a remarkably short list of prejudices.
+choice What does your audience get in return? -> windfall_lunch
+choice I'll spare the apple my reviews. -> hub
+node windfall_lunch
+say A clean straw nest, an affectionate name of its own and eventually a very distinguished place beside my best bit of bread.
+choice I'll spare the apple my reviews. -> hub

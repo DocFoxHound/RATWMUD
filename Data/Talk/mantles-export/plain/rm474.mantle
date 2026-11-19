@@ -1,0 +1,262 @@
+mantle rm474
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_ulric_blossommeadow
+title the apple with two prices
+fits stage=adult|old
+prefers honesty=sly talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk weighs_an_apple_against_a_facedown_card
+likes warm_bread cards quiet_chapel summer_evenings
+dislikes salt_wind early_bells
+fears salt_in_the_drying_room a_promise_lost_in_the_wedding_noise
+hopes a_long_evening_with_a_good_hand_still_to_play
+topics work +0.6 food +0.4 family +0.3 smalltalk +0.4
+styles comfort=practical gossip=oblique refuse=shrewd tease=dry
+marks oath saying
+persona #self.first# turns over the apple freely but keeps the card face down until both sides agree what counts as a blemish.
+
+words
+oath! = Twist my apple stalk | Salt in the cake tin
+saying! = Show the fruit before the hand | A sound skin buys another hour
+roundfruit = a little round apple | a lopsided apple
+lowbough = the lowest bearing bough | a limb easy to reach
+turnedcard = a facedown card | the concealed face
+thinheel = a fresh loaf's warm heel | the last warm bread heel
+rack = the slatted drying board | the drying rack
+thumbmark = a thumb-sized bruise | a soft spot
+stalk = the apple's short stalk | the dry little stem
+warmair = the long heat of evening | mild evening air
+chapelbench = the quiet end bench | a vacant chapel seat
+salttrace = fine salt on the sill | a line of white grit
+handfan = my tightly fanned hand | three cards held low
+
+any
+opinion merchants against 1 : A shiny load of fruit will fetch two prices. Everybody remembers the higher when paying the picker.
+opinion festivals for 2 : A wedding dance lets a wolf make an important promise without an audience for the words.
+opinion city mixed 0 : I like the streets well enough once I've checked where their fine new signs actually point.
+opinion church for 1 : An empty chapel offers a seat to a wolf with nothing to declare.
+opinion dole for 1 : A bread queue can start while good apples still lie in the grass. I'd put that basket somewhere sensible.
+opinion houses against 1 : A House could keep an orchard gate in better repair for the price of painting a name across it.
+opinion road mixed 0 : Dust protects a good apple's blush beautifully until somebody asks to eat it.
+
+grown
+line greet : Round here. I've a clean corner for company.
+line greet [pair.band=strangers] : First acquaintance buys you a look at the fruit.
+line greet [here.time=dawn] : Morning before the right bell's almost worth keeping.
+line greet [here.time=dusk|night] : Long shadows bring the bruise out on a bad apple.
+line greet.return : I've time while that last card stays down.
+line greet.return [pair.band=friends|family] : You know which side I keep the good bread on.
+line greet.return [self.working=yes] : Keep talking. My thumbs know this much.
+line greet.return [here.time=dusk|night] : Still just enough light to count a hand by.
+line kin.open [pair.kin!=no] : Sit with me, kin. No price on the seat.
+line again.open : I've held the card where we left it.
+line hail [pair.band=friends] : Friend! There was a good ear missing till now.
+line farewell : Walk away with the better half of the bargain.
+line farewell.return : Give the salt wind a wide berth.
+line react.news : Let's hear whether it's fully ripe.
+line react.news.new : Fresh enough to leave a stem on.
+line react.news.known : Heard the telling before the first apple fell.
+line react.news.doubt : A fine shine. Mind if I examine the other side?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put the cards away for a hard account like that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'd keep a whole evening for such a thing.
+line ask.how : Did the scales go easy on you today?
+line answer.how : Nothing bruised that I can't eat.
+line thank : You kept that bargain handsomely.
+line deflect_thanks : An easy kindness doesn't run up a bill.
+line sympathise : I'll listen till you get past the sore part.
+line reassure : Lay it face down until you've had some bread.
+line decline : I wouldn't play that hand at that price.
+line accept_decline : Then the offer stays in my pocket.
+line preclose : Time to see what the evening has left me.
+line accept_preclose : Deal yourself a decent journey.
+
+scene two_prices
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I give #roundfruit# two prices. | I weigh an apple against #turnedcard#.
+b : Is that allowed? | On a scale?
+a : One for selling and one for keeping. The second runs higher when I'm hungry. | In my judgement. I consider which holds my interest longer.
+
+scene stalk_test
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My trade? #self.trade_words.capitalize#. A twist is worth more than tugging till the twig breaks. | At work my thumb goes beside #stalk#.
+b : Why twist? | To pluck it off?
+a : The tree keeps its twig and the apple keeps its hat. | To feel the fruit let go without dragging leaves along.
+
+scene fruit_board
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Leave a breath between neighbours on #rack#. | I dry the good slices separately from the bruised.
+b : A breath of what? | Why give the bruise its own board?
+a : Whatever air you want touching both sides. | So I can eat that lot before anybody puts a price on it.
+
+scene warm_crust
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Butter runs off #thinheel# if you stand it on edge. | A hot loaf smells worth more than a cold loaf weighs.
+b : Do you mind? | Which do you buy?
+a : Depends whose plate's downhill. | Cold if I'm buying. Warm if somebody lets me choose.
+
+scene card_weight
+when topic=smalltalk self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : #handfan.capitalize# gives away less from below the table edge. | Never turn the last card until the crumbs are clear.
+b : Are you hiding a good card? | How does that affect play?
+a : A perfectly lawful expression of doubt. | You can see exactly where the last winner wiped a buttery thumb.
+
+scene long_evening
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : #warmair.capitalize# keeps the grass fit for sitting long after supper. | I mark the best evenings by how slowly bread goes cold outdoors.
+b : Is that what keeps you out? | Does it last long enough to tell?
+a : That and an account that will be just as dull indoors tomorrow. | Not often. A pleasing flaw in the method.
+
+scene chapel_rest
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : #chapelbench.capitalize# is where I can hear myself quite distinctly. | I like the chapel after the last footfall.
+b : What do you say? | Who gets the final word?
+a : Precious little. It isn't a market. | A loose floorboard, generally.
+
+scene salt_trace
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : #salttrace.capitalize# tells me which casement ought to have been shut. | A salt wind promises fine sailing to somebody else.
+b : What suffers most? | What's your share?
+a : A warm loaf laid down beside it. | A gritty lip and an extra turn of the washing.
+
+scene early_peal
+when topic=festival self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : Early bells spoil the sweetest part of a bargain with sleep. | I'm happy for a bell to celebrate the sun.
+b : Do those bells wake you? | When?
+a : All except the first and the anticipation of the next. | Once I've seen the sun personally.
+
+scene vow
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : Ask what I promised #self.spouse# and you'll get a view of my closed hand. | I can remember precisely where I stood beside #self.spouse# when the words were said.
+b : A secret? | And what were the words?
+a : The words belong to the two who stood there. | Now you're trying for two cards on one turn.
+
+scene city_tag
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A city label says 'best'. I ask to turn the basket over. | I trust a bruised apple's honest side before a bright sign over a door.
+b : Looking for a mark? | Do you ever go inside?
+a : Looking for the bottom layer. | Naturally. Distrust is good for shopping.
+
+scene tight_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a pinched week #thumbmark# catches my attention straight away. | A bruise gets cheaper by evening.
+b : Hoping to save money? | Is the best time late then?
+a : Hoping for an apple that requires eating immediately. | Not if a quicker customer can see the same bruise.
+
+scene new_face
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd steer a new face towards the baker's cooling shelf. | New in town? Read the chalk price sideways.
+b : Give away a good counter? | Why sideways?
+a : I'll keep the time it comes out to myself. | Stand clear of the paying customer. You may hear what the real price is.
+
+scene news_card
+when topic=news world.news
+does tell.news / react.self / assess
+a : Word was marked #world.news_from#. #world.news#. | #world.news#. Give #world.news_from# the credit for that account.
+b : Marked on both sides? | Does it fetch much?
+a : I've seen just the one face. | News isn't priced until somebody wants it changed.
+
+scene gossip_card
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A little market talk won't keep till tomorrow. | I'd sooner trade an overripe apple than an overripe rumour.
+b : Are you giving it away? | What if I like ripe fruit?
+a : I'm giving it till tomorrow. | Then we have the beginnings of a proper bargain.
+
+scene hand_on_gate
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I open a swinging gate with the back of my hand. | #lowbough.capitalize# makes a fine peg for a hat.
+b : Keeping the palm clean? | Do you remember it afterwards?
+a : Keeping the fruit in it. | I generally remember where I've left anything with a good card in the band.
+
+scene evening_table
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep a clear board for two cards and a supper knife. | I like a shelf just high enough that apples don't vanish under a sleeve.
+b : Only two cards? | Worried about thieves?
+a : I don't set down the rest of my hand. | Worried about my own butter.
+
+scene last_good
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a whole summer evening owed to nobody. | My ambition is a last good card with nobody demanding to see it.
+b : How would you spend it? | Would you ever play?
+a : Slowly. Even a generous evening wants sound management. | It's remarkably pleasant to hold the choice.
+
+story stem_hat [topic=memories|work]
+  : I put an apple stem in my hat to remember which row I meant to revisit.
+  : Took my hat off to wipe my brow and spent a while following a stem that had blown loose.
+  b : Did it lead you back?
+  : To a perfectly good row. Its particular claim to being my row remained doubtful.
+
+story pair_price [topic=memories|food]
+  : I offered two apples for the price of my best one.
+  : My customer chose the biggest pair and asked me to point out my best.
+  b : Which did you show?
+  : A little russet one in my pocket. It had the advantage of being the only apple left.
+
+story chapel_card [topic=memories|faith]
+  : A card slipped from my coat in a quiet chapel.
+  : I put my heel over it till the last visitor went out.
+  b : What was showing?
+  : A completely blank back. I'd spent a long service guarding the most innocent face I had.
+
+rule @stem_snap
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say There's a nice clean twist to that one.
+
+rule @turn_tray
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Turn the soft skin out of the sun.
+
+rule @late_hand
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Light enough for one last deal.
+
+rule @salt_wipe
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Rub that white streak off the sill.
+
+dlg resident.hub : A word doesn't cost you the sight of your hand. Come along.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I remember your judgement on a fair bargain.
+dlg resident.hub [here.time=dusk] : Pull the bench into what's left of the warmth.
+dlg resident.hub [pair.disposition=hostile|wary] : Show me an empty palm and I'll hear your terms.
+dlg resident.job [self.trade_words] : The post reads '#self.trade_words#'. A good stem twists clean.
+dlg resident.news [world.news] : The mark's #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : An apple with that much handling goes into the cook pot.
+dlg resident.bye : Keep a decent card till you get indoors.
+
+graft resident.hub
+choice Why keep the card face down? -> closed_hand
+node closed_hand
+say A card face up is only worth what it shows. Face down it might still be worth your best apple.
+choice Would you take an apple for a look? -> pick_apple
+choice My hand stays closed too. -> hub
+node pick_apple
+say Turn the apple, please. I'd be a poor judge if I missed a bruise while explaining the value of a hidden side.
+choice I can respect a careful bargain. -> hub
+choice I'll keep the apple for later. -> bye

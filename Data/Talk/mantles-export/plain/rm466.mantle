@@ -1,0 +1,257 @@
+mantle rm466
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_corrie_oakfield
+title the bootlace with the old advice
+fits stage=adult|old
+prefers role=civilian
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk knots_bootlaces_for_old_advice_worth_remembering
+likes oatcakes dancing new_boots warm_rain
+dislikes wet_floors flies
+fears a_gate_that_swings_against_a_tired_animal
+hopes to_have_stout_boots_for_a_slow_homecoming
+topics animals +0.4 pastimes +0.3 friends +0.3 home +0.2
+styles comfort=gentle gossip=quiet refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps useful old advice in the knots of a bootlace and lets a slow animal set the pace for a quiet conversation.
+
+words
+oath! = Tie my patient heel | By the second little bow
+saying! = Old advice keeps good underfoot | A boot may remember what a head mislays
+lace = my knotted bootlace | the cord at my ankle
+knot = a little cross knot | a flat lace knot
+boot = the newer boot | my sound shoe
+cake = a thick oatcake | my buttered oat round
+gate = the low yard gate | a gate with a broad latch
+beast = a heavy red cow | a slow patient beast
+fly = a sticky-footed fly | a loud black fly
+rag = a scrap of lace leather | a little drying rag
+sill = the dry sill board | the sound doorstep
+rain = a soft mild sprinkle | the little warm rain
+note = a folded letter | a letter with a worn crease
+grass = a knot of sweet grass | a fresh grass blade
+
+any
+opinion dole for 3 : I had a meal from that pot when every knot in my lace stood for some expense I couldn't meet. It kept me walking.
+opinion houses against 1 : I can mind a beast for a fine house. I'd be glad of the same freedom to take an empty seat in one.
+opinion merchants against 2 : The price of an oatcake seems always to take the longer stride. My money has smaller feet.
+opinion strangers for 1 : Someone with a long dusty walk behind them ought to get the first bite before the first question.
+opinion times against 2 : The gap between supper and wages keeps getting wider. I can't tie those two ends together easily.
+
+grown
+line greet [pair.band=strangers] : Come by the dry shoelace side. | Hello, with room on this bit of ground.
+line greet [self.working=yes] : My word for you comes from beside the gate. | Come within reach of an ordinary voice.
+line greet [here.time=dawn] : Morning. The laces have sat up neatly. | First steps find good company.
+line greet [here.time=dusk|night] : Evening leaves my knees a little quieter. | There's room beside the setting light.
+line kin.open [pair.kin!=no] : I recognise the family stretch of ground. | Kin can stop and retie a lace here.
+line again.open : Back round the knot again. | Another shared patch of path.
+line greet.return : I've got you by the sound of that greeting. | I can hold still and listen.
+line greet.return [pair.band=friends|family] : A familiar voice gives me a little rest. | Take the good side of my step.
+line greet.return [self.working=yes] : I'll keep one hand steady at work. | There's time for a quiet word by the latch.
+line greet.return [here.time=dusk|night] : Evening. My walking ears are open. | Welcome while the light still reaches my laces.
+line farewell : Good laces and an easy pace home. | May your boots find the level ground.
+line farewell.return : I'll keep the little knot here. | Step round the rough bit going out.
+line farewell.return [here.time=night] : A steady tread past the late lamps. | Quiet between your threshold and your bed.
+line react.news : Tell it from the knot you know. | Which end of the word's clear?
+line react.news.new : New advice for my lace. | That sound hasn't come along my road.
+line react.news.known : That knot's been tied before. | I've carried the earlier telling.
+line react.news.doubt : I'd like the ends to meet before I trust that account. | Somebody may have pulled an old word out of shape.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a painful road to walk. | I'll take the outside of the path beside you.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : An easy bit of light come through. | I'd carry glad word like that anywhere.
+line ask.how : Did your feet get an easy turn today? | Has the ground been kind to you?
+line answer.how : My knots are staying put so far. | My feet have settled comfortably enough.
+line decline : I'd sooner stay on this familiar stretch today. | Let me keep the easy hour for my own little task.
+line accept_decline : Your feet know what suits them. | No need to pull that knot tighter.
+line thank : That's an hour of easier walking. | I'll mark the kindness in this lace.
+line sympathise : Rest here. I'll take the gate side. | Let me come alongside the harder bit.
+line reassure : One small step can carry plenty. | Time enough to get both boots planted again.
+line preclose : Those laces need my hand again. | My return journey's due for a beginning.
+
+scene knot
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I tie old advice into #lace#.
+b : An elder's advice? | Which knot holds which rule?
+a : Often. Seems a shame to let a lifetime of sensible words walk past in the road. | The little cross one reminds me to close the gate before admiring the view.
+
+scene cow
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I let a slow cow finish looking at the gate before I ask more of its feet.
+b : Why wait? | What if it won't go?
+a : This side is familiar. The other side smells different to a nose that large. | Look for the real difficulty. No amount of pulling a rope will make a shining puddle look like land.
+
+scene boots
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : New boots earn their keep by accepting old laces pleasantly.
+b : Why keep old laces? | Won't the new shoes pinch?
+a : They still hold a knot. A little bit of my last road goes into the next. | Not if I soften the leather as patiently as I'd like somebody to break in a new idea.
+
+scene cake
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I eat the buttered part of an oatcake last.
+b : Will the plain bit do? | Why save it?
+a : Very well when the day's young and the appetite hasn't started arguing. | Something worth getting to is a good thing in a small meal.
+
+scene dance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I like a dance where a slow step still counts.
+b : Would you join a quick one? | Does the music allow that?
+a : If there were someone to keep me clear of the quicker dancers at first. I can speed up once I've heard it. | A good tune's got a resting place underneath the fast bit.
+
+scene shower
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain brings the smell of grass right through a coat.
+b : Does that please you? | Can you tell indoors?
+a : It's as if the hillside had followed me back for a short friendly visit. | Smell my doorstep. A boot can carry quite a great sweep of green for something so small.
+
+scene wetfoot
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I won't leave a wet print where somebody has to turn with a full bowl.
+b : Would you go barefoot? | Can you foresee the turning place?
+a : I wipe the boot. It's still got to get me back where I came from. | I look for the clear bit of table and the place where the bowl has come from.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I don't mind a small creature having business if it keeps its feet out of my supper.
+b : A fruit fly? | Does a cover help?
+a : A great black fly's generally the one expressing most interest in my oatcake. | A folded cloth and a kindly word for the part of the room past the shutter.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd wait for #self.friend# to retie a lace even close to a closing gate.
+b : Wouldn't you run on ahead? | Why take the chance?
+a : If I can secure the gate I will. Leaving somebody to struggle won't help my own feet. | Two wolves arriving a minute late have the shared pleasure of company to one another.
+
+scene paper
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I carry one folded page that hasn't brought an answer.
+b : Are the words sad? | Will you send it again?
+a : Some have got gentler with time. Paper does that where it touches a warm breast pocket. | No. It can have its place without requiring a second question of anybody.
+
+scene byre
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I steady the gate flat-handed before the beasts reach it.
+b : Push or pull? | Why the flat?
+a : Whichever way needs doing. A hanging latch can deceive an eye from some distance. | To feel its weight steadily. A hard knock may bring every head up at once.
+
+scene favour
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I count the steps to a stranger's next comfortable place.
+b : Why the next place only? | Do you tell the count?
+a : The entire journey can look too long when the feet are sore. A bench is an achievable promise. | Only if there's a reason to know. Most would sooner be gently shown the way.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A good boot needn't cost a winter's soup.
+b : Can you find one? | Second-hand?
+a : I know it's worth looking at the heel before I fall in love with the ankle shape. | A solid used pair can still have a decent future with another wolf.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed my old bootlaces rooted through the floor and grew a meadow.
+b : Could you walk? | Was the grass any good?
+a : Very slowly. I had most of a hillside attached to each foot. | Good enough for imagined beasts. I woke up remembering where I'd left the real brush.
+
+scene trouble
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A stone in a boot makes a quiet wolf even quieter.
+b : Why not speak? | Do you stop at once?
+a : I begin thinking only about the foot. It crowds out quite a bit of willing conversation. | As soon as I find a dry spot. There's no virtue in carrying a stone an extra half mile.
+
+scene wise
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I believe old household rules ought to be tried on for size.
+b : Do you mean to doubt an elder? | How do you try one?
+a : I mean to understand the kindness under the words. It doesn't always fit every house the same way. | See who gets a warmer supper from it. Good sense should do the feet some good too.
+
+scene night
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : I untie both boots before taking either one off.
+b : So you don't forget? | Isn't one at a time easier?
+a : So I can sit in both feet for a minute while the day's pace runs out. | It leaves one foot still at work and the other at rest. I prefer seeing the day out evenly.
+
+scene badnews
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A rumour tied to good advice can sound remarkably serviceable.
+b : How do you untie it? | What do you keep?
+a : Ask whether anyone saw the thing that made the advice necessary. | The kindness, if there's kindness in it. A story can be left whichever way the road runs.
+
+story laceswap [topic=memories]
+  : I wore a pair of shoes once with different laces on each foot. I was trying to decide whether flat cord or round cord would stay tied longer.
+  : I watched the two ends every time I sat down. By evening I could tell exactly where every loose stone in the road had been and nothing at all about the cord.
+  b : Why nothing?
+  : Both had stayed tied perfectly. I took the sort I'd enjoyed looking at more.
+
+story showerdance [topic=pastimes]
+  : I once practised a dance on a patch of dry grass while a mild shower crept up the hill towards me. Each little pace brought my feet to slightly wetter ground.
+  : By the end I was dancing in very clean shoes, with one new green stripe along the hem of my clothes.
+  b : Did you finish the dance?
+  : Yes. The ground kept the quieter footfalls. The rain put a tune underneath them.
+
+story gatebread [topic=work self.job=none self.working=yes]
+  : I left part of an oatcake on a gate rail once and found when I went back that the butter had printed a perfectly round ring onto the wood.
+  : There was a strong smell of supper though the cake itself was gone. A large soft muzzle on the other side looked particularly interested in my pockets.
+  b : Did the muzzle win the meal?
+  : I lost that one bit. I had the other half buttoned up with an old rule about not leaving food on a rail.
+
+rule @aside1
+when concept=bark self.job=none self.working=yes
+does aside
+cooldown 6h
+say Gate first, view second. That's the little cross knot. | Let the big feet decide where to set down.
+
+rule @aside2
+when concept=bark self.likes=new_boots
+does aside
+cooldown 7h
+say Old cord for the brand-new eyelets. | My heels have a whole road to settle in.
+
+rule @aside3
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Go examine the gatepost further off, fly. | Oatcake cloth back in place.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Both laces free before the feet rest. | Carry that lesson in the left knot.
+
+dlg resident.hub : If you've a hard bit of walking behind you we can rest those weary heels awhile before speaking.
+dlg resident.job [self.job=none self.working=yes self.workplace] : I look after the cattle at #self.workplace#. A broad quiet hand works best at a gate.
+dlg resident.news [world.news] : The word I brought along came in this shape. #world.news#
+dlg resident.hub [topic.meeting=known] : Your footsteps have an ordinary welcome here, #topic.player#.
+dlg resident.bye : Good soles under you through the steeper stretch beyond.
+
+graft resident.hub
+choice Why is that knot tied halfway along? -> lace_word
+node lace_word
+say It's a reminder to stop the gate before letting the last beast through. I often remember an old bit of advice just by brushing the appropriate knot.
+free
+choice Could you run out of bootlace? -> lace_room
+choice I'll take the gate rule with me. -> hub
+node lace_room
+say I untie the lessons my feet have learnt. A useful thing about old advice is that a bit of it can grow into an ordinary habit without taking up any more cord.
+choice I'll keep room for a new knot. -> hub
+choice Here's to an easy walk. -> bye

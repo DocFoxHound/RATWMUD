@@ -1,0 +1,247 @@
+mantle rm467
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_egil_bilgeley
+title the churner's unpaid wagers
+fits stage=adult|old
+prefers piety=devout temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk cannot_resist_a_wager
+likes warm_bread roof_birds full_larder first_warm_day
+dislikes crowds haggling
+fears putting_anyone_elses_supper_at_stake
+hopes learning_the_sound_before_the_butter_comes
+topics food +0.5 faith +0.5 pastimes +0.3 work +0.3
+styles comfort=practical gossip=guarded refuse=direct tease=none
+marks oath saying
+persona #self.first# makes wagers payable in sweeping or silence and keeps the family's butter clear of the stakes.
+words
+oath! = Skim my last pat | Clap my lid crosswise
+saying! = Wager a chore you can pay | Listen for the change
+dashtop = a smooth handle end | a polished grip
+breadbit = a hot loaf end | a little torn crust
+buttercurl = a pale butter curl | a yellow sweet shaving
+churnvoice = a dull low thud | a changing wet slap
+sweepstake = one honest floor sweep | my next broom duty
+birdrow = a line of little claws | a row of brown heads
+stakechip = a chip of plain wood | a bent straw token
+clothfold = a square of clean cloth | a doubled linen edge
+cupdeep = a deep empty cup | a cool pottery cup
+pantryshade = a dark shelf corner | a strip of cool shade
+yardbeat = an uneven tap | a regular hollow knock
+
+grown
+
+opinion houses mixed 1 : A House is entitled to decent service. It cannot make truth richer by setting a large purse beside it.
+opinion church for 2 : I keep my prayers out of the wager. A chip falling sideways won't give me a claim on heavenly favours.
+opinion merchants mixed 1 : I'll have one clear figure for a working thing. I get my gaming pleasure elsewhere.
+opinion strangers mixed 1 : I'd stake a little yard sweeping on a friendly guess with a stranger, but no household has to fund my introductions.
+opinion dole for 2 : The poor pot has nothing to do with how lucky anyone was that morning.
+opinion city mixed 1 : I'd enjoy more of the city's good bread if less of the city were wedged into the same doorway to buy it.
+line greet : Welcome. The only stake today is a little spare time.
+line greet.return : You've found the listening side of me before the betting side.
+line greet [pair.band=strangers] : We can stand well clear of the elbows and hear each other here.
+line farewell : May your day's last reckoning be easy enough to pay.
+line farewell.return : Keep your supper clear of any wager on the road.
+line ask.how : Does the day feel reasonably even in both hands?
+line answer.how : Steady till somebody offers me a guess too good to leave alone.
+line react.news : I'll listen for the change beneath the first account.
+line react.news.new : That gives the whole question a different sound.
+line react.news.known : I'd already laid a little thought beside that piece.
+line react.news.doubt : I wouldn't even stake my sweeping turn on the account as given.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give thanks for that and keep the betting out of it.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take an unwelcome chore off a household dealing with that.
+line decline : I won't put a household promise on a stranger's chance.
+line thank : You helped me keep my promise without asking to share the winnings.
+line deflect_thanks : I set the stake myself and I mean to pay what I promised.
+line accept_decline : No wager taken and no account between us.
+line sympathise : I can do the next little task while you come to terms with it.
+line reassure : A poor guess needn't determine what either of us does afterwards.
+line ack : I hear the turn in that reasoning now.
+line preclose : Something is waiting for a steady pair of arms.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My bit of the work goes by #self.trade_words#. I listen as carefully as I pull.
+b : What change are you waiting for? | Does it take both arms?
+a : The sound gets a heavier centre to it. Then I look, however certain I was before. | It takes both arms and enough good sense to keep them from competing with one another.
+
+scene work_2
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : As a learner I like to guess what comes next before the hand showing me gets there.
+b : Do you call the guess out? | And when you're wrong?
+a : I leave the guess unspoken while the lesson's still being given. Most days. | I have a better reason for remembering the right bit. I am becoming rather extensively educated.
+
+scene food_1
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Warm bread's the best possible answer to a pat of butter in doubt about its calling.
+b : What about the first melting bit? | Do you share your slice?
+a : That's where keeping the crust level matters while I'm chewing. A little gravity can steal a lot of butter. | I'll make a second slice whenever possible. A divided piece will almost always tip butter onto somebody's collar.
+
+scene animals_1
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I'll wager a broom turn on which roof bird leaves first.
+b : How do you collect from a bird? | What tells you which?
+a : The wager's with myself. The birds have reached a most satisfactory agreement never to help with the sweeping. | One's attention goes down to the ground before its feet leave the tile. Sometimes I even guess the right one.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say my thanks before trying to guess which way the afternoon will go.
+b : Why in that order? | Isn't a wager rather worldly?
+a : I should hate my thanks to depend entirely on whether my guesses flattered me. | Mine does some ordinary work if I lose. Keeping another wolf fed is an obligation, not a sporting chance.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I would rather admit a foolish bet to #self.spouse# than spend supper trying to look particularly innocent.
+b : What makes one foolish? | Would you pay up even then?
+a : A stake I've no right to choose alone. I've a careful rule for keeping the household out of my pocket sports. | I'd make the trouble right out of my own time, long before asking a family table to cover it.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My favourite pantry has full jars and no betting slips beside them.
+b : Not even the smallest jar? | What would you wager instead?
+a : The smallest jar can contain the last thing needed to make a supper. Hunger is an abrupt and thorough auditor. | A dish washed, a board cleaned, one decent minute of keeping my opinion to myself.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : When spring turns mild I watch how the butter sits under the cloth.
+b : Do you move it inside? | Don't you want to be out in the sun?
+a : Into deeper shade before the edges lose the shape I worked to give them. | I do. After I've made sure the work needn't enjoy the season quite as directly as I intend to.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Crowds make me cross quickest when everybody assumes the wolf behind has room to step back.
+b : Do you speak up? | What if you're the one pressing?
+a : Yes. Then I try to keep the first sharpness for the problem instead of the nearest ear. | Back off where there's room and own up. Pride can afford that much walking backwards.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I have remarkably little patience for haggling considering how much I like a harmless wager.
+b : What's the difference? | Would you wager on a price?
+a : In a wager both sides know what restless nonsense is going on. I'd like a purchase to be a purchase. | No. An honest price ought not to depend on which buyer has the luckiest thumb.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A story I keep privately concerns a great household. I won't put it into circulation for any stakes on the table.
+b : Can you tell us which House? | Doesn't silence make it tempting?
+a : That would put the newest listener halfway to a conclusion with no means of checking the road. | Certainly. Knowing exactly where to stop is one of the costlier kinds of pride I've tried to acquire.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I leave a chip by my cup when I've promised to do an extra job.
+b : What if you forget what it was? | What if two jobs are owed?
+a : I avoid making a second sporting promise before paying the first. One chip's quite a full account of my capabilities. | Then a second chip goes out and the wagering business is closed for the afternoon.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A real friend may refuse my favourite sort of game without being asked to explain personal finances.
+b : Even a wager without coin? | Wouldn't you be disappointed?
+a : Even my time is mine to spend. I can't go offering a friend's turn at the broom without an invitation. | Perhaps a little. A quiet face at a table is worth more than collecting a field of unwilling opponents.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If my arms begin arguing over which is doing more work I change the grip.
+b : Can you tell which is right? | Why not have a rest?
+a : The sore one has a particularly effective argument but not necessarily the fairest view of the arrangement. | That's the next remedy after giving my shoulders a chance to come down out of my ears.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : On a lean day my wagers are payable entirely in improvements to things that already need doing.
+b : Can you lose then? | Where's the fun?
+a : My fingers can lose a pleasant idle minute for pride. The floor gets a very good return either way. | In guessing correctly before the roof birds entirely rearrange their positions, a distinctly unreasonable habit of theirs.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I turn a warm loaf over and guess which side met the hottest part of the oven.
+b : How can you tell? | What do you win?
+a : A dark patch by the heel and the smell where the crust is slightly too proud of itself. | The bit I wanted to eat regardless. There's no reason a domestic amusement has to involve peril.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer can decline to join one of my games and still choose the best seat.
+b : Suppose a single stool has to do? | Would you take a visitor's coin?
+a : Offer it before suggesting a wager. A chair isn't part of the odds of a proper welcome. | For honest work, perhaps. Never from somebody who thought the price of a welcome had to be guessed.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The tale in open circulation says #topic.subject# #topic.claim#.
+b : What odds would you give on that? | Would you tell anything you heard in private?
+a : None at all. I can't see where a public guess about a private name is fit to have a stake laid against it. | I've repeated the open talk. I shall give my good sense the deciding turn now.
+
+story crow [topic=animals]
+  : I bet myself a turn sweeping that the largest bird would leave a roof first.
+  : A shadow crossed the wall and all five birds went up together.
+  b : Who won the bet?
+  : I swept half the yard and sat down to look at the rule for a dead heat. A well-advised settlement considering the state of the yard.
+
+story crust [topic=food]
+  : I put a little piece of butter on bread so warm I could hardly hold it.
+  : I turned to say a word and found a lively yellow channel running down my wrist.
+  b : Did you lose your lunch?
+  : I used a second piece of plain bread to take up the overflow. It was scientific work and I ate both results.
+
+story paid [topic=memories]
+  : I promised to clean a shelf if a chip landed edge upwards and propped the chip against the cup without meaning to.
+  : It stood there as firm as a stone marker and left me considering the technicalities.
+  b : Did you clean the shelf?
+  : Yes. I enjoy a doubtful victory very much less than a cupboard whose state permits a clear conscience.
+
+rule @listen
+when concept=bark
+does aside
+cooldown 8h
+say Heavier sound in the middle. Time for a proper look. | No wager worth spoiling a morning's work.
+
+rule @spring
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Get the pat into shade before admiring the sun. | Early warmth can alter a fair slice in moments.
+
+rule @learn
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say Guess privately and hear the whole instruction. | A wrong guess gives the right answer somewhere to stick.
+
+rule @roof
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say That little brown head is thinking about a departure. | Keep the broom handy till both claws actually leave.
+dlg resident.hub : An honest question doesn't need a stake put down beside it.
+dlg resident.job [self.trade_words] : Put my day down as #self.trade_words#. When the sound shifts, the work deserves both eyes.
+dlg resident.news [world.news] : This much arrived while my ears were free. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The public version says #topic.subject# #topic.claim#. I save my wagers for matters with rather fewer reputations attached.
+dlg resident.hub [topic.meeting=known] : #topic.player#, no odds at all against recognising that particular voice.
+dlg resident.bye : May supper be yours without a single stake required.
+
+graft resident.hub
+choice What can I wager without spending coin? -> churn_sweep
+node churn_sweep
+say An extra chore you'd freely choose to take on. If the bird stays on the ridge past the next breath, I might offer to clear a shelf.
+choice What do I win from you? -> churn_win
+choice We'll let the bird decide. -> hub
+node churn_win
+say A clean shelf and the satisfaction of being right about a very small bird. I should much prefer a game to leave a wolf richer in one of those ways.
+choice We'll let the bird decide. -> hub

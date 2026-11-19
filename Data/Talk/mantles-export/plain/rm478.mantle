@@ -1,0 +1,257 @@
+mantle rm478
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_arne_wetworth
+title the chamber refrain
+fits stage=adult|old
+prefers job=servant
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_an_extra_bar_for_each_unfinished_chamber
+likes spiced_cider singing sharp_knife frosty_mornings
+dislikes deep_mud cold_tea
+fears singing_past_a_door_that_should_be_quiet
+hopes to_end_the_day_on_a_satisfied_low_note
+topics work +0.5 pastimes +0.3 friends +0.2 home +0.2
+styles comfort=practical gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# lengthens a sea refrain by one bar for each room still waiting and drops the voice to a hum near a closed door.
+
+words
+oath! = Hush my last bar | By the octave under my breath
+saying! = A closed door keeps the chorus small | The last chamber gets the last long note
+bar = the spare bar | a lengthened refrain
+note = a low sea note | a quiet middle note
+tune = my below-deck tune | a slow working refrain
+brush = a short chamber brush | my soft-bristled brush
+burr = a pointed burr | one caught seedhead
+cup = a little cider cup | a brown drinking cup
+spice = a clove tip | a curl of cinnamon
+edge = my trim knife edge | a bright edge
+rime = a needle of frost | a pale tracery of ice
+tray = my smooth tray | a newly wiped tray
+hem = the chamber curtain hem | the clean hanging edge
+boot = the mud line | a sole's width of mud
+
+any
+opinion merchants against 1 : I'd like the price that was offered before my back was turned to last till my purse comes round as well.
+opinion strangers against 1 : An unfamiliar foot in a private passage needs a plain answer as to where it's going.
+opinion houses mixed 1 : A great house counts me among its people when the chambers want keeping. I attend to how broad the term is after that.
+opinion festivals mixed 0 : My enjoyment of the music depends on choosing my distance from the crush. I have other arrangements for the procession.
+opinion times mixed 0 : My own tray goes back to the right place. Whether all the business round me is as orderly I'd be slow to say.
+
+grown
+line greet [pair.band=strangers] : Speak from the passage side. Welcome. | Room beside me out of the doorway.
+line greet [self.working=yes] : Step where the tray has been cleared. | My quiet refrain leaves the ear free.
+line greet [here.time=dawn] : Morning. The first measure's all before us. | Fresh light above the low curtain.
+line greet [here.time=dusk|night] : Evening. Lower voices carry admirably here. | Come out of the door's shadow.
+line kin.open [pair.kin!=no] : There's no private passage between kin. | Family may take the humming side.
+line again.open : The spare bar brings your voice round. | Another entrance before my refrain's done.
+line greet.return : Hello. I have the note safe in my head. | Speak while the tune's still low.
+line greet.return [pair.band=friends|family] : I know that note of greeting. | Come near. Your voice is welcome in my quiet passage.
+line greet.return [self.working=yes] : My hands can brush while I hear. | I've a spare interval between chambers.
+line greet.return [here.time=dusk|night] : Evening. I'm singing only to myself now. | That's a welcome sound past the curtain.
+line farewell : A comfortable room beyond your final errand. | Leave the latch as quiet as you found it.
+line farewell.return : I'll take the next measure here. | Keep an easy rhythm past the threshold.
+line farewell.return [here.time=night] : Hush the latch and rest your feet tonight. | A careful homecoming past the late sleepers.
+line react.news : Give me the clear line of it. | What's the account beneath the noise?
+line react.news.new : New words for this passage. | That wasn't in my earlier hearing.
+line react.news.known : I've heard the start and ending of that already. | A familiar tune comes through again.
+line react.news.doubt : I'd need a steadier account before joining that chorus. | A line muffled by a curtain can change its meaning.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll keep my tune still for you. | A difficult word to carry through a quiet house.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a brighter bar to finish with. | Good. The passage sounds easier after that.
+line ask.how : Have you a quiet end in sight today? | How many rooms has the day put you through?
+line answer.how : A few more measures before I can rest. | Keeping my tune down and my hands occupied.
+line decline : I'd better leave my quieter energies for the last room. | I need a private interval before agreeing to more.
+line accept_decline : I can lower the voice on that matter. | Then the arrangement ends quite clearly.
+line thank : You've spared me a whole spare bar. | That sits well with my reckonings.
+line sympathise : Take the chair outside the noisy passage. | I can give you quiet without leaving you alone.
+line reassure : You'll find another interval after this one. | Attend to the little thing your hands can manage now.
+line preclose : I should take up the refrain again. | Time my chamber list lost another bar.
+
+scene roomtune
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I add #bar# for each room that remains unfinished.
+b : Does the song get shorter as you go? | Which rooms get the low notes?
+a : Enough to let me know the working day's coming to a tolerable end. | The last ones. A tired voice shouldn't have to climb once supper's in sight.
+
+scene hush
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I like singing properly when a door won't pass it on without my leave.
+b : Out of doors? | Which tune?
+a : Beyond a wall that throws the voice into open air. Neighbours have sufficient of their own to hear. | Something from the water with one long middle note. Helps a chest settle into the words.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I have my cider with spice enough to give my nose a pleasant hearing before I drink.
+b : What spice? | Doesn't it cool?
+a : Whatever I can pick out without scorning what's actually in the pot. A warm clove will do very well. | I don't stand in ceremony till it's gone cold. My manners have reasonable limits.
+
+scene point
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I like a keen knife for trimming a curtain thread.
+b : Would shears serve? | Does it make a better edge?
+a : Perhaps. A good small blade will cut right against the hem without pulling a loop clear. | The hem already has its edge. I prefer leaving it where the maker intended.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosty morning puts a whole leaf on a pane with no need for watering.
+b : Do you wipe it off? | Can you see outside?
+a : Only the little patch I need for looking down. A whole leaf deserves some consideration. | Round the edge of the frond. A soft cloth shows the street again if needed.
+
+scene mud
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : I resent a deep rut having more to say about my boots than I do.
+b : Does it take a boot? | Could you skirt round it?
+a : It would if I didn't lift from the heel and argue carefully with the toe. | Usually, by spending more time than the entire fixed duty inside is supposed to take.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : A cold cup of tea gives me a poor opinion of a whole tray.
+b : The cup's the only fault. | Can't you warm it again?
+a : The fault I can taste. A bright spoon doesn't improve the mouthful. | With a clean pot and a little proper heat. A passing wave at the hearth won't do.
+
+scene burr
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My ruff seems to attract burrs whose principal aim is to attend a respectable room.
+b : Do you check the ruff first? | Are they troublesome?
+a : With both hands and a little brush. They're particularly inclined to sit under an ear. | Only when a room's quite clean and one small travelling seed decides to disembark.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I can leave a half-hummed verse unfinished with #self.friend# and feel quite easy.
+b : A friend who knows the words? | Wouldn't you finish it later?
+a : That's much less important than letting me choose whether to deliver the words. | If the rest of the visit wants music. Company needn't run to a prepared sequence.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : On the Estate I know which long passages carry a word round two bends.
+b : Useful for calling? | Do you ever put a word round both bends?
+a : Useful for knowing where not to call. A private remark should keep its appointment with the proper ears. | Only good wishes delivered at an ordinary volume. They're generally permitted a little freedom.
+
+scene private
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I have no interest in publishing what a closed chamber might have heard.
+b : Even in a song? | Doesn't that make for dull company?
+a : A catchy refrain is an exceptionally poor container for anything private. | If it does, I can recommend several perfectly sociable patches of weather for discussion.
+
+scene manners
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I don't quite like a visitor humming louder than my greeting.
+b : Why not? | Do you say so?
+a : I prefer knowing whether the greeting was returned or incorporated into an opera. | If it keeps happening. A gentle interruption usually does the business.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A guest in an unfamiliar passage should see at once which door is open.
+b : Why so particular? | Wouldn't a name suffice?
+a : It saves the first hour of a visit being spent apologising for a private intrusion. | If every visitor can read it in that light. A hand held out in welcome is considerably simpler.
+
+scene traywork
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I wipe the tray in long strokes that finish at the edge nearest my cuff.
+b : Why there? | What's wrong with short strokes?
+a : To keep the remaining speck in view before bringing the clean surface to a door. | Nothing, until each one leaves a small dirty margin for the next one to chase.
+
+scene cheat
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A price that changes while my back is turned gets a very short refrain.
+b : How short? | Would you still pay?
+a : Just the no in the low register and my retreating footfalls. | Only if there'd been a change in the goods that I had positively requested.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed an empty chamber could hold a note all night and give it back at dawn.
+b : A pleasant sort of dream? | The same note?
+a : Not until I remembered whether I'd left a pleasing one there after supper. | An octave lower. Apparently even a private chamber has opinions about a tired singer.
+
+scene kind
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I think a quietly kept room can be part of a welcome in the Bright One's eyes.
+b : How quietly? | Is every room a chapel?
+a : So quietly the wolf using it need never feel obliged to praise the one who swept it. | It may give a little of the same shelter without presuming on the whole distinction.
+
+scene hushblood
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've found it prudent to lower my voice first when I'm offended.
+b : Will that mend it? | Wouldn't you rather speak up?
+a : A lower voice lets me examine my suspicion before launching an objection. | After thinking, perhaps. My first words oughtn't to be the ones a whole passage remembers.
+
+story doorverse [topic=work self.job=servant]
+  : I finished a room once, hummed out its last measure and went very deliberately to the door. The tune still tugged at me as if a bar had been left hanging.
+  : I went back and looked. The curtain cord was looped around a chair arm where it ought never to have gone.
+  b : Did the tune tell you that?
+  : My ear had missed its usual little scrape as I straightened the chair. The uneasiness knew its business before my eyes did.
+
+story ciderclove [topic=food]
+  : I put a single clove in my cup of cider and found two floating there after the first slow drink. For once my own table seemed to be offering a bargain.
+  : One clove was a dark spot in the glaze. It stayed high and dry as the cider went down alongside it.
+  b : Did you object?
+  : Only to the spot's taking up the position of one very desirable extra mouthful of spice.
+
+story burrtune [topic=memories]
+  : Once I went to sing a quiet opening note and heard a small scratch whenever my muzzle moved. I thought a curtain cord was rubbing a rough spot on the wood.
+  : A burr in the ruff had got its hooks into my collar. It had accompanied me through two passages in a sort of intimate percussion.
+  b : Was the burr invited to sing again?
+  : I removed it with due consideration for the performers' future engagements.
+
+rule @aside1
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 6h
+say One bar less as the chamber settles. | Palm flat over the loose fringe.
+
+rule @aside2
+when concept=bark self.likes=singing
+does aside
+cooldown 7h
+say Keep the sea note below the curtain hem. | One spare breath ready for the last room.
+
+rule @aside3
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say Fresh heat before the tray goes out. | A shiny spoon won't warm a cold mouthful.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Clear one little pane and leave the fronds. | First chamber gets the shortest tune.
+
+dlg resident.hub : Take a few steps clear of the closed door. Your business can have just as good a hearing without a chamberful of accidental listeners.
+dlg resident.job [self.job=servant self.trade_words] : #self.trade_words.capitalize#. I give each room its own quiet finish before I move the tray along.
+dlg resident.news [world.news] : In a plain voice the word came through thus. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've come in between the quiet verses.
+dlg resident.bye : An easy latch and a quiet interval on your own homeward way.
+
+graft resident.hub
+choice Why does your sea song keep changing length? -> short_chorus
+node short_chorus
+say Every room still wanting my attention gets a bar to itself. At the last door I can hum the entire tune on a single breath, if the day has gone properly.
+free
+choice What does an extra chorus mean? -> curtain_again
+choice I can hear where the phrase settles. -> hub
+node curtain_again
+say Sometimes a collar has dropped a burr on a clean floor and I must add a little more music. Most unexpected events can be accommodated by a reasonable refrain.
+choice I'll let you finish the measure. -> hub
+choice May your last note come soon. -> bye

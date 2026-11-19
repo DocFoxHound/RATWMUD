@@ -1,0 +1,262 @@
+mantle rm481
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_berit_mudton
+title the inn helper with the floating spoon
+fits stage=adult|old
+prefers job=sailor talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk balances_a_spoon_on_a_folded_napkin_like_a_boat_on_blocks
+likes barley_soup singing old_maps misty_dawns
+dislikes waiting night_noise
+fears a_tune_beaten_flat_by_noise the_last_ladle_left_empty
+hopes a_whole_quiet_verse_between_two_servings
+topics food +0.6 home +0.4 lore +0.3 work +0.4
+styles comfort=warm gossip=quiet refuse=dry tease=gentle
+marks oath saying
+persona #self.first# rests a spoon on a folded napkin as if putting a boat to bed, and hears a tune where the ladle strikes the rim.
+
+words
+oath! = Spoon overboard | A crumpled chart
+saying! = Set the spoon where it can rest | Every tune deserves a landing
+spoon = a long-handled spoon | my favourite spoon
+fold = two ridges of folded cloth | a pair of napkin folds
+rimnote = a low note from the rim | the ring round a pot
+pencilshore = the pencilled outline of a bay | the wavery line of a shore
+barley = a plump grain of barley | a little pearly barley
+steambank = a low bank of steam | a curtain of kitchen steam
+quietend = the end seat beyond the clatter | the seat beside the wall
+restbar = a rest two beats long | a small silence in a tune
+mistcap = a pale hood of mist | a band of low mist
+dampcuff = a damp patch on my cuff | a half-wet sleeve
+kindbeat = a steady walking beat | a gentle rhythm
+
+any
+opinion city for 1 : I'd miss the sound of spoons against a hundred breakfast bowls.
+opinion merchants against 1 : Give me a measure that holds the same amount whichever side of the pot you're standing on.
+opinion festivals against 1 : From an upstairs window the singing comes clear and the elbows don't.
+opinion dole for 1 : A meal in a warm room can keep doing good quite late into the next day.
+opinion drink mixed 0 : Cider goes down easily enough. Remember which tune you meant to sing before you order another.
+opinion road mixed 0 : An old map makes fine company provided nobody makes the mistake of following it too closely.
+opinion times mixed 0 : Look into the pot and judge what sort of week it's been.
+
+grown
+line greet : Welcome to the quiet end.
+line greet [pair.band=strangers] : There's space in today's chorus for an unfamiliar note.
+line greet [here.time=dawn] : Morning. There's still silence between the first few bowls.
+line greet [here.time=dusk|night] : Evening. The longer tunes fit now.
+line greet.return : I'm listening between the little clinks.
+line greet.return [pair.band=friends|family] : There's the note this seat was short of.
+line greet.return [self.working=yes] : Go on, the spoon can keep its own count.
+line greet.return [here.time=dusk|night] : Your voice travels very clearly at this hour.
+line kin.open [pair.kin!=no] : Come sit inside the curve, kin.
+line again.open : A little rest and then the tune continues.
+line hail [pair.band=friends] : Friend, I've saved the wall side.
+line farewell : Go easy past the stacked bowls.
+line farewell.return : And save a second dry crease for my spoon.
+line react.news : Tell it without the extra beat.
+line react.news.new : First time I've heard that struck.
+line react.news.known : Same words. A different rim, perhaps.
+line react.news.doubt : I'd hear it in a quieter room before I trusted it.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We've time for a silence after that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That one deserves a chorus.
+line ask.how : Any warmth left in your bowl?
+line answer.how : It's been a day for small, well-spaced mouthfuls.
+line thank : That made the load sit evenly. Thank you.
+line deflect_thanks : The cloth needed folding anyway.
+line sympathise : I've a seat that asks nothing of its occupant.
+line reassure : Let the noise settle. You'll hear your own thought again.
+line decline : I owe another turn at the cloth tonight.
+line accept_decline : Fair enough. I'll put the ladle down.
+line preclose : I'd like to finish before anything boils away.
+line accept_preclose : We can set this conversation down quite gently.
+
+scene spoon_boat
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I rest #spoon# across #fold#. | A spoon ought to go down as gently as it came up.
+b : Why build it a dock? | Has it said so?
+a : Keeps the wet end off my last clean stretch of board. | Often. Listen to one dropped in an empty pot.
+
+scene quiet_beat
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I give a tune #restbar#. | A pot singing on its own is generally asking for attention.
+b : Why leave room in it? | You answer in tune?
+a : So the next note has somewhere to arrive. | I fetch a cloth and lower the fire slightly.
+
+scene help_at_inn
+when topic=work self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like two clear steps between myself and the next laden helper. | The sweetest sound around #self.workplace# is the quiet just after everybody's served.
+b : Even when there's a rush? | No thanks?
+a : Especially when there's something hot between us. | A busy spoon is a perfectly civil acknowledgement.
+
+scene work_water
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : A sailor knows a tilted board. An inn helper knows where the broth went. | On the water I notice how a load inclines.
+b : Which knows sooner? | And ashore?
+a : Whoever's nearer the low edge. | Particularly if several loaded dishes are coming my way.
+
+scene grain_soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : #barley.capitalize# wants enough time to open without giving up. | I let the soup rest for as long as one short verse.
+b : How can you tell? | What sort of verse?
+a : It fits the bowl of a spoon without looking defeated. | One I can finish before somebody comes looking for supper.
+
+scene map_soup
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #pencilshore.capitalize# could just as easily be a ladle stain. | I'm fond of a chart showing a misguided island.
+b : How do you tell? | Can an island get lost?
+a : See if the ship has anchored beside a grain of barley. | On a page it can wander positively miles.
+
+scene mist_open
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #mistcap.capitalize# lets a roof show before the room below it. | A misty morning gives the Works a gentler edge.
+b : Why watch that? | Do you like it better then?
+a : For a moment a whole roof goes sailing without its house. | I enjoy seeing an old neighbour's face change.
+
+scene sing_under
+when topic=smalltalk self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : Set the first note low enough to reach without lifting a shoulder. | I can keep a serving tune almost under my breath.
+b : Do you sing louder afterwards? | How would I hear it?
+a : Once I've found somebody who wants the rest. | Watch the spoon move. That's half the song already.
+
+scene noise_after
+when topic=home self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : The night belongs to quieter instruments. | I begrudge any door that bangs after the last tune dies.
+b : Name one. | Can a door spoil a good ending?
+a : A spoon placed carefully beside a folded cloth. | Listen to how long people wait for it to bang again.
+
+scene slow_queue
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : The worst wait is standing there with a clean empty bowl. | Don't promise soup in two beats if the pot wants twenty.
+b : What makes it worse than others? | Would you count?
+a : Both hands are occupied and so is the imagination. | Up to nineteen, quite patiently.
+
+scene works_song
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : In the Works you can hear the great iron notes through the little kitchen ones. | I've found #quietend# even in a room near the Works.
+b : Can you follow both? | Where would I look?
+a : I pick whichever beat lets me eat in peace. | Behind something sound doesn't like going through.
+
+scene debt_place
+when topic=times self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A debt on a slip of paper sits surprisingly heavily in a pocket. | I count a payment on a dry board.
+b : What's your way of carrying it? | Superstition?
+a : Separate from my shopping list. Dinner ought to get a hearing too. | Practical. I'd rather a creditor couldn't contest a blurred figure.
+
+scene mist_cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : #dampcuff.capitalize# dries sooner than a catch in my throat. | I pause for breath when a musical phrase comes round to rest.
+b : Does a warm bowl help? | Does it matter where?
+a : Even supposing it didn't, I'd have ordered one. | To the music, yes. My lungs make their own arrangements.
+
+scene brief_word
+when topic=news world.news
+does tell.news / react.self / assess
+a : Heard it from #world.news_from#. #world.news#. | #world.news#. The telling came through #world.news_from#.
+b : Is that how the tune went? | Would you add a chorus?
+a : Yes. Leave the words in that order. | No. A single voice carried that much.
+
+scene simmer
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I've heard kitchen talk reduce till it's very strong indeed. | There's a bit of talk abroad and a good bit of steam in it.
+b : Is it ready to serve? | How much will be left tomorrow?
+a : I'd leave the lid on. | I can wait to find out quietly.
+
+scene meal_stretch
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks call for spoons that reach farther round a pot. | When food comes short I use the narrow bowls.
+b : Is there more there? | Can they hold enough?
+a : Sometimes the last good grain settles against the curve. | They hold the heat while somebody makes up a mind to begin.
+
+scene new_wall
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd point out the seat where a newcomer can put a pack down safely. | Arrive at serving time and you find out how a room works.
+b : Safe from whom? | By asking?
+a : From somebody like me carrying hot soup backwards. | By seeing which few steps everybody keeps clear.
+
+scene song_finish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a whole verse to fit between two bowls some evening. | I'd like a good wide window over a very quiet breakfast.
+b : Would a quiet kitchen do? | What would you see?
+a : A kitchen with somebody listening would do better. | The mist parting in its own time. I'd take mine too.
+
+story bowl_chart [topic=memories|food]
+  : Once I followed a line across an old sea chart until it stopped at a perfect circle.
+  : Thought I'd discovered a bay with an impossibly narrow mouth.
+  b : Did the chart give its depth?
+  : The circle fitted my saucer. The line was spiced gravy. Quite shallow as it turned out.
+
+story spoon_hull [topic=memories|work]
+  : I folded a cloth into a splendid little stand and balanced a spoon on top.
+  : Then I loaded the spoon with broth to examine the trim.
+  b : Were the folds high enough?
+  : The spoon kept its position beautifully. The broth acquired a destination all over my apron.
+
+story lost_verse [topic=memories|smalltalk]
+  : I made a tune to remember the order of the bowls at supper.
+  : Reaching the last seat, I found I'd composed a nice extra verse.
+  b : Did you need another bowl?
+  : I went back and ate the extra verse myself. Best arrangement for an enthusiastic composer.
+
+rule @fold_clean
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Two folds and the bowl end's clear.
+
+rule @set_soft
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Softly with that last dish.
+
+rule @mist_top
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say There's a roof setting sail.
+
+rule @tap_count
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Three clinks and a boot for the fourth.
+
+dlg resident.hub : A quiet word will reach this side of the steam.
+dlg resident.hub [topic.meeting=known] : #topic.player#. You've come in exactly on the rest.
+dlg resident.hub [here.time=dusk] : Come out of the bowl traffic and we'll have a word.
+dlg resident.hub [pair.disposition=hostile|wary] : You can speak from beyond that empty seat.
+dlg resident.job [self.trade_words] : The post is #self.trade_words#. I get the warm things where they're wanted.
+dlg resident.news [world.news] : The report names #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : That account's simmered quite long enough.
+dlg resident.bye : Leave the spoon resting there. Happy journey.
+
+graft resident.hub
+choice Can a pot really keep a tune? -> low_note
+node low_note
+say Empty it and tap the handle gently. Fill it and hear the broth muffle the note. A wolf sings differently before and after supper too.
+choice Which makes the better singer? -> well_fed
+choice I'll listen for the handle. -> hub
+node well_fed
+say I'd pay the better singer in supper. That way both conditions can be tried and nobody goes hungry on account of the experiment.
+choice A fair trial. -> hub
+choice I'll leave the quiet seat free. -> bye
