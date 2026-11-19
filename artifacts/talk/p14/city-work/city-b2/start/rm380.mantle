@@ -1,0 +1,32 @@
+# rm380, TODO title (doc 84 P14, batch city-b2): written for rmx_mab_plankridge (Mab Plankridge: at lessons, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm380
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_mab_plankridge
+title TODO
+fits stage=young|adolescent|adult|old
+prefers TODO
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_the_bells_from_the_chapel_of_the_tide
+likes crisp_apples riddles tidy_house first_snow
+dislikes waiting stale_bread
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown
+
+young
+
+adolescent

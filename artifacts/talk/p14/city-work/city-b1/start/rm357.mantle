@@ -1,0 +1,32 @@
+# rm357, TODO title (doc 84 P14, batch city-b1): written for rmx_tobias_dunley (Tobias Dunley: at lessons, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm357
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_tobias_dunley
+title TODO
+fits stage=young|adolescent|adult|old
+prefers TODO
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk takes_the_long_stairs_two_at_a_time
+likes fried_fish long_walks festival_bells misty_dawns
+dislikes deep_mud salt_wind
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown
+
+young
+
+adolescent

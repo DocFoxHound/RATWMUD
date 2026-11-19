@@ -1,0 +1,28 @@
+# rm434, TODO title (doc 84 P14, batch city-b3): written for rm_lavinia_plankwick (Lavinia Plankwick: stewarding Grayrock Hall, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm434
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_lavinia_plankwick
+title TODO
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk trusts_no_one_from_a_rival_house
+likes spiced_cider draughts tidy_house summer_evenings
+dislikes bad_manners wet_floors
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

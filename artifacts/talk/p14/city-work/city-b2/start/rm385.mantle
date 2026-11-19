@@ -1,0 +1,28 @@
+# rm385, TODO title (doc 84 P14, batch city-b2): written for rm_erland_plankwell (Erland Plankwell: in service to the Granthams, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm385
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_erland_plankwell
+title TODO
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=ambitious
+quirk keeps_a_pocketful_of_coal_for_luck
+likes warm_bread dancing new_boots summer_evenings
+dislikes bad_manners gulls
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

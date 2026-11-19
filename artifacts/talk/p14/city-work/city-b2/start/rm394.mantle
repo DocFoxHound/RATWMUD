@@ -1,0 +1,28 @@
+# rm394, TODO title (doc 84 P14, batch city-b2): written for rmx_nessa_slagmarsh (Nessa Slagmarsh: tallying in the Iron Store, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm394
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_nessa_slagmarsh
+title TODO
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk keeps_a_pocketful_of_coal_for_luck
+likes honey_cakes whittling full_larder summer_evenings
+dislikes drizzle early_bells
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

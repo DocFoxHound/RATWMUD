@@ -1,0 +1,28 @@
+# rm440, TODO title (doc 84 P14, batch city-b3): written for rm_wenna_mossgrave (Wenna Timberland: running the House's iron trade, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm440
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_wenna_mossgrave
+title TODO
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk TODO
+likes blackberries dice market_bustle warm_rain
+dislikes deep_mud gulls
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

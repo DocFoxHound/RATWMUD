@@ -1,0 +1,28 @@
+# rm562, TODO title (doc 84 P14, batch city-b7): written for rm_yrsa_tarwick (Yrsa Tarwick: weighing at the Customs House, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm562
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_yrsa_tarwick
+title TODO
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk can_name_every_ship_in_the_sound
+likes roast_pork digging sharp_knife warm_rain
+dislikes rats deep_mud
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

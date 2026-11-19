@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm414	rm_desmond_grantham	Desmond Grantham	plain	full	broad light	adult	ridgemere	heights	463	runs The Rainwater Brewery	Data/Talk/mantles-export/plain/rm414.mantle
+rm415	rm_philippa_rustton	Philippa Rustton	plain	standard	none	adult	ridgemere	sump	466	keeping the Greatly stables	Data/Talk/mantles-export/plain/rm415.mantle
+rm416	rm_ragnar_millmarsh	Ragnar Millmarsh	plain	full	none	adult	ridgemere	commons	467	provisioner at Commons Provisions	Data/Talk/mantles-export/plain/rm416.mantle
+rm417	rm_rosalind_greatly	Rosalind Greatly	plain	full	none	adult	ridgemere	estate	468	reading in the gardens	Data/Talk/mantles-export/plain/rm417.mantle
+rm418	rm_signe_ashstack	Signe Ashstack	plain	standard	light broad	adult	ridgemere	estate	470	serving in the King's household	Data/Talk/mantles-export/plain/rm418.mantle
+rm419	rm_vigdis_millley	Vigdis Millley	plain	standard	light broad	young	ridgemere	works	472	at lessons	Data/Talk/mantles-export/plain/rm419.mantle
+rm420	rm_wynn_sootridge	Wynn Sootridge	plain	standard	light broad	adult	ridgemere	estate	473	helping at The Hook and Cleaver	Data/Talk/mantles-export/plain/rm420.mantle
+rm421	rmx_disa_nettleby	Disa Nettleby	plain	standard	broad light	young	ridgemere	commons	476	at lessons	Data/Talk/mantles-export/plain/rm421.mantle
+rm422	rmx_magnus_tarton	Magnus Tarton	plain	standard	light broad	adult	ridgemere	sump	477	helping at The Fell Wine Vaults	Data/Talk/mantles-export/plain/rm422.mantle
+rm423	rmx_ottilie_slagley	Ottilie Slagley	plain	standard	light broad	adult	ridgemere	sump	478	unloading ships at the piers	Data/Talk/mantles-export/plain/rm423.mantle
+rm424	rmx_palle_brinewell	Palle Brinewell	plain	standard	light broad	adolescent	ridgemere	sump	479	at lessons	Data/Talk/mantles-export/plain/rm424.mantle
+rm425	cty_flint_snowdrift	Flint Snowdrift	plain	standard	broad light	adult	ridgemere	-	499	logger at the Rainwood cut	Data/Talk/mantles-export/plain/rm425.mantle
+rm426	cty_kjell_saltdale	Kjell Saltdale	plain	standard	light broad	adolescent	ridgemere	-	500	deckhand at Soundside	Data/Talk/mantles-export/plain/rm426.mantle
+rm427	rm_agna_dripridge	Agna Dripridge	plain	standard	light broad	adult	ridgemere	estate	502	helping at Bridge Stores	Data/Talk/mantles-export/plain/rm427.mantle
+rm428	rm_berit_wickton	Berit Wickton	plain	standard	light broad	adult	ridgemere	estate	503	serving in the hall	Data/Talk/mantles-export/plain/rm428.mantle
+rm429	rm_brenna_ropehand	Brenna Ropehand	plain	standard	light broad	adult	ridgemere	commons	504	helping at Greywool	Data/Talk/mantles-export/plain/rm429.mantle
+rm430	rm_disa_millley	Disa Millley	plain	standard	light broad	adult	ridgemere	works	505	helping at The Rivet and Rain	Data/Talk/mantles-export/plain/rm430.mantle
+rm431	rm_ilse_fogridge	Ilse Fogridge	plain	full	light broad	adult	ridgemere	sump	508	runs The Timberland Charcoal Store	Data/Talk/mantles-export/plain/rm431.mantle
+rm432	rm_imogen_tarcot	Imogen Tarcot	plain	standard	broad light	adult	ridgemere	works	509	works at The Timberland Ironworks	Data/Talk/mantles-export/plain/rm432.mantle
+rm433	rm_jarl_greyford	Jarl Greyford	plain	standard	light broad	adult	ridgemere	sump	511	helping at Harbour Provisions	Data/Talk/mantles-export/plain/rm433.mantle
+rm434	rm_lavinia_plankwick	Lavinia Plankwick	plain	full	light broad	adult	ridgemere	estate	512	stewarding Grayrock Hall	Data/Talk/mantles-export/plain/rm434.mantle
+rm435	rm_oda_sootdale	Oda Sootdale	plain	standard	light broad	young	ridgemere	office	514	at lessons	Data/Talk/mantles-export/plain/rm435.mantle
+rm436	rm_rosamund_saltmarsh	Rosamund Saltmarsh	plain	full	light broad	adult	ridgemere	commons	515	helping at Bridge Stores	Data/Talk/mantles-export/plain/rm436.mantle
+rm437	rm_rune_gullwell	Rune Gullwell	plain	full	light broad	adult	ridgemere	office	517	clerking at the Counting House	Data/Talk/mantles-export/plain/rm437.mantle
+rm438	rm_silas_brinemore	Silas Brinemore	plain	standard	light broad	adult	ridgemere	heights	519	in service to the Thornburys	Data/Talk/mantles-export/plain/rm438.mantle
+rm439	rm_soren_kelpstack	Soren Kelpstack	plain	standard	light broad	adult	ridgemere	commons	520	clerking in the Administrative Wing	Data/Talk/mantles-export/plain/rm439.mantle
+rm440	rm_wenna_mossgrave	Wenna Timberland	plain	full	light broad	adult	ridgemere	estate	521	running the House's iron trade	Data/Talk/mantles-export/plain/rm440.mantle
+rm441	rmx_dunstan_plankham	Dunstan Plankham	plain	standard	light broad	adult	ridgemere	sump	523	none	Data/Talk/mantles-export/plain/rm441.mantle
+rm442	rmx_grete_dimmock	Grete Dimmock	plain	standard	broad light	adult	ridgemere	commons	524	carrying for the Couriers' Office	Data/Talk/mantles-export/plain/rm442.mantle
+rm443	rmx_harriet_pennock	Harriet Pennock	plain	standard	light broad	adult	ridgemere	commons	525	clerking at the Records Office	Data/Talk/mantles-export/plain/rm443.mantle
+rm444	rmx_orla_wetridge	Orla Wetridge	plain	standard	light broad	adolescent	ridgemere	commons	526	at lessons	Data/Talk/mantles-export/plain/rm444.mantle
+rm445	rmx_pim_pitchham	Pim Pitchham	plain	standard	light broad	young	ridgemere	sump	527	at lessons	Data/Talk/mantles-export/plain/rm445.mantle
+rm446	rmx_rosamund_ash	Rosamund Ash	plain	standard	broad light	old	ridgemere	commons	528	none	Data/Talk/mantles-export/plain/rm446.mantle
+rm447	rmx_solveig_nailstack	Solveig Nailstack	plain	standard	light broad	adult	ridgemere	sump	529	crying wares in the Rag Market	Data/Talk/mantles-export/plain/rm447.mantle

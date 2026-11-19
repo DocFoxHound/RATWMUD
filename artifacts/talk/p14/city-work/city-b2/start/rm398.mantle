@@ -1,0 +1,28 @@
+# rm398, TODO title (doc 84 P14, batch city-b2): written for cty_vesper_greenholt (Vesper Greenholt: cuts wood at the Rainwood coppice, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm398
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_vesper_greenholt
+title TODO
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk sleeps_badly_before_storms
+likes roast_pork digging tidy_house summer_evenings
+dislikes cold_tea haggling
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

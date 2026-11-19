@@ -1,0 +1,28 @@
+# rm521, TODO title (doc 84 P14, batch city-b6): written for rm_hjalte_wetdale (Hjalte Wetdale: healer of the abbey, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm521
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hjalte_wetdale
+title TODO
+fits stage=adult|old
+prefers job=healer
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk remembers_every_debt_owed_or_owing
+likes pickled_herring roof_birds festival_bells misty_dawns
+dislikes gulls smoke
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

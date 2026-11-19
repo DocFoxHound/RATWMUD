@@ -1,0 +1,28 @@
+# rm490, TODO title (doc 84 P14, batch city-b5): written for rm_corra_slagmore (Corra Slagmore: commanding the Watch, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm490
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_corra_slagmore
+title TODO
+fits stage=adult|old
+prefers job=guard
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk takes_the_long_stairs_two_at_a_time
+likes plum_tart wrestling quiet_chapel first_snow
+dislikes night_noise gulls
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

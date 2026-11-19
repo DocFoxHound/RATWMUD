@@ -1,0 +1,28 @@
+# rm505, TODO title (doc 84 P14, batch city-b5): written for rm_eleanor_saltcot (Eleanor Saltcot: moneychanger at The Greatly Bank, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm505
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_eleanor_saltcot
+title TODO
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=ambitious
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes blackberries long_walks old_maps first_warm_day
+dislikes early_bells waiting
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

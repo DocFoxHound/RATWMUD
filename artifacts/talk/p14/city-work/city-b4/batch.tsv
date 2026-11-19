@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm448	cty_frederick_ropeford	Frederick Ropeford	plain	standard	light broad	adult	ridgemere	-	544	cowherd at Rainrun	Data/Talk/mantles-export/plain/rm448.mantle
+rm449	cty_hakon_plankcot	Hakon Plankcot	plain	standard	light broad	adult	ridgemere	-	545	cuts stone at the Rainward quarry	Data/Talk/mantles-export/plain/rm449.mantle
+rm450	rm_aldric_rainmarsh	Aldric Rainmarsh	plain	standard	light broad	adult	ridgemere	commons	548	helping at The Wet Loaf	Data/Talk/mantles-export/plain/rm450.mantle
+rm451	rm_arne_wickdale	Arne Wickdale	plain	full	light broad	adult	ridgemere	sump	549	brewer at the abbey brewhouse	Data/Talk/mantles-export/plain/rm451.mantle
+rm452	rm_ebba_slagstack	Ebba Slagstack	plain	standard	none	young	ridgemere	commons	550	at lessons	Data/Talk/mantles-export/plain/rm452.mantle
+rm453	rm_edmund_sootcot	Edmund Sootcot	plain	standard	none	adult	ridgemere	office	551	running the City Office	Data/Talk/mantles-export/plain/rm453.mantle
+rm454	rm_halvard_mossgrave	Halvard Timberland	plain	full	broad light	old	ridgemere	estate	553	walking the gardens	Data/Talk/mantles-export/plain/rm454.mantle
+rm455	rm_hanne_thornbury	Hanne Thornbury	plain	standard	none	adolescent	ridgemere	heights	554	at lessons	Data/Talk/mantles-export/plain/rm455.mantle
+rm456	rm_jarl_saltcot	Jarl Saltcot	plain	standard	light broad	adult	ridgemere	commons	555	helping at The Greatly Bank	Data/Talk/mantles-export/plain/rm456.mantle
+rm457	rm_lotte_greyley	Lotte Greyley	plain	standard	light broad	adult	ridgemere	estate	556	helping at Greywool	Data/Talk/mantles-export/plain/rm457.mantle
+rm458	rm_montague_millcot	Montague Millcot	plain	standard	broad light	adult	ridgemere	sump	557	helping at The Eastgate Bakehouse	Data/Talk/mantles-export/plain/rm458.mantle
+rm459	rm_petra_plankhand	Petra Plankhand	plain	standard	light broad	adult	ridgemere	sump	558	driving for the carters	Data/Talk/mantles-export/plain/rm459.mantle
+rm460	rm_sigrun_kelphand	Sigrun Kelphand	plain	full	broad light	adult	ridgemere	sump	559	cooper in the Market Hall	Data/Talk/mantles-export/plain/rm460.mantle
+rm461	rm_una_rustridge	Una Rustridge	plain	standard	light broad	adult	ridgemere	sump	560	minding the shop door	Data/Talk/mantles-export/plain/rm461.mantle
+rm462	rm_wystan_coalmarsh	Wystan Coalmarsh	plain	standard	light broad	adult	ridgemere	works	561	unloading ships at the piers	Data/Talk/mantles-export/plain/rm462.mantle
+rm463	rmx_gudrun_mossdale	Gudrun Mossdale	plain	standard	broad light	old	ridgemere	commons	562	none	Data/Talk/mantles-export/plain/rm463.mantle
+rm464	rmx_septimus_ives	Septimus Ives	plain	standard	broad light	adult	ridgemere	commons	564	copying at the Records Office	Data/Talk/mantles-export/plain/rm464.mantle
+rm465	rmx_sigrun_mudworth	Sigrun Mudworth	plain	standard	none	adult	ridgemere	sump	565	helping at The Barber's Pole	Data/Talk/mantles-export/plain/rm465.mantle
+rm466	cty_corrie_oakfield	Corrie Oakfield	plain	standard	light broad	adult	ridgemere	-	619	cowherd at Hillside	Data/Talk/mantles-export/plain/rm466.mantle
+rm467	cty_egil_bilgeley	Egil Bilgeley	plain	standard	none	adult	ridgemere	-	620	churns the butter at Hillside	Data/Talk/mantles-export/plain/rm467.mantle
+rm468	cty_nan_ashhand	Nan Ashhand	plain	standard	light broad	adult	ridgemere	-	621	quarrymaster at the Rainward quarry	Data/Talk/mantles-export/plain/rm468.mantle
+rm469	cty_odo_icewell	Odo Icewell	plain	standard	none	adult	ridgemere	-	622	woodward of the Rainwood coppice	Data/Talk/mantles-export/plain/rm469.mantle
+rm470	cty_rue_haycombe	Rue Haycombe	plain	standard	light broad	adult	ridgemere	-	624	tends the orchard at Coastvale	Data/Talk/mantles-export/plain/rm470.mantle
+rm471	cty_rue_sheafley	Rue Sheafley	plain	standard	light broad	adult	ridgemere	-	625	picks apples at Rainward	Data/Talk/mantles-export/plain/rm471.mantle
+rm472	cty_senna_beechleaf	Senna Beechleaf	plain	standard	light broad	adult	ridgemere	-	626	logger at the Rainwood cut	Data/Talk/mantles-export/plain/rm472.mantle
+rm473	cty_skye_harvestcroft	Skye Harvestcroft	plain	standard	light broad	adult	ridgemere	-	627	picks apples at Coastvale	Data/Talk/mantles-export/plain/rm473.mantle
+rm474	cty_ulric_blossommeadow	Ulric Blossommeadow	plain	standard	light broad	adult	ridgemere	-	628	picks apples at Rainward	Data/Talk/mantles-export/plain/rm474.mantle
+rm475	rm_aldric_grayrock_	Aldric Grayrock	plain	full	broad light	adult	ridgemere	estate	632	overseeing the Grayrock wharf	Data/Talk/mantles-export/plain/rm475.mantle
+rm476	rm_ambrose_greatly	Ambrose Greatly	plain	full	light broad	adult	ridgemere	estate	633	overseeing the Counting House	Data/Talk/mantles-export/plain/rm476.mantle
+rm477	rm_ansel_tarley	Ansel Tarley	plain	standard	light broad	adult	ridgemere	estate	634	serving in the hall	Data/Talk/mantles-export/plain/rm477.mantle
+rm478	rm_arne_wetworth	Arne Wetworth	plain	standard	light broad	adult	ridgemere	estate	635	keeping the chambers	Data/Talk/mantles-export/plain/rm478.mantle
+rm479	rm_beatha_foggate	Beatha Foggate	plain	standard	broad light	adult	ridgemere	heights	636	keeping the chambers	Data/Talk/mantles-export/plain/rm479.mantle
+rm480	rm_beatha_millley	Beatha Millley	plain	full	none	adult	ridgemere	works	638	armourer at The Rivet and Rain	Data/Talk/mantles-export/plain/rm480.mantle
+rm481	rm_berit_mudton	Berit Mudton	plain	standard	light broad	adult	ridgemere	works	639	helping at The Sailors' Rest	Data/Talk/mantles-export/plain/rm481.mantle

@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm516	rm_hester_bilgeham	Hester Bilgeham	plain	full	light broad	adult	ridgemere	heights	683	holding the south gate	Data/Talk/mantles-export/plain/rm516.mantle
+rm517	rm_hilde_bilgegate	Hilde Bilgegate	plain	standard	light broad	adult	ridgemere	estate	684	serving in the hall	Data/Talk/mantles-export/plain/rm517.mantle
+rm518	rm_hilde_dripby	Hilde Dripby	plain	standard	light broad	adult	ridgemere	wharf	685	none	Data/Talk/mantles-export/plain/rm518.mantle
+rm519	rm_hilde_greyby	Hilde Greyby	plain	full	light broad	adult	ridgemere	commons	686	glassblower at Clearwater Glass	Data/Talk/mantles-export/plain/rm519.mantle
+rm520	rm_hjalte_sootby	Hjalte Sootby	plain	standard	light broad	adult	ridgemere	sump	688	works at The Greatly Yard	Data/Talk/mantles-export/plain/rm520.mantle
+rm521	rm_hjalte_wetdale	Hjalte Wetdale	plain	standard	light broad	adult	ridgemere	commons	689	healer of the abbey	Data/Talk/mantles-export/plain/rm521.mantle
+rm522	rm_hollis_nailwick	Hollis Nailwick	plain	standard	light broad	adult	ridgemere	estate	690	stewarding Timberland Court	Data/Talk/mantles-export/plain/rm522.mantle
+rm523	rm_hollis_slagwick	Hollis Slagwick	plain	standard	none	adult	ridgemere	office	691	in service to the Harrowgates	Data/Talk/mantles-export/plain/rm523.mantle
+rm524	rm_ilse_coalley	Ilse Coalley	plain	standard	light broad	adult	ridgemere	sump	692	lighting the lamps at dusk	Data/Talk/mantles-export/plain/rm524.mantle
+rm525	rm_ingrid_grayrock_	Ingrid Grayrock	plain	full	light broad	adolescent	ridgemere	estate	693	at her lessons in the Hall	Data/Talk/mantles-export/plain/rm525.mantle
+rm526	rm_isolde_fell_	Isolde Fell	plain	full	none	adult	ridgemere	estate	694	ruling House Fell	Data/Talk/mantles-export/plain/rm526.mantle
+rm527	rm_ivar_cinderford	Ivar Cinderford	plain	standard	none	adult	ridgemere	estate	695	serving in the hall	Data/Talk/mantles-export/plain/rm527.mantle
+rm528	rm_ivo_dripford	Ivo Dripford	plain	full	light broad	adult	ridgemere	heights	696	holding the north gate	Data/Talk/mantles-export/plain/rm528.mantle
+rm529	rm_ivo_wickgate	Ivo Wickgate	plain	standard	light broad	adult	ridgemere	estate	697	serving at Greatly House	Data/Talk/mantles-export/plain/rm529.mantle
+rm530	rm_julian_greatly	Julian Greatly	plain	full	light broad	adult	ridgemere	estate	698	keeping the Greatly Yard's books	Data/Talk/mantles-export/plain/rm530.mantle
+rm531	rm_karin_stanmore	Karin Stanmore	plain	standard	light broad	adult	ridgemere	heights	699	the Crown's treasurer	Data/Talk/mantles-export/plain/rm531.mantle
+rm532	rm_kjell_saltcot	Kjell Saltcot	plain	standard	none	young	ridgemere	commons	700	child	Data/Talk/mantles-export/plain/rm532.mantle
+rm533	rm_kjell_saltton	Kjell Saltton	plain	standard	light broad	adolescent	ridgemere	commons	701	at lessons	Data/Talk/mantles-export/plain/rm533.mantle
+rm534	rm_lavinia_ashford	Lavinia Ashford	plain	standard	light broad	young	ridgemere	commons	702	at lessons	Data/Talk/mantles-export/plain/rm534.mantle
+rm535	rm_magnus_stanmore	Magnus Stanmore	plain	standard	broad light	young	ridgemere	heights	705	at lessons	Data/Talk/mantles-export/plain/rm535.mantle
+rm536	rm_millicent_rustwell	Millicent Rustwell	plain	standard	broad light	adult	ridgemere	estate	707	stewarding Fellhall	Data/Talk/mantles-export/plain/rm536.mantle
+rm537	rm_olaf_fogstack	Olaf Fogstack	plain	standard	light broad	young	ridgemere	sump	709	at lessons	Data/Talk/mantles-export/plain/rm537.mantle
+rm538	rm_orla_ropeworth	Orla Ropeworth	plain	standard	light broad	adolescent	ridgemere	commons	710	at lessons	Data/Talk/mantles-export/plain/rm538.mantle
+rm539	rm_oskar_sootwick	Oskar Sootwick	plain	full	light broad	adult	ridgemere	estate	712	serving in the King's household	Data/Talk/mantles-export/plain/rm539.mantle
+rm540	rm_oskar_wickmarsh	Oskar Wickmarsh	plain	full	light broad	adult	ridgemere	heights	713	in service to the Granthams	Data/Talk/mantles-export/plain/rm540.mantle
+rm541	rm_ottilie_harrowgate	Ottilie Harrowgate	plain	standard	none	adult	ridgemere	office	715	the King's daughter, at the Residence	Data/Talk/mantles-export/plain/rm541.mantle
+rm542	rm_palle_plankmore	Palle Plankmore	plain	full	light broad	adult	ridgemere	sump	716	holding the Cinder Gate	Data/Talk/mantles-export/plain/rm542.mantle
+rm543	rm_piet_muddale	Piet Muddale	plain	standard	none	adult	ridgemere	wharf	718	working at Cinder Wheelwrights	Data/Talk/mantles-export/plain/rm543.mantle
+rm544	rm_ragnar_cinderwell	Ragnar Cinderwell	plain	standard	light broad	young	ridgemere	commons	719	at lessons	Data/Talk/mantles-export/plain/rm544.mantle
+rm545	rm_ragnar_vance	Ragnar Vance	plain	standard	none	young	ridgemere	heights	720	at lessons	Data/Talk/mantles-export/plain/rm545.mantle
+rm546	rm_roald_wickstack	Roald Wickstack	plain	standard	light broad	adult	ridgemere	heights	721	in service to the Vances	Data/Talk/mantles-export/plain/rm546.mantle
+rm547	rm_rosamund_sootmarsh	Rosamund Sootmarsh	plain	full	broad light	adult	ridgemere	sump	722	holding the Customs Pier	Data/Talk/mantles-export/plain/rm547.mantle
+rm548	rm_sigrun_thornbury	Sigrun Thornbury	plain	standard	light broad	young	ridgemere	heights	723	at lessons	Data/Talk/mantles-export/plain/rm548.mantle
+rm549	rm_solveig_tarwell	Solveig Tarwell	plain	full	none	adult	ridgemere	office	724	priest of the Chapel of the Tide	Data/Talk/mantles-export/plain/rm549.mantle

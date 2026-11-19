@@ -1,0 +1,28 @@
+# rm453, TODO title (doc 84 P14, batch city-b4): written for rm_edmund_sootcot (Edmund Sootcot: running the City Office, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm453
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_edmund_sootcot
+title TODO
+fits stage=adult|old
+prefers job=official
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk trusts_no_one_from_a_rival_house
+likes barley_soup dancing sharp_knife first_warm_day
+dislikes wet_floors rats
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

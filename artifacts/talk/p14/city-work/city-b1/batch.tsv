@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm346	cty_isolde_gullwick	Isolde Gullwick	plain	standard	light broad	adult	ridgemere	-	328	herds the cattle at Hillside	Data/Talk/mantles-export/plain/rm346.mantle
+rm347	cty_pell_barleymead	Pell Barleymead	plain	standard	light broad	adult	ridgemere	-	329	churns the butter at Southgate	Data/Talk/mantles-export/plain/rm347.mantle
+rm348	cty_rowan_hazelfield	Rowan Hazelfield	plain	standard	light broad	adult	ridgemere	-	330	keeps bees at the Alder Garth	Data/Talk/mantles-export/plain/rm348.mantle
+rm349	rm_arne_ashton	Arne Ashton	plain	standard	light broad	adult	ridgemere	sump	331	working at The Timberland Charcoal Store	Data/Talk/mantles-export/plain/rm349.mantle
+rm350	rm_erland_fogley	Erland Fogley	plain	standard	broad light	adult	ridgemere	estate	333	helping at The Lamp & Wick	Data/Talk/mantles-export/plain/rm350.mantle
+rm351	rm_gwen_cinderdale	Gwen Cinderdale	plain	standard	light broad	adult	ridgemere	office	336	clerking at the City Office	Data/Talk/mantles-export/plain/rm351.mantle
+rm352	rm_karin_ashgate	Karin Ashgate	plain	full	light broad	adult	ridgemere	commons	337	keeping the taproom	Data/Talk/mantles-export/plain/rm352.mantle
+rm353	rm_philippa_dripworth	Philippa Dripworth	plain	full	light broad	adult	ridgemere	sump	339	fishmonger at Gullgut Fish	Data/Talk/mantles-export/plain/rm353.mantle
+rm354	rm_piet_wickridge	Piet Wickridge	plain	standard	light broad	adult	ridgemere	sump	340	carrying from Sump Stairs	Data/Talk/mantles-export/plain/rm354.mantle
+rm355	rmx_bertil_saltcot	Bertil Saltcot	plain	standard	light broad	adult	ridgemere	commons	341	none	Data/Talk/mantles-export/plain/rm355.mantle
+rm356	rmx_rupert_greyley	Rupert Greyley	plain	standard	none	adult	ridgemere	sump	343	crying wares in the Rag Market	Data/Talk/mantles-export/plain/rm356.mantle
+rm357	rmx_tobias_dunley	Tobias Dunley	plain	standard	broad light	young	ridgemere	commons	344	at lessons	Data/Talk/mantles-export/plain/rm357.mantle
+rm358	cty_hob_appleby	Hob Appleby	plain	standard	light broad	adult	ridgemere	-	352	hive hand at the Alder Garth	Data/Talk/mantles-export/plain/rm358.mantle
+rm359	rm_dagny_pitchley	Dagny Pitchley	plain	standard	light broad	adult	ridgemere	sump	354	scribe of the abbey	Data/Talk/mantles-export/plain/rm359.mantle
+rm360	rm_eleanor_wickhand	Eleanor Wickhand	plain	standard	light broad	adult	ridgemere	sump	355	works at The Timberland Sawmill	Data/Talk/mantles-export/plain/rm360.mantle
+rm361	rm_erland_millstack	Erland Millstack	plain	standard	none	adult	ridgemere	commons	356	helping at The Cedar Phial	Data/Talk/mantles-export/plain/rm361.mantle
+rm362	rm_florence_millhand	Florence Millhand	plain	standard	light broad	adult	ridgemere	sump	357	unloading ships at the piers	Data/Talk/mantles-export/plain/rm362.mantle
+rm363	rm_josephine_dripgate	Josephine Dripgate	plain	full	broad light	adult	ridgemere	sump	359	shopkeeper at Sump Sundries	Data/Talk/mantles-export/plain/rm363.mantle
+rm364	rm_karin_sootdale	Karin Sootdale	plain	full	light broad	adult	ridgemere	office	360	scribe at Wetink Lane Scriveners	Data/Talk/mantles-export/plain/rm364.mantle
+rm365	rm_nessa_fogton	Nessa Fogton	plain	standard	none	adult	ridgemere	commons	361	helping at Hollis Physic	Data/Talk/mantles-export/plain/rm365.mantle
+rm366	rm_ragnar_brineford	Ragnar Brineford	plain	standard	broad light	adult	ridgemere	wharf	363	helping at The Bung Hole	Data/Talk/mantles-export/plain/rm366.mantle
+rm367	rm_yrsa_nailwell	Yrsa Nailwell	plain	standard	light broad	adult	ridgemere	sump	365	washing at the Washhouse	Data/Talk/mantles-export/plain/rm367.mantle
+rm368	rmx_ivo_pitchridge	Ivo Pitchridge	plain	standard	none	adult	ridgemere	sump	366	crying wares in the Rag Market	Data/Talk/mantles-export/plain/rm368.mantle
+rm369	rmx_una_toft	Una Toft	plain	full	light broad	adult	ridgemere	commons	368	runs The Timberland Ironworks	Data/Talk/mantles-export/plain/rm369.mantle
+rm370	cty_bettany_slagridge	Bettany Slagridge	plain	standard	light broad	adult	ridgemere	-	379	churns the butter at Southgate	Data/Talk/mantles-export/plain/rm370.mantle
+rm371	cty_cinder_wheatton	Cinder Wheatton	plain	standard	light broad	adult	ridgemere	-	380	cowherd at Rainrun	Data/Talk/mantles-export/plain/rm371.mantle
+rm372	cty_ridge_larkridge	Ridge Larkridge	plain	standard	none	adult	ridgemere	-	381	herds the cattle at Southgate	Data/Talk/mantles-export/plain/rm372.mantle
+rm373	rm_aldric_fogwell	Aldric Fogwell	plain	full	light broad	adult	ridgemere	sump	383	priest at the cathedral	Data/Talk/mantles-export/plain/rm373.mantle
+rm374	rm_delphine_dripham	Delphine Dripham	plain	standard	light broad	adult	ridgemere	sump	384	scribe of the abbey	Data/Talk/mantles-export/plain/rm374.mantle
+rm375	rm_egil_brineham	Egil Brineham	plain	full	light broad	adult	ridgemere	works	385	smith at Timberland's Forge Row	Data/Talk/mantles-export/plain/rm375.mantle
+rm376	rm_ivar_pitchwick	Ivar Pitchwick	plain	standard	none	adult	ridgemere	office	386	clerking at the Counting House	Data/Talk/mantles-export/plain/rm376.mantle
+rm377	rm_oda_kelpworth	Oda Kelpworth	plain	standard	light broad	adult	ridgemere	estate	387	keeping the Greatly stables	Data/Talk/mantles-export/plain/rm377.mantle
+rm378	rm_petra_vance	Petra Vance	plain	standard	broad light	adult	ridgemere	heights	388	lending	Data/Talk/mantles-export/plain/rm378.mantle
+rm379	rmx_finn_dripwick	Finn Dripwick	plain	standard	light broad	adult	ridgemere	sump	390	helping at The Sailors' Rest	Data/Talk/mantles-export/plain/rm379.mantle

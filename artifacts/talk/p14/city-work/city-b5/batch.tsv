@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm482	rm_bertil_grantham	Bertil Grantham	plain	standard	broad light	young	ridgemere	heights	640	at lessons	Data/Talk/mantles-export/plain/rm482.mantle
+rm483	rm_bettany_nailley	Bettany Nailley	plain	full	light broad	adult	ridgemere	sump	641	sergeant of the Watch	Data/Talk/mantles-export/plain/rm483.mantle
+rm484	rm_bettany_ropegate	Bettany Ropegate	plain	standard	light broad	adult	ridgemere	commons	642	clerking at the Watch Office	Data/Talk/mantles-export/plain/rm484.mantle
+rm485	rm_brand_fogworth	Brand Fogworth	plain	standard	light broad	young	ridgemere	commons	643	child	Data/Talk/mantles-export/plain/rm485.mantle
+rm486	rm_cedric_ashcot	Cedric Ashcot	plain	standard	light broad	adult	ridgemere	heights	644	minding the shop door	Data/Talk/mantles-export/plain/rm486.mantle
+rm487	rm_cedric_mudley	Cedric Mudley	plain	full	light broad	adult	ridgemere	heights	645	holding the north gate	Data/Talk/mantles-export/plain/rm487.mantle
+rm488	rm_corra_greyby	Corra Greyby	plain	standard	none	young	ridgemere	commons	647	child	Data/Talk/mantles-export/plain/rm488.mantle
+rm489	rm_corra_ropewell	Corra Ropewell	plain	standard	light broad	adult	ridgemere	estate	648	unloading ships at the piers	Data/Talk/mantles-export/plain/rm489.mantle
+rm490	rm_corra_slagmore	Corra Slagmore	plain	full	none	adult	ridgemere	heights	649	commanding the Watch	Data/Talk/mantles-export/plain/rm490.mantle
+rm491	rm_corwin_fell_	Corwin Fell	plain	full	light broad	adult	ridgemere	estate	651	keeping the Fell cellars	Data/Talk/mantles-export/plain/rm491.mantle
+rm492	rm_cressida_carlisle	Cressida Carlisle	plain	standard	none	adult	ridgemere	heights	654	pleading cases	Data/Talk/mantles-export/plain/rm492.mantle
+rm493	rm_dagfinn_brineley	Dagfinn Brineley	plain	standard	light broad	adult	ridgemere	heights	655	none	Data/Talk/mantles-export/plain/rm493.mantle
+rm494	rm_dagny_ropeley	Dagny Ropeley	plain	full	light broad	adult	ridgemere	sump	656	sergeant of the Watch	Data/Talk/mantles-export/plain/rm494.mantle
+rm495	rm_delphine_mudwick	Delphine Mudwick	plain	full	none	adult	ridgemere	sump	657	porter of the abbey	Data/Talk/mantles-export/plain/rm495.mantle
+rm496	rm_desmond_ashwick	Desmond Ashwick	plain	standard	light broad	adult	ridgemere	sump	658	works at The Rainwater Brewery	Data/Talk/mantles-export/plain/rm496.mantle
+rm497	rm_desmond_dripcot	Desmond Dripcot	plain	full	none	adult	ridgemere	sump	659	keeping the cells	Data/Talk/mantles-export/plain/rm497.mantle
+rm498	rm_dirk_rainmore	Dirk Rainmore	plain	standard	broad light	old	ridgemere	commons	660	minding the shop door	Data/Talk/mantles-export/plain/rm498.mantle
+rm499	rm_dunstan_greywick	Dunstan Greywick	plain	full	broad light	adult	ridgemere	commons	662	tanner at The Wharf Tannery	Data/Talk/mantles-export/plain/rm499.mantle
+rm500	rm_ebba_pitchworth	Ebba Pitchworth	plain	standard	none	adult	ridgemere	works	663	works at The Ropewalk	Data/Talk/mantles-export/plain/rm500.mantle
+rm501	rm_edda_mudmore	Edda Mudmore	plain	standard	light broad	adult	ridgemere	sump	664	unloading ships at the piers	Data/Talk/mantles-export/plain/rm501.mantle
+rm502	rm_edric_kelpham	Edric Kelpham	plain	standard	broad light	adult	ridgemere	estate	666	stewarding Greatly House	Data/Talk/mantles-export/plain/rm502.mantle
+rm503	rm_edric_saltby	Edric Saltby	plain	standard	light broad	adult	ridgemere	sump	667	brother at the abbey brewhouse	Data/Talk/mantles-export/plain/rm503.mantle
+rm504	rm_eleanor_mudworth	Eleanor Mudworth	plain	standard	none	adult	ridgemere	office	669	keeping the rolls at the Records Office	Data/Talk/mantles-export/plain/rm504.mantle
+rm505	rm_eleanor_saltcot	Eleanor Saltcot	plain	full	none	adult	ridgemere	commons	670	moneychanger at The Greatly Bank	Data/Talk/mantles-export/plain/rm505.mantle
+rm506	rm_eleanor_vance	Eleanor Vance	plain	full	broad light	adult	ridgemere	heights	671	runs The Rag Mill	Data/Talk/mantles-export/plain/rm506.mantle
+rm507	rm_emmerich_greyridge	Emmerich Greyridge	plain	standard	broad light	adult	ridgemere	office	672	in service to the Harrowgates	Data/Talk/mantles-export/plain/rm507.mantle
+rm508	rm_erland_millley	Erland Millley	plain	standard	broad light	old	ridgemere	works	673	none	Data/Talk/mantles-export/plain/rm508.mantle
+rm509	rm_frederick_foghand	Frederick Foghand	plain	standard	light broad	adult	ridgemere	estate	674	unloading ships at the piers	Data/Talk/mantles-export/plain/rm509.mantle
+rm510	rm_frederick_nailgate	Frederick Nailgate	plain	standard	none	adult	ridgemere	estate	675	healer of the abbey	Data/Talk/mantles-export/plain/rm510.mantle
+rm511	rm_frederick_rainham	Frederick Rainham	plain	standard	light broad	adult	ridgemere	heights	676	helping at The Pawn and Ledger	Data/Talk/mantles-export/plain/rm511.mantle
+rm512	rm_frida_bilgewell	Frida Bilgewell	plain	full	light broad	adult	ridgemere	sump	677	keeping the cells	Data/Talk/mantles-export/plain/rm512.mantle
+rm513	rm_grete_gullhand	Grete Gullhand	plain	standard	light broad	adult	ridgemere	sump	679	works at The Greatly Yard	Data/Talk/mantles-export/plain/rm513.mantle
+rm514	rm_gudrun_fell_	Gudrun Fell	plain	full	broad light	adult	ridgemere	estate	680	keeping the Fell accounts	Data/Talk/mantles-export/plain/rm514.mantle
+rm515	rm_hakon_grantham	Hakon Grantham	plain	standard	light broad	young	ridgemere	heights	681	at lessons	Data/Talk/mantles-export/plain/rm515.mantle

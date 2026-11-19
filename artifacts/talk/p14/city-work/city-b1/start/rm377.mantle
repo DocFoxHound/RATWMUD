@@ -1,0 +1,28 @@
+# rm377, TODO title (doc 84 P14, batch city-b1): written for rm_oda_kelpworth (Oda Kelpworth: keeping the Greatly stables, Ridgemere-born). Name-free; every TODO must go. Window lines on the news, gossip, business, shop and inn nodes say their case ([here.shop!=bare]...); a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm377
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_oda_kelpworth
+title TODO
+fits stage=adult|old
+prefers job=herder
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes plum_tart long_walks old_maps frosty_mornings
+dislikes early_bells stale_bread
+fears TODO
+hopes TODO
+topics todo +0.0
+styles comfort=TODO gossip=TODO refuse=TODO tease=TODO
+marks oath saying
+persona #self.first# TODO (one line; no pronoun at all: a mantle passes to either sex)
+
+words
+oath! = TODO | TODO
+saying! = TODO | TODO
+
+any
+
+grown

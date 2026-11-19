@@ -1,0 +1,31 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm550	rm_soren_millwell	Soren Millwell	plain	standard	broad light	old	ridgemere	commons	725	none	Data/Talk/mantles-export/plain/rm550.mantle
+rm551	rm_sybil_bilgeby	Sybil Bilgeby	plain	full	light broad	adult	ridgemere	estate	726	cooking for the King's household	Data/Talk/mantles-export/plain/rm551.mantle
+rm552	rm_thyra_carlisle	Thyra Carlisle	plain	standard	light broad	adolescent	ridgemere	heights	727	at lessons	Data/Talk/mantles-export/plain/rm552.mantle
+rm553	rm_tilde_nailby	Tilde Nailby	plain	full	broad light	adult	ridgemere	heights	728	holding the south gate	Data/Talk/mantles-export/plain/rm553.mantle
+rm554	rm_tobias_grayrock_	Tobias Grayrock	plain	full	light broad	adult	ridgemere	estate	729	keeping the wharf's books	Data/Talk/mantles-export/plain/rm554.mantle
+rm555	rm_tove_wetgate	Tove Wetgate	plain	full	light broad	adult	ridgemere	estate	730	portering in Market Square	Data/Talk/mantles-export/plain/rm555.mantle
+rm556	rm_tristram_rainley	Tristram Rainley	plain	standard	light broad	adult	ridgemere	sump	731	portering in Market Square	Data/Talk/mantles-export/plain/rm556.mantle
+rm557	rm_ulf_pitchham	Ulf Pitchham	plain	standard	light broad	adult	ridgemere	heights	732	in service to the Carlisles	Data/Talk/mantles-export/plain/rm557.mantle
+rm558	rm_ulf_stanmore	Ulf Stanmore	plain	standard	none	young	ridgemere	heights	733	at lessons	Data/Talk/mantles-export/plain/rm558.mantle
+rm559	rm_vidar_dripmarsh	Vidar Dripmarsh	plain	full	broad light	adult	ridgemere	heights	734	holding the east gate	Data/Talk/mantles-export/plain/rm559.mantle
+rm560	rm_wynn_pitchwell	Wynn Pitchwell	plain	standard	light broad	adult	ridgemere	heights	735	in service to the Stanmores	Data/Talk/mantles-export/plain/rm560.mantle
+rm561	rm_wystan_tarstack	Wystan Tarstack	plain	standard	broad light	adult	ridgemere	estate	736	keeping the chambers	Data/Talk/mantles-export/plain/rm561.mantle
+rm562	rm_yrsa_tarwick	Yrsa Tarwick	plain	standard	light broad	adult	ridgemere	office	737	weighing at the Customs House	Data/Talk/mantles-export/plain/rm562.mantle
+rm563	rmx_arne_rainworth	Arne Rainworth	plain	standard	light broad	young	ridgemere	sump	738	at lessons	Data/Talk/mantles-export/plain/rm563.mantle
+rm564	rmx_aud_saltridge	Aud Saltridge	plain	full	light broad	adult	ridgemere	sump	739	driving for the carters	Data/Talk/mantles-export/plain/rm564.mantle
+rm565	rmx_bertil_coalley	Bertil Coalley	plain	standard	light broad	adult	ridgemere	sump	740	none	Data/Talk/mantles-export/plain/rm565.mantle
+rm566	rmx_cressida_mallory	Cressida Mallory	plain	standard	light broad	adult	ridgemere	commons	742	weighing at the Customs House	Data/Talk/mantles-export/plain/rm566.mantle
+rm567	rmx_hester_greyby	Hester Greyby	plain	standard	light broad	adolescent	ridgemere	sump	744	at lessons	Data/Talk/mantles-export/plain/rm567.mantle
+rm568	rmx_humphrey_sootton	Humphrey Sootton	plain	standard	light broad	young	ridgemere	sump	745	at lessons	Data/Talk/mantles-export/plain/rm568.mantle
+rm569	rmx_kari_wickworth	Kari Wickworth	plain	standard	broad light	adult	ridgemere	sump	746	unloading ships at the piers	Data/Talk/mantles-export/plain/rm569.mantle
+rm570	rmx_liv_tarmarsh	Liv Tarmarsh	plain	standard	light broad	adult	ridgemere	sump	747	working at Grayrock Shipwrights	Data/Talk/mantles-export/plain/rm570.mantle
+rm571	rmx_moll_coldharbour	Moll Coldharbour	plain	standard	none	young	ridgemere	commons	748	at lessons	Data/Talk/mantles-export/plain/rm571.mantle
+rm572	rmx_oda_marrowby	Oda Marrowby	plain	full	light broad	adult	ridgemere	commons	749	pie baker on Market Square	Data/Talk/mantles-export/plain/rm572.mantle
+rm573	rmx_piet_lumley	Piet Lumley	plain	standard	light broad	adult	ridgemere	commons	751	none	Data/Talk/mantles-export/plain/rm573.mantle
+rm574	rmx_rupert_hatherley	Rupert Hatherley	plain	full	broad light	adult	ridgemere	commons	752	tallying in the Bonded Warehouse	Data/Talk/mantles-export/plain/rm574.mantle
+rm575	rmx_signe_bilgewell	Signe Bilgewell	plain	standard	light broad	adolescent	ridgemere	sump	753	helping at The Morning Oven	Data/Talk/mantles-export/plain/rm575.mantle
+rm576	rmx_tilde_slagwell	Tilde Slagwell	plain	standard	light broad	adult	ridgemere	sump	754	working at The Fell Preserving House	Data/Talk/mantles-export/plain/rm576.mantle
+rm577	rmx_tove_mossdale	Tove Mossdale	plain	standard	none	adult	ridgemere	commons	756	tallying in the Long Store	Data/Talk/mantles-export/plain/rm577.mantle
+rm578	rmx_ulf_kelpmarsh	Ulf Kelpmarsh	plain	standard	light broad	adult	ridgemere	sump	757	helping at The Round and Rind	Data/Talk/mantles-export/plain/rm578.mantle
+rm579	rmx_wenna_sootham	Wenna Sootham	plain	standard	broad light	adult	ridgemere	commons	758	tallying in the New Store	Data/Talk/mantles-export/plain/rm579.mantle

@@ -1,0 +1,35 @@
+id	npc	name	dialect	tier	accents	stage	town	quarter	rank	work	export_path
+rm380	rmx_mab_plankridge	Mab Plankridge	plain	standard	none	adolescent	ridgemere	sump	391	at lessons	Data/Talk/mantles-export/plain/rm380.mantle
+rm381	rmx_roald_toft	Roald Toft	plain	standard	light broad	adult	ridgemere	commons	392	keeping the Bathhouse	Data/Talk/mantles-export/plain/rm381.mantle
+rm382	rmx_wystan_wethand	Wystan Wethand	plain	standard	none	young	ridgemere	sump	394	at lessons	Data/Talk/mantles-export/plain/rm382.mantle
+rm383	cty_ludo_chalkham	Ludo Chalkham	plain	standard	light broad	adult	ridgemere	-	406	churns the butter at Rainrun	Data/Talk/mantles-export/plain/rm383.mantle
+rm384	rm_edda_gullford	Edda Gullford	plain	standard	broad light	adult	ridgemere	sump	407	lighting the lamps at dusk	Data/Talk/mantles-export/plain/rm384.mantle
+rm385	rm_erland_plankwell	Erland Plankwell	plain	standard	broad light	adult	ridgemere	heights	408	in service to the Granthams	Data/Talk/mantles-export/plain/rm385.mantle
+rm386	rm_lionel_pitchdale	Lionel Pitchdale	plain	full	light broad	adult	ridgemere	commons	409	helping at Mutton Lane Butchers	Data/Talk/mantles-export/plain/rm386.mantle
+rm387	rm_moll_millton	Moll Millton	plain	standard	light broad	young	ridgemere	commons	410	at lessons	Data/Talk/mantles-export/plain/rm387.mantle
+rm388	rm_septimus_slagby	Septimus Slagby	plain	standard	broad light	old	ridgemere	works	411	minding the shop door	Data/Talk/mantles-export/plain/rm388.mantle
+rm389	rm_signe_mossgrave	Signe Timberland	plain	full	light broad	adult	ridgemere	estate	412	keeping Timberland Court	Data/Talk/mantles-export/plain/rm389.mantle
+rm390	rm_silas_sootworth	Silas Sootworth	plain	full	broad light	adult	ridgemere	works	413	helping at Wickham's Chandlery	Data/Talk/mantles-export/plain/rm390.mantle
+rm391	rm_thyra_plankridge	Thyra Plankridge	plain	full	light broad	adult	ridgemere	commons	415	provisioner in the Market Hall	Data/Talk/mantles-export/plain/rm391.mantle
+rm392	rmx_aldric_thackeray	Aldric Thackeray	plain	standard	broad light	young	ridgemere	works	416	at lessons	Data/Talk/mantles-export/plain/rm392.mantle
+rm393	rmx_montague_kettlecote	Montague Kettlecote	plain	standard	light broad	adult	ridgemere	commons	417	keeping the Iron Store	Data/Talk/mantles-export/plain/rm393.mantle
+rm394	rmx_nessa_slagmarsh	Nessa Slagmarsh	plain	standard	light broad	adult	ridgemere	sump	418	tallying in the Iron Store	Data/Talk/mantles-export/plain/rm394.mantle
+rm395	rmx_palle_mireby	Palle Mireby	plain	standard	light broad	adolescent	ridgemere	commons	419	at lessons	Data/Talk/mantles-export/plain/rm395.mantle
+rm396	cty_kell_reedwade	Kell Reedwade	plain	full	light broad	adult	ridgemere	-	429	skipper at Soundside	Data/Talk/mantles-export/plain/rm396.mantle
+rm397	cty_linden_sedgeditch	Linden Sedgeditch	plain	standard	light broad	adult	ridgemere	-	430	skipper at North Cove	Data/Talk/mantles-export/plain/rm397.mantle
+rm398	cty_vesper_greenholt	Vesper Greenholt	plain	standard	light broad	adult	ridgemere	-	431	cuts wood at the Rainwood coppice	Data/Talk/mantles-export/plain/rm398.mantle
+rm399	rm_frederick_pitchcot	Frederick Pitchcot	plain	standard	broad light	old	ridgemere	commons	432	minding the shop door	Data/Talk/mantles-export/plain/rm399.mantle
+rm400	rm_karin_thornbury	Karin Thornbury	plain	standard	none	adolescent	ridgemere	heights	437	at lessons	Data/Talk/mantles-export/plain/rm400.mantle
+rm401	rm_njal_stanmore	Njal Stanmore	plain	standard	none	adult	ridgemere	heights	439	drafting the Council's letters	Data/Talk/mantles-export/plain/rm401.mantle
+rm402	rm_oda_slagby	Oda Slagby	plain	standard	light broad	young	ridgemere	works	440	at lessons	Data/Talk/mantles-export/plain/rm402.mantle
+rm403	rm_orm_wickcot	Orm Wickcot	plain	standard	light broad	adult	ridgemere	estate	441	serving in the hall	Data/Talk/mantles-export/plain/rm403.mantle
+rm404	rm_percival_thornbury	Percival Thornbury	plain	standard	light broad	adult	ridgemere	heights	442	pleading cases	Data/Talk/mantles-export/plain/rm404.mantle
+rm405	rm_rune_cinderwick	Rune Cinderwick	plain	standard	light broad	adult	ridgemere	sump	443	helping at The Hook and Cleaver	Data/Talk/mantles-export/plain/rm405.mantle
+rm406	rm_vidar_vance	Vidar Vance	plain	standard	light broad	adolescent	ridgemere	heights	444	at lessons	Data/Talk/mantles-export/plain/rm406.mantle
+rm407	rmx_dagny_catterick	Dagny Catterick	plain	standard	light broad	adult	ridgemere	commons	445	keeping the Fell Cellars	Data/Talk/mantles-export/plain/rm407.mantle
+rm408	rmx_florence_pennock	Florence Pennock	plain	standard	none	adult	ridgemere	commons	446	carrying for the Couriers' Office	Data/Talk/mantles-export/plain/rm408.mantle
+rm409	rmx_frida_marrowby	Frida Marrowby	plain	standard	light broad	young	ridgemere	commons	447	at lessons	Data/Talk/mantles-export/plain/rm409.mantle
+rm410	rmx_jasper_coalcot	Jasper Coalcot	plain	standard	none	adult	ridgemere	sump	448	portering in Market Square	Data/Talk/mantles-export/plain/rm410.mantle
+rm411	rmx_soren_ashcote	Soren Ashcote	plain	standard	light broad	adult	ridgemere	works	449	working at The Fell Press House	Data/Talk/mantles-export/plain/rm411.mantle
+rm412	rmx_yrsa_kelpstack	Yrsa Kelpstack	plain	standard	light broad	young	ridgemere	sump	450	at lessons	Data/Talk/mantles-export/plain/rm412.mantle
+rm413	cty_varg_barleyfield	Varg Barleyfield	plain	standard	light broad	adult	ridgemere	-	462	cowherd at Southgate	Data/Talk/mantles-export/plain/rm413.mantle
