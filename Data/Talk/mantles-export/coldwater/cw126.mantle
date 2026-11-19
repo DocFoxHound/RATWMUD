@@ -1,6 +1,6 @@
-# cw126, the strap song (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw126, the strap song (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw126
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent broad light
@@ -249,15 +249,13 @@ story loosened_strap [topic=work self.age>=18]
 story dance_after_delivery [topic=pastimes self.age>=18]
   : I reached a festival after a late delivery with #boots# still dusty.
   : I took one #dance# anyway, then helped move the empty #carts# from the green.
-  ask : Did you enjoy it?
-  b : Even one dance can help after work.
+  b : Even one dance can help after work. Did you enjoy it?
   : I did. I hummed the tune on the way #home#.
 
 story first_snow_cart [topic=weather self.age>=18]
   : I set off in the first #snow# thinking the #road# would stay firm.
   : The #wheels# found hidden #ruts#, so I slowed and shortened the day's run.
-  ask : Did you arrive?
-  b : Slowly is better than a broken axle.
+  b : Slowly is better than a broken axle. Did you arrive?
   : Before dark, with every #sack# still tied.
 
 rule @bark_strap

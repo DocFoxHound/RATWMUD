@@ -1,6 +1,6 @@
-# sw109, the warren-mistress (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw109, the warren-mistress (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw109
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent broad light
@@ -61,7 +61,7 @@ does tell.self / react.self / assess
 a : Look at the edge on that. #blade.capitalize#. I strop it every night like a prayer. | A dull knife tears a pelt, and a torn pelt sells for half. So, #blade#, always. | I've had this knife twenty years and never let anyone else hold it. Don't take it personally.
 b[job=crafter|smith] #steel : That's a good edge. Who ground it? | Half? That's a hard market. | I wouldn't let anyone hold mine either.
 b : That's sharp. | Makes sense. | I wasn't going to.
-a@steel : Ground it myself, #address#, with a stone off the dry bank and a great deal of patience. | Hard, and fair. A tear's a tear. | Then we understand each other. #bc_ha#
+a@steel : Ground it myself, #address#, on a dry-bank stone and a great deal of patience. | Hard, and fair. A tear's a tear. | Then we understand each other. #bc_ha#
 a : Sharp as a tax collector's eye. #bc_ha# | #bc_true# And sense pays. | Then you're wiser than most, and welcome.
 
 scene pelts_to_the_city
@@ -259,7 +259,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#, honoured guest. Sit; you
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. What can I do for you, #address#? | #topic.player#! #talk_open#
 dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Well, we'll see how this goes. Speak your piece. | You again. I'm listening, but I'm counting.
 dlg @1 resident.job [self.job=herder] : I keep the rabbits at Redsand. Forty-odd does, and a second warren in my head. | #doe.capitalize#, #pelts#, and #blade#. That's my work, and I love it.
-dlg @1 resident.news : #news_none# But ask me about the warren; I've news there every day. | If there's news, it'll be at the inn with a song on it.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# But ask me about the warren; I've news there every day. | If there's news, it'll be at the inn with a song on it.
 dlg @1 resident.bye : #farewell#. | #farewell#, #topic.player#. Come back and hear me sing.
 graft resident.hub
 choice Were you talking to the sky just now? -> haggle

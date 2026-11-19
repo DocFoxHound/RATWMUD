@@ -1,6 +1,6 @@
-# cw116, the road beyond the door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw116, the road beyond the door (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw116
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -312,15 +312,13 @@ a : No. I mean to see it myself. | Some mornings, surely.
 story hot_pan [topic=work self.age>=25]
   : I lifted a #pan# by a handle I thought had cooled.
   : I let it down quickly and found a cloth before moving it again.
-  ask : Did you drop supper?
-  b : I hope you kept it level.
+  b : I hope you kept it level. Did you drop supper?
   : I did. The guests never knew how close their meal came to the floor.
 
 story guest_from_downroad [topic=travel self.age>=25]
   : A traveller described a Ridgemere street while I rinsed the #bowls#.
   : I asked for its name twice and wrote it down after the kitchen closed.
-  ask : Did you visit it?
-  b : You sound as if you intend to.
+  b : You sound as if you intend to. Did you visit it?
   : Not yet. The #road# is still there when I am ready.
 
 story blunt_knife [topic=work self.age>=25]
@@ -333,15 +331,13 @@ story blunt_knife [topic=work self.age>=25]
 story window_seat [topic=memories self.age>=25]
   : Once I took the only free #chair#, facing away from the #door#.
   : I kept turning at each footstep and missed the ending of an old #tale#.
-  ask : Did you hear the ending later?
-  b : The teller might have repeated it.
+  b : The teller might have repeated it. Did you hear the ending later?
   : I asked them to. Then I stood by the #hearth# to listen.
 
 story shore_before_departure [topic=dreams self.age>=25]
   : I walked to the #shore# before a traveller's #cart# left town.
   : I thought of asking for a place, but counted the #coin# I had and came back to work.
-  ask : Did you regret staying?
-  b : You could take another cart when you are ready.
+  b : You could take another cart when you are ready. Did you regret staying?
   : That is what I told myself. I have saved more since.
 
 rule @bark_pot

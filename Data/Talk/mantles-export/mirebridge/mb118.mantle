@@ -1,6 +1,6 @@
-# mb118, the storm-sleeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb118, the storm-sleeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb118
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -145,7 +145,7 @@ a : It works. Mostly. | It was nothing. Half of #loaf#. | Fair's what I am, appa
 scene council_lost
 when topic=times|gossip here.region=fens pair.band=friends|family|housemates|acquaintances
 does confide / react.self / assess
-a : I went up and asked #council# for something fair once. You know how that went. | #council.capitalize#? I'm still cross, and I'm saving it. | #council.capitalize# wouldn't know a hard winter if it sat on them.
+a : I went up and asked #council# for something fair once. You can guess the rest. | #council.capitalize#? I'm still cross, and I'm saving it. | #council.capitalize# wouldn't know a hard winter if it sat on them.
 b[friends] #mate : I know. Still. | Saving it for what? | #bc_true#
 b : #bc_bad_luck# | Still? | #bc_ha#
 a@mate : Still. Some things don't wash out. | For when they ask me for something. | And it never has. #annoyed#.
@@ -262,7 +262,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Have you eaten? Ask your
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. You look #tired#. What is it?
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. I'll listen. I'm too #tired# for anything else.
 dlg @1 resident.job : I net coneys in the sand hills. #ferret.capitalize# does the work and I take the credit.
-dlg @1 resident.news : Only that there's #blow#. I didn't sleep. Ask anyone else for the rest.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Only that there's #blow#. I didn't sleep. Ask anyone else for the rest.
 dlg @1 resident.bye : #farewell#. Eat something on the way.
 graft resident.hub
 choice How do you always know a storm's coming? -> stormsense

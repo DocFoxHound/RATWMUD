@@ -14,11 +14,12 @@ hand-made SQL. Never for a live world (PROD's mantles come by import, §17.9): i
          Saved/Backups/mantles-<world>-<batch>-<stamp>.jsonl (`restore` puts it back).
       4. Written in one transaction as Atlas's role (ratw_editor), the history's source `mantle_load:<batch>`: new mantles
          and items inserted, changed items updated, unchanged ones left alone (their revision doesn't move), items absent
-         from a file deleted only with --prune. written_by is claude-<batch>. A new item with no @name takes the next
+         from a file deleted only with --prune. written_by is --written-by WHO (default claude-<batch>). A new item with no @name takes the next
          free number of its kind, never a key the rows have.
       5. --bind: each mantle to the resident it was written for (bound_how authored, bound_day the world's day), unless
          they are dead or wear another.
       6. The world's server told: one voice.sync.
+      Exit 0: done; 1: refused (nothing written); 2: written, but a mantle wasn't bound (`<id> not bound: <why>`).
       7. The touched mantles exported over their files (unless --no-export), so the batch's commit carries the keys and
          revisions it was given.
       Loading the same files twice changes nothing.
@@ -136,18 +137,19 @@ def read_files(paths: list[str], reserved_of) -> tuple[list[tuple[Path, T.Mantle
 
 def load(world: str, paths: list[str], batch: str, bind: bool = False, dry_run: bool = False, prune: bool = False,
          take_theirs: set = frozenset(), take_mine: set = frozenset(), export: bool = True, account: str = '',
-         echo=print, strict: bool = True) -> dict:
+         echo=print, strict: bool = True, written_by: str = '') -> dict:
     """The batch (steps 1-7 above). What was done: {loaded: {id: changes}, skipped, bound, backup, problems}."""
     key, conn = connect(world)
     with conn:
-        return load_into(conn, key, paths, batch, bind, dry_run, prune, take_theirs, take_mine, export, account, strict)
+        return load_into(conn, key, paths, batch, bind, dry_run, prune, take_theirs, take_mine, export, account, strict, written_by)
 
 
 def load_into(conn, key: str, paths: list[str], batch: str, bind: bool = False, dry_run: bool = False, prune: bool = False,
               take_theirs: set = frozenset(), take_mine: set = frozenset(), export: bool = True, account: str = '',
-              strict: bool = True) -> dict:
-    """load() on an open connection (Atlas's role) to the world `key`."""
-    report = {'loaded': {}, 'skipped': [], 'bound': [], 'backup': None, 'problems': []}
+              strict: bool = True, written_by: str = '') -> dict:
+    """load() on an open connection (Atlas's role) to the world `key`. `written_by`: who wrote the batch (--written-by;
+    claude-<batch> when none is given, as before fix 8)."""
+    report = {'loaded': {}, 'skipped': [], 'bound': [], 'backup': None, 'problems': [], 'unbound': []}
     world_id = S.world_id_of(conn)
 
     def reserved_of(mid):
@@ -194,7 +196,7 @@ def load_into(conn, key: str, paths: list[str], batch: str, bind: bool = False, 
     # 4-5. One transaction.
     with conn.transaction():
         for p, m, current in go:
-            m.written_by = f'claude-{batch}'[:80]
+            m.written_by = (written_by or f'claude-{batch}')[:80]
             report['loaded'][m.id] = S.save(conn, world_id, m, base_revision=current, source=f'mantle_load:{batch}',
                                             account=account or os.environ.get('USER', ''), note=f'{p.name}',
                                             prune=prune, take_mine=True, checked=True)
@@ -202,6 +204,7 @@ def load_into(conn, key: str, paths: list[str], batch: str, bind: bool = False, 
                 why = S.bind(conn, world_id, m.id, m.written_for)
                 if why:
                     report['problems'].append(f'{m.id} not bound: {why}')
+                    report['unbound'].append(m.id)
                 else:
                     report['bound'].append(f'{m.id} -> {m.written_for}')
         # 6. The server.
@@ -382,9 +385,11 @@ def main() -> int:
     ap.add_argument('--take-mine')
     ap.add_argument('--no-export', action='store_true')
     ap.add_argument('--lenient', action='store_true', help="G2 without --strict (the tier's size and the density warned)")
+    ap.add_argument('--written-by', default='', help="who wrote the batch, for the rows' written_by (default claude-<batch>), "
+                                                     "e.g. claude-opus, codex, the user's name")
     a = ap.parse_args(argv)
     report = load(a.world, a.files, a.batch, a.bind, a.dry_run, a.prune, ids(a.take_theirs), ids(a.take_mine), not a.no_export,
-                  strict=not a.lenient)
+                  strict=not a.lenient, written_by=a.written_by)
     for p in report['problems']:
         print(p)
     for mid, done in sorted(report['loaded'].items()):
@@ -395,7 +400,13 @@ def main() -> int:
         print('kept the rows of ' + ', '.join(report['skipped']))
     if report['backup']:
         print(f'backup: {report["backup"]}')
-    return 1 if report['problems'] and not report['loaded'] else 0
+    # (Fix 8: a load that wrote but failed to bind exits 2, never 0; a refused one 1.)
+    if report['problems'] and not report['loaded']:
+        return 1
+    if report['unbound']:
+        print(f"{len(report['unbound'])} loaded but not bound: {', '.join(report['unbound'])}")
+        return 2
+    return 0
 
 
 if __name__ == '__main__':

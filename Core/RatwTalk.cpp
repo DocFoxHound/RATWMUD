@@ -1244,11 +1244,26 @@ bool Library::readGrammarText(const std::string& text, const std::string& file, 
         std::size_t at = 0;
         while (at < line.size() && (std::islower(static_cast<unsigned char>(line[at])) || std::isdigit(static_cast<unsigned char>(line[at])) || line[at] == '_'))
             ++at;
-        const std::string name = line.substr(0, at);
+        std::string name = line.substr(0, at);
         if (name.empty())
         {
             fail("expected 'symbol = words | words'");
             continue;
+        }
+        // mark.<symbol>: a dialect's bank of habits, drawn again for a reused mantle's marks (§12.4, redrawHabit). Never
+        // said by name, so in no layer below; plain holds the bank of plain speech.
+        bool bank = false;
+        if (name == "mark" && at < line.size() && line[at] == '.' && line.compare(at, 6, ".broad") != 0)
+        {
+            auto end = ++at;
+            while (end < line.size() && (std::islower(static_cast<unsigned char>(line[end])) || std::isdigit(static_cast<unsigned char>(line[end])) || line[end] == '_'))
+                ++end;
+            if (end == at)
+            {
+                fail("a mark bank is mark.<symbol>");
+                continue;
+            }
+            name += "." + line.substr(at, end - at), at = end, bank = true;
         }
         GrammarEntry entry;
         // name.broad: the dialect's word for the broadest accents only (doc 62, section 3).
@@ -1259,6 +1274,11 @@ bool Library::readGrammarText(const std::string& text, const std::string& file, 
             habit = true, ++at;
         if (habit && at < line.size() && line[at] == '!')
             pairHabit = true, ++at;
+        if (bank && (broad || habit))
+        {
+            fail("a mark bank (" + name + ") has no .broad and no ! (its values become the wearer's own habit)");
+            continue;
+        }
         if (at < line.size() && line[at] == '[')
         {
             const auto end = line.find(']', at);
@@ -1345,7 +1365,7 @@ bool Library::parseGrammar(const std::string& text, const std::string& file, std
     grammars_ = merged;
     for (const auto& p : pending)
     {
-        if (p.grammar != "plain" && (!grammars_.count("plain") || !grammars_.at("plain").count(p.symbol)))
+        if (p.grammar != "plain" && p.symbol.rfind("mark.", 0) != 0 && (!grammars_.count("plain") || !grammars_.at("plain").count(p.symbol)))
             errors.push_back(p.where + ": " + p.symbol + " is not in the plain grammar (every symbol must be)");
         for (const auto& t : p.texts)
             checkText(t, errors, p.where, nullptr);

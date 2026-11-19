@@ -1,6 +1,6 @@
-# mb116, the weather-scolding carter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb116, the weather-scolding carter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb116
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent broad light
@@ -72,7 +72,7 @@ does tell.self / react.self / assess
 a : Three runs up #causeway# today and one more if #sky# behaves. | Took #load# of peat to the kilns. Came back with pots. Never empty both ways, me. | #cart.capitalize#'s due a new pin. I'll whittle one tonight.
 b[job=carter|laborer] #road : Four runs? You'll kill the pony. | Clever. Never an empty run. | Whittle a pin?
 b : That's a lot of runs. | #bc_clever# | You can do that?
-a@road : The pony's fine. It's me that's tired. #oath#. | It's the only way it pays. | Ash, cut green. Holds better than iron, some days.
+a@road : The pony's fine. It's me that's tired. #oath#. | It's the only way it pays. | Green-cut ash. Holds better than iron, some days.
 a : It's what it pays. #saying#. | #bc_somebody_has_to# | I can whittle most things. Not a wheel. Yet.
 
 scene work_stuck
@@ -273,7 +273,7 @@ dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Quick, now.
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. Say what you want. I've miles.
 dlg @4 resident.hub [here.weather=rain] : #greet#. Don't mind me; I'm not speaking to the rain. What is it?
 dlg @1 resident.job : I drive #cart# up and down #causeway#. Peat up, pots down, whatever pays. #saying#.
-dlg @1 resident.news : Only what I hear on #causeway#, and most of that's the pony's opinion.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Only what I hear on #causeway#, and most of that's the pony's opinion.
 dlg @1 resident.bye : #farewell#. I've miles to make.
 graft resident.hub
 choice Why do you shout at the sky? -> sky

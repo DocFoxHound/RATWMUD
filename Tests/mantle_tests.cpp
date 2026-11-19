@@ -1092,6 +1092,37 @@ int databaseLife(const std::string& key)
 }
 } // namespace
 
+// Fix 8 (doc 84 §42): a window line that tests none of the facts its node's tree reports yields to them. cw017's shop
+// greeting with its gate taken off (as a line written before G2 refused it, or edited in Atlas) is still the wearer's own
+// in a stocked shop, but a bare shop's own line ("I'll still buy") is said in a bare one.
+void windowLinesYieldToFacts()
+{
+    auto lib = library();
+    auto text = read(Fixture + "/coldwater/cw017.mantle");
+    const std::string gated = "dlg shop.greet [here.shop!=bare] :";
+    expect(text.find(gated) != std::string::npos, "the fixture's gated greeting");
+    text.replace(text.find(gated), gated.size(), "dlg shop.greet :");
+    std::vector<talk::MantleText> texts{{"", text, "cw017.mantle"}};
+    std::vector<talk::Library::MantleRefusal> refused;
+    expect(lib.setMantles(texts, refused) == 1, "cw017 loads");
+    talk::Query q;
+    q.concept = "dlg.shop.greet";
+    q.a = speaker("keeper", "cw017", "coldwater");
+    q.alone = true;
+    q.facts["here.place"] = "shop";
+    for (std::uint64_t s = 1; s <= 20; ++s)
+        expect(lib.pick(q, s, {}, {}).id.rfind("cw017.dlg.shop.greet.", 0) == 0, "stocked: the wearer's own greeting");
+    q.facts["here.shop"] = "bare";
+    std::set<std::string> said;
+    for (std::uint64_t s = 1; s <= 20; ++s)
+        said.insert(lib.pick(q, s, {}, {}).id);
+    expect(said.size() == 1 && said.begin()->rfind("dlg.shop.greet.", 0) == 0, "bare: the tree's bare-shop line, never hidden: " + *said.begin());
+    const auto* own = lib.find("cw017.dlg.shop.greet.1");
+    expect(own && std::any_of(own->when.begin(), own->when.end(), [](const talk::Criterion& c) {
+               return c.name == "shop" && c.op == talk::Criterion::Op::NotIn && c.values.count("bare");
+           }), "its yield is here.shop!=bare");
+}
+
 int main(int argc, char** argv)
 {
     setenv("RATW_DATA_DIR", (fs::path(RATW_SOURCE_DIR) / "Data").string().c_str(), 0);
@@ -1111,6 +1142,7 @@ int main(int argc, char** argv)
         passingOn();
         arrivalsBindOne();
         handoffInTheTalkTown();
+        windowLinesYieldToFacts();
     }
     catch (const std::exception& e)
     {

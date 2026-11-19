@@ -1,6 +1,6 @@
-# lf109, the city-bound paper hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf109, the city-bound paper hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf109
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent broad light
@@ -266,22 +266,19 @@ a : By the second turn. | Until the #gulls# drown us out.
 story spotted_sheet [topic=work self.age>=18]
   : I lifted a #sheet# that looked clean while it lay on the #board#.
   : Under the #window# #light#, a dark #spot# appeared near the center.
-  ask : Could you mend it?
-  b : Good you checked.
+  b : Good you checked. Could you mend it?
   : I returned it to the #vat# before the #press# took it.
 
 story city_wagon [topic=travel self.age>=18]
   : A #wagon# from the #city# stopped by our #gate# with a load of #rags#.
   : I asked the driver about the larger #press# before I touched the #pulp#.
-  ask : Did you learn anything?
-  b : You are planning ahead.
+  b : You are planning ahead. Did you learn anything?
   : Enough to know which #road# I want to travel.
 
 story shared_verse [topic=pastimes self.age>=18]
   : I forgot the third #verse# of a #song# while lifting a wet #sheet#.
   : A #friend# took the tune and gave me new words for the #beat#.
-  ask : Do you still sing them?
-  b : The song grew.
+  b : The song grew. Do you still sing them?
   : Every #shift#, when the #vat# is full.
 
 rule @bark_light

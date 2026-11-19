@@ -16,7 +16,7 @@ fears a_dry_well
 hopes a_good_season
 topics prices +.3 times +.2
 marks oath saying
-persona #self.first# keeps the stores by the pans: dry, careful, and she weighs everything twice.
+persona #self.first# keeps the stores by the pans: dry, careful, and weighs everything twice.
 
 words
 saying! = Salt keeps, and so do debts | Weigh twice, sell once
@@ -42,4 +42,4 @@ line react.news.known : I'd heard it at the well.
 line answer.how : Weighed and found fair, mostly.
 line preclose [self.working=yes] : Well. The scales won't watch themselves.
 
-dlg shop.greet : #greet#. Salt, oil, rope, all weighed twice.
+dlg shop.greet [here.shop!=bare] : #greet#. Salt, oil, rope, all weighed twice.

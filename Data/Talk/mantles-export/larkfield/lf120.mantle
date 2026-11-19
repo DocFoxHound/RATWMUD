@@ -1,6 +1,6 @@
-# lf120, the city-wary storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf120, the city-wary storekeeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf120
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent broad light
@@ -362,8 +362,7 @@ story light_box [topic=work self.age>=18]
 story first_snow [topic=weather self.age>=18]
   : The first #snow# came while I was closing the #shop#.
   : The #market# fell quiet before the last #stall# packed away.
-  ask : Did you stay to watch?
-  b : A peaceful sight.
+  b : A peaceful sight. Did you stay to watch?
   : Until the #lamp# went out.
 
 story farm_seed [topic=pastimes self.age>=18]
@@ -383,8 +382,7 @@ story late_cart [topic=travel self.age>=18]
 story mother_shelf [topic=family self.age>=18]
   : A #family# visitor moved one #box# to a higher #shelf# without asking.
   : I left it there because it was a better place.
-  ask : Did you tell them?
-  b : A quiet kindness.
+  b : A quiet kindness. Did you tell them?
   : Only after they had gone.
 
 rule @bark_crate

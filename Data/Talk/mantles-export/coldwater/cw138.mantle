@@ -1,6 +1,6 @@
-# cw138, the favour tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw138, the favour tally (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw138
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -235,8 +235,7 @@ a : Gladly. | I still remember the #mark#.
 story first_tally [topic=memories self.age>=18]
   : I wrote my first #favour# in a small #book# after someone carried #feed# for me.
   : The #mark# felt too little for a whole morning of help.
-  ask : How did you repay it?
-  b : The book kept the promise visible.
+  b : The book kept the promise visible. How did you repay it?
   : I took the hard #yard# shift when they needed a rest.
 
 story storm_cards [topic=pastimes self.age>=18]
@@ -249,8 +248,7 @@ story storm_cards [topic=pastimes self.age>=18]
 story house_whisper [topic=memories self.age>=18]
   : Someone told me a #story# about a House while we waited at the #market#.
   : I realized the teller had trusted me with more than gossip.
-  ask : Did you repeat it?
-  b : Some stories are dangerous to carry.
+  b : Some stories are dangerous to carry. Did you repeat it?
   : No. I put no #mark# for that in the #book#.
 
 rule @bark_tally

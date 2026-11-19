@@ -1,6 +1,6 @@
-# lf134, the sparrow-feeding farmhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf134, the sparrow-feeding farmhand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf134
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -282,8 +282,7 @@ a : At #meal# time. | For now.
 story empty_post [topic=family self.age>=18]
   : I saw the post come through the #gate# after a long #winter#.
   : None of the #letters# held my family's #writing#.
-  ask : Did you write again?
-  b : A hard wait.
+  b : A hard wait. Did you write again?
   : I did, and kept a little hope for #spring#.
 
 story rain_planting [topic=work self.age>=18]
@@ -296,8 +295,7 @@ story rain_planting [topic=work self.age>=18]
 story first_dance [topic=pastimes self.age>=18]
   : I waited outside the #festival# until the #fiddle# began.
   : #self.spouse# took my #hand# and pulled me across the #floor#.
-  ask : Did you dance?
-  b : That was kind.
+  b : That was kind. Did you dance?
   : Badly, but I asked for another tune.
 
 rule @bark_sparrows

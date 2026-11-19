@@ -1,6 +1,6 @@
-# cw155, the doorway soap hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw155, the doorway soap hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw155
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -247,15 +247,13 @@ a : For a short frost. | I offer #supper# when I can.
 story scorched_batch [topic=work self.age>=18]
   : I once turned my #back# on a #pan# to answer someone at the #door#.
   : The #heat# climbed and the #batch# took on a burned edge.
-  ask : Could you save it?
-  b : One distraction was enough.
+  b : One distraction was enough. Could you save it?
   : I cooled it and kept the useful #bars# apart.
 
 story withheld_seat [topic=home self.age>=18]
   : I entered a hall and chose a #bench# with the #door# in sight.
   : A stranger claimed every place was spoken for, though no one else came.
-  ask : Did you stay?
-  b : That was unkind.
+  b : That was unkind. Did you stay?
   : I found another room and kept my own company.
 
 story last_eel [topic=food self.age>=18]

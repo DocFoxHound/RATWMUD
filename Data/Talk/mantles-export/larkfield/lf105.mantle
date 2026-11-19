@@ -1,6 +1,6 @@
-# lf105, the river song (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf105, the river song (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf105
-revision 1
+revision 3
 state ready
 dialect larkfield
 accent light broad
@@ -268,8 +268,7 @@ a : Until the last #verse#. | The one everyone can answer.
 story first_trap [topic=pastimes self.age>=18]
   : I set my first #eel# #trap# too close to a shallow #bank#.
   : The #river# left it nearly dry, so I moved it below the #bridge#.
-  ask : Did you catch one?
-  b : You learned the bend.
+  b : You learned the bend. Did you catch one?
   : Enough for supper, and I remembered the place.
 
 story borrowed_verse [topic=family self.age>=18]
@@ -280,7 +279,7 @@ story borrowed_verse [topic=family self.age>=18]
   : We finished it together at the #table#.
 
 story winter_jar [topic=food self.age>=18]
-  : One #winter# the #market# had little #fish#, but our #larder# held a #jar# of #herring#.
+  : One #winter# the #market# had hardly any #fish#, but our #larder# held a #jar# of #herring#.
   : I divided it among the late workers with #bread#.
   ask : Was there enough?
   b : You saved it well.

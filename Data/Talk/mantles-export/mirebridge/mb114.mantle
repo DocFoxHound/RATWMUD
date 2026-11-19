@@ -1,6 +1,6 @@
-# mb114, the three-tale deckhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb114, the three-tale deckhand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb114
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent none
@@ -245,7 +245,6 @@ story stone_pike [topic=memories self.age>=25]
 story stone_sandbar [topic=memories self.age>=25 self.job=fisher|sailor|none]
   : We went on a sandbar one night with the tide going out. Stuck fast.
   : The whole crew sat there in the dark till the water came back. Lamp out by midnight.
-  ask : Were you afraid?
   b : Were you afraid?
   : No. I asked questions all night. #whosays.capitalize#, what next, how long. The others were afraid of that.
   b : #bc_ha#
@@ -261,7 +260,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Don't know you. Where fr
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Where've you been since last time? Every bit, mind.
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. What do you want? Ask, and I'll ask back.
 dlg @1 resident.job : I'm #self.trade_words#. Third of my line on these ropes. That's all you need to know. #askback.capitalize#?
-dlg @1 resident.news : News? You tell me first. Then I'll see what I've got. #saying.capitalize#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? You tell me first. Then I'll see what I've got. #saying.capitalize#.
 dlg @1 resident.bye : #farewell#. Mind #deepmud# by the end board.
 graft resident.hub
 choice Tell me one of your stories. -> stone_tales

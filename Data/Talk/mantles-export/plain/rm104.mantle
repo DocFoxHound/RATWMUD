@@ -1,6 +1,6 @@
-# rm104, the bird-counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm104, the bird-counter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm104
-revision 1
+revision 2
 state ready
 dialect plain
 accent broad light
@@ -275,32 +275,29 @@ a : Then started again. | Every time. | Next year. Aye. Like last year said.
 story lights_night [topic=lore|memories here.region=fens self.away=yes]
   : My first winter out here, I was walking back late from the creek. Lamp in one paw, a brace of teal in the other.
   : And there they were. Off the path. A row of lights, swaying, like folk walking slow.
-  ask : What did you do?
-  b[old] : You didn't follow?
-  b : Did you go to them?
+  b[old] : You didn't follow? What did you do?
+  b : Did you go to them? What did you do?
   : Blew my lamp out. Stood there in the dark and counted to a thousand till they went. I've never been surer of anything. They were drowned folk.
   b : #bc_i_hope_so#
 
 story first_boots [topic=memories|smalltalk self.away=yes]
   : I came out here in boots with the soles flapping. Walked half the road like a duck in a hurry.
   : First proper money I made off the birds, I went and bought new ones. Stood in the shop an hour picking.
-  ask : An hour?
-  b : Worth it?
+  b : Worth it? An hour?
   : Eleven geese, those boots. I wore them home and stepped in the first puddle on purpose. To show it who was boss.
 
 story big_throw [topic=pastimes|memories]
   : There was a bout on the grass once. A great wide wolf, a head over me, laughing before we'd started.
   : He came at me and I just sat down. Sudden, like. He went straight over the top and onto his back.
-  ask : On purpose?
-  b[job=guard|soldier] : Old trick, that.
-  b : You sat down?
+  b[job=guard|soldier] : Old trick, that. On purpose?
+  b : You sat down? On purpose?
   : Pure accident. But I've told it as on purpose for years, and you're not to say otherwise.
 
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #pal#. Keep your voice down near the reeds, if you'd be so good. What's wanted?
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Fancy that. I was just thinking nobody'd come by.
 dlg @3 resident.hub [pair.disposition=warm|fond] : There they are. #greet#, #topic.player#. Sit, if there's anywhere dry.
 dlg @1 resident.job : I net birds. #birds.capitalize#, whatever comes over. Mostly I sit very still and count them.
-dlg @1 resident.news : I've news of birds, if that's any good. Thirty-odd geese yesterday. People news, I'm slower on.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : I've news of birds, if that's any good. Thirty-odd geese yesterday. People news, I'm slower on.
 dlg @1 resident.bye : #farewell#. Mind the lights, if it's dark.
 graft resident.hub
 choice What are you counting? -> counting

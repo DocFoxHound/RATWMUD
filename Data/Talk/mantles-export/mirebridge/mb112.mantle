@@ -1,6 +1,6 @@
-# mb112, the wagering deckhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb112, the wagering deckhand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb112
-revision 1
+revision 2
 state ready
 dialect mirebridge
 accent light broad
@@ -56,7 +56,7 @@ line @1 farewell : #farewell#. #wager.capitalize# I see you before the week's ou
 line @1 farewell.return : #farewell#! | #farewell#. Keep your purse shut.
 line @1 react.news.new : #oath#! Is that so? I'd have bet against it. | Is it? I'd not have given #odds# on that.
 line @1 react.news.known : Had it already. Lost #wager# on it, too. | #knew.capitalize#. Everyone's had it. Keep up.
-line @1 react.news.doubt : Never. #odds.capitalize# against. Who says? | #doubt.capitalize#. Seeing's believing, and I've seen nothing.
+line @1 react.news.doubt : Never. #odds.capitalize# against, by my reckoning. Who says so? | #doubt.capitalize#. Seeing's believing, and I've seen nothing.
 line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. Somebody'll pay for that, I'd bet. | #bad.capitalize#. #very.capitalize# #bad#. Nobody saw it coming, did they?
 line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There! Called it. #wager.capitalize# I said so. | Good. #bc_lucky_you# Some folk get #luck#.
 line @1 answer.how : #fine.capitalize#. You? | #notsobad.capitalize#. Won't complain, anyway. Not to you.
@@ -245,7 +245,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Don't know your face. Wh
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! #wager.capitalize# you want something. Am I right?
 dlg @3 resident.hub [pair.disposition=wary] : #greet#. I'm watching you, mind. Nothing personal. I watch everyone.
 dlg @1 resident.job : I'm #self.trade_words#. I haul, I coil, I bail. #wages.capitalize#'s bad. I make it up on wagers.
-dlg @1 resident.news : News? Somebody came over #road# last night. Never saw them leave. That's my news.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? Somebody came over #road# last night. Never saw them leave. That's my news.
 dlg @1 resident.bye : #farewell#. #wager.capitalize# I see you before the week's out.
 graft resident.hub
 choice Fancy a wager? -> ivar_bet

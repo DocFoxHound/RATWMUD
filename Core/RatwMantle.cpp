@@ -170,6 +170,73 @@ std::string joined(const std::vector<std::string>& v, const char* by = " ")
         out += (out.empty() ? "" : by) + s;
     return out;
 }
+
+// A mantle's window line outranks its tree's own (+5). Where the tree's lines at that node report facts (the news, the
+// gossip, the business, a bare shop, a warrant...) and the mantle's line tests none of them, it would hide them: "Nothing
+// worth the telling" while a wagon lies robbed on the road (doc 84 §42, fix 8). So such a line yields: it holds only
+// where none of the tree's fact lines do (each one's first fact, negated), its score as written. The hour, the meeting,
+// the mood and the trade are how a line is said, not facts it reports; a line of the strict priority wins anyway.
+// (tools/mantle_check.py's window rule is the same, so a writer sees where it applies.)
+bool cosmeticFact(const Criterion& c)
+{
+    static const std::set<std::string> Cosmetic{"concept", "meeting", "time", "disposition", "trade", "stage"};
+    return Cosmetic.count(c.name) > 0;
+}
+
+std::string factKey(const Criterion& c) { return std::to_string(int(c.ns)) + ":" + c.name; }
+
+Criterion negated(Criterion c)
+{
+    using Op = Criterion::Op;
+    switch (c.op)
+    {
+    case Op::In: c.op = Op::NotIn; break;
+    case Op::NotIn: c.op = Op::In; break;
+    case Op::Lt: c.op = Op::Ge; break;
+    case Op::Ge: c.op = Op::Lt; break;
+    case Op::Le: c.op = Op::Gt; break;
+    case Op::Gt: c.op = Op::Le; break;
+    case Op::Has: c.op = Op::Lacks; break;
+    case Op::Lacks: c.op = Op::Has; break;
+    }
+    return c;
+}
+
+void yieldToTree(Entry& e, const std::vector<Entry>& shared, const std::vector<std::size_t>& tree, int strict)
+{
+    std::set<std::string> own, reported;
+    for (const auto& c : e.when)
+        own.insert(factKey(c));
+    std::vector<const Entry*> gated;
+    for (const auto i : tree)
+    {
+        const auto& t = shared[i];
+        if (t.priority >= strict)
+            continue;
+        bool any = false;
+        for (const auto& c : t.when)
+            if (!cosmeticFact(c))
+                reported.insert(factKey(c)), any = true;
+        if (any)
+            gated.push_back(&t);
+    }
+    for (const auto& k : reported)
+        if (own.count(k))
+            return;                                 // (It speaks to the facts itself: the writer's case, as written.)
+    std::set<std::string> added;
+    for (const auto* t : gated)
+        for (const auto& c : t->when)
+            if (!cosmeticFact(c))
+            {
+                // One fact of the line negated is enough to stand aside from it (never more than once a fact).
+                const auto n = negated(c);
+                const auto key = factKey(n) + ":" + std::to_string(int(n.op)) + ":" + joined(std::vector<std::string>(n.values.begin(), n.values.end()), "|") +
+                                 ":" + std::to_string(n.number);
+                if (added.insert(key).second)
+                    e.when.push_back(n);
+                break;
+            }
+}
 } // namespace
 
 std::string mantleLayer(const std::string& id) { return "m_" + id; }
@@ -782,8 +849,10 @@ bool Library::compileMantle(Mantle& m, Owned& out, std::vector<std::string>& err
         {"adolescent", "self.stage=adolescent"},
         {"old", "self.stage=old"}};
     mantleParse_ = true;
+    std::string yieldAt;
     for (const auto& item : m.items)
     {
+        yieldAt.clear();
         if (item.kind == "symbol")
             continue;
         const auto id = m.id + "." + item.key;
@@ -829,6 +898,7 @@ bool Library::compileMantle(Mantle& m, Owned& out, std::vector<std::string>& err
                 continue;
             }
             src = "rule " + id + "\n" + when("concept=dlg." + sp.head + " " + sp.criteria) + "say " + sp.text + "\n";
+            yieldAt = "dlg." + sp.head;
         }
         else if (item.kind == "rule" || item.kind == "scene")
         {
@@ -1063,6 +1133,9 @@ bool Library::compileMantle(Mantle& m, Owned& out, std::vector<std::string>& err
         }
         for (auto& e : got)
         {
+            if (!yieldAt.empty())
+                if (const auto at = byConcept_.find(yieldAt); at != byConcept_.end())
+                    yieldToTree(e, entries_, at->second, settings_.strict);
             e.owner = m.id;
             e.file = m.id;                          // (B4: a short name, kept in the string itself; the key is in its id.)
             Criterion c;

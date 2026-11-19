@@ -1,6 +1,6 @@
-# rm106, the borrowed saying (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm106, the borrowed saying (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm106
-revision 1
+revision 2
 state ready
 dialect plain
 accent light broad
@@ -219,22 +219,19 @@ a : It helps. | I save it from autumn.
 story city_purse [topic=memories self.age>=18]
   : I took the #road# to the #city# with a purse and a great many plans.
   : I worked, spent, and came back with nearly no #coin#.
-  ask : Did you regret going?
-  b : That must have been hard to tell at home.
+  b : That must have been hard to tell at home. Did you regret going?
   : I learned which place I wanted to call #home#.
 
 story first_gate [topic=work self.age>=18]
   : In my first week at the #yard#, I left a #gate# half latched.
   : The smallest #pig# found the gap and ran toward the #road#.
-  ask : Did you catch it?
-  b : A quick lesson for an apprentice.
+  b : A quick lesson for an apprentice. Did you catch it?
   : I did, and I check the catch twice now.
 
 story roof_guest [topic=pastimes self.age>=18]
   : A #bird# watched from the #roof# while I filled the #trough# for days.
   : When the first #snow# fell, it waited by the door instead.
-  ask : Did you feed it?
-  b : Perhaps it knew where the warmth was.
+  b : Perhaps it knew where the warmth was. Did you feed it?
   : A few crumbs, away from the #pigs#.
 
 rule @bark_gate

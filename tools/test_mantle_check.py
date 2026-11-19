@@ -143,11 +143,47 @@ class Rules(unittest.TestCase):
         self.assertTrue(any("'saying' has 1 alternative" in f for f in one), one)
 
 
+    def test_fix8(self):
+        """Fix 8 (doc 84 §42): G2 reads tagged scene lines; the persona has no pronoun; a window line on a node whose tree
+        reports facts says which case it is; the pools' health (--pools) year by year and the spares' honesty."""
+        world = {'names': {'Hollin'}, 'npcs': {'tt_sa_storekeeper'}, 'town': {}, 'wearer': {}}
+        for tagged in ("b[job=merchant] #fair : Ask Hollin, he weighs fair.", "a@fair : Ask Hollin, then."):
+            text = self.BASE.replace("b : There's always a thumb on it somewhere.",
+                                     "b : There's always a thumb on it somewhere.\n" + tagged)
+            found = self.check(text, world=world)
+            self.assertTrue(any('the name of someone' in f and 'any.scene.weighing' in f for f in found), f'{tagged}: {found}')
+        she = self.check(self.BASE.replace('and weighs everything twice', 'and she weighs everything twice'))
+        self.assertTrue(any('persona' in f and '"she"' in f for f in she), she)
+        bare = self.check(self.BASE.replace('dlg shop.greet [here.shop!=bare] :', 'dlg shop.greet :'))
+        self.assertTrue(any('dlg.shop.greet.1' in f and 'here.shop' in f for f in bare), bare)
+        news = self.BASE + '\ndlg resident.news : Nothing worth the telling.\n'
+        self.assertTrue(any('resident.news' in f and 'world.news' in f for f in self.check(news)))
+        cased = news.replace('dlg resident.news :', 'dlg resident.news [' + C.PLAIN_CASE['resident.news'] + '] :')
+        self.assertFalse(any('resident.news' in f for f in self.check(cased)), self.check(cased))
+        self.assertIn('world.news', C.window_facts()['resident.news'])
+        self.assertNotIn('topic.meeting', C.window_facts().get('shop.greet', set()))
+        # The pools: 4 spares and 1 ready, the births drawn and the wearers' deaths coming back; the spares' honesty.
+        report = {'pools': {'saltwell': {'spare': 4, 'ready': 1, 'resting': 1, 'birthsByYear': [2.0, 2.0, 4.0],
+                                         'wearerDeathsByYear': [1.0, 1.0, 0.0], 'honesty': {'sly': 50.0, 'plain': 50.0},
+                                         'livingHonesty': {'sly': 20.0, 'plain': 80.0}}}}
+        h = C.pool_health(report)['saltwell']
+        self.assertEqual([y['green'] for y in h['years']], [True, True, False], h)
+        self.assertEqual(h['years'][1]['supply'], 4, '5 - 2 births + 1 rested')
+        self.assertFalse(h['ok'])
+        self.assertTrue(any('honesty' in w for w in h['why']), h['why'])
+        spare = T.read(self.BASE.replace('mantle sw001', 'mantle sw901').replace('written_for tt_sa_storekeeper', '')
+                       .replace('tier standard', 'tier spare'))
+        spare.traits['honesty'] = 'plain'
+        mixed = C.pool_health(report, [spare, spare])['saltwell']
+        self.assertEqual(mixed['spares'], 6)
+        self.assertEqual(mixed['honesty'][0], 33.3, 'two sly of six')
+
+
 class Kits(unittest.TestCase):
     def test_kits_are_their_dialects_pups(self):
         """Phase 11: a stage kit (Data/Talk/kits/<dialect>.<stage>.talk, doc 84 §7.10) is the shared floor of one dialect's
         pups or adolescents: every entry is gated to speakers from that dialect's towns and of that stage."""
-        towns = {'saltwell': {'saltwell'}, 'mirebridge': {'fenshore', 'mirebridge'}}
+        towns = {'saltwell': {'saltwell'}, 'mirebridge': {'fenshore', 'mirebridge'}, 'plain': {'ridgemere'}}   # (plain: Ridgemere's speech)
         kits = sorted((ROOT / 'Data' / 'Talk' / 'kits').glob('*.talk'))
         self.assertGreaterEqual(len(kits), 4)
         for f in kits:

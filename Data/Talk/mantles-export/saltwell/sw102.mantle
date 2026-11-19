@@ -1,6 +1,6 @@
-# sw102, the taproom's chalk (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw102, the taproom's chalk (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw102
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -19,7 +19,7 @@ hopes a_taproom_of_my_own
 topics work +0.4 prices +0.3 dreams +0.3 pastimes +0.2 weather +0.1 gossip -0.4 faith -0.1
 styles comfort=practical gossip=reluctant refuse=firm tease=none
 marks oath saying
-persona #self.first# keeps the taproom: frank, plain-spoken, saving every coin toward a place of their own, wet-pawed all day and never minding it.
+persona #self.first# keeps the taproom: frank, plain-spoken, saving every coin toward a place of #self.first#'s own, wet-pawed all day and never minding it.
 
 words
 oath! = By the cistern lid | Cistern and chalk
@@ -400,9 +400,8 @@ a : Good for some, #address#. | Fair to them. Not to the till. #demur.capitalize
 story lamp_night [concept=talk.memories self.job=innkeeper]
   : There was a dust-wind one night, and a cart still out beyond the dunes.
   : I put every lamp we had on the roof beside #lamp#. Every one. I stood up there till my eyes ran.
-  ask : Did they find you, #address#?
-  b[carter] : That's how we come home. By the roof lamps.
-  b : Did they come in?
+  b[carter] : That's how we come home. By the roof lamps. Did they find you, #address#?
+  b : Did they come in? Did they find you, #address#?
   : At dawn. Mules, carter, salt, all of it. The carter paid for the lamp oil without being asked, truly.
   : That's the only thanks I keep. Paid oil. #oath#.
 
@@ -449,15 +448,16 @@ dlg @4 resident.hub [pair.disposition=hostile] : Say it and drink, or say it and
 dlg @5 resident.hub [pair.disposition=warm] : #greet#, #topic.player#. I kept a cold cup back for you.
 dlg @6 resident.hub [here.time=night] : Late. The fire's lit and I'm still counting #jugs#. Speak.
 dlg @1 resident.job [self.job=innkeeper] : I keep #taps#. Pour, mop, chalk, count. And again tomorrow.
-dlg @1 resident.business : Steady, by #slate#. Steady isn't enough, but it's honest.
-dlg @1 resident.news : Nothing new over #taps# since the last carts. | It's all talk of #world.event_words# over #taps#.
-dlg @1 resident.gossip : What's said at my counter stays there, #address#. Ask at the well.
+dlg @1 resident.business [business!=thriving|failing] : Steady, by #slate#. Steady isn't enough, but it's honest.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new over #taps# since the last carts.
+dlg @2 resident.news [world.event_words] : It's all talk of #world.event_words# over #taps#.
+dlg @1 resident.gossip [here.gossip!=yes] : What's said at my counter stays there, #address#. Ask at the well.
 dlg @1 resident.bye : #farewell#. Mind the wet by the door.
-dlg @1 inn.greet : #greet#. A bed, bread, or a cup? Wipe your feet first.
-dlg @2 inn.greet [topic.meeting=known] : #greet#, #topic.player#. Your cup, or a bed tonight?
+dlg @1 inn.greet [here.inn_helper!=yes] : #greet#. A bed, bread, or a cup? Wipe your feet first.
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes] : #greet#, #topic.player#. Your cup, or a bed tonight?
 dlg @1 inn.rooms : A bed's #here.bed_night#p a night, #here.bed_week#p the week. All of upstairs, #here.upstairs_night#p, if it's empty. I don't haggle, #address#.
 dlg @1 inn.roomed : Up the stairs; the window faces the dunes, so the night comes in #cold#. Feet dry before the blankets, please.
-dlg @1 inn.rest : Sit on #bench# by the fire. The bench is free; the cup is not.
+dlg @1 inn.rest [here.lodging!=yes] : Sit on #bench# by the fire. The bench is free; the cup is not.
 dlg @1 inn.refused : #topic.why# I'll not bend on it, #address#.
 dlg @1 inn.bye : #farewell#. #slate.capitalize# remembers you.
 graft resident.hub

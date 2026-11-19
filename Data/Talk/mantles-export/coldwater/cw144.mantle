@@ -1,6 +1,6 @@
-# cw144, the bell-late picker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw144, the bell-late picker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw144
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -239,15 +239,13 @@ a : A patient picker. | One whole #shift#.
 story bell_race [topic=work self.age>=18]
   : I heard the #bell# while carrying a half-full #basket# down a #row#.
   : I hurried, caught my foot on the #ladder#, and scattered #apples#.
-  ask : Were you hurt?
-  b : Hurry cost you time.
+  b : Hurry cost you time. Were you hurt?
   : Only my pride. I gathered each one slowly.
 
 story last_move [topic=pastimes self.age>=18]
   : I left a #draughts# #piece# in the centre of the #board# all #evening#.
   : My opponent expected me to take it back, but I had another move waiting.
-  ask : Did you win?
-  b : You let the piece sit there?
+  b : You let the piece sit there? Did you win?
   : For once, yes. I was nearly late to bed.
 
 story unanswered_post [topic=family self.age>=18]

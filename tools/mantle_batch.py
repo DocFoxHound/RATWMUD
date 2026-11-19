@@ -19,25 +19,25 @@ Only reads the world (one read-only transaction); writes only under the --out fo
       OUT/batch.tsv, OUT/briefs/<id>.md, OUT/start/<id>.mantle and OUT/index-<town>.md (tools/mantle_index.py's). Nothing
       is written to the export or the world: copy a starting file to its export path and write it there.
   python3 tools/mantle_batch.py lint PATH... [--world ridgemere3] [--facts F] [--json]
-      What G1 (talk_check --mantle) and G2 (mantle_check) don't catch, by mantle and item key. Refused: the listener's
-      tagged lines and the wearer's tagged answers (`b[...] #tag :`, `a@tag :`) under every G2 rule (G2 skips them today:
-      names, dog, gods, tells, pronouns by a slot, truth, dialect, 5-word runs); every word of the deity family (godsend,
-      godly...); "they" of one named wolf (talk_lint's they_named); a pronoun in the persona (it passes to either sex);
+      What G1 (talk_check --mantle) and G2 (mantle_check) don't catch, by mantle and item key. Refused: every word of the
+      deity family (godsend, godly...); "they" of one named wolf (talk_lint's they_named); a story's `ask :` that asks
+      the teller about the story ("Did you catch one?": the listener's question, which belongs in the `b` line after it);
       TODO left; a header that doesn't fit its wearer (dialect, accents, honesty kept, all seven axes, fits their stage,
       a pup's sections); a scene line whose alternatives don't line up with its threads; a decline, refusal or doubt of
-      fewer than six words with no hedge; a window line that would hide what its node's tree reports (the news, the
-      gossip, the business, a bare shop, a warrant: an ungated `dlg resident.news` outranks real news). Warned: a scene
-      thread ending on a question; an age claim with no age gate; the brief's own words copied (its reasons and likes go
-      to every writer of the town); stock lines ("Thank you for telling me"); too many alternatives of three words or
-      fewer; a tier's parts under the pilot's counts; a file away from its export path.
+      fewer than six words with no hedge. Warned: a scene thread ending on a question; an age claim with no age gate;
+      the brief's own words copied (its reasons and likes go to every writer of the town); stock lines ("Thank you for
+      telling me"); too many alternatives of three words or fewer; a tier's parts under the pilot's counts; a file away
+      from its export path. (Until fix 8 the lint also ran G2's rules over tagged scene lines, refused a pronoun in the
+      persona and a window line that would hide its node's facts: G2 makes those checks now, so mantle_load does too.)
   python3 tools/mantle_batch.py gates PATH... [--world ridgemere3] [--facts F] [--no-g3]
       Every per-batch gate on the files named (a directory: every .mantle under it): G1, G2 --strict over each touched
       dialect's whole folder (so a 5-word run shared with any neighbour shows), the lint above, and G3 (talk_check
       --mantles-from a copy of just these files --mantle-coverage). Exit 1 if any refuses.
   python3 tools/mantle_batch.py pools PATH... [--facts F]
-      For spares (P15): each dialect's spares' share of sly and guarded honesty against its living residents' (within
-      5 points, doc 84 §9.5; `mantle_check --pools` was planned but isn't built). What a spare must be (no written_for,
-      a fit by stage only, young, adolescent and grown sections) is the lint's, on any mantle of tier spare.
+      For spares (P15), from the files alone: each dialect's spares' share of sly and guarded honesty against its living
+      residents' (within 5 points, doc 84 §9.5). `mantle_check.py --pools --world ridgemere3 [PATH...]` is the gate: the
+      same honesty test on the rows and the drafts together, and each pool's health over five forecast years. What a
+      spare must be (no written_for, a fit by stage only, young, adolescent and grown sections) is the lint's.
 
 The world is DEV, `ridgemere3` (ratw_ridgemere3). A live world is refused. talk_check is $RATW_TALK_CHECK, else the newest
 build*/talk_check of this checkout, else of the main checkout (a worktree has no build of its own); it is always given
@@ -77,8 +77,12 @@ TARGETS = {'full': {'scene': 27, 'story': 5, 'opinion': 8, 'line': 30, 'rule': 6
            'standard': {'scene': 17, 'story': 3, 'opinion': 5, 'line': 18, 'rule': 4, 'dlg': 4, 'graft': 1, 'symbol': 12},
            'spare': {'scene': 18, 'story': 3, 'opinion': 5, 'line': 18, 'rule': 4, 'dlg': 4, 'graft': 1, 'symbol': 12}}
 DEITY = dialect_check.DEITY
-PERSONA_PRONOUN = re.compile(r"\b(he|she|him|her|his|hers|himself|herself|they|them|their|theirs|themselves|he's|she's|"
-                             r"they're|he'd|she'd|they'd|he'll|she'll|they'll)\b", re.I)
+# A story's `ask :` that asks the teller about the story (the listener's question, misplaced: fix 8, cw102 and 180 more):
+# "Did you catch one?", "Were you hurt?", "What did you do?". (Not "Did you ever...?", "Would you have...?", "Do you know...?":
+# those ask the listener.)
+LISTENERS_ASK = re.compile(r"^(?:and )?(?:(?:did|were|weren't|was) you\b(?! ever)|what did you\b|where were you\b|how did you\b|"
+                           r"who taught you\b|was (?:your|that your)\b|is that why you\b|did (?:she|he|they|it|the \w+|something) "
+                           r"[^?]*\byou(?:r|rs)?\b)", re.I)
 DISPREFERRED = ('decline', 'refuse', 'disagree', 'react.news.doubt', 'react.complaint.disagree', 'decline_apology')
 HEDGES = re.compile(r'#(hedge|account|excuse|demur|doubt|refuse|sorry|put_off|concede|dunno|pardon)(\.[a-z]+)*#')
 STOCK = re.compile(r"^(thank you for telling me|is that so|i see|indeed|how interesting|good|very good|interesting|"
@@ -86,7 +90,6 @@ STOCK = re.compile(r"^(thank you for telling me|is that so|i see|indeed|how inte
 AGE_CLAIM = re.compile(r"\b(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|a hundred|\d{2,3})(?:-\w+)? "
                        r"(?:years|winters|summers|springs|autumns|seasons))\b|\bwhen i was (?:twenty|thirty|forty|fifty|sixty|"
                        r"seventy|eighty|\d{2})\b|\bin (?:all )?my (?:\w+ )?years\b|\bat my age\b", re.I)
-TAGGED = re.compile(r'^(\s*)(?:([ab])(\??)(\[[^\]]*\])?\s*#[a-z0-9_]+|a@[a-z0-9_]+(\[[^\]]*\])?)(\s*:)', re.M)
 WORD = re.compile(r"[a-z']+")
 
 
@@ -313,7 +316,8 @@ def starting_file(mid: str, f: dict, npc: str, name: str, dialect: str, batch: s
         prefers.append(f'job={f["job"]}')
     lines = [
         f'# {mid}, TODO title (doc 84 P14, batch {batch}): written for {npc} ({name}: {f.get("trade_words") or f.get("job") or "-"}, '
-        f'{f.get("from_town") or "-"}-born). Name-free; every TODO must go.',
+        f'{f.get("from_town") or "-"}-born). Name-free; every TODO must go. Window lines on the news, gossip, business, '
+        f'shop and inn nodes say their case ([here.shop!=bare]...); a story\'s ask is the teller\'s question (handbook 4.5.6, 4.5.8).',
         f'mantle {mid}',
         'state ready',
         f'dialect {dialect}',
@@ -410,15 +414,6 @@ def cmd_plan(a) -> int:
 
 # ------------------------------------------------------------------ lint
 
-def strip_tags(text: str) -> str:
-    """The text with `b[...] #tag :` as `b[...] :` and `a@tag :` as `a :`, so G2's rules see those lines too."""
-    def rep(m):
-        if m.group(2):
-            return f"{m.group(1)}{m.group(2)}{m.group(3)}{m.group(4) or ''}{m.group(6)}"
-        return f"{m.group(1)}a{m.group(5) or ''}{m.group(6)}"
-    return TAGGED.sub(rep, text)
-
-
 def turns(it: T.Item) -> list[tuple[str, str, list[str]]]:
     """A scene's or story's lines: (who, criteria, alternatives), tags and all."""
     out = []
@@ -450,37 +445,6 @@ def item_criteria(it: T.Item) -> str:
     return crit + ' ' + (m.group(1) if m else '')
 
 
-def tree_data_keys() -> dict[str, set]:
-    """For each window node (<tree>.<node>), the facts its own tree's lines turn on (Data/Talk/dialogue/*.tree: the news,
-    the gossip, the business, a bare shop, a warrant...), but for the hour, the meeting and the mood, and but for a line
-    of priority 10 or more (which wins whatever a mantle says). A mantle's line there outranks the tree's (+5), so an
-    ungated one would hide those facts: "Nothing worth the telling" while the salt road is shut."""
-    out = {}
-    cosmetic = {'topic.meeting', 'here.time', 'pair.disposition', 'trade', 'priority'}
-    for f in sorted((TALK / 'dialogue').glob('*.tree')):
-        tree = node = None
-        for raw in f.read_text().splitlines():
-            t = raw.strip()
-            if t.startswith('tree '):
-                tree = t.split()[1]
-            elif t.startswith('node '):
-                node = f'{tree}.{t.split()[1]}'
-            elif t.startswith('say[') and node and ']' in t:
-                toks = t[4:t.index(']')].split()
-                pr = [int(x.split('=')[1]) for x in toks if x.startswith('priority=') and x.split('=')[1].isdigit()]
-                if pr and pr[0] >= 10:
-                    continue
-                for tok in toks:
-                    k = re.split(r'!=|<=|>=|=|<|>', tok.lstrip('!'))[0]
-                    if k not in cosmetic:
-                        out.setdefault(node, set()).add(k)
-    return out
-
-
-def crit_keys(crit: str) -> set:
-    return {re.split(r'!=|<=|>=|=|<|>', tok.lstrip('!'))[0] for tok in crit.split()}
-
-
 def runs5(text: str) -> set:
     w = WORD.findall(text.lower())
     return {' '.join(w[i:i + 5]) for i in range(len(w) - 4)}
@@ -491,34 +455,8 @@ def lint(paths: list[str], world: str | None, facts: dict | None) -> list[C.Find
     files = C.files(paths)
     batch = [(f, read_mantle(f)) for f in files]
     batch = [(f, m) for f, m in batch if m]
-    ids = {m.id for _, m in batch}
-    # Everyone else, as G2 sees them: the world's rows and every exported or drafted file of the touched dialects.
-    others, others_s, world_f = [], [], None
-    dialects = {m.dialect for _, m in batch}
-    pool = {}
-    for f in mantle_files([EXPORT / d for d in dialects] + [Path(p) for p in paths]):
-        m = read_mantle(f)
-        if m and m.id not in ids:
-            pool[m.id] = (m, read_mantle(f, strip_tags(f.read_text())))
-    if world:
-        W = world_db()
-        with W.connect(resolve(world), 'editor') as conn:
-            wid = C.world_id_of(conn)
-            world_f = C.world_facts(conn, wid)
-            for m in C.world_mantles(conn, wid):
-                if m.id not in ids and m.id not in pool:
-                    pool[m.id] = (m, read_mantle(Path(f'db:{m.id}'), strip_tags(T.write(m))))
-    others = [p[0] for p in pool.values()]
-    others_s = [p[1] for p in pool.values() if p[1]]
-    # 1. G2's rules over the tagged lines: what the stripped text finds that the text as written doesn't.
-    plain_f = {str(x) for x in C.check([m for _, m in batch], world=world_f, strict=True, others=others, facts=facts)}
-    stripped = [read_mantle(f, strip_tags(f.read_text())) for f, _ in batch]
-    for x in C.check([m for m in stripped if m], world=world_f, strict=True, others=others_s, facts=facts):
-        s = str(x)
-        if s in plain_f or x.mantle not in ids or 'carry a dialect marker' in s or 'its habits are in' in s:
-            continue
-        out.append(C.Finding(x.mantle, x.key, x.message + '  [a tagged line: b[...] #tag : or a@tag :]', x.warning))
-    data_keys = tree_data_keys()
+    # (G2's rules over the tagged lines, the persona's pronouns and the window lines that would hide facts were the lint's
+    # until fix 8; mantle_check (G2) makes them now, so mantle_load refuses them too.)
     for f, m in batch:
         text = f.read_text()
         fx = (facts or {}).get(m.written_for, {}) if m.written_for else {}
@@ -531,11 +469,6 @@ def lint(paths: list[str], world: str | None, facts: dict | None) -> list[C.Find
                                                        f'the Dark One; no god, gods, godsend, godly...'))
             if re.search(r'\b(TODO|todo)\b', raw):
                 out.append(C.Finding(m.id, f'line {n}', 'a TODO is left'))
-        # 3. A pronoun in the persona.
-        if PERSONA_PRONOUN.search(m.persona or ''):
-            out.append(C.Finding(m.id, 'persona', f'"{PERSONA_PRONOUN.search(m.persona).group(0)}": the persona passes to the '
-                                                  'next wearer, of either sex; say it with no pronoun ("#self.first# keeps..., '
-                                                  'and keeps a jar of stones")'))
         # 4. The header against the wearer.
         if m.tier == 'spare':
             if m.written_for:
@@ -594,6 +527,14 @@ def lint(paths: list[str], world: str | None, facts: dict | None) -> list[C.Find
                         out.append(C.Finding(m.id, it.key, f'"{t}": "they" (them, their) after one wolf named by a slot; a '
                                                            f'wolf is male or female: say the name again, #topic.they#, or '
                                                            f'rephrase (if "they" means something else, make that plain)'))
+            if it.kind == 'story':
+                for raw in it.body.split('\n')[1:]:
+                    am = re.match(r'^\s*ask\s*:\s*(.*)$', raw)
+                    if am and LISTENERS_ASK.search(am.group(1).strip()):
+                        out.append(C.Finding(m.id, it.key, f'"ask : {am.group(1).strip()}": `ask :` is the teller\'s question to '
+                                                           f'the listener ("Do you keep anything...?"), and this asks the teller '
+                                                           f'about the story: it is the listener\'s, so put it in the `b` line '
+                                                           f'after ("You found the better water. Did you catch one?")'))
             if it.kind in ('scene', 'story'):
                 ts = turns(it)
                 threads = max((len(alts) for _, _, alts in ts), default=1)
@@ -625,15 +566,6 @@ def lint(paths: list[str], world: str | None, facts: dict | None) -> list[C.Find
                     if brief_runs & runs5(C.plain_words(t)):
                         out.append(C.Finding(m.id, it.key, f'"{t}": the brief\'s own words (every writer of the town has them); '
                                                            f'say it in this wolf\'s', True))
-            if it.kind == 'dlg':
-                first = it.body.split('\n')[0]
-                _, head, crit, _, _, _ = T.split_item(first[len('dlg'):])
-                need = data_keys.get(head.strip(), set())
-                if need and not (crit_keys(crit) & need):
-                    out.append(C.Finding(m.id, it.key, f'{head.strip()}: its tree speaks of {", ".join(sorted(need))}, and '
-                                                       f'this ungated line outranks it (+5), so it would hide them: gate it '
-                                                       f'(the plain case: [!world.news ...], [here.shop!=bare], '
-                                                       f'[here.wanted=no], [business=steady]...) or write one a case'))
             if it.kind == 'line':
                 head = it.body.split(':', 1)[0].split()
                 moves = [w for w in head[1:] if not w.startswith(('@', '['))]

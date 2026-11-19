@@ -1,6 +1,6 @@
-# cw154, the careful bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw154, the careful bell (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw154
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -263,15 +263,13 @@ story loose_handle [topic=work self.age>=13]
 story early_bells [topic=home self.age>=13]
   : I heard the #festival# #bells# while a #lamb# still needed #hay#.
   : I finished at the #fold#, then reached the #green# before the first #bout#.
-  ask : Did you miss anything?
-  b : The lamb came first.
+  b : The lamb came first. Did you miss anything?
   : Only the opening song.
 
 story wet_bout [topic=pastimes self.age>=13]
   : I tried a #wrestling# #bout# after #rain# had slicked the #green#.
   : My foot slid before the #grip# settled, so we stopped and waited for dry ground.
-  ask : Did you try later?
-  b : Safer to wait.
+  b : Safer to wait. Did you try later?
   : The next #day#, on firmer grass.
 
 rule @bark_tool

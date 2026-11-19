@@ -1,6 +1,6 @@
-# cw150, the honest wrapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw150, the honest wrapper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw150
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -374,15 +374,13 @@ story eel_supper [topic=food self.age>=25]
 story star_walk [topic=pastimes self.age>=25]
   : I left a crowded #market# and walked toward the #lake# as the #stars# appeared.
   : The first one showed above the #shore# before the last #stall# closed.
-  ask : Did you stay out?
-  b : That sounds peaceful.
+  b : That sounds peaceful. Did you stay out?
   : Just long enough to forget the #vats#.
 
 story cold_cup [topic=food self.age>=25]
   : I left a #cup# of #tea# by the #door# while I helped carry #crates#.
   : When I returned it was cold, so I shared a fresh pot with the next #worker#.
-  ask : Did you drink the first cup?
-  b : The work interrupted you.
+  b : The work interrupted you. Did you drink the first cup?
   : Not that one. I poured it out.
 
 rule @bark_wrapper

@@ -436,6 +436,22 @@ oath! = Crumbs | Flour and fire | Yeast take it
     bad("grammar plain\ngreet += Hi\n", "nothing below it");
     bad("grammar plain\ngreet.broad = Hi\n", "plain has no accent");
     bad("x = y\n", "expected 'grammar <name>' first");
+    // Mark banks (doc 84 §12.4, fix 8): mark.<symbol> in a dialect, in no layer below, drawn for a reused mantle's habit.
+    {
+        auto l = foundation();
+        std::string p;
+        expect(l.parseGrammar("grammar plain\nmark.oath = Well I never | Stars above\n\ngrammar frosthollow\n"
+                              "mark.oath = By the ice | Cold take it | Snow and stone\n", "banks.grammar", p), "mark banks parse: " + p);
+        std::set<std::string> drawn;
+        for (const auto* w : {"a", "b", "c", "d", "e", "f", "g", "h"})
+            drawn.insert(l.redrawHabit("cw001", "oath", w, "frosthollow"));
+        expect(drawn.size() >= 2 && !drawn.count("") && !drawn.count("Well I never"), "a reused mantle's oath drawn from its bank");
+        expect(l.redrawHabit("cw001", "oath", "a", "") == "Well I never" || l.redrawHabit("cw001", "oath", "a", "") == "Stars above",
+               "plain's bank for plain speech");
+        expect(l.redrawHabit("cw001", "saying", "a", "frosthollow").empty(), "no bank and no mantle: nothing drawn");
+    }
+    bad("grammar plain\nmark. = x\n", "a mark bank is mark.<symbol>");
+    bad("grammar frosthollow\nmark.oath! = x\n", "a mark bank");
 }
 
 void chainsAndMemory()

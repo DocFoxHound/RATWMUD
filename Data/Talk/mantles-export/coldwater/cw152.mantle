@@ -1,6 +1,6 @@
-# cw152, the market voice (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw152, the market voice (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw152
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent none
@@ -262,22 +262,19 @@ a : I explain it. | For a little while.
 story broken_box [topic=prices self.age>=18]
   : A #cart# brought a painted #box# from the #city# with a splendid #label#.
   : The corner broke when I lifted it, and I found half the #goods# were damaged.
-  ask : Did you pay for it?
-  b : The paint hid poor wood.
+  b : The paint hid poor wood. Did you pay for it?
   : Only for what I could use.
 
 story market_gull [topic=home self.age>=18]
   : A #gull# followed my #bag# from the #market# to the #shore#.
   : It caught the loose wrapping, so I lifted the #bag# and shouted until it let go.
-  ask : Was your food safe?
-  b : That bird was bold.
+  b : That bird was bold. Was your food safe?
   : Every piece of #eel# stayed inside.
 
 story first_bout [topic=pastimes self.age>=18]
   : I entered a #wrestling# #bout# thinking a strong #grip# would settle it.
   : My opponent turned a #shoulder# and put me on the #green# before I could plant my feet.
-  ask : Did you try again?
-  b : You learned the turn.
+  b : You learned the turn. Did you try again?
   : Next time I waited instead of rushing.
 
 rule @bark_market

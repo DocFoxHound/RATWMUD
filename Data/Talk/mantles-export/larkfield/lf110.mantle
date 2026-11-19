@@ -1,6 +1,6 @@
-# lf110, the frost-watch orchard keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf110, the frost-watch orchard keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf110
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -289,8 +289,7 @@ story gate_visitor [topic=home self.age>=18]
 story woods_at_dusk [topic=travel self.age>=18]
   : I took the short #path# beside the #woods# on a late #evening#.
   : The #shadows# made every #tree# look closer than it was.
-  ask : Did you get home?
-  b : The road would have been easier.
+  b : The road would have been easier. Did you get home?
   : I did, and now I take the open #road#.
 
 rule @bark_frost

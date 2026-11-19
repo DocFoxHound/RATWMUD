@@ -1,6 +1,6 @@
-# lf101, the plumb line (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf101, the plumb line (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf101
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -19,7 +19,7 @@ hopes a_door_of_her_own_in_the_heights
 topics work +0.4 player +0.3 lore +0.3 food +0.2 weather +0.2 newcomer +0.2 festival -0.3 gossip -0.2
 styles comfort=practical gossip=reluctant refuse=soft tease=dry
 marks oath saying
-persona #self.first# builds for the Greatly works and keeps its counter: quiet, dry and warm under it, her coat brushed clean of lime every hour, and she climbs the long stairs two at a time, bound for the Heights.
+persona #self.first# builds for the Greatly works and keeps its counter: quiet, dry and warm under it, a coat brushed clean of lime every hour, climbing the long stairs two at a time, bound for the Heights.
 
 words
 oath! = Plumb and level | Brick on brick | Mortar and mercy
@@ -399,8 +399,7 @@ a : I like the work. The House I don't see. | Steps, sills, garden walls. They m
 story bk_story_first_wall [concept=talk.memories self.age>=25]
   : The first wall I ever laid myself, I was proud as a cat. It came down in the rain the same week.
   : The foreman made me take it apart, brick by brick, and stack them clean. Every one.
-  ask : Did you want to quit?
-  b[job=crafter|laborer] : We've all had that wall.
+  b[job=crafter|laborer] : We've all had that wall. Did you want to quit?
   b : Did you want to quit?
   : For a night. Then I laid it again, and it's still there. #plumb#. I go and look at it now and then, on a Restday.
   b : That's a good wall to have.
@@ -446,12 +445,12 @@ dlg @4 resident.hub [pair.disposition=wary] : #greet#. Say what you came to say.
 dlg @5 resident.hub [pair.disposition=warm] : There you are, #topic.player#. I'll put the kettle on, and this time I'll drink it hot.
 dlg @6 resident.hub [here.time=night] : #greet#. Late. Everything all right? Come in out of the dark.
 dlg @1 resident.job : I'm a #self.trade_words#. I lay what folk lean on. | Brick, mostly. Walls, steps, sills. I keep the counter as well.
-dlg @1 resident.business : #fine#. The walls go up and the coin comes in, slow. | Steady. Late loads cost me, but steady.
-dlg @1 resident.news : Travellers tell me things. #news_none# today, though. | The road's slow and the brick's dear. That's my news.
-dlg @1 resident.gossip : #secret#. What's said at my counter stays there. | I don't pass it on. Something always spills, carrying it.
+dlg @1 resident.business [business!=thriving|failing] : #fine#. The walls go up and the coin comes in, slow. | Steady. Late loads cost me, but steady.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Travellers tell me things. #news_none# today, though. | The road's slow and the brick's dear. That's my news.
+dlg @1 resident.gossip [here.gossip!=yes] : #secret#. What's said at my counter stays there. | I don't pass it on. Something always spills, carrying it.
 dlg @1 resident.bye : #farewell#. Mind #stairs#; they bite harder going down. | #farewell#. Come back with a story.
-dlg @1 shop.greet : #greet#. Brick, tile, lime, and somebody who'll tell you which you need. | #greet#. What are you building?
-dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. Back for more? I put a good stack aside.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Brick, tile, lime, and somebody who'll tell you which you need. | #greet#. What are you building?
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Back for more? I put a good stack aside.
 dlg @1 shop.prices : I say a sum once and it's an honest one. If it's dear, I'll tell you why. | That's the price. I don't go round in circles; it wastes the day for both of us.
 dlg @1 shop.bye : #farewell#. Build it straight. | #farewell#. Lay #course# right and the rest is easy.
 graft @stairs resident.hub

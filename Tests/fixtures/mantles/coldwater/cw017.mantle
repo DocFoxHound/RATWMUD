@@ -53,8 +53,8 @@ does tell.self / react.self
 a : The lake's like glass this morning. I'll be in it before the shutters are down.
 b : You'll catch your death one of these mornings.
 
-dlg shop.greet : #greet#. Salt, candles, string, soap. If the lake doesn't sell it, I do.
-dlg shop.greet [topic.meeting=known] : #greet#, #topic.player#. In out of the wet. Looking or buying?
+dlg shop.greet [here.shop!=bare] : #greet#. Salt, candles, string, soap. If the lake doesn't sell it, I do.
+dlg shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. In out of the wet. Looking or buying?
 dlg resident.hub [here.outdoors=fog] : #greet#. Come in out of the mist; the floor's wet, mind. What's wanted?
 dlg resident.bye : #farewell#. Mind the step; it's slick.
 

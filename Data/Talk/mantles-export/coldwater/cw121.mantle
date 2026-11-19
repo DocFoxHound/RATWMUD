@@ -1,6 +1,6 @@
-# cw121, the lark and the kettle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw121, the lark and the kettle (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw121
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent broad light
@@ -324,8 +324,7 @@ story first_kettle [topic=work self.age>=25]
 story lark_reply [topic=pastimes self.age>=25]
   : I gave a #whistle# to a #lark# above the boiling house.
   : It answered twice, then flew off while I tried to make the same #song#.
-  ask : Did you match it?
-  b : A lark has more practice.
+  b : A lark has more practice. Did you match it?
   : No. I went back to the #kettle# and tried again the next morning.
 
 story wrong_scale [topic=prices self.age>=25]
@@ -338,8 +337,7 @@ story wrong_scale [topic=prices self.age>=25]
 story quiet_game [topic=pastimes self.age>=25]
   : I played draughts after a day when every #wagon# arrived late.
   : I missed an easy move because I kept listening for another knock at the #counter#.
-  ask : Did you lose?
-  b : Your mind was on the road.
+  b : Your mind was on the road. Did you lose?
   : I did. The next game, I shut the #door# first.
 
 story unopened_letter [topic=memories self.age>=25]

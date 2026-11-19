@@ -1,6 +1,6 @@
-# rm102, the two-at-a-time (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm102, the two-at-a-time (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm102
-revision 1
+revision 2
 state ready
 dialect plain
 accent none
@@ -18,7 +18,7 @@ hopes to_see_every_roof_in_the_city
 topics day +0.4 animals +0.3 food +0.2 festival +0.3 family +0.2 prices -0.2
 styles comfort=practical gossip=keen refuse=short tease=none
 marks oath saying
-persona #self.first# is a quick, blunt pup of the Commons who says exactly what she sees, watches the birds on the roofs, keeps a secret list, and takes every stair two at a time.
+persona #self.first# is a quick, blunt pup of the Commons who says exactly what is there to see, watches the birds on the roofs, keeps a secret list, and takes every stair two at a time.
 
 words
 oath! = Two at a time | Up and over | Stairs and soot
@@ -149,7 +149,7 @@ does tell.complaint / react.complaint / assess
 a : I hate #drizzle#. Proper rain is better. | It's wet on the stairs. I slipped on the eighth one. | #drizzle.capitalize# gets in my ears.
 b[stage=adult|old] #grown : Proper rain's wetter. | Take them one at a time when they're wet. | Shake your head. Like this.
 b : Me too. | Did you fall? | Mine too.
-a@grown : Wetter is better. You know where you are. | No. Two at a time. I'll just be careful. | That doesn't help. I tried.
+a@grown : Wetter is better. At least it's honest. | No. Two at a time. I'll just be careful. | That doesn't help. I tried.
 a : Nobody likes it. | Nearly. I didn't. | It's horrid.
 
 scene ad_secret_list
@@ -164,7 +164,7 @@ a : No. It's secret. That's the whole point. | Can't hear. I'm working on it. | 
 scene ad_mother_shop
 when topic=family self.mother
 does tell.self / react.self / assess
-a : #self.mother# says I mustn't touch the shiny things in #shop#. I look, though. | #self.mother# works with tiny tools. I'm not allowed to breathe near them. | I sat under the counter while #self.mother# worked. I was very still.
+a : #self.mother# says I mustn't touch the shiny things in #shop#. I look, though. | #self.mother# works with tiny tools. I'm not allowed to breathe near those tools. | I sat under the counter while #self.mother# worked. I was very still.
 b[stage=adult|old] #grown : Looking's allowed. | Best not. Those tools cost a fortune. | Very still? You?
 b : Not even one? | Not even breathe? | How long?
 a@grown : I know. I'm good at looking. | I don't breathe. I hold it. | I can be still. When it's worth it.
@@ -227,8 +227,7 @@ a : Mostly. I don't cheat. | Me. They stop for horses. | Until my tail hurt.
 story ad_story_bird [concept=talk.memories]
   : One day a bird came in our window and sat on the larder shelf.
   : It ate a crumb, and looked at me, and I looked at it, and nobody said anything.
-  ask : What did you do?
-  b[stage=adult|old] : I'd have chased it out.
+  b[stage=adult|old] : I'd have chased it out. What did you do?
   b : What did you do?
   : Nothing. I opened the window wider. It went. It came back the next day to the gutter.
   b : It remembered you.
@@ -237,8 +236,7 @@ story ad_story_bird [concept=talk.memories]
 story ad_story_stairs [concept=talk.day self.mother]
   : The first time I did #stairs# two at a time, I fell on the last one and cut my chin.
   : I didn't cry. I counted the steps while #self.mother# washed it.
-  ask : Did it hurt?
-  b[stage=adult|old] : That's a brave pup.
+  b[stage=adult|old] : That's a brave pup. Did it hurt?
   b : Did it hurt?
   : Yes. Then I did them again. #saying#.
 
@@ -299,8 +297,7 @@ a : Not telling. Somebody'd take the eggs. | Same one. Same spot. Like a shopkee
 story ad_story_snow [concept=talk.memories]
   : The first snow I really remember, I stood on the step all morning with my mouth open.
   : It tasted of nothing. I was so cross. I'd waited all year.
-  ask : Did you still like it?
-  b[stage=adult|old] : That's snow for you.
+  b[stage=adult|old] : That's snow for you. Did you still like it?
   b : Did you still like it?
   : More. It was quiet, and it was ours, and it tasted of nothing. That's better than it sounds.
 

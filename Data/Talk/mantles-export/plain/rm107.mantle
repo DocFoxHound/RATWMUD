@@ -1,6 +1,6 @@
-# rm107, the weather's opponent (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# rm107, the weather's opponent (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm107
-revision 1
+revision 2
 state ready
 dialect plain
 accent none
@@ -237,22 +237,19 @@ a : The other shepherd. | I claimed I had persuaded the #sky#.
 story borrowed_coin [topic=memories self.age>=25]
   : I borrowed #coin# in the #city# when a season of work fell short.
   : I have kept the sum in my #ledger#, though the lender's name stays with me.
-  ask : Will you repay it?
-  b : That sounds like a heavy thing to carry.
+  b : That sounds like a heavy thing to carry. Will you repay it?
   : Every #fleece# I sell brings the account closer to closing.
 
 story bell_in_field [topic=festival self.age>=25]
   : The festival #bells# started while I was bringing in a stubborn #ewe#.
   : I asked the #wind# to wait and it blew the #gate# shut for me.
-  ask : Did you make the celebration?
-  b : The wind finally helped.
+  b : The wind finally helped. Did you make the celebration?
   : I did, with a muddy #coat# and a good story.
 
 story lost_card [topic=pastimes self.age>=25]
   : A #card# lifted from our #table# and sailed toward the #lake#.
   : We chased it past a #bush# full of #berries#.
-  ask : Did you catch it?
-  b : That must have spoiled the hand.
+  b : That must have spoiled the hand. Did you catch it?
   : It landed face up. Nobody trusted the next deal.
 
 rule @bark_weather

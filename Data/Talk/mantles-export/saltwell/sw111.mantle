@@ -1,6 +1,6 @@
-# sw111, the proverb-monger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw111, the proverb-monger (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw111
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -175,7 +175,7 @@ scene sw111_cottage
 when topic=home here.region=waste self.wealth=poor|destitute
 does tell.self / react.self / assess
 a : A mat on a crowded floor. Warm, at least. | Six snores under one roof. I sleep through all of them. | #oldones.capitalize#, a crowded house is never robbed.
-b[wealth=poor|destitute] #poor : Better than the alms-bread line. | Six? I'd go mad. | Nothing in it worth robbing.
+b[wealth=poor|destitute] #poor : Better than queueing for charity bread. | Six? I'd go mad. | Nothing in it worth robbing.
 b : #bc_poor_soul# | Close quarters. | #bc_ha#
 a@poor : #bc_it_is# | You'd learn. #mm#. | That too.
 a : #saying#. | Close and cool. #proverb#. | #mm#. It suits me.
@@ -220,7 +220,7 @@ scene sw111_newcomer
 when topic=newcomer here.region=waste
 does tell.news / react.news / give.opinion
 a : #topic.subject#'s new. Asking about work at the press already. | Saw #topic.subject# at the well. Drew first, as a guest should. | #topic.subject#, new in. #mm#. We'll see.
-b[from=saltwell] #sw : Three days a guest, then a neighbour. | Good manners. | We'll see what?
+b[from=saltwell] #sw : Guest for three days, neighbour for good. | Good manners. | We'll see what?
 b : #bc_good# | #bc_we_will_see# | #bc_maybe#
 a@sw : And then a rival for my rows. #proverb#. | Manners are cheap. Work isn't. | Whether they stay.
 a : #mm#. There's only so much work. | #saying#. | #oldones.capitalize#, a new broom sweeps, and an old one knows the corners.
@@ -275,7 +275,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#. #mm#. What's 
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #oldones.capitalize#, #proverb#.
 dlg @3 resident.hub [pair.disposition=wary|hostile] : #mm#. You again. Say it, then.
 dlg @1 resident.job : I tie and pick at #self.workplace#. For somebody else's grapes. #saying#.
-dlg @1 resident.news : News? #mm#. #proverb#. Nothing I'd swear to.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? #mm#. #proverb#. Nothing I'd swear to.
 dlg @1 resident.bye : #farewell#. Mind the flies.
 graft resident.hub
 choice You've a saying for everything, haven't you? -> sayings

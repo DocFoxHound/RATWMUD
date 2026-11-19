@@ -18,7 +18,7 @@ hopes a_stall_of_her_own
 topics prices +.3 work +.2
 styles tease=dry refuse=short
 marks oath saying
-persona #self.first# sells fish in the Rag Market: quiet, short-tempered and dry, wasting neither words nor coin; she keeps a wet-stone whetting knife about her always.
+persona #self.first# sells fish in the Rag Market: quiet, short-tempered and dry, wasting neither words nor coin, with a wet-stone whetting knife always to hand.
 
 words
 saying! = Good fish tells no lies | A sharp knife wastes no meat
@@ -55,4 +55,4 @@ line answer.how : Can't complain. Wouldn't help if I did.
 line preclose [self.working=yes] : Well. These won't gut themselves.
 
 dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've found me before the good ones go.
-dlg shop.greet : #greet#. Fish, fresh this morning. Pick, or step aside.
+dlg shop.greet [here.shop!=bare] : #greet#. Fish, fresh this morning. Pick, or step aside.

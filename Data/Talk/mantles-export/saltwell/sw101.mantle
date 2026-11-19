@@ -1,6 +1,6 @@
-# sw101, the stone-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw101, the stone-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw101
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -19,7 +19,7 @@ hopes a_shelf_that_never_empties
 topics lore +0.4 prices +0.3 weather +0.2 player +0.2 gossip -0.4
 styles comfort=practical gossip=reluctant refuse=soft tease=dry
 marks oath saying
-persona #self.first# keeps the store by the spring and lives above it: patient, wry and plain, slow to gossip, honest at the scales, and she keeps a jar of smooth stones from the wadi beds on the counter.
+persona #self.first# keeps the store by the spring and lives above it: patient, wry and plain, slow to gossip, honest at the scales, with a jar of smooth stones from the wadi beds on the counter.
 
 words
 oath! = By the pebble and the pool | Stone and shade | By scale and spring
@@ -412,19 +412,19 @@ does aside
 cooldown 8h
 say Still no dust on #saltroad#. | Late again. #shelves.capitalize# will be bare by Restday.
 
-dlg @1 shop.greet : #greet#. Salt, oil, rope and dates, and every weight #honest#. | #greet#, #address#. Look all you like; #jar# aren't for sale.
-dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. Back for more rope, or for news? | #topic.player#. #shelves.capitalize# are as you left them, near enough.
-dlg @3 shop.greet [here.time=day here.weather=clear] : #greet#. Out of the noon, quick. Water first, then business.
-dlg @4 shop.greet [pair.disposition=hostile|wary] : What is it you want? Ask, and I'll weigh it.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Salt, oil, rope and dates, and every weight #honest#. | #greet#, #address#. Look all you like; #jar# aren't for sale.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Back for more rope, or for news? | #topic.player#. #shelves.capitalize# are as you left them, near enough.
+dlg @3 shop.greet [here.time=day here.weather=clear here.shop!=bare] : #greet#. Out of the noon, quick. Water first, then business.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : What is it you want? Ask, and I'll weigh it.
 dlg @1 shop.prices : Salt's cheap, it's under our feet. Everything else crossed #waste#, and #waste# charges. | #shop_dear# I don't set the carters' prices.
 dlg @1 shop.bye : #farewell#. Mind the step; it's worn smooth. | #shop_bye# Come back when #carts# are in.
 dlg @1 resident.hub : #greet#. Sit, if you like. What is it? | #greet#, #address#. Out of the glare first.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've kept the stool warm. What's wanted?
 dlg @3 resident.hub [here.time=night] : It's late. If it's #oil#, you're in luck. If it's talk, the same.
 dlg @1 resident.job : I keep #self.workplace#, and I live over it. Salt, oil, rope, dates. And the news, though I don't sell that. | I keep the store. I weigh things. I listen. That's most of it.
-dlg @1 resident.business : Steady. #carts.capitalize# are late more than they're early, and the salt's always here. | It pays for #soup# and a stone now and then.
-dlg @1 resident.news : #news_none# #carts.capitalize# will bring some, if they come. | Nothing worth the telling. Ask #carter#; they talk for a living.
-dlg @1 resident.gossip : #gossip_none# | I hear plenty. I'm not a well to be drawn on.
+dlg @1 resident.business [business!=thriving|failing] : Steady. #carts.capitalize# are late more than they're early, and the salt's always here. | It pays for #soup# and a stone now and then.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# #carts.capitalize# will bring some, if they come. | Nothing worth the telling. Ask #carter#; they talk for a living.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty. I'm not a well to be drawn on.
 dlg @1 resident.bye : #farewell#. Mind the step. | #farewell#, #address#. Come back when you've news.
 graft resident.hub
 choice What's in the jar on the counter? -> stones

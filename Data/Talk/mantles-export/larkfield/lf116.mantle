@@ -1,6 +1,6 @@
-# lf116, the river-stone taproom keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf116, the river-stone taproom keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf116
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -356,22 +356,19 @@ a : Often enough. | Whoever reaches the #door# last.
 story first_key [topic=work self.age>=18]
   : A #guest# returned a #key# I thought had vanished.
   : It had been under the #plate# beside their #bed#.
-  ask : Were you relieved?
-  b : An odd place for it.
+  b : An odd place for it. Were you relieved?
   : I put a brighter mark on that #key#.
 
 story river_pocket [topic=pastimes self.age>=18]
   : I carried a smooth #stone# from the #river# in my pocket.
   : It wore a hole through the cloth before I noticed.
-  ask : Did you keep it?
-  b : A costly little stone.
+  b : A costly little stone. Did you keep it?
   : It sits beside the #lamp# now.
 
 story city_cart [topic=travel self.age>=18]
   : I went to the #city# with a #cart# of supplies.
   : A rut held the #wheel# while the #taproom# ran short at home.
-  ask : Did you reach them in time?
-  b : A hard way to buy supplies.
+  b : A hard way to buy supplies. Did you reach them in time?
   : Before the last #cask# emptied.
 
 story riddle_guest [topic=pastimes self.age>=18]

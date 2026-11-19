@@ -1,6 +1,6 @@
-# cw149, the local seed (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw149, the local seed (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw149
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -267,15 +267,13 @@ story dark_ice [topic=memories self.age>=18]
 story bad_seed [topic=pastimes self.age>=18]
   : A #box# of #seeds# from the #city# promised quick roots.
   : Only one sprouted in my test #bed#, so I kept the rest out of the #garden#.
-  ask : Did the seller refund you?
-  b : Testing saved the larger bed.
+  b : Testing saved the larger bed. Did the seller refund you?
   : I took the #box# back and showed the empty #soil#.
 
 story spilled_roast [topic=food self.age>=18]
   : I carried a #plate# of #pork# across a freshly swept #floor#.
   : A gust opened the #door#; my quick #hand# kept supper on the #plate#.
-  ask : Did you spill anything?
-  b : That was close.
+  b : That was close. Did you spill anything?
   : Only a little #crackling#.
 
 rule @bark_garden

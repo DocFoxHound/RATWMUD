@@ -5335,3 +5335,51 @@ spares are written to this, and a change to it is a format 2: a `format` value t
 6. **Two facts changed for everyone**: skippers, deckhands and boatmen now have `job=sailor` and warreners
    `job=herder` (they were `none`), so lines gated on those jobs now fit them; and nobody names one of their people
    (`#self.boss#`, `#self.friend#`...) to that very wolf's face.
+
+## 42. Fix 8: the handbook's problems, fixed before the writing (2026-11-18)
+
+The agent that wrote `Docs/Mantle-writing-handbook.md` found nine problems (handoff §8). All are fixed on
+`r3-talk-fix8`, so stage 5's writing (P14, P15) can go ahead. The engine change is small and in two Core functions.
+
+1. **Mark banks** (§12.4): the grammar parser (`Library::readGrammarText`, Core/RatwTalk.cpp) takes `mark.<symbol> =
+   alt | alt` lines, the name `Library::redrawHabit` looks for; such a bank is in no layer below (the plain check in
+   `Library::parseGrammar` passes it), takes no `.broad` and no `!`. None is written yet (P15). Tests: talk_tests'
+   grammar test (a Frosthollow bank drawn for a reused mantle, plain's bank for plain speech, the refusals).
+2. **Window lines that hid facts**: a mantle's `dlg` line outranks its tree's (+5), so an ungated "Nothing worth the
+   telling" beat real news 20 times in 20. Now (a) the engine: `Library::compileMantle` (Core/RatwMantle.cpp) gives a
+   `dlg` line that tests none of the facts its node's tree lines report (the hour, the meeting, the mood, the trade
+   and the stage aside; a line of the strict priority aside) each fact line's first fact, negated (`yieldToTree`, a
+   file-static helper), its score as written: it holds only where none of them does, and stays the wearer's own
+   otherwise. mantle_tests' `windowLinesYieldToFacts`. (b) G2 refuses such a line (`mantle_check.window_facts`, read
+   from the trees; its message gives the node's plain case). (c) The content: 84 lines in 42 mantles gated on their
+   case (`[!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent]`,
+   `[here.gossip!=yes]`, `[business!=thriving|failing]`, `[here.shop!=bare]`, `[here.inn_helper!=yes]` or `=yes` for
+   sw103's scrubber, `[here.lodging!=yes]`), and 4 news alternatives that said `#world.event_words#` beside a
+   "nothing new" moved to lines gated on it.
+3. **G2 reads tagged scene lines** (`b[...] #tag :`, `a@tag :`, `a@tag[...] :`): `mantle_check.said` skipped them. The
+   52 problems they hid in the pilot were rephrased (5-word runs, a Southmeadow phrase in mb120, "Ash" used as a word,
+   listeners' lines writing Saltwell out); counting the tagged lines put three mantles under the 60% density, lifted
+   with their dialects' symbols. The lint's own re-run of G2 over stripped tags is gone.
+4. **Personas**: G2 refuses a pronoun in a persona; the 15 (and 9 of the fixture's) were made sex-neutral.
+5. **`ask :` misused**: in 183 stories of 106 mantles (cw102's, and most of cw-1, cw-2 and lf-1's), `ask :` carried
+   the listener's question to the teller ("Did you catch one?"), which the engine gives the teller. Each was folded
+   into the `b` line after it (the listener asks it: "You found the better water. Did you catch one?"); the ask dropped
+   where the `b` line already asked. `ask :` lines that ask the listener, or tease what comes next ("Did the batch
+   spoil?"), were kept. The lint refuses the common misplaced forms.
+6. **`mantle_load` exits 2** when it wrote but a bind failed (1: refused, nothing written; 0: done).
+7. **`mantle_check --pools --world KEY [drafts]`**: each pool's health over five forecast years (spare + ready against
+   `mantle_pool`'s births, the wearers' deaths back once rested, green at 1.5 x the half-year's births + 2) and the
+   spares' sly + guarded within 5 points of the dialect's living. Every pool is short today (no spares).
+8. **`mantle_load --written-by WHO`** (default `claude-<batch>`); fix 8's own reload kept each mantle's writer.
+9. **The kits test** maps plain to Ridgemere.
+
+All 145 mantles were reloaded into `ratw_ridgemere3` (four loads, one per writer, backups in the worktree's
+`Saved/Backups/`) and exported; rows and files agree. G1, G2 `--strict`, the lint and G3 pass over all 145 (G3: 0
+holes, the same 84 scenes never heard as before).
+
+**The card** (`artifacts/talk/runs/fix8`, once, on the 145): it exits 1 on the soft rows §41 left open (C8, O1, U2,
+K2, X1, C9, D1A, D1B, the timings) and on R8 (habit lines 0.05 → 0.30%, the 102 new mantles' oaths and sayings;
+the ceiling is 15%); U1 is 5.52 / 3.54% of all lines (0.96 at P11: 145 wearers, not 43). One hard row broke in the
+frozen mode, **D2 = 2**: lf105's (lf-1's) story beat "had little #fish#" says Coldwater's "little fish" in a Larkfield
+mouth (G2 can't see a phrase split by a symbol). Fixed after the card ("had hardly any #fish#", reloaded, revision
+3); the card was not run again. Nothing refrozen.

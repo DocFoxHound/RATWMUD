@@ -94,6 +94,21 @@ class Scratch:
         return self.owner.execute(sql, args).fetchone()[0]
 
 
+class ExitAndAuthor(unittest.TestCase):
+    def test_a_failed_bind_exits_non_zero(self):
+        """Fix 8: a load that wrote but couldn't bind exits 2 (it exited 0 before), a refused one 1, a clean one 0; and
+        --written-by reaches the load."""
+        from unittest import mock
+        base = {'loaded': {'cw017': {}}, 'skipped': [], 'bound': [], 'backup': None, 'problems': [], 'unbound': []}
+        cases = [(dict(base, problems=['cw017 not bound: tt_x is dead'], unbound=['cw017']), 2),
+                 (dict(base, loaded={}, problems=['cw017.mantle: refused']), 1), (base, 0)]
+        for report, code in cases:
+            with mock.patch.object(L, 'load', return_value=report) as load, \
+                    mock.patch.object(L.sys, 'argv', ['mantle_load.py', 'w', 'x.mantle', '--batch', 'b', '--written-by', 'codex-b']):
+                self.assertEqual(L.main(), code, report)
+                self.assertEqual(load.call_args.kwargs['written_by'], 'codex-b')
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
 class MantleRows(unittest.TestCase):
     def test_migration(self):
@@ -175,6 +190,7 @@ class MantleRows(unittest.TestCase):
             self.assertEqual(s.count("SELECT count(DISTINCT source) FROM live.mantle_history"), 1)
             self.assertTrue(Path(report['backup']).exists())
             self.assertEqual(s.count("SELECT written_by FROM live.mantles WHERE id = 'cw017'"), 'claude-test')
+            self.assertEqual(report['unbound'], [])
             # The files were written back from the rows: named, numbered, with their revision.
             back = (s.drafts / 'coldwater' / 'cw017.mantle').read_text()
             self.assertIn('revision 1\n', back)
@@ -213,8 +229,10 @@ class MantleRows(unittest.TestCase):
             theirs = s.load([out1 / 'coldwater' / 'cw017.mantle'], batch='stale', export=False, take_theirs={'cw017'})
             self.assertEqual(theirs['skipped'], ['cw017'])
             self.assertEqual(s.count("SELECT revision FROM live.mantles WHERE id = 'cw017'"), 2)
-            mine = s.load([out1 / 'coldwater' / 'cw017.mantle'], batch='mine', export=False, take_mine={'cw017'})
+            mine = s.load([out1 / 'coldwater' / 'cw017.mantle'], batch='mine', export=False, take_mine={'cw017'},
+                          written_by='codex-mine')
             self.assertEqual(mine['loaded']['cw017']['updated'], 1)
+            self.assertEqual(s.count("SELECT written_by FROM live.mantles WHERE id = 'cw017'"), 'codex-mine', '--written-by')
             self.assertEqual(s.count("SELECT revision FROM live.mantles WHERE id = 'cw017'"), 3)
             # A new unnamed item never takes a key the rows have, though the file lacks it.
             draft = T.write(T.read(back)).replace('line @1 preclose', 'line preclose')

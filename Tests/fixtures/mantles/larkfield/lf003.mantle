@@ -16,7 +16,7 @@ fears open_water
 hopes a_berth_somewhere_dry
 topics ships +.4 weather +.2
 marks oath saying
-persona #self.first# works and lives in the Sump: quiet, content in a thin way, and she dreams of a berth on a ship bound somewhere dry.
+persona #self.first# works and lives in the Sump: quiet, content in a thin way, dreaming of a berth on a ship bound somewhere dry.
 
 words
 saying! = Every tide leaves a bargain behind | Dry paws, fair price

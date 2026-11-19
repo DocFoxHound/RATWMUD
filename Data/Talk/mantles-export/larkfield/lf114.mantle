@@ -1,6 +1,6 @@
-# lf114, the name-keeping country printer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf114, the name-keeping country printer (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf114
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent none
@@ -354,15 +354,13 @@ a : Only a loose #block#. | After I check it.
 story first_proof [topic=work self.age>=18]
   : My first paid #proof# had one reversed #letter# in the heading.
   : A buyer spotted it before I did.
-  ask : Did you repair it?
-  b : That is a useful lesson.
+  b : That is a useful lesson. Did you repair it?
   : I reset the #line# before the #press# ran.
 
 story road_walk [topic=travel self.age>=18]
   : I walked the full #road# to the #city# because the #wagon# was full.
   : Coming home I could still hear the city #market# behind me.
-  ask : Did you return with anything?
-  b : A long way on foot.
+  b : A long way on foot. Did you return with anything?
   : A little #paper# and a great wish for quiet.
 
 story remembered_name [topic=memories self.age>=18]

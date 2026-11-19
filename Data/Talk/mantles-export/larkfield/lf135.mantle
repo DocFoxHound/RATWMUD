@@ -1,6 +1,6 @@
-# lf135, the keeper of favours (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf135, the keeper of favours (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf135
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -282,22 +282,19 @@ a : A #friend# held her. | Only hungry.
 story city_debt [topic=memories self.age>=18]
   : I went to the #city# carrying the first #coins# I had saved.
   : The one I owe would take only part of the #debt#.
-  ask : Did you ask why?
-  b : That sounds difficult.
+  b : That sounds difficult. Did you ask why?
   : I left the rest for another visit.
 
 story escaped_sow [topic=work self.age>=18]
   : The #latch# failed and a #sow# trotted out toward the #market#.
   : I followed her #hooves# through the #mud#.
-  ask : Did you catch her?
-  b : Clever animal.
+  b : Clever animal. Did you catch her?
   : A #friend# stopped her with a #bucket# of #feed#.
 
 story first_tally [topic=home self.age>=18]
   : A #neighbour# brought supper when my #wage# had run out.
   : I put a small #mark# on a folded #page#.
-  ask : Was that your first tally?
-  b : A kind neighbour.
+  b : A kind neighbour. Was that your first tally?
   : It was, and the #page# is still in my pocket.
 
 rule @bark_trough

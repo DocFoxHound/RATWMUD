@@ -1,6 +1,6 @@
-# lf130, the grandmother-quoting woodcutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf130, the grandmother-quoting woodcutter (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf130
-revision 1
+revision 2
 state ready
 dialect larkfield
 accent light broad
@@ -284,15 +284,13 @@ story branch_warning [topic=work self.age>=18]
 story wrong_bridge [topic=pastimes self.age>=18]
   : My old #map# drew a #bridge# over a patch of #mud#.
   : A walk by its false #bridge# left my #boots# heavy with #mud#.
-  ask : Did you throw it away?
-  b : A memorable map.
+  b : A memorable map. Did you throw it away?
   : No; I still like its honest errors.
 
 story hidden_savings [topic=home self.age>=18]
   : I hid a few #coin# after the #cart# was sold.
   : The #house# asked what I was saving for.
-  ask : Did you answer?
-  b : A private plan.
+  b : A private plan. Did you answer?
   : I said I would tell them when it was real.
 
 rule @bark_axe

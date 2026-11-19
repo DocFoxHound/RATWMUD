@@ -1,6 +1,6 @@
-# sw113, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# sw113, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle sw113
-revision 1
+revision 2
 state ready
 dialect saltwell
 accent light broad
@@ -64,7 +64,7 @@ line @1 answer.how : #fine#. Mostly. I worry, you know. | Well. I think. #fret#.
 line @1 sympathise : #sympathy#. If there's anything, ask. I'd owe it to you anyway. | #sympathy#. Sit a moment. Please.
 line @1 decline : #hedge#, I can't. I'd only let you down, and then I'd owe you twice. | I'd rather not. #fuss#. Another time, if I can.
 line @1 accept_decline : Oh, of course. #no_matter#. | That's all right. I shouldn't have asked.
-line @1 thank : #thanks#. That's #notch# for you. I won't forget. | My thanks. I've marked it. Truly.
+line @1 thank : #thanks#. That's #notch# for you. I won't forget. | My thanks, #address#. I've marked it. Truly.
 line @1 deflect_thanks : It was owed. From before. You don't remember, but I do. | #deflect#. We're square now. Nearly.
 line @1 preclose [self.working=yes] : #does.capitalize# will fret if I'm long. #excuse#. | I should see to #warren#. Sorry.
 line @1 ack : #ack#. | Yes. Yes, #bc_it_is#
@@ -98,7 +98,7 @@ does tell.worry / reassure / assess
 a : I counted #kits# twice this morning and got two numbers. | One of #does# didn't come up at dawn. I've been at the hole all morning. | #mothers.capitalize#. I feel them watching every time I lose one.
 b[job=herder|farmer] #farm : Count a third time. The middle number's right. | She'll be nursing. They hide when they're nursing. | Everyone loses a few. They did too.
 b : #sympathy#. | #bc_i_hope_so# | #bc_poor_soul#
-a@farm : The middle one. Yes. That's sensible. I'll do that. | Nursing. Oh, I hope so. | Did they? Nobody ever said.
+a@farm : The middle one. Yes. That's sensible. I'll do that. | Nursing. #bc_maybe# I hope so. | Did they? Nobody ever said.
 a : #fret#. I'll count again tonight. | I'll sit by the hole. Just in case. #oath#. | #fret#. I'm the third. I can't be the one.
 
 scene sw113_hawk
@@ -107,7 +107,7 @@ does tell.worry / react.self / assess
 a : #hawkword.capitalize# was over #warren# again. Circling. I waved my shawl. | #hawkword.capitalize# took a kit yesterday. I saw it. I couldn't do anything. | I've strung rags on the thorn to keep #hawkword# off. I don't know if it helps.
 b[from=saltwell] #sw : She's feeding her own. It's the Waste. | The Waste takes. It gives too. | Rags work, for a while. Then she learns.
 b : #bc_poor_soul# | #pity#. | #bc_maybe#
-a@sw : I know. I know. I still wave. | It gives. I keep forgetting that part. | Then I'll change the rags. Red ones.
+a@sw : #bc_i_know# I still wave. | It gives. I keep forgetting that part. | Then I'll change the rags. Red ones.
 a : #fret#. I'll be out at first light again. | #oath#. One kit. It's still one. | #fuss#. But I'll keep at it.
 
 scene sw113_tally
@@ -125,23 +125,23 @@ does tell.self / react.self / assess
 a : #stewbowl.capitalize# tonight, if the cart brought mutton. Did it? Do you know? | I saved a little silver for #stewbowl#. Is that wicked? | Somebody left #stewbowl# on my step. I don't know who. Now I can't pay it back.
 b[from=saltwell] #sw : There's mutton at the inn. I smelled it. | Wicked? It's stew. | Bread and salt, then. That pays most things.
 b : #tasty.capitalize#. | #bc_i_hope_so# | #bc_maybe#
-a@sw : Oh, good. Good. I'll go before it's gone. | It's stew. You're right. It's stew. | Does it? Bread and salt. I'll leave it on every step, then.
+a@sw : Oh, good. Good. I'll go before it's gone. | It's stew. You're right, #address#. It's stew. | Does it? Bread and salt. I'll leave it on every step, then.
 a : #hungry.capitalize#. I'll hope. | #fuss#. I'll have it anyway. | #fret#. I'll find them.
 
 scene sw113_stars
 when topic=weather|pastimes here.region=waste here.time=dusk|night here.weather=clear
 does tell.self / react.self / assess
 a : I sit on the warren wall every evening and wait for #starsout#. | #starsout.capitalize#. That one's always first. Every night. It never misses. | I count them till I lose count. It's the only counting I don't mind getting wrong.
-b[from=saltwell] #sw : The low red one. Carters steer by it. | Always first. Like the well. | The stars blow on the embers of the day.
+b[from=saltwell] #sw : The low red one. Carters steer by it. | Always first. Like the well. | Stars are the day's embers, blown bright.
 b : #bc_lovely# | #bc_every_night# | #bc_wise#
-a@sw : Does it? Then somebody's safe home. | Like the well. Yes. Something you can trust. | Blow gently, then. I like the warmth a bit longer.
+a@sw : Does it? Then somebody's safe home. | Like the well. #bc_true# Something you can trust. | Blow gently, then. I like the warmth a bit longer.
 a : #bc_lovely# | #oath#. There it is. | Nobody owes the stars anything. I like that.
 
 scene sw113_chapel
 when topic=faith here.region=waste
 does tell.self / react.self / assess
 a : I go to #hush#. Before the bell, after the bell. Never during. | Nobody in #hush# but me and the Bright One. That's how I like it. | I pray small. Keep #warren#. Keep the young ones. That's all.
-b[stage=old] #old : The Bright One hears a quiet room best. | The bell's for the crowd. The quiet's for the asking. | Small prayers come true more often.
+b[stage=old] #old : A quiet room carries furthest to the Bright One. | The bell's for the crowd. The quiet's for the asking. | Small prayers come true more often.
 b : #bc_wise# | #bc_i_know# | #bc_maybe#
 a@old : Do you think so? I hope so. | For the asking. Yes. I'll remember that. | Do they? I'll keep them small.
 a : Crowds make me count faces. #fuss#. | #bless#. | #saying#. Even to the Bright One.
@@ -161,14 +161,14 @@ does tell.complaint / react.complaint / assess
 a : A carter walked straight across #warren#. Stamped on two holes. Not a word. | Somebody took water before the elders at the well. I didn't say anything. I wanted to. | Nobody says thank you now. Not like it was.
 b[from=saltwell] #sw : Tell him next time. Plainly. | The well remembers who drew from it. | It's still like it was. Some of us.
 b : #bc_very_bad# | #annoyed.capitalize#. | #bc_true#
-a@sw : I couldn't. I'd shake. | I hope it does. #fret#. | Some of us. Yes. You do.
+a@sw : I couldn't. I'd shake. | I hope it does. #fret#. | Some of us. #bc_true# You do.
 a : #fret#. I filled the holes. | I said nothing. #fuss#. | #saying#. That's what thanks are for.
 
 scene sw113_newcomers
 when topic=newcomer here.region=waste
 does tell.worry / react.self / assess
-a : #topic.subject#, new. I don't know a thing about them. Do you? | #topic.subject# was at the warren wall at dusk. Just looking. Why would they? | Another new face. #topic.subject#. I'll wait and see. I'll watch.
-b[from=saltwell] #sw : Three days a guest, then a neighbour. | Rabbits are worth looking at. | Watch, and bring dates.
+a : #topic.subject#, new. I don't know a thing about #topic.them#. Do you? | #topic.subject# was at the warren wall at dusk. Just looking. Why would #topic.they#? | Another new face. #topic.subject#. I'll wait and see. I'll watch.
+b[from=saltwell] #sw : A guest three days. After, one of us. | Rabbits are worth looking at. | Watch, and bring dates.
 b : #bc_we_will_see# | #bc_maybe# | #bc_fair#
 a@sw : Three days. I'll try. It's hard for me. | Maybe. I hope that's all. | Dates. Yes. And watch.
 a : #fret#. I'll be polite. | I counted #kits# after. All there. | #fuss#. I can't help it.
@@ -279,7 +279,7 @@ dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Oh. Hello. I don't know 
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're on #tally#, you know. In a good way.
 dlg @3 resident.hub [pair.disposition=wary|hostile] : Oh. You. #fret#. What is it?
 dlg @1 resident.job : I keep #warren# at #self.workplace#. Feed, mend, count. #mothers.capitalize#. I'm the third.
-dlg @1 resident.news : News? I don't know. I don't like to pass things on. Ask at the well.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : News? I don't know. I don't like to pass things on. Ask at the well.
 dlg @1 resident.bye : #farewell#. Go carefully. Mind the holes.
 graft resident.hub
 choice What's that stick with the notches? -> tally
