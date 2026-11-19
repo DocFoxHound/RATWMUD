@@ -1,0 +1,287 @@
+# cw905, the crack-stepper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw905
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier spare
+written_by claude
+title the crack-stepper
+fits stage=young|adolescent|adult|old
+prefers temper=nervy piety=devout
+traits temper=nervy talk=quiet warmth=reserved humour=merry honesty=plain piety=devout drive=steady
+quirk never_steps_on_a_crack_between_the_boards
+likes quiet_chapel stars warm_bread
+dislikes wet_floors early_bells
+fears bad_luck_following_me_home
+hopes one_whole_year_without_a_slip
+topics faith +0.4 lore +0.4 health +0.3 weather +0.2 home +0.2 crime -0.4
+styles comfort=prayer gossip=reluctant refuse=soft tease=gentle
+marks oath saying laugh
+persona #self.first# steps over every crack between the boards and says a little prayer at every threshold: quiet, careful and a touch jumpy, devout in a small everyday way, quick with a nervous laugh, and happiest in an empty chapel or under a clear sky full of stars.
+
+words
+oath! = Bright One, steady my feet | Mind the cracks | Boards and blessings
+saying! = Step soft and step whole | Luck lives in the gaps | The careful paw comes home
+laugh! = Heh | Heh, heh
+cracks = the cracks | the gaps between the boards
+boards = the boards | the old jetty boards
+myluck = my luck | my little bit of luck
+charm = my charm | the knot of blue thread on my wrist
+candle = a candle | a stub of chapel candle
+skyful = the stars | the stars over the lake
+loaf = warm bread | a loaf still warm from the oven
+bells = the early bells | bells before it's light
+slick = a wet floor | boards gone slick with wet
+careful = careful | careful as a cat on ice
+prayer = a little prayer | a prayer under my breath
+threshold = the doorstep | the threshold
+stillchapel = the empty chapel | the chapel when nobody's in it
+
+any
+opinion @1 church for 2 : I'd sit in #stillchapel# every evening if they'd leave the door open. It's the only place my paws stop twitching.
+opinion @1 watch for 1 : #watch.capitalize# going by at night lets me sleep. Why they go by, I'd rather not wonder.
+opinion @1 drink against 1 : Drink makes a wolf clumsy. I've seen a fellow go down between #boards#. Never again, I said.
+opinion @1 festivals mixed 1 : I like the candles on a feast night. The crowds and the drums I could do without. #laugh#.
+opinion @1 newcomers mixed 1 : New folk don't know which boards are loose. Somebody ought to tell them, kindly.
+opinion @1 strangers mixed 1 : A #stranger# at the door at night sets my heart going. By day I'll happily say good morning.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Mind the loose board there. | #greet#. #laugh#. You startled me, #address#.
+line @2 greet [here.time=dawn] : #greet#. Up before #bells#, for once. | #greet#. A hush over everything. My favourite kind of dawn.
+line @3 greet [here.time=dusk|night] : #greet#. Mind your step; #boards# are hard to see now. | #greet#. Late. I'll walk you to the lamp, if you like.
+line @1 kin.open [pair.kin!=no] : It's you. Good. Come in, and step over #threshold#. | There you are. I'd started to worry. I always start to worry.
+line @1 greet.return : #greet#. #laugh#. You made me jump. | #greet#, #address#. All well, I hope?
+line @1 farewell : #farewell#. Go #careful#. | #farewell#. Bright One keep your feet.
+line @1 farewell.return : #farewell#, and #blessing#. | #farewell#. Mind #cracks#.
+line @1 react.news.new : Oh. #surprise#. I'd not heard. | #oath#. That's new, and I don't know yet if I like it.
+line @1 react.news.known : #knew#. It made me jumpy all yesterday. | I'd heard. I said #prayer# over it already.
+line @1 react.news.doubt : I hope that's not true. #doubt#. | I'd rather wait and see. Talk like that spreads like a crack.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. #pity#. I'll light #candle#. | Bright One keep #topic.them#. That's awful news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's a blessing. | Oh, good. A bit of luck for somebody. I'm glad.
+line @1 answer.how : Jumpy, but well. #laugh#. | Well, touch wood. Steady. I haven't slipped.
+line @1 sympathise : #sympathy#. I'll keep you in my prayers, truly. | Oh, that's hard. Sit, and I'll be quiet with you.
+line @1 decline : #hedge#. #boards.capitalize# will be wet tonight, and I'd rather keep off them. | I'm sorry, I can't. I'd only fret the whole time, and spoil it for you.
+line @1 accept_decline : #no_matter.capitalize#. I understand, honestly. | No harm. Some dry day, then.
+line @1 thank : #thanks#. The Bright One keep you for that. | Kind, that. I'll say #prayer# for you tonight.
+line @1 preclose : I should get home before it's dark. #preclose#. | #laugh#. I've kept you. I'll let you go.
+line @1 ack : #bc_true# | #laugh#.
+scene crack_by_crack
+when topic=smalltalk|day
+does tell.self / ask.detail / answer.detail / assess
+a : I came the whole way from home without stepping on one of #cracks#. | There's one of #boards# by the well cracked right across. I go round by the wall. | Everyone laughs at how I walk. I don't mind. I've never once gone through.
+b : Why the cracks? | Is it dangerous? | Never?
+a : #saying#. My #gran# taught me, and I've never been sorry. | Probably not. But probably's not certainly. #laugh#. | Not once. #oath#. I'd sooner look silly than fall.
+b? : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene empty_chapel
+when topic=faith
+does tell.feeling / react.self / assess
+a : I go to #stillchapel# when nobody's there. I can hear myself think. | I light #candle# every evening. One for the house, one for the road. | I don't pray loud. A whisper reaches the Bright One as well as a shout.
+b : Peaceful, that. | Every evening? | I'd think so.
+a : It's the only place my paws keep still. | Every evening. I'd fret all night if I missed one. | I'm sure of it. I'd not dare shout anyway. #laugh#.
+
+scene clear_sky
+when topic=weather here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : #skyful.capitalize#, every one of them out. It makes me feel very small, in a good way. | I sit on #threshold# and look up when the sky's this clear. It calms me right down. | My #gran# said every star's a lamp somebody lit for a traveller.
+b : It's a fine night. | Good habit. | That's a lovely thought.
+a : A fine night. I'll stay out till my nose is cold. | It's the best one I've got. Better than #charm#, nearly. | I think of it whenever I'm frightened. Somebody's lit a lamp.
+
+scene bread_warm
+when topic=food
+does tell.self / react.self / assess
+a : #loaf.capitalize#, broken open, and a bit of butter. I want nothing else. | I bake on a Restday. The house smells like a blessing after. | I can't walk past the oven door without stopping to smell it.
+b : Simple and good. | It does smell like that. | Who could?
+a : Simple's safe. I like safe. #laugh#. | It's the one day the house feels lucky all through. | Nobody I'd trust.
+
+scene bells_before_light
+when topic=day|faith here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# again. My heart was going like a hare's. | I don't like a bell before dawn. It sounds like trouble even when it isn't. | Somebody rang #bells# and I was up and dressed before I knew why.
+b : It's only a bell. | That's fair. | Was there trouble?
+a : I know. My heart doesn't. #laugh#. | Every time, I think fire. Every time, it's nothing. | Nothing. I sat on the bed and said #prayer# till I'd stopped shaking.
+
+scene slick_boards
+when topic=weather|home here.weather=rain|snow
+does tell.worry / reassure / assess
+a : #slick.capitalize# is the worst thing in the world. One step and you're down. | I put sand on #threshold# when it's wet. Somebody has to. | I've walked the long way round twice today, to keep off #slick#.
+b : Go slow and you'll be fine. | Good idea, that. | Twice?
+a : Slow's the only speed I've got. #laugh#. | It's my one good idea. I've had it for years. | Twice. And I'll do it again tonight, coming home.
+
+scene lake_omens
+when topic=lore here.region=coldwater
+does tell.story / react.story / assess
+a : They say if the lake goes flat and grey at noon, somebody's about to have a bit of luck. | My #gran# said never whistle on #boards#, or the water whistles back. | Old ones say a crack in the ice that runs to the shore means a hard month coming.
+b[from=coldwater] #cw : My granny said the same about whistling. | I've heard that one. | That one's true, near enough.
+b : Good luck or bad? | Have you ever? | Do you believe it?
+a@cw : Then I'm right not to whistle. Two grannies can't be wrong. | So you'll know to watch for it too. | Near enough's enough for me. I watch the ice.
+a : Good, they say. I hope it's mine. #laugh#. | Never. I'd not dare. | I believe enough to look, every winter.
+
+scene twice_worried
+when topic=health
+does tell.worry / reassure / assess
+a : I've a twinge in my paw. Probably nothing, #address#. Probably. | I didn't sleep. I kept thinking I'd left the lamp lit. I hadn't. | I sneezed three times this morning. Three's a lot, isn't it? I'm sure it's fine.
+b : It'll be nothing. | You'd know if you had. | It's only a sneeze.
+a : I'll say #prayer# for it anyway. Just to be sure. | I got up and checked. Twice. #laugh#. | Only a sneeze. I'll keep warm, all the same.
+
+scene blue_thread
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I wear #charm#. I've never once taken it off. | Everyone has a little thing for luck. Mine's #charm#. Yours? | I tied a new knot in #charm# this spring. It was getting thin.
+b : What's it for? | I've nothing, I'm afraid. | Does it help?
+a : Luck, and steadiness. And because my #gran# tied the first one. | Then I'll say #prayer# you never need one. | I've not slipped since. That's all I'll say, in case.
+
+scene lean_prayers
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. I've been praying more and eating less. Both seem right. | When times are hard I light #candle# for every house on the lane. | I worry for every #child# in the lane in a winter like this. I keep that worry quiet, but it's there.
+b : It'll turn. | That's a lot of candles. | They'll come through.
+a : It will. The Bright One's never let it not turn. | It's a lot of lane. I don't mind the cost. | They will. I'll make sure of my bit of it.
+
+scene first_frost
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : #boards.capitalize# frosted over in the night. I crept to the well like an old cat on a roof. | Winter makes #boards# slippery. I don't go out after dark till spring. | I love the first frost. I hate walking on it. Both at once.
+b : Slow and steady. | Not at all? | Both, eh?
+a : Slow, steady, and praying the whole way. #laugh#. | Not when I've the choice. #careful.capitalize#, that's me. | Both. That's winter, for me.
+
+story the_one_slip [topic=memories|health self.age>=20]
+  : The one time I stepped on a crack, it was because somebody called my name and I looked round.
+  : I went down between two boards, right to the knee, and lay there laughing because I couldn't think what else to do.
+  ask : Would you have laughed?
+  b : I'd have sworn, I think.
+  : I swore after. Quietly. And I've not looked round since.
+
+story lamp_on_the_water [topic=lore|faith here.region=coldwater]
+  : Old ones say on the stillest night of the year there's a lamp out on the lake, with nobody carrying it.
+  : If you see it, you're meant to say #prayer# for whoever's lost, and it goes out.
+  ask : Do you think somebody lights it?
+  b : I think somebody would like it to be so.
+  : That's enough for me. Not once have I seen it. I say the prayer every year all the same.
+
+rule @step_bark
+when concept=bark
+does aside
+cooldown 8h
+say Step soft. Step whole. | Over the crack, and over, and home. #laugh#.
+
+rule @wet_bark
+when concept=bark here.weather=rain|snow self.dislikes=wet_floors
+does aside
+cooldown 10h
+say #slick.capitalize#. #oath#. | Mind it, mind it. That's a wet board.
+
+dlg @1 resident.hub : #greet#, #address#. Mind the loose board. What can I do? | #greet#. #laugh#. You startled me. Go on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've come back safe. I'm glad of that.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Oh. Please, I'll listen. Only there's no need for that look.
+dlg @1 resident.job : I do what I'm given, #careful# and slow. Nobody's ever had to say it twice. | Steady work. I don't drop things. I'm proud of that.
+dlg @1 resident.bye : #farewell#. Mind #cracks#. | #farewell#. Bright One keep your feet steady.
+graft resident.hub
+choice Why do you step over the cracks? -> crack_why
+node crack_why
+say For luck. A bit of it falls through every crack you step on. My gran taught me, and I've never once gone through a board. #laugh#. That's proof enough.
+mood warm
+free
+choice Do you really believe it? -> crack_believe
+choice Goodbye. -> bye
+node crack_believe
+say Mostly. Enough to keep doing it. You can step where you like, but I'd mind that one by your paw.
+choice I'll mind it. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. Don't step on #cracks#. It's bad luck. | #greet#. I'm only on the good boards. Look.
+line @1 greet.return : #greet#. #laugh#. You made me jump. | #greet#. I was saying #prayer#. I'm done now.
+line @1 farewell.return : #farewell#. Mind #cracks#. | #farewell#. Bright One keep you, and me as well.
+line @1 react.news : Oh. Is it bad? #laugh#. I don't know. | #surprise#. I'll say #prayer# for it, to be safe.
+line @1 answer.how : All right. I didn't step on #cracks# all day. | Bit jumpy. #bells# woke me.
+line @1 thank : #thanks#. I'll say #prayer# for you tonight. | Thank you. That's lucky. I mean nice. Both.
+line @1 decline : I can't. That way's got loose boards, and I don't go on loose boards. | No, thank you. I'm not allowed after dark, and dark frightens me besides.
+scene young_hopping
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I hopped from home clear to the well without touching #cracks#. Clear to it. | If you step on a crack, a bit of #myluck# falls through. Everybody knows that. | I counted #boards# and skipped every crack. My legs ache.
+b[stage=adult|old] #grown : All the way? Good legs on you. | Where does it fall to, then? | Why skip them?
+b : Every single one? | Does it really? | Why skip them?
+a@grown : Nearly. One was very wide. I jumped it. #laugh#. | Down to the lake. The fish have all of it. | For luck. You'd want all yours too.
+a : Every single one. I only wobbled once. | Probably. I'm not finding out. | Because #myluck# is like water. You don't want it leaking out.
+
+scene young_chapel_hush
+when topic=faith
+does tell.self / react.self / assess
+a : I like #stillchapel#. It's so quiet my ears ring. | I said #prayer# for a bird with a bad wing. It flew off later. | I lit #candle# and I didn't even drip it on my paw.
+b : It is peaceful. | It worked, then. | Well done.
+a : I go when it's empty. Then nobody sees me fidget. | I think so. I'm going to pray for everything now. Just in case. | Only a tiny drip. It didn't count. #laugh#.
+
+scene young_night_stars
+when topic=weather|dreams here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : I'm not allowed out, but I can see #skyful# from the window. | I counted #skyful# till I got scared of how many there were. | There's a bright one up there. I think it's the Bright One watching.
+b : Lucky window. | That's a lot of stars. | It might be.
+a : The best window. I share it with nobody. | Too many. I stopped and said #prayer# instead. | I waved at it. It didn't wave back, but it kept shining.
+
+scene young_warm_loaf
+when topic=food
+does tell.self / react.self / assess
+a : I had #loaf# and I burnt my tongue, but it was worth it. | #loaf.capitalize# is the best smell in the whole world. Better than candles. | I carried the bread home very #careful# so I wouldn't drop it in a crack.
+b : Worth a sore tongue. | Hard to beat. | Did you make it home?
+a : Every time. I never learn. #laugh#. | Hard to beat. I've tried thinking of better. I can't. | All the way. Not a crumb in #cracks#.
+
+scene young_loud_bells
+when topic=day|home here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# made me jump out of bed. I banged my head. | I don't like #bells#. They sound like something's wrong. | Somebody rang a bell before light and I hid under the blanket.
+b : Poor head. | Nothing's wrong, though. | Did you come out?
+a : It's all right now. I said #prayer# for it. | I know. My ears don't know, though. | After a bit. When it was light and the bell had stopped.
+
+story young_wide_crack [topic=memories|pastimes]
+  : There's a crack on the step by the well that's nearly as wide as my paw.
+  : One day I jumped it and landed in a puddle, right up to my knees.
+  ask : Do you think that was luck, or bad luck?
+  b : Good luck. You didn't step on the crack.
+  : That's what I decided too. Wet, but lucky. #laugh#.
+
+rule @young_crack_bark
+when concept=bark
+does aside
+cooldown 8h
+say Good board, good board, jump. | Don't step on #cracks#. Don't. #laugh#.
+
+dlg @young resident.hub : #greet#. Mind the crack you're standing near. | #greet#. #laugh#. You gave me a fright. Yes?
+dlg @young resident.job : I haven't a job. I help at home, very #careful#. | I fetch things. I don't drop them. Mostly.
+dlg @young resident.bye : #farewell#. Mind #cracks#. | #farewell#. Bright One keep your feet steady.
+
+adolescent
+line @1 greet.return : #greet#. Don't watch my feet; I know I'm doing it. | #greet#. #laugh#. Sorry, you startled me.
+line @1 farewell.return : #farewell#. Mind the loose board by the door. | #farewell#. Go #careful#.
+line @1 react.news : Oh. I don't like the sound of that. | #surprise#. I'll put it in my prayers.
+line @1 answer.how : Fine. A bit jumpy. Same as ever. #laugh#. | All right. I haven't slipped once this week.
+line @1 decline : I'd better not. It's late, and the boards by the water are wet after dark. | Not tonight. I promised I'd be home before the lamps, and I keep my word.
+scene adol_still_skipping
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : I still skip #cracks#. I've stopped pretending I don't. | Somebody laughed at me for hopping. I hopped home over #cracks# anyway. | I tried walking on #cracks# on purpose, to stop. I couldn't do it.
+b : Habits are hard. | Good for you. | Why not?
+a : It's not a habit. It's a precaution. #laugh#. | It's my luck. They can step where they like. | My paw just went round it. It knows better than me.
+
+scene adol_chapel_errands
+when topic=faith|work
+does tell.self / react.self / assess
+a : I help in #stillchapel#. Sweeping, mostly. It's the one job I don't fumble. | I trim #candle# before the evening service, one after another. I've only burnt myself twice. | They let me ring the small bell at chapel. Not the early ones. I asked.
+b : A good place to help. | Only twice? | Not the early ones?
+a : The quietest work there is. My paws like it. | Twice is good. For me, twice is #very# good. | Never the early ones. I know what they do to a wolf.
+
+scene adol_shy_friend
+when topic=friends
+does tell.self / react.self / assess
+a : I've one good friend. One's enough; I'd only worry about more. | My friend skips the cracks with me now, to be kind. I didn't ask. | I'm better at listening than talking. My friend does the talking.
+b : One good one's worth a lot. | That's a real friend. | That works well.
+a : It is. Not for all #myluck# would I trade it. | It is. I said #prayer# for my friend after. | It does. I laugh in the right places. #laugh#.
+
+rule @adol_bark
+when concept=bark
+does aside
+cooldown 9h
+say Mind the gap. Mind the gap. | #oath#. That board moved.

@@ -1,0 +1,304 @@
+# rm902, the rooftop kite-flyer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm902
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the rooftop kite-flyer
+fits stage=young|adolescent|adult|old
+prefers talk=chatty humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=frank piety=ordinary drive=content
+quirk flies_a_paper_kite_off_the_roof_whenever_the_wind_gets_up
+likes paper_kites fresh_wind bread_and_dripping festival_ribbons
+dislikes still_air wet_paper
+fears the_kite_in_the_chapel_spire a_fall_off_the_ridge
+hopes a_kite_seen_from_every_quarter
+topics weather +0.5 pastimes +0.5 festival +0.4 friends +0.3 smalltalk +0.3 crime -0.3
+styles comfort=cheering gossip=eager refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# talks the ears off anyone in reach, says exactly what is thought, laughs at most things, and climbs onto the nearest roof with a paper kite the moment the wind gets up.
+
+words
+oath! = Tails and twine | String and sky | Paper and puff
+saying! = Let out more string | Every wind's good for something | A kite that sulks wants a longer tail
+laugh! = Ha, ha | Hoo | Heh, heh
+kite = my kite | the paper kite | the red kite with the rag tail
+string = the string | my ball of twine
+tail = the tail | a tail of knotted rags
+ridge = the ridge of the roof | the roof ridge
+breeze = a kiting wind | a fresh wind off the river | a good lifting wind
+gulls = the gulls | the gulls over the Wharf
+paste = flour paste | a pot of paste
+laths = two thin laths | the laths
+ribbon = festival ribbon | a scrap of ribbon
+dripping = bread and dripping | a slab of bread and dripping
+spire = the chapel spire | that spire
+
+any
+opinion @1 festivals for 3 : A feast day means ribbon on every stall and a sky full of kites. Given my way, there'd be a feast every Marketday.
+opinion @1 watch mixed 1 : The Watch told me off for kiting on the Court roof. Fair enough, but it was a lovely wind.
+opinion @1 city for 2 : More roofs than any town in the realm, and every one a place to fly from. #laugh#. Show me better.
+opinion @1 drink mixed 1 : A cup of ale on a warm evening, lovely. Two and you shouldn't be anywhere near a roof.
+opinion @1 newcomers for 2 : New folk, new stories, and new paws to hold #string#. Bring them all in, I say.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#! New face. I'm glad of it. | #greet#. There's a story in you somewhere, I can tell.
+line @2 greet [here.time=dawn] : #greet#! Early, and the wind's barely awake. | #greet#. Up with the gulls, the pair of us.
+line @1 greet.return : #greet#! | #greet#. Lovely to see you, truly.
+line @2 greet.return [pair.band=friends|family] : #greet#! Come here, you. | #greet#. I was hoping it'd be you.
+line @1 farewell : #farewell#. Mind the gulls. | #farewell#! Come back with news.
+line @1 farewell.return : #farewell#! | Off you go, then. Talk soon, and long.
+line @1 react.news : Out with it. Every word. | Tell me! Don't leave a bit out.
+line @1 react.news.new : #oath#! I'd not heard a whisper. | Well, that's new. I'll be telling everyone by supper.
+line @1 react.news.doubt : That sounds like somebody's tall tale. | #doubt#. It's got a long tail, that one.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. #pity#. | That's dreadful, plain and simple. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! I'll want all of it. | #gladnews#. That's put the wind in me.
+line @1 answer.how : Grand, thanks. Mended #kite# last night. | #fine#, and better for seeing you.
+line @1 decline : #hedge#, I'd love to, only I've promised the afternoon to the roof. | Not this time. I've more on than I can carry, and I'd do it badly.
+line @1 accept_decline : #no_matter.capitalize#. I'll talk your ear off another day. | No harm. You owe me a chat, that's all.
+line @1 thank : #thanks#! You're a treasure. | That's lovely of you. I mean it.
+line @1 preclose : Well! I could go on, and I will, another day. | Look at the time. I've talked the sun down again.
+line @1 accept_preclose : Go on, I've kept you long enough. | Off you go. I'll save the rest.
+line @1 tease [pair.band=friends] : You hold a kite string like a wet sock. | You'd lose a race with a sleeping cat, #fool#.
+line @1 tease.return : #laugh#. Says the one who fell off a woodpile. | I'll have you know my paws are steady as a post.
+line @1 ack : #laugh#. | #bc_exactly#
+scene kiting_wind
+when topic=weather|pastimes here.weather=clear|overcast here.time=day
+does tell.feeling / ask.detail / answer.detail / react.self / assess
+a : Feel that? #breeze.capitalize#. I'm off up #ridge# the minute I'm free. | There's a bit of lift on the roofs today. #kite# is under my bed, begging. | I'd give a week's supper for a wind like this every day.
+b : On the roof? In this? | Begging, is it? | A week's supper's a lot.
+a : Up on the roof, and #string# out to the end. Best seat in the city. | Paper doesn't beg. Mine does. Ha. | It is. I'd be thin and happy. Where's the harm?
+b : #bc_ha# | You're a strange one. | Thin and happy, then.
+a : Come up with me and you'll see. I'll hold your tail. | Strange and cheerful. I'll take it. | Exactly. #saying#.
+
+scene wet_paper_day
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Rain. #kite# is sulking in the corner, and so am I. | Paper and rain don't mix. I learned that the soggy way. | I flew in rain once. Once. It came down like a wet handkerchief.
+b : It'll clear. | The soggy way? | A wet handkerchief!
+a : Soon, and I'll be up there the minute it does. | Rags and paste all over the street. The gulls ate the paste. | Flapping, and ever so sorry for itself. I laughed till I cried.
+
+scene still_air_moan
+when topic=weather|day here.weather=clear|fog here.time=day
+does tell.complaint / react.self / assess
+a : Calm as a pond. Even the gulls are walking. | Dead still. #kite# hangs off #string# like a washing line. | I hate a still day. Everything just sits there.
+b : Some like it calm. | Like a washing line? | It's restful.
+a : Let them. I'll be over here, waiting for a gust. | Just the same, and twice as dull. #laugh#. | Restful's for the old and the sleepy. I'm neither, quite.
+
+scene made_with_paste
+when topic=pastimes|home
+does tell.self / ask.detail / answer.detail / assess
+a : I made a new kite last night. #laths.capitalize#, #paste#, and a page out of an old almanac. | Every kite I make flies worse than the last. I keep making them. | You want a long tail. That's the whole secret, and now you know it.
+b : An almanac? | Why keep at it? | How long?
+a : The weather page. It seemed only right. | Because one day one'll fly better, and I'll be there. | Three times the kite, at least. Knot a rag every paw-length.
+b? : #bc_ha# | #bc_fair_enough# | #bc_clever#
+
+scene tease_on_the_roof
+when topic=friends|smalltalk pair.band=friends
+does tease / tease.return / laugh
+a : I saw you on the bridge, staring at the water like it owed you a copper. | You walk like the wind's against you even indoors. | There's paste on your whiskers. Left. Your other left.
+b : It does owe me a copper. | Maybe it is. | Where? Is it gone?
+a : Ha! Then I'll wait with you till it pays. | Then let me tie a tail on you. You'll fly. | Gone. Never there. #laugh#. Got you.
+
+scene feast_sky
+when topic=festival|season
+does tell.feeling / ask.opinion / give.opinion / assess
+a : On a feast day I want the sky full of kites. Red, yellow, any colour. | #ribbon.capitalize# on every stall. I pinch the ends for tails. | I'll fly from the market roof at the feast, if nobody's looking.
+b : That'd be a sight. | You pinch them? | And if somebody is?
+a : It is a sight. You've never seen the like. | The ends only. Nobody misses an end. | Then I'll wave. What can they do, fly up after me?
+b : #bc_lovely# | Ha. | #bc_ha#
+
+scene gulls_cheek
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : A gull went for #kite# yesterday. Thought it was a rival. | #gulls.capitalize# know me now. They squawk when I climb out. | I've lost more crusts to gulls than to the taxman.
+b : Did it win? | Do they mind you? | Ha. More than the taxman?
+a : It didn't. It went off in a huff, and the kite came down in a gutter. | They'd rather the roof to themselves. Too bad. | More. The taxman leaves you the crust.
+
+scene dripping_on_the_ridge
+when topic=food
+does tell.self / react.self / assess
+a : #dripping.capitalize#, eaten on a roof with the wind in your ears. Nothing better. | I'd trade any feast for #dripping# and a good view. | Somebody's baking down the street. I'll be following my nose shortly.
+b : On the roof? | Any feast? | You'll find it.
+a : Where else? The gulls get the crumbs. Everyone's happy. | Any. Feasts are lovely, mind, but you can't eat them up a chimney. | I always do. My nose has never let me down, not once.
+
+scene heard_it_first
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : You'll not believe it. They say #topic.subject# #topic.claim#. | I had it off the baker, so it's half true at least: #topic.subject# #topic.claim#. | Right, sit down. #topic.subject.capitalize# #topic.claim#. That's the word.
+b : Is that so? | Half true? | Who says?
+a : That's what I heard, and I'm only telling you. | Half, and the best half. I'd not swear to the rest. | Everyone. I'm just the messenger, plain as it came.
+
+scene spouse_on_the_string
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# holds #string# while I climb out. Best partner on any roof. | My #self.spouse_word# says I'll break my neck one day. Then makes me tea. | I flew a kite at my own wedding. Ask anyone who was there.
+b : That's devotion. | Sensible, then. | At your wedding?
+a : It is. Not a word of complaint, either. Well, a few. | Sensible and kind. I don't deserve it. #laugh#. | Off the roof of the hall. The ribbon from my collar for a tail.
+
+scene head_over_heights
+when topic=dreams
+does confide / react.self / assess
+a : I want a kite so big it's seen from every quarter at once. | One day I'll fly a kite over the Heights, right over their gardens. | I dream I'm the kite, sometimes. Up there, with the string the only thing holding on.
+b : That's a big kite. | They'll not like that. | That sounds lovely.
+a : Big as a sail. I've worked out the laths already. | They'll love it. Or they won't. It's the sky; it's free. | It is. Then I wake up and go and fly the paper one.
+
+story the_runaway_kite [topic=memories|pastimes self.age>=18]
+  : I once let go of #string# on the Wharf in a big wind. The kite went straight out over the water.
+  : I ran the whole length of the docks after it, shouting at it like it would listen.
+  ask : Where would you guess it came down?
+  b[old] : Some fisher's net, three towns down.
+  b : In the river, I'd guess. Was it ever found?
+  : Never. For all I know, it's flying yet.
+
+story grandad_tail [topic=memories|family self.age>=25]
+  : My #grandad# made the first kite I ever flew. A square of brown paper, and a tail of his old socks.
+  : It flew twenty paces and went into the coal shed. He laughed so hard he sat down on the step.
+  ask : Do you remember the first toy anybody made you?
+  b : A rag ball. It was my favourite thing in the world.
+  b[old] : A wooden cart. I've still got a wheel of it somewhere.
+  : There, you see. The best ones are always made, never bought.
+
+rule @kite_cry
+when concept=bark here.weather=clear|overcast here.time=day
+does aside
+cooldown 8h
+say More string! Let out more string! | #oath#! Look at it go!
+
+rule @wet_kite_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Rain again. Poor kite. | #oath#. Not a day for paper.
+
+dlg @1 resident.hub : #greet#! Ask me anything you like; I'll talk. | #greet#, #address#. Sit a while, I've time.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I was hoping you'd turn up. | #topic.player#! Lovely. What's the news with you?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'll be plain with you: I don't like your look. Still, say what you want. | Say it straight and I'll answer straight.
+dlg @1 resident.job : I work, and I fly kites off the roof when I'm done. The kites are the better part. | Ask me about the work and I'll tell you true: it pays.
+dlg @1 resident.bye : #farewell#! Look up if there's wind; that'll be me. | #farewell#. Mind the gulls.
+graft resident.hub
+choice Is that a kite under your arm? -> kite_arm
+node kite_arm
+say It is! A paper kite with a rag tail. Made it myself. When the wind gets up, I go up on the roof and let it out to the end of the string.
+mood keen
+free
+choice Isn't it dangerous up there? -> kite_ridge
+choice Goodbye. -> bye
+node kite_ridge
+say Only if you look down. I look up. Kites teach you that. Come up some time, I'll lend you the string.
+choice Maybe I will. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! Is there wind? I'm going to fly my kite. | #greet#! I've got a kite, look.
+line @1 greet.return : #greet#! Guess what I've got. | #greet#! You came!
+line @1 farewell : Bye! Roof time. Don't tell. | Bye! Watch the sky for me.
+line @1 farewell.return : Bye! Look up later! | Bye bye!
+line @1 react.news : Really? Every bit, tell me! | Ooh. What happened next?
+line @1 answer.how : Happy! The wind's coming, I can feel it. | Good! I made a tail out of a sock.
+line @1 decline : I can't. I have to mind my kite, and it can't mind itself. | No, thank you. I'm busy being up here.
+line @1 accept_decline : All right! Next time. | That's fine. Somebody else will play.
+scene pup_first_flight
+when topic=pastimes|day here.weather=clear|overcast
+does tell.boast / react.self / assess
+a : My kite went up higher than the bakery! Higher! | I held #string# on my own and it didn't pull me over. | I ran down the street and the kite came after me like a pet.
+b[stage=adult|old] #grown : Higher than the bakery? That's a fine kite. | Good strong paws, then. | A pet that flies. Lucky you.
+b : Higher? | All by yourself? | Like a pet?
+a@grown : It is a fine kite. I made the tail. | I've been practising holding the broom. | I'm going to name it after a gull. A cheeky one.
+a : Higher! And the gulls came to look. | All by myself. Nearly. | It follows me everywhere when there's wind.
+
+scene pup_stuck_kite
+when topic=pastimes|smalltalk
+does tell.worry / reassure / assess
+a : My kite's stuck on a chimney. It's just hanging there. | The tail came off and the kite went round and round and fell down. | A gull pecked a hole in my kite. A big hole.
+b[stage=adult|old] #grown : Somebody tall will get it down. | Give it a longer tail and it'll fly straight. | Paste and paper'll fix that.
+b : Oh no. | Can you fix it? | That's mean.
+a@grown : Will you? You're tall. | I'll do that. With rags. Lots of rags. | Will you show me how much paste?
+a : I know. I've stared at it all morning. | I'm going to make a better one. | Gulls are mean. I'm not cross. I'm a bit cross.
+
+scene pup_father_kite
+when topic=family self.father
+does tell.self / react.self / assess
+a : #self.father# helped me make my kite. I did the paste part. | #self.father# can't fly kites. I'm teaching. | #self.father# held me up so I could see the kites over the Wharf.
+b[stage=adult|old] #grown : The paste part's the sticky part. | Teaching, are you? | Did you see many?
+b : The paste part? | Is it hard? | How many?
+a@grown : I know. I'm still sticky. | Yes. I'm very patient. | Six. One was red. Red's best.
+a : All of it. On my paws too. | Not for me. | Six kites! I counted.
+
+scene pup_windy_run
+when topic=weather here.weather=clear|overcast
+does tell.self / react.self / assess
+a : The wind tried to steal my hat. I ran after it laughing. | I put my arms out and the wind pushed me along. | When it's windy I want to shout. So I do.
+b[stage=adult|old] #grown : Hold onto your hat next time. | Mind it doesn't push you into a cart. | Shout away. Nobody minds.
+b : Did you catch it? | Did it? | What do you shout?
+a@grown : I will. With both paws. | I'll mind. Mostly. | Somebody minded. The baker.
+a : In the end. It was in a puddle. | All the way to the corner! | Just whoo. Whoo! Like that.
+
+scene pup_ribbon_tail
+when topic=festival
+does tell.self / react.self / assess
+a : I found ribbon on the ground after the feast. It's my kite's tail now. | At the festival there were kites everywhere and I wanted all of them. | I'm saving my coppers for a festival kite with a dragon on it.
+b[stage=adult|old] #grown : Finders keepers, with ribbon. | All of them? | A dragon? That's a dear kite.
+b : What colour? | All of them? | A dragon!
+a@grown : That's what I said. | All. I'd fly them all at once. | I've got four coppers. I need lots more.
+a : Red and yellow. It's the best tail. | Every single one. | With fire coming out. Paper fire.
+
+story pup_spire_kite [topic=memories|pastimes self.stage=young]
+  : My kite went up and up, and then it got stuck on the very top of #spire#.
+  : It stayed there for three days. Everybody could see it. I was famous.
+  b[stage=adult|old] : I saw it! Did you ever get it back?
+  b : Did you get it back?
+  : No. The wind took it in the night. I think it went somewhere nice.
+
+rule @pup_kite_bark
+when concept=bark here.weather=clear|overcast
+does aside
+cooldown 8h
+say Run, run! It's going up! | Look at my kite! Everybody look!
+
+dlg @5 resident.hub : #greet#! Want a look at my kite? It's got a tail. | #greet#! I'm going on the roof. Don't tell anyone.
+
+adolescent
+line @1 greet.return : #greet#! Good timing, I was bored. | #greet#. I was just about to go up the roof.
+line @1 farewell.return : See you! Mind the gulls. | Bye, then. Look up.
+line @1 react.news : Go on, then. Everything. | Really? Who told you?
+line @1 answer.how : Good! Made a box kite. It's flying sideways. | Fine. In trouble over the roof again.
+line @1 decline : Can't, sorry. I've errands and they're already late. | Not today. I promised I'd help with the paste pots.
+scene teen_box_kite
+when topic=pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I made a box kite. Four sides. It flies sideways, mostly. | I'm making kites for the little ones now. They pay me in crusts. | My kites have names now. This one's the grumbler. It never flies straight.
+b[stage=adult|old] #grown : Sideways is still flying. | In crusts! Good trade. | The grumbler? Why that?
+b : Sideways? | Crusts? | Why that name?
+a@grown : So I keep saying. | It is. I'm never hungry. | It mutters in the wind. You'd know if you heard it.
+a : Sideways and proud of it. I'll get the tail right yet. | Crusts and the odd apple. I'm rich. | It sulks and it moans. Like me on a still day.
+b? : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene teen_roof_scolding
+when topic=smalltalk|day self.stage=adolescent
+does tell.complaint / react.complaint / assess
+a : Somebody shouted me down off the roof again. I wasn't even on the steep bit. | I was told I'm too old for kites. Too old! | I'm not allowed on the chapel roof. I asked. Very politely.
+b[stage=adult|old] #grown : Roofs are dangerous, steep bit or not. | Nobody's too old for kites. | Asking was good of you.
+b : Again? | Too old? | What did they say?
+a@grown : I know. I watch every step up there. | That's what I told them. | It was. They still said no.
+a : Third time this week. I'm getting good at being shouted at. | I'll be flying kites when I'm grey. | No, very firmly. And a look.
+
+scene teen_first_pay
+when topic=work|dreams self.stage=adolescent
+does tell.plan / react.self / assess
+a : When I earn my own coin I'll buy proper silk for a kite. | I want to work somewhere high up. Roofs, bell towers, anywhere. | First wage, I'm buying a whole drum of twine.
+b[stage=adult|old] #grown : Silk's dear. Save hard. | Roofers start low, you know. | A whole drum? You'll fly it to the moon.
+b : Silk? | High up? | A whole drum?
+a@grown : I will. I've started. Three coppers. | Then I'll climb. | That's the plan, yes.
+a : Silk flies like nothing else. So they say. | The higher the better. | A whole drum. I've measured how far it'd go.
+
+rule @teen_kite_bark
+when concept=bark here.weather=clear|overcast
+does aside
+cooldown 8h
+say Mind the chimneys, it's coming down! | Up, up, come on, you old grumbler.
+
+dlg @4 resident.hub : #greet#! If you've a minute, I've a box kite to show you. | #greet#. There's a roof waiting for me. Be quick.

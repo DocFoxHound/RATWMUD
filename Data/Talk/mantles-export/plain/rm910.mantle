@@ -1,0 +1,289 @@
+# rm910, the button tin (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm910
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the button tin
+fits stage=young|adolescent|adult|old
+prefers temper=short warmth=cold
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk keeps_a_tin_of_odd_buttons_and_never_says_why
+likes tins_with_tight_lids the_grey_cat_on_the_wall plain_broth sharp_shears
+dislikes nosy_questions waste
+fears being_talked_about
+hopes a_door_that_shuts_properly
+topics animals +0.3 home +0.3 work +0.2 weather +0.2 gossip -0.5 family -0.4 dreams -0.3
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# keeps an old tin of odd buttons and won't say what for, feeds the grey cat on the back wall and denies it, answers short and keeps the rest behind a shut door.
+
+words
+oath! = Lid on it | Tin and tallow | Rust and rivets
+saying! = What's kept is nobody's business | Keep the lid on and the rain out | A shut tin tells no tales
+tin = my tin | the button tin
+buttons = odd buttons | buttons nobody came back for
+cat = the grey cat | the grey cat off the back wall
+scraps = a few fish skins | scraps, for nobody in particular
+latch = the latch | a latch that holds
+nosy = nosy folk | folk with too many questions
+broth = a bowl of broth | plain broth, nothing in it to argue with
+shears = my shears | the good shears
+draught = a draught | the draught under the door
+wall = the back wall | the wall behind the yard
+mine = my business | nobody's business but mine
+
+any
+opinion @1 watch mixed 1 : The Watch mind their street and I mind mine. That suits us both.
+opinion @1 newcomers against 1 : A new face asks questions. I've no answers for strangers, and none for neighbours either.
+opinion @1 dole mixed 0 : Feed who needs feeding. Only don't write my name in anybody's book.
+opinion @1 festivals against 1 : Crowds, noise, and folk asking where you've been all year. I stay in.
+opinion @1 merchants for 1 : A stall that sells and says nothing is the best kind. Too many of them chatter.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll want something, I suppose. | #greet#. Quick, please. I've a pot on.
+line @2 greet [here.time=dawn] : Morning. Early for talk. | Morning. No broth in me yet, so mind your step.
+line @1 kin.open [pair.kin!=no] : You. Come in, shut the door behind you. | It's you. Good. Sit; don't touch the tin.
+line @1 again.open : You again. Twice today. That's plenty. | Back. Well, here I sit, same stool.
+line @1 greet.return : #greet#. What is it? | #greet#, #address#. Keep it short and we'll get on. | #greet#. I'm busy, but go on.
+line @1 farewell : #farewell#. Shut the door as you go. | Right. That's that, then.
+line @1 farewell.return : #farewell#. | #farewell#. Mind the step, it's loose.
+line @1 react.news.new : Is it. Well, none of mine, that. | Hm. #oath#. First I've heard.
+line @1 react.news.known : Heard. Doesn't mean I'll repeat it. | I'd heard. Kept it to myself.
+line @1 react.news.doubt : I'll wait and see. Folk say all sorts. | Maybe. I don't believe half what's said in this street.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad, that. Nobody's owed that. | Hard. I'll say no more about it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Good for them, I mean it. | That's fair news. Not often we get it.
+line @1 answer.how : Fine. Same as yesterday. | Well enough. No sense going on about it. | Getting by. Leave it there.
+line @1 sympathise : That's rough. Sit a minute, if you want. | Hard luck. I'll not pry.
+line @1 reassure : Put a lid on it till morning. It'll keep. | Don't go stewing on it. It won't help.
+line @1 decline : No. I'll stay out of that one, thanks all the same. | Not for me. My own door's work enough.
+line @1 accept_decline : Fair. Won't press you. | Right. No harm in it.
+line @1 thank : Thanks. That's decent of you. | Hm. Obliged to you, then.
+line @1 deflect_thanks : Leave it. Wasn't much. | It was nothing. Don't spread it round.
+line @1 preclose : That's enough talk for me. I've things to do. | Right. I'll get on now.
+line @1 accept_preclose : Go on, then. | Fine. Off you go.
+line @1 ack : #bc_fair# | Mm.
+rule @tin_bark
+when concept=bark
+does aside
+cooldown 8h
+say Who's been at my tin? Nobody. Good. | One more for the tin. Don't ask.
+
+rule @nosy_bark
+when concept=bark here.place=street|market
+does aside
+cooldown 10h
+say Some folk can't walk past without staring. | Mind your own business, I say. Somebody should.
+
+scene button_tin
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : Found a horn button in the gutter. It's in #tin# now. | #tin.capitalize#'s nearly full. I'll need another. | Somebody asked about my tin today. Asked twice, as if I'd not heard the first time.
+b : What's the tin for? | Are they for anything? | What did you tell them?
+a : For buttons. That's all you're getting. | Nothing. A tin keeps; that's the use of it. | Nothing. Same as I'll tell you.
+b : Fair enough. | #bc_fair_enough# | #bc_ha#
+
+scene grey_cat
+when topic=animals
+does tell.self / react.self / assess
+a : #cat.capitalize# was on the wall again this morning. Staring at my door. | Somebody's been feeding that grey cat. Not me. | That grey cat's got a torn ear now. Been in a fight. Won, I'd guess.
+b : It knows where the food is. | Not you, then. | Tough old thing.
+a : There's no food. I've no idea what it's waiting for. | Not me. I'd never. Fish skins don't grow on walls, mind. | Tough. Keeps itself to itself. I like that in a cat.
+
+scene broth_supper
+when topic=food
+does tell.self / react.self / assess
+a : #broth.capitalize# and bread. I don't need fancy. | Folk put too much in a pot. Onion, salt, water. Done. | Made enough broth for three days. Saves the bother.
+b : Plain's fine. | That's all? | Sensible.
+a : It is. Nothing to go wrong. | That's all. Never made anybody ill. | It is. Less going out, too.
+
+scene rain_door
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Rain's creeping in under the door. There's a sack against it now. | Wet day. Good. Fewer folk knocking. | Rain on the roof all night. Kept me up.
+b : That's a nuisance. | You like it, then? | Mine too.
+a : It is. I'll fix the sill, when I've a dry day. | I like the quiet. Rain's just the price of it. | Doesn't matter. I don't sleep much anyway.
+
+scene cold_snap
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : Cold. I keep the door shut and the fire small. | #draught.capitalize# under the door is like a knife. I've a sack on it. | Snow on the wall. The grey cat sat in it like it didn't care.
+b : Keep warm. | That'll help. | Cats don't feel it.
+a : I will. I've done winters before. | It does. Some. | Cats feel it well enough. Only they don't whine. Sensible.
+
+scene work_heads_down
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I do my work and go home. Nobody needs to talk to me in between. | Work's going. No questions from anybody, so a good day. | Long day. I'll not complain; somebody'd only ask about it.
+b : That's one way. | A quiet one, then. | Fair enough.
+a : It's my way. | Quiet. Best kind. | Fair. Now you know as much as anybody.
+
+scene keeps_quiet
+when topic=gossip|smalltalk
+does give.opinion / react.self / assess
+a : I don't pass things on. Whatever it is, I've not heard it. | Folk talk too much in this street. I'd sooner they didn't. | Somebody asked me who lives over the lane. Not my business to say.
+b : That's a rare thing. | They do go on. | Quite right.
+a : Rare. Stays rare, too. | They do. I just shut the door. | It's not. #saying#.
+
+scene gossip_hard
+when topic=gossip|crime topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+a : You'll hear it anyhow, so here: #topic.subject# #topic.claim#. That's all I know. | They're saying #topic.subject# #topic.claim#. Don't ask me more. | Bad word in the street: #topic.subject# #topic.claim#.
+b : That's hard. | I won't. | Bad indeed.
+a : Hard. My door stays shut tonight. | Good. I've nothing else. | Bad. I'll say no more.
+
+scene door_latch
+when topic=home
+does tell.self / react.self / assess
+a : Put a new latch on the door. Holds now. First time in years. | A door that shuts properly. That's all I want from a house. | I check #latch# twice before I sleep. Habit.
+b : Good to have. | Not much to ask. | Can't hurt.
+a : It is. I sleep better. | It's not much. You'd be surprised how few manage it. | It can't. That's why I do it.
+
+scene new_faces
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New face on the street. Asks everybody their name. Not getting mine. | Somebody new knocked to ask the way. I pointed. That's enough. | More new faces every week, and every one curious.
+b : They'll settle. | Pointing's polite enough. | They're only being friendly.
+a : Maybe. They'll settle without my name. | Polite as I get. | Friendly asks questions. I've no answers.
+
+scene faith_kept
+when topic=faith
+does give.opinion / react.self / assess
+a : Chapel, when it suits me. What I say to the Bright One there stays there. | Folk want to know what you pray for. I don't tell them. | The Bright One hears me fine without a crowd.
+b : Fair enough. | It's private. | True enough.
+a : It is fair. | It is. Keep it that way. | True. I'll go when it's quiet.
+
+scene lean_tin
+when topic=times|prices world.times=hard|lean
+does tell.self / react.self / assess
+a : Lean weeks. I waste nothing. Never have. | Times are hard, and folk start asking what you've got put by. | Prices up again. I'll manage. I always manage.
+b : Wise. | None of their business. | You will.
+a : Wise or not, it's how I am. | None. Exactly that. | I will. Without help, too.
+
+story horn_button [self.age>=30]
+  : There was a coat, a long time back. Good coat. I kept the buttons off it when it went.
+  : That's the first one in the tin. That's all I'll say about it.
+  ask : Do you keep anything you'd not explain to anybody?
+  b : One or two things, I suppose.
+  b[old] : More than I'd admit.
+  : Then you know. No more questions.
+
+story snow_cat [self.age>=20]
+  : One winter a cat followed me home through the snow. Thin as a rake.
+  : I shut the door on it. It sat on the step all night.
+  b : Did you let it in?
+  : In the morning. Gave it a bit of fish. It stayed three years and never once asked me anything.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Ask what you want and I'll see if I've an answer.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Again. Go on, then.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say your piece from there. That's close enough.
+dlg @1 resident.bye : #farewell#. Shut the door behind you.
+graft resident.hub
+choice What's in the tin you carry? -> tin_buttons
+node tin_buttons
+say Buttons. Odd ones. Horn, bone, brass. Nobody came back for them.
+mood calm
+free
+choice Why keep them? -> tin_why
+choice Goodbye. -> bye
+node tin_why
+say Somebody has to. That's all the answer there is, and more than most get.
+mood stern
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#. What do you want? | #greet#. I'm busy. What is it?
+line @1 farewell.return : Bye. | Bye. Don't follow me.
+line @1 react.news.new : Oh. That's not mine to care about. | #oath#. I didn't know.
+line @1 answer.how : Fine. Don't ask about my tin. | All right. Leave me be and I'll be better.
+line @1 thank : Thanks. That's decent. | Thanks. Don't tell anyone.
+line @1 decline : No. Not wanting to is reason enough for me. | No thanks. I'm going home, and that's that.
+rule @pup_tin
+when concept=bark
+does aside
+cooldown 8h
+say Nobody touch my tin! | That's mine. Go away.
+
+scene pup_tin
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I've got a tin. It's full of buttons. | I found a brass button. It's going in my tin. | Somebody tried to look in my tin. I sat on it.
+b : Where did you get them all? | Can I see it? | Why sat on it?
+a : Here and there. Not telling. | No. It's mine. You can see the lid. | So they couldn't. It's mine.
+b : Fair enough. | #bc_fair# | #bc_ha#
+
+scene pup_cat
+when topic=animals
+does tell.self / react.self / assess
+a : There's a grey cat on the wall. It's mine. Not really, but it is. | I gave the grey cat a bit of my supper. Don't tell anybody. | The cat and me stared a long while. Not a word from either.
+b : Does it have a name? | I won't tell. | Cats are like that.
+a : It doesn't need one. It knows who it is. | Good. Promise properly. | So am I.
+
+scene pup_broth
+when topic=food
+does tell.complaint / react.self / assess
+a : Broth again. I don't mind broth. | Folk keep putting extra things in my food. | I hid my crust for later. It's somewhere safe.
+b : Broth's good. | What sort of things? | Where?
+a : It's fine. It's always the same, and that's good. | Green things. Surprises. I like knowing what's in it. | Not telling. Then it's safe.
+
+scene pup_kin_home
+when topic=family|home self.mother
+does tell.self / react.self / assess
+a : #self.mother# says I'm too quiet. I'm not. I just don't say things. | I don't like visitors. I go in my corner till they leave. | #self.mother# asked what's in my tin. I said buttons. That's true.
+b : Quiet's all right. | Corners are good. | That's honest.
+a : I know. I keep telling everyone. | Mine's the best corner. | It's true. It's not all of it.
+
+scene pup_rain
+when topic=weather here.weather=rain|snow
+does tell.feeling / react.self / assess
+a : I like it when it rains. Everyone stays in and stops asking things. | The cat hid under the steps from the rain. I left it a crust. | Snow made the street quiet. Good.
+b : It is quiet. | Kind of you. | Peaceful, snow.
+a : Quiet's best. | Don't tell. | Peaceful. It should stay.
+
+story pup_lost_tin
+  : I lost my tin once. I looked everywhere for a whole day.
+  : I didn't tell anyone. I just looked.
+  ask : Do you know where I found it?
+  b : Under your bed?
+  : In the cat's corner, under the steps. The cat was minding it. I'm certain of that.
+
+dlg @4 resident.hub : #greet#. What do you want? I'm busy.
+dlg @1 resident.job : No job. I keep my tin. That's enough to be getting on with.
+
+adolescent
+line @1 greet.return : #greet#. What do you want? | #greet#. Don't make a fuss of me.
+line @1 farewell.return : Bye, then. | Right. See you.
+line @1 react.news.new : Is it. Doesn't matter to me. | #oath#. Who's been saying that?
+line @1 answer.how : Fine. Don't ask. | All right. Better left alone.
+rule @teen_tin
+when concept=bark
+does aside
+cooldown 8h
+say Can't anybody leave a person be? | I'm going home. Don't follow.
+
+scene teen_nosy
+when topic=friends|smalltalk
+does tell.complaint / react.complaint / assess
+a : My friends keep asking where I go. I go out. That's where. | Everybody wants to know everything. Why? | Somebody read my scrap of paper. I don't keep scraps now.
+b : They're curious. | It's just talk. | That's not right.
+a : Curious can stay curious. | Talk's how it starts. | It's not. I've learned.
+
+scene teen_work
+when topic=work|day
+does tell.self / react.self / assess
+a : I'm learning a trade. Head down, mouth shut, it's going fine. | They gave me the shears to sharpen. I'm good at it. | I did my errands and came straight back. No chatting.
+b : Good for you. | Careful with those. | Quick, then.
+a : It is good. Nobody bothers me. | Careful's all I ever am. | Quick and quiet. That's me.
+
+scene teen_cat
+when topic=animals
+does tell.self / react.self / assess
+a : The grey cat lets me sit near it now. Not close. Near. | I feed the cat. If you tell, I'll know it was you. | The cat had kittens under the steps. I'm not telling where.
+b : That's trust. | I won't. | Good. Leave them be.
+a : It's something. I'm not making a fuss of it. | You'd better not. | They will be left. I'll see to it.
+
+dlg @5 resident.hub : #greet#. Go on. I'm listening, I suppose.

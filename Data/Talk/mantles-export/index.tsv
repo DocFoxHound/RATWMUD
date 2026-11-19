@@ -113,6 +113,11 @@ cw211	coldwater	standard	ready	2	rm_orm_wickwick	claude
 cw212	coldwater	standard	ready	1	rm_philippa_fogwick	claude
 cw213	coldwater	standard	ready	1	rmx_dunstan_sallow	claude
 cw214	coldwater	standard	ready	2	rmx_tobias_blackford	claude
+cw901	coldwater	spare	ready	1		claude
+cw902	coldwater	spare	ready	1		claude
+cw903	coldwater	spare	ready	1		claude
+cw904	coldwater	spare	ready	1		claude
+cw905	coldwater	spare	ready	1		claude
 fh101	frosthollow	standard	ready	1	cty_marl_craghearth	claude
 fh102	frosthollow	standard	ready	2	cty_ulric_stonevein	claude
 fh103	frosthollow	standard	ready	1	cty_ebba_coalgate	claude
@@ -128,6 +133,8 @@ fh112	frosthollow	standard	ready	1	rm_solveig_cinderton	claude
 fh113	frosthollow	standard	ready	1	rm_lavinia_bilgedale	claude
 fh114	frosthollow	standard	ready	1	cty_juniper_larkham	claude
 fh115	frosthollow	standard	ready	1	rmx_cressida_cotton	claude
+fh901	frosthollow	spare	ready	1		claude
+fh902	frosthollow	spare	ready	1		claude
 lf101	larkfield	full	ready	3	rm_berit_kelpwick	claude-p11-pilot
 lf102	larkfield	standard	ready	3	rm_agna_bilgecot	claude-p11-pilot
 lf103	larkfield	standard	ready	2	tn_oh_quill_oakdell	claude-codex-lf-1
@@ -191,6 +198,11 @@ lf160	larkfield	full	ready	2	rm_gorm_rustmarsh	claude
 lf161	larkfield	full	ready	1	rm_mab_carlisle	claude
 lf162	larkfield	full	ready	1	rm_maren_grayrock_	claude
 lf163	larkfield	standard	ready	2	rmx_philippa_pitchstack	claude
+lf901	larkfield	spare	ready	1		claude
+lf902	larkfield	spare	ready	1		claude
+lf903	larkfield	spare	ready	1		claude
+lf904	larkfield	spare	ready	1		claude
+lf905	larkfield	spare	ready	1		claude
 mb101	mirebridge	full	ready	3	cty_nell_plummeadow	claude-p11-pilot
 mb102	mirebridge	full	ready	3	tn_mb_roan_pikewater	claude-p11-pilot
 mb103	mirebridge	standard	ready	3	tn_oh_ludo_ashwood	claude-p11-pilot
@@ -223,6 +235,8 @@ mb129	mirebridge	full	ready	1	rm_ilse_saltley	claude
 mb130	mirebridge	standard	ready	1	cty_hob_mirebridge	claude
 mb131	mirebridge	standard	ready	1	rmx_dagfinn_thornham	claude
 mb132	mirebridge	full	ready	1	rm_hanne_coalton	claude
+mb901	mirebridge	spare	ready	1		claude
+mb902	mirebridge	spare	ready	1		claude
 oh101	oakhaven	full	ready	3	rm_agnes_millford	claude-p11-pilot
 oh102	oakhaven	standard	ready	1	cty_frost_colddrift	claude
 oh103	oakhaven	standard	ready	1	cty_ingram_ashleaf	claude
@@ -237,6 +251,8 @@ oh111	oakhaven	standard	ready	1	rm_wynn_fogworth	claude
 oh112	oakhaven	full	ready	1	rm_sten_kelpwell	claude
 oh113	oakhaven	standard	ready	1	cty_stone_sunton	claude
 oh114	oakhaven	standard	ready	1	tn_fh_ivy_stonehollow	claude
+oh901	oakhaven	spare	ready	1		claude
+oh902	oakhaven	spare	ready	1		claude
 rm101	plain	full	ready	3	rm_dagny_slaghand	claude-p11-pilot
 rm102	plain	standard	ready	2	rm_ada_rainmore	claude-p11-pilot
 rm103	plain	standard	ready	2	cty_lichen_reedford	claude-p11-pilot
@@ -321,6 +337,18 @@ rm181	plain	full	ready	1	rm_piet_slagcot	claude
 rm182	plain	standard	ready	1	rm_gwen_pitchcot	claude
 rm183	plain	standard	ready	1	rm_desmond_cindermore	claude
 rm184	plain	standard	ready	1	rm_rosamund_slagstack	claude
+rm901	plain	spare	ready	1		claude
+rm902	plain	spare	ready	1		claude
+rm903	plain	spare	ready	1		claude
+rm904	plain	spare	ready	1		claude
+rm905	plain	spare	ready	1		claude
+rm906	plain	spare	ready	1		claude
+rm907	plain	spare	ready	1		claude
+rm908	plain	spare	ready	1		claude
+rm909	plain	spare	ready	1		claude
+rm910	plain	spare	ready	1		claude
+rm911	plain	spare	ready	1		claude
+rm912	plain	spare	ready	1		claude
 sm101	southmeadow	standard	ready	3	cty_ada_coalstack	claude-p11-pilot
 sm102	southmeadow	standard	ready	2	cty_vale_pikebridge	claude-codex-cw-1
 sm103	southmeadow	standard	ready	2	cty_brisk_lakemere	claude-codex-lf-1
@@ -353,6 +381,8 @@ sm129	southmeadow	standard	ready	2	rm_gorm_plankworth	claude
 sm130	southmeadow	full	ready	1	rm_corwin_kelpby	claude
 sm131	southmeadow	full	ready	1	rm_liv_kelpmarsh	claude
 sm132	southmeadow	full	ready	1	rm_osric_mossgrave	claude
+sm901	southmeadow	spare	ready	1		claude
+sm902	southmeadow	spare	ready	1		claude
 sw101	saltwell	full	ready	3	tn_fh_thistle_stonepick	claude-p11-pilot
 sw102	saltwell	full	ready	2	tn_mb_oriel_marshditch	claude-p11-pilot
 sw103	saltwell	full	ready	2	tn_lf_moss_downridge	claude-p11-pilot
@@ -377,3 +407,5 @@ sw121	saltwell	standard	ready	1	cty_desmond_saltton	claude
 sw122	saltwell	standard	ready	1	cty_stone_marshditch	claude
 sw123	saltwell	standard	ready	1	rm_ada_greyhand	claude
 sw124	saltwell	full	ready	1	rm_celestine_greatly	claude
+sw901	saltwell	spare	ready	1		claude
+sw902	saltwell	spare	ready	1		claude

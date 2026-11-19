@@ -1,0 +1,307 @@
+# fh901, the dark-whistler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh901
+revision 1
+state ready
+dialect frosthollow
+accent light broad
+tier spare
+written_by claude
+title the dark-whistler
+fits stage=young|adolescent|adult|old
+prefers humour=merry talk=chatty
+traits temper=calm talk=chatty warmth=warm humour=merry honesty=frank piety=devout drive=content
+quirk whistles_in_the_dark
+likes singing stars honey_cakes frosty_mornings
+dislikes cold_tea wet_floors
+fears the_lamp_going_out a_house_gone_silent
+hopes a_tune_the_whole_valley_knows a_full_table_at_midwinter
+topics pastimes +0.4 faith +0.3 friends +0.3 season +0.2 food +0.2 gossip -0.3
+styles comfort=company gossip=reluctant refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# whistles through every dark lane in the valley, says a thing straight out or not at all, thanks the Bright One for small mercies and laughs easily: calm, chatty, warm and glad of any company.
+
+words
+oath! = Wick and whistle | Bright One's lamp | Lark and lantern
+saying! = A tune weighs nothing to carry | The dark's only the light gone walking | Whistle, and the road shortens
+laugh! = Hoo-hoo | Heh, heh
+tune = a tune | a bit of a tune
+whistling = my whistling | a whistle through the teeth
+lamp = my lamp | the little tin lamp
+black = the dark | the black of it
+stars = the stars | the stars over the white
+honeycake = a honey cake | honey cake with the top gone sticky
+whitefrost = a white frost | a frost that crunches
+hymn = the lamp hymn | the old morning hymn
+lane = the lane | the steep lane home
+hush = a dead hush | quiet you could stand a pick in
+coldtea = tea gone cold | a cup gone stone-cold
+echo = the echo | the echo off the rock
+choir = the singing on a Restday | the chapel singing
+
+any
+opinion @1 church for 2 : #choir.capitalize# is worth the climb in any weather. The Bright One likes a full chapel and a loud one.
+opinion @1 festivals for 2 : A feast with no #tune# in it is only eating. Give me the singing and I'll bring #honeycake#.
+opinion @1 strangers for 1 : A stranger's only a neighbour I've not whistled at yet. Pull up a rock for them, I say.
+opinion @1 drink against 1 : One jar and a song, #good#. Four jars and nobody in the room can hold #tune#.
+opinion @1 times mixed 1 [world.times=hard|lean] : Lean weeks, and I'll not pretend otherwise. Still, a #tune# costs no #money#, and I've plenty of those.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Pull up a rock. I'm glad of the company. | #greet#. You'll be new. Welcome, and mind the steps.
+line @2 greet [here.time=dusk|night] : #greet#. You'll have heard me before you saw me. | #greet#, #address#. Come in by #lamp#.
+line @1 again.open : Two visits in one day. I'll need a new #tune# for you. | Back again. #good.capitalize#, I'd run out of things to whistle.
+line @1 greet.return : #greet#. | #greet#, #address#. #good.capitalize# to see you.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. I was whistling your tune, near enough. | #greet#. Come here, you.
+line @1 farewell : #farewell#. | #farewell#, #address#. Whistle if you get lost.
+line @2 farewell [here.time=dusk|night] : #farewell#. Whistle in the dark lanes; it keeps you company. | #farewell#. The Bright One light your way home.
+line @1 farewell.return : #farewell#. | #farewell#. Same to you, and sing on the way.
+line @1 react.news.new : #surprise#. I hear most things, and I'd not heard that. | #oath#! Tell it again; I want to hold it right.
+line @1 react.news.doubt : #doubt#. Let somebody else say it, and I'll start believing. | I'll say it plain: that sounds like pit-talk to me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll say a prayer tonight, and mean it. | Oh, that's #bad#. Somebody should go and sit with the family.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! That wants a song. | Now that's #good#. I'll whistle all the way home on that.
+line @1 answer.how : #fine#. Never better, near enough. | #good.capitalize#, #address#. Fed, warm, and #tune# in my head.
+line @1 decline : #hedge#, I can't tonight. I promised the chapel I'd sing, and I keep a promise. | I'll say no plain, #address#: I'm worn through, and I'd be poor company.
+line @1 preclose : Well. #preclose#. | I'd best get home before #lamp# runs dry.
+rule @dark_whistle
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say Fwee-oo, fwee-oo. Keep #black# back. | #lamp.capitalize#'s low. Whistle, then. #saying#.
+
+rule @hush_bark
+when concept=bark here.crowd=quiet here.time=day
+does aside
+cooldown 10h
+say Too quiet by half. I'll fill it. | #hush.capitalize#. Somebody hum, for pity's sake.
+
+scene dark_whistle
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : You'll have heard me coming down #lane#. I whistle in the dark; always have. | Folk say they can find me at night by ear. #whistling.capitalize# carries. | I can't walk through #black# quiet. A #tune# comes out on its own.
+b : Why in the dark, though? | Doesn't it wake folk? | Even when you're alone?
+a : The dark can't abide a #tune#. And #echo# tells you where the walls are. | Not yet. They'd tell me, and I'd whistle softer. | Most of all then. Nobody's alone with a #tune# going.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene pit_whistle
+when topic=work|lore self.job=miner
+does give.opinion / disagree / concede / ack
+a : The old hands say whistling down the pit brings the roof in. It's held every shift I've worked. | A #tune# at #work# keeps the arms going. I'll whistle at the face till I'm told to stop. | Whistling underground's the safest thing going. #echo.capitalize# tells you how far the tunnel runs.
+b : I'd still not chance it. Old hands know things. | Somebody'll tell you to stop, one of these days. | I'd sooner trust a lamp than an echo.
+a : They do. I'll whistle soft by the old props, then. That's fair. | They've tried. #boss.capitalize# hums along now. I'll rest it by the props, mind. | A lamp and an echo both, then. #saying#.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene chapel_sing
+when topic=faith
+does tell.feeling / ask.detail / answer.detail / assess
+a : I'd sooner sing to the Bright One than speak. Words come out plain; a hymn comes out whole. | #choir.capitalize# is the best hour of the week. I go for the singing; the sermon I put up with. | I say my prayers whistling, under my breath. The Bright One hears #tune# fine.
+b : What do you sing? | Even for the sermon? | Whistling prayers?
+a : #hymn.capitalize#, mostly. It's got a high bit I can't reach, and I try anyway. | Even that, if it's short. #laugh#. | Whistling. It's the only prayer I never forget the words of.
+b : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene stars_step
+when topic=pastimes|weather here.weather=clear here.time=night self.likes=stars
+does invite / accept / assess
+a : Come out a minute. #stars.capitalize#, thick as frost, and nobody looking but us. | Bring your coat. I want to show you the star that's always over the peak. | Sit on the step with me. The sky's too good to waste on sleep.
+b : Just a minute, then. | Go on, show me. | For a bit.
+a : A minute's plenty. See the long smear? The Bright One's road, my #gran# called it. | That one. Steady as #lamp#. I whistle to it going home. | #good.capitalize#. I'll hum; you count. We'll both be happy.
+
+scene frost_dawn
+when topic=weather|day here.time=dawn here.season=winter here.outdoors=clear
+does tell.feeling / react.self / assess
+a : #whitefrost.capitalize# on every rail and roof. I'd not swap it for a summer. | Your breath hangs in the air like a #tune# you can see. | I walked out first thing just to hear the frost go under my boots.
+b : It's #cold#, mind. | It does, at that. | Crunching, was it?
+a : Cold's only weather. That's the Bright One's lace on the fence. | Mine came out whistling. #laugh#. | Like walking on sugar. Best sound of the day, and free.
+
+scene snow_hush
+when topic=weather here.weather=snow
+does tell.complaint / react.complaint / assess
+a : #snow.capitalize# takes all the sound out of the valley. I can't stand #hush#. | It's coming down so thick my whistle doesn't even come back off the rock. | Snow's #good# for sledging and bad for talk. Everyone stays in.
+b : I like the quiet. | Whistle louder, then. | Come in and talk, then.
+a : You're welcome to it. I'll hum in the corner while you enjoy it. | I did. A crow answered. Better than nothing. | I will. I'll bring #honeycake#, so you'll want me.
+
+scene honey_pocket
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / offer / accept
+a : There's #honeycake# in my pocket. Squashed, but honest. | I've a weakness, and it's #honeycake#. I'll admit it to anyone. | Baked a tray of honey cakes. I've eaten two, and I'm owning up to it.
+b : Squashed is fine by me. | There's worse weaknesses. | Only two?
+a : Half's yours, then. Here. | Then share mine, and we're both weak together. | Two and a half. Have the rest before I'm down to none.
+b : #bc_thank_you# | #bc_gladly# | Go on, then.
+
+scene cold_cup
+when topic=food|home self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : I poured a cup, got talking at the door, and came back to #coldtea#. #annoyed#. | There's no sadder thing on a table than #coldtea#. Not even an empty plate. | Every cup I make goes cold. I talk too much to drink it.
+b : Talk less, then. | Bit sad, yes. | Drink faster.
+a : Talk less? I'd sooner drink it cold. Nearly. #laugh#. | It is. I'll pour it on the step and start again. | Can't. I'd have to stop talking, and that's never happened yet.
+
+scene midwinter_table
+when topic=festival|season here.season=winter
+does tell.plan / react.self / assess
+a : Come midwinter I want every chair in the house full and a song before the pot's empty. | I'm putting #money# by for the midwinter table. Honey, meat, the lot. | Midwinter, I'll have the door open, and anyone who's on their own can come in.
+b : That's a lot of chairs. | You'll be out of pocket. | Anyone at all?
+a : Borrowed chairs count. I'll fetch them myself. | Then I'll be out of pocket and happy. #saying#. | Anyone. A stranger at midwinter is only a friend late for #supper#.
+
+scene friend_tune
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd whistle for in the dark, and know I'd be answered. | I made #tune# up once just for #self.friend#. Never told anyone whose it was. | When I'm low, a word from #self.friend# and I'm whistling again by the bend.
+b : That's a friend, then. | Whistle it now. | That's a good one to have.
+a : #very.capitalize# rare, a friend like that. I know it. | Not here. It's only for the one ear. #laugh#. | The best. I'll say so plain, to anyone.
+
+scene spouse_song
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# hums the harmony when I whistle. Never once asked to; it just happens. | My #self.spouse_word# says I whistle in my sleep. I don't believe a word of it. | I'd sing at the chapel door every Restday for #self.spouse#, and I nearly do.
+b : That's a match, then. | You do, I'd bet. | Nearly?
+a : The best I'll ever make. #good.capitalize# as rock. | Then I'll whistle quieter, and in tune. #laugh#. | Nearly. I get as far as the step and lose my nerve.
+
+scene new_face
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New face on #lane# this morning. I whistled a welcome and got a wave back. | A new face down at the inn, lost as a lamb. I'll go and say #greet#, plain as that. | Somebody new came up the pass with nothing but a pack. I'd give #honeycake# to anyone that tired.
+b : A wave's a start. | You'll scare them off. | Kind of you.
+a : It is. Tomorrow I'll get a name. | Not with a #tune#. Nobody's scared of a #tune#. | It's only neighbourly, #address#. #saying#.
+
+scene gossip_straight
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I'll say it as I heard it, no more: #topic.subject# #topic.claim#. | They're saying at the well that #topic.subject# #topic.claim#. I'd sooner hear it from the one it's about. | Heard down #lane#: #topic.subject# #topic.claim#. That's all, and I'll not add to it.
+b : Is it true, though? | Fair enough. | Hm. That's a thing.
+a : #dunno.capitalize#. I'll ask #topic.them# straight out, next time. | Folk add bits as it goes round. I won't. | Gossip's slag till somebody says it to your face.
+
+story lamp_out [topic=memories|weather self.age>=25]
+  : I was a #child# coming home late when the wind blew #lamp# out. Black as the inside of a boot.
+  : I stood there and shook. Then I remembered my #grandad# saying: whistle, and listen for #echo#.
+  ask : What do you think the echo told me?
+  b : Where the rock was, I'd say.
+  b[job=miner] : Where the walls were. Old pit trick, that.
+  : Where the rock was, and where the lane wasn't. I whistled myself home. I've not stopped since.
+
+story cracked_hymn [topic=faith|memories self.age>=20]
+  : The first time I sang alone in chapel, my voice cracked on the high bit like ice on a puddle.
+  : I stopped dead. Then the old priest whistled the note for me, right there, halfway through the hymn.
+  ask : Stood up there, would you have run or sung?
+  b : Run for the door, I think.
+  b[old] : I remember a priest like that. Kind soul.
+  : I took the note and sang it out. Cracked again, but louder. #laugh#.
+
+dlg @3 resident.hub : #greet#. You heard me whistling, I expect. What's wanted? | #greet#, #address#. Pull up a rock and say it plain.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#! #good.capitalize#. I'd #tune# going just for you.
+dlg @1 resident.job [self.job=miner] : I dig, down the pit. I whistle the whole shift; they've given up telling me not to. | #work.capitalize#, #address#. Pick, lamp, and #tune# to keep it going.
+dlg @2 resident.job : This and that. Whatever wants doing, I'll do it whistling.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# If I'd heard any, you'd have it straight. | Nothing, #address#. I'd tell you plain if there were.
+dlg @2 resident.bye : #farewell#. Whistle in the dark lanes. | #farewell#, #address#. The Bright One keep you.
+graft resident.hub
+choice Why do you whistle all the time? -> whistle_why
+node whistle_why
+say Because the dark can't abide a tune. My #grandad# taught me: whistle, and the walls answer. You're never lost if you can hear the walls.
+mood pleased
+free
+choice Will you teach me a tune? -> whistle_teach
+choice Goodbye. -> bye
+node whistle_teach
+say Wet your lips, tongue down, and blow soft. Softer. There! That's the start of it. The rest is only practice, and a deal of it.
+mood warm
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! I can nearly whistle now. Listen. | #greet#, #address#. I've been looking for you everywhere.
+line @1 greet.return : #greet#! | #greet#. I'm practising #whistling#. It's not right yet.
+line @1 farewell : #farewell#! I'll whistle for you when I can. | Bye, #address#! Don't let #black# get you.
+line @1 farewell.return : #farewell#! | Bye! #farewell#, #address#.
+line @1 react.news : #surprise#! Say it again, slower. | Truly? I'm going to tell everyone, #address#.
+line @1 decline : I can't, #address#. I'm told to stay near the door till #supper#. | Not today. I'd get a telling-off, a big one, and no #honeycake#.
+scene y_cant_whistle
+when topic=pastimes|smalltalk
+does tell.self / give.advice / assess
+a : I've been trying to whistle all week. Only air comes out. | Listen. Fwee. That was nearly it! | I whistled once by accident. Now I can't find it again.
+b[stage=adult|old] #grown : Wet your lips and don't try so hard. | Not bad. Keep your tongue down. | It'll come back. It always does.
+b : Wet your lips first. | Nearly! | Try again, slower.
+a@grown : Wet them? I'll try that. My lips are #very# tired. | Down. Down, down. I'll practise till #supper#. | I hope so. I'll sit in #black# and wait for it.
+a : I did. It's still only air, #oath#. | I know! Tomorrow it'll be a whole #tune#. | Fwee. Fwoo. #laugh#. That was a sneeze.
+
+scene y_brave_dark
+when topic=home|smalltalk here.time=dusk|night
+does confide / reassure / assess
+a : I don't like #black# under the stairs. I whistle at it, nearly. | When #lamp# goes out I hum. Humming's nearly whistling. | I fetched the wood in the dark all by myself. I hummed the whole way.
+b[stage=adult|old] #grown : There's nothing under the stairs but dust. | Humming's good. It chases the dark off. | All by yourself! That's brave.
+b : We'll hum at it together, then. | Humming works. | Brave, that.
+a@grown : Dust and a spider. The spider's #good#, I've decided. | It does. #black.capitalize# can't abide #tune#. | I was. A bit shaky. But I did it.
+a : Together's better. Two hums is nearly a song. | It does. Mostly. #laugh#. | I was. Brave and #cold#.
+
+scene y_honey
+when topic=food
+does tell.self / react.self / assess
+a : I had #honeycake# and saved the sticky bit for last. | There's honey on my nose. I'm keeping it for later. | I helped make the cakes. Mostly I licked the spoon.
+b[stage=adult|old] #grown : The sticky bit's the best. | Wash your face, you daft little thing. | That's the best job in the kitchen.
+b : Clever. | For later? Ha. | Best job going.
+a@grown : It is. I licked my paws after, too. | Not yet. Later, #address#. | The best. I'll do it again on Restday.
+a : I know. #laugh#. | For when I'm #hungry#. | It is. #good.capitalize# spoon, too.
+
+scene y_stars
+when topic=pastimes|weather here.weather=clear here.time=night
+does tell.feeling / ask.detail / answer.detail / assess
+a : Look up. #stars.capitalize#. I counted forty before I lost my place. | The Bright One leaves a lamp lit for every one of us up there. Mine's that one. | There's a star that blinks. I think it's whistling.
+b : Forty! How many are there? | Which one's yours? | Whistling?
+a : More than forty. More than all the stones in the valley, I think. | That one, by the peak. It's little, but it's mine. | Blinking's how stars whistle. I decided it.
+b : #bc_lovely# | It's a good one. | #bc_ha#
+
+scene y_hymn_home
+when topic=family|faith self.mother
+does tell.feeling / react.self / assess
+a : #self.mother# sings #hymn# when it's dark. I know all the words but two. | #self.mother# can whistle like a lark. I'm going to learn it all. | When I can't sleep, #self.mother# hums by #bed#. It works every time.
+b : Which two? | Like a lark? | Every time?
+a : The long ones in the middle. I hum those bits. | A lark. I'll be one too, when I'm big. #oath#. | Nearly. Once it took two hymns and a #honeycake#.
+
+rule @y_fwee
+when concept=bark
+does aside
+cooldown 8h
+say Fwee. Fwoo. #oath#, nearly! | Listen, everyone! I can nearly do #whistling#!
+
+dlg @1 resident.hub : #greet#! Do you know how to whistle? I'm learning. | #greet#, #address#. I'm not meant to talk to strangers, but you look all right.
+dlg @1 resident.bye : #farewell#! | Bye! Mind #black# on #lane#.
+
+adolescent
+line @1 greet : #greet#. I can whistle now. Properly. Two fingers and all. | #greet#, #address#. You'll have heard me coming.
+line @1 greet.return : #greet#. | #greet#. I was just thinking of you, near enough.
+line @1 farewell.return : #farewell#. | #farewell#. Same to you, #address#.
+line @1 react.news : #surprise#. Nobody tells me anything first. | #oath#. I'll want all of that again, slowly.
+line @1 decline : #hedge#, I can't. I'm meant to be at #work# by the bell, and I'm late already. | Not tonight, #address#. I said I'd be home before #black#, and I keep my word.
+scene ad_too_loud
+when topic=pastimes|smalltalk
+does tell.self / tease / tease.return
+a : I learned the two-finger whistle. It's so loud the hens fall over. | I whistled in chapel by mistake. The whole bench turned round. | I can whistle back at the larks now. One answered, I swear it.
+b : The hens'll never forgive you. | In chapel! You'll be famous. | A lark's got nothing better to do.
+a : They will when I whistle them in for their corn. #laugh#. | The Bright One didn't mind. The old ones did, a bit. | Nor have I, most days. #laugh#.
+
+scene ad_learning
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning a trade. Nobody lets me whistle at it yet. | I got something right first time today, and nobody saw. #oath#. | Folk still call me #child#. I've stopped answering to it.
+b : They will, in time. | Somebody saw, I'd bet. | Good for you.
+a : When I'm #good# at it. Then I'll whistle all day. | Then I'll do it again tomorrow, louder. #laugh#. | I answer to my name. That's all I'll answer to.
+
+scene ad_lane_home
+when topic=day|home here.time=dusk|night
+does tell.self / react.self / assess
+a : I walked home through #black# with no lamp. Whistled the whole way, not scared at all. | Somebody hid in #lane# to jump at me. I whistled right in their ear. | I like #lane# after dark now. It's mine when nobody's on it.
+b : Not at all? | Ha! Serves them right. | Yours, is it?
+a : A little bit. The whistle hid it. | Their ear'll ring till Restday. #laugh#. | Mine, and the owls'. We get on.
+
+rule @ad_lark
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say There's the lark. I'll answer it. Fwee-oo. | #oath#. Up before the lark again.
+
+story ad_first_whistle [topic=memories|pastimes]
+  : The first time I ever whistled proper, I was alone in the woodshed. Nobody heard it.
+  : I ran in to show everyone, and it was gone again. It took a week to come back.
+  ask : Have you ever lost a thing the moment you found it?
+  b : Many a time. It comes back, mostly.
+  b[stage=young] : I can't whistle at all yet!
+  : It came back. Now I can't stop. #laugh#.
+
+dlg @2 resident.hub : #greet#. I'm not busy. Well, I am, but say it anyway. | #greet#, #address#. You'll want somebody older, likely. I'll do till then.

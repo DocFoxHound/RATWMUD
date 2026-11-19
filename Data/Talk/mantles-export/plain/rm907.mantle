@@ -1,0 +1,286 @@
+# rm907, the hen-namer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm907
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the hen-namer
+fits stage=young|adolescent|adult|old
+prefers talk=chatty warmth=warm
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=content
+quirk names_every_hen_in_the_market_coops
+likes brown_eggs geese_on_the_march market_mornings warm_kitchens
+dislikes cramped_cages being_hurried
+fears a_fox_loose_in_the_lanes
+hopes a_yard_with_a_coop_of_my_own
+topics animals +0.5 food +0.4 smalltalk +0.3 day +0.2 gossip +0.2 crime -0.3
+styles comfort=company gossip=eager refuse=soft tease=merry
+marks oath saying
+persona #self.first# chatters to anyone standing near the market coops, has a name for every hen in the coops, laughs at most things, and would sooner share an egg than sell one.
+
+words
+oath! = Feathers and fiddlesticks | Eggs and onions | Combs and crumbs
+saying! = A loud hen lays as well as a quiet one | Every coop has its queen | Never name what you mean to eat
+coops = the market coops | the coops by the stalls
+speckle = the speckled one | old speckle, the bossy one
+brownhen = the little brown hen | the brown one with the bent comb
+duchess = the duchess, that big white hen | the white one I call the duchess
+egg = a brown egg | an egg still warm from the straw
+geese = the market geese | the geese off the river carts
+march = marching like the Watch on parade | in a line, chins up, proud as anything
+crumbs = a crumb for the hens | the crust in my pocket
+kitchen = a warm kitchen | a kitchen with the oven going
+yard = a yard of my own | a little yard with a coop at the bottom
+fox = a fox | a fox come in off the hills
+feathers = feathers everywhere | a feather on my sleeve again
+
+any
+opinion @1 merchants for 1 : Stallholders are my sort. Shout a price, laugh at the answer, and everybody goes home with #egg#.
+opinion @1 festivals for 2 : A festival's the one day somebody ties a ribbon on a goose. I'm for anything that does that.
+opinion @1 newcomers for 1 : New faces always stop at #coops# and ask the hens' names. I always tell them. Every one.
+opinion @1 watch mixed 1 : The Watch walk past the stalls like #geese#, all boots and chins. Useful, I'm sure. Loud, though.
+opinion @1 city for 2 : A hundred stalls and forty hens in one square. Show me another place with that. You can't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Here's a face that wants to hear a hen's name, I can tell. I've forty. | #greet#, #address#. Stand by #coops# with me; the wind's kinder here.
+line @2 greet [here.time=dawn] : Morning. The hens beat me up again; they always do. | Morning, #address#. The first egg's laid already, and not by me.
+line @1 kin.open [pair.kin!=no] : There you are. I've a crust in my pocket and a story from the coops. | You'll never guess what #speckle# did this morning. I'll tell you anyway.
+line @1 again.open : Twice in a day. The hens will start talking about us. | Back so soon, and me with nothing new but a feather.
+line @1 greet.return : #greet#. Lovely to see somebody who doesn't cluck. | #greet#, #address#. I was just this minute thinking about eggs. | #greet#. Come out of the draught and talk to me.
+line @1 farewell : #farewell#. Say good day to any hens you pass. | Off you go, then. Mind #geese# on the corner.
+line @1 farewell.return : #farewell#, #address#. Come by the coops again soon. | #farewell#. Go careful, and eat something warm.
+line @1 react.news.new : #oath#! Not a word of that reached the coops. | Well, there's a thing. I'll have told it twice by noon.
+line @1 react.news.known : Heard that at the stalls before the hens were fed. | That's been round the market twice, love.
+line @1 react.news.doubt : Seeing's believing, and I've seen nothing of the sort. | That's the sort of tale a goose would honk at you.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. That's very hard to hear. | That's a sad thing to have going round the market.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! I'll want every bit of that. | Best news since #brownhen# laid a double yolk.
+line @1 answer.how : Chirpy, thanks. Somebody has to be. | Well enough. Fed, warm and talking, which is all I ever ask. | Grand. #speckle.capitalize# laid, so the day started right.
+line @1 sympathise : Oh, come here. That's a rotten thing to happen to anyone. | That's hard, that is. Sit a minute and let it settle.
+line @1 reassure : It'll come right. Things mostly do, given a day and a supper. | Don't fret yet. Even the hens settle down by dark.
+line @1 decline : I would, truly, only I've promised my morning to somebody else. Another day? | Not today, #address#. My paws are full and my head's fuller.
+line @1 accept_decline : That's all right. Another day, then. | No harm in asking, and no harm in a no.
+line @1 thank : Oh, you're a good sort. Thank you kindly. | That's lovely of you. I'm all warm with it.
+line @1 deflect_thanks : Get away with you. It was nothing at all. | Pfft. You'd do as much for me, and quicker.
+line @1 preclose : Well, the hens won't name themselves. I'd best get on. | I could talk all day, and I nearly have. Off you go.
+line @1 accept_preclose : Go on, then. I've talked your ear off. | Off with you. The rest can wait till next time.
+line @1 tease [pair.band=friends] : You walk like the big grey goose when you're cross. I'm only saying. | Crumbs on your coat. Have you been feeding my hens behind my back?
+line @1 tease.return : Cheek! I'll name a hen after you for that. | Ha! From you I'll allow it. Nobody else.
+line @1 ack : #bc_it_is# | Mm, that's so.
+rule @coop_cry
+when concept=bark here.place=market here.time=dawn|day
+does aside
+cooldown 8h
+say Forty hens in there, and I can name the lot. | Shoo, you great goose. That crust's for the hens.
+
+rule @rain_hens
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Poor hens. Nothing looks sorrier than a wet hen. | Rain again. The coops will smell of wet feathers all day.
+
+scene coop_names
+when topic=animals|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : Every hen in #coops# answers to a name I gave it. Forty, and I've not muddled one yet. | #duchess.capitalize# pecked the coop-keeper this morning. Nobody's sorry. | There's a new hen in #coops#. Thin little thing, all legs. I've not named it yet.
+b : Forty? How do you tell them apart? | Which one's the duchess? | What'll you call it?
+a : By the combs, mostly. And the temper. The bossy ones have bent combs, always. | The big white one with the opinions. Nobody buys her; she frightens them off. | Sparrow, I think. It eats like one and it hops like one.
+b : #bc_ha# | That sounds like a hen worth keeping. | Sparrow suits it.
+
+scene geese_parade
+when topic=animals|day here.outdoors=clear|overcast
+does tell.self / react.self / laugh / assess
+a : #geese.capitalize# came across the square this morning #march#. Stopped a cart dead. | A goose took a whole bun off a pup's paw today. Didn't even break step. | I counted the geese off the river carts. Eleven, and one of them limping.
+b : Wish I'd seen that. | Cheeky thing. | Poor thing, the limping one.
+a : The carter just sat and waited. You don't argue with a goose. | The pup laughed so hard the goose looked offended. #saying#. | I gave it the end of my crust. It hissed at me, so it's not that poorly.
+b : #bc_true# | Ha! Bold as brass. | Hissing's a good sign in a goose.
+
+scene egg_breakfast
+when topic=food here.time=dawn|day
+does tell.self / ask.detail / answer.detail / backchannel
+a : Had #egg# for breakfast. I knew which hen laid it, too. | I fried two eggs this morning and ate them standing at the window. Best meal of the week. | The coop-keeper gave me a cracked egg for nothing. Cracked eggs taste the same, you know.
+b : You knew the hen? | Standing up? | Lucky you.
+a : #brownhen.capitalize#. It's always her eggs that come out brown and round. | It tastes better standing. Don't ask me why; it does. | Lucky me. I'd have paid, and the hen would never know.
+b : #bc_lovely# | I'll take your word. | #bc_lucky_you#
+
+scene wet_coops
+when topic=weather here.weather=rain
+does tell.complaint / sympathise / assess
+a : The hens hate this. They stand under the cart with their feathers flat and look at me like it's my fault. | Rain in the coops all morning. #feathers.capitalize#, and all of them wet. | Somebody left the coop lid off last night. Three hens soaked to the skin.
+b : They'll dry. | Poor creatures. | That's careless.
+a : They will, and they'll grumble till they do. Same as me. | I put a sack over the worst of it. Best I could do. | It was. I'd a word with the coop-keeper. A quiet one.
+
+scene market_morning
+when topic=day here.day=market
+does tell.feeling / react.self / assess
+a : Market day. Stalls up, hens out, and everybody shouting. My favourite noise. | I love a market morning. You hear everything twice before the bell. | Market day, and the egg stall sold out before I got my coat on.
+b : It's a racket. | Twice? | That's early.
+a : A happy racket, though. Nobody's ever cross on a market morning. | Once from whoever saw it, once from whoever heard about it. | Early is the only time for eggs. I'll know next week.
+
+scene yard_dream
+when topic=dreams|home
+does confide / react.self / assess
+a : One day I'll have #yard#. Six hens, no more. I'd know them better than my own kin. | I'd like a coop under my window. Just to hear them in the mornings. | If I ever had a bit of ground, I'd have a goose on it. One goose. To keep the cats honest.
+b : Six is a good number. | You'd never sleep. | A goose'd keep anyone honest.
+a : Six and a bench. That's all I'd want from life. | I'd not want to. Hens at dawn is better than sleep. | That's the idea. Nobody argues with a goose.
+
+scene fox_fear
+when topic=animals|crime here.time=dusk|night
+does tell.worry / reassure / assess
+a : Somebody said they saw #fox# by the river carts. I don't like to think of it near the coops. | I always check the coop latches at dusk. Twice, if I've heard talk of foxes. | Foxes frighten me more than robbers do. A robber doesn't kill for fun.
+b : The coops are well latched. | Twice is sensible. | It'll not come into the city.
+a : They are. I've checked. I'll check again on my way past. | Better twice than sorry once. #oath#, listen to me. | I'll hope you're right. I'll still check the latches.
+
+scene parent_hens
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : I'd like #self.child# to know every hen's name, same as me. Worth knowing, names. | I'd want #self.child# to grow up liking hens. And geese. Mostly hens. | I've told #self.child# about the duchess so often, it feels like family.
+b : Names are a fine thing to hand down. | Hens over geese, then. | The duchess would like that.
+a : There are. Names are free and they stay with you. | Always. Hens don't hiss at you for a crust. | The duchess thinks everybody is family. Or a servant.
+
+scene gossip_good
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept|other
+does tell.gossip / react.news / assess
+a : The coops had it first: #topic.subject# #topic.claim#. The hens took it well. | Word at the stalls is #topic.subject# #topic.claim#. I've told three people already. | They're saying #topic.subject# #topic.claim#. Nothing goes with eggs like news.
+b : Did they, now. | Three already? | #bc_so_they_say#
+a : They did. #speckle.capitalize# clucked about it all morning, none of it kind. | Four with you. I'm not proud. Well, a bit. | So they say, and I'll say it too.
+
+scene gossip_hard
+when topic=gossip|crime topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+a : I wish I'd not heard it. #topic.subject.capitalize# #topic.claim#. | Sad word at the stalls today. #topic.subject.capitalize# #topic.claim#. | Even the hens were quiet this morning. #topic.subject.capitalize# #topic.claim#, they say.
+b : That's a heavy thing to hear. | A sad day, then. | That's hard on everyone.
+a : It is. I've not chattered half so much since. | It is. I'll not be laughing much today. | Heavy, yes. Gently, when I pass it on.
+
+scene lean_eggs
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Eggs cost more than they did, and folk are buying one where they'd buy six. | The coop-keeper's selling hens for the pot. It's lean, I understand that. Still, I hate it. | I gave my egg away this morning to somebody who needed it more.
+b : It'll turn. | You can't stop it. | Kind, that.
+a : It will. Hens keep laying whatever the prices do. | I can't. I can say their names when they go, though. | It was only an egg. There'll be another tomorrow.
+
+story fox_night [self.age>=30]
+  : Years back, a fox got into a yard by the river, and I heard the hens from three streets off.
+  : I ran down in my nightclothes with a broom. The fox stared at me, and I stared at the fox.
+  ask : What do you think the fox did?
+  b : Ran off, I'd guess, with the hen in its mouth.
+  b[old] : Ran. They always do, if you shout loud enough.
+  : Ran, and with nothing. There I was, broom in paw, laughing till I cried. The neighbours still won't let me forget it.
+
+story first_name [self.age>=20]
+  : The first hen I ever named was a scruffy grey thing nobody would buy.
+  : I called it lump, and it followed me round the coop like a pup.
+  b : What became of it?
+  : It lived to be very old and very rude. #saying#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. If you're passing the coops, the big white one's the duchess. Don't let her bully you.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come and say hello to the hens; they've missed you. I have too.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. You look like a hen in the rain. Something wrong?
+dlg @1 resident.bye : #farewell#. Mind the geese on the way out; they've no manners.
+graft resident.hub
+choice Do the hens in the market really all have names? -> hen_list
+node hen_list
+say Every one. The duchess, old speckle, sparrow, the little brown one. Forty of them. I'd tell you all forty, if you've the afternoon.
+mood pleased
+free
+choice Which one's your favourite? -> hen_best
+choice Goodbye. -> bye
+node hen_best
+say The little brown one with the bent comb. Never makes a fuss, lays every day, and looks at you like it knows things.
+mood warm
+choice That's a good hen. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#! I named a new hen today. | #greet#. I've got crumbs, if you want to see the hens.
+line @1 farewell.return : Bye! Say bye to the hens for me. | Bye. Don't tread on any feathers.
+line @1 react.news.new : Really? I'm going to tell the hens. | #oath#! Nobody told me that.
+line @1 answer.how : Good! The coop-keeper let me hold the speckled one. | Hungry. I gave my crust to the hens again.
+line @1 thank : Thank you! I'll name a hen after you. | Thanks. That's the nicest thing all day.
+line @1 decline : I can't, I've got to be home before the lamps. Sorry. | Better not. I'd get told off, and I'd deserve it.
+rule @pup_hens
+when concept=bark
+does aside
+cooldown 8h
+say I know every hen in there. Every one! | Shoo, goose! That's my crust!
+
+scene pup_hen_names
+when topic=animals|smalltalk
+does tell.boast / react.self / assess
+a : I know all the hens' names. Even the new one. I named it myself. | The big white hen is called the duchess. I named her. She likes me best. | I had a crumb and nine hens came running. Nine!
+b : What did you call it? | Does she? | Nine's a lot of hens.
+a : Pebble. Because it's small and grey and it sits very still. | She doesn't peck me. That means she likes me. | It was a big crumb. They knew.
+
+scene pup_goose_chase
+when topic=animals|day here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : A goose chased me right across the square. I ran so fast. | I tried to stroke a goose and it hissed like a kettle. | The geese walked past in a line, and I walked behind them, and nobody noticed.
+b : Did it catch you? | They do that. | Somebody noticed, I bet.
+a : No! I'm faster than a goose. Nearly. | I'll try again when it's in a better mood. | Only the last goose. It looked back at me.
+
+scene pup_warm_egg
+when topic=food
+does tell.self / react.self / assess
+a : I found an egg in the straw and it was still warm. Warm! | I'm allowed to crack the eggs for supper now. I only dropped one. | I had a boiled egg and I dipped bread in it. That's the best supper.
+b : Did you keep it? | Only one? | The very best.
+a : I gave it to the coop-keeper. It wasn't mine. I held it first, though. | It was a small one. It doesn't count. | I'd have it every day if I could.
+
+scene pup_mother_coop
+when topic=family|home self.mother
+does tell.complaint / react.self / assess
+a : #self.mother# says I can't bring a hen home. Not even a small one. | I asked #self.mother# for a goose and got laughed at. | #self.mother# says I smell of hens. I don't think that's bad.
+b : Hens are a lot of work. | A goose is a lot of goose. | It's a warm sort of smell.
+a : I'd do it all. I'd feed it every day. | I'd keep it in the yard. It'd be a good goose. | That's what I said. Nobody listened.
+
+scene pup_rain
+when topic=weather here.weather=rain
+does tell.feeling / react.self / assess
+a : The hens hate the rain. They go all flat and cross. | I put my coat over the coop. Now I'm wet and they're dry. | It's raining, so the geese are happy and the hens are grumpy.
+b : They'll dry out. | That was kind. | Geese like anything wet.
+a : I know. I still feel sorry for them. | Kind and wet. I'll dry. | Geese like everything. Except me.
+
+story pup_lost_hen
+  : One day a hen got out of the coops and ran under the bread stall.
+  : Everybody was chasing it and shouting, and it just sat there eating crumbs.
+  ask : Do you know how I got it out?
+  b : You gave it more crumbs?
+  : I sat down and called it by its name, and it came. Names work. Everybody laughed, but I was right.
+
+dlg @4 resident.hub : #greet#! Do you want to know the hens' names? I know all of them.
+dlg @1 resident.job : I haven't got a job. I know all the hens' names, though. That's nearly a job.
+
+adolescent
+line @1 greet.return : #greet#. Don't mind me, I'm off to the coops. | #greet#. I've an errand, but I can talk while I walk.
+line @1 farewell.return : Bye, then. Mind the geese. | See you round the stalls.
+line @1 react.news.new : Who said? I'll want to hear it all. | #oath#. That hasn't reached the coops yet.
+line @1 answer.how : Fine. Busy. Errands all morning. | Well enough. The coop-keeper's letting me help now.
+rule @teen_coops
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say Mind the coops, they've only just settled. | I'll feed them. Go on, I said I'll do it.
+
+scene teen_helping
+when topic=work|day here.time=dawn|day
+does tell.boast / react.self / assess
+a : The coop-keeper lets me clean the coops now. Mucky work, but they trust me with the latches. | I fed all forty hens this morning without being asked. | I sold six eggs at the stall today and gave the right change every time.
+b : Trust's worth having. | Without being asked? | Every time?
+a : It is. I check them twice. Nobody's lost a hen on my watch. | Without being asked. I'm practically grown. | Every time. I counted it back twice, slowly. Nobody can say I didn't.
+
+scene teen_teased
+when topic=friends|smalltalk
+does tell.complaint / reassure / assess
+a : My friends call me the hen pup. I'm nearly grown, I'll have them know. | Somebody clucked at me in the street. I clucked back. Louder. | They laugh because I know the hens' names. I know their names too, and that's no different.
+b : They'll stop when they're bored. | Good for you. | They'll grow out of it.
+a : Let's hope. I'm not stopping, so they'll have to. | It was a very good cluck. The stall laughed. | Maybe. I'll still be naming hens when they do.
+
+scene teen_cooking
+when topic=food|home
+does tell.self / react.self / assess
+a : I made supper for everyone last night. Eggs, three ways. Nobody was sick. | I'm learning to make a pie. The crust is still like a roof tile. | I boiled an egg exactly right this morning. Runny middle, no cracks.
+b : That's a fair start. | Roof tiles keep the rain off. | That's harder than it sounds.
+a : I'd call it a triumph, but fair will do. | Ha. That's the nicest thing anybody's said about it. | It is. I've cracked about a hundred learning it.
+
+dlg @5 resident.hub : #greet#. If you're after the coops, I'll show you. If you're after anything else, ask someone older.

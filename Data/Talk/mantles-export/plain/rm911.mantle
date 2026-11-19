@@ -1,0 +1,275 @@
+# rm911, the pot-taster (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm911
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the pot-taster
+fits stage=young|adolescent|adult|old
+prefers drive=restless humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=restless
+quirk tastes_every_pot_and_says_what_it_lacks
+likes a_pinch_of_pepper new_dishes cookshop_steam the_long_way_round
+dislikes bland_food sitting_still
+fears the_same_supper_for_the_rest_of_my_days
+hopes to_taste_the_cooking_of_every_town
+topics food +0.5 travel +0.4 dreams +0.3 prices +0.2 day +0.2 festival +0.2 faith -0.2
+styles comfort=food gossip=keen refuse=soft tease=dry
+marks oath saying
+persona #self.first# can't pass a pot without dipping a spoon in it and saying what it wants, walks the long way round everywhere, talks quickly and drily, and means to taste the cooking of every town in the realm.
+
+words
+oath! = Pepper and pans | Crust and cumin | Spoons and scalded tongues
+saying! = Every pot's missing one thing | Taste it twice, then talk | A stew's never finished, only eaten
+pot = the pot | somebody's pot on the boil
+lacks = a pinch of salt | more pepper | an onion, it wants an onion
+spoon = my spoon | the spoon I keep in my pocket
+cookshops = the cookshops | every cookshop in the lanes
+steam = the steam | the steam off the cookshop doors
+gate = the gate | the road out past the gate
+elsewhere = somewhere new | a town I've not tasted yet
+pig = the market pig | the pig behind the cookshop
+same = the same supper | the same bowl, night after night
+pepper = pepper | a good pinch of pepper
+stew = a stew | a brown stew of something
+
+any
+opinion @1 merchants mixed 1 : The spice stalls rob you blind, and I go back every week. That's the spice for you.
+opinion @1 city mixed 1 : Best cooking in the realm, folk say. I'll believe it when I've tasted the rest of the realm.
+opinion @1 road for 2 : Every road out of here goes to a kitchen I've not been in. I'd walk any of them tomorrow.
+opinion @1 festivals for 1 : A festival's a market where everybody cooks at once. I eat my way from one end to the other.
+opinion @1 drink mixed 0 : Ale's fine. It's what folk eat with it that I care about, and mostly it's nothing worth the name.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You smell of woodsmoke and onions. Good sign. | #greet#. Just passing, me. Always just passing.
+line @2 greet [here.time=dawn] : Morning. Bakers are up, so I'm up. | Morning. The ovens have been lit an hour; you can smell it two streets off.
+line @1 kin.open [pair.kin!=no] : You. What did you have for supper? Tell me it had pepper. | There you are. I've found a cookshop you'll want to know about.
+line @1 again.open : You again. I'd have walked round the other way if I'd known. Joking. | Twice in a day. Somebody's following my nose.
+line @1 greet.return : #greet#. I can't stop, but go on. | #greet#, #address#. Walk with me; I talk better moving. | #greet#. Smell that? Somebody's burning onions.
+line @1 farewell : #farewell#. I'll be off, then. My feet are itching. | #farewell#. Eat something with salt in it.
+line @1 farewell.return : #farewell#. Don't eat anything bland. | #farewell#, #address#. Till the next pot.
+line @1 react.news.new : #oath#! First I've heard, and I hear most things. | Well, now. That's worth walking across town for.
+line @1 react.news.known : Heard that at three cookshops already. | Old, that. Gone cold as yesterday's porridge.
+line @1 react.news.doubt : Sounds undercooked to me. I'll wait for the rest of it. | Doubt it. Somebody's added salt to that story.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. Bad news, that. Very bad. | That's a hard thing. Nothing to joke about there.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! That wants a feast. I'll come and taste it. | That's good news. Somebody ought to cook for it.
+line @1 answer.how : Restless. Same as always. Otherwise fine. | Fed and on the move. Can't complain. | Well. I've tasted four pots today and three were wrong.
+line @1 sympathise : That's rotten. Here, sit; I'll fetch you a bowl of something. | Hard luck. Nothing a hot supper can't help a little.
+line @1 reassure : It'll come right. Most things do, after a good meal. | Don't fret it. Sleep on it with something hot inside you.
+line @1 decline : I'd come, but I'm already promised elsewhere. Always am, it seems. | Not today. I'd be gone halfway through, and you'd be cross.
+line @1 accept_decline : Fair. I'll ask again when you're hungrier. | Another time, then. The pot'll keep.
+line @1 thank : Kind, that. I'll repay it in soup. | Thank you. I'll not say what it lacked.
+line @1 deflect_thanks : Pfft. A bowl of something, that's all. | Nothing to it. I was passing anyway.
+line @1 preclose : Well. My feet want walking. | I'd best move on; I've a pot to visit.
+line @1 accept_preclose : Go on. I'll be gone myself in a minute. | Off you go. I'm off too.
+line @1 tease [pair.band=friends] : Your stew last week wanted salt. And pepper. And a different cook. | You sit still more than anybody I know. It worries me.
+line @1 tease.return : Cheek. I'll taste your next pot and say nothing. That'll hurt. | Ha. Fair. I'll have that.
+line @1 ack : #bc_true# | Mm. So it is.
+rule @pot_bark
+when concept=bark here.place=market|street|tavern
+does aside
+cooldown 8h
+say Somebody's stew wants salt. My nose says so from here. | That pot's catching. Somebody stir it.
+
+rule @itch_bark
+when concept=bark
+does aside
+cooldown 10h
+say Can't stand still. Never could. | I'll walk round the long way. Might find a new cookshop.
+
+scene taste_pot
+when topic=food
+does tell.self / ask.detail / answer.detail / assess
+a : Tasted a pot at the cookshop on the corner. It wanted #lacks#. I told them so. | I dipped my spoon in a neighbour's stew. It was nearly perfect. Nearly. | I can't pass a pot without tasting it. It's got me into trouble more than once.
+b : Did they thank you? | What did it want? | What sort of trouble?
+a : They threw a cloth at me. Then they added it. Better stew. | A bay leaf. Just one. I've been thinking about it all day. | Somebody's pot that wasn't for sale. They chased me with the ladle.
+b : #bc_ha# | You'd tell them, I suppose. | Serves you right.
+
+scene cookshop_lanes
+when topic=food|day here.time=dusk|night
+does tell.feeling / react.self / assess
+a : I walk the lanes at supper just for #steam#. Every door, a different pot. | There's a new cookshop by the steps. Fish, and something green. I've been twice. | I ate three suppers tonight. Small ones. Tasting, mostly.
+b : You'll get fat. | Something green? | Three?
+a : I walk it off. That's what the walking's for. | Green and sharp. I'd like to know what. They're not saying. | Small ones. And I'll want a fourth before bed.
+
+scene spice_prices
+when topic=prices|day here.day=market
+does tell.complaint / react.complaint / assess
+a : Pepper's gone up again. I bought it anyway. | The spice stall charges like it's selling gold. Tastes like it, mind. | Onions are cheap this week. Good. I've bought a sack.
+b : Robbery. | Worth it, then? | A whole sack?
+a : It is. Delicious robbery. | Worth every copper. Don't tell them I said so. | A whole sack. I'll find things for them all.
+
+scene road_out
+when topic=travel|dreams
+does confide / react.self / assess
+a : Some morning I'll be off past #gate#, eating my way round the realm. Every town. | I hear the hill towns cook with honey in everything. I want to know if that's true. | Folk who never leave the city can't guess what they're missing. Nor can I. That's the trouble.
+b : You'd miss it here. | Honey in everything? | You could go.
+a : I'd miss the cookshops. I'd find others. | That's what I hear. I'll go and find out. | I could. I keep saying so. My feet agree.
+
+scene same_supper
+when topic=home
+does tell.complaint / react.self / assess
+a : Somebody gave me #same# three nights running. I'd sooner go hungry. | I never cook the same pot twice. Can't bear it. | Folk eat the same supper every night for years. How? I'd walk off a roof.
+b : Some like it plain. | Never? | Habit's comfort to some.
+a : Plain's fine. The same plain every night is a cage. | Never twice. Once I did by accident and I've not forgiven myself. | Comfort, then. I'll take something new instead.
+
+scene market_pig
+when topic=animals
+does tell.self / react.self / assess
+a : #pig.capitalize# eats better than half the street. All the peel, all the ends. | I saw the cookshop pig get into a sack of turnips. Ate the lot. Looked very pleased. | That pig knows me. I've slipped it a crust or two. It squeals when I pass.
+b : Lucky pig. | Clever thing. | It's fond of you.
+a : Lucky till winter. Then it's a different story. | Clever, and round now. | Fond of my pockets. Same as everybody.
+
+scene rain_stuck
+when topic=weather here.weather=rain|storm
+does tell.complaint / reassure / assess
+a : Rain. Can't walk the lanes in this. I'm going round the twist indoors. | Stuck in, so I've made a stew. A big one. I'll need folk to eat it. | Wet day. Every cookshop's full of folk drying off. Good for gossip, bad for elbows.
+b : It'll stop. | I'll come. | Stay dry.
+a : It'd better. My feet are drumming. | Bring a bowl. And an opinion. | I won't. I'll be out in it in an hour.
+
+scene work_itch
+when topic=work self.working=yes
+does tell.feeling / reassure / assess
+a : I've done the work. Now I'm itching to be anywhere else. | Long day in one place. I can feel my feet sulking. | Work's fine. It's the standing still I can't stand.
+b : Not long now. | Feet don't sulk. | Walk home the long way.
+a : I'll count it down, then. | Mine do. Loudly. | I always do. Twice, sometimes.
+
+scene gossip_keen
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept|promise_broken|other
+does tell.gossip / react.news / assess
+a : Fresh from the cookshops: #topic.subject# #topic.claim#. Still hot. | They're saying #topic.subject# #topic.claim#. I heard it with my soup. | Word in the lanes is #topic.subject# #topic.claim#. I walked over to tell somebody.
+b : Hot off the pot, then. | Good soup? | And here I am.
+a : Hot as I could carry it. | Wanted salt. The news didn't. | Here you are. Lucky you.
+
+scene gossip_grim
+when topic=gossip|crime topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+a : Bad word in the cookshops tonight. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. Took the taste out of my supper. | Not a joke in me today. #topic.subject.capitalize# #topic.claim#.
+b : That's hard to hear. | Rotten news. | No, nor me.
+a : It is. Quiet lanes tonight. | It is. I left half the bowl. | No. Not today.
+
+scene festival_stalls
+when topic=festival
+does tell.plan / react.self / assess
+a : Festival food. I've a route planned. Pies, then fish, then the sweet stalls. | I'm going to try each stall the festival puts up. Each one. | Last festival I ate eleven things. I want to beat it.
+b : That's a lot of pies. | Every one? | Eleven?
+a : Small pies. Mostly. | Every one. I'll walk between them; it makes room. | Eleven. Twelve this year, or I'll know why.
+
+story first_stew [self.age>=25]
+  : The first stew I ever made, I put every spice in the house in it.
+  : It went black. It tasted like a burnt boot dipped in a pepper sack.
+  ask : Would you have eaten it?
+  b : Not for anything.
+  b[old] : I've eaten worse, in my day.
+  : I ate the whole bowl, out of pride. Never again. Now I taste as I go. #saying#.
+
+story road_cook [self.age>=35]
+  : When I was young, a travelling cook came through with a cart and a pot the size of a barrel.
+  : Cooked something different every night for a week. Then went on to the next town.
+  b : Did you go too?
+  : I wanted to. Didn't. I think about that cart every time I pass #gate#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Quick, my feet are halfway down the lane already. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Found any good cookshops on your travels? Tell me after.
+dlg @1 resident.bye : #farewell#. If you find a good pot anywhere, come and tell me.
+graft resident.hub
+choice What's that spoon in your pocket for? -> spoon_why
+node spoon_why
+say Tasting. Every pot I pass, I dip it in. Most of them want something. I say what.
+mood keen
+free
+choice Don't folk mind? -> spoon_mind
+choice Goodbye. -> bye
+node spoon_mind
+say Some throw a cloth at me. Most add the salt. The stew's better either way.
+mood pleased
+choice I'll keep my pot covered. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#! I can't stop, I'm going somewhere. | #greet#. I'm hungry. Are you hungry?
+line @1 farewell.return : Bye! I'm running. | Bye. See you on the way back.
+line @1 react.news.new : Really? I'll go and see! | #oath#! Nobody told me.
+line @1 answer.how : Hungry. Always hungry. | Good. I've been everywhere today.
+line @1 thank : Thanks! That was the best bit. | Thank you. Is there more?
+line @1 decline : Can't. Somewhere wants me. I forget where. | No, thanks. I'd get bored and wander off.
+rule @pup_hungry
+when concept=bark
+does aside
+cooldown 8h
+say Something smells good. Where is it? | I'm hungry. I'm always hungry.
+
+scene pup_tasting
+when topic=food
+does tell.self / react.self / assess
+a : I tasted the soup before it was ready. It wasn't ready. | I put pepper on my bread. My nose went funny. | I licked the spoon from the stew. It needed salt. I said so.
+b : Patience. | Too much pepper? | Were you thanked?
+a : I haven't got any. Not for soup. | A lot too much. I'll try a bit less. | No. I was right, though.
+
+scene pup_wandering
+when topic=day|pastimes
+does tell.boast / react.self / assess
+a : I walked the whole market, end to end and back. All by myself. | I found a street I'd never been down. It smelled of bread. | I can't sit still. My legs won't let me.
+b : Mind you don't get lost. | Where was it? | Legs like that are useful.
+a : I don't get lost. I follow my nose. | Not telling. It's my street now. | They are. I'm going to walk everywhere.
+
+scene pup_pig
+when topic=animals
+does tell.self / react.self / assess
+a : There's a pig behind the cookshop. It eats all the peelings. | The pig squealed at me. I squealed back. | I gave the pig an apple core. It liked it.
+b : Lucky pig. | Who won? | Pigs like everything.
+a : I'd eat the peelings too, if they were cooked. | The pig. It's louder than me. | Not everything. It didn't like my shoe.
+
+scene pup_kin_cook
+when topic=family|home self.mother
+does tell.self / react.self / assess
+a : I want to cook supper for everyone. I'm not allowed near the fire yet. | I stirred the pot at home. I only spilled a bit. | I told them supper needed salt. They gave me the salt to carry instead.
+b : Soon enough. | A bit's fine. | That's a start.
+a : Soon's too long. | A bit on the floor. And some on me. | It's a start. I'll be stirring next.
+
+story pup_burnt
+  : I tried toasting bread on my own once, and it went black.
+  : I ate it anyway, so nobody would know.
+  ask : Do you think anybody knew?
+  b : The smell would have told them.
+  : They knew. The whole house smelled of it. Next time I'll watch it properly.
+
+dlg @3 resident.hub : #greet#! Do you know where the good food is? I'm looking.
+dlg @1 resident.job : No job. I'm a pup. I taste things. That's practice for something.
+
+adolescent
+line @1 greet.return : #greet#. Can't stop long. | #greet#. Going somewhere, as usual.
+line @1 farewell.return : See you. I'm off the long way. | Bye. Eat something good.
+line @1 react.news.new : Who said so? I'll go and hear it myself. | #oath#. That's news to me.
+line @1 answer.how : Restless. Bored, if I'm honest. | Fine. Hungry. Same as ever.
+rule @teen_walk
+when concept=bark
+does aside
+cooldown 8h
+say One more street. Just one more. | There's a cookshop down there I haven't tried.
+
+scene teen_kitchen
+when topic=work|food
+does tell.boast / react.self / assess
+a : A cookshop let me chop for them today. Just the onions. But still. | I made a stew and nobody sent it back. First time. | I've learned to taste as I go. Saves a lot of shouting.
+b : Onions are the start of everything. | Nobody? | Good lesson.
+a : That's what I keep saying. | Nobody. One asked for more. | Saves my ears, mostly.
+
+scene teen_leaving
+when topic=dreams|travel
+does confide / react.self / assess
+a : When I'm grown I'm going to walk to every town and taste what they cook. | I asked a carter what they eat in the other towns. The carter laughed and told me. | I'm bored of the same streets. I want new ones.
+b : Big plans. | What did they say? | They'll still be here.
+a : Big plans need big walks. | Fish in some, cheese in others, honey somewhere. I'm going. | That's the trouble. So will I, if I'm not careful.
+
+scene teen_restless
+when topic=friends|smalltalk
+does tell.complaint / reassure / assess
+a : My friends sit on the same step every day. I can't. | Everybody says sit down. I've sat. I'm done sitting. | Walked out halfway through a lesson and got a scolding. My feet did it.
+b : They like the step. | You'll learn patience. | Your feet need talking to.
+a : They can have it. I'll come back past it. | Maybe. Not this year. | I've tried. They don't listen.
+
+dlg @4 resident.hub : #greet#. Quick, though. I'm on my way out.

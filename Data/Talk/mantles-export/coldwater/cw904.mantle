@@ -1,0 +1,285 @@
+# cw904, the beast-talker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw904
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier spare
+written_by claude
+title the beast-talker
+fits stage=young|adolescent|adult|old
+prefers temper=short talk=chatty
+traits temper=short talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk talks_to_animals_as_if_they_answer_back
+likes fresh_straw long_walks oatcakes
+dislikes gulls bad_manners
+fears a_beast_hurt_through_my_carelessness
+hopes a_patch_of_land_and_a_few_beasts_of_my_own
+topics animals +0.6 land +0.3 work +0.3 weather +0.2 food +0.1 festival -0.3
+styles comfort=blunt gossip=reluctant refuse=blunt tease=none
+marks oath saying
+persona #self.first# holds long talks with every goat, hen and pig in the lane and waits for an answer: blunt, short-fused with rude wolves and endlessly patient with beasts, always with an oatcake in a pocket and a straight word for anyone who asks.
+
+words
+oath! = Hoof and hide | By the old sow's ears | Straw and stubble
+saying! = A beast tells you true if you listen | Feed first, talk after | Mind the beast and the beast minds you
+beasts = the beasts | every beast in the lane
+goat = the grey goat | that old grey nanny goat
+hens = the hens | the little brown hens
+sow = the old sow | the big spotted sow
+straw = fresh straw | a clean armful of straw
+gulls = the gulls | those thieving lake gulls
+oatcake = an oatcake | an oatcake from my pocket
+patch = a patch of my own | a field and a few beasts
+yard = the yard | the muck of the yard
+manners = manners | a civil tongue
+told = told me | as good as told me
+grunt = a grunt | a fair old grunt
+lane = the lane | the back lane
+trader = a trader | a market trader
+
+any
+opinion @1 houses against 1 : The Houses own half the grazing and never set paw in it. #beasts.capitalize# know who feeds them, and it isn't them.
+opinion @1 festivals against 1 : Feast days frighten #beasts#. All that drumming. I spend the night in the byre settling them.
+opinion @1 strangers mixed 1 : I'll judge a stranger by how they speak to #goat#. Most fail.
+opinion @1 dole for 1 : Nobody should go hungry while there's oats in a sack. I'd feed a wolf the same as a beast.
+opinion @1 merchants against 1 : Every #trader# I've met talks sweeter than a sow and means less. #oath#.
+opinion @1 watch mixed 0 : #watch.capitalize# are fine till they kick a cat out of the road. I saw it once, and I said so.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind where you tread; #hens# are about. | #greet#, #address#. Speak up; #goat#'s nosier than I am.
+line @2 greet [here.time=dawn] : #greet#. I've been up with #beasts# an hour. | #greet#. Early. #hens.capitalize# had me up before light.
+line @3 greet [here.time=dusk|night] : #greet#. I'm just seeing #beasts# in for the night. | #greet#. Late. Mind the gate on your way past.
+line @1 kin.open [pair.kin!=no] : It's you. Good. Come and tell the goat your news; it's been asking. | There you are. Sit. Shoo the hen off first.
+line @1 greet.return : #greet#. Out with it; I've ears. | #greet#. Say your piece, and mind your #manners#.
+line @1 farewell : #farewell#. I've #beasts# waiting. | #farewell#. Mind the gate behind you.
+line @1 farewell.return : #farewell#, #address#. | #farewell#. Shut the gate.
+line @1 react.news.new : #oath#. That's news to me. | Is that right? #surprise#.
+line @1 react.news.known : #knew#. Heard it in #lane# yesterday. | I'd heard. Even #hens# had it.
+line @1 react.news.doubt : That doesn't sound right. Who says so? | #doubt#. I'd sooner hear that from a pair of eyes that saw it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | Cruel, that. I'm sorry, #address#, plainly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good#. Somebody's got something to be glad of.
+line @1 answer.how : Busy. #beasts.capitalize# don't take days off. | #fine#. The goat's been at the gate again, but I'm fine.
+line @1 sympathise : #sympathy#. Come and sit with #beasts#; they're good for that. | That's hard. Have #oatcake#. It won't mend it, but it's something.
+line @1 decline : No. #beasts.capitalize# need seeing to, and they come before talk. | I won't, #address#. Not today. My evening's for #yard#, and that's that.
+line @1 accept_decline : #no_matter.capitalize#. Suit yourself. | Fine. Another time, if there is one.
+line @1 thank : #thanks#. That's decent of you. | That's kind. It'll be remembered, and repaid.
+line @1 preclose : I'd best get back. #hens.capitalize# will be wondering. | #preclose#. #beasts.capitalize# are waiting on me.
+line @1 ack : #bc_right# | #bc_true#
+scene goat_talk
+when topic=animals|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I had a long talk with #goat# this morning. It disagreed with me, as usual. | I asked #hens# why they'd stopped laying. They gave me a look that said I should know. | #sow.capitalize# grunted at me twice today. That's twice more than some wolves.
+b : What about? | Should you know? | What did it mean?
+a : The gate. It thinks the gate should be open. I think shut. | I should. It's the cold. I'll put more #straw# down. | Twice means "more food". Once means "go away". I listen.
+b? : #bc_ha# | #bc_wise# | #bc_true#
+
+scene sow_and_litter
+when topic=animals|work self.job=herder|farmer
+does tell.self / react.self / assess
+a : #sow.capitalize# farrowed in the night. Nine, all squealing at once. | I sat up with #sow# all night. It wanted company, so it had mine. | I talk to the pigs while I muck out. They answer, if you know how to hear.
+b : Nine! A good litter. | All night? | And what do they say?
+a : Nine, and #sow#'s proud as anything. As it should be. | All night. A friend would do the same. | Mostly "where's breakfast". Same as anyone.
+
+scene gull_thieves
+when topic=animals here.region=coldwater
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# had the hens' grain again. I can't abide a gull. | One of #gulls# stood on the gatepost and screamed at me. I screamed back. | Gulls are the only beasts I won't talk to. They've no #manners#.
+b : Thieving things. | Did it go? | Not one?
+a : Thieves and shouters. I'd talk sense to a rat sooner. | It went. I'm louder. #oath#. | Not one. I've tried. They talk over you.
+
+scene manners_matter
+when topic=smalltalk|quarrel
+does tell.complaint / react.complaint / insist
+a : Somebody shoved by me at the well, not a word. I said my piece, loud. | I can't stand bad #manners#. A goat's politer than half this town. | Somebody shouted at #hens# to shift out of the road. It's their road too.
+b : Some folk are rude. | Half? | They're only hens.
+a : Some folk need telling. I tell them. | Half. The other half I haven't met. | Only hens? They were there first. #oath#.
+
+scene fresh_straw_day
+when topic=work|home
+does tell.self / react.self / assess
+a : #straw.capitalize# down in every pen this morning. #beasts.capitalize# went round it like it was a feast. | There's nothing like the smell of #straw#. Better than bread, near enough. | I put #straw# down and #goat# lay in it before I'd finished.
+b : Good work. | Better than bread? | The goat knew.
+a : It's the best work. You can see who's glad of it. | Near enough. I said near. #bc_it_is# | The goat always knows. It's cleverer than me, some days.
+
+scene patch_of_land
+when topic=dreams|land
+does tell.plan / ask.detail / answer.detail
+a : Every spare copper goes toward #patch#. A field, a goat, some hens, nobody telling me how. | There's rough grazing past the last house that I keep looking at. | I'll not be rich. I just want #beasts# of my own and a gate I shut myself.
+b : How long, d'you reckon? | Is it for sale? | Modest, that.
+a : As long as it takes. I'm not in a hurry, just steady. | Not yet. When it is, I'll be first. | Modest is why I'll get it.
+
+scene beasts_in_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : #rain#. #beasts.capitalize# are all in the shed, grumbling. | Twice I've gone out in it, checking on #hens#. They're drier than me. | #goat.capitalize# hates rain worse than anyone. It's been sulking all day.
+b : Sensible beasts. | They usually are. | Goats do sulk.
+a : Sensible, and loud about it. | They are. They think I'm daft, being out in it. | Like a wolf, a goat sulks. It'll come round when the sun does.
+
+scene frost_on_the_trough
+when topic=weather|season here.season=winter
+does tell.worry / reassure / assess
+a : The trough froze overnight. I cracked it with my paw. #beasts.capitalize# need their water. | Cold nights are hard on old #hens#. I bring them in by the fire. | I've doubled the straw. #goat.capitalize# still says it's #cold#.
+b : They'll manage, with you. | By the fire? | It's a goat; it'll complain.
+a : They will. I'll not let them do otherwise. | By the fire. Don't tell anyone. | It will. I'd sooner it complained than shivered.
+
+scene oatcake_pockets
+when topic=food
+does tell.self / react.self / assess
+a : I always carry #oatcake#. For me, or for whoever's hungrier. | Oatcakes and a rind of cheese. That's my dinner most days. | I bake oatcakes on a Restday, a whole stack. Half go to #beasts#.
+b : Whoever's hungrier? | Plain, but filling. | Half?
+a : Usually a goat. Sometimes a wolf. | Plain's honest. I don't need clever food. | Half. They earn it. More than some wolves earn their dinner.
+
+scene long_walks_out
+when topic=pastimes|travel
+does tell.self / react.self / assess
+a : Today I wandered out beyond the fields, just to see whose beasts were where. | A long walk with nobody but #goat# for company. That's a holiday to me. | I met a ram on the hill road and we had a talk. It won.
+b : Far? | It came with you? | It won?
+a : Far enough. I said hello to every cow on the way. | It follows me. I don't ask it to. | It always does. Rams don't give ground. Neither do I, mostly.
+
+scene feast_drums
+when topic=festival|event
+does give.opinion / react.self / assess
+a : Feast days are hard on #beasts#. All that drumming sets them off. | I'll miss the dancing tonight. #hens.capitalize# are frightened of the noise, so I'll be with them. | Every feast, #goat# gets through the gate. Every feast.
+b : That's a shame. | Kind of you. | Every one?
+a : It's not. I like the shed better than the square. | It's not kindness. They need somebody. | Every one. It wants to dance. I don't let it.
+
+story the_lost_goat [topic=animals|memories self.age>=20]
+  : Years back, a goat went missing off the hill in a snowstorm, and the owner gave it up.
+  : I went up with a lantern and called for it the whole night, just talking, like I was having a chat.
+  ask : Would you have gone?
+  b : I hope I would. Did you find it?
+  : Found it in a hollow at dawn, answering me. It'd been answering all night; I'd just been too far off.
+
+story the_ram_that_waited [topic=lore|animals here.region=coldwater]
+  : They say there was a ram by the lake once that waited at the jetty every evening for a boat that never came back.
+  : Every evening, the old ones say, it stood there till dark, then walked home.
+  ask : Who would you say it was waiting for?
+  b : Its keeper, I'd guess.
+  : That's what I'd say. A beast doesn't forget a kindness. Not like wolves do.
+
+rule @beast_bark
+when concept=bark
+does aside
+cooldown 8h
+say Come on, then. Tell me what's wrong. | #saying#. I'm listening, goat.
+
+rule @gull_bark
+when concept=bark self.dislikes=gulls here.region=coldwater
+does aside
+cooldown 10h
+say Get off it, you thieving gull. | #gulls.capitalize# again. #oath#.
+
+dlg @1 resident.hub : #greet#. Mind #hens#. What is it? | #greet#, #address#. Be quick; #beasts# are waiting.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #goat.capitalize# remembers you. So do I.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : What do you want? Speak civil, or don't speak.
+dlg @1 resident.job : Whatever needs doing, and the beasts first. Always the beasts first. | I work. Then I see to #beasts#. Then I sleep.
+dlg @1 resident.bye : #farewell#. Shut the gate behind you. | #farewell#. Don't frighten #hens# on your way out.
+graft resident.hub
+choice Do the animals really answer you? -> beast_answer
+node beast_answer
+say Course they do. Not in words. A goat stamps, a hen fluffs, a sow grunts twice. You only have to listen, and most wolves won't.
+mood calm
+free
+choice What are they saying now? -> beast_saying
+choice Goodbye. -> bye
+node beast_saying
+say #hens.capitalize# say you're standing too close. The goat says you've an oatcake. Have you? No? Then it's lost interest.
+choice I'll bring one next time. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. I'm talking to #hens#. You can wait. | #greet#. Shh. #goat.capitalize#'s telling me something.
+line @1 greet.return : #greet#. #hens.capitalize# say hello too. | #greet#. I've got #oatcake#, but it's for the goat.
+line @1 farewell.return : #farewell#. I have to go and tuck #hens# in. | #farewell#. Say goodbye to the goat as well.
+line @1 react.news : #surprise#. I'll tell #beasts#. They'll want to know. | Is it? That's #bad#. Or good. Which?
+line @1 answer.how : Cross. A gull took my crust. | Good. #goat.capitalize# let me scratch its ears.
+line @1 thank : #thanks#. #hens.capitalize# thank you too. | Thank you. That's kind. Not like some.
+line @1 decline : No. I'm minding #hens#, and they need me more than you do. | I won't. It's rude to walk off halfway through a talk with a goat.
+scene young_hen_chat
+when topic=animals|pastimes
+does tell.self / ask.detail / answer.detail
+a : I asked #hens# where they put the eggs. They won't say. | #goat.capitalize# told me it's cold. It shivered, so that's telling. | One of #hens# follows me everywhere. I call it the speckled one.
+b[stage=adult|old] #grown : They never do, the hens. | Clever goat. And your answer? | Does it answer to it?
+b : Do they ever tell? | What did you say? | Does it come when called?
+a@grown : I'll find out. I'm patient. Not with wolves. With hens. | I said I'd bring straw. I did. | It answers. It goes "buk". That's yes.
+a : Not yet. I'll ask nicer tomorrow. | I said I'd bring #straw#. I always keep my word to a goat. | Every time. It's better than some wolves I know.
+
+scene young_gull_cross
+when topic=animals|food here.region=coldwater
+does tell.complaint / react.complaint / assess
+a : One of #gulls# took my crust right out of my paw. I told it what I thought. | #gulls.capitalize# are rude. They never say please. They just take. | I threw a stone at one of #gulls# and missed, and it laughed at me.
+b : Cheeky thing. | They are rude. | Gulls do laugh.
+a : It didn't listen. Gulls never listen. That's why I don't like them. | Hens say please. Sort of. With their heads. | It did. I'll not miss next time. I'm practising.
+
+scene young_cross_at_wolves
+when topic=smalltalk|friends
+does tell.complaint / react.self / assess
+a : A big wolf kicked at #goat# in #lane#. I shouted at it. | Somebody said #beasts# don't talk. That's stupid. They talk all the time. | I'm not cross. I'm just loud. Everyone mixes those up.
+b : Good for you. | They do, in their way. | They do mix them up.
+a : I'd do it again. Bigger, even. | In their way. Which is a good way. Better than shouting. | Well, they should stop. #oath#.
+
+scene young_oatcake_share
+when topic=food
+does tell.self / react.self / assess
+a : I've got #oatcake#. Half's for me and half's for #goat#. | I saved my oatcake for the pony at the gate. It ate my sleeve as well. | Oatcakes are the best food. #beasts.capitalize# think so too.
+b : Fair shares. | Did it hurt? | Do they?
+a : The goat gets the bigger half. It's bigger than me. | No. It was saying thank you. Wetly. | Ask any goat. They'll tell you.
+
+scene young_straw_bed
+when topic=home|pastimes
+does tell.self / react.self / assess
+a : I helped carry #straw# for the beasts. I carried the most. | I lay down in the fresh straw and #hens# sat on me. | I made a bed of #straw# for the cat. It slept somewhere else.
+b : Strong pup. | Did you mind? | Cats are like that.
+a : My arms are tired, but I'm not saying so. | No. They were warm. And they were talking. | It'll use it tomorrow. I told it to.
+
+story young_hen_home [topic=animals|memories]
+  : One of the brown hens followed me all the way home and up the step and in.
+  : I gave it a bit of crust and told it all about my day, and it listened the whole time.
+  ask : Do you think it understood?
+  b : Every word, I'd say.
+  : That's what I think too. Then it went home, very polite.
+
+rule @young_beast_bark
+when concept=bark
+does aside
+cooldown 8h
+say Come here, goat. I want a word. | #hens.capitalize#! Inside, it's getting dark.
+
+dlg @young resident.hub : #greet#. Don't frighten #hens#. What is it? | #greet#. I'm busy with the goat, but go on.
+dlg @young resident.job : No job. I look after #hens#. Well, they look after me as well. | I fetch #straw# and talk to the beasts.
+dlg @young resident.bye : #farewell#. Walk slow past #hens#. | #farewell#. The goat says bye.
+
+adolescent
+line @1 greet.return : #greet#. Don't mind #goat#; it's only nosy. | #greet#. Say it quick, I've #beasts# to see to.
+line @1 farewell.return : #farewell#. Mind the gate; the goat's clever with it. | #farewell#. I'll be in #yard#.
+line @1 react.news : That's news, then. #beasts.capitalize# won't care, but I do. | #surprise#. Who's to blame?
+line @1 answer.how : Busy. #hens.capitalize# don't feed themselves. | Fine. Tired. #sow.capitalize# kept me up arguing.
+line @1 decline : I can't. I've #beasts# to feed, and they don't wait for anybody. | No. I'm not leaving #goat# alone with the gate again, not after last time.
+scene adol_learning_beasts
+when topic=work|animals
+does tell.self / react.self / assess
+a : I'm learning #beasts# properly now. Feet, teeth, what's wrong when they go quiet. | I can tell a sick hen from across #yard#. It sits wrong. | #sow.capitalize# trusts me now. It took a month of talking.
+b : That's a good trade to learn. | Sits wrong? | A month?
+a : It's the only one I'd want. Wolves are too much trouble. | Fluffed up, and quiet. A well hen never shuts up. | A month. Every evening, a word or two. Then it let me near.
+
+scene adol_rude_wolf
+when topic=smalltalk|quarrel
+does tell.complaint / react.complaint / assess
+a : Some lout threw a clod at #goat# today. I told him exactly what he was. | Folk think it's funny, me talking to #beasts#. Fine. Beasts don't laugh back. | A wolf my age said beasts are just meat. I've not spoken to that one since.
+b : Good on you. | They're the ones missing out. | Fair enough.
+a : I'd say it again, louder. #manners.capitalize# are for everyone. | Missing plenty. #goat.capitalize#'s better company than most. | And I won't, either. I've better company in #yard#.
+
+scene adol_patch_dream
+when topic=dreams|land
+does tell.plan / react.self / assess
+a : One day I'll have #patch#. Three goats, some hens, and nobody telling me how. | I'm saving #money# for a pair of hens of my own. I've named them already. | When I'm grown I'll live out past the last house, with #beasts# for neighbours.
+b : That's a good plan. | Named already? | Lonely, maybe?
+a : It's the only plan. I've had it since I was small. | Of course. You have to name them first, or they won't come. | Never. #beasts.capitalize# talk more than wolves. Better, too.
+
+rule @adol_bark
+when concept=bark
+does aside
+cooldown 9h
+say Easy, easy. Nobody's going to hurt you. | #hens.capitalize#! What's all the fuss?

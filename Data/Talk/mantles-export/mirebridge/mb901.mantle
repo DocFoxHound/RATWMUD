@@ -1,0 +1,315 @@
+# mb901, the unasked mender (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb901
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier spare
+written_by claude
+title the unasked mender
+fits stage=young|adolescent|adult|old
+prefers temper=short drive=ambitious
+traits temper=short talk=plain warmth=cold humour=dry honesty=frank piety=ordinary drive=ambitious
+quirk mends_whatever_is_broken_without_being_asked
+likes sharp_knife whittling hard_cheese misty_dawns
+dislikes deep_mud bad_manners
+fears the_fen_taking_the_house
+hopes a_workshop_on_dry_ground
+topics work +0.4 home +0.3 times +0.2 land +0.2 weather +0.2 gossip -0.3 festival -0.2
+styles comfort=practical gossip=reluctant refuse=blunt tease=dry
+marks oath saying
+persona #self.first# mends whatever is broken without being asked, from loose boards to split eel baskets: blunt, short-tempered and cold-spoken, dry as tinder, kinder in paws than in words, and set on a workshop on dry ground one day.
+
+words
+oath! = Peg and patch | Tar and twine | Sink me for a botch
+saying! = A thing mended is a thing kept | If it creaks, it's asking | Fix it before the fen does
+mend = a mend | a proper mend
+botch = a botch | a bodged job
+twine = tarred twine | a hank of tarred twine
+pegs = my pegs | the pocket of pegs
+walkboards = the boards | the walk-boards
+looseboard = a loose board | the board that rocks
+knife = my knife | the little hooked knife
+basket = an eel basket | the split basket
+stilts = the stilts | the house legs
+workshop = a workshop on dry ground | a bench of my own, high and dry
+cheese = hard cheese | a heel of hard cheese
+whittling = a bit of whittling | a stick and my knife
+pocket = my pocket | a pocket of odds and ends
+shrug = Hmph | No need
+dawnmurk = a misty dawn | the murk off the reeds at first light
+leak = the leak | a drip in the thatch
+rot = the rot | soft black rot
+swollendoor = the door | that swollen door
+reeds = the reeds | a fistful of reeds
+
+any
+opinion @1 houses against 2 : #toffs.capitalize# pay a joiner to look at a door. I'd have it hung while they're still talking about it.
+opinion @2 merchants against 1 : They sell you a hinge that rusts by spring, and another in the summer. #robbery#.
+opinion @4 newcomers mixed 1 : New folk break things. New folk also pay to have them fixed. #shrug#, it comes out even.
+opinion @5 festivals against 1 : A feast is three days of everyone breaking things, then a week of me fixing them, knee-deep in #mud#.
+opinion @6 times against 2 [world.times=hard|lean] : Lean times, and nobody buys new. They bring it to me, and can't pay. I fix it anyway. #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Your boot's split at the heel. I'll look at it, if you stand still. | #greet#. Mind #looseboard#. I'll get to it.
+line @2 greet [here.time=dawn] : #greet#. Early. Good. I've a job for the light. | #greet#. Up before #walkboards# dry. So am I.
+line @3 greet [here.time=dusk|night] : #greet#. Late. Mind your feet. | #greet#. I've one more peg to drive, then I'm done.
+line @1 again.open : #welcome_back#. If you've broken something, say. | You again. Nothing's broken, then, or you'd have said, #address#.
+line @1 greet.return : #greet#. | #greet#. What's broken?
+line @1 farewell : #farewell#. | #farewell#. Mind #looseboard#.
+line @1 farewell.return : #farewell#. | #farewell#. Bring it back if it goes.
+line @1 react.news.new : #surprise#. First I've had of it. | Is it, now. #oath#.
+line @1 react.news.doubt : #doubt#. Show me, and then I'll believe it. | Fen-talk. Half of it's bog-wind, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a thing no #mend# fixes. | That's hard. #very.capitalize# hard.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | #good.capitalize#. Something going right for once.
+line @1 answer.how : #fine#. Busy. Somebody's always breaking something. | #notsobad#. A full pocket of pegs and a day's work.
+line @1 decline : #hedge#: no. I've a mend half done and it won't wait. | Not today, #address#. My own roof's leaking, and that comes first.
+line @1 accept_decline : #no_matter#. | Fair enough. Another time, when it's dry.
+line @1 thank : #thanks#. | Hmph. #thanks#, then.
+line @1 deflect_thanks : #shrug#. It was broke. | Don't go on. Just don't break it again, #fool#.
+line @1 preclose : #preclose#. | Right. #pegs.capitalize# won't drive themselves.
+line @1 accept_preclose : Go on. Mind #looseboard#. | Off you go. #farewell#.
+line @1 tease.return : Says the one who brings me every #botch# going. | Ha. I'll fix your face, while I'm at it.
+scene botch_found
+when topic=work|home
+does tell.complaint / react.complaint / insist / ack
+a : Somebody nailed this board over #rot#. Didn't take it out. Just nailed over it. | That's #botch#, that hinge. It'll be hanging off before the month's out. | Whoever fixed this used wet twine, not #twine#. Wet! In the fen!
+b : Can you do better? | Will you tell them? | Is that bad?
+a : I'll do it right. Rot out, new board, done. #saying#. | I'll fix it. Telling them doesn't fix anything. | It's the worst. It'll rot by spring and they'll call it #bad# luck.
+b? : #bc_good# | #bc_fair_enough# | #bc_poor_soul#
+
+scene loose_boards
+when topic=home|smalltalk here.region=fens
+does tell.self / ask.detail / answer.detail / assess
+a : I pegged three loose boards on the north walk this morning with #pegs#. Nobody asked. | #walkboards.capitalize# by the Heron rock like teeth. I'll be at them all week. | There's a board on the walk that's been loose a year. I fixed it. Somebody'll miss the noise.
+b : Who pays you for that? | Like teeth? | Miss it?
+a : Nobody. I'd fall in otherwise, and so would you. | Loose and rotten, every one. One good push and you're in the #mud#. | Some folk like a board that warns them you're coming. Tough luck.
+b : #bc_true# | #bc_poor_soul# | #bc_ha#
+
+scene workshop_dream
+when topic=dreams|work self.age>=18
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll have #workshop#. Stone floor. No #mud#. A bench the length of a boat. | I'm saving for #workshop#. Coin in a pot, under a board I fixed myself. | I could mend for the whole fen if I had #workshop#.
+b : Where would you put it? | How long till you've enough? | Why don't you?
+a : Up on the causeway, where the floods don't reach. I've picked the spot. | Years. #shrug#. I'm patient about one thing, and that's it. | No coin, no dry place. Yet. #oath#, I'll get there.
+b : #bc_good# | #bc_i_hope_so# | #bc_we_will_see#
+
+scene thanks_brushed
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : Somebody thanked me three times for fixing #swollendoor#. Once is plenty. | I mended a fence and they baked me a cake. I didn't want a cake. I ate it. | I don't fix things to be liked. I fix them because they're broke. #shrug#.
+b : They meant it kindly. | Good cake? | Still, it's kind.
+a : I know. Three's still too many. #shrug#. | #good.capitalize# cake. I'll fix their gate next. | Kind is fine. Fixed is better.
+
+scene knife_sharp
+when topic=pastimes|work self.likes=sharp_knife
+does tell.self / react.self / assess / ack
+a : #knife.capitalize# will take a reed lengthways, clean. I check every morning. | A blunt knife's a #botch# waiting to happen. Mine's never blunt. | I spent an evening on the whetstone. Worth it. Cuts #twine# like water.
+b : Every morning? | Never? | Like water?
+a : Every morning. It's the first #mend# of the day. | Never. #saying#. | Like water. Try it. Careful.
+b? : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene whittle_evening
+when topic=pastimes here.time=dusk|night self.likes=whittling
+does tell.self / react.self / assess
+a : Evenings I sit with #whittling#. Pegs, mostly. A peg's never wasted. | I whittled a new latch for #swollendoor#. Better than the iron one. | I made a whistle once. It was terrible. I fixed it. It's still terrible.
+b : Only pegs? | Wood's better? | Ha.
+a : Pegs, and a spoon if I'm feeling soft. | In the fen, yes. Iron rusts. Oak just swells and holds. | It's the only thing I've never fixed. #oath#.
+
+scene mizzle_roof
+when topic=weather|home here.weather=rain|storm here.region=fens
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# for a week. Found #leak# over the hearth this morning. | Everybody's roof has #leak# and I can't be on all of them. | I patched my own roof in the wet. Slid off once. Didn't fall in. Nearly.
+b : Can you fix it? | Pick the worst. | Careful up there.
+a : When it stops. You can't patch wet thatch. | I've picked. The old ones first, then the pups. | I'm always careful. The roof isn't, #address#.
+
+scene murk_dawn
+when topic=weather|day here.weather=fog here.time=dawn self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : #dawnmurk.capitalize#. Not a board to be seen past your own feet. I like it. | Murk on the fen, and everything quiet. Good time to work. Nobody watching. | #dawnmurk.capitalize#. The only time I'm not in a hurry.
+b : You like it? | Nobody watching? | You, not in a hurry?
+a : Nothing to see means nothing to fix. For an hour. | Nobody to tell me how to do it. #good.capitalize#. | Only then. Don't get used to it.
+
+scene gossip_short
+when topic=gossip
+does tell.gossip / react.self / assess / ack
+a : I heard #topic.subject# #topic.claim#. You'll get no more out of me. | They're saying #topic.subject# #topic.claim#. No frills on it from me. | #topic.subject.capitalize# #topic.claim#, they say. Believe it or don't; that's yours to choose.
+b : Is that so? | That's all? | Who says?
+a : So I heard. Plainly. | All. I've #swollendoor# to hang. | The reeds, #address#. I didn't ask more.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Lean times. Nobody buys new; they bring me every #botch# they own. I'll take it. | I fixed a pot for an egg today. An egg. #shrug#. It was a #good# egg. | When times are hard, everything's mended twice. I'm busy and #skint#.
+b : At least there's work. | An egg? | Both at once.
+a : There's work. There's no #money# in it. | One egg. I ate it. #oath#. | Both. The fen has a sense of humour.
+
+scene flood_worry
+when topic=weather|home here.weather=storm here.region=fens
+does tell.worry / reassure / assess
+a : The fen's at the second rung of #stilts#. I've been checking all night. | If the water comes over #walkboards#, I'll lose half my tools. | Storm, and the house legs creaking. I braced them last spring. I hope I braced them well.
+b : It'll hold. | Move them up. | You'll have done it right.
+a : #reassure#. I hope so. I'll keep checking. | I've moved them. Twice. I'll move them again. | I did it right. I'll still be up all night, #address#.
+
+story stuck_door [topic=memories|work self.age>=25]
+  : Years back a door on the walk swelled shut in the wet, with an old wolf inside it.
+  : Everyone stood about shouting advice. I took the hinge pins out with #knife# and lifted it off.
+  ask : Do you know what the old one said, when the door came off?
+  b : Thank you, I'd hope.
+  b[old] : About time, if they were anything like me.
+  : About time, and could I put it back on. I did. It shuts right now.
+
+rule @mend_bark
+when concept=bark here.region=fens
+does aside
+cooldown 8h
+say Who's left #looseboard# like that? #oath#. | Hold still, you. #looseboard.capitalize#, and not for much longer.
+
+rule @mud_bark
+when concept=bark here.weather=rain|storm self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #mud.capitalize# to the knee. #annoyed#. | This walk wants raising out of the #mud#. Somebody pay me to raise it.
+
+dlg @3 resident.hub : #greet#. If something's broken, say. If not, say anyway. | #greet#. Mind #looseboard#. What is it?
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Still in one piece? | #topic.player#. What have you broken this time?
+dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. Out with it. I've work.
+dlg @6 resident.job [self.working=yes] : #self.trade_words.capitalize#. And I fix what's broken, on the side, for nothing. | Work's work. Then I mend things with #pegs# and #twine#. That's my own business.
+dlg @7 resident.bye : #farewell#. Mind #walkboards#. | #farewell#. Bring it back if it breaks.
+graft resident.hub
+choice Why are you fixing that? Nobody asked you to. -> unasked_mend
+node unasked_mend
+say Somebody would have fallen through it. Nobody asked; I didn't need asking. It's broke, so I fix it.
+mood stern
+free
+choice Do you ever get paid? -> unasked_mend_pay
+choice Goodbye. -> bye
+node unasked_mend_pay
+say Sometimes an egg. Once a cake. Mostly nothing. I'm saving for a workshop on dry ground. Then they'll pay.
+choice Good luck with it. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet [pair.band=strangers] : #greet#. Your strap's coming off. I can fix it. | #greet#. Mind #looseboard#. I'm fixing it.
+line @1 greet.return : #greet#. I'm busy. | #greet#. Take this end. The other end, #fool#.
+line @1 farewell : #farewell#. Don't break anything. | #farewell#. Bring it back if it snaps.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #walkboards#.
+line @1 react.news.new : #surprise#. Nobody tells me anything. | Is that true? I'll ask #gran#.
+line @1 react.news.doubt : That's #nonsense#. I'll believe it when I see it. | Sounds like #reeds# whispering to me. Who said?
+line @1 answer.how : Busy. I'm mending #basket#. | #good.capitalize#. I fixed the gate. Nobody asked.
+line @1 decline : No. I'm in the middle of #mend#, and it'll come apart. | I can't. I've #looseboard# half pegged, and it won't wait.
+line @1 accept_decline : #no_matter#. | Suit yourself. I'll do it anyway, #oath#.
+rule @y_mend_bark
+when concept=bark here.region=fens
+does aside
+cooldown 8h
+say That's #looseboard#. I'm fixing it. Nobody asked. | Who broke this? #oath#. I'll do it.
+
+scene y_loose_board
+when topic=smalltalk|home here.region=fens
+does tell.self / react.self / assess
+a : There was #looseboard# on the north walk. I pegged it down with a stone. | I found #looseboard#, and I sat on it till it stopped. It didn't stop. | Somebody's going to fall in through that board. Not if I fix it first with #pegs#.
+b[stage=adult|old] #grown : With a stone? Clever, for now. A peg's better. | Sitting won't do it. It wants a nail. | Good. Somebody did fall through it, last spring.
+b : Good for you. | Did it stop? | Who asked you to?
+a@grown : I'll get a peg. I'll ask for one. Or find one. | Then I'll find a nail. #oath#. | Then I'm fixing it today.
+a : It's still there. The stone's doing the work. #good.capitalize# stone. | No. It's a stubborn board. | Nobody. That's not the point, #address#.
+
+scene y_split_basket
+when topic=work|pastimes
+does tell.boast / react.self / assess
+a : I mended #basket# with reeds. It holds water now. Nearly. | I fixed #basket# the wrong way round, so the eels could get out. I fixed it again. | #grandad# threw out a broken basket. I fixed it and gave it back. Didn't say anything.
+b[stage=adult|old] #grown : Nearly's the hardest part. Tighter weave at the bottom. | Better to find that out on the bank than at the trap. | Did #grandad# notice?
+b : Nearly? | Ha. | That was kind.
+a@grown : Tighter at the bottom. I'll do it again. | I found it out in the water. Wet. | Yes. Pretended not to. I saw.
+a : Nearly. It drips a #little#. | Then I did it right. | It was broke. Now it's #good#.
+
+scene y_told_off
+when topic=family|home
+does tell.complaint / react.complaint / assess
+a : I took the latch off #swollendoor# to fix it and I couldn't get it back on. I'm in trouble. | #gran# says I'm to stop mending things that aren't broken. They were nearly broken. | I fixed the stool. Now it's too short. Everybody's cross.
+b[stage=adult|old] #grown : Take things apart slowly, and lay the bits out in order. | Nearly broken is a fair reason. Say so. | Shorten the other legs to match, and you'll have a lower stool.
+b : Oops. | Nearly broken? | Too short?
+a@grown : In order. Like a row. I'll try that. | I did say so. Nobody listened. | That's #very# clever. I'll do it tonight.
+a : #very.capitalize# in trouble. | Nearly. You could see. | A #little# short. You can sit on it lower.
+
+scene y_toad_house
+when topic=animals here.region=fens
+does tell.self / react.self / assess
+a : I built a toad a house from a broken pot, up off the #mud#. The toad's in it. | A heron knocked over the duck shelter. I put it back up, better. | I found a frog with a hurt leg. I made it a splint from #reeds#. It hopped off.
+b[stage=adult|old] #grown : Lucky toad. A house above the mud, like everyone wants. | Better than it was? Good. | With the splint? Good mending.
+b : A toad house? | Better how? | Did it work?
+a@grown : I put a roof on. #oath#, it's a #good# house. | Higher off the #mud#. The ducks hate it. | It hopped. That means it worked.
+a : A proper one. With a door. | Higher. And it doesn't wobble. #good.capitalize#. | It hopped away. So yes.
+
+scene y_mizzle_drip
+when topic=weather|home here.weather=rain|storm here.region=fens
+does tell.self / react.self / assess
+a : #rain.capitalize# again, and #leak# over my bed. I put a pan under it. | There's a drip in the corner. I stuffed it with #reeds#. It drips round them. | Everything's wet. I can't fix wet. Nobody can.
+b[stage=adult|old] #grown : A pan's a start. The thatch wants a patch when it's dry. | Water finds a way. Find where it gets in, not where it drips. | Nobody can fix the fen. You can only keep it out.
+b : Clever. | Still dripping? | #bc_true#
+a@grown : When it's dry, I'll go up. With help. | Where it gets in. I'll look. | Then I'll keep it out. #oath#.
+a : Plink, plink. All night. | Round the reeds. Sneaky water. | Nobody. Not till it dries. #oath#.
+
+scene y_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess
+a : #cheese.capitalize# is the only food that doesn't go soggy. | I had #cheese# and an onion. I'm full now. | Soft cheese is just cheese that gave up.
+b[stage=adult|old] #grown : Spoken like a fen pup. Everything else goes soggy here. | Good. That's a meal for anyone. | That's a strong opinion for a small one.
+b : True. | Full? | Ha.
+a@grown : Everything. Even boots. | #very.capitalize# full. I'll fix something now. | I've got lots of them.
+a : Dry all the way through. | I could mend a whole wall. | It's true.
+
+story y_first_mend [topic=memories|family]
+  : When I was smaller still, I mended a wooden duck with a broken neck.
+  : I tied it with #twine# and it looked the wrong way. I liked it better.
+  ask : Have you got anything that's better broken?
+  b[stage=adult|old] : A few things, little one. Me, maybe.
+  b : A cup with a chip. I drink from the other side.
+  : That's the right answer. I'd still fix the chip.
+
+dlg @1 resident.hub : #greet#. Something broken? I'll fix it. | #greet#. Mind #looseboard#; I'm on it.
+dlg @2 resident.job : I'm a pup. I fix things with #pegs#. Nobody pays me. | No job. I mend stuff. That's a job, nearly.
+
+adolescent
+line @1 greet.return : #greet#. Don't lean on that; it's not dry. | #greet#. What's broken?
+line @1 farewell.return : #farewell#. | #farewell#. Bring that hinge back when it squeaks.
+line @1 react.news.new : #surprise#. First I've heard. | Truly? #surprise#. I'd have heard, if I wasn't always mending.
+line @1 answer.how : Busy. #pegs.capitalize# are nearly gone. | #fine#. Somebody broke a door. I'm glad.
+rule @a_tools_bark
+when concept=bark
+does aside
+cooldown 8h
+say Where's my knife? Who's had #knife#? | #oath#. That's a #botch#. I'll redo it.
+
+scene a_learning
+when topic=work
+does tell.complaint / react.complaint / assess
+a : They had me sweep for a week before they'd let me hold a tool. I can make #mend# better than half of them. | Somebody redid my join. It was fine. Theirs is #botch#. | I'm told I fix things too fast. Too fast! There's no such thing.
+b[stage=adult|old] #grown : Sweeping's how you learn where everything goes. | Maybe it was fine. Ask why they changed it. | There's fast, and there's done right. Learn both.
+b : Unfair. | Is it? | Is there?
+a@grown : I know where everything goes. I've known for a year. | I did ask. They said they liked theirs. | I'll do both. Fast first.
+a : I'll be holding tools by spring. | Worse. Wobbles like #looseboard#. | No. Slow is just late.
+
+scene a_called_rude
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I told somebody their gate was a #botch#. It was. Now they won't speak to me. | They say I'm rude. I'm not rude. I'm right, #oath#. | I fixed a friend's #basket# and said how badly it was made. That was the wrong part to say.
+b : It might have been the way you said it. | Can't you be both? | Just fix it next time.
+a : There's only one way to say a gate's a #botch#. | I can. I usually am. #shrug#. | I'll fix and say nothing. #oath#, that's hard.
+
+scene a_saving_tools
+when topic=dreams|work
+does tell.plan / react.self / assess
+a : I'm saving for a proper chisel. Then a saw. Then #workshop#. | I've got #knife# and a hammer with a loose head. I fixed the head. | One day I'll have #workshop#, and nobody's boots in the mud.
+b : That's a long list. | Good start. | One day.
+a : Long, and I'll get to the end of it, sure as #mud#. | It's a #good# hammer now. Better than new. | One day. I've drawn it already. On a board.
+
+story a_story_punt [topic=memories|work]
+  : Last summer the old punt sank by #walkboards#, and everyone said it was done for.
+  : I bailed it out, pitched the seams with tar and #twine#, and it floated by dusk.
+  ask : Can you guess what folk said, when it floated?
+  b : Well done, I hope.
+  b[stage=adult|old] : That they'd always known you could.
+  : Nothing. Somebody used it the next morning. That's thanks enough, in the fen.

@@ -1,0 +1,291 @@
+# cw901, the leaf-boat folder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw901
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier spare
+written_by claude
+title the leaf-boat folder
+fits stage=young|adolescent|adult|old
+prefers temper=calm talk=quiet
+traits temper=calm talk=quiet warmth=warm humour=dry honesty=frank piety=ordinary drive=content
+quirk folds_leaf_boats_and_sets_them_on_the_lake
+likes misty_dawns honey_cakes summer_evenings
+dislikes crowds drizzle
+fears losing_the_knack_in_my_paws
+hopes a_boat_that_reaches_the_far_bank
+topics pastimes +0.5 weather +0.3 dreams +0.3 family +0.2 lore +0.2 gossip -0.4
+styles comfort=company gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# folds little boats out of broad leaves and sends each one sailing off the jetty: quiet, calm and kind, dry when it counts, frank to the bone, and content with a still morning and a crust with honey on it.
+
+words
+oath! = Fold and float | Leaf and ripple | By the little fleet
+saying! = Small boats find the far side too | Let it go and watch it sail | A leaf floats as long as it means to
+boat = a leaf boat | a little boat of folded leaf
+boats = leaf boats | my little leaf boats
+fleet = my fleet | the little fleet on the sill
+fold = a careful fold | a fold and a crease
+crease = the crease | a crease pressed with a thumbnail
+farbank = the far bank | the cove's other shore
+jetty = the jetty | the old jetty boards
+honeybread = bread and honey | a crust with honey thick on it
+glass = a still morning | a morning flat as glass
+leaves = the broad leaves | the big leaves off the shore bushes
+sank = went down nose first | sank like a dropped spoon
+ripple = a ripple | a ring of ripple
+breeze = the breeze | a breath of breeze off the water
+mm = Mm | Mm, well
+pockets = my pockets | a pocket full of leaves
+
+any
+opinion @1 festivals for 1 : On a feast night I'd set #fleet# out with a stub of candle in each. The lake looks dressed for it.
+opinion @1 strangers for 1 : A #stranger# is only somebody who hasn't sat on #jetty# with me yet.
+opinion @1 watch for 1 : #watch.capitalize# carry a lamp along the shore at night. I sleep the better for that lamp.
+opinion @1 drink against 1 : A #drink# makes wolves loud, and loud is what I can least abide. #mm#.
+opinion @1 church mixed 1 : #glass.capitalize# is a gift, and I tell the Bright One so from wherever I'm standing. I've never needed a bench for it.
+opinion @1 newcomers for 1 : New faces are new paws to teach #fold#. I've never run short of patience for that.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Sit, if you like; there's room. | #greet#. Don't mind #leaves#; they're for folding.
+line @2 greet [here.time=dawn here.weather=clear] : #greet#. #glass.capitalize#, and I've been out since first light. | #greet#. Best hour there is for sailing #boats#.
+line @3 greet [here.time=dusk|night] : #greet#. I've just sent the last of #fleet# off. | #greet#. Late out, the pair of us.
+line @1 kin.open [pair.kin!=no] : Ah, it's you. I saved a leaf back for you. | Come and sit. #mm#. You look like you need sitting.
+line @1 greet.return : #greet#. Pull up a stone and sit. | #greet#, #address#. Sit down a minute.
+line @1 farewell : #farewell#. Go gently. | #farewell#. #saying#.
+line @1 farewell.return : #farewell#, #address#. | #farewell#. Mind the wet boards.
+line @1 react.news.new : #oath#. That's new to me, every bit of it. | #surprise#. Let me sit with that a while.
+line @1 react.news.known : #knew#. It came by me yesterday. | I'd heard. Slowly, the way news drifts to me.
+line @1 react.news.doubt : #mm#. I'll wait to hear it twice. | #doubt#. Somebody's folded that one over a few times.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. #pity#. | Oh, that's heavy news. I'm sorry, #address#, truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll fold something for that. | Good. That's the kind of news I like to sit with.
+line @1 answer.how : #fine#. Quiet, and quiet suits me. | Content. My paws are busy and nobody's shouting.
+line @1 sympathise : #sympathy#. Sit with me; you needn't talk. | That's hard. I'll keep you company a while.
+line @1 decline : #hedge#, but no. I'd be poor company today, and I know it. | I'd rather not. Crowds and noise undo me, and that's the truth of it.
+line @1 accept_decline : #no_matter.capitalize#. Another day, then. | No harm. It'll keep, like a leaf pressed in a book.
+line @1 thank : #thanks#. That's a kindness I'll remember. | That was good of you. Truly, #address#.
+line @1 preclose : Well. #preclose#. | I'll get back to #fleet#, if you don't mind.
+line @1 ack : #bc_it_is# | #mm#.
+scene setting_sail
+when topic=pastimes here.region=coldwater
+does tell.self / ask.detail / answer.detail
+a : Folded #boat# this morning from a leaf as big as my paw. It's out past the second post now. | I've nine in #fleet#. They go out one a day. | Pups bring me #leaves# now. I fold, they sail. It's a fair trade.
+b : How far will it get? | Why one a day? | Do they keep them?
+a : As far as #breeze# takes it. Nobody's ever told me where that is. | So there's always one to look forward to. #mm#. | They lose them by supper and come back for more. That's the whole idea.
+
+scene still_morning
+when topic=weather|day here.time=dawn here.weather=clear here.region=coldwater
+does tell.feeling / react.self / assess
+a : #glass.capitalize#. Not #ripple# from here to the far end. | This is the hour #boats# like. No wind to tip them over. | I was down on #jetty# before the birds. Worth it.
+b : Lovely, isn't it. | Good for sailing, then. | Was it?
+a : I'd keep every morning like this if anybody asked me. | The best. Even a bad #fold# floats on water like this. | Every bit. The lake was all mine for a while.
+
+scene gusty_day
+when topic=weather here.weather=storm|overcast here.region=coldwater
+does tell.complaint / react.complaint / assess
+a : No sailing today. #wind.capitalize# would have them over before the first post. | I lost three of #boats# to the gusts this morning. Flipped like pancakes. | I keep #fleet# indoors on days like this. They sulk.
+b : Another day, then. | Three at once? | They sulk?
+a : Another day. The lake's not going anywhere, and nor am I. | One after another. I stopped after the third. #mm#. | Leaves sulk. Ask anyone who's folded one.
+
+scene soft_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# again. Every leaf in #pockets# has gone soft. | The sound of it on the roof I'll take, though I'll not sail #boats# in it. | Wet socks. I can't abide wet socks, and I'll say so every time it rains.
+b : They'll dry. | It's a good sound. | Nobody likes those.
+a : They will. Tomorrow's #fleet# gets folded from what's dry. | It is. Like somebody tapping to be let in, very politely. | Nobody, and me least of anyone. #oath#.
+
+scene honey_crust
+when topic=food
+does tell.self / react.self / assess
+a : #honeybread.capitalize#, and a hot cup beside it. That's a meal to me. | I eat the crust last. Always have. It's the best of #honeybread#. | Somebody gave me a whole comb of honey once. I made it last a month.
+b : Simple, and good. | Most eat the crust first. | A whole month?
+a : Simple's the kind I can keep up with. | Most hurry. #mm#. I never saw the sense in it. | A month. A thin month, mind, but sweet all the way through.
+
+scene shouting_round
+when topic=quarrel|smalltalk
+does tell.complaint / react.complaint / assess
+a : There was shouting by the well this morning. I went the long way round. | I can't abide a quarrel. My ears go flat and stay flat. | Two wolves were at it over a fence. I'd have folded them each #boat# to hush them.
+b : Some folk like the noise. | Mine do the same. | Would it have worked?
+a : They can have it. I'll have the quiet, #mm#. | It's not that I'm frightened. It's my ears. | No. But they'd have had to stop and ask what it was.
+
+scene far_bank_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream about one of #boats# reaching #farbank#. Somebody over there picks it up. | I dreamt the lake was all #leaves#, flat and gold, and I could walk on it. | I dreamt I'd forgotten how to fold. Woke up and did one straight off, to be sure.
+b : Who picks it up? | Could you, though? | And could you still?
+a : I never see. Just a paw. That's enough for me. | Right out to the middle. Then I woke, #mm#. | First try. My paws hadn't forgotten #fold#, even if my head had.
+
+scene teaching_fold
+when topic=friends|family|pastimes
+does tell.self / react.self / assess
+a : There's a pup comes most evenings to learn #fold#. Can't do it yet. Will. | I've taught more pups to fold #boats# than I could count, and I don't count. | The trick I tell the little ones: press #crease# down, twice.
+b : Patient of you. | Do they keep it up? | Why twice?
+a : Patience is cheap, and I've a sack of it. | Some do. Some grow out of it. I never did. | Once to make it, once to mean it. #saying#.
+
+scene sill_and_spouse
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# has a whole sill of #boats# to live with. I count that a kindness. | I fold one for my #self.spouse_word# most nights. It goes on the pillow, not the water. | Ask me what I'm grateful for: #self.spouse# first, #glass# a long way second.
+b : That's patience. | That's sweet of you. | Good order to put them in.
+a : #bc_it_is# I try to be worth the sill. | It's only a leaf. It's #fold# that says it. | The right order. #mm#.
+
+scene the_lake_keeps
+when topic=lore here.region=coldwater
+does tell.story / react.story / assess
+a : My #grandad# said a boat that reaches #farbank# carries a wish across. | There's an old tale the lake keeps every boat it's given, and gives them back as mist. | They say the lake breathes out in autumn, and that's every wish it's kept.
+b[from=coldwater] #cw : Mine said the same, near enough word for word. | I've heard that one by many a fire. | My granny told it that way too.
+b : Has one ever got there? | Do you believe it? | Do you believe that?
+a@cw : Then it's true. Two grandads can't both be wrong. | So now you see why I give it so many #boats#. | Every granny on this shore tells it. That's how lore keeps.
+a : Not that I've seen. I keep sending #boats#, all the same. | #mm#. I believe it on grey mornings. | On a misty morning, I'd believe nearly anything.
+
+scene not_mine_to_tell
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I heard a thing at the well. I'll keep it, though; it isn't mine to give. | Folk talk over my head like I'm a post. I hear it all and fold it away. | #mm#. Half of what's said on this shore never happened, and the other half shouldn't have.
+b : Go on, then. | Do you ever tell? | And which half is this?
+a : No. Frank, I am. A gossip, I'm not. | Never. A thing folded away stays folded. | Neither. I've already forgotten it, #mm#.
+b : #bc_fair_enough# | #bc_ha# | Ha.
+
+story the_soot_wish [topic=memories|lore self.age>=25]
+  : When I was a #child#, my #gran# folded me a boat with a wish written on it in soot.
+  : It sailed clean out of sight. I never knew what the wish was.
+  ask : Would you have read it first?
+  b : I'd have peeked. I couldn't have helped it.
+  b[old] : No. A wish read is a wish spent.
+  : I've folded one like it every year since. I don't read mine either.
+
+story the_trough_boat [topic=pastimes|smalltalk self.age>=30 here.region=coldwater]
+  : A shepherd from over the cove came round once with a soggy #boat#, asking whose it was.
+  : It was mine. Three days it had sailed, and fetched up in a lamb's water trough.
+  ask : Can you guess what I told the shepherd?
+  b : To keep it, I'd guess.
+  : To keep it. It had earned a new home, and the lamb had earned a story.
+
+rule @sail_bark
+when concept=bark here.region=coldwater here.outdoors=clear
+does aside
+cooldown 8h
+say Off you go, little one. #saying#. | There. Press #crease#, and sail.
+
+rule @quiet_bark
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 10h
+say Quiet's free. I don't know why more folk don't take it. | #oath#. My ears want #glass#.
+
+dlg @1 resident.hub : #greet#, #address#. Sit, if you like. What's wanted? | #greet#. Mind #leaves#; I'm sorting them.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've #boat# folded and waiting, should you want it.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Easy, #address#. Ask your question and you'll get a plain answer.
+dlg @1 resident.job : I work when there's work, and fold #boats# when there isn't. | Work by day, #fold# by night. It's a good shape for a life.
+dlg @1 resident.bye : #farewell#. Go gently. | #farewell#. If you see #boat# out there, it's mine.
+graft resident.hub
+choice What are you folding? -> leaf_fleet
+node leaf_fleet
+say A boat, out of a leaf. Fold it, crease it, press it twice, and it'll sail till it's tired. Here. This one's yours.
+mood warm
+free
+choice Where do they go? -> fleet_farbank
+choice Goodbye. -> bye
+node fleet_farbank
+say Wherever #breeze# sends them. Some to #farbank#, most to the bottom. I've never minded which.
+choice I'll sail mine, then. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. I made #boat#. It's the best one. | #greet#. Mind #leaves#; they're for folding.
+line @1 greet.return : #greet#. I'm folding. You can watch. | #greet#. I've got leaves in all #pockets#.
+line @1 farewell.return : #farewell#. Watch the water for my boat. | #farewell#. I'll wave from the bank.
+line @1 react.news : Is that true? I'm going to tell #fleet#. | #surprise#. Nobody told me any of that.
+line @1 answer.how : Good. #boat.capitalize# didn't sink this time. | All right. My paws are sticky from #leaves#.
+line @1 thank : #thanks#. I'll fold you one back. | Thank you. That's the best leaf anyone's ever given me, #address#.
+line @1 decline : I don't want to. I'm in the middle of #fold#, and it'll spoil. | Not now. #breeze.capitalize#'s just right and I've #boat# to sail.
+scene young_first_boat
+when topic=pastimes|smalltalk
+does tell.boast / react.self / assess
+a : I folded #boat# all by myself. It's got a pointy front. | Look in my paw. That's #boat#, and it floats. | I made six boats this morning and five of them #sank#.
+b[stage=adult|old] #grown : That's clever work for small paws. | Does it really? Show me, then. | Five! And the sixth one?
+b : Who showed you how? | Does it really float? | What about the sixth?
+a@grown : I know. I did #crease# twice. | Only if you put it down gently. Like this. | Still going. I didn't wait to see it stop.
+a : Nobody. I watched #leaves# fall in the water, and I thought about it. | It floats till it gets tired. Then it's a leaf again. | It's sailing. I'm not going to stand and watch it sink.
+
+scene young_honey
+when topic=food
+does tell.self / react.self / assess
+a : I had #honeybread# and I licked the knife. Don't tell. | I had #honeybread# for breakfast and saved the crust for last. | There was honey on my paws, so #boat# came out sticky.
+b : Your secret's safe. | The best bit, saved. | Did it still float?
+a : Good. It wasn't a sharp knife. I checked first. | The crust's the bit you remember after. | It floated, and a wasp chased it all the way out.
+
+scene young_wet_socks
+when topic=weather|home here.weather=rain
+does tell.complaint / react.complaint / assess
+a : My socks are wet right through. Wet socks are the worst thing there is. | I jumped in the puddle on purpose, and now my socks are soaked. #mm#. | #rain.capitalize# is no good for #boats#. They go all soft.
+b : Mine are too. | Was it worth it? | Soft?
+a : Worse than spiders. I'm going to stand by the fire till they steam. | For one jump. Not for after. | Soft like bread in milk. They just give up and lie there.
+
+scene young_jetty_dusk
+when topic=day here.time=dusk here.region=coldwater
+does tell.self / react.self / assess
+a : I'm allowed on #jetty# till the lamps. Then I have to come in. | The water goes orange out past #jetty#. I watched it. | I sent #boat# out just now. It's going to sleep on the water.
+b : Lamps soon, then. | Orange? | Where will it sleep?
+a : I know. I'll go when the first one's lit, not before. | Orange, then grey, then you can't see #farbank# at all. | Out near #farbank#. It'll be cold, but it's a boat.
+
+scene young_when_grown
+when topic=dreams|pastimes
+does tell.plan / react.self / assess
+a : When I'm grown I'll fold a boat big enough to sit in. | I dreamed #boat# got huge and took me to #farbank#. | When I'm big I'm going to teach every #child# in the town to fold.
+b[stage=adult|old] #grown : A leaf that size? You'd want a whole tree. | And what was over there? | That's worth wanting, that.
+b : Out of what? | What was over there? | Every one of them?
+a@grown : Then I'll fold a tree. I'll ask first. | More #leaves#, and somebody folding them. Then I woke up. | I know. I thought of it all by myself.
+a : Lots of #leaves# stuck together. I'm still thinking about the sticking. | More #leaves#, and somebody folding them. Then I woke up. | Every one who can sit still long enough.
+
+story young_first_sinking [topic=pastimes|memories]
+  : The very first boat I ever made went straight down. It didn't even try.
+  : I sat by the water and cried, and then I made another one with a fatter middle.
+  ask : Have you ever made something that sank?
+  b : Plenty of things. So the fat middle's the trick?
+  : That's the trick. Nobody told me. The water did.
+
+rule @young_fold_bark
+when concept=bark
+does aside
+cooldown 8h
+say Fold, and fold, and press #crease# flat. | Go on, #boat#. Sail, then.
+
+dlg @young resident.hub : #greet#. I'm folding. You can ask me something. | #greet#. Mind #leaves#; I've sorted them.
+dlg @young resident.job : I haven't got a job. I fold #boats#, and I fetch water when I'm asked. | I help at home. Mostly I fold #boats#.
+dlg @young resident.bye : #farewell#. Watch the water for my boat. | #farewell#. Don't step on #fleet#.
+
+adolescent
+line @1 greet.return : #greet#. Don't laugh; I still fold them. | #greet#. I'm not too old for #boats#, whatever anyone says.
+line @1 farewell.return : #farewell#. Mind how you go. | #farewell#. I'll be down by the water, if I'm wanted.
+line @1 react.news : Really? I'm always the last to hear, #address#. | #surprise#. Nobody tells me anything first.
+line @1 answer.how : Older, apparently. Everyone keeps saying so. #mm#. | Steady. My paws know #fold# better than my head does.
+line @1 decline : I'd better not. I promised I'd help at home, and I'll catch it if I don't. | Not today. I've #fold# I'm trying to get right, and I'm nearly there.
+scene adol_too_old
+when topic=pastimes
+does tell.self / react.self / assess
+a : Somebody said I'm too old for #boats# now. I folded three more out of spite. | I teach the little ones to fold. They listen better than I ever did. | I tried a boat out of paper once. Paper's worse. #leaves.capitalize# know what they're for.
+b : Good for you. | Do they? | Worse?
+a : #mm#. One of the three is still out there. | They do. I make them press #crease# twice before it sails. | Paper drinks the water. A leaf sheds it. That's the whole secret.
+
+scene adol_learning
+when topic=work
+does tell.self / react.self / assess
+a : I'm learning to be useful. It's slower than #fold#. | Everyone wants me to pick a trade. I'd pick #boats#, if boats were a trade. | I carried water all morning. I'm #tired#.
+b : It comes, with time. | Are they not a trade? | Arms do that, at first.
+a : That's what they tell me. I'm waiting to see it. | Not leaf ones. Nobody pays for a thing that #sank# by supper. | They'll stop aching by Restday. I hope.
+
+scene adol_quiet_spot
+when topic=friends|smalltalk here.region=coldwater
+does tell.self / react.self / assess
+a : I like sitting out on #jetty# with nobody asking me anything. | My friend thinks folding's daft. We still sit together. | I gave my best boat to a friend. Watched it go out of sight.
+b : Everyone needs a spot like that. | Friends can disagree. | Your best one?
+a : It's mine till somebody finds it. Don't tell. | We do. We just don't talk about #boats#. | My best one. A friend's worth the leaf.
+
+rule @adol_bark
+when concept=bark
+does aside
+cooldown 9h
+say Not too old. Not yet. | One more #fold#, then chores.

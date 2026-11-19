@@ -1,0 +1,309 @@
+# rm903, the drain-poker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm903
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the drain-poker
+fits stage=young|adolescent|adult|old
+prefers temper=short drive=restless
+traits temper=short talk=plain warmth=cold humour=none honesty=plain piety=ordinary drive=restless
+quirk pokes_every_blocked_drain_clear_with_a_stick_in_passing
+likes running_water clean_gutters strong_tea thunderstorms
+dislikes idlers litter
+fears the_low_streets_going_under
+hopes every_drain_on_the_street_running_clear
+topics weather +0.4 work +0.3 home +0.3 times +0.2 crime +0.2 pastimes -0.3 festival -0.3
+styles comfort=practical gossip=blunt refuse=short tease=none
+marks oath saying
+persona #self.first# has little patience and less tact, says what is meant in as few words as will do, and cannot walk past a blocked drain without stopping to poke it clear with a hooked stick.
+
+words
+oath! = Rot the drains | Muck and leaf-mould | Grates and grumbles
+saying! = Clear it now or wade it later | Water wants to go somewhere | Nobody's job is my job, then
+stick = my stick | the hooked stick | the drain stick
+grate = the grate | the drain grate | that grating
+gutters = the gutters | the gutters on this street
+downpipe = the downpipe | that cracked downpipe
+leaves = wet leaves | a wad of leaves
+muck = muck | the muck that comes up
+sweepers = whoever's meant to clear them | the Council's sweepers
+idlers = idlers | folk who stand and watch
+rush = the rush of it | the water running clean
+tch = Tch | Pah
+tea = strong tea | a mug of tea as black as the drain
+low = the low streets | the bottom of the hill
+
+any
+opinion @1 city mixed 2 : A fine city with filthy drains. Somebody ought to be ashamed, and it isn't me.
+opinion @1 houses against 1 : The Houses have their own sweepers. The rest of us have sticks and bad tempers.
+opinion @1 festivals against 1 : A feast means peelings and ribbon in every gutter for a week. I'll pass.
+opinion @1 watch mixed 1 : The Watch walk past a flooded doorway and look at it. Looking never cleared a grate.
+opinion @1 newcomers mixed 1 : New folk are welcome, so long as they keep their peelings out of #gutters#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the grate. | #greet#. You're standing in the wet. Step left.
+line @2 greet [here.time=dawn] : #greet#. Up before the muck's dried, then. | #greet#. Early. Good. The street's quieter.
+line @1 greet.return : #greet#. | #greet#. What is it?
+line @2 greet.return [pair.band=friends|family] : #greet#. Make it quick, I'm halfway down the street. | #greet#. Oh, it's you. Fine.
+line @1 farewell : #farewell#. | #farewell#. Watch your feet on the corner.
+line @1 farewell.return : #farewell#. | Right. Off with you, then.
+line @1 react.news : Get on with it, then. | Spit it out. I've ears on me.
+line @1 react.news.new : That's news to me. Not good news, by the sound. | #oath#. When was this?
+line @1 react.news.doubt : Rubbish. Somebody's stirring the pot for the fun of it. | #doubt#. Who's spreading that about?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bad business. I'm sorry. | #pity#. No joking about that one.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. High time something came right. | #gladnews#. Don't expect me to dance.
+line @1 answer.how : Busy. Always busy. | Cross. The third grate on this street's blocked again.
+line @1 answer.how.busy [self.working=yes] : Rushed. Don't stand there, it slows me down. | Up to my elbows. Ask me tomorrow.
+line @1 decline : No. I've no time today, and I'd only be cross about it. | I won't, and I'll not pretend I'm sorry. My paws are full.
+line @1 accept_decline : Fine. Myself, then, as usual. | Suit yourself. It'll get done.
+line @1 thank : #thanks#. That's a help. | Right. Thanks. That's one I owe you.
+line @1 apologise : I bit your head off. Sorry. I'm like that. | That was short of me. My fault.
+line @1 accept_apology : Done. Forget it. | Fine. We're square.
+line @1 preclose : Right. I've drains waiting. | That's enough standing about. I'm off.
+line @1 accept_preclose : Go on, then. I've things to do as well. | Off you go. So am I.
+line @1 ack : #tch#. | Right.
+scene rain_grates
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / insist / ack
+a : Third grate down this street, blocked solid. #leaves.capitalize# and somebody's cabbage. | Look at it. Water up to the step, and everyone just walking round it. | Ten minutes of rain and #gutters# are over. Every time.
+b : Somebody ought to see to it. | Folk are busy. | It's the rain, though.
+a : Somebody is. Me. Hold this. | So am I. I still bent down. Took me a moment. | It's not the rain. It's the cabbage. #saying#.
+b? : #bc_fair_enough# | #bc_right# | #bc_ha#
+
+scene storm_running
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Listen to that. Every downpipe on the row going at once. Lovely. | A storm's the only time this city's drains work. They've no choice. | I stood under the arch and watched #rush#. Best thing all week.
+b : You sound pleased. | No choice? | The best thing?
+a : I am. Don't spread it about. | Too much water to argue with. It just goes. | The best. It's all clear after, for a day or two.
+
+scene autumn_leaf_war
+when topic=season|weather here.season=autumn
+does tell.complaint / ask.detail / answer.detail / assess
+a : Autumn. Every tree in the city's coming down into my drains. | I cleared that grate this morning. Look at it now. | Leaves. Wet leaves. They pack like felt.
+b : Your drains? | Again? | What do you do about it?
+a : Mine. Nobody else wants them. | Again. I'll do it again tonight, and tomorrow. | Hook them out with #stick#. Stack them. Swear a bit.
+b? : #bc_poor_soul# | #bc_ha# | #bc_true#
+
+scene thaw_mess
+when topic=season|weather here.season=winter|spring
+does tell.worry / reassure / insist
+a : When the thaw comes, it all comes at once. The low streets'll be wading. | Ice in the grates. Nothing gets past it. Come the thaw, you'll see. | The downpipe on the corner's split with the frost. Nobody's said a word.
+b : It might go slowly. | It'll melt in time. | Somebody will notice.
+a : It never goes slowly here. I'll be out with #stick# at first light. | It'll melt all right. Into the cellars. | Somebody has. Me. Now somebody else can fix it.
+
+scene stood_and_watched
+when topic=smalltalk|friends here.region=ridgemere
+does tell.complaint / react.complaint / insist / ack
+a : Three of them stood and watched me clear that grate. Not one offered to hold the stick. | I don't need help. Being asked would be nice, though. | Folk tell me I'm short with them. I'd be less short if they'd shift off the grate.
+b : They didn't know how. | That's fair. | You are a bit short.
+a : You put the stick in and pull. A pup could do it. | Thank you. That's all I'm after. | I know. I'm working on it. Slowly.
+b : #bc_ha# | #bc_true# | #bc_fair_enough#
+
+scene sweepers_argued
+when topic=times|smalltalk here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : #sweepers.capitalize# come round once a season. The muck comes round every day. | The city ought to pay somebody for the drains. Properly. | I'd do it for nothing, and I nearly do.
+b : They've a lot of streets. | Who'd pay for it? | You should ask for coin.
+a : Then they want more sweepers. It's not hard sums. | Fine. Everybody. A copper a door. Nobody would miss it. | I'd sooner have the drains clear than the coin. Most days.
+b? : #bc_true# | #bc_maybe# | #bc_right#
+
+scene work_first
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I work, then I do the drains on the way home. Same every day. | Don't talk to me while I'm at it. I'll lose count. | I'm quick. Folk think quick is rude. It isn't.
+b : Every day? | I'll wait. | It can seem rude.
+a : Every day. They block every day. | Good. Won't be long. | Then it seems. I'm still quick, and I'm not sorry.
+
+scene black_tea
+when topic=food
+does tell.self / react.self / assess
+a : #tea.capitalize#. Not a word at me till it's drunk. | I've no patience for fancy food. Bread, cheese, done. | Somebody gave me a cake with icing on. I gave it to a pup.
+b : I'll wait, then. | Nothing else? | Kind of you.
+a : Good. Nearly there. Right. Now I can listen. | Onions, if I'm feeling grand. | It wasn't kindness. I just don't like icing.
+
+scene street_floods
+when topic=home self.homeless!=yes
+does tell.worry / sympathise / assess
+a : The street outside my door floods if one grate's blocked. One. | I keep a sandbag by the step. Haven't needed it in a year, because I clear the drains. | When the water gets in, it gets in the walls. Smells for a month.
+b : That's worrying. | Because of you? | A month?
+a : It is. So I watch the grate like a hawk. | Because of me. And #stick#. Nobody else, I can tell you. | A month, and the damp after. #oath#.
+
+scene no_patience_gossip
+when topic=gossip|crime
+does tell.gossip / react.news / insist
+a : I heard a thing about somebody up the street. I didn't like the sound of it. | If you've something to say about a wolf, say it to them. | Folk talk more than they work round here.
+b : What was it? | Not always easy. | That's true.
+a : I'll not repeat it. It's not mine to pass on, and it's probably wrong. | It is easy. You open your mouth. I do. | It's true, and I'm talking now. I'll stop.
+
+scene snapped_at
+when topic=smalltalk pair.band=friends|acquaintances
+does tell.complaint / take_offence / apologise / accept_apology
+a : Don't stand on the grate. Off. Now. | Do that again and I'll put #stick# somewhere you'll not like. | Look, either help or move. Either.
+b : There's no need to bark at me. | Steady on. | You might ask nicely.
+a : No. You're right. Sorry. I see a blocked grate and I go off like a kettle. | I'm sorry. That was too much, even for me. | I might. I won't, mostly. Sorry. I'll try.
+b : #bc_fair_enough# | Forgiven. | #bc_ha#
+
+scene peelings_newcomer
+when topic=newcomer here.region=ridgemere
+does tell.complaint / react.self / assess
+a : New lot at the end house throw their peelings straight in #gutters#. | I had words with the new neighbours about the grate. Short words. | Somebody new on the row. Good. Maybe they'll help with the drains.
+b : Did you tell them? | How did they take it? | Maybe they will.
+a : I told them. They looked at me like I'd come out of the drain. | Badly. They'll learn, or they'll wade. | They won't. Nobody does. I'll ask anyway.
+
+story low_streets_flood [topic=memories|weather self.age>=25]
+  : When I was a #child#, the bottom of the hill flooded. A whole night of rain and every grate choked.
+  : I watched an old wolf go up and down with a hook, clearing them one by one in the dark. Nobody helped.
+  ask : Would you have gone out in that?
+  b[old] : I'd like to think so. I'd likely have stayed in.
+  b : I'm not sure I'd have dared.
+  : I went out the next time. Been out every time since.
+
+story coin_in_the_grate [topic=memories|pastimes self.age>=18]
+  : I hooked a silver coin out of a grate once. Bright as a button, under all that muck.
+  : I stood there holding it, and nobody came for it. So I bought a new #stick# with it.
+  ask : What would you have done with it?
+  b : Spent it on something hot, and quick.
+  b[wealth=poor|destitute] : Eaten for a week on it.
+  : Fair. But a good stick lasts years.
+
+rule @blocked_bark
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 8h
+say Who's blocked this one? #tch#. | Water up to the step again. #oath#.
+
+rule @off_the_grate
+when concept=bark here.place=street
+does aside
+cooldown 10h
+say Off the grate, somebody. Thank you. | Peelings in the gutter. Again. Lovely.
+
+dlg @1 resident.hub : #greet#. What is it? Quick, I'm busy. | #greet#. Say what you want and we'll both get on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What now? | #topic.player#. Back. Go on.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I've nothing for you. Move on. | Say it and go. I've drains to see to.
+dlg @1 resident.job : I work. Then I clear the drains nobody else will. | Work. The drains are extra, and free.
+dlg @1 resident.bye : #farewell#. Mind the grate. | #farewell#. Keep your feet dry.
+graft resident.hub
+choice Why are you poking at that drain? -> drain_poke
+node drain_poke
+say Because it's blocked, and nobody else will. Leaves, peelings, rag. Leave it and the street floods. So I don't leave it.
+mood stern
+free
+choice Isn't that the sweepers' work? -> drain_sweepers
+choice Goodbye. -> bye
+node drain_sweepers
+say It is. Ask them where they are. I'll still be here with my stick.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. Don't step there, it's my drain. | #greet#. I'm busy. Very busy.
+line @1 greet.return : #greet#. What? | #greet#. I'm poking the drain. Watch.
+line @1 farewell.return : Bye. Don't drop anything in my drain. | Bye. Go round the puddle.
+line @1 react.news : Tell me properly. Not in bits. | What? When? Say it right.
+line @1 answer.how : Cross. Somebody's blocked my drain with a shoe. | Fine. I've got a new stick.
+line @1 decline : No. I'm in the middle of something and I won't stop. | I don't want to. My drain's not finished yet.
+line @1 accept_decline : Fine. I didn't want you to anyway. | All right. Don't then.
+scene pup_my_drain
+when topic=day|pastimes here.weather=rain|overcast
+does tell.boast / react.self / assess
+a : I cleared the drain at the corner all by myself. It's going down now. | There was a shoe in the drain. A whole shoe. I got it out. | Look. If you poke it there, it all goes glug.
+b[stage=adult|old] #grown : By yourself? Good for you. | Whose shoe? | Glug, is it?
+b : All by yourself? | A whole shoe? | Let me try.
+a@grown : By myself. Nobody helped. | Don't know. It's on the wall now. | Glug. Then it runs. Listen.
+a : All by myself. Look how fast it goes. | A whole one. It smelled. | No. It's my drain. You can watch.
+
+scene pup_told_off
+when topic=family self.mother
+does tell.complaint / react.self / assess
+a : #self.mother# says I'm not to put my paws in drains. I use a stick, though. | I came home all muddy and #self.mother# was cross. It was worth it. | #self.mother# took my stick away. I've found another.
+b[stage=adult|old] #grown : A stick's much better than paws. | Worth a telling-off? | You'll lose that one too.
+b : A stick's all right, then. | Was it? | Another one?
+a@grown : That's what I said. It didn't help. | Yes. The drain's clear now. | I won't. It's hidden.
+a : It's not paws. So it's allowed. | Yes. I'd do it again. | A better one. With a hook.
+
+scene pup_impatient
+when topic=smalltalk|friends
+does tell.complaint / react.self / assess
+a : I hate waiting. Everything's slow. | The others play games where you take turns. I don't like turns. | Grown-ups talk and talk and never do anything.
+b : Waiting's not so bad. | Turns are fair. | They do talk a lot.
+a : It is bad. It's the worst. | Fair and slow. | Talking's not doing. I do things.
+
+scene pup_rain_run
+when topic=weather here.weather=rain|storm
+does tell.feeling / react.self / assess
+a : When it rains hard the gutters go like a river. I love that. | I put a leaf in the gutter at the top and ran to catch it at the bottom. | The water goes all brown and fast. Then it's clear.
+b[stage=adult|old] #grown : Mind you don't fall in after it. | Did you beat it? | It's the muck coming out.
+b : Like a river? | Did you catch it? | Then clear?
+a@grown : I won't. I'm careful. Mostly. | Nearly. It went down a drain. | I know. I like the clear bit.
+a : A loud one. You can hear it. | It went down a drain. Rude. | Clear and fast. Best bit.
+
+scene pup_untidy_street
+when topic=home|day here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Somebody dropped a cabbage leaf right on the grate. Right on it. | Our street is messy. I'm going to tidy it. | I picked up all the rubbish by our door. All of it.
+b[stage=adult|old] #grown : Some folk were raised in a barn. | All by yourself? | That's a good pup.
+b : That's rude. | The whole street? | All of it?
+a@grown : None. I told them. | Yes. It might take a while. | I know. Somebody tell the others.
+a : I know. I moved it. | Start at our door. Then the rest. | Every bit. It's tidy now. Don't drop anything.
+
+story pup_shoe_story [topic=memories|day self.stage=young]
+  : I found a shoe in the drain. I pulled and pulled and it came out with a pop.
+  : It was all slimy. I left it on the wall for whoever lost it.
+  b[stage=adult|old] : Well done, you. Did anyone come for it?
+  b : Did anyone come for it?
+  : No. It's still there. Nobody's got one shoe, apparently.
+
+rule @pup_drain_bark
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 8h
+say It's going down! Look, it's all going down! | Who put that in my drain?
+
+dlg @5 resident.hub : #greet#. I'm clearing the drain. You can watch, but don't help. | #greet#. What? I'm busy.
+
+adolescent
+line @1 greet.return : #greet#. What do you want? | #greet#. Fine. Hello.
+line @1 farewell.return : Bye, then. | See you. Mind the grate.
+line @1 react.news : Get on with it. | Go on. Quick, though.
+line @1 answer.how : Annoyed. Somebody kicked my stick into the gutter. | Fine. Bored. I want to be doing something.
+line @1 decline : No. I've errands, and I'm already late for two of them. | I can't. I've been told to be somewhere, and I'm going.
+scene teen_temper
+when topic=smalltalk|friends self.stage=adolescent
+does tell.self / react.self / assess
+a : I lost my temper with somebody yesterday. I'm not sorry. Well. A bit. | Everybody says I'm too sharp. I'm not sharp. I'm right. | I can't sit still. I've got to be doing something.
+b[stage=adult|old] #grown : A bit sorry's a start. | Right and sharp can go together. | You'll find work soon enough.
+b : What happened? | Are you, though? | Like what?
+a@grown : I'll tell them. Tomorrow. Maybe. | That's what I keep thinking. | I hope so. Soon.
+a : They stood on my grate. I told them. Loud. | Mostly. | Anything. Drains, errands. Not sitting.
+
+scene teen_drain_round
+when topic=day|weather self.stage=adolescent
+does tell.self / react.self / assess
+a : I've a round now. Every drain from the chapel to the square. | The old folk on our street leave me a copper for clearing their grates. | I know every drain on this street by the noise it makes.
+b[stage=adult|old] #grown : A round of your own, at your age. | Coppers for grates? Good. | By the noise? Show me.
+b : Every one? | A copper? | By the noise?
+a@grown : Somebody has to. | It adds up. | That one gurgles. That one's choked. Listen.
+a : Every one. Twice a week. | Sometimes two. I'm saving. | Gurgle means fine. Nothing means trouble.
+
+scene teen_want_work
+when topic=work|dreams self.stage=adolescent
+does tell.plan / react.self / assess
+a : I want proper work. Now. Not in a year. | Somebody told me to be patient. I'm not good at that. | I asked about work with the sweepers. They laughed.
+b[stage=adult|old] #grown : A year goes quicker than you think. | Patience comes with years. | Their loss. Ask again.
+b : Now? | Are you trying? | Laughed?
+a@grown : Not quick enough. | It'd better. | I will. Louder.
+a : Now. I'm ready. | I'm trying. It's not working. | They'll stop laughing when I've done their streets.
+
+rule @teen_drain_bark
+when concept=bark here.weather=rain|overcast
+does aside
+cooldown 8h
+say Out the way. Drain's blocked. | That one's choked again. #tch#.
+
+dlg @4 resident.hub : #greet#. If it's quick, ask. If not, I've drains.

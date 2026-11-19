@@ -1,0 +1,315 @@
+# mb902, the thatch-hider (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb902
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier spare
+written_by claude
+title the thatch-hider
+fits stage=young|adolescent|adult|old
+prefers temper=nervy talk=quiet
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk hides_small_keepsakes_in_the_thatch
+likes riddles oatcakes warm_rain fresh_straw
+dislikes night_noise smoke
+fears the_thatch_catching_fire
+hopes a_house_nobody_can_see_into
+topics home +0.4 weather +0.3 lore +0.2 animals +0.2 pastimes +0.2 gossip -0.4 newcomer -0.2 family -0.2
+styles comfort=quiet gossip=refuses refuse=soft tease=none
+marks oath saying
+persona #self.first# hides small keepsakes in the thatch and answers a question with a riddle as often as not: quiet, nervy and private, polite at the door but never past it, and content with a dry corner and a soft rain overhead.
+
+words
+oath! = Thatch and hush | Under the eaves | Straw over it
+saying! = What's tucked away can't be taken | Ask the thatch; it won't tell you either | A quiet roof keeps a dry head
+thatch = the thatch | the thatch over my bed
+eaves = the eaves | the dark under the eaves
+keepsake = a keepsake | a little something
+tucked = tucked away | tucked up in the straw
+straw = fresh straw | a bundle of new straw
+oatcake = an oatcake | an oatcake warm off the griddle
+riddle = a riddle | a little riddle
+murmur = Hm | Mm
+nightnoise = the noise at night | somebody banging about after dark
+smokeword = the smoke | peat smoke in my eyes
+nook = my nook | the nook by the hearth
+softrain = a soft rain | warm rain pattering overhead
+latch = the latch | my latch
+walkway = the boards | the walk-boards
+longears = long ears | a nosy one
+tin = the tin | a little tin with a lid
+cloth = the cloth | the cloth over the window
+shell = a blue shell | a little blue shell
+ducks = the ducks | our ducks
+
+any
+opinion @1 strangers against 1 : A stranger on #walkway# wants to know where things are. I'd rather they didn't. #murmur#.
+opinion @2 watch for 1 : The watch walk #walkway# at night with a lantern. I sleep the sounder for it. That's all I'll say for them.
+opinion @3 newcomers against 1 : New folk look in at windows. They don't mean harm. I still draw #cloth#.
+opinion @4 church mixed 1 : The chapel's a #good# place, if nobody asks you anything. Some days they ask.
+opinion @6 festivals mixed 0 : I like the lamps. I don't like the crowd under them. I watch from #nook#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll want somebody else, likely. | #greet#. I don't know you, #address#. That's no fault.
+line @3 greet [here.time=dusk|night] : #greet#. It's late for the boards. Mind #walkway#. | #greet#. I was just drawing #latch#.
+line @1 again.open : You again. #murmur#. | #welcome_back#. I've nothing more to say than before.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, then. Shut the door. | #greet#. It's you. Good.
+line @1 farewell : #farewell#. | #farewell#. Shut the gate behind.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #walkway#.
+line @1 react.news.new : #surprise#. I'd not heard. | #murmur#. That's new to me.
+line @1 react.news.known : #knew#. | I'd heard. I kept it #tucked#.
+line @1 react.news.doubt : #doubt#. I'll not repeat it. | Maybe. I'd keep that #tucked# till it's sure.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard. | Oh. That's #very# hard, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good#. I'm glad, quietly.
+line @1 answer.how : #fine#. That'll do, won't it. | Well enough. I'd not say more if I could.
+line @1 decline : #hedge#; no. I'd rather keep to #nook# today. | I'll say no, #address#, kindly. I've a thing at home to see to.
+line @1 accept_decline : #no_matter#. | That's all right. I'd have said the same, #address#.
+line @1 thank : #thanks#. | That's kind. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | It was nothing. Don't tell anyone, #address#.
+line @1 preclose : #preclose#. | I'd best get in. #latch.capitalize# won't draw itself.
+line @1 accept_preclose : #farewell#. | Go on, then. Quietly.
+scene thatch_keep
+when topic=home|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #keepsake# in #thatch#. Most folk keep them in a box. A box can be carried off. | There's something of mine in #eaves# that nobody else alive has seen. | I put a new thing up in the straw a night ago. What it is stays with me.
+b : What sort of things? | Nobody at all? | Why up there?
+a : Small ones. A ring. A letter. A stone. That's as far as I'll go. | Nobody but me. #murmur#. And I'm not saying more. | Because nobody looks up. #saying#.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene asked_where
+when topic=smalltalk|family
+does tell.self / ask.detail / answer.detail / ack
+a : You'll ask where I'm from next. Everyone does. | Somebody asked me my business today. I told them it was mine. | I'm asked a lot of questions, for a quiet one.
+b : Where are you from, then? | Was it rude? | Because you don't answer.
+a : Here and about. The fen. That's plenty. #murmur#. | Not rude. Just mine. #murmur#. | That's likely it. I'll go on not answering.
+b? : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene riddle_offer
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : I'll answer you with #riddle#: what's kept best when it's never shown? | Here's one. What has a mouth on the fen and never speaks? | I like a riddle. It's a question with the answer #tucked# inside.
+b : A secret? | The creek? | Is there an answer to you?
+a : A secret. You've got me. #oath#. | The creek's mouth. It never says a word. Like me. | There is. It's in the thatch, with the rest.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene soft_rain
+when topic=weather here.weather=rain self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #softrain.capitalize#. I sat in #nook# all afternoon and listened. | Rain like this, the whole fen goes quiet. Everyone's in. | I like the #rain# when it's warm. It keeps folk off the boards.
+b : Sounds a good afternoon. | Quiet's good. | Ha. That's why?
+a : The best I've had this month. #murmur#. | It is. Nobody calling. Nobody asking. | That's why. And the sound of it.
+
+scene murk_door
+when topic=weather|day here.weather=fog here.region=fens
+does tell.self / react.self / assess
+a : #fog.capitalize# thick as wool. I'm staying in, #oath#. | In a murk like this, nobody can see past #cloth#. I like that, I'll own. | I heard footsteps on #walkway# in the murk and couldn't see whose. I drew #latch#.
+b : Sensible. | Nobody can see out, either. | Probably nobody.
+a : Sensible, or shy. Both, maybe. | I'm not looking out. That's fine. | Probably. #latch.capitalize#'s drawn all the same.
+
+scene new_straw
+when topic=home|season self.likes=fresh_straw
+does tell.self / react.self / assess / ack
+a : I've #straw# for the bed, and I'll patch #eaves# with the rest. | The smell of #straw# is the best smell there is. Better than bread. | Patched #eaves# with new straw. Moved a thing or two while I was up there.
+b : A good smell. | Better than bread? | Moved what?
+a : It is. Clean and dry. | #murmur#. Nearly. | Things. They're safe. That's all.
+b? : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene night_noise
+when topic=day|home here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : #nightnoise.capitalize# again. Somebody singing on #walkway# till all hours. | A door kept banging somewhere. I lay and counted. | I don't sleep through #nightnoise#. I listen for what it is.
+b : Some folk are like that. | How many? | And what was it?
+a : They can be, somewhere else. #annoyed#. | Too many. I stopped at a hundred. | A gate, in the end. Not my gate. I checked.
+
+scene smoke_fear
+when topic=home|health self.dislikes=smoke
+does tell.worry / reassure / assess
+a : #smokeword.capitalize# came in under the door this morning. I was up the ladder looking at #thatch# before I'd dressed. | I can't abide #smokeword#. A thatch roof and a fire, and you never stop watching both. | I damp #thatch# over the hearth every week. Nobody told me to.
+b : Was it all right? | You'd see it in time. | That's sense.
+a : Only somebody's chimney. #reassure#. I'll still look again. | I'd see it. I'll still look. Twice. | Sense, and fear. Mostly fear. #murmur#.
+
+scene gossip_refused
+when topic=gossip|crime
+does tell.gossip / react.self / assess / ack
+a : I've heard something. It goes no further than me. #gossip_none# | They talk on #walkway# like the reeds have no ears. I've ears. I keep them shut. | Somebody tried to tell me a thing about somebody. I walked off down #walkway#.
+b : Not even a hint? | Shut ears? | Good for you.
+a : Not a hint. It's not mine to give. | Shut, and the mouth after them. #oath#. | It's easier than listening. And kinder, mostly.
+b : #bc_fair_enough# | #bc_ha# | #bc_good#
+
+scene stranger_wary
+when topic=newcomer|player
+does tell.worry / reassure / assess
+a : There's a stranger about. Looking at houses. I drew #cloth#. | Somebody new knocked and asked the way. I told them, through the door. | I don't mind new folk. I mind new folk looking in.
+b : Likely harmless. | Through the door? | Fair.
+a : Likely. The cloth stays drawn. #murmur#. | Through the door. Politely. #latch.capitalize#'s there for a reason. | It's not much to ask. Look at the fen; it's prettier.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Whatever little I have stays #tucked#. Where is my own affair. | When times are hard, folk get curious about what others have. | I'm eating #oatcake# and not much else. It'll do.
+b : Wise, maybe. | They do. | It'll turn.
+a : Wise, or nervy. Both, and it stays #tucked#. | They do. Another reason to keep it in #thatch#. | #reassure#. It always has, so far.
+
+story the_tin [topic=memories|home self.age>=25]
+  : Years ago I kept #tin# under the bed, with all I had in it. One night it was gone.
+  : Who took it, I never learned. After that, everything went up in #thatch#.
+  ask : Would you have guessed, if it were you?
+  b : I'd have wondered about everybody.
+  b[old] : I'd have guessed, and been wrong.
+  : I wondered about everybody. That's worse than the tin. #saying#.
+
+rule @thatch_bark
+when concept=bark here.place=home
+does aside
+cooldown 8h
+say Still there, #tucked#. Good. | #oath#. Who's been under #eaves#?
+
+rule @noise_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Hush out there on #walkway#. Some of us sleep. | #nightnoise.capitalize#. #annoyed#.
+
+dlg @3 resident.hub : #greet#. What's wanted, #address#? | #greet#. Ask, then. I'll answer what I can.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. That's all right. | #topic.player#. Back on my step, then.
+dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. Keep to #walkway#, if you would. What's needed?
+dlg @6 resident.job [self.working=yes] : #self.trade_words.capitalize#. That's as much as I'll say about it. | I work. Quietly. It pays enough for #oatcake# and a dry #nook#.
+dlg @7 resident.bye : #farewell#. | #farewell#. Mind #walkway#.
+graft resident.hub
+choice What do you keep up in the thatch? -> thatch_secret
+node thatch_secret
+say In the thatch? Nothing. Straw. Why would anyone keep anything in a roof? What's kept best when it's never shown?
+mood calm
+free
+choice A secret, I'd guess. -> thatch_secret_more
+choice Goodbye. -> bye
+node thatch_secret_more
+say You'd guess right. And it stays up in #thatch#. Ask me about the weather, if you want an answer.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet [pair.band=strangers] : #greet#. I don't know you. That's all right. | #greet#. Don't look up at our roof.
+line @1 greet.return : #greet#. | #greet#. #murmur#.
+line @1 farewell : #farewell#. Don't follow me. | #farewell#. I've something to put away.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #walkway#.
+line @1 react.news.new : #surprise#. I didn't know. | Oh. Is that a secret? I'll keep it #tucked#.
+line @1 react.news.doubt : That sounds like a story to me. #murmur#. | #nonsense.capitalize#, maybe. I'll not say it again till I know.
+line @1 answer.how : Good. I found #keepsake#. | All right. I'm not telling why. #murmur#.
+line @1 decline : No, thank you. I've got to stay near #nook#. | I'd rather not. I'm shy of it, and I've a thing to put in #thatch#.
+line @1 accept_decline : #no_matter#. | All right. Ask me another time, quietly.
+rule @y_thatch_bark
+when concept=bark here.place=home
+does aside
+cooldown 8h
+say Nobody look up. There's nothing in #thatch#. | #oath#. Where did I put it?
+
+scene y_thatch_treasure
+when topic=pastimes|home
+does tell.self / ask.detail / answer.detail
+a : I've got #keepsake# in #thatch#. I'm not saying what. | I found #shell# and I hid it where nobody looks. Up. | I hide things in #thatch#. Then nobody can take them.
+b[stage=adult|old] #grown : Something shiny? Mind you don't pull the roof down after it. | Up? Ah. I can guess. | Who'd take them from you?
+b : What is it? | Where? | Who'd take them?
+a@grown : I'm careful. I only pull one straw. | Don't guess. Please. | Nobody. That's because they're hidden.
+a : It's shiny. That's all I'll say, #oath#. | Up. That's all. | Nobody, now.
+
+scene y_riddle
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I've got #riddle#. What has a roof and no house? | Here's one: what's grey and wet and never goes home? | I know #riddle# about the heron. You won't get it.
+b[stage=adult|old] #grown : A roof and no house? A hat, is it? | Grey and wet and never leaves. Rain, is it? | Try me. I'm old enough to know a heron.
+b : I give up. | I don't know. | Go on, then.
+a@grown : A mushroom, really. A hat's a fair guess. I'll find a harder one. | The mizzle. Near enough. You've heard it. | What waits on one leg and never once tires? You'd know. The heron.
+a : A mushroom. It's got a roof and nobody lives in it. | The mizzle. It never goes home; it lives here. | What waits on one leg and never sits? The heron. Ha.
+
+scene y_rain_thatch
+when topic=weather|home here.weather=rain here.region=fens
+does tell.self / react.self / assess
+a : I like lying in #nook# listening to the #rain# on #thatch#. | When it rains, #thatch# talks. Little taps. | #softrain.capitalize#. I'm going to stay in and be quiet. #good.capitalize#.
+b[stage=adult|old] #grown : It's a good sound, rain on a dry roof. | What does it say? | Stay in, then. You've earned it.
+b : Nice. | What does it say? | #bc_lovely#
+a@grown : Dry inside, wet outside. That's the best. | Stay in. It always says stay in, #oath#. | I'll be #very# quiet, then.
+a : The best sound. | Stay in. Stay quiet. | #very.capitalize# quiet.
+
+scene y_night_noise
+when topic=day|home here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : Somebody was shouting on #walkway# in the dark. I hid under the blanket. | There's #nightnoise# again. I can't sleep. | A door banged all night. Bang. Bang. I counted it from #nook#.
+b[stage=adult|old] #grown : Only somebody coming home late. Nothing to fear. | It'll stop by and by. Sleep with your ears covered. | Somebody's latch wants fixing.
+b : Scary. | Me too. | How many?
+a@grown : I know. I still hid. | I'll cover my ears. Both. | Not ours. Ours is good.
+a : I don't like the dark ones. #murmur#. | Nobody sleeps. | Forty. Then I slept.
+
+scene y_heron_shy
+when topic=animals here.region=fens
+does tell.self / react.self / assess
+a : A heron came down by our steps. I kept #very# still and it stayed. | There's a toad lives under #walkway#. I've never told anyone. Till now. | #ducks.capitalize# know me. They don't run off when I come.
+b[stage=adult|old] #grown : Still is how you watch a heron. You've a gift for it. | Your secret's safe with me. | They know who's gentle. Ducks always do.
+b : Lucky. | A toad! | #bc_clever#
+a@grown : I can be still all day. | You won't tell? Good. | I don't shout. That's why.
+a : It looked at me. | A big one. Shh. | They're my friends, #ducks#.
+
+scene y_oatcake
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : I had #oatcake# and I saved half. It's #tucked#. | #oatcake.capitalize# is the best. It doesn't make a mess. | I'm saving #oatcake# for later. Don't tell.
+b[stage=adult|old] #grown : Saved half? It'll go stale up there. | They're a quiet food. You'd like that. | Your secret's safe.
+b : Saved it? | They are good. | I won't.
+a@grown : It's for tomorrow. Stale is still good. | I do like that. #murmur#. | Thank you. It stays between us, then.
+a : For later. Just in case. | And they're quiet. | #bc_thank_you#
+
+story y_lost_button [topic=memories|home]
+  : I hid a shiny button in #thatch# once, so nobody would find it.
+  : Nobody found it. Not even me. It's still up there somewhere, #tucked#.
+  ask : Have you ever hidden something too well?
+  b[stage=adult|old] : More than once, little one. My spectacles, mostly.
+  b : Yes. A whole sweet. I never found it.
+  : Then you know. I'll find it one day, when I'm tall enough.
+
+dlg @1 resident.hub : #greet#. Are you lost? #murmur#. I'm not supposed to say much. | #greet#. What is it?
+dlg @2 resident.job : I'm a pup. I don't do anything. Quietly, in #nook#. | No job. I look after #keepsake#. That's all.
+
+adolescent
+line @1 greet.return : #greet#. | #greet#. I was just going in.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #walkway#.
+line @1 react.news.new : #surprise#. Nobody told me. Good, maybe. | Truly? I'll keep it #tucked#.
+line @1 answer.how : Well enough. Quiet, up in #nook#. | #fine#. I've nothing to say about it, really.
+rule @a_hush_bark
+when concept=bark
+does aside
+cooldown 8h
+say Nobody saw. #good.capitalize#. | #oath#. Who's been in my things?
+
+scene a_secret_kept
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : A friend told me something. I've told nobody. It's #tucked#. | Everyone wants to know what I'm thinking. I'm thinking about nothing. | Somebody asked what I keep in #thatch#. I told them a riddle instead.
+b[stage=young|adolescent] #pup : You never tell anyone anything. | Nobody thinks about nothing. | What riddle?
+b : Good friend, then. | Truly? | #bc_ha#
+a@pup : That's why they tell me. | I do. It's quiet in there. | What's up and dry and never says? #thatch.capitalize#.
+a : I try. #murmur#. | Nearly nothing. | It worked.
+
+scene a_what_to_be
+when topic=dreams|work
+does tell.feeling / react.self / assess
+a : They keep asking what I'll be when I'm grown. I'll be me, but older. | I'd not be anything big. A dry house and #latch# that shuts. | Everybody's off somewhere far. I'd like to stay in #nook#.
+b : That's an answer. | Sounds good to me. | Nothing wrong with staying.
+a : That's all the answer there is. | It's #good# enough. #saying#. | Nothing at all. The fen's quiet, if you let it be.
+
+scene a_mist_bell
+when topic=lore|weather here.weather=fog here.region=fens
+does tell.story / react.story / assess
+a : #fog.capitalize# today. I don't go out in it. I stay where I know the boards. | When the mist bell rings, I count the strokes and stay put in #nook#. | The murk's when things get lost. I keep my things #tucked#.
+b : Wise. | Why count? | Good idea.
+a : Wise, or frightened. It's the same in a fog. | So I know it's still ringing. #murmur#. | Nothing of mine goes missing. #oath#.
+
+story a_marsh_lights [topic=lore|memories here.region=fens]
+  : I followed the marsh lights once, a little way. Only to the end of #walkway#.
+  : I stood there and they danced over the #mud#, and then I came back. I've never said.
+  ask : Would you have gone further?
+  b : I hope not. You did right.
+  b[stage=adult|old] : Everyone goes a little way once. Few say it.
+  : I'm saying it now. That's the most I've said in a week.

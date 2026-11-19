@@ -1,0 +1,303 @@
+# sm901, the rain-sniffer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm901
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier spare
+written_by claude
+title the rain-sniffer
+fits stage=young|adolescent|adult|old
+prefers honesty=frank drive=ambitious
+traits temper=calm talk=plain warmth=warm humour=dry honesty=frank piety=ordinary drive=ambitious
+quirk sniffs_the_wind_for_rain
+likes warm_rain barley_soup autumn_wind stars
+dislikes drizzle deep_mud
+fears hail_on_a_ripe_field being_wrong_on_the_day_it_matters
+hopes an_acre_of_my_own a_summer_with_rain_at_the_right_times
+topics weather +0.4 harvest +0.4 land +0.3 dreams +0.2 food +0.2 gossip -0.2
+styles comfort=practical gossip=plain refuse=plain tease=dry
+marks oath saying
+persona #self.first# sniffs the wind every morning and tells anyone who'll listen when the rain is coming, mostly rightly: calm, plain-spoken and warm, dry as stubble in the humour, honest to a fault, and saving for an acre of one's own.
+
+words
+oath! = Wind and wheat | Cloud and corn | By the weathercock
+saying! = The wind tells the ones who sniff | Rain's only late, never lost | Smell it first and curse it after
+weathercock = the weathercock | the cock on the barn roof
+sky = the sky | the big sky over the fields
+wheat = the wheat | the standing wheat
+stooks = the stooks | the stooks in their rows
+soup = barley soup | barley soup thick enough to stand a spoon in
+mud = mud to the hocks | deep mud
+drizzle = drizzle | a spit of rain that can't decide
+field = an acre of my own | a field that's mine and nobody's
+nose = my nose | the old nose
+swallows = the swallows | the swallows over the stubble
+puddle = a puddle | the big puddle by the gate
+
+any
+opinion @1 houses against 1 : The Houses own every field I've ever cut. I'll have #field# before I'm grey, and they can hear me say it.
+opinion @1 times mixed 1 [world.times=hard|lean] : Lean year. I'll not pretend otherwise. #sky.capitalize# did half of it, and folk did the rest.
+opinion @1 church mixed 1 : I'll pray for #rain# when it's wanted. Praying against it never did #wheat# any good.
+opinion @1 merchants against 1 : The buyers pay least the week the harvest's in. Every year. #robbery#, I call it, and I do.
+opinion @1 newcomers for 1 : Anyone who'll swing a sickle is welcome here. We've more #wheat# than paws, most years.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. You'll be new. Welcome, and keep a coat handy. | #greet#. You're new. I'll not pretend I know you, #address#; I don't.
+line @2 greet [here.time=dawn] : Morning, #address#. I've had my sniff. We'll see. | Morning. Dew's heavy on #wheat#; that means something.
+line @1 again.open : Back again. Weather's not changed, if you're asking. | You again. Same as before, #address#: it'll turn.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit; I'll tell you what the wind's up to. | #greet#. You. #good.capitalize#. Sit down.
+line @1 farewell : #farewell#. | #farewell#, #address#. Take a coat, I would.
+line @2 farewell [here.time=dusk|night here.weather=clear] : #farewell#. Clear sky; you'll walk home dry. | #farewell#. The sky's open; there'll be a chill by morning.
+line @1 farewell.return : #farewell#. | #farewell#. And to you.
+line @1 react.news.new : #surprise#. Never saw that coming, and I see most things coming. | #marvel#. I'll say plainly, I'd no idea.
+line @1 react.news.doubt : #doubt#. Ripen it first, then tell me. | I'll be straight: that sounds like #nonsense# to me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard, and there's no dressing it up. | Oh, that's #bad#. Truly sorry, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize# news, and about time. | That's #good#. I'll say it plain: I'm glad.
+line @1 answer.how : #fine#. Aching, but #fine#. | Well enough, #address#. #nose.capitalize# says rain, and my bones agree.
+line @1 decline : #hedge#, no. I'll be straight with you: I've no time, and I'd do it badly. | Not this time, #address#. The fields want me more than you do, and that's the truth.
+line @1 preclose : Well. #preclose#. | I'd best go and look at #sky# before dark.
+rule @sky_bark
+when concept=bark here.outdoors=overcast
+does aside
+cooldown 8h
+say There. Smell it? #rain.capitalize# by dusk. | #oath#. That's rain on the wind, sure as stubble.
+
+rule @mud_bark
+when concept=bark here.weather=rain here.season=autumn|winter|spring self.dislikes=deep_mud
+does aside
+cooldown 10h
+say #mud.capitalize#. Again. I'll lose a boot. | #annoyed#. The lane's gone to soup.
+
+scene morning_sniff
+when topic=weather|day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : I've had my sniff. Rain by dusk, or I'm a turnip. | Wind's backed round to the south. That means wet, mostly. | Dew's heavy and the cows are lying down. I'll say rain, and I'll be right.
+b : And if it doesn't come? | Only mostly? | The cows know, do they?
+a : Then I'm a turnip, and I'll say so. #saying#. | Mostly. Nine times in ten, #address#. I'll not claim the tenth. | They know before I do. I only listen to them.
+
+scene hay_today
+when topic=work|harvest here.season=summer self.job=farmer|laborer
+does tell.self / ask.detail / answer.detail
+a : Get the hay in today. I don't care if it's not dry. Tomorrow's wet. | We cut the long field yesterday. I've told them: turn it twice and stack it. | #boss.capitalize# wants another day's drying. I've said plainly it'll rot.
+b : You're sure of it? | Will they listen? | And?
+a : Sure as #nose#. I'll take the blame if I'm wrong. | They will, after last year. | I've said it. The rest's up to them. #oath#.
+
+scene hail_weather
+when topic=weather|harvest here.weather=storm here.season=summer
+does tell.worry / reassure / assess
+a : That's hail weather. Ripe #wheat# and hail, and there's a year gone. | I don't mind thunder. Hail I'm scared of, and I'll say it. | Every summer storm I stand at the door and watch #wheat# for the white stones.
+b : It may only be rain. | #reassure# | Any hail yet?
+a : May be. I'll not sleep till I know. | It will, or it won't. Either way I'll be up at dawn. | Not yet. #rain.capitalize#, so far. I'll take rain.
+
+scene spit_of_spite
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : This isn't rain. It's #drizzle#. It wets you and leaves the fields thirsty. | Give me a proper downpour any day. This is only spite. | I sniffed this coming and still came out in it. That's on me.
+b : It's wet, though. | Spite? | That's honest.
+a : Wet, and no use. #drizzle.capitalize# is the worst kind of wet. | Spite. #sky.capitalize#'s sulking. | I'll own it. Soaked and right. #oath#.
+
+scene dust_going_down
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : Warm rain on a dry field. Nothing sweeter, and I'll fight anyone who says otherwise. | Smell that? The dust going down. #wheat.capitalize#'s drinking. | Out in it bare-headed, I was. Felt like a #child# again.
+b : No fighting needed. | I can smell it. | You'll catch a chill.
+a : #good.capitalize#. Then we agree. | That's the best smell in the south, #address#. | Not in warm rain. Nobody ever did.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : That's a proper autumn blow. Leaves everywhere, and #weathercock# spinning. | I like #wind# like this. It blows the cobwebs out of you. | The wind's turned north. Winter's sniffing at the door.
+b : It'll take the roof off. | You would say that. | Already?
+a : It won't. I'll keep an eye on #weathercock#. | I would, and I do. | Already. A month early, I'd say. I'll be honest, I don't like it.
+
+scene second_bowl
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : There's #soup# on, and I'm not ashamed to say I've had two bowls. | Cold day, hot bowl. That's all the cooking I know. | I put barley soup on when the rain comes in. Every time.
+b : Two? | It works. | Every time?
+a : Two. A third's not out of the question. #oath#. | It does. I'll not pretend I can cook more. | Every time. I smell the rain first, so the pot's on before it lands.
+
+scene acre_saving
+when topic=dreams|land
+does confide / react.self / assess
+a : #vent#: I'm saving for #field#. Nobody's name on it but mine. | I've #money# put by. It's not enough. It's more than last year. | I'll have #field# before I'm grey. I've said so, and I'll do it.
+b : Where, though? | That's honest saving. | I believe you.
+a : South slope, past the mill. #good.capitalize# drainage. I've looked. | It is. Slow, but honest. | #good.capitalize#. You'll be first to eat what grows on it.
+
+scene stars_twinkle
+when topic=pastimes|weather here.weather=clear here.time=night self.likes=stars
+does tell.self / react.self / assess
+a : Clear sky. No rain tonight; I'll stake #nose# on it. | I look at the stars before #bed#. If they twinkle hard, wind tomorrow. | Look at that. Not a cloud from here to the hills.
+b : Your nose has lost before. | Does that work? | Lovely.
+a : Once or twice. Not tonight. | Mostly. #nose.capitalize# says so, anyway. | It is. #good.capitalize# night for a walk, and I'll take one.
+
+scene friend_straight
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# to stack my hay. That's trust, from me. | I tell #self.friend# the truth, and #self.friend# tells me mine. We get on. | If #self.friend# says I'm wrong, I listen. Most folk I don't.
+b : That's a good friend. | That's rare. | High praise, from you.
+a : The best I've got, #address#. | It is. Not many can take it, #address#. | Highest I give. Once, and that's your lot. #oath#.
+
+scene spouse_washing
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : #self.spouse# says I sniff the air like a hare in spring. | My #self.spouse_word# always knows when I'm right about the rain, and never says so. | #self.spouse# hangs the washing out when I say it'll rain. On purpose.
+b : Like a hare? | Never at all? | Why on purpose?
+a : Like a hare. I'll take it; hares are clever. | Not once. It's maddening. I love it, #oath#. | To prove me wrong. Never has, mind. #oath#.
+
+scene told_straight
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I'll tell you straight what I heard: #topic.subject# #topic.claim#. | Over the hedge, they say #topic.subject# #topic.claim#. That's all I know, and I'll not pad it. | #topic.subject.capitalize# #topic.claim#. I heard it twice, so it's likely true.
+b : Straight's best. | Fair. | Twice?
+a : It is. Gossip's like weather, #address#: say what you see, not what you fear. | #dunno.capitalize#, #address#. | Twice, from folk who don't talk to each other. I'd call that likely.
+
+scene poor_harvest
+when topic=times|harvest world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean year. The rain came at the wrong time, and the price came at the wrong time too. | Folk are counting #money# twice before they spend it. So am I. | I'll be straight: it's been a poor harvest. No use calling it anything else.
+b : It'll come round. | Everyone is. | No use at all.
+a : #saying#. When I smell it coming, I'll say so. | Everyone. The buyers too, mind. | None. Say it plain, and plan for the next one. #saying#.
+
+story feast_soaked [topic=memories|festival self.age>=25]
+  : Years back I swore blind the harvest feast would be dry. Told the whole village to leave their coats.
+  : It poured from the first dance to the last. I've never been let forget it.
+  ask : What would you have said to me, stood there soaked?
+  b : Something rude, I'd think.
+  b[old] : The same as everyone did, I'm sure.
+  : They said plenty. And the next year they asked me anyway. That's the weather for you.
+
+story copper_air [topic=memories|lore self.age>=25]
+  : My #grandad# could smell a storm two days off. Said it was copper in the air.
+  : I laughed at him. Then the barn roof came off, two days later, right as he said.
+  : I've been sniffing ever since. #saying#.
+  b : He had the gift, then.
+  b[stage=young] : Can you smell copper?
+  : Sometimes. Faint. I'll not claim more than I've got.
+
+dlg @3 resident.hub : #greet#. What's wanted? I'll tell you straight. | #greet#, #address#. Say it plain; I like it plain.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Weather's turning, if that's what you came for.
+dlg @1 resident.job [self.job=farmer|laborer] : I work the fields. Sow, cut, stack, and watch #sky# the whole time. | #work.capitalize#. And I tell them when the rain's coming. They mostly listen.
+dlg @2 resident.job : Whatever pays. Done properly, or I'll say plain I can't, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd tell you plain if there were. | Nothing, #address#. #sky.capitalize#'s the only news I have.
+dlg @2 resident.bye : #farewell#. Take a coat. | #farewell#, #address#. Rain later, mind.
+graft resident.hub
+choice Will it rain today? -> rain_today
+node rain_today
+say Let me have a sniff. Mm. The swallows are low, and the wind's soft. I'd say yes, by dusk. I'll not swear to the hour.
+mood keen
+free
+choice How can you tell? -> rain_how
+choice Goodbye. -> bye
+node rain_how
+say Wet hay and pennies, that's rain on the wind. The swallows fly low, the cows lie down, and my left paw itches. Nine times in ten I'm right. I'll own the tenth.
+mood pleased
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! I can smell rain coming. Truly. | #greet#, #address#. I've been up on the gate looking at #sky#.
+line @1 greet.return : #greet#! | #greet#. It'll rain later. I sniffed.
+line @1 farewell : #farewell#! Get in before the rain. | Bye, #address#! Mind #puddle#.
+line @1 farewell.return : #farewell#! | Bye! #farewell#.
+line @1 react.news : #surprise#! Truly? Say it again. | #marvel#. I'll tell everyone.
+line @1 decline : No, thank you. I'm meant to be home for #supper#, and I'll get told off. | Not now, #address#. I'm watching the clouds, and it's important.
+scene y_prickly_nose
+when topic=weather|smalltalk
+does tell.self / react.self / assess
+a : I can smell rain before it comes. #nose.capitalize# goes all prickly. | I told everyone it would rain, and it did. Nobody believed me first. | I stood on the gate and sniffed the whole of #sky#.
+b[stage=adult|old] #grown : That's a gift, that. | Did they say sorry? | And what did it say?
+b : Can you really? | Clever! | What did it smell like?
+a@grown : It is. Nobody taught me, either. | No. But I said it loudly. #oath#. | Rain by #supper#. I'm nearly always right.
+a : Truly. Try it. Sniff hard, #address#. | I know. I'm going to be a weather-wolf, #someday#. | Wet hay and pennies. That's rain.
+
+scene y_puddles
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize#! I've jumped in every puddle in the lane. | My feet are wet right through, and I don't care. | I sniffed this rain coming. I was right again.
+b[stage=adult|old] #grown : You'll catch a chill. | You will when you're drying them. | Again! Well done.
+b : All of them? | Me neither. | You were!
+a@grown : I won't. #puddle.capitalize#'s warm, nearly. | I'll dry them by the fire. #oath#. | I'm nearly always right. #saying#.
+a : Every one. Some twice. | Wet feet are #good# feet. | I'm going to be right every day. #oath#.
+
+scene y_three_sheaves
+when topic=work|harvest here.season=summer|autumn
+does tell.self / react.self / assess
+a : I helped with #stooks#! I carried three sheaves. Little ones. | I'm not allowed near the sickle. I can tie, though. | I hid in a stook and nobody found me till #supper#.
+b[stage=adult|old] #grown : Three! You'll be a reaper yet. | Tying's a proper job. | They were looking everywhere!
+b : Three! | Tying's hard. | Ha!
+a@grown : A #little# reaper first. Then a big one. | I know. My knots hold. Mostly. #stooks.capitalize# stand up, anyway. | I know. I heard them. I didn't come out.
+a : Little ones. But three. | Not for me. I'm quick, #address#. | It was the best hide ever. #oath#.
+
+scene y_soup_round
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize#'s on the hob. The smell's out at the gate. | I had two bowls of #soup# and my belly's round as a pumpkin. | I like #soup# best when it's raining outside.
+b[stage=adult|old] #grown : Wash your paws first. | Two! | That's the best time for soup.
+b : Lucky. | Two bowls? | Me too.
+a@grown : I did. Nearly. | Two. And bread. #oath#. | It is. #rain.capitalize# and soup go together.
+a : I'll save you some. A #little#. | Two. I could do three. | Rain outside, soup inside. That's #good#.
+
+scene y_thunder_table
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : There's thunder! I'm not scared. I'm only under the table to listen. | Flash, then I counted to the bang. Seven! | The storm made the barn door bang all night.
+b[stage=adult|old] #grown : It'll pass over soon. | Seven means it's going away. | Doors bang in a storm.
+b : Me neither. | Seven? | Loud, wasn't it?
+a@grown : I know. I'm listening for it to go, #address#. | Going away. #good.capitalize#. | I know. I didn't sleep. Much.
+a : Under the table's the best place to listen. | Then three. It's coming back! | Louder than the cockerel. #oath#.
+
+rule @y_sniff_bark
+when concept=bark here.outdoors=overcast
+does aside
+cooldown 8h
+say Sniff, sniff. #rain.capitalize#'s coming! | I can smell it. Rain! #oath#.
+
+dlg @1 resident.hub : #greet#! It'll rain later. I can smell it. | #greet#, #address#. What do you want? I'm busy sniffing.
+dlg @1 resident.bye : #farewell#! Get in before it rains. | Bye! Take a coat, #address#.
+
+adolescent
+line @1 greet : #greet#. Rain by noon, I'd say. I'll not swear on #nose#. | #greet#, #address#.
+line @1 greet.return : #greet#. | #greet#. I've been watching that cloud for an hour.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Keep dry.
+line @1 react.news : #surprise#. I'll be honest, I'd not heard. | #marvel#. That's news, and I'll say so.
+line @1 decline : #hedge#, no. I've the yard to finish, and I said I'd do it. | Not tonight, #address#. Plainly, I'm worn out from the field.
+scene ad_wrong_once
+when topic=weather|smalltalk
+does tell.self / react.self / assess
+a : I said it'd rain on the feast, and it didn't. They'll never let it drop. #annoyed#. | The old ones ask me about #sky# now. Me! | I was wrong today. I'll say so. #sky.capitalize# fooled me.
+b : Everyone's wrong once. | That's something. | Fair of you to say.
+a : Once. I've been right forty times. Nobody counts those, #oath#. | It is. I try not to look pleased. | #sky.capitalize# fools everyone. I'll not be fooled twice.
+
+scene ad_learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning a trade. They tell me I talk back. I only say what's true. | I got it wrong today and said so straight off. They didn't know what to do with me. | I'll be #good# at this. Plainly, I'm not yet.
+b : There's a time for true. | Honest's rare. | You'll get there.
+a : I know. I'm learning that too, slowly. | They'll get used to it, #address#. | I will. #oath#.
+
+scene ad_one_acre
+when topic=dreams|land
+does tell.plan / react.self / assess
+a : I'm saving for #field#. One acre. I've started. | Everyone laughs when I say I'll have my own land. I don't mind. | I've picked #field# already. South slope, good drainage.
+b : An acre's a lot. | Let them. | South's best.
+a : It is. I've #money# in a jar. Not much. Yet. | I'll laugh at the harvest, then. | South, and nothing on it but weeds. I'll fix that, #someday#.
+
+rule @ad_cloud_bark
+when concept=bark here.outdoors=overcast here.time=day
+does aside
+cooldown 10h
+say There's a black one coming over #sky#. Get the washing in. | Smell that. Rain within the hour, #oath#.
+
+story ad_hay_sour [topic=memories|work]
+  : Last summer I told everyone the hay should come in a day early. Nobody listened.
+  : That night it poured, and half the field went black and sour.
+  ask : Would you have listened to a pup?
+  b : Probably not. I'd have been sorry after.
+  b[stage=young] : I'd listen! Did they say sorry?
+  : Nobody said sorry. But they asked #nose# the next time. That's better.
+
+dlg @2 resident.hub : #greet#. Need something? I'll tell you straight if I can't help. | #greet#, #address#. Get under a roof by dark, I'd say.

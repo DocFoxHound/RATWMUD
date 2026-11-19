@@ -1,0 +1,305 @@
+# rm904, the waterline guesser (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm904
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the waterline guesser
+fits stage=young|adolescent|adult|old
+prefers drive=ambitious humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=sly piety=ordinary drive=ambitious
+quirk guesses_every_barge_s_load_by_how_low_it_sits_in_the_water
+likes river_barges a_good_bargain roast_pork wharf_evenings
+dislikes river_fog nosy_questions
+fears being_caught_out dying_poor
+hopes a_barge_with_my_name_on_the_stern
+topics prices +0.5 work +0.4 dreams +0.4 gossip +0.3 travel +0.2 faith -0.4
+styles comfort=flattery gossip=keen refuse=smooth tease=dry
+marks oath saying
+persona #self.first# talks easily and tells a little less than the truth, watches the barges on the river and guesses every load by its waterline, always has a quiet arrangement on the go, and means to own a barge one day.
+
+words
+oath! = Keel and coin | By the waterline | Low and laden
+saying! = Low barge, fat purse | Everything floats at the right price | Watch the waterline, never the bargemaster
+barge = a barge | a fat barge | a long barge off the river
+waterline = the waterline | how low it sits
+wharf = the Wharf | the wharf steps
+deal = a little arrangement | a quiet bit of business | an understanding
+cut = my cut | a small cut, nothing greedy
+bargemaster = the bargemaster | whoever's at the tiller
+someday = a barge of my own | my own barge, with my name on the stern
+pork = roast pork | crackling off the spit
+between = between ourselves | just between us two
+whisper = a whisper | what I heard on the steps
+fog = the river fog | fog on the water
+dryly = Well, now | Fancy that
+
+any
+opinion @1 merchants for 2 : Merchants are only wolves who noticed the waterline before anyone else. I intend to join them.
+opinion @1 watch mixed 1 : The Watch are very welcome. I keep well out of their way, purely to save them the trouble.
+opinion @1 houses for 1 : The Houses got where they are by a few clever arrangements. I don't blame them. I take notes.
+opinion @1 city for 2 : Every barge on the river ends up here, sooner or later. Where else would a sharp wolf live?
+opinion @1 church mixed 1 : I give at chapel where it's seen. The Bright One sees the rest, I'm told, so it all comes out even.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Lovely to meet you. Truly. | #greet#. You look like a wolf who knows a bargain.
+line @2 greet [here.time=dawn] : #greet#. Early on the steps is where the business is. | #greet#. Up with the barges, are we?
+line @1 greet.return : #greet#. | #greet#. Just the face I was hoping for.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down. I've a thing to tell you, #between#. | #greet#. You're looking well. Prosperous, even.
+line @1 farewell : #farewell#. Keep an eye on the river for me. | #farewell#. Think about what I said.
+line @1 farewell.return : #farewell#. | #farewell#. We'll talk again. We always do.
+line @1 react.news : Oh? More, please. All of it. | Go on. Who else knows?
+line @1 react.news.new : #dryly#. That's worth knowing. | #oath#. Nobody told me that, and they ought to have.
+line @1 react.news.known : #knew#. Had it on the steps this morning. | Old news. Still, I'll act surprised for the next one.
+line @1 react.news.doubt : #doubt#. Who gains if I believe it? | I'll weigh that one before I swallow it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. A sad business all round. | That's hard. I'm sorry, and I mean it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll send something. Something small. | Good news is good for business. I'm glad.
+line @1 answer.how : Doing nicely, thank you. Nicely. | #fine#. A few irons in the fire. You know how it is.
+line @1 decline : #hedge#, I would, but there's a prior arrangement that won't keep. | Not this time, friend. My paws are spoken for, and I never break my word. Often.
+line @1 accept_decline : #no_matter.capitalize#. I'll ask again when it suits you better. | No offence taken. I'll remember you said maybe.
+line @1 thank : #thanks#. I'll repay it. With interest, if I'm feeling grand. | Very decent. That goes down in my ledger, on the good side.
+line @1 preclose : Well. Business calls, and it won't call twice. | I'd best be off. There's a barge due, or there ought to be.
+line @1 accept_preclose : Go well. Mind how you spend it. | Go on. I'll keep your place warm.
+line @1 tease [pair.band=friends] : You bargain like a lamb at a wolf market. | I've seen you pay full price. Twice. I nearly wept.
+line @1 tease.return : #dryly#. And I'd sell you that remark back at cost. | Clever. I'll charge you for it later.
+line @1 ack : #dryly#. | #bc_of_course#
+scene low_in_the_water
+when topic=work|smalltalk here.region=ridgemere
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : There was #barge# in this morning, sitting so low the water lapped the boards. | I can tell you what's aboard any barge on the river by #waterline#. Near enough. | I lost a bet on a barge yesterday. Swore it was bricks. It was feathers.
+b : What was aboard? | How do you tell? | Feathers?
+a : I'd say iron. Or a bargemaster who eats well. One or the other. | The low ones are stone or metal. The high ones are wool or air. The rest's guessing. | Bales of them. I'll never live it down, so I'll stop telling it.
+b : #bc_ha# | Clever. | #bc_ha#
+a : I'll find out by noon. I always do. | It's a gift. Gifts aren't for handing out. #saying#. | There. You'll forget it now. Lovely.
+
+scene fog_on_the_river
+when topic=weather here.weather=fog
+does tell.complaint / react.complaint / assess
+a : #fog.capitalize#. You can't see a barge till it's on top of you. | I hate fog. Anything could come up the river in this and nobody'd know. | Thick as porridge out there. My whole morning's guessing, wasted.
+b : It'll lift by noon. | Is that so bad? | You could guess blind.
+a : By noon the good barges are unloaded and the business is done. | For me it is. For some, fog's worth its weight in silver. I wonder who. | Guess blind? I've some pride. Not much, but some.
+
+scene quiet_arrangement
+when topic=prices|work
+does pre.request / go_ahead / offer / refuse / assess
+a : Can I put a thing to you, #between#? | I've a small proposal. Listen first, before you say no. | You look like a wolf who'd like a little extra. Am I right?
+b : Go on, then. | I'm listening. | Depends what it is.
+a : I know somebody who knows somebody with a load that wants moving quietly. Nothing wicked. | A share in a guess. If I'm right about the next barge, you get a cut. | Nothing much. A word in an ear, a nod at the right moment, and #cut# for you.
+b : I'd rather not. | I'll pass, thanks. | That sounds like trouble.
+a : Never mind. Forget I asked. I already have. | Your loss, friend. A small one, mind. | Trouble's only trouble if you're caught. Still, no harm done.
+
+scene steps_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / insist / ack
+a : #whisper.capitalize#: #topic.subject# #topic.claim#. You didn't hear it from me. | They say #topic.subject# #topic.claim#. And I'd guess there's more to it than that. | Just between us, #topic.subject# #topic.claim#. Don't pass it on. Well, not yet.
+b : Is that true? | More to it? | I won't.
+a : It's true enough to repeat, and that's my only test. | There's always more. I'm working on the rest. | Good. Things are worth more when fewer wolves know them.
+b? : #bc_so_they_say# | #bc_ha# | #bc_fair_enough#
+
+scene my_own_barge
+when topic=dreams|work
+does confide / react.self / assess
+a : One day I'll have #someday#. You'll see it come down the river. | I've a box under the floor with every spare copper in it. It's a barge, one day. | When I'm rich I'll stand on my own deck and guess other wolves' loads for nothing.
+b : Coppers add up slowly. | Under the floor? | For nothing?
+a : Slowly, over a lot of years. I've time, and patience, and very few scruples. | Don't tell anyone. Not that I'd believe you if you did. | For nothing. Then I'll charge them for telling them I was right.
+
+scene hard_times_tide
+when topic=times|prices world.times=hard|lean
+does give.opinion / disagree / insist / ack
+a : Hard times are good times for somebody. I mean to be that somebody. | Lean year. Folk sell things cheap when they're hungry. I'm only saying. | Nobody's buying, so the wolf who still has coin is king. Briefly.
+b : That's a cold way to see it. | That's not kind. | Not much of a king.
+a : It's an honest way to see it. Nearly. | I didn't say it was kind. I said it was so. | Briefly's all most kings get. I'll take it.
+b? : #bc_maybe# | #bc_true# | #bc_ha#
+
+scene good_times_tide
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Barges coming in low as you like. Everyone's buying. A rising tide. | Good times. Even the bargemasters are tipping, and they never tip. | Coin's moving. You can hear it moving, like rain on a roof.
+b : Good for you. | They never do. | Rain on a roof?
+a : Good for all of us. Some more than others, naturally. | Never. I nearly fainted. Then I pocketed it. | The sweetest sound in the city. Better than bells.
+
+scene crackling
+when topic=food
+does tell.self / react.self / assess
+a : #pork.capitalize#, with the crackling still singing. Nothing better. | There's a cookshop by #wharf# that does a pork roll. I know the cook, so I pay less. | I'll forgive a wolf anything for crackling done right. Almost anything.
+b : That sounds lovely. | Pay less? | Almost?
+a : It is. I'd tell you where, but then it'd be crowded. | Less than you would, anyway. We have an understanding. | Almost. I'm not a saint. Saints don't get crackling.
+
+scene keeping_clear
+when topic=crime
+does tell.self / react.self / assess
+a : I keep well clear of the Watch. No reason. Habit. | Somebody was taken in on the steps last week. I had no part in it. None at all. | I've never done a thing I'd be ashamed of. Caught at, anyway.
+b : No reason? | You're sure? | Caught at?
+a : None at all. I'm the most law-abiding wolf on the river. Ask anyone I've paid. | Sure as sure. I wasn't even there. I was round the corner. | #dryly#. A slip of the tongue. I meant thought of.
+
+scene watching_is_working
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I'm working. I'm watching, which is working, if you do it properly. | Busy. Three things on, and only one of them's what I'm paid for. | I'll be done here by noon, and then the real work starts.
+b : Watching? | Only one? | The real work?
+a : The wolf who watches knows things. The wolf who knows things eats. | The other two pay better. Don't spread it about. | The interesting kind. Never you mind.
+
+scene green_newcomer
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody fresh on the steps today. Doesn't know the prices yet. Bless. | Strangers are lovely. They're so grateful when you tell them where things are. | Somebody new in the quarter. I've introduced myself. Twice, in case.
+b : You'll help them, I hope. | Grateful? | Twice?
+a : I'll help them. I'm a great helper. For a small consideration. | Grateful, and generous with it. It's a lovely quality. | Once as a friend, once as a wolf with a proposal.
+
+story the_brick_barge [topic=memories|work self.age>=25]
+  : Years back I bet a bargemaster a silver piece his barge was carrying bricks, by the way it sat.
+  : He laughed and said it was empty. Then he opened the hatch, and it was full of rainwater. Full to the boards.
+  ask : Who do you think won the bet?
+  b : Nobody, I'd say. Did you pay up?
+  b[old] : The bargemaster, if he was any good.
+  : I said water weighs more than bricks, so I'd won. He paid to be rid of me.
+
+story first_copper [topic=memories|prices self.age>=18]
+  : The first copper I ever made, I made selling a bargemaster his own lost rope back.
+  : I'd found it on the steps. Fair and square. He never asked where.
+  ask : Would you have told him?
+  b : I'd have given it back free.
+  b[wealth=poor|destitute] : Not if I was hungry, I wouldn't.
+  : Then you're a better wolf than me, or a richer one.
+
+rule @waterline_bark
+when concept=bark here.region=ridgemere here.time=dawn|day
+does aside
+cooldown 8h
+say Low in the water, that one. Iron, I'd say. | #oath#. Riding high. Wool, or nothing at all.
+
+rule @fog_bark
+when concept=bark here.weather=fog
+does aside
+cooldown 10h
+say #fog.capitalize#. A whole morning lost. | Can't see a thing. Somebody's doing well out of this.
+
+dlg @1 resident.hub : #greet#, #address#. Something I can help you with? For you, very little charge. | #greet#. You look like a wolf with a question. I've answers. Some free.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. My favourite traveller. Don't tell the others. | #topic.player#. I hoped you'd come by. I've been thinking about you. Nothing bad.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : No need for that face. I'm harmless, I promise. Mostly. | #greet#. Whatever you heard, it wasn't me.
+dlg @1 resident.job : I work, I watch, and I keep my ears open. One of those pays. | A bit of this, a bit of that. Ask me about barges instead.
+dlg @1 resident.bye : #farewell#. Think about what I said. | #farewell#. Should anybody ask, we never met. Joking.
+graft resident.hub
+choice What are you watching on the river? -> waterline_watch
+node waterline_watch
+say The barges. See how low that one sits? You can tell a load by its waterline. Low means stone or metal. High means wool, or a bargemaster who's been cheated.
+mood keen
+free
+choice What good does knowing do you? -> waterline_use
+choice Goodbye. -> bye
+node waterline_use
+say The wolf who knows what's coming knows what to buy before it lands. That's all business is. I'll say no more. Not for free.
+choice I'll keep that in mind. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. Have you got anything to swap? | #greet#. You look rich. Are you rich?
+line @1 greet.return : #greet#! I've got something you'll want. | #greet#. You were on my mind. Honest.
+line @1 farewell.return : Bye. Remember, I was nice to you. | Bye! Come back with sweets.
+line @1 react.news : Ooh. Tell me. I won't tell anyone. Much. | Really? Who said? What else?
+line @1 answer.how : Good. I swapped a button for a marble. A good marble. | Fine. I'm saving up. Don't ask what for.
+line @1 decline : I can't now. There's a swap on, and it's important. | Not now. Somebody's waiting for me. Somebody important.
+line @1 accept_decline : All right. I'll ask again later, when you've forgotten. | Fine. Your loss.
+scene pup_barge_steps
+when topic=day|pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : I sat on #wharf# all morning guessing what was on the barges. | A barge came in so low it nearly went under. I guessed rocks. | The bargemen let me count the sacks. I counted wrong on purpose. Nearly.
+b[stage=adult|old] #grown : Did you guess right? | Was it rocks? | Wrong on purpose? Why?
+b : What did you guess? | Rocks? | On purpose?
+a@grown : Mostly. Once it was a goat. | It was bricks. That's nearly rocks. | To see if they were watching. They were.
+a : Coal, salt, apples. All of them. | Rocks or bricks. Nearly the same. | Nearly. I'm not telling you why.
+
+scene pup_marble_swap
+when topic=pastimes|friends
+does tell.boast / react.self / assess
+a : I swapped a bent button for a blue marble. The other pup didn't know. | I've got eleven marbles now. I started with two. | I'll swap you this stone for your apple. It's a lucky stone.
+b[stage=adult|old] #grown : That's sharp dealing for a pup. | Eleven? How? | Is it truly lucky?
+b : Didn't know what? | How? | Is it lucky?
+a@grown : Thank you. I'm sharp. | Swapping. Clever swapping. | It is now. I've just decided.
+a : That buttons aren't worth much. Shh. | Swaps. I'm good at swaps. | Very lucky. Luckier than an apple.
+
+scene pup_father_wharf
+when topic=family self.father
+does tell.self / react.self / assess
+a : #self.father# says I've got a head for business. I think that's good. | #self.father# took me down to the river to look at the barges. I want one. | #self.father# caught me selling pebbles. It was a lot of pebbles.
+b[stage=adult|old] #grown : A head for business is a fine thing. | Everybody wants one at your age. | Who was buying pebbles?
+b : Is it good? | A barge? | Selling pebbles?
+a@grown : I hope so. I'm using it. | Not everybody. Just the clever ones. | Other pups. They were special pebbles.
+a : Very good. Better than a head for sums. | A big one. With a flag. | Special ones. From the river.
+
+scene pup_sweet_stall
+when topic=food|prices
+does tell.self / react.self / assess
+a : The sweet stall lady gives me the broken ones if I look sad. | I paid half for a toffee because I said I only had half. | I'm saving my coppers. Sweets are for pups who don't plan.
+b[stage=adult|old] #grown : Looking sad's an old trick. | Did you only have half? | Saving's sense.
+b : Do you look sad? | Did you? | You don't eat sweets?
+a@grown : It's a good trick, though. | Nearly. I had a bit more. | I know. I've got four coppers.
+a : Watch. I'll show you my sad face. | Sort of. Half and a bit. | Only the free ones.
+
+scene pup_little_fib
+when topic=smalltalk|gossip
+does confide / react.self / assess
+a : I told a fib today. Only a little one. It worked. | Somebody asked who broke the pot. I looked at the cat. | I know a secret about somebody. I'll tell you for a sweet.
+b[stage=adult|old] #grown : Little fibs grow, mind. | Poor cat. | Secrets aren't for selling.
+b : What was it? | The cat? | What secret?
+a@grown : This one won't. I'll keep it small. | It's a cat. It doesn't mind. | Everything's for selling. Somebody said.
+a : Not telling. It's still working. | The cat didn't argue. | A sweet first. Then maybe.
+
+story pup_lost_coin [topic=memories|day self.stage=young]
+  : I found a copper by the river and somebody said it was theirs.
+  : I asked them which side was up when they dropped it. They didn't know. I did.
+  b[stage=adult|old] : Clever pup. Did you keep it?
+  b : Did you keep it?
+  : Yes. Then I gave it back. Then they gave me half. That's how you do it.
+
+rule @pup_swap_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Marbles! Swaps! Good swaps here! | That barge is low. I bet it's rocks.
+
+dlg @5 resident.hub : #greet#. Want to swap something? I've marbles. Good ones. | #greet#. You look like you've got sweets. Have you?
+
+adolescent
+line @1 greet.return : #greet#. Good timing. I've a thing to show you. | #greet#. You're looking well. Lend me a copper?
+line @1 farewell.return : See you. Don't forget me. | Bye, then. Keep it quiet.
+line @1 react.news : Go on. Who else knows? | Really? That's worth something.
+line @1 answer.how : Doing well. Got a bit of business on. | Fine. Saving. Always saving.
+line @1 decline : Can't, sorry. I've errands that pay, and that one doesn't. | Not today. I've a prior arrangement, as they say.
+scene teen_message_runner
+when topic=work|day self.stage=adolescent
+does tell.self / react.self / assess
+a : I run messages for the bargemen now. They tip if you're quick and don't read them. | I know which bargemasters tip and which ones shout. I only run for the tippers. | I made more this week than my first month. Running, mostly. Listening, a bit.
+b[stage=adult|old] #grown : Don't read them, mind. | Clever. | Listening to what?
+b : Do you read them? | Who tips best? | Listening?
+a@grown : I never would. Not where they can see. | It's not clever. It's sense. | Things. That's all I'll say.
+a : Never. Mostly never. | Not telling. Find your own. | Things worth knowing.
+
+scene teen_caught_out
+when topic=smalltalk|friends self.stage=adolescent
+does tell.self / react.self / assess
+a : I got caught in a fib. A big one. I'm still talking myself clear of it. | Somebody called me a twister. I said thank you. | I promised two folk the same thing. That was a mistake.
+b[stage=adult|old] #grown : Talk's a long road out of a fib. | It wasn't praise. | That always comes back.
+b : What happened? | Thank you? | What did you do?
+a@grown : I know. I'm a good walker. | It sounded like praise. | It came back. Twice.
+a : I said I'd been somewhere I hadn't. Somebody had seen me. | It sounded like a compliment. | Picked the one who pays better. Obviously.
+
+scene teen_plans
+when topic=dreams self.stage=adolescent
+does tell.plan / react.self / assess
+a : I've got a plan. Barge, warehouse, then a house on the hill. | By the time I'm grown I'll have a share in a barge. A small one. | I watch the merchants. I'm learning how they talk.
+b[stage=adult|old] #grown : Start with the barge. | A share's a start. | How do they talk?
+b : All of that? | A share? | How do they talk?
+a@grown : I am. Saving every copper. | It is. A small start. | Slowly, and never all of it.
+a : All of it. In order. | A small share. To begin. | Like they've already won.
+
+rule @teen_runner_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Messages run! Quick and quiet! | Low barge coming in. I'd say slate.
+
+dlg @4 resident.hub : #greet#. Need a message run? Quick, quiet, and I never read them.

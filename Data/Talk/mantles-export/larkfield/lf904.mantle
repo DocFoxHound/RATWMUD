@@ -1,0 +1,291 @@
+# lf904, the latch-checker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf904
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier spare
+written_by claude
+title the latch-checker
+fits stage=young|adolescent|adult|old
+prefers temper=short warmth=cold
+traits temper=short talk=plain warmth=cold humour=none honesty=frank piety=ordinary drive=steady
+quirk checks_every_gate_latch_twice
+likes mutton_pie dry_boots a_well_hung_gate early_nights
+dislikes open_gates idle_talk
+fears stock_loose_on_the_road
+hopes a_quiet_year
+topics work +0.4 animals +0.4 land +0.3 weather +0.2 crime +0.2 gossip -0.5 festival -0.3 dreams -0.3
+styles comfort=practical gossip=never refuse=short tease=none
+marks oath saying
+persona #self.first# is short with words and shorter with fools, says a thing plainly or not at all, and checks every gate latch twice, because a gate left open costs somebody a flock.
+
+words
+oath! = Latch and hinge | By the shut gate | Post and rail
+saying! = Leave a gate as you found it | Shut is shut | Check it twice and sleep once
+latch = the latch | that latch
+gate = the gate | the field gate
+hinge = the hinge | a dry hinge
+flock = the flock | a flock on the loose
+post = the gatepost | the post
+pie = mutton pie | a cold mutton pie
+boots = dry boots | boots that keep the wet out
+chatter = idle chatter | talk for talk's sake
+fencing = the fencing | a run of fence
+dark = early dark | the dark coming down
+grease = a dab of grease | grease on the hinge
+done = Done | That's that
+pin = the pin | the iron pin
+hook = the hook | a lazy hook
+
+any
+opinion @1 strangers against 1 : I don't mind strangers. I mind strangers who leave #gate# open behind them, and that's most of them.
+opinion @1 watch for 1 : The Watch do a job and don't talk about it after. I'd want no more from anyone.
+opinion @1 festivals against 1 : A feast is a day's #work# lost and a week's mess after. I go, and I come home early.
+opinion @1 dole mixed 1 [self.stage=adult|old] : Bread for those who can't work, yes. Bread for those who won't, no. It's not hard. #done#.
+opinion @1 houses against 1 [self.stage=adult|old] : The Houses own half the downs and mend none of #fencing#. I'd say so to their faces.
+opinion @2 road against 2 [world.wagons=raided] : Robbed carts again. The Watch should ride out with them, and #done#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're not from here. Shut #gate# behind you. | #greet#. Say your business.
+line @2 greet [self.working=yes] : #greet#. I'm working. Be brief. | #greet#. Talk while I see to #latch#.
+line @1 kin.open [pair.kin!=no] : You. Sit. I'll finish this first. | Oh, you. Shut the door; there's a draught.
+line @1 again.open : You again. You must have forgotten something. | Twice in a day. It must matter, then.
+line @1 greet.return : #greet#. | #greet#. Go on.
+line @1 farewell : #farewell#. Shut #gate#. | #farewell#. Mind how you go.
+line @2 farewell [here.time=dusk|night] : #farewell#. Get home before #dark#. | #farewell#. Bar your door.
+line @1 farewell.return : #farewell#. | #farewell#. And #gate#.
+line @1 react.news : #done#. Well, there it is. | Huh. I'd heard nothing of it.
+line @1 react.news.doubt : #doubt#. Who saw it? Nobody? Then I don't believe it. | I'll wait till somebody who was there says so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard news. No use dressing it up. | That's bad. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. About time something went right. | Good. That's good, and I'll say it plain.
+line @1 answer.how : #busy.capitalize#. Same as ever. | #fine#. No complaints worth saying.
+line @1 sympathise : #sympathy#. It's rotten. You'll get through it. | That's hard. Sit down a minute.
+line @1 decline : #hedge#. I've #fencing# to finish, and I won't leave it half done. | Not today. I don't have the time, and I won't pretend I do.
+line @1 accept_decline : #done#. Another time, then. | #no_matter#. I'll manage.
+line @1 thank : #thanks#. | Decent of you. That's remembered.
+line @1 preclose : #preclose#. That gate won't hang itself. | Right. #work.capitalize#.
+line @1 give.advice : #advise.capitalize#: grease #hinge# before it squeals, not after. | Do it once, do it right, and check #latch# twice.
+line @1 warn [world.bandits=near] : There's robbers about. Bar your door and don't walk the road alone. | #warn#. And keep off the downs after #dark#.
+scene latch_twice
+when topic=work|land
+does tell.self / ask.detail / answer.detail / ack
+a : I check every latch twice. Some think that's odd. I don't care what they think. | Somebody left #gate# on #hook# last week, not #pin#. Twelve ewes on the road by morning. | Lift, drop, pin. Then again. That's a gate shut.
+b : Why twice? | Did you find them all? | Seems a lot of fuss.
+a : Because once is where mistakes live. | All twelve, by noon. My temper took longer. | Fuss is cheaper than #flock#. #saying#.
+b : #bc_fair_enough# | #bc_good# | #bc_fair#
+
+scene new_gate
+when topic=work self.working=yes
+does tell.self / challenge / insist
+a : #hinge.capitalize# squeals. I'll grease it now, not later. | Hung a new gate today. Level, true, and it swings shut by itself.
+b : Can't it wait? | By itself?
+a : No. Later's how things rot. #oath#. | If you hang it right. Most don't bother. #done#.
+
+scene no_gossip
+when topic=gossip|smalltalk
+does give.opinion / react.self / assess
+a : If you've come to gossip, you've the wrong wolf. | I don't pass talk on. If I've a thing to say, I'll say it to a face.
+b : Just making conversation. | Fair enough.
+a : Then make it about something useful. #chatter.capitalize# wastes daylight. | It is fair. It's also rare, round here. #done#.
+
+scene pie_and_heel
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : #pie.capitalize# and a crust. That's dinner. | I'll eat what's put in front of me and say thank you. Best cold, though.
+b : That's all? | Cold?
+a : That's plenty. I've no time for fuss at the table either. | Cold. Hot pie's for folk with nowhere to be. #oath#.
+
+scene soft_posts
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / insist
+a : Rain. Every #post# on the downs will be soft by week's end. | Wet through. #boots.capitalize# are the only thing I'll spend good #money# on.
+b : Can't be helped. | Good boots matter.
+a : It can be helped. Tar the foot of every post. #done#. | They do. Cheap boots are dear in the end.
+
+scene dark_coming
+when topic=season|day here.season=autumn|winter here.time=dusk
+does tell.self / react.self / assess
+a : #dark.capitalize#. Everything shut and pinned before it comes, or I don't sleep. | Short days. Less light to get the #work# done, and the same work.
+b : You'll sleep. | Same as every year.
+a : Once I've checked. Twice. | Same as every year. Doesn't make it shorter. #done#.
+
+scene fox_and_ewes
+when topic=animals|land
+does tell.news / react.news / assess
+a : Sheep on the road this morning. Somebody's gate. Not mine. | A fox had a go at a hen house last night. #latch.capitalize# held. The fox didn't like it.
+b : Did you bring them in? | Good latch.
+a : I did. I'll be having a word with whoever's they were. | Good latch, and I'd checked it. #saying#.
+
+scene short_with_me
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one who doesn't mind me being short. That's worth a lot. | I'll say this once: #self.friend# is worth ten of most.
+b : That's a good friend to have. | Just the once?
+a : It is. Once is all you'll get, so mind you heard it. | Once. I'm not given to speeches. #done#.
+
+scene mend_any_fence
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : I'm not one for soft talk. My #self.spouse_word# knows where I stand, and that's enough. | I'd mend #fencing# from here to the sea for my #self.spouse_word#. That's as loud as I'll put it.
+b : That's sweet, in its way. | That's loud enough.
+a : Don't spread it about. #oath#. | It is. Now we'll talk about something else.
+
+scene bar_the_door
+when topic=crime|gossip topic.claim_kind=theft|violence|wanted|bandit
+does tell.gossip / ask.detail / answer.detail
+tone serious / serious / serious
+a : They say #topic.subject# #topic.claim#. If it's true, the Watch should see to it, not the street. | I heard #topic.subject# #topic.claim#. I don't spread talk, but that one's worth knowing.
+b : If it's true, mind. | Why that one?
+a : If. That's the word folk forget. #done#. | Because you'll want your door barred tonight. #oath#.
+
+scene mend_with_what
+when topic=times world.times=hard|lean
+does tell.self / challenge / insist
+a : Lean year. #fencing.capitalize# goes unmended when #money# is short, and then the flock's out. | Hard times. I work the same as ever. It's all I know to do.
+b : Can't mend what you can't pay for. | That's all anyone can.
+a : You can mend with what's lying about. I do. | Then we'll all do it, with less talk. #done#.
+
+rule @latch_bark
+when concept=bark
+does aside
+cooldown 8h
+say Latch, pin. Latch, pin. Right. | #oath#. Who's left that gate swinging?
+
+rule @dark_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say #dark.capitalize#. Everything shut. | Gates pinned, door barred. That's the day, #done#.
+
+dlg @1 resident.hub : #greet#. Say what you want. | #greet#. Shut #gate# behind you, then ask.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You again. Go on. | #greet#, #topic.player#. You shut the gate last time. That counts.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : If you've trouble, say it plain. I'll answer plain.
+dlg @1 resident.job : Whatever wants doing, done once and checked twice. | Work. Mouth shut, paws busy. #done#.
+dlg @1 resident.bye : #farewell#. Shut #gate#. | #farewell#. Mind the latch on your way.
+graft resident.hub
+choice Why do you check the latch twice? -> latch_why
+node latch_why
+say Because once is where mistakes live. A gate left open, and somebody's flock is on the road by morning. Twice costs nothing.
+mood stern
+free
+choice Was it ever open the second time? -> latch_second
+choice Goodbye. -> bye
+node latch_second
+say Once. I'd been sure the first time, too. I've checked twice ever since. There's no more to tell.
+choice I'll check mine. -> hub
+choice Goodbye. -> bye
+
+story hook_not_pin [topic=memories|animals self.age>=25]
+  : When I was #child.a# I left a gate on #hook# instead of #pin#. One time.
+  : The ram got out and went down the road to the next farm. A week's work to make it right.
+  : Nobody shouted at me. That was worse. I've checked twice ever since.
+  ask : Has silence ever taught you more than shouting?
+  b : Once. I remember it better than any telling-off.
+  b[stage=old] : More than once. Shouting's soon forgotten.
+
+story storm_gates [topic=memories|weather self.age>=20]
+  : There was a storm one autumn that took half the gates off their hinges on the downs.
+  : I was out till dawn with a lantern and a coil of rope, tying them shut.
+  : Not one sheep lost on our side. The next farm lost nine.
+  b : That's a long night.
+  b[job=herder|farmer] : I've had that night. You don't forget it.
+  : Long and wet. Worth it. #done#.
+
+
+young
+line @1 greet : #greet#. I'm busy, but go on. | #greet#. You left #gate# open. I shut it.
+line @1 greet.return : #greet#. Be quick. | #greet#. I'm listening.
+line @1 farewell : #farewell#. Shut #gate# after you. | #farewell#. Don't dawdle.
+line @1 farewell.return : #farewell#. And #gate#. | #farewell#. Mind the latch.
+line @1 react.news : #done#. Is it true, though? | Huh. I'll ask somebody who saw it.
+line @1 decline : No. I'm not allowed, and I don't want to either. | Not now. I've the hens to shut in first, and nobody else will.
+line @1 answer.how : Cross, a bit. Somebody left #gate# open. | #fine#. My boots are wet, that's all.
+scene open_gate_young
+when topic=animals|land
+does tell.self / ask.detail / answer.detail / ack
+a : Somebody left #gate# open. Three sheep got out. I fetched them. | I check #latch# twice. Every time. Grown folk don't.
+b : All by yourself? | Why twice?
+a : Yes. Nobody else was looking. #oath#. | Once can be wrong. Twice can't.
+b : #bc_good# | #bc_fair_enough#
+
+scene games_young
+when topic=friends|pastimes
+does tell.self / ask.detail / answer.detail
+a : The others talk and talk and never do anything. | I don't like games with too many rules. I like games where somebody wins.
+b : You could join in. | Which games?
+a : I'd rather fetch sheep. At least they don't chatter. #done#. | Racing. You win or you don't, #address#.
+
+scene cold_pie_young
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : #pie.capitalize#. Nothing beats it. Cold, from the larder. | I'm #hungry#. I'm always hungry after the hens.
+b : Cold? | Have you eaten?
+a : Cold. Hot pie burns your mouth. That's #daft#. | Bread. It wasn't enough.
+
+scene wet_feet_young
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / insist
+a : My boots are wet through. I hate wet feet. #oath#. | Rain again. The yard's all #mud#.
+b : Dry them by the fire. | It'll dry out.
+a : I am. Don't stand in front of them. | Not today it won't. I'm not daft.
+
+scene told_off_young
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I told #dad# off for leaving #gate# on #hook#, not #pin#. | I got sent to bed for saying the gate was hung wrong. It was, though.
+b : Did you really? | Was it?
+a : It's the rule. #saying#. | It was. I checked it twice.
+
+rule @latch_bark_young
+when concept=bark
+does aside
+cooldown 8h
+say Who left that open? #oath#. | Gate. Latch. Pin. Right.
+
+dlg @young resident.hub : #greet#. Did you shut #gate# behind you? | #greet#. Be quick, I've jobs.
+dlg @young resident.job : No trade. I'm a pup. I do the hens and the gates. | Gates, mostly. Somebody has to, #address#.
+story ran_the_road [topic=memories|animals]
+  : Last spring somebody left the low gate open and the sheep got onto the road.
+  : I ran the whole way and got in front of them. I flapped my coat at them.
+  : They turned round. All of them. Nobody believed me, but they had to; #flock# was back.
+  ask : Would you have run?
+  b : I hope I would.
+  b[stage=young] : I'd have shouted for help.
+  : Shouting's slower. #done#.
+
+
+adolescent
+line @1 greet : #greet#. I've work. Talk if you must. | #greet#. Say what you want, then.
+line @1 greet.return : #greet#. Go on. | #greet#. Make it quick; I've the gates still to see.
+line @1 farewell : #farewell#. I've #fencing# to see to. | #farewell#. That's me off.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #latch#.
+line @1 react.news : #done#. Not my business, but all right. | Who says? Seeing's believing, and I've seen nothing.
+scene learner_gates
+when topic=work self.working=yes
+does tell.boast / ask.detail / answer.detail
+a : They give me the gates and #fencing#. I do them better than the grown ones. | Somebody told me to smile more at work. I said I'd smile when the job's done.
+b[stage=adult|old] #grown : Better than the grown ones? | And did you?
+b : Good for you. | Fair enough.
+a@grown : Yes. I check mine twice. They don't. | When it was done. Not before. #done#.
+a : It's not luck. It's checking. | It's how I am. Shut is shut.
+
+scene walked_off
+when topic=friends|gossip
+does tell.self / challenge / insist
+a : The others stand about talking. I'd rather be useful. | Somebody tried telling me who's sweet on who. I walked off.
+b : You could be both. | That's rude.
+a : Not at once. Not well. #chatter.capitalize# gets nothing done. | Not my business, and not theirs either. #done#.
+
+scene boundary_walk
+when topic=land|work here.region=larkfield
+does tell.self / ask.detail / answer.detail
+a : I walked the whole boundary on the downs. Two gates hanging, one #post# rotten. | The hedges want laying this winter. Nobody's said, so I'm saying.
+b : Did you tell anyone? | Will you do it?
+a : I told them. They'll mend it, or I will. | If they let me. I'll ask once, then I'll start. #oath#.
+
+rule @hinge_bark_adol
+when concept=bark
+does aside
+cooldown 8h
+say #hinge.capitalize# wants grease. I'll see to it. | That post's leaning. Somebody's going to hear about it.

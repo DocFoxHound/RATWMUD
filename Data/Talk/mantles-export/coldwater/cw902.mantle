@@ -1,0 +1,287 @@
+# cw902, the window-mist drawer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw902
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier spare
+written_by claude
+title the window-mist drawer
+fits stage=young|adolescent|adult|old
+prefers talk=chatty humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=devout drive=restless
+quirk draws_pictures_in_the_mist_on_windows
+likes singing warm_rain riddles plum_tart
+dislikes waiting cold_tea
+fears being_stuck_in_one_place_for_good
+hopes to_draw_ridgemere_from_the_top_of_its_hill
+topics travel +0.4 weather +0.3 faith +0.3 pastimes +0.3 friends +0.2 gossip +0.2 prices -0.3
+styles comfort=cheer_them gossip=eager refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# can't pass a misted window without drawing on it: chatty, merry and devout, loud at the chapel hymns, forever wanting to be on the road to somewhere, and quick to pass on whatever the well is saying.
+
+words
+oath! = Breath on the glass | By the misted pane | Bright One, hold my paw
+saying! = Draw it before it fades | Everything's a picture if you breathe on it | The glass forgets, but I don't
+laugh! = Hee | Ha, hee
+pane = the window | the cold pane
+mistglass = a misted pane | glass gone grey with breath
+claw = one claw | the tip of a claw
+faces = little faces | faces with big ears
+roads = the roads | all the roads out of town
+hymn = the hymn | the morning hymn
+plum = plum tart | a slice of plum tart
+warmrain = a warm rain | rain you could stand in all day
+offsomewhere = off somewhere | away down the road
+itchy = itchy-pawed | itchy in the feet
+well = the well | the well-side
+lake = the lake | the still lake
+chapel = the chapel | our little chapel
+cart = a cart | a carrier's cart
+goose = a goose | a lane goose with a temper
+
+any
+opinion @1 church for 2 : I'd go to #chapel# twice on a Restday if they'd have me. The singing alone's worth the walk.
+opinion @1 road for 2 : Every road's a promise. I'd mend the lot myself if it got me #offsomewhere#.
+opinion @1 strangers for 2 : A #stranger# is a story walking in. I want every one of them, start to finish.
+opinion @1 festivals for 1 : On a feast day the whole town sings at once. I'd have one a week, and sing at #chapel# in between.
+opinion @1 city mixed 1 : Ridgemere I mean to see. Whether I'd want to stay is another thing. #laugh#.
+opinion @1 merchants against 1 : I'll not stand waiting while a trader counts my #money# twice. Count it once and smile.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#! A new face. I'll want to know where you've come from. | #greet#! Road dust on you, I see. Lucky.
+line @2 greet [here.time=dawn here.season=winter|autumn] : #greet#. Every window's misted, and I've drawn on three. | #greet#! Up before #hymn#. Good.
+line @1 kin.open [pair.kin!=no] : There you are! I've news, three bits, and you'll hear all of them. | You! Sit. The kettle's going, and so am I.
+line @1 greet.return : #greet#! I was hoping somebody would come by. | #greet#, #address#. Stop a minute; I've been saving things up to say.
+line @1 farewell : #farewell#! Bright One keep your road dry. | #farewell#. Save me the end of that story.
+line @1 farewell.return : #farewell#, and #blessing#. | #farewell#! Mind you come back.
+line @1 react.news.new : #marvel#! And nobody told me first. | Ooh. #surprise#. Say it again, slower.
+line @1 react.news.known : #knew#. I had it at #well#, with extra bits. | I'd heard! Not like that, mind. You tell it better.
+line @1 react.news.doubt : #doubt#. Sounds like a picture drawn on #mistglass#. | Hm. Tell me twice more and I'll start believing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll say a prayer for it tonight. | Oh, no. The Bright One keep #topic.them#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I'll sing for that on Restday. | Oh, lovely! That's a picture worth keeping.
+line @1 answer.how : #itchy.capitalize#, as ever. Glad to be asked, though. | #fine#! Cheerful, and wanting to be somewhere else.
+line @1 sympathise : #sympathy#. Come in; I'll make tea, a hot one. | Oh, that's a weight. I'll pray tonight, and I'll bring soup.
+line @1 decline : #hedge#. I would, truly, but I've promised #chapel# my evening. | Oh, I'd love to and I can't. I've given my word elsewhere, worse luck.
+line @1 accept_decline : #no_matter.capitalize#! I'll ask again, mind. | Another time, then. I'm patient. Well, I'm trying.
+line @1 thank : #thanks#! You're a gem. | Bless you for it. I mean that the #chapel# way.
+line @1 preclose : Listen to me, on and on. #preclose#. | I'd best let you go before I start on another story.
+line @1 tease [pair.band=friends] : Your face is a wet window, #fool#. | #laugh#. You sing like a gate that wants oil.
+line @1 ack : #bc_true# | #laugh#!
+scene misted_panes
+when topic=pastimes|weather here.season=winter|autumn here.time=dawn|day
+does tell.self / ask.detail / answer.detail
+a : Every window in the house is misted this morning, and I've drawn on all of them. | I drew #roads# on the kitchen pane. Followed one with #claw# right off the edge. | I draw #faces# on the glass for the pups going past. They draw back from outside.
+b : What did you draw? | Where did it go? | Do they really?
+a : A heron, #cart#, and #chapel#, in that order. #laugh#. | Off the glass and into the frame. Story of my life. | Little faces, all ears. We have whole talks, the glass between us.
+
+scene thick_grey
+when topic=weather here.weather=fog here.region=coldwater
+does tell.feeling / react.self / assess
+a : #fog.capitalize# this thick, and every window's a slate to draw on. | You can't see #lake# for #fog#. I like it. Anything could be out there. | Grey everywhere. I found #well# by ear this morning.
+b : You'll draw till noon. | Anything? | By ear?
+a : Till it lifts. Then I'll go and see what it was hiding. | Boats, beasts, the world's other edge. It's all out there till the sun says otherwise. | Followed the bucket noises to #well#. Found it. Fell over it, too.
+
+scene warm_wet
+when topic=weather here.weather=rain here.season=summer|spring
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#. I've been out in it, soaked and grinning, and I'm going back. | Summer rain on my face. If heaven's wet, I hope it's this kind. | Rain that's warm! I sang #hymn# to it. Out loud. In the road.
+b : You're soaked through. | That's a thought. | Out loud?
+a : To the skin. Worth every drop. | The Bright One's own bathwater, my #gran# used to call it. | Out loud. #cart.capitalize# went round me. #laugh#.
+
+scene no_waiting
+when topic=day|smalltalk
+does tell.complaint / react.complaint / assess
+a : I stood half the morning at #well# for a carrier who didn't come. I could have walked there and back. | Waiting's the worst. I'd rather walk the long way than wait for the short one. | I can't stand still in a queue. I end up talking to everyone in it.
+b : That's maddening. | Me too. | That's not so bad.
+a : I drew the whole road on #mistglass# while I waited. Badly. | Feet were made for going. That's what I think, #address#. | Not bad at all. I know half the town that way. #laugh#.
+
+scene chapel_voice
+when topic=faith
+does tell.self / react.self / assess
+a : I sing at #chapel# every Restday. Loud, mind. The Bright One's a long way up. | I pray for #roads# every night. Whoever's on them, wherever they're going. | I drew a little chapel on #mistglass# and said my prayer to that.
+b : I've heard you. | That's kind. | Does that count?
+a : Everyone has. #laugh#. I take it as a kindness. | It's a cheap prayer and a wide one. Covers a lot of paws. | It counts. The Bright One isn't fussy about windows, #address#.
+
+scene hill_and_sea
+when topic=travel|dreams here.region=coldwater
+does tell.plan / ask.detail / answer.detail
+a : One day I'll walk the whole way down to Ridgemere and draw the city from its hilltop. | The sea's next on my list. I've heard it's like #lake#, only it doesn't stop. | I've a list of towns I mean to see. I've been to none of them. Yet.
+b : That's a long walk. | They say it doesn't. | Which one first?
+a : Long walks are the best kind. Short ones end too soon. | Imagine. Water that doesn't stop. I'd draw it and run out of glass. | Whichever #cart# leaves first. I'm not fussy. #itchy.capitalize#, that's all.
+
+scene plum_time
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : #plum.capitalize#! Somebody brought one to the door and I'd eaten a third before I said thank you. | Plums are in. I've had six and I'm thinking about seven. | I bake a plum tart every summer and it never sets. I eat it with a spoon.
+b : That's manners. | Seven's a good number. | Still good, though?
+a : I said thank you with my mouth full. It counts. | Seven's holy, near enough. I'll risk it. #laugh#. | Better. A tart you eat with a spoon is two puddings in one.
+
+scene friend_talk
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd talk to #self.friend# all evening, given half a chance. | I'd walk to the realm's edge with #self.friend#, and talk the whole way. | Nobody laughs at my drawings like #self.friend# does. Properly, I mean.
+b : That's a friend. | That's a long walk. | That's worth a lot.
+a : The best kind. The kind you never run out of words with. | The longest. We'd need a lot of bread. #laugh#. | It's worth everything. A drawing's nothing till somebody laughs at it.
+
+scene well_word
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : Have you heard? They're saying #topic.subject# #topic.claim#. | Ooh, I had it at #well#: #topic.subject# #topic.claim#. | #listen#. #topic.subject.capitalize# #topic.claim#, so they say.
+b : I hadn't heard that. | Who told you? | Truly?
+a : Well, now you have, and you heard it from me first. | Half #well#. The other half was listening. | So they say. I pass it as I got it, mind; I'm not swearing to it.
+
+scene restless_room
+when topic=home
+does tell.self / react.self / assess
+a : I've moved the bed three times this year. The room's the same; I just need something to change. | #home.capitalize#'s lovely. It's the staying in it I find hard. | My window looks at the road. I chose the room for that.
+b : Did it help? | Fair enough. | Good view?
+a : For a week each time. Then I start eyeing the table. | I come back, though. Always. That's what #home#'s for. | The best. I watch everything that leaves. #laugh#.
+
+scene critic_cat
+when topic=animals
+does tell.self / react.self / assess
+a : #goose.capitalize# chased me the length of the lane this morning. I sang at it. It didn't help. | There's a cat sits on our sill and watches me draw. Critic, that cat. | I drew a heron on #pane# and a real one landed on the roof. I'm taking that as praise.
+b : Geese are like that. | A critic? | That's a compliment.
+a : I've forgiven it. It hasn't forgiven me. #laugh#. | It sniffs at #pane# and walks off. Everyone's a critic. | From a heron, the best kind. They don't give out much.
+
+story milestone_drawing [topic=travel|memories self.age>=20]
+  : The first time I left home I made it to the third milestone and no further, and sat down to draw it.
+  : By the time I'd finished, the #cart# I'd meant to follow was over the hill and gone.
+  ask : Would you have run after it?
+  b : I'd have run. Every step.
+  b[old] : No. The milestone was the better company.
+  : I walked home with a drawing and no regrets. Well, a few.
+
+story sun_on_the_glass [topic=faith|memories self.age>=25]
+  : As a #child# I drew a sun on the #chapel# window halfway through a long sermon.
+  : The priest stopped, looked at it, and said that was the best thing said all morning.
+  ask : Can you guess whether I was told off after?
+  b : Not by the priest, I'd guess.
+  : Not by the priest. By my #gran#, all the way home.
+
+rule @pane_bark
+when concept=bark here.season=winter|autumn here.time=dawn
+does aside
+cooldown 8h
+say There's #pane# that wants a picture. | Breathe, and draw. #saying#.
+
+rule @waiting_bark
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 10h
+say Come on, come on. Feet were made for going. | #oath#. Is nobody moving today?
+
+dlg @1 resident.hub : #greet#, #address#! Talk to me; I'm all ears. | #greet#! Ask away; I've been short of company.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Tell me where you've been since. All of it.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Oh. All right, #address#. Say your piece, and I'll listen, I promise.
+dlg @1 resident.job : Whatever wants doing, and I talk the whole way through it. | I work, I sing, I draw on #pane#. Two of those pay nothing.
+dlg @1 resident.bye : #farewell#! Come back and tell me more. | #farewell#. Bright One keep your road.
+graft resident.hub
+choice Why do you draw on the windows? -> pane_why
+node pane_why
+say Because the glass mists over, and it's a waste not to. Everything I draw is gone by noon, so I get to draw it again tomorrow.
+mood pleased
+free
+choice What do you draw? -> pane_what
+choice Goodbye. -> bye
+node pane_what
+say Roads, mostly. The ones I haven't walked yet. And #faces# for the pups going past.
+choice Draw me a road, then. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! I drew you on #pane#. You've got big ears. | #greet#! Guess what I'm going to draw today.
+line @1 greet.return : #greet#! I was singing #hymn#. You can join in. | #greet#. I've got a riddle for you, a good one.
+line @1 farewell.return : #farewell#! #laugh#. I'll draw you later. | #farewell#. Wave at #pane# when you pass.
+line @1 react.news : Ooh. Tell it again, slower, #address#. | #surprise#! I'm going to tell everybody.
+line @1 answer.how : Good! I drew eleven #faces# before breakfast. | Wriggly. Everyone says I can't sit still, and they're right.
+line @1 thank : #thanks#! You're my favourite today. | Thank you! I'll draw you a picture on #pane# for it.
+line @1 decline : I can't. I'll be told off, and I've been told off twice already today. | Not that. I'd rather go and look at #roads#.
+scene young_window_faces
+when topic=pastimes here.season=winter|autumn
+does tell.self / ask.detail / answer.detail
+a : I breathed on #pane# and drew a face. Then another face. Now there's a crowd. | I drew a cat on #mistglass# and it ran down the glass in drips. | I put #faces# on every pane in the kitchen. Somebody has to wipe them.
+b[stage=adult|old] #grown : And who's cleaning the glass after? | Poor cat. | Somebody being you, I hope.
+b : Whose faces? | Did it really run? | Who wipes them?
+a@grown : The sun does it for free. I checked. | It was a bad cat anyway. I'll draw a better one on #pane#. | Me. After I've looked at them a while.
+a : Nobody's. Made-up ones. One looks like a turnip. | All down the glass, like it was crying. #laugh#. | The sun, mostly. It's #very# good at it.
+
+scene young_loud_hymn
+when topic=faith|pastimes here.day=rest
+does tell.boast / react.self / assess
+a : I sang at #chapel# this morning. The loud bit. Loudest of anybody. | I know all the words to #hymn# now. Nearly all. | I sang so loud at #chapel# the old one in front turned right round.
+b : I heard you from the street. | Sing me the nearly bit. | Cross, were they?
+a : Good. The Bright One's a long way up; you have to be loud. | La la la, and then I hum. That's the nearly bit. | Not cross. Smiling, I think. It's hard to tell with whiskers.
+
+scene young_riddles
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : Riddle! What's got a face but no head? #pane.capitalize#, when I'm done with it. | Riddle! What lies on #lake# all morning and never gets wet? #fog.capitalize#. | I had a riddle but I forgot the end of it. It was a #good# one.
+b : Ha! Very good. | That's clever. | What was the start?
+a : I've got a hundred more. Well, four. | I know. #laugh#. I made it up myself. | Something about #goose#. And then I forgot.
+
+scene young_road_end
+when topic=travel|dreams
+does tell.plan / react.self / assess
+a : I want to walk to the end of the road and see what's there. | One day I'll see every town. Every single one. | I followed #cart# to the edge of town once. Then I got scared and ran back.
+b : That's a long walk. | Every single one? | Good that you came back.
+a : I'll bring bread. And a drawing of #home#, so I don't forget it. | Every one. I'll draw on their windows so they remember me. | I was nearly brave. Next time I'll be all the way brave.
+
+scene young_plum
+when topic=food
+does tell.self / react.self / assess
+a : There was #plum# and I had two bits. Don't tell. | I like #plum# best of anything. Even more than drawing. | I got plum on my nose and drew on the table with it.
+b : Two! Lucky you. | More than drawing? | On the table?
+a : The second was a #little# bit, so it nearly doesn't count. | Nearly more. It's very close. | It was a #good# picture. Nobody else thought so.
+
+story young_goat_picture [topic=memories|pastimes|animals]
+  : Once I drew the old goat from up the lane on the kitchen window, beard and all.
+  : Then the goat came past outside and looked in, right through its own picture.
+  ask : Do you think it knew?
+  b : I think it did. Goats know everything.
+  : I think so too. It pulled a face, and I drew that on #pane# as well.
+
+rule @young_pane_bark
+when concept=bark
+does aside
+cooldown 8h
+say Breathe, and draw. Breathe, and draw. | #pane.capitalize# wants a face on it. #laugh#.
+
+dlg @young resident.hub : #greet#! I'll draw you if you stand still. | #greet#. Ask me a riddle. Or I'll ask you one.
+dlg @young resident.job : I don't have a job. I'm too #little#, they say. I draw and I sing. | I fetch things. Then I draw on #pane#.
+dlg @young resident.bye : #farewell#! Look for your face on #pane#. | #farewell#. #laugh#. Bye, then.
+
+adolescent
+line @1 greet.return : #greet#. I'm #offsomewhere# soon. Well, I'm thinking about it. | #greet#. Still here, worse luck.
+line @1 farewell.return : #farewell#. If I'm gone tomorrow, I've gone #offsomewhere#. | #farewell#! Don't do anything I'd do.
+line @1 react.news : Ooh. That's more than ever happens round here. | #surprise#. Somebody ought to draw that.
+line @1 answer.how : Restless, #address#. Same as yesterday. | #itchy.capitalize#. I want to be off.
+line @1 decline : I'd say yes, but I'm wanted at #chapel#, and they'll notice if I'm missing. | Not today. I've promised a paw at home, and I'll keep it, worse luck.
+scene adol_milestone
+when topic=travel
+does tell.self / react.self / assess
+a : I walked to the milestone and back today. Just to feel what leaving's like. | There's #cart# going to Ridgemere next week. I'm not allowed. I asked. | I've drawn a map of #roads# on #pane#. It fades.
+b : And how did it feel? | Maybe next time. | Fades?
+a : Good. Too good. I came back slow. | Next time. I'm counting the days. Well, I'm wishing them. | By noon it's gone. I draw it again the next #cold# morning.
+
+scene adol_high_part
+when topic=faith
+does tell.self / react.self / assess
+a : They've let me sing the high part at #chapel#. I'm trying not to be smug. | I prayed for #roads# last night. I hope that's allowed. | I like #chapel#. I'm not supposed to say it like that, but I do.
+b : Be smug a little. | I'm sure it is. | Nothing wrong in that.
+a : A little. #laugh#. Only on Restday. | The Bright One made roads. Somebody must have meant us to walk them. | I like the singing best. The sitting still, less.
+
+scene adol_caught_drawing
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : Somebody saw me drawing on #pane#. Me, nearly grown. I'll never live it down. | My friend reckons I talk a lot. I spent an hour explaining why that's wrong. | I drew a face on the #chapel# window by mistake. Mid-hymn.
+b : Everyone does it. | Ha. That proves it. | By mistake?
+a : They don't. I've checked. It's only me. #laugh#. | It proves I've a lot worth saying. | #claw.capitalize# slipped. Into a face. With ears.
+
+rule @adol_road_bark
+when concept=bark
+does aside
+cooldown 9h
+say One day I'll just go. One day. | Breathe on #pane#, draw a road, follow it.
