@@ -1,0 +1,297 @@
+# cw195, the two-pen clerk (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw195
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_olaf_pitchmore
+written_by claude
+title the two-pen clerk
+fits stage=adult|old
+prefers job=scholar temper=nervy
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_a_spare_pen_behind_each_ear
+likes pickled_herring dice full_larder autumn_wind
+dislikes night_noise stale_bread
+fears a_paper_lost_on_my_desk an_empty_larder_in_winter
+hopes a_purser_s_desk_on_a_ship_bound_south
+topics work +0.5 dreams +0.3 food +0.2 pastimes +0.2 crime +0.2 gossip -0.4 festival -0.2
+styles comfort=practical gossip=refuses refuse=short tease=none
+marks oath saying
+persona #self.first# copies, files and stamps at a desk among the city's clerks: blunt, anxious and exact, frank to the point of rudeness, fond of a pickled herring, a game of dice and a well-stocked larder, and never without a spare pen behind each ear.
+
+words
+oath! = Blot and bother | Stamp and sand
+saying! = Written down is half done | Ink dries, rain doesn't
+pen = my pen | the spare pen behind my ear
+pens = two pens | a pen behind each ear
+ledger = the ledger | the day-book
+forms = the forms | a stack of forms in triplicate
+queue = the queue | the line out of the door
+stamp = the stamp | the big brass stamp
+ink = ink | the black ink
+herring = pickled herring | a herring out of the vinegar
+dice = the dice | three dice in a cup
+larder = a full larder | shelves with something on every one
+gust = an autumn wind | a wind that strips the trees
+racket = boots on the cobbles at midnight | the din after the taverns shut
+ship = a southbound ship | a purser's desk somewhere dry
+desk = my desk | the desk by the window
+form = a form | a blank form
+office = the Office | the City Office
+deed = a deed | a deed of sale
+lake = the lake | the lake at home
+
+any
+opinion @1 houses for 1 : Say what you like about the Houses. Half #ledger# is theirs, and without them this city would fall down in a fortnight.
+opinion @1 merchants against 1 : I've copied enough bills of sale to know where #money# goes, #address#, and it isn't into the goods.
+opinion @1 sump against 2 : Every complaint that crosses #desk# started down by the water and climbed. I'd not go below the ropewalk for #money#.
+opinion @1 strangers against 1 : A stranger is #form# with nothing filled in. You've no idea what follows them up the road.
+opinion @1 watch for 1 : #watch.capitalize# keep my street quiet after dark. I'd pay them double for it, and I've said so in writing.
+opinion @1 city against 2 : Soot on every sheet I copy, and nobody on my stair knows my name. #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Name first, then the matter. | #greet#. If it's Office business, there's #queue#.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. Be quick; I've #forms# drying. | #greet#. You've a minute of me, not two.
+line @3 greet [here.time=dawn] : #greet#. You're up before #queue#. That's sensible. | #greet#. Early. Good. I like early.
+line @4 greet [here.time=dusk|night] : #greet#. I'm off duty, so it'll have to be small. | #greet#. Late to be about, #address#.
+line @1 kin.open [pair.kin!=no] : It's you. Sit; don't touch #desk#. | Oh. Good. I'd wanted a word with somebody I trust, #address#.
+line @1 again.open : #welcome_back#. You've come for something you forgot. | You again. I'd have you down twice in #ledger# today.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. You're a relief to see. | #greet#. Come in; mind #ink#.
+line @3 greet.return [self.working=yes] : #greet#. One moment; I'm mid-line. | #greet#. Don't jog #desk#.
+line @1 farewell : #farewell#. | #farewell#. Mind the wet on the steps.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the streets with lamps. | #s8_night#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Go carefully.
+line @1 react.news : #surprise#. That'll mean paperwork for somebody. | That's not what I expected, #address#.
+line @1 react.news.new : #oath#. That's not crossed #desk# yet. | #surprise#. Nobody wrote me that.
+line @1 react.news.known : #knew#. It came through #office# yesterday. | I had it in writing this morning, on #desk#.
+line @1 react.news.doubt : #doubt#. Show it me written and I'll believe it. | That's #nonsense# until somebody signs it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for it. | #sympathy#. That's #bad#, and no form will mend it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll be glad to stamp that one. | #good.capitalize#. Something cheerful to file, for once.
+line @1 answer.how : Behind, and worried about it. Otherwise #fine#. | Well enough. #desk.capitalize#'s clear, which never lasts.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #queue.capitalize#'s out of the door. | Copying since dawn. My paw's gone stiff round #pen#.
+line @1 ask.how : And yourself? Nothing amiss? | Everything in order with you, #address#?
+line @1 sympathise : #sympathy#. I'll not pretend I know what to say. | That's #bad#. Take a seat; nobody's using it.
+line @1 reassure : #reassure#. It's on paper now; it can be sorted. | It'll come right. Most things do, once they're written down.
+line @1 decline : #hedge#, but no. I've #forms# to finish before the bell. | I'd rather not, #address#. I've a desk full and no time to spare from it.
+line @1 accept_decline : #no_matter.capitalize#. It was a long shot. | Fair. I'll not ask again till #desk# is clear.
+line @1 thank : #thanks#. | Thank you. I'll note it in #ledger# and not forget it.
+line @1 deflect_thanks : #deflect.capitalize#. It's what I'm for. | No need. It was only #form# in the right order.
+line @1 preclose [self.working=yes] : I must get back. #forms.capitalize# won't copy themselves. | That's my bell. I've #queue# waiting.
+line @2 preclose : #preclose#. | I've said what I had to say, #address#.
+line @1 accept_preclose : Go on, then. #farewell#. | Yes. We're done for now. #farewell#.
+line @1 ack : #bc_it_is# | Noted.
+line @1 give.advice : #advise.capitalize#: get it written, signed and copied, or it never happened. | Come at dawn. #queue.capitalize# at noon is a day's wait.
+line @1 warn [world.bandits=near] : There's talk of trouble on the roads. #warn#. | I'd not travel this week. That's not #form#; that's advice.
+scene triplicate
+when topic=work self.working=yes self.job=scholar
+does tell.self / ask.detail / answer.detail / ack
+a : Forty of #forms# since the bell. That's a hundred and twenty times I've written somebody's name. | I copy every line twice in my head before #pen# touches paper. A blot means starting over. | Somebody filed #deed# under the wrong year. I've been through three years of #ledger# finding it.
+b : Doesn't your paw ache? | Starting over? | Did you find it?
+a : It aches. I change #pen# for the one behind the other ear and carry on. | From the top. One blot, and a whole sheet's #worthless#. | Under spring, two years back. Somebody at #office# had a holiday mind that week.
+b? : #bc_poor_soul# | #bc_wise# | #bc_ha#
+
+scene the_queue_at_dawn
+when topic=work|day here.region=ridgemere self.job=scholar
+does tell.worry / reassure / assess / ack
+a : #queue.capitalize# starts before we open now. I can hear them on the steps while I'm sanding the first sheet. | Every wolf in that line has a matter, and every matter wants #form#. I've counted #forms#. There aren't enough. | Somebody waits all day, gets to #desk#, and has brought the wrong paper. I hate that more than anything.
+b : They'll wait. | You'll find more forms. | It's not your fault.
+a : They'll wait, and be cross, and it's #desk# they'll be cross with. | I've written to #office# to ask for more. In triplicate. | It isn't. I still feel it every time, #address#.
+b? : #bc_true# | #bc_ha# | #bc_poor_soul#
+
+scene two_pens
+when topic=smalltalk|work
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #pens#. One to write, one in case the first gives out. | Somebody asked me why I've #pens#. Because I've two ears. | I lost a pen once, halfway through #deed#. Never again.
+b : What if both give out? | Is that the only reason? | What happened?
+a : Then there's a third in my coat. I'm not a fool, #address#. | No. The real one is that I'm frightened of running short, and I'd rather look odd. | I had to stop, mid-name, and find another. The wolf at the counter watched me the whole while.
+b? : #bc_ha# | #bc_fair_enough# | #bc_poor_soul#
+
+scene rain_and_ink
+when topic=weather here.weather=rain|fog here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# again. #ink.capitalize# won't dry in this; every sheet I sand comes up grey. | Damp gets into the paper and the paper gets into my temper. #oath#. | Every wet coat in #queue# drips on the floor, and somebody always drips on #form#.
+b : Can't the fire dry them? | Your temper? | Make them stand back.
+a : Near a fire, the ink runs. Away from it, it won't set. #saying.capitalize#. | It's short enough dry. In this it's shorter. | I've chalked a line on the floor. Nobody reads chalk.
+
+scene autumn_gusts
+when topic=weather|season here.season=autumn here.outdoors=clear|overcast
+does tell.feeling / react.self / assess
+a : #gust.capitalize# today. I walked home the long way just to stand in it. | I like #gust#. It scours the streets of smoke, and my head with them. | #wind.capitalize# took a sheet out of my paw on the steps. I ran half a street after it, and I was glad of the run.
+b : It's cold enough. | Clears your head? | Did you catch it?
+a : Cold, yes, but clean. Warm and #bad# is what the city usually gives. | For an hour. Then I'm back at #desk# and it fogs over again. | I caught it. It was a receipt for two candles. I'd have run as far for #deed#.
+
+scene herring_at_noon
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I've #herring# and a heel of rye for noon, same as every day. | There's nothing I'd rather eat than #herring#. Sharp, cold, and done in three bites. | There's a herring jar in #desk#. Nobody else will touch it, which suits me.
+b : Every day? | Three bites? | In your desk?
+a : Every day. I don't have to think about it, so I don't. | Three. Then I'm back to work before #ink# dries on my last line. | In the bottom drawer, below the spare forms. The forms smell of it now.
+
+scene bread_like_slate
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : They sold me a loaf this morning that had been sold to somebody else yesterday. #oath#, I could tell. | I'll go #hungry# before I chew stale bread. It's like eating #form#. | Stale bread in a house means nobody's minding #larder#. I can't abide it.
+b : Take it back. | You've tasted a form? | Who's minding yours?
+a : I did. I had the date of the baking out of them, too, in writing. | Near enough. I've licked enough of #stamp#'s papers. | I am. Every shelf, every day. That's the trouble with me.
+
+scene a_throw_of_the_dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : I play #dice# of an evening. A penny a throw, and every throw written on a slip. | I won three nights running at #dice# last week. I've written it down, in case nobody believes me. | #dice.capitalize# are honest. They don't care who you are or what you've filed.
+b : A tally? | Three nights? | You trust dice?
+a : Of course a tally. I'm down four pennies to #dice# since spring, and I know which nights. | Three. The fourth I lost it all back, and I've written that down as well. | More than most clerks. Dice never lose a paper.
+b? : #bc_ha# | #bc_ha# | #bc_true#
+
+scene shelves_full
+when topic=home self.likes=full_larder
+does tell.worry / reassure / assess
+a : I've #larder# at home and I still worry it'll run out. I count the jars of a Restday. | I buy a little more than I need every week. One day #larder# will matter. | A shelf with a gap on it keeps me awake. I go out early and fill it, #address#.
+b : It won't run out. | That's sensible. | That's a lot of worry.
+a : It won't, because I count it. #saying.capitalize#. | It is. A winter's long, and a city doesn't feed you. | It is. But it's worry that keeps the shelves full, #address#.
+
+scene boots_at_midnight
+when topic=home|smalltalk self.dislikes=night_noise here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #racket.capitalize# again last night. I lay there counting the steps till I lost count. | I'd write to somebody about the noise at night, if I knew whose desk it belonged on. | Somebody sang under my window till the lamps went out. Badly, and with no end to the verses.
+b : Shut the shutters. | Write it anyway. | That's the city for you.
+a : I do. They let it through anyway. The shutters are #worthless#. | I have. Twice. It's in a drawer somewhere, in somebody else's desk. | It's the city. I'd still like it to stop at midnight, by order.
+
+scene somewhere_dry
+when topic=dreams|travel
+does tell.plan / ask.plan / answer.plan / ack
+a : I'd like #ship# one day. A purser keeps the books and stays dry, and I've the hand for it. | Somewhere it doesn't rain. Somewhere #ink# dries in a breath. I'd go tomorrow. | I've written a letter asking about a purser's post. I've not sent it. I've copied it four times with #pen#.
+b : A purser? | Where's that, then? | Why not send it?
+a : The ship's clerk. Stores, wages, cargo, all in one #ledger#. I'd be good at it. | South, they say, where #rain# is a story. I've only read about it, mind. | Because if they say no, I'll have nowhere left to want to go.
+b? : #bc_good# | #bc_maybe# | #bc_poor_soul#
+
+scene trouble_climbs
+when topic=crime world.crime=recent here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : There's been trouble again. Mark my word, it started below the ropewalk and walked up. | I've three new complaints on #desk#, all of them from the lower streets. | The Watch were in and out of #office# all yesterday. That means trouble, and it means forms.
+b : It can start anywhere. | Not every one, surely. | Forms won't stop it.
+a : It can. It mostly doesn't. I've the papers in #ledger# to show it. | Every one. I checked the addresses twice, #address#. | No. But they'll tell us where it happened, and that's something.
+b? : #bc_maybe# | #bc_maybe# | #bc_true#
+
+scene lean_petitions
+when topic=times|work world.times=hard|lean self.job=scholar
+does tell.worry / sympathise / assess
+a : Lean times mean long queues. Everyone wants relief, and every relief wants #form#. | I've had five wolves this week ask me to write their letters for them. I've done it for nothing. | There's less coming in and more going out. I see both columns in #ledger#. Neither is pleasant.
+b : Hard for everyone. | That's good of you. | Better you than me.
+a : It is. I've #larder# and I still lie awake. | It isn't good. It's quicker than explaining #forms#. | I'd swap. Seeing it all is #very# much worse than guessing.
+
+scene lake_and_ledger
+when topic=memories self.away=yes self.from=coldwater self.age>=25
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# I kept the tally for a loom shed when I was hardly grown. That's where #pen# started. | I miss the wind off #lake# at #self.from_town#. It came straight through you, and then you felt clean. | At #self.from_town# there's one clerk for the whole town. I wanted to be that clerk. I came here instead.
+b[from=coldwater] #home : The loom sheds? I knew the tally boys. | That wind. You don't get it anywhere else. | There still is just the one.
+b : A loom shed? | Clean? | Why come here, then?
+a@home : Then you'll know they're all clerks now, or wish they were. | Nowhere. I've looked, in every quarter of this city. | #good.capitalize#. I'd hate to think somebody had taken my old chair.
+a : Bales in, cloth out, and every bolt in a book. I liked it more than the weaving. | Clean. The city's #wind# only moves the soot from one sill to the next. | They'd one clerk, and the clerk had no plans to die. #dunno.capitalize#; the city had chairs.
+b? : #bc_lovely# | #bc_true# | #bc_ha#
+
+scene accent_on_paper
+when topic=accent self.away=yes self.from=coldwater self.accent=none
+does tell.self / react.self / assess
+a : You can't write an accent. So I don't speak with one. It makes no difference on #form#. | My voice went plain the year I took #office# oath. I didn't miss it, which surprised me. | Folk at #desk# can't tell where I'm from. I prefer it. A clerk shouldn't come from anywhere.
+b : Shame, though. | Not at all? | From nowhere?
+a : Perhaps. I'd rather be understood. | Not much. I'd been understood half the time before, at #office#. | From nowhere. Then nobody thinks I'm favouring them.
+
+scene newcomers_unfiled
+when topic=newcomer here.region=ridgemere
+does tell.self / react.self / assess
+a : Every newcomer to the city is #form# somebody hasn't filled in yet. Mostly, that somebody's me. | New faces in #queue# this week. They never know which line to stand in. | A newcomer came to #desk# yesterday with no papers at all. I sent the poor soul back down the hill.
+b : They have to start somewhere. | Help them, then. | No papers at all?
+a : At the back of #queue#, like everybody. That's the start. | I pointed. Pointing is help. | None. You'd not believe how many think a face is enough.
+
+scene not_in_writing
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I don't trade in what isn't written down. Gossip's just #form# nobody's signed. | I heard something in #queue# this morning. I've chosen not to remember it. | Don't ask me. A clerk who talks is a clerk with no #desk#.
+b : Not even a whisper? | Why not? | Go on, nobody's listening.
+a : No. If it matters, it'll come through #office#, and then I'll know it properly. | Because I'd only fret about it, and I've #forms# to fret about. | Somebody's always listening. That's why there's an Office, #address#.
+b? : #bc_fair_enough# | #bc_fair_enough# | #bc_ha#
+
+scene trusted_with_the_keys
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the only wolf I'd let near #desk# while I'm out of the room. | I trust #self.friend#. That's not a thing I say of anybody else in the city. | If my papers went missing tomorrow, I'd want #self.friend# to be the one hunting.
+b : That's trust. | Nobody else? | High praise.
+a : It is. I've weighed it, and it holds. | Nobody else. I've thought about it more than is healthy. | It's as high as I go. I don't go high often, #address#.
+
+scene cold_office
+when topic=season|work here.season=winter self.job=scholar
+does tell.complaint / react.complaint / assess
+a : #cold.capitalize# enough in #office# this morning #ink# went thick in the pot. | I've worn my coat at #desk# since the frost came. Two pens, two gloves, and still shivering. | Winter's when the drawers stick and the paper cracks at the fold. #oath#.
+b : Ask for a stove. | Gloves at a desk? | Cracks?
+a : I did. In writing, on #form#. The stove is under consideration. | Mittens with the tips cut out. It looks foolish. It works. | At the fold. A deed that cracks is #deed# that can be argued. I hate winter.
+
+story the_seal_upside_down [topic=work|memories self.job=scholar self.age>=25]
+  : My first year at #desk#, I stamped a whole bundle of deeds with the seal upside down.
+  : Sixty-one of them. I found out when somebody brought one back and turned it over for me without a word.
+  ask : Owning up, or redoing them quietly: which would it be for you?
+  b : Started again and said nothing.
+  b[job=scholar] : Signed a note saying the seal was right and the deeds were wrong.
+  : I redid every one by lamplight. I've never stamped since without looking twice at #stamp#.
+
+story the_lucky_throw [topic=pastimes self.likes=dice]
+  : I once threw five sixes with a cup of #dice#, at a table of clerks who don't believe in luck.
+  : Nobody spoke. Somebody checked #dice#. Somebody else checked me.
+  ask : Would you call that luck?
+  b : A little. More after a story like that.
+  b[old] : Not at my age. I believe in loaded dice.
+  : I don't. I wrote the throw down in #ledger#, with a witness. Now it's a fact, not luck.
+
+story the_wind_and_the_will [topic=weather|memories here.region=ridgemere]
+  : One autumn a gust took a will right off #desk# and out of the window.
+  : Three clerks went down the stairs after it. It came down in a puddle outside the Watch House.
+  b : Was it ruined? Did anybody read it?
+  : Damp, but readable. The Watch read it first. That took some explaining.
+
+rule @next_in_line
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 6h
+say Next. Name first, then the matter, then #form#. | #queue.capitalize#, please. Form in one paw, patience in the other.
+
+rule @pen_gone
+when concept=bark working=yes
+does aside
+cooldown 8h
+say #oath#. Where's... ah. The other ear. | Blotted. Again. From the top.
+
+rule @wet_sheets
+when concept=bark here.weather=rain|fog here.region=ridgemere
+does aside
+cooldown 8h
+say #ink.capitalize# won't dry. Nothing dries in this city. | #rain.capitalize#. #saying.capitalize#.
+
+rule @midnight_racket
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say It's past midnight. #desk.capitalize# opens at first light, and so must I. | #racket.capitalize#. Every night. Every single night.
+
+dlg @1 resident.hub : #greet#. Name first, then the matter. | #greet#, #address#. What is it? Be brief, if you can.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. What's the matter this time?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : State your business. I'll listen, and then I'll decide.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. Forms, deeds, copies, #stamp#. Everything the city does, it does on paper, and the paper comes to me. | I'm a clerk. I write things in #ledger# so nobody can argue about them later.
+dlg @2 resident.job : I work. It's in order, and it's not interesting, #address#.
+dlg @1 resident.news [world.news] : It came through #office# from #world.news_from#: #world.news#. That's as written.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's crossed #desk# worth repeating. | Nothing in writing at #office#. I don't deal in anything else.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. If it's true, it'll be filed.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. Mind the steps; they're wet.
+graft resident.hub
+choice Why do you keep a pen behind each ear? -> pens
+node pens
+say Because one gives out, and then I've the other. A clerk who runs out of pen in front of a queue is a clerk who never lives it down.
+mood calm
+free
+choice Has that happened to you? -> pens_once
+choice Goodbye. -> bye
+node pens_once
+say Once. In the middle of somebody's name. I've carried two ever since, and a third in my coat. You may laugh; I don't mind.
+choice I won't laugh. -> hub
+choice Goodbye. -> bye

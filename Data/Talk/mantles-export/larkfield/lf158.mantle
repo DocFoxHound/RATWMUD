@@ -1,0 +1,462 @@
+# lf158, the brewer who notches the floods (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf158
+revision 1
+state ready
+dialect larkfield
+accent none
+tier full
+written_for rm_edmund_kelpstack
+written_by claude
+title the brewer who notches the floods
+fits stage=adult|old
+prefers job=brewer piety=devout
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk notches_the_flood_line_on_the_cellar_post
+likes barley_soup singing tidy_house first_warm_day
+dislikes flies crowds
+fears the_cellar_flooding_in_the_night a_whole_brew_gone_sour
+hopes a_cellar_that_stays_dry_all_winter a_tap_room_that_sings_on_restday_eve
+topics work +0.4 faith +0.4 weather +0.3 home +0.3 food +0.2 pastimes +0.2 gossip -0.3
+styles comfort=feeding gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# brews and keeps a tap room in the Commons and lives over it: warm, devout and plain, quick to feed a stranger and slow to speak ill, with a floor swept twice a day and a cellar post notched with every flood the city has sent down the stairs.
+
+words
+oath! = Barley and blessing | Mercy on the mash
+saying! = Water keeps its own ledger | Mark the post and sleep dry | A swept floor and an honest cask, and the Bright One sees to the rest
+copper = the copper | the big brewing copper
+mash = the mash | a tun of mash
+hops = the hops | a sack of hops
+malt = the malt | the malt loft
+barm = the yeast | the barm off the last brew
+cask = a cask | a fresh-tapped cask
+casks = my casks | the casks in the cellar
+cellar = the cellar | my cellar
+post = the cellar post | the post at the foot of my stair
+notches = my notches | a knife notch for every flood
+lowstreets = the low streets | the streets that go under first
+taproom = the tap room | my front room with the benches
+benches = my benches | the benches by the fire
+bar = the bar | my counter
+pint = a pint | a pint drawn clear
+regulars = my regulars | the old faces on the benches
+soup = barley soup | a bowl of barley soup with the steam on it
+hymn = a hymn | the old evening hymn
+singing = a good sing | a room full of voices
+sweptfloor = a swept floor | a floor swept twice
+slops = the slops | the slop bucket
+flies = the flies | flies round the mash tun
+crush = a crush | a room packed to the door
+warmday = the first warm day | the first day the coat stays on the peg
+barley = the barley | good malting barley
+stairs = the cellar stairs | my seven steps down
+lamp = the window lamp | the lamp I keep in the window
+prayer = a prayer | a quiet prayer at the post
+rainhall = the Rain Hall | that great cold hall up the hill
+
+any
+opinion @1 church for 2 : The Bright One carried me through #cellar# full of water and a brew gone sour. I'll not leave the chapel now. | I sing at the chapel because it's where #singing# means most. #oath#.
+opinion @1 dole for 2 : Nobody should go to #bed# hungry in a city with this many coppers. I send #soup# to the parish when I can. | Bread from the parish is no shame. Going without, with #soup# on every stove, is the shame.
+opinion @1 merchants for 1 : I keep #bar# myself, so the cost of a wagon of #hops# is no mystery to me. | Most of us price fair. I'd sooner trust a trader than a rumour about one, #address#.
+opinion @1 newcomers for 1 : #benches.capitalize# have room for any wolf who works and pays. Where they were born doesn't come into it. | New folk drink, pay and sing like anyone. #good.capitalize# for #taproom#.
+opinion @1 strangers for 1 : Give a stranger a bowl once and you've a regular. Twice, and you've a friend. | I've never been sorry for #soup# given to somebody I didn't know.
+opinion @1 road against 1 : Every load of #hops# that comes in late, I pay for twice. Every season the wagons crawl in slower. | #barley.capitalize# off the road should be here in three days. It's five now, some months.
+opinion @2 road against 2 [world.wagons=raided] : They've robbed the road again. That's somebody's #barley#, and somebody's wages, gone into the ditch. | A raided wagon means a thin brew in a month. #annoyed#.
+opinion @1 watch for 2 : I'll speak well of the Watch. They walk past at closing, and #benches# stay quiet. | The Watch knows which of #lowstreets# go under. I told them, and they listened.
+opinion @2 watch for 2 [self.robbed=yes] : The day I was robbed, the Watch had the thief by nightfall. I've thanked them in #prayer# ever since. | When I was robbed they came within the hour. #bless#.
+opinion @1 drink mixed 1 : #pint.capitalize# is a kindness. Five is a sorrow. I stop pouring at three for some. | I brew it and I'm careful with it. Both can be true, #address#.
+opinion @1 city against 1 : The city's smoke and elbows on a market day, and I've no love for #crush#. But my door's here, and my neighbours. | It's a hard place to know anybody in. #taproom.capitalize# helps.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. In you come; the wet stays on the step. | #greet#. Sit anywhere. #benches.capitalize# nearest the fire are warmest.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. #taproom.capitalize#'s open, and the cask's fresh. | #greet#. Mind the floor, it's just been swept.
+line @3 greet [here.time=dawn] : Morning. I've #copper# on since before light. | Morning, #address#. You're up as early as #barm#.
+line @4 greet [here.time=dusk|night] : #greet#. Come in. There's light and #soup# yet. | #greet#. Late, and welcome. #bless#.
+line @5 greet [here.weather=rain|storm here.region=ridgemere] : #greet#. Shake off by the door, and spare #sweptfloor#. | #greet#. Bad weather for walking. Sit by the fire.
+line @1 kin.open [pair.kin!=no] : So it's you. A bowl of #soup#'s been waiting. | Come in, come in. Sit. You look #tired#.
+line @1 again.open : #welcome_back#. The bench is still warm. | Back so soon. #good.capitalize#, I've a fresh cask on.
+line @1 hail [pair.band=friends] : #address.capitalize#! Come and sit a moment. | Over here, #address#, there's room on my bench.
+line @1 greet.return : #greet#. | #greet#, #address#. #bless#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good to see you. | #greet#. I was thinking of you over #mash# this morning.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Pull up a bench. | #greet#. #taproom.capitalize#'s yours.
+line @4 greet.return [here.time=dusk|night] : #greet#. A #good# evening to you. | #greet#. Late, and none the less welcome.
+line @1 farewell : #farewell#. #bless#. | #farewell#. Mind the step down.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the high side of the street. | #farewell#. The Bright One keep you till morning.
+line @3 farewell [here.weather=rain|storm here.region=ridgemere] : #farewell#. Take the high streets home; #lowstreets# will be running. | #farewell#. Not by the steps tonight, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. #bless#.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Come back soon. | #farewell#. There'll be a bowl for you.
+line @1 react.news : #oath#. Sit down and tell it properly. | That's news. Let me put #copper# down and hear it.
+line @1 react.news.new : #marvel#. Nobody's breathed it in #taproom#. | News to me, and I hear most things over #pint#.
+line @1 react.news.known : #knew#. It came in with the first customer. | I'd heard. #taproom.capitalize# had it by noon.
+line @1 react.news.doubt : #doubt#. Let a sober tongue say it and I'll listen. | Tap-room news. Twice heard at #bar#, then believed.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll say #prayer# tonight. | That's #very# hard. The Bright One keep them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants #singing#. | Now that's #good#. I'll draw #pint# on it.
+line @1 answer.how : #fine#. The cask's clear and the floor's swept. | #bc_thank_you# #cellar.capitalize#'s dry and I've a full room.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Brew day and a full bench. | Run off my feet with #copper#, but glad of it.
+line @1 ask.how : And you? Have you eaten, #address#? | How are you keeping, #address#? Warm enough?
+line @1 sympathise : #sympathy#. Sit. I'll bring you #soup#. | That's a weight. Sit by the fire a while, and let #benches# hold you up.
+line @1 reassure : #reassure#. The Bright One hasn't forgotten you. | Give it a dry night and it mends. Things do, #address#.
+line @1 decline : #hedge#, but I can't. #copper.capitalize#'s on and it won't wait for me. | I'd like to, #address#, but I've a cask to tap and nobody else to tap it.
+line @1 accept_decline : #no_matter#. Another evening. | That's all right. #benches.capitalize# will keep.
+line @1 thank : #thanks#. #bless#. | That's kind of you. You'll be in #prayer# tonight.
+line @1 deflect_thanks : #deflect#. You'd do the same for me. | It's only #soup#. There's always more.
+line @1 preclose [self.working=yes] : Well. #copper.capitalize# won't watch itself. | I'd best see to #cellar#. It's that time.
+line @2 preclose : Well. #preclose#. | The light's going, and I've #taproom# to sweep.
+line @1 accept_preclose : Go on, then. #bless#. | Of course. Go well, #address#.
+line @1 ack : #bc_it_is# | #bc_true#
+line @1 give.advice : #advise#: when it rains three days, keep off #lowstreets#. | Eat #soup# before you go out in the wet. That's the whole of my wisdom.
+line @1 warn [here.weather=rain|storm here.region=ridgemere] : Don't take the steps down tonight. #lowstreets.capitalize# will be under. | #warn#. The water's coming up by the low corner.
+line @2 warn [world.bandits=near] : Keep off the road for a while. #warn#. | If you must travel, travel with the carters, #address#.
+line @1 confide : Between us, I saw a thing in #rainhall# that I'll never speak of. | I'll tell you this and no more: not everyone up the hill is as hard as they look. #bless#.
+scene brew_day
+when topic=work|day here.time=dawn self.working=yes self.job=brewer
+does tell.self / react.self / assess
+a : Brew day. #copper.capitalize# was on before light, and #mash# smells like bread. | I've been stirring #mash# since the first bell. My arms are porridge. | The first steam off #copper# on a brew day. Nothing in the city smells better.
+b : Smells good from the street. | Porridge? | I'll take your word.
+a : Come back in a week and taste it. #good.capitalize# barley, this lot. | Soft as porridge, and about as useful. #bless#. It's done. | Come in and smell #malt#, then. I'll not charge for that.
+
+scene hops_in_the_paw
+when topic=work self.working=yes self.job=brewer
+does tell.self / ask.detail / answer.detail / assess
+a : You rub #hops# between your paws and smell them. That's how you know. | #hops.capitalize# came in sticky this week. That's the good sign. | Too many #hops# and it's bitter as a sermon. Too few and it won't keep.
+b : What are you smelling for? | Sticky's good? | How do you get it right?
+a : Green and sharp. If #hops# smell of hay, they're old. | Sticky means the oil's still in them. The oil's the keeping of #cask#. | You learn it over a hundred brews of #mash#. I'm still learning it.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene the_cellar_post
+when topic=weather|home|lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : There's a post at the foot of #stairs#. Every flood, I cut a notch where the water stopped. | Nine notches on #post# now. The highest is above my knee. | I scratch the date beside every notch on #post#. #saying#.
+b : Nine floods? | Above your knee? | Why mark them?
+a : Nine since I came, and each came up by #lowstreets# first. | Above my knee, the year I lost four of #casks#. I still remember the smell. | So I know when to start carrying. When the water reaches the third of #notches#, the casks go up.
+b : #bc_wise# | #bc_bad_luck# | #bc_clever#
+
+scene rain_rising
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does warn / ask.detail / answer.detail / assess
+a : Three days of this and #lowstreets# go under. Mark what I say. | It's coming up the drain by the corner already. I've moved #casks# to the top step. | Don't go down by the steps tonight, #address#. I know which ones flood first.
+b : Which ones? | Already? | How do you know?
+a : The lane by the old well, then the bottom of the market, then the steps. Always the same, by #notches#. | Already. If it's over the second notch on #post# by midnight, I'll be up all night. | I've notched every flood since I came. #saying#.
+b : I'll keep to the high streets, then. | Good luck to you. | #bc_i_will#
+
+scene the_morning_after
+when topic=weather|home here.weather=overcast|clear here.region=ridgemere here.time=dawn
+does tell.self / react.self / assess
+a : The water went down in the night. I'm sweeping the mud out and notching #post#. | Morning after a flood, every door on #lowstreets# is open and every broom's going. | I took my knife down #stairs# this morning and cut a fresh notch. Lower than last time. #bless#.
+b : Was it bad? | Every broom? | Lower, that's good.
+a : Not so bad. Two of #casks# floated, and none broke. | Every one. You learn who your neighbours are, mornings like this, #address#. | It is. I said #prayer# on the stair for it.
+
+scene the_first_warm_day
+when topic=weather|season here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess / ack
+a : #warmday.capitalize#. I've opened every window in #taproom#. | First day this year I've gone without my coat. #oath#, it feels like a holiday. | Smell that? The whole street's drying out at once, #cellar# with it.
+b : About time. | It does feel like one. | I smell it.
+a : About time, and I thanked the Bright One for #warmday# this morning. | I'll be singing behind #bar# by noon, mark me. | Drying out, and #post# can rest. That's the best of it.
+b? : #bc_about_time# | #bc_good# | #bc_lovely#
+
+scene the_summer_flies
+when topic=weather|season|work here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# found #mash# this morning. Hundreds of them. | I'd give a week's takings to be rid of #flies# for one summer. | One fly in a glass and that customer's gone for good. I watch every #pint#.
+b : They always do. | A week's? | Every glass?
+a : They do, and I sweep them out, and #flies# come back. | A week's, and gladly. They're the plague of #taproom#. | Every one. I've a cloth over each cask, and a swatter by #bar#.
+
+scene no_room_to_turn
+when topic=smalltalk|festival|day self.dislikes=crowds
+does tell.complaint / react.self / assess
+a : Market day, and #crush# at #bar#. I like a full room, not a packed one. | The feast brings the whole city to my door. I can't turn round behind #bar#. | I lose my temper in #crush#. I'd rather pour for twelve I know than sixty I don't.
+b : Good for trade, though. | Can't turn round? | That's fair.
+a : Good for the till. Bad for #sweptfloor#, and worse for me. | Not without a tray in somebody's ear. #bless#, the noise. | Twelve, and #singing# after. That's my kind of evening.
+
+scene barley_soup_on
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess / ack
+a : There's #soup# on the back of the stove. There always is. | #barley.capitalize# left over from #mash# makes the best soup. Nothing goes to waste. | When it's wet out I give #soup# to anybody who comes in shaking.
+b : I'll have some. | From the mash? | That's kind.
+a : Sit, then. I'll bring a bowl to #benches#. | The same barley. It's sweet, from #malt#. | It's no kindness. Somebody gave me #soup# once, when I came here with nothing.
+b? : #bc_thank_you# | #bc_clever# | #bc_good#
+
+scene two_sweeps_a_day
+when topic=home|work self.likes=tidy_house
+does tell.self / react.self / assess
+a : I sweep #taproom# at opening and at closing. #sweptfloor.capitalize# tells a customer you care. | My rooms upstairs are tidier than the chapel. I'll say that to the priest's face. | A tidy house is a kind of #prayer#. I believed it as a pup and I believe it now.
+b : Every day? | Tidier than the chapel? | Is it?
+a : Twice every day, and three times on a feast, #benches# up and all. | The priest agrees, which is worse. #bc_ha# | For me it is. #sweptfloor.capitalize# and a quiet mind.
+
+scene a_good_sing
+when topic=pastimes|festival self.likes=singing
+does tell.feeling / ask.opinion / give.opinion / assess
+a : The best nights are when somebody starts a song in #taproom# and everybody comes in on it. | I sing while I brew. #mash.capitalize# doesn't complain. | There's no sound like #singing# when the rain's on the windows.
+b : Do you sing too? | Does it help the ale? | I'd like to hear that.
+a : Loudest of #regulars#. I've no voice, but I've lungs. | It can't hurt it. Every #cask# I've sung to has come out clear. | Come Restday eve. There's always #singing# by nine.
+b : #bc_ha# | #bc_maybe# | #bc_i_will#
+
+scene the_evening_hymn
+when topic=faith|pastimes here.time=dusk|night
+does tell.self / react.self / assess
+a : I sing #hymn# when I close up, every night. Just the one verse. | In the house I grew up in, somebody sang #hymn# over the washing. I sing it over #casks#. | You can hear #hymn# halfway down the street when I close. Folk tell me.
+b : Every night? | The same one? | Do they mind?
+a : Every night since I opened #taproom#. I'll not stop now. | The same words, the same tune. The Bright One's heard #hymn# from both of us. | They hum along, some of #regulars#. That's my congregation.
+
+scene kept_through_worse
+when topic=faith
+does give.opinion / react.self / assess
+a : Floods, a soured brew, a purse with nothing in it: the Bright One saw me through each. I'll not doubt now. | I say #prayer# at #post# when the water's rising. It's never come over the top notch yet. | I go to chapel twice on Restday. Once for #prayer#, once to sing.
+b : You've faith. | Never yet? | Twice?
+a : I've seen too much come right to have none, #address#. | Never yet. I'll not say it's #prayer#. I'll not say it isn't. | Twice. The second time's for #singing#, honestly.
+
+scene the_parish_loaf
+when topic=times|life world.times=hard|lean
+does tell.worry / react.self / reassure / ack
+a : Lean times. Half #benches# are folk nursing one pint all evening. I don't move them on. | I've doubled what goes in #soup#. More are coming to the back door. | Folk can't afford #pint# and they still come to sit. I'd not turn them out.
+b : That's good of you. | More every week? | Where else would they go?
+a : It's only a bench in #taproom#. The fire's lit either way. | More every week. I give what I can and say #prayer# for the rest. | Nowhere warm. That's the trouble. #reassure#.
+b? : #bc_bless_you# | #bc_poor_soul# | #bc_true#
+
+scene coin_about
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Good times. #taproom.capitalize#'s full every night, and they're buying the second pint. | I've ordered a second #copper#. First time I've dared. | Coin about, and #regulars# singing. I'll put a little by for the lean weeks.
+b : Good for you. | A second copper? | Wise.
+a : Good for all of us. A full room's a happy street, #address#. | A second, and a bigger #cellar# if the Bright One's willing. | Lean weeks always come. I've #notches# to prove it.
+
+scene the_hops_are_late
+when topic=caravan|work world.wagons=late
+does tell.worry / reassure / assess
+a : #hops.capitalize# were due on Marketday. Nothing yet. | Two brews behind for want of #barley#. The wagons are late again. | I've one sack of #hops# left. After that it's a thin brew or none.
+b : They'll come. | Two behind? | Can you buy elsewhere?
+a : They will. I'll stir what I have till then. #reassure#. | Two, and #regulars# are asking. I tell them the truth. | Not at a price I'd pass on to #benches#. I'll wait, and pray.
+
+scene the_wagons_in
+when topic=caravan|work world.wagons=in
+does tell.news / react.news / assess
+a : The wagons are in. #barley.capitalize# to the rafters of #malt#. | Fresh #hops# in this morning. You can smell them from the corner. | Wagons came in heavy. I'll have #copper# on by tomorrow.
+b : Good news. | I can smell them. | Good.
+a : #gladnews#. I'll be brewing all week. | That's the smell of a good month, #address#. | #good.capitalize#. I'll sing over this one.
+
+scene barley_on_the_downs
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : At home #barley# grew on the downs, white in the wind. I can still see it. | #barley.capitalize# I brew with came from fields like the ones round #self.from_town#. I bought it there once, by the sack. | Harvest home in #self.from_town#: everyone sang the last load in. I've never heard #singing# like it.
+b[from=larkfield] #lark : White in the wind. I remember. | You'd know a good sack, then. | Every year. I sang it too.
+b : White? | You bought it there yourself? | That sounds a sight.
+a@lark : So you'll see why there's a sheaf hung by #post#. | I'd know it by the smell. Downs #barley#'s sweeter. | Then you'll sing with me in #taproom# some evening. I'd like that.
+a : White, near enough, when it's ripe and the wind's on it. #bless#, I miss that. | By the sack, at the market, weighed in front of me. Fair as daylight, #address#. | It was. I try to bring a bit of it into #taproom#.
+
+scene how_i_talk_now
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : I've lost most of the way they talk at home. #taproom.capitalize# takes the corners off you. | Folk from home tell me I sound like the city now. I don't hear it, #address#. | I still count #casks# the way my father counted sheep. That's all the accent I've kept.
+b : Do you miss it? | You don't? | Counted how?
+a : Sometimes, at the chapel. The old hymns sound wrong in city voices. | No. I'll hear it when I go back, and I'll be sorry. #bless#. | In twenties, on my fingers. Nobody at #bar# does that.
+
+scene the_quiet_hall
+when topic=lore|memories here.region=ridgemere
+does tell.self / ask.detail / insist / ack
+a : I carried a cask up to #rainhall# once. I saw a thing there I've never told. | Folk talk about #rainhall# as if they know it. I've been inside. I don't talk about it. | There's something about #rainhall# I'll keep to myself till I die. Don't ask.
+b : What did you see? | What's it like? | Now I want to know.
+a : Nothing I'll tell. It wasn't mine to see, and it isn't mine to say, #address#. | Big and quiet and cold. No more than that leaves #bar#. | Then want. I gave my word to myself on the stair coming down. #bless#.
+b : #bc_fair_enough# | #bc_fair# | #bc_i_know#
+
+scene feed_the_stranger
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : There's a new face on the street. I'll send #soup# out if they look hungry. | A traveller came in this morning, cold and empty. I fed them first and asked their business after. | New folk find #taproom# first, mostly. I like that.
+b : You feed everybody. | Fair enough. | Why's that?
+a : Not everybody. Everybody who's hungry. #bless#. | It's how I'd want to be met in a strange town, #address#. | The door's warm and #soup# is free. Word gets round.
+
+scene the_neighbour
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# could have my key to #cellar# tomorrow. There's no higher word from me. | When the water's rising, it's #self.neighbour# I go to first, for #casks#. | #self.neighbour# and I have shared a wall a good while. I'd not want another, #address#.
+b : That's a lot of trust. | First? | Good walls make good neighbours.
+a : #cellar.capitalize#'s my whole living. It's all the trust I have. | First, so we can carry together. That's what neighbours are for, #address#. | And a good neighbour makes a good wall. #bc_true#
+
+scene the_shopkeeper
+when topic=friends|work self.shopkeeper self.role=merchant
+does tell.self / react.self / assess
+a : I buy what I can from #self.shopkeeper#. Keep the coin on #lowstreets#, I say. | #self.shopkeeper# prices fair. I'll say that to anyone at #bar#. | I'd sooner pay #self.shopkeeper# a penny more than a stranger a penny less, #address#.
+b : On the street, yes. | Fair's rare. | That's loyal.
+a : It comes back. It always does, one way or another, #bless#. | Rarer than it should be, #address#. I value it. | It's sense. A street looks after its own, like #regulars# do.
+
+scene keep_it_close
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear plenty across #bar#. I let most of it go out with #slops#. | Folk say all sorts after a third #pint#. I'd not repeat it. | There's talk tonight at #benches#. I'll not carry it. The Bright One hears it too.
+b : Go on, a little. | All sorts? | You're a good one.
+a : No. #taproom.capitalize# that talks is a tap room that empties. | All sorts. And most of it's the ale talking, #address#. | I try to be. I fall short, but I try. #bless#.
+b : #bc_ha# | #bc_true# | #bc_bless_you#
+
+scene a_death_told
+when topic=gossip|news topic.claim_kind=death
+does tell.news / react.news / assess
+tone grave / grave / tender
+a : They say #topic.subject# #topic.claim#. I'll light a candle and say #prayer# tonight. | Word in #taproom#: #topic.subject# #topic.claim#. The whole bench went quiet. | #topic.subject.capitalize# #topic.claim#. I'll sing #hymn# slow tonight.
+b : That's sad news. | I heard. | That's right.
+a : It is. The Bright One keep #topic.them#. | We'll raise #pint# tonight, and gently. | It's all I know how to do, #address#.
+
+scene a_wedding_told
+when topic=gossip|news topic.claim_kind=marriage
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# #topic.claim#! I'll brew something for the feast, if it's wanted. | Word is #topic.subject# #topic.claim#. That wants #singing#. | #topic.subject.capitalize# #topic.claim#, I hear. The Bright One bless the match.
+b : That's good to hear. | It does. | It's good news.
+a : #gladnews#. I'll put #cask# by. | Come by tonight and sing it in with #regulars#. | It is. There's not enough of it, #address#.
+
+scene back_and_casks
+when topic=health
+does tell.self / react.self / reassure
+a : My back's sore from #casks#. A full one weighs as much as I do. | I scalded my paw on #copper# last week. It's healing. | I've not been sick since I came here. #soup.capitalize# and prayer, I tell folk.
+b : Lift with your knees. | Mind yourself. | That's lucky.
+a : I know. I forget, every time, halfway up #stairs#. | I will. I said a word and #prayer#, in that order. | Lucky and blessed. Both, I think, #address#.
+
+scene a_dry_cellar_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I'd like #cellar# up the hill one day, where the water never comes. | I dream of #taproom# where everybody sings on Restday eve and nobody fights. | One day I'd like #post# with no new notch in it for a whole year.
+b : Up the hill? | Nobody fights? | A whole year?
+a : Up the hill, and dry as a hymn book. That's my dream, #address#. | Not even a word. Just #singing# and a clean floor. | A whole year. I'd cut a little cross instead, for thanks.
+b : #bc_i_hope_so# | #bc_maybe# | #bc_bless_you#
+
+scene closing_sweep
+when topic=day|work here.time=night self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : Last pint's poured. I'll sweep, sing #hymn#, and bar the door. | #benches.capitalize# up on the tables, #sweptfloor# under them. That's the night done. | I count #casks# before bed. It settles me.
+b : Long day. | Every night? | Settles you?
+a : Long, and a #good# one. #bless#. | Every night. I'd not sleep, else, #address#. | Like #prayer#. Everything where it should be.
+
+scene fog_on_the_street
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog off the Sound. I've lit #lamp# so folk can find the door. | You can't see the corner in this. Mind the step down, #address#. | Fog's good for #taproom#. Folk come in to get out of it.
+b : That's thoughtful. | I'll mind it. | It's thick.
+a : It's a tap room's duty, #lamp# in the fog. | #good.capitalize#. I'd not want you in the gutter. | Thick as #mash#. Sit down till it lifts.
+
+scene winter_cellar
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : Winter's slow for #barm#. It sulks in the cold. | I keep #copper# going longer in winter, for the warmth as much as the brew. | Cold #cellar#, clear ale. Winter's the best for keeping.
+b : Sulks? | Smart. | Is it?
+a : Sulks, and won't rise. I wrap the tun in sacks, like a pup. | Warm room, full #benches#. The two go together. | It is. You'll taste #cask# of it, come spring.
+
+story the_night_it_came_in [topic=weather|memories here.region=ridgemere self.age>=25]
+  : The winter I first came, I woke in the night to the sound of #casks# knocking together.
+  : The water was over my knee in #cellar#. I carried casks up the stair till dawn, alone.
+  : I lost four. In the morning I took my knife and notched #post# where it had stopped.
+  ask : Do you keep a mark of anything, so you'll never forget it?
+  b : Nothing like that. A scar or two.
+  b[old] : Plenty. The old ones are all marks.
+  : I've marked every one since. #saying#.
+
+story the_first_sour_brew [topic=work|memories self.job=brewer self.age>=20]
+  : My first brew went sour in a week. #cellar.capitalize# smelled like a wet boot.
+  : An old brewer I worked for said, scald everything, and then scald it again.
+  : I've scalded every tub and paddle since. I've never lost #cask# to the sour again.
+  b : Hard lesson. Good one, though.
+  b[job=brewer] : Scald it twice. Somebody told me the same, word for word.
+
+story harvest_home [topic=memories|festival|land self.from=larkfield self.age>=20]
+  : At home, the last load of #barley# came down off the downs with everybody riding on it, singing.
+  : The farmer's wife stood at the gate with a jug and gave every singer a cup.
+  : That's the first ale I ever tasted. I've been chasing it with #copper# since.
+  ask : Do you remember the taste of something you'll never have again?
+  b : Bread from when I was small. I'll never taste it again.
+  b[from=larkfield] : I know that load. I rode it myself once.
+
+story hymn_in_the_flood [topic=faith|weather|memories here.region=ridgemere self.age>=25]
+  : One flood night the water came up so fast the whole of #lowstreets# was out on the steps.
+  : Somebody's pup was crying, so I started #hymn#. Then everybody sang.
+  : We sang till the water went down. Nobody remembers the flood. They remember #singing#.
+  b : That's a good thing to be remembered for.
+  b[old] : I was there, maybe. I remember singing on steps.
+
+story the_regular [topic=work|friends|memories self.role=merchant]
+  : There was an old carter who came in every night and sat in the same seat by the fire in #taproom#.
+  : He never said much. One night he didn't come, and the next.
+  : I keep his seat empty on Restday eve. Nobody's ever asked why, and I've never said.
+  ask : Have you ever kept something going for somebody nobody else remembers?
+  b : No. But I'd like to think somebody would, for me.
+  b[old] : I keep a few. You get more, the older you are.
+
+rule @cask_cry
+when concept=bark working=yes self.job=brewer
+does aside
+cooldown 6h
+say Fresh cask on. Come and try #pint#. | #soup.capitalize# on the stove and #cask# on the trestle.
+
+rule @mash_bark
+when concept=bark working=yes self.job=brewer here.time=dawn|day
+does aside
+cooldown 8h
+say Steady, steady. Don't you catch on me, #mash#. | #mash.capitalize# is turning nicely. #oath#.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Out, the lot of you. Out of #mash#. | #flies.capitalize# again. #annoyed#.
+
+rule @rising_bark
+when concept=bark here.weather=rain|storm here.region=ridgemere
+does aside
+cooldown 8h
+say It's up past the second notch. #casks.capitalize# to the top step. | Keep off #lowstreets#, the water's coming.
+
+rule @hymn_bark
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say #hymn.capitalize#, then bed. | One verse, and the door barred. #bless#.
+
+rule @late_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 10h
+say Still no #hops#. #annoyed#. | One sack left, and no wagon. Bright One send it soon, for #regulars#.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Ale's clear, and there's #soup# on. What'll it be? | #greet#, #address#. Shake off the wet and come to #bar#. #shop_offer#
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. The usual? | #topic.player#. Your bench is free. #shop_offer#
+dlg @3 shop.greet [here.weather=rain|storm here.region=ridgemere here.shop!=bare] : #greet#. Shake off by the door, and mind #sweptfloor#. #shop_offer#
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : I'll serve you, and gladly. Just keep it civil in my house. #bless#.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #casks.capitalize# are near dry; the wagons are behind. I'll still pour what I've got. | #shop_bare# There's #soup#, though, and that's free.
+dlg @1 shop.prices : A fair price for #pint#. #hops.capitalize# have gone up; I've held mine as long as I can. | #shop_dear# I'd charge less if the road were kinder.
+dlg @1 shop.bye : #farewell#. #bless#. | #shop_bye# Come back for #singing#.
+dlg @1 resident.hub : #greet#. Sit down, if you like. What brings you? | #greet#, #address#. Have you eaten?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you again. What's wanted? | #topic.player#. Come in. #talk_open#
+dlg @3 resident.hub [here.time=night] : It's late, but come in. There's light and #soup# yet.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you out. Say your piece quietly; there are folk eating. | #greet#. #benches.capitalize# are for sitting, not quarrels. Go on.
+dlg @1 resident.job [self.job=brewer] : I brew at #self.workplace# and keep #taproom#. Barley, hops and patience. And a swept floor. | I brew. Mash, boil, cool, and wait. The Bright One does the rest, #address#.
+dlg @2 resident.job : I work, I pray, I sweep. Most days that's the whole of me. | #job_busy# And I watch #lowstreets# when it rains.
+dlg @1 resident.business [business=thriving] : #good.capitalize#, thank the Bright One. #benches.capitalize# are full every night. | Thriving. I've ordered a second #copper#.
+dlg @2 resident.business [business=steady] : Steady. It pays the rent and the hops, and there's #soup# for whoever needs it. | Steady, #bless#. I'll not complain.
+dlg @3 resident.business [business=failing] : Poorly. Fewer pints, and #hops# dearer every month. I'm praying on it. | Not well. I'll keep the door open as long as I can, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask me after the evening rush. | Not a word over #bar# today.
+dlg @2 resident.news [world.news] : They were saying it over #bar#: from #world.news_from#, #world.news#. | Word from #world.news_from#: #world.news#. That's what #regulars# had tonight.
+dlg @3 resident.news [world.event_words] : The whole of #taproom#'s on about #world.event_words#. | It's all #world.event_words# tonight, at every one of #benches#.
+dlg @4 resident.news [world.wagons=raided] : A wagon's been taken on the road. That's somebody's #barley# gone. Mind yourself out there.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | What's said at #bar# goes out with #slops#.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'd not carry it far. | Folk say #topic.subject# #topic.claim#. That's all I have, and it's only #bar# talk.
+dlg @1 resident.bye : #farewell#. #bless#. | #farewell#, #address#. Mind the step down.
+graft resident.hub
+choice Which streets flood first? [here.region=ridgemere] -> floods
+node floods
+say The lane by the old well, then the bottom of the market, then the steps. Always that order. I notch every flood on my cellar post.
+mood warm
+free
+choice Why mark the post? -> floods_post
+choice Goodbye. -> bye
+node floods_post
+say At the third notch, the casks go up the stair. Nine notches now, and no cask lost since the first. Keep off the low streets after three days of rain.
+choice Thank you. Something else. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do you brew it? [self.job=brewer] -> brewing
+node brewing
+say Barley malted and mashed, the sweet wort boiled with hops, cooled, and the yeast pitched in. Then you wait, and pray, and sweep.
+mood warm
+choice And the hops? -> brewing_hops
+choice Let me see your wares. -> greet
+node brewing_hops
+say Rub them between your paws. Green and sharp is good; hay is old. Too many and it's bitter as a sermon. Too few and it won't keep a week.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye

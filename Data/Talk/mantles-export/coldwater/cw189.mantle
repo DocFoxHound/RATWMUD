@@ -1,0 +1,325 @@
+# cw189, the hive hand who trusts no wall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw189
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_pike_acornshaw
+written_by claude
+title the hive hand who trusts no wall
+fits stage=adult|old
+prefers job=farmer humour=dry
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes oatcakes old_tales new_boots warm_rain
+dislikes flies early_bells
+fears the_deep_woods a_swarm_lost_on_my_watch
+hopes boots_cobbled_back_home a_hive_to_call_mine
+topics work +0.4 animals +0.3 food +0.3 pastimes +0.3 memories +0.2 newcomer -0.3 gossip -0.2
+styles comfort=food gossip=wary refuse=soft tease=dry
+marks oath saying
+persona #self.first# walks out through the city gate every morning to the hives on the heath and back in at dusk: wry, warm and a little low, suspicious of anything made, baked or said inside the walls, fond of an old tale and a buttered oatcake, and saving for boots nobody in the city cobbled.
+
+words
+oath! = Swarm and settle | By the hive's hum
+saying! = Walls keep in more than they keep out | Trust the hive, not the hawker
+bees = the bees | the hum in the boxes
+boxes = the hive boxes | the boxes out on the heath
+smoker = the smoker | a puff off the smoker
+veil = my veil | the old veil with the hole in it
+comb = the comb | a frame of comb
+oatcake = an oatcake | an oatcake buttered to the edge
+boots = new boots | boots still creaking from the last
+citymade = city-made | made inside the walls
+tale = an old tale | a tale told slow by the fire
+heath = the heath | the open heath past the gate
+gate = the gate | the city gate
+woods = the deep woods | trees with no end to them
+bells = the early bells | bells before a body's awake
+stair = our stair | the top of the stair
+lake = the lake | the lake at home
+city = the city | this city
+walls = the walls | these walls
+hawker = a hawker | some hawker with a tray
+flies = flies | the summer flies
+
+any
+opinion @1 city against 2 [here.region=ridgemere] : I sleep in it and I'll not trust it. Everything #citymade# has a hawker's thumb on it somewhere. #saying#.
+opinion @1 merchants against 2 : They sell you a loaf with chalk in it and call it fine. What I'm paid won't reach their honest ones, if they keep any.
+opinion @2 city against 1 : Nothing #citymade# ever did me a good turn, and I've given it chances. #oath#, I have.
+opinion @1 dole for 2 : The parish fed our house through a thin week. That's one thing from inside #gate# I'll not speak against.
+opinion @1 houses against 1 : I've kept #bees# on House land half my life and never seen a House face out on #heath#.
+opinion @1 strangers for 1 : A stranger off the road is no worse than a neighbour off #stair#. Give them #oatcake# and see.
+opinion @1 times against 2 [world.times=hard|lean] : Thinner by the week, and the hill's too high to see #stair# from. #oath#, they'd not look if it weren't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Not from round here, are you. Good. | #greet#, #address#. You've the look of somebody off the road.
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Keep back a bit; #bees# are cross today. | #greet#. Stand still, and they'll not bother you.
+line @3 greet [here.time=dawn] : Morning. #bees.capitalize# will be stirring soon, and me with them. | Morning, #address#. Up before the bells, me.
+line @4 greet [here.time=dawn here.region=ridgemere] : Morning. Out through #gate# before the bells, me. | Morning, #address#. #bees.capitalize# aren't up and nor's #city#.
+line @5 greet [here.time=dusk|night] : #greet#. Day's done, and I've #heath# on my boots. | #greet#, #address#. #tired.capitalize#, and glad to sit.
+line @6 greet [here.time=dusk|night here.region=ridgemere] : #greet#. Back inside #walls#, worse luck. | #greet#. In through #gate# again, and the door bolted behind.
+line @1 kin.open [pair.kin!=no] : There you are. I've #oatcake# kept back for you. | You. Good. The kettle's on up #stair#.
+line @1 again.open : #welcome_back#. You'll have forgotten something. | Back again already. #bees.capitalize# would call that a swarm.
+line @1 hail [pair.band=friends] : #address.capitalize#. Over here, away from the hawkers. | #address.capitalize#. A minute, out of the crush.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Sit, and mind the bench, it wobbles. | #greet#. I'd know your step on any stair.
+line @3 greet.return [self.working=yes self.job=farmer] : #greet#. Mind #boxes#. | #greet#. Talk soft; #bees# listen.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, for honest folk. | #greet#. I'm half asleep on my feet, mind.
+line @1 farewell : #farewell#. | #farewell#. Keep clear of the hawkers.
+line @2 farewell [here.time=dusk|night] : #farewell#. Sleep sound, if they let you. | #farewell#. Don't let #bees# into your dreams.
+line @3 farewell [here.time=dusk|night here.region=ridgemere] : #farewell#. Bolt the door; it's #city#. | #farewell#. Mind the hawkers on #stair#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Go on, #address#. | Is that right. Out with the rest of it.
+line @1 react.news.new : #surprise#. That's not reached #heath# yet. | #oath#. Nobody tells a hive hand anything.
+line @1 react.news.known : #knew#. It got out to #heath# before you did. | It was going round #gate# at first light.
+line @1 react.news.doubt : #doubt#. Who told you, a hawker? | #hawker.capitalize# could sell that. I'd weigh it twice before I swallowed it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a bad one. | #oath#. I'm sorry. I am.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good, that. | Now there's something worth carrying out to #heath#.
+line @1 answer.how : #fine#. Bit low, if I'm honest. | Middling. Stung twice by #bees# and paid once.
+line @1 answer.how.busy [self.working=yes self.job=farmer] : #busy.capitalize#. #bees.capitalize# are swarming in my head as well. | Busy. #boxes.capitalize# want looking at, every one.
+line @1 ask.how : And yourself, #address#? | Eating, are you? You look it, less than you ought.
+line @1 sympathise : #sympathy#. Have #oatcake#. They don't fix much, but they help. | That's rough water, #address#. Sit down a bit.
+line @1 reassure : #reassure#. Bees come back to the box; most things do. | It'll settle, #address#. Things do, given quiet.
+line @1 decline : #hedge#. Wish I could; my purse is empty as a holed net this week. | Not this time, #address#. I'm out at #heath# from first light, and back half dead.
+line @1 accept_decline : #no_matter#. | Fair. #later.capitalize#, then.
+line @1 thank : #thanks#. | #thanks#. I'll owe you #oatcake#.
+line @1 deflect_thanks : #deflect#. | Nothing to it. #bees.capitalize# do me more favours than that.
+line @1 preclose [self.working=yes] : Well. #bees.capitalize# won't mind themselves. | I'd best get back to #boxes#.
+line @2 preclose : #preclose#. | Right. #boots.capitalize# won't buy themselves, and nor will supper.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. Mind #hawker# on the corner.
+line @1 tease [pair.band=friends here.region=ridgemere] : You're getting soft, living in here. You'll trust a hawker next. | City's rubbing off on you, #address#. I can smell it.
+line @1 tease.return : Says the one with a city cough. #oath#. | Me, soft? I'll stand in a swarm of #bees# and show you.
+line @1 ack : #bc_right# | #bc_true#
+scene dawn_gate
+when topic=day|work here.time=dawn self.working=yes self.job=farmer here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Out through #gate# before it's light. I breathe easier the minute #walls# are behind me. | I'm on the road to #heath# before the bakers are up. Best walk of the day. | Every morning the same. Down #stair#, out #gate#, and #city#'s off my back.
+b : Easier how? | Long walk, is it? | Every single morning?
+a : The air's mine out there. No chimneys, no hawkers, just #bees# and the wind. | Long enough. By #heath# I've near forgot the place, and that's the point. | Every one. The day I don't go, you'll know I'm #poorly#.
+b : #bc_lovely# | #bc_fair_enough# | #bc_ha#
+
+scene bees_mood
+when topic=work|animals self.job=farmer self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #bees.capitalize# know your mood before you've opened the box. Come to them cross and they'll tell you so. | I hum to #boxes# when I lift the lids. Calms them, and me. | Lost a whole frame to wax moth this week. #bees.capitalize# were sulking over it.
+b : They can tell? | What do you hum? | Can bees sulk?
+a : They can. You can lie to a city clerk. You can't lie to #bees#. | Old boat songs from #lake#. They seem to like the slow ones. | Not a sting out of them all morning. Bees that don't sting are bees that don't care. That's sulking.
+b : #bc_clever# | #bc_lovely# | #bc_ha#
+
+scene stung_nose
+when topic=health|work self.job=farmer
+does tell.complaint / react.complaint / assess
+a : Stung on the nose this morning. Right through the hole in #veil#. | Three stings before noon. #bees.capitalize# and me aren't speaking. | My paw's up like a bun. One sting, through #veil#'s hole and down to the pads.
+b : That must hurt. | Three! | Put something on it.
+a : It does. I'll mend #veil# when I've a copper for thread, and not before. | Three. I'd still sooner be stung at #boxes# than sit in a counting-house. | A bit of mud, the old way. I'll not pay a city apothecary for what mud does.
+
+scene city_honey
+when topic=food|prices here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / assess
+a : I saw a stall in the market selling honey off #heath#, it said. Half of it was syrup. My nose knew it three stalls off. | Don't buy honey inside #gate#, #address#. Buy it off somebody with stings on their paws. | Honey from #hawker#'s thin as tea. They water it and charge you for the water.
+b : How could you tell? | Why the stings? | Is it really watered?
+a : Real honey's got heather in it. That was sugar and a lie. | Stings mean they've been to #boxes#. #hawker.capitalize#'s never been near a hive. | Some of it. Not all. But #citymade# is always a gamble, and I don't gamble.
+b : #bc_ha# | #bc_wise# | #bc_fair_enough#
+
+scene oatcakes
+when topic=food self.likes=oatcakes
+does tell.feeling / react.self / assess
+a : I make my own #oatcake# on a griddle up #stair#. Same as my mam did. | Oats from the farm, butter from #heath# cows. Not a crumb of it bought in #city#. | #oatcake.capitalize# and a hot cup by the window. I'd not swap that supper for a House feast.
+b : Same as your mam's? | None of it from the city? | Not a feast?
+a : Near enough. Mine burn at the edges. Hers never did. | None. I know where every crumb's been. #saying#. | Not a feast. A feast's got a cook you've never met, and I'd want to see the cook, #address#.
+
+scene saving_boots
+when topic=pastimes|smalltalk self.likes=new_boots
+does tell.plan / ask.detail / answer.detail / assess
+a : I'm putting a copper by each week for #boots#. Proper ones, mind. Not city stitching. | My boots have more patch than leather. #boots.capitalize#, next, and made at home. | I tried on a pair at a stall by #gate#. The heel came loose in my paw.
+b : What's wrong with city stitching? | Made at home? | In your paw?
+a : It looks right on the stall and comes apart on the road. #saying#. | There's a cobbler in #self.from_town# whose boots outlast the wearer. I'll walk back for them if I have to. | Right off. I gave it back to #hawker# and said nothing. The face on the stallholder said enough.
+b : #bc_good# | #bc_lovely# | #bc_ha#
+
+scene old_tale
+when topic=pastimes|lore self.likes=old_tales
+does tell.feeling / ask.opinion / give.opinion / assess
+a : There's nothing like #tale#. Not a song, not a play. A tale, and somebody who knows when to stop. | The tellers in #city# rush it. A tale wants room, like a hive wants a quiet corner. | My grandad told the one about #lake# that ate a boat whole and gave back the oars. I still hear it.
+b : Do you know many? | Does it matter how fast? | Gave back the oars?
+a : A few. I know which #tale# is worth keeping, and I tell it slow. | It matters, #address#. Rush the middle and the end means nothing. | Clean, every one. And a note tucked in the rowlock saying thanks. I believed it for years.
+b : #bc_wise# | #bc_true# | #bc_ha#
+
+scene warm_rain
+when topic=weather|season here.weather=rain here.season=summer|spring self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : Warm rain. #bees.capitalize# are in, and I'm out here stood in it like a daft thing. | This is the only rain I'll own to liking. Soft, and smells of #heath#. | Rain after a dry spell. #heath.capitalize# drinks it and the honey's better for it.
+b : You'll catch your death. | It does smell good. | Is the honey better?
+a : Not in this. This is the warm kind. Nothing spoils this kind. | It does. Smells like #lake#, near enough, with my eyes shut. | Better by the next take. #bees.capitalize# know. They come out after, busy as anything.
+
+scene rain_idle
+when topic=weather|work here.weather=rain self.job=farmer
+does tell.complaint / sympathise / assess
+a : Rain. #bees.capitalize# won't fly, so I sit in the shed and mend #veil#. | Cold rain, and #bees# all huddled in. A day lost and no pay for it. | #tired.capitalize# and wet through. I opened one box to look and got told off for it.
+b : A rest day, at least. | No pay at all? | Told off?
+a : A rest I can't afford. I'll mend and fret, the same as ever. | Not a bit of #money#. The farm pays for honey, not for weather. | A cloud of them out the top. I shut it quick and apologised. Out loud, mind.
+
+scene summer_flies
+when topic=animals|season here.season=summer self.dislikes=flies here.region=ridgemere
+does tell.complaint / react.complaint / concede
+a : Flies. All summer, through the shutter and round the butter. | A bee earns its keep. #flies.capitalize# do nothing but land on your supper. | #city.capitalize#'s thick with flies. They're its bees, near enough, and look what they make.
+b : They're everywhere this year. | Can't argue with that. | Ha. Fair.
+a : Everywhere. I've a cloth over the butter up #stair# and still they find it. | No. Give me a hundred of #bees# before one fly. | Muck, that's what. And it's #city# keeps them fed.
+
+scene early_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# again. Who needs a bell to tell them it's morning. | They ring before the birds, and they've rung before I'm down #stair#. | I'm awake anyway. That's not the point. A bell's #city# telling you when to wake.
+b : Some folk need them. | You're up early as it is. | It's just a bell.
+a : Some. Not me. #bees.capitalize# never needed a bell in their lives. | Early, aye. By my own say-so, for #bees#, not by somebody's rope. | It's never just a bell in here. It's somebody up the hill pulling it.
+
+scene city_talk
+when topic=smalltalk|times here.region=ridgemere
+does give.opinion / disagree / concede
+a : Bread, water, coin, word of mouth. If it's #citymade#, I'll want to see where it's been. | I've lodged in #city# a good while now and trust it less than the day I came. | Nothing good comes in through #gate#. The good stuff goes out, to #heath# and the farms.
+b : That's a bit much. | Why stay, then? | Some good comes in.
+a : Maybe. I've been cheated too often in here to call it much. | The work's out on #heath#, and the bed's in here. Cheaper than walking from home. | Some. You'll have to show me it, #address#, before I take your word.
+
+scene spring_water
+when topic=health|food here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I carry a flask out to the spring on #heath# and fill it there. I'll not drink from a city well. | City water tastes of the pipe it came through. I bring my own in. | There's a spring by #boxes# runs clear as #lake#. That's my water.
+b : The wells aren't bad. | Every day? | As clear as that?
+a : They're not good. A well with a city round it is a well I'll walk past. | Every day, both ways. My flask's older than some of the streets inside #walls#. | Near. Not as #cold#. Nothing's as cold as home.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene spouse_kept
+when topic=family self.married=yes here.region=ridgemere
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# is the one thing inside #gate# I'd hand my last copper to. | #self.spouse# could talk a swarm into a sack, and has a gentler paw with me than I deserve. | I'd follow #self.spouse# anywhere. Even in here, and that's saying something.
+b : That's good to hear. | Gentler than you deserve? | Even in here.
+a : Good. It's not often said by me, so mark it, #address#. | Most days, aye. I'm a grumbler. #self.spouse# lets it run off like rain. | Even in here. I'd sooner a city with #self.spouse# than a heath without.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : Back in #self.from_town# the mornings were still. Still water, still air. Here something's always shouting. | I miss the lake-mist at dawn. Out on the jetty you'd not see your own paws. | Folk at home knew who baked your bread. Here it's a stranger's oven, every loaf.
+b[from=coldwater] #home : Still as glass, them mornings. | I miss that mist, and all. | I know the baker you mean, near enough.
+b : Do you go back much? | Didn't that frighten you? | Does that matter?
+a@home : Then you know. Nothing inside #walls# comes close. | It got into everything, didn't it. Your fur, your bread. | Every loaf, warm, and you knew it was honest.
+a : Not as much as I'd like. Boots, and coppers. One day for good, maybe. | Never. The mist was home. It's the fog here that's got teeth. | It does to me. You'd not eat a stranger's honey, so I'll not eat their bread.
+
+scene woods_fear
+when topic=land|travel
+does confide / reassure / assess
+a : I'll tell you a thing. I can't abide #woods#. I'll walk a mile out of my road to miss them. | There's a stand of trees on the road out that I walk past quick, eyes front. | I grew up by water. Open sky. #woods.capitalize# close over your head like a lid.
+b : Plenty feel that. | Nothing in there'll hurt you. | A lid's a good word for it.
+a : Do they? #good.capitalize#. I thought it was only me, and me a grown wolf. | Maybe not. It's what I can't see that bothers me. Give me #heath# any day. | It is. Shut in. Same as #walls#, only greener.
+
+scene gossip_hawkers
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / insist / ack
+a : There's talk on every corner in here, and half of it's selling something. | I hear it at #gate#. It stops there; #bees# don't want it. | Gossip off #hawker#'s like their honey. Mostly watered.
+b : Not even the juicy bits? | Fair enough. | Ha. True.
+a : The juicier it is, the more somebody's watered it. #saying#. | They don't. And nor do I, much, #address#. | True as a sting.
+b? : #bc_ha# | #bc_wise# | #bc_true#
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / assess
+a : Word at the gate is #topic.subject# #topic.claim#. I said, didn't I. Walls keep thieves in. | They say #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I hear. And folk wonder why I bolt the door.
+b : You did say. | That's bad. | I'd bolt it too.
+a : Not that I'm glad of it. I'd rather be wrong for once. | #bad.capitalize#, and not the last we'll hear of, either. | Bolt it twice. I do, and I've nothing worth taking.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean week. The bread's up again and #wages# isn't. | I'm skint as a holed net, #address#. Oats and water till payday. | Hard times. The farm took a hand off, and I'm watching my back.
+b : It'll turn. | Oats are filling. | They'll keep you on.
+a : It might. Not because anybody up the hill's trying. | They are. I'll not complain of oats. It's the water I'm tired of. | Maybe. #bees.capitalize# don't care what times it is, and I'm good with bees.
+
+scene newcomer_wary
+when topic=newcomer|player here.region=ridgemere
+does give.opinion / react.self / assess
+a : Somebody new on #stair#. A week of nods first, then maybe good morning. | New faces come in through #gate# every day. Most go out again lighter. | I'm not unfriendly to strangers. I'm unfriendly to #city# they come in through.
+b : A week? | Lighter? | That's a fine line.
+a : A week. Then #oatcake#, if they've earned it. | Lighter in the purse. #city.capitalize# sees to that. | It is. I walk it every day, out and back.
+
+scene faith_plain
+when topic=faith
+does tell.self / react.self / assess
+a : The Bright One made #bees# and #heath#. Somebody else made #city#. | My prayers are short, at night, under the blanket. The Bright One's busy, I'd think. | I'll sit in a chapel on #heath#, if there were one. City chapels smell of hawkers' coin.
+b : That's harsh. | Short's fine. | There's a chapel for everyone.
+a : Maybe. I'll not take it back, mind. | Short and meant. That's all I've got. | There is. I just like my sky without a roof on it.
+
+story first_swarm [topic=work|memories self.job=farmer self.age>=25]
+  : The first swarm I ever caught, I caught in my hat. No veil, no smoker, just a hat and a prayer.
+  : They hung off a branch like a brown beard. I shook it, and they went in the hat, and I walked them home with my arms out.
+  : Not one sting. #bees.capitalize# have had me a thousand times since, and never that day.
+  ask : Was there ever a thing you got right by luck, and never again after?
+  b : My first loaf. Every one after was worse.
+  b[job=farmer] : That's a beginner's swarm. They're kind, the first time.
+
+story boat_oars [topic=memories|lore self.from=coldwater self.age>=20]
+  : My grandad told it by the fire, every winter. A boat went out on #lake# in the fog and never came back.
+  : Next morning the oars washed up on the shore, crossed, clean as new. Folk said #lake# had eaten the boat and was sorry for it.
+  : He'd stop there. Never said who rowed it. I asked every winter. #oath#, I still want to know.
+  ask : Would you have wanted to know who rowed it, or is it better not?
+  b : Better not. The not knowing's the tale.
+  b[from=coldwater] : I heard it with the oars tied in a knot. Same lake, though.
+  : Better not. That's what grandad said, near enough.
+
+story chalk_loaf [topic=memories|food self.away=yes here.region=ridgemere]
+  : The first loaf I bought in #city#, I bit into it halfway up #stair#, and it crunched.
+  : Chalk. They'd stretched the flour with it. I took it back and the baker shrugged and said everybody does it.
+  : I've baked my own since, on my own griddle up #stair#.
+  b : Chalk! Is that why you trust nothing in here?
+  b[from=coldwater] : They'd never get away with that at home.
+  : That, and a hundred little things after. The loaf was only the first.
+
+rule @bees_easy
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Easy now. Easy. Nobody's after your comb. | #oath#. Who's upset the end box?
+
+rule @bells_bark
+when concept=bark here.time=dawn self.dislikes=early_bells here.region=ridgemere
+does aside
+cooldown 12h
+say There they go. #bees.capitalize# aren't up, and they ring anyway. | #bells.capitalize#. As if I needed telling.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off the butter, you. Off. | Flies. #city.capitalize#'s own bees, and they make nothing.
+
+rule @gate_dusk
+when concept=bark here.time=dusk here.region=ridgemere
+does aside
+cooldown 12h
+say Back in through #gate#. #saying#. | #walls.capitalize# again. Ah well. Supper and bed.
+
+dlg @1 resident.hub : #greet#. Say what you're wanting. | #greet#, #address#. Be quick, and I'm yours.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Still in one piece, then. | #topic.player#. #greet#. You've not bought anything off a hawker, I hope.
+dlg @3 resident.hub [here.time=night] : It's late. I'm up at first light for #heath#. Quick, then. | #greet#. Late for talking, but go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I don't know you, and I don't know what you're selling. | Stop there and say it. #bees.capitalize# taught me to keep my distance.
+dlg @1 resident.job [self.job=farmer] : I'm out at #boxes# every day. #bees.capitalize#, #comb#, and a sting or two for my trouble. | Hives. I keep them calm and take #comb# when it's due.
+dlg @2 resident.job [here.region=ridgemere] : #self.trade_words.capitalize#. It gets me out of #city#, which is the best part. | Out past #gate# every day, and back at dusk.
+dlg @3 resident.job : #self.trade_words.capitalize#. Honest work, and #good# enough. | #job_busy#
+dlg @1 resident.news [world.news] : Word at #gate# from #world.news_from#: #world.news#. Weigh it yourself. | From #world.news_from#, they say: #world.news#.
+dlg @2 resident.news [world.event_words] : The whole city's on about #world.event_words#. | It's all #world.event_words#, at every corner.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon got taken on the road. I keep to #heath# track. | Thieves working the road. Walk in company, if you walk.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I believe. #bees.capitalize# are well, if that counts.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'd weigh it, myself. | Folk say #topic.subject# #topic.claim#. City talk, mind.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Talk's like city honey. Mostly watered, and I'm no hawker.
+dlg @1 resident.bye : #farewell#. Mind the hawkers. | #farewell#, #address#.
+graft resident.hub
+choice Is anything in this city worth trusting? [here.region=ridgemere] -> trust
+node trust
+say Not much. Bread with chalk in, honey with syrup in, boots that come apart on the road. If it was made inside #walls#, I'll want to see who made it first.
+mood calm
+free
+choice What do you trust, then? -> trust_what
+choice Goodbye. -> bye
+node trust_what
+say Bees. #heath.capitalize#. My own griddle. A face I've known a long while. Things that can't lie to you, or haven't yet.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

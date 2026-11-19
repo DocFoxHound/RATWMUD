@@ -1,0 +1,440 @@
+# lf147, the lid-dater (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf147
+revision 2
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for rm_ingrid_saltstack
+written_by claude
+title the lid-dater
+fits stage=adult|old
+prefers role=merchant drive=ambitious
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=ambitious
+quirk writes_the_day_and_the_weather_on_every_jar_lid
+likes oatcakes old_tales old_maps first_snow
+dislikes waiting haggling
+fears a_damp_cellar_through_a_whole_season dying_with_the_savings_still_in_the_tin
+hopes a_second_counter_of_my_own a_shelf_of_first_snow_jars
+topics work +0.4 prices +0.3 lore +0.3 weather +0.2 memories +0.2 dreams +0.2 gossip -0.4
+styles comfort=feeding gossip=reluctant refuse=firm tease=none
+marks oath saying
+persona #self.first# sets fruit by the kettle and writes the day and the weather on every lid: warm, plain and earnest, one price and no haggling, saving for a second counter, fond of old tales and of maps that get the roads wrong.
+
+words
+oath! = Ticket and twine | By the chalk and the fold | Wax and weather
+saying! = A written price saves a morning's talk | Put the day on the lid and the lid keeps faith | Fruit won't stand about for a haggler
+lid = the lid | a lid with the day on it
+lids = my lids | the lids on the top shelf
+ticket = the ticket | a price ticket in my own hand
+pencil = my lid pencil | the pencil behind my ear
+kettle = the jam kettle | the big kettle on the back fire
+cellar = the cellar | the cool cellar under the floor
+batch = the batch | this morning's batch
+oatcake = an oatcake | an oatcake buttered to the edges
+downs = the downs | the chalk downs
+drovemap = my drover's map | the old drove map pinned up by the door
+snowjar = the first-snow jar | the one jar I hold back every winter
+tale = an old tale | a tale told without hurry
+fellcarts = the fruit carts | the Fell carts
+secondshop = a second counter | a second counter with my own name over it
+hagglers = hagglers | wolves wanting a penny off
+stalls = the stalls | the market stalls
+queue = a queue | a line of folk all standing about
+quince = quince | quince paste that sets firm as cheese
+
+any
+opinion @1 church against 1 : I give at the Restday plate and mean it. But a sermon never sealed #batch#, and #batch# pays the rent.
+opinion @2 city mixed 1 [here.region=ridgemere] : The damp in this city gets into #lids# and my chest both. But there's custom here #downs# never dreamt of.
+opinion @3 festivals against 1 [self.role=merchant] : A feast is a day #kettle# goes cold and the bills don't. I open half of it and I'm not sorry.
+opinion @4 houses against 1 [here.region=ridgemere] : Nobody climbs in this city without a House's nod. I'll get there on my own #ticket#, nod or no nod.
+opinion @5 merchants for 1 [self.role=merchant] : Behind a counter you learn what a cart of fruit costs before it ever reaches #cellar#. I'll not hear traders called thieves.
+opinion @6 newcomers for 2 : Room for anybody who'll do a full day. I'd sooner a keen #stranger# than a slow cousin.
+opinion @7 road against 1 : A late cart means soft fruit, and soft fruit means a short #batch#. The roads want mending, #oath#.
+opinion @8 road against 2 [world.wagons=raided] : Robbed on the road again. That's a season of plums gone into somebody's sack, and #lids# with nothing under them.
+opinion @9 strangers for 2 : Travellers bring custom and they bring tales. I'll give a jar for #tale# any day of the week.
+opinion @10 watch for 1 : A Watch that walks past my door twice a night is worth what we pay for it. #bc_true#
+opinion @11 drink mixed 1 : A drop of cider in a plum jar does no harm. A drop too many in the wolf at #kettle# does plenty.
+opinion @12 dole mixed 1 : I'll never begrudge #dole# to a hungry wolf. I'd sooner they had work, though, and I've told the parish so.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in and look; every jar has its price on it. | #greet#, #address#. Everything's priced, so there's no call to ask.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. #kettle.capitalize#'s on, so mind it spitting. | #greet#. I've #batch# going; talk while I stir.
+line @3 greet [here.time=dawn] : #greet#. First up again, the pair of us. | #greet#. #cellar.capitalize#'s coldest at this hour, and the fruit likes it.
+line @4 greet [here.time=dusk|night] : #greet#. Late, but the lamp's still lit. | #greet#. I was writing up #lids#; come in.
+line @5 kin.open [pair.kin!=no] : There you are. I've #oatcake# put by for you. | Sit down. You'll have eaten nothing, knowing you, #dear#.
+line @6 again.open : Twice today, and welcome both times, #address#. | Back already. #lids.capitalize# haven't changed since.
+line @7 hail [pair.band=friends] : #address.capitalize#! A word, when you've a minute. | Over here. Come and look at #lids#.
+line @8 greet.return : #greet#. | #greet#. It's good to have you by.
+line @9 greet.return [pair.band=friends|family] : #greet#, #dear#. Come and sit. | #greet#. I was hoping you'd pass.
+line @10 greet.return [self.working=yes self.role=merchant] : #greet#. Look as long as you like. | #greet#. The prices are on #lids#.
+line @11 greet.return [here.time=dusk|night] : #greet#. Come in; the hour doesn't matter. | #greet#. The lamp's still lit for you.
+line @12 farewell : #farewell#. | #farewell#. Come back when #quince# is in.
+line @13 farewell [here.time=dusk|night] : #farewell#. Mind the steps in the dark. | #farewell#, and sleep warm.
+line @14 farewell.return : #farewell#. | #farewell#, #address#, and thank you.
+line @15 farewell.return [here.time=dusk|night] : #farewell#. Sleep sound. | And you. Keep warm; it's #cold# out.
+line @16 react.news : #ack#. Tell me the rest. | #oath#. I'll want the whole of that.
+line @17 react.news.new : #surprise#. Not a whisper of it has reached my door. | #oath#. I'd not heard, and little gets past my door.
+line @18 react.news.known : #knew#. It came in with #fellcarts#. | I'd heard. News comes in at my door faster than #fellcarts#.
+line @19 react.news.doubt : #doubt#. I'll believe it when it's written down. | I'd want that from somebody who saw it, not somebody who heard it at #stalls#.
+line @20 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a sore thing for anyone. | #oath#. I'll light a lamp for them tonight.
+line @21 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll send round a jar. | #bc_lovely# That's the best I've heard all week.
+line @22 answer.how : #fine#. #cellar.capitalize#'s dry and so am I. | Steady, and #busy#. I'd not have it another way.
+line @23 answer.how.busy [self.working=yes] : #busy.capitalize#. Three batches and one pair of paws. | #busy.capitalize#, and not a minute to stand about in.
+line @24 ask.how : And you? Getting your #grub# properly? | How's your week weighing out, #address#?
+line @25 sympathise : #sympathy#. Sit a minute; I'll find you something. | That's hard. You'll take #oatcake#, at least.
+line @26 reassure : #reassure#. Things set, given time, same as #quince#. | Give it time. Most things set if nobody stands over them.
+line @27 decline : #hedge#. I can't leave #kettle#, and #batch# won't wait for either of us. | I'd like to, truly. But #fellcarts# are due and there's nobody else to count them in.
+line @28 accept_decline : #no_matter.capitalize#. Another day, then. | It'll keep, like #quince#. I'll not hold it against you.
+line @29 thank : #thanks#. That's kind of you. | #thanks#. I'll put it on a lid, so I remember.
+line @30 deflect_thanks : #deflect.capitalize#. You'd have done it for me. | No need. A jar's no great gift; I've #cellar# full.
+line @31 preclose [self.working=yes] : Well. #batch.capitalize# won't seal itself. | #kettle.capitalize# wants me back.
+line @32 preclose : #preclose#. | Well. I'll let you get on, #address#.
+line @33 accept_preclose : Go on, then. I've #lids# to write. | Of course. I'll not hold you up, #address#.
+line @34 ack : #bc_it_is# | Just so.
+line @35 give.advice : #advise.capitalize#: put the price where folk can see it, and you'll never haggle again. | Write the day on whatever you put by, #address#. You'll thank me in a year.
+line @36 warn [world.bandits=near] : Keep to the main road and keep in company. #warn#. | There's trouble on the roads. Go by daylight, if you must go.
+line @37 insist : #insist#. It's written, and it stays written. | I'll not drop it. #ticket.capitalize# says what it says.
+line @38 tease.return : I'll take that kindly, #address#, since you meant it so. | Hm. Pass me #pencil#; that goes on a lid.
+scene lid_writing
+when topic=smalltalk|pastimes self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Every one of #lids# gets the day and the weather. This one says Hearthday, fog. | Look at #lids#. I can tell you which batch set on a wet day and which on a dry. | I write on #lids# in pencil, never ink.
+b : Why the weather? | Does it matter which? | Why not ink?
+a : Fruit set on a damp day comes out soft. I like to know which of #lids# to sell first. | It does. The wet-day jars go first; the dry ones keep a year down in #cellar#. | Ink runs in a damp #cellar#. Pencil stays where you put it.
+b : #bc_clever# | I'd never have thought of it. | #bc_fair_enough#
+
+scene no_haggle
+when topic=prices|work self.working=yes self.role=merchant
+does tell.self / react.self / insist / ack
+a : One price, written on #ticket#. I don't haggle, and I'll not start now. | Folk hear my voice and get ready to haggle. Then they see #ticket#. | Somebody tried to knock a penny off a plum jar today. I pointed at #ticket#.
+b : Everyone haggles, surely. | Saves you both a morning. | Did they pay?
+a : Not here. #ticket.capitalize# is fair the first time, so there's nothing to argue. | #saying#. Nobody's proved me wrong yet. | They paid. Haggling's a habit, not a need.
+b? : #bc_fair# | #bc_true# | #bc_ha#
+
+scene kettle_on
+when topic=work self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : Plums in #kettle# since first light. You stir, you skim, and you don't walk off. | #quince.capitalize# today. It takes all afternoon and it's worth every stir. | I've three batches to set before dusk and one wolf at #kettle#. That's me.
+b : How do you know when it's ready? | Worth it? | No help at all?
+a : A drop on a cold saucer. Push it, and if it wrinkles, it's set. | It keeps a year in #cellar# and sells in the dead of winter, when nothing else is fresh. | Help comes after noon. Till then it's me, the long spoon and #kettle#.
+
+scene cellar_cool
+when topic=work|home self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : Down in #cellar# it's the same cold all year. The jars like it better than I do. | I went down to count #cellar# and came up an hour later with a list. | There's one damp corner in #cellar# I put nothing in. Nothing keeps there.
+b : Better than you do? | A long count. | Can't it be mended?
+a : The damp gets in my chest down there. I don't make a fuss of it. | Long, and right to the last jar. #oath#. | I've asked twice. The third time I'll mend it myself.
+
+scene oatcake_dinner
+when topic=food
+does tell.self / react.self / assess / ack
+a : #oatcake.capitalize# at noon and another at four. That's my dinner most days. | The bakers make oatcakes too thin here. You could read a ticket through them. | I bake my own oatcakes on a Restday night. One tin does the week.
+b : That's a thin dinner. | Too thin? | A whole week?
+a : It's plenty when you're on your feet. I have a proper #supper# on Restday. | A proper oatcake has a bit of chew to it. #bc_it_is# | If I hide the tin from myself, it does.
+b? : #bc_fair_enough# | #bc_true# | #bc_clever#
+
+scene snow_day
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow. Every one of #lids# gets the word today, and one jar goes on my own shelf. | Snow, and the street's gone quiet. I love that hush more than anything. | Look at that. It's settling on #fellcarts# already.
+b : You keep one back? | It is quiet. | It'll be thick by night.
+a : Every winter. #snowjar.capitalize#. I've a row of them now. | I could stand here an hour and listen to it making no sound at all. | Let it. I've nowhere to go but down to #cellar#.
+
+scene damp_week
+when topic=weather here.weather=rain|fog here.region=ridgemere self.away=yes
+does tell.complaint / react.complaint / assess
+a : Another wet day. #lids.capitalize# this week will all be written damp. | Fog off the water again. I can feel it in my chest. It's nothing. | The rain gets in under the door and #lids# go soft in their paper.
+b : It's Ridgemere. | You're coughing. | Can you stop it?
+a : It is. On #downs# a wet week was a week; here it's a season. | I'm not. It's the fog talking, not me. | A rag along the sill. It's a poor answer, but it's mine.
+
+scene dry_door
+when topic=weather|day here.weather=clear
+does tell.self / react.self / assess
+a : Dry day. Today's lids all say clear, and those jars will keep the longest in #cellar#. | Sun on the step. I've propped the door to let #cellar# breathe. | A dry day. I'd seal one in a jar if I could and open it when #rain# sets in.
+b : Does the weather truly matter? | Will that do it? | I'd buy that jar.
+a : To #batch# it does. A dry day sets firm. | It'll air the damp corner, anyway. #bc_i_hope_so# | You'd pay full weight for it, and I'd write the day on #lid#.
+
+scene drove_map
+when topic=pastimes|travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I've a map of #downs# by the door. Half the drove roads are drawn where nobody ever walked. | #drovemap.capitalize# has a river on it that isn't there. I keep it for that. | I took an old map off a carter for a jar of #quince#. It's wrong about everything.
+b : Why keep a wrong map? | No river at all? | Wrong how?
+a : It shows what somebody hoped was on #downs#. I like that in a map. | Not a drop. Somebody drew it from #tale#, I think. | Roads in the wrong places and towns twice their size. #oath#, it's a lovely thing.
+b : #bc_fair_enough# | Strange thing to treasure. | #bc_lovely#
+
+scene tale_for_a_jar
+when topic=lore|pastimes self.likes=old_tales
+does tell.self / react.self / assess
+a : A drover sat by my counter an hour telling tales. I gave the #quince# away at the end. | I'll swap a jar for #tale#, if it's told properly. | There's no tale like one from #downs#. Sheep, weather and somebody cheating at the market.
+b : You gave it away? | That's a good trade. | Cheating?
+a : An hour of tales is worth a jar of plums. More, some days. | It is, and I've never once lost on it. | Always. And the cheat loses in the end, or it's no proper downs tale.
+
+scene full_house
+when topic=home
+does tell.self / react.self / assess
+a : I like a house with noise in it. Somebody's always on the stair. | I keep my window cracked even in #rain#. A room wants air. | I keep my own shelf in the kitchen, labelled, so nobody eats an oatcake meant for me.
+b : Doesn't it wake you? | In the wet? | Does it work?
+a : I sleep like a stone. The stair's company. | Stale air spoils fruit, and I'd guess it spoils wolves too. | Mostly. They know a labelled thing is a counted thing.
+
+scene second_counter
+when topic=dreams|work self.role=merchant self.age>=25
+does confide / react.self / assess
+a : I mean to have #secondshop# while I've still the legs to climb to it. | I've put a little by every week for years. #secondshop.capitalize#, that's what it's for. | #vent#: I'll not keep somebody else's shop forever.
+b : Where would you put it? | Will you get there? | Would the House mind?
+a : Up the hill, where folk have #money# and no time. They'd like a price on the lid. | I will. Slowly, but I will. #oath#. | Not so long as the plums come off #fellcarts#. I've thought it through.
+
+scene standing_about
+when topic=day|smalltalk self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : I stood at the Office a whole morning for one stamp. A whole morning. | I can't abide #queue#. Give me a job and I'll do it, but don't make me stand. | The carter said noon, and it's long past. I've #kettle# going cold.
+b : Did you get it? | Nobody likes waiting. | They'll come.
+a : At the very end. I'd sooner have paid twice and walked out. | I mind it more than most. It's time thrown in the gutter. | They'll come, and I'll have said a thing or two by then.
+
+scene haggle_at_home
+when topic=memories|accent self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : In #self.from_town# they'd haggle over a funeral. I'd had my fill of #hagglers# by twelve. | The market cross at home on a Marketday, and the din of #hagglers#. I hear it in my sleep. | I learned to write a ticket because #mum# never would. A penny could take her an hour.
+b[from=larkfield] #lark : And the winner buys the cider after. | Every Marketday, cross to cross. | Every mother there did the same.
+b : So that's why you won't haggle. | Is it the noise you miss? | And did she win?
+a@lark : And nobody remembers what the penny was for. | Cross to cross, and back again before noon. | They did. Mine was the loudest of them.
+a : That's why. I'd sooner spend the hour at #kettle#. | Not the noise. The wolves making it, sometimes. | Mostly. I'd sooner win quietly.
+
+scene downs_snow
+when topic=memories|season here.season=winter here.region=ridgemere self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : On #downs# the first snow came over the top like somebody shaking out a sheet. | Snow at home meant #beasts# brought in, and every wolf out with a lantern. | I miss #downs# under white. Here snow lands on soot and goes grey by noon.
+b : I'd like to see that. | Every wolf? | It does go grey.
+a : You'd have to stand very still. It comes in with no sound. | Pups and all. I carried a lantern before I could carry a crook. | Grey by noon and gone by night. I keep #snowjar# for a reason.
+
+scene counter_secrets
+when topic=gossip|crime self.role=merchant
+does tell.gossip / react.news / insist / ack
+a : Folk talk at my counter as if #lids# can't hear. I can. | I've heard things across #ticket# that'll go no further than me. | Somebody asked me today what I knew about a neighbour. Nothing, I said.
+b : Go on, then. | Anything good? | And did you know anything?
+a : #bc_never# A shop that talks loses its custom. | Good or bad, it stays down in #cellar# with the jars. | A thing or two. Nothing that's mine to sell.
+b : #bc_fair_enough# | #bc_wise# | #bc_fair#
+
+scene passed_as_heard
+when topic=gossip
+does tell.gossip / react.news / assess
+a : They're saying #topic.subject# #topic.claim#. I pass it on as I had it, and no more. | I heard #topic.subject# #topic.claim#. I've not seen it, so I'd not put my name to it.
+b : That's a thing to hear. | I'd heard something of the sort.
+a : #hearsay#. I'd want it written down before I'd call it true. | Then two of us have heard it. That's still not the same as knowing, #oath#.
+
+scene small_jars
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / reassure / assess / ack
+a : Folk are buying the small jars now, not the large. That's how I know the times. | Nobody's buying #quince# when bread's dear. I can't blame them. | I've dropped nothing in price, but I've made the jars smaller. Written plain on #ticket#.
+b : It'll turn. | Hard for everyone. | Smaller?
+a : It will. Fruit comes back every year, and custom with it. | It is. I put the cracked jars by the door for whoever needs them. | Half the size, half the price. Nobody's cheated and nobody goes without.
+b? : #bc_i_hope_so# | #bc_good# | #bc_fair#
+
+scene sold_out
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : Sold out of plum by Stoneday. I wrote it down, because I'll not believe it next year. | #money.capitalize#'s moving. Folk are buying two jars and asking after a third. | The good weeks are when I put by for #secondshop#.
+b : Good for you. | A third? | How much have you put by?
+a : Good for #cellar#, too. It's never been so bare. | A third, and I'd none left. I'll be at #kettle# early tomorrow. | Enough to start dreaming properly. Not enough to stop working.
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.role=merchant
+does tell.worry / reassure / assess
+a : #fellcarts.capitalize# were due at dawn. Every hour they're late, the plums go softer. | No carts yet. I've #kettle# hot and nothing to put in it. | Late again. If they come tonight I'll be at #kettle# by lamplight.
+b : They'll come. | Is there nothing else to set? | You'll be worn out.
+a : They will. Late fruit makes soft jam, though, and that goes on the lid too. | Apples from #cellar#, maybe. It's not the same. | #tired.capitalize#, and right. Better that than fruit gone to waste.
+
+scene carts_in
+when topic=caravan|work world.wagons=in self.working=yes self.role=merchant
+does tell.news / react.news / assess
+a : #fellcarts.capitalize# are in. Every kettle in the place will be going by noon. | #fellcarts.capitalize# in, and the plums are good this time. Firm, not bruised. | I counted the crates into #cellar# myself. Not one short.
+b : Busy day for you. | Good plums? | Not one?
+a : #busy.capitalize#, and I'd not swap it for an idle one. | Good enough to eat off the cart, and I did. | Not one. I've written that on the wall, it's so rare.
+
+scene short_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : I give at the plate on Restday and I keep #ticket# honest. The Bright One can ask no more of a trader. | When the year's first batch sets, I've a word for the Bright One. Only the one. | Sermons run long and #kettle# won't wait. I pray short.
+b : That's fair. | Only the one? | Short prayers count.
+a : I hope so. It's what I can do every week. | One, and a jar left on the chapel step. #oath#. | They count the same, I'm sure of it. Longer isn't truer.
+
+scene not_a_cough
+when topic=health
+does tell.self / react.self / reassure
+a : I'm not coughing. It's the steam off #kettle#. | The damp in #cellar# gets in my chest of a winter. I keep the door shut and say nothing of it. | I don't take sick days. #batch.capitalize# doesn't care how I feel.
+b : That's a cough if ever I heard one. | You should see somebody. | Everybody gets sick.
+a : It's steam, and it'll pass. Have #oatcake#. | When #batch# is set. Not before. | Not this week. I'm #busy#, and that's that.
+
+scene voice_in_the_city
+when topic=accent here.region=ridgemere self.away=yes
+does tell.self / react.self / assess
+a : City folk hear #downs# in my voice before I've named a price. | Still they ask me which market I've come up from. | They tell me I talk like a price list. I'll take it.
+b : It's a friendly voice. | You do have the sound of it. | It is a bit like that.
+a : Friendly, and fixed-price. That's a #self.from_town# wolf who's learned. | Chalk in the voice. It doesn't wash out in #rain#. | Good. A price list never lies to anybody.
+
+scene new_face
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : There's a new wolf on the street. I took round a jar of #quince#; it's the way it ought to be done. | Every new face is a new customer or a new neighbour. Both are welcome here. | Somebody new came in asking the way to everything. I drew them a map on the back of #ticket#.
+b : That's kind of you. | Both? | Did they find their way?
+a : A jar costs me little and buys a neighbour. | Both, and if it's both at once, all the better. | They did. My map was right, which is more than #drovemap# can say.
+
+scene traveller_jar
+when topic=player|smalltalk self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : A traveller bought a jar for the road. I wrote the day on #lid# for them. | Strangers always want to know what #pencil# marks mean. I tell them; it's half my trade. | Travellers buy the small jars. They pack better on a long road.
+b : A good keepsake. | Half? | Sensible.
+a : That's what they said. A jar that knows where it's from. | Half the talk, anyway. The other half's the weather. | And they come back for another. That's all the trick there is.
+
+scene summer_kettle
+when topic=season|work here.season=summer self.role=merchant
+does tell.feeling / react.self / assess
+a : Summer's #kettle# full from dawn. Berries in the morning, currants by noon. | I'm up before dawn all summer and asleep by dusk. That's the trade. | #cellar.capitalize# fills from the back forward all summer. By autumn there's no room to turn.
+b : Long days. | Never a rest? | You'll want a bigger cellar.
+a : Long and sticky. I'd not change one of them. | On Restday. And in winter, when nobody's picking. | I will. That's #secondshop#, in a word.
+
+scene autumn_quince
+when topic=season|food here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : Autumn's #quince# and apple. The whole house smells of it, and so do I. | The last fruit comes in off #fellcarts# hard and sour, and that's the best for setting. | I start the winter shelf in autumn. Every one of #lids# with a day I can read across the room.
+b : Is that a bad thing? | Sour's best? | Why read it so far off?
+a : Not at all. I'd bottle the smell if I could. | Sour fruit sets firm. Sweet fruit sulks in the jar. | So I can see at a glance what to sell first. Oldest out, always.
+
+scene good_neighbour
+when topic=friends|smalltalk self.neighbour
+does tell.self / react.self / assess
+a : I'd hand #self.neighbour# my cellar key and sleep sound. | #self.neighbour# is good company of an evening. Not much talk, and that suits me. | I'd sooner have #self.neighbour# next door than a fine view.
+b : That's a good neighbour. | That suits plenty of us. | Good neighbours are rare.
+a : The best kind, to my mind. | It does. Talk's for the counter. | Rarer than a dry week. I know #luck# when I see it.
+
+scene feast_half_day
+when topic=festival self.role=merchant
+does tell.self / react.self / assess
+a : A feast day, and I'm open half of it. Somebody always wants #quince# for the table. | Feast days I put the best plums by the door and let them sell themselves. | The whole street's out and #kettle#'s cold. I don't know where to put myself.
+b : Take the day off. | Do they sell? | Come out with us, then.
+a : Half the day off. That's my feast. | Every one, by dusk. #oath#. | For an hour, maybe. Then I'll be thinking of #batch#.
+
+scene first_kettle
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : #kettle.capitalize# lit, and the street still dark. I like it best like this. | I write the day on a fresh lid before I've had #oatcake#. It starts me right. | Nobody's about but #fellcarts# and me. Not one wolf waiting on anything.
+b : Peaceful. | Before you eat? | No queue at all.
+a : It is. By noon it'll be all elbows and questions. | Before anything. #saying#. | None. I'd keep this hour in a jar if I could.
+
+story first_dated_lid [topic=memories|work self.age>=25]
+  : The first batch I ever set on my own, I forgot which day I'd made it.
+  : Half went bad on the shelf before I sold it. Since then the day goes on #lid#, and the weather beside it.
+  ask : Do you write anything down, or trust your head?
+  b : My head, mostly. It's let me down more than once.
+  b[old] : I write the important things, and then lose the paper.
+  : Write it down. #saying#.
+
+story the_town_on_the_map [topic=lore|travel]
+  : There's a map of #downs# with a market town drawn on it that nobody's ever found.
+  : A carter went looking for it once with a cart of cheese to sell. He came back with the cheese.
+  ask : Would you have gone looking?
+  b : I would, for a day or two.
+  b[job=carter] : I've chased worse roads than that for less.
+
+story the_homing_ewe [topic=lore|pastimes self.likes=old_tales]
+  : There was a drover on #downs# who sold the same ewe at three markets in one week.
+  : Every night the ewe walked home on her own, and every morning he sold her again.
+  : At the fourth market nobody would bid, so he walked her home himself, and she never forgave him.
+  b : A clever ewe, that.
+  b[old] : I had that one from my own gran, told with a pig.
+
+story the_first_city_snow [topic=memories|season self.age>=30 here.region=ridgemere self.away=yes]
+  : My first winter in this city, the snow came in the night and I woke to quiet.
+  : I set a batch that morning and wrote snow on the lid. I couldn't sell it. I still have it.
+  ask : Do you keep anything you couldn't bear to part with?
+  b : A thing or two, wrapped in a cloth somewhere.
+  b[wealth=poor|destitute] : Nothing I could keep, the way things have gone.
+  : Then keep the day, at least. That costs nothing.
+
+story the_wolf_in_the_coat [topic=memories|gossip here.region=ridgemere]
+  : Very early once, on my way up the hill, I saw a wolf in a fine coat weeping on some steps.
+  : Nobody else about. I've never said who, and I'll not start now.
+  ask : Would you have gone over?
+  b : I'd like to think I would.
+  b[wealth=rich] : I'd have hoped to be left alone.
+  : I left them be. I've wondered since if that was right.
+
+rule @cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Plum, quince and apple, and every price on #lid#. | Jars for the table, jars for the road. No haggling, #address#.
+
+rule @pencil
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Where's #pencil# got to? It was here a minute ago. | Hearthday, wet. No. Fog. Fog it was.
+
+rule @dawn_cellar
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say #cellar.capitalize#'s cold. Good. | #kettle.capitalize# on, and not a soul on the street.
+
+rule @steam
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say It's the steam. It's only the steam. | Damp again. Keep #lids# off the sill.
+
+rule @no_waiting
+when concept=bark working=yes self.dislikes=waiting
+does aside
+cooldown 10h
+say Come on, come on. The day won't wait on me. | Still nobody. I could have set #batch# by now.
+
+rule @carts_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no fruit. #oath#. | Every late hour's a softer plum.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Every price is on the lid; look as long as you like. | #greet#, #address#. Plum, #quince# or apple?
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. New lids since you were last in. | #topic.player#. Come in; #kettle#'s just off.
+dlg @3 shop.greet [here.time=dawn here.shop!=bare] : #greet#. You're early. #cellar.capitalize#'s at its coldest, and so's the fruit.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Prices are on #lids#. Take what you want and pay what's written.
+dlg @5 shop.greet [here.shop=bare] : #greet#. The shelves are cleared and the next batch isn't set. I'll still buy fruit, if you've any.
+dlg @6 shop.prices : Fruit's dear when the carts are late, and I don't hide it. The price is on #lid#. | #shop_dear# I write it plain so you can see it.
+dlg @7 shop.bye : #farewell#. Keep it somewhere cool. | #shop_bye# Mind the day on the lid.
+dlg @8 resident.hub : #greet#. What's it to be today? | #greet#, #address#. Come in; mind the step.
+dlg @9 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You know where everything is by now.
+dlg @10 resident.hub [here.time=night] : Late, but the lamp's lit. What is it?
+dlg @11 resident.hub [pair.disposition=hostile|wary] : Say what you've come for. I've #lids# to write.
+dlg @12 resident.job [self.role=merchant] : I keep #self.workplace#. I set the fruit, write #lids# and sell what I set. | Preserves. Plum, #quince#, apple, and the day and the weather on every jar.
+dlg @13 resident.job : #self.trade_words.capitalize#, and #busy# with it. | #job_busy#
+dlg @14 resident.business [business=thriving] : Selling faster than I can set it. I'll want #secondshop# at this rate. | Thriving. I've not written spare on a shelf in weeks.
+dlg @15 resident.business [business=failing] : Poorly. The jars sit and the days on #lids# get older. | Badly, and I'll not dress it up. Folk aren't buying.
+dlg @16 resident.business [business!=thriving|failing] : Steady. It pays, and a little goes by for #secondshop#. | Steady enough. Every jar sells in the end.
+dlg @17 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the weather, and that's on #lids#. | Nobody's brought me anything worth repeating today, #address#.
+dlg @18 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing I'd pass on. A shop that talks loses its custom.
+dlg @19 resident.bye : #farewell#. Keep somewhere dry. | #farewell#, #address#. Come back when the snow's in.
+graft resident.hub
+choice What are the pencil marks on the jar lids? [self.role=merchant] -> lids
+node lids
+say The day each batch was set, and that day's weather. Wet-day jars set soft and sell first; dry-day ones keep a year in #cellar#.
+mood pleased
+free
+choice Do you keep any back? -> lids_snow
+choice Goodbye. -> bye
+node lids_snow
+say One jar every winter, from the day of the first snow. I've a row of them now. I've never sold one, and I never will.
+choice That's a fine habit. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Will you take less for it? -> haggle
+node haggle
+say No. The price on the lid is the fair one, so there's nothing to argue. I grew up among #hagglers# and I've had my fill.
+mood calm
+choice Fair enough. -> greet
+choice Why write the price at all? -> haggle_why
+node haggle_why
+say So nobody wastes a morning. You know it, I know it, and the fruit doesn't sit waiting while we argue.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,311 @@
+# fh112, the weight-guesser (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh112
+revision 1
+state ready
+dialect frosthollow
+accent none
+tier standard
+written_for rm_solveig_cinderton
+written_by claude
+title the weight-guesser
+fits stage=adult|old
+prefers job=carter humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk guesses_every_load_s_weight_aloud_before_lifting
+likes mutton_stew cards sharp_knife first_snow
+dislikes rats deep_mud
+fears a_strap_that_snaps_on_the_stairs mud_that_never_dries
+hopes a_berth_on_a_ship_bound_somewhere_dry
+topics work +0.4 pastimes +0.4 weather +0.3 dreams +0.3 festival +0.2 gossip +0.2 faith -0.3
+styles comfort=jokes gossip=eager refuse=cheerful tease=playful
+marks oath saying
+persona #self.first# carries loads across the square for a copper or two and calls out the weight of every one before lifting it, keeping a running tally of the guesses: chatty, merry and exact, fond of cards and a sharp knife, and dreaming of a ship to somewhere dry.
+
+words
+oath! = Strap and stair | Shoulder and strap
+saying! = Nothing's heavy till you've guessed it | Every load weighs what it weighs | Never bet against a sack of nails
+load = the load | this load
+strap = my strap | the carrying strap
+guess = my guess | a guess by eye
+tally = my tally | the guessing tally
+knife = my knife | the little knife on my belt
+cards = a hand of cards | the cards
+square = the square | the market cobbles
+mud = the mud | mud past the ankles
+wharf = the Wharf | the Wharf steps
+headland = the headland | up on the headland
+ship = a ship bound somewhere dry | a berth on a ship for drier parts
+stew = mutton stew | a bowl of mutton stew
+firstsnow = the first snow | the year's first flakes
+stairs = the stairs | the long stairs up from the Wharf
+coppers = two coppers | a copper or two
+uphome = up the mountain | back home among the mines
+cwt = a hundredweight | a good hundredweight
+feathers = feathers | goose feathers
+nails = nails | a sack of nails
+stonebit = a stone and a bit | a stone and a little over
+rats = the rats | the Wharf rats
+pack = your pack | that pack of yours
+mine = the mine | the mine road
+sack = a sack | a sack off the carts
+ships = the ships | the tall ships out on the Sound
+crate = the crate | that crate
+
+any
+opinion @1 festivals for 2 : Dance all night and the back forgets the week. #oath#, I'll dance till the musicians beg.
+opinion @1 drink for 1 : A jar after the last #load# never hurt anyone I'd want to drink with.
+opinion @1 houses against 1 : I've hauled House crates up #stairs# since I came down, and I've not met one House face yet.
+opinion @1 road for 1 : Loads come by road, and most days the road's no worse than #stairs#. I've no quarrel with it.
+opinion @1 times against 2 : A copper less a week, every week. I notice. I count everything, and that sum's going the wrong way.
+opinion @1 dole for 2 : It fed my lodging through a lean week. I keep a tally of that too, and I'll pay it back in kind.
+opinion @1 newcomers against 1 : Every new pair of paws on #square# is one more after my loads. I wish them well, somewhere else.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. I'll carry that for you, and guess the weight for nothing. | #greet#. That bag of yours is a good stone heavier than it looks.
+line @2 greet [self.working=yes self.job=carter] : #greet#. #coppers.capitalize# and I'll take it anywhere on #square#. | #greet#, #address#. Point at it and I'll tell you what it weighs.
+line @3 greet [here.time=dawn] : #greet#. First load of the day, and I'm still guessing light. | #greet#. Up with the gulls, the pair of us.
+line @4 greet [here.time=dusk|night] : #greet#. Last load, and then cards. | #greet#, #address#. Late. My shoulders have gone home already.
+line @1 kin.open [pair.kin!=no] : You! Sit down. I've news and none of it's mine. | There you are. Pull up a crate; I'll guess what's in it.
+line @1 again.open : #welcome_back#. Same bag, same weight; I'll not charge you to guess twice. | You again. #tally.capitalize# says I owe you a guess.
+line @1 hail [pair.band=friends] : #address.capitalize#! Over here, I've a story. | Oi, #address#! Come and settle a bet.
+line @1 greet.return : #greet#. | #greet#, #address#. You look like you've carried a heavy day.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good, it's you and not another crate. | #greet#. Sit. I've #cards# in my pocket and an hour in my legs.
+line @3 greet.return [self.working=yes self.job=carter] : #greet#. Talk while I walk; #load# won't carry itself. | #greet#. Mind your paws; this one's heavier than it looks.
+line @1 farewell : #farewell#. Lift with your back straight. | #farewell#, #address#. Mind #mud#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind #stairs# in the dark; they bite. | #farewell#. I'm off to lose at #cards#.
+line @1 farewell.return : #farewell#. | And you, #address#. Lift light.
+line @1 react.news : #surprise#. Oh, I'll be telling that one all day. | No! Go on, then. That's worth a load or two.
+line @1 react.news.new : #surprise#. Nothing like that has crossed #square# yet. | That's fresh. I'll have it round #wharf# before dusk.
+line @1 react.news.known : #knew#. A carter had it on #stairs# this morning. | Heard it already, and I'll hear it again by noon, twice as big.
+line @1 react.news.doubt : #doubt#. That's a heavy story for such a light paw to carry. | Sounds like a sack of #feathers# called iron, #address#. I'll wait and weigh it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a load nobody should carry. | #sympathy#. I'm sorry. I'll be quiet a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! There'll be dancing. I'll carry the benches. | #good.capitalize#! Something light for once, #address#.
+line @1 answer.how : Well enough. My guesses are good and my back's not complaining. | #fine#. Nine loads in and only one wrong.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every crate on #square# wants moving at once. | Run off my paws. I've a load waiting and #tally#'s behind.
+line @1 ask.how : And you? Carrying anything heavier than you'd like? | How's the day weighing on you, #address#?
+line @1 sympathise : #sympathy#. Here, give me the heavy end of it. | That's hard, #address#. Sit down; I'll stand for both of us.
+line @1 decline : #hedge#, I can't. I've three loads promised and only the one back. | I'd love to, #address#, but #square# is full of crates with my name on.
+line @1 accept_decline : #no_matter#. I'll ask again, I always do. | Another time. I'll mark it on #tally#.
+line @1 thank : #thanks#! That's a weight off. | Kind of you, #address#. That goes on #tally#, the good side.
+line @1 deflect_thanks : #deflect#. Light work, that. | Nothing to it. I guessed it at a feather and I was right.
+line @1 preclose [self.working=yes] : #preclose#. There's a crate giving me looks. | I'd best go before somebody else gets #load#.
+line @2 preclose : #preclose#. The cards won't deal themselves. | It's getting on. I've a game waiting by #wharf#, #address#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I'll guess you lighter next time.
+line @1 tease [pair.band=friends] : You walk like you're carrying #nails#, and you're carrying nothing. | You'd guess a feather at #cwt#, #fool#.
+line @1 tease.return : #cheek.capitalize#. I'd guess your head at two stone, all of it bone. | Says the one who lost at #cards# to a pup.
+line @1 ack : #bc_right# | Ha. #bc_true#.
+line @1 give.advice : #advise#: tip it first, then lift. A load tells you its weight if you ask it. | Never lift what you haven't guessed. #saying#.
+line @1 warn [world.bandits=near] : Don't carry for anyone past the walls this week, #address#. #warn#. | If you're going out the gate, go heavy-handed and in company.
+scene guess_the_load
+when topic=work self.working=yes self.job=carter
+does tell.self / ask.detail / answer.detail / assess
+a : Tip it, look at it, call it. That one's #cwt# and a half, I'd say. | Before I lift, I guess. Out loud, so nobody can say I changed it after. | #guess.capitalize# on that crate? Nails. Heavy as a sin, and twice as awkward.
+b : And were you right? | Why out loud? | How can you tell nails?
+a : Near enough to a pound. #tally.capitalize# says I'm nine in ten this week. | Honest guessing. A guess kept quiet is just a feeling. | The way it sits. Nails sit like they mean it. Feathers sit like they're sorry.
+b : #bc_clever# | #bc_fair# | #bc_ha#
+
+scene the_tally
+when topic=work|pastimes self.job=carter
+does tell.boast / ask.detail / answer.detail / assess
+a : I keep #tally# on a scrap of slate. Right guesses one side, wrong the other. | Forty right this week. Two wrong, and one of those was a cheat. | #tally.capitalize# says I've guessed a thousand loads since spring. I've counted every one.
+b : Who checks them? | A cheat? | A thousand?
+a : The scale at the weighhouse, when I can get near it. Otherwise my back. | A sack of wool with a brick in the middle. I'd have guessed it right if it was honest. | A thousand and some. I'm not boasting. I'm just keeping count.
+b : #bc_ha# | #bc_ha# | #bc_wise#
+
+scene guess_your_bag
+when topic=smalltalk|player
+does tell.self / ask.detail / answer.detail / assess
+a : Hold still. That bag of yours is #stonebit#. Don't argue; I'm never far off. | I'll guess #pack#, if you'll let me. Free, this once. | You're carrying something heavier on the left. I can see it in your walk.
+b[job=carter|laborer|sailor] #trade : Close. Nearer two, I'd say. | Go on, then. We'll see who's right. | It's my tools. You've a good eye.
+b : How do you know? | Go on, then. | My walk?
+a@trade : Two, then. I'll mark it a half. You carry it well. | A stone and three. I'll take your word if you take mine. | Tools always pull. You'll want to change sides at noon.
+a : I carry for a living. You learn a load by looking. | A stone and a quarter. I'd bet #coppers# on it, and I'd win. | You lean right to balance. Swap paws now and then, or your back will thank nobody.
+b : #bc_ha# | #bc_fair_enough# | #bc_clever#
+
+scene mud_square
+when topic=weather here.outdoors=rain here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : #mud.capitalize# on #square# again. It had my boot off this morning, and a guess with it. | Rain on the cobbles, and the low corner's a bog. I carry round it, which doubles the walk. | You can't guess a load in #mud#. Your feet go and the weight comes with them.
+b : Did you get the boot back? | Can't they drain it? | Nasty.
+a : The boot, yes. The guess, no. Mud adds a stone to everything. | They could. They'd need somebody to carry the stones, and I'm busy. | Nasty and slow. Give me a frozen road any day, #address#.
+
+scene first_flakes
+when topic=weather|season here.outdoors=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : Look! #firstsnow.capitalize#! I could drop #load# and dance. | Snow at last. Down here it's half rain, but I'll take it. | #firstsnow.capitalize#. Every year I stop what I'm doing and stand in it.
+b : It won't last the morning. | Half rain? | You'll catch cold.
+a : Then I've the morning. That's plenty, #address#. | Half rain and half snow is still half snow. #bc_ha#. | Not me. I grew up in this. It's like being hugged by home.
+
+scene fog_wharf
+when topic=weather|day here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog off the water. You can't see #wharf# from #stairs#. | I carried a crate up from #wharf# in fog. Got to the top and found I'd carried it to the wrong door. | Thick this morning. I guessed a wolf at a crate till it said good morning.
+b : Thick as soup. | The wrong door! | Ha!
+a : Thicker. You could ladle it like #stew#, if it tasted of anything. | Carried it back down, too. Two loads for one fee. I'll not tell #tally#. | It was a big wolf, to be fair. #cwt.capitalize# and a half, easy.
+
+scene dry_day
+when topic=weather|day here.outdoors=clear here.time=day here.region=ridgemere
+does tell.feeling / react.self / assess
+a : A dry day on #square#! Firm footing, light loads, and the sun on my back. | Clear sky. I can see #ships# from #headland# this morning, every mast. | No rain, no #mud#, no excuses. I've carried twelve loads before noon.
+b : Make the most of it. | Every mast? | Twelve?
+a : I'm making the most of it with both arms full, #address#. | Every one. I counted them twice. Sixteen. | Twelve, and guessed eleven. The twelfth was a cheat again.
+
+scene stew_supper
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : There's a pot of #stew# on at the lodging tonight. I can smell it from #square#. | Nothing puts a back right like #stew# and a sit-down. | I'd carry a load up #stairs# for #stew#. I have, too.
+b : From here? | Nothing? | For stew?
+a : I've a nose for it. I could guess the weight of the pot from here, too. | Nothing. Not sleep, not a jar. #stew.capitalize#, then bed. | A cook on #headland# pays in stew. Best wages I've ever had, #address#.
+b : #bc_ha# | #bc_true# | #bc_ha#
+
+scene cards_night
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : #cards.capitalize# tonight. I've been looking forward to it since the first load. | I lost at #cards# last night to a wolf who couldn't count. Couldn't count, and won. | I play #cards# the way I carry: guess first, then commit.
+b : What do you play? | How? | Does it work?
+a : Anything with a pot in the middle. Low stakes; I'm a porter, not a House. | Luck. Pure luck. I've written it down so I'll never forget it. | Nine times in ten. The tenth time I go home light.
+b : #bc_ha# | #bc_bad_luck# | #bc_ha#
+
+scene sharp_knife
+when topic=smalltalk|work self.likes=sharp_knife
+does tell.self / react.self / assess
+a : See #knife#? I keep it sharp enough to cut a cord before it knows it's cut. | A porter without a sharp knife is a porter untying knots all day. | I whet #knife# every night before cards. Of all I own, it's the only thing always ready.
+b : That's sharp. | Knots, then. | Always ready?
+a : Sharp's safe. A dull knife slips. #saying#. | Knots with wet fingers in the rain. I'd rather have the knife. | Always. Unlike me, mornings.
+
+scene wharf_rats
+when topic=animals|work self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : Rats on #wharf# the size of cats. I guessed one at a stone this morning. | A rat ran out of a grain sack I was lifting. I dropped the sack and the rat both. | I won't carry for the warehouse on the end. #rats.capitalize# there have a guild.
+b : A stone? | What happened? | A guild?
+a : Near enough. I didn't get close enough to check, and I'll not try. | The sack burst, the rat left, and I paid for the sack. The rat didn't. | They sit in a row and watch you. I'm not paid enough to be watched by #rats#.
+b : #bc_ha# | #bc_bad_luck# | #bc_ha#
+
+scene dry_ship
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail / assess
+a : One day I'll get #ship#. A Grayrock hull, and a hold full of loads to guess. | I dream of somewhere dry. No #mud#, no fog, sand maybe. I'd guess the sand by the bucket. | Every ship that leaves the Sound, I guess its cargo from #headland#. One day I'll be on one.
+b : Somewhere dry? | Sand? | Where to?
+a : Dry as a biscuit. Somewhere the rain's a story, #address#. | Sand. I've never seen it, but I'd know what a bucket weighs. | Anywhere it doesn't rain sideways. I'm not fussy past that.
+b : #bc_i_hope_so# | #bc_ha# | #bc_good#
+
+scene mine_road
+when topic=memories|work self.away=yes self.from=frosthollow self.age>=20
+does tell.memory / react.self / assess
+a : In #self.from_town# the pups carried for #mine#. That's how I came by the guessing. | We'd bet on the ore sacks #uphome#. Whoever guessed closest got the warm seat by the fire. | I learned to carry on ice. #stairs# down here are nothing after that.
+b[from=frosthollow] #home : I carried too. Never guessed one right. | The warm seat! I'd forgotten. | Ice and a steep road. I remember.
+b : Young to be carrying. | Did you win? | On ice?
+a@home : You just weren't watching the sack, #address#. It's all in how it sits. | I'd not. I sat in it most winters, I'll have you know. | So a wet stair down here makes me laugh. You'll see why.
+a : Young, and glad of the coin. Everybody carried. | Most winters. I sat by that fire till my tail singed. | On ice, uphill. #stairs.capitalize# are a holiday after that.
+
+scene friend_lodging
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd trust to hold my winnings. That's high praise from me. | I'd carry #self.friend# up #stairs# if it came to it. I'd guess the weight first, mind. | #self.friend# and I play #cards# most nights. Neither of us cheats. We're not that clever.
+b : That's trust. | You'd guess it first? | Good company.
+a : Trust, and a tally. I'd still count them after. | Of course. I'd be off by a pound and never hear the end of it. | The best. I'd rather lose to an honest wolf than win off a crooked one.
+
+scene boss_word
+when topic=work self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss# gives me the awkward loads. I'll take that as a compliment, since it pays the same. | I'll say this for #self.boss#: I always know where I stand. Usually under a crate. | #self.boss# says I talk too much. I say I carry while I talk. Both true.
+b : A compliment? | Under a crate? | Fair enough.
+a : What else would I take it as? #bc_ha#. | Under a crate, guessing its weight. It's a living. | Both true. And I'll keep doing both, #address#.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean week. Fewer loads, and everyone wants them carried for a copper less. | Folk are carrying their own bags this week. That's how you know it's lean. | I've guessed fewer loads this week than any week since spring. #tally.capitalize# looks thin.
+b : Hard all round. | Can't blame them. | It'll pick up.
+a : Hard, and harder on the knees. #reassure#. I've known worse. | I don't. I'd carry my own too. I just miss #coppers#. | It will. And when it does I'll be ready, #strap# and all.
+b? : #bc_true# | #bc_fair_enough# | #bc_i_hope_so#
+
+scene gossip_eager
+when topic=gossip|crime here.gossip=yes
+does tell.gossip / react.news / assess
+a : Have you heard? They're saying #topic.subject# #topic.claim#. I had it on #stairs#. | I carried a crate for a cook this morning and got a story free: #topic.subject# #topic.claim#. | Word on #square# is that #topic.subject# #topic.claim#. Don't say I said.
+b : Is it true? | A story free? | I won't.
+a : That's what they say. I've carried heavier rumours, mind. | Free with #load#. The best kind of tip. #bc_ha#. | You will. Everybody does. I've guessed it round #square# by noon.
+
+scene gossip_none_heard
+when topic=gossip|crime here.gossip!=yes
+does tell.self / react.self / assess
+a : I've heard nothing worth repeating today, and it's killing me. | Not a whisper on #square# this morning. I'll have to make conversation. | I carried twelve loads and heard nothing. Twelve! Folk have stopped talking.
+b : Make some up. | You'll survive. | Maybe it's quiet.
+a : I'd never. A made-up story's a sack of #feathers#. Weighs nothing. | I might not. I'll have to talk about the weather, and I'll hate it, #address#. | Quiet's worse than bad news. At least bad news has weight.
+
+scene feast_dance
+when topic=festival|season
+does give.opinion / ask.opinion / give.opinion / assess
+a : A feast! I'll carry benches all morning and dance on them all night. | A night's dancing mends what a week of loads breaks. | The feast's the one day I don't guess anything. I just carry the drink.
+b : Will you dance? | Do you think so? | Not even the drink?
+a : Till the musicians beg. Then a bit more. | I know so. I've the tally for it, #address#. | The drink I guess by the second cup. After that I stop counting.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+story the_crate_of_feathers [topic=work|memories self.job=carter self.age>=20]
+  : I once braced for a crate a carter swore was full of iron. Planted my feet, set #strap#, called it two hundredweight.
+  : Lifted it so hard I went over backwards. Feathers. A whole crate of #feathers#.
+  : The carter laughed for a week. I marked it wrong on #tally# and never forgave either of them.
+  ask : Would you have forgiven the carter, #address#?
+  b : Never. | Eventually. After a few jars.
+  b[job=carter] : That's an old trick. I'm sorry to say I've done it.
+
+story ore_sacks [topic=memories|pastimes self.away=yes self.from=frosthollow self.age>=25]
+  : #uphome# the miners had a game. They'd set out sacks and let the pups guess the weight.
+  : Closest guess got a sweet. I got so many sweets the miners stopped asking me to play.
+  : That's when I knew I'd be no good at anything else.
+  b : You've a gift. | And are you?
+  b[from=frosthollow] : I played that. Never got a single sweet.
+
+story the_winning_hand [topic=pastimes|smalltalk self.likes=cards]
+  : I once won a pot with nothing in my paw. Not a single card worth having.
+  : Everyone else folded because I was smiling. I wasn't smiling at the cards. I was thinking of #stew#.
+  : I've tried the same face since. It never works twice.
+  b : Ha! The stew face. | That's how it goes.
+  b[friends] : I've seen that face. It doesn't work on me.
+
+rule @porter_cry
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 6h
+say Carry for #coppers#! Anywhere on #square#. | Loads carried, weights guessed, free of charge.
+
+rule @guess_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say That one's #cwt#, I'd say. Let's see. | #oath#. Heavier than it looks, that one.
+
+rule @mud_bark
+when concept=bark here.outdoors=rain self.dislikes=deep_mud
+does aside
+cooldown 10h
+say #mud.capitalize# again. There goes another boot. | Mind the low corner. It'll have your leg.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.region=ridgemere
+does aside
+cooldown 12h
+say Off, you. Go on. Find a cat to bother. | Rats on #wharf# again. Big as cats, and less polite.
+
+dlg @1 resident.hub : #greet#. Carry something? Guess something? Ask away. | #greet#, #address#. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Your pack's lighter than last time. What can I do? | #topic.player#. Good. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Yes? Say it quick. I've a load waiting.
+dlg @4 resident.hub [here.time=night] : It's late. If it's a load, it'll cost double. If it's talk, it's free.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I carry, I guess the weight first, and I keep #tally#. | Loads across #square#, up and down #stairs#. #coppers.capitalize# a trip.
+dlg @2 resident.job : I work, I play #cards#, I guess what things weigh. Nothing more to tell. | Whatever wants carrying. And plenty that doesn't, with me talking.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing today, and it's killing me. Come back tomorrow.
+dlg @2 resident.gossip [here.gossip=yes] : Oh, they say #topic.subject# #topic.claim#. I had it on #stairs#. Don't tell anyone I told you.
+dlg @1 resident.bye : #farewell#. Lift with your back straight. | #farewell#, #address#. Mind #mud#.
+graft resident.hub
+choice What do you reckon my pack weighs? -> guess
+node guess
+say Hold still. Turn round. #stonebit.capitalize#, I'd say. Maybe a quarter over. I'm rarely more than a pound out.
+mood keen
+free
+choice How do you do that? -> guess_how
+choice Goodbye. -> bye
+node guess_how
+say Years of carrying, and a habit I picked up as a pup in the mountains. A load tells you its weight by how it sits. You only have to listen.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye

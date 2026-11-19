@@ -1,0 +1,289 @@
+# oh102, the favour-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh102
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier standard
+written_for cty_frost_colddrift
+written_by claude
+title the favour-keeper
+fits stage=adult|old
+prefers job=woodcutter piety=devout
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=devout drive=steady
+quirk keeps_a_tally_of_favours_owed
+likes smoked_eel riddles festival_bells autumn_wind
+dislikes crowds flies
+fears dying_with_a_debt_unpaid an_oak_that_falls_the_wrong_way
+hopes every_notch_squared_by_the_last_winter
+topics faith +0.4 work +0.3 pastimes +0.3 season +0.2 gossip -0.5 newcomer -0.3
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# fells oaks at the cut and says little: devout, close as bark, wary of new faces, setting a riddle now and then, and keeping a notched stick of every favour given and owed, squared to the last notch.
+
+words
+oath! = Root and reckoning | By the notched stick
+saying! = A favour's a seed; it comes up in its season | Owed is owed, oak or acorn
+stick = my tally stick | the notched stick
+notch = a notch | another notch on the stick
+axe = the felling axe | my axe
+wedge = the wedge | the iron wedge
+crosscut = the crosscut | the long saw
+cut = the cut | the felling ground
+eel = smoked eel | a strip of smoked eel
+riddle = a riddle | a riddle worth the chewing
+blow = an autumn blow | the wind that strips the oaks
+press = a press of bodies | elbows on every side
+flies = the flies | the biting flies
+purse = my purse | a purse I don't speak of
+feastbells = the feast-day bells | the bells from the chapel tower
+square = square | squared off, notch for notch
+bright = the Bright One | the Bright One above
+oaks = the oaks | the old oaks
+forest = the old forest | the oakwood
+chapel = the chapel | the little chapel
+well = the well | the town well
+carter = the carter | the South Road carter
+
+any
+opinion @1 church for 1 : I've leaned on #bright# through hard winters, and not once fallen. I'll be at the back of #chapel# on Restday.
+opinion @1 dole for 1 : A crust for the hungry is a notch #bright# cuts on our side. I'd grudge it to nobody in #here.town#.
+opinion @1 drink against 1 : Drink loosens a tongue and empties a purse. I've watched it do both, and I keep away.
+opinion @1 houses against 1 : They own #oaks# I fell and I've never once seen a face of theirs at #cut#. That's a debt they'll not square.
+opinion @1 merchants against 2 : I fell timber all the week and can't buy a fair loaf come Restday. The ones at the counters never go short.
+opinion @1 strangers against 1 : A stranger's knock gets no answer from me till I know the paw. #saying#.
+opinion @1 newcomers against 1 : There's little enough work in #forest#. Every new paw at #cut# is one of ours idle.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be wanting something. | #greet#, #address#. Say your business.
+line @2 greet [self.working=yes self.job=woodcutter] : #greet#. Stand clear of the fall line. | #greet#. Mind #axe#; I'm working.
+line @3 greet [here.time=dawn] : #greet#. Early. The dew's still on. | #greet#, #address#. #bright.capitalize#'s light, and here's you in it.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be about. | #greet#. The light's going, #address#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit, #address#. | It's you. #good.capitalize#. Shut the door.
+line @1 again.open : Again. You've a reason, then, #address#. | #welcome_back#. That's twice.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit by me. | #greet#. I'd a feeling it was you.
+line @3 greet.return [self.working=yes self.job=woodcutter] : #greet#. Wait till this one's down. | #greet#. Stand back of me.
+line @1 farewell : #farewell#. | #farewell#. #bright.capitalize# keep you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the roots in the dark. | #farewell#. Bar your door.
+line @1 farewell.return : #farewell#. | And you, #address#.
+line @1 react.news : #ack#. | Mm. I'll turn that over, #address#.
+line @1 react.news.new : #surprise#. I'd not had that. | That's new to me, #address#.
+line @1 react.news.known : #knew#. | I had it at #well# this morning.
+line @1 react.news.doubt : #doubt#. | Who told it? I'll weigh it by who.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. #bright.capitalize# hold them. | That's #bad#. I'll say a word for it tonight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #bright.capitalize#'s good. | #good.capitalize#, that. I'm glad of it.
+line @1 answer.how : #fine#. | Steady. No worse than #oaks#, #address#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. | Felling. Ask me at dusk.
+line @1 ask.how : And you, #address#? | You're keeping well, #address#?
+line @1 sympathise : #sympathy#. I'll pray on it. | That's #bad#. Sit, then.
+line @1 reassure : #reassure#. #bright.capitalize#'s not done with you. | It'll mend, #address#. Most things do.
+line @1 decline : #hedge#. Not today. I've #cut# to finish and nobody to finish it. | I'll not, #address#. My days are spoken for this week.
+line @1 accept_decline : #no_matter#. | That's fair. #later.capitalize#, then.
+line @1 thank : #thanks#. That's #notch#, and I'll square it. | #thanks#. I owe you, and I'll not forget.
+line @1 deflect_thanks : We're #square#. | #deflect#. You'd done the same for me.
+line @1 preclose [self.working=yes self.job=woodcutter] : Well. The oak won't fell itself. | #excuse#. #axe.capitalize# wants me.
+line @2 preclose : #preclose#. | I've work, #address#.
+line @1 accept_preclose : Go on. #farewell#. | Aye. Go well under #oaks#.
+line @1 ack : Mm. | #ack#.
+line @1 give.advice : #advise#: never fell into the wind. | Pay what you owe before you buy what you want. #saying#.
+line @1 warn [world.bandits=near] : Stay off the South Road a while. #bandits.capitalize# about. | Stay under #oaks# and go in company.
+scene notched_stick
+when topic=smalltalk|friends
+does tell.self / ask.detail / answer.detail / assess
+a : See #stick#? A notch on this side for what I'm owed, that side for what I owe. | Cut #notch# this morning. A neighbour carried #axe# home. | There's one notch on #stick# I've carried seven years.
+b : Which side's longer? | For carrying an axe? | Seven years?
+a : The owing side. I keep it so on purpose, #address#. | A favour's a favour. Size doesn't come into it. | Seven, and I'll square it before they lay me down.
+b : #bc_fair# | #bc_fair_enough# | #bc_i_hope_so#
+
+scene squared_up
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I squared a notch today. Carried wood for an old one who'd lent me salt in the winter. | Somebody tried to say I owed them nothing. I cut the notch anyway. | We're #square#, that one and me. First time in years.
+b : That's a long memory. | Why, if they didn't want it? | That feels good, I'd think.
+a : Long as #stick#. #stick.capitalize# doesn't forget, so I needn't. | Because I owe it, whether they want it or not. That's how owing goes. | It does. Lighter by a notch, and #bright# sees it.
+
+scene riddle_set
+when topic=pastimes|smalltalk self.likes=riddles
+does ask.detail / answer.detail / react.self / assess
+a : Here's #riddle#: I'm cut and I'm not hurt, I fall and I'm not sorry. What am I? | Riddle me this: all my life I stand in one place, and dead I cross the whole realm. | What has rings but no fingers, and grows a year older every spring?
+b : An oak? | A cloud? | A tree. It's a tree.
+a : Near. Timber. An oak's sorry; timber isn't. | A tree. Cut, sawn and sent off on a cart, or a ship. | A tree, aye. Any pup in #here.town# would have it. I'll find a harder.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene felling
+when topic=work self.job=woodcutter self.working=yes
+does tell.self / react.self / assess
+a : This one's two hundred years. I'll have #wedge# in by noon and her down by dusk. | I read the lean before I touch #axe#. Most of felling is looking. | #crosscut.capitalize# needs two, and I've only me. I'll take it slow.
+b : Two hundred years? | Looking at what? | Slow's safer.
+a : Older than #here.town#'s walls, near enough. I'll say a word before she goes. | The lean, the wind, the rot. A tree tells you which way, if you'll listen. | Safer, and #bright# likes a patient paw.
+
+scene the_fall
+when topic=work|land self.job=woodcutter here.region=oakhaven
+does tell.feeling / react.self / assess
+tone even / serious / even
+a : There's no sound like a great oak going. #forest.capitalize# holds its breath. | An oak fell wrong at #cut# when I was young. I've never felled into the wind since. | When she starts to go, you walk. You don't run, and you don't look back till she's down.
+b : I've heard it from town. | Fell wrong? | Why not run?
+a : Then you know. I say a word for each one. It's only right. | Wrong, and somebody under it. I'll not say more. | Running, you trip on a root. Walking, you live.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #blow.capitalize#. I like it. It does in a day what #axe# does in a week. | Hear #oaks# in that? Every leaf in #forest# is letting go at once. | A good autumn wind clears my head. I walk out in it after the shift.
+b : It's wild today. | Like rain, the leaves. | Doesn't it chill you?
+a : Wild, and honest. It goes where it means to. | Leaf-rain. #bright.capitalize# sweeping out the year. | No. It's the still days that chill me.
+
+scene leaf_drip
+when topic=weather here.weather=rain here.region=oakhaven
+does tell.self / react.self / assess
+a : #rain.capitalize# off the leaves all day. #cut#'s a mire; no felling in this. | Rain in #forest#. The trees drink and we wait. | I sat under the big oak at #cut# and it rained on everyone but me.
+b : A day off, then. | It's what the name's for. | Lucky.
+a : A day of mending, #address#. Never a day off. | It is. Grumbling never stopped a cloud. | Not luck. I've known that oak since I was a sapling.
+
+scene mist_morning
+when topic=weather|day here.weather=fog here.time=dawn
+does tell.self / react.self / assess
+a : #fog.capitalize# this morning. I'll not fell a tree whose crown I can't see. | Fog on #cut#. The oaks come out of it one at a time like folk to chapel. | Grey and still. You hear a jay from half a mile off in #forest#.
+b : Wise. | That's a picture. | It's quiet.
+a : Wise is alive, #address#. Bold is buried. | It is. I stood a while and watched them come. | Quiet's #bright#'s own weather.
+
+scene eel_supper
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail / assess
+a : I've #eel# hung by the chimney. That's my supper and my treat both. | #carter.capitalize# brings smoked eel up the South Road once a season. I buy the lot. | Give me #eel# and a crust and I'll ask nothing more of a day.
+b : Where do you get it? | All of it? | Nothing more?
+a : Off #carter#. I'll not say what I pay; it's between us. | All he'll sell me. It keeps, and I don't share it, #address#. | Nothing, but quiet to eat it in.
+b : #bc_ha# | #bc_fair_enough# | #bc_fair#
+
+scene no_crowds
+when topic=festival|smalltalk self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : Market day. #press.capitalize#, all of them talking. I'll go at dusk. | I can't abide #press#. Too many paws, too many eyes. | They had the whole town in the square for the feast. I went round by the wall.
+b : It's only once a week. | I don't mind it. | You missed the dancing.
+a : Once a week is enough. I'll have what's left. | You've a different skin, then. Mine's thin. | I missed the elbows. I heard the dancing from the wall, and that did me.
+
+scene flies_summer
+when topic=weather|work here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / ack
+a : #flies.capitalize# at #cut#. They come for the sap and stay for me. | The heat under #oaks# brings #flies# out thick. I've bitten my own tongue swatting. | I rub pine-tar on my ears against #flies#. It half works.
+b : Smoke them out. | That's bad. | Half's better than nothing.
+a : Smoke draws them in the end. I've tried. | Bad enough. I've asked #bright# to take them elsewhere. | Half's what I get, #address#. I take it.
+
+scene feast_bells
+when topic=festival|faith self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #feastbells.capitalize# this morning. I stood in my doorway and listened to every one. | I'll not go into the square. But I'll hear #feastbells# from my step, and gladly. | #feastbells.capitalize# are the best of a feast. No crowd, no talk, only bells.
+b : Lovely, they are. | From the step? | Only the bells?
+a : They're #bright#'s voice, my #mum# said. I've no better word for it. | From the step. Near enough to hear, far enough to breathe. | Only the bells. The rest is elbows.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray at dawn and dusk and say nothing of it. That's how #bright# likes it, I think. | #bright.capitalize# sees every notch on my stick. I'd not want it otherwise. | I sit at the back of #chapel#. I hear better there, and nobody looks.
+b : Quiet faith's the best. | Every one? | The back's good.
+a : I think so. The loud ones are praying to the room. | Every one. I keep it square so I can meet that eye. | It is. Near the door, too, #address#.
+
+scene spouse_hearth
+when topic=family|home self.married=yes self.spouse
+does tell.feeling / react.self / assess
+tone tender / even / even
+a : #self.spouse# and I say little of an evening. There's no need. | There's no notch on #stick# for #self.spouse#. Some things you don't count. | I'd trust #self.spouse# with #purse#. I'll not say that of anyone else.
+b : That's a good marriage. | That's kind. | That's a deal of trust.
+a : It is. Quiet's the best of it. | It's not kindness. It's past counting. | It is, #address#. And I don't give it twice.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Timber's down and bread's up. Each week's a notch harder than the last. | I've three notches owing this month and nothing to square them with. | Nobody up in the big houses sees it. They'll see it when #cut# stops.
+b : Everyone's short. | They'll wait. | They never see.
+a : Everyone. #bright.capitalize# sees it, if nobody else. #reassure#. | They'll wait. But I'll not make them wait long. | Never. That's why I don't look up.
+b? : #bc_true# | #bc_i_hope_so# | #bc_true#
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New faces at the gate. I'll keep my door shut till I know them, #address#. | A stranger asked me the way to #cut#. I told them, and watched them go. | Somebody new took a place at #cut#. That's work gone from one of ours.
+b : They might be decent. | Watched them? | It's not their fault.
+a : Might. I'll know in a year. A year's not long, #address#. | All the way to the trees. Guarded's not unkind. | No. But it's ours that go hungry for it.
+
+scene no_gossip
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I heard a thing at #well#. It stays at #well#. | Folk talk. I listen, and it stops with me. | Somebody wanted me to carry a tale up #here.town#. I'll not.
+b : Not even to me? | You must hear plenty. | Good for you.
+a : Not even. It'd be a notch against me, and I keep #stick# clean. | Plenty. #bright.capitalize# hears it all; that's enough ears. | It's only what's right, #address#.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene the_purse
+when topic=dreams|smalltalk
+does tell.self / react.self / assess
+a : I've a purse put by. What for is mine to know. | Every copper I can spare goes in #purse#. Don't ask me what for, #address#. | #someday.capitalize# I'll do a thing with what I've saved. Not yet.
+b : I'll not ask. | I won't. | When, then?
+a : #good.capitalize#. You'd get nothing. | Then we'll get on. | When #bright# says. Not a day before.
+
+story oak_fell_wrong [topic=work|memories self.job=woodcutter self.age>=30]
+  : When I was young, an old feller I worked under cut an oak in a gusting wind.
+  : It turned on the stump and came down across the path, where nobody should have been.
+  ask : Would you fell on a windy day, if the master told you to?
+  b : I'd want to say no.
+  b[job=woodcutter] : Never. Not for any master.
+  : Nobody was hurt, by #bright#'s mercy. I've never felled into a wind since.
+
+story granny_riddle [topic=memories|pastimes self.likes=riddles self.age>=25]
+  : #gran.capitalize# set me a riddle when I was a sapling, and wouldn't give the answer.
+  : I chewed it all one winter. Then I grew up and forgot to ask her.
+  ask : Shall I set it you, and see if you do better?
+  b : Go on, then.
+  b[old] : I'll likely have heard it.
+  : What's always coming and never arrives? I know now. It's tomorrow.
+
+story seven_year_notch [topic=friends|memories self.age>=30]
+  : Seven years back a wolf pulled me out of the brook pool when the ice gave.
+  : I cut the notch that night. I've not found a way to square it since.
+  b : Some debts can't be squared.
+  b[old] : Keep the notch. Some notches are meant to stay.
+  : Maybe. I'll keep looking, all the same.
+
+rule @timber
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 6h
+say Stand clear! She's going! | Fall line! Clear the fall line!
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off. Off with you, #flies#. | #annoyed#. The flies again.
+
+rule @prayer_bark
+when concept=bark here.time=dusk|dawn
+does aside
+cooldown 12h
+say Bright One, keep #cut# and the ones in it. | Bright One, square what I can't. #oath#.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say Hark at #oaks#. #blow.capitalize#, at last. | There go #oaks#. Every leaf at once.
+
+dlg @1 resident.hub : #greet#. Say what you want. | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've come back. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Keep your distance and say it plain.
+dlg @1 resident.job [self.job=woodcutter] : I fell oaks at #cut#. I read the lean, I set #wedge#, and I say a word when they go. | Felling. Big oaks, mostly. They're #slow#, and I'm slow, so we suit.
+dlg @2 resident.job : I work, I pray, and I pay what I owe. That's the whole of it, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I'd carry, #address#.
+dlg @1 resident.bye : #farewell#. | #farewell#. #bright.capitalize# keep you.
+graft resident.hub
+choice What are the notches on that stick? -> tally
+node tally
+say Favours. This side, what I'm owed. That side, what I owe. The owing side's longer, and I keep it so.
+mood calm
+free
+choice Do I have a notch? -> tally_me
+choice Goodbye. -> bye
+node tally_me
+say Not yet. Do me a kindness, or let me do you one, and you will.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye

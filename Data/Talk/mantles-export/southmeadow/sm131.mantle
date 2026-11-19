@@ -1,0 +1,487 @@
+# sm131, the gate's map-mender (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm131
+revision 1
+state ready
+dialect southmeadow
+accent none
+tier full
+written_for rm_liv_kelpmarsh
+written_by claude
+title the gate's map-mender
+fits stage=adult|old
+prefers job=guard humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk inks_the_true_roads_onto_old_maps
+likes smoked_eel long_walks old_maps warm_rain
+dislikes smoke bad_manners
+fears a_gate_left_open_in_the_dark a_road_nobody_walks_any_more
+hopes a_window_of_my_own_up_the_hill every_road_drawn_true
+topics travel +0.5 newcomer +0.4 crime +0.3 pastimes +0.3 weather +0.2 gossip +0.2 lore +0.2 faith -0.2
+styles comfort=talk gossip=keen refuse=dry tease=dry
+marks oath saying
+persona #self.first# keeps a gate of the city and wants every passer's name and business: loud, wry and talkative, plain in dealing, with ink on both forepaws from setting old maps right.
+
+words
+oath! = Bar and bolt | By the gate bar | Ink and iron
+saying! = Name first, business after | Every road comes to a gate | A map lies until somebody walks it
+gate = the gate | my gate
+bar = the gate bar | the big oak bar
+names = a name and a reason | name and business
+carters = the carters | the carts at the gate
+map = an old map | a map older than its roads
+maps = my old maps | the maps in my chest
+ink = my ink | a pot of gate-ink
+road = the east road | the road out past the gate
+eel = eel off the smokehouse rack | a strip of smoked eel
+reek = the smokehouse reek | soot on the wind
+amble = a long amble | a ramble that goes nowhere in particular
+softrain = a warm rain | a soft summer rain
+civil = a civil tongue | plain manners
+wall = the wall | the city wall
+roster = the roster | the watch roster
+bunks = the barracks | our bunk room
+lantern = the gate lantern | the lantern on its hook
+tally = my tally | the gate tally
+carter = a carter | a carter off the road
+city = the city | this city
+sarge = the sergeant | our sergeant
+restday = a rest day | my day off
+feet = my feet | these two feet
+chest = my chest | the chest under my bunk
+
+any
+opinion @1 road for 1 [self.job=guard] : I've counted every cart out and back on #road#. I know its bad bends better than any map does. #saying#.
+opinion @3 road for 1 : A road's only as safe as the company on it. Go in a crowd and you'll mostly come home. #saying#.
+opinion @2 road against 2 [world.bandits=near] : Not this month. There's trouble out on the roads, and #gate# stays shut on it as long as I've the say.
+opinion @2 watch for 1 : The Watch get laughed at by day and sent for by night. I know which half of that I'd rather be.
+opinion @1 watch for 1 [self.job=guard] : I wear the coat, so you'd expect me to say it. Laugh at the Watch at noon if you like; you'll want us by midnight.
+opinion @1 sump against 1 : You'll not find me below the rope sheds by choice. Nothing down there wants #names# asked of it.
+opinion @1 festivals for 1 : A feast's when this city remembers it has neighbours. I'll be working it, likely, but the singing carries.
+opinion @1 city mixed 1 : Smoke at the bottom, money at the top, and the Watch holding up the middle. I'd still not trade it for #road#.
+opinion @1 strangers for 1 : A stranger's only #names# I haven't heard yet. Most of them are dull, #address#, and that's how I like them.
+opinion @1 newcomers mixed 1 : New faces come into #city# every day. Some stay and some shouldn't. I can't always tell which, not at first.
+opinion @1 drink against 1 : I've seen what staggers home at midnight with #ale# in it. I'll have mine at home, and the one.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #names.capitalize#, if you'd be so good. | #greet#, #address#. Into the light with you, so I've a face for the name.
+line @2 greet [self.working=yes self.job=guard] : #greet#. #gate.capitalize#'s open and I'm on it. | #greet#. Mind the cart behind you; it doesn't stop for anybody.
+line @3 greet [here.time=dawn] : #greet#. #city.capitalize#'s only just up. You're early. | #greet#. First face of the morning, and a civil one.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be about, #address#. | #greet#. Dark already, and here you are, #address#.
+line @5 greet : #greet#. | #greet#, #address#. Fine day for a walk, whatever it's doing.
+line @1 kin.open [pair.kin!=no] : There you are. I'd started to wonder. Sit; I'll tell you about my day. | You. #greet#. There's dust on you from half #road#.
+line @1 again.open : Twice through my day. I'll put you in #tally# as a regular. | You again. I remember the name, before you offer it.
+line @1 hail [pair.band=friends] : Hoi! This way, I've news for you. | #address.capitalize#! This way; I'll walk with you a bit.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'd a feeling it'd be you. | #greet#. You've caught me talking to myself again.
+line @3 greet.return [self.working=yes self.job=guard] : #greet#. On duty, but I can talk. I always can. | #greet#. Keep it short; there's a cart coming.
+line @4 greet.return [here.time=dusk|night] : #greet#. Mind the dark corners going home. | #greet#. Late, and I'm still upright, just.
+line @1 farewell : #farewell#. | #farewell#. Mind the cobbles on the way down.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps, and don't stop for anybody. | #farewell#. I'll be here at dawn, if you need a face.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. Well, there's a thing. | Is that the talk? #oath#.
+line @1 react.news.new : #surprise#. That's not reached me, and most things do. | #oath#. All day out and about, and nobody said.
+line @1 react.news.known : #knew#. #carter.capitalize# had it before noon. | I'd heard. Things reach me early, #address#.
+line @1 react.news.doubt : #doubt#. I'll want a name behind that before I believe it. | Who said it, and what was their business? Then I'll judge.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a hard one. | #bad.capitalize#, that. My heart goes to whoever's left.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's the best I've heard this week. | #good.capitalize#! Somebody's luck has turned, then.
+line @1 answer.how : Well enough. #feet.capitalize# are sore and my tongue's not, so that's even. | #fine#. Nothing's happened today I couldn't name.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. A string of carts and every carter wants a chat. | Run off #feet#, and talking the whole way.
+line @1 ask.how : And you? Walked far? | How's your day gone, #address#? Tell me all of it.
+line @1 sympathise : #sympathy#. Sit down. I'll do the talking for a bit. | Heavy news to carry. Stay a while, there's no hurry.
+line @1 reassure : #reassure#. Roads come round. | It'll pass. I've seen worse come and go, #address#.
+line @1 decline : #hedge#, no. I've a shift till dark, and it won't stand itself. | Not today. I've a shift to stand, and somebody has to stand it.
+line @1 accept_decline : #no_matter#. Another day, then. | That's fair. I'd have given the same answer, #address#.
+line @1 thank : #thanks#. | That's kind, and I'll remember the name it came with.
+line @1 deflect_thanks : #deflect#. | Nothing. I was standing here anyway.
+line @1 preclose [self.working=yes self.job=guard] : Well. #gate.capitalize# won't watch itself. | There's a cart coming. I'd best look #busy#.
+line @2 preclose : Well. #preclose#. I could talk all night, and I would. | That'll do me. #feet.capitalize# want their bunk, and so do I.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I'll find somebody else to talk at, #address#.
+line @1 tease [pair.band=friends] : You walk like a cart with a wheel off, #address#. Who taught you, a goose? | You wore that coat on purpose? Bold of you, in this weather.
+line @1 tease.return : Says the one with mud to the knees. | I'll put that in #tally#, under insolence.
+line @1 ack : #bc_right# | Hm. #bc_fair_enough#
+line @1 give.advice : #advise#: give your name at #gate# before anyone asks. It saves an hour. | Never trust a map nobody's walked. Mine have ink on them for a reason.
+line @1 warn [world.bandits=near] : Keep off #road# a while. #warn#. | Going out? Take a cart for company and #lantern# besides, #address#.
+scene gate_names
+when topic=work self.working=yes self.job=guard
+does tell.self / ask.detail / answer.detail / assess
+a : I ask every wolf through #gate# for #names#. Most of them lie about the reason. | I've let four hundred carts through #gate# since spring. I could tell you every carter's name. | A wolf came through this morning and gave a name I'd heard before, on somebody else.
+b : How do you know they lie? | Every one? | What did you do?
+a : They look at the sky when they say it. Nobody honest looks at the sky, #address#. | Every one. I don't write them down, either. #oath#. | Asked again, slower. The second name was the true one. #saying#.
+b : #bc_clever# | #bc_ha# | #bc_good#
+
+scene gate_dawn
+when topic=work|day here.time=dawn self.working=yes self.job=guard
+does tell.self / react.self / assess / ack
+a : Up with #bar# at first light. Heaviest thing in #city#, and I lift it every morning. | Dawn's the best hour on #gate#. Mist on #road# and nobody shouting yet. | First cart of the day was a load of turnips and #carter# asleep on top of them.
+b : Every morning? | Sounds peaceful. | Asleep?
+a : Every morning. My shoulders could tell you about it, #address#. | It is, for about an hour. Then #city# wakes up. | Snoring. The mule knew the way. I let them both through.
+b? : #bc_poor_soul# | #bc_lovely# | #bc_ha#
+
+scene gate_night
+when topic=work|day here.time=night self.job=guard
+does tell.worry / reassure / assess
+a : #gate.capitalize# shuts at dark, and it's my paw that checks it twice. | Night on #gate#'s long. Every shadow on #road# looks like company. | I don't like #lantern# going out. It's the only friend you've got out there.
+b : It'll hold. | Only shadows, mostly. | Bring a spare.
+a : It will. I still check. #saying#. | Mostly. It's the one that isn't that you remember, #address#. | I do. Two spares and a flint. #oath#, I'm not daft.
+
+scene inked_roads
+when topic=pastimes|travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : See the ink on my paws? I've been putting the roads right on #map# again. | Carters bring me #maps#. I mark where the roads really go and give them back. | I bought #map# off a rag stall. The roads on it are drawn by somebody who never left the house.
+b : Wrong how? | For nothing? | How can you tell?
+a : A bridge where there's a ford, and a ford where there's nothing but #bad# mud. | For a strip of #eel#, mostly. Or a good story off #road#. | Because I've walked them. Not all, but enough to know a liar's line on #map#.
+b : #bc_clever# | #bc_ha# | #bc_fair_enough#
+
+scene map_that_lied
+when topic=travel|lore
+does tell.story / react.story / assess / ack
+a : I've #map# that puts a whole village on #road# where there's only a well. | There was a road on an old map that went straight through a hill. Somebody believed it once. | My favourite map has a sea where the downs are. I keep it for the cheek of it.
+b : Did you look for the village? | Through the hill? | A sea?
+a : I walked out to it on #restday#. A well, a stone, and a goat looking at me. | Somebody's cart is still in that hill, if you believe #carters#. | A sea. Drawn with fish and all. #oath#, I'd love to have met that wolf.
+b : #bc_ha# | #bc_so_they_say# | #bc_ha#
+
+scene long_ambles
+when topic=pastimes|day self.working=no self.likes=long_walks
+does tell.feeling / react.self / assess
+a : Day off. I'll take #amble# round #wall# and talk to nobody. Which is hard, for me. | I walk on #restday# the way some wolves drink. Long, and not to anywhere. | Best walk in #city# is the wall at dusk. You see every road going out, and none of them want you.
+b : Talk to nobody? | Not anywhere? | Sounds lonely.
+a : I talk to #wall#. It doesn't answer, which suits it. | Not anywhere. That's the whole trick, #address#. | Lonely's sitting still. #amble.capitalize#'s company enough.
+
+scene smoked_eel
+when topic=food self.likes=smoked_eel
+does tell.feeling / ask.detail / answer.detail / assess
+a : #eel.capitalize# and a crust. I could live on it, and some weeks I do. | I can't abide smoke, and I'd give my boots for #eel#. Make sense of that if you can. | There's a stall by the water sells #eel# so good I go the long way round to pass it.
+b : Every week? | How does that work? | Which stall?
+a : Most weeks. A wolf on #roster# eats what's quick. | The smoke's done its work by the time it reaches me. I eat the work, not the smoke. | I'll not tell you. You'd buy it all, and I'd go #hungry#.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene reek_on_wind
+when topic=weather|day here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : Wind's off the smokehouses again. #reek.capitalize# right down the street. | My eyes have run all morning. #reek.capitalize#, and nowhere to stand out of it. | You can tell which way the wind is by whether I'm cursing.
+b : It's bad today. | Stand upwind. | Are you cursing now?
+a : It's #bad# every day the wind's wrong, #address#. | Upwind's the smokehouse roof, and I'd rather not. | Quietly. You'd not want to hear the loud version. #oath#.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #softrain.capitalize#. I could stand out in this all day, and some days I do. | Feel that? Warm. The dust's coming off #road# like a sigh. | This is the only rain I'll not complain of. It smells of fields, even here.
+b : You'll be soaked. | It is warm. | Fields?
+a : Soaked and #good# about it. There are worse ways to spend a day. | Warm as bathwater. #carters.capitalize# are all smiling for once. | Fields. Somebody's, somewhere. I'll take it, #address#.
+
+scene cold_rain
+when topic=weather here.weather=rain here.season=autumn|winter self.job=guard
+does tell.complaint / sympathise / assess
+a : #cold.capitalize# rain, and #gate# faces right into it. My coat weighs more than I do. | Rain like this, #carters# stop to argue just to stand under the arch. | Wet through by noon. I'll steam by the fire tonight like a kettle, #tired# and glad of it.
+b : That's a miserable shift. | Who can blame them? | Sounds like it.
+a : Miserable and long. I've told the rain my opinion of it. #oath#. | Nobody. I argue back, so we're all under the arch together. | Steam and a cup of something. That's the plan, #address#.
+
+scene fog_on_road
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail / assess
+a : Fog on #road#. I can hear a cart for an age before I see it. | Can't see past the first post this morning. I've been asking the fog its name. | In fog I go by voices. You learn a lot about a wolf from the voice alone.
+b : How do you know who it is? | Did it answer? | Like what?
+a : The wheels. Every cart creaks its own way, #address#. | It did not. #bad.capitalize# manners, fog. | Whether they're lying. A liar's voice climbs on the last word.
+b : #bc_clever# | #bc_ha# | #bc_wise#
+
+scene snow_gate
+when topic=weather|season here.weather=snow self.job=guard
+does tell.self / react.self / assess
+a : Snow on #road#, and not a print in it till noon. Nobody's coming in today. | I swept the arch three times. It's still white. #oath#. | First snow and the whole gate looks new. I'll ruin it with my boots soon enough.
+b : A quiet day, then. | It'll keep falling. | It looks lovely.
+a : Quiet. I've talked to #lantern# more than anyone. | It will. I'll keep sweeping. Somebody has to be stubborn. | It does, for an hour. Then the carts find it.
+
+scene manners_at_gate
+when topic=smalltalk|crime self.dislikes=bad_manners self.job=guard
+does tell.complaint / react.complaint / insist / ack
+a : A wolf in a fine coat shoved past #gate# this morning, not so much as a nod. I called him back. | Some folk think #names# is a question they can ignore. It isn't. | I'll let anyone through with #civil#. Nobody through without it, not on my watch.
+b : Did he come? | It's only manners. | That seems fair.
+a : He came. Slowly, and red to the ears. I asked him for #names# twice. | Manners are all that stand between us and a scrum, #address#. | Fair is what I'm paid for. Mostly I'm paid for talking.
+b? : #bc_good# | #bc_true# | #bc_ha#
+
+scene stranger_through
+when topic=newcomer|player self.working=yes self.job=guard
+does tell.self / react.self / assess / ack
+a : There was a traveller at #gate# this morning with a pack bigger than they were. | A stranger came through and gave me a name I'd never heard. I said it back twice to keep it. | New faces every day. I like guessing their business before they tell me.
+b : What were they carrying? | Did you keep it? | Do you guess right?
+a : I asked. Pots, a blanket and a great many opinions, #address#. | I've got it. It's in #tally# with the rest. | Half the time. The other half, they're more interesting than I guessed.
+b? : #bc_ha# | #bc_good# | #bc_ha#
+
+scene bandits_out
+when topic=bandits|travel world.bandits=near self.job=guard
+does warn / react.news / assess
+a : Trouble out past #gate#. I've told every carter to wait for company. | Bandits out again. I'll not let a lone cart out after noon. | They say the roads aren't safe. I say they never were, and now everyone knows it.
+b : Will they listen? | Is that allowed? | Cheerful.
+a : The clever ones. The others come back walking, #skint# and sorry. | It's allowed if I say it with my hand on #bar#. | I'm not paid to be cheerful, #address#. I'm paid to count who comes back.
+
+scene carts_late
+when topic=caravan|travel world.wagons=late self.job=guard
+does tell.worry / reassure / assess
+a : #carters.capitalize# should have been through by noon. I've watched #road# empty all afternoon. | Late again. Every hour I don't see a cart, I think of what's out there. | Not a wheel on #road# since dawn. #oath#. Somebody's sitting in a ditch, likely.
+b : They'll come. | It's probably the mud. | In a ditch?
+a : They usually do. I'll keep #lantern# lit for them. | Probably. I'll stop worrying when I've counted them in. | With a wheel off and a mule laughing at them. That's what I hope, anyway.
+
+scene carts_robbed
+when topic=caravan|bandits|crime world.wagons=raided self.job=guard
+does tell.news / sympathise / assess
+a : A cart was taken out on #road#. They'll watch it closer now, I'd hope. | They robbed a cart out on the road, I hear. Nobody hurt, if the word's true. | Another cart robbed. I counted it out through #gate# and nobody's counted it back.
+b : That's terrible. | Thank the Bright One. | Poor carter.
+a : It is. I'll be asking names twice for a week. | If the word's true. I'll be easy once I've seen faces. | Poor carter, and poor whoever was waiting for the load.
+
+scene night_watch
+when topic=crime here.region=ridgemere self.job=guard
+does give.opinion / react.self / assess
+a : Folk mock the Watch at noon and scream for us at midnight. I've stopped minding. | You'd not believe what tries to come through a gate after dark. | I've never once regretted a shut gate. I've regretted an open one.
+b[role=guard] #guard : Same at every gate. | Or what tries to go out. | So have I.
+b : That's hard on you. | Like what? | Once?
+a@guard : Every gate and every night. #oath#. | Out's worse. Out's usually carrying something it shouldn't. #oath#. | Then you know why I check #bar# twice.
+a : It's the work, #address#. I'd not swap it. | Wolves, carts, a goat once. All of them with a story. | Once was enough. I'll not tell you the rest.
+
+scene below_ropesheds
+when topic=smalltalk|crime here.region=ridgemere self.job=guard
+does give.opinion / disagree / concede
+a : Below the rope sheds is no place for me. Not in uniform, not out of it. | The Sump looks after its own and nobody else. I'd sooner stay up the hill. | Down there they see a Watch coat and the whole lane goes quiet. I don't blame them.
+b : It's not so bad down there. | Not everybody's like that. | They've reason to.
+a : Maybe not. I've only seen it at its worst, #address#, which is when they send me. | No. I'll grant you that. It's the ones who are that I meet. | They have. I'd not say so in front of #sarge#, mind.
+
+scene heights_window
+when topic=dreams|home here.region=ridgemere self.job=guard
+does tell.plan / ask.detail / answer.detail / assess
+a : I mean to end my days with a window of my own up the hill. A small one. | Some day I'll have a room on the Heights where I can see every road at once. | I'm saving for a window. Not a house, a window. Somewhere to hang #maps#.
+b : Why the Heights? | Every road? | Just a window?
+a : Because it's quiet, and nobody up there asks your name. I'd like a rest from asking. | Every one. I'd sit with my ink and check them as the carts go out. | A window with a room behind it, if I'm lucky. #saying#.
+b : #bc_i_hope_so# | #bc_ha# | #bc_good#
+
+scene home_lanes
+when topic=memories|land self.away=yes self.from=southmeadow
+does tell.memory / react.story / assess
+a : In #self.from_town#, every lane ran between orchards. I walked them all before I was ten. | At home you could see the harvest carts coming a mile off, dust behind them like a tail. | My first map was one I drew myself, of the lanes round home. It was wrong, but kindly.
+b[from=southmeadow] #meadow : I know those lanes. | The harvest carts. I'd forgotten the dust. | We all drew those maps.
+b : You miss it? | A mile off? | Is it kept somewhere?
+a@meadow : Then you know you can't get lost in them. Only late. | Dust and singing. You'd hear them before you saw them. | All of them wrong in the same places, #address#.
+a : The walking, not the work. There was a lot of work. | A mile and more. The land's that flat. | Somewhere in #chest#. I'll not look at it; I'd only correct it.
+
+scene voice_gone
+when topic=accent self.from=southmeadow self.away=yes self.job=guard
+does tell.self / react.self / assess
+a : I talked my home out of my voice at #gate#. Carters can't place me now, and I like it. | Folk at #gate# hear a dozen voices an hour. Mine went plain to keep up. | My #mum# would weep to hear me now. Not a word of home left in it.
+b : Do you miss it? | You'd never know where you're from. | Is that so bad?
+a : Only when I'm #tired#. Then a word slips out and #carters# laugh. | That's the idea. I'm from #gate#, as far as anyone needs to know. #saying#. | Bad enough to make me say #greet# to her, the way she likes, when I go back.
+
+scene feast_day_gate
+when topic=festival self.job=guard
+does tell.self / react.self / assess / ack
+a : Feast day, and #gate# has me from dawn to dark. I hear the singing from here. | The whole city's out on a feast day, talking to each other for once. I love it. | On a feast day half the carts are full of barrels and the other half full of cousins.
+b : You don't mind working it? | For once? | Cousins?
+a : I mind. I'd mind more if I wasn't paid double, #address#. | For once. Every other day they walk past each other like strangers, #address#. | Cousins. Every one of them with a name and no reason at all.
+b : #bc_ha# | #bc_true# | #bc_ha#
+
+scene faith_gate
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One gets a word from me at dusk, when the day's shut. That's all the chapel I've time for. | The Bright One's got a lot of gates to watch. I try to keep mine off the list. | I'm no great hand at prayers. I'm better at shutting doors on the Dark One's business.
+b : That's enough. | That's thoughtful. | That's a kind of prayer.
+a : I hope so. It's what I've got, #address#. | Thoughtful, or lazy. #bc_ha# | It's the kind I'm good at, #address#.
+
+scene trusted_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd want on the next gate on a bad night. | I'd trust #self.friend# with my maps and my secrets, and the maps are dearer. | When I talk too much, #self.friend# lets me. That's a friend, #address#.
+b : That's high trust. | Dearer? | Not many would.
+a : The highest I've got. #oath#. | Dearer to me. Secrets are cheap; the ink cost me money. | Not many. Most folk find somewhere else to be.
+
+scene sergeant_fair
+when topic=work|friends self.boss self.job=guard
+does tell.self / react.self / assess
+a : #self.boss# draws up #roster# fair. I've had worse sergeants and I've had none better. | I'd stand a double shift if #self.boss# asked. I'd grumble, but I'd stand it. | #self.boss# lets me talk. That's rare in the Watch, believe me.
+b : Lucky. | You'd grumble? | Rare?
+a : Lucky. I tell myself so every week. | Loudly. It's part of the shift. | Rare as a straight road. #saying#.
+
+scene bunk_room
+when topic=home self.job=guard
+does tell.complaint / react.self / assess
+a : #bunks.capitalize# is a dozen wolves and a dozen snores. I can name every snore. | I share #bunks# with half the Watch. Nobody's ever alone, and nobody's ever asleep. | There's a chest under my bunk with #maps# in it. That's my whole house.
+b : Can you sleep? | Sounds noisy. | That's not much.
+a : Like a stone, once I've talked myself #tired#. | It is. I'm the noisiest, they say, and I'm awake. | It's plenty. The rest of my house is #road#.
+
+scene sore_feet
+when topic=health
+does tell.self / react.self / reassure
+a : #feet.capitalize# ache from standing on the cobbles. I soak them at night and talk to them. | My knees creak in the damp. #carters.capitalize# say they can hear me coming. | I've not been ill a day this year. I put it down to fresh air and complaining.
+b : Soak them in salt. | They can't, surely. | Keep it up.
+a : Salt and hot water. I'll try it tonight, #address#. | They can, the cheek of them. I creak louder to spite them. | I intend to. Complaining's free, and I've plenty.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean self.job=guard
+does tell.worry / react.complaint / assess
+a : Fewer carts this month, and the ones that come are half empty. I can tell the times from #gate#. | Folk are walking out of #city# with everything they own. That's a lean sign. | Carters are haggling at #gate# over a copper toll. That never used to happen.
+b : Hard for everyone. | Where are they going? | Times are hard.
+a : Hard. You see it in their faces first, then #carters#. | Wherever they think there's work. I hope they find it. | They are. I let the copper go, sometimes. Don't tell #sarge#.
+
+scene good_times
+when topic=times|prices world.times=good|boom self.job=guard
+does tell.news / react.news / assess
+a : Carts stacked to the rails this week. I've hardly had time to ask a name. | Coin's moving. Even #carters# are whistling, and they never whistle. | Good times at #gate#. Everyone's polite when there's money in it.
+b : Good to hear. | Whistling? | Polite?
+a : It is. I'll take #good# while it's here. | Whistling. Badly, but whistling, #address#. | Polite as a parson. It won't last, but it's #good# while it does.
+
+scene gossip_heard
+when topic=gossip here.region=ridgemere self.job=guard
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. I had it from #carter#, so take it as you like. | A gate hears it all. Today it's that #topic.subject# #topic.claim#. | Word through #gate# is that #topic.subject# #topic.claim#. That's all I know of it.
+b : Is it true? | Everything? | Fancy that.
+a : I'd want a name behind it before I swore. | Everything, and most of it twice. | So did I. I'll know more by dusk, I expect.
+
+scene gossip_rough
+when topic=gossip|crime topic.claim_kind=violence|theft|wanted
+does tell.gossip / warn / ack
+a : They're saying #topic.subject# #topic.claim#. Keep your eyes open on the way home. | Word is #topic.subject# #topic.claim#. If you see anything, come and find me. | You'll have heard #topic.subject# #topic.claim#. I'd stay where #lantern# light reaches, for now.
+b : I will. | I'll come straight to you. | Thanks for the word.
+a : Good. That's what I like to hear, #address#. | Do. I'm easy to find; listen for the talking. | Any time. It's what I'm here for.
+
+scene event_talk
+when topic=event|news world.event_words self.job=guard
+does tell.news / react.news / assess
+a : Every carter through #gate# today is on about #world.event_words#. | #world.event_words.capitalize#, they're saying. I've heard it forty times since dawn. | All this talk of #world.event_words#. I've not had a quiet minute.
+b : I heard the same. | Forty? | Is that bad?
+a : Then you're up with #gate#, and that's quick, #address#. | Forty-one, counting you. #oath#. | Not for me. I like a busy day; it's the quiet ones I fret in.
+
+scene gate_goat
+when topic=animals self.job=guard
+does tell.story / react.story / assess / ack
+a : A goat walked up to #gate# alone this morning, like it had business in #city#. | There's a cat lives in the gatehouse. It inspects every cart before I do. | I let a flock of geese in once and spent an hour getting them back out.
+b : What did you do? | Does it let them through? | An hour?
+a : Asked its name. It ate my tally stick, so I let it in. | Mostly. It's stricter than #sarge#, and #very# rude about it. | An hour, and a bite on the tail. I count geese very carefully now.
+b : #bc_ha# | #bc_ha# | #bc_poor_soul#
+
+story the_false_name [topic=work|crime self.job=guard self.age>=25]
+  : My first winter on #gate#, a wolf came through three nights running and gave three different names.
+  : The fourth night I said all three back to him before he'd opened his mouth.
+  : He turned round and went back the way he came. I never saw him again.
+  ask : Would you have let him through?
+  b : Not on the fourth night.
+  b[role=guard] : I'd have held him. You were kinder than me.
+
+story the_sea_on_the_downs [topic=lore|pastimes self.likes=old_maps]
+  : I've a map in #chest# with a sea drawn where the downs should be. Fish, waves, a ship with its sails up.
+  : The wolf who drew it had never been east of #city#. You can tell; the sea's very confident.
+  : I've never inked that one. Some maps are wrong in a way that's worth keeping.
+  b : Show it me some day.
+  b[old] : I've seen maps like that. The old ones were bolder.
+
+story walking_home [topic=memories|travel self.from=southmeadow self.away=yes self.age>=25]
+  : The first time I went home from #city# on foot, it took me six days. I could have ridden it in three.
+  : I stopped at every orchard and asked whose it was. By the end, I knew half the families on the road.
+  : When I got to my own door my #mum# asked where I'd been. I said asking names. She said I'd always done that.
+  ask : Have you ever walked a road the long way on purpose?
+  b : I have. It's the only way to know one.
+  b[from=southmeadow] : Every orchard on that road. I've done it too.
+
+story the_lantern_night [topic=work|weather self.job=guard]
+  : One storm night #lantern# blew out, and there I was in the black with my paw on #bar#.
+  : Something came up #road# slow, breathing hard. I gave the challenge three times.
+  : It was #carter#'s mule, alone, come home without him. We found the carter in the morning, cold and cross but whole.
+  b : You must have been frightened.
+  : I was. I still gave the challenge properly. #oath#.
+
+story ink_from_soot [topic=pastimes|lore self.likes=old_maps]
+  : I make #ink# myself, from lamp soot and a bit of gum. It's the only use I've ever found for smoke.
+  : The first batch was so thin the roads ran off the map in the rain.
+  ask : Do you know what a good ink needs?
+  b : Patience, I'd guess.
+  b[job=scholar] : Gum, soot, and time. You had the first two.
+  : Patience, and a second try. The second batch is still on my paws.
+
+rule @gate_call
+when concept=bark working=yes self.job=guard
+does aside
+cooldown 6h
+say #names.capitalize#, one at a time! | Stand in the light, the next one!
+
+rule @ink_bark
+when concept=bark working=no self.likes=old_maps
+does aside
+cooldown 10h
+say That road's in the wrong place. Again. | Where's #ink#? This bridge isn't a bridge.
+
+rule @reek_bark
+when concept=bark here.region=ridgemere self.dislikes=smoke
+does aside
+cooldown 8h
+say #reek.capitalize#. My eyes, my poor eyes. | Wind's wrong. #oath#.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.season=spring|summer self.likes=warm_rain
+does aside
+cooldown 8h
+say Oh, that's lovely. Warm as you like. | Rain I can stand in. At last.
+
+rule @shut_bark
+when concept=bark here.time=dusk working=yes self.job=guard
+does aside
+cooldown 8h
+say #gate.capitalize# shuts at dark! Last in, last out! | Bar's coming down! Hurry if you're coming!
+
+rule @manners_bark
+when concept=bark working=yes self.dislikes=bad_manners
+does aside
+cooldown 8h
+say Shove again and you'll be at the back. | Manners, if you please. #oath#.
+
+dlg @1 watch.hub [here.wanted=no on_watch=yes] : #greet#. All quiet at #gate#, and I'd like it kept so. What's wanted? | #watch_greet# I'm on, and I'm listening.
+dlg @2 watch.hub [here.wanted=no on_watch=yes topic.meeting=known] : #greet#, #topic.player#. I remember you. Name and business, for form's sake. | #topic.player#. Back at #gate#. What is it today?
+dlg @3 watch.hub [here.wanted=no on_watch=no] : I'm off #roster#, #address#, but I'll hear you. Quickly. | Off duty. Ask me anyway; I can't help listening.
+dlg @4 watch.hub [here.wanted=yes] : Hold there. You're wanted, #address#: #here.fine# pennies settles it. | I know that face. The Watch wants #here.fine# pennies of you.
+dlg @5 watch.hub [here.wanted=no pair.disposition=hostile|wary] : Hands where I can see them. Then say what you want. | Easy. Name and business, and slowly.
+dlg @1 watch.crime [here.witnessed=0] : Saw something, did you? Go on, I'm all ears. | Tell me plain. Who, where, what?
+dlg @2 watch.crime [here.witnessed>=1] : Go on. Who did it, and where did they go? | Tell it from the start. I'll remember every word.
+dlg @1 watch.reported [topic.reported=yes] : #watch_noted# I'll pass it up the line tonight. | Good. That's a name for #sarge#. Thank you.
+dlg @2 watch.reported [topic.reported!=yes] : We have that already. Keep your eyes open, though. | Nothing new to us, but you did right to say, #address#.
+dlg @1 watch.fine [here.wanted=yes] : You owe #here.fine# pennies: the fine and what's to be made good. Pay it, or you'll come with me.
+dlg @2 watch.fine [here.wanted=no] : You owe the Watch nothing. Keep it that way, #address#.
+dlg @1 watch.paid : Settled. Off you go, and mind yourself, #address#. | That's that. I'll forget your face by supper, if you let me.
+dlg @1 watch.law [here.wanted=no] : Steal and it's three pennies and the goods back. Strike a wolf and it's eight. Pay any of us. | Theft's three pennies, striking's eight. Simple enough to remember, #address#.
+dlg @2 watch.law [here.wanted=yes] : You'd know it better than most. Theft's three, striking's eight, and yours is #here.fine#.
+dlg @1 watch.unpaid : Then you'll sit in the cells till it's settled. They're dry, mostly, and #cold#. | The cells, until it's paid. I'll bring you a blanket.
+dlg @1 watch.bounties : Posted at #gate#: #here.bounty# | #here.bounty# That's the board, as of this morning.
+dlg @1 watch.refused : #topic.why# | Not that, #address#. #topic.why#
+dlg @1 watch.bye : #farewell#. Keep the peace. | #watch_bye#
+dlg @1 resident.hub : #greet#. What's wanted? I've time to talk. | #greet#, #address#. Out with it, I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see a name I know. | #topic.player#! Come and tell me where you've been.
+dlg @3 resident.hub [here.time=night] : It's late, but I'm awake. I'm always awake. What is it? | Night, #address#. Say on; I'll not sleep yet.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say your piece, and say it plain. | I'm listening. Keep your paws where I can see them.
+dlg @1 resident.job [self.job=guard] : #self.trade_words.capitalize#. Names, carts, and a heavy bar twice a day. | I keep #gate#. Everybody in, everybody out, and every name in my head.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me talking, which suits me. | Work's work, #address#. #self.trade_words.capitalize#, and plenty to say about it.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Every carter's had it today. | #carter.capitalize# from #world.news_from# says #world.news#. I'd take it as told.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# in #city#. Every carter has it.
+dlg @3 resident.news [world.wagons=raided] : They robbed a cart out on #road#. Don't go out alone, #address#.
+dlg @4 resident.news [world.death=recent] : There was a burying this week, and the streets have been hushed for it.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! Half the guests went by with flowers in their teeth.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the carts, and the carts are dull today. | Nothing's come through #gate# worth telling. Ask me at dusk.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. You didn't hear it from me. Well, you did. | Word on the street is #topic.subject# #topic.claim#. Take it as you like.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# #carters.capitalize# are dull this week. | Nothing worth repeating, and I've tried. #bc_ha#
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the cobbles going down.
+graft resident.hub
+choice Why is there ink on your paws? [self.likes=old_maps] -> ink
+node ink
+say I mend maps. Carters bring me old ones, all crooked, and I ink in where the roads truly run. My paws pay for it.
+mood pleased
+free
+choice How do you know where they really go? -> ink_how
+choice Goodbye. -> bye
+node ink_how
+say I've walked a good many, and I ask every carter I meet. Between the two, a road can't hide from me long.
+choice That's a lot of asking. -> hub
+choice Goodbye. -> bye
+
+graft watch.hub
+choice Which way out of the city is safest? -> roads
+node roads
+say The one with the most carts on it today. Company's safer than any road. Ask me which that is, and I'll tell you; I've counted.
+mood formal
+choice And if I must go alone? -> roads_more
+choice Thank you. -> hub
+node roads_more
+say Then go at first light and be back by dusk. Nothing good walks the roads at night, and I'd like to see you through #gate# again.
+choice Thank you. -> hub
+choice Goodbye. -> bye

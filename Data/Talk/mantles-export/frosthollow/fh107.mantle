@@ -1,0 +1,432 @@
+# fh107, the bird-carver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh107
+revision 2
+state ready
+dialect frosthollow
+accent broad light
+tier full
+written_for tn_oh_thorn_ashwood
+written_by claude
+title the bird-carver
+fits stage=adult|old
+prefers job=innkeeper warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk carves_little_birds_to_give_away
+likes warm_bread swimming festival_bells warm_rain
+dislikes stale_bread smoke
+fears the_pit_bell_ringing_at_night a_cold_hearth_on_a_full_night
+hopes a_carved_bird_on_every_sill_in_the_valley
+topics friends +0.4 pastimes +0.3 food +0.3 festival +0.3 player +0.3 work +0.2 gossip -0.3
+styles comfort=company gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps the taproom under the pit road and sleeps over it: gentle, open-pawed and unhurried, with a bowl and a seat by the fire for anyone off the shift, and a little wooden bird whittled for anyone who looks in need of one.
+
+words
+oath! = Feather and flint | Wing and hearth | By the little birds
+saying! = There's room for one more by any fire | A bird given away still sings | Nobody hurries under a low beam
+bird = a little bird | a wooden finch | a bird off my knife
+birds = the little birds | my wooden birds
+knife = my knife | the whittling knife
+shavings = the shavings | a lapful of shavings
+sill = the sill | the window sill
+taproom = the taproom | my taproom
+hearth = the hearth | the big hearth
+bench = the bench | the long bench by the fire
+bowl = a bowl of broth | a bowl of something hot
+hotbread = bread hot off the hearthstone | a round still steaming
+boardbread = bread gone to board | a heel you could shoe a pony with
+tarn = the tarn | the cold tarn under the scree
+warmrain = a warm rain | rain warm as a bath
+peal = the feast peal | the chapel bells ringing a feast
+pipesmoke = pipe smoke | smoke you could cut
+regulars = the regulars | my old regulars
+doorlamp = the lamp over the door | the door-lamp
+pitbell = the pit bell | the bell on the pithead
+valley = the valley | our valley
+fire = the fire | my fire
+broth = the broth | the pot-broth
+shift = the shift | the day shift
+pass = the pass | the pass road
+slate = the slate | my slate
+pit = the pit | the pit below
+
+any
+opinion @1 drink for 1 : A jar of #ale# at the end of a shift is an honest thing, and I'll not hear it called otherwise under my roof.
+opinion @1 strangers for 2 : Every stranger who comes through #taproom# leaves a story by #fire#. I've never once been sorry to hear one.
+opinion @1 newcomers for 2 : There's room in #valley# for anybody who'll pull a share. I've #bench# long enough for all of them.
+opinion @1 watch for 1 : #watch.capitalize# keep the rough ones off my door, and they drink their #ale# quiet. I've no quarrel with them.
+opinion @1 merchants for 1 : Anyone who's paid a carter for a barrel up #pass# knows what a counter costs. I'll not begrudge another wolf a fair price.
+opinion @1 road against 1 : The barrels come up late more than they come up early, and it's #regulars# who go dry for it.
+opinion @1 city against 1 : Down there they say a neighbour's name once a year. Up here I hear every name on #bench# every night, #address#.
+opinion @1 festivals for 1 : I'd open #taproom# for nothing on a feast day, just to hear #peal# from the step.
+opinion @1 dole for 1 : Nobody in #valley# should sleep hungry. I'll put out the end of the pot for anyone, and so should we all.
+opinion @1 times for 1 [world.times=good|boom|ordinary] : While #hearth# is lit and #bench# is full, grumbling would be #daft#, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come in out of #wind# and take your time. | #greet#. You look like you've walked a long way. Sit, sit.
+line @2 greet [self.working=yes self.job=innkeeper] : #greet#. There's a seat by #hearth# and #bowl# if you want it. | #greet#. Take #bench# nearest #fire#, #address#.
+line @3 greet [here.time=dawn] : #greet#. You're up early. #fire.capitalize#'s only just caught. | #greet#. I've the kettle on and nobody to share it with.
+line @4 greet [here.time=dusk|night] : #greet#. Come in; the lamp's lit for you as much as anyone. | #greet#. You're out late, #address#. Warm your paws first.
+line @1 kin.open [pair.kin!=no] : Here you are at last. The warm seat's been waiting, #address#. | Come here, then. Sit by #fire# and let me look at you.
+line @1 again.open : You again, #address#. That's twice I've been glad of a face today. | #welcome_back#. The seat's still warm from you.
+line @1 hail [pair.band=friends] : #address.capitalize#! Come over here by #fire#. | Here, #address#. I've something for you.
+line @1 greet.return : #greet#. | #greet#, #address#. It's good to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping you'd come by. | #greet#. Sit, you look #tired#.
+line @3 greet.return [self.working=yes self.job=innkeeper] : #greet#. Take a seat; I'll be round. | #greet#. #bench.capitalize#'s yours, #address#.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, and none the worse for it. | #greet#. Pull up to #hearth#, then.
+line @1 farewell : #farewell#. Come back when you're cold. | #farewell#, #address#. Mind the step; it's worn.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps, and get home warm. | #farewell#. Bank your fire well tonight.
+line @1 farewell.return : #farewell#. | And yours, #address#. Go gently.
+line @1 react.news : #surprise#. That's a thing to think on by #fire#. | Is it so? Not a whisper of it reached #bench#, and I hear plenty.
+line @1 react.news.new : #surprise#. Nobody's said that on #bench# yet. | That's new. #taproom.capitalize# will have the rest of it by dusk.
+line @1 react.news.known : #knew#. The shift brought it up with the dust. | I'd heard, #address#. #taproom.capitalize# had it last night.
+line @1 react.news.doubt : #doubt#. Ale-talk, that, most like. | I'll wait and hear it from someone sober, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. #pity#. | #sympathy#. I'll set a lamp on #sill# tonight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants a jar raising. | Oh, that's #good#. I'll carve a bird for it.
+line @1 answer.how : Content, #address#. #fire.capitalize#'s lit and nobody's cold. | #fine#. A full bench and an empty pot. That's a good day.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. The shift's just up. | Run ragged, and glad of it. Sit while I pour #ale#.
+line @1 ask.how : And you? Have you eaten, #address#? | How are you keeping, #address#? Truly, now.
+line @1 sympathise : #sympathy#. Sit here by me and tell it slow. | Oh, #address#. Have #bowl# and we'll talk it through.
+line @1 reassure : #reassure#. You've a roof here whatever comes. | It'll come right. Give it a night by #fire#.
+line @1 decline : #hedge#, I can't leave #taproom# with #shift# due up. Ask me again at Restday. | I'd like to, truly, but I'm promised to somebody else that day, #address#.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. #fire.capitalize#'ll be here another day.
+line @1 thank : #thanks#. That's kindly done. | #thanks#. I'll carve you a bird for that.
+line @1 deflect_thanks : #deflect#. It's what a fire's for. | It was nothing. Any wolf by #fire# would do it.
+line @1 preclose [self.working=yes self.job=innkeeper] : Well. #drink.capitalize# won't pour itself. | #hearth.capitalize# wants a log before it sulks. Excuse me.
+line @2 preclose : #preclose#. | Well. I've a bird half-done upstairs, #address#.
+line @1 accept_preclose : Go on, then. Come back soon, #address#. | Of course. Mind the ice on #pass#.
+line @1 ack : #bc_right# | Aye, #address#.
+line @1 give.advice : #advise#: eat something hot before you go down, not after. | Take your time with it. #saying#.
+line @1 warn [world.bandits=near] : Don't go down #pass# alone, #address#. #bandits.capitalize# are about. | Wait for company before you cross. Sit by #fire# till some comes.
+line @1 offer : Here, have #bowl#. Go on, it's made. | Take this. It's only #bird#, but it was made for you.
+line @1 accept : That's kind, #address#. I'll take it gladly. | #thanks#. I'd not say no.
+line @1 invite [pair.band=friends|family] : Come by tonight after #shift#. I'll keep you a seat. | Come up to the tarn with me when it's warm, #address#.
+scene whittling
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I've #bird# half out of this bit of pine. The beak's the hard part; it always is. | I whittle of an evening when #taproom# goes quiet. A bird a night, near enough. | Look at that. #shavings.capitalize# all over my knees and only a wing to show for it.
+b : Why is the beak hardest? | A bird a night? | Only a wing?
+a : Too much and it's a stick, too little and it's a lump. You go slow, and you stop early. | A bird a night, and given away by morning. I've not kept one of #birds# in years. | A wing's a start. The rest of the bird's in the wood, waiting for #knife#.
+b : #bc_wise# | #bc_lovely# | #bc_ha#
+
+scene bird_given
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I gave #bird# to a pup this morning. Never seen a face light like it. | There's a miner on the row carries one of #birds# down #pit# every shift. | Somebody asked what I want for #birds#. Nothing, I said. What would I want?
+b : That's kind of you. | Down the pit? | Most would sell them.
+a : It cost me an evening and a lapful of shavings. That's cheap for a face like that, #address#. | For luck, so I hear. I'd sooner it was a lamp, but I'll take it. | Then most would miss the best part, #address#. Giving them is the best part.
+
+scene birds_on_sills
+when topic=smalltalk|home here.region=frosthollow
+does tell.feeling / react.self / assess
+a : Walk down the row and count the sills. Half of them have one of #birds# on them now. | I can see three of #birds# from my window, all looking down the valley. | A widow on the high street keeps one in her window. She's never said a word about it, and nor have I.
+b : Half the row? | Looking down the valley? | That's a kindness, that.
+a : Half, and the other half are coming. #knife.capitalize# is patient. | Waiting for somebody coming up #pass#, I think. Birds do that. | It's a little thing. Little things go a long way up here.
+
+scene shift_up
+when topic=work self.working=yes self.job=innkeeper here.time=dusk|night
+does tell.self / react.self / assess
+a : Shift's up. In a minute #bench# will be grey from end to end with pit dust. | Hear the boots? That's the day shift coming up the street, and they'll want broth first. | Every night I count them in at the door. I don't say I'm counting.
+b : You'll be busy, then. | Broth before ale? | Why count them?
+a : Busy, and glad. A full bench is a safe shift. | Broth first, always. A wolf off #shift# needs filling before oiling. | Because if one's missing, I want to know before anybody has to come and tell me.
+
+scene morning_hearth
+when topic=day|work here.time=dawn self.job=innkeeper
+does tell.self / react.self / assess
+a : First thing I do is rake #hearth# and get a flame in it. Nobody should come in to a cold room. | Sweeping last night's #shavings# off the floor. I'm a messy carver. | I put #broth# on at dawn. By noon it's fit to drink; by dusk it's fit to live on.
+b : Before anything else? | Every morning? | Fit to live on?
+a : Before my own breakfast. #fire.capitalize# eats first in this house. | Every morning. The broom knows where my chair is better than I do. | You'll see, at dusk. The shift'll tell you.
+
+scene fresh_round
+when topic=food self.likes=warm_bread
+does tell.feeling / react.self / assess / ack
+a : There's nothing better than #hotbread# torn open with a bit of butter in it. | I bake a round every morning for #taproom#. The smell does more business than I do. | A wolf can come up #pit# half dead and sit up straight for #hotbread#.
+b : I'd come in for the smell. | Does it bring them in? | I believe it.
+a : Then come in. There's always a heel for whoever smells it first. | Like moths to the lamp, #address#. I've seen it. | I've watched it a hundred times. Bread does what words can't.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene board_bread
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : The carters sell #boardbread# up here and call it travelling loaves. | I'll not put #boardbread# in front of a wolf who's been down a hole all day. | Found a heel behind the barrel. Hard as the rock they dig, and twice as old.
+b : What do you do with it? | Not even soaked? | Into the broth?
+a : Into the pudding, with milk and a fistful of currants. It's forgiven there. | Soaked, it's food. Served dry, it's an insult, and I'll not insult a regular. | Into the birds' tray on #sill#. Even the crows argue over it.
+
+scene pipe_smoke
+when topic=smalltalk|health self.dislikes=smoke
+does tell.complaint / react.complaint / assess / ack
+a : I've asked them to take their pipes out on the step. Most do. One doesn't. | #pipesmoke.capitalize# in #taproom# again. My eyes are running like a thaw. | The smelter smoke's on the wind and the pipes are going inside. A wolf can't breathe.
+b : Make him go out. | Open the shutters. | It's the town, though.
+a : I will, gently. I'll put his jar on the step and see where he follows. | I did, and the cold came in, and now they're cross with me instead. | I know it. I'd still like one clean breath between here and #pass#.
+b? : #bc_ha# | #bc_bad_luck# | #bc_true#
+
+scene warm_rain_scene
+when topic=weather here.weather=rain here.season=summer|spring
+does tell.feeling / react.self / assess
+a : Smell that? #warmrain.capitalize#, after the dry. I'd go and stand in it, if nobody were watching. | A warm rain up here is rare as a quiet shift. I've propped the door open to hear it. | Rain on the roof and #fire# low. That's the best of the year, #address#.
+b : Then go and stand in it. | Rare, it is. | It is a good sound.
+a : I might. I'll tell them I was checking the gutters. | Rarer than that, some years. I'll not waste it. | Better than any song in this room, and they sing a fair few.
+
+scene sleet_night
+when topic=weather here.weather=snow|rain here.region=frosthollow here.time=dusk|night
+does tell.self / ask.detail / answer.detail / assess
+a : Coming down hard. Nobody's going home in this; I'll be making up the floor. | It'll be worse on #pass#. There'll be a carter knocking before the night's out. | Listen to it on the shutters. I've a pan of something hot for whoever comes in from that.
+b : Make up the floor? | How do you know? | Who'll come in?
+a : Blankets by #hearth#, and #bench# for the tall ones. Nobody pays on a night like this. | Because one always does. I've the lamp lit over the door for them. | Whoever's out in it. That's who the lamp's for, #address#.
+b : #bc_good# | #bc_wise# | #bc_lovely#
+
+scene storm_count
+when topic=weather here.weather=storm
+does tell.worry / reassure / assess
+tone serious / even / even
+a : Thunder on the peaks. I don't like it with #shift# still down. | That was close. The lamps jumped on their hooks. | A storm like this, I keep looking at the door for the bell.
+b : They're deep. They won't hear it. | It'll pass over. #reassure#. | It's only thunder.
+a : I know. It's me that hears it, and I'll keep hearing it till they're up. | It will. I'll keep #broth# on until it has. | Only thunder. #bc_right#. I'll make myself believe it by the third jar.
+
+scene frost_dawn
+when topic=weather|day here.time=dawn here.weather=clear
+does tell.self / react.self / assess
+a : #cold.capitalize# out there. The step's white and the pump's froze solid. | Clear and still. You can hear a pick up at #pit# from my door this morning. | A dawn like this, the whole valley smokes like a kettle.
+b : Biting, isn't it. | That far? | Like a kettle?
+a : Come in, then, and stand by #fire# till your tail thaws. | That far. Sound carries in the cold. So does a cough. | Every chimney at once. It's a good sight. Means everyone's still here.
+
+scene feast_peal
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / ask.opinion / give.opinion / assess
+a : Did you hear #peal# this morning? I stood on the step with a jar in each paw and forgot to set them down. | Feast day. I'll open early, and close when the last one goes home singing. | I'd give the whole year for one feast morning when the bells come down the valley.
+b : I heard them. | Will you not rest, on a feast day? | The whole year?
+a : Then you know. Nothing else sounds like that, up here. | Rest? Feeding a feast is my rest. I'll sleep the day after. | Near enough. Every other day is only waiting for it.
+b : #bc_lovely# | #bc_fair_enough# | #bc_ha#
+
+scene tarn_swim
+when topic=pastimes|season here.season=summer self.likes=swimming
+does tell.self / ask.detail / answer.detail / assess
+a : I went up to #tarn# before #shift# and swam across and back. My fur's still steaming. | There's no water like #tarn# on a hot day. You go in a wolf and come out a fish. | Folk think I'm #daft# for swimming up here. They've not tried it in high summer.
+b : Isn't it freezing? | A fish? | Have you never been daft?
+a : Freezing, and lovely. You shout once, and then you're glad you came. | A cold fish, mind. But I come out lighter than I went in. | Oh, often. But not about the tarn, #address#. Come up with me and see.
+b : #bc_ha# | #bc_lovely# | I might.
+
+scene pit_bell
+when topic=lore|memories|work here.region=frosthollow self.age>=30
+does confide / sympathise / assess
+tone grave / tender / even
+a : #vent#: I listen for #pitbell# every night. I've heard it once, and once is enough for a life. | The night #pitbell# goes, every lamp in #taproom# stays lit till they're all counted up. | Every wolf on #bench# has heard #pitbell# ring at the wrong hour. Nobody talks about it.
+b : I'm sorry. | Every lamp? | Nobody?
+a : Don't be. Everyone came up that night, but one. I keep a lamp for that one still. | Every lamp, and the door open, and #broth# on. That's what this house is for. | Nobody. They talk about the ale instead, and I let them.
+
+scene friends_neighbour
+when topic=friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# is the one I'd knock for at midnight, and not need to say why. | I've known #self.neighbour# long enough to know when to say nothing. That's a friend. | There's a bird of mine somewhere at #self.neighbour#'s. I hope it's on a sill and not in a drawer.
+b : That's a good neighbour. | Saying nothing's hard. | Would you ask?
+a : The best. You don't get many, so you mind the ones you've got. | Hard for some. It comes easy by #fire#. | Never. A bird's given; where it lives after is its own business.
+
+scene stranger_seat
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : A stranger came in this morning, sat in the corner and ate like a winter. I didn't ask a thing. | New faces up #pass#. I've put clean straw upstairs; somebody will want it. | There's a traveller asleep on #bench# who came in at midnight. I covered them with my coat.
+b : You didn't ask anything? | Clean straw already? | Your own coat?
+a : They'll tell me when they're ready, or they won't. Either way they ate. | Already. A stranger comes up #pass# tired; the least they should find is a clean bed. | It was nearest, and they were cold. I'll have it back by breakfast.
+
+scene travellers_talk
+when topic=travel|news
+does tell.self / react.self / assess
+a : The best of my news comes up #pass# in strangers' mouths, and I never pay a copper for it. | A traveller last week told me the lowlands have a market every day. Every day! | I've never been past the low bend, #address#. Everything I know of the world, somebody told me by this fire.
+b : News for free. | Every day? Would you go? | Never past the low bend?
+a : For a bowl of broth, which is free anyway. It's a fair trade. | Not me. Who'd mind #hearth#? I'll hear about it and be content. | Never. The world comes up to me. It's a long walk the other way.
+
+scene gossip_held
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : There's a lot said on #bench# after the third jar. I let it lie where it falls. | Folk tell an innkeeper things they'd not tell a priest. I keep them like a priest would. | Somebody said something last night I'll not repeat. It wasn't kind and it wasn't true.
+b : Go on, though. | You must hear plenty. | How do you know it's not true?
+a : No, #address#. Ale-talk's not mine to carry. | Plenty. And it goes up the stairs with me and no further. | Because the wolf who said it was sorry by morning. That's how I know.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene sad_word
+when topic=gossip|news topic.claim_kind=death
+does tell.news / sympathise / assess
+tone grave / grave / tender
+a : They're saying on #bench# that #topic.subject# #topic.claim#. I've set a lamp on #sill#. | Word came up tonight: #topic.subject# #topic.claim#. The room went quiet. | Did you hear? #topic.subject.capitalize# #topic.claim#. I'll keep a seat empty tonight.
+b : I'm sorry to hear it. | It would. | That's a kind thought.
+a : So am I. The lamp will burn till morning; it's the least we do. | Quiet, and then somebody started the old song, and we all sang it. | It's all I can do. A seat and a lamp, and the door left open.
+
+scene glad_word
+when topic=gossip|news topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. I'm carving something for it already. | Word on #bench# is that #topic.subject# #topic.claim#. That wants a jar raising. | They say #topic.subject# #topic.claim#. I'm glad. We need good news up here.
+b : That's good to hear. | Raise one for me. | We do.
+a : Good, and I'll have a bird done by the week's end to say so. | I'll raise two, and drink one of them for you, #address#. | We do, and we don't get it often. I'll take it gladly.
+
+scene thin_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : #slate.capitalize# behind the bar's longer than it's been in years. I'll not rub a name off it for being hungry. | Folk are making one jar last the night now. I don't mind. #fire.capitalize#'s the same price either way. | I've been putting more water in #broth# and more pepper to hide it. Don't tell anyone.
+b : They'll pay you back. | That's good of you. | Your secret's safe.
+a : They will, or they won't. Either way they ate. #reassure#. | It's what a fire's for, #address#. Nobody sits by it for the price. | #thanks#. It's a hard winter when #broth#'s thin. We'll get through.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will#
+
+scene good_times
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : #bench.capitalize# is full every night and #slate#'s clean. I've not seen that since I was young. | #regulars.capitalize# are buying rounds for strangers. That's a good year, up here. | I've bought a new barrel and a new knife, and I'm not sorry for either.
+b : Good for you. | That is a good year. | A new knife?
+a : Good for all of us. A full bench means a safe pit and full bellies. | Good years come rarer than feast days. I'll remember this one. | For #birds#. The old one's worn to a sliver. It carved half the valley's sills.
+
+scene barrels_late
+when topic=caravan|prices world.wagons=late self.job=innkeeper
+does tell.worry / ask.advice / give.advice / ack
+a : The barrels were due up #pass# two days ago. I'm down to the dregs of the dark. | No carts, and #shift#'ll be wanting #ale# in an hour. | I've one barrel left and a full house coming. What would you do?
+b : Water it a little? | Serve broth instead. | Ration it.
+a : Never. I'll pour less and say so, and they'll understand. | Broth first anyway, and they'll be glad of it. #bc_good#. | One jar each, and the second when the carts come. That's fair.
+b : #bc_wise# | #bc_good# | #bc_fair#
+
+scene faith_lamp
+when topic=faith
+does give.opinion / react.self / assess
+a : I'm no great one for chapel. I keep a lamp lit for the ones still down, and that's my prayer. | The Bright One sits by every fire, my #mum# said. I try to keep mine fit for company. | I have a word with the Bright One when #shift# goes down, and another when it comes up.
+b : That's prayer enough. | That's a kind way to see it. | Every shift?
+a : That's my hope. It's the one prayer I'm good at. | She was a kind wolf. It was a kind house. I try to keep it one. | Every shift, #address#. It's a short word. It does for both.
+
+scene pit_cough_toddy
+when topic=health
+does tell.self / react.self / reassure
+a : The pit-cough's on #bench# again. I've honey and #ale# on the hob for it. | Every wolf who comes in coughs. I give them the seat nearest #fire# first. | I keep #remedy# warming by #hearth# for the chesty ones.
+b : Does it help? | That's kind. | Does it do any good?
+a : It helps them sleep, which helps everything. | A warm chest is half a cure. The other half's rest, and nobody rests up here. | It smells as if it does, and half of curing is believing, #address#.
+
+scene upstairs_home
+when topic=home self.job=innkeeper
+does tell.self / ask.detail / answer.detail / assess
+a : I sleep right over #taproom#. I can hear #fire# settle through the boards. | My room upstairs is half bed and half birds. You can't see the shelf for them. | I've a window up there that looks right up the pit road. I like to see the lamps coming down.
+b : Does the noise keep you up? | I thought you gave them away? | Why the pit road?
+a : Never. It's the quiet that wakes me. A quiet taproom means something's wrong. | I do. Those are the ones still waiting for the right wolf. | So I know they're all down safe. Then I sleep.
+b : #bc_ha# | #bc_fair_enough# | #bc_wise#
+
+scene accent_hearth
+when topic=accent self.away=no
+does tell.self / react.self / assess
+a : Strangers laugh when we say #greet#. Then they sit by my fire an hour and say it themselves. | We talk short up here because the cold takes the long words. Inside, by #fire#, I'll talk all night. | A lowlander asked me what a hearth had to do with hello. I gave them a seat and didn't need to answer.
+b : It does catch on. | That's fair. | Did they understand?
+a : By the second night they're all saying it. I don't even have to teach them. | #fire.capitalize# thaws a tongue as well as a tail, #address#. | By morning. They said it to me going out the door.
+
+story first_bird [topic=memories|pastimes self.age>=25]
+  : When I was #child.a#, there was an old miner sat in the corner of this very room, carving.
+  : He'd give me the shavings to play with. One night he gave me the knife instead, and the bird he'd started.
+  ask : Did anybody ever put something in your paws like that, when you were small?
+  b : Not like that. I wish they had.
+  b[old] : My grandda gave me his pick. I couldn't lift it for a year.
+  : I finished that bird the next spring. It was terrible. I still have it.
+
+story snowed_in_week [topic=lore|memories self.job=innkeeper self.age>=30]
+  : One winter #pass# shut for a week with twelve travellers in this house and food for four.
+  : We ate the larder, then the pudding, then the bread I'd been saving for the feast.
+  : By the end they were singing songs from six towns, and nobody could remember which was whose.
+  ask : Would you have minded, being snowed in with strangers?
+  b : Not if there was singing.
+  b[job=carter] : I've been one of the twelve, somewhere. It's the best week of a bad year.
+
+story ice_on_the_tarn [topic=pastimes|memories self.likes=swimming]
+  : A friend dared me once to swim #tarn# in spring, with the ice still at the edges.
+  : I went in. I came out with a voice like a crow and no feeling in my tail till supper.
+  b : You daft thing! Would you do it again?
+  : Every spring since, #address#. The dare's long gone. The tarn's still there.
+
+story the_bird_came_back [topic=friends|player|travel]
+  : A stranger came through years ago, sad as a wet coat. I gave them #bird# and a bed.
+  : Last winter a wolf walked in, set a wooden finch on the bar, and said thank you.
+  ask : Do you think a little thing can carry that far?
+  b : Further than a big one, sometimes.
+  b[old] : I've seen it. It's always the little things.
+  : That bird's on my own sill now. It's the only one I've kept.
+
+story pit_bell_night [topic=memories|lore here.region=frosthollow self.age>=35]
+  : The night #pitbell# rang, I opened the door and lit every lamp in the house.
+  : They came up one by one, and I counted them in and gave each a bowl.
+  : All but one. I kept that bowl hot till dawn, and then I set it on the sill.
+  b : I'm sorry. That's a hard night to carry.
+  b[job=miner] : We all carry one of those. Thank you for the lamps.
+
+rule @pour_bark
+when concept=bark working=yes self.job=innkeeper
+does aside
+cooldown 6h
+say Broth's hot and the dark's poured. Come in off #shift#. | Room by #hearth#. Shove up, you lot, there's another coming.
+
+rule @carve_bark
+when concept=bark working=no
+does aside
+cooldown 8h
+say Easy, easy... there's the wing. | Careful with #knife#. Little cuts, little cuts.
+
+rule @smoke_bark
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 10h
+say Pipes on the step, please. On the step. | #pipesmoke.capitalize# again. I'll have the shutters open, cold or not.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.season=summer|spring
+does aside
+cooldown 10h
+say Hark at it. #warmrain.capitalize#, at last. | Leave the door open. I want to hear it.
+
+rule @bells_bark
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say There's #peal#. Oh, there it is. | Feast day. Every jar's a kind one today.
+
+rule @night_lamp
+when concept=bark here.time=night self.job=innkeeper
+does aside
+cooldown 10h
+say #doorlamp.capitalize#'s lit. Whoever's out, it's for you. | One more log, and the lamp stays up.
+
+dlg @1 resident.hub : #greet#. Take your time; I've nowhere I'd rather be. What is it? | #greet#, #address#. Sit down, then ask.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I was hoping you'd come back. What can I do for you?
+dlg @3 resident.hub [here.time=night] : It's late, but #fire#'s not out. What is it, #address#?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. I'll hear you out, gently. There's no call for anything else under my roof.
+dlg @1 resident.job [self.job=innkeeper] : I keep #self.workplace#. Broth, ale, a bed upstairs, and a seat by #fire# for whoever comes up off #shift#. | I mind #taproom# and live up the stair. And I carve birds, though nobody pays me for those.
+dlg @2 resident.job : I work, and I whittle, and I give away what I whittle. That's most of me, #address#.
+dlg @1 resident.business [business=thriving] : Full every night. I've had to put a second bench by #hearth#.
+dlg @2 resident.business [business!=thriving|failing] : Steady. A full bench most nights, and #slate# gets paid in the end. | It keeps #fire# lit and #broth# on. I'll not ask more of it.
+dlg @3 resident.business [business=failing] : Quiet, #address#. Too quiet. I've kept #fire# up anyway.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Come back after #shift#; they always bring something up. | Nothing tonight. #bench.capitalize# talked about the weather and the ale.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | What's said by my fire stays by my fire, #address#.
+dlg @1 resident.bye : #farewell#. Come back when you're cold. | #farewell#, #address#. The door's always open.
+dlg @1 inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. Come in to #hearth#, #address#. A bed, a bowl, or just #fire#? | #greet#. Take your time. There's broth on, and room on #bench#.
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : #greet#, #topic.player#. Your seat's still warm. The usual? | #topic.player#! Sit, sit. I've a bird for you somewhere.
+dlg @3 inn.greet [here.time=night here.inn_helper!=yes here.shop!=asleep] : Come in, come in. It's a cold night to be out. #inn_offer#
+dlg @4 inn.greet [here.inn_helper=yes] : #greet#. I only help here, #address#. Ask #here.innkeeper# for a bed, and sit by #fire# meanwhile.
+dlg @1 inn.rooms : A bed's #here.bed_night#p a night, #here.bed_week#p the week. The whole upstairs is #here.upstairs_night#p, if nobody's in it. Clean straw, and the chimney runs through.
+dlg @1 inn.roomed : Up the stair, the room by the chimney. There's a bird on the sill; it's yours to keep. | #inn_bed# Sleep warm, #address#.
+dlg @1 inn.rest [here.lodging!=yes] : Sit by #hearth# till you're thawed through. Nobody pays for #fire#. | #inn_rest#
+dlg @2 inn.rest [here.lodging=yes] : Rest while you please, #address#. Your bed's upstairs, warm, whenever you want it.
+dlg @1 inn.refused : I'm sorry, #address#. #topic.why# | #topic.why# I wish it were otherwise.
+dlg @1 inn.bye : #farewell#. Mind the step; it's worn. | #farewell#. Come back up #pass# to us.
+graft resident.hub
+choice Who carves the little wooden birds? -> birds
+node birds
+say I do. A bird a night, near enough, when #taproom#'s quiet. I give them all away.
+mood warm
+free
+choice Why give them away? -> birds_why
+choice Goodbye. -> bye
+node birds_why
+say A bird kept is a bit of wood. A bird given is a face lighting up. I know which I'd rather have. Here, take one.
+mood pleased
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Is it always this busy after the shift? [here.region=frosthollow] -> shift
+node shift
+say Every night #shift# comes up, aye. They come in grey and go home pink. Broth first, then a jar, then home to bed.
+mood warm
+choice Do you know them all? -> shift_all
+choice Back to the fire. -> greet
+node shift_all
+say Every one, and I count them in. If one's missing, I want to know before anyone has to tell me.
+choice I see. -> greet
+choice Goodbye. -> bye

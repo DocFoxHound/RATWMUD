@@ -1,0 +1,304 @@
+# cw191, the pip-saver of the press house (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw191
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rmx_soren_cindermarsh
+written_by claude
+title the pip-saver of the press house
+fits stage=adult|old
+prefers job=none humour=merry talk=chatty
+traits temper=calm talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk saves_apple_pips_for_a_garden_up_the_hill
+likes crisp_apples old_tales fresh_straw autumn_wind
+dislikes deep_mud smoke
+fears dying_in_the_sump_mud a_winter_that_sets_the_leg_for_good
+hopes a_room_in_the_heights_with_a_tree_outside a_tale_told_so_well_nobody_leaves
+topics dreams +0.4 food +0.3 pastimes +0.4 work +0.2 memories +0.2 friends +0.2 crime -0.3
+styles comfort=cheer gossip=keen refuse=soft tease=merry
+marks oath saying
+persona #self.first# turns the big screw at a fruit press down in the Sump and comes home sticky to the elbows, chattering: gentle, merry and plain, a leg that aches when the weather turns, a twist of apple pips saved in a pocket for the garden to be planted one day up on the Heights.
+
+words
+oath! = Pips and pressings | By the big screw
+saying! = Up's the only road out of the Sump | Plant the pip and wait on the tree
+pips = my pips | the twist of pips in my pocket
+press = the press | the big screw press
+must = the must | apple must to the elbow
+vats = the vats | the working vats
+apple = a crisp apple | an apple that cracks like a knuckle
+straw = fresh straw | an armful of clean straw
+tale = an old tale | a tale with a good ending
+blow = a blowy autumn | a wind that rattles every shutter
+mud = Sump mud | mud that sucks the boots off you
+leg = this leg | my bad hock
+heights = the Heights | a room up the Heights
+garden = my garden | a garden with an apple tree in it
+stair = our stair | the stair up to my room
+lake = the lake | the lake back home
+sump = the Sump | the bottom of the city
+presshouse = the press house | the press house down the lane
+
+any
+opinion @1 sump for 1 : #sump.capitalize#'s home, mud and all. Knock on any door on #stair# and you'll get a candle lent.
+opinion @1 watch against 1 [here.region=ridgemere] : #watch.capitalize# come down #stair# with a cart and go back up with somebody in it. I've yet to see them bring a loaf.
+opinion @1 houses against 2 : A House would leave a job going begging before it'd hand it to a Sump wolf. I got on #press# by turning up three mornings running.
+opinion @1 festivals for 2 : One feast day mends me better than seven days lying flat. #leg.capitalize# aches anyway; let it ache for a reel.
+opinion @1 drink for 1 : #drink.capitalize# among friends, and the evening's warmer for it. #must.capitalize# is another matter; that stays in #vats#.
+opinion @1 merchants against 2 [here.region=ridgemere] : My pay sits still while the loaf gets dearer by the week. Some stall-keeper's eating my supper, and it's not me.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! You're new down here. Mind the step; it's half mud. | #greet#, #address#. Down #stair# by mistake, I'd guess.
+line @2 greet [self.working=yes] : #greet#! Don't shake; I'm sticky to the elbow. | #greet#. Stand back of #press#, it spits.
+line @3 greet [here.time=dawn] : Morning! Up before the gulls, me, and #leg# with me. | Morning, #address#. Fine morning for a bit of chatter.
+line @4 greet [here.time=dusk|night] : #greet#. Home time, and #leg# knows it. | #greet#, #address#. Lamps are on; it's a good hour.
+line @1 kin.open [pair.kin!=no] : Here you are! Sit on #straw# and I'll tell you my day. | You! #good.capitalize#. I've a tale saved up for you.
+line @1 again.open : #welcome_back#! Can't keep away, can you. | You again, #address#. I'll not complain; I like the company.
+line @1 hail [pair.band=friends] : #address.capitalize#! Here, come here. | Oi, #address#. A minute; I've news.
+line @1 greet.return : #greet#. | #greet#, #address#!
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#! The very face I wanted. | #greet#. Sit down, sit down.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I turn. | #greet#. Mind the drip off #press#.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but I'm awake if you are. | #greet#. Still up, then. Good.
+line @1 farewell : #farewell#! | #farewell#. Come by again.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamps side of the alley, mind. | #farewell#. Sleep sound, and mind #mud#.
+line @1 farewell.return : #farewell#! | #farewell#, #address#.
+line @1 react.news : Go on, go on, #address#. | Is it now? Every bit, go on.
+line @1 react.news.new : #surprise#! First I've had of that. | #oath#! Nobody said a word to me.
+line @1 react.news.known : #knew#. Old news down #presshouse#. | It came up #stair# at breakfast, but tell it again; you tell it better.
+line @1 react.news.doubt : #doubt#. Somebody's stretched that like a wet rope. | Ha. I'll believe it when it's knocking on my door.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a black day for somebody. | #oath#. Poor soul.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! Now that's worth hearing. | Oh, #good#! Somebody's luck's turned, then.
+line @1 answer.how : #fine#! #leg.capitalize#'s quiet today. | Not so bad. #skint.capitalize#, sticky and cheerful, same as ever.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, and #press# is busier. | Up to the elbow in #must#, but I'll talk.
+line @1 ask.how : And you? Head above #mud#, are you? | How's yourself, #address#? Eating?
+line @1 sympathise : #sympathy#. Here, sit. Have #apple#. | Rough water, that, #address#. I'm sorry. Truly.
+line @1 reassure : #reassure#. Even #sump# dries out, now and then. | It'll come right, #address#. Things mostly do, if you wait them out.
+line @1 decline : #hedge#, but no. A shift on #press# has me, and there's no coin to spare besides. | Not this time, #address#. #leg.capitalize#'s playing up, and I'd only slow you.
+line @1 accept_decline : #no_matter#! | Fair enough. #later.capitalize#, then.
+line @1 thank : #thanks#! | #thanks#. I'll not forget that.
+line @1 deflect_thanks : #deflect#. | Nothing, that. Worth #apple#, at most.
+line @1 preclose [self.working=yes] : Well, #press# won't turn itself. | Back to #vats#, or there's trouble.
+line @2 preclose : #preclose#. | Right, that's both your ears worn through. Off I go.
+line @1 accept_preclose : Go on, then! #farewell#. | Go careful, then. Watch #mud#.
+line @1 tease [pair.band=friends] : Look at you, all clean. You'd not last an hour on #press#. | You've a face like a squashed apple today, #address#.
+line @1 tease.return : Ha! You'll pay for that one. #oath#. | This from a wolf with #mud# to the knees.
+line @1 laugh : Ha! #funny.capitalize#. | Oh, that's #good#. That's #very# good.
+line @1 ack : #bc_ha# | #bc_right#
+scene press_morning
+when topic=work|day self.working=yes here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Three cartloads of apples through #press# before noon. My shoulders are singing. | I turn #press#. Round and round, and the juice comes down like a little brown river. | You'd not believe the smell in #presshouse#. Like a whole autumn squashed in a box.
+b : Three cartloads? | Doesn't it tire you? | Good smell, though?
+a : Three. Counted every cart, because nobody else does. #busy.capitalize#. | Tires the arms. Not the head. The head's off somewhere else, telling itself #tale#. | Good for an hour. By dusk #must#'s in your fur and your dreams and your supper.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene windfall_pips
+when topic=work|food self.working=yes self.quirk=saves_apple_pips_for_a_garden_up_the_hill
+does tell.self / ask.detail / answer.detail / assess
+a : There's always a good one in the cart. I eat it, and the pips go in #pips#. | I've near a hundred pips in my pocket from #press#. Don't laugh. | Every apple through #press# has pips, and nobody wants them but me.
+b : What are they for? | A hundred? Why? | And then what?
+a : #garden.capitalize#. One day. Up on #heights#, with a tree outside the window. | For later. When I've #garden#, I'll want a tree in it, and trees start small. | Dry them on the sill and keep them. #saying#.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene vats_working
+when topic=work|smalltalk self.working=yes self.job=none
+does tell.self / react.self / assess
+a : #vats.capitalize# are working today. You can hear them, a little fizz, like gossip in a quiet room. | The must's turning. Give it a month and it'll be the House's fine cider, and none of it mine. | I stuck my nose over #vats# and came up dizzy. Not drunk. Dizzy.
+b : Gossip! | None of it yours? | Not drunk, eh?
+a : Gossip. I lean in to hear what they're saying. #funny.capitalize#. | Not a drop. I turn #press#; the hill drinks it. That's the way of things. | Not #drunk#. Not quite. I sat on a barrel till the walls stopped going round.
+
+scene leg_weather
+when topic=health|weather
+does tell.self / ask.detail / answer.detail / assess
+a : #leg.capitalize#'s aching. There's weather coming, you watch. | #leg.capitalize# limps more some days than others. It comes and goes with the wet. | My bad hock woke me before light. #leg.capitalize# knows the sky better than I do.
+b : Is it ever wrong? | Does it hurt much? | What happened to it?
+a : Hardly ever. The Watch should pay #leg# a wage. | Some days. Most days it's only a grumble. I talk back to it. | Slipped on the ice on #lake# as a #child#. Fell badly. It mended crooked, and here we are.
+b : #bc_ha# | #bc_poor_soul# | #bc_poor_soul#
+
+scene mud_sump
+when topic=weather|home here.weather=rain here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : Rain again, and #mud# up to the hocks at the bottom of #stair#. | Left a boot in the alley this morning. #mud.capitalize# ate it. I had to go back in with my paw. | You can't abide mud and live in #sump#. And yet here I am, abiding it.
+b : Poor boot. | And the boot? | Somebody has to.
+a : Poor me. The boot's fine; it's the foot that's cold. | Got it back. Full. I'll be a day drying it on the sill, with #pips#. | Somebody does. Up on #heights#, they've cobbles that drain. One day.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #blow.capitalize#! Every shutter on #stair# banging. I love it. | Wind like this clears the smoke clean off us, and #heights# come out shining. | I stood on the corner and let the wind pull at me. Felt like a boat on #lake#.
+b : You love it? | Shining, is it? | Like a boat?
+a : Love it. Wind's the one thing that blows on #sump# and #heights# alike. | Shining. All those windows. One of them's mine, some day, with #garden# under it. | Like a boat with a sail up and nowhere to be. #leg.capitalize# didn't mind either.
+
+scene smoke_sump
+when topic=smalltalk|weather here.region=ridgemere self.dislikes=smoke
+does tell.complaint / sympathise / assess
+a : The smoke sits in #sump# like it pays rent. All the chimneys on the hill, and it rolls down to us. | I can't abide smoke. I came from beside #lake#, where you could see across the water. | Some mornings our alley's gone in the smoke, wall to wall. Just shapes coughing.
+b : That's the low streets. | Do you miss that? | Shapes coughing!
+a : Low and grey. Up on #heights# the smoke's somebody else's. | Every day. Clean air off #lake#. I'll not get it here. | Shapes coughing, and one of them's me. Ha. Still, it's home.
+
+scene heights_dream
+when topic=dreams|travel here.region=ridgemere
+does tell.plan / ask.detail / answer.detail / assess
+a : I'll die up on #heights#, you see if I don't. A window, a tree, and the smoke underneath me. | One day I'll climb that hill for good, and leave #mud# at the bottom. #saying#. | Born to #lake# and living in a ditch. I'll finish somewhere with a view.
+b : On what money? | Never back down? | A view of what?
+a : #money.capitalize#, a copper at a time. And I'll plant #pips#. The tree'll come up while I'm saving. | Down to visit, maybe. Bringing #apple# off my own tree. | Of the Sound, of the whole city, of #stair# gone tiny. Of the place I used to live, small and far down.
+b : #bc_i_hope_so# | #bc_ha# | #bc_lovely#
+
+scene old_tale
+when topic=pastimes|lore self.likes=old_tales
+does tell.feeling / ask.detail / answer.detail / assess
+a : There's nothing like #tale# told right. I can make one last a whole evening. | I tell tales to the lot on #stair# of a night. They pretend not to listen. | My #gran# had a tale for every cloud. I've kept most of them, and added a few.
+b : A whole evening? | Do they listen? | Added some?
+a : The whole evening, and they'll beg the end of #tale# off me. That's the trick. Make them beg. | They listen, #address#. Nobody coughs at the good bit. | A few. The one about the heron who stole a whole boat, that's mine. Don't tell.
+b : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene fresh_straw
+when topic=home|smalltalk self.likes=fresh_straw
+does tell.feeling / react.self / assess
+a : I got #straw# off the carter for nothing. My bed smells like a barn now. | New #straw# under me, and I'm a lord for a night. | Nothing better than #straw# after a day in #must#. You sink right in.
+b : Lucky you. | Not quite rich. | Sounds lovely.
+a : Lucky me! I thanked him till he went red, and gave him #apple#. | Not quite. But #straw# smells rich, and that's half of it. | It is. You come down here, I'll let you sit on it. Not lie on it; that's mine.
+
+scene apple_crunch
+when topic=food self.likes=crisp_apples
+does tell.feeling / ask.opinion / give.opinion / assess
+a : Give me #apple# and I'll sing for you. Not well, but I'll sing. | The best apple goes off like a snapped twig in your teeth. A soft apple's a sad apple. | Pie or #apple#? #apple.capitalize#, every time. You can hear a good one.
+b : What's a good apple, then? | Some like them soft. | Over a pie?
+a : Hard, #cold#, and a bit sour. Spits juice up your nose. Then you keep #pips#. | Some do. Some like #mud#, too. I'm not one to argue taste. | Every time. A pie's a cook's idea. An apple's the tree's own.
+b : #bc_ha# | #bc_fair_enough# | #bc_true#
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : At home in #self.from_town# a still morning showed you the far side of #lake#. Here I can't see across the alley. | I fished off the end of a boat with my #gran#, back home. Never caught a thing. Didn't matter. | Back home there were apple trees by the water. I'd climb them for the high ones.
+b[from=coldwater] #home : Clear as glass, mornings like that. | Same. Nobody I knew ever caught anything. | The old trees by the shore. I know them.
+b : You must miss that. | Never a thing? | Climbed them?
+a@home : So you'll know what I swapped. Still water for #mud#. | Ha! Then we were all out on #lake# for the talking. | Then you've had their apples. Best I ever ate.
+a : Some days. But you can't climb a lake. You can climb a hill. | Not a sprat, #oath#. We talked the whole time. I think that was the point. | Every one. Fell out of most. That's why I want #garden#, up the hill.
+
+scene accent_sump
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : Down here I'm the lake one. I say #greet# and they all laugh. | I said I was waterlogged after a shift and the whole press house fell about. | #sump.capitalize#'s got its own talk and I've got mine. We meet in the middle with a lot of pointing.
+b : They mean no harm. | What did they think it meant? | Ha. That works.
+a : No harm at all. I laugh too. Then I say #greet# again. | Drunk. I'd to explain I was only tired. They didn't believe me. | It works. Pointing's honest, at least, #address#.
+
+scene friend_close
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s the best company I've got. Listens to every tale like it's the first. | If I'd one apple I'd halve it with #self.friend#. That's the measure of it. | #self.friend# and I share a roof and a loaf, and the loaf's never big enough.
+b : Good to have. | That's fair. | Never is.
+a : Good to have. I'd not be half so cheerful without, #address#. | Fair and true. Pips and all. | Never. We halve it anyway. #funny.capitalize#.
+
+scene feast_dance
+when topic=festival|pastimes
+does tell.plan / react.self / assess
+a : Feast coming! I'll dance till #leg# gives out, then I'll dance on the other one. | A day of dancing, and I'll sleep in #straw# like the dead after. Worth every ache. | They'll have fiddles on the green. I'll be there with a jar and a crooked hop.
+b : With your leg? | Worth it? | A crooked hop!
+a : With #leg#. It complains either way; it might as well complain about something good. | Every ache. You don't get many days in a year to forget #sump#. | Crooked, but cheerful, #address#. Nobody watches the feet, they watch the grin.
+
+scene watch_down
+when topic=crime|times here.region=ridgemere
+does give.opinion / disagree / concede
+a : The Watch came down #stair# again. Took somebody off. Never come down to ask after anyone. | Down here it's neighbours who see to neighbours, because nobody else will. | Somebody up the hill always blames #sump#. It's easy; we're down the bottom.
+b : They've a job to do. | That's something. | Some trouble does start here.
+a : They have. I only wish half of it was helping on #stair#. | It's a lot. It's most of what #sump# has got. | Some does. I'll grant you that. The rest walks down from the top.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean week. #skint.capitalize#, and the bread's up. | Hard times. They've cut a shift where I work. I'm still on. For now. | Oats and #apple#. That's supper, and breakfast.
+b : It'll turn. | Still on's good. | Oats are filling.
+a : It will. It always turns, down here; it just takes the long way round. | Still on's good. I'll not count the week till #press# stops for it. | Filling, and cheap. And I keep #pips#. Ha.
+
+scene faith_bells
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I go to the tide chapel when they ring. Not every time. #leg.capitalize# chooses. | The chapel fed our house one bad week. It'll hear nothing against it from me. | I don't pray long. Apples and wind: those two get my thanks, and the Bright One hears it. That's it.
+b : The leg chooses? | Fair. | That's enough.
+a : #leg.capitalize# chooses. Up the steps on a good day, from the door on a bad one. | Fair's fair. Bread's bread, #address#. | It's plenty. The Bright One's got bigger worries than #leg#.
+
+scene newcomer_welcome
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New face down our alley! I gave them #apple#. Can't hurt. | Strangers are just folk I've not fed. So I hand them #apple#. | New folk get #mud# first and the welcome after. I try to do it the other way.
+b : Kind of you. | Easy said. | Good of you.
+a : It's only #apple#. Kind's a big word for one apple. | Easy done, too, if you've #apple#. | Mud's going nowhere. The welcome I can do something about.
+
+story ice_and_leg [topic=memories|health self.from=coldwater self.age>=20]
+  : One winter, a #child# still, I saw #lake# freeze hard enough to walk on. Every pup in the town was out on it.
+  : I went faster than anybody, and further. Then it cracked under me, and #leg# went down a hole.
+  : They got me out. #leg.capitalize# mended crooked. I've walked with it ever since, and it tells me the weather.
+  ask : Did you ever do a thing as a pup that you'd still do again, knowing?
+  b : I'd do half of mine again. The other half, no.
+  b[from=coldwater] : The ice. Every winter somebody went through. I'm glad you came out.
+  : I'd do it again. I was the fastest wolf on #lake#, for one afternoon.
+
+story heights_barrels [topic=memories|dreams here.region=ridgemere self.age>=20]
+  : They sent me up the hill once with a barrel on a barrow. Some big house in #heights#.
+  : I took it round the back, and there was a garden. An apple tree in it, and a bench under the tree.
+  : I stood there with the barrow till somebody shouted. That's when I started keeping #pips#.
+  b : Did anyone see you?
+  b[stage=young] : An apple tree! Did you take one?
+  : A cook saw me, and gave me a cup of water and sent me off. Kind enough. Never forgot the tree.
+
+story heron_boat [topic=lore|pastimes self.likes=old_tales]
+  : My #gran#'s tale, with a bit of mine: a heron on #lake# took a fancy to a rowing boat.
+  : It stood in it every morning, and every morning the fisher shooed it out. One day the fisher came down and the boat was gone.
+  : Far out on #lake#, there it was. The heron in the stern, rowing with its wings.
+  ask : Where do you think it was going?
+  b : Somewhere without a fisher.
+  b[old] : To find a better boat, I'd say.
+  : Up the hill, I'd guess. Same as me. #saying#.
+
+rule @press_bark
+when concept=bark working=yes here.region=ridgemere
+does aside
+cooldown 6h
+say Round she goes. Round she goes. | #oath#! That's the screw stuck again.
+
+rule @leg_bark
+when concept=bark here.weather=rain|storm|fog
+does aside
+cooldown 10h
+say There's #leg#. Told you so. | #leg.capitalize#'s talking. Rain by dusk.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say Hear that wind! #blow.capitalize#. | Blow, then. Blow the smoke off us.
+
+rule @mud_bark
+when concept=bark here.weather=rain here.region=ridgemere self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #mud.capitalize#. Again. My poor boots. | Watch it, there's a hole in #mud# there.
+
+dlg @1 resident.hub : #greet#! Here's me, at your service. | #greet#, #address#. Stop and talk, if you've a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. Good. | #topic.player#! I was hoping you'd come by.
+dlg @3 resident.hub [here.time=night] : Late, isn't it? #leg.capitalize# keeps me up. Go on. | #greet#. #leg.capitalize# won't let me sleep anyway.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Easy, #address#. I'm only stood here. What is it? | I've nothing worth taking, if that's your business.
+dlg @1 resident.job [self.working=yes] : I turn #press#. Apples in, juice out, and the must up to my elbows. | #self.trade_words.capitalize#. Sticky work at #press#, and honest.
+dlg @2 resident.job : #self.trade_words.capitalize#. It's a living, and the apples smell good. | #job_busy#
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Fancy that. | From #world.news_from#, they're saying: #world.news#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# on #stair#. | Everyone's on about #world.event_words#!
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon got set upon on the road. Watch yourself. | Thieves on the road again, they're saying.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new down here but #mud#.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Imagine! | Folk on #stair# say #topic.subject# #topic.claim#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Quiet week for talk. Even #mud#'s dull.
+dlg @1 resident.bye : #farewell#! Come again. | #farewell#, #address#. Mind #mud#.
+graft resident.hub
+choice What's in your pocket? It rattles. -> pips
+node pips
+say Pips! Apple pips. Every good apple I eat, I keep them. Dried on the sill. There's near a hundred now.
+mood pleased
+free
+choice What are they for? -> pips_why
+choice Goodbye. -> bye
+node pips_why
+say A garden. Up on the hill, one day, with a window over it. I'll plant the lot, and the ones that come up, I'll keep. #saying#.
+choice I hope you get it. -> hub
+choice Goodbye. -> bye

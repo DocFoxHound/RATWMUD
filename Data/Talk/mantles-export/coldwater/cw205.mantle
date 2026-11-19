@@ -1,0 +1,518 @@
+# cw205, the jumpy fishmonger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw205
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for rm_agna_tarham
+written_by claude
+title the jumpy fishmonger
+fits stage=adult|old
+prefers role=merchant job=fisher temper=nervy
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk jumps_at_every_bell_then_laughs_it_off
+likes plum_tart dice new_boots frosty_mornings
+dislikes flies early_bells
+fears the_ice_running_out a_quarrel_between_the_houses
+hopes a_winter_with_ice_to_spare boots_that_last_the_year
+topics work +0.4 food +0.3 smalltalk +0.3 weather +0.2 gossip +0.2 times +0.2 faith -0.2
+styles comfort=company gossip=eager refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# keeps a fish slab in the Commons and lives up over it: chatty, jumpy at every bell and the first to laugh about it, plain at the scales, sure the Houses will fall out before winter, and weak for plum tart and new boots.
+
+words
+oath! = Gills and gravy | Scales and slush | Ice and eel-skin
+saying! = A fish can't lie about its eyes | Fresh shows and stale tells | The eye never fibs
+laugh! = Ha, listen to me | Hoo, there I go again | Ha, that's me told
+slab = the slab | my wet slab
+ice = the ice | a barrow of ice
+eyes = a bright eye | eyes as clear as the lake
+gills = red gills, never brown | gills the colour of a rose
+boats = the Sound boats | the boats off the Sound
+sound = the Sound | the grey Sound
+bells = the chapel bells down by the water | the bells off the water
+jump = jumped clean out of my fur | near leapt out of my skin
+tart = a plum tart | plum tart, warm from the tin
+dice = the dice | a throw of bones on an upturned crate
+boots = my new boots | boots so new they squeak
+rime = rime on the gutters | a white rime on every rail
+flies = the flies | a cloud of flies | flies off the gutter
+lake = the lake | Glasswater
+commons = the Commons | the Commons streets
+houses = the Houses | all four Houses
+herring = herring | a box of herring, bright as coins
+
+any
+opinion @1 houses mixed 1 : #houses.capitalize# smile at each other at the Council like cats round one herring. I give it till winter before somebody's clawed. | Mark me, they'll fall out before the snow. I feel it in my whiskers, same as storms.
+opinion @2 houses against 2 [world.times=hard|lean] : Lean times, and #houses# squabbling over who owns what. When they quarrel, it's #commons# that goes short.
+opinion @1 city against 1 : Ridgemere rings a bell for everything and listens to none of them. I've not had a #very# quiet hour since I came.
+opinion @2 city mixed 1 [self.away=yes self.from=coldwater] : On #lake# a bell meant somebody was wed or drowned. Here it only means another hour's gone. I miss knowing which, and I'll not be going home for it.
+opinion @1 drink for 1 : A jar once the day's scrubbed off, and #dice# after. That's my notion of an evening, shore-friend.
+opinion @1 festivals for 2 : Feast days are the only days the bells are for laughing. I'm first out in #boots# and last home.
+opinion @1 merchants for 1 [self.role=merchant] : I pay for #ice# every dawn before I've sold a fin. Nobody's getting fat on a fishmonger's margin, #oath#.
+opinion @1 newcomers against 1 : A new face and I'm counting the spoons. Daft, I know. #laugh#. I'll like them fine once I've learned them.
+opinion @1 strangers against 1 : I like a stranger well enough once they've paid. Before that, I'm watching their paws and they're watching #herring#.
+opinion @1 road against 2 : You'll not get me past the gates these days, not for all #tart# in Ridgemere.
+opinion @1 sump against 1 : I go the long way round the Sump and I'm glad of the blisters. Jumpy is one thing; daft is another.
+opinion @1 watch for 1 : A Watch boot on the corner, and I sleep through, #bells# and all. Near enough.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. You came up quiet, and you've made me jump. #laugh#. | #greet#. Yours is a face I've not got yet. Give me a day and I'll know it.
+line @2 greet [self.working=yes self.role=merchant self.job=fisher] : #greet#. Everything on #slab# came in this morning, and I'll swear to it. | #greet#, #address#. Look them in the eye before you buy; that's my rule.
+line @3 greet [here.time=dawn] : Morning, #address#. The chapel's not rung yet, so I'm still calm. | Morning. You've beaten #bells# out of bed. I only just did.
+line @4 greet [here.time=dusk|night] : Evening. #bells.capitalize# are done and I've stopped jumping. | #greet#. Late to be out, #address#. Keep to the lamps.
+line @1 kin.open [pair.kin!=no] : There you are. I've #tart# put by for you, so don't say I never. | Oh, it's only you. #good.capitalize#. Tell me something that isn't fish.
+line @1 again.open : Back already, #address#. Folk will say you're sweet on the fish. | #welcome_back#, #address#. Nothing's changed here but #ice#.
+line @1 hail [pair.band=friends] : #address.capitalize#! Over here, before the bell goes. | Here, you! Come and save me from #flies#.
+line @1 greet.return : #greet#. | #greet#, #address#. Oh! You crept up on me.
+line @2 greet.return [pair.band=friends|family] : #greet#. Oh, good, it's only you. | #greet#. Sit down, I've news and nobody to tell it to.
+line @3 greet.return [self.working=yes self.role=merchant self.job=fisher] : #greet#. Talk while I scale this one. | #greet#. Wet paws, open ears, shore-friend. Go on.
+line @4 greet.return [here.time=dusk|night] : #greet#. Evening, and #bells# done with for the day. | Evening, #address#. I was just going up, but go on.
+line @1 farewell : #farewell#. | #farewell#. Mind the wet cobbles at the corner.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamps, not alleys, #address#. | #farewell#. Sleep sound, and let #bells# ring without you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Come back when you've gossip.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Bring #dice# next time. | Go on, then. #farewell#, and don't be a stranger.
+line @1 react.news : #oath#. Say it again, slower; I jumped. | Oh! #surprise#. I'll want the whole of that.
+line @1 react.news.new : #surprise#. #commons.capitalize# hasn't had a breath of that. | #oath#. I hear everything, and I never heard that.
+line @1 react.news.known : #knew#. The carts had it before dawn. | I'd heard. #commons.capitalize# is chewing on it already.
+line @1 react.news.doubt : #doubt#. I'll wait till somebody sober says it. | #hedge#, but I'll want it from somebody who was stood there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, that's cruel. | That's #bad# news, and I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll tell the whole street. | Oh, that's lovely. I'll dance to that tonight in #boots#.
+line @1 answer.how : #fine#. Only jumped twice today, and laughed both times. | Steady, #address#. My feet are warm, which is a wonder in this city.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Ask me again after noon. | Up to my elbows since dawn, shore-friend, and glad of it.
+line @1 answer.how.poorly : #tired.capitalize#. #bells.capitalize# kept me up. | #hurt.capitalize# across the back, from all the bending. It'll pass.
+line @1 ask.how : And you? Keeping dry, #address#? | How's the day been to you, shore-friend?
+line @1 sympathise : #sympathy#. Sit a moment. | Oh dear. No pretending it's fine. I'll sit by you a while instead.
+line @1 reassure : #reassure#. Things look worse before the first bell. | It'll float. I worry for two, so you needn't.
+line @1 decline [self.working=yes self.role=merchant] : #hedge#, but no. #ice.capitalize# won't wait for me, and nor will #flies#. | I'd love to, only there's #slab# to scrub before the light goes.
+line @2 decline : Not this time, #address#. My nerves are tied in knots today and I'd be poor company. | Not today, I'm sorry. I've promised myself an early night and a quiet one.
+line @1 accept_decline : #no_matter#. Another day, then. | It'll keep, like #herring# in brine. I'll remind you, mind.
+line @1 thank : #thanks#. I'll not forget it. | Oh, that's kind. You've made my day, #address#.
+line @1 deflect_thanks : #deflect#. You'd do the same. | Pay me in gossip, shore-friend, and we're square.
+line @1 praise : That's #good# work. I'd never have the patience. | #very.capitalize# well done, and I mean it.
+line @1 deflect_praise : #modest#. Luck, mostly. | Oh, stop, #address#. I'll go red under the fur.
+line @1 preclose [self.working=yes] : Well. #flies.capitalize# won't swat themselves. | Back to it, or a gull will have #herring# off the end.
+line @2 preclose : Well. #preclose#. | There's #bells#. Off I go, before the next lot ring.
+line @1 accept_preclose : Off with you, then. I've chattered your ears off. | #bc_fair_enough# Off you go, #address#.
+line @1 tease [pair.band=friends] : Look at you, glum as a cod on #ice#. | You'd jump at a bell too, #fool#, with my ears.
+line @1 tease.return : Says the one who can't tell #herring# from haddock. | #laugh#. I'll get you back for that one.
+line @1 laugh : #laugh#. | Ha! Oh, that's a good one.
+line @1 ack : #bc_true# | Mm. #bc_fair#
+line @1 give.advice : #advise#: look a fish in the eye before you buy it. #saying.capitalize#. | Buy it early and cook it for #supper#. Fish doesn't like to be kept waiting.
+line @1 warn [world.bandits=near] : #warn#. Stay inside the walls till the Watch says different. | Beyond the gates, take company with you, #address#. Never alone.
+scene bell_jump
+when topic=smalltalk|day here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : #oath#! That bell. I #jump#, and in front of everyone. | There goes #bells#, and there goes my heart with them. | Did you see? I near dropped a whole tray at that bell.
+b : You jumped a foot. | Every time it rings? | I saw. Are you all right?
+a : A foot and a half. #laugh#. All my time in the city and #bells# still get me. | Every single time. You'd think I'd learn, shore-friend. | Right as lake-rain now. It's the laughing after that does me good.
+b : #bc_ha# | You'll learn one day. | #bc_good#
+
+scene early_bell
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess / ack
+a : Somebody rang the chapel before light, and I was dreaming of #tart#. | The dawn bell went and I was halfway into #boots# before I knew why. | Bells before the sun's up ought to be against the law. #oath#.
+b : For the boats, maybe. | Half dressed already? | Tell the Watch.
+a : The boats can hear their own bells. I want my dream back, and #tart# in it. | Half dressed and wide awake, and nothing to do but laugh at myself. | I would, only they'd ring a bell to call the meeting.
+b : #bc_ha# | #bc_poor_soul# | Ha. That they would.
+
+scene slab_morning
+when topic=work self.working=yes self.role=merchant self.job=fisher
+does tell.self / ask.detail / answer.detail / assess
+a : Cod, two kinds of flat, and #herring#, all laid on #slab# before the first bell. | #slab.capitalize# iced, the knives out, and not one fly yet. Touch wood. | Every fish on #slab# came off #boats# this morning. I'd swear it on #boots#.
+b : What's best today? | Not one fly? | You'd swear on your boots?
+a : The herring. Look at #eyes# on them. | Not one. I'll have a dozen by noon, you watch. #laugh#. | On my boots, and they're the dearest thing I own. #saying.capitalize#.
+b : #bc_good# | #bc_ha# | I'll take your word, then.
+
+scene eyes_tell
+when topic=work|food self.role=merchant self.job=fisher
+does give.advice / ask.detail / answer.detail / assess
+a : You want to know if a fish is fresh? Look it in the eye, shore-friend. | Folk poke the belly. Never poke the belly. Lift the gill. | A fish lies about nothing, shore-friend. People lie about fish all day long.
+b : And if the eye's cloudy? | What should the gill be? | Who lies about fish?
+a : Then it's yesterday's, whatever the seller swears. #saying.capitalize#. | #gills.capitalize#. Brown, and you walk on. | The ones who sell it cheap at dusk. I'm naming nobody. #laugh#.
+b : #bc_wise# | I'll remember that. | #bc_ha#
+
+scene ice_weeping
+when topic=work|weather here.season=summer here.weather=clear self.working=yes self.role=merchant self.job=fisher
+does tell.worry / ask.detail / answer.detail / assess
+a : #ice.capitalize# is going faster than I can sell. Feel #slab#; it's warm already. | Summer, and #flies#, and the melt running into my boots. What a day. | I've moved #herring# to the back where it's shady. I'll move it again in an hour.
+b : Can you get more ice? | Your new ones? | Will they keep?
+a : At a price. I'll pay it; a soft fish is worse than a dear one. | My new ones. I'm wearing the old pair tomorrow, #oath#. | Till the third bell. Then it's pickle or the pot.
+b : #bc_fair# | #bc_poor_soul# | #bc_we_will_see#
+
+scene flies_war
+when topic=animals|weather here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / assess / ack
+a : A cloth in one paw, a swatter in the other, and #flies# are winning. | Where do they come from? One minute nothing, the next #flies#. | I hung a bunch of mint over the door. #flies.capitalize# sat on the mint.
+b : They always win. | Off the gutters, I'd say. | Did it help at all?
+a : Not while I've a paw free, they don't. #annoyed#. | Off the gutters and straight for my supper. Cheek. | Not a bit. The mint smells lovely, mind. #laugh#.
+b : #bc_ha# | #bc_true# | Pretty, and no use at all.
+
+scene rime_morning
+when topic=weather|season here.time=dawn here.season=winter here.weather=clear self.likes=frosty_mornings
+does tell.feeling / react.self / assess / ack
+a : Look at that, #rime#. I could stand here all morning. | Cold enough to see your breath, and still as a pond. I love a morning like this. | #boots.capitalize# crunch on it. Listen. Crunch, crunch.
+b : It's freezing. | You don't mind it? | They do. Ha.
+a : Freezing and lovely, both at once. | Lake-born. The cold's an old friend of mine. | New boots on old frost. Best sound in Ridgemere, shore-friend.
+b : #bc_fair_enough# | #bc_true# | #bc_lovely#
+
+scene rain_on_awning
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : Rain again. City rain, mind, not proper lake-rain. | Hear it on the awning? Like somebody drumming their claws. | Every drop off these roofs finds the back of my neck.
+b : What's the difference? | Loud today. | Stand further in.
+a : Lake-rain's soft. This lot comes at you sideways, with soot in it. | Loud and long. It'll not stop before dusk, you mark me. | I would, but then I'd miss who's walking past. #laugh#.
+b : #bc_true# | #bc_we_will_see# | #bc_ha#
+
+scene fog_close
+when topic=weather here.weather=fog here.region=ridgemere self.away=yes self.from=coldwater
+does tell.feeling / react.self / assess
+a : Fog off #sound#. I can't see the end of the street. | In fog #bells# sound closer. Right on top of you. | This fog's nothing to the lake's. At home you'd lose sight of your own tail.
+b : Nor can I. | Closer? | Your own tail?
+a : Folk loom up out of it like ghosts. I've jumped at three already. #laugh#. | Close as the next room, shore-friend. #oath#, I hate it. | Couldn't see it. Had to take it on trust that it was there.
+
+scene storm_shutters
+when topic=weather here.weather=storm
+does tell.worry / reassure / assess / ack
+a : Hear that wind? The shutters are rattling like teeth. | Thunder, then the bell, and me in the middle of the both of them. | A blow on #sound#. I'm glad I'm not on the water tonight.
+b : They'll hold. | You poor thing. | Nobody should be.
+a : They'd better. I've not the nerve to go out in #rain# and fix them. | Poor nothing. I've had my fright, and a hot cup after it. | Nobody. I'll put a candle in the window for the boats, for what good it does.
+b : #bc_true# | #bc_good# | #bc_true#
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / react.self / assess / ack
+a : I've had #tart# for breakfast and I'm not one bit sorry. | A stall down the Rag Market does #tart# worth crossing the city for. | Plum tart before the first bell. Stop staring at me.
+b : Not even a little? | Worth the walk? | I'm not staring.
+a : Not a crumb's worth. I'd have another, #oath#. | Every step. I go round the Sump to get there, and it's still worth it. | You are. You're thinking of tart now too. #laugh#.
+b : #bc_ha# | #bc_good# | #bc_true#
+
+scene supper_fish
+when topic=food self.role=merchant self.job=fisher
+does tell.self / ask.detail / answer.detail / assess
+a : You'd think I'd be sick of fish. I'm not. A bit of cod in butter for #supper# and I'm happy. | I take home whatever's left on #slab# at dusk. Never the same supper twice. | The trick with herring is a hot pan and no fussing. Folk fuss.
+b : Never sick of it? | Lucky you. | How do they fuss?
+a : Never. It's the smell I'm sick of. #laugh#. | Lucky some nights. Other nights it's a fish head and an onion. | Turning it and turning it. Leave it be, and it cooks itself.
+b : #bc_ha# | #bc_true# | I'll try that.
+
+scene dice_after_dark
+when topic=pastimes self.likes=dice
+does invite / ask.detail / answer.detail / assess
+a : Fancy #dice# after the lamps? I'll only take your coppers a little. | I lost three coppers at #dice# last night and won four back. Up one. | My paws shake when I throw. Folk think it's a trick.
+b : Only a little? | Up one's a win. | Is it a trick?
+a : A little, and I'll buy you a jar out of it after. | That's what I said. I bought half a tart with it. | No, it's nerves. They take it for a trick, and I win more. #laugh#.
+b : #bc_go_on_then# | #bc_ha# | #bc_clever#
+
+scene new_boots
+when topic=smalltalk|pastimes self.likes=new_boots
+does tell.boast / react.self / assess / ack
+a : Do you see these? #boots.capitalize#. I saved for them for ages. | I'll not walk in a gutter in these, so I'm going the long way everywhere. | They pinch. I don't care one bit. Look at the shine on #boots#.
+b : Very smart. | The long way? | They'll stop pinching.
+a : Smart and dry. Dry paws, in Ridgemere. Imagine it. | Round three streets to keep them clean. Daft, I know. #laugh#. | So the cobbler said. I'll believe it when my toes do.
+b : #bc_lovely# | #bc_ha# | #bc_maybe#
+
+scene home_lake
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# the bell rang for weddings and drownings. Here it rings for the hour. | I miss the quiet on #lake# of a morning. A fish jumping across the bay, and you'd hear it. | Work brought me down to the city, and the noise kept me. Mad, I know.
+b[from=coldwater] #cw : Weddings and drownings. That's home. | Still water at dawn. I miss it too. | You'll go back one day.
+b : Is that why you jump? | Do you miss it? | Stayed for the noise?
+a@cw : And you could tell which by the tune. Here they're all one tune. | Don't. You'll set me off, shore-friend. | Maybe. When the city's done with me.
+a : Probably. My ears were raised on one bell a month. | Every frosty morning. Less in summer, with the flies. | It grows on you, like damp. #laugh#.
+b : #bc_ha# | #bc_true# | #bc_ha#
+
+scene mother_near
+when topic=family self.mother
+does tell.self / react.self / assess / ack
+a : I'd not last a week in this city without #self.mother#. | #self.mother# says I worry enough for two. I say somebody has to. | Every Restday I eat at #self.mother#'s table, and every Restday I'm told I'm too thin.
+b : It's good to have family close. | Do you? | Are you?
+a : Good, and nosy. Both at once. #laugh#. | All day long. It keeps the bad luck off, I tell myself. | Thin as #herring#, apparently. So I have seconds.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# holds my spare key and half my secrets, and I sleep sound. | When I'm in a state, #self.friend# can make me laugh till I forget why. | I'd do anything for #self.friend#. Within reason. Within most reason.
+b : It's good to have one like that. | Everyone needs one of those. | Most reason?
+a : Good as #tart#, and harder to come by. | Everyone. I'd be a wreck without, #oath#. | Not the bells. I'll ring a bell for nobody. #laugh#.
+
+scene flat_upstairs
+when topic=home self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I live up over #self.workplace#. Everything smells of fish and I've stopped minding. | Two little rooms up top, a window on the street, and a bed that creaks like a jetty. | From my window I can see the chapel roof. And hear it. Oh, I hear it.
+b : Stopped minding? | Like a jetty? | Every bell?
+a : Mostly. Visitors mind. #laugh#. | Just like one. It rocks me off; it sounds like #lake#. | Every one. My pillow's over my head by the third.
+b : #bc_ha# | #bc_good# | #bc_poor_soul#
+
+scene gull_thief
+when topic=animals self.role=merchant self.job=fisher
+does tell.complaint / react.complaint / assess / ack
+a : A gull took a herring clean off the end of #slab#, and looked at me while it did it. | I keep a broom by #slab# for the gulls. They know it, and they wait for me to turn. | The cats round here are worse than the gulls. At least a gull's honest about it.
+b : Bold as brass. | Clever birds. | Honest how?
+a : Brass and feathers. I shrieked like a pup. #laugh#. | Too clever. There's one with a crooked foot, and I know that one's face. | A gull shouts first. A cat just sits there looking innocent, with fish on its breath.
+b : Ha! | #bc_true# | #bc_ha#
+
+scene sound_morning
+when topic=lore|land here.region=ridgemere
+does tell.self / react.self / assess
+a : When #boats# come in you can smell it three streets up. | I keep off the salt water. Lake-born, and I'll stay a fresh-water wolf, thank you. | They say #sound# was here before the city. I believe it. It's got that look about it, like it was here first.
+b : Fresh fish, then. | Never once? | It does.
+a : Fresh fish and tar and somebody's pipe. That's a good morning. | Never, and I'll not start. A lake doesn't bite like that. | Grey and patient, like it's waiting for us all to leave. #oath#.
+
+scene ship_in_talk
+when topic=ships topic.kind=in topic.ship here.region=ridgemere
+does tell.news / react.news / assess / ack
+a : They say #topic.ship# is in. The whole street will have something to talk of. | #topic.ship.capitalize#'s in, I'm told. I know the name and not the boat. #laugh#. | A ship in means a busy wharf, and a busy wharf means folk with coin for #herring#.
+b : So they say. | You don't know it? | Good for you, then.
+a : Then the street's got its talk for the day, and so have I. | I know names. Boats all look like boats to me, shore-friend. | Good for all #commons#. Coin rolls uphill on a ship day.
+b : #bc_true# | #bc_ha# | #bc_good#
+
+scene houses_feeling
+when topic=gossip|times here.region=ridgemere
+does give.opinion / ask.detail / answer.detail / assess
+a : Mark me: #houses# will be at each other's throats before winter's out. | Four Houses round one table at the Council, every one of them counting the others' spoons. | I've a feeling about #houses#. A bad one. I get them before storms, too.
+b : You think so? | Counting spoons? | Are your feelings ever right?
+a : I do. Too much smiling at the Council. Nobody smiles that much for nothing. | Counting, and hiding their own. It'll end in a row, you watch. | Half the time. The other half I laugh about after. #laugh#.
+b : #bc_we_will_see# | #bc_ha# | That's fair.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean self.role=merchant self.job=fisher
+does tell.worry / react.complaint / reassure / ack
+a : Folk who'd have had a cod ask me for a herring now. I can read the times off #slab#. | I've let two regulars run a slate this week. It keeps me up at night. | Heads and tails sell now. Nobody wanted those a year ago.
+b : It's hard for everyone. | Will they pay? | For soup, I suppose.
+a : Hard, and harder the further down the hill you go. #pity#. | They will. I'd stake #boots# on it. | Soup, and pies. A good soup's half heads, #gran# used to say.
+b : #bc_true# | #bc_i_hope_so# | #bc_wise#
+
+scene good_times
+when topic=times|prices world.times=good|boom self.role=merchant self.job=fisher
+does tell.news / react.news / assess / ack
+a : Sold out before the second bell. That's not happened in a long while. | Folk are buying cod for no reason at all. No feast, no wedding. Just cod. | Coin's moving. Even the cooks from the Heights come down to #commons# for fish.
+b : Good for you. | That's a fine thing. | Down from the Heights?
+a : Good for #boots#, too. I've my eye on a second pair. #laugh#. | Fine, and it sets my nerves going. Good times make me jumpier than bad. | With baskets, and their noses up. Their coin spends the same, #oath#.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene feast_bells
+when topic=festival|season here.day=festival
+does tell.feeling / ask.detail / answer.detail / assess
+a : A feast day, #bells# ringing all morning, and for once I don't mind. | I'll dance till #boots# give out. And they're new. | Feast bells are the only bells I like. They mean nobody's working.
+b : Not even a little? | You'll ruin them. | Not even you?
+a : Not one bit. A feast bell's a laughing bell, shore-friend. | Then I'll dance in my socks, and get the old pair out tomorrow. | Not even me. I've scrubbed up and I'm off out. #laugh#.
+b : #bc_good# | #bc_ha# | #bc_lovely#
+
+scene stranger_corner
+when topic=player|newcomer here.region=ridgemere
+does tell.worry / reassure / assess / ack
+a : There's #stranger# been standing at the corner an age. I keep looking. | New faces in #commons# today. I count them, the way I count spoons. | A traveller wanted the way to the gate, and I jumped like they'd pulled a knife. Daft.
+b : Probably just lost. | How many? | Did you tell them?
+a : Probably. I'll keep looking anyway; it's cheaper than fretting. | Four. I'll know every one of their faces by tomorrow. | Told them twice, and pointed. Then I laughed at myself all afternoon. #laugh#.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene gossip_passed
+when topic=gossip topic.claim_kind=promise_kept|promise_broken|newcomer|marriage|prowling|other topic.subject
+does tell.gossip / ask.detail / answer.detail / assess
+a : I heard in the street that #topic.subject# #topic.claim#. I near dropped my basket. | #topic.subject.capitalize# #topic.claim#, they're saying. I'll tell you and then forget I did. | They're saying #topic.subject# #topic.claim#. Don't look at me; I only heard it.
+b : You nearly dropped it? | Will you forget? | Who's saying it?
+a : Nearly. I'm jumpy enough without news. #laugh#. | I'll try. I was never much good at forgetting. | Half of #commons#. That's who says everything.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / warn / ack
+a : They say #topic.subject# #topic.claim#. I'll be checking the bolt three times tonight. | #topic.subject.capitalize# #topic.claim#, I hear. #robbery#. | Have you heard? #topic.subject.capitalize# #topic.claim#. I've not stopped jumping since.
+b : Lock up well. | Is it true? | Nor would I.
+a : Three times, #address#, and once more for luck. | It's hearsay. I saw nothing myself, and I'll say no more. | I'll sleep with a pan by the bed. A small pan.
+b? : #bc_wise# | #bc_fair# | #bc_ha#
+
+scene hard_news
+when topic=crime|gossip topic.claim_kind=death|violence topic.subject
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They're saying #topic.subject# #topic.claim#. I've had the shivers since I heard. | #topic.subject.capitalize# #topic.claim#. #pity#. | I heard #topic.subject# #topic.claim#. My paws won't keep still for it.
+b : It's hard news. | It is. | Nor do I.
+a : Hard. I'll take a candle down to the chapel, bells and all. | #sympathy#. I'll not joke about this one. | I'll scrub something. Scrubbing's how I think.
+
+scene road_robbers
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess / ack
+a : They say the road's had robbers on it again. I'd not go past the gate for all the tart in Ridgemere. | A wagon robbed out there. There goes somebody's whole season. | Every time I hear of the road I check the bolt. #daft.capitalize#; robbers don't come in through my door.
+b : Nor would I. | Poor souls. | Not so daft.
+a : Not for a whole #tart#. And there's little I'd not do for a tart. | #pity#. Somebody's counting that loss tonight. | Daft, but it settles me. #laugh#.
+b : #bc_ha# | #bc_true# | #bc_fair_enough#
+
+scene chapel_candles
+when topic=faith
+does give.opinion / react.self / assess / ack
+a : I'm no great chapel-goer. Those bells do enough shouting at the Bright One for me. | Restday, I put a candle up for #boats#. It's the one bell I'm braced for. | #gran.capitalize# said the Bright One laughs when we're frightened, kindly. I hope so; I give a lot of laughs.
+b : Fair enough. | Only that one? | That's a kind thought.
+a : If the Bright One misses a prayer here, it's not for want of noise. | Only that one. The rest catch me every time, #oath#. | Kind, and a bit cheeky. That was my #gran# all over.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene nerves_today
+when topic=health
+does tell.self / give.advice / answer.detail / assess
+a : My nerves are in a knot today, #address#. I jumped at my own shadow on the stair. | I've #chill# in my nose, and everything smells of nothing. Lovely, in a way. | My back aches from all the bending. I'll be an old stick before my time.
+b : Sit down a while. | Lovely how? | Stretch it out at night.
+a : If I sit, I fret. Standing and fretting is quicker. #laugh#. | Not a whiff of the gutters for three days. I'll miss it when it's gone. | I'll try. I'll forget by the next bell, #oath#.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene bell_dreams
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #bells# were fish, and every time one rang, a herring jumped out. | I dream of a little shop with a window on #lake# and no bell for a mile. | Last night I dreamt I'd lost #boots# in the lake. I woke up holding them.
+b : Ha! And then? | No bell at all? | Holding them?
+a : Then I woke, and the bell was a bell. Very disappointing. | Not one. Just gulls, and I'd chase those off with a broom. | Both of them, in bed, like a pup. #laugh#. Tell nobody.
+b : #bc_ha# | #bc_lovely# | Your secret's safe.
+
+scene lake_words
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : City folk grin at me for wishing them still water at dawn. I laugh back; it's free. | Somebody asked me why I talk like a boat. I said, because boats were all I heard till I was grown. | I've lost half my lake words in the city. The other half I keep for the fish.
+b : Let them laugh. | Fair answer. | Keep the rest.
+a : I do. They buy fish all the same. | Fair and true, shore-friend. #oath#. | I'll keep them. They're the only thing I brought that hasn't worn out.
+b : #bc_true# | #bc_ha# | #bc_lovely#
+
+scene winter_trade
+when topic=season here.season=winter self.role=merchant self.job=fisher
+does tell.self / ask.detail / answer.detail / assess
+a : Winter's the kind season for my trade. #ice.capitalize# lasts and #flies# are gone. | Cold paws all day, and the fish keep without fussing. | Nobody believes me, but I sell more in the cold. It's soup weather.
+b : Cold paws, though. | All day? | Soup weather?
+a : Cold paws, warm heart, my #mum# says. I hope that's so. | All day. I'm lake-born; I hardly notice. | Fish soup, chowder, a pot with a head in it. Everyone wants one by winter.
+b : #bc_good# | #bc_fair_enough# | Now I want soup.
+
+scene price_of_cod
+when topic=prices self.role=merchant self.job=fisher
+does tell.complaint / ask.detail / answer.detail / assess
+a : Folk ask the price, then look at me like I caught the thing myself. | Ask the price of cod, and first you'll hear about #ice#. | I don't haggle. I go red and give in, so I never start.
+b : Did you, though? | What does ice cost? | Never?
+a : Not a fin. I buy off #boats# like anyone else. | Too much, and it melts while you watch. That's the price of cod. | Never. I'd be cleaned out by Restday. #laugh#.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene friends_joke
+when topic=smalltalk pair.band=friends|family
+does tell.self / react.self / laugh / ack
+a : You'll never guess. I jumped at the bell and threw a cod into the gutter. | Don't laugh. I tried to stop #bells# by asking nicely. | I've decided. Next feast I'm ringing that bell myself, and we'll see who jumps.
+b : I'll guess anyway. | You never did! | You'd not dare.
+a : Then you'll guess wrong. It was a big cod, too. #laugh#. | I did. The ringer laughed so hard he near missed the hour. | I'd dare. I'd ring it once and run like the deep was after me.
+b : Ha! | #bc_ha# | Ha! I'd pay to see it.
+
+story first_city_bell [topic=memories self.away=yes self.from=coldwater self.age>=20]
+  : My first night in Ridgemere, #bells# rang at midnight and I was out of bed and under it before I knew why.
+  : Under the bed, I mean, not the bell. I lay there till the last stroke with my nose in the dust.
+  ask : Have you ever been so frightened you ended up laughing?
+  b : Once or twice. You were new to it, that's all.
+  b[old] : Every wolf off the boats did that once. I did.
+  : I laughed till the neighbours banged on the wall. Best welcome I had in the city.
+
+story gran_nose [topic=memories|food self.age>=18]
+  : My #gran# could tell a fish's age by the smell of it from across the kitchen.
+  : She'd stand in the door and say, three days, and the seller's a liar. Right every time, #oath#.
+  ask : Had you anybody like that, who knew a thing without looking?
+  b : Not like that. I wish I had.
+  b[old] : I was that one, for my own lot. Still am.
+
+story gull_lace [topic=pastimes|memories self.from=coldwater]
+  : I left a new boot on the jetty to dry once, and a gull took the lace right out of it.
+  : I chased that gull the length of the shore with one boot on and one paw bare.
+  : It dropped the lace in the shallows, kindly, right where I could reach. #laugh#.
+  b : Ha! A gull with manners, then.
+  b[from=coldwater] : The shore gulls are like that. A cheeky lot.
+
+story dice_tart [topic=pastimes self.likes=dice]
+  : I won a whole plum tart at dice once. The sailor across the crate swore never to have lost a throw.
+  : He lost three times running. My paws were shaking so, and the shaking was what did it.
+  ask : Do you believe in luck, or only in shaky paws?
+  b : Shaky paws, now I've heard that.
+  b[job=sailor] : Sailors always swear it. Never believe one of us.
+
+story fish_parade [topic=work|memories self.role=merchant self.job=fisher self.age>=20]
+  : My first morning on #slab#, I laid every fish facing the same way, like soldiers on a wall.
+  : A customer asked if they were on parade. I said yes, and for sale as well.
+  : They bought two. I've laid them facing the same way ever since.
+  b : Ha. Fish on parade.
+  b[role=merchant] : You've got to have a way. Mine's by size.
+
+rule @slab_cry
+when concept=bark working=yes self.role=merchant self.job=fisher
+does aside
+cooldown 6h
+say Herring, bright-eyed and cold! Look them in the eye, #address#! | Fresh off #boats#, on #ice# since dawn. #oath#, they're lovely.
+
+rule @bell_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 6h
+say #oath#! That bell. #laugh#. | Oh! Every time. Every single time, shore-friend.
+
+rule @fly_bark
+when concept=bark self.dislikes=flies here.season=summer
+does aside
+cooldown 8h
+say Off! Off with you. #annoyed#. | Where's my cloth? #flies.capitalize# again.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter here.weather=clear self.likes=frosty_mornings
+does aside
+cooldown 12h
+say Ooh, #rime#. Lovely. | Frost on the cobbles. Mind your step, all of you.
+
+rule @dawn_bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say Before light. Who rings before light? | Bells at this hour ought to be fined, #oath#.
+
+rule @ice_bark
+when concept=bark working=yes self.role=merchant self.job=fisher here.season=summer
+does aside
+cooldown 8h
+say #ice.capitalize# is weeping. #oath#, the ice. | Somebody fetch me more ice before it's all soup.
+
+dlg @1 resident.hub : #greet#, #address#. Oh, it's you that made me jump. What is it? | #greet#. Ask away; I've a minute between bells.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Oh, good, a face I know. Go on. | #topic.player#! #welcome_back#. What's wanted, then?
+dlg @3 resident.hub [here.time=night] : It's late, and I'm jumpy after dark. Quick, then, #address#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you want from there, #address#. I'll hear you well enough.
+dlg @1 resident.job [self.role=merchant self.job=fisher] : I keep #self.workplace#. Fish off #boats#, laid on #ice#, and every one looked in the eye before it's sold.
+dlg @2 resident.job : #job_busy# I keep busy and I keep my nerve, mostly. | #self.trade_words.capitalize#. That's me, and I'm not ashamed of it.
+dlg @1 resident.business [business=thriving] : Sold out most days by noon. I'm too pleased to sit still, #oath#.
+dlg @2 resident.business [business=steady] : Steady. I pay for #ice#, the fish go out, and I sleep, mostly.
+dlg @3 resident.business [business=failing] : Badly. I've stopped sleeping over it, and the fish don't care one bit, shore-friend.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I near dropped my knife.
+dlg @2 resident.news [world.event_words] : #world.event_words.capitalize#, and nothing else on anybody's lips in #commons#.
+dlg @3 resident.news [world.wagons=raided] : Robbers stopped a wagon out past the gates. Stay inside the walls, if you've sense.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Just #bells#, and more bells. | Nothing new. If there were, I'd have jumped at it, shore-friend.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. You didn't have it from me.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing worth repeating, and I've tried hard to find some.
+dlg @1 resident.bye : #farewell#. Careful of the puddle at the step. | #farewell#, #address#. Come back when you've news.
+dlg @1 shop.greet [here.shop!=bare self.job=fisher] : #greet#. Everything on #ice# came in this morning. Look them in the eye; I'll wait.
+dlg @2 shop.greet [here.shop!=bare] : #greet#, #address#. Look all you like. | #greet#. Mind the floor; it's always wet in here.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! #greet#. Back for more, or only for a chat?
+dlg @4 shop.greet [here.shop=bare] : #shop_bare# The boats will bring more, if they come in. Oh, I hate an empty slab.
+dlg @1 shop.prices [self.job=fisher] : #shop_dear# Ice is dear, and #boats# aren't cheap either. | The price is what the boats charge, and the ice, and my nerves on top.
+dlg @2 shop.prices : #shop_dear# I don't set what it costs me.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Cook it tonight; don't let it sit.
+graft resident.hub
+choice Why did you jump just then? [here.region=ridgemere self.away=yes] -> jumped
+node jumped
+say The bell. Always the bell. #oath#. At home a bell rang once in a month, and I've never got used to them here. Silly, isn't it?
+mood calm
+free
+choice Not silly at all. -> jumped_kind
+choice Goodbye. -> bye
+node jumped_kind
+say That's kind of you. Most folk laugh, and then I laugh, and then we're friends. That's how it goes with me.
+mood warm
+choice Glad to hear it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How can I tell a fresh fish? [self.job=fisher] -> fresh
+node fresh
+say Look it in the eye. Clear and bright, it's fresh; cloudy, walk on. Lift the gill: red, not brown. And never poke the belly.
+mood keen
+choice Show me one. -> fresh_show
+choice Thanks. -> greet
+node fresh_show
+say Here. See that eye? Like a drop of lake water. That one came off the boats at dawn. Now, how many do you want?
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

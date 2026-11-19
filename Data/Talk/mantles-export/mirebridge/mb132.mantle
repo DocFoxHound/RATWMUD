@@ -1,0 +1,502 @@
+# mb132, the puddle-sounder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb132
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for rm_hanne_coalton
+written_by claude
+title the puddle-sounder
+fits stage=adult|old
+prefers job=guard humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk sounds_every_puddle_before_stepping_in
+likes fried_fish draughts full_larder first_snow
+dislikes flies smoke
+fears ground_that_gives_way water_over_the_sill
+hopes a_lost_paper_found a_snow_that_lies_till_noon
+topics work +0.4 weather +0.4 crime +0.3 pastimes +0.2 memories +0.2 food +0.2 home +0.2 ships +0.2 gossip -0.3 festival -0.2
+styles comfort=quiet gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# sounds every puddle with a stick before stepping in it and is in no hurry about anything else: fen-born, quiet, dry and even, slow to believe what floats up, fond of a board of draughts and fish out of a butter pan.
+
+words
+oath! = Silt and sounding-pole | By the sounding-pole | Silt to the hocks
+saying! = Sound it before you stand on it | Soft ground always speaks first | The deep ones look shallowest
+gate = the gate | this gate
+bar = the bar | the gate-bar
+puddle = that puddle | the puddle by the bar | the big puddle
+deep = ankle-deep | boot-deep | deeper than it looks
+barges = the barges | the barges up off the Sound
+quay = the fish quay | the quay
+fish = fish out of the butter pan | a bit of fish done in butter
+draughts = a board of draughts | draughts by the brazier
+larder = the larder | my larder
+snow = the first snow | a snow that lies
+flies = the quay flies | the flies off the gutting tables
+reek = the smokehouse reek | smoke off the west wall
+fen = the fen | the fen back home
+lump = some lump | some lump off a barge
+lantern = the gate lantern | the lantern
+holds = the holds | every hold on the water
+dryly = Hm | So it is
+stick = a stick | my sounding stick
+water = the water | the black water
+city = the city | this city of roofs
+boots = my boots | these old boots
+pole = a pole | a sounding pole
+ground = the ground | the ground here
+
+any
+opinion @1 watch for 1 [self.job=guard] : Nobody loves the Watch down here, and nobody's meant to. We're meant to be at #bar# when it matters, and quiet when it doesn't.
+opinion @2 watch mixed 1 : The Watch is #stick# and #lantern#. What it's worth is whoever's holding them, and that changes by the shift.
+opinion @1 sump for 1 [self.quarter=sump] : They say the Sump's all lumps and thieves. It's #mud#, mostly, and folk who'll pull you out of it before they ask your name.
+opinion @1 city against 1 [self.from=fenshore] : Too many roofs, and none of them knows the one beside it. #fen.capitalize# had fewer wolves and more neighbours.
+opinion @1 road for 1 [self.job=guard] : Keep the roads open, I say. Shut a road and the trouble only comes in by water, and water comes to #gate#.
+opinion @1 festivals against 1 : A feast's a crowd, and a crowd's a hundred puddles nobody's sounded. Give me a high window over it, #pet#.
+opinion @1 times for 1 [self.wealth=comfortable|rich] : There's bread on the shelf and a roof that keeps most of the #rain# out. I don't ask the times for more than that.
+opinion @1 houses mixed 1 [self.job=guard] : The Houses put their seals on the papers. I read the wax and lift #bar#. What they're like behind it, I couldn't say.
+opinion @1 strangers mixed 1 : A stranger's a puddle. Might be nothing, might be #deep#. #saying#.
+opinion @1 drink mixed 1 : #drink.capitalize# after a long day, and gladly. Never before dark; a wolf wants both eyes till then.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Stand off the soft bit, there. | #greet#, #address#. Mind #puddle#; it's #deep#.
+line @2 greet [self.working=yes self.job=guard here.place=gate] : #greet#. #gate.capitalize#'s open, for now. | #greet#. State your business slow; I'm in no hurry.
+line @3 greet [here.time=dawn here.region=ridgemere] : #greet#. Early. The lamps are still lit down #quay#. | #greet#. The tide's only just turned.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be wading about. | #greet#. Keep to where the lamps are, #address#.
+line @5 greet [here.weather=rain] : #greet#. Wet again. I'd half thought it might stop. | #greet#. #rain.capitalize#, and more of it behind.
+line @1 kin.open [pair.kin!=no] : So it's you. Sit; the kettle's on, #pet#. | You. Good. I'd a mind to see a face I know, #address#.
+line @1 again.open : Twice today. You'll wear #ground# smooth. | You again. #puddle.capitalize#'s where you left it.
+line @1 hail [pair.band=friends] : Here, #address#. A word, when you're by. | Over here. Out of the #rain#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping it'd be you. | #greet#. Sit down before you drip on something.
+line @3 greet.return [self.working=yes self.job=guard] : #greet#. Quick, mind; I'm on. | #greet#. I'm on watch, but I've ears.
+line @4 greet.return [here.time=dusk|night] : #greet#. Dark enough for you. | #greet#. Mind the step; nobody can see it now.
+line @1 farewell : #farewell#. | #farewell#. Sound it before you step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps. | #s8_night#.
+line @1 farewell.return : #farewell#. | #s8_byeback#.
+line @2 farewell.return [here.time=dusk|night] : #s8_nightback#. | And to you. Mind the dark bits of #ground#.
+line @1 react.news : #ack#. | #dryly#. That's news, then.
+line @1 react.news.new : #surprise#. First I've heard of it. | #oath#. Nobody brought that past me.
+line @1 react.news.known : #knew#. | That's old #mud#. I had it this morning, off somebody wading by.
+line @1 react.news.doubt : #doubt#. Wait till it's been sounded. | When a wolf I'd lend a boot to says it twice, I'll think on it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #very# hard. #pity#. | #sympathy#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | Well. One thing gone #good# for once, then.
+line @1 answer.how : #fine#. Nothing's given way yet. | Even. That's as #good# as it gets, and I'll take it.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. It'll ease by dark, or it won't. | On, and staying on. #dryly#.
+line @1 ask.how : And you? Keeping your feet out of #mud#? | You look a long day's worth. How's it been, #address#?
+line @1 sympathise : That's #mud# to the hocks, that. Sit a bit. | #sympathy#. No hurry to talk about it.
+line @1 reassure : #reassure#. It mostly does. | It'll hold. Most ground does, if you go slow on it, #address#.
+line @1 decline : #hedge#, but not today. I've a thing wants doing before the lamps. | I'd say yes another day. Today I'm spoken for, and I'm #very# sorry for it.
+line @1 accept_decline : #no_matter#. It'll keep. | Another day, then. #ground.capitalize#'s not going anywhere.
+line @1 thank : #thanks#. | That's #good# of you. It's noted.
+line @1 deflect_thanks : #deflect#. | It was nothing. I was stood here in #mud# anyway.
+line @1 preclose [self.working=yes self.job=guard] : Well. #gate.capitalize# won't hold itself. | Back to #bar# for me.
+line @2 preclose : Well. #preclose#. | Still. The light's going off #water#, and so am I.
+line @1 accept_preclose : Go on, then. #farewell#. | Go, then. Same place tomorrow, same puddle, #oath#.
+line @1 tease [pair.band=friends] : You walk like you've never met a puddle, #fool#. | You've #mud# to the eyebrows, and you're asking me for manners.
+line @1 tease.return : Says the one who dripped on #boots#. | #dryly#. I'll remember that, next time you want past.
+line @1 ack : #bc_it_is# | #dryly#.
+line @1 give.advice : #advise#: go round, never through. | Step where somebody's stepped before you, and slow. #saying#.
+line @1 warn [world.bandits=near] : Walls are your friend this week. #warn#. | There's #bandits# about. Go in company or don't go.
+line @1 laugh : Ha. That's a #good# one. | #funny#.
+line @1 apologise : #sorry#. I'd no call to say it. | That was short of me, #address#. I'm sorry.
+scene rain_on_the_bar
+when topic=weather here.weather=rain self.working=yes self.job=guard
+does tell.self / ask.detail / answer.detail / ack
+a : I've sounded #puddle# four times since noon. Up a knuckle each time. | Look at #rain# come down. I keep thinking it'll stop, and it keeps not. | #rain.capitalize# on #bar#. The iron goes slick, and then it goes #cold#.
+b : Why sound it at all? | Does it ever stop, round here? | Can't you get under cover?
+a : Because one day it'll be #deep#, and I'd like to know before my boots do. | Once, for a whole afternoon. I'm still waiting on the next, #pet#. | Not and hold #gate#. #lantern.capitalize#'s dry; I'm not.
+b : #bc_fair_enough# | #bc_ha# | #bc_poor_soul#
+
+scene rain_at_the_window
+when topic=weather|day here.weather=rain here.time=dusk|night here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I sit and watch #rain# at the window, like it owes me an answer. | Hark at that on the roof. Like gravel off a shovel. | It'll stop somewhere tonight. Never over #city#, mind.
+b : Does it ever answer? | Loud tonight. | Not in this city.
+a : Never. I keep asking. There's a comfort in that, #pet#. | Loud and steady. I sleep the better for it, in #bed#. | No. Rain anywhere else knows when to quit. Not this lot.
+
+scene murk_on_the_water
+when topic=weather here.weather=fog here.region=ridgemere self.job=guard
+does tell.self / ask.detail / answer.detail / ack
+a : #fog.capitalize# on the Sound so thick I'm taking #barges# in by ear. | Can't see the end of #quay#. Can hear it, mind. | Fog like this, #city# talks louder. Doesn't help a soul.
+b : By ear? | What can you hear? | Louder how?
+a : Oars, and a bargeman swearing. You learn whose swearing is whose. | Gulls, chains, and #lump# who's lost a cart. | Everybody shouting where they are. Nobody's any the wiser.
+b : #bc_ha# | #bc_true# | #bc_true_enough#
+
+scene first_snow
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess / ack
+a : Snow. Look at it, #address#. Lying on the rooftops like it means to stay. | #snow.capitalize#, and not a footprint in it yet. I'll be first. | It never lies long on #ground#. I'll stand and look while it does.
+b : You like the snow? | Go on, then. | It's melting already.
+a : More than anything else the sky does. It shuts the whole street up. | Done. One print of #boots#, and it's filling. | It is. That's why I'm stood out here and not inside.
+b? : #bc_lovely# | #bc_ha# | #bc_fair#
+
+scene clear_morning
+when topic=weather|day here.weather=clear here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : Clear for once. You can see right out over #water# past the last mooring. | Not a cloud. I've no faith in it, and I'm enjoying it anyway. | #snug.capitalize# ground under my boots this morning. I near forgot the feel.
+b : It won't last. | Have it while you can. | Mind it doesn't go to your head.
+a : It won't. I'll have it while it's here, #pet#. | I mean to. An hour of it, and then the usual. | #dryly#. Too late. I've had a whole thought about drying my washing.
+
+scene grey_noon
+when topic=smalltalk|day here.weather=overcast here.time=day
+does tell.self / ask.opinion / give.opinion / ack
+a : Grey all morning and not decided. I've my hood half up against #rain#. | Sky like a pot lid. Can't tell if it's noon or #supper#. | It's that grey that isn't #rain# yet. I'd sooner it just rained.
+b : Rain later, you think? | Feels like supper. | Would you?
+a : By dark. My ears say so, and they're not often wrong. | Then it's #supper#. I'll not argue with my belly. | I would. At least #rain#'s honest about what it is.
+b : #bc_probably# | #bc_ha# | #bc_fair_enough#
+
+scene storm_shut
+when topic=weather here.weather=storm self.job=guard self.working=yes
+does tell.self / ask.detail / answer.detail / ack
+a : #bar.capitalize#'s down and wedged. Nothing comes in off the water in this. | Wind's had #lantern# out twice. I've given up on it. | #water.capitalize#'s over the low step. First time this season.
+b : Is anyone still out there? | Can you see without it? | Will it come in?
+a : Nobody's fool enough. If they are, they'll ride it out, #oath#. | Enough. The lightning does the rest. | Not past the sill. Not tonight. I've sounded it with #pole#.
+b? : #bc_hope_so# | #bc_ha# | #bc_i_hope_so#
+
+scene every_hold
+when topic=work self.working=yes self.job=guard here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I've had my nose in nine holds since dawn. Eight smelt of fish. | Nothing comes up off #water# without I've looked at it. | A barge tried to go through on the tide without stopping. Tried.
+b : And the ninth? | Everything? | What happened?
+a : Wet wool. Worse than fish, and nobody's told me why. | Every crate, every sack, and the bargeman's pockets if there's a smirk. #saying#. | I put #bar# across. It stopped, quick enough.
+b : #bc_ha# | #bc_good# | #bc_fair#
+
+scene lifting_the_bar
+when topic=work|day self.working=yes self.job=guard here.time=dawn
+does tell.self / ask.detail / answer.detail / ack
+a : #bar.capitalize# weighs what I do, near enough. I lift it every morning like it's the first time. | First thing of the day: sound #puddle#, lift #bar#, snuff #lantern#. | First light, and the queue's already back past #quay#.
+b : Can't somebody help you with it? | Snuff the lantern? | Who comes that early?
+a : They could. I'd sooner do it and know it's done. | No need of #lantern# by morning. One less thing to go out on me. | Folk who want to be through before #flies# are up. Can't blame them.
+b : #bc_fair_enough# | #bc_ha# | #bc_true_enough#
+
+scene wax_on_the_papers
+when topic=work self.working=yes self.job=guard
+does tell.self / ask.detail / answer.detail
+a : Every paper through #gate# has a House seal on it. I know them by the wax now. | Somebody brought me a seal today I'd never seen. Green wax. I sent it back. | I can't read half the hands on these papers. I read the seals instead, #dryly#.
+b : Which one's hardest to fake? | Was it a real one? | Is that enough?
+a : None, if you've a knife and patience. That's why I look at the face as well. | I'll know tomorrow. If it was, I'll say sorry, and if it wasn't, I'll say nothing. | It's enough for the Office. It's not always enough for me, #address#.
+
+scene lantern_hours
+when topic=work|day self.working=yes self.job=guard here.time=night
+does tell.feeling / react.self / assess / ack
+a : Night's the best of it. #lantern.capitalize#, the water, and nobody wanting anything. | Quiet out here after dark. I can hear #water# on the posts. | Every lump with a reason to dodge me comes past at night. I like that too.
+b : Not lonely? | You'd miss it, then. | You like it?
+a : I've #water# to talk to. It doesn't argue back. | I would. Nights are the only time #city# goes still. | I like knowing who they are. They don't like that I know.
+b? : #bc_fair_enough# | #bc_lovely# | #bc_ha#
+
+scene butter_pan
+when topic=food self.likes=fried_fish here.region=ridgemere
+does tell.self / react.self / tell.self / ack
+a : I had #fish# for #supper# and I've thought of nothing else since. | The trick with fish is the butter. More than you think, and then a dab more. | Off #quay# at dawn and in my pan by noon. That's the only way to eat it.
+b : Lucky you. | How much more? | Doesn't it go off?
+a : Lucky's the word. The pan's still in the sink and I'm not sorry. | A knob the size of your paw. Keep that between us, #pet#. | Not if you're quick. Down here, everyone's quick about fish.
+b : #bc_lucky_you# | #bc_ha# | #bc_fair_enough#
+
+scene full_shelves
+when topic=food|home self.wealth=comfortable|rich
+does tell.self / ask.detail / answer.detail / ack
+a : Filled #larder# yesterday. Every shelf, right to the back. I keep going in to look. | There's no sound I like better than #larder# door shutting on full shelves. | Two jars of pickled eel, a ham, a sack of oats. I sleep easier for it.
+b : Expecting a siege? | It doesn't take much, does it? | Who taught you that?
+a : Expecting nothing. That's why I do it, #address#. | It doesn't. Full shelves and a #snug# floor, and I'm rich. | My #gran#. She'd had empty winters, and she never had another.
+b? : #bc_fair# | #bc_true# | #bc_wise#
+
+scene board_and_buttons
+when topic=pastimes self.likes=draughts
+does tell.self / tease / tease.return / laugh
+a : I've #draughts# set up at home and nobody to lose to me. | Won three straight, last night. Who against, I'll keep to myself. | Draughts is all watching what the other one leaves open.
+b : Is that a challenge? | Ashamed of them, are you? | And what do you leave open?
+a : It's an offer, #address#. Bring your own buttons; I'll keep mine. | Kind to them. They'll want another go, and they'll lose that too. | Nothing. I've sat at a board since I was a #child#.
+b? : #bc_go_on_then# | #bc_ha# | #bc_clever#
+
+scene trusted_one
+when topic=friends|pastimes self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd sooner sit a board with than anybody. | If I'd to trust one wolf with my door key, it'd be #self.friend#. | I'd go #far# way for #self.friend#, and not say so to anyone's face.
+b : Good to have one like that. | That's a lot of trust. | You've just said it to mine.
+a : It is. Half #city# goes without. | It is, and I've not been wrong yet, #oath#. | #dryly#. You'll not repeat it, then.
+
+scene summer_flies
+when topic=animals|season here.season=summer self.dislikes=flies here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# are up. You can hear them from the end of the street. | I've swatted the same fly six times today. It's laughing at me. | Summer's the worst of it here. Fish, heat and #flies#.
+b : They're everywhere this week. | Six? | Every summer, the same.
+a : Everywhere there's fish, which is everywhere down here. #annoyed#. | Seven now. I'll have it by dark, mark me. | The same. I'd swap the lot for one #cold# week.
+
+scene west_wind_reek
+when topic=weather|smalltalk here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / insist / ack
+a : Wind's round to the west. #reek.capitalize# is in everything. | Smoke in my eyes since noon. I've wept more today than at a burying. | They've lit every fire in the smokehouses at once, I'd swear it.
+b : You get used to it. | That bad? | It's only smoke.
+a : I've not, and I've given it long enough. #annoyed#. | Worse. I'll be tasting it at #supper#. | Only smoke, and it sits in the fur a week.
+b? : #bc_poor_soul# | #bc_ha# | #bc_fair#
+
+scene sounding_the_fen
+when topic=memories|land self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail
+a : Back in #self.from_town# you sound every step with #pole#, or you go in. I still do it here, on cobbles. | My #grandad# taught me to sound #mud#. Poke, listen, step. Poke, listen, step. | You learn young in #fen# where the ground's lying.
+b[from=fenshore] #fen : Every pup does. I still catch myself at it. | Poke, listen, step. I'd near forgotten. | It lies more than anyone.
+b : On cobbles? | What are you listening for? | How do you tell?
+a@fen : Then we're two daft ones together. #agree#. | You'll not forget it now; I've said it out loud. | It does. City ground lies too, only slower.
+a : Cobbles have holes too. Ask anyone in #city# who's lost a boot down a drain. | The sound of it. Firm ground knocks; soft ground sucks. | By the knock of the pole. #saying#.
+
+scene city_mud
+when topic=land|home here.region=ridgemere self.from=fenshore self.away=yes
+does tell.self / ask.detail / answer.detail / ack
+a : Fen #mud# is honest. City #mud# has things in it I won't name. | Folk here call the low streets a swamp. They've never seen a swamp. | I came up off #fen# thinking a city would be dry. #dryly#.
+b : I'd not ask. | What's a real one like? | And was it?
+a : Don't. I sound it with #stick#, never my paw. | Quiet. Wide. Ground that moves when you're not looking. I miss #fen#, mostly. | Wetter. It's built on a hill and it still finds a way to be wet.
+b : #bc_ha# | #bc_fair# | #bc_true_enough#
+
+scene low_street_doors
+when topic=home|friends here.region=ridgemere self.quarter=sump
+does give.opinion / disagree / concede / ack
+a : Folk higher up reckon the Sump's all thieves. It's #mud#, and folk who'll pull you out of it. | I've lived drier, but never among better neighbours than down here. | Down here a shut door's an insult. Up the hill it's manners.
+b : There's thieves too, mind. | Better than up the hill? | Which do you keep?
+a : There are. Ours know whose door to leave be. | Better and noisier. I'll take noisy, #pet#. | Mine's on the latch. Think on that, #address#.
+b : #bc_ha# | #bc_fair_enough# | #bc_true#
+
+scene snow_till_noon
+when topic=dreams
+does tell.feeling / ask.detail / answer.detail / ack
+a : If I'd one wish, it'd be a snow a year that lay till noon. That's all. | A house with a step that's high and dry. Three steps, if I'm greedy. | I don't dream much. When I do, it's ground that holds, and #boots# dry.
+b : Only till noon? | Why three? | Odd thing to dream of.
+a : Any longer and it goes grey. Noon's when it's best, #pet#. | One for the #rain#, one for the floods, and one to sit on. | Not if you grew up where I did. #saying#.
+b? : #bc_fair# | #bc_ha# | #bc_fair_enough#
+
+scene office_bench
+when topic=smalltalk|day here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : Go up to the Office about a paper and they'll say come back next week. Then they'll say it again. | The Office has a room just for lost papers. Nobody in #city#'s ever found the door. | I've seen wolves go grey on that Office bench, waiting on one stamp.
+b : Every week? | Truly? | One stamp?
+a : Every week. Go enough times and a clerk nods at you. Never at the paper, mind. | That's what they say down here. I'd not bet against it. | One stamp, and the clerk with it gone to lunch. #dryly#.
+b? : #bc_ha# | #bc_so_they_say# | #bc_poor_soul#
+
+scene candle_for_the_water
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I light a candle at the chapel by the water when #barges# are out in a blow. | I'm not one for praying. I put in a word with the Bright One for #snug# boots and leave it there. | The low streets are as plain to the Bright One as the Heights are. I've decided it, and I'll not hear otherwise.
+b : For anyone in particular? | Does it work? | Good.
+a : For whoever's out. It's a small candle; it covers a lot. | Some days. #boots.capitalize# tell me how I stand with the Bright One. | Good, then. That's the faith settled, #address#.
+
+scene damp_in_the_shoulder
+when topic=health self.age>=35
+does tell.complaint / sympathise / assess
+a : Damp's got into my shoulder again. It knows when I'm out in it. | Standing on #ground# all day does for the knees. I'll not say it's the years. | I've a cough I'm calling #chill#. I'll call it something worse if it stays.
+b : #sympathy# | Sit when you can. | Have you tried #remedy#?
+a : It'll ease when the #rain# does. So, never. | I sit when the day lets me, which is about never. | #remedy.capitalize#, twice. It's going, slowly, like most things.
+
+scene word_of_a_theft
+when topic=crime topic.claim_kind=theft
+does tell.news / react.news / assess / ack
+a : They say #topic.subject# #topic.claim#. I heard it twice before noon. | Word is #topic.subject# #topic.claim#. I'll be keeping my door barred. | #topic.subject.capitalize# #topic.claim#, they say. I'll believe it once it's sounded.
+b : Is it true? | Will that help? | You doubt it?
+a : #dunno#. I only had it secondhand. | Can't hurt. Whoever did it has to carry it off through #city# somehow. | I doubt everything that floats up. Most of it's #nonsense#.
+b? : #bc_probably# | #bc_true# | #bc_fair_enough#
+
+scene stays_at_the_gate
+when topic=gossip self.job=guard
+does tell.self / ask.detail / answer.detail / ack
+a : I hear everything at #gate#, all day long. It stays at #gate#. | #secret.capitalize#. I'm not the one to ask, #address#. | Folk tell a guard things they'd not tell their own mother. I'd be a poor guard to pass them on.
+b : Not even a little? | Go on. | That's fair.
+a : Not #little#. #dryly#. | I'll not. It's sunk, and it stays sunk. | A small rule, and mine. #saying#.
+b? : #bc_fair_enough# | #bc_ha# | #bc_fair#
+
+scene thin_water
+when topic=times|prices world.times=hard|lean here.region=ridgemere
+does tell.worry / reassure / assess / ack
+a : Fewer barges this month, and more folk trying their luck. Times are thin. | When times go lean, the queues get shorter and the lies get longer. | I'm all right. It's the ones lower down the hill I worry for.
+b : It'll turn. | Lies? | You're good to.
+a : It will. #water.capitalize# turns, in the end. | Longer and sadder. I believe more of them than I ought. | #dryly#. Somebody ought to, and it's cheap.
+b? : #bc_hope_so# | #bc_poor_soul# | #bc_true#
+
+scene fat_water
+when topic=times world.times=good|boom here.region=ridgemere
+does tell.self / react.self / assess
+a : Every mooring taken and the bargemen whistling. Good times, these. | Coin about. You can tell by who's buying #fish# for #supper#. | When it's #good# like this, I count my blessings and sound them twice.
+b : Long may it last. | Who's buying? | Twice?
+a : It won't, but I'll not spoil it by saying so. | Everyone, this week. Even me. | #good.capitalize# ground's still ground. #saying#.
+
+scene masts_on_the_sound
+when topic=ships world.ships=in here.region=ridgemere
+does tell.news / react.news / assess
+a : Ships in on the Sound. The queue's back past #quay#. | Masts all along the far side this morning. I counted, then I gave up. | Ships in means sailors ashore, and sailors ashore means a long night.
+b : Busy, then. | How many? | Rowdy, you think?
+a : Busy enough. I'll sleep when they sail. | More than I've fingers. #dryly#. | Not rowdy. Thirsty. That's worse, after dark.
+
+scene ship_overdue
+when topic=ships world.ships=late here.region=ridgemere
+does tell.news / react.news / reassure / ack
+a : Ship's late. #quay.capitalize#'s full of wolves pretending not to look out at the Sound. | Overdue, and nothing on the water but gulls. | A late ship makes folk short at #gate#. I keep #bar# down and my mouth shut.
+b : It'll come in. | Worried? | That's wise.
+a : Likely. The Sound keeps things a while and gives them back. | Not mine to worry. I've no cargo aboard. | Wise or #tired#. Both, today.
+b? : #bc_hope_so# | #bc_fair# | #bc_ha#
+
+scene road_wolves_near
+when topic=bandits world.bandits=near self.job=guard
+does tell.worry / ask.opinion / give.opinion / ack
+a : #bandits.capitalize# out past the walls, they say. I'd keep inside after dark. | Word's come there's #bandits# about. They'll try the water next, mark me. | #bandits.capitalize# near, and I've seen nothing. That's what worries me.
+b : Will they come in? | By water? | Why worry, then?
+a : Not past a barred gate. Not without a fuss, they won't. | It's easier than the walls. I've said as much to #boss#. | The ones you see are the ones you can stop. #uneasy#.
+b? : #bc_hope_so# | #bc_wise# | #bc_true_enough#
+
+scene first_puddle
+when topic=newcomer
+does tell.self / ask.detail / answer.detail / ack
+a : New face on the corner. I'll have it learnt by tomorrow. | Somebody new's moved in down the street. Steps round nothing, straight through everything. | New folk always step in the big puddle first. Every one of them.
+b : You know every face? | Straight through? | Do you warn the new ones?
+a : Most. Faces I'm #good# at. Names I leave to others. | Puddles and all. A week of wet boots teaches anyone, #pet#. | Never. Wet boots are the best teacher there is. Mine taught me.
+b? : #bc_ha# | #bc_true_enough# | #bc_fair#
+
+scene feast_crowd
+when topic=festival world.festival=today|soon
+does tell.self / ask.detail / answer.detail / ack
+a : A feast coming, and every #lump# in the city out on the streets for it. I'll be at a window. | Feast days I'd sooner work than dance. Somebody's got to watch the crowd drink. | Last feast I watched one puddle swallow three boots and a hat.
+b : Not one for dancing? | You never get a feast? | Three boots?
+a : I dance with my eyes. It's cheaper and nobody treads on me. | I get the morning after. It's quieter, and the bread's cheap. | Three, and the hat. #dryly#. Nobody came back for the hat.
+b? : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene fen_in_the_voice
+when topic=accent self.away=yes self.from=fenshore
+does tell.self / react.self / assess
+a : Folk up here hear me say #greet# and look at my boots. | I've been in the city long enough to lose it, and I haven't. | A bargeman asked me if I was from #self.from_town#. Two words, and he knew.
+b : It's a kind way to say hello. | Do you want to lose it? | Which two?
+a : It is. Dry feet's worth wishing on anyone, here of all places. | No. It's the only bit of #fen# I could carry up the hill. | The usual two. I'll not change them for any city.
+
+scene traveller_at_the_puddle
+when topic=player
+does tell.self / ask.opinion / give.opinion / ack
+a : That traveller's been eyeing #puddle# a while. Thinking about it. | There's a traveller about who walks like #ground# owes rent. | A traveller asked me the way earlier. I gave it, then watched to see it taken.
+b : Round or through, you think? | Trouble? | And was it?
+a : Through. Strangers always go through. I'll keep my mouth shut and watch. | Not trouble. Just sure of the ground, which is worse. | Taken. Some folk listen. It makes a change.
+b? : #bc_ha# | #bc_we_will_see# | #bc_for_once#
+
+story pole_lesson [topic=memories self.from=fenshore self.age>=25]
+  : My #grandad# put #pole# in my paws when I was a #child#, and walked me out on #fen#.
+  : Every step, poke and listen. I got bored and stepped without. Went in to the chest.
+  : He let me stand there a good while before he held the pole out.
+  ask : Would you have pulled a pup out straight off?
+  b : Straight off. I'm soft that way. | Not straight off. I'd want it to stick.
+  b[old] : No. The waiting's the lesson. Your grandda knew it.
+
+story eel_barge [topic=work|lore self.job=guard self.age>=30]
+  : A barge came up to #gate# once with a paper that said eels, and a bargeman who swore blind it was eels.
+  : I said I'd look. He said there was no need. I looked.
+  : It was eels. Every one alive, and the lid off before I'd got #bar# back down. We were picking them out of the gutters till dark.
+  b : Ha! And you'd been so sure. | Serves you right for looking.
+  b[from=fenshore|mirebridge] : Live eels on cobbles. Sink me, I can see it.
+
+story white_week [topic=weather|memories self.away=yes self.from=fenshore self.age>=30]
+  : One winter back home the snow lay a whole week. #fen.capitalize# froze white from the causeway to the far reeds.
+  : We walked where nobody walks. Right out over the deep pools, on top of them.
+  : I've never stood anywhere since that felt so much like a secret.
+  ask : Have you ever walked somewhere you oughtn't to be able to?
+  b : Once, on a frozen pond. My heart was in my mouth the whole way.
+  b[old] : I did it once, and went through. You were lucky.
+
+story purse_in_the_puddle [topic=crime|work self.job=guard]
+  : #lump.capitalize# snatched a purse at #gate# and ran for it. I didn't run. I knew which way he'd go.
+  : Straight across, the quickest way. Straight into the puddle I sound every morning.
+  : To the ears. I fished him out by the collar, and the purse came up with him.
+  b : Ha! The puddle did your work for you.
+  b[job=guard] : I'd give a week's pay for a puddle like that one.
+
+story peas_on_the_board [topic=pastimes|memories self.age>=25]
+  : An old soldier taught me draughts with dried peas on a board scratched in a table.
+  : Green peas his, yellow mine. If I lost he ate my peas, and he always ate.
+  : The first time I won, I was too pleased to eat his. I've been kinder to winners since.
+  ask : Have you ever let somebody win?
+  b : Once or twice. Pups, mostly.
+  b[stage=young] : Never! I want to win it fair.
+
+rule @puddle_bark
+when concept=bark working=yes self.job=guard here.weather=rain
+does aside
+cooldown 6h
+say Up another knuckle. #oath#. | There. #deep.capitalize#, and getting deeper.
+
+rule @bar_bark
+when concept=bark working=yes self.job=guard here.time=dawn
+does aside
+cooldown 12h
+say #bar.capitalize#'s up. In you come, slow. | #gate.capitalize#'s open. Single file, papers out where I can see them.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off. Off, the lot of you. | #flies.capitalize# again. #annoyed#.
+
+rule @reek_bark
+when concept=bark here.region=ridgemere self.dislikes=smoke
+does aside
+cooldown 8h
+say West wind again, and #reek# in my eyes. | Somebody's lit every smokehouse at once. #annoyed#.
+
+rule @lantern_bark
+when concept=bark working=yes self.job=guard here.time=night
+does aside
+cooldown 8h
+say #lantern.capitalize#'s lit. Quiet now, the lot of you. | Dark, and the water talking. I'll listen.
+
+rule @sails_bark
+when concept=bark here.region=ridgemere world.ships=late
+does aside
+cooldown 12h
+say Still nothing on the Sound. | No sails yet. #saying#.
+
+dlg @1 watch.hub [here.wanted=no on_watch=yes] : #greet#. State your business slow; I'm listening. | #watch_greet#
+dlg @2 watch.hub [here.wanted=no on_watch=yes topic.meeting=known] : #greet#, #topic.player#. Mind #puddle# and tell me what's wanted. | #topic.player#. I remember the boots. What is it?
+dlg @3 watch.hub [here.wanted=no on_watch=no] : I'm off watch, #address#, but I've ears. Be quick. | Off duty. Say it anyway; I'll only wonder, #pet#.
+dlg @4 watch.hub [here.wanted=yes] : Stand there. The Watch wants #here.fine# pennies of you, #address#. | Hold. You're wanted: #here.fine# pennies, and then you're square.
+dlg @5 watch.hub [here.wanted=no pair.disposition=hostile|wary] : Paws where I can see them, #address#. Then talk. | Easy. What do you want with the Watch?
+dlg @1 watch.crime [here.witnessed=0] : Saw something? Go on. Plain, and from the start. | Tell it. Who, where, and which way they went.
+dlg @2 watch.crime [here.witnessed>=1] : Go on. I'm listening, and I don't forget. | Say it slow. I'll sound every word, #oath#.
+dlg @1 watch.reported [topic.reported=yes] : #watch_noted# It goes up the line tonight. | Good. That's sounded, then. #thanks#.
+dlg @2 watch.reported [topic.reported!=yes] : We've had that already. Keep your eyes open, though. | #knew#. Still, you did right to say.
+dlg @1 watch.fine [here.wanted=yes] : #here.fine# pennies against your name, fine and damages both. Settle it here, or walk with me to the Watch House.
+dlg @2 watch.fine [here.wanted=no] : Your slate's clean with us. I'd keep it so. | Nothing against you. #saying#.
+dlg @1 watch.law [here.wanted=no] : A theft costs three pennies and every stolen thing back. Raise a paw to a wolf and it's eight. Any of us can take it off you. | Three for a theft, eight for a blow. Simple, and the Watch holds you to it, #address#.
+dlg @2 watch.law [here.wanted=yes] : You'd know. Theft's three and the goods back, a blow's eight, and yours stands at #here.fine#.
+dlg @1 watch.unpaid : Then it's the cells till it's settled. They're #snug#, near enough. | The cells, then. I'll see you get a blanket.
+dlg @1 watch.paid : Settled. Off you go, and sound your steps on #ground#. | Paid. I've forgotten it already.
+dlg @1 watch.bounties : Posted on #gate#: #here.bounty# | #here.bounty# That's what's on the board.
+dlg @1 watch.refused : #topic.why# | Not that. #topic.why#
+dlg @1 watch.bye : #farewell#. Keep the peace. | #watch_bye#
+dlg @1 resident.hub : #greet#. What is it, then? | #greet#, #address#. Stand off the wet bit and say.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What's wanted? | #topic.player#. Back, and still dry-shod. Go on.
+dlg @3 resident.hub [here.time=night] : It's late. #talk_open#
+dlg @1 resident.job [self.job=guard] : #self.trade_words.capitalize#. I lift #bar#, I read the seals, I look in #holds#. | I'm Watch. I keep a gate. It's quieter than it sounds, mostly.
+dlg @2 resident.job : #job_busy# | This and that. I keep my eyes open; somebody has to.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's all I've had. | #world.news.capitalize#, they're saying. From #world.news_from#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words#, wherever I stand. | Everyone's on about #world.event_words#.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's come up off the water worth saying. | Quiet. #dryly#. Suits me.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty. It stays sunk where I heard it, #address#.
+dlg @1 resident.bye : #farewell#. Sound it before you step. | #farewell#. Mind the big puddle.
+graft watch.hub
+choice Why do you poke every puddle? -> sounding
+node sounding
+say Habit. The ground I grew up on lies to you. You sound it with #pole# or you go in. This one by the gate's got deeper every year.
+mood calm
+free
+choice How deep is it now? -> sounding_deep
+choice Goodbye. -> bye
+node sounding_deep
+say Past a boot. One day it'll swallow a cart, and I'll have known first. Mind it on your way.
+choice Something else. -> hub
+choice Goodbye. -> bye
+
+graft resident.hub
+choice What's the fen like? [self.away=yes self.from=fenshore] -> fen
+node fen
+say Wide and quiet, and the ground moves when you're not looking. I miss it. The city's wetter, and it's built on a hill.
+mood calm
+free
+choice Would you go back? -> fen_back
+choice Goodbye. -> bye
+node fen_back
+say Some day, maybe. For now the city's got used to me, and I to it. #farewell#.
+choice I'll let you be. -> hub
+choice Goodbye. -> bye

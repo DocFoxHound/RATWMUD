@@ -1,0 +1,287 @@
+# cw212, the hummer who times the griddle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw212
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_philippa_fogwick
+written_by claude
+title the hummer who times the griddle
+fits stage=adult|old
+prefers job=servant honesty=guarded
+traits temper=even talk=plain warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk hums_sea_songs_under_the_breath
+likes oatcakes stars festival_bells first_warm_day
+dislikes smoke salt_wind
+fears a_burnt_batch_on_a_feast_morning being_talked_about_below_stairs
+hopes a_window_that_faces_the_evening_stars a_griddle_of_my_own_one_day
+topics work +0.4 food +0.3 festival +0.3 pastimes +0.3 season +0.2 gossip -0.5 family -0.2
+styles comfort=practical gossip=closed refuse=polite tease=none
+marks oath saying
+persona #self.first# hums old sea songs under the breath and times every task by the tunes, two verses to an oatcake side: exact, guarded and civil, saying little of anyone, fond of oatcakes, the first stars of an evening, and the bells on a feast morning.
+
+words
+oath! = Flour and fathoms | By the griddle and the grate
+saying! = Two verses a side and never peek | A closed mouth hums the sweetest | Keep the tune and keep the time
+griddle = the griddle | the big iron griddle
+verses = two verses | a verse and a chorus
+tune = a tune off the old boats | a rowing tune with the words worn off
+kitchens = the kitchens | the kitchens below
+oatcakes = oatcakes with butter | an oatcake, buttered warm
+stars = the first stars out | the stars over the kitchen yard
+peal = the festival peal | bells ringing a feast in
+warmday = the first warm day | a spring morning the frost forgot
+smoke = oven smoke | the smoke off the bread ovens
+saltwind = the salt wind | a harbour wind with salt on it
+trays = the trays | a tray squared to its edges
+pantry = the pantry | the pantry shelves
+dough = the dough | a bowl of dough rising
+scullery = the scullery | the scullery sink
+yard = the kitchen yard | the yard behind the ovens
+door = my door | the cottage door
+city = the city | this city
+count = my count | the count I keep
+step = the step | the back step
+songs = the old songs | the boat songs
+backpew = the back pew | a pew nobody looks at
+butter = the butter | a scrape of butter
+mm = Mm | Hm-hm
+
+any
+opinion @1 city against 1 : #mm#. Chimneys and crowds, and not a soul can name the family two doors along. I like that better than I ought to.
+opinion @1 merchants against 1 : A trader's thumb finds the scale when nobody's looking. I count my change twice on the step, #address#.
+opinion @1 strangers against 1 : I don't open #door# to a face I can't place. Civil on the step, and no further than that.
+opinion @1 sump against 1 : I keep to the upper streets of #city#. What goes on in the low ones I'm content to hear about, never to see.
+opinion @1 houses mixed 1 : The houses that hire us pay on the day. That much I'll grant, and nothing past it.
+opinion @1 festivals for 1 : Feast days are the busiest we have in #kitchens#, and the best. #peal.capitalize# and every oven going.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll forgive me if I don't stop; say what you need. | #greet#. Your face is new to me, #address#.
+line @2 greet [self.working=yes self.job=servant] : #greet#. Mind #trays#, if you please. | #greet#. Talk if you like; #griddle# won't wait.
+line @3 greet [here.time=dawn] : Good morning. #dough.capitalize# was up before either of us. | Good morning. #oatcakes.capitalize# are nearly done, #address#.
+line @4 greet [here.time=dusk|night] : Good evening. #stars.capitalize# soon, I'd say. | Good evening, #address#. Late to be calling.
+line @1 kin.open [pair.kin!=no] : In you come; I've kept you #oatcakes#. | Oh, you. Sit down; there's water warming on #griddle#.
+line @1 again.open : Twice today, #address#. I'll set another cup. | You again. #mm#, I'd only just sat down.
+line @1 greet.return : #greet#. | #greet#, #address#. Well met.
+line @2 greet.return [pair.band=friends|family] : #greet#. I thought that was your knock on #step#. | #greet#. Sit down, there's #oatcakes# still warm.
+line @3 greet.return [self.working=yes] : #greet#. One verse more and I'm yours. | #greet#. Let me square #trays# first.
+line @1 farewell : #farewell#. Mind the step. | #farewell#. Go on; you've places to be.
+line @2 farewell [here.time=dusk|night] : Good night. #stars.capitalize# are out; walk home looking up. | Good night, #address#. The lamplit side of the street, mind.
+line @1 farewell.return : #farewell#. | #farewell#, and thank you for stopping.
+line @1 react.news : #mm#. Go on, then. | Well. I'll keep that one to myself, #address#.
+line @1 react.news.new : #surprise#. Nobody's carried that down to #kitchens# yet. | I'd not heard. Nobody tells me much, and I prefer it, #address#.
+line @1 react.news.known : #knew#. #kitchens.capitalize# had it at breakfast. | I'd heard. It went no further than #scullery#, mind.
+line @1 react.news.doubt : #doubt#. Somebody who saw it can tell me, and then I'll think on it. | #hedge#, I'd want more than kitchen talk before I believed that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll bake something and send it round, quietly. | That's #very# hard news. Sorry I am for it, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be a cake owed for that. | #good.capitalize# news. I'll hum a happier tune today.
+line @1 answer.how : #fine#, thank you. Nothing to complain of. | Steady, #address#. Same as ever, which suits me.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #griddle.capitalize# never cools on a feast week. | Floured to the wrist and #verses# behind, thank you.
+line @1 ask.how : And yourself, #address#? | You're keeping well, #address#, I hope?
+line @1 sympathise : #sympathy#. Sit a while; I'll make you something hot. | I'm sorry for it, #address#. You needn't tell me more than you want.
+line @1 reassure : #reassure#. Most things settle if you give them the time. | It'll come right, #address#. Dough always rises in the end.
+line @1 decline : #hedge#, but I can't; I'm wanted in #kitchens# and I gave my word. | Not this time, #address#. My evenings are spoken for, and I like them so.
+line @1 accept_decline : #no_matter#. I understand. | Quite all right. Another time, #address#.
+line @1 thank : #thanks#. That's #very# good of you. | #thanks#. I'll remember it, though I'll not mention it.
+line @1 deflect_thanks : #deflect#. It was no trouble. | It was nothing, #address#. Truly.
+line @1 preclose : Still, #griddle# won't mind itself. | I should be getting on. #pantry.capitalize# wants counting.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. #griddle.capitalize# can spare me a minute more, no longer.
+line @1 ack : #mm#. | #bc_true#.
+line @1 give.advice : Time it by a song, #address#, and you'll never burn a thing. | Keep your business to yourself, #address#. Nobody can repeat what they never heard.
+rule @hum
+when concept=bark
+does aside
+cooldown 6h
+say Hm-hm, hm, hm-hm... #tune#, under the breath. | #mm#... where was I. The second verse.
+
+rule @smoke
+when concept=bark self.dislikes=smoke self.working=yes
+does aside
+cooldown 8h
+say #smoke.capitalize# again. Who's left the flue shut? | My eyes. Somebody open a window over #griddle#.
+
+rule @griddle
+when concept=bark self.working=yes self.job=servant
+does aside
+cooldown 8h
+say Two verses, and turn. Two verses, and off. | #oath#. One's caught. Only the one.
+
+rule @saltwind
+when concept=bark self.dislikes=salt_wind here.region=ridgemere here.weather=overcast|storm
+does aside
+cooldown 10h
+say #saltwind.capitalize#. My washing will be stiff with it. | That wind tastes of the harbour. I'll shut #yard# door.
+
+scene griddle_verses
+when topic=work self.working=yes self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I time #oatcakes# by a song. #verses.capitalize# a side, then turn. | I've not burned a batch on #griddle# in three years. Never once looked at a clock. | Every task in #kitchens# has its tune. Scrubbing's slow, kneading's quick.
+b : What if you lose your place? | No clock at all? | Which tune for the pans?
+a : Then I start again from the chorus and turn them early. | There's no clock in #kitchens# worth trusting. #songs.capitalize# don't run fast. | A long one with a lot of verses. The pans want it, #address#.
+
+scene caught_humming
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : Somebody asked what I was humming today. News to me that I was at all. | I hum when I'm counting. If I stop, I've lost #count#. | They tell me I hum through every meal. I'll take their word.
+b : Did you tell them? | Counting what? | It's not unpleasant.
+a : I said it was nothing. It's #tune#, but that's mine to know. | Spoons, cakes, steps. Whatever wants counting, #address#. | Thank you. I'd still rather not be heard at it.
+
+scene the_old_tune
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : Every tune I hum I had off the boats at #self.from_town#, waiting by the water as a pup. #songs.capitalize#, all of them. | I learned #tune# from an old rower who never sang the words, only hummed them. | The songs came with me from #self.from_town#. Not much else did.
+b[from=coldwater] #cw : The jetty songs. I know a few. | That's how I learned mine, too. | They do travel, the songs.
+b : Do you still know the words? | Did you ever learn the words? | That's plenty to bring.
+a@cw : Then you'll know the slow one. Hm-hm, like that. | Hummed is how they ought to be learned. | They do. Lighter than a trunk, #address#.
+a : Hardly a line of them. #tune.capitalize# is enough for me. | Never. I like them better without. | It is. #mm#, it's all I needed.
+
+scene oatcake_morning
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #oatcakes.capitalize# and nothing else. That's breakfast and I'll hear no argument. | I eat the broken #oatcakes# myself. The whole ones go up on #trays#. | Two oatcakes and #butter#, and the day may do as it pleases.
+b : Not even an egg? | You get the broken ones? | That's a sound start.
+a : An egg is fuss. #oatcakes.capitalize# are honest. | They taste the same broken, and they're not in #count#. | It is. Worse days have started on finer breakfasts.
+
+scene stars_yard
+when topic=pastimes self.likes=stars here.time=dusk|night here.weather=clear
+does tell.feeling / react.self / assess
+a : I stand in #yard# when the work's done and wait for #stars#. | There's one star comes up over the chimney first, every night. I wait for it. | Clear tonight. I'll be on the step a while, if anyone wants me.
+b : Have they got names, the stars? | Which one? | I'll leave you to it.
+a : I don't. I'd rather not; it'd spoil them. #mm#. | I couldn't tell you its name. I just know where to look from #step#. | Thank you. It's the only hour that's mine.
+
+scene first_warm
+when topic=season|weather here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I opened every window in #kitchens# before anyone could stop me. | #yard.capitalize#'s warm underfoot for the first time since autumn. I took my shoes off. | Spring's come. I'll hang the linen out and it'll dry before noon.
+b : They'll have shut them again by now. | Shoes off? You? | Lucky linen.
+a : Let them. I had my hour of it. | I did. Nobody saw, and I'll not do it twice. | #very.capitalize# lucky. It's been hanging in the scullery since autumn.
+
+scene feast_bells
+when topic=festival self.likes=festival_bells
+does tell.self / react.self / assess
+a : I hear #peal# start up and #griddle#'s already hot. I like that order of things. | Feast mornings I'm up two hours early. #peal.capitalize# is my reward for it. | There's a song for feast days too. Quicker than the rest. You'll hear me.
+b[job=servant|cook] #kitchen : Feast mornings are the worst for us. | Two hours? I'd be asleep standing. | I've heard you. Every year.
+b : You don't get to go out to them? | That's a long morning. | I'd like to hear that one.
+a@kitchen : The worst and the best. I'd not swap. | It stops hurting by the third feast. Mostly, #address#. | #mm#. Every year, same tune.
+a : I hear them from #yard#. That's plenty for me. | It is. But the bells come at the end of it. | You will, if you listen close at #kitchens# door.
+
+scene oven_smoke
+when topic=work|health self.dislikes=smoke self.working=yes
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# this morning, thick. Somebody left the flue shut. I know who. | My eyes are still red from #smoke#. I can't hum with a cough in me. | Half the bread came out grey from #smoke#. I sent it to the yard.
+b : Will you say anything? | No humming at all? | All of it?
+a : No. I'll open the flue myself before they come in tomorrow. | Not a note. #tune.capitalize# keeps till the chimney draws. | Half. The other half I'd stand behind.
+
+scene salt_wind_sound
+when topic=weather here.region=ridgemere here.weather=overcast|storm self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. It's on my teeth, that salt. | Wind off the harbour, and the washing's stiff as board. | I'll not hang anything out in this. It comes back tasting of the docks.
+b : You'd think you'd be used to it. | Bring it in, then. | Dry it indoors.
+a : I'm used to lake wind. That's different; it's sweet, #address#. | I have. It's on the rack by #griddle# now. | I will. Over #scullery#, where it'll smell of soap instead.
+
+scene rain_kitchens
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Wet again. I don't mind it so much in #kitchens#; it's warm down there. | Rain on the yard flags all day, and the bread rising beautifully. Damp suits #dough#. | Wet out. Everyone comes in dripping onto my clean floor in #kitchens#.
+b : Lucky you, in the warm. | Does it, now? | Make them wipe their paws.
+a : Lucky, yes. I'll not say it upstairs. | It does. Warm and damp, and #dough# grows like a rumour. | I do. They don't like being asked. #mm#.
+
+scene gossip_closed
+when topic=gossip
+does tell.self / react.self / assess
+a : There's talk in #kitchens# today. I heard it, and that's as far as it goes. | They say #topic.subject# #topic.claim#. That's what they say. Don't ask me what I think. | I don't carry talk up the stairs or down them. It's a rule of #kitchens#, and mine.
+b : Not even a hint? | Fair enough. | A good rule.
+a : Not even. Ask somebody who likes the sound of it. | #mm#. I'll go back to my count, then. | It's spared me a deal of bother, #address#.
+
+scene friend_hearth
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd trust #self.friend# with anything I own. That's not a short list for me. | I could sit a whole evening by #griddle# with #self.friend#, and hardly a word said. | If I've a worry, #self.friend# is the one I'd tell. Nobody else.
+b : Not a short list? | That's the best kind. | Just the one?
+a : I don't trust many, #address#. That one I trust. | It is. Quiet company is hard to find in #city#. | One is enough. More and it gets about.
+
+scene door_shut
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New faces about. I'll be civil and keep #door# on the latch. | There's a stranger asking questions in the street. I've nothing to tell anyone. | I don't open up to people I've just met. Give me a year.
+b : That's a bit cold. | Nor have I. | A year!
+a : Careful isn't cold. I'll warm when I know them. | #good.capitalize#. Then nobody tells anyone anything. | A year, and #oatcakes#. That's how it's done.
+
+scene faith_hum
+when topic=faith
+does give.opinion / react.self / assess
+a : I hum a hymn under the work as often as a sea song. The Bright One hears both. | I go to chapel and sit in #backpew#. That suits me. | I don't pray aloud. The Bright One knows what I'd say.
+b[job=priest] #priest : We'd be glad to hear you sing out. | You're welcome anywhere in it. | Silent prayers are heard too.
+b : I hope so. | It's quiet at the back. | I expect so.
+a@priest : #mm#. Humming's as loud as I go. | Thank you. #backpew.capitalize# is where I like it. | That's what I trust, #address#.
+a : I'm sure of it. That's my comfort. | It is. Nobody asks you anything there. | So do I. It saves a deal of talk.
+
+scene lean_kitchens
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. #kitchens.capitalize# throws nothing away now, not a crust. | Flour's dear and #trays# come back clean. That tells you something. | We've been told to make #butter# go further. I can do it; I don't like it.
+b : Good that nothing's wasted. | It does. | It'll ease.
+a : It is. I was raised that way. It's no hardship to me. | Folk are hungry, and they're too proud to say. | I hope so. Till then I'll scrape thin and hum louder.
+
+scene good_season
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. More feasts, more #trays#, more of everything going up the stairs. | Coin about, and #pantry#'s fuller than I've seen it. I've counted twice. | Everyone's cheerful. I'll be cheerful when the season's done and I can sit down.
+b : More work for you, though. | Twice? | Fair enough.
+a : More work, and steadier pay. I'll not grumble. | Twice. I don't trust a full shelf, #address#. | It's my way. I keep my cheer for after.
+
+scene home_lake
+when topic=home|memories self.away=yes self.from=coldwater
+does tell.self / ask.detail / answer.detail
+a : In #self.from_town# we had a window that looked over the water. I'd like one like it again. | I've been in #city# a long while now, and I still set my supper by the lake's hours. | My people kept a tidy house by the lake. I keep mine the same.
+b : Facing the lake? | The lake's hours? | Tidy how?
+a : West, over the water, for #stars#. I miss that more than the people, nearly. | Supper at dusk, bed when it's dark. Nobody here keeps hours like that. | A place for every spoon, and every spoon in its place. Nothing to talk about.
+
+scene dream_window
+when topic=dreams
+does tell.plan / react.self / assess
+a : I'd like my own window one day, facing west, where #stars# come out first. | One day I'd have #griddle# of my own and bake for nobody but me. | When I'm old I'll sit on a step somewhere quiet and hum till I forget the words.
+b : That's not much to want. | Only for you? | You've forgotten them already.
+a : It isn't. That's why I think I'll get it. | For me, and one friend, on a Restday. | I have. That's why I hum, #address#.
+
+story the_first_song [topic=memories self.age>=25]
+  : When I was small there was an old rower on our jetty who hummed while he mended his oars.
+  : Never a word. Just the tunes, one after another, the whole long afternoon.
+  ask : Do you have a tune you can't remember learning?
+  b : One or two. My mother's, I think.
+  b[stage=young] : I've got one! It goes up at the end.
+  : That's how it is. You keep the tune and lose who gave it you. #mm#.
+
+story the_spoon_count [topic=work self.job=servant self.age>=25]
+  : One feast night the count came up a spoon short. Forty-one where there should be forty-two.
+  : I counted three times, humming the whole while, and nobody slept till I'd done.
+  ask : Where would you have looked first?
+  b : Under the table, I'd think. Did you find it?
+  : In the dough. Baked into a loaf. I've hummed a quicker tune at the bread ever since.
+
+story the_feast_morning [topic=festival|memories self.age>=25]
+  : The first feast I ever worked, I burned two dozen #oatcakes# because the bells made me lose count.
+  : The cook never said a word. Only nodded at the bin, and I started again.
+  ask : Have you ever been let off a mistake without a word said?
+  b : Once or twice. It's worse than a scolding. What did you do?
+  : I learned to count by #songs# instead of bells. Never burned a batch since.
+
+dlg @1 resident.hub : #greet#. Something you're wanting, #address#? | #greet#, #address#. One minute, #address#, and a short one.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You remembered where to find me. | #topic.player#. Come for #oatcakes# again, have you.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say your business, and plainly. | We've not been introduced, #address#. Speak up, then.
+dlg @1 resident.job [self.job=servant] : I'm in #kitchens#, at #griddle# mostly. #trays.capitalize# go up, and they come back down. | I work at #self.workplace#. Head down, #count# right.
+dlg @2 resident.job : I keep busy, #address#. The rest is my own affair. | This and that. Mostly I keep things where they belong.
+dlg @1 resident.bye : #farewell#. Mind the step. | #farewell#, #address#.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say Was I? It's an old one off the boats. No words to it, or none I'd sing. I time my baking by it.
+mood calm
+free
+choice Time your baking? -> timing
+choice Back to it. -> hub
+node timing
+say Two verses a side for an oatcake, a long song for a loaf. Never burned one yet. Well, hardly.
+mood warm
+choice Clever. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,288 @@
+# lf144, the load-blesser (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf144
+revision 2
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for rm_greta_gullton
+written_by claude
+title the load-blesser
+fits stage=adult|old
+prefers piety=devout temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk blesses_every_load_before_it_leaves_the_ground
+likes barley_soup singing tidy_house first_warm_day
+dislikes drizzle smoke
+fears a_rope_that_goes_unblessed
+hopes a_seat_in_the_front_row_of_the_singing
+topics faith +0.4 work +0.4 home +0.3 pastimes +0.2 newcomer -0.2 gossip -0.5
+styles comfort=prayer gossip=refuses refuse=short tease=none
+marks oath saying
+persona #self.first# lifts cargo on the wharf and says a blessing over every load before it leaves the ground: proud, devout and plain, short with sloppy work, keeper of a spotless room and a strong Restday singing voice.
+
+words
+oath! = Bright One steady the rope | Lift and bless
+saying! = Bless it before it leaves the ground | A swept room is half a prayer | Ask every week and they'll learn your face
+blessing = a blessing on the load | a word over the rope
+rope = the rope | the lifting rope
+gang = the gang | our gang on the wharf
+soup = barley soup | barley soup with an onion in it
+room = my room | my room under the eaves
+hymn = a hymn | one of the old Restday hymns
+singing = the singing | the Restday singing
+drizzle = this drizzle | drizzle that never gets on with it
+smoke = the smoke | smoke off the smokehouses
+broom = my broom | the broom behind the door
+springsun = the first warm day | the first day the stones are warm
+office = the Office | the Office up the hill
+hook = the hook | the big iron hook
+downs = the downs | the open downs
+wharf = the wharf | the wet wharf
+knots = the knots | every knot twice over
+stair = my stair | the stair I sweep
+bread = the parish bread | bread from the chapel door
+prayer = a prayer | a short prayer
+rest = Restday | a Restday morning
+
+any
+opinion @1 church for 2 : The chapel kept bread on my board when nobody else would. Every Restday I sing for it, loud as #hook# on iron.
+opinion @2 dole for 3 [self.on_dole=yes] : #bread.capitalize# got me through the thinnest week I've known. The Bright One has my thanks for it, and so do the paws that hand it out.
+opinion @3 drink against 1 : I've watched a sing-song turn into a brawl by the third jar. Water and #soup# for me.
+opinion @4 houses against 2 [here.region=ridgemere] : Every House says the other one's crooked. I believe them all, and trust none of them with #rope#.
+opinion @5 merchants against 2 : The bread goes up and my pay stays where it was. Somebody's counting wrong, and it isn't #gang#.
+opinion @6 newcomers against 1 : There's little enough work on the wharf. Every new paw on #rope# is one shift less for #gang#.
+opinion @7 times against 2 : Harder every week, and the hill doesn't feel it. The Bright One sees, if nobody else does.
+opinion @8 watch against 1 [here.region=ridgemere] : When the Watch climb to our landing, it's never with good news.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've found #gang#, the best there is. | #greet#. Stand back from #hook#, please.
+line @2 greet [self.working=yes] : #greet#. Wait till #rope#'s down. | #greet#. One load, then I'll talk.
+line @3 greet [here.time=dawn] : #greet#. First load of the day's blessed already. | #greet#. Early. Good.
+line @4 greet [here.time=dusk|night] : #greet#. Shift's done. I've #soup# to get to. | #greet#. Late. Say it quickly.
+line @5 kin.open [pair.kin!=no] : Come in. Wipe your paws; I've swept. | There you are. Sit, and touch nothing in #room#.
+line @6 again.open : You again. #rope.capitalize#'s waiting. | Back already. Make it short, #address#.
+line @7 greet.return : #greet#. | #greet#. Bright One keep you.
+line @8 greet.return [pair.band=friends|family] : #greet#. Come up, then. | #greet#. Good to see a face I trust.
+line @9 greet.return [self.working=yes] : #greet#. Mind #hook#. | #greet#. Quick, now.
+line @10 farewell : #farewell#. | #farewell#. Bright One keep you.
+line @11 farewell [here.time=dusk|night] : #farewell#. Say your prayers before you sleep. | #farewell#. Mind the dark stairs.
+line @12 farewell.return : #farewell#. | And you. #bless#.
+line @13 react.news : #ack#. Go on. | Hm. Tell it straight, #address#.
+line @14 react.news.new : #surprise#. I'd not heard. | Bright One. That's new to my ears.
+line @15 react.news.known : #knew#. | I had it on #wharf# already.
+line @16 react.news.doubt : #doubt#. I'll pray it isn't so. | I'll want it from somebody honest before I believe it.
+line @17 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll pray for them. | Bright One keep them. That's hard.
+line @18 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Thank the Bright One. | Good. There's a blessing come true.
+line @19 answer.how : #fine#. Blessed, and tired. | #tired.capitalize#. But my room's swept and #soup#'s on.
+line @20 answer.how.busy [self.working=yes] : #busy.capitalize#. A ship in and #gang# short. | Busy. Don't stand under #rope#.
+line @21 ask.how : And you, #address#? | You keeping well?
+line @22 sympathise : #sympathy#. I'll pray for you tonight. | That's hard. Sit, and I'll say #prayer#.
+line @23 reassure : #reassure#. The Bright One sees it. | It'll come right. I'll say #prayer# for it.
+line @24 decline : #hedge#. #rope.capitalize# needs me till dark, and I'll not leave #gang# short. | Not today. I've the shift, and then #singing#.
+line @25 accept_decline : #no_matter.capitalize#. | Fine. #rope.capitalize# keeps me anyway.
+line @26 thank : #thanks#. Bright One bless you for it. | #thanks#. I'll remember you in my prayers.
+line @27 deflect_thanks : #deflect.capitalize#. | It was nothing. Thank the Bright One, not me.
+line @28 preclose [self.working=yes] : #rope.capitalize# wants me. | That's #hook# coming down. I'm off.
+line @29 preclose : #preclose#. | Well. #soup.capitalize# won't heat itself.
+line @30 accept_preclose : Go on, then. | Go. #bless#.
+line @31 ack : Mm. | #bc_right#
+scene bless_the_load
+when topic=work|faith self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I say a word over every load before it goes up. Every one. | #blessing.capitalize#, and then lift. That's how I've always done it. | The gang laughs at me for #blessing#. Nobody's been hurt on my rope yet.
+b : What do you say? | Why every one? | Not once?
+a : Only, Bright One, hold it. That's all it needs. | Because the one you skip is the one that slips. #saying#. | Not once. #gang.capitalize# can laugh all they like.
+b : #bc_fair_enough# | #bc_wise# | #bc_good#
+
+scene best_on_the_wharf
+when topic=work self.working=yes here.region=ridgemere
+does tell.boast / react.self / assess
+a : #gang.capitalize# moves more cargo than any on the wharf. I'll say it to anybody. | Not one crate dropped since the spring. That's #gang#. | Watch us unload a ship. You'll not see better on the whole of the water.
+b : That's a fine boast. | Not one? | I'll watch.
+a : It's no boast if it's true. | Not one. I check #knots# myself. | Do. And stand back from #hook# while you do.
+
+scene loose_knot
+when topic=work self.working=yes
+does tell.complaint / react.complaint / insist / ack
+a : Somebody tied that knot like a pup ties a ribbon. I've redone it. | I'll not lift on #rope# till I've looked at it. I don't care who's waiting. | A new hand slung a load crooked this morning. I sent it back down.
+b : They'll learn. | They'll grumble. | Good for you.
+a : They'll learn from me, and they'll not enjoy it. | Let them. Grumbling never dropped a crate on anybody. | I'll not have #rope# shamed by careless paws.
+b : #bc_fair# | #bc_true# | #bc_good#
+
+scene drizzle_again
+when topic=weather here.weather=rain|fog self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize#. Rain properly or stop, I say. | Wet ropes and wet paws, all day, from #drizzle#. | #drizzle.capitalize# gets under my hood and into my temper.
+b : It's the city. | It's slippery out. | Your temper, eh?
+a : It's the city, and I pray for better every #rest#. | Slippery as sin. I'll say #blessing# twice today. | My temper's short enough dry. Wet, it's worse.
+
+scene first_warm_stones
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #springsun.capitalize#. I'll open #room#'s window wide and air everything. | Warm, at last. Even #rope# feels kinder in the paw. | The sun's out and #gang#'s singing. That's a day blessed.
+b : About time. | Kinder? | Singing?
+a : It is. I'll give thanks for it tonight. | Dry, and soft, and it doesn't bite. | Badly, but singing. I lead it, mind.
+
+scene smoke_on_the_wind
+when topic=weather|smalltalk here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# on the wind again. My eyes are streaming. | #smoke.capitalize# gets in my washing. Clean sheets, and they smell like fish. | I can't sing with smoke in my throat. #singing.capitalize# will be hoarse.
+b : It's the wind. | Can't you wash them again? | You'll manage.
+a : It's the wind, and the smokehouses. One I can't blame. | Again, and again. A tidy house costs more down here. | I'll manage. The Bright One's heard me hoarse before.
+
+scene soup_on
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess / ack
+a : #soup.capitalize# on the fire, and I'll be home to it by dusk. | A pot of #soup# lasts me three days if I'm careful. | Give me #soup# on a cold night over any feast up the hill.
+b : Smells good. | Three days? | I'll take your word.
+a : It does. Wipe your paws and you can have a bowl of #soup#. | Three, and a blessing over each bowl. | Good. Come and have some, then.
+b? : #bc_thank_you# | #bc_wise# | #bc_good#
+
+scene restday_singing
+when topic=pastimes|faith self.likes=singing
+does tell.self / react.self / assess
+a : I sing every Restday. I've the loudest voice in #singing#, and I'm not sorry. | #hymn.capitalize# when the week's done. That's my rest. | #gang.capitalize# sings when we haul. I make them sing the hymns, not the other ones.
+b : I've heard you. | That's a good rest. | Do they mind?
+a : Then you know I'm not boasting. | It is. Better than any jar. | They mind. They sing anyway.
+
+scene swept_room
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : #room.capitalize# is swept every night before I sleep. Every night. | Nothing on my floor but the floor. #saying#. | I keep #broom# by the door. Visitors wipe their paws or they don't come in.
+b : Every night? | That's tidy. | Strict.
+a : Every night, tired or not. It's how I end a day. | My mother swept twice a day. I only manage once. Mess is a kind of laziness. | Strict, and clean. I'll not apologise for either.
+
+scene chapel_bread
+when topic=faith|times self.on_dole=yes
+does tell.self / react.self / assess
+a : #bread.capitalize# kept my house fed through a thin month. I remember it every Restday. | I've stood in that line with my head up and said #prayer# over the loaf. | When the pay's short, the chapel isn't.
+b : Good folk. | No shame at all. | That's true.
+a : The best. I give them #singing#, the only pay I have. | None. Pride's for what you do, not what you're given. | True. I keep it in my prayers.
+
+scene the_office_queue
+when topic=smalltalk|times here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : I went up to #office# again. Same desk, same face, same answer. | You can stand a whole morning at #office# and leave with less than you came. | I'll go back next week. #saying#.
+b : Same answer? | That's the Office. | They might.
+a : Come back next week. I've heard it so often I could say it for them. | That's the Office. I pray for it, which is more than it does for me. | They will. I'll be stood there till they do.
+
+scene new_paws
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New faces on #wharf# every week, and the same few shifts to share. | I'll not be rude to a newcomer. I'll not give up my place on #rope# either. | A newcomer asked me where the chapel was. That one I'll help.
+b : They need work too. | Fair enough. | Kind of you.
+a : They do. The Bright One knows I'd sooner there was enough for all. | It's fair. I earned my place on #rope#, and they can earn theirs. | It's no kindness. It's the right road.
+
+scene downs_singing
+when topic=memories|faith self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : In #self.from_town# we sang in the chapel loud enough to wake the sheep. | My grandmother taught me every hymn on #downs#, walking to market. | At home the chapel had a stone floor I scrubbed every Restday as a pup.
+b[from=larkfield] #lark : The sheep always knew it was Restday. | Every grandmother there did. | That cold floor. I remember.
+b : Loud enough for sheep? | Walking to market? | You started young.
+a@lark : They did. They'd stand at the wall and listen. | And all of them sang flat, mine with them. | Cold and clean. I've kept a clean floor since.
+a : Louder. I'll not sing quiet for anybody. | #hymn.capitalize# a mile, market and back. I know them all still. | Young, and proud of it. A clean floor's an honest one.
+
+scene trusted_one
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I trust on #wharf#. I'll not say that of many. | I'd put #self.friend# on my rope without checking the knot. Nearly. | When I'm short with folk, #self.friend# tells me so. I listen.
+b : That's rare, from you. | Nearly? | Good friend.
+a : It is. Trust is earned, and slowly. | Nearly. I'd still check #knots#. | A good friend, and a straight one. I pray for that one nightly.
+
+scene hard_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Fewer ships, fewer lifts. I'm home by noon some days and not glad of it. | Bread's dear and the pay's thin. I've thinned #soup# to match. | I pray for ships. #wharf.capitalize# can't live on prayer, but it helps.
+b : It'll turn. | Hard for all of us. | So do we all.
+a : It will. I believe that, or I'd not get up. #reassure#. | All of us. My neighbours have it worse, so I keep quiet. | Then there's a lot of us praying. Something'll come in.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will_see#
+
+scene no_tattle
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : They're saying #topic.subject# #topic.claim#. That's as far as it goes with me. | I heard #topic.subject# #topic.claim#. It's not mine to spread, and I'll not.
+b : Fair enough. | You're right.
+a : Talk's cheap, and it costs somebody dear. I'll pray it isn't so. | I'm right more than I'm thanked for. Leave it there.
+b : #bc_fair_enough# | #bc_true#
+
+scene sump_pride
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : The Sump's poor, but #stair# is the cleanest in it. I see to that. | Folk down here share the last of #bread#. That's more chapel than the hill has. | Folk on the hill look down on the Sump. I hold my head up all the same.
+b : I believe it. | That's true. | So you should.
+a : Swept every morning before #rope#. | It is. The Bright One's as near the Sump as the Heights. | I should, and I do. Pride's not only for the rich.
+
+scene dawn_lift
+when topic=day here.time=dawn self.working=yes
+does tell.self / react.self / assess
+a : The first load of the day gets the longest blessing. Sets the shift right. | Up before the gulls, #rope# checked, #hook# greased. That's my dawn. | #wharf.capitalize# at dawn is the only quiet I get. I say my prayers to it.
+b : The longest? | Greased? | Quiet, is it?
+a : Twice through. The first lift's the one the day follows. | Greased and blessed. Both matter. | Till #gang# comes. Then it's shouting till dusk.
+
+story the_paper_lost [topic=memories|times here.region=ridgemere self.age>=30]
+  : I had a paper go missing at #office# once. A whole season it was lost.
+  : I went back every week, same day, same hour. In the end they knew my face before I reached the desk.
+  ask : Is that pride, would you say, or faith?
+  b : A bit of both, I'd say.
+  b[piety=devout] : Faith. The Bright One answers the ones who keep asking.
+  : Both. They found it in the spring, under somebody's lunch.
+
+story the_one_unblessed [topic=work|faith self.age>=25 here.region=ridgemere]
+  : The only load I never blessed, I was in a hurry. A ship waiting and the master shouting.
+  : Halfway up, #rope# frayed. It held, just. Nobody under it, thank the Bright One.
+  ask : Would you call that luck, or a warning?
+  b : A warning. You were lucky.
+  b[job=sailor|laborer] : I'd call it a bad rope and a good lesson.
+  : I've not skipped a load since. Not one.
+
+story barn_hymn [topic=memories|faith self.away=yes self.from=larkfield]
+  : There was a storm once on #downs# when I was small. The whole market ran into a barn.
+  : Somebody started #hymn#, and by the end every wolf in that barn was singing, and nobody was frightened.
+  b : A fine memory, that.
+  b[old] : I've been in a barn like that. You don't forget it.
+  : I sing it still, every time it thunders.
+
+rule @load_blessing
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Bright One, hold it. Up she goes. | Blessed. Lift.
+
+rule @hook_bark
+when concept=bark working=yes here.region=ridgemere
+does aside
+cooldown 8h
+say #hook.capitalize#'s coming over. Mind yourselves. | Who tied that? Down it comes.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain|fog self.dislikes=drizzle
+does aside
+cooldown 8h
+say #drizzle.capitalize#. Rain or don't. | Wet rope again. #oath#.
+
+rule @hymn_bark
+when concept=bark here.time=dusk self.likes=singing
+does aside
+cooldown 12h
+say Bright One, keep us through the night... | Mm. The evening hymn, then #soup#.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Stand back from #hook# and say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bright One keep you. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say it plain, and keep your paws off #rope#.
+dlg @4 resident.job : #self.trade_words.capitalize#. I bless every load, and none of them drop off #hook#. | #job_busy#
+dlg @5 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new but #drizzle# and ships.
+dlg @6 resident.gossip [here.gossip!=yes] : #gossip_none# | I'll not carry talk. It's a sin with a smile on.
+dlg @7 resident.bye : #farewell#. Bright One keep you. | #farewell#. Mind #hook# going.
+graft resident.hub
+choice Why do you bless every load? -> bless
+node bless
+say Because the one you skip is the one that slips. Only a word: Bright One, hold it. Nobody's been hurt on my rope yet.
+mood calm
+free
+choice Have you ever skipped one? -> bless_skip
+choice Goodbye. -> bye
+node bless_skip
+say Once, in a hurry. #rope.capitalize# frayed halfway up, and held. I've not skipped one since, and I never will.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye

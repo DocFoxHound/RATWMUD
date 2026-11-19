@@ -1,0 +1,275 @@
+# cw209, the floor-proud server (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw209
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_hilde_wetwick
+written_by claude
+title the floor-proud server
+fits stage=adult|old
+prefers job=servant drive=ambitious
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk coughs_in_the_damp_and_pretends_not_to
+likes plum_tart stars old_maps autumn_wind
+dislikes gulls wet_floors
+fears being_passed_over_for_a_younger_pair_of_paws a_cough_that_will_not_be_hidden
+hopes a_hall_of_my_own_in_a_dry_country passage_south_on_a_house_ship
+topics work +0.4 dreams +0.4 travel +0.3 home +0.2 food +0.2 health -0.4
+styles comfort=brisk gossip=pointed refuse=sharp tease=none
+marks oath saying
+persona #self.first# serves in a great hall and keeps its flagstones spotless, with a cough in the damp that is never, ever a cough: proud, sharp, quick to take offence, ambitious past the hall, fond of plum tart and an old map of the south, and saving for a passage somewhere dry.
+
+words
+oath! = Scrub me raw | By the clean flags | Soda and spite
+saying! = Done is done, so don't walk on it | Nobody rises off a wet floor | A clean hall speaks before you do
+flags = the flagstones | every flag in the hall | the flags I've just done
+mop = the mop | my good mop
+bucket = the bucket | a bucket of hot water and soda
+tickle = a tickle | a crumb gone down the wrong way | the dust, that's all
+tart = plum tart | a wedge of plum tart
+southmap = my map of the south | the old map with the coast drawn crooked
+southstars = the southern stars | the stars at the bottom of my map
+dryingwind = a drying wind | an autumn wind that dries a floor in an hour
+gulls = gulls | gulls with mud on their feet
+pawprints = muddy paws | paw marks across a wet floor
+hall = the hall | the great hall
+drycountry = a dry country | somewhere a floor stays done
+houseship = a House ship | a berth on a Grayrock hull
+damp = the damp | this city's damp
+place = my place | a better place than this one
+soda = the soda | a scoop of soda
+city = this city | the city
+
+any
+opinion @1 church against 1 : A sermon never scrubbed #flags# or filled a plate. My prayers get said kneeling, with a brush in my paw.
+opinion @1 dole against 1 : I've never taken a crust I didn't work for, and I'll not start. #oath#, I'd sooner scrub twice.
+opinion @1 festivals against 2 : Feast days mean ale on #flags# and somebody weeping in a corner by midnight. I do the mopping after.
+opinion @1 houses against 1 : I've served under their roof for years and been looked through like #hall# window. One day I'll be the one they ask for.
+opinion @1 merchants against 1 : A trader adds a penny every time you turn your head. I don't turn mine, #address#.
+opinion @1 sump against 1 : The low streets I leave alone. Whatever lives down there comes up on folks' boots and ends on #flags#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind #flags#; they've only just been done. | #greet#. Wipe your feet first, #address#, please.
+line @2 greet [self.working=yes self.job=servant] : #greet#. Round the edge, please, not across. | #greet#. I'm on my knees; you'll forgive me not standing.
+line @3 greet [here.time=dawn] : Good morning. #hall.capitalize# was done before the sun was. | Good morning. Up and scrubbed already, #address#.
+line @4 greet [here.time=dusk|night] : Good evening. #tickle.capitalize#. Don't mind it. | Good evening, #address#. Late for calling, but there.
+line @5 greet [here.weather=rain] : #greet#. Shake off on the step, not on #flags#. | #greet#. Wet again, and you're dripping. Step back out.
+line @1 kin.open [pair.kin!=no] : You. #good.capitalize#. Take your boots off first. | There you are. Sit; #tart# in the crock if you want it.
+line @1 again.open : Twice in one day, #address#. Boots off this time. | Back so soon, and still in those boots, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was wondering when you'd turn up. | #greet#. Mind the edge, it's wet.
+line @3 greet.return [self.working=yes] : #greet#. One more flag and I'm with you. | #greet#. Don't step there, it's drying.
+line @1 farewell : #farewell#. Go out the way you came, along the wall. | #farewell#. And wipe them next time.
+line @2 farewell [here.time=dusk|night] : Good night. The step goes like glass after dark; tread careful. | Good night, #address#. I'll be up before the bells.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #flags#.
+line @1 react.news : Go on. I can work #mop# and listen both. | Well? Out with it, #address#.
+line @1 react.news.new : #surprise#. That's not reached #hall# yet. | Is it, now. News to me, and little in #hall# gets past me.
+line @1 react.news.known : #knew#. Half #hall# was full of it by breakfast. | I'd heard. You hear plenty on your knees by #bucket#.
+line @1 react.news.doubt : #doubt#. Bring me somebody who saw it, not somebody who heard it. | #hedge#, that sounds like talk to me, and talk's cheap.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's cruel news. I'm sorry for it. | #oath#. That's bad news. Who's seeing to them?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's getting on, then. Good. | #good.capitalize#. Somebody deserves a step up.
+line @1 answer.how : #fine#. #tickle.capitalize#, nothing else. | Well enough, #address#. Better when I'm out of #damp#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #hall.capitalize# won't scrub itself. | Knees sore and #flags# shining, thank you.
+line @1 ask.how : And yourself, #address#? Out of #damp#, I hope. | How are you getting on, #address#? Truly.
+line @1 sympathise : #sympathy#. Take the stool by the hearth; there's water on to boil. | That's hard, #address#. You'll come through it. I did.
+line @1 reassure : #reassure#. You'll get where you're going. I mean to. | Don't fret, #address#. Scrub at a thing long enough and it comes clean.
+line @1 decline : #hedge#, but I can't. #hall.capitalize# wants doing and nobody else will do it right. | No. Not today, #address#. I've #flags# to finish and I'm behind.
+line @1 accept_decline : #no_matter#. Suit yourself. | Fine. I'll not ask twice, #address#.
+line @1 thank : #thanks#. That's good of you. | #thanks#, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. It was nothing. | Don't make a fuss, #address#.
+line @1 preclose : Well. #flags.capitalize# won't wait for me. | I'd best get on. #bucket.capitalize#'s going cold.
+line @1 accept_preclose : Go on, then. And mind #flags#. | Off you go, #address#.
+line @1 ack : #bc_right#. | #bc_true#. #oath#.
+line @1 give.advice : Get your foot in the door and then get the door. That's how, #address#. | Never let them see you tired, #address#. Never.
+line @1 warn [world.bandits=near] : I'd not go out on the roads this week, #address#. | Stay in #city#. The roads are a fool's errand now.
+rule @flags
+when concept=bark self.working=yes self.job=servant
+does aside
+cooldown 6h
+say Not there. Not there either. Round #flags#, please. | #oath#. Who's walked across #flags#.
+
+rule @cough
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say Hm-hm. #tickle.capitalize#. Nothing. | That? That was #tickle#, nothing more.
+
+rule @gulls
+when concept=bark self.dislikes=gulls here.region=ridgemere
+does aside
+cooldown 8h
+say #gulls.capitalize# on the step again. Shoo. | Off. You'll have your feet all over my step, #oath#.
+
+rule @wind
+when concept=bark here.season=autumn here.weather=clear|overcast self.likes=autumn_wind
+does aside
+cooldown 10h
+say #dryingwind.capitalize#. Open the doors, quick. | Now that's a wind. #flags.capitalize# will be dry by noon.
+
+scene flags_done
+when topic=work self.working=yes self.job=servant
+does tell.self / react.self / assess
+a : Did #flags# by first light. Every one. Then somebody walked across with mud on. | I've done #hall# so clean you could eat off it. Nobody looks down, of course. | Forty-two flags from the door to the hearth in #hall#. I know every crack in every one.
+b[job=servant|cook] #staff : That's the job, isn't it. Somebody always walks on it. | Somebody notices. I do. | You could cross them blind, I'd think.
+b : What did you do? | They should. | Forty-two?
+a@staff : It is. I'll still give them a look they'll remember, #oath#. | #good.capitalize#. One's enough, if it's the right one. | Blind, by feel. It's a gift, or a curse.
+a : I did them again. And I told the one who did it exactly what I thought. | They will, one day. I'll see they do; #saying#. | Forty-two. Forty-one and a half, since the hearth one cracked.
+
+scene getting_on
+when topic=work|dreams self.job=servant
+does tell.plan / ask.plan / answer.plan
+a : I'll not be on my knees in #hall# for ever. I've told them I want more. | There's a place coming free above me in #hall#. I mean to have it. | I watch how the steward runs #hall#. I could do it better, and quicker.
+b : What did they say? | Will they give it you? | Better how?
+a : That they'd think on it. They'll think on it till I'm grey, unless I push, #address#. | They'll give it to me or they'll give it to someone worse. I'll make sure they know which. | I'd not waste a morning. Every hour of #hall# would be done by noon.
+
+scene not_a_cough
+when topic=health
+does tell.self / react.self / assess
+a : A cough? Never. It's #tickle#. I don't know why everybody keeps asking. | I'm #fine#. I swallowed wrong. Twice. Stop staring at me so. | #damp.capitalize# gets in the hall and in your chest. Not mine. Other people's.
+b : It sounds like a cough. | Twice? | Of course not.
+a : Well, it isn't one, #address#. #oath#. | Twice. It happens. Leave it. | Of course not. #damp.capitalize# can't get a grip on me.
+
+scene damp_morning
+when topic=weather here.weather=rain|fog here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Wet all night, and #flags# sweat in it. You do them and they're damp again by noon. | #damp.capitalize# today. I can feel it in the walls. Not in my chest. The walls. | Nothing dries in this. Not #flags#, not linen, not tempers.
+b : You can't help the weather. | The walls, then. | Not tempers, no.
+a : No. But I can scrub twice and curse it once. #oath#. | The walls. #tickle.capitalize#. Excuse me. | Especially not mine. I'll warn you now.
+
+scene drying_wind
+when topic=weather|season here.season=autumn here.weather=clear|overcast self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #dryingwind.capitalize# today. I had every door in #hall# open by dawn. | That's the wind I like. Floor's dry before I've wrung #mop#. | Autumn's my season. The air's dry and everything gets done at once.
+b : The cold'll get in. | That's quick. | Everything?
+a : Let it. Cold's clean. It's #damp# I can't abide. | Quick and done. Like I'd have everything, if I had my way. | Everything that's mine to do. Everyone else's I just watch.
+
+scene wet_floor_trouble
+when topic=home|work self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : #pawprints.capitalize# from the door to the hearth this morning. I could have wept. Didn't. | Somebody spilled a jug on #flags# and walked off. Left it to spread. | Wet floors are how folk fall and break things. I've seen it. I'll not have it in #hall#.
+b : Did you find who? | That's careless. | That's fair.
+a : I know exactly who. I'll say nothing, and they'll know I know. #saying.capitalize#. | Careless and lazy. I've no patience for either, #address#. | It's not fair, it's sense. Plain sense.
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / react.self / assess
+a : There's #tart# in the crock, and it's mine, and I'm saying so now. | The kitchens did #tart# today. I got the corner. The corner's the best bit. | I'd work an extra hour for #tart#. I nearly did.
+b : I'll not touch it. | Is it? | Nearly?
+a : #good.capitalize#. I'd know if you had. | It is. More crust. Anybody who says different is wrong. | Nearly. Then I just took the slice. #oath#, I'd earned it.
+
+scene southern_map
+when topic=dreams|travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I've #southmap# pinned over the bed. The coast's wrong but the sun's right. | I bought #southmap# off a stall. Half the towns are in the sea. I don't care. | I look at #southmap# every night before I sleep. I know where I'm going.
+b : Wrong how? | In the sea? | Where, then?
+a : They've drawn the bay twice. I've marked the right one in pencil. | It's old. Things move. #drycountry.capitalize# is still there, that's what matters. | South, somewhere at the bottom of the map. #drycountry.capitalize#.
+
+scene dry_passage
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : One day I'll get #houseship# going south. I've been putting coin by for years. | I want #drycountry#, where the sky keeps its water to itself. | I'll run a hall of my own down there. A small one. Dry as a bone, and every flag mine.
+b : That's a long way. | That sounds nice. | You would, as well.
+a : It is. That's the point of it, #address#. | Then save, #address#. Nobody's going to hand it to you. | I would. And nobody would walk on my floors.
+
+scene stars_window
+when topic=pastimes self.likes=stars here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : Clear tonight. I'll be at the window looking for the ones on #southmap#. | I like the stars. They stay where they're put, and nobody walks mud across them. | My map's got #southstars# along the bottom. You can't see them from here. Yet.
+b : Can you find them? | That's true enough. | Yet?
+a : Some. #southstars.capitalize# are too far down. That's where I'm going. | Nothing else in #city# does. | Yet. I'll see them from a dry deck, one day.
+
+scene spouse_by_me
+when topic=family self.married=yes self.spouse
+does tell.self / react.self / assess
+a : My #self.spouse_word# and I keep the same hours. We see each other across #flags#, mostly. | I'd not swap #self.spouse# for #drycountry#. Nearly not, anyway. | I'd say my #self.spouse_word# would back me in anything. I'd back mine.
+b : That must be strange. | Nearly? | That's good to hear.
+a : It's handy. I always know where to find a spare pair of paws for #bucket#. | Nearly. I'd bring my #self.spouse_word# along, is what I'd do. | It is. Getting on is easier with somebody at your back, #address#.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd let walk across #flags# wet. | I'd trust #self.friend# with #southmap# and my savings both. | #self.friend# and I go back a good while. That counts for something.
+b : That's a lot of trust. | Both? | It does.
+a : It is. Don't expect me to repeat it, mind. | Both. And that's two of the three things I own. | It counts for a great deal, #address#.
+
+scene home_lake
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : At #self.from_town# we'd scrub the boards with lake water and sand, no #soda# at all. Cold as anything. | I left #self.from_town# carrying one bag and a want to get on. Still got both. | Every house by the lake had a step you'd scrubbed white. You'd be ashamed otherwise, #address#.
+b[from=coldwater] #cw : Sand and lake water. I remember the cold. | One bag. Same as me. | My mother's step was the whitest on the shore.
+b : Do you miss it? | Got on, though? | That's a good habit.
+a@cw : Then you'll see why #soda# feels like luxury to me. | Then we'll both get on. #good.capitalize#. | I'll grant it, if you'll grant mine was second.
+a : The water, some days. The chill off it, never. | Some way. Not far enough from #flags# yet. | It's the only habit worth having, #address#.
+
+scene faith_brush
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray on my knees. Mostly because I'm on them anyway, at #flags#. | The Bright One sees work done right. I'd rather that than a sermon. | I go on Restday and I look at the chapel floor. I can't help it, #oath#.
+b[job=priest] #priest : You're welcome, knees and all. | Work done right is a prayer too. | Is it clean, at least?
+b : #bc_fair_enough# | That's a fair faith. | You would.
+a@priest : #good.capitalize#. Mind I don't start on your floor. | I'll take that, and gladly. | It wants doing. I'll not say so in the pew.
+a : It's honest, anyway. | It's mine. It'll do for me. | I would. Somebody has to notice.
+
+scene gossip_pointed
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. Not from me, mind, I'm only saying what's said. | They say #topic.subject# #topic.claim#. I've no time for it, but I heard it. | Talk round #hall# today: #topic.subject# #topic.claim#. There'll be scrubbing to do over that, I'd think.
+b : You've said it now. | Fair enough. | Somebody will.
+a : I have. Well. You'd have heard it anyway. | #oath#. Back to #flags#, then. | Somebody always is. Better them than me.
+
+scene lean_hall
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Hands are being let go from #hall#. Not me. I'll not allow it. | Bread's dear, and the savings for #houseship# have stopped growing. | Everybody's tight. I'm scrubbing faster so nobody can say I'm not worth keeping.
+b : You'll be kept. | They'll grow again. | Nobody'd say that.
+a : I'll make sure of it. | They will. I'll not stop saving, even a penny. | They'd better not, #address#. Not where I can hear.
+
+scene good_hall
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. More feasts in #hall#, more mess, more coin. I'll take the coin. | Coin about. I've put more by for #drycountry# this month than all last year. | Everybody's spending. I'm saving. Somebody's got to have sense.
+b : More mess, though. | Good for you. | Fair enough.
+a : More mess, more work, more pay. I'm not complaining. | It is. #good.capitalize#. I'm closer than I was. | It's the only way I know to get on.
+
+story first_hall [topic=work|memories self.job=servant self.age>=25]
+  : My first day in a big hall I scrubbed the flags so hard I wore through a brush by noon.
+  : The old head of the hall came and looked, and said nothing, and walked round the edge.
+  ask : Do you know what that meant?
+  b : That you'd done well, I'd guess. Did they say so later?
+  : Never. But I was put on the great hall the next week, and nobody else was.
+
+story the_map_stall [topic=travel|memories self.likes=old_maps]
+  : I found my map at a stall, rolled up behind some pots, with a stain on one corner.
+  : The trader wanted a silver piece. I offered one copper, walked off, and had it for two.
+  ask : Would you have paid the silver?
+  b : I might have, if I wanted it badly enough. Was it worth two?
+  : Worth a hundred to me. But I'd not have told the trader that.
+
+story the_lake_step [topic=memories self.away=yes self.from=coldwater]
+  : By the lake every house had a step you scrubbed white each morning.
+  : One winter ours froze so slick my gran slid off it into the snow and came up laughing.
+  ask : Did your family have a thing like that, a thing you did every day?
+  b : We swept the yard. Every day, rain or not. Did your gran mind the fall?
+  : Not a bit. She made me scrub it again, mind, with salt this time.
+
+dlg @1 resident.hub : #greet#. Mind #flags#; what are you after? | #greet#, #address#. Speak up, I'm busy.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You wiped your feet, I hope. | #topic.player#. Back again. Mind the edge.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : State your business, and from the step. | #greet#. I've no time for nonsense, #address#.
+dlg @1 resident.job [self.job=servant] : I serve in #hall#. #flags.capitalize#, the tables, the hearth. And I'll be running it one day. | #self.trade_words.capitalize#. On my knees, mostly, but not for ever.
+dlg @2 resident.job : I work. Hard, and well. I'll be doing better than this soon. | Anything that's put in front of me, #address#, and done right.
+dlg @1 resident.bye : #farewell#. Mind #flags# on the way out. | #farewell#. Wipe your feet next time.
+graft resident.hub
+choice Is that a cough? -> cough
+node cough
+say It is not. It's a crumb gone down wrong. Or the dust. The damp in this city gets into everything but me.
+mood stern
+free
+choice It sounded like a cough. -> insist
+choice Sorry. Back to it. -> hub
+node insist
+say Well, it wasn't. Now mind the floor and ask me something sensible.
+mood stern
+choice All right. -> hub
+choice Goodbye. -> bye

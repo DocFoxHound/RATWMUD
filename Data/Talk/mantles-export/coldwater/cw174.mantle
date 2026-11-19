@@ -1,0 +1,466 @@
+# cw174, the lime-burner in the wind (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw174
+revision 3
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for rmx_corra_pennock
+written_by claude
+title the lime-burner in the wind
+fits stage=adult|old
+prefers role=merchant job=crafter talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes spiced_cider roof_birds fresh_straw autumn_wind
+dislikes wet_floors smoke
+fears water_on_a_lime_floor a_short_load_in_the_steward_s_tally
+hopes one_clean_breath_of_lake_air a_season_without_a_burn
+topics work +0.4 weather +0.3 animals +0.3 food +0.2 memories +0.2 player -0.2 gossip -0.5
+styles comfort=practical gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# keeps the lime kilns burning for the House that owns the kilns and carries the smoke home in the fur: quiet, guarded and tired, the floor kept dry and strawed, a mug of spiced cider at dusk, eyes on the birds along the roofs.
+
+words
+oath! = By the cold draw | Ash and lake-wind
+saying! = Lime never forgets a wet paw | Keep it dry and keep it quiet
+kiln = the kiln | the big kiln
+kilns = the kilns | the lime kilns
+lime = quicklime | the white lime
+stone = the stone | the limestone off the carts
+draw = the draw | the morning draw
+reek = kiln smoke | the smoke off the kilns
+whiff = the smoke in my fur | a whiff of the kilns on me
+straw = fresh straw | clean straw underfoot
+cider = spiced cider | a mug of cider with the spice in it
+birds = the roof birds | the starlings on the ridge tiles
+blow = an autumn blow | a wind with some bite to it
+steward = the steward | the House steward
+tally = the steward's tally | my load book
+carts = the stone carts | the carts from the quarry
+burn = a lime-burn | a burn off the lime
+putty = lime putty | slaked lime gone soft
+wetfloor = a wet floor | water on the boards
+burrs = burrs in my ruff | a ruff full of burrs
+lakeair = clean lake air | air off the lake with nothing in it
+yard = the kiln yard | the yard
+lake = the lake | the still lake
+floor = the floor | my swept floor
+door = my door | the yard door
+coat = my coat | this old coat
+paws = my paws | these paws
+rook = the rook | my rook
+quiet = the quiet | a bit of quiet
+talk = talk | chatter
+sacks = the lime sacks | the sacks by the door
+so = So | Well, so
+
+any
+opinion @1 city against 1 : Ridgemere breathes #reek# and calls it air. I add my share, and I know it.
+opinion @1 merchants for 1 [self.role=merchant] : I keep a counter too. I know what a cart of #stone# costs before it's burnt to anything.
+opinion @1 road against 1 : #carts.capitalize# get later by the month. A cold kiln costs more than a hot one, and the loss is mine.
+opinion @1 strangers against 1 : Faces I don't know don't come past #yard# gate. Nothing personal. #saying#.
+opinion @1 watch for 1 : Keep the thieves off #sacks# and I'll not grumble at the boots on the stair.
+opinion @1 houses mixed 1 [self.job=crafter self.role=merchant] : The House owns #kilns# and #steward# owns my mornings. They pay on time. That's as far as I'll go.
+opinion @1 church mixed 0 : I go in when it's #cold#. #whiff.capitalize# comes in with me and sits in the pew.
+opinion @1 festivals mixed 1 : A feast means a day with #kilns# banked down. Then a day getting them up again.
+opinion @1 drink for 1 : #cider.capitalize# at dusk. One. That's all the drink I've any use for.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll want something, or you'd not be stood there. | #greet#, #address#. Mind the step; it's dusty.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Stand back from #kiln#; it bites. | #greet#. I've #lime# on my paws. Talk, but don't shake.
+line @3 greet [here.time=dawn] : Morning. #kilns.capitalize# have been up since before I was. | Morning, #address#. Early for it.
+line @4 greet [here.time=dusk|night] : #greet#. Late. I can smell #reek# on you from here, and you on me, likely. | #greet#. Day's done, near enough.
+line @5 greet [here.season=autumn here.weather=clear|overcast] : #greet#. There's #blow# coming. Good. | #greet#. A fair wind today; the air's near clean.
+line @1 kin.open [pair.kin!=no] : Oh. It's you, #dear#. Come in, and wipe your feet. | There you are. I've laid #straw#; sit where you like.
+line @1 again.open : #so#. Twice today. | #welcome_back#. Something's on your mind, then.
+line @1 hail [pair.band=friends] : #address.capitalize#. A word. | Over here. Out of #reek#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Shut #door# behind you, quick. | #greet#. I'd not have opened #door# for anyone else.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. Mind #sacks#. | #greet#. Don't stand in the doorway; it pulls the smoke.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late for visiting. | #greet#. Quick, then; I'm for my bed.
+line @1 farewell : #farewell#. | #farewell#. Wipe your feet going out, too.
+line @2 farewell [here.time=dusk|night] : #farewell#. Watch the cobbles; they're slick. | #farewell#. Sleep sound.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [here.time=dusk|night] : #farewell#. Mind the dark. | #farewell#. Get home dry.
+line @1 react.news : #so#. Go on. | I'm listening, #address#. I don't always look it.
+line @1 react.news.new : #surprise#. Nobody told me that. | #oath#. That's news to me.
+line @1 react.news.known : #knew#. Came past #yard# yesterday. | I'd heard. #secret.capitalize#, till now.
+line @1 react.news.doubt : #doubt#. Talk gets thicker the further it walks. | I'll wait. #talk.capitalize#'s like smoke; it fills a room and weighs nothing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a hard one. | #oath#. I'm sorry for it. I am.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | #good.capitalize#. Something clean, for once.
+line @1 answer.how : #fine#. Tired. Smoky. Same as ever. | Middling. #kilns.capitalize# are drawing; that's most of what I ask.
+line @1 answer.how.busy [self.working=yes self.job=crafter] : #busy.capitalize#. Three burns going and #carts# late. | No time to stand. #lime# won't wait on talk.
+line @1 ask.how : And you? Keeping your paws dry? | You've the look of a long day, #address#.
+line @1 sympathise : #sympathy#. Sit. I'll not ask more than you want to say. | That's rough water. I'm sorry.
+line @1 reassure : #reassure#. It'll burn through. Most things do. | Give it a night, #address#. It'll look smaller.
+line @1 decline : Not today, #address#. #kilns.capitalize# can't be left, and nobody else knows #draw#. | #hedge#, but no. It's not mine to give, and I'll not pretend it is.
+line @1 accept_decline : #no_matter#. | That's fair. #later.capitalize#.
+line @1 accept_preclose : Go on, then. #farewell#. | Go on. I've a floor to sweep.
+line @1 thank : #thanks#. | Kindly done. That'll stay with me.
+line @1 deflect_thanks : #deflect#. | It was nothing worth the word.
+line @1 preclose [self.working=yes self.job=crafter] : Well. #kiln.capitalize# wants watching. | #draw.capitalize#'s due. Back I go.
+line @2 preclose : Well. #preclose#. | That's me done with #talk# for a while.
+line @1 ack : #bc_right# | #so#.
+line @1 give.advice : Keep it dry. Whatever it is, keep it dry. #saying#. | #advise.capitalize#: never stand downwind of a thing you've lit.
+line @1 warn [world.bandits=near] : Nobody walks the road alone just now. #warn#. | #uneasy.capitalize#. Keep in.
+line @1 insist : #insist#. That's how it is. | I said it once. I'll not say it louder.
+line @1 concede : #concede#. | Fair. I had that wrong.
+line @1 put_off : #put_off#. Ask me after the burn's drawn. | Not now. When #kilns# are quiet.
+scene smoke_in_fur
+when topic=smalltalk|health
+does tell.self / ask.detail / answer.detail / assess
+a : I washed twice this morning. I still smell of #reek#. | You'll have caught #whiff# when you came in. I can't shift it. | Smoke's in my fur, #coat#, my bed. Even on Restday, after a scrub.
+b : Does it never go? | Can't you wash it out? | Even on Restday?
+a : Never. A good #blow# thins it. That's the best I get. | I've tried lye, I've tried lake-water. It laughs at both. | Even then. Folk know me coming before they see me. #whiff.capitalize# goes first.
+b : #bc_poor_soul# | #bc_bad_luck# | Hard way to live.
+
+scene hate_the_smoke
+when topic=smalltalk|times here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / concede
+a : I can't abide smoke. And here I am, burning #lime# all day and smelling of it all night. | The whole city's under a lid of #reek#, and I'm one of the ones holding it down. | I'd give a year's wages for one morning's #lakeair#.
+b : That's a funny trade for you, then. | You and the ironworks. | A year's?
+a : It pays, and it's mine. I don't have to like the smell of it. | Me and the ironworks and every chimney on the hill. I don't pretend otherwise. | A year's. And I'd not regret one coin of it.
+
+scene morning_draw
+when topic=work|day self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : We drew #kiln# at first light. White as snow, #lime#, and hotter than you'd think to look at. | #draw.capitalize#'s the part I like. You open her up and there it is, burnt clean. | Before breakfast I rake #kiln# out and see what the night's done.
+b : Hot still? | Clean every time? | And what had it done?
+a : Hot for a day after. You learn not to trust #lime# that looks cold. | Not every time. Sometimes it's half stone, and that's a long day. | Burnt it through, this time. A good night's work, and I slept through it.
+b : #bc_wise# | #bc_bad_luck# | #bc_good#
+
+scene wet_floor
+when topic=work|home self.job=crafter self.dislikes=wet_floors
+does warn / ask.detail / answer.detail / assess
+a : Somebody tracked water across #floor# today. I near lost my temper, and I don't lose it. | #wetfloor.capitalize# by #sacks# is the worst thing you can do to me. | I keep #straw# down so nobody's feet bring water in.
+b : Is water so bad? | Why the worst? | Straw does that?
+a : Water on quicklime boils. It'll take the skin off your pads. | Wet lime burns, and it doesn't care whose paw it is. #saying#. | It drinks up what the boots bring in. That's why I keep it fresh.
+b : I never knew that. | #bc_wise# | #bc_clever#
+
+scene fresh_straw
+when topic=home|smalltalk self.likes=fresh_straw
+does tell.feeling / react.self / assess
+a : I laid #straw# this morning. There's no smell in the world like it, except #lakeair#. | New straw on #floor# and #door# shut. That's my idea of a good evening. | I change the straw every Restday. Folk think I'm fussy.
+b : I'd never thought of straw smelling of anything. | Simple enough. | Are you?
+a : It smells of fields. Of somewhere without a chimney. | Simple's what I want, after a day at #kiln#. | Fussy about some things. Dry floors, clean straw. I'm not fussy about much else.
+
+scene steward_tally
+when topic=work self.job=crafter self.role=merchant
+does tell.self / react.self / assess
+a : Nothing leaves #yard# that isn't in #tally#, and nothing comes in unwritten. | I answer for #kilns# to the House. A sack goes missing, it's my name on it. | #steward.capitalize# came down again today. Counted #sacks# twice. Said nothing.
+b : That's a lot to carry. | Is that fair? | Said nothing?
+a : It's what I'm paid for. I'd not want it otherwise; I know where I stand. | Fair enough. It's their lime. I only burn it. | Nothing. That's how I know it was right.
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.job=crafter
+does tell.worry / reassure / assess / ack
+a : #carts.capitalize# are late again. #kiln.capitalize#'s half full and going cold. | No #stone# since Marketday. I can't burn what isn't here. | Late, #carts#. I've folk waiting on lime and nothing to sell them.
+b : They'll come. | What will you do? | Can't you burn what's left?
+a : They will. Late's just dear, not lost. | Bank #kilns# and wait. Nothing else for it. | I did, yesterday. Now there's nothing left to burn.
+b? : #bc_i_hope_so# | #bc_bad_luck# | #bc_fair_enough#
+
+scene carts_in
+when topic=caravan|work world.wagons=in self.job=crafter
+does tell.news / react.news / assess / ack
+a : #carts.capitalize# came in this morning. Stone stacked to #yard# wall. | #stone.capitalize#'s in. We'll burn tonight, and through tomorrow. | Full carts at last. My back already knows it.
+b : Good news, then. | Long night ahead. | Unloading?
+a : Good enough. #kilns.capitalize# will be glad of it, and so will #steward#. | Long, and smoky. I'll sleep when it's drawn. | Every block of it. Then #floor# swept after.
+b? : #bc_good# | #bc_poor_soul# | #bc_ha#
+
+scene lime_burn
+when topic=health|work self.job=crafter
+does tell.self / sympathise / assess
+a : I've #burn# across my paw from Hearthday. Healing, slow. | Every lime-burner has a few of these. The trick is not adding to them. | I splashed a slake bucket last week. Lucky it was only my sleeve.
+b : That looks sore. | You'd think it'd teach you. | Lucky indeed.
+a : It is sore. It'll heal; they do. #saying#. | It does teach you. You only learn it twice if you're a fool. | Lucky, and slower about it since. That's the lesson.
+
+scene roof_birds
+when topic=animals|pastimes self.likes=roof_birds
+does tell.feeling / ask.detail / answer.detail / assess
+a : I watch #birds# from #yard#. They sit right on the kiln roof for the warmth. | There's a rook that comes to #yard# gate most mornings. I keep a crust for it. | When the smoke's thin I sit and count #birds#. They don't ask anything of you.
+b : On the kiln? | Does it know you? | Count them?
+a : On the very top, where it's warm. They don't mind the smell. They're the only ones. | It knows the crust. That's enough knowing for a rook. | Twenty-odd on a good morning. Fewer when it's wet. They go where it's dry, same as me.
+b : #bc_lovely# | #bc_fair_enough# | Restful, I suppose.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #blow.capitalize# today, and the smoke's gone off down the Sound. I can breathe. | This is my season. The wind gets up and blows #reek# clean out of the streets. | A proper autumn blow. Doors banging, leaves everywhere, and not a whiff of #kiln#.
+b : It's cold, mind. | You like it windy? | Leaves everywhere, yes.
+a : #cold.capitalize#'s honest. Smoke isn't. | Windy and dry. That's my weather, all year if I could have it. | Let them blow. Better leaves than #reek#.
+
+scene rain_and_lime
+when topic=weather here.weather=rain self.job=crafter
+does tell.worry / ask.detail / answer.detail / assess
+a : Rain. I've been on the roof of #yard# all morning, chasing leaks. | I hate rain on a burning day. One drip on #lime# and it spits like a cat. | #sacks.capitalize# are all off #floor# and under cover. Rain won't find them.
+b : Find any leaks? | Spits? | You're careful.
+a : Two. One I stopped. The other I put a bucket under, far from #lime#. | Spits and smokes and burns whatever's near. I keep well back. | I'm careful because I've seen what careless costs. #saying#.
+b? : #bc_wise# | #bc_poor_soul# | #bc_wise#
+
+scene fog_and_smoke
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #fog.capitalize# and smoke together. You can't see your paw, and you can taste the city. | On a day like #reek# just sits. Nowhere to go. | Fog off the Sound holds every chimney's smoke down in the streets.
+b : Horrible. | Nowhere at all. | It does, doesn't it?
+a : Horrible's the word. I'll be coughing it up till Restday. | Nowhere, so it comes to me. I'm used to it. Not fond. | Every one. And mine's among them, which I don't forget.
+
+scene winter_kiln
+when topic=weather|season here.season=winter self.job=crafter
+does tell.self / react.self / assess
+a : Winter's the one time I'm glad of #kiln#. Warmest yard in the Commons. | Folk find reasons to come by in winter. They stand by #kiln# wall and talk at me. | When it snows, it never settles on #yard#. It's gone before it lands.
+b : I'd stand there too. | Do you mind? | Never settles?
+a : Stand, then. Only don't lean on it. | I don't mind. I don't #talk# back much, and they don't seem to care. | Never. The birds know it. They sit all along the wall.
+
+scene summer_kiln
+when topic=weather|season here.season=summer self.job=crafter self.working=yes
+does tell.complaint / sympathise / assess
+a : Summer by #kiln#. I'm baked through by noon. | #hot.capitalize# day, hot kiln. I drink a bucket of water and sweat two. | The air shakes over #yard# in summer. Even the birds keep off.
+b : I'd melt. | Two buckets? | Even them?
+a : You'd learn. Or you'd leave. Most leave. | Near enough. I'll be glad of #blow# when it comes. | Even them. When the birds keep off, it's past bearing.
+
+scene spiced_cider
+when topic=food self.likes=spiced_cider
+does tell.feeling / ask.detail / answer.detail / assess
+a : One mug of #cider# when the day's done. Clove and a bit of ginger. That's my evening. | One stall by the market sells #cider# with the spice still floating. I go out of my way for it. | Cider, warm, with spice. It's the only thing that tastes of something past the smoke.
+b : Just the one? | Out of your way? | Past the smoke?
+a : Just the one. More, and I'm no use at #draw#. | Two streets. Worth it on a #cold# night. | The spice cuts through. Everything else tastes of #kiln#.
+b : #bc_lovely# | #bc_fair_enough# | #bc_poor_soul#
+
+scene lake_quiet
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : I miss the quiet of #self.from_town#. Not the folk. #quiet.capitalize#. | Nights by #lake# you could hear it breathe. Here you hear carts. | I'd go back for #lakeair# alone. Not to stay. Just to breathe.
+b[from=coldwater] #home : Still water, still nights. | I miss that sound. | Me too. A week, no more.
+b : Will you go back? | Carts all night? | Why not to stay?
+a@home : Still water. Nothing like it. You know. | Then you know. I'll not say more. | A week. We'd go mad with the quiet after that.
+a : Some day. Not soon. #kilns.capitalize# won't run themselves. | Carts, doors, singing. The city never quite sleeps. | I've work here. A trade. You don't leave that for the quiet.
+
+scene accent_commons
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Every stallholder on the Commons knows where I'm from by my second word. | I said "netted" at the market and the stallholder looked at me like I'd sneezed. | I don't soften it, #address#. Never have.
+b : Do they mind? | What did it mean? | Why should you?
+a : Some smile. Some don't. I don't change it for either. | Caught. Cheated. They'd understood me fine by the end. | No reason at all. They'll learn me, or they won't.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene burners_hill
+when topic=memories|work self.from=coldwater self.age>=25
+does tell.memory / ask.detail / answer.detail / assess
+a : When I was a #child# I'd go up to the charcoal burners above #lake# and sit with them. Hours. | First fire I ever kept was a burner's mound in the woods above home. I'd watch it all night. | The burners up the hill never said a word more than they needed. I liked them for it.
+b : What did you do there? | All night? | Quiet folk?
+a : Nothing. Watched the smoke go up straight. They let me. | All night, wrapped in a sack. I was the proudest #child# on #lake#. | Quiet, and kind. I've wanted that quiet ever since.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene friend_kept
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s the one I'd want at my door if the kilns went up. | #self.friend# and I get by on ten words a day. We don't need more. | Years, with #self.friend#. Neither of us is one for talk, and that suits.
+b : Good to have. | Comfortable, that. | Suits you both.
+a : Good. Rare. I don't count on many. | Comfortable's the word. Like old boots. | It does. We'd both rather sit than chatter.
+
+scene hand_knows
+when topic=work|friends self.hand self.working=yes
+does tell.self / react.self / assess
+a : #self.hand#'s learned #draw# near as well as I know it. I'd trust that pair of paws. | I leave #self.hand# with #kiln# now, a night or two. That's not nothing. | #self.hand# keeps #floor# dry. That's half the trade, and the half folk forget.
+b : High praise, from you. | That's trust. | Half, is it?
+a : It's not praise. It's a fact. I don't hand those out loosely. | It's trust. I don't give it twice if it's spent. | Half, and the half that keeps your paws on. #saying#.
+
+scene faith_smoke
+when topic=faith
+does tell.self / react.self / assess
+a : I go to chapel on the cold days. I pray for dry weather and a straight draw. | The Bright One sees everything, they say. Then I hope the Bright One can see through smoke. | I'm not one for sermons. I say my bit at night and leave it there.
+b : Practical prayers. | Ha. Maybe. | That's enough for most.
+a : I'm a practical wolf. Nothing wrong with asking for what you need. | Better than most, I'd think. I can't. | It's enough for me. The rest is for folk who like to talk.
+
+scene gossip_closed
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : There's #talk#. There's always #talk#. I don't carry it. | I hear things over #sacks#. They stay over #sacks#. | Ask elsewhere. My mouth stays as shut as #yard# gate.
+b : Not even a little? | Like what? | Fair enough.
+a : Not a word. Talk's not my trade. | Like nothing you'll hear from me. #secret#. | It is fair. It's kept me out of trouble.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene new_faces
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New faces don't come past #yard# gate. Not till I know them. | I don't mind newcomers. I just don't open #door# to them first. | Strangers want lime, they can ask at the counter. That's what it's there for.
+b : Bit hard, that. | Why not? | Fair enough.
+a : Maybe. It's kept #sacks# where they belong. | Folk open doors and wonder where their things went. | It is fair. I'm not unkind. I'm careful.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean self.job=crafter
+does tell.worry / react.complaint / reassure / ack
+a : Nobody's building in hard times. #sacks.capitalize# just sit. | Lean season. I've banked one kiln. No call for #lime#. | When folk stop mending walls, I feel it first.
+b : It'll pick up. | That's bad. | First?
+a : It will. Walls fall down whether folk can pay or not. #reassure#. | Bad, but not the worst I've seen. I'll last it. | First. #lime.capitalize#'s for building, and building's the first thing let go.
+b? : #bc_i_hope_so# | #bc_true# | #bc_true#
+
+scene good_times
+when topic=times world.times=good|boom self.job=crafter
+does tell.news / react.news / assess
+a : Everyone's building. I can't burn #lime# fast enough. | Good times. Three kilns going and still folk waiting at #door#. | Busy as I've ever been. #steward.capitalize# even smiled.
+b : Good for you. | Waiting? | Smiled?
+a : Good for #tally#. I'll be glad when I can sit. | Waiting. I tell them it takes two days to burn. They don't like two days. | Once. Quickly. I'll not see it again till next boom.
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / warn / ack
+a : They say #topic.subject# #topic.claim#. I'll be locking #sacks# tonight. | Word is #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I hear. That's why my door stays shut.
+b : Lock them, yes. | Is it so? | Can't blame you.
+a : Locked and counted. #steward.capitalize# will ask. | Heard, not seen. #hearsay.capitalize#. | No. Careful's cheaper than sorry.
+b? : #bc_wise# | #bc_fair# | #bc_true#
+
+scene death_heard
+when topic=gossip|crime topic.claim_kind=death topic.subject
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They say #topic.subject# #topic.claim#. I didn't know #topic.them# well. It's still hard. | #topic.subject.capitalize# #topic.claim#. #pity#. | Word came past #yard#: #topic.subject# #topic.claim#.
+b : #pity#. | That's sad news. | That's a heavy thing.
+a : Sad. A candle from me tonight, for what it's worth. #rest#. | It is. Quiet day, after news like that. | Heavy. There'll be a word said for #topic.them# tonight, by me.
+
+scene wedding_heard
+when topic=gossip topic.claim_kind=marriage topic.subject
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. Good. Somebody should be happy. | Word is #topic.subject# #topic.claim#. #gladnews#. | #topic.subject.capitalize# #topic.claim#, I'm told. I hope the house is dry and the hearth warm.
+b : Good news, that. | A wedding! | The house?
+a : Good. We don't get enough of it. | A wedding. I'll not dance, but I'll be glad from the side. | Dry floors and a warm hearth. That's all a marriage needs, I'd think.
+
+scene dream_clean
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt I swam in #lake# and came out clean. No smoke on me at all. | I dream of snow, sometimes. Fresh snow with nothing on it. | Last night I dreamt #kilns# went out and nobody noticed for a week.
+b : Clean? | Why snow? | A week?
+a : Clean. Then I woke up and smelt the pillow. | White, and no smoke to it. I'd ask nothing more of a dream. | A week. I woke up sweating and went to look. They were burning.
+b : #bc_poor_soul# | #bc_fair_enough# | #bc_ha#
+
+scene feast_banked
+when topic=festival|season self.job=crafter
+does tell.self / react.self / assess
+a : Feast day. #kilns.capitalize# are banked and I'm sat here doing nothing. I don't know how. | A day off. I'll sweep #yard# anyway. Can't help it. | Folk go to the dancing. I go to the roof and watch #birds#.
+b : Enjoy it! | On a feast day? | The roof?
+a : I'll try. Doing nothing's harder than burning lime. | Swept yard on a feast day. It's my idea of rest. | Quiet up there. Nobody wants anything. That's my feast.
+
+story first_burn [topic=work|memories self.job=crafter self.age>=25]
+  : The old burner who taught me let me draw my first kiln alone when I was barely grown.
+  : I opened her too early, and half the load came out stone. Raw. Useless.
+  : He said nothing. Just pointed at the next kiln and went home. I never opened one early again.
+  ask : Have you ever been taught by somebody who said nothing at all?
+  b : Once. Those are the lessons that stick.
+  b[job=crafter|smith] : Every good master I've had was like that.
+
+story burners_camp [topic=memories self.from=coldwater self.age>=20]
+  : Above #lake# at home there was a charcoal burners' camp in the trees. I went up most days as a #child#.
+  : The burners let me watch the mounds. I'd sit on a log and watch the smoke go up straight in the still air.
+  : That's where I learned that a fire wants tending, not talking to.
+  ask : Is there somewhere you go to be quiet, even now?
+  b[from=coldwater] : The end of the jetty, at dawn. Every pup in town did.
+  b : A hayloft. Nobody ever looked for me there.
+  : Then you know. I've not found mine here yet.
+
+story lake_swim [topic=memories|travel self.away=yes self.from=coldwater self.job=crafter self.age>=30]
+  : I went home once, a few years into the kilns. First thing, I walked into #lake# in #coat#.
+  : Stood there up to my chest in #chill#, thinking the smoke would wash off.
+  : It didn't. The lake smelled of kiln for a day after, and I came back to the city smelling of both.
+  b : Into the lake in your coat? You must have been desperate.
+  b[from=coldwater] : The lake's cold enough to wash anything. Except that, I suppose.
+
+story cracked_kiln [topic=work|memories self.job=crafter self.age>=30]
+  : One winter the frost got into the old kiln's wall. It cracked down the side during a burn.
+  : We had to let the whole load go, two days of fire, and shore the wall before it fell in.
+  : The House rebuilt it that spring. I still check that wall every morning, first thing.
+  ask : Do you keep a habit like that, from something that went wrong once?
+  b : I check my door three times. I couldn't tell you why.
+  b[old] : Too many to count. Every scar teaches one.
+
+story the_rook [topic=animals|pastimes self.likes=roof_birds]
+  : There's a rook that came to #yard# gate the winter I started, and it's never stopped coming.
+  : I gave it a crust once. Now it waits on the gatepost every morning, and shouts if I'm late.
+  : It's the only one in the city that's glad to see me, smoke and all.
+  b : That's a loyal bird. Does it have a name?
+  b[friends] : I'm glad to see you too, smoke and all.
+  : No name. It's a rook. It knows the crust, and that's enough.
+
+rule @lime_cry
+when concept=bark working=yes self.job=crafter self.role=merchant
+does aside
+cooldown 6h
+say Lime! Fresh-burnt, by the sack. | Quicklime for mortar. Ask at the counter, and keep your paws dry.
+
+rule @wet_floor_bark
+when concept=bark working=yes self.dislikes=wet_floors here.weather=rain
+does aside
+cooldown 8h
+say Who tracked water in? #oath#. | Wipe your feet. Wipe them. #saying#.
+
+rule @smoke_bark
+when concept=bark here.region=ridgemere self.dislikes=smoke here.weather=fog|overcast
+does aside
+cooldown 10h
+say #reek.capitalize#, and nowhere for it to go. | You could cut this air with a spade.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say There's #blow#. Go on, take the smoke with you. | Wind's up. Good.
+
+rule @birds_bark
+when concept=bark here.time=dawn self.likes=roof_birds
+does aside
+cooldown 12h
+say There's #birds#, back on the tiles. | Morning, rook. Crust's coming.
+
+rule @carts_bark
+when concept=bark working=yes self.job=crafter world.wagons=late
+does aside
+cooldown 8h
+say Still no #carts#. Still no stone. | Late again. #kiln.capitalize# can't burn wishes.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Say what you need.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. Come in. | #topic.player#. #greet#. Mind #floor#.
+dlg @3 resident.hub [here.time=night] : It's late. I'm tired, and I smell of smoke. Ask quick. | #greet#. Late for it. What's wanted?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You're a stranger to me. Your business, from there. | #so#. You'll keep your distance till I do.
+dlg @1 resident.job [self.job=crafter self.role=merchant] : #self.trade_words.capitalize#. Burn the stone, draw #lime#, sell it by the sack. Answer for every load. | Lime. I burn it for the House and keep #tally# square. No more to it than that.
+dlg @2 resident.job : #self.trade_words.capitalize#. It's work, and it's mine. | #job_busy#
+dlg @1 resident.business [business=thriving] : Better than steady. Folk are building, and building wants lime. | Busy. I can't burn it fast enough.
+dlg @2 resident.business [business=steady] : Steady. The carts are late more than they're early, but #lime# sells. | It pays. I'd not say more than that.
+dlg @3 resident.business [business=failing] : Badly. Nobody's building. #sacks.capitalize# just sit. | Poor. No sense pretending otherwise.
+dlg @1 resident.news [world.news] : From #world.news_from#: #world.news#. That's what came past #yard#. | Word from #world.news_from#: #world.news#. I'll leave it there.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words#, they say. | Folk are full of #world.event_words#. I'm not.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon was waylaid out on the road. I'd stay off it.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing past #yard# gate. Nothing I'd pass on.
+dlg @1 resident.gossip [here.gossip=yes] : Folk say #topic.subject# #topic.claim#. Don't ask me more. | They say #topic.subject# #topic.claim#. That's all I'm saying.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry #talk#. Ask somebody with more time.
+dlg @1 resident.bye : #farewell#. Wipe your feet going out. | #farewell#, #address#.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Lime by the sack, putty by the tub. Keep your paws dry. | #greet#. Quicklime or slaked? Say which; they're not the same.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. Same as last time? | #topic.player#. #greet#. Sacks are by #door#.
+dlg @3 shop.greet [here.shop=bare] : #greet#. #shop_bare# The next burn's two days off. | #shop_bare# I'll still buy stone, if you've any.
+dlg @4 shop.greet [here.shop!=bare pair.disposition=hostile|wary] : What do you want? Ask, and keep back from #sacks#.
+dlg @1 shop.prices : #shop_dear# Stone's dear and #carts# are late; that's the price. | It costs what #stone# and the burning cost. I don't add much.
+dlg @1 shop.bye : #farewell#. Keep it dry, whatever you do with it. | #shop_bye#
+graft resident.hub
+choice You smell of smoke. -> smoke
+node smoke
+say I know. I always do. I burn lime, and the smoke's settled into my fur and won't leave. Wash, scrub, lake-water, lye. It stays.
+mood calm
+free
+choice Doesn't it bother you? -> smoke_why
+choice Goodbye. -> bye
+node smoke_why
+say I can't abide it. That's the joke nobody laughs at. An autumn wind clears it off me for an hour, and that's my best hour.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's quicklime for? [self.job=crafter] -> lime
+node lime
+say Mortar, plaster, limewash. Mix it with sand and water and it holds a wall up longer than you or I will stand. Mix it with water careless and it burns you.
+mood calm
+free
+choice How do I handle it? -> lime_care
+choice Let me see your wares. -> greet
+node lime_care
+say Dry paws, dry sacks, dry floor. Gloves if you've got them. Never let it touch your eyes. That's all, and it's everything.
+choice Thank you. -> greet
+choice Goodbye. -> bye

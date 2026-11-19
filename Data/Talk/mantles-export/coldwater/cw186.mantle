@@ -1,0 +1,299 @@
+# cw186, the drip-counter at the block (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw186
+revision 2
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rmx_jarl_greywell
+written_by claude
+title the drip-counter at the block
+fits stage=adult|old
+prefers job=merchant talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_the_drips_off_the_awning
+likes roast_pork dice tidy_house first_snow
+dislikes early_bells rats
+fears a_rain_that_never_lets_up questions_about_where_i_came_from
+hopes a_dry_week a_block_of_my_own
+topics weather +0.4 work +0.3 food +0.2 pastimes +0.2 gossip -0.4 family -0.3
+styles comfort=quiet gossip=closed refuse=flat tease=none
+marks oath saying
+persona #self.first# cuts and hangs meat at a butcher's in the Sump and counts the drips off the awning between customers, sure each shower is the last: quiet, guarded, tidy to the bone, and talking of the trade as if born to it.
+
+words
+oath! = Block and cleaver | Hook and hang
+saying! = Sharp knife, shut mouth | A clean block tells no tales
+block = the block | the chopping block
+cleaver = the cleaver | my cleaver
+hooks = the hooks | the meat hooks
+mutton = mutton | a side of mutton
+sawdust = fresh sawdust | the sawdust on the floor
+awning = the awning | the drip off the awning
+door = the shop door | the doorway
+pork = a slice of roast pork | pork off the spit, the skin all crackle
+dice = the dice | a throw of the dice
+tidy = a tidy room | a room with nothing out of place
+snow = the first snow | first snow on the roofs
+bells = early bells | bells before light
+rats = the rats | the rats in the yard
+apron = my apron | the apron
+lane = the lane | the lane outside
+grain = the grain of the meat | the way the meat lies
+wet = the wet | this lake-rain
+sky = the sky | that grey lid of a sky
+stairs = the stairs | the steep stairs
+room = my room | the room up the stairs
+scraps = the scraps | the bone-ends
+
+any
+opinion @1 watch against 1 : When #watch# come down #lane#, somebody leaves with them. That's all I've ever seen. #saying#.
+opinion @1 houses against 2 : #toffs.capitalize# up the hill have never once come down #lane#. That suits me. They can stay up there.
+opinion @1 merchants against 2 : The ones who sell #mutton# never go hungry. The ones who cut it, sometimes do.
+opinion @1 sump for 1 [self.quarter=sump] : The Sump's mine now, #stairs# and all. We keep our own counsel and look after our own.
+opinion @1 dole for 2 : The dole kept a roof over us one holed week. Nobody runs it down near me.
+opinion @1 strangers mixed 1 : I'll serve anybody across #block#. I'll not tell them anything, mind.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your feet; #sawdust# was fresh this morning. | #greet#. Look all you like; I'll be here.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. Mind #cleaver#. | #greet#. Mutton's fresh off #block# this morning.
+line @3 greet [here.time=dawn] : Morning. Or near enough, under #sky#. | Morning. #bells.capitalize# had me up again.
+line @4 greet [here.outdoors=rain] : #greet#. It'll stop soon. | #greet#. Come in under #awning#; it'll ease off.
+line @1 kin.open [pair.kin!=no] : Oh. It's you. Sit; it's out of #wet# here. | You. Good. Shut #door#, would you.
+line @1 again.open : #welcome_back#. Nothing's changed. | Twice today. The step's wearing thin, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [self.working=yes] : #greet#. I'm listening; I'll keep cutting. | #greet#. Stand clear of #block#.
+line @1 farewell : #farewell#. | #farewell#. Mind the wet in #lane#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Stick to the lamps. | #farewell#. Don't hang about on #stairs#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Mm. Go on. I'll keep at #block#. | Say it, then.
+line @1 react.news.new : #surprise#. I'd not heard. | That's new. I keep to #block#, mostly.
+line @1 react.news.known : #knew#. Somebody said it over #block#. | #knew#. Old news, down #lane#.
+line @1 react.news.doubt : #doubt#. Who's saying it? | #hedge#. I'd not repeat it till I knew more.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a holed week for somebody. | #bad.capitalize#, that. Sorry to hear it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #good.capitalize#. Somebody's doing all right, then. | #gladnews#.
+line @1 answer.how : #fine#. Same as ever. | All right. #wet.capitalize#. Always the wet.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three sides of #mutton# to hang. | Busy. Talk while I work #cleaver#, if you like.
+line @1 ask.how : You? Keeping #fine#? | And you, #address#? Keeping dry?
+line @1 sympathise : That's hard. Sit down a bit, out of #wet#. | #sympathy#. I'll not pry.
+line @1 decline : #hedge#, no. I've meat to hang and I'm not one for going out. | I'd sooner not, #address#. I'm needed at #block# till late.
+line @1 accept_decline : #no_matter#. | Fair enough. I'd likely have done no different.
+line @1 thank : #thanks#. | #thanks#. It'll not be forgotten.
+line @1 deflect_thanks : It was nothing. A paw off #block#, no more. | #deflect#.
+line @1 preclose : #preclose#. #mutton.capitalize# won't hang itself. | #block.capitalize#'s waiting on me.
+line @1 accept_preclose : Go on, then. | Off you go. Mind #wet#.
+line @1 ack : Mm. | #bc_true#
+line @1 give.advice : Keep your knives sharp and your questions few. #saying#. | #advise#, never trust a dry morning in this city.
+line @1 warn [world.bandits=near] : Stay inside the walls. #warn#. | Keep off the road out of the city for now, shore-friend.
+scene rain_will_stop
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : It'll stop. Look, it's thinning at the top of #lane#. | I give it an hour. Then the sun through #sky#. Maybe. | I've been watching it from #door# since noon. It's thinking about stopping.
+b : It's been raining for days. | You always say that. | It doesn't look it.
+a : So #wet#'s due a rest. Stands to reason. | I say it every time. Some time it'll be true. #oath#. | It's thinking. That's a start. #bc_we_will_see#
+b? : #bc_maybe# | #bc_ha# | #bc_we_will_see#
+
+scene rain_from_door
+when topic=weather|smalltalk here.outdoors=rain|storm self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I stand at #door# between customers and watch it come down. Every time, I think this is the last of it. | There's a drip off #awning# that's been going three days. I'm counting it. | Folk ask why I watch #wet# from #door#. I don't know. I count the drips till it stops.
+b : Is it ever? | Counting the drips? | Does it ever stop?
+a : Not yet. Doesn't mean it won't be. | Somebody has to. It'll stop on a number, and I'll know it. | Sometimes. Usually when I've gone in.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene snow_morning
+when topic=weather|season here.outdoors=snow self.likes=first_snow here.region=ridgemere
+does tell.feeling / react.self / assess
+a : #snow.capitalize#. I stood out in #lane# before anyone had walked it. | Snow. The whole Sump goes quiet under it, #stairs# and all. I like that. | #snow.capitalize#, and the rain's stopped for once. It's turned to this instead.
+b : It's freezing. | Quiet's rare down here. | Better than rain?
+a : It is. Worth it, for the quiet. | Rarer than a dry week down here. I'll take it. | Better. Snow knows when to stop.
+
+scene dry_day_doubt
+when topic=weather|day here.outdoors=clear here.region=ridgemere
+does tell.self / react.self / assess
+a : A dry day. I don't trust it. #sky.capitalize#'s too pale. | Sun on #lane#. It'll rain by dark. It always does. | Clear. I keep looking up at #sky#, waiting for it to change its mind.
+b : Enjoy it. | You're gloomy. | Let it be.
+a : I am. Quietly. With an eye on the sky. | Not gloomy. I've lived here a while, that's all. | I'll try. #oath#. It's hard to stop watching.
+
+scene at_the_block
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : Three sides of #mutton# this morning, and every joint off them clean. | You cut with #grain#, never across. Folk who cut across it want soup, not a joint. | I keep #block# scrubbed and #sawdust# fresh. A dirty shop sells nothing twice.
+b[job=merchant|cook] #trade : Clean joints sell themselves. | That's the knack, aye. | That's true of any shop.
+b : That's quick work. | Is there a right way? | You're particular.
+a@trade : They do. Nobody haggles over a clean cut off #block#. | It is. Most never learn #grain#. | Any shop worth the name. #saying#.
+a : Quick and clean, shore-friend. Nothing fancy. | There is. With #grain#, like I said. | I am. You'd want the same, eating it.
+
+scene learning_the_block
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm still learning #block#. #self.boss# shows me once and watches me do it ten times. | I came to #cleaver# late. I'll not say how late. | The hooks, #block#, the knives. There's an order to it. I like an order.
+b : That's a good way to learn. | Late's better than never. | You sound born to it.
+a : It is. I've not cut against #grain# in a month. | It is. I'll catch up. | Maybe I was. I just didn't know it.
+
+scene the_grain
+when topic=work|food self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : A good side of #mutton# has a grain like wood. You can read it if you know how. | Every beast is different inside. You learn to feel it with #cleaver#. | I can tell how old #mutton# was from one cut. Don't ask me how.
+b : Read it how? | Feel what? | How?
+a : The fat runs one way, the meat the other. Cut where they part. | Where it gives. Where it doesn't. Your paw learns before your head. | I said don't ask. #saying#.
+b : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene bells_before_light
+when topic=day|faith here.time=dawn self.dislikes=early_bells here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize# again. Every morning, before light, and for what? | Somebody up the hill rings #bells#, and the whole Sump's awake. | I'd sleep another hour if it weren't for #bells#. Just the one hour.
+b : For the chapel, I think. | They're loud. | An hour's a lot.
+a : The chapel can ring at a decent hour. | Loud, and early, and every day. #oath#. | An hour's everything, when you're on #block# at sunrise.
+
+scene rats_in_the_yard
+when topic=animals|work self.dislikes=rats here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / assess
+a : #rats.capitalize# were at #scraps# again. I'll be setting traps all evening. | One of #rats# as big as a cat sat on the yard wall and watched me. Bold as you like. | I hate rats. They're in every yard in the Sump and twice as many round a butcher's.
+b : Do the traps work? | What did you do? | Can't you keep a cat?
+a : Some. The clever ones just eat the bait. | Threw a bone off #block# at it. It took the bone. | We had one. It got fat and lazy on #scraps# and let them be.
+b? : #bc_ha# | #bc_ha# | #bc_bad_luck#
+
+scene roast_pork
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess
+a : #pork.capitalize#. That's the one thing I'd buy if I had coin to spare. | I cut pork all week at #block# and never eat it. Funny, that. | On Restday I buy one slice of roast pork and eat it slow at #door#.
+b : You'd think you'd be sick of it. | Never? | Watching the rain?
+a : Cutting it's not eating it. Different thing. | Rarely. It's dear, even for us. | Watching the rain, aye. It's a good Restday.
+
+scene dice_quiet
+when topic=pastimes self.likes=dice
+does invite / accept / assess
+a : A throw of #dice#? Just for buttons. | I've #dice# in my apron. One game, while it's quiet. | Sit. I'll throw #dice# with you for the last oatcake.
+b[friends] #mate : You always win. | One game. | I'll lose it, won't I?
+b : Go on. | One game, then. | Fair enough.
+a@mate : I count the throws. You don't. That's all it is. | One. Then I've #mutton# to hang. | Maybe. Maybe not. That's dice.
+a : #good.capitalize#. You throw first. | One. Then back to #block#. | Throw, then. Mind the sawdust.
+
+scene tidy_room
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : I keep #tidy#. Everything where it goes. It's about all I own outright. | I swept #room# twice before I came to work. Can't help it. | A mess makes me uneasy. Don't know why. It just does.
+b : That's a good habit. | Twice? | Plenty are, round here.
+a : Habit's what you've got when you're #skint# of everything else. | Twice. And I'll sweep again when I get home. | I'm like that. I'll not apologise for it.
+
+scene not_much_to_say
+when topic=memories|family self.away=yes
+does tell.self / react.self / assess
+a : You'll want to know where I'm from. Folk always do. | Before here? This and that. Not much to tell. | I don't talk about before. It's nothing bad. It's just mine.
+b : Only if you want to say. | That's fair. | That's your business.
+a : I don't, much. But thanks for asking it kindly. | It is. #saying#. | It is. #bc_thank_you#.
+
+scene home_lake_rain
+when topic=memories|weather self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# you could watch the rain come across the lake, and watch it stop. Here it just goes on over the roofs. | #rain.capitalize# back home had an edge. You could see it go. | I used to sit on the shore and wait for a shower to pass over the lake. I still wait. It never passes, here.
+b[from=coldwater] #home : I know that. A grey sheet coming over the water. | It did. You could tell where it ended. | That lake.
+b : Is that why you watch it? | An edge? | Do you miss it?
+a@home : Then you'll see what I'm waiting on. | You'd see it stop right on the shore. Never here. | That lake. Aye.
+a : Maybe. I'd not thought of it like that. | A grey line on the water, coming or going. Here it's just everywhere. | Some days. Not out loud.
+
+scene sump_keeps
+when topic=smalltalk|home here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Sump's not bad, if you keep your head down. Folk look after their own. | Down here nobody asks too many questions. I like that about it. | I've #room#, a job and a door that locks. That's more than some down here.
+b : It's rough, though. | Suits you, then. | That's something.
+a : Rough. Fair, mostly. #saying#. | It does. I'll not pretend otherwise. | It's plenty. I'm not asking for more. Yet.
+
+scene watch_stairs
+when topic=crime here.region=ridgemere
+does tell.self / react.self / assess
+a : #watch.capitalize# came down #lane# yesterday. I kept cutting and didn't look up. | Somebody got taken off by #watch# last week. I didn't see who. I didn't look. | Trouble on #stairs# last night. I heard it. I stayed in.
+b : Best not to. | Wise. | Probably right.
+a : Best not, down here. You see nothing, you say nothing. | Not wise. Just careful. | Probably. #saying#.
+
+scene lean_meat
+when topic=times|prices world.times=hard|lean self.job=merchant
+does tell.worry / react.complaint / assess / ack
+a : Nobody's buying joints. It's #scraps# for soup now. I'm cutting more bones than meat. | Lean weeks. Half #hooks# are empty and the other half aren't selling. | Times are hard. I see it in what folk ask for across #block#.
+b : Same everywhere. | That's grim. | What do they ask for?
+a : Same everywhere, worse down here. | Grim. #oath#. | The scraps. The cheap ends. Same as I'd ask for.
+b? : #bc_true# | #bc_true# | #bc_poor_soul#
+
+scene gossip_closed
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : Folk say things over #block# like I'm not there. I don't pass any of it on. | I heard something at #block# today. I'll keep it. | I don't do gossip. Ask somebody chattier.
+b : Not even a little? | Fair enough. | Nobody's chattier than you, though.
+a : Not a word. #saying#. | It is fair. You'd want the same. | Ha. Nobody's quieter, you mean.
+b : #bc_fair_enough# | #bc_fair# | #bc_ha#
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is one of the few I'd trust. Not many on that list. | I'd not say much to most folk. To #self.friend#, more. #bc_true# | #self.friend# took a chance on me. I'll not forget that.
+b : That's good to have. | That's something. | That was kind.
+a : It is. I keep it close. | More than most get. #oath#. | It was. I'll pay it back with work at #block#.
+
+story lake_shower [topic=memories|weather self.away=yes self.from=coldwater self.age>=18]
+  : When I was small I'd watch a shower walk across the lake towards us, grey as a curtain.
+  : It would reach the shore, rain on us for a minute, and go off over the hills. Then the sun.
+  ask : Have you ever watched rain stop, right where it stops?
+  b : Never. I didn't know you could.
+  b[from=coldwater] : On the lake, aye. Nowhere else.
+  : Here I watch for it every day. One day I'll see it.
+
+story first_cut [topic=work|memories self.apprentice=yes]
+  : The first side of mutton I cut on my own, I cut against the grain the whole way down.
+  : I was sure I'd be put out. Instead I was handed the cleaver and shown again.
+  ask : Would you have kept me on?
+  b : I would, if you came back the next day.
+  b[job=merchant] : I'd have kept you. Everybody cuts it wrong once.
+  : I came back. I've not cut against it since.
+
+story snow_lane [topic=season|memories self.likes=first_snow]
+  : One winter the first snow came down at night, and I was the first out in the morning.
+  : I stood at the top of #lane# and it was clean, end to end. Not one print in it.
+  : I walked down the middle of it slowly. Then I went back and swept the step.
+  b : That's a good memory.
+  b[stage=young] : I'd have run in it!
+
+rule @block_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say Mutton, fresh off #block#. | Fresh cut this morning. Clean joints off #hooks#.
+
+rule @rain_bark
+when concept=bark here.outdoors=rain
+does aside
+cooldown 8h
+say #wet.capitalize#'ll stop. Soon. | Thinning. Look. It's thinning.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats
+does aside
+cooldown 10h
+say Get out of it! Out, #rats#! | #rats.capitalize# again. #oath#.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #bells.capitalize#. Again. | Every blessed morning.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Can I help?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. What's wanted? | #topic.player#. Get under #awning#, out of #wet#.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : What do you want? I'm working #block#.
+dlg @1 resident.job [self.job=merchant self.working=yes] : #self.trade_words.capitalize#. Cutting, hanging, scrubbing #block#. | #mutton.capitalize#, mostly. Some pork. Clean cuts, honest scales.
+dlg @2 resident.job : I work, shore-friend. Nothing else worth saying. | This and that. Keeps me fed and #room# paid.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Not that's reached #block#. I keep my ears to myself.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | And if there were, it'd stay behind #block#. #saying#.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the wet.
+graft resident.hub
+choice Why do you count the drips off the awning? -> rain
+node rain
+say Every shower ends on a last drip, and I want to be counting when it falls. Where I grew up you could watch rain cross the water and go.
+mood calm
+free
+choice Do you miss that? -> rain_miss
+choice Goodbye. -> bye
+node rain_miss
+say Some days. That's as much as I'll say. It'll stop. I'll be at the door when it does.
+choice I hope you see it. -> hub
+choice Goodbye. -> bye

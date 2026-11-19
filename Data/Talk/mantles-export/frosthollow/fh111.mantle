@@ -1,0 +1,300 @@
+# fh111, the heel-giver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh111
+revision 1
+state ready
+dialect frosthollow
+accent none
+tier standard
+written_for rm_jorunn_saltdale
+written_by claude
+title the heel-giver
+fits stage=adult|old
+prefers job=baker warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk slips_a_spare_heel_into_hungry_pockets_and_denies_it
+likes mutton_stew long_walks festival_bells thunder
+dislikes bad_manners smoke
+fears the_ovens_going_cold_for_good the_houses_falling_out_over_winter
+hopes a_room_with_a_window_above_the_smoke
+topics food +0.4 work +0.3 weather +0.3 pastimes +0.2 memories +0.2 gossip -0.5 times -0.2
+styles comfort=feeding gossip=closed refuse=gentle tease=none
+marks oath saying
+persona #self.first# works the ovens in the Sump and slips the heels of loaves into hungry pockets without a word, then swears it never happened: quiet, warm and close, unhappy in the smoke, at ease on a long walk, and saying nothing about the self that need not be said.
+
+words
+oath! = Crumbs and quiet | By the oven door
+saying! = A full belly asks no questions | Bread's for eating, not for thanking
+oven = the oven | the big oven
+heel = a heel of bread | the heel of a loaf
+loaves = the loaves | the morning loaves
+stew = a mutton stew | mutton stew with barley in it
+walk = a long walk | a walk to nowhere much
+smoke = the smoke | the smokehouse reek
+flour = the flour | the flour dust
+dough = the dough | the first batch of dough
+festbells = the festival bells | the bells for a feast
+damp = the damp | the low-street damp
+nothing = I saw nothing | nobody gave you anything
+lowdown = down here | the bottom of the city
+uphome = up the mountain | back home in the high air
+chapel = the chapel | the old chapel
+houses = the Houses | the Houses up the hill
+stair = my stair | the stair at home
+
+any
+opinion @1 church for 1 : #chapel.capitalize# fed my house one winter when nobody else would. I'll not hear a word against it.
+opinion @1 dole for 3 : #saying#. The dole kept my house fed one lean week. I'd give to it twice before I'd see it shut.
+opinion @1 houses against 2 : They'll fall out with each other before the next winter's done, #houses#. Mark it, and forget I said it.
+opinion @1 merchants against 2 : I bake bread I can barely buy. Somebody up the hill is doing well out of #loaves#, and it isn't me.
+opinion @1 sump for 1 : It's #lowdown#, and it's damp, but folk here look after their own. I'll take that over a dry street.
+opinion @1 watch against 1 : #watch.capitalize# only come #lowdown# to take somebody away. I keep my eyes on #dough# when they pass.
+opinion @1 times against 2 : Every week the flour costs a little more and the pay doesn't. Nobody up the hill counts it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the step; it's slick. | #greet#, #address#. You'll have come for bread.
+line @2 greet [self.working=yes self.job=baker] : #greet#. #loaves.capitalize# are nearly up. | #greet#. Stand by #oven#; it's warmer.
+line @3 greet [here.time=dawn] : #greet#. You're early. So's #dough#. | #greet#, #address#. #dough.capitalize# and I have been up a while.
+line @4 greet [here.time=dusk|night] : #greet#. It's late to be out #lowdown#. | #greet#. Get yourself home soon, #address#.
+line @1 kin.open [pair.kin!=no] : You. Sit. There's #heel# going spare. | It's you. Eat something first, then talk.
+line @1 again.open : #welcome_back#. You'll be wanting a crust. | Twice today, #address#. You'll eat this time.
+line @1 greet.return : #greet#. | #greet#, #address#. You look cold.
+line @2 greet.return [pair.band=friends|family] : #greet#. I kept you something. Don't ask what. | #greet#. Sit down. You're thin.
+line @3 greet.return [self.working=yes] : #greet#. I'm at #oven#; talk while I work. | #greet#. Mind the trays.
+line @1 farewell : #farewell#. Eat what's in your pocket. | #farewell#, #address#. Keep out of #damp#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go the lit way home. | #farewell#. Bar your door; it's the Sump.
+line @1 farewell.return : #farewell#. | And you, #address#. Eat something.
+line @1 react.news : #surprise#. I'll keep that to myself. | That's news. I've not heard it, and I'll not repeat it.
+line @1 react.news.new : #surprise#. Nobody at #oven# said. | That's new to me, #address#. I keep my head down.
+line @1 react.news.known : #knew#. It came down the street before #loaves# did. | I had it at the trough this morning. I said nothing.
+line @1 react.news.doubt : #doubt#. Folk #lowdown# say a lot of things. | I'll wait and see, #address#. Talk's cheap and bread isn't.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll keep a candle lit for that house. | #sympathy#. I'll put a loaf by for the house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. There'll be bread wanted. | That's #good# to hear, #address#. The street could do with it.
+line @1 answer.how : Well enough. Never mind me. | #fine#. #oven.capitalize#'s lit, so I'm warm.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three batches in, and me alone at #oven#. | No rest since #dough# went in. It's how I like it.
+line @1 ask.how : And you? Fed, I hope? | How are you keeping, #address#? Eating?
+line @1 sympathise : #sympathy#. Here. Have #heel#. Sorrow's worse on an empty belly. | That's hard, #address#. Sit by #oven# a while.
+line @1 reassure : #reassure#. Eat first; it always looks better fed. | It'll pass, #address#. Even #damp# lifts some days.
+line @1 decline : #hedge#, I can't. The batch is in #oven#, and a batch left alone burns. | I'd like to, #address#, but I've #dough# rising and no one to watch it.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. I'd have said the same, #address#.
+line @1 thank : #thanks#. You needn't have. | That's kind of you. I'll keep it in mind.
+line @1 deflect_thanks : #deflect#. #saying#. | Hush. #nothing.capitalize#.
+line @1 preclose [self.working=yes] : #preclose#. #oven.capitalize#'s calling. | I'd best get back. #loaves.capitalize# won't turn themselves.
+line @2 preclose : #preclose#. I've a long walk home. | It's getting on, #address#. I'll be off.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. Mind how you go, #address#.
+line @1 ack : #bc_right# | Mm. #bc_i_know#.
+line @1 keep_confidence : #secret#. It's gone in with the flour. | I heard nothing. I never do, #address#.
+line @1 warn [world.bandits=near] : Stay #lowdown# tonight, #address#. #warn#. | Don't go out past the walls alone. Not this week.
+scene heel_in_pocket
+when topic=food|work self.working=yes self.job=baker
+does tell.self / react.self / insist / ack
+a : There's #heel# in your coat pocket. #nothing.capitalize#, mind. | Somebody's pocket gets the heels every morning. I couldn't say whose. | I don't give bread away. Ask anyone. Then ask them why they're not #hungry#.
+b[stage=young] #pup : There's bread in my pocket! | Somebody gave me a crust! | Did you give me this?
+b : Did you put that there? | You give them away? | And why aren't they?
+a@pup : Hush. Eat it before anyone sees, and don't say where you got it. | Did they. Lucky pup. Eat it slow. | No. #nothing.capitalize#. Go on, now.
+a : I don't know what you mean. Eat it before it goes hard. | Who'd do a thing like that? Go on with you. | They've eaten, that's why. A full belly asks no questions.
+b? : #bc_thank_you# | #bc_ha# | #bc_fair_enough#
+
+scene oven_before_light
+when topic=work|day here.time=dawn self.working=yes self.job=baker
+does tell.self / react.self / assess
+a : I'm at #oven# before the street wakes. It's the warmest place #lowdown#. | First batch goes in in the dark. You learn to feel #dough#, not see it. | The Sump's cold at this hour. #oven.capitalize# isn't. That's why I'm early.
+b : Before the street? | Feel it? | Warm, at least.
+a : Before the street, before #smoke#, before anyone wants anything. My best hour. | In your paws. It tells you when it's ready, if you're quiet. | Warm and quiet. Then the door opens and the day starts.
+
+scene learned_quick
+when topic=work|memories self.job=baker self.age>=25
+does tell.self / ask.detail / answer.detail / assess
+a : I learned to bake in a hurry. One season I'd never touched #dough#; the next I was at #oven# all night. | My first loaves were bricks. Folk ate them anyway, which tells you how things were. | I came to #oven# late. Nobody taught me; I watched, and burnt my paws, and learned.
+b : Who taught you? | Bricks? | Burnt?
+a : Hunger did. It's a quick teacher and it doesn't let you off. | Bricks with a crust. They're better now. Ask anyone at the trough. | A few times. The paws remember. They don't burn now.
+b : #bc_good# | #bc_ha# | #bc_wise#
+
+scene smoke_and_damp
+when topic=weather|home here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# sits in the street like it pays rent. I can taste it in the bread. | When it's damp #smoke# won't lift. It just hangs at the door. | Back home the air was cold and clean. #lowdown# it's warm and full of soot.
+b : It's always smoky down here. | Can't be helped. | You miss clean air?
+a : Always. I wash my paws twice and they still smell of it. | No. But I'm allowed to mind it, #address#. | Every morning. I take #walk# on Restday, just to breathe.
+
+scene thunder_under_roof
+when topic=weather here.outdoors=storm self.likes=thunder
+does tell.feeling / react.self / assess
+a : Hear that? #oath#. I like a storm, so long as there's a roof between us. | Thunder over the roofs. #oven.capitalize# hums when it's close. I swear it does. | Storm's coming over. Best sound there is, from indoors with #loaves# baking.
+b : You like storms? | The oven hums? | It's loud.
+a : I do. It's the one noise that drowns the street out. | It does. Ask anyone who's stood by it in a storm. | Loud, and honest. It doesn't pretend to be anything.
+
+scene wet_street
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Wet again. The stair at home's a stream, and #damp# is in the walls. | #rain.capitalize# down the street. Half the Sump's warming itself by #oven# and calling it shopping. | Rain on the Sump. Wet coats and #smoke#, that's the smell of it.
+b : It's always wet. | Do they buy? | Wet coats and smoke.
+a : Always. Back #uphome# the wet came as snow, and stayed where you put it. | Some do. The rest I let stand. It's warm, and it costs me nothing. | That's #lowdown# in the rain. Some get used to it.
+
+scene fog_low
+when topic=weather|day here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog down #lowdown#. The street ends ten paces off. | Thick fog this morning. I walked to #oven# by the smell of it. | Fog and #smoke# together. I can't tell where one stops.
+b : I couldn't see a thing. | By the smell? | Nor can I.
+a : Keep to the wall in it. Folk lose their way and their purse. | Bread's the one smell #lowdown# that's worth following. | It's not good for the chest. Get inside, #address#.
+
+scene city_snow
+when topic=weather|memories here.outdoors=snow self.away=yes self.from=frosthollow
+does tell.memory / react.self / assess
+a : Snow, #lowdown#. Grey before it lands. In #self.from_town# it kept white till the thaw. | It never settles here. Back #uphome# you could walk on it by midwinter. | I stood in the door and watched it fall. Then it turned to slush, like it always does here.
+b[from=frosthollow] #home : White to the roofs, at home. | Walk on it and not leave a mark, some days. | I know. It's not real snow, this.
+b : It's pretty while it lasts. | Did you miss it? | It always does.
+a@home : White to the roofs, and quiet under it. I miss the quiet. | Some days. You learned to step light. | No. It's only rain that's lost its way.
+a : It's pretty for a breath. Then it's soot. | I miss the quiet of it, #address#. Not the cold. | It does. I watched anyway. It's the nearest thing to home there is #lowdown#.
+
+scene mutton_stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : I've #stew# on at home. It'll be better tomorrow, and the day after. | There's no cold day #stew# can't undo. | I made #stew# for the whole stair on Restday. They ate the pot clean.
+b : Better tomorrow? | Not a thing? | The whole stair?
+a : Stew's like bread. It wants time to settle. You can't hurry either. | Not a thing. Mutton, barley, an onion, and a long while on the fire. | Every floor. I'd not see anyone on #stair# go without.
+b : #bc_good# | #bc_true# | #bc_good#
+
+scene restday_walk
+when topic=pastimes|day self.likes=long_walks
+does tell.feeling / react.self / assess
+a : Restday I take #walk#. Up the hill, round the walls, nowhere in particular. | I walk till #smoke#'s behind me and I can hear birds. Takes an hour. | I like a walk with nothing at the end of it. No errand. Just the walking.
+b : All the way round? | Birds? | No errand at all?
+a : As far as my feet take me, and back by dusk. #bc_every_time#. | Birds. #lowdown# you'd forget there were any. | None. That's the whole good of it. Everything else I do is for somebody.
+
+scene bells_ringing
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : When #festbells# go, I stop whatever I'm doing and listen. Even #dough#. | #festbells.capitalize# carry all the way #lowdown#. It's the only thing from up the hill that does. | I like #festbells# better than the feast. The feast is crowds. #festbells.capitalize# are just bells.
+b : Even the dough? | Only the bells? | Crowds aren't so bad.
+a : Even that. It'll forgive me a minute. | #festbells.capitalize# and the rain. Everything else stops at #stair#. | For some. I'm better with #festbells# and a quiet corner, #address#.
+
+scene no_manners
+when topic=smalltalk|work self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : A wolf came to #oven# this morning and took bread without a word. Not even a nod. | I don't ask for much. A please. A thank you, if you're feeling grand. | Somebody shoved past the queue at #oven#. Pups stood aside better than that.
+b : Some folk. | That's not much to ask. | Did you serve them?
+a : Some folk. I gave the next one an extra heel, to even it out. | It's not. And I'll give bread to anyone who says it. | I served them. Last. Manners cost nothing, and that's what they got.
+
+scene houses_quarrel
+when topic=times|gossip here.region=ridgemere
+does tell.worry / react.self / assess
+tone serious / serious / even
+a : I'll say this once. #houses.capitalize# will be at each other's throats before the winter's out. | They're smiling at each other up the hill. That's when you want to watch them. | Folk say #houses# are friends. I've seen friends. That isn't it.
+b : Why do you say that? | Smiling? | What is it, then?
+a : I don't. I didn't say it. Bread's what I know, #address#; the rest you never heard from me. | Smiling, and saying nothing. You don't need to be clever to see it. | Waiting. Each of them waiting on the other. I'll keep my head down when it comes.
+
+scene home_mountain
+when topic=memories|travel self.away=yes self.from=frosthollow self.age>=25
+does tell.memory / react.self / assess
+a : In #self.from_town# the air was so cold it hurt to breathe. I'd give a week's pay to hurt like that again. | I grew up where you could see a wolf coming a mile off on the snow. Here you can't see your own paws. | Nobody locked a door at home. There was nothing to take, and nowhere to run with it.
+b[from=frosthollow] #home : It does hurt. You get to like it. | A mile off, and you'd know who by the walk. | And the snow would show you the tracks anyway.
+b : Why did you come down? | It's crowded here. | Do you lock yours here?
+a@home : You do. And #lowdown# nothing hurts clean. | By the walk. I could still tell you some of them. | It would. Nothing hides on snow. Everything hides #lowdown#.
+a : For #work#. There's always bread wanted in a city. | Crowded and kind, mostly. I'll not complain where it can be heard. | Twice over, and a chair against it. That's the Sump.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd leave my last loaf with. That's all I'll say. | I'd trust #self.friend# with my door key and my secrets, both. | #self.friend# and I go back. Neither of us talks much. It suits.
+b : That's a good friend. | Your secrets? | It's restful.
+a : It is. I don't need many. One will do, if it's that one. | The few I've got. #bc_ha#. They're small. | Restful's the word. #bc_true#.
+
+scene lean_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean, this week. More folk at the door, and fewer coins in their paws. | Folk are buying half #loaves# now. Nobody says why; nobody needs to. | I've given more heels away this week than I've sold loaves. #nothing.capitalize#, mind.
+b : Hard all over. | Half loaves? | You'll get in trouble.
+a : Hard, and harder #lowdown#. Nobody up the hill counts it. | Half, and counting the coins twice. You'd not see it unless you were #hungry#. | Then I'll get in trouble fed. #reassure#.
+b? : #bc_true# | #bc_poor_soul# | #bc_ha#
+
+scene gossip_closed
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : Folk talk at the oven door. I don't listen. | I hear things, #lowdown#. I've learned to forget them by the time I'm home. | Somebody asked me what I knew this morning. #nothing.capitalize#, I said. It's always true.
+b : You must hear something. | Forget them? | Nothing at all?
+a : I hear the bread. That's all I'll own to. | Forget them, or carry them. I'd rather not carry. | Nothing I'll say. In the Sump, that's the same as nothing.
+b : #bc_fair_enough# | #bc_wise# | #bc_fair#
+
+scene faith_fed
+when topic=faith
+does give.opinion / react.self / assess
+a : #chapel.capitalize# fed us when nobody else did. I give the Bright One thanks for that every morning. | I'm not one for sermons. But I'll put a loaf by #chapel# door on Restday. | The Bright One knows what I give. Nobody else needs to.
+b : That's something. | A loaf every week? | That's private, then.
+a : It's a lot. You don't forget who fed you, #address#. | When I've one spare. Most weeks I find one. | Private. Like most things #lowdown#.
+
+scene old_place
+when topic=memories|work self.age>=30 self.wealth=poor|destitute
+does tell.memory / sympathise / assess
+tone grave / tender / even
+a : I had a place of my own, once. It went to somebody better placed. I don't talk of it. | There was a time I hired, not worked for hire. It doesn't do to look back. | I'll not complain about the old place where anyone can hear. It's gone.
+b : I'm sorry. | That's hard. | You can, to me.
+a : Don't be. I bake, I eat, I've a roof. #saying#. | Hard once. It's smooth now, like a step with years on it. | I know. That's why I won't. It's kinder to both of us.
+
+story first_loaf [topic=work|memories self.job=baker self.age>=25]
+  : My first batch came out of #oven# black on top and raw in the middle. I wanted to throw it in the gutter.
+  : An old wolf off #stair# bought one anyway. Ate it on the step, every crumb, and said it was good.
+  : It wasn't. But I kept baking because of that.
+  ask : Have you ever told a kind lie like that, #address#?
+  b : Once or twice. It's no sin. | I should have, more.
+  b[old] : Many times. It's what the old are for.
+
+story mountain_oven [topic=memories|food self.away=yes self.from=frosthollow self.age>=25]
+  : At home in winter the whole street baked in one oven. Everybody's dough, all night, in turn.
+  : You'd stand in the snow and wait for yours, and talk to whoever was there.
+  : I knew everyone on that street by their bread. Here I don't know my own stair.
+  b : That sounds warm. | One oven for a street?
+  b[from=frosthollow] : We did the same. I'd know my mother's loaf blind.
+
+story the_pup_at_the_door [topic=smalltalk|food]
+  : There was a pup came to the door every morning one winter. Never asked. Just stood.
+  : Every morning there was #heel# in a pocket. I couldn't tell you who put it there.
+  : Then one spring the pup stopped coming. I hope that means fed, and not the other thing.
+  ask : What do you think it means?
+  b : Fed. Grown and fed. | I'd like to think it's the good thing.
+  b[stage=young] : It means fed. I'm sure.
+
+rule @oven_cry
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 6h
+say #loaves.capitalize#, warm. Mind your paws on the crust. | Bread up. Come in out of #damp#.
+
+rule @smoke_bark
+when concept=bark self.dislikes=smoke here.region=ridgemere
+does aside
+cooldown 10h
+say #oath#. #smoke.capitalize# again. | I can't see the street for #smoke#.
+
+rule @manners_bark
+when concept=bark working=yes self.dislikes=bad_manners
+does aside
+cooldown 10h
+say A please wouldn't kill you. | Wait your turn. The bread's not going anywhere.
+
+rule @thunder_bark
+when concept=bark here.outdoors=storm self.likes=thunder
+does aside
+cooldown 10h
+say There it goes. #oath#, that was close. | Listen to that. Better than any bell.
+
+dlg @1 resident.hub : #greet#. Have you eaten? Never mind; tell me what's wanted. | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're thin. What can I do? | #topic.player#. Sit. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Yes? Quick, please. I've #dough# rising.
+dlg @4 resident.hub [here.time=night] : It's late for the Sump. Say it and get home.
+dlg @1 resident.job [self.job=baker] : I'm at #oven# at #self.workplace#. I bake, I sweep, I keep my head down. | Bread. From the dark till noon. It's honest work, and warm.
+dlg @2 resident.job : Work, and quiet. There's no more to me than that. | Whatever wants doing. I'll not complain where it's heard.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear the bread and nothing else. It's safer.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I didn't say it, mind.
+dlg @1 resident.bye : #farewell#. Eat something. | #farewell#, #address#. Keep out of #damp#.
+graft resident.hub
+choice Is that bread in my pocket? [self.job=baker] -> heel
+node heel
+say Is it? I couldn't say how it got there. Eat it while it's warm, and don't tell anyone where you found it.
+mood warm
+free
+choice Thank you. -> heel_thanks
+choice Goodbye. -> bye
+node heel_thanks
+say For what? I gave you nothing. Bread's for eating, not for thanking. Go on, now.
+choice I'll eat it, then. -> hub
+choice Goodbye. -> bye

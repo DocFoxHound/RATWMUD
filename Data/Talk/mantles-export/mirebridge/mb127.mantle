@@ -1,0 +1,316 @@
+# mb127, the high-step watcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb127
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for rm_dagny_pitchton
+written_by claude
+title the high-step watcher
+fits stage=adult|old
+prefers temper=calm honesty=frank
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk climbs_to_the_highest_step_to_watch_the_ships
+likes hard_cheese riddles full_larder first_warm_day
+dislikes flies wet_floors
+fears ending_where_it_began a_floor_that_never_dries
+hopes a_door_up_the_hill a_riddle_nobody_can_answer
+topics ships +0.4 pastimes +0.3 work +0.3 home +0.2 dreams +0.2 food +0.2 gossip -0.2
+styles comfort=practical gossip=plain refuse=plain tease=none
+marks oath saying
+persona #self.first# climbs to the highest step in reach to watch the ships come up the water and means to end up living higher still: blunt, patient and steady, frank to a fault, fond of a hard cheese and a riddle that takes a week.
+
+words
+oath! = Rind and reason | By the hard rind | Step by step, then
+saying! = Every riddle has a floor to it | Climb slow and you only climb once | Ask it plain and it gets answered plain
+step = the top step | the highest step I can find | the last step before the roofs
+stairs = the stairs | all those stairs
+ships = the ships | the ships coming up the water
+harbour = the harbour | the harbour down below
+cheese = a hard cheese | cheese with a proper rind on it
+riddle = a riddle | a good long riddle
+larder = the larder | my larder, full to the door
+warmday = the first warm day | a morning the coat stays on its peg
+flies = the flies | the summer flies
+floor = the floor | my clean floor
+wetfloor = a wet floor | wet boards underfoot
+street = our street | the street
+upthehill = up the hill | higher up the hill
+still = the still | the copper
+casks = the casks | the long row of casks
+plain = plainly | in plain words
+city = the city | this city
+paws = your paws | those paws of yours
+
+any
+opinion @1 merchants against 1 : A price has two parts: what the thing's worth, and what the seller fancies for dinner. I'll pay the first #plain# and argue the second.
+opinion @1 sump against 1 [here.region=ridgemere] : I go down to the low streets when I'm sent, not before. Every door down there has #wetfloor# behind it.
+opinion @1 city mixed 1 : #city.capitalize#'s a stair. Most folk stand on one step and complain about the view. I'd sooner keep climbing.
+opinion @1 houses mixed 1 : The Houses have the hilltop. I don't grudge them it. I'd only like a step a little nearer, #oath#.
+opinion @1 drink mixed 1 : One small glass of something good beats a jug of anything cheap. I'll have the glass.
+opinion @1 newcomers for 1 : Newcomers climb #stairs# the quickest. Nobody's told them yet where they're meant to stop, and it won't be me who tells them.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be new to #street#. | #greet#, #address#. A face I've not learnt. I will.
+line @2 greet [self.working=yes] : #greet#. I've a minute, not two. | #greet#. Mind #floor#; I've just mopped it.
+line @3 greet [here.time=dawn] : #greet#. Early. #ships.capitalize# aren't even in yet. | #greet#. I've been up #step# already.
+line @4 greet [here.time=dusk|night] : #greet#. #stairs.capitalize# are dark this late. | #greet#. The lamps are lit; you'll find your way.
+line @1 kin.open [pair.kin!=no] : It's you. Come in and wipe #paws# first. | Good. Sit down. I've #cheese# and nobody to share it with.
+line @1 again.open : You again. Twice in a day suits me. | Back already. Then it must be worth #stairs#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit, if you're stopping. | #greet#. I'd wondered where you'd got to on #stairs#.
+line @3 greet.return [self.working=yes] : #greet#. Quickly, if it's work. | #greet#. Say it while I've a paw free.
+line @1 farewell : #farewell#. | #farewell#, #address#. Wipe #paws# at the next door.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind #stairs# in the dark. | #farewell#. Go straight home; it's late.
+line @1 farewell.return : #farewell#. | #farewell#. Mind #floor# going out.
+line @1 react.news : #ack#. | So that's that. #plain.capitalize#, then.
+line @1 react.news.new : #surprise#. I hadn't heard. | That's new to me. Say it again, slower.
+line @1 react.news.known : #knew#. | I had that yesterday, from #step#.
+line @1 react.news.doubt : #doubt#. Who said it, and did they see it? | I'll wait for somebody who was there before I carry that up #stairs#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard news. #pity#. | #sympathy#. Sorry, truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good# news, and about time somebody had some.
+line @1 answer.how : #fine#. Steady, which suits me. | Well enough. #larder.capitalize#, a dry floor, and no complaints.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. It'll keep me till dark. | Busy. Idle paws get nobody #upthehill#.
+line @1 ask.how : And you? Say it #plain#; I'd sooner know. | How are you keeping, #address#? Truthfully.
+line @1 sympathise : #sympathy#. Sit; there's no hurry. | That's a heavy thing. I'll not pretend otherwise, #address#.
+line @1 reassure : #reassure#. These things come right, slowly. | It'll mend. Leave it be a while and see, #address#.
+line @1 decline : #hedge#. Not today. #still.capitalize# wants me till the lamps. | I'll say no today, and mean another day. I've too much on to do it #plain# and properly.
+line @1 accept_decline : #no_matter#. Another time. | That's fair. It'll keep till you're free, #address#.
+line @1 thank : #thanks#. | Kindly done. I'll remember it #plain#.
+line @1 deflect_thanks : #deflect#. | It was nothing worth the thanks. You'd have done it, #address#.
+line @1 preclose [self.working=yes] : Well. #preclose#. | I'd best get on. #still.capitalize# doesn't mind itself.
+line @2 preclose : Well. I'll be off #upthehill#. | Still. The light's going, and #step# is a long way up.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. Mind #stairs#.
+line @1 tease.return : If you say so. I've heard worse on #stairs#. | I'll take that #plain#, and give it back another day.
+line @1 give.advice : #advise#: climb slow, and look down only to count. | Ask it plain, and you'll get a plain answer. #saying#.
+line @1 ack : #bc_it_is# | #bc_true#
+scene high_step_sails
+when topic=ships|smalltalk here.region=ridgemere
+does tell.self / ask.detail / answer.detail / ack
+a : I went up #step# this morning before work. You can see every mast on the water from there. | There's a step at the end of #street# that sees right down to #harbour#. I sit on it most evenings. | I climb to the highest place I can find whenever a ship's due. I can't help it, #oath#.
+b : What do you look at? | Every evening? | Why the highest?
+a : How #ships# come about at the point. The good crews do it without a sound. | Most. It's the best seat #upthehill#, and it costs nothing. | Because the higher you are, the sooner you see them. I like to be first.
+b : #bc_fair_enough# | #bc_lovely# | #bc_fair#
+
+scene sails_counted
+when topic=ships world.ships=in here.region=ridgemere
+does tell.news / react.news / assess
+a : #ships.capitalize# are in. I counted the masts from #step#. More than last time. | Every berth in #harbour# taken this morning. You could walk across it on the decks. | Sails in with the sunrise. I was up #stairs# to see them, of course.
+b : How many? | Not quite, surely. | Of course you were.
+a : More than I've fingers, and I've counted twice. | Near enough. A pup could do it, if nobody minded. | Somebody has to watch them in. I've the legs for #stairs#.
+
+scene sails_late
+when topic=ships world.ships=late here.region=ridgemere
+does tell.worry / reassure / assess / ack
+a : There's a ship overdue. I've been up #step# three evenings and seen nothing come round. | Late. #harbour.capitalize#'s empty past the point, and the quay's pretending not to notice. | Nothing on the water again. I'm tired of climbing #stairs# to look at it empty.
+b : It'll come in. | They usually do. | Give it time.
+a : It will. I'll be up #step# when it does. | Usually. I'll stop climbing up to check when it's in. | I'll give it a week of evenings. Then I'll start to mind, #plain#.
+b? : #bc_hope_so# | #bc_true# | #bc_fair#
+
+scene riddle_offered
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail / ack
+a : I've #riddle# for you. What's always full and never fed? | Try this. What climbs all day and never gets higher? | Here's one I made. What do you wipe before you're in, and never after?
+b : Give me a minute. | A stair? | Your feet?
+a : Take two. The answer's the sea. You'll groan when you hear it. | Near. It's the tide. It climbs the posts twice a day and ends where it began. | My doorstep. Most folk don't wipe it, and that's why I made it up.
+b : #bc_ha# | #bc_clever# | #bc_fair_enough#
+
+scene riddle_kept
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / react.self / tell.self / assess
+a : Somebody gave me #riddle# a week ago, and I've still not cracked it. | I don't like #riddle# I can answer at once. It's no use to me. | #riddle.capitalize#'s like a cheese. It wants keeping before it's any good.
+b : Will you ask for the answer? | What use is a riddle to you? | Keeping?
+a : Never. I'll have it by Restday, or I'll have it by spring. | It gives me something to chew on the long way #upthehill#. | Weeks, sometimes. #saying#. You just have to find it.
+b? : #bc_good# | #bc_fair_enough# | #bc_wise#
+
+scene rind_and_all
+when topic=food self.likes=hard_cheese
+does tell.self / ask.opinion / give.opinion / ack
+a : I bought #cheese# yesterday. It'll see me through the month. | Soft cheese is for folk in a hurry. I like #cheese# I have to work at. | The rind's the best of #cheese#. Most folk cut it off and throw it away.
+b : A month? | Is it worth the work? | The rind?
+a : A thin slice a day, and #riddle# with it. That's my supper. | It is. Anything worth having takes some chewing. | The rind. It's kept the rest honest, so I eat it last, #oath#.
+b : #bc_fair# | #bc_true# | #bc_ha#
+
+scene larder_to_the_door
+when topic=home|food self.wealth=comfortable|rich
+does tell.self / react.self / assess
+a : #larder.capitalize#. I've worked a long time to say that, and I say it often. | Restdays, I go through the jars in #larder#. Not to eat them; just to count. | I keep #larder# full and #floor# dry. That's all the house needs of me.
+b : You've earned it. | Just to count? | That's a short list.
+a : I have, and I'll not pretend otherwise. #oath#. | Just to count. It's a better prayer than most I've heard. | It's more than most houses get. I'll keep to it, #plain#.
+
+scene warm_morning
+when topic=weather|season here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess / ack
+a : #warmday.capitalize#. I left my coat on the peg and walked out like a fool. | Feel that. The sun's on #stairs#, and #stairs# are warm. | It's the first day of the year I've sat outside without wishing I hadn't.
+b : It won't last. | Lovely, isn't it? | About time.
+a : It needn't. One day like this pays for a month of the other kind. | It is. I'll go up #step# at noon and sit in it. | It is. I'd stopped believing in #warmday# at all.
+b? : #bc_lovely# | #bc_good# | #bc_about_time#
+
+scene tracked_in
+when topic=weather|home here.weather=rain self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Three wolves today, and each walked #wetfloor# into my hall. | The rain gets under the door and across #floor#. I'm forever on my knees after it. | I've put a mat down inside. Nobody uses the mat, #oath#.
+b : It's raining. What can they do? | Can't you fix the door? | Shall I wipe mine?
+a : Wipe #paws#. It's not a riddle; it's a mat. | I've had it planed twice. The rain's more patient than the carpenter. | Please. You'll be the first today, and I'll remember it.
+
+scene fly_season
+when topic=animals|season here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / insist / ack
+a : #flies.capitalize# are in #larder#. I've no idea how. | I've hung muslin on every window, and #flies# still find a way. | Summer's grand till #flies# come. Then I'd swap it for a cold week.
+b : There's no keeping them out. | Muslin doesn't stop them. | You'd miss the warm.
+a : There's keeping them out of my cheese, and I will. | It slows them. I'll take slow, #plain#. | I'd miss it by noon. I'd still swap it, #oath#.
+b? : #bc_fair# | #bc_fair_enough# | #bc_ha#
+
+scene copper_and_casks
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : #self.trade_words.capitalize#. Mostly I watch #still# and wait. | Half the work's watching #casks# do nothing. The other half's mopping #floor#. | It's the waiting I'm good at. Some folk can't stand by #still# all day. I can.
+b : Is it hard work? | Mopping? | Doesn't it bore you?
+a : Not hard. Long. You learn to stand still and think. | Spills, steam, the drips off the pipes. #floor.capitalize# is a good part of any job. | Never. I turn #riddle# over while I wait.
+b : #bc_fair_enough# | #bc_ha# | #bc_clever#
+
+scene the_patient_part
+when topic=work|day self.working=yes
+does tell.self / react.self / assess
+a : Most work is waiting for something else to be ready. I don't mind that part, #plain#. | Somebody asked me if I'd go faster. I said the job goes the pace it goes. | I've been at #self.workplace# since first light. I'll be there till the lamps.
+b : Most folk hate the waiting. | Did they like that? | Long day.
+a : Most folk want to be done. I want it done right. #saying#. | They didn't. It's still the pace it goes, #oath#. | Long, and paid for. I'll not complain about a paid day.
+
+scene a_door_up_the_hill
+when topic=dreams|home
+does tell.plan / ask.detail / answer.detail / assess
+a : I'll have a door #upthehill# before I'm done. A small one. I'm not greedy. | I mean to end my days higher than I started them. That's my whole plan, #plain#. | One day I'll sit on my own step and see #harbour# from it. No more climbing to look.
+b : How high? | Higher than here? | And then?
+a : High enough to see the water over the roofs. That'll do. | Higher than here. Here's good. Higher's better. | Then I'll stop climbing. #saying#.
+b : #bc_good# | #bc_fair# | #bc_hope_so#
+
+scene quiet_court
+when topic=home|friends here.region=ridgemere self.quarter=estate
+does tell.self / react.self / assess
+a : #street.capitalize#'s quiet. Folk nod, and they don't knock unless they mean it. | Up here the doors are painted and #stairs# are swept. I like that more than I'd say. | I've a neighbour who says good morning and nothing else. It's the best kind, #oath#.
+b : Quiet's worth a lot. | You'd say it to me. | Nothing else?
+a : It is. I paid for it, every step of #stairs#. | I would. I'm saying it #plain#. | Nothing. It's a kind of respect. I give it back.
+
+scene where_i_grew
+when topic=memories|land self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail
+a : Back in #self.from_town# there's nowhere high to stand. You see the sky, and that's all. | I grew up low, in #self.from_town#, where the ground's never quite dry. | Every floor we had in #self.from_town# was wet by spring. Every one.
+b[from=fenshore] #home : Not a hill for a day's walk. | Never dry, no. | Every spring, the same.
+b : Is that why you climb? | Do you miss it? | Is that why you mind floors?
+a@home : Not one. I counted #stairs# in #city# the first week. | No. I miss nothing about it but the quiet. | Every spring. I swore I'd have a dry #floor# one day.
+a : It might be. I've never asked myself #plain#. | Some of it. Not the floors. | It is. A dry #floor# was the first thing I bought myself.
+
+scene voice_worn_down
+when topic=accent self.away=yes self.from=fenshore
+does tell.self / react.self / assess
+a : I came up from #self.from_town# speaking like the place. I wore it off a word at a time. | Folk in #city# can't tell where I'm from by my voice now. I worked at that. | When I first came to #city#, I practised my words on #stairs#, going up.
+b : Why wear it off? | You'd never know. | On the stairs?
+a : A voice gets you a door or it doesn't. I wanted the door. | Good. That was the point. I keep the rest of it to myself. | On #stairs#, every morning. By the top I sounded like anyone.
+
+scene word_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / ask.detail / answer.detail / ack
+a : What I heard, I'll pass on. Nothing more. #topic.subject.capitalize# #topic.claim#. | They say #topic.subject# #topic.claim#. That's all I have, #plain#. | I heard #topic.subject# #topic.claim#. I'll leave it bare, as I had it.
+b : Who told you? | Do you believe it? | That's all?
+a : Somebody nearer than me. I'll leave the who out. | I believe I heard it. That's as far as I go, #oath#. | That's all. I don't put a coat on a rumour.
+b? : #bc_fair# | #bc_fair_enough# | #bc_wise#
+
+scene small_candle
+when topic=faith
+does tell.self / react.self / assess
+a : I go to the chapel on a Restday and sit at the back. I like the quiet. | Once a year I put one small thing to the Bright One. | I'm not one for prayers out loud. I think mine on the way up #stairs#.
+b : Just the quiet? | What do you ask? | The stairs?
+a : The quiet, and the counting. I count the candles while they sing, #plain#. | That's kept between the Bright One and myself. It's small, I'll say that. | A step a word. By #step# I've said all I mean to.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Times are lean. I've seen it in the larders round #street#. | Bread's thinner and folk are quieter. That's how you know, #plain#. | When times go hard, #stairs# empty. Nobody climbs if they can't eat.
+b : It'll turn. | You'll be all right. | That's grim.
+a : It will. I'll keep #larder# full till it does, and share what I can. | I will. I planned for it. Not everyone could. | It is grim. I'll say it #plain#; it is.
+b? : #bc_hope_so# | #bc_true# | #bc_poor_soul#
+
+scene new_on_the_stair
+when topic=newcomer
+does tell.self / ask.opinion / give.opinion / ack
+a : There's somebody new in #street#. I'll have the face by tomorrow and the name by Restday. | A newcomer asked me the way up. I told them the long way. It's the better one. | New folk walk too fast on #stairs#. They'll learn.
+b : Friendly, are they? | The long way? | Will they?
+a : I don't know yet. I'll say #greet# and see what comes back. | The long way has steps to rest on. The short way has a wall to fall off. | They'll learn by the second week, or their knees will teach them, #oath#.
+b? : #bc_we_will_see# | #bc_clever# | #bc_ha#
+
+scene the_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd ask, if I'd anything to ask. #plain.capitalize#. | I don't keep many friends. #self.friend# is enough of one for three. | If I'd #riddle# nobody could answer, I'd still take it to #self.friend# first.
+b : Good to have that. | Enough for three? | Why first?
+a : It is. I don't often say so out loud. | Three. And quieter than any of them would be. | Because #self.friend# never pretends to know. That's rare in #city#.
+
+story the_ferry_riddle [topic=memories|pastimes self.age>=25]
+  : When I was small, an old ferry hand gave me #riddle# and wouldn't tell me the answer.
+  : Every crossing I gave him a guess, and every crossing he shook his head.
+  : I had it the spring I left home. I went down to tell him, and he'd gone downriver for good.
+  ask : Where does an answer go, when nobody's left to hear it?
+  b : Give it to somebody new. That's what riddles are for.
+  b[old] : You keep it. Some answers are only for you.
+
+story the_borrowed_coat [topic=memories|dreams self.age>=30 here.region=ridgemere]
+  : The first time I went up into the Heights, I wore a borrowed coat that hung off me like a sail.
+  : I walked every street up there till dark. Nobody stopped me, and nobody spoke to me.
+  : I came back down #stairs#, gave the coat back, and promised myself the next one would be mine.
+  ask : Is there a place you've sworn to go back to?
+  b : One. I still mean to go.
+  b[wealth=poor|destitute] : Not up there. I'd not know where to stand.
+
+story the_tallest_mast [topic=lore|ships here.region=ridgemere]
+  : They say a ship came into #harbour# once with a mast so tall it caught the moon on a clear night.
+  : The crew climbed up to fetch it down, and found it was only the lamp on the hilltop.
+  : Not a word of it's true. I still look, on a clear night, from #step#.
+  b : Ha! A lamp. That's a good one.
+  b[job=sailor] : I've climbed a mast at night. You'd believe anything up there.
+
+rule @sails_bark
+when concept=bark here.region=ridgemere world.ships=in
+does aside
+cooldown 8h
+say Sails off the point. I'll be up #step# tonight. | Masts in, every berth. Look at #harbour#.
+
+rule @wet_floor_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Wipe #paws#, please. | Who's walked #street# in on #floor#. #oath#.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Out of #larder#, the lot of you. | #flies.capitalize# again. Where's the muslin.
+
+rule @copper_bark
+when concept=bark working=yes self.job=none
+does aside
+cooldown 10h
+say Mind #still#; it's hot. | Steady. #saying#.
+
+dlg @1 resident.hub : #greet#. What is it you need? | #greet#, #address#. Say it #plain#; I'll answer it the same way.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're back. What is it this time? | #topic.player#. Good. Wipe #paws# and tell me.
+dlg @3 resident.hub [here.time=night] : It's late. #talk_open#
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. I watch #still#, I mop, I wait. It suits me. | #self.workplace#. Long days, and a dry floor at the end of them if I've mopped it.
+dlg @2 resident.job : #job_busy# | This and that, done #plain# and properly. That's my trade.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# When I've something true, you'll have it. | Nothing I'd swear to. Ask me tomorrow, from #step#.
+dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what I heard, #plain#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I've nothing I'd repeat. I'd not repeat it if I had.
+dlg @1 resident.bye : #farewell#. Mind #stairs# going down. | #farewell#, #address#. Wipe #paws# at the next door.
+graft resident.hub
+choice What do you watch from the top step? [here.region=ridgemere] -> topstep
+node topstep
+say The ships, mostly. From up there you see them come round the point before anyone on the quay does. I like to be first.
+mood calm
+free
+choice Is it worth the climb? -> topstep_why
+choice Goodbye. -> bye
+node topstep_why
+say Every time. The higher you go, the further you see. I mean to live up there one day, not just sit on the step.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye

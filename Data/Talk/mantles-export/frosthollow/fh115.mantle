@@ -1,0 +1,297 @@
+# fh115, the face-taker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh115
+revision 1
+state ready
+dialect frosthollow
+accent light broad
+tier standard
+written_for rmx_cressida_cotton
+written_by claude
+title the face-taker
+fits stage=adult|old
+prefers warmth=cold honesty=frank
+traits temper=even talk=plain warmth=cold humour=none honesty=frank piety=ordinary drive=steady
+quirk notes_every_strange_face_in_a_pocket_book
+likes fried_fish long_walks quiet_chapel first_warm_day
+dislikes bad_manners stale_bread
+fears growing_old_in_the_rain being_taken_for_a_fool
+hopes a_ship_out_of_the_sound_to_somewhere_dry
+topics travel +0.4 dreams +0.3 pastimes +0.3 player +0.3 crime +0.2 food +0.2 weather +0.2 gossip -0.3
+styles comfort=blunt gossip=wary refuse=short tease=none
+marks oath saying
+persona #self.first# walks the city end to end with a little pocket book, writing down every face that doesn't belong: blunt, cool and hard to fool, short with bad manners, plain to the point of rudeness, and saving every thought for a ship out of the Sound to somewhere it never rains.
+
+words
+oath! = Bite the ice | Hard frost and hard words | Teeth of the pass
+saying! = Watch the paws, not the face | Say it plain or keep it | Somewhere it's dry, and I'll find it
+book = my book | the little book in my coat
+pencil = the pencil | a pencil stub
+faces = faces | faces that don't belong
+walk = a walk | a walk from one wall to the other
+hull = a hull | a ship with a dry port at the end of her
+sound = the Sound | the grey water
+fishpaper = fish in a paper | hot fish out of a twist of paper
+crust = a crust gone hard | bread like a roof tile
+manners = manners | a please and a thank-you
+warmday = the first warm day | the day the coats come off
+wet = the wet | rain, and more rain
+uphill = up the pass | up home
+coat = my coat | the long coat
+purse = my purse | the purse in my coat
+stair = the stair | the long stair
+wharf = the wharf | the quay
+city = this city | the wet city
+stall = the fish stall | the fryer's stall down the hill
+dryland = somewhere dry | somewhere it never rains
+
+any
+opinion @1 strangers against 1 : #faces.capitalize# come, they gawp, they go, and a purse goes with them. I write them down. All of them.
+opinion @1 dole against 2 : I've watched the queue for it. Same faces, twice round. That's not hunger, #address#, that's habit.
+opinion @1 merchants against 1 : Half of any price is the seller's supper. I ask what it cost them. They never like that. #saying#.
+opinion @1 times for 1 : I've a roof and #purse# isn't empty. Grumbling would make a #fool# of me, and I'm nobody's.
+opinion @1 city against 1 [here.region=ridgemere] : Wet, crowded, and every wolf too busy to look you in the eye. I look. That's why #city# doesn't like me.
+opinion @1 watch mixed 1 [here.region=ridgemere] : #watch.capitalize# see half of what I see and write down none of it. Put me on a corner. I'd do better.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Don't mind #book#; I write everyone down. | #greet#. I've not seen you before. I will again, I expect.
+line @2 greet [here.time=dawn] : Morning. Early to be out, unless you've reason. | Morning. I've done half #here.town# already on #walk#.
+line @3 greet [here.time=dusk|night] : #greet#. Late. Keep your purse in your coat. | #greet#. Dark early these days. Mind the lanes.
+line @4 greet [self.wealth=rich] : #greet#. I'll not buy anything, so don't try. | #greet#. Say your piece. I've #walk# to get on with.
+line @1 kin.open [pair.kin!=no] : You. Good. Walk with me; I'm going the long way. | There you are. Shut the door; #wet#'s coming in.
+line @1 again.open : You again. That's twice today; it's in #book#. | Back already. I'd not moved on yet.
+line @1 greet.return : #greet#. | #greet#. Say it, then.
+line @2 greet.return [pair.band=friends|family] : #greet#. You're late, but you're here. | #greet#. Walk, and talk while we go.
+line @3 greet.return [here.time=dusk|night] : #greet#. Late for it. | #greet#. Mind the dark.
+line @1 farewell : #farewell#. | #farewell#. Keep your eyes open.
+line @2 farewell [here.time=dusk|night] : #farewell#. Walk the main street, not the walls. | #farewell#. Lanes are black after dark; take the long way.
+line @1 farewell.return : #farewell#. | And you. Watch your purse.
+line @1 react.news : #surprise#. Who says, and were they there? | Is it. I'll believe it when I've looked.
+line @1 react.news.new : #surprise#. Nobody's said that on #walk#. | #oath#. That's new.
+line @1 react.news.known : #knew#. Heard it at #stall#. | Old news. I had it yesterday, and the name of who started it.
+line @1 react.news.doubt : #doubt#. Who gains if I believe it? | Pit-talk. Somebody wants it said.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | #sympathy#. I'm sorry. Really.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. We're short of that. | That's #good#. Somebody's got lucky for once.
+line @1 answer.how : Well enough. I've walked the walls and nothing's wrong. | #fine#. Dry, for now. That won't last in #city#.
+line @1 ask.how : And you? You look like you've had a day. | How are you, then? Tell it straight.
+line @1 sympathise : #sympathy#. Sit. I'll not say anything #daft#. | That's hard. I'm not good at this, but I'm listening.
+line @1 reassure : #reassure#. Worse has been and gone. | It'll pass. Most of it does, if you keep your head.
+line @1 decline : #hedge#, no. I don't go where I don't know the faces. | Not tonight. I've #walk# to finish, and I cut it short for nobody.
+line @1 accept_decline : #no_matter#. Another time, maybe. | Fair. I'd not go either.
+line @1 thank : #thanks#. I'll remember it. | That's decent of you. Most aren't.
+line @1 deflect_thanks : #deflect#. | It needed doing. I did it.
+line @1 preclose : #preclose#. | I've the rest of the walls to walk. I'll be off.
+line @1 accept_preclose : Go on, then. #farewell#. | Fair. I'm going myself.
+line @1 ack : #bc_right# | Mm. Noted in #book#.
+line @1 warn [world.bandits=near] : Stay off the roads, #address#. #bandits.capitalize# about. | #warn#. Go in company, or don't go.
+line @1 give.advice : #advise#: watch what folk do with their paws while they talk. #saying#. | Write it down. You'll forget a face; #book# won't.
+scene the_book
+when topic=player|newcomer here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : See that one by the steps? New. I've written down the coat and the ears. | Another face I don't know. That's three today. Into #book#. | I keep #book# for #faces#. Every one that doesn't belong goes in it.
+b : Why write them down? | Three? | And then what?
+a : Because if a purse goes missing, I'll know who was here. #saying#. | Three. Two went on; one's still about. I'll watch that one with #pencil# ready. | Then nothing, mostly. Mostly is fine. #oath#, I'd rather be ready.
+b : #bc_fair_enough# | #bc_we_will_see# | #bc_wise#
+
+scene why_the_book
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess
+a : I've filled four little books with #faces# so far. Coats, ears, which way they went. | Folk think #book# is odd. Folk with nothing to hide don't mind it. | #pencil.capitalize# wears down faster than I can buy them. #oath#.
+b : Four books? | And the ones who mind? | Buy a bigger pencil.
+a : Four. Not once have I looked back in them. I'd still not stop. | They go in #book# twice. #saying#. | It's not the size. It's #faces#. There are too many in #city#.
+
+scene long_walk
+when topic=pastimes|travel self.likes=long_walks here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I walked from the north wall to #wharf# and back this morning. Nobody spoke to me. Perfect. | I go on #walk# every day with nowhere to be. It's the only time I'm not on edge. | I've walked every street on this hill. Some twice. I know which ones lie.
+b : All the way? | Not on edge? | Lie how?
+a : All the way, and up #stair# to the Heights for good measure. | Walking, I'm the one watching. Sitting, I'm the one watched. #saying#. | Look straight, then turn. The lanes down by #wharf# bend back on you.
+b : #bc_ha# | #bc_fair# | #bc_i_know#
+
+scene fish_paper
+when topic=food self.likes=fried_fish
+does tell.feeling / react.self / assess
+a : #fishpaper.capitalize#, eaten walking. That's my dinner, and I don't sit for it. | #stall.capitalize# fries fish in butter. The only honest cook in #here.town#. | I'd walk a mile for #fishpaper#. I do, most days.
+b : Walking? | Honest? | Every day?
+a : Walking. Sit down in a cookshop and somebody wants to talk. #bc_not_me# | Honest. You can see what goes in the pan. I watch, with #book# out. | Most days. The fish is the same; #walk# is different.
+
+scene hard_crust
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : Somebody sold me #crust# and called it this morning's. I gave it back. | I can tell yesterday's loaf from across the street. Folk still try it on. #oath#. | #crust.capitalize# in the window and a fresh price on it. #annoyed#.
+b : Did they take it back? | Can you? | Shameless.
+a : They did, once I said it loud enough for the queue. #bc_good# | By the shine on the crust. Old bread goes dull. #saying#. | Shameless, and I said so. That one's in #book# now.
+
+scene no_manners
+when topic=smalltalk|crime self.dislikes=bad_manners
+does tell.complaint / react.complaint / insist / ack
+a : A wolf shoved past me on #stair# today and didn't stop. That one's in #book# too. | Not a please, not a thank-you. I'll serve myself next time. #oath#. | Folk with no #manners# make me cold. Colder than usual, I mean.
+b : Some folk. | That's fair. | Is that possible?
+a : Some folk, and I know what they look like now. #bc_true# | It is. #manners.capitalize# cost nothing; there's no excuse for having none. | It's possible. Ask anyone who's been rude to me. #bc_ha#
+b? : #bc_true# | #bc_fair# | #bc_ha#
+
+scene warm_day
+when topic=season|weather here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I took #coat# off on the wall and sat in it. | Feel that sun. First proper warmth this year. I walked twice round to get my fill. #bc_lovely# | A warm day in #here.town#. Write it down; there won't be many.
+b : Lovely, isn't it? | Twice? | Ha.
+a : It is. I'd move #dryland# for days like this, if I could. | Twice, and I'd go again if #stall# didn't shut. | I did. In #book#, under #faces#. One warm day.
+
+scene rain_again
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #wet.capitalize# again. Four days. #oath#. | It rains here like it means it. #uphill.capitalize# at least it froze and stayed put. | #book.capitalize#'s damp through. I can't write a face in the wet.
+b : It's the city. | At least it's not snow. | Keep it in your coat.
+a : It's #city#, and I'm leaving it one day for #dryland#. | #snow.capitalize# I'd take. Snow you can walk on. | I do. #wet.capitalize# gets in #coat#. It gets in everything here.
+
+scene fog_faces
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Fog off #sound#. I can't see a face till it's on top of me. | I hate fog. Anybody could be anybody. #annoyed#. | In fog I walk the middle of the street and keep my paws on #purse#.
+b : Is it worse than rain? | Anybody? | Why the middle?
+a : Worse. #wet.capitalize# only soaks you. Fog makes you blind. | Anybody. That's the trouble with it. #saying#. | Room to see them coming. And room to go. #bc_wise#
+b? : #bc_true# | #bc_fair# | #bc_wise#
+
+scene ship_dream
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail / assess
+a : I'll have a berth on #hull# some year, and I'll not look back at #sound#. | I want to go #dryland#. Hot and far and done with rain. | I've been down to #wharf# to ask about berths. Three times. They laughed twice.
+b : Where would you go? | Is there such a place? | And the third time?
+a : South. As far as the ship goes. Further, if they'll let me off. | There must be. I'll go and look. #saying#. | The third time a mate told me to come back with a trade. I'll come back.
+b : #bc_i_hope_so# | #bc_maybe# | #bc_good#
+
+scene wharf_watching
+when topic=ships|travel here.region=ridgemere
+does tell.self / react.self / assess
+a : A ship went out on the tide today. I stayed on #wharf# till it was a speck. | I know the ships by their rigging now. Not their names; I don't trust a painted name. | Every hull that goes out of #sound# goes somewhere drier than #city#.
+b : Envious? | Smart. | Not every one.
+a : Yes. I'll say it plain. #saying#. | Paint's easy. Rigging's harder to lie about. #bc_true# | Every one I watch. I've decided. #bc_i_will#
+
+scene mother_worries
+when topic=family|home self.mother
+does tell.feeling / react.self / assess
+a : #self.mother# worries about me walking alone. I walk alone anyway, with #book#. | I'd not leave #self.mother# without a word. I'd leave. But with a word. #saying#. | #self.mother# says I look at folk like a bailiff. I take that as praise.
+b : That's natural. | That's fair. | Ha.
+a : It's natural. So is me going out. We've agreed to disagree. #bc_fair_enough# | It's fair. I'm cold, not cruel. There's a difference. | It is praise. Bailiffs don't get #cheated#.
+
+scene learning_trade
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I'm learning a trade. They say I learn fast and talk back faster. | I've a master who explains everything three times. I needed it once. #oath#. | Being taught is the worst part of learning. I'd sooner watch and get on.
+b : Do you like it? | Have you told them? | Does that work?
+a : I like what it'll get me. A trade gets you #hull#. | I have. Twice. We're both still waiting on the other to give in. | It works for me. It doesn't work on masters. #bc_ha#
+b? : #bc_fair# | #bc_ha# | #bc_ha#
+
+scene home_up_pass
+when topic=memories|home self.away=yes self.from=frosthollow
+does tell.memory / ask.detail / answer.detail / assess
+a : I grew up in #self.from_town#. #snow.capitalize# to the windows and everybody knowing your business. | #uphill.capitalize# you knew every face in the street. Down here I'd need a book. I've got one. | #uphill.capitalize# the cold was honest. Down here it's wet and it lies about it.
+b[from=frosthollow] #fh : Everybody knew you up there. Couldn't sneeze unwatched. | That's why you keep a book, then. | Honest cold. Aye, that's it.
+b : Do you miss it? | So you started the book here? | Lies?
+a@fh : Couldn't sneeze. And I liked that, I'll not lie. #bc_true# | That's exactly why. You see it. #bc_right# | Honest cold. Nobody down here knows what we mean.
+a : I miss knowing who's who. Not #snow#. | The first week. A wolf took my purse on #stair#. I wrote them down after. | It's warmer than it feels and colder than it looks. That's lying. #bc_true#
+b? : #bc_fair_enough# | #bc_poor_soul# | #bc_ha#
+
+scene voice_heard
+when topic=accent self.away=yes self.from=frosthollow here.region=ridgemere
+does tell.self / react.self / assess
+a : They say I talk hard, down here. I talk plain. #uphill.capitalize# that's the same thing. | I've kept the hill in my voice. I see no reason to lose it for #city#. | A stallholder copied how I said #greet#. Once. #oath#.
+b : It's a good voice. | Why would you? | Just once?
+a : It does the job. That's all I want from a voice. #saying#. | Exactly. Let them get used to it. #bc_let_them# | Once. I looked at that one till it was over. That's in #book#, too.
+
+scene chapel_empty
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : An empty chapel's where I go. Nobody wants anything off you in an empty chapel. | I sit at the back where I can see the door, and I talk to the Bright One plain. #saying#. | An empty chapel's the only room in #city# where nobody stares.
+b : That's peaceful. | Plain how? | Except you.
+a : It's peace. I don't find much in #city#. | No asking. I just say what's what. The Bright One knows the rest. | Except me. I stare at the windows. They don't mind. #bc_ha#
+
+scene purse_gone
+when topic=crime|gossip topic.claim_kind=theft|wanted
+does tell.news / ask.opinion / give.opinion / assess
+a : They say #topic.subject# #topic.claim#. I'll be looking in #book# tonight. | #topic.subject.capitalize# #topic.claim#, they say. A stranger's purse, or a stranger's paws. #oath#. | Theft again: #topic.subject# #topic.claim#. I said this would come.
+b : You think you'll find them? | Which, do you think? | You did?
+a : I might. I've had stranger luck. #saying#. | Paws, likely. Folk with clean paws don't get talked about. #bc_probably# | I did. Nobody writes it down but me, in #book#.
+b? : #bc_we_will_see# | #bc_true# | #bc_ha#
+
+scene sump_eyes
+when topic=crime|land self.quarter=commons here.region=ridgemere
+does give.opinion / react.self / assess
+a : I walk the Sump in daylight, eyes open, #purse# out of reach. Never at night. | Folk up here blame the Sump for everything. Most of what's missing goes missing up here. #oath#. | The Sump's no worse than the Commons. It just doesn't pretend.
+b : Sensible. | Is that so? | That's fair.
+a : Sensible keeps you in coats. #bc_true# | It's so. I've the pages in #book# to show it. | Fair, and true. I'll say it to anyone. #saying#.
+
+scene newcomer_wary
+when topic=newcomer
+does give.opinion / disagree / insist / ack
+a : A new face moved in on the street. I've seen them twice already. Into #book#. | Newcomers. Some are fine. I'll know which once I've watched a week. #saying#. | Somebody new asked me the way to #wharf#. I told them. Then I watched where they went.
+b : Give them a chance. | A week? | Did they go there?
+a : I am. A chance to show me who they are. #bc_fair# | A week. That's how long anybody can keep up a face. | They did, eventually. After a while at the market. Noted in #book#.
+b? : #bc_fair# | #bc_wise# | #bc_ha#
+
+story first_face [topic=memories self.away=yes self.age>=16]
+  : My first week down here, a smiling wolf helped me carry a bag up #stair#. At the top, #purse# had gone the other way.
+  : I couldn't even tell #watch# what that wolf looked like. I'd been looking at the smile.
+  ask : Has anybody ever had you like that?
+  b : Once. You don't forget it.
+  b[old] : More than once. You learn, in the end.
+  : I bought #book# the next day. Nobody's had me since. #saying#.
+
+story the_mate [topic=travel|dreams self.age>=16]
+  : I went to #wharf# and asked a mate for a berth. Just like that, with #coat# on and nothing in my paws.
+  : The mate looked me up and down and said, come back with a trade and a better face.
+  ask : Would you go back, after that?
+  b : I'd have gone home and sulked, I think.
+  b[job=sailor] : You'd have got a berth from me, if you could haul a line.
+  : I'm going back. With the trade. The face stays. #oath#.
+
+story snow_walk [topic=memories self.away=yes self.from=frosthollow self.age>=16]
+  : When I was small I walked out of #self.from_town# up the pass in new #snow#, just to see how far I'd get.
+  : I got far enough that the town went quiet behind me. Then I sat on a rock and ate my #grub# and came back.
+  ask : Did you ever do anything like that?
+  b : Not alone. I'd have been too frightened.
+  b[from=frosthollow] : Everybody walks up the pass once. It's the coming back that counts.
+  : I wasn't frightened. I was #hungry#. That's why I came back.
+
+rule @rain
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say #wet.capitalize#. Again. #oath#. | There's #dryland# out past the Sound. I'll find it.
+
+rule @rude
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 8h
+say Say excuse me, then. #annoyed#. | Shoving. Noted. Into #book# with you.
+
+rule @warm
+when concept=bark here.season=spring here.weather=clear self.likes=first_warm_day
+does aside
+cooldown 12h
+say Sun. Write it down; it won't last in #city#. | #coat.capitalize# off. About time.
+
+rule @faces
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 10h
+say New face by the steps. Noted in #book#. | That one's been past three times. #pencil.capitalize#.
+
+dlg @1 resident.hub : #greet#. Say what you need and keep it short. | #greet#. You're new. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're in #book#. What now?
+dlg @3 resident.hub [here.time=night] : It's late. Say it quick and go home by the main street. #warn#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You're written down already. Speak from there. #oath#.
+dlg @1 resident.job [self.apprentice=yes] : I'm learning a trade. I'll have it sooner than they think, and then I'm off on #hull#. | Apprenticed. Learning, and keeping my eyes open while I do.
+dlg @2 resident.job : I walk, and I watch. That's #work# enough, for now. | Nothing worth telling. Next question.
+dlg @1 resident.bye : #farewell#. | #farewell#. Keep your purse in your coat.
+graft resident.hub
+choice What are you writing in that book? -> book
+node book
+say Faces. Every one in this city that doesn't belong where I see it. Coat, ears, which way they went. You're in it, as of now.
+mood stern
+free
+choice Why do you do it? -> book_why
+choice Goodbye. -> bye
+node book_why
+say My first week here I was robbed by a smiling stranger I couldn't describe after. I'll not be robbed by a face I can't remember again. Anything else?
+choice Something else. -> hub
+choice Goodbye. -> bye

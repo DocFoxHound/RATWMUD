@@ -1,0 +1,289 @@
+# lf157, the lamplighter who never haggles (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf157
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for rm_corwin_bilgestack
+written_by claude
+title the lamplighter who never haggles
+fits stage=adult|old
+prefers job=laborer warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk pays_the_first_price_asked_and_never_haggles
+likes barley_soup roof_birds festival_bells frosty_mornings
+dislikes deep_mud haggling
+fears a_dark_court_on_a_night_somebody_needs_it_lit
+hopes the_courts_lit_every_night_while_i_can_climb
+topics home +0.4 work +0.4 friends +0.3 season +0.2 prices +0.2 gossip -0.4
+styles comfort=company gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# lights the lamps of the Sump's back courts at dusk and climbs four flights to a top-floor room after: quiet, warm and loyal, guarded with strangers, fond of barley soup and a frosty morning, and the one wolf from a market town who pays the first price asked and will not haggle, ever.
+
+words
+oath! = Spark and spill | Light and leave it
+saying! = The first price is the honest one | A lit court's a safe court
+taper = my taper | the long taper on its hook
+lamps = the lamps | the court lamps
+courts = the back courts | the courts off the low lanes
+wick = the wick | a wick that wants trimming
+stair = the stair | the four flights up to my room
+garret = my room up top | the top-floor room
+firstprice = the first price | whatever they ask
+haggling = haggling | arguing a penny up and down for an hour
+soup = barley soup | barley soup thick enough to hold the spoon up straight
+bottomcourt = the bottom court | the court down by the pump
+roosting = the birds going to roost | pigeons settling on the gutters
+feastbells = the feast bells | the ringing on a feast morning
+frost = a frosty morning | frost on the cobbles at first light
+lanemud = the lane mud | mud to the ankle in the low lanes
+neighbours = the folk down here | our own, in the courts
+window = my window | the one window up top
+
+any
+opinion @1 sump for 1 : It's home. #neighbours.capitalize# look after their own, and they look after me. | Folk up the hill say rough things of the Sump. I've never been robbed in #courts#.
+opinion @1 dole for 3 : When my house had nothing, the parish loaf was on the table. I'll stand up for it while I can stand. | Nobody down here takes #dole# for pleasure. It's for the weeks there's nothing.
+opinion @1 houses against 2 : All the years I've lived under their walls, not one House face has looked down into #courts#. | The Houses own half #courts#, they say. They've never lit a lamp in one.
+opinion @1 merchants against 2 : What #lamps# pay won't buy a loaf some weeks, and the traders' shelves are never bare. | I pay #firstprice#, and they know it, and still they ask more of me than of the next one.
+opinion @1 watch against 1 : The Watch only comes down to #courts# to drag somebody off. | I'd sooner they came down to walk #lamps# with me than to knock on doors.
+opinion @1 times against 2 : Every week a little harder. Nobody up the hill notices; they don't come down to #courts# to see. | Lean times. #lamps.capitalize# burn the same, but the bread doesn't stretch.
+opinion @1 church for 1 : The chapel fed my house once, in a bad winter. I've not forgotten, and I'll not. | Prayer's not my gift, but I sweep the chapel step. That much is mine to give, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. You'll be lost, down here, likely.
+line @2 greet [self.working=yes self.job=laborer] : #greet#. Mind #taper#; it's lit. | #greet#. I'm on #lamps#; walk with me if you like.
+line @3 greet [here.time=dawn] : Morning. #frost.capitalize#, and I'm glad of it. | Morning. Early for #courts#.
+line @4 greet [here.time=dusk|night self.job=laborer] : #greet#. Just lighting up. | #greet#. #lamps.capitalize# are coming on now.
+line @5 greet [here.time=dusk|night] : #greet#. Late to be about, #address#. | #greet#. Mind the dark corners of #courts#.
+line @1 kin.open [pair.kin!=no] : There you are. Come up, the kettle's on. | You. Good. Sit by #window#.
+line @1 again.open : Twice today. Good. Sit a minute, #address#. | You again. I've not got far, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good to see you. | #greet#. Come up #stair#, if your legs will.
+line @3 greet.return [self.working=yes self.job=laborer] : #greet#. Walk with me a bit. | #greet#. Hold the light, would you.
+line @1 farewell : #farewell#. | #farewell#. Mind the steps.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the dark corners of #courts#. | #farewell#. Stay where #lamps# are, in #courts#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #oath#. That's news. | Hm. That's not reached #courts# yet.
+line @1 react.news.new : That's new to me. #marvel#. | First word of it to reach #courts#.
+line @1 react.news.known : #knew#. It was up #stair# before me. | I'd heard. #neighbours.capitalize# talk.
+line @1 react.news.doubt : #doubt#. Folk say things. | I'll wait and see it, #address#. Stories grow in the dark.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That's a hard thing. #courts.capitalize# will feel that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good#. #courts.capitalize# could do with some.
+line @1 answer.how : Steady. #soup.capitalize# in the pot, and I'm warm. | #fine#. My knees grumble, but I'm well, #address#.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Thirty-two lamps before full dark. | Can't stop long; #lamps# won't wait.
+line @1 ask.how : And you? Eating properly, #address#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Come up; there's #soup#. | Sit by me a while on #bottomcourt# bench.
+line @1 reassure : #reassure#. You've friends down here. | It'll come right. #neighbours.capitalize# won't let it go otherwise.
+line @1 decline : #hedge#. I can't. I've somewhere to be by dark, and nobody to stand in. | I'd like to, #address#, but my knees won't do #stair# twice tonight.
+line @2 decline [self.job=laborer] : #hedge#. I can't. #lamps.capitalize# have to be lit by dark and there's only me. | Not tonight, #address#. #courts.capitalize# would sit dark without me.
+line @1 accept_decline : #no_matter#. Another day. | No harm done. I'll manage, #address#.
+line @1 thank : #thanks#. | That's kind. I'll not forget it, #address#.
+line @1 deflect_thanks : #deflect#. You'd do the same. | It was nothing. #neighbours.capitalize# do for each other.
+line @1 preclose [self.working=yes] : Well. #lamps.capitalize# won't light themselves. | I'd better get on with #courts#.
+line @2 preclose : Well. #preclose#. | That's me. #stair.capitalize# is waiting.
+line @1 accept_preclose : Go on, then. #farewell#. | Away with you. #stair.capitalize#'s waiting on me.
+line @1 ack : #bc_it_is# | #bc_true#
+line @1 give.advice : #advise#: pay #firstprice#. You'll lose a penny and save an hour. | Keep to #courts# with a lamp in them. That's all I know.
+line @1 warn [world.bandits=near] : Keep off the roads out of town for a bit. #warn#. | Stay in after dark this week, #address#.
+scene lighting_up
+when topic=work|day here.time=dusk self.working=yes self.job=laborer
+does tell.self / react.self / assess
+a : Dusk. I start at the bottom court and work up. #taper.capitalize# and a steady paw. | Thirty-two lamps between here and the stairs. I light the dark corners of #courts# first. | I've lit #lamps# down here so long the wicks know me.
+b : The dark ones first? | Thirty-two? | The wicks know you?
+a : The dark ones first. That's where the old folk live, and the pups. | Thirty-two, each one burning before full dark, or I'm not done. | They catch first time for me. For anybody else they sulk. #saying#.
+
+scene the_courts_by_name
+when topic=work|home here.region=ridgemere self.job=laborer
+does tell.self / ask.detail / answer.detail / assess
+a : I know every court down here by its lamp. Which flickers, which smokes, which never goes out. | There's one lamp in #courts# that leans. I've asked for it mended three times. | I light #bottomcourt# last. There's a bench there, and I sit a minute.
+b : Which never goes out? | Did they mend it? | Just a minute?
+a : The one by the chapel steps. Rain, wind, #wick# keeps going. I'm proud of that one. | No. I tied it up with wire myself. It's held since. | A minute. Then #stair#, and #soup#. That's my evening.
+b : #bc_good# | #bc_fair_enough# | #bc_lovely#
+
+scene the_first_price
+when topic=prices|work|smalltalk self.dislikes=haggling
+does tell.self / react.self / insist / ack
+a : I pay #firstprice#. Always have. The stallholders down here know it. | A trader asked me four coppers for a cabbage worth two. I gave him four. #firstprice.capitalize#. | I'll not haggle. Never have. I'd rather lose the penny than the hour to #haggling#.
+b : They'll rob you blind. | Four! | Not once?
+a : They don't. Not in #courts#. They'd be ashamed to, and they know I know. | He gave me a second cabbage after, and wouldn't look at me. That's how it goes. | Not once. #saying#.
+b : #bc_ha# | #bc_fair_enough# | #bc_true#
+
+scene the_haggling_at_home
+when topic=memories|prices self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : Back in #self.from_town#, #haggling# is sport. They'll argue over a penny an hour and call it a good morning. | Every stall at home is a fight. Part of why I left #self.from_town# was to be shot of it. | Folk at home thought I'd been dropped on my head. A Larkfield wolf who won't haggle.
+b[from=larkfield] #lark : It's the best part of market day. | It's never a fight. It's a dance. | A week of market and we'd have had you haggling.
+b : An hour over a penny? | Did it work? | Were you?
+a@lark : For you, maybe. For me it was a toothache. | A dance where everybody treads on my feet. I'd sooner sit out. | Plenty tried. I paid them all #firstprice#, and they gave up.
+a : An hour. Over a penny. I'd watch them and feel #tired# for them. | It did. Nobody in #courts# haggles with me now. | Likely. I'm not sorry. #oath#.
+
+scene a_bowl_of_soup
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : #soup.capitalize#, once the work's done. Nothing in the day beats it. | I make #soup# in one pot on a Restday and it does me most of the week. | When it's cold I take a bowl of #soup# down to the old ones in the bottom court.
+b : Sounds good. | All week? | That's kind.
+a : It is. A spoon, #window#, and #lamps# all lit below. | Most of it. It's better on the third day than the first. | It's not kindness. #neighbours.capitalize# would do as much for me, and have.
+
+scene birds_at_lighting_up
+when topic=animals|work here.time=dusk self.likes=roof_birds self.job=laborer
+does tell.feeling / react.self / assess
+a : When I light up, #roosting# along the gutters. They don't mind the taper at all. | There's a pair that sleep on the lamp iron by the chapel. I light round them with #taper#. | You can tell when it's dusk by the birds. They know before I do.
+b : They don't mind? | Round them? | Do they?
+a : Not a bit. I think they like the warm of #lamps#. | Carefully. They've been there longer than me. | Every time. Half an hour before the light goes, they're home.
+
+scene feast_bells_ringing
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #feastbells.capitalize# carry right down into #courts#. You'd not think it, but they do. | I'm up early on a feast day, just for #feastbells#. | The feast bells are the one thing in this city that sounds like home.
+b : Even down here? | Just for the bells? | Like home?
+a : Even here. #courts.capitalize# go quiet to listen. | Just for them. Then I go back to bed, if my knees let me. | At home they rang over the downs. Here they ring over roofs. Same bells, near enough.
+
+scene frost_on_the_cobbles
+when topic=weather|season here.season=winter here.time=dawn self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #frost.capitalize#. Look at the cobbles; every one of them sparkling. | I like a frosty morning. The mud goes hard and you can walk the lanes dry. | A frosty morning and a clear sky. I'll stand at #window# and look a while.
+b : It's lovely. | Dry for once. | Cold, though.
+a : It is. It's the one hour #courts# look clean. | Dry, and hard, and nobody slipping in #lanemud#. | Cold. I've a coat. I'd take frost over #lanemud# any day.
+
+scene the_lane_mud
+when topic=weather|home here.weather=rain|storm self.dislikes=deep_mud self.job=laborer
+does tell.complaint / react.complaint / assess
+a : #lanemud.capitalize# again. I lost a shoe at the bottom court and found it at the next. | The low lanes go to mud in an hour of rain. I light with one paw and hold my coat up with the other. | Nobody's paved #courts# since before I came. Nobody will.
+b : Lost a shoe? | Sounds hard. | Never?
+a : Lost and found. It was full of water. I wore it anyway. | It's slow. #lamps.capitalize# still get lit. They always do. | Never. #courts.capitalize# get mended last, if they get mended at all.
+
+scene the_old_post
+when topic=memories|work self.age>=40 self.job=laborer
+does tell.memory / react.self / assess
+tone even / grave / even
+a : I had another post once. Better paid. Someone better placed got it. | I don't talk about the old post much. It went where these things go, up the hill. | I lost a good place to a wolf with better friends. I took the lamps. I've not been sorry.
+b : That's hard. | Up the hill? | Not sorry?
+a : It was. It's done now. I've #lamps#. | To somebody's cousin, I think. I'll not say more, #address#. | Not sorry. #lamps.capitalize# never asked me who my friends were.
+
+scene the_friend_upstairs
+when topic=friends|home self.friend
+does tell.self / react.self / assess
+a : #self.friend# would carry me up #stair# if it came to it. That's the kind I keep. | I'd go into a dark court for #self.friend#. No lamp, no question. | When it's hard, I'd want #self.friend# by me and nobody else.
+b : That's loyalty. | No question? | Good to have.
+a : It goes both ways. That's what makes it. | None. Some things you don't weigh. | It is. One like that's worth the whole hill.
+
+scene our_own
+when topic=home|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : Folk up the hill think the Sump's all thieves. #neighbours.capitalize# look after their own better than anybody. | When I was laid up a week, #neighbours# brought me #soup# every night. | Down here, if a pot's empty, a neighbour's isn't. #courts.capitalize# run on it.
+b : That's good to hear. | Every night? | As it ought to be.
+a : It's true. I'd not live anywhere but #courts# now. | Every night, and too much salt in it. I could have wept. | It ought to. Mostly it's only down here that it is.
+
+scene the_watch_comes_down
+when topic=crime|gossip
+does give.opinion / react.self / assess
+a : The Watch only comes down to #courts# when they want somebody. Never just to walk. | I'd like a watchman who knew #neighbours# by sight. I've never met one. | When the Watch comes down, doors shut and #lamps# are all that's looking.
+b : That's a shame. | Never? | I see.
+a : A shame. Folk don't trust what only comes with a stick. | Never once, that I've seen. | You see it, then. Most don't, from up the hill.
+
+scene the_chapel_lamp
+when topic=faith self.job=laborer
+does tell.self / react.self / assess
+a : I light the chapel lamp first, every night, with #taper#. It's my prayer, near enough. | Prayers aren't much in my line. But the chapel's lamp is always lit. I see to that. | They fed my house once, the chapel. Now their lamp never goes out on my watch.
+b : That's a good prayer. | Always? | That's a debt paid.
+a : The Bright One can read a lamp as well as words, I'd think. | Always. Even the night I was poorly, #neighbours# saw to it. | Paid and paying. Some debts you keep paying gladly.
+
+scene four_flights_up
+when topic=home self.street
+does tell.self / react.self / assess
+a : I live up top at #self.street#. Four flights. My knees count every step. | From #garret# I can see half of #courts#, and the chapel roof. It's a fine sight. | It's a small room and the roof drips. But #window# beats any in the court.
+b : Four flights! | Half? | That's something.
+a : Four, and they get longer every winter. | Half, near enough. I look out over them before I sleep. | It's everything. A ground floor couldn't buy it off me.
+
+scene leaner_down_here
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean down here. #bottomcourt.capitalize#'s eating once a day. | Bread's up again. I paid #firstprice#, same as ever, and I felt it. | Folk are burning their own lamps less. #courts.capitalize# go dark early.
+b : Hard for everyone. | Felt it? | That's grim.
+a : Hardest at the bottom. It's always the bottom. | Felt it in the pot. Less #soup# this week, more water. | I share what #soup# I've got. #reassure#.
+b? : #bc_poor_soul# | #bc_true# | #bc_i_hope_so#
+
+scene keeping_quiet
+when topic=gossip self.job=laborer
+does tell.gossip / react.news / assess
+a : I see a lot, lighting up. I don't say what I see. | Folk forget there's somebody with #taper# in the corner. I hear plenty. I keep it. | Down here, a loose tongue's worse than a dark court.
+b : You must see plenty. | And keep it? | True.
+a : Plenty. #lamps.capitalize# and I keep it between us. | Keep it. That's how they let me into #courts#. | True. #saying#.
+
+scene the_knees
+when topic=health self.age>=50
+does tell.self / react.self / reassure
+a : My knees know every step of #stair#. They complain of it after dark. | I've a cough in the damp, up in #garret#. It's no worse than last winter. | I was laid up a week in the spring. #neighbours.capitalize# saw to me.
+b : Rest them. | Mind it. | Good of them.
+a : When #lamps# are lit. Not before. | I will. #soup.capitalize# and a dry coat, that's the cure. | Good, and I'll carry it to the end.
+
+story the_ewe_at_market [topic=memories|prices self.from=larkfield self.age>=25]
+  : When I was young, the old drover I worked for sent me to the market at #self.from_town# to sell a ewe.
+  : The first buyer named a price. I said yes. The whole market stopped to stare.
+  : The drover laughed so hard he sat down in the straw. He never sent me to sell again, and I never haggled again.
+  ask : Would you have held out for more?
+  b : I would. But I'd have hated it.
+  b[from=larkfield] : Every one of us would. You were the only one who didn't.
+
+story the_court_that_wasnt_mine [topic=work|memories self.job=laborer here.region=ridgemere]
+  : There was a court off the low lane that wasn't on my list. No lamp of the city's in it at all.
+  : An old body lived there who couldn't abide the dark. So I hung a lamp of my own and lit it every night.
+  : She's long gone now. I still light it.
+  ask : Do you keep doing something for somebody who isn't there to see it?
+  b : Not yet. I hope I'd have the heart to.
+  b[old] : I do. More than one. That's what getting old is.
+
+story frost_and_bells [topic=festival|memories|season self.age>=20]
+  : The best morning I remember was a feast day with frost on everything, and the bells going.
+  : Every chimney smoking straight up. Every breath a little cloud. And the bells over it all.
+  : I stood in the street and didn't move till they stopped. My paws went numb. I didn't care.
+  b : That sounds a good morning.
+  b[old] : I remember mornings like that. They don't come often.
+
+rule @lighting_bark
+when concept=bark working=yes self.job=laborer here.time=dusk
+does aside
+cooldown 6h
+say Lighting up. #lamps.capitalize# coming on. | There. And the next. #oath#.
+
+rule @mud_bark
+when concept=bark here.weather=rain|storm self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #lanemud.capitalize#, the whole lane. | Somebody put a board down. Anybody.
+
+rule @bells_bark
+when concept=bark here.day=festival self.likes=festival_bells
+does aside
+cooldown 12h
+say There's #feastbells#. Listen. | Bells. Hear them, down here and all.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn self.likes=frosty_mornings
+does aside
+cooldown 12h
+say Look at that frost. Every cobble, and #lamps# still glinting. | Hard ground and a clear sky. #good.capitalize#.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. I've a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you. | #topic.player#. #talk_open#
+dlg @3 resident.hub [here.time=night] : It's late. I'm off up #stair#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I don't know you. Say what you want, quietly; #neighbours# are sleeping.
+dlg @1 resident.job [self.job=laborer] : I light the lamps at dusk down in #courts#. Thirty-two of them, the dark ones first. | I'm a lamplighter. #taper.capitalize#, a steady paw, and a long walk.
+dlg @2 resident.job : I do what's wanted and keep my own counsel. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing comes down to #courts# till it's old. | Nothing I've heard on #stair#.
+dlg @2 resident.news [world.news] : #courts.capitalize# were saying it: from #world.news_from#, #world.news#. | It came down #stair# from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | What I see in #courts# stays with me.
+dlg @1 resident.bye : #farewell#. | #farewell#. Keep where there's light, #address#.
+graft resident.hub
+choice They say you never haggle. Is that true? -> haggle
+node haggle
+say True. I pay the first price asked, always. I'd rather lose a penny than an hour, and I'd rather a trader felt shame than I felt clever.
+mood calm
+free
+choice Doesn't that cost you? -> haggle_cost
+choice Goodbye. -> bye
+node haggle_cost
+say A penny here and there. But nobody down here cheats me now. They'd be ashamed to. That's worth more than the pennies.
+choice Something else. -> hub
+choice Goodbye. -> bye

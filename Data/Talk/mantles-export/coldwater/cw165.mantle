@@ -1,0 +1,297 @@
+# cw165, the bone-giver (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw165
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rmx_karin_bilgeford
+written_by claude
+title the bone-giver
+fits stage=adult|old
+prefers job=merchant warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk gives_the_bones_away_free_and_remembers_who_took_them
+likes mutton_stew dice quiet_chapel misty_dawns
+dislikes cold_tea flies
+fears being_made_a_fool_of_at_the_counter a_hook_hanging_empty
+hopes every_debt_squared_before_the_grave a_pot_that_never_goes_thin
+topics work +0.4 food +0.3 pastimes +0.2 faith +0.2 newcomer -0.3 gossip -0.3
+styles comfort=practical gossip=closed refuse=blunt tease=none
+marks oath saying
+persona #self.first# cuts and hangs the meat in a Sump butcher's, gives the bones away for nothing and remembers every paw that took one: cold, guarded, plain, generous without ever saying so, fond of mutton stew, a throw of the dice and an empty chapel.
+
+words
+oath! = Hook and hock | By the block | Cleaver and chine
+saying! = Bones go free, debts don't | Trust the scale, not the smile | A cut's a cut, a promise is a promise
+cleaver = the cleaver | my old cleaver
+block = the block | the chopping block
+bones = the bones | a bag of bones for the pot
+hooks = the hooks | the meat hooks
+stew = mutton stew | a pot of mutton stew, thick
+dice = the dice | my knucklebone dice
+emptychapel = an empty chapel | the pews at noon, bare
+mistsump = mist on the steps | a grey morning with the mist down
+reckoning = who owes me | my private tally of who's had what
+flies = the flies | flies on the hooks
+counter = the counter | the shop counter
+scraps = the scraps | the trimmings off the block
+apron = my apron | an apron stiff with it
+copper = a copper | a single copper
+pot = a pot | the stew pot
+bolt = the bolt | my door bolt
+uphill = up the hill | the hill folk
+knife = my knife | the knife I came down with
+lake = the lake | the lake back home
+alehouse = the alehouse | the back room of the alehouse
+
+any
+opinion @1 houses against 2 : I've cut meat for those tables half my life and not a face from up there has looked at me. They see the joint, not the paw. #oath#.
+opinion @1 merchants against 2 : The ones who own the hooks eat the best cuts. The ones who hang the meat take #bones# home.
+opinion @1 strangers against 1 : A face I can't put a name to gets #bolt#, not a welcome. #saying.capitalize#.
+opinion @1 sump for 1 : Folk down here look after their own. I give #bones#, I get a knock on the door when I'm poorly. Fair.
+opinion @1 watch against 1 : #watch.capitalize# only come down our stairs to take somebody away. Never to bring anything.
+opinion @1 dole for 2 : The parish fed me a lean week and asked nothing back. That's on #reckoning# too, on the good side.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be wanting something; I can always tell. | #greet#. Buying or looking? I'll know which.
+line @2 greet [self.working=yes] : #greet#. Mind #block#. | #greet#. Mutton, rabbit or pork. #bones.capitalize# go free.
+line @3 greet [here.time=dawn] : Morning. #mistsump.capitalize#. Good. | Morning. Early, for you, #address#.
+line @4 greet [here.time=dusk|night] : #greet#. Shop's shut. | Evening. I'm done with #cleaver# for today.
+line @1 kin.open [pair.kin!=no] : You. Sit by #pot#. | You're here. #good.capitalize#.
+line @1 again.open : You again. #greet#. | Back so soon. You're on #reckoning#, you know. The good side.
+line @1 greet.return : #greet#. | #greet#. What is it?
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Sit down, then. | #greet#, #address#. Kettle's on.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I cut. | #greet#. Stand clear of #cleaver#.
+line @1 farewell : #farewell#. | #farewell#. Bolt your door.
+line @2 farewell [here.time=dusk|night] : #farewell#. Don't dawdle on the stairs. | #farewell#. Get indoors.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #ack#. | Hm. #hearsay.capitalize#.
+line @1 react.news.new : #oath#. Hadn't heard. | #surprise#. Nobody tells me anything at #counter#.
+line @1 react.news.known : #knew#. Heard it at the shop. | I know. Half the street was at #counter# with it.
+line @1 react.news.doubt : #doubt#. Who told you, and what do they owe you? | Folk lie at a counter more than anywhere. I'll wait and see, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | #oath#. That's a #bad# business.
+line @1 answer.how : #fine#. On my feet. | Same as yesterday. That's good enough, #address#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #hooks.capitalize# are full. | Cutting. Talk fast, #address#.
+line @1 ask.how : You, #address#? | Eating, #address#?
+line @1 sympathise : #sympathy#. Here. Take #bones# home for #pot#. | That's hard. No use pretending it isn't, #address#.
+line @1 decline : #refuse#. Lend what I haven't got? I won't, and I've nothing spare. | No, #address#. Not this week; #counter# keeps me till dark and after.
+line @1 accept_decline : #no_matter#. | Fine. I'll remember you asked, #address#.
+line @1 thank : #thanks#. I'll square it. | #thanks#. That's noted.
+line @1 deflect_thanks : It's #bones#. Don't thank me for bones. | #deflect.capitalize#. You'd have done it.
+line @1 preclose : Right. #excuse#. | #hooks.capitalize# won't hang themselves.
+line @1 accept_preclose : Go on, then, #address#. | #farewell#. Off you go, #address#.
+line @1 ack : #bc_right# | #ack#.
+scene the_block
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : Broke a whole sheep down on #block# before noon. #cleaver.capitalize# needs a stone. | City wanted more butchers. I put my paws up. Steady paws. Not a nick off #cleaver# in a year. | #hooks.capitalize# are full this morning. Mutton, two pigs, a row of rabbits.
+b : That's quick work. | Not one nick? | Busy, then.
+a : Quick and clean. That's the job. | Not one. Count my claws if you doubt me. One's gone, and that was before #block# and me were friends. | Busy. Good. Empty #hooks# frighten me more than a full day.
+
+scene bones_free
+when topic=work|food self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #bones.capitalize# go free with every cut. Always have. | A pup came to #counter# with no coin. Went home with #bones# and #scraps#. | I give #bones# away. I remember every paw that takes them.
+b : Why free? | Their family'll eat tonight. | Why remember?
+a : Bones make #pot#. A pot feeds a house. I'll not sell a house its #supper#. | They will. Doesn't cost me #copper#. | Because some come back with #copper# when they've one. Some don't. I know which.
+b : #bc_good# | #bc_good# | #bc_fair_enough#
+
+scene the_reckoning
+when topic=smalltalk|friends
+does tell.self / react.self / insist / ack
+a : Three on this street are on #reckoning#. Small sums. I've not asked. I won't forget. | I owe nobody a copper. Never have. #saying.capitalize#. | Somebody borrowed #pot# off me in spring. I know who. The pot knows who.
+b : Will you ask? | Never? | Ask for it back.
+a : No. They know. That's enough. When they've #money# they'll find me. | Not a copper. I'd sooner go without. | I'll wait. I'm good at waiting. Better than they are.
+b? : #bc_true# | #bc_wise# | #bc_ha#
+
+scene flies_hooks
+when topic=animals|season here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# on every joint since dawn. Summer's the butcher's curse. | I've a swat in one paw and #cleaver# in the other. That's summer. | Can't hang meat in this heat without #flies# finding it first. #oath#.
+b : Muslin helps. | Both at once? | It's bad this year.
+a : Muslin, smoke, vinegar. #flies.capitalize# laugh at the lot. | Both. I've hit more joints than #flies#. | It's #bad# every year. This year's no worse. Just longer.
+
+scene mutton_stew
+when topic=food self.likes=mutton_stew
+does tell.self / react.self / assess
+a : #stew.capitalize# on the hob. The neck end, the bones, an onion. All day. | I make #stew# out of what nobody buys. Best thing in the shop. | Nothing's better than #stew# when the cold's in your bones. Nothing.
+b : Smells good. | What nobody buys? | Not even fish?
+a : It is good. You can't have any. Not from #pot#. | The neck, the shin, #scraps#. Slow fire does the rest. | Not even fish. I grew up on fish by #lake#. I'll take mutton.
+
+scene the_dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : I throw #dice# on Restday nights. Never more than a copper on it. | I carved my own #dice# out of a knuckle bone. They roll true. | There's a game in #alehouse#. I win more than I lose.
+b : Only a copper? | True? | How do you win?
+a : #copper.capitalize#. I'll not owe anybody over a game. | True. I tested them a hundred throws. #bc_every_time#. | I watch who's sweating over #dice#. Then I bet against them.
+b : #bc_wise# | #bc_ha# | #bc_clever#
+
+scene empty_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : Noon's my hour for #emptychapel#. I sit. I say nothing. | #emptychapel.capitalize#. That's where I sit with the Bright One. Not at a service. | A full chapel's just a crowd. #emptychapel.capitalize#'s the one hush this city has.
+b : Do you pray? | Not at a service? | It's peaceful.
+a : I sit. If that's praying, then I pray. | Services are folk watching each other. I don't need watching. #bc_never#. | It is. Nobody asks me for anything in there. Not even the Bright One.
+
+scene misty_steps
+when topic=weather|day here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #mistsump.capitalize#. The stair's gone to nothing past the third step. I like it. | Mist this thick, the Sump goes quiet. It's the only hour it does. | Mornings like this I could be back by #lake#.
+b : Cold, though. | Quiet's rare here. | The lake?
+a : #cold.capitalize#'s honest. I don't mind it. | Rare. I take it when it comes. | Where I grew up. The mist sat on #lake# like a lid.
+
+scene cold_cup
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : Poured a cup at dawn. Somebody wanted a joint. Came back to it cold. #annoyed#. | There's two things I can't stomach. #flies.capitalize# and a cup gone cold. | I'd sooner have no tea than tea that's sat. #bad.capitalize#, either way.
+b : Make another. | Only two things? | Drink it anyway.
+a : No time. There's always another customer. | Two I'll say aloud. The rest go on #reckoning#. | Not a chance. It's #worthless#, cold tea.
+
+scene the_wharf_brother
+when topic=memories|family self.age>=40
+does tell.memory / sympathise / assess
+tone grave / serious / even
+a : The wharf had a brother off me. I'll not buy a thing with a Grayrock mark on it. #oath#. | When a House cart goes by with their flag I turn my back. Every time, for years. | Some things you don't forgive. I've one of those. Leave it there.
+b : I'm sorry. | Every time? | I'll leave it.
+a : So am I. It's old. It doesn't go. #bc_never#. | Years. I'll keep doing it while I'm spared. | Good. #bc_thank_you#.
+
+scene the_sump_door
+when topic=home here.region=ridgemere
+does give.opinion / react.self / assess
+a : #bolt.capitalize#'s across. My neighbours know to knock twice. That's how you live down here. | I was #poorly# last winter. A neighbour left soup on the step every day. Never said a word. | Down here nobody has much. So nobody pretends.
+b : Bolted? | Kind of them. | That's honest.
+a : Bolted. And open to the ones who knock right. | It was. I took them a shoulder off #hooks# after. We're square. | It is. #uphill.capitalize# they pretend for a living.
+
+scene the_watch
+when topic=crime here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : #watch.capitalize# came down our stair this week. Took a wolf away. Brought nothing. | When a thing walks off down here, it's settled among us. Quicker than #watch#. | I've never once seen #watch# carry a parcel up a stair.
+b : They keep order. | That's how feuds start. | Some are decent.
+a : #uphill.capitalize#. Down here they keep a list. | Sometimes. More often it's how they end. | Maybe. Not the ones who come down our stair.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_i_hope_so#
+
+scene strangers_counter
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : A stranger at #counter# today asked for credit. I laughed. | New face on the stair. I've shot #bolt# twice tonight. | I watch a #stranger#'s paws, not their face. Faces lie.
+b : Harsh. | Twice? | And paws don't?
+a : Harsh keeps #hooks# full. | Twice. Once for them. Once for luck. #bc_every_night#. | Paws tell you what they're after. Watch them.
+
+scene parish_week
+when topic=times self.on_dole=yes
+does confide / react.self / assess
+a : I've taken the parish loaf. More than once. I'm not ashamed. | Some weeks the shop pays the rent and nothing else. The parish pays #supper#. | I'll pay the parish back in #bones#. They'll get a bag every week.
+b : No shame in it. | Hard. | That's fair.
+a : None. Being #hungry# is the shame. Not eating. | Hard enough. I manage. #bc_mostly#. | It's what I've got. #bc_it_is#.
+
+scene the_lake_hills
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# I herded pigs on the hill above the lake. Smelled better than #hooks#. | Back home we killed one pig a year and the whole lane ate. Here #cleaver# goes through forty a week. | I left #self.from_town# with #knife# and a coat. I've still got the knife.
+b[from=coldwater] #cw : The hill pigs. I remember them. | The pig day. Everybody came. | I left with less.
+b : Do you miss it? | Forty? | And the coat?
+a@cw : Then you'll remember the mud. #bc_every_year#. | Everybody. Even the ones who'd not spoken all year. | Then you did better than me, starting from nothing.
+a : The quiet. Not the pigs. Not #lake# either. | Forty, and nobody I know eats them. | Gone. A coat's a coat. #knife.capitalize#'s a life.
+
+scene house_tables
+when topic=times|gossip here.region=ridgemere
+does give.opinion / react.self / assess
+a : The best joints go #uphill# every morning on a cart. Who eats them I couldn't tell you. | Half my day's cutting for House kitchens. Not one cook's come down to #counter#. | The Houses buy the loin and leave us #scraps#. Same as ever.
+b : They pay, though. | Does it matter? | Scraps make good stew.
+a : They pay the shop. Not me. Not #copper# of it. | It matters. You'd like to know who you're feeding. | They do. Best #stew# in the city, out of what they won't touch.
+
+scene dear_meat
+when topic=prices|times
+does tell.complaint / react.complaint / assess
+a : Mutton's dearer every week. I cut it, I can't afford it. #robbery#. | The ones who own the shop eat well. The ones on #block# eat #stew#. | Folk ask for half a cut now. Then a quarter. Then #bones#.
+b : Not your fault. | That's how it goes. | Hard times.
+a : Not mine. Somebody's. | It goes that way every time. Never the other way. #bc_never#. | Hard, and getting harder. #bc_true#.
+
+scene rain_sump
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# runs down the stairs and in under the shop door. #apron.capitalize# soaks through. | Wet days, nobody comes down to buy. They sit at home with what's in #pot#. | Rain's good for one thing. #stew.capitalize#.
+b : Put a board down. | Quiet day, then. | Ha. Fair.
+a : I've a board down. It floats. #annoyed#. | Quiet. I'll scrub #block# twice. | Fair, and true. #bc_every_time#.
+
+scene lean_hooks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : #hooks.capitalize# half empty. Folk buying #bones# instead of meat. | Lean times. More #bones# gone free this month than in a year. | Customers want credit. I've said no to all of them, and I hate it.
+b : They'll be back. | Kind of you. | It's right to say no.
+a : When there's #money#. Not before. | It's bones. I'll not watch a pup go #hungry# over bones. | Right, maybe. It doesn't feel it. #bc_never#.
+
+scene my_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : After dark #bolt# stays across for all but a few. #self.friend#'s knock, I open to. | I don't trust easy. #self.friend# took years to earn it. | I keep no #reckoning# with #self.friend#. Nobody else gets that.
+b : Years? | That's a lot. | That's something.
+a : Years, aye. Worth the wait. | It is. Don't spread it about. #secret.capitalize#. | It is. I'd not say it to #self.friend#'s face.
+
+story first_cleaver [topic=memories|work self.age>=30]
+  : The first time I picked up #cleaver# I took a claw off my own paw. That's the missing one.
+  : I wrapped it in #apron# and finished the joint before I saw anyone. Nobody was paying me to bleed.
+  ask : Would you have finished the joint?
+  b : No. I'd have run for help.
+  b[job=merchant|crafter] : I would. Then fainted after.
+  : I've never cut myself since. Not once, #oath#.
+
+story the_debt_dice [topic=pastimes self.likes=dice]
+  : A carter owed me for a leg off #hooks# and swore he'd no coin.
+  : That night I found him at #dice#. I sat down beside him and won back the price of the leg, exact.
+  b : Ha! Did he know it was you?
+  : He knew. He pays at #counter# now, every time. #saying.capitalize#.
+
+story pig_day [topic=memories|food self.from=coldwater self.age>=25]
+  : Back home there was one day a year the whole lane killed a pig together, down by #lake#.
+  : The grown ones did the work and we pups ran with the bladder for a ball till dark.
+  ask : Was there a day like that where you grew up?
+  b : Something like it. A harvest supper.
+  b[from=coldwater] : The pig day. I'd forgotten the bladder.
+  : Best day of the year. I've not seen a lane do it since.
+
+rule @block_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Mutton, rabbit, pork! #bones.capitalize# go free! | Fresh off #block#. Come and look.
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off the meat. Off. #oath#. | #flies.capitalize# again. Where's the swat?
+
+rule @reckoning_bark
+when concept=bark working=yes
+does aside
+cooldown 10h
+say A shoulder owed, #pot# owed. I know. | #reckoning.capitalize#. Long, today.
+
+rule @mist_bark
+when concept=bark here.time=dawn here.weather=fog
+does aside
+cooldown 12h
+say #mistsump.capitalize#. Good. | Quiet, for once. Like #lake#.
+
+dlg @1 resident.hub : #greet#. What do you want? | #greet#. Say it, #address#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Stand where I can see your paws, #stranger#. Now say it.
+dlg @1 resident.job [self.workplace] : #self.trade_words.capitalize#. I cut, I hang, I give #bones# away. | I work #block# at #self.workplace#. Steady paws.
+dlg @2 resident.job : I work. I keep my head down. That's all you need, #address#. | Whatever pays, #address#. Done right.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing worth carrying, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry tales. Not across #counter#.
+dlg @1 resident.bye : #farewell#. Bolt your door. | #farewell#.
+graft resident.hub
+choice Do you really give the bones away for nothing? -> bones
+node bones
+say I do. #bones.capitalize# make a pot, a pot feeds a house. I'll not sell a house its supper. I remember who takes them, mind.
+mood calm
+free
+choice Why remember? -> bones_why
+choice Goodbye. -> bye
+node bones_why
+say Because some bring #copper# back when they've one, and some never do. I don't hold it against them. I just know.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

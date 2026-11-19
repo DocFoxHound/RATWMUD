@@ -1,0 +1,296 @@
+# oh104, the sky's quarreller (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh104
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier standard
+written_for cty_oda_cinderdale
+written_by claude
+title the sky's quarreller
+fits stage=adult|old
+prefers job=woodcutter humour=dry
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk argues_with_the_weather
+likes pickled_herring old_tales market_bustle misty_dawns
+dislikes deep_mud early_bells
+fears a_summer_with_no_rain_to_argue_with
+hopes the_last_word_with_the_sky_just_once
+topics weather +0.5 lore +0.3 food +0.2 pastimes +0.2 festival -0.3 gossip -0.2
+styles comfort=quiet gossip=dry refuse=dry tease=dry
+marks oath saying
+persona #self.first# logs at the cut and has a running quarrel with the sky: quiet, dry and in no hurry, fond of a market at full noise and a tale told slow, and liable to tell a raincloud to its face exactly what it is.
+
+words
+oath! = Sky and stump | Clouds and cuckoos
+saying! = The weather's no manners, but it always turns up | Argue with the rain; it never sulks
+sky = the sky | that sky up there
+cloud = that cloud | the fat grey one
+mire = mud past the knees | the deep mud by the cut
+herring = pickled herring | herring out of the crock
+tale = an old tale | a tale told slow
+market = market day | the market at its loudest
+greydawn = mist on the oaks at first light | a grey, soft dawn
+dawnbell = the chapel bell at dawn | that dawn bell
+bucksaw = the saw | the bucksaw
+cut = the cut | the logging ground
+oaks = the oaks | the old oaks
+gate = the gate | the town gate
+city = the city | Ridgemere
+window = the window | my quiet window
+forest = the forest | the old wood
+rainy = the rain | that rain
+weather = the weather | this weather
+mud = the mud | this mud
+chapel = the chapel | the little chapel
+well = the well | the town well
+carter = the carter | the South Road carter
+
+any
+opinion @1 houses against 1 : I've logged their oaks for years and not one of them has shown a face at #cut#. #sky.capitalize# shows itself oftener.
+opinion @1 merchants against 2 : A week at #cut# buys a loaf and a grumble. The counters never seem to go short of either.
+opinion @1 festivals against 1 : A feast's best seen from #window#. The noise comes in, and the elbows stay out.
+opinion @1 newcomers against 1 : A newcomer at #cut# means one less day's pay for somebody who was here first.
+opinion @1 city against 1 : #city.capitalize#? Chimneys and crowds, and not a neighbour among them. I'll take #oaks#.
+opinion @1 times against 1 : Each week's a bit thinner than the last. Only #sky# seems to notice, and it laughs.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've picked a day for it. | #greet#, #address#. Mind #weather#; it's in a mood.
+line @2 greet [self.working=yes self.job=woodcutter] : #greet#. Mind #bucksaw#. | #greet#. Stand clear, #address#; this one's coming down.
+line @3 greet [here.time=dawn] : #greet#. Up with the mist, are you. | #greet#, #address#. Early. The sky's not decided yet.
+line @4 greet [here.time=dusk|night] : #greet#. The light's gone off in a huff. | #greet#. Late to be out, #address#.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Sit, then, #address#. | You're back. #good.capitalize#. Shut the door on #weather#.
+line @1 again.open : You again, #address#. The day's full of surprises. | #welcome_back#. The sky's been no better since.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Pull up a stump. | #greet#. I was hoping for company that talks back.
+line @3 greet.return [self.working=yes self.job=woodcutter] : #greet#. Half a breath; #bucksaw#'s stuck. | #greet#. Hold on till this trunk's on the ground.
+line @1 farewell : #farewell#. Watch #sky#. | #farewell#, #address#. Don't let #weather# bully you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the roots, and the dark. | #farewell#. Sleep, if the wind lets you.
+line @1 farewell.return : #farewell#. | And you, #address#.
+line @1 react.news : #ack#. Well. | Hm. That's a thing, #address#.
+line @1 react.news.new : #surprise#. That's new. | First I've heard, #address#. The sky didn't mention it.
+line @1 react.news.known : #knew#. | I had that yesterday. Stale as old bread now.
+line @1 react.news.doubt : #doubt#. | Says who? I'll wait and see, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | That's hard news, #address#. #very# hard.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | Well, that's #good#. Even #sky# might smile.
+line @1 answer.how : Content, #address#. The sky and I are speaking, for now. | #fine#. Muddy, but fine.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. | Sawing. Ask me after, #address#.
+line @1 ask.how : And you, #address#? Keeping dry? | How's your day treating you, #address#?
+line @1 sympathise : #sympathy#. Sit a while. | That's #bad#, #address#. I'm sorry.
+line @1 reassure : #reassure#. Weather turns. So does luck. | It'll pass, #address#. Most clouds do.
+line @1 decline : #hedge#, but no. I've #cut# till dusk, and #sky#'s not helping. | Not today, #address#. I've promised the day, and I'm slow to unpromise it.
+line @1 accept_decline : #no_matter#. | Another day, then, #address#. It'll keep.
+line @1 thank : #thanks#. That's kind. | #thanks#, #address#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | It was nothing, #address#. Less than nothing.
+line @1 preclose [self.working=yes self.job=woodcutter] : Well. #oaks.capitalize# won't fell themselves. | #excuse#. #bucksaw.capitalize#'s waiting.
+line @2 preclose : #preclose#. | Well. I've a sky to have words with, #address#.
+line @1 accept_preclose : Go on, then. | Off you go, #address#. Watch #weather#.
+line @1 ack : Mm. | #ack#.
+line @1 tease [pair.band=friends] : You walk like a cloud with somewhere to be, #address#. | You've mud to the ears. Lost an argument with a puddle?
+line @1 tease.return : Says the one with a face like a wet week. | #cheek#. I'll tell #rainy# on you.
+line @1 give.advice : #advise#: never argue with the wind on a high branch. | Take a staff in #forest#; the paths go like grease in the wet. #saying#.
+line @1 warn [world.bandits=near] : Stay inside #gate# a while, #address#. There's #bandits# about. | Go in company under #oaks#, if you go at all.
+scene telling_the_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess / ack
+a : I told #rainy# this morning it had made its point. It went on making it. | Go on, then, rain. Soak me. See if I care. I've been wetter, and so have you. | Third day of it. I've stopped arguing with #sky#; I'm only sulking now.
+b : Did it listen? | Does it help, talking to it? | Sulking's fair.
+a : It never listens. That's why I don't give up on it. | It helps me. The rain's no better and no worse for it. | It is. #sky.capitalize# started it, #address#.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene sun_scold
+when topic=weather here.weather=clear here.season=summer
+does tell.self / react.self / assess
+a : Look at #sky#, not a cloud in it, smug as a cat. I'll be roasted by noon. | Hot and still. I've told the sun twice to go behind #cloud#. | #hot.capitalize# today. I asked for a breeze. Nobody's listening.
+b : It is hot. | Did it go? | Nobody ever is.
+a : Hot as a baker's elbow. I'll work in the shade of my own complaining. | Not yet. It's stubborn. So am I, #address#. | No. But it does me good to ask, #address#.
+
+scene wind_words
+when topic=weather here.weather=overcast
+does tell.self / react.self / assess
+a : #cloud.capitalize# has been sitting over the cut all morning, doing nothing. Make up your mind, I said. | Grey and heavy and not a drop to show for it. I've no patience with a sky that won't commit. | I had a word with that cloud at dawn. It's still there. I think it's sulking.
+b : It'll rain by dusk. | You sound like my granny. | You've a lot of words for the sky.
+a : Then it should get on with it. I've told it so. | Your #gran# had sense, then. | It's the only neighbour I've never once agreed with.
+
+scene grey_dawn
+when topic=weather|day here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #greydawn.capitalize#. That's the one weather I've no quarrel with. | Mist in #oaks# at first light. I stood at the door and said nothing for once. | A soft grey morning. #oath#, I could stand in it all day.
+b : Not even one word? | Nothing at all? | It is lovely.
+a : Not one. It's the only weather with manners. | Nothing. Even I know when to hold my tongue. | Lovely, and quiet. It doesn't want an argument, and nor do I, #address#.
+
+scene thunder_talk
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : Thunder over #oaks#. I've told it it's not as loud as it thinks. | Hark at that sky, showing off. It does this every summer. | The storm's brought a branch down by #gate#. I've had words with it.
+b : It sounds loud enough to me. | Showing off? | With the branch?
+a : Loud, aye. Clever, no. #saying#. | Every year, same tricks. It thinks we've not seen it before. | With #sky#. The branch only did what it was told.
+
+scene deep_mud
+when topic=weather|work self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess / ack
+a : #mire.capitalize# again. I lost a boot in it this morning and had to go back in for it. | I'll not work in #mire# like this. It pulls at your legs like a pup that wants something. | The cut's a swamp. I told #sky# whose fault that was.
+b : Did you find it? | Like a pup? | Did it say sorry?
+a : I found it. Full. I'll be squelching till Restday. | A big pup, and spoilt. It never lets go. | No. It rained harder. That's its idea of an answer.
+b? : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene dawn_bell
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : #dawnbell.capitalize# again. I was having a lovely dream about herring. | Somebody rang #chapel# bell before the birds were up. I said things. | That bell at dawn is the one noise I'd sooner argue with than #weather#.
+b : It's to wake us. | What did you say? | Worse than the weather?
+a : I was awake. I was choosing not to be. | Things I'll not repeat near a chapel, #address#. | Worse. #weather.capitalize# at least doesn't do it on purpose.
+
+scene herring_crock
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail / assess
+a : #herring.capitalize# and a heel of rye. That's the best of any day. | I keep a crock of #herring# under the bed. The whole room smells of the sea. | I'd trade my last coin for #herring#. I'd regret it later, but not then.
+b : Just that? | Does it? | And later?
+a : Just that, and a quiet hour to eat it under #oaks#. I'm easy pleased. | It does. I've never seen the sea, so I take it as a kindness. | Later's another wolf's trouble, #address#.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene market_noise
+when topic=smalltalk|pastimes here.day=market self.likes=market_bustle
+does tell.feeling / react.self / assess
+a : #market.capitalize#. All that shouting and haggling. I love it. I don't buy a thing. | I go to market to stand amid the racket and listen. It's better than a song. | Hear that? Every stall at once, and #carter# shouting over all of them.
+b : You don't buy anything? | Better than a song? | Loud, though.
+a : A copper's worth of #herring#, if I'm feeling rich. I'm there for the noise. | A song's one voice. #market.capitalize# is the whole town at once. | Loud, aye. A good loud. Not like #sky#'s.
+
+scene old_tale
+when topic=lore|pastimes self.likes=old_tales
+does tell.feeling / ask.detail / answer.detail / assess
+a : There's an old one in the corner of the inn who tells a tale slower than the oaks grow. I'd sit all night for it. | I like #tale#. The kind where the ending's in no hurry. | A tale told quick is only news. A tale told slow is the real thing.
+b : What sort of tales? | What's the best one? | What's the difference?
+a : Old ones, about #forest# and what walks in it. Never anything true. | The one about the oak that swallowed a stolen bell. On still nights it rings under the roots, they say. | News you forget. A slow tale stays, like #mud# on a boot.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene logging_day
+when topic=work self.job=woodcutter self.working=yes
+does tell.self / react.self / assess
+a : Bucking logs all morning. #bucksaw.capitalize# and I are not speaking. | I've cut three logs and told #sky# off four times. That's a fair morning. | We're limbing the big one today. Four of us and one saw, and #bucksaw# wins.
+b : Not speaking? | Four times? | The saw wins?
+a : It sticks, I curse, it sticks again. We'll make it up by dusk. | It kept threatening rain. I kept telling it not to. Even, so far. | It always does. We just hold on and take the credit.
+
+scene cut_lunch
+when topic=work|food here.region=oakhaven self.job=woodcutter
+does tell.self / react.self / assess
+a : We eat at the cut on a felled trunk, all in a row like crows. | Noon at the cut, and my bread's gone soft in the damp. I told #weather# about it. | A bit of #herring# on a log under #oaks#. That's my noon, and I'll not change it.
+b : Like crows? | Did it listen? | Sounds good.
+a : Like crows, and about as quiet. Mostly I listen. | It never does. The bread stayed soft. | It is. Quiet, and nobody wanting anything.
+
+scene spouse_dry
+when topic=family|home self.married=yes self.spouse
+does tell.feeling / react.self / assess
+tone tender / even / even
+a : #self.spouse# says I'll argue with my own shadow next. I might. It's never agreed with me either. | I'd not be anywhere but beside #self.spouse#. I don't say so. I don't need to. | #self.spouse# laughs at me when I talk to #rainy#. That's the best sound in the house.
+b : You might, at that. | That's sweet. | That's good to have.
+a : I'll keep you told how it goes, #address#. | Sweet's not a word I'd use. It's true, though. | It is. I'd keep talking to #rainy# for it.
+
+scene debt_down_there
+when topic=dreams|travel|smalltalk self.owes=yes
+does confide / keep_confidence / assess
+tone even / even / even
+a : I owe a debt down in #city#. I'll not say to whom, and I'll pay it in my own time. | There's a wolf in #city# I owe. They'll get it. Slowly. | #vent#: there's money I owe somewhere far off. It sits on me like wet wool.
+b : I'll not ask who. | Will they wait? | That's heavy.
+a : #good.capitalize#. You'd get nothing, and we'd both be uncomfortable. | They'll have to. I'm slow, but I'm sure. | Heavy, and wet. But it'll dry out, like everything.
+
+scene content_lot
+when topic=dreams|smalltalk
+does tell.self / react.self / assess
+a : I've a roof, a crock of #herring# and a sky to quarrel with. What more would I want? | Folk ask what I'm saving for. Nothing. I've what I need, near enough. | Some want the city, some want a House's favour. I want it not to rain on market day.
+b : Nothing at all? | Lucky you. | That's a small wish.
+a : Maybe a bit less mud. I'll not push my luck. | Lucky, or easily pleased. It comes to the same. | Small, and still it never comes true. The sky sees to that.
+
+scene thin_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Bread's dearer and the pay's the same. I told #sky# about it. It rained. | Thinner every week, and the ones with the ledgers look the other way. | I bought half the herring this week. Even my crock's going hungry.
+b : Hard for everyone. | They never notice. | Your poor crock.
+a : Hard, aye. I'll manage. I'm good at managing. | Never. They'll notice when nobody's left to fell their oaks. | It's sulking. We're all sulking, #address#.
+
+scene gossip_dry
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Talk's going round. I let it blow past, like weather. | Somebody told me a thing about somebody. I've forgotten it already, on purpose. | #well.capitalize#'s full of talk today. Fuller than the bucket.
+b : Not even a bit? | On purpose? | That's the well for you.
+a : Not a bit. It's not mine, and it's not true, most like. | On purpose. I've a short memory for other folk's business. | It is. I fetch water and leave the talk in it.
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New faces at the cut. One of them asked me which way #weather# would go. I said ask it yourself. | A stranger came through #gate#. Looked at #sky# like they'd never seen one. | There's somebody new on our street. They'll learn #weather# here soon enough.
+b : Did they? | Maybe they hadn't. | They will.
+a : They did. It didn't answer them either. | City sky's all smoke, they say. Ours must have been a shock. | They will. And #mud#. #mud.capitalize# first.
+
+scene faith_dry
+when topic=faith
+does give.opinion / react.self / assess
+a : I go to chapel and I mind my manners. I save the arguing for #sky#. | The Bright One made #weather#. I'll take it up with the Bright One when I get there. | I pray for a dry market day. I've been praying years. It's not come up yet.
+b : Wise of you. | You'll have a lot to say. | Keep praying.
+a : Wise, or scared. The chapel's got a roof, and I'd like it to stay up. | I'll have a list. A long one. | I will. Somebody up there is very slow, or very funny.
+
+story rain_that_stopped [topic=memories|weather self.age>=25]
+  : When I was small, I went out in the yard and told #rainy# to stop. Shouted it.
+  : And it did. Right then. #mum.capitalize# looked at me like I'd grown horns.
+  ask : Do you think it listened, or was it only luck?
+  b : Luck, I'd say.
+  b[stage=young] : It listened! I'll try that.
+  : Luck, most like. But I've been arguing with it ever since, in case.
+
+story the_bell_in_the_oak [topic=lore|pastimes here.region=oakhaven]
+  : They say a thief once ran off with the chapel bell and hid it in the hollow of one of #oaks#.
+  : The oak grew shut round it. On a still night you can hear it ring, down under the roots.
+  ask : Would you go out on a still night to listen for it?
+  b : Not alone, I wouldn't.
+  b[old] : I've heard something, once. I'll not swear it was a bell.
+  : Nor me. I've bells enough at dawn without digging for more.
+
+story market_purse [topic=pastimes|memories self.likes=market_bustle]
+  : One market day I dropped my purse in the crush and didn't notice till the stalls were packing.
+  : I went back, and an old stallholder had it on the counter with a sprig of mint on top.
+  b : Honest folk! Did you thank them?
+  : I bought herring off them every week after. They never once said a word about it.
+
+rule @rain_words
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Oh, that's enough now. You've made your point. | Rain, rain. I heard you the first time.
+
+rule @mud_bark
+when concept=bark self.dislikes=deep_mud here.weather=rain
+does aside
+cooldown 10h
+say #mire.capitalize#. #annoyed#. | Let go of my boot, you greedy mud.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say That bell. That blessed bell. | It's barely light. Who rings a bell before the birds?
+
+rule @saw_bark
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 6h
+say Stand clear! Coming down! | Mind #bucksaw#, it bites.
+
+dlg @1 resident.hub : #greet#. #weather.capitalize#'s in a mood; what's yours? | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. The sky's no better, if you're asking.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say it plain. I've a sky to argue with and no time for two quarrels.
+dlg @1 resident.job [self.job=woodcutter] : I log at #cut#. Bucking, limbing, hauling. And I keep #sky# honest while I do it. | Logging. Slow work, and I'm in no hurry, so we suit.
+dlg @2 resident.job : I work, I eat herring, and I argue with #weather#. That's the whole of me, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The sky had nothing to say either. | Nothing. Not even #weather#'s changed, #address#.
+dlg @1 resident.bye : #farewell#. Watch #sky#. | #farewell#, #address#. Don't let #rainy# win.
+graft resident.hub
+choice Why do you talk to the sky? -> sky
+node sky
+say Somebody has to. It does as it likes, and nobody ever tells it. I tell it.
+mood calm
+free
+choice Does it ever listen? -> sky_listen
+choice Goodbye. -> bye
+node sky_listen
+say Once, back in my sapling days. Never since. I live in hope, #address#.
+choice Good luck with it. -> hub
+choice Goodbye. -> bye

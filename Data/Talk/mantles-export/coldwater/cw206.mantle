@@ -1,0 +1,297 @@
+# cw206, the roof-bird watcher (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw206
+revision 2
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_beatha_millgate
+written_by claude
+title the roof-bird watcher
+fits stage=adult|old
+prefers job=merchant temper=nervy
+traits temper=nervy talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk reads_the_roof_birds_for_trouble
+likes warm_bread roof_birds full_larder first_snow
+dislikes early_bells waiting
+fears the_birds_going_quiet a_knock_after_dark
+hopes a_winter_with_nothing_to_fear a_door_that_locks_properly
+topics smalltalk +0.3 weather +0.3 work +0.2 season +0.2 food +0.2 newcomer -0.3 gossip -0.4
+styles comfort=warning gossip=closed refuse=sharp tease=none
+marks oath saying
+persona #self.first# helps behind a butcher's counter in the Sump and lives four flights up, where the roof birds can be watched from the window: wary, cold, quick to see a bad sign, slow to trust a new face, and soothed only by warm bread and the first snow.
+
+words
+oath! = Wing and weather | Feather and frost
+saying! = When the roof goes quiet, look to your door | A bird knows before the Watch does | Latch it first and be sorry after
+birds = the birds on the slates | the sparrows along the gutter
+gulls = the gulls | the big grey gulls
+stairs = the stairs | all four flights
+knock = a knock | a knock after dark
+crust = a crust | the heel of a loaf
+window = my high window | the window at the top
+top = the top floor | four flights up
+sign = a bad sign | a sign, if you've eyes to read it
+latch = the latch | my latch, done twice
+loaf = a warm loaf | bread so new it steams through the cloth
+snow = the first snow | the first white on the slates
+dawnbell = the dawn bell | that bell before first light
+waiting = all this waiting | standing about for somebody else
+front = the shop front | the front step
+till = the till | the coin drawer
+shore = the lake shore | the shore at home
+larder = my larder | the shelf I call a larder
+
+any
+opinion @1 city against 2 : Four flights of strangers under me and I couldn't put a name to one. At home I knew every door on #shore#. #oath#.
+opinion @1 drink against 1 : Two jars and a wolf will tell any #stranger# where the coin is kept. Not for me.
+opinion @1 houses against 2 : All my days paying their rent, and never a House face on our stair, #oath#. They see our rent, and that's all they see.
+opinion @1 merchants against 2 : I stand behind a counter all day and still can't buy #loaf# on what I'm paid. Somebody's doing well. It's not me.
+opinion @1 strangers against 2 : Every #stranger# drags something in after, and half the time it's trouble. Watch the paws, and watch #birds#.
+opinion @1 watch against 1 : #watch.capitalize# come down our stair to drag somebody off, and that's all they come for. I keep #latch# done.
+opinion @1 sump for 1 : Rough, aye, but the Sump minds its own. I'd still sooner #knock# came first, and a voice I know.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. I don't know you, so I'll watch you. | #greet#. You're new on #stairs#, or I'd know you. Say what you're after.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. Mind the step, and keep your paws where I can see them. | #greet#. If it's meat, say the cut. I'll weigh it.
+line @3 greet [here.time=dawn] : Morning. #dawnbell.capitalize# dragged me out of #bed# again. | Morning. Early to be about, #address#.
+line @4 greet [here.time=dusk|night] : #greet#. It's late to be knocking. | Evening. Quick, then, before #stairs# go dark.
+line @1 kin.open [pair.kin!=no] : Oh. You. In, then, and do #latch# behind you. | You. #good.capitalize#. I'd heard steps on #stairs# and wondered.
+line @1 again.open : #welcome_back#. You're about a lot today. | Twice now. I'll start to think you're watching me, #address#.
+line @1 greet.return : #greet#. | #greet#. What is it?
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in quick, out of the street. | #greet#. #good.capitalize#, it's only you.
+line @3 greet.return [self.working=yes] : #greet#. Say it while I watch #till#. | #greet#. Be quick; I've the counter.
+line @1 farewell : #farewell#. | #farewell#. Mind who's behind you.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go straight home, mind. | #farewell#. Don't stop for anybody on the stairs.
+line @1 farewell.return : #farewell#. | #farewell#. Watch yourself.
+line @1 react.news : #ack#. I'll believe it when I've heard it twice. | Hm. #uneasy#.
+line @1 react.news.new : #surprise#. Nobody tells me anything. | #oath#. That's the first I've had of it, and I don't like it.
+line @1 react.news.known : #knew#. I heard it at the counter. | I know. #birds.capitalize# knew before any of us.
+line @1 react.news.doubt : #doubt#. And who had it first, and what did they want for it? | Maybe. Folk say all sorts across a counter. I'll wait and see, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I said something was coming. | #oath#. That's a #bad# business, and it'll not be the last.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Well. Something's gone right, then. | #good.capitalize#. I'll not trust it yet, but it's #good#.
+line @1 answer.how : #fine#, for now. | On my feet. Watching #birds#. Same as ever.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. And somebody has to watch #till#. | #busy.capitalize#, and #waiting# on the carts besides.
+line @1 ask.how : You, #address#? Nothing wrong? | And you? Nobody bothering you, #address#?
+line @1 sympathise : #sympathy#. Keep your door done tonight. | That's hard. I'd not wish it on anyone, #address#.
+line @1 decline : #refuse#. I'll not leave the counter with strangers about. | #hedge#, but no. I've the till to mind and nobody else to mind it.
+line @1 accept_decline : #no_matter.capitalize#. I'd not have, either. | Suit yourself. I'll not ask twice, #address#.
+line @1 thank : #thanks#. I'll mind that. | #thanks#. Don't tell anyone I needed it.
+line @1 deflect_thanks : It's nothing. No call to go shouting it down #stairs#. | #deflect.capitalize#. Just don't spread it about.
+line @1 preclose [self.working=yes] : Back to it. #till.capitalize# won't watch itself. | Enough. There's somebody at #front#.
+line @2 preclose : #preclose#. | Enough standing in the open. I'm going in to #latch#.
+line @1 accept_preclose : Go on, then. Straight home, #address#. | #farewell#. Mind the stairs.
+line @1 ack : #bc_i_know# | Hm. #bc_maybe#.
+line @1 warn [world.bandits=near] : Stay inside the walls. #warn#. | Keep off the roads. #birds.capitalize# have been wrong all week.
+line @1 give.advice : #advise.capitalize#: do your latch twice and trust the first sound you hear. | Watch the roofs, not the street. #saying#.
+scene birds_gone_quiet
+when topic=smalltalk|weather here.region=ridgemere
+does tell.worry / reassure / insist / ack
+a : #birds.capitalize# have gone quiet. Not a peep since noon. Something's wrong. | Did you see? Every one of #birds# went up off the slates at once. I didn't like it. | #gulls.capitalize# are sitting on the roofs, all facing one way. That's #sign#.
+b : They're only birds. | A cat, most likely. | Wind, maybe.
+a : Only birds. Folk said that once, and then the roof came in. #bc_true#. | A cat, maybe. I've done #latch# anyway. #uneasy#. | Wind, then trouble. It comes in that order. #saying#.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_we_will_see#
+
+scene window_watch
+when topic=pastimes|smalltalk self.likes=roof_birds
+does tell.self / ask.detail / answer.detail / assess
+a : From #window# I can see #birds# for three streets. I know which ones belong. | There's a one-legged sparrow on the gutter opposite #window#. Comes every morning. | I watch #birds# from #top# when I can't sleep. They wake before the city does.
+b : Which ones belong? | Do you feed it? | What do they do?
+a : The ones who come back. A strange bird on the slates and I watch it, same as a strange face. | #crust.capitalize#, when nobody's looking. Don't tell #stairs#. | Squabble, then settle. Better than folk. Folk never settle.
+b : #bc_ha# | #bc_i_wont# | #bc_true#
+
+scene first_snow_comes
+when topic=season|weather here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : #snow.capitalize#. Look at it. Even the Sump looks clean. | Snow on the slates and #birds# all puffed up like loaves. I could watch it all day. | It's snowing. Nobody's out, not #knock# all day. I can breathe.
+b : It's lovely. | They look cold. | It's quiet.
+a : For a morning. Then it's mud, same as everything. #bc_true#. | They're snug enough. They know where the warm chimneys are. | Quiet. That's what I like about it, #address#.
+
+scene warm_loaf
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : I had #loaf# off the baker's cart this morning. Ate half on the stairs. | Nothing settles me like #loaf#. Not ale, not talk. Bread. | I'll stand in a queue for warm bread. It's the only thing I'll queue for.
+b : Half on the stairs? | Bread's a comfort. | You hate waiting.
+a : I'd have eaten the lot, but I'd nobody to hide it from. #bc_ha#. | It is. Nobody's frightened with their mouth full of #crust#. | I do. But bread pays you back for the queue. #waiting.capitalize# mostly doesn't.
+
+scene larder_count
+when topic=home|food self.likes=full_larder
+does tell.worry / reassure / assess
+a : I count what's on #larder# every night. Four days, if I'm careful. Five if I'm hungry. | When #larder#'s full I sleep. When it's not, I lie and listen. | There's a crock of salt pork on the shelf I won't touch. That's for when it goes #bad#.
+b : That's sensible. | You'll be all right. | When what goes bad?
+a : Sensible's all I've got. #saying#. | Maybe. I'll still count it. | Anything. Times. The roof. You don't know till it does.
+
+scene dawn_bell
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess / ack
+a : #dawnbell.capitalize# again. I was awake anyway. Now I'm awake and cross. | Every morning, that bell. I jump out of my skin, every time. | Who rings a bell in the dark? Somebody who's never needed sleep, #oath#.
+b : It's for the service. | Years of it, and still? | The chapel, I'd guess.
+a : Then they can service later. #annoyed#. | You'd think. I'm not. #bc_never#. | The chapel. I know. Knowing doesn't make it quieter.
+b? : #bc_ha# | #bc_true# | #bc_fair#
+
+scene waiting_on
+when topic=work|smalltalk self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : #waiting.capitalize#. On the carts, on the boss, on folk to make up their minds. | Stood at #front# an hour for a cart, and it never turned up. | I hate #waiting#. You stand still too long and someone notices you.
+b : It's half of any job. | It'll come. | Who'd notice?
+a : Half too much, then. | So they say. I've stopped listening. #grumble#. | Anyone who's looking. Somebody always is, #address#.
+
+scene the_till
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess / ack
+a : I watch #till# and #front#. Nothing walks out of that shop that isn't paid for. | The cutting's not mine. The watching is, the way meat walks out of here free. | Three wolves came in today I didn't like the look of. I stood by #till# till they went.
+b : Somebody has to. | The boss is generous, though. | Did they take anything?
+a : Somebody. It's always me. #grumble#. | Generous. One day it'll cost the shop. I've said so. Twice. | Not a crumb. They saw me watching. #bc_good#.
+b? : #bc_somebody_has_to# | #bc_true# | #bc_good#
+
+scene boss_soft
+when topic=work|friends self.boss self.working=yes
+does tell.worry / react.self / assess
+a : #self.boss# would give the whole rail away if I let it happen. Somebody has to say no. | I'd not work for anyone but #self.boss#. I'd not say so, mind. | #self.boss# trusts everybody. I trust nobody. Between the two of us the shop stays open.
+b : It's a kind shop. | You just did say so. | That sounds a fair split.
+a : Kind shops get robbed. #sign.capitalize#, if you ask me. | Then forget I did. #secret#. | Fair. I'd still sooner the trusting was mine to do.
+
+scene strange_faces
+when topic=newcomer|player
+does tell.worry / react.self / insist / ack
+a : Somebody I can't place has been up and down #stairs# twice today. I've done #latch#. | A #stranger# asked at the counter where everyone lives. I told them nothing. | Somebody came off a ship with too many questions. #birds.capitalize# didn't like them either.
+b : Maybe they're lost. | Good. | Birds can't tell.
+a : Lost folk don't climb #stairs# twice. #uneasy#. | Good. Let them ask the Watch, if they're honest. | They can. Better than you'd think. #saying#.
+b? : #bc_maybe# | #bc_good# | #bc_ha#
+
+scene rain_steps
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / assess
+a : #rain.capitalize# on the slates all night. You can't hear anyone on the stairs through it. | Wet again. #birds.capitalize# have all gone in under the eaves. I don't blame them. | Rain like this, the whole Sump sits indoors and listens to the gutters.
+b : Bad for sleep. | Sensible birds. | It'll stop.
+a : Bad for sleep, and worse for hearing #knock#. | Sensible. I'd join them if I could fit. | It always stops. Then it starts again, #address#.
+
+scene fog_blind
+when topic=weather here.weather=fog
+does tell.worry / reassure / assess
+a : #fog.capitalize#. I can't see the roofs from #window#. I hate it. | You can't see who's coming in this. Anyone could be anyone. | Thick grey down the stair this morning. I took the long way round, where the lamps are.
+b : It'll lift by noon. | Nobody's out in it. | That's sensible.
+a : Noon's a long way off when the street ends ten steps out. | Somebody always is, #address#. That's the trouble. | Sensible keeps you breathing. #saying#.
+
+scene home_shore
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# you could see anyone coming along #shore# a mile off. Here they're on your step before you know it. | At home the birds sat on the water, not on the roofs. I watched them from the jetty. | I left #self.from_town# for work and the city's not let go of me since.
+b[from=coldwater] #cw : A mile off. I remember. | The jetty birds. | Nor me.
+b : You could see so far? | Different birds, then. | Would you go back?
+a@cw : Then you know why the city frightens me. | Grey ones, with the white heads. You'd know them. | Then we're both stuck, #address#. #bc_true#.
+a : A mile on a clear day. Long enough to do #latch# and put the kettle on. | Different birds, same signs. They tell you if you watch. | Maybe. When I've something to go back with.
+
+scene sump_doors
+when topic=home here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Sump minds its own. But it's #knock# first, or nobody gets in. | Four flights up, and I've a latch on my door and another on the window. | Folk call the Sump rough. It's honest about it. Up the hill they smile and rob you.
+b : Two latches? | Quite right. | Fair enough.
+a : Two. And I check them both before I sleep. #bc_every_night#. | It is. Few on #stairs# bother, mind. | Fair, and true. #saying#.
+
+scene watch_drag
+when topic=crime here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : #watch.capitalize# were on our flights this week. Took someone off. Brought nobody back. | When #watch# come down here, folk go in and shut the doors. That tells you something. | I've never seen #watch# come down the Sump to help anyone. Not once.
+b : They keep order. | Maybe they've cause. | Some are decent.
+a : Order up the hill. Down here it's names in a book. | Maybe. I'll still go in and shut my door. | Maybe. I've not met one.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_we_will_see#
+
+scene gossip_who
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : There's talk. I'll not say whose. You never know who's listening. | Folk tell me things at the counter. I keep them. You don't know who it gets back to. | A #stranger# asked after one of my neighbours today. I said I'd not noticed. I had.
+b : Go on. | Very careful. | Why lie?
+a : No. Talk comes back up the stair with teeth in it. | Careful's what keeps a roof over you, #address#. | Because they asked too nicely. #sign.capitalize#.
+b : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene thin_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Bread's up again. I stood at the stall and put it back. | Nothing coming in, and everything going up. I'm counting crusts. | The parish bread had me on my feet a week last month. I'll not pretend it didn't.
+b : Hard all round. | Me too. | No shame in it.
+a : Hard all round, and harder down here. #bad.capitalize#. | Then we'll count together. | Shame's for folk with full larders.
+
+scene faith_roof
+when topic=faith
+does give.opinion / react.self / assess
+a : Bright One, keep the roof on and #stairs# quiet. That's the whole of my prayer. That's all I ask. | Chapel's for when it's empty, if I go at all. A full chapel's a crowd of strangers. | When I was #skint# they handed me #crust# at the chapel door, no questions. I remember that.
+b : That's a fair prayer. | Empty suits me too. | That was good of them.
+a : Fair, and not answered yet. Not all of it. | Then you know. #bc_good#. | It was. I don't forget a kindness, nor a slight.
+
+scene bad_dreams
+when topic=dreams|health
+does tell.self / react.self / reassure
+a : I dreamt every bird in the city went at once, and then nothing. I woke with my heart going. | I don't sleep. Not properly. One ear on the stairs all night. | Last night I dreamt somebody knocked and I couldn't find #latch#.
+b : Only a dream. | You need rest. | Horrible.
+a : Folk say so right up till the roof comes in. | I know it. My ears don't. | Horrible. I checked it twice when I woke. #oath#.
+
+story birds_before_the_fire [topic=memories|lore self.age>=30]
+  : Years back, on a still night, every bird on our row went up off the slates at once and wouldn't come down.
+  : I sat up. By midnight there was smoke three doors down, and we got everybody out.
+  : Since then I watch them. They know before we do.
+  ask : Would you have sat up, or gone to bed?
+  b : To bed, I'm afraid.
+  b[old] : Sat up. The old ones always said watch the birds.
+
+story the_lake_ice [topic=memories|season self.away=yes self.from=coldwater self.age>=25]
+  : When I was small the lake froze right across one winter, and the birds walked on it looking for the water.
+  : I felt sorry for them. I took them crusts out onto the ice.
+  : #mum.capitalize# hauled me back by the scruff. The ice was thinner than it looked.
+  b : Ha. You were lucky.
+  b[from=coldwater] : I remember that winter. The ice sang all night.
+  : Lucky. I've watched my step since. On everything.
+
+story first_city_night [topic=memories|travel self.age>=25 here.region=ridgemere]
+  : My first night in this city I never once closed my eyes. Every step on the stairs was somebody coming for me.
+  : In the morning I found it was the wolf next door, going out to work before light.
+  ask : What kept you awake, your first night somewhere new?
+  b : Nothing. I slept like a stone.
+  b[old] : The quiet, where I went. Too quiet after home.
+  : I still listen for them. Habit, now.
+
+rule @birds_bark
+when concept=bark here.time=day here.region=ridgemere
+does aside
+cooldown 8h
+say #birds.capitalize# are quiet. I don't like it. | Up they go, the lot of them. #oath#. What's that for?
+
+rule @dawn_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say That bell. Every morning, that bell. | #dawnbell.capitalize#. I was awake anyway. #annoyed#.
+
+rule @till_bark
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say Paws where I can see them, thank you. | Pay at the counter, not on your way out.
+
+rule @waiting_bark
+when concept=bark working=yes self.dislikes=waiting
+does aside
+cooldown 10h
+say Still #waiting#. Always #waiting#. | If that cart's coming, it can come now.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Say what you want.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. What now?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Stay where you are. I can hear you fine from there.
+dlg @1 resident.job [self.working=yes self.job=merchant] : #self.trade_words.capitalize#. I weigh, I wrap, and I watch #till#. Mostly I watch. | Counter work, and watching. That part's mine.
+dlg @2 resident.job : This and that. I keep my eyes up and #latch# done.
+dlg @1 resident.news [world.news] : I heard word from #world.news_from#: #world.news#. Don't say I told you.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd sooner keep it that way. | Nothing. Quiet. Too quiet, if you ask me.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. It comes back on you.
+dlg @1 resident.bye : #farewell#. Mind who's behind you. | #farewell#.
+graft resident.hub
+choice Why do you keep looking up at the roofs? -> birds
+node birds
+say The birds. They know when something's wrong before we do. Gone quiet, gone up all at once: that's a sign, if you've eyes to read it.
+mood stern
+free
+choice What are they telling you now? -> birds_now
+choice Goodbye. -> bye
+node birds_now
+say Today? Nothing yet. That's not the same as nothing coming. Watch them yourself, if you're staying.
+choice I'll keep an eye out. -> hub
+choice Goodbye. -> bye

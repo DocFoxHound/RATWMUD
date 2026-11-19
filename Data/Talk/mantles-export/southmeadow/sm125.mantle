@@ -1,0 +1,293 @@
+# sm125, the porter who hums the tide (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm125
+revision 2
+state ready
+dialect southmeadow
+accent none
+tier standard
+written_for rm_thyra_wetmarsh
+written_by claude
+title the porter who hums the tide
+fits stage=adult|old
+prefers job=carter warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk hums_hauling_songs_from_the_docks_while_carrying
+likes crisp_apples long_walks full_larder summer_evenings
+dislikes smoke early_bells
+fears standing_still_till_the_legs_forget
+hopes to_walk_every_street_of_the_city_once
+topics work +0.4 travel +0.4 pastimes +0.3 food +0.2 weather +0.2 newcomer +0.2 gossip -0.3
+styles comfort=company gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# carries loads across the market square from dawn and walks the city after dark for the pleasure of it: warm, plain, never still, humming some sea song under the breath that nobody taught on purpose.
+
+words
+oath! = Strap and shoulder | By the long carry
+saying! = Every load gets set down somewhere | A tune weighs nothing on the back
+strap = the strap | my carrying strap | the strap across my chest
+load = a load | a good square load | the next load
+square = the square | the market square
+song = a sea song | an old tide song | a song off the docks
+apple = an apple that snaps | a hard green apple
+larder = a full larder | a shelf with something on it
+evening = a long summer evening | the light that won't go home
+smoke = the smoke | forge smoke | smoke in my eyes
+bells = the early bells | bells before anyone's up
+walk = a long walk | a walk to no place in particular
+stalls = the stalls | the market stalls
+crate = a crate | a crate of somebody's
+legs = my legs | these legs of mine
+city = the city | this city
+copper = a copper | one copper
+feet = my feet | these feet
+shelf = the one shelf in my room | my shelf
+forges = the forges | my street of forges
+backache = my back | the ache across my shoulders
+
+any
+opinion @1 dole for 2 : The dole fed our house the week the loads stopped coming. I'll speak well of it to anyone, #address#.
+opinion @1 church for 1 : When I'd nothing, the chapel had a bowl for me and asked no questions. That's worth #money# to me.
+opinion @1 houses against 1 : I've hauled for every House in this city and no House face ever looked my way. They're names on #crate#.
+opinion @1 newcomers for 2 : I came in at the gate with a bag and empty paws, #address#. Whoever comes next deserves the same chance.
+opinion @1 road for 2 : The road brought me here and carries #load# everywhere else. I've no quarrel with it.
+opinion @1 strangers for 1 : A #stranger# with a heavy bag is a customer and maybe a friend. I'll carry for either.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. If it wants carrying, I'm your wolf. | #greet#. That bag's been a long way, #address#.
+line @2 greet [self.working=yes] : #greet#. Mind your toes; #load# coming through. | #greet#, #address#. I'm halfway across #square# with this.
+line @3 greet [here.time=dawn] : #greet#. First carry of the day, and the stalls still half up. | #greet#. Early. I like the city best before #smoke# gets up.
+line @4 greet [here.time=dusk|night] : #greet#. Out walking too, then. | #greet#, #address#. The light's going, and the streets are good for it.
+line @1 kin.open [pair.kin!=no] : Come and sit. Boots off, and I'm all ears, #pet#. | Ah, it's you. #good.capitalize#. I've an apple spare.
+line @1 again.open : Twice today. You and me both, up and down #city#. | #welcome_back#. I've done six carries since I saw you last.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I hoped I'd see you. | #greet#. Come and walk a bit with me.
+line @3 greet.return [self.working=yes] : #greet#. I'll stop a breath. Just one. | #greet#. #strap.capitalize# can wait a moment.
+line @1 farewell : #farewell#. | #farewell#, and mind the cobbles.
+line @2 farewell [here.time=dusk|night] : #farewell#. Stay where the lamps are. | #farewell#. I'm off for #walk# before #bed#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. Nobody in #square# said a word of it. | #marvel#. I'll have that round the stalls by noon.
+line @1 react.news.new : #oath#. That's new on me. | #surprise#. I carry all day and miss everything.
+line @1 react.news.known : #knew#. The porters had it at first light. | I heard it over #load# this morning.
+line @1 react.news.doubt : #doubt#. I'll wait till somebody who saw it says so. | Hm. #square.capitalize# says a lot of things by noon.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard. #pity#. | #sympathy#. I'm sorry for the house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's a thing to hum about. | #good.capitalize#. I'll take #good# news; I don't get much.
+line @1 answer.how : Tired legs, a #good# back, and a song stuck in my head. Fair enough. | #fine#. Restless, but that's nothing new.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every stall wants its crates at once. | Up and down #square# since dawn. My legs know it.
+line @1 ask.how : And you? Keeping on your feet, #address#? | How's the day carrying you, #address#?
+line @1 sympathise : #sympathy#. Set it down a minute. It'll still be there, but you'll be rested. | That's a heavy one. Walk with me a bit, #address#.
+line @1 decline : #hedge#, I can't. I've three loads due across #square# before noon. | I'd like to. Only #strap# isn't off my shoulders till dusk.
+line @1 accept_decline : #no_matter.capitalize#. Another day, then. | Fair. We're all carrying something.
+line @1 thank : #thanks#. That's a weight off. | That's kind. I'll carry it for you sometime.
+line @1 deflect_thanks : #deflect.capitalize#. It was on my way. | It was nothing. Lighter than #load#, anyway.
+line @1 preclose [self.working=yes] : Well. #load.capitalize# won't walk itself. | I'd better pick up #strap# again.
+line @2 preclose : Well. #preclose#. | #feet.capitalize# want moving. I'll be off.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I've #walk# in me anyway.
+line @1 ack : #bc_it_is# | #bc_true#
+scene first_carry
+when topic=work|day here.time=dawn self.working=yes self.job=carter
+does tell.self / ask.detail / answer.detail / assess
+a : First carry was apples for #stalls#. Four crates, and I smelled sweet all the way across. | I'm across #square# and back before the bells are done. Every morning. | #strap.capitalize# goes on before my boots do. Habit.
+b : Did you eat one? | Every morning? | Before your boots?
+a : One. The stall-keeper saw and called it my wages. | Every one. You learn the shortest line between #stalls#. | Near enough. #feet.capitalize# would wander off without it.
+b : #bc_ha# | #bc_every_day# | #bc_fair_enough#
+
+scene square_load
+when topic=work self.job=carter self.working=yes
+does tell.complaint / react.complaint / assess
+a : That last crate was nails. Nobody says nails. They say a small box. | Somebody's barrel leaked down my back. I'll smell of vinegar till Restday. | #load.capitalize# up the steps and the stall-keeper wanted it back down the steps.
+b : Heavy work. | Vinegar? | Up and down again?
+a : Heavy, and honest. Better than a desk, any day. | Vinegar. I'll be pickled before I'm #tired# of it. | Up and down. I charged both ways, and smiled.
+
+scene humming_carry
+when topic=work|pastimes self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Was I humming? I do it when #load#'s heavy. I don't hear it till somebody says. | That one's #song#. The words never stuck. I know how it goes up at the end. | I picked up the tunes off the dock gangs, #song# at a time.
+b : What was it? | Where's it from? | Do you sing them?
+a : Something about a ship that never came back. Cheerful, for the docks. | Off the wharf, I think. The sailors hum it hauling rope. | Never out loud. Under my breath, so #load# doesn't hear.
+b : #bc_ha# | Makes sense. | #bc_fair_enough#
+
+scene sea_song_odd
+when topic=accent|memories|pastimes self.away=yes self.from=southmeadow
+does tell.self / react.self / assess
+a : Funny, a wolf from #self.from_town# humming #song#. I'd never seen the sea till I came here. | Back home we sang about the reaping. Here I hum about drowning. I'm not sure that's progress. | My #mum# would laugh to hear me. All these sea tunes, and I can't swim.
+b[from=southmeadow] #home : We sang the reaping songs too. I miss them. | I'd forgotten the reaping songs. | Nor can I. Fields don't teach you.
+b : Do you miss the old ones? | It's a nice tune, at least. | Can't you?
+a@home : So do I. These came in where those went quiet. | Hum one, then. I'll hum the next. | They teach you to walk, though. That's something.
+a : Some days. The sea ones fit #city# better. | It is. It goes up at the end like a question. | Not a stroke. I keep #feet# on the cobbles and hum about waves.
+
+scene long_walk
+when topic=pastimes|travel self.likes=long_walks
+does tell.self / ask.plan / answer.plan / assess
+a : Restday I walked from the gate to the top of the Heights and back down. Just to see it. | I'm trying to walk every street in #city# once. I'm not halfway. | After work I don't sit. I take #walk# till my legs say stop.
+b : Why? | Will you manage it? | Aren't you tired after?
+a : Because I'd never seen it. I'd only carried things through it. | #someday.capitalize#. There's always another alley behind the one I've done. | Tired, yes. Still is worse. #legs.capitalize# forget if I let them.
+b : #bc_fair# | #bc_hope_so# | #bc_fair_enough#
+
+scene smoke_morning
+when topic=weather|home self.dislikes=smoke self.quarter=works here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# was down in the street again this morning. I came out coughing. | I live in #forges#. My washing comes in greyer than it went out. | The wind's turned and pushed #smoke# all over us. #oath#.
+b : The Works never clears. | Grey washing? | It'll turn back.
+a : It doesn't. I walk up to #square# to breathe, and call that work. | Grey, and I've given up minding. Mostly. | I hope so. Till then I hum with my mouth shut.
+
+scene rain_carry
+when topic=weather here.outdoors=rain here.region=ridgemere self.working=yes
+does tell.self / react.self / assess
+a : #rain.capitalize# on the cobbles, and every crate weighs double. | Wet strap, wet back, wet everything. The city's way. | Folk tip better in the #rain#. They feel sorry for you.
+b : Can't you stop till it eases? | It does rain. | Do they?
+a : Wait for the #rain# to stop here? I'd never carry again. | It does. I was born dry and I'll never be again. | They do. I'll take the pity and the copper both.
+
+scene clear_evening
+when topic=weather|season here.outdoors=clear here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : #evening.capitalize#, and nothing on my back. This is what I work for. | Look at that light. Even #forges# look kind in it. | Clear and warm. I'll take #walk# till the lamps come on.
+b : It is lovely. | Even the forges? | Where will you go?
+a : It is. I'd keep it in my pocket if I could. | Even them. For an hour. | Nowhere in particular. Going is the whole of it.
+
+scene fog_walk
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog this thick, I count the steps across #square# so I don't walk into a stall. | I like the fog, a little. #city.capitalize# goes quiet and soft in it. | Carried #crate# to the wrong stall in this fog. They kept it anyway.
+b : How many steps? | Quiet's nice. | Kept it?
+a : Two hundred and twelve, gate to fountain. I know it like #song#. | It is. You can hear the gulls and nothing else. | Kept it, and paid. I didn't ask. The right stall can do without.
+
+scene apple_break
+when topic=food self.likes=crisp_apples
+does tell.self / offer / accept / thank / assess
+a : I carry #apple# in my pocket for the middle of the morning. It gets me to noon. | #apple.capitalize#. The fruit stall gives me the bruised ones and I don't mind. | The thing I miss from home every day is #apple#, straight off the tree.
+b : Just one? | That's kind of them. | No apples here?
+a : One's enough, if it's #good#. Have half of this one. | Here, have one. Bruised outside, sweet inside. | They're here. They've just come a long way. Have this; it's travelled.
+b : #bc_thank_you# | #bc_lovely# | Thank you.
+a : #bc_good# Eat it while it snaps. | Go on. Better you than the gulls. | It's #good# yet. Even after the road.
+
+scene full_shelf
+when topic=food|home|times self.likes=full_larder
+does tell.feeling / react.self / assess
+a : Payday I fill #shelf#. Oats, onions, a bit of cheese. Then I sleep sound. | Nothing better than coming home tired to #larder#. | When #shelf#'s bare I can't settle. I'll walk half the night.
+b : Simple pleasures. | Sounds right to me. | Is it bare now?
+a : The best kind. I don't need much, only to know it's there. | It is. A shelf and #bed#. That's a good life, near enough. | Half bare. Two more carries and it'll be #larder# again.
+
+scene lean_loads
+when topic=times|work world.times=hard|lean self.job=carter
+does tell.worry / reassure / assess
+a : Fewer loads this week. #stalls.capitalize# are carrying their own to save the copper. | Lean times. I'm standing about #square# more than I'm walking it. | When nobody pays to have things carried, you know #city#'s tight.
+b : It'll pick up. | That's hard. | It always comes back.
+a : It will. The market can't carry itself for long. | It is. I hum louder when it's quiet. Helps a little. | It does. I'll be here when it does, #strap# and all.
+
+scene good_loads
+when topic=times|work world.times=good|boom self.job=carter
+does tell.news / react.news / assess
+a : I've turned down two carries today. Two! I've never turned down a carry. | Every stall's buying stock. #backache.capitalize#'s sore and my purse isn't. | #good.capitalize# times. I put a copper by every day this week.
+b : Good for you. | Sore shoulders, full purse. | What for?
+a : #good.capitalize# for my legs, anyway. They've had enough. | That's the bargain. I'll take it. | A long walk somewhere. Out of #city#, maybe, just to look.
+
+scene bells_dawn
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.self / assess
+a : #bells.capitalize# again. I was awake, but they don't know that. | Somebody up there rings like #city#'s on fire. Every morning. | I'd stop #bells# if I could reach them. Just the early ones.
+b : They wake the whole street. | They always ring. | Only the early ones?
+a : The whole street, and the street's #tired#. | They do. I hum #song# over them now. | The feast ones can stay. Those I'll forgive.
+
+scene friend_house
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : If I'd nothing left, it's #self.friend#'s door I'd knock on. That's how I measure a friend. | I'd carry anything for #self.friend#, and never ask #copper#. | #self.friend# and I take #walk# of an evening, when we're both free.
+b : That's a good friend. | Free, even? | Good company.
+a : The best kind. You only need one, really. | Free. Some things you don't charge for. | It is. We don't talk much. We walk.
+
+scene new_at_gate
+when topic=newcomer|player here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I saw somebody new at the gate today with everything they owned on their back. I remember that. | New faces in #square# every week. I always offer the first carry cheap. | Somebody asked me the way to the Commons. I walked them there. It was on my way. Nearly.
+b : Do you always help? | Why cheap? | Nearly?
+a : When I can. Somebody helped me once, and I never paid it back. | So they come back. And because I was new once. | Nearly. A long way round is still a walk.
+
+scene home_fields
+when topic=memories|land self.away=yes self.from=southmeadow
+does tell.memory / react.self / assess
+a : In #self.from_town# you could walk all day and see nothing but fields and sky. | I carried sheaves when I was small, back home. Same work, different load. | I left #self.from_town# because I couldn't stand still. I still can't.
+b[from=southmeadow] #home : Fields and sky. I miss that too. | Sheaves. I remember the weight. | Same here. It's in us.
+b : It sounds peaceful. | Did you like it? | Will you go back?
+a@home : Then we'll miss it together. #bc_ha# | Lighter than crates. Scratchier, though. | Maybe so. Restless folk end up here.
+a : It was. Too peaceful for #legs#. | I liked the walking home after. That's what I kept. | To visit. To stay? I'd only start walking again.
+
+scene faith_bowl
+when topic=faith
+does give.opinion / react.self / assess
+a : I'm not much at the chapel. But they fed me once, and I put #copper# in when I've one. | At the top of the steps I nod up at the Bright One. Every carry. | The Bright One gave me legs that won't sit still. I've decided that's a blessing.
+b : That's fair. | Every carry? | A blessing, is it?
+a : Fair's all I can manage. They know it. | Every one. It's a lot of thanks. | Most days. Some days it's a load like any other.
+
+story the_wrong_load [topic=work|pastimes self.job=carter]
+  : My first week in the city I carried #crate# halfway up the Heights before I asked where it was going.
+  : It was going to the docks. The other way. The wolf who'd paid me just stood and watched me go.
+  ask : Would you have shouted after me?
+  b : I'd have shouted, yes. Eventually.
+  b[job=carter] : I'd have let you go, the first time. It's how you learn.
+  : He bought me an apple when I got back. I've asked where first ever since.
+
+story first_sea [topic=memories|travel self.away=yes self.from=southmeadow self.age>=20]
+  : The day I first walked in at the gate, I went straight down to the water. I'd never seen it.
+  : An old docker was hauling rope and humming. I sat on a bollard and listened till dark.
+  : I didn't learn the song that night. It just stayed.
+  ask : Do you remember the first time you saw the sea?
+  b : I do. You don't forget it.
+  b[from=southmeadow] : Not yet. I've not been down to it.
+  : Go and sit there one evening. You'll come back humming.
+
+story the_long_evening [topic=pastimes|season self.likes=summer_evenings here.region=ridgemere]
+  : Last summer I walked out on the longest evening, meaning to go round the wall.
+  : I kept going. Down past the smokehouses, up over the hill, back in by the north gate.
+  : The sun was still on the roofs when I got home. I could have gone round again.
+  b : That's a long walk.
+  b[old] : I did that once, at your age. My knees remember it.
+  : It was. And not one thing on my back the whole way.
+
+rule @carry_cry
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 6h
+say Carry for you? A copper across #square#. | Mind your backs! #load.capitalize# coming through.
+
+rule @hum_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Hm, hm-hm... the one about the ship again. | Hmm-hmm... up at the end, and down to the water.
+
+rule @smoke_bark
+when concept=bark self.dislikes=smoke here.region=ridgemere here.outdoors=clear|overcast
+does aside
+cooldown 10h
+say #oath#. #smoke.capitalize# in my eyes again. | Somebody tell the forges the wind's turned.
+
+rule @dusk_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Strap off. Now for #walk#. | There's the evening. About time.
+
+dlg @1 resident.hub : #greet#. Need something carried, or just a word? | #greet#, #address#. I've a minute, if you're quick.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What's the load today? | #topic.player#. #good.capitalize#. What's wanted?
+dlg @3 resident.hub [here.time=night] : I'm out for a walk, but I'll stop. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it; I've a load waiting.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. Crates, sacks, barrels, across #square# and up the steps. | I carry. Whatever's too heavy for the one who bought it.
+dlg @2 resident.job : I work, and then I walk. That's my whole day, near enough. | Whatever wants doing, and I'm on #feet# for all of it.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That came across #square# this morning.
+dlg @2 resident.news [world.event_words] : All anyone in #square# talks of today is #world.event_words#.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I carry; I don't listen much. | Nothing I've heard. Ask the stall-keepers; they talk while I lift.
+dlg @1 resident.gossip [here.gossip=yes] : #stalls.capitalize# say #topic.subject# #topic.claim#. I only carry it this far.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Not a thing worth passing on. I hum instead.
+dlg @1 resident.bye : #farewell#. Mind the cobbles. | #farewell#, #address#. I'm off.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say Was I? It's #song#. I picked it up off the dock gangs. I don't know the words, only how it goes up at the end.
+mood warm
+free
+choice Why sea songs? -> tune_why
+choice Goodbye. -> bye
+node tune_why
+say Because they're made for carrying. One pull, one note. The load goes lighter. Try it with your next heavy thing.
+choice I'll try it. -> hub
+choice Goodbye. -> bye

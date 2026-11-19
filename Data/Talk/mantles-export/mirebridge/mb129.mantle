@@ -1,0 +1,472 @@
+# mb129, the water-taster at the still (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb129
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for rm_ilse_saltley
+written_by claude
+title the water-taster at the still
+fits stage=adult|old
+prefers role=merchant humour=dry
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk tastes_every_water_before_trusting_it
+likes blackberries singing sharp_knife misty_dawns
+dislikes flies deep_mud
+fears a_bad_well_nobody_has_tasted a_cracked_copper
+hopes a_market_stall_in_the_commons one_cask_with_her_own_mark
+topics work +0.4 food +0.3 pastimes +0.3 memories +0.3 weather +0.2 dreams +0.2 gossip -0.2
+styles comfort=wry gossip=reluctant refuse=dry tease=dry
+marks oath saying wry
+persona #self.first# runs the copper still and tastes every water before trusting it: warm under a dry tongue, plain and patient, fond of a song and a bramble, with a tin of coppers saved for a market stall of the wearer's own.
+
+words
+oath! = Copper and cork | By the worm and the wash | Mash and mercy
+saying! = Good spirit starts as good water | The first of anything goes in the bucket | Nothing clears that wasn't let settle
+wry! = Mm | There we are | Well, that's that
+still = the still | the big copper
+worm = the worm | the copper worm
+mash = the mash | the bramble mash
+casks = the casks | the Fell casks
+spirit = the spirit | good clear spirit
+heads = the first run | the heads off the still
+water = the water | city water
+cistern = the cistern | the yard cistern
+brambles = blackberries | brambles off the hedge
+stall = a stall in the Commons market | a stall of my own, one day
+tin = the stall tin | my saving tin
+knife = my hooked knife | the little bramble knife
+flies = the flies | fruit flies on the mash
+sing = a sing with the windows open | a song with the whole house in on it
+fen = the fen | the brown water at home
+stillhouse = the still-house | the hot room
+
+any
+opinion @1 drink mixed 1 : I make it, so I'll not preach. A dram's a kindness, a bottle's an argument, #address#.
+opinion @1 church for 1 [self.age>=50] : I've buried enough friends to be glad somebody knows the words. I couldn't say them myself without stopping.
+opinion @2 church for 1 : Somebody has to say the words over a body. Better a priest than me, #wry#; I'd only mumble.
+opinion @1 merchants for 1 [self.role=merchant] : I pay for the fruit before a drop's run. If the price stings, take it up with the carters, not my counter.
+opinion @1 strangers for 2 : A traveller tastes #spirit# with fresh eyes. Half my news and all my best compliments come from strangers.
+opinion @1 newcomers for 1 : New wolves bring thirst and coin, and I've never turned down either. Room for anyone who'll carry their share.
+opinion @1 road against 2 [self.age>=50] : When I was a pup on the fruit carts, nobody thought twice about the road. Now every load's a throw of the dice.
+opinion @1 city against 1 [here.region=ridgemere self.away=yes] : The city's water tastes of roofs and the air of smoke. I've stopped complaining. Mostly.
+opinion @1 houses mixed 0 [here.region=ridgemere] : Fell pays on the day and puts the crest on my work. Fair trade, #wry#, if you don't want your own name on anything.
+opinion @1 dole for 1 : No wolf ought to sleep #hungry# in a city that can afford #spirit# by the cask.
+opinion @1 watch for 1 : The Watch keeps thieving paws away from #casks#; I'll thank them for that. A stolen cask comes back watered, if it comes back.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Mind the copper; it bites. | #greet#. A new face. You'll want a taste of something, or the way out.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Speak up; #still#'s louder than it looks. | #greet#. One moment. I'm watching #heads# come off.
+line @3 greet [here.time=dawn] : #greet#. Early. #still.capitalize#'s barely warm, and nor am I. | #greet#. You're up with the mist.
+line @4 greet [here.time=dusk|night] : #greet#. The fire's banked, but I'm still about. | #greet#. Late for buying, about right for talking.
+line @5 greet [here.outdoors=rain here.region=ridgemere] : #greet#. Shake it off outside; I don't want city rain in #mash#. | #greet#. #rain.capitalize# again. Stand by #still# and steam.
+line @1 kin.open [pair.kin!=no] : Oh, you. Sit down before you knock something over. | There you are. I've #brambles# in a bowl, if you've a paw free.
+line @1 again.open : #welcome_back#. You've caught me between two casks. | Twice today. People will talk, #address#.
+line @1 hail [pair.band=friends] : #address.capitalize#! Come here and taste this for me. | Over here. I need a tongue I trust.
+line @1 greet.return : #greet#. | #greet#, #address#. #wry#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Took your time. | #greet#. I was just talking about you. Kindly, mostly.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Mind #worm#; it's hot. | #greet#. Speak while I watch the drip.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, and you know it. | #greet#. I'd banked the fire, but come in.
+line @1 farewell : #farewell#. Mind the step; it's sticky with mash. | #farewell#, #address#. Come back thirsty.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamplit streets. | #farewell#. Mind the low streets after dark; they keep their puddles.
+line @3 farewell [here.outdoors=rain here.region=ridgemere] : #farewell#. Take the high side; the low lanes fill first. | #farewell#. If the water's over your boots, turn back.
+line @1 farewell.return : #farewell#. | #farewell#, and mind where you put your feet.
+line @1 react.news : #wry#. That'll want settling before I swallow it. | So that's the talk. I'll let it settle, like the spirit.
+line @1 react.news.new : #oath#. Now that's new. | #surprise#. And I'm always the last to hear, stuck by #still#.
+line @1 react.news.known : #knew#. It came in with the fruit this morning. | Old news by the time it reaches #stillhouse#, #address#.
+line @1 react.news.doubt : #doubt#. Taste it twice before you swallow that one. | Hm. Sounds like the first run. Throw it out and wait for the clean stuff.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's #bad#. #pity#. | That's hard news, #address#. It'll take some swallowing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well, now. That's #good#; I'll put a bottle by for it. | #gladnews.capitalize#. Somebody's luck has come in at last.
+line @1 answer.how : Steady, #address#. Knees complaining, spirit running clear. | #fine.capitalize#. Nothing's cracked, nothing's soured. That's a good day.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #still.capitalize# doesn't care how I am. | Steamed like a pudding, and glad of the work, #address#.
+line @1 ask.how : And you? Drinking water you've tasted, I hope. | How's the world treating you, #address#?
+line @1 sympathise : Oh, #address#. Sit. You needn't say anything; I'll pour. | #sympathy#. That wants a quiet corner and somebody to sit in it with you.
+line @1 reassure : #reassure#. Things settle, given time. | It'll clear, #address#. Leave off stirring and it settles.
+line @1 decline : #hedge#. I can't leave #still# running; it'd sulk and spoil. Another day. | I'd like to, but there's a cask to fill by dusk, and the cut's mine alone to make.
+line @1 accept_decline : #no_matter.capitalize#. It'll keep. Better than spirit, even. | Another time, then, #address#.
+line @1 thank : #thanks#. You've made an old copper glad. | #thanks#, #address#. That's kindly done.
+line @1 deflect_thanks : #deflect.capitalize#. I'd expect the same off you, or better. | Go on. I'll send you a bill.
+line @1 preclose [self.working=yes] : Well. #still.capitalize# won't watch itself. | I'd better go and taste the run before it turns.
+line @2 preclose : Well. #preclose#. | I'll let you go. #saying#.
+line @1 accept_preclose : Go on, then. Don't trip on the mash. | Off with you. #still.capitalize#'s calling.
+line @1 ack : #wry#. | #bc_it_is#
+line @1 tease [pair.band=friends] : You look like you've been tasting the first run, #fool#. | You walk like a cask with a loose hoop.
+line @1 tease.return : Says the one who can't hold a cup straight. | #wry#. I'll put that on your bill.
+line @1 give.advice : #advise.capitalize#: taste your water before you boil anything in it. | Throw the first of anything away. The first cup, the first idea. #saying#.
+line @1 warn [world.bandits=near] : Keep off the road a while, #address#. #warn#. | Going beyond the walls? Then go with others, and go armed.
+line @1 congratulate : #congrats.capitalize#. That deserves a cup of the good stuff. | Well done, #address#. I'll drink to it, and so will the still.
+scene a_sip_first
+when topic=work|smalltalk self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Pass me that dipper. I taste #water# before it goes anywhere near #still#. | Every bucket from #cistern#, I sip first. Every one. | I tasted #water# this morning and sent it back. Too much roof in it.
+b : Every bucket? | Can you taste the difference? | Too much roof?
+a : Every one. A bad bucket makes a bad cask, and a bad cask is a month of #spirit# thrown in the gutter. | Like you'd taste a wrong note in a song. You'd know it, even if you couldn't say why. | Tile and moss and a bit of somebody's chimney. You'd be amazed what rain picks up on its way down.
+b : #bc_wise# | #bc_fair_enough# | #bc_ha#
+
+scene the_bucket_first
+when topic=work self.working=yes self.role=merchant
+does tell.self / react.self / tell.self / assess
+a : There goes #heads#, into the bucket. Smell it and you'll know why. | Off comes #heads#. I throw it out. Some don't, and you can taste it in their spirit. | That's the cut. A breath early and it's poison, a breath late and it's #bad# as ditchwater.
+b : It smells awful. | Wasteful, though? | How do you know when?
+a : It is awful. It'd strip paint. #saying#. | Not as wasteful as a headache in every bottle with my work in it. | My nose knows before my head does. Long enough standing here, #wry#.
+b? : #bc_ha# | #bc_true# | #bc_clever#
+
+scene bramble_time
+when topic=work|food|season here.season=autumn self.likes=blackberries
+does tell.feeling / ask.detail / answer.detail / assess
+a : #brambles.capitalize# are in. My paws are purple to the wrist and I'd not trade it. | Bramble season. I eat one for every ten that go in #mash#. Twelve, some days. | The best #brambles# are under the leaves where the carters don't look. I pick those for myself.
+b : Purple to the wrist? | Twelve? | Where do you find them?
+a : It washes out by midwinter. Then I miss it. | Thirteen, if nobody's watching. #still.capitalize# never complains. | I'll not say. A distiller with a secret bush is a distiller with a reason to get up.
+b : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene flies_on_the_mash
+when topic=animals|work here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / assess / ack
+a : #flies.capitalize# have found #mash# again. I've a cloth over it and they walk round under the edge. | Summer. The hot room is full of #flies#, and every one wants a drink. | I swatted forty flies before noon. They held a funeral and invited more.
+b : Can't you shut them out? | They like it as much as anyone. | Forty?
+a : I could shut out the air with them, and then I'd be the one to faint. | They do, and they don't pay. #annoyed#. | Forty-one. The last one was on my nose, and I'm counting it, #address#.
+b? : #bc_poor_soul# | #bc_ha# | #bc_ha#
+
+scene the_stall_tin
+when topic=dreams|work self.wealth=poor|comfortable
+does tell.plan / ask.detail / answer.detail / assess
+a : There's a tin under my bed with every spare copper since the spring. It's for #stall#. | I'll have #stall# before I'm too old to stand at it. That's the plan. | Somebody asked what I'd sell at a stall. Everything I'm not allowed to make here.
+b : How much is in it? | Is that soon? | What would you sell?
+a : Enough to rattle. Not enough to sing. #wry#. | Soon is a word for the young. I'll say: before my knees go. | #brambles.capitalize# in syrup, and a cordial nobody's crest is on.
+b : #bc_i_hope_so# | #bc_ha# | #bc_lovely#
+
+scene the_whole_house_singing
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail / assess
+a : There was #sing# last night, and the neighbours banged on the wall in time. | I sing to #still#. It runs cleaner for it, I swear. | Nobody in my house can hold a tune, and we have #sing# anyway, every Restday.
+b : They banged in time? | Does it really? | What do you sing?
+a : Near enough in time. We counted it as joining in. | Can't prove it doesn't. That's good enough for me. | Fen songs, mostly. Long ones with a lot of water in them, #address#.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene white_on_the_water
+when topic=weather|day here.outdoors=fog here.time=dawn self.away=yes self.from=fenshore
+does tell.feeling / react.self / tell.self / assess
+a : A morning like this, and I'm a pup again in #self.from_town#, with the mist lying on the water like milk. | #fog.capitalize# up from the harbour. It's the nearest thing to #fen# this city gives me. | I walked to work slow this morning. Mist on the hill streets, and nobody about.
+b : Like milk? | Near enough? | Nobody at all?
+a : Thick and white, and the reeds sticking up through it. You'd lose a boat in it, and we did. | Near enough. It's missing the eels and the frogs. And the damp, which I don't miss, #wry#. | A cat and a carter. The carter said good morning to the cat.
+b? : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene clear_through_the_window
+when topic=weather|day here.outdoors=clear here.region=ridgemere here.time=day
+does tell.self / react.self / assess
+a : Clear day. I've propped the door of #stillhouse# and let the steam out into the sun. | Sun on the slates. Everyone in the Commons is out pretending they've errands. | A dry day. I've #casks# out in the yard breathing, and the yard smells like a feast.
+b : Lucky steam. | Have you? | Smells good from here.
+a : Luckier than me. I'm still in here with the copper, #address#. | Twice. Once for bread, once to stand in the sun and say I was getting bread. | It's the oak. And a little of #spirit#, which nobody need know.
+
+scene the_low_streets_go_first
+when topic=weather|land here.outdoors=rain|storm here.region=ridgemere
+does tell.worry / ask.detail / answer.detail / assess
+a : Hear that? The lane below's a brook already, and the #mud# with it. It goes first, every time. | Water's over the cobbles at the bottom of the street. I could have told them it would. | Rain like this, the cellars down the hill will be bailing by dusk.
+b : Every time? | Could you? | Will yours be dry?
+a : Every time. It's the lowest bit, and water's not proud, #address#. | Grew up in #fen#. I know where water wants to go before it does. | Mine's up the hill. I picked it for that, and for nothing else. #wry#.
+b? : #bc_poor_soul# | #bc_wise# | #bc_lucky_you#
+
+scene in_the_wet
+when topic=travel|weather here.outdoors=rain here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : I went down past the gate this morning and lost a boot to the #mud#. Got it back. Lost my temper. | The yard's ankle-deep. I'd lay boards, if anybody'd pay for boards. | I left #fen# to be done with #mud#, and the city went and made some of its own.
+b : Lost your temper? | Lay them yourself? | Not as bad as the fen, surely.
+a : I'd found it again before I reached my door. It was in the boot. | With these knees? I'll pay a young one in spirit and watch. | Worse. In #fen# we expected it. Here it ambushes you on a paved street.
+
+scene storm_on_the_copper
+when topic=weather here.outdoors=storm here.region=ridgemere self.role=merchant
+does tell.worry / reassure / assess
+a : Wind like this, I bank the fire low. A spark up the flue in a gale is how still-houses burn. | Storm all night. I came in early to check #still# had kept its feet. | Thunder over the hill. #still.capitalize# hums when it thunders. I don't like to think why.
+b : Safer that way. | Had it? | Hums?
+a : Slower spirit, but a roof over it in the morning. #saying#. | Steady as an old ox. Better than me; I'd hardly slept. | Hums, like it's answering. I tell it to keep its opinions to itself, #address#.
+
+scene snow_in_the_yard
+when topic=weather|season here.outdoors=snow here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Snow in the yard. I tasted it. Clean as anything that's ever fallen on this city. | Snow on the cistern lid. #water.capitalize#'ll be sweet for a week now. | Snow, and the still-house the warmest room on the street. I've had callers all morning.
+b : You tasted the snow? | Sweet? | Callers?
+a : Of course. Snow's the only #water# up here that hasn't been on a roof first. | Sweet and soft. Melted snow makes the best spirit, and the rarest. | Warming their paws, mostly. One bought a bottle, so I let the rest stay.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene brown_water
+when topic=memories|health self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town#, the water came brown out of the ground and you tasted it before you drank it, or you were sorry. | #fen.capitalize# taught me my trade before I knew it was one. You sip, you spit, you choose. | My #mum# could tell a sick well by the smell from the door. I learnt it at her elbow.
+b : Brown? | Sip and spit? | By the smell?
+a : Brown as tea, with the peat of #fen# in it. You could drink it, if it was the right brown. | That's it. Same as now, only now I'm paid for spitting. #wry#. | Eggs, if it was bad. Earth, if it was good. Nothing, if somebody'd been at it.
+b : #bc_poor_soul# | #bc_ha# | #bc_wise#
+
+scene the_fen_in_my_mouth
+when topic=accent self.away=yes self.from=fenshore here.region=ridgemere
+does tell.self / react.self / assess / ack
+a : I've been in this city longer than I was in #fen#, and still they hear #greet# and ask where I'm from. | A House steward told me my speech was charming. I told him the spirit was dearer than the speech. | The fruit carters understand me. The clerks, never. I've stopped repeating myself.
+b : Do you mind? | What did he say? | Sensible.
+a : Not a bit. Of all I carried up here, it's the only thing not worn thin. | He bought two bottles. Charming costs extra. | Sensible and quieter. They nod, I nod, and the cask gets filled, #address#.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene a_friend_i_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd send for if #still# caught fire. Not to put it out. To sit with me while it burnt. | #self.friend# could hold #tin# and I'd not count it after. I'd not say as much for a priest. | #self.friend# and I go back further than either of us admits.
+b : That's a friend. | High praise. | How far back?
+a : It is. You don't get many. I've the one, and it's enough. | Highest I've got. Keep it from the priest. #wry#. | Far enough that we've stopped counting the years out loud, #address#.
+
+scene the_wall_next_door
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : I hope the still's reek sits easy with #self.neighbour#. It gets into the whole row. | I'd leave #brambles# on #self.neighbour#'s step and never own to it. | I'd trust #self.neighbour# with the still's key, and that's a short list.
+b : Does anyone complain? | A secret gift. | Short?
+a : Not to my face. I leave a jar on the step now and then, to be safe. | Everyone needs one. That's how you keep a good neighbour. | Two names long, #address#. The other stays mine.
+
+scene not_from_me
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty, stood by #still#. Folk say things to a copper they'd not say to a face. | There's talk going round #stillhouse#. It'll stay there, with the steam. | I could tell you a thing. But then I'd have to taste it first, and it's not settled.
+b : Go on, then. | Not even a hint? | When will it be settled?
+a : No. #saying#, and gossip's no different. | Not a drop. Ask me when it's old and harmless. | When it's stopped being anybody's business. Give it a year, #address#.
+b : #bc_fair_enough# | #bc_ha# | #bc_ha#
+
+scene mind_the_casks
+when topic=gossip|crime topic.claim_kind=theft|wanted
+does tell.gossip / react.news / give.advice
+a : They say #topic.subject# #topic.claim#. I've locked the yard gate twice over. | Word in the street is #topic.subject# #topic.claim#. I've counted #casks# twice since. | #topic.subject.capitalize# #topic.claim#, so I hear. I'll want to see the empty cask before I believe it.
+b : Locked twice? | All there? | Fair enough.
+a : Once for the thief, once for me, so I sleep. Mind your own door too. #warn#. | All there, and I'll count them again at dusk, #address#. | Till then, the gate stays locked. #wry#.
+
+scene some_good_word
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. I'll put a bottle by for it. | Word is #topic.subject# #topic.claim#. That's #good# news, and I'll drink to it. | #topic.subject.capitalize# #topic.claim#, they're saying. Something's gone right for once, then.
+b : #bc_lovely# | You'll drink to anything. | #bc_about_time#
+a : The good stuff, too. Not the run I'm still arguing with. | Only good news. Bad news gets water. #wry#. | It is. One right thing a week, and I'd ask no more of the world, #address#.
+
+scene lean_and_thirsty
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / react.self / assess
+a : Hard times, and folk still buy #spirit#. Less of it, and the cheap kind, but they buy. | Lean month. I've #heads# being asked for, and I won't sell it. Not to anyone. | Times are hard. I'm saving for #stall# a copper at a time, and coppers are slow.
+b : Strange, that. | Good. | Slow, but it's saving.
+a : Not strange. When the bread's thin, folk want something to make it seem thicker. | It'd blind a wolf. I'd sooner lose the sale than sleep with that, #address#. | It is. The tin's heavier than it was. That's all I need it to be.
+
+scene coin_about
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : Good weeks. The Heights are buying #casks# from the back, the old ones, and paying without blinking. | Times are kind. Three coppers in #tin# this week instead of one. | Coin's moving. Even the carters are buying a bottle to take home instead of drinking it here.
+b : Good for you. | That's something. | Civilised of them.
+a : For #casks#, mostly. I'm only the one who watched them age. #wry#. | It's #stall#'s roof, three coppers at a time. | Civilised, and their wives will thank me, #address#.
+
+scene no_fruit_on_the_road
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / reassure / assess / ack
+a : The fruit carts are late. #mash.capitalize# is down to the bottom of the tub. | No carts in from the farms this week. #still.capitalize#'s sitting cold, and it doesn't like it. | Late carts. I've made the last of #brambles# go further than a bramble ever should.
+b : They'll come. | Can't you use something else? | How far?
+a : They will, and I'll be up all night with #mash# when they do. | Not and put Fell's crest on it. #wry#. | Far enough that I'll not say what's in this batch, #address#.
+b? : #bc_true# | #bc_ha# | #bc_ha#
+
+scene a_cart_lost
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / tell.feeling
+a : They're saying a cart was robbed out on the road. Somebody's whole season gone into a ditch. | #bandits.capitalize# again. I hope they took fruit and choke on the stones. | They robbed a cart. My mind keeps going to whoever held the reins.
+b : A whole season. | #bc_ha# | Let's hope they're unhurt.
+a : A season's picking. Somebody's paws are #hurt# for nothing tonight. | I'd not wish it on anyone. Almost anyone. #wry#. | Unhurt and home, and drinking something strong. I'd stand them the first one, #address#.
+
+scene a_dram_and_no_more
+when topic=food|pastimes
+does give.opinion / ask.opinion / insist / ack
+a : I make the stuff and I drink a thimble of it a night. That's my secret, #address#. | Folk think a distiller must drink like a drain. I'd be dead by now, and so would #still#. | A dram is for the end of a long day. Two drams is for a story. Three is for regret.
+b : Only a thimble? | Truly? | And four?
+a : A thimble. The rest of #spirit# I sell to wolves who think they've earned more. | Truly. You taste all day; you don't want it at night. #wry#. | Four is for the Watch. And then for the priest.
+b? : #bc_wise# | #bc_true# | #bc_ha#
+
+scene the_bright_one_and_the_copper
+when topic=faith
+does give.opinion / react.self / assess
+a : I say my thanks every time #still# runs clean. That's as near to praying as I get. | My #mum# used to say the Bright One watches the bottles. So I keep mine honest and let the watching be done. | I'm not much for pews. But I've never lit #still# without a word of thanks, and I'll not start.
+b : That's enough, surely. | Wise. | A word to who?
+a : It'd better be. It's what I've got, #address#. | Wise or lazy. I'll let the Bright One choose. #wry#. | Mostly the Bright One. A little to the copper; it's done more for me than most.
+
+scene drowning_in_mash
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt I fell in #mash# and nobody noticed for a week. They bottled me. | I dream of #stall# some nights: a striped cloth, and a queue. | Last night I dreamt #still# talked. It said I'd been cutting late for years.
+b : Did they sell you? | A queue for what? | Had you?
+a : I sold well, apparently. Fruity, with a bite. #wry#. | For #brambles# in syrup. I woke up hungry and the stall was gone. | No. I checked this morning. Still, I cut a breath earlier, just in case.
+b : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene scalded
+when topic=health
+does tell.self / react.self / reassure
+a : I caught my paw on #worm# yesterday. You'd think I'd know where it is by now. | I've a cough from the steam. A thimble of #spirit# and honey, and it's quiet. | I'm well. I don't say it loud; #still# hears everything.
+b : Does it hurt? | Spirit and honey? | Knock on the wood.
+a : Only when I think about it, which is always. | My #gran#'s cure. It fixes nothing and you don't mind. | Knocked. Twice. #still.capitalize#'s copper, so I knocked the cask as well, #address#.
+
+scene the_feast_cordial
+when topic=festival|season here.day=festival
+does tell.feeling / ask.detail / answer.detail / assess
+a : Feast day. I've a cordial of #brambles# for the pups, and something stronger for their parents. | Everyone's out, and #still#'s shut for the day. It deserves it. So do I. | I'll be singing by dusk, #address#. I'm warning you now so you can stand further off.
+b : Something stronger? | You shut the still? | That bad?
+a : Same bottle, different shelf. Don't tell the pups. #wry#. | Banked it. Even copper wants a feast. | Worse. But loud, and the loud part makes up for it.
+b? : #bc_ha# | #bc_good# | #bc_ha#
+
+scene fell_on_the_cask
+when topic=work|lore here.region=ridgemere self.role=merchant
+does tell.self / react.self / assess
+a : Every cask out of here has the Fell crest burnt into it. Not one has my name. | Fell's steward tasted the new run and said it'd do. From a steward, that's a song. | Fell grows the fruit and pays the wages. I only make #spirit# worth paying for.
+b : Does that sting? | High praise. | That's all, is it?
+a : A bit. That's what #stall# is for. One day, a bottle with nothing burnt into it but my own luck. | Highest I've had. I hung it on the wall, in my head. | That's all. Small job. #wry#.
+
+scene a_stranger_sipping
+when topic=newcomer|player self.role=merchant
+does tell.self / react.self / assess / ack
+a : A traveller in this morning tasted the bramble and asked if it was medicine. I said yes. | Strangers taste with their eyes shut. Locals drink with their mouths open. I prefer strangers. | A new face at the door asks what the copper's for, and I get to tell them. My favourite question.
+b : Is it medicine? | Rude of the locals. | Do you tell them everything?
+a : It is if you're sad. #wry#. | Rude, and thirsty. I'll take their coin either way. | Everything but the cut. The cut I keep, #address#.
+b? : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+story the_well_that_went_bad [topic=memories|lore self.age>=40 self.from=fenshore]
+  : As a pup in #self.from_town#, I knew a family down the boards whose well went bad overnight.
+  : I tasted it first, because I was the pup who tasted everything. It was like a rotten egg in my mouth. I spat and ran home.
+  : My #mum# went and told them, and nobody drank it. They were cross for a week and alive for years.
+  ask : Would you have listened to a pup?
+  b[old] : Not then. I would now.
+  b : I hope so. I'd have been cross, mind.
+
+story the_first_cask [topic=work|memories self.role=merchant self.age>=30]
+  : My first cask on my own, I cut late, and the whole lot came out like lamp oil.
+  : The old distiller tasted it, said nothing, and used it to clean the copper for a year.
+  : Every time the copper shone, he looked at me. #wry#.
+  b : Ha. That's cruel.
+  b[job=merchant] : Mine was the same. They kept a bottle to show me.
+  : Cruel, and right. I never cut late again.
+
+story the_bramble_feud [topic=memories|pastimes self.likes=blackberries]
+  : There was a bramble bush behind the chapel at home, the best in the place, and two pups fought over it every summer.
+  : One of them was me. The other ended up running a bakery and still owes me a basket.
+  ask : Did you ever have a bush like that, or a spot that was yours?
+  b : An apple tree. I bit the first one every year.
+  b[old] : A whole hedge. I still dream of it.
+
+story the_wrong_words [topic=pastimes self.likes=singing]
+  : There was an old carter who sang one song all the way up the road, and every word of it wrong.
+  : Wrong names, wrong rivers, wrong ending. The horse knew the right ones and looked ashamed.
+  : We started singing it his way at home, out of spite, and now nobody knows the real one.
+  b : Ha. That's how songs go.
+  b[friends] : That's very you. Spite with a tune.
+
+story the_heron_and_the_still [topic=lore|pastimes self.from=fenshore]
+  : They tell one in #self.from_town# about a heron that stood by a still every night and drank the drips.
+  : It got so it could talk, and it only ever said one thing: too early.
+  : The distiller listened, cut later, and made the best spirit on the river. The heron took the credit.
+  ask : Do you think it was the heron, or the distiller?
+  b : The distiller. Herons can't talk.
+  b[old] : The heron. They always know more than they say.
+
+rule @drip
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say There. Clean. Now that's a run. | Heads in the bucket, hearts in the cask. #oath#.
+
+rule @dipper
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Pass me the dipper. No, the clean one. | Hm. Too much roof in this water. Back it goes.
+
+rule @fly_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Off the mash, you. Off. | #flies.capitalize#. #annoyed#.
+
+rule @song_bark
+when concept=bark here.time=dusk self.likes=singing
+does aside
+cooldown 10h
+say Somebody start a song; I'll come in on the second line. | Hm-hm. That's the song with the long river in it.
+
+rule @rain_bark
+when concept=bark here.outdoors=rain here.region=ridgemere
+does aside
+cooldown 8h
+say Low lane's under by now. Told them. | #rain.capitalize#. Bottom of the hill's swimming by now.
+
+rule @fruit_bark
+when concept=bark working=yes world.wagons=late self.role=merchant
+does aside
+cooldown 8h
+say No fruit, no mash, no spirit. No supper, either. | Still no carts. #still.capitalize# sits cold, and so do I.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Spirit, cordial and bramble syrup, and every drop of it tasted. | #greet#, #address#. Have a sniff; I'll not charge for the smell.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. The bramble again, or something with more teeth? | #topic.player#. Good. I've a new run I want a second tongue on.
+dlg @3 shop.greet [here.time=dawn here.shop!=bare] : #greet#. Early. #still.capitalize#'s only warming, but the bottles are awake.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Name it, and I'll pour where you can watch.
+dlg @5 shop.greet [here.shop=bare] : #greet#. The shelf's bare; the fruit's late and #still#'s cold. I'll buy, if you've anything sweet.
+dlg @1 shop.prices : Spirit's dear when the fruit's dear, and the fruit's always dear. #shop_dear# | Bramble's fair. The old casks are for the Heights. I don't set what the carters charge.
+dlg @1 shop.bye : #farewell#. Mind the step; it's sticky. | #shop_bye# Taste it slow.
+dlg @1 resident.hub : #greet#. Mind #worm#. What is it? | #greet#, #address#. Say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Ask away; I'm only watching a drip. | #topic.player#. Sit on the cask, it's the clean one.
+dlg @3 resident.hub [here.time=night] : Late. #still.capitalize#'s banked, and I'm nearly so. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain. I'm busy and I'm old.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. I taste the water, run the copper, throw away the worst and bottle the rest. | I make spirit. Mostly I stand by a hot copper and wait. That's distilling.
+dlg @2 resident.job : I work, I taste things, I sing badly. That's most of me, #address#. | Whatever wants doing, and I do it slowly and properly.
+dlg @1 resident.business [business!=thriving|failing] : Steady. Folk drink in good times and bad; they only change what. | Steady enough. #casks.capitalize# fill and empty, and so do I.
+dlg @2 resident.business [business=thriving] : Busy. I can't fill #casks# fast enough, and I'll not hurry the cut for anyone.
+dlg @3 resident.business [business=failing] : Poorly. The fruit's dear and the buyers are few. I'll not pretend otherwise.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That came in with the fruit.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# in the hot room today. #still.capitalize#'s the only one not talking.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the drip, and that never says anything new. | Nothing. Ask the fruit carters; they hear it first.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear things by #still#. They stay there, with the steam.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I've not tasted it myself, mind.
+dlg @1 resident.bye : #farewell#. Mind the step. | #farewell#, #address#. Taste your water.
+graft resident.hub
+choice Why do you taste the water first? -> taste
+node taste
+say Because where I grew up, a bad well would kill you, and the only way to know was to sip and spit. I never got out of the habit.
+mood warm
+free
+choice What does bad water taste of? -> taste_bad
+choice Goodbye. -> bye
+node taste_bad
+say Eggs, if it's very bad. Metal, if a pipe's gone. City water tastes of roofs. I'll drink it, but I always know.
+choice I'll taste mine, then. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's the bucket by the still for? -> bucket
+node bucket
+say The first run. It comes off first and it's the worst: harsh, and bad for the head. I throw it away. Every time.
+mood pleased
+choice Don't others keep it? -> bucket_others
+choice Let me see your wares. -> greet
+node bucket_others
+say Some do, to make the bottle go further. You can taste it in theirs. Mine goes in the gutter, and I sleep well.
+choice Good to know. -> greet
+choice Goodbye. -> bye
+
+
+old
+line @1 answer.how [self.age>=60] : Old and steaming, #address#. The copper and I both. | #fine.capitalize#. My knees have opinions; I don't ask for them.
+line @1 greet [here.time=dawn self.age>=60] : #greet#. My knees woke me before #still# did. | #greet#. I'm up early; the old always are.
+scene the_stairs_and_my_knees
+when topic=health|home self.age>=60
+does tell.complaint / react.self / assess
+a : Three flights to my room. I count them going up and say things to them coming down. | My knees are a better almanac than any sky. They said rain at dawn. | I'm the oldest in my house, and the only one who can't run for the door.
+b : Say things to them? | Were they right? | Nobody needs to run.
+a : Nothing a priest should hear. #wry#. | They're never wrong. I'd sooner they were, now and then. | Not yet. But I'd like the choice, #address#.
+
+scene when_the_fen_was_wider
+when topic=memories|lore self.age>=60 self.from=fenshore
+does tell.memory / ask.detail / answer.detail / assess
+a : When I was a pup, #self.from_town# was half the size and twice the water. We poled to the bread. | I remember the year the river came into every house in #self.from_town#. We lived upstairs a month. | In my day the eel-boats went out singing. You could hear them across the whole of #fen#.
+b : Poled to the bread? | A whole month? | Do they still?
+a : In a flat boat, with a basket. The baker had a window on the water. | A month. My #mum# cooked on the stairs. I thought it was the best month of my life. | I don't know. I've not been back to hear. I hope they do, #address#.
+b : #bc_lovely# | #bc_ha# | #bc_i_hope_so#
+
+scene the_ones_i_buried
+when topic=memories|faith self.age>=60
+does tell.memory / sympathise / assess
+tone grave / tender / even
+a : I've buried more friends than I've got now. You stop counting, and then you start again. | Every winter there's a name fewer at the singing. The songs get longer, to fill the gap. | When I go, I want #still# lit and a song nobody can sing properly.
+b : #bc_poor_soul# | That's hard. | That's a good send-off.
+a : It's the price of living long. I'd pay it again, mostly, #address#. | It is. But we sing louder. #wry#. | And somebody to taste the first run and throw it out. That's the job.

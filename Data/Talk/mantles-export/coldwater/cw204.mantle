@@ -1,0 +1,287 @@
+# cw204, the prayer-stone picker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw204
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for cty_aster_sheafby
+written_by claude
+title the prayer-stone picker
+fits stage=adult|old
+prefers piety=devout talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes plum_tart digging festival_bells frosty_mornings
+dislikes waiting drizzle
+fears the_deep_woods a_prayer_left_too_long
+hopes every_stone_given_back a_patch_of_ground_to_dig
+topics faith +0.4 work +0.3 pastimes +0.3 season +0.2 weather +0.2 gossip -0.4 newcomer -0.2
+styles comfort=prayer gossip=refuses refuse=gentle tease=none
+marks oath saying
+persona #self.first# walks out of the city to the orchards and back each day, picking a smooth stone off the riverbank to hold through every prayer and setting it back in the water once the prayer is answered: quiet, devout, reserved and tired, glad of plum tart, a borrowed spade and the feast bells.
+
+words
+oath! = Bright One walk beside me | Stone and river | Bright One, take this stone
+saying! = Hold it till it's answered, then give it back | The river keeps what it's given | One step, one prayer, one more row
+keepyou = the Bright One see you right | the Bright One go along with you
+stone = a smooth stone | a river stone worn round
+prayerstone = my prayer stone | the stone in my paw
+river = the river | the slow river
+rows = the rows | the long rows of trees
+ladder = the picking ladder | the ladder
+basket = the basket | the picking basket
+apple = an apple | a good red apple
+tart = plum tart | a tart with the plums sunk dark into it
+spade = the spade | a borrowed spade
+feastbells = the feast bells | bells ringing for a holy day
+frost = frost | hoar on every stalk
+drizzle = drizzle | that thin rain that never makes up its mind
+woods = the deep woods | trees so thick you can't see out
+walk = the walk out | the long walk out past the gate
+chapel = the chapel | the chapel bench
+lake = the lake | the lake at home
+gate = the orchard gate | the farm gate
+waiting = waiting | waiting on other folk to decide
+
+any
+opinion @1 church for 2 : When my house was short a whole week, #chapel# put food in front of us and wanted nothing. I'll be there every Restday I can stand.
+opinion @1 drink against 1 : I've watched what ale does to a family. The Bright One weeps over it, I'd think, and I'd not add to it.
+opinion @1 houses against 1 : They'd sooner leave a row unpicked than take on somebody like me for the year. I pray for them anyway, #oath#.
+opinion @1 merchants against 2 : Not a copper more for me, and a copper more on every loaf. Somebody's counting the difference, and it isn't me.
+opinion @1 newcomers against 1 : Every new face at #gate# in the season is one less day's work for those of us already here.
+opinion @1 city against 1 : Smoke and strangers, and no #river# you can get your paws in. I walk out of it every day I'm able.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #keepyou.capitalize#. | #greet#, #address#. You're welcome.
+line @2 greet [here.time=dawn] : Morning. I'm on my way out to #rows#. | Morning, #address#. The Bright One give you a good day.
+line @3 greet [here.time=dusk|night] : Evening. I'm just back from #walk#. | #greet#. It's late. Go safely.
+line @1 kin.open [pair.kin!=no] : You've come. Rest your legs here beside me. | You. #good.capitalize#. I'd prayed you'd come by.
+line @1 again.open : #welcome_back#. Twice today; that's a blessing. | Back again, #address#. You're welcome both times.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down; I'll find you something. | #greet#. #good.capitalize#, it's you.
+line @3 greet.return [self.working=yes] : #greet#. I'll talk, but I'll keep picking. | #greet#. Mind #ladder#.
+line @1 farewell : #farewell#. | #farewell#. #keepyou.capitalize#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go safely, it's dark. | #farewell#. Sleep well.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. #keepyou.capitalize#.
+line @1 react.news : #ack#. I'll pray on it. | So it is, then. I'll keep it in my prayers tonight.
+line @1 react.news.new : #surprise#. I'd not heard a word. | #oath#. That's new to me, #address#.
+line @1 react.news.known : #knew#. It was said at #chapel#. | I'd heard. Somebody at #gate# was saying.
+line @1 react.news.doubt : #doubt#. I'll keep it to myself till I'm sure. | Perhaps. Let's not say more than we know, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll pray for them tonight. | That's hard news. The Bright One help them, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's an answered prayer for somebody. | #good.capitalize#. I'm glad, truly.
+line @1 answer.how : #fine#. #tired#, but well. | Steady, #address#. The Bright One's been kind enough.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #rows.capitalize# don't end. | Picking since first light, #address#.
+line @1 ask.how : And you, #address#? Keeping well? | Are you well? You look #tired#.
+line @1 sympathise : #sympathy#. I'll hold you in my prayers. | That's heavy, #address#. Sit, and say it all.
+line @1 reassure : #reassure#. Prayers are answered, in their time. | It'll ease, #address#. The Bright One sees to it, slowly.
+line @1 decline : #hedge#, but I can't. It's #walk# back before dark, and I'm slow. | I would, #address#, only my legs have nothing left today.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | That's all right, #address#. I understand.
+line @1 thank : #thanks#. The Bright One bless you for it. | That's kind, #address#. Thank you.
+line @1 deflect_thanks : #deflect.capitalize#. It was nothing. | It's what we're for, #address#.
+line @1 preclose [self.working=yes] : I should get back up #ladder#. | Well. #basket.capitalize# won't fill itself.
+line @2 preclose : Well. #preclose#. | Go on with your day. #farewell#.
+line @1 accept_preclose : Go on, then. #keepyou.capitalize#. | #farewell#, #address#.
+line @1 ack : #bc_true# | #bc_i_hope_so#
+line @1 give.advice : #advise.capitalize#: say your prayer, then do the work. Both, in that order. | Hold something steady when you're frightened. #saying#.
+scene prayer_stone
+when topic=faith|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I pick #stone# off #river# for every prayer, and hold it till the prayer is answered. | There's #prayerstone# in my pocket now. I've had it since spring. | When a prayer's answered, I take its stone back to #river# and give it back.
+b : Why a stone? | What's it for? | Why give it back?
+a : My paws want something to hold while I wait, and #waiting# is hard for me. | For somebody who's poorly. I'll not say who. #oath#. | It was only lent. #saying#.
+b : #bc_good# | #bc_i_hope_so# | #bc_wise#
+
+scene stones_given_back
+when topic=faith|pastimes
+does tell.feeling / react.self / assess
+a : I gave three stones back to #river# this month. Three answered. That's a good month. | Some stones I've held a year. One I've held five. I keep holding #prayerstone#. | #stone.capitalize# is best. You can turn it in your paw all through the service and nobody hears.
+b : Three in a month. | Five years? | I'll try that.
+a : Three. I said thank you at the water each time, #address#. | Five. It'll be answered. The Bright One isn't in a hurry. | Do. Pick one from #river#; it has to be a river one.
+
+scene picking_rows
+when topic=work self.working=yes self.job=none here.season=autumn
+does tell.self / react.self / assess
+a : #self.trade_words.capitalize#. Up #ladder#, fill #basket#, down, empty, up again. All day. | #rows.capitalize# go on further than you can see. I don't look at the end. | Good #apple# this year. Heavy on the branch. I say a word for whoever eats it.
+b : Hard on the legs. | Wise. | Whoever eats it?
+a : Hard on everything. I pray on #ladder#; it passes the time. | Keep looking for the last tree and you'll never climb the next one. | Somebody in the city. I'll never know them. #keepyou.capitalize#, I say anyway.
+
+scene ladder_ache
+when topic=work|health self.working=yes self.job=none
+does tell.self / reassure / assess
+a : My legs know every rung of #ladder# by dusk. | I'm #tired#, that's all. A long day and #walk# back on top of it. | I've a stiffness that comes and goes. Worse in #drizzle#, better with work.
+b : Rest a while. | You work hard. | Does anything help?
+a : I will, on Restday. The Bright One rested; I can too. | I work as I'm able, #address#. That's all anyone's asked to do. | A hot stone at night, and patience. Mostly patience, #oath#.
+
+scene walk_out
+when topic=travel|day here.region=ridgemere self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Every morning I take #walk#. Past the gate, past #river#, out to #rows#. | On #walk# I stop at #river# and pick the day's stone. The same bend, always. | I'd rather walk an hour each way than live out by the trees. I like a door that locks.
+b : That's a long way. | Which bend? | Why not live closer?
+a : It is, and quiet with it. I pray most of the way. | Where #river# goes slow by the willows. The stones are round there. | The farms sit too near #woods#. I'll not sleep near trees like that.
+b : #bc_fair_enough# | #bc_lovely# | #bc_fair#
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / react.self / assess
+a : There's #tart# at the baker's on feast days. I save for it all week. | I'd give a day's picking for a slice of #tart#. Not the money; the day. | My #gran# made #tart# for every holy day. I've never tasted one like it since.
+b : All week? | That much? | Never?
+a : All week. #tart.capitalize# is all I spend on myself. | Almost. Don't tell the baker, #address#. | Never. The Bright One keeps her recipe now.
+
+scene digging_patch
+when topic=pastimes|home self.likes=digging
+does tell.self / ask.detail / answer.detail / assess
+a : There's a patch behind #chapel# they let me dig. An hour on Restday with #spade#. | I'd dig all day if I'd ground of my own. Turning soil is a kind of prayer. | I borrowed #spade# again. I'll give it back cleaner than I had it.
+b : What do you grow? | A prayer? | Cleaner?
+a : Beans, and whatever comes up. Mostly whatever comes up, #address#. | Slow, and quiet, and you can't hurry it. That's prayer enough for me. #bc_true#. | Always. A borrowed thing goes back better. #saying#.
+b : #bc_good# | #bc_true# | #bc_wise#
+
+scene feast_morning
+when topic=festival|faith self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : #feastbells.capitalize# this morning. I stood still in the street to hear the whole peal. | When #feastbells# go, I feel the Bright One near. I can't say it better. | No dancing, no ale, but I'll stand at the chapel door for #feastbells#.
+b : They were loud. | I can see that. | That's enough.
+a : Loud enough for the whole city to hear. That's the point, #address#. | You feel it too, I think, if you stand still for #feastbells#. | It's plenty, #address#.
+
+scene white_frost
+when topic=weather|season here.season=winter here.time=dawn here.weather=clear self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #frost.capitalize#. The whole road out white and still, and only me walking it. | A hard #frost#. My breath goes up like a prayer. | #river.capitalize# had ice at the edges this morning. I still found a stone.
+b : Cold for walking. | It does. | Under the ice?
+a : Cold, but clean. I'd take #frost# over #drizzle# every time. | On a frost I can watch my prayers go up, #address#. | At the edge, where it's thin. My paw was numb an hour, #oath#.
+
+scene drizzle_day
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize#. Not rain, not dry. I'm wet through and it never once poured. | I can't stand #drizzle#. My paws slip on #ladder# and the apples bruise. | Thin wet all day. It gets in your coat and stays there.
+b : At least it's not a downpour. | Careful up there. | It'll dry.
+a : A downpour you can shelter from. #drizzle.capitalize# finds you anyway. | I am. I pray on every rung in weather like this. | It will. By Restday, maybe, if the Bright One's kind.
+
+scene waiting_on_folk
+when topic=smalltalk|work self.dislikes=waiting
+does tell.complaint / react.self / assess
+a : An hour at #gate# this morning for a cart that stayed away. I'd sooner walk. | I don't mind work. I mind standing about while other folk make up their minds. | #waiting.capitalize# is the hardest thing I know. A stone in my paw is the only help for it.
+b : An hour? | Me too. | A stone helps?
+a : An hour, and then I walked anyway. #oath#. | Then you'll know the feeling, #address#. | My paws turn it over, and my heart can wait in peace.
+
+scene deep_woods
+when topic=land|lore here.region=ridgemere
+does tell.worry / reassure / assess
+a : The orchards stop where the trees get thick. I don't go past the last of #rows#. | Some of the pickers go into #woods# for kindling. I won't. Not for anything. | When the light goes, #woods# behind the rows look like a wall. I walk home faster.
+b : It's only trees. | You're right to be careful. | They're not so bad.
+a : Only trees. I know. I still won't go. #oath#. | Careful is all I am, near #woods#. | Maybe not. I'll not find out, #address#.
+
+scene chapel_bench
+when topic=faith
+does give.opinion / react.self / assess
+a : At the back of #chapel# I say my prayers under the singing, with my stone. | The Bright One hears a quiet voice as well as a loud one. I'm quiet. | I go to #chapel# every Restday, and twice when somebody's poorly.
+b : The back suits you. | I'd hope so. | Twice?
+a : Nobody watches you at the back. There's only you and the Bright One. | I'm sure of it, #address#. I've given back too many stones to doubt. | Twice. One to ask, and one after to give thanks.
+
+scene lake_stones_home
+when topic=memories|home self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# the shore of #lake# was all stones. Thousands. I'd fill my pockets till I couldn't run. | My #gran# taught me to hold a stone to pray, back home by #lake#. I've done it since. | I left #self.from_town# with one stone in my pocket. I've still not given it back.
+b[from=coldwater] #cw : The lake shore. All grey ones. | A gran's way. Mine too. | What did you pray for?
+b : Thousands? | She sounds a wise one. | Why not?
+a@cw : Grey and round. The ones in #river# here are browner. | Then you'll know it works, #address#. | To come back, one day. It's not answered yet.
+a : Thousands, and every one smooth. #lake.capitalize# does that. | She was. She's with the Bright One now. | It's not answered. I'm still holding #prayerstone#.
+
+scene city_walls
+when topic=home here.region=ridgemere
+does give.opinion / react.self / assess
+a : The city's for sleeping in, as far as I'm concerned. | My room's dry. I'll not ask more of a city, #address#. | The city's all smoke and stairs. I'm out of it before light and back after dark.
+b : That sounds a hard way to live. | Dry's something. | You hardly see it, then.
+a : It's a way. I've lived worse, and the Bright One knows it. | It is. A dry room is a gift from the Bright One. I'll not ask for a view. | Hardly. That suits me, #address#.
+
+scene hard_season
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : They took fewer pickers on this year. I was lucky. I prayed for the ones turned away at #gate#. | Bread's dearer and the pay's the same. I've had the parish loaf twice this month. | Lean times. I give a little at #chapel# anyway. It comes back somehow.
+b : You were lucky. | No shame in that. | Does it?
+a : Lucky, or answered. I don't know which, #address#. | None. The parish asked nothing, and I've #prayerstone# for them. | It does. Not always as coin, but it does.
+
+scene gossip_refused
+when topic=gossip
+does tell.self / react.self / assess
+a : Nothing about anybody passes my lips that I'd not say to their face. | There's talk going round about somebody. I'll pray for them instead of passing it on. | Folk at #gate# talk all day. I keep my eyes on #basket# and pick.
+b : That's fair. | That's kind. | Sensible.
+a : It's only right, #address#. | Talk never mended anybody. Prayer might. | Eyes down, #basket# full. That's my way.
+
+scene new_pickers
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New faces at #gate# every season. Every one of them means less work to go round. | I don't blame the new folk. I just pray there's enough for all of us. | Somebody new wanted the road out to the orchards today. I showed them, and said a prayer for the work.
+b : That's hard on everyone. | There never is. | That was kind.
+a : Hard on everyone. And harder on the slow ones, like me. | Not often. But sometimes, #address#. | It costs nothing, #address#. #keepyou.capitalize#.
+
+story the_first_stone [topic=memories|faith self.from=coldwater self.age>=25]
+  : As a #child# I sat up with my #gran# when she was poorly, and had no notion what to do.
+  : I picked #stone# off the shore and held it all night, and prayed.
+  : In the morning she sat up and asked for porridge. I ran back down and gave the stone to #lake#.
+  ask : Do you keep anything for luck, or for praying?
+  b : Nothing. Perhaps I should.
+  b[from=coldwater] : A stone from the lake. Doesn't everyone?
+
+story lost_in_the_trees [topic=memories|lore self.age>=20]
+  : Once, as a young one, I went into a wood after a lamb and couldn't find my way back out.
+  : The trees all looked the same and the light went green, then grey, then nothing.
+  : I held #stone# and prayed till morning. A woodcutter found me at first light.
+  ask : Would you have gone in after the lamb?
+  b : I'd have stood at the edge and called.
+  b[old] : I'd have gone. And been sorry, like you.
+  : That's why I stop at the last of #rows#. Every time.
+
+story the_bell_morning [topic=festival|memories self.likes=festival_bells]
+  : One feast morning I was up #ladder# when the bells started, every chapel in the city together.
+  : I stopped picking and just held on and listened, and nobody shouted at me to get on.
+  : The whole orchard had stopped. Every picker, every ladder, listening to #feastbells#.
+  b : That sounds a fine thing.
+  b[job=farmer|laborer] : I've seen that. It doesn't happen often.
+
+rule @stone_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Bright One, here's another. Hold #stone# with me. | #oath#. One for today.
+
+rule @picking_bark
+when concept=bark working=yes self.job=none here.season=autumn
+does aside
+cooldown 6h
+say Another of #rows# done. One more, then. | #basket.capitalize#'s full. Down I go.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 8h
+say #drizzle.capitalize#. Again. Bright One, send it one way or the other. | Wet through, and #drizzle# never even rained properly.
+
+rule @bells_bark
+when concept=bark world.festival=today self.likes=festival_bells
+does aside
+cooldown 12h
+say Listen. #feastbells.capitalize#. | There they go. #oath#, the Bright One's morning.
+
+dlg @1 resident.hub : #greet#. Is there something you need? | #greet#, #address#. #keepyou.capitalize#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I'm glad you've come back.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. I'm just back. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Ask what you want to ask, #address#, and I'll answer if I can.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Up #ladder# and down, and a prayer on every rung. | I work out at #self.workplace#, and walk there and back each day.
+dlg @2 resident.job : I work as I'm able, and I pray as I go. | Whatever I'm given, done with care, #address#.
+dlg @1 resident.news [world.news] : It was said at #chapel#: word from #world.news_from#, #world.news#. I'm praying it's no worse than that.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I've heard, #address#. A quiet week, thank the Bright One.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't pass talk on, #address#. I'd rather pray for folk than talk about them.
+dlg @1 resident.bye : #farewell#. #keepyou.capitalize#. | #farewell#, #address#. Go safely.
+graft resident.hub
+choice Why do you keep a stone in your paw? -> stone
+node stone
+say It's a prayer stone. I pick one off #river# for every prayer and hold it till the prayer's answered. Then I give it back to the water.
+mood calm
+free
+choice What are you praying for now? -> stone_now
+choice Goodbye. -> bye
+node stone_now
+say That stays between the Bright One and me. But it's a smooth stone, so I've held it a long while. It'll be answered.
+choice I hope it is. -> hub
+choice Goodbye. -> bye

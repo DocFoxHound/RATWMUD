@@ -1,0 +1,446 @@
+# lf162, the map-mender of the hall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf162
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier full
+written_for rm_maren_grayrock_
+written_by claude
+title the map-mender of the hall
+fits stage=adult|old
+prefers job=merchant warmth=reserved
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk pencils_the_true_roads_onto_old_maps
+likes plum_tart wrestling old_maps thunder
+dislikes haggling waiting
+fears a_letter_that_never_comes the_gate_left_open_at_night
+hopes every_road_on_the_map_drawn_true a_full_table_in_the_hall_again
+topics home +0.4 lore +0.4 travel +0.3 weather +0.3 family +0.2 work +0.2 gossip -0.4 prices -0.3
+styles comfort=steady gossip=withholding refuse=formal tease=none
+marks oath saying
+persona #self.first# keeps a great hall and its ledgers with a sharp eye and an even voice: patient, formal, never one to haggle, and fond of old maps, with the true roads pencilled in of an evening.
+
+words
+oath! = By the true road | Seal and scale | By the old map's margin
+saying! = A price is named once in this house | Every map is wrong somewhere, and the road never minds | The patient ledger balances
+maps = my old maps | the maps in the long gallery
+pencil = my pencil | a soft pencil
+trueroad = the true road | the road as it really runs
+hall = the hall | this old hall
+grounds = the grounds | the hall grounds
+gate = the gate | the iron gate
+ledgers = the ledgers | the hall's ledgers
+letters = the letters | a letter, filed and kept
+household = the household | the servants' hall
+tart = plum tart | a plum tart from the kitchens
+bout = a bout on the green | a fair throw on the green
+thunder = thunder | a good roll of thunder
+roof = a sound roof | the hall roof
+downs = the downs | the open downs
+cross = the market cross | the cross on a fair day
+haggler = a haggler | some haggler at the gate
+gallery = the long gallery | the gallery with the maps
+seal = the seal | the House seal
+kitchens = the kitchens | the hall kitchens
+thehouse = the House | our House
+roads = the roads | the roads of the realm
+carter = a carter | a carter off the east road
+city = the city | the city below the hill
+sound = the Sound | the grey Sound
+chapel = the chapel | the chapel on the hill
+price = a price | a written price
+callers = callers | callers at the gate
+map = a map | an old map
+
+any
+opinion @1 houses for 2 [self.house] : The Houses are the beams of #city#. Take one out and see what stands. | I speak for #thehouse# only where the House has spoken. On that, it has.
+opinion @2 houses for 1 [!self.house] : The Houses keep #city#'s walls up and its wharves working. I'd weigh any complaint against that, full weight.
+opinion @1 merchants against 1 : A trader who names a price and then haggles has named no price at all. #saying#. | I deal with merchants who write a price down. The rest may stand at #gate#.
+opinion @1 dole against 1 : #dole.capitalize# comes out of every purse in the Estate, and some faces come back for it twice. I see the ledgers. | Charity is a duty. Charity without #ledgers# is a leak.
+opinion @1 city against 1 [self.away=yes] : #city.capitalize# is all roofs and no neighbours. In #self.from_town# one knew whose door was whose by the first market. | The city is loud below #gate#. I keep it there.
+opinion @1 sump against 2 : I do not go below the Commons, and I see no reason I should begin. That is my price, and it's named. | The Sump keeps the Watch busy and #ledgers# sorry. That is all I know of it, and enough.
+opinion @1 strangers for 1 : A traveller brings the roads in on their boots. I'll hear any of them about #trueroad#. | Strangers at #gate# are a nuisance. Strangers with news of a road are welcome.
+opinion @1 watch for 1 : The Watch keeps my street quiet at night. I'd pay for that twice and call it fair-priced. | A constable on the corner is worth a bolt on #gate#. I have both.
+opinion @1 newcomers for 1 : New faces bring new trade, and new trade keeps #thehouse#. I'll not turn my nose up at either. | An incomer who pays fair is no incomer for long.
+opinion @1 times for 1 : I have no complaint of the times, and I'd be daft to make one aloud. | The ledgers balance. That much I'll say in the street, and nothing past it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You stand at #hall#. Be brief, and be welcome. | #greet#. State your business plainly; I'll hear it.
+line @2 greet [self.house] : #greet#. You are in the House's keeping while you're here. | #greet#. Come in. Mind the floors; they're older than either of us.
+line @3 greet [here.time=dawn] : Good morning. I have been up with #ledgers# an hour already. | Good morning. Early, for #callers#.
+line @4 greet [here.time=dusk|night] : #greet#. Late for calling. I'll allow it. | Good evening. #gate.capitalize# shuts at the bell; mind it.
+line @1 kin.open [pair.kin!=no] : There you are, #dear#. Sit. I have been waiting, and you know I don't care for it. | You. Sit, and tell me everything, full weight and in order.
+line @1 again.open : Back the same day. Something was left unsaid, then. #welcome_back#. | You again. I shall have a chair kept for you in #hall#, at this rate.
+line @1 hail [pair.band=friends] : A word, if you will. It's short weight; it won't keep you. | Here. I have something to show you; it's #map#.
+line @1 greet.return : #greet#. | #greet#. You are welcome.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, then. | #greet#. I had hoped it would be you.
+line @3 greet.return [self.house] : #greet#. The House is glad of you. | #greet#. Sit where you please.
+line @4 greet.return [here.time=dusk|night] : Good evening. It is late, but sit. #kitchens.capitalize# are still warm. | Good evening. #thunder.capitalize# or callers; the night brings one or the other.
+line @1 farewell : #farewell#. | #farewell#. Mind #gate#.
+line @2 farewell [here.time=dusk|night] : Good night. Keep to the lamps below the hill, and count your change. | Good night. I'll have #gate# barred behind you.
+line @1 farewell.return : #farewell#. | #farewell#. Go carefully.
+line @2 farewell.return [pair.band=friends|family] : Go on, then. Write, if you won't call; I'll file #letters# with the rest. | #farewell#. Don't leave it so long next time; I notice.
+line @1 react.news : Is it so. Put it on the scales for me, in order. | Go on. I'll weigh it when you've done, to the ounce.
+line @1 react.news.new : #surprise#. That has not reached #hall# yet. | Very little is new to me. That is. #surprise#.
+line @1 react.news.known : #knew#. It was in the morning's letters. | I had that already. Things come up to #hall# quicker than you'd think.
+line @1 react.news.doubt : #doubt#. I'll believe it when it is written down and signed. | #nonsense.capitalize#, maybe. I'll weigh it when I have a second telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is hard news. #pity#. | I am sorry for it, full weight. Sit a moment.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll see the kitchens send something. | Good. That is good weight, and rare enough.
+line @1 answer.how : #fine#. #ledgers.capitalize# balance and #roof# holds. | Well enough, near full weight. I'll not complain in company.
+line @1 answer.how.busy [self.working=yes] : Occupied. #ledgers.capitalize# will not keep. | #busy.capitalize#, and better for it.
+line @1 ask.how : And you? I'll have it honest weight, mind. | How do you keep, #address#? Plainly, now.
+line @1 sympathise : A dear price, and you've paid it in full. Sit. | #sympathy#. You'll take something from the kitchens before you go.
+line @1 reassure : It'll weigh out right. Give it a season. | You'll manage. I have seen worse balanced in #ledgers#.
+line @1 decline : #hedge#: I do not leave #hall# for it, and I'll not begin now. | I must say no. #ledgers.capitalize# want me tonight, and they will not wait on anyone.
+line @1 accept_decline : #no_matter.capitalize#. Another time. | That will do. I'd not press you. #bc_fair_enough#
+line @1 thank : #thanks#. That was well done. | I am obliged to you. It goes in #ledgers#, the good side.
+line @1 deflect_thanks : #deflect.capitalize#. It was owed. | There's no debt in it. No charge for it, and leave it there.
+line @1 preclose [self.working=yes] : Well. #ledgers.capitalize# are waiting. | I must get back to #hall#'s business.
+line @2 preclose : Well. #preclose#. | I've held you here long enough, and myself. #excuse#.
+line @1 accept_preclose : Go, then. Mind #gate#. | Of course. #farewell#.
+line @1 insist : #insist#. A price is a price. | I said so once. I'll not drop my price on my own words.
+line @1 ack : #bc_true# | #bc_right#
+line @1 give.advice : #advise.capitalize#: a map you haven't walked is only somebody's word. | Write #price# down before you shake on it. Then there is nothing to haggle.
+line @1 warn [world.bandits=near] : Keep off the roads past the walls. #warn#. | If you travel, travel with company. The roads are worse than #maps# admit.
+line @1 refuse : #hedge#: I'll not take it. The hall has enough, and I've no use for more. | No, thank you. #hall.capitalize# provides for me.
+scene pencilled_roads
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I have #maps# out on the table again. Half the roads on them are drawn wrong. | Every map in #gallery# has my pencil on it now. Faint, mind. Only where the road truly runs. | #carter.capitalize# told me the east road bends at a mill that isn't on any map I own. I've put it on.
+b : Wrong how? | Only faint? | A mill?
+a : Drawn by someone who never walked #roads#. Straight where they bend, and a bridge where there's a ford. | Faint. #map.capitalize# is somebody's work. I correct it; I don't spoil it. | A mill, and a ford below it. I'll never see either. #maps.capitalize# will know, at least.
+b : #bc_ha# | #bc_wise# | #bc_true#
+
+scene the_true_road
+when topic=travel|lore self.likes=old_maps
+does tell.feeling / react.self / assess
+a : I have walked no road in years, and I know #trueroad# to half the towns in the realm. | #map.capitalize# is a promise someone made about a road. Most of them break it. | Ask me the way to anywhere. I'll tell you how #maps# lie about it.
+b : That's a strange way to travel. | Most of them? | Is the map that bad?
+a : It is the way I travel. It suits me. #saying#. | All the old ones. The new ones are short-weighed differently. | Worse. But a map with the true road pencilled in is a fair-priced thing.
+
+scene the_gallery
+when topic=home|pastimes self.likes=old_maps self.house
+does tell.self / react.self / assess
+a : There is a long gallery in #hall#, and every map in it is older than the House's seal. | I walk #gallery# when the lamps are lit. That is all my walking now. | The oldest map in #hall# shows the city as three streets and a jetty.
+b : Older than the seal? | The only walking? | Three streets?
+a : Some of them. The House collected them before it collected anything else. | It is enough. #maps.capitalize# go further than I would. | Three, and a jetty, and #sound#. I like to look at what was there first.
+
+scene thunder_from_under_a_roof
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess / ack
+a : Listen to that. #thunder.capitalize#, and #roof# over us. I could not ask for more. | I put the lamps out in #gallery# and watch the storm over the Sound. | There's no sound I'd rather hear than #thunder# on a slate roof, so long as it is somebody else's weather.
+b : You like storms? | In the dark? | It is loud.
+a : From under #roof#, I do. In it, I would not. | In the dark. One sees the lightning better. It's the only show I'll sit through. | Loud and honest weight. #thunder.capitalize# never haggles.
+b? : #bc_true# | #bc_lovely# | #bc_ha#
+
+scene rain_on_the_grounds
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain again. #grounds.capitalize# have been under water since Restday. | The gardeners say the lower lawn of #grounds# is a pond. I have told them to call it one. | I keep a pair of boots at the door of #hall# for the rain, and I've worn them out twice.
+b : It never stops here. | A pond? | Twice?
+a : It does, for an afternoon in summer. I mark it in #ledgers#. | If it will not drain, it can at least be honest about what it is. | Twice. #rain# here is not like #downs#. It does not move on.
+
+scene fog_over_the_estate
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog to #gate#. I cannot see the street from the upper windows. | The bells come up through fog to #hall# like they're next door. | Nothing comes to #hall# in fog. No callers, no letters. It's very quiet.
+b : Thick today. | I've noticed that. | Restful, maybe.
+a : Thick. The city may as well not be there. Some days I would not mind. | It carries the sound and hides the rest. That is fog. | Restful. Yes. I'll call it that, if you will. #bc_fair_enough#
+
+scene snow_on_the_grounds
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow on #grounds#. Not a footprint on it. I'd keep it so till noon if I could. | In #self.from_town# snow came over #downs# and stopped the market. Here it only stops the carts. | I like #grounds# white. Every path is mine again, and nobody's.
+b : It's lovely. | Stopped the market? | Nobody's?
+a : It is. I'll have the paths swept at noon and not a moment before. | For a day. Nobody haggled at #cross#. It was the quietest day of the year. | Nobody's. Not even #thehouse#'s, till the thaw.
+
+scene wrestling_on_the_green
+when topic=pastimes|memories self.likes=wrestling
+does tell.memory / ask.detail / answer.detail / assess
+a : There was wrestling at every fair on #downs# in my pup days. I never missed #bout#. | I could still tell you every throw there is, and what it's called on #downs#. | I'd stand at the rope in my good dress and shout like a carter. My #mum# despaired.
+b : Did you ever wrestle? | Every throw? | Did she?
+a : Once. I was thrown fair-priced and I got up. That is all wrestling teaches, and it is enough. | Every one. The hip-roll, #downs#-lift, the cross-buttock. I'll not demonstrate. | Every fair. And every fair I went back to the rope.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / react.self / assess
+a : The kitchens make #tart# on a Restday. I eat it in the gallery where nobody can see. | #tart.capitalize# is the one thing I'll take a second helping of in company. | There was a stall at #cross# that sold plum tart wrapped in a cabbage leaf. Nothing since has been as good.
+b : Why where nobody can see? | Only that? | A cabbage leaf?
+a : #thehouse.capitalize# does not need to know how much #tart# I eat. | Only that. Everything else I take once and leave room. | To keep it warm. It tasted of the leaf, a little. That was part of it.
+
+scene no_haggling
+when topic=prices|work self.dislikes=haggling
+does give.opinion / disagree / insist / ack
+a : I will not haggle. #thehouse.capitalize# names a price once, and that is the price. | A dealer came to #gate# and tried to haggle over the lamp oil. I sent him round again. | I grew up by #cross#, so I know every trick of a haggler. That is why I won't.
+b : Everyone haggles. | Round again? | Isn't that odd, for a market wolf?
+a : Then everyone wastes an hour. I've no hour to waste. #saying#. | Round the walls, and back to #gate# with a written price. He came. | Odd, perhaps. I saw what haggling does to a friendship. Name the price, I say.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene the_waiting
+when topic=day|family self.dislikes=waiting
+does tell.feeling / react.self / reassure / ack
+a : I do not care for waiting. For #letters#, for carts, for anything. | The hall is very good at waiting. I am less so. | I have filed every letter that's come to this house. Waiting for the next one is the part I mind.
+b : Nobody likes to wait. | Less so? | It'll come.
+a : No. But some are made to do more of it than others. | I keep busy. #ledgers.capitalize# do not wait; they're always ready. | It will. I'll file it with the others, and I'll read it twice first.
+b? : #bc_true# | #bc_wise# | #bc_i_hope_so#
+
+scene the_ledgers
+when topic=work self.house self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #ledgers.capitalize# are mine. Every candle, every sack of meal, every wage. | I sit with #ledgers# from breakfast till noon, and nobody interrupts me twice. | I found a shilling's difference in #kitchens#' book last month. I found where it went, too.
+b : Every candle? | Twice? | Where did it go?
+a : Every candle. A house is run by its small numbers, not its large ones. | Once, they're forgiven. Twice, they're given work in the stables. | Into a cook's pocket, and back out of it, with an apology. It balanced.
+b : #bc_wise# | #bc_ha# | #bc_good#
+
+scene running_the_house
+when topic=work|home self.house
+does tell.self / react.self / assess
+a : I keep #hall# for the House: the staff, the stores, the callers and #gate#. | Forty rooms in #hall#, and I know which windows stick in the wet. | The household runs whether the family is home or not. I see to that.
+b : That's a great deal. | Forty? | That's a lot to carry.
+a : It's what I'm for. I'll not pretend otherwise. | Forty, and a cellar that floods. I've #map# of that too. | It is. I carry it quietly. #thehouse.capitalize# prefers it so.
+
+scene the_house_stands
+when topic=lore|work self.house
+does give.opinion / react.self / assess
+a : #thehouse.capitalize# was here before half #city#, and it means to be here after. | People below the hill talk of the Houses as if they were weather. We're not. We're work. | #thehouse.capitalize# has its faults. I keep a list. I keep it to myself.
+b : That's a proud thing to say. | Work? | A list?
+a : It is a true thing to say. Pride is another ledger. | Work. Wages, ships, walls, roofs. Somebody keeps #ledgers#, and here it is me. | A short one. Shorter than other Houses would have, I'd wager.
+
+scene spouse_away
+when topic=family self.married=yes self.spouse
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# keeps long hours. I keep #hall#. That was the bargain, and I keep my bargains. | I'd not have #self.spouse# home a day sooner than the work allows. That is how a House runs. | #self.spouse# and I have been married a long while. Long enough to need very few words.
+b : A hard bargain. | That's patient of you. | That's rare.
+a : A fair-priced one, made with open eyes. I don't haggle over it now. | Patient. Yes. I've had the practice. | Rare and quiet. A louder one would be short weight to me.
+
+scene the_children
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : #self.child# will run #hall# better than I do, one day. I've seen to that. | I'll not have #self.child# learn to haggle. Learn to name a price, I said. | I want #self.child# to see more of #roads# than I have. Walked, not pencilled.
+b : You must be proud. | And did it stick? | That's a good wish.
+a : Proud, and I'll not say it at table. | It's sticking. I hear it in the voice. | That one I say aloud. The rest I keep.
+
+scene home_downs
+when topic=memories|home self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : #self.from_town# raised me, under #downs#. I can still smell a wool market if I close my eyes. | Back home a lambkin learned the scales before letters. I did, and I still read a ledger like a stall. | I came up from #self.from_town# young, and I've not been back. The maps go there for me.
+b[from=larkfield] #lark : The wool market. Nothing smells like it. | The scales before letters, every one of us. | It's not changed much, the town.
+b : Do you miss it? | Like a stall? | You've never been back?
+a@lark : Then you'll know why I can't abide a short weight. | Then we were taught alike. I'm glad of it. | I'm glad. I've pencilled it the way I remember.
+a : I miss #downs#. The sky goes all the way down to the grass there. | Like a stall. Weigh it, write it, let's not haggle. | Not once. #map.capitalize# of it hangs over my desk. That will do.
+
+scene the_wool_fair
+when topic=lore|memories self.away=yes self.from=larkfield self.age>=30
+does tell.memory / ask.detail / answer.detail / assess
+a : In #olddays# the wool fair at #cross# lasted three days, and nobody slept. | My #grandad# sold fleeces by the weight and swore by the market cross that every one was full weight. | The fair had a weigh-master in a red coat who could stop any sale in the square.
+b : Three days? | Were they? | Any sale?
+a : Three days, and the third day was all bargains, since nobody could stand for haggling by then. | Every one, true weight. He'd sooner lose a buyer than a name. I learned that from him. | Any sale. One word from the red coat and the scales were checked. I've wished for one since.
+b : #bc_ha# | #bc_wise# | #bc_true#
+
+scene the_estate
+when topic=home|smalltalk here.region=ridgemere self.quarter=estate
+does tell.self / react.self / assess
+a : The Estate is quiet, and I'd keep it quiet, like #hall#. High walls, good gardens, and nobody shouting. | Up here one hears #city# as a sort of weather. That suits me. | From the Estate you can see every roof in #city#. Very few of them see us.
+b : It's peaceful. | Like weather? | That's one way to put it.
+a : Peaceful is earned. It's paid for in walls and wages. | A low noise, always, like rain on a far roof. | It is the true way to put it. Walls work in one direction.
+
+scene the_gate
+when topic=home|smalltalk self.house
+does tell.self / react.self / assess
+a : I rarely pass #gate# now. Everything the hall needs comes to it. | #gate.capitalize# is barred at the bell, every night. I check it myself. | Callers stand at #gate# and think it's for keeping them out. It's for knowing who's in.
+b : Never? | Every night? | That's a fine difference.
+a : Rarely. The roads are in #gallery#; I don't need the dust. | Every night, and I've never once found #gate# open. I'll keep it so. | It's the whole difference. I'll explain it to anyone with a written price.
+
+scene gossip_held
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear a great deal at #hall#. I repeat almost none of it. | Somebody said a thing at dinner that stays at dinner. Some words are not for carrying. | Gossip is a market-mouth's trade. I was raised to keep a better one.
+b : Not even a little? | Fair. | A better trade?
+a : Not even that. A hall that talks loses its #callers#. | Fair. It's a courtesy I'd ask back. | Ledgers. They talk only when asked, and they never lie about it.
+b : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene gossip_heard
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : It's said below the hill that #topic.subject# #topic.claim#. That is how it came to me, no more. | They say #topic.subject# #topic.claim#. There's nothing of mine added, and you'll not quote me. | I had it from #kitchens#: #topic.subject# #topic.claim#. Weigh it as kitchen talk.
+b : Is it true? | I won't. | Kitchen talk?
+a : I could not say. I've not seen it written in #letters#. | Good. Then it's said, and it stops. | Kitchen talk is right more often than a dinner table's. I'll grant it that.
+
+scene town_talk
+when topic=news|event world.event_words
+does tell.news / react.news / assess
+a : Everyone who comes to #gate# today has spoken of #world.event_words#. | #world.event_words.capitalize#. It has reached even #hall#. | The household speaks of nothing but #world.event_words#. I've let them, for a day.
+b : It's everywhere. | Even here? | Only a day?
+a : So it is. I'll wait till it's written down before I say what I think. | Even here. Very little doesn't, in the end. | A day. Then #ledgers# want them back.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean self.house
+does tell.worry / reassure / assess
+a : The ledgers say #city# is buying less. The House sees it before the street does. | Lean, this season. I've had the kitchens send more to #gate#. | When the times are lean, the first thing cut is candles. I've cut ours.
+b : Hard for everyone. | That's good of you. | Even yours?
+a : Hard, and it will pass. It will weigh out right if we're careful. | It is what a hall is for. #bc_somebody_has_to# | Even ours. A House that keeps its candles in hard times deserves the dark. #bc_true#
+
+scene good_times
+when topic=times|prices world.times=good|boom self.house
+does tell.news / react.news / assess
+a : #ledgers.capitalize# have never looked better. I checked them twice to be sure. | Good times. The wharf is busy and the bank is pleased, I'm told. | Every room aired, every candle lit. Good times look like that, in #hall#.
+b : That's good news. | Only told? | Every candle?
+a : It is. I'll not trust it past a season, but it is. | Only told. I'll believe it in #ledgers#, and I have. | Every one. I counted.
+
+scene ships_in
+when topic=ships here.region=ridgemere world.ships=in self.quarter=estate
+does tell.news / react.news / assess
+a : The ships are in. You can hear the wharf from the Estate on a still day. | Ships in. The letters will come up the hill tonight. | I saw the sails come round from the upper windows of #hall#. A good sight, that.
+b : Good news. | Letters? | It is a good sight.
+a : Good for the city. Good for #ledgers#. | Letters always come with ships. I'll read them all twice. | The best #city# offers, from up here.
+
+scene faith
+when topic=faith
+does give.opinion / react.self / assess
+a : On Restday I sit in the pew; on the other six I keep #ledgers# straight. The Bright One may judge which counts more. | The chapel has #thehouse#'s pew. I sit in it and think of the roads. | Back in #self.from_town# they say the Bright One weighs every soul twice. I try to be worth the second weighing.
+b : Both count. | The roads? | That's a good way to live.
+a : I'd hope so. I keep both, in any case. | Prayer goes where it likes. Mine goes down #roads#. | I was raised to it, and I keep to it. #bc_true#
+
+scene health
+when topic=health
+does tell.self / react.self / reassure
+a : My eyes ache from #ledgers# by lamplight. I'll not admit it to the physician. | A stiff back. Forty rooms will do that to anyone who walks them. | I'm well. I'm always well. #ledgers.capitalize# leave no time to be otherwise.
+b : Rest them. | Sit a while. | That's lucky.
+a : I'll rest them on #map#, which is not the same thing at all. | I'll sit when #gate# is barred. Not before. | Lucky, and careful. I'd not tempt it.
+
+scene the_road_never_walked
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dream of walking one of #roads# I've pencilled in. Just one. | I dreamt the old map in #gallery# was right after all, and the true road went wrong. | Some nights I dream #gate# is open and nobody has barred it.
+b : Which road? | What did you do? | What happens then?
+a : #trueroad.capitalize# east, to the mill and the ford. I never get further than the first bend. | Rubbed out my pencil, every line of it. I woke and went to #gallery# to look. | Nothing. Nobody comes in. That's the worst of it.
+b : #bc_i_hope_so# | #bc_ha# | #bc_poor_soul#
+
+scene the_accent
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I married into a House and kept my #self.from_town# talk. It has done #thehouse# no harm. | Folk up here say fair price as a joke. I say it because I mean it. | The first season in #hall# I was told to soften my vowels. I declined.
+b : Good for you. | Do they mean it? | You declined?
+a : It's the honest weight of me. I'll not trade it. | They'll learn what it means, or they won't. Either way, I'll say it. | Politely, and once. Nobody asked twice. That's #saying#.
+
+scene stranger_at_the_gate
+when topic=newcomer|player
+does tell.self / react.self / assess / ack
+a : A traveller stopped at #gate# this morning to ask the way. I told them the true way, not the map's. | Strangers come up the hill and look at #hall# as if it might bite. It doesn't. | I like an incomer who knows the road they came by. Most don't.
+b : Kind of you. | Does it? | Most don't?
+a : Not kind. Accurate. They'll thank #pencil#. | Only the hagglers. #bc_ha# | Most walk with their eyes on their boots. I'd look at the road.
+b? : #bc_ha# | #bc_ha# | #bc_true#
+
+story the_first_correction [topic=pastimes|memories self.age>=25]
+  : The first map I ever corrected was one my #grandad# kept by the door. It showed a bridge over a river that was only a ford.
+  : I was nine. I took a pencil and drew the ford in, and he made me walk to it to prove it.
+  ask : Would you have let a pup mark your map?
+  b : Not without walking it, no.
+  b[old] : I'd have done as he did.
+  : I walked it, and I was right. He framed the map after, pencil and all.
+
+story the_thrown_bout [topic=pastimes|memories self.likes=wrestling self.age>=20]
+  : At the fair once a big shepherd threw every challenger, and nobody would try him.
+  : A little drover stepped in, let himself be thrown twice, and on the third turned the shepherd's own weight over.
+  ask : Do you know what the crowd did?
+  b : Cheered for the little one, I'd hope.
+  : Not a sound. Then the shepherd laughed and shook his paw, and the whole green roared.
+
+story coming_up_the_hill [topic=memories|family self.married=yes self.age>=30]
+  : To this house I brought one trunk and #map# of #self.from_town# folded in it.
+  : The first night, I unfolded it on the table and pencilled where everything was, so I'd not forget.
+  ask : Do you keep anything from home?
+  b : Not much. A few things.
+  b[from=larkfield] : A weight and a cloth, from home. You'd understand that.
+  : The map hangs over my desk now. I've never needed to look at it, and I look at it every day.
+
+story the_storm_over_the_downs [topic=weather|memories self.away=yes self.from=larkfield self.likes=thunder]
+  : One summer a storm came over #downs# while the market was still up. Every stall came down at once.
+  : The weigh-master stood in the square in the rain and wouldn't let a sale finish till the scales were dry.
+  b : That's dedication.
+  : Or stubbornness. In #self.from_town# we never could tell them apart.
+
+story the_haggler_at_the_gate [topic=prices|work self.house self.dislikes=haggling]
+  : A dealer once stood at #gate# for an hour trying to haggle me down on lamp oil.
+  : I named my price once and went in to my ledgers. When I came out at dusk, he was still there.
+  ask : Do you know what he said?
+  b : That he'd take your price, I hope.
+  : That he'd take it, and that he'd never met a worse customer. I took that as fair.
+
+rule @ledger_bark
+when concept=bark working=yes self.house
+does aside
+cooldown 8h
+say Who has been at #ledgers#? | The kitchen book again. #annoyed#.
+
+rule @gate_bark
+when concept=bark here.time=dusk|night self.house
+does aside
+cooldown 10h
+say Bar #gate#. Now, please. | #gate.capitalize#. I'll check it myself.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 10h
+say There it is. Listen to that. | #thunder.capitalize#. Good.
+
+rule @map_bark
+when concept=bark self.likes=old_maps
+does aside
+cooldown 12h
+say Where has #pencil# gone? | That road bends. It always bent.
+
+rule @haggle_bark
+when concept=bark self.dislikes=haggling
+does aside
+cooldown 12h
+say One price. Named once. | #saying#.
+
+rule @waiting_bark
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 12h
+say Still nothing. #annoyed#. | How long does a letter take, I wonder.
+
+dlg @1 resident.hub : #greet#. Say what brings you, plainly. | #greet#. You stand at #hall#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you like. What is wanted?
+dlg @3 resident.hub [here.time=night] : It is late. If it is urgent, say so. If it is not, say it quickly.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You'll state your business, and then we'll see.
+dlg @5 resident.hub [self.house] : #greet#. The House receives you. Be brief, and be welcome.
+dlg @1 resident.job [self.house] : I keep #self.workplace#: the staff, the stores, the callers and #ledgers#. | I keep #thehouse#'s hall. Somebody must, and it is me.
+dlg @2 resident.job : I keep a house and its accounts. It's work enough. | #job_busy#
+dlg @1 resident.business [business=thriving] : The ledgers have never looked better. The street may guess the rest. | Well. Very well, in fact.
+dlg @2 resident.business [business=failing] : Poorly. Finer words would be short weight. | Badly. The ledgers say so, and #ledgers# don't flatter.
+dlg @3 resident.business [business!=thriving|failing] : Steady. The ledgers balance. | #fine#. Nothing to boast of, nothing to hide.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Little reaches the hall that hasn't reached the street first. | Nothing that I'd repeat.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #gate# today. Even the household has it.
+dlg @3 resident.news [world.news] : The letters say this, from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | A hall that talks loses its #callers#. I'll keep mine.
+dlg @1 resident.bye : #farewell#. Mind the gate. | #farewell#. You'll find your own way down the hill.
+graft resident.hub
+choice What are you marking on that map? [self.likes=old_maps] -> roads
+node roads
+say The true roads. Half the roads on an old map were drawn by somebody who never walked them. I pencil in where they really run.
+mood formal
+free
+choice Have you walked them? -> roads_walked
+choice Goodbye. -> bye
+node roads_walked
+say No. I've not passed #gate# in a long while. The maps go where I don't. If you know a road, tell me how it bends, and I'll put it in.
+choice I'll tell you what I know. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice Why won't you haggle? [self.dislikes=haggling] -> haggle
+node haggle
+say Because a price named twice is no price at all. I grew up in a market town; I know every trick. That's why I'll not play any of them.
+mood stern
+choice That's fair. -> hub
+choice Did you ever haggle? -> haggle_ever
+node haggle_ever
+say Once, as a pup, over a plum tart. I won, and the stall-keeper never sold to me again. A lesson cheaply bought.
+choice I'll remember it. -> hub
+choice Goodbye. -> bye

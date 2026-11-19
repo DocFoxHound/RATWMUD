@@ -1,0 +1,186 @@
+[info] RATW_VOICE router on
+[info] RATW_TALK 10728 rules and scenes for residents' talk
+[info] RATW_SCRATCH a scratch server (pid 150849): nothing it does is saved, and it runs beside any other server. Stop it when you're done.
+[info] RATW_MANTLE loaded 182 mantles (13929 rules and scenes, 22196 rows) worn by 182 residents in 293 ms
+[info] RATW_TALK voices: 1084 residents (0 with words of their own, 0 with lines, 182 with a mantle), 7 dialects, 0 figures
+[info] RATW_DATABASE_WORLD_LOADED database=ridgemere3 world=upper_accord build=81 release=0 cells=1241 residents=775 streamed=1 loaded=727
+[info] RATW_SCRATCH_ACCOUNTS the save's central (ticket) accounts are set aside on this scratch server; it starts with fresh local accounts (nothing is written back).
+[info] RATW_RESTORE characters=4 summaries=2 ledger=1
+[info] RATW authoritative world ready; 20Hz; save=none (scratch: read from ridgemere3 database); dialogue=Authored offline dialogue
+ok      cw162 (cty_fenwick_plankworth, frosthollow): 8 listeners; 20 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw162.grown.scene.thunder_peaks
+  never heard: cw162.grown.scene.lean_times
+  never heard: cw162.grown.scene.carts_late
+ok      fh101 (cty_marl_craghearth, frosthollow): 8 listeners; 23 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: fh101.grown.scene.hard_times
+ok      fh102 (cty_ulric_stonevein, frosthollow): 8 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: fh102.grown.scene.gossip_plain
+  never heard: fh102.grown.scene.good_times
+ok      fh103 (cty_ebba_coalgate, frosthollow): 8 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: fh103.grown.scene.wagons_late
+  never heard: fh103.grown.scene.wagons_raided
+  never heard: fh103.grown.scene.gossip_dry
+ok      fh104 (cty_leif_driphand, frosthollow): 8 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: fh104.grown.scene.hard_times
+ok      fh105 (cty_stone_acorndell, frosthollow): 8 listeners; 18 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: fh105.grown.scene.thunder_roof
+  never heard: fh105.grown.scene.robbed
+  never heard: fh105.grown.scene.good_ledger
+ok      fh106 (tn_fh_aster_coldfell, frosthollow): 8 listeners; 27 of 34 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: fh106.grown.scene.thunder_roof
+  never heard: fh106.grown.scene.carts_late
+  never heard: fh106.grown.scene.carts_in
+  never heard: fh106.grown.scene.carts_taken
+  never heard: fh106.grown.scene.hard_winter
+  never heard: fh106.grown.scene.good_season
+  never heard: fh106.grown.scene.told_gossip
+ok      fh107 (tn_oh_thorn_ashwood, frosthollow): 8 listeners; 27 of 33 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: fh107.grown.scene.storm_count
+  never heard: fh107.grown.scene.sad_word
+  never heard: fh107.grown.scene.glad_word
+  never heard: fh107.grown.scene.thin_times
+  never heard: fh107.grown.scene.good_times
+  never heard: fh107.grown.scene.barrels_late
+ok      lf138 (cty_iris_fernhaven, frosthollow): 8 listeners; 22 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf138.grown.scene.thunder_peaks
+  never heard: lf138.grown.scene.hard_times
+ok      oh102 (cty_frost_colddrift, oakhaven): 7 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      oh103 (cty_ingram_ashleaf, oakhaven): 7 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: oh103.grown.scene.storm_night
+ok      oh104 (cty_oda_cinderdale, oakhaven): 7 listeners; 19 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: oh104.grown.scene.thunder_talk
+  never heard: oh104.grown.scene.market_noise
+  never heard: oh104.grown.scene.debt_down_there
+ok      oh105 (cty_tristram_rainridge, oakhaven): 7 listeners; 18 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: oh105.grown.scene.storm_under
+  never heard: oh105.grown.scene.late_defence
+  never heard: oh105.grown.scene.road_robbed
+  never heard: oh105.grown.scene.debt_quiet
+ok      oh106 (cty_ulla_rusthand, oakhaven): 7 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      oh107 (tn_fh_tamsin_icefell, oakhaven): 7 listeners; 30 of 37 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: oh107.grown.scene.thunder_roof
+  never heard: oh107.grown.scene.waiting_wagons
+  never heard: oh107.grown.scene.wagons_in
+  never heard: oh107.grown.scene.theft_till
+  never heard: oh107.grown.scene.glad_news
+  never heard: oh107.grown.scene.good_till
+  never heard: oh107.grown.scene.stormy_night
+ok      oh108 (tn_oh_cairn_oakhaven, oakhaven): 7 listeners; 30 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: oh108.grown.scene.city_cart
+  never heard: oh108.grown.scene.wagons_late
+  never heard: oh108.grown.scene.good_ledger
+  never heard: oh108.grown.scene.till_bar
+  never heard: oh108.grown.scene.glad_tidings
+ok      oh109 (tn_sm_moss_blossomwell, oakhaven): 7 listeners; 28 of 34 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: oh109.grown.scene.paper_late
+  never heard: oh109.grown.scene.paper_in
+  never heard: oh109.grown.scene.market_crowd
+  never heard: oh109.grown.scene.theft_lock
+  never heard: oh109.grown.scene.glad_cards
+  never heard: oh109.grown.scene.good_times
+ok      oh110 (tn_oh_ludo_beechshaw, fenshore): 16 listeners; 20 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: oh110.grown.scene.bird_for_you
+  never heard: oh110.grown.scene.market_roar
+  never heard: oh110.grown.scene.trim_truth
+ok      sm104 (tn_lf_rowan_downridge, southmeadow): 16 listeners; 36 of 42 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sm104.grown.scene.good_word
+  never heard: sm104.grown.scene.hard_word
+  never heard: sm104.grown.scene.lean_jars
+  never heard: sm104.grown.scene.full_benches
+  never heard: sm104.grown.scene.carts_late
+  never heard: sm104.grown.scene.carts_in
+ok      sm105 (tn_sm_brisk_plumby, southmeadow): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm105.grown.scene.lean_weeks
+ok      sm106 (tn_sm_varg_meadowfield, southmeadow): 16 listeners; 15 of 31 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm106.grown.scene.g_turn_it_over
+  never heard: sm106.grown.scene.g_bread_shared
+  never heard: sm106.grown.scene.g_orchard_rows
+  never heard: sm106.grown.scene.g_knife_work
+  never heard: sm106.grown.scene.g_snow_stubble
+  never heard: sm106.grown.scene.g_bells
+  never heard: sm106.grown.scene.g_dawn_bell
+  never heard: sm106.grown.scene.g_waiting_about
+  never heard: sm106.grown.scene.g_newcomer
+  never heard: sm106.grown.scene.g_faith_plain
+  never heard: sm106.grown.scene.g_work_plain
+  never heard: sm106.story.g_the_city_knife
+  never heard: sm106.young.scene.y_first_crust
+  never heard: sm106.young.scene.y_city_cart
+  never heard: sm106.young.scene.y_snow
+  never heard: sm106.young.scene.y_bells
+ok      sm107 (cty_briar_cornby, southmeadow): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm107.grown.scene.gossip_true
+  never heard: sm107.grown.scene.lean_times
+ok      sm108 (tn_oh_harl_oakbough, southmeadow): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm108.grown.scene.under_the_thunder
+  never heard: sm108.grown.scene.lean_slope
+ok      sm109 (tn_sm_iris_meadowfield, southmeadow): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm109.grown.scene.times_lean
+  never heard: sm109.grown.scene.robbed_once
+ok      sm110 (cty_aster_cornley, southmeadow): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm110.grown.scene.times_tight
+ok      sm111 (cty_willa_wheatcombe, southmeadow): 16 listeners; 32 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm111.grown.scene.carts_in
+  never heard: sm111.grown.scene.hard_times
+  never heard: sm111.grown.scene.good_times
+  never heard: sm111.grown.scene.gossip_death
+  never heard: sm111.grown.scene.gossip_crime
+  never heard: sm111.grown.scene.gossip_glad
+ok      sm112 (cty_disa_fogford, southmeadow): 16 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm112.grown.scene.thunder_roof
+  never heard: sm112.grown.scene.lean_weeks
+ok      sm113 (cty_emrys_stillshore, southmeadow): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm113.grown.scene.hard_grind
+ok      sm114 (tn_sm_rusk_plummeadow, southmeadow): 16 listeners; 27 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sm114.grown.scene.prices_lean
+  never heard: sm114.grown.scene.prices_good
+  never heard: sm114.grown.scene.wagons_late
+  never heard: sm114.grown.scene.wagons_in
+  never heard: sm114.grown.scene.wagon_robbed
+  never heard: sm114.grown.scene.thunder_door
+  never heard: sm114.grown.scene.dance_coming
+  never heard: sm114.grown.scene.dance_tonight
+  never heard: sm114.grown.scene.count_the_spoons
+  never heard: sm114.grown.scene.wedding_word
+  never heard: sm114.grown.scene.all_the_talk
+ok      sm115 (cty_alder_blossomcroft, southmeadow): 16 listeners; 20 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm115.grown.scene.market_loud
+  never heard: sm115.grown.scene.lean_pay
+  never heard: sm115.grown.scene.fair_coming
+ok      sm116 (cty_myrtle_larkcombe, southmeadow): 16 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      sm117 (tn_sm_orrin_appleley, southmeadow): 16 listeners; 29 of 34 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sm117.grown.scene.storm_shelf
+  never heard: sm117.grown.scene.careful_now
+  never heard: sm117.grown.scene.market_stall
+  never heard: sm117.grown.scene.folk_mend
+  never heard: sm117.grown.scene.clay_down_the_lane
+ok      sm118 (cty_tor_chalkfield, southmeadow): 16 listeners; 21 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm118.grown.scene.not_me_this_time
+  never heard: sm118.grown.scene.lean_bowls
+ok      sm119 (cty_briar_sedgebridge, southmeadow): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm119.grown.scene.theft_talk
+ok      sm120 (cty_sloe_harvestby, southmeadow): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm120.grown.scene.lean_crock
+ok      sm121 (tn_sm_hob_meadowfield, southmeadow): 16 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm121.grown.scene.robbed_once
+  never heard: sm121.grown.scene.carts_late
+ok      sm122 (tn_sm_lark_meadowfield, southmeadow): 16 listeners; 17 of 35 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm122.grown.scene.g_names_kept
+  never heard: sm122.grown.scene.g_orchard_dream
+  never heard: sm122.grown.scene.g_saplings_dry
+  never heard: sm122.grown.scene.g_fish_supper
+  never heard: sm122.grown.scene.g_dice_evening
+  never heard: sm122.grown.scene.g_snow_still
+  never heard: sm122.grown.scene.g_flies_orchard
+  never heard: sm122.grown.scene.g_straw_home
+  never heard: sm122.grown.scene.g_newcomer
+  never heard: sm122.grown.scene.g_faith
+  never heard: sm122.grown.scene.g_gossip_held
+  never heard: sm122.grown.scene.g_hard_times
+  never heard: sm122.story.g_horse_names
+  never heard: sm122.young.scene.y_thin_bread
+  never heard: sm122.adolescent.scene.t_name_book
+  never heard: sm122.adolescent.scene.t_orchard_plans
+  never heard: sm122.adolescent.scene.t_snow_still
+  never heard: sm122.adolescent.scene.t_teased
+37 mantles worn; 824 of 963 scenes heard by some listener; 0 holes in the core moves; W1 100% (2380 of 2380 window lines at the hub, goodbye, job and the role's greeting are the wearers' own)

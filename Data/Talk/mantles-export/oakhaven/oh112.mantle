@@ -1,0 +1,477 @@
+# oh112, the chandler who rolls for it (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh112
+revision 1
+state ready
+dialect oakhaven
+accent none
+tier full
+written_for rm_sten_kelpwell
+written_by claude
+title the chandler who rolls for it
+fits stage=adult|old
+prefers role=merchant job=crafter humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=ambitious
+quirk rolls_a_die_for_every_small_choice
+likes honey_cakes dice quiet_chapel thunder
+dislikes crowds haggling
+fears a_crush_with_no_way_out an_empty_hook_on_the_wall
+hopes a_sign_of_my_own_over_a_door a_second_shop_by_thirty
+topics work +0.4 pastimes +0.3 dreams +0.3 prices +0.2 weather +0.2 faith +0.1 gossip -0.2
+styles comfort=cheerful gossip=light refuse=breezy tease=merry
+marks oath saying
+persona #self.first# minds the counter of a chandlery on the Wharf: quick-talking, merry and ambitious, private under all the chatter, with a price tag on every coil so nobody need haggle, a small die in the waistcoat pocket for every choice too small to think about, and a soft spot for honey cakes, thunder heard from indoors and a chapel with nobody in it.
+
+words
+oath! = By the top face | Pips and pitch
+saying! = The die never haggles | A shop grows a shelf at a time
+die = my die | the little die in my waistcoat
+throw = one throw | a single throw and no second tries
+dice = a game of dice | dice on the back step after closing
+tags = the price tags | the tags
+coil = a coil of line | line by the fathom
+lampoil = lamp oil | a can of lamp oil
+wicks = wicks | a bundle of lamp wicks
+pitch = pitch | a keg of pitch
+counter = the counter | our counter
+hooks = the hooks | every hook on the wall
+ledger = the ledger | my ledger
+plans = my plans | the plans in the back of the ledger
+sign = a sign of my own | my own name painted over a door
+cake = a honey cake | a honey cake gone dark at the edges
+storm = thunder over the slates | a storm heard from indoors
+pew = the chapel between bells | a chapel with the benches bare
+crush = a crush on the quay | the quay when a ship's just tied up
+quay = the quay | the wet boards of the quay
+forest = the old forest | the trees back home
+haggle = haggling | an hour's haggling over a farthing
+rooms = my two rooms | the rooms up the back stair
+till = the till | the cash drawer
+wharf = the Wharf | the waterfront
+tag = the tag | the little tag
+copper = a copper | one copper
+carts = the carts | the carts off the road
+rope = rope | hemp rope
+cakes = honey cakes | sticky honey cakes
+
+any
+opinion @1 merchants for 1 [self.role=merchant] : Somebody has to stand behind #counter# and answer for what #carts# cost. I'd sooner it was me, with #tags# on everything.
+opinion @2 road against 1 : Every late crate is an empty peg on some wall in the city, and empty pegs sell nothing. #oath#, I hate a late crate.
+opinion @3 road against 2 [world.wagons=raided self.role=merchant] : Robbed on the road again, and I'm the one telling customers we're out. #bandits.capitalize# don't pay my rent.
+opinion @4 watch for 1 : I like a Watch who walks #quay# at closing. Less goes walking off in the dark.
+opinion @5 houses against 1 : Nobody gets #sign# in this city without some House nodding at it first. I mean to manage without the nod.
+opinion @6 city mixed 1 : The city's wet, loud and packed tighter than pitch in a keg. It's also the only place a small trade grows into a big one.
+opinion @7 drink for 1 : One jar and #dice# is a good evening. Two jars and I start betting the stock, so I don't.
+opinion @8 festivals for 1 : A feast is good for #till# and better for the spirits. I'll dance, so long as the square isn't packed to the walls.
+opinion @9 church mixed 1 : Sermons I can leave. #pew.capitalize#, quiet as a held breath, I'd not give up for anything.
+opinion @10 dole against 1 : I'd sooner earn a dry crust than be handed a loaf. That's pride, and I know it, and I keep it anyway.
+opinion @11 strangers for 1 [self.role=merchant] : A stranger pays what's on #tag# and never argues it. Best customers on #wharf#, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Shake the wet off before you go on. | #greet#, #address#. Not a face I know yet, but #die# says I will.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Line, oil, wicks and pitch, every one of them tagged. | #greet#. Have a look round; #tags# do the talking in here.
+line @3 greet [here.time=dawn] : #greet#. Up before the gulls, you and me both. | #greet#. Early, and #die# says it'll be a good day.
+line @4 greet [here.time=dusk|night] : #greet#. Late, but the lamp's still lit. | #greet#. I'd the bolt half across, and I'm glad I hadn't.
+line @1 kin.open [pair.kin!=no] : There you are. I kept #cake# back for you, mostly. | Oh, it's you. Sit down, and I'll tell you #plans#.
+line @1 again.open : #welcome_back#. #die.capitalize# said you'd be back, and here you are. | Twice in one day. I'll have to put a tag on you.
+line @1 hail [pair.band=friends] : #address.capitalize#! Here, a word, quick. | Over here. I've a throw to settle and I want a witness.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good, I wanted the company. | #greet#. You're the face I'd have rolled for.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Talk while I count; I can do both. | #greet#. Mind #coil# by your feet.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late for us both, then. | #greet#. The lamps are coming on along #quay#.
+line @1 farewell : #farewell#. | #farewell#. Watch your step out there.
+line @2 farewell [here.time=dusk|night] : #farewell#. #quay.capitalize# gets slick after dark; go round by the warehouses. | #farewell#, and sleep sound.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends] : #farewell#. Tomorrow, then, and bring coppers for #dice#. | #farewell#. I'll keep #cake# back.
+line @1 react.news : Go on, then, and leave nothing out. | Tell it slow; I want every bit of it, #address#.
+line @1 react.news.new : #marvel#. Nobody's carried that past #counter# yet. | #oath#. That's the first I've heard of it.
+line @1 react.news.known : #knew#. The morning's customers brought it in with the rain. | #knew#. That's old news on #quay# by now.
+line @1 react.news.doubt : #doubt#. I'd not stake #copper# on that one. | I'd want to hear it twice, from two different mouths, before #oath# I believed it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. #pity#. No joking about that one. | #sympathy#. That's a sorry thing to hear.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants #cake# at the very least. | Well! #congrats#. I'm glad of that.
+line @1 answer.how : #fine#. #die.capitalize# came up six this morning, so it's a good one. | Not bad. Better tomorrow, if #plans# hold.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three jobs on the go and only the two paws. | Run ragged, and glad of it. #till.capitalize# likes a ragged day.
+line @1 ask.how : And yourself? Dry under all that #rain#, I hope. | How's the day treating you, #address#?
+line @1 sympathise : #sympathy#. Sit a while; #die# and everything else can wait. | That's hard. I'll stop my chattering and listen.
+line @1 reassure : #reassure#. Give it a week; things look smaller after a week. | It'll come right. I'd roll #die# on it and not be worried.
+line @1 decline [self.role=merchant] : #hedge#, but I can't. There's nobody to mind #counter# if I go. | I'd like to, truly. Only I've an order to make up before dark and #ledger# to square.
+line @2 decline : #hedge#, but I can't today. I've promised the evening elsewhere, and I keep my promises. | I'd like to, truly. Only the day's spoken for, every hour of it, and #ledger# besides.
+line @1 accept_decline : #no_matter#. Another day, then. | Fair enough. I'll try you again another day.
+line @1 thank : #thanks#. I'll not forget that. | That's good of you. I owe you #cake#.
+line @1 deflect_thanks : #deflect#. It cost me nothing. | Ha. Pay me back in #cakes#, and we're square.
+line @1 preclose [self.working=yes self.role=merchant] : Well. #counter.capitalize# won't mind itself. | I'd best get back before someone takes #coil# and forgets to pay for it.
+line @2 preclose : #preclose#. There's #ledger# waiting on me. | Well. I've talked enough for two wolves.
+line @1 accept_preclose : Go on, then. #counter.capitalize# and I will manage without you. | Off you go. I'll be here, same as ever.
+line @1 tease [pair.band=friends] : You haggle like a gull with a crust, #fool#. | You've a face like #die# when it rolls a one.
+line @1 tease.return : #cheek#. I'll tag that remark and sell it. | Ha. Says the one who lost three throws running at #dice#.
+line @1 laugh : Ha! #funny#. | Ha. That one's going in #ledger#.
+line @1 ack : #bc_right# | Right you are.
+line @1 give.advice : #advise#: write your price down and stand by it. #saying#. | Never buy cheap #wicks#. They smoke, and you pay for the soot in the end.
+line @1 warn [world.bandits=near] : Stay inside the walls a while, #address#. The roads aren't safe. | If you're going out past the walls, go in company, and go quick.
+scene the_die
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I let #die# choose my supper tonight. Odd is fish, even is soup. | Every small thing, #die# decides. Which boot first, which way home. | I've carried #die# since I was a pup. The pips are nearly worn off.
+b : And what did it say? | Why on earth for? | Can you still read it?
+a : Three. Fish. #die.capitalize# knows what I want better than I do. | So I keep my thinking for the big things. Small ones, #die# can have. | By feel, mostly. #oath#, I'd know it in the dark.
+b : #bc_ha# | That's one way to do it. | #bc_clever#
+
+scene dice_closing
+when topic=pastimes self.likes=dice here.time=dusk|night
+does invite / accept_invite / tease / tease.return
+a : Shutters are up. Fancy #dice#, #copper# a throw? | I've the board out on the back step. Come and lose #copper#. | One game before I sleep. Just one, and I mean it this time.
+b : Go on, then. A copper a throw. | I'll not lose. Shake them. | One. I'll hold you to it.
+a : Good. Mind, I always win the first throw; it's the second that bites me. | Ha. They all say that, and then the ones come up. | You'll hold me to it, and I'll talk you into three.
+b : #bc_we_will_see# | You'll talk, I'll win. | #bc_ha#
+
+scene no_haggling
+when topic=work|prices self.working=yes self.role=merchant
+does tell.self / ask.opinion / give.opinion / ack
+a : Everything in here has a tag on it. That's the price, and there's no talking it down. | I'll not haggle. I'd sooner lose the sale than sit through #haggle#. | I write the price on a tag in the morning, and then I never have to argue it.
+b : Folk like to bargain, though. | You'd turn a customer away? | Doesn't anyone argue?
+a : They can bargain at the next door. I'd rather a fair price and a short talk. | I'd rather turn them away than turn a farthing into a quarrel. #saying#. | Some try. I point at #tag# and smile till they stop.
+b? : #bc_fair_enough# | #bc_fair# | #bc_ha#
+
+scene the_haggler
+when topic=work|smalltalk self.working=yes self.role=merchant
+does tell.complaint / react.complaint / insist / ack
+a : A wolf stood at #counter# this morning and argued a coil down to nothing in their head. | Someone offered me half what's on #tag# for #lampoil# and called it generous. | I'd a customer try to haggle the price of #wicks# against the weather.
+b : Did you give in? | Half? The cheek. | The weather?
+a : Not #copper#. I'll smile all day, but #tags# don't bend. | Half, and they looked hurt when I laughed. I'm still laughing. | Said it might rain, so the wicks were worth less. It did rain. They paid in full.
+b : #bc_good# | #bc_ha# | Ha. Serves them right.
+
+scene sign_over_door
+when topic=dreams|work self.drive=ambitious
+does tell.plan / ask.plan / answer.plan / assess
+a : One day there'll be #sign#. Painted green, with gold edges. | I've a corner on the Commons picked out. Not bought. Picked. | I mean to have a second shop before I've any grey in my ruff.
+b : Green and gold? | Which corner? | A second shop?
+a : Green for back home, gold because I'll have earned it. | The one by the steps where everyone has to slow down. They'd see #tags# going by. | One shop runs itself if you build it right. Then you start the next, and the next.
+b : #bc_i_hope_so# | Clever spot. | #bc_we_will_see#
+
+scene ledger_back_pages
+when topic=dreams|work self.role=merchant
+does confide / keep_confidence / assess / ack
+a : Don't tell a soul, but the back of #ledger# is all sums for a shop that isn't mine yet. | I put #copper# aside every night. It's not much. It's every night, though. | I've drawn the shelves of my own shop in the margins of #ledger#. Twice. In ink.
+b : Not a word from me. | Every night adds up. | Twice?
+a : Good. Plans said out loud have a way of wandering off. | It does. I've counted it, and then counted it again for the pleasure. | The first lot had the door in the wrong place. I fixed it.
+b? : #bc_ha# | #bc_wise# | #bc_good#
+
+scene thunder_indoors
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess / ack
+a : Hear that? #storm.capitalize#. Best noise in the city. | I'd shut #counter# and sit by the window for #storm#. | Count with me. One, two, three, and there's the rumble.
+b : You like it? | You'd lose trade. | Three. Getting close.
+a : From under a roof, I love it. Out in it, less so. | I'd lose an hour of trade and gain an hour of #storm#. A fair trade. | Close, and I'm dry, and the kettle's on. #oath#, what more is there.
+b : #bc_lovely# | #bc_fair_enough# | #bc_it_is#
+
+scene rain_quay
+when topic=weather here.weather=rain here.region=ridgemere self.role=merchant
+does tell.complaint / react.complaint / assess / ack
+a : Rain again. Half #wharf# comes in to drip on my floor and buy nothing. | Every customer today brought a puddle in with them. | The rain off #quay# runs straight under our door. I've a rag down for it.
+b : They're only sheltering. | It's the city. | A rag won't hold it.
+a : I know. I'd shelter too. I just wish they'd buy a wick while they're at it. | It is. I came here knowing it rains, and it's kept its word. | It won't, but it makes me feel useful. #oath#, it does.
+b : #bc_ha# | #bc_true# | #bc_fair#
+
+scene fog_morning
+when topic=weather|day here.weather=fog here.region=ridgemere self.role=merchant self.job=crafter
+does tell.self / ask.detail / answer.detail / assess
+a : Fog like this, lamp oil goes out the door by the armful. | The far end of #quay#'s gone in the fog. So has the water. | Fog days are slow days. Nobody comes down the hill to shop in it.
+b : Who's buying oil this early? | Can you hear it, at least? | What do you do all day, then?
+a : The boats. They want every lamp lit before they'll put out. | I can hear it slapping the piles. That'll do me. | Sums. I sit at #counter# and dream in numbers.
+b : #bc_good# | #bc_it_does# | #bc_ha#
+
+scene bright_day
+when topic=weather|day here.weather=clear here.time=day self.role=merchant self.working=yes
+does tell.feeling / react.self / assess / ack
+a : A dry day on #wharf#. I've propped the door open to make the most of it. | Sun on #quay#, and every wolf in the city out walking. | I set #coil# out on the step in the sun. It sells better in daylight, oddly.
+b : I'd prop mine open too. | Busy, then. | Does it?
+a : The light gets in and #hooks# look fuller. A trick, but a fair one. | Busy enough. Not packed, which is how I like it. | It does. Rope looks honest in the sun. #oath#, it is honest.
+b? : #bc_clever# | #bc_good# | #bc_ha#
+
+scene crush_on_quay
+when topic=smalltalk|day here.crowd=crowd self.dislikes=crowds
+does tell.complaint / sympathise / assess / ack
+a : I can't stand #crush#. Elbows everywhere, and nobody looking where they're going. | Too many of us in one place. I'd like to climb a lamp post and breathe. | When a crowd packs in like this, I go round by the back lanes, every time.
+b : It's always like this on a busy day. | Stand behind me, then. | The back lanes are quicker anyway.
+a : It is, and it's why I like a wall at my back. #oath#, a wall never elbows anyone. | Kind of you. I'll take the shelter and pretend it's chance. | Quicker and quieter. I'd walk an extra mile for quiet.
+b : #bc_ha# | #bc_good# | #bc_true#
+
+scene empty_pew
+when topic=faith self.likes=quiet_chapel
+does tell.self / react.self / assess / ack
+a : I go to #pew# when nobody else does. Just to sit. | #pew.capitalize# is the quietest room in the city. I know; I've checked. | I'm no great one for sermons. An empty bench, though, I'll take any day.
+b : Just to sit? | You checked? | That's prayer enough, maybe.
+a : Sit, and hear nothing. The Bright One gets my thinking free, and #die# gets a rest. | Every room on this side of the hill. #oath#, the chapel wins. | I'd like to think so. It's the only kind I'm good at.
+b : #bc_lovely# | #bc_ha# | #bc_i_hope_so#
+
+scene honey_cake
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail / assess
+a : I've #cake# in my pocket for after closing. I'm not sharing. | There's a stall by the steps that does #cakes#. I've an account there now. | I'd trade a whole coil for #cake# done right. Nearly.
+b : Not even a corner? | An account, for cakes? | What's done right?
+a : A corner. A small one. Don't tell anyone I'm soft. | Paid on Restday, every week. It's the one bill I'm glad of. | Dark at the edges, soft in the middle, and too much honey. That's right.
+b : #bc_ha# | #bc_fair_enough# | #bc_lovely#
+
+scene supper_rooms
+when topic=home|food here.time=dusk|night self.quarter=wharf
+does tell.self / react.self / assess / ack
+a : #rooms.capitalize# are small, but the window looks out on the water. | I'll go up to #rooms# and eat whatever #die# picks for me. | My rooms are so close to #counter# I can hear #till# ring in my sleep.
+b : Water's a good view. | Whatever it picks? | That'd keep me up.
+a : It's a good view when it's not raining. So, some days. | Whatever it picks. Fish, mostly. It's fond of fish. | Keeps me sharp. If it rings in the night, I'll know someone's in it.
+b? : #bc_true# | #bc_ha# | #bc_wise#
+
+scene father_counter
+when topic=family|work self.father
+does tell.feeling / react.self / assess / ack
+a : #self.father# is the loudest wolf on #wharf#, and I'd not change a hair of it. | I've learnt more from #self.father# than from any book. Not that I'd say it to that face. | When #self.father# laughs, the whole street knows.
+b : Loud's not bad. | You should say it. | You're quieter, then.
+a : Loud is honest. You always know where you stand. | Some day. When I've #sign#, I'll say it then. | Quieter on the outside. I do my shouting in #ledger#.
+b : #bc_true# | #bc_i_hope_so# | #bc_ha#
+
+scene trusted_friend
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail / assess
+a : I'd trust #self.friend# to hold my stake at #dice#, and nobody else. | If I had one wolf to mind #counter# while I'm away, it'd be #self.friend#. | I'd tell #self.friend# my plans before anyone. Have done, in fact.
+b : Not yourself? | Not anyone else? | And what was said?
+a : Not myself, no. I'd roll for it again and lose the lot. | Nobody. There's trust, and then there's leaving #till#. | That I'd do it. Just that. It was enough.
+b : #bc_ha# | #bc_fair_enough# | #bc_good#
+
+scene forest_and_city
+when topic=home|memories self.away=yes self.from=oakhaven
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town# you could walk a whole morning and meet nobody but squirrels. | I grew up under #forest#. I still wake some nights and listen for the wind in the tops. | Everyone in #self.from_town# said I'd come running home within a year.
+b[from=oakhaven] #home : Some mornings I'd give anything for the quiet of it. | You do get that sound in your ears for life. | They said the same to me, and I'm still here.
+b : Don't you miss the quiet? | And what do you hear instead? | Did you?
+a@home : So would I. Then I come down to #counter# and the noise starts, and I'd not give it up. | For life. The gulls nearly cover it, some nights. | Here we both are, then. Stubborn as the trees.
+a : I miss the quiet. I don't miss the waiting. Nothing happens fast out there. | Gulls, carts and someone singing badly on #quay#. I've got fond of it. | I didn't. Here I am, still, with #tags# on everything.
+b : #bc_true# | #bc_ha# | #bc_good#
+
+scene slow_folk
+when topic=accent|travel self.away=yes self.from=oakhaven
+does tell.self / react.self / assess / ack
+a : Folk at home say everything slow, as if the words have to grow first. I talk quick to make up for it. | City wolves think we're slow because we wait before we answer. I learnt to answer first. | My kin in #self.from_town# would take a week over a price I set before breakfast.
+b : You do talk quick. | Is that better? | A week?
+a : Twice as quick, and I still run out of day. | Better for #counter#. Worse for the thinking, perhaps. I'll let you know. | A week, and they'd get it right. I'll grant them that much. #oath#, they would.
+b? : #bc_ha# | #bc_maybe# | #bc_true#
+
+scene learning_trade
+when topic=work self.apprentice=yes self.working=yes self.role=merchant self.job=crafter
+does tell.self / ask.detail / answer.detail / assess
+a : I'm still learning the trade. Knots, weights, which pitch holds and which only smells like it. | Every week I learn some new thing about #rope# I wish I'd known the week before. | They say you need ten years to know a chandlery. I'm counting.
+b : Which pitch holds? | Like what? | How many have you done?
+a : The dark one that's slow to pour. The fast one's mostly water and hope. | That wet #rope# shrinks, and I'd sold a wolf a coil cut to the inch. | Not enough. But I'm quick, and I've written every lesson down.
+b : #bc_good# | #bc_ha# | #bc_clever#
+
+scene dark_comes_early
+when topic=season|work here.season=autumn|winter self.working=yes self.role=merchant self.job=crafter
+does tell.news / react.news / assess / ack
+a : Dark by four, and every lamp on #wharf# wants #lampoil#. | Winter's my best season. Nobody can see to work without #wicks#. | I've doubled the oil on the shelf and it's still going out the door.
+b : Good for trade. | Is that so? | You'll run out.
+a : Good for trade, bad for my eyes. I'm squinting at #ledger# by a stub. | It is. I'd sell the dark itself if I could bottle it. | I'll not. I ordered early, #oath#.
+b : #bc_ha# | #bc_ha# | #bc_wise#
+
+scene summer_dusk
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess / ack
+a : Summer evenings, I sit on the step with #cake# and watch the boats come in. | Light till late, and nobody needs a lamp. Slow season for oil. | The water goes gold this time of night. I'd paint it if I could paint.
+b : Sounds a good evening. | Slow season? | You can't paint?
+a : It is. Better than any feast, and cheaper. | Slow, but there's rope enough going out to pay for it. | Not a stroke. I can do sums, though. Sums are a kind of painting, if you squint.
+b : #bc_lovely# | #bc_fair# | #bc_ha#
+
+scene good_takings
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / ask.detail / answer.detail / assess
+a : Coin's moving on #wharf#. I've filled the back of #ledger# twice this month. | Folk are buying #rope# they don't need yet. That's a good sign. | Good times. Even the hagglers have stopped haggling.
+b : Twice? | How can you tell they don't need it? | Have they, now?
+a : Twice over, and I put #copper# aside each time. #plans.capitalize# are closer than they were. | They buy the long coils and the good pitch, and they don't ask the price first. | Mostly. One still tries, but out of habit, I think.
+b : #bc_good# | #bc_clever# | #bc_ha#
+
+scene lean_takings
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / reassure / assess / ack
+a : Lean weeks. Folk are mending old #rope# rather than buying new. | I've had to put #plans# off a while. Not give up. Just put off. | Nobody's buying past the oil they need to see by.
+b : #reassure#. It'll turn. | Put off isn't given up. | They still need the oil.
+a : It will. I'll be here when it does, with #tags# still on. | I say it to myself every night, before I blow the lamp out. | They do. Oil keeps me open. Rope can wait.
+b? : #bc_i_hope_so# | #bc_true# | #bc_true#
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.role=merchant
+does tell.worry / reassure / assess / ack
+a : #carts.capitalize# are late again, and #hooks# are looking thin. | I've a tag on a coil I haven't got. That's never a good morning. | Late carts mean I tell customers no, and I hate telling anyone no.
+b : They'll come. | Take it off till they do. | Tell them when, then.
+a : They will. They'll come the day after I've sold out, which is always the way. | I did. Now there's a gap on the wall and it looks at me. | I'd tell them when if anybody would tell me. #oath#, nobody does.
+b : #bc_true# | #bc_ha# | #bc_fair_enough#
+
+scene carts_in
+when topic=caravan|work world.wagons=in self.role=merchant
+does tell.news / react.news / assess / ack
+a : Carts are in. I'll be all afternoon putting #tags# on new stock. | Every hook's full again. Look at it. | The new crates are in, and I've already sold a coil off the top of one.
+b : Good for you. | It looks right, full. | Before it reached the shelf?
+a : Good for #till#, too. #plans.capitalize# go forward a step. | It does. A full wall's the best sight on #wharf#. | Before I'd the lid off. Some days, it all just goes.
+b : #bc_good# | #bc_lovely# | #bc_ha#
+
+scene ship_orders
+when topic=ships topic.kind=in|arrived topic.ship here.region=ridgemere self.role=merchant self.job=crafter
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s in. That's line and pitch going out the door by the armful. | A ship in, and its crew will be at #counter# before the gulls settle. | #topic.ship.capitalize# tied up this morning. I've put the kettle on; they'll want a while.
+b : Will you have enough? | What do they buy first? | A while?
+a : I counted twice. I'll have enough if nobody orders three of anything. | #lampoil.capitalize#, then line, then #cakes# from the stall next door, if they've any sense. | A crew that's been at sea wants a long talk with somebody new. I'm somebody new.
+b : #bc_i_hope_so# | #bc_ha# | #bc_fair_enough#
+
+scene rumour_odds
+when topic=gossip here.gossip=yes self.role=merchant topic.claim_kind=newcomer|promise_kept|promise_broken|prowling|other|marriage|theft|wanted|bandit
+does tell.gossip / react.news / assess / ack
+a : They say #topic.subject# #topic.claim#. I'd not put #copper# on it either way. | Folk at #counter# were full of it: #topic.subject# #topic.claim#. That's all I had. | Have you heard? #topic.subject.capitalize# #topic.claim#. Or so the talk goes.
+b : You'd not bet on it? | Do you believe it? | I'd heard something like it.
+a : I bet on dice, not on talk. Dice are more honest. | I don't know. I sell #rope#; I don't sell truth. | Then that's two of us. Still not enough for me to swear by.
+b : #bc_ha# | #bc_fair# | #bc_true#
+
+scene new_faces
+when topic=newcomer|player here.region=ridgemere self.role=merchant
+does tell.self / react.self / assess / ack
+a : New faces on #wharf# every week. Half of them need #rope# and don't know it yet. | I like a newcomer. They read #tag# and pay it, and they don't know anybody to haggle through. | Somebody new came in asking which way to the Heights. I sold them a lamp for the climb.
+b : You'll teach them. | Nice for you. | A lamp, for the Heights?
+a : I'll sell them, which is a kind of teaching. | It is. I was new once, not long ago. I paid what was on #tag# too. | It's a long climb, and dark at the top. They thanked me. #oath#, they did.
+b? : #bc_ha# | #bc_good# | #bc_ha#
+
+scene feast_square
+when topic=festival|season world.festival=today
+does tell.feeling / ask.opinion / give.opinion / assess
+a : Feast day. I'll shut #counter# early and go dancing, if the square's not packed. | Feast days are good for #till#. Everyone wants a lantern for the night. | I've a honey cake saved for the feast and #dice# for after.
+b : And if it's packed? | Will you open, then? | Who are you playing?
+a : Then I'll watch from the steps with #cake#, and dance on the way home. | Till noon. After that, #till# can have a feast of its own. | Whoever'll sit down with me. I'm not proud, and #dice# isn't either.
+b : #bc_good# | #bc_fair# | #bc_ha#
+
+scene dreams_die
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #die# came up seven. There's no seven. I woke up laughing. | I dream of #sign# most nights. Some nights the paint's still wet. | Last night I dreamt the whole quay was a counter and I'd priced every board of it.
+b : What did seven mean? | Wet paint? | Every board?
+a : Something good, I'd say. I'm deciding it meant something good. | So I can't touch it yet. Some day it'll dry. | Every one. Nobody haggled, either. #oath#, best dream I've had.
+b : #bc_ha# | #bc_i_hope_so# | #bc_ha#
+
+scene never_ill
+when topic=health
+does tell.self / react.self / reassure
+a : I've a cough from the damp off #quay#. It'll pass by Restday. | I've not had a day sick since I came to the city. I'm afraid to say it out loud. | My back's sore from lifting kegs of pitch. My own fault.
+b : Mind it doesn't settle. | Knock on the counter. | Get someone to help you lift.
+a : I'll mind it. #remedy.capitalize#, a scarf, and less talking. Less talking's the hard bit. | Knocked. And I've rolled the die, and it came up even, so I'm safe. | I'd ask, but I'd have to wait for them. I'm not good at waiting.
+
+story wooden_die [topic=memories|pastimes self.away=yes self.from=oakhaven self.age>=18]
+  : When I was small, #grandad# whittled me a die out of a knot of oak, back home under the trees.
+  : It never rolled true. It came up four most of the time. I thought it was lucky.
+  ask : Do you know what it does to a pup, a die that always says four?
+  b : Teaches you to like fours, I'd say.
+  b[old] : Makes you trust your luck more than you ought. I had one like it.
+  : I still like fours. I still have it, too, at the bottom of my box.
+
+story first_coil [topic=work|memories self.role=merchant]
+  : The first coil I ever sold, I let the customer name the price.
+  : They named a price for #rope# that a gull would have laughed at, and I took it, because I didn't know how to argue.
+  : That night I cut #tags# out of an old box lid and priced everything on the wall. I've never argued since.
+  b : So that's where the tags come from. | A hard lesson, that.
+  b[job=merchant] : I did the same once. I still haggle, though.
+
+story the_long_haggle [topic=work|pastimes self.role=merchant]
+  : A wolf once argued at #counter# for the better part of an hour over a can of lamp oil.
+  : Down a copper, up half a copper, down again. I kept pointing at #tag#.
+  ask : What do you think they paid in the end?
+  b : The tag, I'd guess. | Less than the tag, if they were stubborn enough.
+  : The tag. Then they asked for a light for their pipe, free. I gave it. A light costs nothing.
+
+story storm_in_the_trees [topic=weather|memories self.likes=thunder self.away=yes self.from=oakhaven self.age>=18]
+  : A storm caught me out in #forest# once, when I was still a pup.
+  : I sat inside a hollow tree and listened to it go over, and I've loved thunder ever since.
+  : The tree came down the year after. I went and sat on it.
+  b : That's a good place to learn to love it. | Sat on it?
+  b[from=oakhaven] : There's a hollow oak like that on every path back home.
+
+story the_big_plan [topic=dreams|work self.drive=ambitious]
+  : The plan goes like this. One shop, then a second, then a cart that goes between them.
+  : Then a boy or a girl to mind the cart, and then a second cart. Then I sit in the chapel at noon and do nothing.
+  ask : Would you want a plan that ends with doing nothing?
+  b : Only if it ended in a chapel. | It sounds a long way off.
+  b[old] : It always ends there. It's the getting there takes the time.
+
+rule @counter_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Line by the fathom, oil by the can. Prices on the tags. | Wicks, pitch, lamp oil. No haggling and no waiting.
+
+rule @die_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Odd, I sweep the front. Even, the back. #oath#. Even. | Where's #die#? I put it down to choose and now I can't choose.
+
+rule @crush_bark
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 8h
+say Room to breathe, for pity's sake. I'll be behind #counter#. | Elbows, elbows, elbows. #annoyed#.
+
+rule @storm_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 8h
+say There it goes, #storm#. One, two, and the rumble. | Listen to #storm#. Best noise in the city.
+
+rule @dusk_bark
+when concept=bark here.time=dusk working=yes self.role=merchant
+does aside
+cooldown 8h
+say Lamps lit, and #ledger# next. | Last call for #lampoil# before dark. Tagged, as ever.
+
+rule @carts_bark
+when concept=bark working=yes self.role=merchant world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no carts. #hooks.capitalize# are looking thin. | Late again. I'll be selling the empty pegs next.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Everything's tagged; take your time. | #greet#, #address#. Line, oil, wicks, pitch. The price is on #tag#.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Back for more line, or just the talk? | #topic.player#. Good. I've new stock, and you're the first to see it.
+dlg @3 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Prices are on #tags#. Look, buy, or go, and no hard feelings. | What is it? Point at it, and I'll wrap it.
+dlg @4 shop.greet [here.shop=bare] : #greet#. #hooks.capitalize# are bare; #carts# are behind. I'll still buy, if you're selling.
+dlg @1 shop.prices : The tag says the price, and the price stays put. #saying#. | #shop_dear# I don't haggle, so at least it's quick.
+dlg @1 shop.bye : #farewell#. Come back when you run short. | #shop_bye# Mind the step; it's slick.
+dlg @1 resident.hub : #greet#. Talk away; I'm listening. | #greet#, #address#. What are you after?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I'd rolled to see if you'd come by. You did. | #topic.player#! Sit, if you've the time.
+dlg @3 resident.hub [here.time=night] : It's late, and I'm for bed soon. Quick, then, and I'll stay up for you.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you want plainly, #address#, and we'll get on fine.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. Line, oil, wicks, pitch, all of it tagged. And learning the rest. | I mind #counter# and keep #ledger#. Some day I'll have #sign#.
+dlg @2 resident.job : Whatever's needed, and plans for more. #oath#, plenty more. | I work, I count, I plan, and #die# does the rest.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. #wharf.capitalize# had it this morning.
+dlg @2 resident.news [world.event_words] : The whole of #wharf# is full of #world.event_words#. Nobody's talking of anything else.
+dlg @3 resident.news [world.wagons=raided] : A cart was robbed on the road. Somebody's stock gone, and somebody's skin. Go careful.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'd tell you if it were otherwise; I talk too much to keep it.
+dlg @1 resident.business [business=thriving] : Better than ever. I can't keep #hooks# full. #oath#, it's grand.
+dlg @2 resident.business [business=steady] : Steady. A copper aside every night, and #carts# mostly on time.
+dlg @3 resident.business [business=failing] : Poorly, if I'm honest. Folk aren't buying, and #tags# stay where they are.
+dlg @1 resident.gossip [here.gossip=yes topic.claim_kind!=death topic.claim_kind!=violence topic.claim_kind!=victim] : They say #topic.subject# #topic.claim#. I'd not bet on it either way.
+dlg @3 resident.gossip [here.gossip=yes topic.claim_kind=death|violence|victim] : They say #topic.subject# #topic.claim#. That's no talk to bet on. It's too sore.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty and keep less. Ask me about #rope#.
+dlg @1 resident.bye : #farewell#. Careful on #quay#. | #farewell#, #address#. Come back when you're short of something.
+graft resident.hub
+choice What's the die for? -> die
+node die
+say Choosing. Which way home, which supper, which boot first. Little things. #die.capitalize# takes them, so my head's free for the big ones.
+mood pleased
+free
+choice Does it ever choose wrong? -> die_wrong
+choice Goodbye. -> bye
+node die_wrong
+say Never. It can't. Whatever it says, I'd decided to like it before I threw. That's the whole trick of it.
+choice Clever. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Will you take less for it? [self.role=merchant] -> no_haggle
+node no_haggle
+say No. Not out of meanness. The price on #tag# is the fair one, the same for you as for anyone. #saying#.
+mood calm
+choice Fair enough. -> greet
+choice Why not haggle? -> no_haggle_why
+node no_haggle_why
+say An hour over a farthing, and both of us cross at the end. I'd sooner set it fair and spend that hour on a honey cake.
+choice Let me look at the stock. -> greet
+choice Goodbye. -> bye

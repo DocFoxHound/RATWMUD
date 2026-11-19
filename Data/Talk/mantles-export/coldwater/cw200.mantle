@@ -1,0 +1,313 @@
+# cw200, the keeper of the letter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw200
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_maren_tarworth__
+written_by claude
+title the keeper of the letter
+fits stage=adult|old
+prefers job=servant humour=merry
+traits temper=even talk=chatty warmth=cold humour=merry honesty=guarded piety=ordinary drive=steady
+quirk swears_by_the_forge_and_the_sea
+likes pickled_herring dancing festival_bells warm_rain
+dislikes night_noise stale_bread
+fears a_secret_slipping_out being_turned_out_of_service
+hopes a_feast_night_that_never_ends the_letter_given_into_the_right_paw
+topics festival +0.4 work +0.3 gossip +0.2 food +0.2 home +0.2 family -0.3
+styles comfort=light gossip=teasing refuse=wry tease=sharp
+marks oath saying
+persona #self.first# keeps the chambers of a great house on the Estate: quick and merry, cool underneath, ready to talk and slow to tell, swearing by forge and sea in one breath, with a letter in the apron for a master who is never home.
+
+words
+oath! = Bellows and breakers | Hearth and high water | Anvil-ring and undertow
+saying! = Polish what you see, pocket what you hear | A shut door hears the most | Smile at the front, sniff at the back
+chambers = the chambers | the family's rooms
+linen = the linen | the good linen
+beeswax = the beeswax | a tin of beeswax and some elbow
+ledges = the high ledges | the ledges nobody looks at
+letter = the letter | a letter nobody's home to take
+master = the master | the master of the house
+herring = a pickled herring on rye | herring sharp with vinegar
+reel = a reel | a turn on a feast night
+feastbells = the feast bells | a feast-morning peal
+warmrain = a warm rain | rain that comes warm after a dry spell
+crust = a stale crust | a crust you could knock on
+estate = the Estate | up here among the gardens
+apron = my apron | the apron pocket
+lake = the lake | Glasswater
+
+any
+opinion @1 strangers against 2 : A face I don't know stays on the step, and I watch it from behind the curtain, #oath#.
+opinion @1 festivals for 2 : Feast night, and I'll #reel# till the bells give up before I do.
+opinion @1 drink for 1 : A small glass once the family's abed. Small, mind, and the door bolted, shore-friend.
+opinion @1 dole against 1 : I've earned every crust I ever ate in service. Them in the dole line might try a morning of #beeswax#.
+opinion @1 merchants against 1 : Every shop on the hill puts a penny on when it sees a House livery. I count it back off, smiling, like a net-mender counting knots.
+opinion @1 houses mixed 1 : #toffs.capitalize# pay on the day and never ask after my health. I'll take the first and do without the second.
+opinion @1 sump against 1 : I'm not going down there. I hear enough of it from the scullery, and that's plenty, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Yours is a face I haven't filed yet, so I'll watch it. | #greet#. A new one. I'll have your measure by the end of this, #address#.
+line @2 greet [self.working=yes self.job=servant] : #greet#. Talk while I dust; I'll not stop for the Bright One. | #greet#. Mind the wet boards, and mind your tail on them.
+line @3 greet [here.time=dawn] : Morning. Up since five, and #tired# with it. | Morning, #address#. Fires lit, kettles on, and not a thank you yet.
+line @4 greet [here.time=dusk|night] : Evening. You're out late for a respectable wolf, #address#. | #greet#. Lamps up, and my temper with them, near enough.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Sit, and don't touch the good cups, #fool#. | You. I had a feeling. Come in, then, and mind #linen#.
+line @1 again.open : Back again, #address#. You'll be wanting a place laid at table next. | You again, and twice before supper. Flattering, and I'm wary of flattery.
+line @1 greet.return : #greet#. | #greet#, #address#. I'm sure.
+line @2 greet.return [pair.band=friends|family] : #greet#. I've a thing to tell you, and you'll not repeat it. | #greet#. Speak of the Dark One, and in you walk. Nicely meant.
+line @3 greet.return [self.working=yes] : #greet#. Quick, before the bell from upstairs. | #greet#. Go on; I can dust and listen both.
+line @1 farewell : #farewell#. | #farewell#. Don't do anything I'd hear about.
+line @2 farewell [here.time=dusk|night] : #farewell#. Bolt your door, and mind who you open it to. | #farewell#. Off home, and quietly, if you please.
+line @1 farewell.return : #farewell#. | #farewell#, and mind how you go.
+line @1 react.news : #oath#! Well, I never. Go on. | Oh, now. That's a fish of a tale, that is. Tell me the rest of it.
+line @1 react.news.new : #surprise#. That's not come knocking at our door yet. | Is that right? I'll be chewing that over #supper#.
+line @1 react.news.known : #knew#. Old news, up on #estate#. | I'd heard. The walls on #estate# are thinner than folk think.
+line @1 react.news.doubt : #doubt#. Somebody's been embroidering. | #hedge#. Show me the seam and I might credit it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's cruel hard. | Oh. That's a #bad# business. I'm sorry, truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll #reel# to that. | Oh, lovely. I'll tell nobody, and #estate# will know by noon.
+line @1 answer.how : #fine#. Keeping my counsel and my apron clean. | Well, thank you. Better than I'll let on, #address#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, and smiling through it. | Run ragged since five, #address#, and still on my feet.
+line @1 ask.how : And you? You're looking well, or you're hiding it. | How are you keeping, #address#? Truthfully, now.
+line @1 sympathise : #sympathy#. Sit, and I'll find you something. | That's a weight. Not a word of it leaves this room, #address#.
+line @1 reassure : #reassure#. It'll look smaller in the morning. | It'll float, #address#. Most things do, given a day.
+line @1 decline [self.working=yes self.job=servant] : #hedge#, but no. The family ring and I come running; that's the bargain. | I can't, I'm sorry. #chambers.capitalize# won't do themselves, more's the pity.
+line @2 decline : #hedge#, but no. I keep to my own company of an evening. | Not today, thank you. I've my feet to rest and #herring# to see to.
+line @1 accept_decline : #no_matter#. Another time, perhaps. | Suit yourself. Once asked is enough, mind.
+line @1 thank : #thanks#. That goes in my memory, and not much gets in. | That's good of you. Don't make a habit of it, #address#.
+line @1 deflect_thanks : #deflect#. It was nothing. | Oh, hush. Anybody with paws would have.
+line @1 preclose [self.working=yes] : Well. The family will be ringing for me any moment. #oath#. | I'd best go before #toffs# upstairs want their tea.
+line @2 preclose : Well. #preclose#. | That's me, then, #address#. Things to do and nobody else to do them.
+line @1 accept_preclose : Off you go, then, #address#. | #bc_fair_enough# Go on.
+line @1 tease [pair.band=friends] : You've a smudge on your nose, #fool#. I'll not tell you where. | You walk like a wolf who's never once carried a tray, #fool#.
+line @1 tease.return : Says the one with mud halfway up the tail. #daft.capitalize#. | Oh, #very# good. I'll pay you back at the dancing.
+line @1 ack : #bc_true# | #bc_i_know#
+line @1 give.advice : #advise#: never say a thing in a hallway you'd not say at the table. | Keep your eyes open and your mouth smiling. That's all service is, #address#.
+line @1 warn [world.bandits=near] : #warn#. Stay inside the walls, and your purse inside your coat. | Not the roads, not now. Take it from me, #address#.
+scene oath_habit
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : #oath#! Did you see that? A cart through the puddle, and me in a clean apron. | Forge and sea, I say, shore-friend. One for each side of my family, so neither can sulk. | You've heard me swear, then. I'll not apologise; it's an old habit, and a clean one.
+b : You're soaked! | Each side? | Clean, is it?
+a : Soaked and smiling, like a lake-rat. I'll not give the carter the satisfaction. | A smith on the one side and boat folk on the other. #oath#, the both of them. | Clean as #linen#. Nobody was ever hurt by a hammer and a wave in one breath.
+b : #bc_ha# | #bc_fair_enough# | Ha. Fair enough.
+
+scene chambers_morning
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I've done #chambers# top to bottom this morning, and not a soul will notice. | There's dust on #ledges# that's older than I am. I'm getting to it. | There's a mirror in #chambers# in a gilt frame. I see more of my own face in it than I'd like.
+b : Somebody must notice. | Older than you? | Is it so bad?
+a : The family notice when it isn't done. That's the only way they notice anything. | Near enough. I'll have it down by Restday, #oath#. | It's a fine face. It's the hours that show on it, shore-friend.
+b : #bc_true# | #bc_good# | #bc_ha#
+
+scene letter_in_apron
+when topic=work|gossip self.job=servant
+does tell.self / ask.detail / answer.detail / assess
+a : I've #letter# in #apron# for #master#, and #master#'s never home to take it. | Three weeks I've carried #letter# about. The corners have gone soft as felt. | Don't look at #apron#. Yes, there's a letter. No, I'll not say who it's from.
+b : Can't somebody else take it? | What's in it? | Who's it from, then?
+a : I promised to put it in #master#'s own paw. I keep a promise, even a dull one. | I've not opened it. I've held it up to a lamp, I'll grant you, but #master# needn't know. | Somebody. You'll have that much from me, and a smile with it.
+b : #bc_fair_enough# | Ha. Sly, that. | #bc_ha#
+
+scene feast_reel
+when topic=pastimes|festival self.likes=dancing
+does tell.self / ask.detail / answer.detail / assess
+a : Feast night, and I'll dance till the fiddler's arm drops off. | I've my good shoes by the door already. One #reel#, I tell myself, and then it's six. | You don't dance? Pity. I'd have liked to tread on your toes in #reel#.
+b : And the fiddler? | Six? | That's why I don't.
+a : The fiddler can rest after. I'll stand them a jar for the trouble. | Six, and a seventh if the tune's #good#. | Clever. I'll find somebody slower, then, #address#.
+b : #bc_ha# | #bc_lovely# | Ha! Do.
+
+scene herring_hid
+when topic=food self.likes=pickled_herring self.job=servant
+does tell.self / ask.detail / answer.detail / assess
+a : #herring.capitalize# for my dinner, and nobody to share it with. Lovely. | The cook upstairs turns up her nose at #herring#. More for me. | There's #herring# hid behind the flour sacks. Don't you tell.
+b : Nobody at all? | Her loss. | Hid from whom?
+a : Nobody I'd give a bite to, anyway. | Her loss, my dinner. I'd call that a fair catch. | From everyone in that kitchen, #address#. They're a light-pawed lot.
+b : #bc_ha# | #bc_fair# | #bc_ha#
+
+scene crust_you_could_knock_on
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess / ack
+a : Somebody's left yesterday's bread out, as if I'd not notice. | I can't abide #crust#. I'd sooner go hungry, and I've tried it. | You could knock on that loaf, and it'd answer the door. #bad.capitalize# bread.
+b : Mean, that. | Sooner hungry? | It's not so bad.
+a : Mean and careful. That's how the rich stay rich, #oath#. | Hungry's honest. Stale bread's a lie told by a baker. | Then you have it, and I'll watch you chew.
+b : #bc_true# | #bc_ha# | Ha. I'll pass.
+
+scene warm_rain_yard
+when topic=weather here.weather=rain here.season=summer self.likes=warm_rain
+does tell.feeling / ask.detail / answer.detail / assess
+a : #warmrain.capitalize#. I stood out in the yard with my face up like a minnow. | Smell that? The dust coming up off the stones. #very.capitalize# nothing to beat it. | I'll get wet, and I'll not mind. Rain's warm in summer, #address#.
+b : Like a pup? | It does smell good. | You'll catch cold.
+a : Like a pup, and nobody saw. If they did, they've the sense to keep quiet. | Better than #beeswax#, and I live on beeswax. | Not in this. It's soft as lake-rain, near enough.
+b : #bc_ha# | #bc_true# | #bc_fair_enough#
+
+scene singers_below
+when topic=home|day here.time=night self.dislikes=night_noise here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : Somebody's singing under the window, and I'll tip the jug on them directly. | Night noise. I've an ear for it like a sentry, and I hear every step on #estate#. | They're at it again over the wall. Shouting. On #estate#, if you please.
+b : You wouldn't! | Every step? | Shocking.
+a : I would, and I'd say it was the cat. | Every one. I know who came home late, and who came home with company. | Shocking, and I'll be telling no one, mind. #saying.capitalize#.
+b : #bc_ha# | Ha! I'll bet. | #bc_ha#
+
+scene behind_the_curtain
+when topic=player|newcomer self.job=servant here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : There was a stranger at the gate asking for the family. I said they're out. They're not. | A new face on the street again, #stranger# by the look. I've had a good long look from behind the curtain. | Travellers want to see inside the big houses. They'll not see inside this one, #oath#.
+b : Why say that? | And? | Strict.
+a : Because I don't know the face, and the family don't pay me to guess. | And the coat's too good for the boots. There's a story in that somewhere. | Strict and paid for it, #address#. There's a difference.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene lake_and_hill
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# we'd herring in the jar and the lake at the door. Now I've herring and a hill. | I left the lake young. I don't miss it, except on still-water mornings, and then I do. | My #gran# used to say the lake keeps a secret better than any wolf. I've tried to match it.
+b[from=coldwater] #cw : Herring and the lake. That's home, all over. | Still mornings. I know. | It does keep them.
+b : A fair trade? | Only then? | Have you managed?
+a@cw : Then you'll keep my secret, shore-friend, and I'll keep yours. | Don't you start me, now. | Keeps them, and smiles over them, same as me.
+a : Fair enough. The hill pays better. | Only then. Otherwise I'm city through and through. | Mostly. #lake.capitalize#'s had more practice.
+b : #bc_ha# | #bc_true# | #bc_ha#
+
+scene duster_in_paw
+when topic=gossip self.job=servant
+does tell.gossip / ask.detail / answer.detail / assess
+a : I know something about #toffs# upstairs, and you'd love to hear it. | Oh, the things one hears with a duster in one's paw. You'd not believe half. | There's talk in the kitchen, net-menders' talk. I'm just not part of it.
+b : Go on, then. | Tell me one. | Aren't you?
+a : Not a word. #saying.capitalize#. | One? No. I'm saving them all for my old age. | Not a bit of it. I only listen, and I'm ever so good at listening.
+b : #bc_ha# | Ha! Mean. | #bc_i_know#
+
+scene feast_bells_morning
+when topic=festival|season here.day=festival self.likes=festival_bells
+does tell.feeling / ask.detail / answer.detail / assess
+a : #feastbells.capitalize# this morning. I had the windows open before the house was up. | When #feastbells# go, I'll have my apron off in a blink. | I love #feastbells#. It's the only noise I'll forgive anybody.
+b : Before they were up? | That fast? | Only that one?
+a : They woke to a feast. Let them thank me for it. | Faster. I've had practice, #oath#. | The only one. The rest can go and sink in the lake.
+b : #bc_ha# | #bc_lovely# | Ha. Harsh.
+
+scene swept_gutters
+when topic=home|smalltalk here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Up here on #estate#, even the gutters are swept. I'd know; I've swept a few. | The lamps are lit at dusk up here, every one. Down the hill they light about half. | Folk up here say good evening as if it cost them. It costs nothing, and still they're careful with it.
+b : Who sweeps the rest? | Only half? | Careful with it?
+a : Other wolves like me, with sore knees and a ready smile. | Half, if they've the oil. #estate.capitalize# always has the oil. | Careful as a miser with a penny. I say it twice, to make them nervous.
+b : #bc_true# | #bc_true# | #bc_ha#
+
+scene linen_day
+when topic=work self.job=servant self.working=yes
+does tell.complaint / ask.detail / answer.detail / assess
+a : Linen day. Every sheet in the house down the stair and back up white. | Somebody's spilled wine on #linen# and put it back folded, as if I'd not see. | I've ironed fourteen pillow slips, and my arm's half the length it was.
+b : That's a day's work. | Who did it? | Half the length?
+a : A day's, and a sore back to keep. #oath#. | I've an idea, and I'll keep it. A stain talks louder than any guilty face. | It feels it. I'll swing it round at the dancing tonight and see.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene candles_counted
+when topic=times|prices world.times=hard|lean self.job=servant
+does tell.worry / react.complaint / assess / ack
+a : Lean weeks. #toffs.capitalize# have cut the candles to one a room, and they call it thrift. | Even up on #estate# they're counting coppers. I've seen it in the kitchen book. | Hard times, they say. Not hard enough for the family to miss a dinner.
+b : Hard for everyone. | Counting? | Not for them, then.
+a : Hard for some more than others. I'll say no more, #address#. | Counting, and they think I can't read. | Not for them. For the scullery, it's the heel of the loaf.
+b? : #bc_true# | #bc_ha# | #bc_poor_soul#
+
+scene spoons_counted
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / ask.detail / answer.detail / ack
+a : They say #topic.subject# #topic.claim#. I've counted the spoons twice since. | #topic.subject.capitalize# #topic.claim#, the street says. #robbery#. | Have you heard? #topic.subject.capitalize# #topic.claim#. Well. I've my own ideas.
+b : Any missing? | Is it true? | What ideas?
+a : Not a spoon. I'd know if there were; I'd know which spoon. | It's what the street says. The street's right more often than #watch#. | Ideas I'll keep, #address#. #saying.capitalize#.
+b : #bc_good# | #bc_ha# | #bc_ha#
+
+scene buckle_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt I danced #reel# in boots with silver buckles. They fitted, too. | In my dreams there's a cottage by the water with nobody's linen in it but my own. | I'd a dream I opened a letter, and it was all about the weather.
+b : Silver buckles! | Only your own? | The weather?
+a : Silver, and I woke with my feet still going. #oath#. | Only mine. I'd iron it wrong on purpose and nobody'd say a thing. | Rain in the morning, fair by noon. I was #very# disappointed.
+b : #bc_ha# | #bc_lovely# | Ha! Shame.
+
+scene back_pew
+when topic=faith
+does tell.self / ask.detail / answer.detail / assess
+a : I sit in the back pew of a Restday, where I can see which of #toffs# are asleep. | I pray for a quiet night and a dry yard, shore-friend. The Bright One's busy, I expect. | Chapel says nothing's hid from the Bright One. I hope the Bright One's discreet about it.
+b : And who is? | Busy with what? | Discreet?
+a : Half #estate#. I keep a list in my head. | With #toffs#, mostly. They pray louder than I do. | Discreet as good service. I'd want no more of anybody, shore-friend.
+b : Ha! A list. | #bc_true# | #bc_ha#
+
+scene one_i_tell
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail / assess
+a : #self.friend# is the only one in this city I'd tell a secret to, and I've not told one yet. | I'd put the household keys in #self.friend#'s paw, and #letter# with them. | When #self.friend# laughs, I know I've said something wicked. It's a good test.
+b : Not yet? | High praise. | Do you say many?
+a : Not yet. When I do, it'll be worth the wait. | As high as it goes, from me, #address#. | Plenty. I keep the #very# best for #self.friend#.
+b : #bc_ha# | #bc_true# | #bc_ha#
+
+story hammer_and_wave [topic=memories|family self.age>=25]
+  : My #grandad# was a smith who never once saw the sea, and my #gran# was boat folk who never lifted a hammer.
+  : They swore at each other by their trades all their lives, and laughed every time.
+  ask : Had yours a word they'd say, when the pot boiled over?
+  b : Something I'd not repeat in company.
+  b[old] : Mine had three, and used all of them at once.
+  : So I swear by both. That way nobody's left out, #oath#.
+
+story bright_doorknob [topic=work|memories self.job=servant self.age>=20]
+  : My first week in service, I polished a brass doorknob so bright the master walked into the door admiring it.
+  : Nobody said a word. The next morning there was a note on my tray: less polish.
+  ask : Would you have laughed, or kept your face straight?
+  b : Laughed, and lost the place.
+  b[job=servant] : Straight face, and then laughed in the scullery after.
+
+story fiddle_wager [topic=pastimes|festival self.likes=dancing]
+  : At a feast once, a fiddler bet me I couldn't keep up till the dawn bell.
+  : I kept up, and the fiddle string broke before my feet did.
+  : The fiddler paid me in herring. I'd have taken the herring anyway.
+  b : Ha! Paid in herring.
+  b[from=coldwater] : That's a lake wager, that is.
+
+rule @oath_bark
+when concept=bark
+does aside
+cooldown 8h
+say #oath#! Who's left that bucket on the stair? | #oath#. Not again.
+
+rule @boards_bark
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 6h
+say Feet off the wet boards, please; #chambers# are fresh done. | Shoes off on the good carpet, if you please.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Hush down there! Some of us rise at five. | Singing, at this hour. #oath#.
+
+rule @bells_bark
+when concept=bark here.day=festival self.likes=festival_bells
+does aside
+cooldown 10h
+say There they go. #apron.capitalize# off, then. | Ring away, #feastbells#; I'll be out directly.
+
+dlg @1 resident.hub : #greet#. What is it? Quickly, I'm wanted. | #greet#, #address#. Ask, and I'll see.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. Whether that's good, we'll see.
+dlg @3 resident.hub [here.time=night] : It's late, and I don't open to faces after dark. Say it from there, #address#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay where you are, #address#. Now, your business.
+dlg @1 resident.job [self.job=servant] : I keep #chambers# for #toffs#. #beeswax.capitalize#, #linen# and a smile, and nobody upstairs asks my name.
+dlg @2 resident.job : #job_busy# Work's work. I'm good at it, and close about it. | #self.trade_words.capitalize#. And there I'll leave it.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I've my own view of it, and I'll keep that.
+dlg @2 resident.news [world.event_words] : All up and down #estate# it's #world.event_words#. I'm sick of hearing it, and I'll tell you anyway.
+dlg @3 resident.news [world.wagons=raided] : The road's had a wagon robbed. Keep inside the walls, #address#.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new, and nothing I'd tell #stranger# if there were.
+dlg @1 resident.gossip [here.gossip=yes] : Word is #topic.subject# #topic.claim#. Mind, you had that from the wall, not me.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Gossip? From me? You want a net-mender, and you've the wrong door.
+dlg @1 resident.bye : #farewell#. And not a word of what I said. | #farewell#, #address#. Mind the step.
+graft resident.hub
+choice What's that letter in your apron? [self.job=servant] -> letter
+node letter
+say A letter for the master of the house, who's never home. I've carried it a good while. It goes into nobody's paw but the right one.
+mood calm
+free
+choice Who is it from? -> letter_who
+choice Goodbye. -> bye
+node letter_who
+say Now that would be telling, and I don't tell. You've a nice enough face, mind. Ask me again in a year.
+mood pleased
+choice Fair enough. -> hub
+choice Goodbye. -> bye

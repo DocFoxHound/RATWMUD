@@ -1,0 +1,311 @@
+# cw190, the dreamer behind the syrup jars (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw190
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_osric_slagstack
+written_by claude
+title the dreamer behind the syrup jars
+fits stage=adult|old
+prefers job=merchant talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk hums_sea_songs_of_a_sea_never_sailed
+likes pickled_herring roof_birds sharp_knife autumn_wind
+dislikes salt_wind crowds
+fears the_day_the_humming_stops a_market_day_crush_with_the_pups_in_it
+hopes one_look_at_open_sea_from_a_safe_hill the_shop_quiet_and_paying
+topics work +0.3 health +0.3 animals +0.3 food +0.2 pastimes +0.3 memories +0.2 gossip -0.5 festival -0.2
+styles comfort=quiet gossip=closed refuse=plain tease=none
+marks oath saying
+persona #self.first# helps behind the counter of a remedy shop, stirring cough syrups and handing out jars, humming old sea songs under the breath all day: quiet, frank and contented, a dreamer of far shores who can't abide the salt wind, fond of soused herring, a well-kept paring knife and the birds along the roofline.
+
+words
+oath! = Haul away | By the far shore
+saying! = A song goes where a body can't | Honey first, then the bitter
+song = a sea song | an old hauling song
+tune = the tune | a bit of a tune
+syrup = the syrup | a pan of cough syrup
+jars = the jars | the stoppered jars on the shelf
+horehound = horehound | horehound and honey
+cough = a cough | a chest that rattles
+herring = soused herring | herring with onion, from the pot
+birds = the birds along the roofline | the sparrows on the chimneys
+knife = my paring knife | the knife I keep sharp
+autumnwind = an autumn wind | a blow that brings the leaves down
+saltwind = the salt wind | a wind straight off the Sound
+crush = a crush | the press of folk
+lake = the lake | the lake at home
+farshore = a far shore | somewhere past the edge of the map
+counter = the counter | the shop counter
+shop = the shop | our shop
+songs = the sea songs | the old sea songs
+honey = honey | dark honey
+chest = a chest | a tight chest
+
+any
+opinion @1 houses for 1 : The Houses run the yards and the yards pay wages. Folk with wages buy #syrup#. I'll not complain.
+opinion @1 merchants against 1 : A good share of what you pay goes on the seller's own table. I know; I've stood behind #jars# and seen it.
+opinion @1 newcomers for 1 : A new face is a new #cough# to see to, and new coin with it. I'm not proud.
+opinion @1 strangers for 1 : Travellers bring news and a chest full of road dust. Both are welcome at #counter#.
+opinion @1 times for 1 : Enough to eat and a dry floor. #saying#. I've never needed more than that.
+opinion @1 city against 1 [here.region=ridgemere] : Too much #crush#, too much #saltwind#. I keep to #shop# and the stair, and that's enough of it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in out of #saltwind#. | #greet#, #address#. Take your time.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. #syrup.capitalize#'s warm, if that's what you're after. | #greet#. Mind the shelf; #jars# are full.
+line @3 greet [here.time=dawn] : Morning. I've had #knife# on the stone already. | Morning, #address#. The best hour, before the coughing starts.
+line @4 greet [here.time=dusk|night] : #greet#. Shutters nearly up, and #jars# counted. | #greet#. Late. Mind the step.
+line @1 kin.open [pair.kin!=no] : Ah, it's you. Some #herring# is put by for you. | You. #good.capitalize#. Sit down.
+line @1 again.open : #welcome_back#. | Back again today. You'll want something off #counter#.
+line @1 hail [pair.band=friends] : #address.capitalize#. Over here. | A word, #address#. Not long.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Come in. | #greet#. I knew it was you on the stair.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. One moment; #syrup# wants a stir. | #greet#. I'll be with you, after this jar.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late. | #greet#. Shut the door; #saltwind# gets in.
+line @1 farewell : #farewell#. | #farewell#. Keep your chest warm.
+line @2 farewell [here.time=dusk|night] : #farewell#. Wrap up. | #farewell#. Sleep well, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Go on, then. #ack.capitalize#. | Mm. I'm listening, #address#.
+line @1 react.news.new : #surprise#. I'd not heard. | #oath#. That's new.
+line @1 react.news.known : #knew#. | I'd heard. #cough.capitalize# came in with it this morning.
+line @1 react.news.doubt : #doubt#. I'll wait and see. | Maybe. I don't believe much until I see it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | #oath#. That's sad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. | #good.capitalize#. That's #good#.
+line @1 answer.how : #fine#. Content. | Well. Content, which is plenty for me.
+line @1 answer.how.busy [self.working=yes self.job=merchant] : #busy.capitalize#. Half the street's coughing. | Busy. #syrup.capitalize# won't keep up.
+line @1 ask.how : And you, #address#? | Keeping #chest# warm, are you?
+line @1 sympathise : #sympathy#. Sit a while. | I'm sorry, #address#. That's heavy.
+line @1 reassure : #reassure#. Most things ease, like #cough#. | It'll pass, #address#. Give it time and something warm.
+line @1 decline : #hedge#. I can't leave #counter#, and I'd not do it well anyway. | Not this time, #address#. My hands are full till #shop# shuts.
+line @1 accept_decline : #no_matter#. | That's fair. #later.capitalize#.
+line @1 thank : #thanks#. | #thanks#. That's kind.
+line @1 deflect_thanks : #deflect#. | It was only one of #jars#.
+line @1 preclose [self.working=yes] : Back to it. #syrup.capitalize# won't stir itself. | Well. #jars.capitalize# want filling.
+line @2 preclose : #preclose#. | Well. #syrup.capitalize# calls.
+line @1 accept_preclose : Go on, then. #farewell#. | Go on. Keep #chest# warm.
+line @1 ack : #bc_right# | Mm.
+scene cough_listening
+when topic=work|health self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I can tell what a customer needs before they've asked. I listen to #cough#. | Three chests this morning that rattled like a sack of stones. All #horehound#. | A dry cough wants #honey#. A wet one wants something bitter. I hand out what they need.
+b : Just from the noise? | Is that the cure? | Is there a difference?
+a : Just that. Dry, wet, deep, tickle. #saying#. | For most. It eases #chest#. I'm no healer; I don't pretend to be. | A great one. Give a wet chest #honey# and it only gets comfortable.
+b : #bc_clever# | #bc_wise# | #bc_true#
+
+scene syrup_pan
+when topic=work self.job=merchant self.working=yes
+does tell.self / react.self / assess
+a : I've #syrup# on the low fire all morning. The whole shop smells of cloves. | #jars.capitalize# are all filled and stoppered, and the shelf's straight. That's a good morning. | I stir #syrup# and hum. The customers don't seem to mind it.
+b : It smells good from here. | Neat work. | Some would.
+a : #syrup.capitalize# tastes worse than it smells. That's how you know it's working. | Neat's how I like a shelf. I can find any of #jars# in the dark. | They don't say. I'd stop #tune# if they did.
+
+scene counter_quiet
+when topic=work|day self.job=merchant self.working=yes here.time=day
+does tell.feeling / react.self / assess
+a : Slow afternoon. #birds# on the roof across, and nobody coughing. | Quiet at #counter#. I don't mind quiet. Nobody's ill, or nobody's buying. | It's a good shop for a quiet one. Folk come in, say what hurts, and go.
+b : Peaceful. | Both, maybe. | Suits you.
+a : It is. I'd not change places with the market stalls. | Both, likely. Either way, I've #knife# to sharpen. | It does. I don't have to talk much. #jars.capitalize# do the talking.
+
+scene damp_trade
+when topic=weather|work here.weather=rain|fog here.region=ridgemere self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Wet week. Every #cough# in the Commons comes through our door when it's like this. | This weather fills #shop#. Folk come in dripping and barking. | Damp fills the till and empties chests. I'd sooner the trade were thinner.
+b : Busy, then? | Barking? | You'd sooner less?
+a : Busy. I've #syrup# on twice a day in weather like this. | Coughing. You'd hear them from the next street. I know the bad ones by ear. | I would. I'm comfortable. I don't need half the street sick to be so.
+b : #bc_fair_enough# | #bc_poor_soul# | #bc_fair#
+
+scene herring_pot
+when topic=food self.likes=pickled_herring
+does tell.feeling / ask.detail / answer.detail / assess
+a : I've #herring# for my supper. That's all I want of an evening. | #herring.capitalize#. I could eat it every day. | There's #herring# in a crock at home. Don't tell anyone.
+b : Every night? | Every day? | Why hide it?
+a : Most nights. Folk pull faces at #herring#. More for me. | I could. I nearly do. #oath#, it's good. | It's mine. If folk knew, they'd want some. I'd have to share.
+b : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene roof_birds
+when topic=animals|pastimes self.likes=roof_birds here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I watch #birds# from the window. They know the warm chimneys better than we do. | There's a pair of sparrows on our gutter that fight every morning. I put crumbs out for both, #oath#. | When it's slow I count #birds#. Twelve today. Fewer when the wind's off the Sound.
+b : Do they? | Both of them? | Fewer?
+a : They do. First #cold# day, they're on the chimneys. They knew before I did. | Both. I don't take sides. They make it up by noon. | They don't like #saltwind# either. We're agreed on that.
+
+scene knife_stone
+when topic=pastimes|work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail / assess
+a : I put #knife# on the stone every morning. Ten strokes a side. | A blunt knife's a danger. A sharp one's a friend. #knife.capitalize# is a friend. | I can cut bread with #knife# so thin you'd see the lamp through it.
+b : Every morning? | A friend? | That thin?
+a : Every morning, before anything else. It settles me. | It doesn't slip. It does what you ask, #address#. That's a friend. | Near enough. A blunt one tears and a sharp one doesn't argue.
+b : #bc_wise# | #bc_fair_enough# | #bc_clever#
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #autumnwind.capitalize# today. Leaves pouring along the gutters like a tide coming in. | This is my wind. Not off the sea. #autumnwind.capitalize#, off the hills. | I stood on the step for a while, just to feel #autumnwind#. Then I went in and hummed.
+b : It's a cold one. | Off the hills, yes. | You hummed?
+a : #cold.capitalize#, but clean. Give me that over salt any day. | Off the hills. It smells of somewhere else. I like that. | Hummed. #song.capitalize#. It wanted one.
+
+scene salt_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind here.weather=clear|overcast
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#. My coat's stiff with it, and sticky. | I can't abide #saltwind#. It cracks my nose and stiffens my coat. | The wind's off the Sound today. My lips are salt with it.
+b : It's the city. | Sticky, yes. | You'd think we'd be used to it.
+a : It is. The work brought me here. The wind came free. | Sticky and grey. I brush #saltwind# out every night. | I've not got used to it. I don't think I will. #saying#.
+
+scene crowds
+when topic=smalltalk|festival self.dislikes=crowds here.region=ridgemere
+does tell.complaint / sympathise / assess
+a : Market day. I'll not go near #crush# in the Commons till it's done. | I can't abide #crush#. Elbows and shouting, and nowhere to stand. | Feast days, I stay indoors and let #crush# go past the window.
+b : It's not so bad. | Nobody likes elbows. | Very wise.
+a : Not for some. For me it's like being shut in a barrel. | Nobody. I just mind #crush# more than most. | It's the only sense I have. I'll keep it.
+
+scene sea_songs
+when topic=pastimes|memories self.away=yes here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I learned #song# off the wharf when I first came. Never been to sea in my life. | I hum #songs# all day. Those I live with say they know my mood by it. | There's a song about a ship that sails to #farshore#. I hum it most.
+b : Never at all? | And do they? | Past the edge?
+a : Never. I don't like #saltwind#. I like the sea in a song. It stays where it's put. | They do. If I stop humming, something's wrong. They come and ask. | To #farshore#. I'll not go. The song goes for me. #saying#.
+b : #bc_ha# | #bc_lovely# | #bc_lovely#
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : Back home in #self.from_town# there were no sea songs. Only #lake#, and the boats on it, quiet. | I grew up beside #lake#. Still mornings. One gull, and the whole shore knew. | My grandad sang rowing songs on #lake#. Slower than sea songs. I hum those too, when nobody's near.
+b[from=coldwater] #home : Quiet water. I remember. | I miss that quiet. | I know a rowing song or two.
+b : Do you miss it? | Still, there? | Slower?
+a@home : Then you know. I don't need to say it. | So do I. There's none of it here. | Then hum #song# with me, some time. I'd like that.
+a : A bit. The quiet more than the place. | #very.capitalize# still. You could hear your own heart. | Slow as a boat with one oar. You row in time.
+
+scene spouse_quiet
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# does the clever part of most things. I do the quiet part. | #self.spouse# knows my mood before I do. Says I hum different when I'm worried. | I'm a lucky wolf, #address#. I don't say it, but I know it.
+b : Good partners. | Do you? | You should say it.
+a : Good enough. We don't argue. Not out loud, #address#. | Lower, I'm told. I can't hear #tune# myself. | Maybe I should. I'm not much of a talker.
+
+scene the_pups
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I'd like #self.child# to learn my songs, wrong words and all. | I worry less than I should, about the pups, #address#. They're well. That's enough. | If #self.child# ever asks where the far shore is, I'll say nobody knows. It's in a song.
+b : That's sweet. | Content, then. | A good answer.
+a : It is. The wrong words are better. I'd not correct a one. | Content. #saying#. | It's the only one I've got. #oath#.
+
+scene fog_morning
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : #fog.capitalize# off the Sound. I couldn't see #birds# this morning. | Fog like this, the chests come in by noon. I put more #syrup# on. | Thick out. I hummed my way up the street so nobody'd walk into me.
+b : Thick one. | Busy day, then. | Did it work?
+a : Thick. #birds.capitalize# will be back when it lifts. | Busy. I don't mind busy, if it's quiet busy. | Nobody walked into me. That's working.
+
+scene faith_quiet
+when topic=faith
+does tell.self / react.self / assess
+a : Chapel, I take the back bench. I don't sing there. Funny, that. | A roof and a full shelf: I give thanks for those. That's my whole prayer. | I'm ordinary about faith. I go, I sit, I come home humming #song#.
+b : You don't sing? | That's a good prayer. | That's most of us.
+a : Not there. It's not my kind of song. I hum on the way home instead. | It's an honest one. I don't ask for more than I need. | Most of us. I don't think the Bright One minds.
+
+scene newcomers
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New face on our stair. I nodded. That's a start, for me. | Newcomers are #good# for trade. New coin's still coin. | I don't mind strangers. They come to #counter#, they buy, they go.
+b : A nod's something. | Ha. That's true. | Simple enough.
+a : It's what I've got. They'll get a word next week. | True enough. It spends the same. | Simple. #good.capitalize#.
+
+scene gossip_closed
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty, #address#. I keep it, the way #jars# keep #syrup#. | Folk tell me things over #jars# with their chests open. I don't pass them on. | I've seen things I'll not repeat. Not to anyone.
+b : Not even to me? | Fair enough. | Not anyone?
+a : Not even you. #secret.capitalize#. | It's only fair, #address#. A word told quiet stays quiet. | Nobody. I'm frank about most things. Not about other folk's.
+b? : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene death_heard
+when topic=gossip|crime topic.claim_kind=death topic.subject
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They say #topic.subject# #topic.claim#. #pity#. | I heard #topic.subject# #topic.claim#. I'll not hum today. | #topic.subject.capitalize# #topic.claim#. The Bright One keep #topic.them#.
+b : #pity#. | That's sad news. | It's a sad thing.
+a : It is. #rest#. | Sad. Some days the songs don't come. | Sad. I'll sit a while with it, #address#.
+
+scene good_times
+when topic=times world.times=good|boom self.job=merchant
+does tell.news / react.news / assess
+a : Good times, they say. I've noticed. Folk buy the dear #syrup# now. | Folk are spending. The shelf's half empty by noon. | Everyone's #good# for coin. I'm glad of it. What I have does me, mind.
+b : Good for you. | Half empty! | Content, are you?
+a : Good all round. I'll not complain. | Half. I'll fill it tonight and hum while I do. | Content. Bread, roof, #song#. That's plenty.
+
+story first_song [topic=memories|pastimes self.away=yes here.region=ridgemere self.age>=25]
+  : My first week in the city I walked down to the wharf to see the ships. I'd never seen a ship.
+  : An old sailor was coiling rope and singing. A song about a far shore. I stood and listened to the whole of it.
+  : I couldn't tell you the words now. But I've hummed the tune every day since. #saying#.
+  ask : Is there a tune you've carried from somewhere and never let go of?
+  b : One my mother sang. I don't know its name.
+  b[from=coldwater] : A rowing song. You'll know it.
+
+story horehound_grandmother [topic=memories|health self.from=coldwater self.job=merchant self.age>=20]
+  : My #gran# kept a pot of #horehound# and honey by the stove. Every #cough# in the house got a spoon.
+  : It tasted terrible. She'd hum while you swallowed it, so you'd forget. It never worked.
+  : I do the same now, at #counter#. It doesn't work for them either.
+  b : Ha. But they come back.
+  b[old] : My gran did the same. Bitter stuff, and a song.
+  : They come back. Maybe it's the song they want.
+
+story night_cough [topic=work|memories self.job=merchant self.age>=30]
+  : One night a mother brought a pup to #shop#, coughing hard. #shop.capitalize# was shut. I let them in.
+  : I warmed #syrup# and gave the pup a spoon, and hummed till the coughing slowed.
+  : It slept on the bench by #counter#, and #chest# eased. In the morning it was better.
+  ask : Would you have opened the door, that late?
+  b : I hope I would.
+  b[stage=old] : I've opened doors for less.
+  : I'd open it again. You don't leave a cough on the step.
+
+rule @syrup_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say #syrup.capitalize#, fresh this morning. | #horehound.capitalize#, honey and cloves. For the chest.
+
+rule @humming
+when concept=bark self.quirk=hums_sea_songs_of_a_sea_never_sailed
+does aside
+cooldown 8h
+say Mm, mm-mm. Haul away, haul away. | #tune.capitalize#, under the breath. Nobody notices.
+
+rule @salt_bark
+when concept=bark self.dislikes=salt_wind here.region=ridgemere here.weather=clear|overcast
+does aside
+cooldown 10h
+say #saltwind.capitalize# again. In my fur. | Off the Sound. #oath#. Shut the door.
+
+rule @crowd_bark
+when concept=bark self.dislikes=crowds here.day=market here.region=ridgemere
+does aside
+cooldown 12h
+say Market day. #oath#. Stay in. | #crush.capitalize# out there. Not for me.
+
+dlg @1 resident.hub : #greet#. What's needed? | #greet#, #address#. Take your time.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you well. | #topic.player#. #greet#. No cough today, then.
+dlg @3 resident.hub [here.time=night] : It's late. #tired.capitalize#. Quick, if you can. | #greet#. Late, #address#. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you, #address#. From there's fine. | What is it? I've #knife# in my paw, mind, for the jars.
+dlg @1 resident.job [self.job=merchant] : I help at #counter#. Syrups and drops for the chest, and #jars# kept straight. | I stir #syrup#, fill #jars# and listen to folk cough. It's a quiet trade.
+dlg @2 resident.job : #self.trade_words.capitalize#. It suits me. | #job_busy#
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. | From #world.news_from#, a customer said: #world.news#.
+dlg @2 resident.news [world.event_words] : Folk talk of #world.event_words#. | It's all #world.event_words# at #counter#.
+dlg @3 resident.news [world.wagons=raided] : Robbers stopped a cart out past the walls. Mind yourself. | Somebody's wagon got taken. I heard it from a cough.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new. #cough.capitalize# or two, mostly.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's all I know. | Folk say #topic.subject# #topic.claim#. I'll not add anything.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep what I hear at #counter#.
+dlg @1 resident.bye : #farewell#. Keep your chest warm. | #farewell#, #address#.
+graft resident.hub
+choice What's that you're humming? -> song
+node song
+say Was I? I do it without knowing. #song.capitalize#. About a ship that sails to #farshore#. I've never been to sea myself.
+mood calm
+free
+choice Why sea songs, then? -> song_why
+choice Goodbye. -> bye
+node song_why
+say I like the sea in a song. It stays where it's put, and the wind doesn't get in your fur. And they tell me, at home, they know I'm content when they hear it.
+choice Keep humming. -> hub
+choice Goodbye. -> bye

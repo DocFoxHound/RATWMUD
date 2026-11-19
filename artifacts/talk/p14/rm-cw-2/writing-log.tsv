@@ -1,0 +1,27 @@
+mantle	writer	started	finished	items	alternatives	note
+cw189	C1	2026-11-18T18:12:36-07:00	2026-11-18T18:34:53-07:00	88	361	hive hand filed job farmer: bee words gated self.job=farmer; city lines here.region=ridgemere
+cw190	C1	2026-11-18T18:18:04-07:00	2026-11-18T18:34:53-07:00	80	336	accent none; shop talk gated self.job=merchant; quirk turned to hums_sea_songs_of_a_sea_never_sailed
+cw191	C1	2026-11-18T18:23:26-07:00	2026-11-18T18:34:53-07:00	82	334	job none at a press: work gated self.working=yes; quirk turned to saves_apple_pips_for_a_garden_up_the_hill
+cw192	C1	2026-11-18T18:28:51-07:00	2026-11-18T18:34:53-07:00	82	328	accent none apprentice: learning gated self.apprentice=yes self.boss; quirk turned to swears_the_cold_water_is_warm
+cw193	C2	2026-11-18T18:11:10-07:00	2026-11-18T18:17:30-07:00	74	222	Heights servant, formal: "the House", never its name; work gated self.job=servant
+cw194	C1	2026-11-18T17:59:06-07:00	2026-11-18T18:34:53-07:00	124	553	full carpenter (merchant+crafter): carpentry gated self.job=crafter, counter on self.role=merchant; shop nodes by here.shop and job
+cw195	C2	2026-11-18T18:17:30-07:00	2026-11-18T18:21:00-07:00	75	224	Office clerk: work gated self.job=scholar; quirk turned to keeps_a_spare_pen_behind_each_ear
+cw196	C2	2026-11-18T18:21:00-07:00	2026-11-18T18:25:28-07:00	83	240	Sump pawnshop help, rough and merry; quirk turned to gives_a_lump_of_coal_with_every_pawn_ticket
+cw197	C2	2026-11-18T18:26:00-07:00	2026-11-18T18:29:38-07:00	74	220	Commons, no trade; idle talk gated self.working=no; quirk turned to bets_oatcakes_on_when_the_rain_will_stop
+cw198	C3	2026-11-18T18:14:48-07:00	2026-11-18T18:19:01-07:00	82	352	accent none, Heights door-minder, formal; quirk turned to touches_a_lump_of_coal_before_opening_any_door
+cw199	C2	2026-11-18T18:03:18-07:00	2026-11-18T18:11:10-07:00	111	335	full sausage butcher: trade talk gated self.role=merchant; price scenes gated world.raw_meat_price; quirk turned to runs_every_stair_as_if_late
+cw200	C3	2026-11-18T18:19:01-07:00	2026-11-18T18:25:08-07:00	83	357	Estate chamber servant, genteel: household talk gated self.job=servant
+cw201	C3	2026-11-18T18:25:08-07:00	2026-11-18T18:29:38-07:00	83	354	accent none plasterer: Sump home gated self.quarter=sump; quirk turned to grows_something_green_on_every_windowsill
+cw202	C3	2026-11-18T18:29:38-07:00	2026-11-18T18:35:28-07:00	87	360	Wharf Office clerk (job scholar): ships only through #topic.ship#; quirk turned to knows_every_ship_by_its_page_in_the_book
+cw203	C4	2026-11-18T18:25:16-07:00	2026-11-18T18:29:50-07:00	73	354	old, proud: old section; quirk turned to drops_a_copper_in_the_stall_jar_each_night
+cw204	C4	2026-11-18T18:30:08-07:00	2026-11-18T18:35:00-07:00	73	333	accent none, devout apple picker: work gated working+job=none (+autumn)
+cw205	C3	2026-11-18T18:05:05-07:00	2026-11-18T18:14:48-07:00	128	611	full fishmonger (job fisher, merchant): fish talk gated self.role=merchant self.job=fisher; no nets; quirk turned to jumps_at_every_bell_then_laughs_it_off
+cw206	C4	2026-11-18T18:15:47-07:00	2026-11-18T18:20:10-07:00	75	350	nervy, cold: work gated working+job=merchant; quirk turned to reads_the_roof_birds_for_trouble
+cw207	C4	2026-11-18T18:07:10-07:00	2026-11-18T18:15:17-07:00	114	582	full butcher, riddling and warm: work gated role=merchant; ship scenes on topic.kind+topic.ship; window cases gated
+cw208	C5	2026-11-18T18:18:17-07:00	2026-11-18T18:21:38-07:00	91	305	almoner (job none, civilian): alms gated self.working=yes self.job=none
+cw209	C5	2026-11-18T18:21:58-07:00	2026-11-18T18:25:46-07:00	89	280	hall server, floor-proud; spouse lines feelings only
+cw210	C5	2026-11-18T18:08:48-07:00	2026-11-18T18:14:00-07:00	99	337	the Queen (job none): royal claims gated self.class=upper (+wealth=rich); quirk turned to remembers_every_favour_given_or_owed
+cw211	C4	2026-11-18T18:20:13-07:00	2026-11-18T18:25:00-07:00	75	352	accent none, meticulous: trade nouns gated job=merchant; quirk turned to lays_the_knives_out_by_length
+cw212	C5	2026-11-18T18:14:26-07:00	2026-11-18T18:18:00-07:00	94	286	King's kitchen servant: kitchen talk gated self.job=servant self.working=yes; times baking by song verses
+cw213	C5	2026-11-18T18:26:25-07:00	2026-11-18T18:29:53-07:00	91	307	no work; hopes for the Watch (gated self.job=none self.working=no); quirk turned to races_up_every_stair
+cw214	C5	2026-11-18T18:30:11-07:00	2026-11-18T18:33:43-07:00	91	287	Admin Wing clerk: work gated self.job=scholar; quirk turned to calls_every_cough_the_dust_of_old_papers

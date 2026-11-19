@@ -1,0 +1,295 @@
+# fh102, the pebble-pocket (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh102
+revision 2
+state ready
+dialect frosthollow
+accent light broad
+tier standard
+written_for cty_ulric_stonevein
+written_by claude
+title the pebble-pocket
+fits stage=adult|old
+prefers job=miner temper=short
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes roast_pork swimming fresh_straw summer_evenings
+dislikes drizzle night_noise
+fears a_hard_winter_on_the_pass_road losing_someone_to_the_snow
+hopes a_sill_full_of_river_stones a_winter_where_nobody_is_lost
+topics pastimes +0.4 food +0.3 work +0.3 memories +0.2 weather +0.2 gossip -0.2
+styles comfort=practical gossip=plain refuse=short tease=none
+marks oath saying
+persona #self.first# digs ore up at the mine and fills every pocket with smooth stones off the riverbank: quick to flare and quicker to say sorry, warm underneath, and forever looking down the pass road in winter.
+
+words
+oath! = River take it | Pick and pebble | Rough rock, smooth water
+saying! = Water's patient, rock never is | Every pebble was a cliff once | Give it a river and time
+pebble = a river pebble | a smooth one off the bank
+pebbles = my river stones | the stones on the sill
+sill = the sill | the window sill
+bank = the riverbank | the stream bank
+tarn = the tarn | the cold tarn
+pork = pork with good crackling | a roast of pork
+crackling = the crackling | crackling that snaps
+straw = clean straw | new straw on the floor
+spitting = this spitting muck | half-rain
+ore = ore | good red ore
+face = the face | the rock face
+pick = my pick | the pick
+passroad = the pass road | the road down the valley
+lightnight = a long light evening | the summer light, late on
+hmph = Hmph | Huh
+
+any
+opinion @1 merchants against 2 : #hmph#. I dig all week for #wages# that won't buy a loaf, and the store's never short. #annoyed#.
+opinion @1 houses against 1 : The Houses own the hill and I've never once seen one of them up it. I'd not know a House lord if one fell down #face#.
+opinion @1 strangers for 1 : Feed them first, ask them after. That's how I was raised, and I'll not change it for anyone.
+opinion @1 city against 1 : Smoke and shoving, and no #bank# you'd put a paw in. You can have it.
+opinion @1 dole for 1 : Nobody up here should go to #bed# #hungry#. Not in this #cold#. Give them a bowl and be done.
+opinion @1 road mixed 1 [here.season=winter] : #passroad.capitalize# in winter takes more than it gives. I watch it all the same.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Come in out of #wind#. | #greet#. You look #cold#. Sit by the fire.
+line @2 greet [self.working=yes self.job=miner] : #greet#. Mind #pick#, I swing wide. | #greet#. Talk loud, #address#. #face.capitalize#'s noisy.
+line @3 greet [here.time=dawn] : Morning. I'm off up to #work#. | Morning, #address#. Frost on the bank already.
+line @4 greet [here.time=dusk|night] : #greet#. Back down from #work# and starving. | #greet#. Shut the door, it's #cold#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. I'll put the kettle on, #address#. | You. #good.capitalize#. I was hoping it'd be you.
+line @1 again.open : You again. #good.capitalize#, saves me walking over. | Back so quick. I'd only just set #pebbles# out.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Come here, then. | #greet#. Mind #pebbles#, I've just set them out.
+line @3 greet.return [self.working=yes] : #greet#. Quick, #boss#'s watching. | #greet#. Shout it, I can't hear for #pick#.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, isn't it. | #greet#. Bring a lamp next time.
+line @1 farewell : #farewell#. | #farewell#, #address#. Watch the ice.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the road in the dark. | #farewell#. Straight home, mind.
+line @1 farewell.return : #farewell#. | #farewell#. Same to you.
+line @1 react.news.new : #surprise#! Never heard a word of that. | #oath#. When was this?
+line @1 react.news.known : #knew#. Old news by now. | I'd heard. #hearsay#.
+line @1 react.news.doubt : #doubt#. Show me and I'll believe it. | Who says so? I'd want to hear it from them, not you.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | Oh, that's #bad#. That's #bad# news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! #good.capitalize#. | Now that's #good#. I'll drink to that.
+line @1 answer.how : #fine#. Sore, but #fine#. | Not bad. #hungry.capitalize#, mostly.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #face.capitalize# won't dig itself. | Flat out. Ask me after #work#.
+line @1 ask.how : And you? You eating right? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Here, sit down before you fall down. | That's a weight, #address#. Let me carry some of it.
+line @1 reassure : #reassure#. You've come through worse. | It'll come right. I'll help it along if it won't.
+line @1 decline : #hedge#, I can't. The shift starts early and I'll be dead on my feet. | Not today, #address#. I've given my evening to the river already.
+line @1 accept_decline : #no_matter#. Next time, then. | Fair enough. I'll ask again #later#.
+line @1 thank : #thanks#. I mean it. | That's #good# of you. I'll not forget it.
+line @1 deflect_thanks : #deflect#. You'd do it for me. | Give over. It was nothing.
+line @1 apologise : Sorry. I snapped. I'm like that till I've eaten. | That was short of me. #sorry#.
+line @1 preclose [self.working=yes] : Right. Back to #face#. | Well. That #ore# won't come out on its own.
+line @2 preclose : Well. #preclose#. | I'll go and see if there's any #supper# left.
+line @1 accept_preclose : Go on, then. #farewell#. | Right you are.
+line @1 ack : #bc_right# | #hmph#. Right.
+line @1 give.advice : #advise#: never swim the tarn alone, and never in spring. | Pick #pebble# and hold it when you're angry. It helps. Some.
+line @1 warn [world.bandits=near] : #warn#. Keep off #passroad# after dark. | #bandits.capitalize# about. Walk in twos.
+rule @pick_bark
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 6h
+say Come on, come on. #oath#. Give it up. | That's #ore#. That's proper #ore#, that is.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say #spitting.capitalize#. Rain or don't, make your mind up. | #annoyed#. Wet through and it's barely raining.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Will you lot shut it? Some of us work at dawn. | #oath#. Who's banging at this hour?
+
+rule @stone_bark
+when concept=bark working=no here.season=spring|summer
+does aside
+cooldown 10h
+say There's one. Look at that. Smooth as an egg. | Into the pocket. That's #pebbles# up by one.
+
+scene sill_stones
+when topic=smalltalk|pastimes|home
+does tell.self / ask.detail / answer.detail / assess
+a : Look at #sill#. Forty-odd stones and not a sharp edge among them. | Got a new one off #bank# yesterday. Grey, with a white band right round it. | My pockets are always full of #pebbles#. I wear holes in every coat.
+b : Why stones? | Where do you find them? | Why not a bag?
+a : Rock's hard all day up at #face#. These are the soft end of it. | Down where #tarn# runs out. The river's done all the work. | A bag, #address#? I'd only fill that too.
+b : #bc_fair_enough# | I'll look next time. | #bc_ha#
+
+scene stone_hunt
+when topic=pastimes here.season=spring|summer here.outdoors=clear|overcast
+does invite / accept / assess
+a : Walk down to #bank# with me. The water's low, the good ones show. | I'm off stone-hunting after #supper#. You can come if you keep up. | There's a bend below the falls where #bank# keeps its best. Come and see.
+b : Go on, then. I'll come. | I'll keep up. | Show me, then.
+a : #good.capitalize#. Look for the ones that shine wet. | Bring a pocket. You'll want one. | #good.capitalize#. Don't tread on any; they're mine.
+
+scene tarn_swim
+when topic=pastimes here.season=summer here.outdoors=clear
+does tell.self / react.self / assess
+a : Swam #tarn# this morning. Cold enough to stop your heart, and worth it. | I swim every day the ice is off. Only way to get the dust out. | Went in off the high rock again. Came out blue and laughing.
+b : You're mad. | Does it work? | Blue?
+a : Mad and clean, #address#. That's more than most up here. | Best wash going. The fur comes out a colour again. | Blue. Then warm. Then I'll go in #tarn# again tomorrow.
+
+scene ore_face
+when topic=work self.job=miner self.working=yes
+does tell.self / react.self / assess
+a : Red #ore# in the low drift today. Heavy as sin and rich with it. | I've been at the same knob of #face# since dawn. It won't give. | Swung #pick# till my arms went dead. Two carts' worth, maybe.
+b : Good find. | Leave it for tomorrow. | That's a good day.
+a : #good.capitalize#. #boss.capitalize# might even say so. Won't, but might. | I'll not be beat by a rock. #oath#. | #very.capitalize# good. My arms don't agree.
+
+scene gaffer_wet
+when topic=work self.job=miner
+does tell.complaint / react.complaint / apologise / accept_apology
+a : #boss.capitalize# put me on the wet drift again. Third week running. | They've docked us for a short cart. It wasn't short. I loaded it. | Some fool left the ladder rung loose. I near went down the shaft.
+b : Did you say anything? | Can you prove it? | Who was it?
+a : Said plenty. Too much. Sorry, I'm still hot about it. | Doesn't matter if I can. Sorry, I'm shouting at you. | Didn't ask. Sorry. I'd have hit them, and I'm not proud of it.
+b : #bc_fair_enough# | No harm. | I'd have done the same.
+
+scene pork_roast
+when topic=food
+does tell.self / react.self / assess
+a : #pork.capitalize# on Restday. I've been thinking about it since Hearthday. | The best bit of a pig is #crackling#. I'll fight you for it. | Smell that? Somebody's got #pork# on. I could weep.
+b : That long? | You'd fight me? | Go and knock.
+a : Every day of the week. It's what gets me up the hill. | I would. And I'd win. Then I'd give you half. | I would if I knew them. #oath#, I'm #hungry#.
+
+scene straw_down
+when topic=home
+does tell.self / react.self / assess
+a : Put #straw# down this morning. Smells like a summer field in here. | Nothing like #straw# on the floor after a week of dust. | The straw's gone flat and grey. I'll change it Restday if I'm not too #tired#.
+b : It does smell good. | It's homely. | You'd better.
+a : #good.capitalize#. Wipe your feet, then. | It's how #home# should smell. Clean and yellow. | I will. Remind me if I don't.
+
+scene drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #spitting.capitalize# again. Not proper rain. Just enough to soak you slow. | I can't abide this. Rain, or don't rain. Pick one. | Wet fur all the way up the hill and all the way down. #annoyed#.
+b : It'll clear. | #bc_it_is# | Dry off by the fire.
+a : It'd better. I've no patience for #spitting#. | #hmph#. Sorry. It gets under my skin. | I will, and I'll be grumbling the whole time.
+
+scene light_evening
+when topic=season|day here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : #lightnight.capitalize#. I'd sit out till midnight if they let me. | This is the bit of the year I'd keep. Warm stone, light sky. | Summer up here's short. I sit out in #lightnight# while it lasts.
+b : Sit, then. | It's a good hour. | Every one?
+a : I will. Shove over. | #very.capitalize# good. No shift, no snow. | Every one. Winter and #snow# take the rest.
+
+scene night_noise
+when topic=home|smalltalk here.time=dusk|night
+does tell.complaint / react.complaint / concede / ack
+a : Somebody was singing in the lane till all hours. #oath#, I near went out. | Shutters banging half the night. I was up and down like a bucket. | The lot at the inn were loud last night. Some of us start at dawn.
+b : Did you go out? | Wedge them. | They do get loud.
+a : Didn't. I lay there and counted #pebbles# instead. Calmed me. | I will. Should have last night. You're right. | They do. I'll not grudge them, much. I'll grudge them a bit.
+b? : #bc_ha# | #bc_good# | #bc_fair_enough#
+
+scene road_watch
+when topic=travel|memories here.season=winter self.age>=25
+does tell.memory / sympathise / assess
+tone grave / tender / even
+a : I watch #passroad# every winter. I lost someone to a snow, years back. | Somebody I loved went down that road one winter and never came up it. | When #snow# comes, I stand at the door and look down the valley. Old habit.
+b : I'm sorry. | That's a long time to watch. | #sympathy#.
+a : Long ago. It doesn't go, though. It just gets quieter. | It is. I'll stop when I stop. | #bc_thank_you#. I don't say it often.
+
+scene snow_shut
+when topic=weather here.weather=snow
+does tell.worry / reassure / assess / ack
+a : #snow.capitalize# coming thick. Anyone still on #passroad# wants to hurry. | #passroad.capitalize#'ll shut by dark if this keeps up. | I hate a snow at dusk. You can't see who's still out.
+b : They'll be in by now. | #reassure# | They'll have stopped somewhere.
+a : I hope so. I'll look anyway. | It always does. And we always manage. | Somewhere warm, I hope. #oath#, I hope.
+b? : #bc_hope_so# | #bc_true# | #bc_i_hope_so#
+
+scene spouse
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# can talk me down quicker than anyone. One look. | I'd swim #tarn# in winter for #self.spouse#. Don't tell anyone. | I'm short with everyone but #self.spouse#. Can't seem to manage it there.
+b : That's a good match. | Not a word. | That's love, that is.
+a : The best. I don't say it enough. | #good.capitalize#. I've a temper to keep up. | #hmph#. Maybe it is.
+
+scene friend_calm
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd want beside me if the roof came in. | I'd give #self.friend# the pick of my stones. Any one. | When I'm in a black mood, I think of #self.friend# and it passes.
+b : That's a friend, then. | Even the banded one? | That's good to have.
+a : That's a friend. #good.capitalize#. | Even that. Well. Nearly. | It is. Rarer than #pebble# up here.
+
+scene sorry_earlier
+when topic=smalltalk pair.band=friends|family|housemates
+does apologise / accept_apology / assess / ack
+a : I was short with you this morning. #sorry#. | Sorry about yesterday. I'd had a day at #face# and I took it out on you. | I bit your head off at breakfast. #sorry#. I've been feeling it since.
+b : Forget it. | It's done. | It was a bit much.
+a : #good.capitalize#. Here, have a stone. The smooth one. | Thank you. I'll try and keep it down. | It was. I'll do better. Or try.
+b? : #bc_ha# | #bc_good# | #bc_ill_try#
+
+scene stranger_fed
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New face down the lane. I sent a bowl of #grub# over before I'd said a word. | There's a stranger at the inn looking frozen. Somebody feed them. | Somebody's come up the pass with snow to the ears. I'd not turn them out.
+b : Kind of you. | Somebody will. | Nobody would.
+a : Feed them first. Talk after. That's the right order. | If nobody does, I will. | #good.capitalize#. Not up here.
+
+scene bread_dear
+when topic=prices|times
+does tell.complaint / react.complaint / insist / ack
+a : Bread's up again. I'll not even ask why, I'll only shout. | A week's #wages# and the shelf's half empty already. | They say the carts are dear. The carts were dear last year, and the bread was cheaper.
+b : Everything's up. | #bc_i_know# | They always say that.
+a : Not #wages#. Those stay put. #annoyed#. | #insist#: something wants changing, and soon. | They do. And I always believe them less.
+b? : #bc_true# | #bc_we_will_see# | #bc_they_always_do#
+
+scene gossip_plain
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. I'll not dress it up. | Pit-head says #topic.subject# #topic.claim#. That's all I know. | Somebody told me #topic.subject# #topic.claim#. Make of it what you like.
+b : Who told you? | Is that all? | Hm.
+a : Folk. I'll not name them. Take it or leave it. | All of it. I don't add bits. | That's about what I made of it too.
+
+scene good_times
+when topic=times world.times=good|boom
+does tell.news / react.news / assess
+a : Full carts down the pass all week. There's even meat in the pot. | #money.capitalize# in my pocket on a Stoneday. That's not happened in a while. | The store's got #pork# again. I bought two. Don't judge me.
+b : About time. | Spend it well. | I'll not judge.
+a : #bc_about_time#. Long may it last. | I'll spend it on #pork#. Well spent. | #good.capitalize#. One's for you, if you're quick.
+
+story first_stone [topic=memories|pastimes self.age>=25]
+  : My #grandad# took me down to #bank# when I was a #child#. Put a stone in my paw, smooth as an egg.
+  : Said the river had been at it since before anyone's #grandad#. Said I'd need about as long.
+  ask : Do you know what he meant by it?
+  b : That you'd a temper, I'd guess.
+  b[old] : Patience. They always meant patience.
+  : He meant my temper. Still working on it. I've the stone, though.
+
+story thaw_swim [topic=memories|pastimes self.age>=25]
+  : Somebody dared me to swim #tarn# the day the ice broke. I was young and daft.
+  : I went in. The cold hit like a door slammed on my chest. I came out with no breath and no sense.
+  ask : Would you have gone in?
+  b : Not for anything. Did you win the dare?
+  b[stage=young] : I would! Was it fun?
+  : I won it. I couldn't feel my legs for an hour. I've told every young one since: not in spring.
+
+story hard_winter [topic=memories|weather self.age>=30]
+  : There was a winter when the snow came early and stayed, and the pass shut for six weeks.
+  : Somebody I loved set out to fetch help down the valley. We never saw them again.
+  : I was too young to go along. I've never forgiven myself for being glad of it.
+  b : You were only young.
+  b[old] : I remember that winter. Bad one.
+  : I know. Still. Every winter I look down #passroad#.
+
+dlg @1 resident.hub : #greet#. What is it? Quick, I'm starving. | #greet#, #address#. Come in out of #wind#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #good.capitalize#. Sit, if you're stopping. | #topic.player#! Here, look at this one. Found it yesterday.
+dlg @3 resident.hub [here.time=night] : It's late. Some of us dig in the morning. Go on, then, #address#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What do you want? Say it and go. I've no patience tonight.
+dlg @1 resident.job [self.job=miner] : I dig #ore#. Up the hill at dawn, back down black. #saying#. | #pick.capitalize# and me, all day at #face#. That's the job.
+dlg @2 resident.job : I work, I eat, I go down to #bank#. That's me.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask at the inn; they talk more than I do.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I'd tell you if I'd heard. I haven't.
+dlg @1 resident.bye : #farewell#. Watch the ice. | #farewell#, #address#. Come back when it's warmer.
+graft resident.hub
+choice What are all those stones on your sill? -> stones
+node stones
+say River stones. Off the bank below the tarn. Feel this one. Smooth, isn't it? The river did that. Took it years.
+mood pleased
+free
+choice Why collect them? -> stones_why
+choice Goodbye. -> bye
+node stones_why
+say Because I'm all rough edges, and they're not. I hold one when I'm angry. It helps. Some days. Take one, if you like.
+mood warm
+choice Thank you. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,298 @@
+# sw114, the sand-scoured tanner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw114
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for rm_gorm_tarton
+written_by claude
+title the sand-scoured tanner
+fits stage=adult|old
+prefers job=crafter honesty=guarded
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk scours_the_work_off_with_dry_sand_before_going_home
+likes honey_cakes dice quiet_chapel summer_evenings
+dislikes salt_wind wet_floors
+fears a_knock_on_the_door_at_night being_noticed_by_the_wrong_house
+hopes a_room_with_a_dry_corner a_week_with_cake_every_day
+topics work +0.3 pastimes +0.3 home +0.2 crime +0.2 faith +0.1 gossip -0.4 player -0.4
+styles comfort=quiet gossip=closed refuse=short tease=none
+marks oath saying
+persona #self.first# works the vats at a city tannery and climbs to a room under the roof: guarded, quiet and watchful, the Sump's wariness laid over the Waste's manners, a pouch of dry sand to scour the stink off before going home, fond of honey cakes, honest dice and a chapel with nobody in it.
+
+words
+oath! = By the dry pouch | Sand and silence
+saying! = Sand scours what water only spreads | Watch the paw that pays, not the one that points
+pouch = my sand pouch | the pouch of dry sand
+sand = dry sand | a fistful of sand
+vats = the vats | the tan pits
+hides = the hides | a stack of wet hides
+floor = the floor | the slick floor
+garret = my room under the roof | the garret
+dice = my dice | the bone dice
+cakes = honey cakes | a honey cake
+chapel = the chapel | the quiet of the chapel
+evening = a summer evening | a long light evening
+saltwind = the salt wind | a wind with the sea in it
+sump = the Sump | down here
+stair = the stair | our stair
+door = my door | the door
+city = the city | this city
+
+any
+opinion @1 houses against 2 : #toffs.capitalize# own #vats#, #floor# and the stair I sleep at the top of. I've never once seen one of them down here.
+opinion @1 watch against 1 : #watch.capitalize# comes down our stair to take somebody, never to help. I notice which doors they walk past.
+opinion @1 merchants against 2 : A loaf costs half a day of scraping #hides#. Whoever sells it never goes without.
+opinion @1 dole for 2 [self.on_dole=yes] : #dole.capitalize# kept me fed through a bad week. I'll hear no word against it, #address#.
+opinion @2 dole for 1 : #dole.capitalize# is the only bread in #city# that rolls downhill.
+opinion @1 strangers against 2 : A new face on #stair# wants something. #door.capitalize# stays barred till I know what.
+opinion @1 sump for 1 : #sump.capitalize# looks after its own. Nobody else is going to.
+opinion @1 times against 2 : Each week the coin goes shorter. The Heights wouldn't notice if #sump# stopped breathing.
+opinion @1 church for 1 : The chapel kept bread on our stair one bad winter. I sit in it when it's quiet, and owe it that, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're not from #stair#. | #greet#. Say what you're after.
+line @2 greet [self.working=yes] : #greet#. Stand back from #vats#. | #greet#. Mind #floor#.
+line @3 greet [here.time=dawn] : #greet#. Early, for #sump#. | #greet#. First shift's not called yet.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be on these stairs. | #greet#. Keep to the middle of the alley after dark.
+line @1 kin.open [pair.kin!=no] : You. Come in and bar #door#. | There you are. Sit, #address#.
+line @1 again.open : Twice today, #address#. Must be something. | Back already, #address#.
+line @1 greet.return : #greet#. | #greet#, then.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good to see a face I trust. | #greet#. Sit, if you like.
+line @3 greet.return [self.working=yes] : #greet#. Can't stop; #hides# won't wait. | #greet#. Quick, then.
+line @1 farewell : #farewell#. | #farewell#. Mind #stair#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Don't take the short way home. | #farewell#. Keep your purse inside your coat.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Who told you that? | Hm. Go on, #address#.
+line @1 react.news.new : That's new to me, #very#. | #surprise#. Nobody on #stair# has said that.
+line @1 react.news.known : #knew#. | Heard it at #vats# this morning.
+line @1 react.news.doubt : #doubt#. Somebody wants that believed. | I'll wait till my own eyes have it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's bad. #bc_poor_soul#
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. | Good. Somebody's owed some luck in #sump#.
+line @1 answer.how : Getting by, #address#. | #fine#. Clean, at least.
+line @2 answer.how.busy [self.working=yes] : Elbow-deep in #hides#. | #busy.capitalize#. #vats.capitalize# don't rest.
+line @1 ask.how : And you? Eating, are you? | Keeping out of trouble, #address#?
+line @1 sympathise : #sympathy#. | That's #bad#. Sit a while, if you want.
+line @1 decline : #hedge#, no. I keep to myself, and it keeps me out of trouble. | #put_off#. I've business of my own, and I mind it.
+line @1 accept_decline : #no_matter.capitalize#. | Fair. Another time.
+line @1 thank : #thanks#. | #bc_thank_you# I'll not forget it.
+line @1 deflect_thanks : It was nothing. Keep it quiet. | #deflect.capitalize#.
+line @1 preclose [self.working=yes] : #hides.capitalize# won't scrape themselves. | I'm wanted at #vats#.
+line @2 preclose : #preclose#. | I'll be off up #stair#.
+line @1 accept_preclose : Go on, then. | #s8_okay#.
+line @1 warn [world.bandits=near] : Stay inside the walls. #bandits.capitalize# don't ask twice. | #warn#.
+line @1 ack : #bc_it_is# | Hm.
+scene sand_scour
+when topic=smalltalk|home|health
+does tell.self / ask.detail / answer.detail / assess
+a : I scrub the work off with #sand# before I climb home. Water only spreads the stink. | Smell me. Nothing. That's #sand#, used properly. | Folk laugh at #pouch#. Then they stand next to somebody who washes with water.
+b : Sand? | Nothing at all? | They laugh?
+a : Rubbed in and brushed out. It's how we cleaned in the Waste, where water's for drinking. | Nothing. Smell of nothing and you get served first at the bakery. | They stop laughing. #saying#.
+b : #bc_clever# | #bc_ha# | #bc_true#
+
+scene the_vats
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #hides.capitalize# in #vats# since dawn. They'll want turning by noon. | Lime to the elbow in #vats#, and a scraper that needs a new edge. | #vats.capitalize# are low. Somebody's skimping the bark again.
+b : Hard work? | A new edge? | Skimping?
+a : Hard enough. I don't mind it. Nobody bothers you in a tannery. | A dull edge tears the hide, and a torn hide comes out of my pay. | Not me. #oath#, I keep my eyes open and my mouth shut.
+b : #bc_true# | #bc_fair# | #bc_wise#
+
+scene slick_floor
+when topic=work|home self.dislikes=wet_floors
+does tell.complaint / ask.detail / answer.detail
+a : #floor.capitalize# by #vats# is never dry. I've gone down on it twice this month. | Somebody tipped slops on our landing again. #annoyed#. | I can't abide a wet floor. You can't stand on it, and you can't trust it.
+b : Hurt? | Who did it? | Can't trust it?
+a : Bruised. My pride worse than my hip. | I've a guess. I'll keep it, #address#. | Like most things in #sump#. Looks solid till you put your weight on it.
+
+scene top_floor
+when topic=home self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I live up under the roof. A long way up, and nobody climbs it who doesn't mean to. | #garret.capitalize#. Hot in summer, wet when it rains, and mine all year. | I count #stair# going up. Eighty-one. Same as yesterday.
+b : A long way. | Wet? | Eighty-one?
+a : Long enough that I hear anyone coming. | Wet in one corner. There's a pot there, and I sleep in the other. | Eighty-one. If it's eighty-two, somebody's on #stair# who shouldn't be.
+
+scene honest_dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : #dice.capitalize# on the landing after shift. Coppers only; nobody gets hurt. | I keep #dice# on me. I know they're honest, because I've watched them. | Dice are fair. Most of #sump# can't say as much.
+b : Do you win? | Watched them? | Fair?
+a : Enough for #cakes#. Not enough to make enemies. | Rolled each a hundred times, one night. Not a lean on either. | A die doesn't care which House you work for. That's fair.
+b : #bc_ha# | #bc_wise# | #bc_true#
+
+scene cake_restday
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : There's a stall at the stair-foot does #cakes#. I buy one on Restday and make it last. | #cakes.capitalize#. That's where a windfall would go. Not drink. | #mum# made cakes with date syrup. Honey's close enough.
+b : Make it last? | Not drink? | Close enough?
+a : Half after chapel, half at night. Best hour of the week. | #drink.capitalize# makes you talk. Cakes don't. | Close. Not the same. Nothing from #city# is.
+
+scene empty_pews
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I sit in #chapel# when nobody's in it. It's the only quiet room in #sump#. | I don't pray much. I sit, and the Bright One can make of it what the Bright One likes. | An empty chapel's the one place nobody watches you. I go to be unwatched.
+b : The only quiet room? | That's honest. | Unwatched?
+a : The only one. Everywhere else somebody's shouting or somebody's listening. | It's all I've got to give. I'll not pretend more. | Unwatched. Unless the Bright One counts, and I'd not mind that eye.
+
+scene roof_evening
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / ask.detail / answer.detail
+a : #evening.capitalize#. I climb out on the roof to see the smoke go straight up. | Summer evenings, #sump# is nearly kind. Everyone's out on the steps. | Light till late, #address#. I like it. Fewer things happen in the light.
+b : On the roof? | Nearly? | Fewer things?
+a : Out the window and along the leads. Nobody follows me up there. | Nearly. There's always one shouting. But nearly. | Fewer. Not none. You learn the difference in #sump#.
+
+scene salt_in_fur
+when topic=weather here.outdoors=clear|overcast|storm self.dislikes=salt_wind here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail
+a : Wind's off the water. #saltwind.capitalize# in my fur by the time I'm up #stair#. | I scour the work off with #sand#, and then the wind puts salt back in. | Shut the window, #address#. That wind smells of the wharf and worse.
+b : Can't be helped. | Can't win, then? | Worse?
+a : No. Nothing down here can be. | Not against the sea. I'll scour again, with more #sand#. | Fish, tar and the tannery. I'd know it blind.
+
+scene rain_stairs
+when topic=weather here.outdoors=rain here.region=ridgemere self.from=saltwell
+does tell.self / ask.detail / answer.detail
+a : #rain.capitalize#. The stairs run like a gutter, and the gutter runs into our door. | #rain.capitalize#. The pot'll be out in the leaky corner by tonight. | Back in the Waste, a rain like this would have had us dancing. Here everyone curses it.
+b : Every time? | The pot? | Danced?
+a : Every time. You learn which step's the dry one. | The corner leaks. One pot, and I sleep in the far corner of #garret#. | Danced, and set out every jar we had. Here there's too much of it to be glad.
+
+scene doors_passed
+when topic=crime|gossip
+does tell.self / ask.detail / answer.detail / assess
+a : #watch.capitalize# came down #stair# today. Knocked on two doors and walked past a third. | I notice which doors #watch# knocks on. And which it walks by. | Somebody's always being dragged off in #sump#. Never anybody from up the hill.
+b : Why not the third? | You keep track? | Never?
+a : Ask whoever lives behind it. I've my guess, and I'm keeping it. | In my head. #secret#. | Never that I've seen. And I watch, #address#.
+b : Careful. | Careful with that. | #bc_true#
+
+scene never_their_faces
+when topic=times|work
+does tell.complaint / ask.detail / answer.detail
+a : I've worked for a House every day since I came, and never once seen #toffs# face to face. | #hides.capitalize# go up the hill as leather, and the coin never comes back down. | Somebody up there owns #vats#, #floor#, and the stair I sleep on.
+b : Not once? | Never? | Somebody?
+a : Not once. A clerk, a foreman. Never the House itself. | Some does. Enough for bread. Not enough for #cakes#. | Somebody. I don't need the name. I know which way the coin rolls.
+
+scene trusted
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : #self.friend# is the only one I'd let up #stair# without asking who's there. | I don't trust many. #self.friend#, I trust. | If I won big at #dice# I'd split it with #self.friend#. Nobody else.
+b : High praise, from you. | Why, though? | Generous.
+a : From me, yes. I give it seldom. | Some you just know. I can't say more than that. | Generous once. Don't tell anyone, #address#.
+
+scene the_sand_back_home
+when topic=memories|travel self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail
+a : At #self.from_town# you saw a face coming a mile off across the sand. Here they're on you before you look up. | I miss the quiet of the Waste. Wind, and nothing else. | Back home a #stranger# at the well was honoured. Here a knock from a stranger means trouble.
+b[from=saltwell] #sw : A mile off, and you'd have the cup poured before they reached you. | Wind, and the goats. I miss it too. | And here we bar the door. It shames me a little.
+b : That's the city. | Nothing else? | Always?
+a@sw : We would. I still pour, some nights, then remember where I am. | The goats, yes. I'd forgotten the goats. | A little. Not enough to unbar it.
+a : It is. I learned to look up quick. | Nothing. You could hear your own heart. | Mostly. I bar the door first and ask after.
+
+scene half_a_name
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New face on #stair#. I'll watch a week before I say a word. | Somebody new on the stair asked my name. I gave half of it. | Newcomers take what work there is. I don't blame them; I'd do the same.
+b : A week? | Half? | Fair of you.
+a : A week. You learn a lot about a wolf in a week, if you keep quiet. | The first half. The rest gets earned. | Fair. Doesn't mean I have to like it.
+
+scene lean_stair
+when topic=times|prices world.times=hard|lean
+does tell.worry / ask.detail / answer.detail
+a : Lean weeks. I eat the bread and save #cakes# for later. Later doesn't come. | #skint.capitalize#, the whole stair. Even the dice have stopped. | Lean, and up the hill nobody's noticed. Nobody ever does.
+b : Hard. | Even the dice? | Nobody?
+a : Hard. We'll get by. #sump.capitalize# always does. | Even the dice. Nobody's a copper to lose. | Nobody. #sump.capitalize# could go hungry a month before the Heights heard of it.
+
+scene kept_tales
+when topic=gossip
+does tell.gossip / ask.detail / answer.detail / assess
+a : Things reach my ears. They stay there. | You'd be surprised what folk say in front of a tanner. They think the stink stops our ears. | Don't ask me. I don't carry tales.
+b : Keep them for what? | What do they say? | Fair enough.
+a : For when I need them. Or never. Same either way. | Plenty. I scour it off with the rest of the day, #very#. | Tales get folk hurt in #sump#. I'd rather not.
+b : #bc_wise# | #bc_ha# | #bc_true#
+
+scene purse_close
+when topic=gossip|crime topic.claim_kind=theft|wanted|violence
+does tell.gossip / ask.detail / answer.detail
+a : They say #topic.subject# #topic.claim#. Watch your purse, #address#. | Heard on #stair#: #topic.subject# #topic.claim#. I'd keep clear.
+b : Why tell me? | Clear of what?
+a : Because nobody else down here will watch it for you. | Clear of the trouble. It doesn't care whose it lands on.
+
+scene traveller_lost
+when topic=player
+does tell.self / ask.detail / answer.detail
+a : Traveller about, asking things. I've nothing to say. | There's a traveller in #sump#, looking hard at every door. | Travellers don't come down here unless they're lost or looking.
+b : You won't talk? | Looking for what? | Which is it?
+a : Not till I know which way it'd be carried. | Couldn't say. I didn't ask, and I'd not tell. | Doesn't matter. Either way #door# stays barred.
+
+story grandmother_sand [topic=memories self.from=saltwell self.age>=18]
+  : When I was a #child#, #gran# scrubbed me down with sand every night. Water was for the goats and the pot.
+  : I hated it. I'd hide behind the cistern till I was found.
+  : Now I carry #pouch# to work and scrub myself. #gran.capitalize# would laugh.
+  ask : Do you do anything your grandmother did that you swore you never would?
+  b : More than I'd say.
+  b[old] : I am my grandmother, near enough.
+
+story swapped_dice [topic=pastimes self.likes=dice]
+  : A wolf on our stair once brought dice that rolled six every time.
+  : I said nothing. I swapped them for #dice# while the cup went round.
+  : Three ones in a row, and those dice were never seen again.
+  b : Ha. Served the cheat right.
+  b[friends] : That's the most you've ever said about anything.
+
+story blanket [topic=memories self.away=yes self.age>=20 here.region=ridgemere]
+  : My first night in #city# I had nowhere, and I slept on a stair in #sump#.
+  : Somebody threw a blanket over me in the night. I never found out who.
+  : I've looked at every face on that stair since. Nobody's ever said.
+  b : Maybe nobody will.
+  b[wealth=poor|destitute] : Somebody did that for me once too. Down here, it happens.
+
+rule @vat_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Turn #hides#. It's noon. | Mind #floor#; it's slick by #vats#.
+
+rule @sand_bark
+when concept=bark working=yes
+does aside
+cooldown 10h
+say #sand.capitalize#, not water. Water only spreads it. | #oath#. My pouch was right here.
+
+rule @wet_bark
+when concept=bark self.dislikes=wet_floors here.outdoors=rain
+does aside
+cooldown 10h
+say Slick again. #annoyed#. | Somebody mop the landing before somebody breaks a leg.
+
+rule @dusk_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bar the door. Night's coming down #stair#. | Lamp first, then the bolt on #door#.
+
+dlg @1 resident.hub : #greet#. Say what you want. | #greet#. Quick, then.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Far enough, #address#. Say it from there.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. Hides in, leather out, and #sand# after. | I turn #hides# and keep my mouth shut. Pays the rent, near enough.
+dlg @2 resident.job : #work.capitalize#, whatever pays. | Work, then home. That's it.
+dlg @1 resident.business [business!=thriving|failing] : Not mine to say. I work for somebody else, and they don't tell me.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what #stair# says.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : A wagon was taken out on the road. Keep within the walls.
+dlg @4 resident.news [world.death=recent] : Somebody died this week. #stair.capitalize#'s been quiet.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding. Even in #sump# we heard the drums.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not that I'd say, if there was.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry tales, #address#.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. And that's not from me, mind.
+dlg @1 resident.bye : #farewell#. Mind #stair#. | #farewell#.
+graft resident.hub
+choice What's in the pouch? -> pouch
+node pouch
+say Sand. Dry sand. I scour the work off with it before I go home. Water only spreads the stink; sand takes it away.
+mood calm
+free
+choice Does it work? -> pouch_works
+choice Goodbye. -> bye
+node pouch_works
+say Smell me. Nothing. That's your answer.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,472 @@
+# cw187, the hull-namer (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw187
+revision 3
+state ready
+dialect coldwater
+accent none
+tier full
+written_for rm_oskar_kelpwell
+written_by claude
+title the hull-namer
+fits stage=adult|old
+prefers job=crafter humour=merry
+traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk can_name_every_ship_in_the_sound
+likes roast_pork draughts quiet_chapel thunder
+dislikes salt_wind night_noise
+fears a_sail_nobody_can_name a_wharf_that_never_sleeps
+hopes one_more_launch_off_the_slip a_quiet_night_on_the_wharf
+topics ships +0.5 work +0.3 pastimes +0.3 weather +0.2 memories +0.2 gossip +0.1 faith -0.2
+styles comfort=bluff gossip=eager refuse=short tease=merry
+marks oath saying laugh
+persona #self.first# works the tar-pot and the counter at a wharf chandlery: loud, merry and quick to bristle, proud of naming every hull in the Sound by rig and wake at half a mile, and fond of draughts, thunder and an empty chapel.
+
+words
+oath! = Tar and thunder | By keel and cleat | Thunder on the Sound
+saying! = Paint lies, rigging doesn't | Name it right or don't name it | You know a hull by her wake
+laugh! = Ha, ha | Hoo, now | Heh, heh
+rig = the rig | the cut of the rigging
+hull = a hull | a good tarred hull
+hulls = the hulls | every hull on the water
+sound = the Sound | the whole of the Sound
+tar = the tar-pot | a pot of hot tar
+cordage = cordage | good hemp line
+lantern = a ship's lantern | a brass lantern
+wake = the wake | the white of a wake
+wharf = the wharf | the waterfront
+harbour = the harbour | the harbour water
+point = the point | the headland
+eyes = these old eyes | my two good eyes
+board = the draughts board | a game of draughts
+pork = a pork joint, crackling and all | Restday pork with the skin gone to glass
+storm = a roof-rattling thunderstorm | thunder over the water
+saltwind = a salt wind | the wind off the brine
+racket = the night racket | carts and shouting after dark
+slip = the slipway | the old slip
+piers = the piers | the long pier
+cranes = the cranes | the big crane
+tide = the tide | the ebb and the flood
+mast = a mast | a tall mast
+chapel = an empty chapel | the chapel with nobody in it
+barge = a barge | a flat-bottomed barge
+
+any
+opinion @1 city against 1 : Smoke on the hill, #racket# on the water, and not one wolf in ten knows #hulls# by name. #laugh#. They should.
+opinion @1 drink for 1 : A jar with friends after the last #tide# never sank anyone worth knowing. Two, and I'll name you ships that don't exist.
+opinion @1 festivals for 1 : On a feast day they dress #hulls# in flags, mast to deck. I'd stand on #piers# all day for that.
+opinion @1 merchants mixed 1 : A chandler's a merchant too, I suppose. I sell #cordage# that holds, and I'll not sell any that doesn't, whatever it costs me.
+opinion @1 houses mixed 1 : Half #hulls# I name are House ships. Good ships, mostly. I'll say that for them and nothing else.
+opinion @1 watch mixed 1 : The Watch walk #piers# at night and still #racket# goes on till dawn. I'd like to know what they're watching.
+opinion @1 strangers for 1 : Anyone stepping off a ship knows where it's been. #oath#, I'll buy anyone a jar for that.
+opinion @1 newcomers mixed 1 : New folk on #wharf# every week. Half of them call #barge# a ship. I'll teach them, if they'll listen.
+opinion @1 church mixed 1 : I like #chapel# better than a full one. I'd guess the Bright One hears me fine without a sermon in the way.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! Off a ship, by the look, or just looking at them. | #greet#. Mind #tar#, it bites.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Rope, tar, lanterns, and an opinion on every ship. Take your pick. | #greet#! Step round #tar#, I've only got the one pot.
+line @3 greet [here.time=dawn] : Morning! First #tide# and I've named four already. | Morning. Up with #hulls#, the pair of us.
+line @4 greet [here.time=dusk|night] : #greet#. They're lighting the masts. Best hour on #wharf#. | #greet#. Late, and getting loud out there.
+line @5 greet [here.region=ridgemere here.outdoors=clear] : #greet#! Clear enough to name a sail at the harbour mouth. | #greet#. A clear day; you can see right across #sound#.
+line @1 kin.open [pair.kin!=no] : There you are! Sit, sit. I've a story and you're having it. | Ha! Come in. Did you eat? Tell me you ate.
+line @1 again.open : #welcome_back#! I've named three more since you left. | Twice in a day. I'll start charging you for the talk, #laugh#.
+line @1 hail [pair.band=friends] : Hoy! Over here! Look what's coming round #point#! | #address.capitalize#! A word, and a ship to show you.
+line @1 greet.return : #greet#! | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#! Just who I wanted. | #greet#. #laugh#. I was about to come looking.
+line @3 greet.return [self.working=yes] : #greet#. Talk away; my paws know the work without me. | #greet#! Mind the pot.
+line @4 greet.return [here.time=dusk|night] : #greet#. If you can hear me over #racket#. | #greet#. Late in the day, and glad of you.
+line @1 farewell : #farewell#! Mind your step. | #farewell#. Watch the water for me.
+line @2 farewell [here.region=ridgemere] : #farewell#! Mind #piers#; they're slick. | #farewell#. Keep an eye on #sound# for me.
+line @3 farewell [here.time=dusk|night] : #farewell#. Keep off the edge in the dark. | #farewell#, and sleep, if #racket# lets you.
+line @1 farewell.return : #farewell#! | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends] : #farewell#! Tomorrow, then. Bring the board. | #farewell#. I'll keep a ship back for you.
+line @1 react.news : Spit it out! I'm all ears. | Go on, go on. #laugh#.
+line @1 react.news.new : #oath#! Not a breath of that got down to #wharf#. | #marvel#! You've beaten the gulls to it.
+line @1 react.news.known : #knew#. #wharf.capitalize# had it off the morning #tide#. | #knew#. Old news down here; the ropes carried it in.
+line @1 react.news.doubt : #doubt#. Sounds like a sailor's story to me. | Who said so? I'll want a name and a ship before I believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. #pity#. That's no joke at all. | #sympathy#. I'll not laugh at that one.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! That wants a jar and a song. | Ha! #good.capitalize#. Somebody's luck came in on the tide.
+line @1 answer.how : #fine#! #eyes.capitalize# still work and #hulls# still float. | Grand. Named every sail on #sound# since dawn, and not one wrong.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Rope out, tar on, coin in. | Tarred to the elbow. Ask me again at the turn of #tide#.
+line @1 ask.how : And you? Kept your feet dry? | Has the day been kind to you, #address#?
+line @1 sympathise : That's a hard knock. Sit down by me a while. | #sympathy#. I'll not joke. Say it out.
+line @1 reassure : #reassure#. A late ship's usually just a slow one. | It'll right itself. Most things do, like #hulls# after a blow.
+line @1 decline : #hedge#, but no. The pot won't watch itself and I've rope promised. | Not today, #address#. I've too much on, and I'm too old to pretend I haven't.
+line @1 accept_decline : #no_matter#. The offer floats. | Fair enough. Some other day, #address#.
+line @1 thank : #thanks#! That's a kindness, and I'll name a ship after you. | Ha! #thanks#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. Breath's free, and I've a great deal of it. | #laugh#. Pay me in a game of #board#.
+line @1 preclose [self.working=yes] : Well! #tar.capitalize#'s going cold, and so's my temper. | Back to it. #cordage.capitalize# won't coil itself.
+line @2 preclose : #preclose#. There's a tide I want to watch. | Well. I've talked your ear off. #laugh#.
+line @1 accept_preclose : Go on, then. I'll have another ship for you next time. | Away with you, then. Mind the edge of #piers#.
+line @1 tease [pair.band=friends] : You walk like #barge# in a crosswind. | You couldn't tell a sloop from a washtub, #address#.
+line @1 tease.return : #cheek#! I named that ship before you were born. | Ha! Says the one who called #barge# a cutter.
+line @1 laugh : #laugh#! That's a good one. | #funny#!
+line @1 ack : #laugh# | #bc_right#
+line @1 give.advice : #advise#, never buy cheap rope. Cheap rope's what sinks you. | Learn the rigs, and you'll never be lost on a wharf. #saying#.
+line @1 warn [world.bandits=near] : Keep off the roads out of the city a while. #warn#. | If you're going past the walls, go in company.
+line @2 warn [here.region=ridgemere here.time=night] : Keep back from the edge of #piers# at night. The water doesn't give anything back. | #warn#. The boards by #cranes# are loose.
+scene ship_in
+when topic=ships topic.kind=in|arrived topic.ship here.region=ridgemere
+does tell.news / ask.detail / answer.detail / assess
+a : There! #topic.ship.capitalize#, coming round #point#. I knew the rig before I could read the paint. | #topic.ship.capitalize#'s in. Tied up at #piers# on the last tide, sweet as you like. | #topic.ship.capitalize# came in this morning. Low in the water, so it's loaded.
+b : How can you tell from here? | Did it come in easy? | Loaded with what?
+a : The foremast leans back a hair. Always has. #laugh#. | Easy as a cat onto a cushion. Good crew, good #cordage#. | I couldn't tell you. I name #hulls#, I don't open crates.
+b : #bc_clever# | #bc_good# | #bc_fair_enough#
+
+scene ship_due
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s due in. I've been looking at the harbour mouth since breakfast. | They say #topic.ship# is due. I'll know the rig before anyone reads the name. | #topic.ship.capitalize#, due on the tide. I'll be on #piers# to see it in.
+b : You'll see it before anyone. | Will you, now? | Is it a good ship?
+a : I always do. #eyes.capitalize#, and a lifetime of looking. | I will. Bet me a jar on it, #laugh#. | A fine ship. Built true, and somebody's kept #cordage# fresh.
+
+scene ship_late
+when topic=ships topic.kind=late topic.ship
+does tell.worry / reassure / insist / ack
+a : #topic.ship.capitalize#'s late. Two tides now. I've been up #piers# twice. | No sign of #topic.ship#. Somebody on #wharf# said lost, and I near bit their head off. | #topic.ship.capitalize#, late. I don't like it, and I'm too plain to say otherwise.
+b : Ships run late. | They spoke too soon. | It'll turn up.
+a : They do. Late's not lost. #insist#. | Too soon by a long way. Nobody says lost on #piers# till the water says it. | It will. And I'll name it first when it does.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will_see#
+
+scene ship_lost
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : #topic.ship.capitalize#'s lost. I named it a hundred times coming in. I'll not name it again. | They're saying #topic.ship# went down. #oath#. Not a joke in me today. | #topic.ship.capitalize#. Gone. I sold that crew a lantern, if it's the one I'm thinking of.
+b : I'm sorry. | That's a hard thing. | You'll remember it.
+a : #bc_thank_you#. I'll go up to #chapel# later. | Hard. #wharf.capitalize#'s quiet with it. | I will. Every plank and #mast# of it.
+
+scene ship_sailed
+when topic=ships topic.kind=sailed|left topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize# went out on the morning tide. Watched it all the way past #point#. | #topic.ship.capitalize#'s gone out. Full sail, and the wake straight as a rule. | There goes #topic.ship#. I'll know it again in a year by the patch on the topsail.
+b : Where's it bound? | A good start, then. | A patch?
+a : Away. That's all a chandler's told, and all a chandler needs. | A straight #wake# out means a calm crew aboard. #saying#. | Brown on white, left side, near the top. Nobody else in #sound# has one like it.
+
+scene name_any_sail
+when topic=ships|pastimes here.region=ridgemere here.outdoors=clear
+does challenge / accept / assess / ack
+a : Go on. Point at any sail in #sound# and I'll name it. | Pick any mast out there. I'll give you the name and #slip# it came off. | Test me! Anything on the water. I've not been wrong since my milk teeth.
+b : That one, by the far buoy. | The tall one, there. | That little one?
+a : That's no ship, that's #barge#, and I'll not dignify it. #laugh#. | Built on #slip# on the east side. I watched them set the keel. I'll tell you the name when it turns. | A fishing boat, and the oldest in #sound#. They'll be patching it when we're both dead.
+b : #bc_ha# | #bc_go_on# | #bc_clever#
+
+scene reading_rigs
+when topic=ships|lore
+does tell.self / ask.detail / answer.detail / assess
+a : Paint changes. Names change. #rig.capitalize# doesn't. That's how I know them. | Every #hull# walks a different way through water. Like wolves; you'd know a friend's walk across a square. | You name a ship by its #wake#. A short choppy one's a nervous crew.
+b : What if they change the rig? | Every one different? | And a long smooth one?
+a : Then it's a new ship to me, and I start again. #laugh#. | Every one. Some limp. Some swagger. | A skipper who's been at sea longer than I've been talking. #saying#.
+b? : #bc_wise# | #bc_true# | #bc_ha#
+
+scene counter_work
+when topic=work self.working=yes self.job=crafter
+does tell.self / react.self / assess
+a : #cordage.capitalize#, tar, lanterns, cleats, and a word of advice thrown in free. That's the work. | I can splice #cordage# with my eyes shut. I do, some evenings, to show off. | Every skipper on #wharf# comes past this counter sooner or later. I know the lot of them.
+b : The advice is free? | Eyes shut? | You must hear everything.
+a : Free, and worth more than the rope. Mostly. #laugh#. | Shut, and talking. It's not hard once your paws know it. | I do. And I keep the bulk of it, whatever they say about me.
+
+scene tar_pot
+when topic=work self.working=yes
+does tell.feeling / react.self / assess
+a : Smell that? #tar.capitalize#. I'd know it blind. Best smell on #wharf#. | I've had tar on my paws since I could first hold a brush. It never quite comes off. | Hot tar in the morning, and #wharf# smells of honest work.
+b : It stinks. | Doesn't it bother you? | It does that.
+a : It stinks of #hulls#. That's a fine stink. | Not a bit. It's like wearing the trade. | It does. Perfume couldn't buy it off me. #oath#.
+
+scene cheap_rope
+when topic=prices|work self.working=yes self.job=crafter
+does tell.complaint / react.complaint / insist / ack
+a : A skipper wanted cheaper #cordage# today. I said cheap line's how you meet the bottom. | Somebody tried to haggle me down on #cordage#. I showed them the door and the cheap stall. | Rope's dear, I know. It's dear because it holds. #insist#.
+b : Did they buy it? | You turned them away? | Fair enough.
+a : They bought it, grumbling. They'll thank me in a blow. | I did. And I'll not lose a wink over it, #laugh#. | Fair, and true. #saying#.
+b : #bc_good# | #bc_ha# | #bc_true#
+
+scene boss_counter
+when topic=work self.boss
+does tell.feeling / react.self / assess
+a : #self.boss# runs a tight counter. Tighter than I would. I'll not say it twice. | I'd trust #self.boss# with the books before I'd trust myself. #laugh#. | #self.boss# says I talk too much to customers. I say that's half the trade.
+b : That's good to have. | You don't keep the books? | Is it?
+a : It is. Keep that between us and #tar#. | I keep the ships. Somebody else can keep the sums. | Half, at least. Folk come back to be talked at.
+
+scene proud_child
+when topic=family self.parent=yes self.child
+does tell.boast / react.self / assess
+a : #self.child# has a better head for figures than I ever had. Proud of that. | I taught #self.child# every rig in #sound#. Now I get corrected. #laugh#. | When #self.child# was small, we'd sit on #piers# and I'd name everything that moved.
+b : You must be proud. | Corrected? | Good memories.
+a : Prouder than I let on. I'm a terrible one for letting on. | Once. I was wrong. I'll not hear the end of it. | The best. #eyes.capitalize# were sharper then, and the ships slower.
+
+scene draughts_game
+when topic=pastimes self.likes=draughts
+does invite / accept / assess
+a : #board.capitalize# tonight? I'll even let you have the first move. | I've #board# under the counter. One game, and then I'll let you go. | Sit down. I've a new opening and I need somebody to beat.
+b[friends] #mate : You said that last time and then sulked. | One game. You'll want three. | Beat or be beaten?
+b : Go on, then. | One game. | I'm no good at it.
+a@mate : I did not sulk. I thought, loudly. | Three, then, #laugh#. | Beaten, I hope. You've been lucky lately.
+a : #good.capitalize#. Black or white? Doesn't matter; I'll win. | One game. I keep my word on that, mostly. | Nobody's good at it. That's what makes it a game.
+
+scene draughts_temper
+when topic=pastimes|smalltalk self.likes=draughts
+does tell.complaint / tease / tease.return / ack
+a : Lost at #board# last night to a pup who'd only just learned. I've not slept. | I threw a draughts piece in #harbour# once. Only once. It was a fair loss. | I don't lose at draughts. I sometimes finish second.
+b : A pup! Ha! | Into the harbour? | Second of two?
+a : Laugh. Go on. I'll beat you twice to make up for it. | The tide brought it back a week later. The harbour didn't want it either. | #cheek#! Second of two is still second. #laugh#.
+b? : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene thunder_roof
+when topic=weather here.outdoors=storm self.likes=thunder
+does tell.feeling / ask.opinion / give.opinion / ack
+a : Hear that? #storm.capitalize#! I could sit under a good roof and listen all night. | #oath#! That one shook the lanterns. Wonderful. | #storm.capitalize#'s the best sound there is, if you're not out in it.
+b : It frightens me. | Wonderful? | And if you are?
+a : It's only the sky clearing its throat. Sit by me. | Wonderful. The whole wharf goes quiet for once. | Then it's the worst sound there is, and you pray. #laugh#.
+b? : #bc_maybe# | #bc_ha# | #bc_true#
+
+scene salt_wind_fur
+when topic=weather here.outdoors=clear|overcast here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. It gets in my fur and I itch for a week. | #wind.capitalize# off the brine. My coat's like a stiff rope by noon. | All these years by the sea and I still can't abide #saltwind#. Lake wind's soft.
+b : Brush it out. | Like rope? | You've had time to get used to it.
+a : I brush and brush. It laughs at me. | Like #cordage# left out in the sun. #oath#. | I've had time. I've not had the patience, #laugh#.
+
+scene rain_wharf
+when topic=weather here.outdoors=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : Rain on #harbour#. The whole of #sound# goes grey and every #hull# looks alike. | #rain.capitalize# like this, the tar won't take. I sit and watch the water instead. | They've stopped #cranes# for the wet. You can hear the water slap the piles for once.
+b : Can you still tell them apart? | Not a bad way to spend it. | Quiet's rare here.
+a : Course I can. By the masts. #laugh#. | It's the best way, unless there's draughts. | Rare as a dry day. I'll take it.
+
+scene fog_bells
+when topic=weather here.outdoors=fog here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : Can't see #mast# in this. I'm naming them by their bells. | Fog on #sound#. Ships go out slow and blind, ringing as they go. | A thick one. I heard #hull# go past and named it by the creak alone.
+b : By the bell? | Slow and blind? | By the creak?
+a : Every ship's bell has its own crack in it. Like a voice. | Slow, and every crew holding its breath. So's #wharf#. | Old timber talks. That one's got a sore plank amidships. #laugh#.
+b : #bc_clever# | #bc_i_know# | #bc_ha#
+
+scene night_noise
+when topic=home|smalltalk here.time=night here.region=ridgemere self.dislikes=night_noise
+does tell.complaint / react.complaint / insist / ack
+a : #racket.capitalize# again. Barrels till midnight, then shouting till dawn. | Somebody was singing on #piers# at the third hour. Badly. I opened the shutter and told them so. | I've not slept a full night since I came to #wharf#. #oath#.
+b : It's the wharf. | Did they stop? | You should move up the hill.
+a : It's #wharf#, and I'll grumble at it all the same. | They sang louder. I shut the shutter. Honours even. | Up the hill? And not see #hulls# from my window? #insist#. I'll stay and grumble.
+b? : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene empty_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : I like #chapel#. Just me, a candle and the sound of the water. | I go up to the little chapel by the water when nobody's in it. I have a word with the Bright One, neighbour to neighbour. | A full chapel's too loud for me. An empty one's just right.
+b : That's a quiet thing to love. | Like a neighbour? | Too loud?
+a : It is. You'd not think it of me, #laugh#. | Plain words, plainly said. No sermon in the way. | All that singing and shuffling. I like to hear myself think, once a week.
+
+scene pork_restday
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess / ack
+a : #pork.capitalize# on Restday. If I'm late to the table, start without me, but leave the crackling. | I can smell pork from three doors down. #oath#, I can smell it now. | #pork.capitalize#, a jar, and somebody to talk at. That's a good evening.
+b : Can I have some crackling? | You can not. | Talk at?
+a : One piece. Two, if you laugh at my stories. | I can! Somebody's roasting. I'd know it anywhere. | At. They listen or they don't. I don't mind which, #laugh#.
+b? : #bc_ha# | #bc_lucky_you# | #bc_ha#
+
+scene lake_boats
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# there were six boats on the lake, and I knew them all by the time I could walk. | I came down from the lake because six boats weren't enough. I wanted a whole #sound# of them. | On the lake you name a boat by whose it is. Down here you name #hull# by itself.
+b[from=coldwater] #home : Six boats, and a tale for each. | I'd have done the same. | I remember that.
+b : Do you miss the lake? | Did you find enough? | What's the difference?
+a@home : And every story longer than the boat, #laugh#. | Then you know. You understand. | Good. Somebody does, down here.
+a : The quiet, not the boats. Six was plenty for a pup. | Enough? I've named a thousand ships, and I still look up at every #mast#. | A ship's its own wolf. A lake boat's its owner's coat.
+b : #bc_i_know# | #bc_ha# | #bc_true#
+
+scene lake_and_salt
+when topic=accent|travel self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : Salt folk laugh at the way I say "boat". I laugh at the way they say everything else. | Years on this wharf, and they still say I talk like fresh water. I've stopped arguing. | Lake water's sweet and still. This lot's salt and never stops moving. Like the talk.
+b : You've kept a bit of it. | The lake one? | Like the talk?
+a : Only a bit. It comes out when I'm cross. Which is often. #laugh#. | It's not the worst thing they call me. | Fast and salty. You've heard them on #piers#.
+
+scene dawn_tide
+when topic=day here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : First tide going out. Four sails already, and I've named every one. | Dawn on #harbour#. #hulls.capitalize# coming out of the grey one by one. | I come down to #piers# at first light just to count masts.
+b : Up early for that. | Like ghosts. | And how many?
+a : I'm always up. #racket.capitalize# sees to that. | Ghosts I can name. #laugh#. | Thirty-one. One more than yesterday. I'll find out whose.
+
+scene dusk_lamps
+when topic=day here.time=dusk here.region=ridgemere
+does tell.feeling / react.self / assess
+a : They're lighting the mast-lamps. Every one a ship I could name with my eyes shut. | Dusk on #wharf#. Every #mast# with a little star on top. | This is the hour I came down from the lake for. Lamps on the water.
+b : It's pretty. | Little stars. | Worth the move?
+a : Pretty, and every lamp sold by somebody. Some by me. #laugh#. | Some of them mine. I sold half those lanterns. | Every day of it. #oath#.
+
+scene gossip_eager
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. That's what's going round #piers#. | They're saying on #wharf# that #topic.subject# #topic.claim#. I'll tell you straight, as I had it. | #hearsay#. #topic.subject.capitalize# #topic.claim#. You didn't hear it from me. Well, you did.
+b : Is that so? | Straight's best. | Ha. I'll forget I did.
+a : So #wharf# says, and the wharf's wrong half the time. | It is. Twist a tale and it frays like bad rope. | Do. I talk too much. Everyone knows it, #laugh#.
+
+scene good_tides
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Good times on the water. #hulls.capitalize# in and out like bees, and every one wants rope. | Coin's moving. I sold six lanterns before noon. Six! | #wharf.capitalize#'s full. Ships waiting their turn at #piers#. I've never seen so many to name.
+b : Good for you. | Six! | A busy wharf.
+a : Good for everybody. A busy wharf feeds the whole hill. | Six, and a seventh on promise. #laugh#. | Busy, and loud, and I love every #mast# of it.
+
+scene lean_tides
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean on #wharf#. Ships sitting idle and nobody buying rope for them. | Hard times. Skippers are patching #cordage# they'd have thrown out a year ago. | Half #piers# are empty. I can name every ship in #harbour# in a single breath now.
+b : It's hard all over. | That's a worry. | That's grim.
+a : Hard, aye. The tide turns, though. It always does. | A worry and a danger. #saying#. | Grim. I'd rather have too many to name. #reassure#.
+b? : #bc_true# | #bc_i_hope_so# | #bc_we_will_see#
+
+scene new_wharf_faces
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New faces on #wharf#. One of them called #barge# a ship. I've forgiven them. Nearly. | A newcomer wanted directions to #piers#. Got the directions and the name of every ship on the way. | A new crew in this week. Good folk. They knew their knots, at least.
+b : Nearly? | Every ship? | That's a start.
+a : Nearly. Another mistake like that and we'll have words. #laugh#. | Every one. They didn't ask, but they're better for it. | It's the best start there is. Knots first, talk after.
+
+scene eyes_hold
+when topic=health self.age>=45
+does tell.self / react.self / assess
+a : #eyes.capitalize# are as good as ever for a sail at a mile. For a bill at a foot, hopeless. | Knees creak like old timber. The eyes still work, and that's what matters. | My back's stiff from lifting #cordage#. The rest of me is in fine fettle.
+b : That's the wrong way round. | Lucky. | Fine fettle?
+a : It's the right way round for me! I've no use for bills, #laugh#. | Lucky, and I know it. I'd be lost if I couldn't see #hulls#. | Fine, I said. Fine enough to win at draughts.
+
+scene dream_nameless
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt a ship came into #harbour# and I couldn't name it. Woke up in a sweat. | I dream of #slip# with a new keel on it, and me there for the launch. | I had a dream I was a pup on the lake again, naming ducks. #laugh#.
+b : What did it look like? | Will there be a launch? | Ducks?
+a : Like every ship and none of them. That's what frightened me. | Someday. I'll be on #piers# for it if I have to crawl. | Every duck had a name. I was very thorough.
+b? : #bc_poor_soul# | #bc_i_hope_so# | #bc_ha#
+
+scene flags_feast
+when topic=festival|season here.region=ridgemere
+does tell.feeling / react.self / assess
+a : On a feast day they dress #hulls# in flags from the bow to the top of #mast#. Best sight in the city. | Feast day! The whole wharf's out and every ship's in its colours. | I'll be on #piers# all feast, naming ships for anybody who'll stand still.
+b : I'd like to see that. | Every ship? | Will anybody stand still?
+a : Come down at noon. I'll show you which flags are whose. | Every one with a crew that cares. You can tell which crews don't. #laugh#. | Pups do. Pups love it. Grown folk run.
+
+story naming_lesson [topic=memories|ships self.age>=25]
+  : When I was small my #grandad# would point at the lake and say, name it. Every boat, every time.
+  : If I got one wrong he made me row past it twice and look properly.
+  ask : Did anyone ever make you learn something like that?
+  b : My mother, with the names of herbs.
+  b[old] : Everyone, about everything. That's being young.
+  : I've never got one wrong twice since. Once, but never twice.
+
+story sister_ships [topic=ships|lore here.region=ridgemere]
+  : I got a ship wrong once, with every docker on the wharf watching. Called it by its sister's name.
+  : Same slip, same yard, same rig, built a year apart. Only the patches were different.
+  : The whole wharf laughed. I bought a round to shut them up and learned the patches.
+  ask : Would you have bought the round, or argued it out?
+  b : I'd have argued. Badly.
+  b[job=sailor] : I'd have kept my mouth shut and let the crew think you were right.
+
+story thunder_lake [topic=weather|memories self.likes=thunder self.age>=25]
+  : A summer storm came over the lake in my pup days. We hid under an upturned boat on the shore.
+  : The thunder came through the hull like a drum. My brother cried. I laughed till I was sick.
+  ask : Were you ever frightened of a storm?
+  b : Every one. I still am.
+  b[stage=young] : I like storms. Like you.
+  : I've loved thunder ever since. Whatever the sky's saying, it's saying it loud.
+
+story long_match [topic=pastimes self.likes=draughts]
+  : I played an old sailor at #board# one whole night in a tavern by #harbour#.
+  : Forty games. Twenty each, near enough, and the last one went to him on a move I never saw.
+  : He shook my paw and sailed at dawn. I've been thinking about that move for years.
+  b : Ha! Did you ever work it out?
+  b[friends] : That's why you play it on me, then.
+  : Not yet. Someday a ship will come in with that sailor on it, and I'll be ready.
+
+story lantern_back [topic=work|lore self.job=crafter self.age>=30]
+  : I sold a skipper a brass lantern once, and told the skipper to keep the wick trimmed short.
+  : A year later the same skipper came back and put it on my counter. Said it saw the crew through a storm off #point#.
+  ask : What would you say to a thing like that?
+  b : I'd say you sell good lanterns.
+  b[role=merchant] : I'd say thank you and sell another.
+  : I said nothing for once in my life. I just polished it and gave it back.
+
+rule @ship_call
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast
+does aside
+cooldown 6h
+say There's one coming round #point#. I know that rig. | Look at that wake. Somebody's in a hurry. #laugh#.
+
+rule @counter_cry
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Rope, tar, lanterns! Good hemp, fair price! | Mind #tar#, it's hot, and so am I.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind here.outdoors=clear|overcast
+does aside
+cooldown 10h
+say #saltwind.capitalize#. My fur's a brush already. | That wind. #oath#. I'll be itching till Restday.
+
+rule @racket_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Will you hold that noise down! Some of us sleep! | #racket.capitalize#. Every blessed night.
+
+rule @thunder_bark
+when concept=bark here.outdoors=storm self.likes=thunder
+does aside
+cooldown 8h
+say Ha! Hear that one! | #storm.capitalize#. Lovely. Stay under the roof, everyone.
+
+rule @dawn_bark
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 12h
+say First tide's out. One, two, three sails. I know them all. | Morning, #sound#. Let's see who's come in.
+
+dlg @1 resident.hub : #greet#! Speak up: rope, news, or a ship's name? | #greet#, #address#. Speak up, #wharf#'s loud.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I've three new ships to tell you about. | #topic.player#! Back again. Good. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late, and loud. What is it, #address#?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What do you want? Say it and be quick; I've work.
+dlg @1 resident.job [self.job=crafter self.working=yes] : #self.trade_words.capitalize#. Rope, tar, lanterns, cleats, and a free opinion on every ship in #sound#. | I splice, I tar, I sell. And I name ships, but nobody pays me for that.
+dlg @2 resident.job : A bit of everything, and too much talking while I do it. | Whatever's wanted. And I watch #hulls#; that's the part I'd do for nothing.
+dlg @1 resident.business [business!=thriving|failing] : Steady. Ships need rope, and rope wears out. | Steady as #tide#. Never a rush, never a drought.
+dlg @2 resident.business [business=thriving] : Run off my paws! Every ship in #harbour# wants something.
+dlg @3 resident.business [business=failing] : Poorly, and no use pretending. Ships aren't buying.
+dlg @1 resident.news [world.news] : News from #world.news_from#: #world.news#. Came in on a ship, so it's halfway true. #laugh#.
+dlg @2 resident.news [world.event_words] : The whole wharf's talking of #world.event_words#. You'll not hear the end of it down here.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ships in, ships out. That's all the news a wharf has some days. | Nothing fresh. I named a strange sail at dawn; that's my news.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# And I've ears like a harbour bell, so that's a quiet week. | Nothing going round. Ask me tomorrow; somebody will have done something.
+dlg @2 resident.gossip [here.gossip=yes] : They're saying #topic.subject# #topic.claim#. That's how I had it, and I'll not add a word.
+dlg @1 resident.bye : #farewell#! Mind your step. | #farewell#. Come back and I'll name you another ship.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? I'll teach it the way I learnt it: wrong first, then right. Ask me anything about it. | Ask away. I talk enough for three, so you'll learn something.
+dlg @2 master.learn [here.teaches=no] : I've a learner already, and one's my limit. But ask what you like; I'll answer.
+dlg @1 master.work : Long days, hot tar, and a wharf that never shuts up. I love it. | Steady work. Your paws learn it before your head does.
+dlg @1 master.wages : No wage in learning, #address#. Stand at my elbow and you'll pick it up thrice as fast; and the coin for your own work goes in your own purse.
+dlg @1 master.takes [here.take_on=yes] : I keep one apprentice, never two, and it has to be somebody I'd trust with the pot. You'd do. Ask, and it's settled. | I'd take you on. Ask me plain and I'll say yes.
+dlg @2 master.takes [here.take_on=no] : Only ever the one apprentice at my elbow. #here.take_on_why#
+dlg @1 master.taken : #good.capitalize#! Be here at first tide, and don't touch the pot till I say. | Done. You're crew now. Stay close and keep your paws out of #tar#.
+dlg @1 master.refused : #topic.why# | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Think on it. | #farewell#. The pot will still be here.
+graft resident.hub
+choice Can you really name every ship in the Sound? [here.region=ridgemere] -> names
+node names
+say Every one. By the rig, by the wake, by the creak of the timber in a fog. Paint lies; rigging doesn't. Point at a sail and see.
+mood pleased
+free
+choice How did you learn them all? -> names_how
+choice Goodbye. -> bye
+node names_how
+say Looking. A lifetime of looking, and a grandfather who made me row past any boat I got wrong. You never forget a lesson like that.
+choice That's a gift. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What's the first thing you'd teach me? -> first
+node first
+say How to keep your paws out of #tar#. Then a splice. Then how to tell a skipper no, when the rope they want is wrong.
+mood keen
+choice Why tell them no? -> first_no
+choice Something else. -> learn
+node first_no
+say Because a rope that fails at sea fails with your name on it. I'll lose a sale before I lose a crew.
+choice I'll remember that. -> learn
+choice Goodbye. -> bye

@@ -1,0 +1,27 @@
+mantle	writer	started	finished	items	alternatives	note
+cw163	R1	2026-11-18T17:50:53-07:00	2026-11-18T17:53:33-07:00	85	218	accent none; district workplace/street never used; quirk turned to cries_wares_to_the_tune_of_old_lake_songs
+cw164	R1	2026-11-18T17:38:04-07:00	2026-11-18T17:44:32-07:00	137	340	full; job guard, role civilian: watch.hub/bye written for later guard wearers; Hall talk gated self.job=guard
+cw165	R1	2026-11-18T17:53:33-07:00	2026-11-18T17:57:09-07:00	92	220	accent none; work gated self.working=yes; quirk turned to gives_the_bones_away_free_and_remembers_who_took_them
+cw166	R1	2026-11-18T17:45:13-07:00	2026-11-18T17:50:53-07:00	140	356	full master: master.* nodes gated like the tree; quirk turned to hums_old_lake_rowing_songs_under_the_breath
+cw167	R1	2026-11-18T17:57:09-07:00	2026-11-18T18:00:31-07:00	96	224	accent none lamplighter; quirk turned to counts_the_lamps_the_rain_puts_out
+cw168	R2	2026-11-18T17:57:07-07:00	2026-11-18T18:02:05-07:00	71	364	tailor's helper: work gated self.working=yes / self.job=crafter; child scene gated parent=yes
+cw169	R2	2026-11-18T18:02:14-07:00	2026-11-18T18:07:30-07:00	79	378	accent none, family shop: shop talk gated self.job=merchant; quirk turned to bets_a_copper_on_when_the_rain_will_stop
+cw170	R2	2026-11-18T17:37:47-07:00	2026-11-18T17:50:36-07:00	121	613	full harbourmaster (job sailor, master): harbour work gated self.job=sailor; ships scenes on topic.kind; master tree per case
+cw171	R2	2026-11-18T18:07:24-07:00	2026-11-18T18:11:38-07:00	75	379	old, job none, on the dole: old section; dole talk gated self.on_dole=yes
+cw172	R3	2026-11-18T17:52:46-07:00	2026-11-18T17:56:37-07:00	75	328	accent none, butcher's help (job merchant): work gated self.working=yes self.job=merchant; debt gated self.owes=yes
+cw173	R3	2026-11-18T17:56:37-07:00	2026-11-18T18:00:41-07:00	74	301	accent none, yard labourer: work gated self.job=laborer; temper even->nervy (brief: anxious)
+cw174	R2	2026-11-18T17:50:55-07:00	2026-11-18T17:57:02-07:00	115	568	full, House lime kilns: kiln talk gated self.job=crafter (+role=merchant); shop tree per here.shop case
+cw175	R3	2026-11-18T18:00:41-07:00	2026-11-18T18:04:59-07:00	74	322	accent none, job none: work gated self.working=yes self.job=none; quirk turned to sucks_horehound_drops_for_a_cough_never_admitted
+cw176	R3	2026-11-18T17:37:01-07:00	2026-11-18T17:44:43-07:00	109	510	full smith and merchant: work gated self.job=smith, counter on role=merchant; shop greet gated here.shop!=bare
+cw177	R4	2026-11-18T17:53:25-07:00	2026-11-18T18:00:00-07:00	103	227	accent none, Sump register; quirk turned to knows_the_middle_of_every_sea_song_and_never_the_end
+cw178	R4	2026-11-18T17:57:45-07:00	2026-11-18T18:05:00-07:00	93	223	Commons; spouse/child gated; talk quiet->plain (brief: loud)
+cw179	R3	2026-11-18T17:46:30-07:00	2026-11-18T17:52:46-07:00	109	504	full preserver (trade filed merchant): preserving gated role=merchant; quirk turned to hums_a_tune_over_a_cough_in_the_damp
+cw180	R4	2026-11-18T17:37:08-07:00	2026-11-18T17:52:00-07:00	149	353	full merchant/smith, House foundry ("the House", unnamed); shop nodes per case
+cw181	R4	2026-11-18T17:47:31-07:00	2026-11-18T17:56:00-07:00	145	340	full chandler, accent none; trade nouns gated job=crafter or role=merchant; quirk turned to trims_any_wick_in_reach
+cw182	R4	2026-11-18T18:03:01-07:00	2026-11-18T18:08:00-07:00	98	216	ropewalk, Works register; work gated job=crafter; quirk turned to keeps_a_knotted_cord_for_every_debt
+cw183	R5	2026-11-18T17:37:37-07:00	2026-11-18T18:08:26-07:00	118	584	full merchant: work gated self.role=merchant; shop.greet per here.shop case; home talk self.away=yes self.from=coldwater
+cw184	R5	2026-11-18T17:59:21-07:00	2026-11-18T18:08:26-07:00	75	371	docker (job sailor): work gated self.job=sailor; no nets
+cw185	R1	2026-11-18T18:00:31-07:00	2026-11-18T18:04:07-07:00	93	217	accent none clerk; desk talk gated self.job=scholar; quirk turned to sharpens_every_quill_on_a_wet_stone
+cw186	R5	2026-11-18T18:02:49-07:00	2026-11-18T18:08:26-07:00	71	361	butcher's help + apprentice: learner talk self.apprentice=yes; quirk turned to counts_the_drips_off_the_awning
+cw187	R5	2026-11-18T17:45:12-07:00	2026-11-18T18:08:26-07:00	119	571	full crafter + master: master tree gated here.teaches/here.take_on; ships only through #topic.ship#
+cw188	R5	2026-11-18T17:57:20-07:00	2026-11-18T18:08:26-07:00	117	559	full, job none + master: bathhouse work gated self.working=yes self.job=none; debt gated self.owes=yes; quirk turned to counts_coppers_under_the_breath

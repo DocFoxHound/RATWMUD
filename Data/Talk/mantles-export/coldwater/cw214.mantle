@@ -1,0 +1,283 @@
+# cw214, the square hand (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw214
+revision 2
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rmx_tobias_blackford
+written_by claude
+title the square hand
+fits stage=adult|old
+prefers job=scholar temper=calm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk calls_every_cough_the_dust_of_old_papers
+likes oatcakes old_tales fresh_straw first_snow
+dislikes drizzle rats
+fears a_paper_lost_that_somebody_needed rats_in_the_archive
+hopes to_see_the_dry_lands_from_the_old_tales a_book_of_tales_in_my_own_hand
+topics lore +0.4 memories +0.3 work +0.3 season +0.2 newcomer +0.2 gossip -0.3
+styles comfort=patient gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# writes a careful, square hand, finds any paper given time, and blames every cough on the dust of old papers: gentle, patient and quietly proud, fond of old tales told slow, plain oatcakes, new straw and the first snow of the year.
+
+words
+oath! = By the square hand | Quill and quiet | Paper and patience
+saying! = It's written down somewhere | No hurry; paper keeps | Slow letters stay read
+squarehand = my square hand | letters set square as bricks
+archive = the archive shelves | the long room of old papers
+dust = the dust | dust off the old papers
+tale = an old tale | a tale told slow
+talesbook = my book of tales | the tales I copy out of an evening
+cake = a plain oatcake | an oatcake with a mug of tea
+papers = the papers | the old papers
+tales = the old tales | the tales I keep
+lakeice = the lake ice | the winter ice on the lake
+straw = fresh straw | a floor of new straw
+snow = the first snow | the first flakes of the year
+drip = this drizzle | a half-hearted sort of wet
+rats = the rats | rats in the archive
+stool = my stool | the high stool by the window
+rolls = the rolls | the city rolls
+southtales = the dry lands in the old tales | the south the tales talk of
+nohurry = There's no hurry | Take your time
+found = found | turned up, as I said it would
+city = the city | this city
+
+any
+opinion @1 strangers for 1 : A stranger's only somebody whose name isn't on #rolls# yet. Sit them down and feed them, I say.
+opinion @1 newcomers for 1 : #city.capitalize# has room enough for any willing pair of paws. I've entered a good few on #rolls# myself.
+opinion @1 times for 1 : I've a roof, #cake# and work I like. I'd be ungrateful to grumble, and I try not to be.
+opinion @1 city mixed 1 : #city.capitalize# is a crowd that never learns its own names. I learn them one paper at a time.
+opinion @1 dole mixed 1 : I copy out the dole lists. Each name there was somebody's pup once, and I write it as carefully as a lord's, in #squarehand#.
+opinion @1 houses mixed 0 : The Houses keep good records and poor manners. I'll speak well of the records, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #nohurry#; say what brings you. | #greet#. A new face. Welcome, #address#.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. One moment while I finish this line. | #greet#. Mind the papers; they're in order, for once.
+line @3 greet [here.time=dawn] : Good morning. Early for #archive#, but I like the quiet. | Good morning, #address#. The ink's not even thawed.
+line @4 greet [here.time=dusk|night] : Good evening. #talesbook.capitalize# is waiting at home for me. | Good evening. Late for #papers#; early for a tale.
+line @1 kin.open [pair.kin!=no] : Come in, come in. There's #cake# if you're hungry. | It's you. Sit; I'll find another cup, #address#.
+line @1 again.open : Back again. #good.capitalize#; I've found what you wanted. | You again, #address#. #nohurry#, I like having you by.
+line @1 greet.return : #greet#. | #greet#, #address#. #good.capitalize# to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping you'd stop by. | #greet#. Sit; I've a tale you'll like.
+line @3 greet.return [self.working=yes] : #greet#. Let me blot this. | #greet#. #nohurry#; one more word and I'm done.
+line @1 farewell : #farewell#. Mind how you go. | #farewell#. Come back when you've a minute.
+line @2 farewell [here.time=dusk|night] : Good night. Keep under the street lamps going back. | Good night, #address#. Sleep well.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Take care.
+line @1 react.news : #nohurry#. Tell me from the start. | Go on, #address#. I'm listening properly.
+line @1 react.news.new : #surprise#. That's not crossed #stool# yet. | That's new to me. I'll want to know how it ends, like #tale#.
+line @1 react.news.known : #knew#. A copy of it crossed #archive# before noon. | I'd heard, #address#. Somebody had it on the stairs.
+line @1 react.news.doubt : #doubt#. Get a witness to sign it, and I'll believe it. | #hedge#, that sounds more like a tale than a fact.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm #very# sorry for that. | That's sad news, #address#. Is there anything to be done.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll be glad to write that one down. | How #good#. That's a happy page in #rolls#.
+line @1 answer.how : #fine#, thank you. #dust.capitalize# aside. | Well, #address#. Quietly well.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, thank you. #archive.capitalize# never ends. | Ink to the wrist, but happy enough among #papers#.
+line @1 ask.how : And yourself, #address#? | And how are things with you, #address#?
+line @1 sympathise : #sympathy#. Stay; nobody's waiting on the chair. #nohurry#. | I'm sorry, #address#. Say only what you care to; I'll not press.
+line @1 reassure : #reassure#. Most things turn up, given time. Papers do. | It'll come right, #address#. These things find their place.
+line @1 decline : #hedge#, but I can't today; I've promised a stack of copying by the bell. | Forgive me, #address#. My evening's promised to #talesbook#.
+line @1 accept_decline : #no_matter#. Another time, then. | Quite all right. #nohurry#.
+line @1 thank : #thanks#. That's #very# kind. | Thank you, #address#. I'll set that down in my memory, in #squarehand#.
+line @1 deflect_thanks : #deflect#. It was a pleasure. | Truly, #address#, it cost me nothing.
+line @1 preclose : Still, #archive# won't sort itself. | I should be getting back to #stool#.
+line @1 accept_preclose : Of course. #farewell#. | Go on, #address#. I'll see you again.
+line @1 ack : #bc_true#. | #bc_i_know#.
+line @1 give.advice : Write it down, #address#. Then it can't get lost. | #nohurry#. Rushing is how papers get lost.
+line @1 warn [world.bandits=near] : I'd not take the road this week, #address#. | Stay inside the walls. The reports on #stool# are bad.
+rule @cough
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 8h
+say Hm-hm. #dust.capitalize#. That's all it is. | Excuse me. #dust.capitalize#, off a box older than me.
+
+rule @found
+when concept=bark self.working=yes self.job=scholar
+does aside
+cooldown 8h
+say There. #found.capitalize#. Under the wrong year. | #saying.capitalize#. Ah. Yes.
+
+rule @rats
+when concept=bark self.dislikes=rats self.working=yes
+does aside
+cooldown 10h
+say Was that a rat. In #archive#. Again. | #oath#. They've been at the ends of the old rolls.
+
+rule @drizzle
+when concept=bark self.dislikes=drizzle here.weather=rain
+does aside
+cooldown 10h
+say #drip.capitalize#. Rain properly or stop. | Neither one thing nor the other. #drip.capitalize#.
+
+scene square_letters
+when topic=work self.job=scholar self.working=yes
+does tell.self / react.self / assess
+a : I write #squarehand#. Slow, but anyone will be able to read it long after me. | Somebody asked why I write #squarehand#. I said so the letters stand up on their own. | I copied a whole order for #rolls# this morning without one blot. I'm not proud of much, but that I am.
+b : Slow's no bad thing. | Do they? | That's worth being proud of.
+a : No. Fast hands lose #papers#. Mine don't. | They do. You could build a wall with them. | Thank you. I'll try for two tomorrow, #address#.
+
+scene finding_papers
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : Somebody came in sure their paper was lost. #found.capitalize#, in a quarter-hour. | #saying.capitalize#. That's what I tell everyone who comes in frightened. | Took me three days to find one deed last week. I never once thought it was gone. #nohurry#.
+b : Where was it? | Is it always? | How did you find it?
+a : Tucked under a different year. #papers.capitalize# wander. They come back. | So far. I've not met one in #archive# yet that wasn't. | Slowly. Box by box. #nohurry#, I told myself, every box.
+
+scene not_a_cough
+when topic=health
+does tell.self / react.self / assess
+a : It's #dust#, that cough. Nothing more. The old boxes are full of it. | I'm quite well. A bit of #dust# in the chest, from #archive#. | Everyone keeps asking about my chest. It's #papers#. They shed.
+b : It sounds like the damp to me. | You should see someone. | Papers shed?
+a : Perhaps a little damp too. Mostly #dust#. | I will, if it doesn't settle. It will, #address#. | They do. Old ones most of all. Like #tales#.
+
+scene old_tales
+when topic=lore|pastimes self.likes=old_tales
+does tell.self / react.self / assess
+a : I've been copying #tale# into my book every evening. Forty pages now. | There's a tale of a scribe who wrote a promise on #lakeice#, and the words floated up whole at the thaw. I love that one. | The best tales are told slow. Nobody should hurry the middle part of #tale#.
+b[old] #elder : I know a few you won't have. | I heard that one as a pup. | You'd get on with my grandmother.
+b : Forty? | That's a strange one. | Not even a little?
+a@elder : Then tell me them, please. They'll go in #talesbook#. | Then you'll know the promise was kept, in the end. | I'd like that. I'd write down every word.
+a : Forty-one, if I count tonight's. #talesbook.capitalize#. | Strange and true, the way good tales are. | Not at all. The middle's where it lives.
+
+scene tales_dry_south
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : #tales.capitalize# talk of dry lands in the south. One day I'll go and see if they're true. | I've thought of a berth on a ship south from the Sound. I've not asked yet. I will. | I'd like to stand somewhere it never rains, just once, and see what the sky does.
+b : Will you, really? | You should ask. | I'd come with you.
+a : One day. #nohurry#. They've waited this long. | I'll ask when I've the coin and the nerve. The coin's nearer. | Then I'll write to you first, in #squarehand#, and tell you which tale was true.
+
+scene first_snow
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : #snow.capitalize#. I stayed by the window and didn't write a word for an hour. | Snow on the roofs, and #city# goes quiet as a page. | I love the first snow. It covers everything, and it doesn't hurry.
+b : An hour? | It does go quiet. | Until it turns to slush.
+a : An hour. #papers.capitalize# forgave me. | Quiet and clean. I wish it would stay. | Then I'll love it less. But not today.
+
+scene drizzle_day
+when topic=weather here.weather=rain here.region=ridgemere self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drip.capitalize# all day. Not even proper rain. | Rain I don't mind. This is #drip#, and it gets into the papers. | My chest doesn't care for #drip#. It's #dust#, mind. Mostly.
+b : It's always like this here. | Into the papers? | Mostly?
+a : I know. I keep hoping #drip# will make up its mind. | The corners curl. I put weights on them. #nohurry#. | Mostly #dust#. A little wet. I'll not argue about it.
+
+scene rats_archive
+when topic=animals|work self.dislikes=rats
+does tell.worry / reassure / assess
+a : Something's been at the bottom shelf of #archive#. Gnawed the corner off a deed. | I saw a rat on the stairs this morning. A big one. I don't like them near #papers#. | We've set a cat in #archive#. I'm not sure the cat's interested.
+b : Was it important? | They'll be after the paste. | Give it time.
+a : Every paper's important to somebody. I copied what was left, in #squarehand#. | Probably. I've moved the paste pots. | I will. I'll give it #cake# too, if it earns it.
+
+scene oatcake_lunch
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #cake.capitalize# at noon, by the window. That's my favourite hour of the day. | #cake.capitalize#, and nothing on it. Some say that's dull. I say it's honest. | Somebody packs me #cake# every morning. Well, I pack it. But I like to pretend.
+b : Just the one? | Honest? | You pack it yourself?
+a : Two, if it's a long day at #stool#. | You know what you're getting. No surprises. | I do. I'm #very# good to myself, that way.
+
+scene straw_floor
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I put #straw# down this morning. My room smells like a summer barn. | Straw underfoot, a candle and #tale#. That's plenty for anyone. | I spend a copper a week on #straw#. It's my one extravagance.
+b : That sounds cosy. | Nothing more? | Only one?
+a : It is. Come and see, if you like, #address#. | Maybe #cake#. That's all. | Only one. I'm careful otherwise; #saying#.
+
+scene coldwater_home
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town# the old folk told #tales# by the lake of an evening. That's where I got the taste for them. | I left #self.from_town# carrying a satchel of letters and not much else. | Back home I learned my letters from an old wolf who carved them in the jetty with a nail.
+b[from=coldwater] #cw : I remember those evenings. | Same as half of us. | I know that jetty.
+b : Do they still? | Letters? | With a nail?
+a@cw : Then you'll know the one about the words on the ice. | Then we'll get on, I think. | Then you've seen the letters. #squarehand.capitalize#, every one.
+a : I hope so. I'd like to go back and put them in #talesbook#. | My mother's. I've kept every one. | With a nail. That's why my hand's so square, I think.
+
+scene accent_none
+when topic=accent self.away=yes self.accent=none
+does tell.self / react.self / assess
+a : My voice went city-plain in my first year at #stool#. Clerks all sound alike. | Folk say I sound like I was born in #city#. I wasn't. I was born by a lake. | I wish I'd kept some lake in how I talk. It's gone, mostly. It's in #talesbook#.
+b : Do you mind? | You'd never know. | That's a nice place to keep it.
+a : A little. It was a nice way of talking. | Most don't. I tell them, if they ask, #address#. | It is. Nobody can file it wrong there.
+
+scene gossip_gentle
+when topic=gossip
+does tell.self / react.self / assess
+a : I heard #topic.subject# #topic.claim#. I'd rather not repeat it. It's not on #rolls#. | They say #topic.subject# #topic.claim#. I don't know if it's true, so I'll leave it there. | There's talk on the stairs about #topic.subject#. I don't add to it.
+b : Fair enough. | You've repeated it now. | That's wise.
+a : Talk's not a record. I'll wait for one. #nohurry#. | I suppose I have. I'll not do it again. | Thank you. #nohurry#; the truth keeps.
+
+scene faith_tales
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One's in half of #tales#, and always kind. That's how I think of the Bright One. | I say a prayer before I open the oldest boxes in #archive#. Not for luck. For the folk in them. | Restdays I take a pencil to the chapel and sit at the back, in case of a good sermon.
+b[job=priest] #priest : That's a lovely thought. | That's a kind custom. | Bring the pencil; I'll try to earn it.
+b : That's a gentle way to see it. | For the folk in them? | In case?
+a@priest : Thank you. It's the tales' thought, really. | It feels right. They were somebody. | Then I'll be listening closely.
+a : I can't think of the Bright One any other way. | The ones in the papers. Somebody ought to. | It happens, now and then. I write it in #talesbook#.
+
+scene newcomer_rolls
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new face on #rolls# this week. I write the newcomers in my best hand. | Somebody new came in to be put on #rolls#. Frightened of the forms. I helped. | Newcomers always look at #papers# like they'll bite. They don't. I don't.
+b : Your best hand? | That was kind. | Do they believe you?
+a : First page is first impressions. They should feel welcome in #city#. | It's my work. And they'll remember it. | By the second form. #good.capitalize#.
+
+scene neighbour_note
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# next door makes a cold evening shorter, I find. | #talesbook.capitalize# I'd lend to #self.neighbour#, and to nobody else. | I write #self.neighbour# a note when I'm out late, so nobody worries.
+b : That's nice. | You don't lend it? | That's thoughtful.
+a : It is. Neighbours matter in #city#. | Never. Though that one could borrow it. | It's only a line or two. In #squarehand#.
+
+scene good_times
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : Good times. #rolls.capitalize# are full of weddings and new trades. I like copying those. | Coin about, and more folk in to register a business. #busy.capitalize#, but cheerful. | It's a good year. I've put a little by for #southtales#.
+b : Happy work. | Cheerful's good. | Good for you.
+a : The happiest. #squarehand.capitalize# goes a little rounder for them. | It is. Busy and cheerful is the best kind. | Thank you. A little more, and I'll ask about a berth.
+
+scene hard_times
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. The dole lists on #rolls# are longer every week. I write every name the same, carefully. | Fewer weddings on #rolls#, more debts. I don't like copying debts. | Hard year. I'm lucky; #papers# don't stop. Others aren't so lucky.
+b : That's decent of you. | Nobody does. | You're kind to say it.
+a : They're names. They deserve a good hand. | No. I write them quickly, so they don't sit. | It's only true. I try not to forget it.
+
+story the_ice_words [topic=lore|memories]
+  : There's #tale# from by the lake, of a scribe who carved a promise into #lakeice#.
+  : When the thaw came, the ice went, and the words floated up whole and drifted to the shore.
+  ask : Do you think words can outlast the thing they're written on?
+  b : Some do. Names on stones, maybe. Did anyone read them?
+  : The one they were promised to. And the tale says the promise was kept.
+
+story the_lost_deed [topic=work self.job=scholar]
+  : An old wolf came in once, sure the deed to a whole house was lost for ever.
+  : I looked for three days. On the fourth it turned up, pressed flat inside another file in #archive#.
+  ask : What do you think was the first thing they said?
+  b : Thank you, I'd hope. Was it?
+  : No. "There's no hurry, then." I've said it to everyone since.
+
+story the_snow_letter [topic=season|memories self.likes=first_snow]
+  : The first snow I saw in #city#, I wrote a letter home about it, very square.
+  : It took so long to write that by the time I'd done, the snow had gone to slush.
+  ask : Wouldn't you rather have been out in it?
+  b : I would. I'd write after. Did you send the letter?
+  : I sent it. In the letter the snow never stopped, and it still hasn't.
+
+dlg @1 resident.hub : #greet#. #nohurry#. How can I help? | #greet#, #address#. Sit down, if you like.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're welcome back. | #topic.player#. Come back for a tale, or a paper?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Please, say it plainly. I'll listen. | I'll help if I can, #address#. Calmly, though.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. Copying, filing, and finding what's lost. | I keep #rolls# at #self.workplace#. #saying.capitalize#; I find it.
+dlg @2 resident.job : I write things down so they don't get lost. That's most of it. #saying.capitalize#. | A quiet sort of work, #address#. I like it.
+dlg @1 resident.bye : #farewell#. #nohurry#. | #farewell#, #address#. Come back soon.
+graft resident.hub
+choice Do you know any old tales? -> tales
+node tales
+say A few hundred. I write them in a book, in my square hand. The one about the words on the ice is my favourite.
+mood warm
+free
+choice Tell me that one. -> ice
+choice Back to it. -> hub
+node ice
+say A scribe carved a promise in the winter ice. At the thaw the words floated up whole and drifted ashore. I'd like to write like that.
+mood warm
+choice A lovely tale. -> hub
+choice Goodbye. -> bye

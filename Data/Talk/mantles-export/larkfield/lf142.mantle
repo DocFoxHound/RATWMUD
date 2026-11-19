@@ -1,0 +1,300 @@
+# lf142, the door-minder who dreams uphill (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf142
+revision 2
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_lionel_dripworth
+written_by claude
+title the door-minder who dreams uphill
+fits stage=adult|old
+prefers job=merchant drive=restless
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk knows_the_heights_houses_by_their_door_knockers
+likes mutton_stew swimming market_bustle misty_dawns
+dislikes smoke salt_wind
+fears dying_where_i_was_set_down a_winter_with_no_door_to_mind
+hopes a_room_up_the_hill_with_a_knocker_of_my_own
+topics dreams +0.5 smalltalk +0.3 newcomer +0.3 home +0.3 food +0.2 weather +0.2 gossip -0.2
+styles comfort=company gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# minds a shop door in the Sump and knows every big house on the Heights by the knocker on its door: warm, plain and forever restless, putting every spare thought toward a room up the hill before the end.
+
+words
+oath! = Brass and bolt | By the lion's-head knocker | Hinges and hope
+saying! = Every door opens for somebody | Uphill's only a slow road home | Mind the door and the door minds you
+knocker = a brass knocker | a lion's-head knocker
+knockers = the knockers | every brass knocker up there
+heights = the Heights | the Heights at the top
+door = the door | this shop door
+step = the step | the shop step
+lamps = the lamps | a window full of lamps
+bell = the bell | the little bell over the door
+stew = mutton stewed till it falls apart | a pot of mutton and barley
+mist = mist on the water at dawn | the dawn haze
+saltwind = the salt wind | the wind off the Sound with salt in it
+plunge = a plunge off the slip | a cold swim
+crowd = the Marketday crowd | a street full of shoppers
+uphill = a hilltop room | somewhere better
+polish = brass polish | a rag and some polish
+knees = my knees | these two knees
+downs = the downs | the long downs
+street = the street | our street
+chapel = the chapel | the chapel by the steps
+city = the city | this city
+
+any
+opinion @1 houses against 1 : Not one House has sent a mason down our lanes in years. Up #heights# they polish #knockers# twice a week.
+opinion @1 newcomers for 3 : I'd be a newcomer myself somewhere, given the nerve. #oath#, I wish them well.
+opinion @1 road for 1 : Roads don't frighten me. Mind yourself and they deliver you. I'd walk any of them for #uphill#.
+opinion @1 dole for 2 : #dole.capitalize# carried me over one lean winter. No shame in a loaf when the work's short.
+opinion @1 watch against 1 : When the Watch walk our way, it's never to pass the time of day.
+opinion @1 city mixed 1 : I'll not run it down. It's got #heights# in it, and that's where I'm going.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind #step#; it's worn in the middle. | #greet#, #address#. Step in from the weather; the lamps are lit.
+line @2 greet [here.time=dawn] : #greet#. #mist.capitalize#, and me on #step# already. | #greet#. Early. The best hour, this.
+line @3 greet [here.time=dusk|night] : #greet#. Only the lamps are awake on this street. | #greet#. Late, #address#. #door.capitalize#'s still open.
+line @1 kin.open [pair.kin!=no] : There you are, #dear#. Come in by the warm. | Ah, you. Sit on #step# with me a minute.
+line @1 again.open : Back again! #door.capitalize# remembers you, and so do I. | Twice in a day. You'll wear #step# down like the rest of us.
+line @1 greet.return : #greet#. | #greet#, #address#. #bell.capitalize#'s glad of you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Shift over; there's room on #step#. | #greet#, #dear#. I was just thinking of you.
+line @1 farewell : #farewell#. | #farewell#. Mind #step# going out.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep under the lamps going home. | #farewell#. Shut the night out behind you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. #saying#.
+line @1 react.news : #listen#. Go on, I've time. | #surprise#. Tell it slow, #address#.
+line @1 react.news.new : #oath#. That's new to me. | Nothing of that crossed #step# till now.
+line @1 react.news.known : #knew#. Half #street# told me on the way in. | I heard. Everything comes past #door# sooner or later.
+line @1 react.news.doubt : #doubt#. Folk say all sorts on a doorstep. | I'll wait and see that one with my own eyes.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for it. | That's a heavy one, #address#. Bright One keep them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Now that's a door opening. | #good.capitalize# news. Every customer gets it from me today.
+line @1 answer.how : #fine#. On my feet, and #door#'s still on its hinges. | Well enough. Dreaming, same as ever.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. #bell.capitalize# hasn't stopped since noon. | Run ragged at #door#, and glad of it.
+line @1 ask.how : And you, #address#? Getting on? | How are you keeping? Moving up in the world?
+line @1 sympathise : #sympathy#. Sit on #step# a while; nobody'll move you. | That's hard. Doors close, #address#. Others open. I believe it.
+line @1 reassure : #reassure#. #saying#. | It'll come right. I've seen worse turn round.
+line @1 decline : #hedge#; I can't leave #door#, and it can't mind itself. | I'd like to, #address#, but I'm promised to #step# till the lamps.
+line @1 accept_decline : #no_matter#. Another day. | That's all right. I'll be here; I'm always here.
+line @1 thank : #thanks#. You're a good sort. | Much obliged, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. You'd do it for me. | It's only a door held. Nothing to it.
+line @1 preclose [self.working=yes] : Well. #door.capitalize# wants minding. | There's #bell#. I'd best see to it.
+line @2 preclose : Well. #preclose#. | I'll let you go on. I've a step to sit on.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. #door.capitalize#'s open when you're back.
+line @1 ack : #bc_right# | #bc_true#
+scene knocker_names
+when topic=smalltalk|dreams here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I know every big house on #heights# by its knocker. Ask me any of them. | There's a house near the top with #knocker# so big you need both paws to lift it. | On my day off I walk up #heights# and look at #knockers#. Just look.
+b : Go on, then. Which is the best? | Both paws? | Only look?
+a : The one shaped like a fish, near the old gate. Polished every morning. You can see your face in it. | Both. I tried it once. A butler opened it, and I asked the time, and he told me. | Only look. One day I'll knock on one. Mine.
+b : #bc_ha# | Brave of you. | #bc_i_hope_so#
+
+scene minding_door
+when topic=work|smalltalk self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : #self.trade_words.capitalize#. I open #door#, I ring #bell#, and I see the whole street go by. | You'd think minding a door was nothing. You'd be wrong; it's everything that comes in. | I stand on #step# all day. #knees.capitalize# know every stone of it.
+b : Sounds dull. | Everything? | Hard on the legs.
+a : Not a bit. Each face through it brings a story. | Every customer, every rogue, every bit of weather. The door sees it first. | It is. Honest enough, though, and the news reaches me first.
+
+scene window_of_lamps
+when topic=work|prices self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : We've #lamps# in the window, every size. On a dark day folk stop just to look. | Somebody bought our biggest lamp today and couldn't get it through #door#. | A good lamp's a good friend in a wet city. I tell every customer so.
+b : Do they buy? | What did they do? | Is that true?
+a : One in ten. The other nine go home and dream of it. I know how they feel. | Turned it sideways. I held #door# and prayed. | True as brass. I'd have one in every window, up #heights#.
+b : #bc_good# | #bc_ha# | #bc_true#
+
+scene heights_end
+when topic=dreams|home here.region=ridgemere
+does confide / react.self / assess
+a : #vent#: I mean to end my days up #heights#. Not live there long. Just end there. | I've had my life down here. I'd like the last bit of it with a view. | I'll not die where I was set down. I've decided. #uphill.capitalize#, before the end.
+b : Good to aim high. | A view of what? | Will you manage it?
+a : It is. And I'll not stop aiming till they carry me. | The Sound, the roofs, the lot of it. And #knocker# on my own door. | I'll manage it or I'll die trying, which is the same thing. #saying#.
+
+scene always_moving
+when topic=dreams|smalltalk here.region=ridgemere
+does tell.plan / ask.detail / answer.detail / assess
+a : I've a plan for every street between here and #heights#. Room by room, step by step. | I never stay put. Three rooms so far, every one a bit further up. | Next spring I'm going up a street. I said that last spring. I'll do it this one.
+b : Room by room? | Further up each time? | Will you?
+a : Find the cheapest room on the next street, move in, save, do it again. Slow, but it's uphill. | A street at a time. The Sump's at the bottom; it's only up from here. | I will. Say it often enough and it comes true. That's how plans work.
+b : #bc_wise# | #bc_good# | #bc_i_hope_so#
+
+scene mutton_pot
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : Give me #stew# and I'm a happy wolf. | There's a pot of mutton on at home. I've been smelling it in my head since noon. | Mutton's cheap and it's honest, and I've never met a stew I didn't like.
+b : What goes in it? | Since noon? | Never?
+a : Mutton, barley, an onion, and patience. Leave it all day and it does the rest. | Since breakfast, honest. I'll run home at the lamps. | Never once. Some I liked less. #bc_ha#
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene cold_plunge
+when topic=pastimes|weather here.season=summer self.likes=swimming
+does tell.self / react.self / assess
+a : I had #plunge# at dawn. At dawn! Folk on the quay think I've lost my wits. | Cold water's the best thing for a wolf who stands on a step all day. | I swim whenever there's a chance. Only in the water do #knees# hush.
+b : At dawn? | Is it? | Good for the joints.
+a : At any hour. The water doesn't ask. #oath#. | The best. You come out new. For an hour. | It is. The water carries what my knees won't.
+
+scene misty_morning
+when topic=weather|day here.time=dawn here.weather=fog self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. I stand on #step# and the far side of #street# is gone. I love it. | Fog first thing, and the lamps glowing in it like oranges. That's a sight. | A misty dawn makes the Sump look like somewhere else. Somewhere better.
+b : #cold.capitalize#, though. | Like oranges? | Somewhere better?
+a : Cold, and quiet, and lovely. Cold's a small price for it. | Little oranges, all down #street#. You'd stop and look, I promise. | An hour of it. Then the mist lifts and it's the Sump. I don't mind; I had the hour.
+
+scene salt_in_the_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. It turns the brass green overnight. | I can taste the Sound on my lips all day when the wind's in the west. | The salt wind gets in my coat and won't come out. I smell like a fishing boat.
+b : It's the Sound. | Green? | Ha.
+a : I know. Up #heights# it's further off. That's another reason. | Green as moss. I'm out with #polish# before the shutters come up. | It's no joke. Nobody up #heights# smells like a fishing boat.
+
+scene smoke_on_street
+when topic=weather|smalltalk here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.self / assess
+a : Smoke from every chimney in the Sump, and it all comes to #door#. | I can't abide smoke. It gets in #lamps# and blacks the glass. | Up #heights# the wind takes the smoke away. Down here it lives with you.
+b : It's everywhere. | Does it? | Ha, true.
+a : Everywhere. Cleaner air waits up #heights#. #saying#. | Every glass of #lamps#, every morning. I wipe them and it's back by noon. | True. Another thing to climb away from.
+
+scene street_crowd
+when topic=smalltalk|pastimes self.likes=market_bustle here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Marketday, and #crowd# going past #door#. I could watch it till dark. | When #street#'s packed I feel ten years younger. Everybody going somewhere. | I love #crowd#. Every face in it has a plan, same as me.
+b : It's busy. | Ten years? | Same as you?
+a : Busy's lovely. Busy means #city#'s alive. | Ten, near enough. Then #crowd# goes and I'm my own age again. | Same as me. Half of them are going up #heights#, I'd swear.
+
+scene sump_kindness
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : I'm leaving the Sump one day. Still, say nothing against it near me. Down here we mind our own. | Nobody down here passes a wolf in a doorway without a word. | The Sump fed me when I'd nothing. I'll remember that up #heights#.
+b[wealth=rich] #rich : I'd not know. | That's good of them. | Will you?
+b : They do. | Good. | Good for you.
+a@rich : Come down and see it, then. Nobody'll bite. | It is. It's how we manage. | I will. I'll send soup down.
+a : They do. I'll miss that. Not the damp. | It's what keeps the place standing, #address#. | I'll keep it, too. Leaving isn't forgetting.
+
+scene watch_comes_down
+when topic=crime|gossip here.region=ridgemere
+does give.opinion / react.self / assess
+a : Watch boots on our stones mean somebody's being taken. Never a stroll. | I see the Watch go past #door# and I count who's missing after. | When there's trouble up #heights#, it's always the Sump that gets turned over.
+b[role=guard] #guard : We go where we're sent. | That's harsh. | Not always.
+b : That's how it is. | Harsh. | Always.
+a@guard : I know you do. I'd have words with who sends you. | It's what I see from #step#. I'll not pretend I don't. | No. Not always. Often enough, though.
+a : It is. I'd like it different, #address#. #oath#. | It is. But #step# sees what it sees. | Always. Another reason to move up #heights#.
+
+scene thin_winter
+when topic=times|prices self.on_dole=yes
+does confide / react.self / assess
+a : #vent#: #dole# saw me through this month. Door-minding doesn't stretch far. | Restday, I'm in line for #dole#. I'm not ashamed. I'll be off it one day. | There's no shame in bread when the work's thin. I've told myself that till I believe it.
+b : No shame at all. | You will. | It's true.
+a : No. It's #step# on the stair, that's all. Next one's up. | I will. Every copper saved is a step. #saying#. | It is. And one day I'll give back what I took. Up the hill, with interest.
+
+scene leaner_every_week
+when topic=times world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Hard times. Fewer folk come through #door#, and those that do just look. | Nobody up #heights# notices when the Sump goes hungry. They'd notice if their knockers went dull. | Lean, this month. Even #lamps# aren't selling, and there's always somebody who wants light.
+b : Hard for everybody. | True enough. | Even lamps?
+a : It is. But it'll turn. It always does. #reassure#. | True. And I'll still go and look at their knockers on Restday. | Even them. Folk are sitting in the dark to save oil. #pity#.
+b? : #bc_true# | #bc_poor_soul# | #bc_i_hope_so#
+
+scene drove_road
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : I walked here from #self.from_town# along the drove road. Three days, and every hill a step further from the sheep. | On #downs# at home you could see a cart coming an hour off. I used to guess what was in it. | My #dad# minded the gate at the market back home. I suppose I got the door from him.
+b[from=larkfield] #lark : Three days' drove. I did it in four. | We all guessed carts as pups. | The gate! I'd have known your dad, then.
+b : Three days? | Were you ever right? | Like father, like son.
+a@lark : Four's no shame. The third hill's the worst. | And the losers paid a pebble. I lost a lot of pebbles. | Maybe you did. Everybody passed through his gate.
+a : Three, and I'd do it again if somewhere better lay past the last hill. | Sometimes. Usually wool. It was always wool. | Like father. Though he never minded a door with lamps behind it.
+
+scene how_i_say_it
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : Say good day at #door# and folk know #downs# straight off. | I'll talk like #self.from_town# till I die, and I'll die up #heights# talking like it. | A customer grinned at my full weight. Then he bought a lamp. Fair trade.
+b : It suits you. | Good for you. | Ha.
+a : #thanks#. It's a homely sound, I think. | I'll be the only one up there who does. Somebody has to. | He came back, too. Bought another.
+
+scene new_faces
+when topic=newcomer|player here.region=ridgemere
+does give.opinion / react.self / assess
+a : A new face! I love a newcomer. They're doing what I want to do, only the other way. | I'd be a newcomer myself somewhere, if I'd the nerve. I'm getting the nerve. | There was somebody new on #street# today. I held #door# for them and pointed them to the good baker.
+b : The other way? | You'll get there. | That's kind.
+a : They've come down to #city#; I want to go up it. We'll pass on the stairs. | Bit by bit, I'll manage it. #saying#. | It's only #door#. But a held door's a good start in a new place.
+
+scene creaking_knees
+when topic=health self.age>=50 here.region=ridgemere
+does tell.self / react.self / reassure
+a : #knees.capitalize# creak worse than #door#. I oil the hinges; I can't oil the knees. | I've stood on #step# so many years my feet have worn a dip in it. | My back's not what it was. I'll still walk up #heights# on Restday.
+b : Rest them. | A dip? | Good for you.
+a : I'll rest them up #heights#. Not before. | A little dip, two paws wide. It'll outlast me. | I will. Slow, but every step of it. #oath#.
+
+scene chapel_thanks
+when topic=faith here.region=ridgemere
+does give.opinion / react.self / assess
+a : #chapel.capitalize# fed my house in a hard spell. Every Restday I've a copper, it goes to the plate, for that. | Prayers don't come easy to me. One thing I pray for, and it's a room up #heights#. | I say a word on Restday. Thanks, mostly. And a word about #heights#.
+b : That's fair. | Just the one thing? | Thanks is good.
+a : It's owed, #address#. Owed and paid. | Just the one. By now it's heard, surely. | Thanks first. Then the asking.
+
+story first_knock [topic=dreams|memories self.age>=30 here.region=ridgemere]
+  : My first walk up #heights#, I came to a house with #knocker# shaped like a lion, and I lifted it.
+  : I let go before it struck. I couldn't think what I'd say if somebody came.
+  : I've walked past that door a hundred times since. One day I'll let it drop.
+  ask : Have you ever stood at a door you weren't brave enough to knock?
+  b : More than once. I'm still standing at one.
+  b[old] : Plenty. Knock, next time. You'll regret the not knocking more.
+
+story lamp_in_the_flood [topic=memories|home here.region=ridgemere self.age>=40]
+  : One wet winter the water came up over #step# and into the shop, and #street# went black.
+  : I lit every lamp in the window and stood them in the doorway, and folk found their way home by them.
+  : Next morning there were three loaves left on #step#. Nobody said who.
+  b : That's a good night's work. Did you ever find out?
+  : Never. I didn't need to. The Sump said thank you its own way.
+
+story the_drove_down [topic=travel|memories self.away=yes self.from=larkfield self.age>=30]
+  : When I left #self.from_town# I walked behind a drove of sheep all the way, because the drovers knew the road.
+  : Three days of wool and dust, and on the last hill #city# came up out of the mist like a great house.
+  : I thought, there's a door in that I'll mind one day. I wasn't wrong. I'm still looking for the next one.
+  ask : What was the city to you, that first sight of it?
+  b : I do. It looked bigger than the sky.
+  b[from=ridgemere] : I was born in it. I've never seen it from outside.
+
+rule @door_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Mind #step#, now. | #door.capitalize#'s open. In you come, out of the wet.
+
+rule @knocker_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say One day, #knocker# of my own. | Brass and a bit of polish. That's all a door needs.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind here.outdoors=clear|overcast|storm
+does aside
+cooldown 10h
+say #saltwind.capitalize#. There goes the brass. | Wind's in the west. I can taste it.
+
+rule @mist_bark
+when concept=bark here.time=dawn here.outdoors=fog
+does aside
+cooldown 10h
+say Look at that mist. Lovely. | #mist.capitalize#. Nothing finer, this early.
+
+dlg @1 resident.hub : #greet#. Mind #step#. Come in and say what's wanted. | #greet#, #address#. Come in, come in.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! #door.capitalize# remembers you. | #topic.player#. Back again; I'm glad of it.
+dlg @3 resident.hub [here.time=night] : It's late, but #door#'s open. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #hedge#. I mind a door, that's all. Say what you want plainly.
+dlg @1 resident.job : #self.trade_words.capitalize#. Honest work, and I see #street# go by. | Whatever's asked of me. I'm good on #step#, and better with folk.
+dlg @1 resident.bye : #farewell#. Mind #step# going out. | #farewell#, #address#. #saying#.
+graft resident.hub
+choice You keep talking about the Heights. [here.region=ridgemere] -> heights
+node heights
+say I mean to end my days up there. I know every big house by #knocker# on its door. One day there'll be a little room with a knocker of my own.
+mood warm
+free
+choice Which is the finest knocker? -> heights_best
+choice Goodbye. -> bye
+node heights_best
+say The fish, near the old gate. Polished every morning, and you can see your face in it. Restdays, I walk up just to see it.
+choice I'll look for it. -> hub
+choice Goodbye. -> bye
