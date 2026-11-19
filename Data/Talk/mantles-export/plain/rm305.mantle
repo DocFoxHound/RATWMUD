@@ -4,11 +4,11 @@ dialect plain
 accent broad light
 tier standard
 written_for rm_edmund_sootdale
-title the stall that sells a minute
+title a minute for sale
 fits stage=young|adolescent|adult|old
 prefers humour=dry honesty=guarded
 traits temper=even talk=quiet warmth=reserved humour=dry honesty=guarded piety=ordinary drive=steady
-quirk counts_the_bells_from_the_chapel_of_the_tide
+quirk puts_a_price_on_quiet_minutes_at_a_paper_counter
 likes warm_bread evening_line festival_bells frosty_mornings
 dislikes deep_mud cold_tea
 fears having_a_private_price_read_aloud

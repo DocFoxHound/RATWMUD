@@ -4,7 +4,7 @@ dialect plain
 accent none
 tier full
 written_for rmx_orm_carlisle
-title the level for a loaded wheel
+title the loaded wheel's level
 fits stage=adult|old
 prefers role=merchant job=laborer
 traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady

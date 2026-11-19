@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier full
 written_for rmx_magnus_wetherell
-title the second breath of the wick
+title the wick's second breath
 fits stage=adult|old
 prefers job=laborer
 traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
-quirk coughs_in_the_damp_and_pretends_not_to
+quirk waits_two_breaths_before_trusting_a_newly_lit_wick
 likes hard_cheese swimming sharp_knife thunder
 dislikes salt_wind stale_bread
 fears running_out_of_breath_before_help_arrives

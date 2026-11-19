@@ -4,11 +4,11 @@ dialect plain
 accent none
 tier full
 written_for rmx_ivo_wainwright
-title the fleet on the chopping board
+title the butcher's fleet
 fits stage=adult|old
 prefers role=merchant job=merchant
 traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
-quirk can_name_every_ship_in_the_sound
+quirk names_joints_like_ships_before_weighing_them
 likes mutton_stew draughts fresh_straw misty_dawns
 dislikes flies crowds
 fears leaving_the_counter_to_a_sharp_practice
