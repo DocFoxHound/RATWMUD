@@ -16,7 +16,7 @@ hopes a_stall_that_weighs_true_in_any_weather
 topics work +0.6 prices +0.5 food +0.4 pastimes +0.3
 styles comfort=practical gossip=slippery refuse=amused tease=nimble
 marks oath saying
-persona persona #self.first# shelters scales and folded reckonings under an oilcloth hood, ready with a bright quip before an unwelcome question can settle.
+persona #self.first# shelters scales and folded reckonings under an oilcloth hood, ready with a bright quip before an unwelcome question can settle.
 
 words
 oath! = Scale my hat brim | Tickle a smoked eel

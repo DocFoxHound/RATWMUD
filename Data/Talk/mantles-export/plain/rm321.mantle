@@ -16,7 +16,7 @@ hopes a_receipt_before_the_hood_wears_through
 topics work +0.6 travel +0.4 memories +0.3 prices +0.2
 styles comfort=precise gossip=frank refuse=courteous tease=light
 marks oath saying
-persona persona #self.first# wears a hood on clear days, entertains the folds with anecdotes and keeps an undelivered letter in the driest one.
+persona #self.first# wears a hood on clear days, entertains the folds with anecdotes and keeps an undelivered letter in the driest one.
 
 words
 oath! = Oil my docket | Seal my hood to the collar

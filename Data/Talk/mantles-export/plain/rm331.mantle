@@ -16,7 +16,7 @@ hopes one_acknowledgement_in_the_proper_hand
 topics work +0.6 prices +0.4 pastimes +0.4 memories +0.2
 styles comfort=orderly gossip=withheld refuse=formal tease=none
 marks oath saying
-persona persona #self.first# leaves room for a signature beneath every unsettled obligation and sets dice down with the faces square to the edge.
+persona #self.first# leaves room for a signature beneath every unsettled obligation and sets dice down with the faces square to the edge.
 
 words
 oath! = Blot the counterfoil | File my last pip

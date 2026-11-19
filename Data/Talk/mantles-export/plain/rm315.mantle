@@ -16,7 +16,7 @@ hopes words_that_need_no_return_address
 topics animals +0.6 pastimes +0.4 food +0.4 gossip -0.3
 styles comfort=wry gossip=oblique refuse=soft tease=dry
 marks oath saying
-persona persona #self.first# minds the cows by old sayings and turns a folded letter in a pocket when the sayings run out.
+persona #self.first# minds the cows by old sayings and turns a folded letter in a pocket when the sayings run out.
 
 words
 oath! = Hitch my heifer crooked | Butter that gatepost

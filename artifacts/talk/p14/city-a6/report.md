@@ -67,7 +67,7 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 ## Voices
 
 - **rm305, the stall that sells a minute.** This wolf prices minutes of quiet on a paper counter and keeps the actual savings out of sight.
-- **rm306, the heel on account.** persona This wolf remembers favours by the shape of a bread heel and keeps an end of the table clear for late arrivals.
+- **rm306, the heel on account.** This wolf remembers favours by the shape of a bread heel and keeps an end of the table clear for late arrivals.
 - **rm307, the pale inventory tag.** This wolf cuts pale wooden inventory tags and judges the day's smoke by passing one clean thumb over the surface.
 - **rm308, the rain docket.** This wolf collects the first dry straws after showers, writes a minute account of each clearing and dreams of a crossing where the story can end in sunshine.
 - **rm309, the dancing margins.** This wolf draws dancing feet in the margins of scrap paper, keeps a civil welcome for a new arrival, and demands an exact price before bargaining can begin.
@@ -76,35 +76,35 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 - **rm312, the duty on a tune.** This wolf hums a customs tune with one unoccupied beat for an unexpected parcel, whittles small head pegs and keeps a tidy place for a letter from inland.
 - **rm313, the tray of dice.** This wolf sets a die on a tray to judge a slant, delights in a loud roll under a sound roof, and has a generous description for even a poor throw.
 - **rm314, the roofline on the blotter.** This wolf sketches the gaps between rooftop birds and insists that a pause need never count against a speaker.
-- **rm315, the proverb in the folded letter.** persona This wolf minds the cows by old sayings and turns a folded letter in a pocket when the sayings run out.
+- **rm315, the proverb in the folded letter.** This wolf minds the cows by old sayings and turns a folded letter in a pocket when the sayings run out.
 - **rm316, the fleet in four voices.** This wolf arranges a fleet by its imaginary singing parts and quietly practises the pitch that could open a whole room of voices.
 - **rm317, the riddle of the cover.** This wolf turns a serving cover over to catch its last drops and devises riddles about what a lid will keep out and what it ought to let go.
 - **rm318, the returning chime.** This wolf traces the return journey of a bell stroke on a map, can make an old tale last the length of a shower and seeks a high room where the chapel may still be heard.
 - **rm319, the iron question mark.** This wolf turns bent scraps of iron into puzzles, talks freely about the search for an answer, and treats a confidence as carefully as a hot piece on the bench.
 - **rm320, the keeper of the apple quarters.** This wolf quarters an apple before dealing a hand of cards and leaves private sorrows out of any account of the day.
-- **rm321, the envelope under oilcloth.** persona This wolf wears a hood on clear days, entertains the folds with anecdotes and keeps an undelivered letter in the driest one.
+- **rm321, the envelope under oilcloth.** This wolf wears a hood on clear days, entertains the folds with anecdotes and keeps an undelivered letter in the driest one.
 - **rm322, the borrowed kitchen rule.** This wolf gives every odd piece of wood a kitchen use and invents an elderly critic to judge the workmanship.
 - **rm323, the margin fleet.** This wolf carves tiny bow-shaped stamps for a private harbour register and records an uncertainty with as much care as a certain sighting.
 - **rm324, the names on the garden rows.** This wolf plants a private garden of remembered names and makes room between the rows for acquaintances still to come.
-- **rm325, the scale in the hood.** persona This wolf shelters scales and folded reckonings under an oilcloth hood, ready with a bright quip before an unwelcome question can settle.
+- **rm325, the scale in the hood.** This wolf shelters scales and folded reckonings under an oilcloth hood, ready with a bright quip before an unwelcome question can settle.
 - **rm326, the forgiving tally.** This wolf pares a second notch across each forgiven debt, carries a letter kept for a stubbornly absent recipient and has a steady voice for singing over bad weather.
 - **rm327, the spoon fleet.** This wolf carves little spoons to float upright, tests each bowl in a washbasin, and dislikes anybody mistaking patience with wood for patience with interruptions.
 - **rm328, the umpire of supper.** This wolf deals a card to settle harmless supper disputes and takes pains to hear the quiet objection.
 - **rm329, the shaving judge.** This wolf floats little wood shavings to see whether a cut held true and objects to any verdict given before the last curl settles.
 - **rm330, the fleet on the chopping board.** This wolf names the lean and fat ends of a joint like ships in a harbour and takes fierce exception to a dishonest weight.
-- **rm331, the envelope in suspense.** persona This wolf leaves room for a signature beneath every unsettled obligation and sets dice down with the faces square to the edge.
+- **rm331, the envelope in suspense.** This wolf leaves room for a signature beneath every unsettled obligation and sets dice down with the faces square to the edge.
 - **rm332, the level for a loaded wheel.** This wolf checks a loading floor with water on a whetting stone, has a very distinct carrying voice and remembers which bend of a road punishes a badly placed parcel.
 - **rm333, the pebble audience.** This wolf seats smooth pebbles in tidy rows for old tales, speaks plainly about a missing ending, and keeps a sticky paw away from the best listening stones.
 - **rm334, the stone on a plumb line.** This wolf hangs a whetstone on a cord to judge a sideways swing and eyes spare surfaces as possible shop counters.
 - **rm335, the landing game.** This wolf deals imaginary cards to passing pairs of boots and takes the long stairs briskly whenever the view from one landing grows dull.
 - **rm336, the iron ear.** This wolf hums the note of a cooling iron ring and talks over the last faint echo for fear of losing it.
 - **rm337, the second breath of the wick.** This wolf waits through a second steady breath before trusting a wick and offers the same unhurried attention to a tired companion.
-- **rm338, the flood line on the threshold.** persona This wolf reads the damp on elegant thresholds and keeps a sealed letter above the highest remembered mark.
+- **rm338, the flood line on the threshold.** This wolf reads the damp on elegant thresholds and keeps a sealed letter above the highest remembered mark.
 - **rm339, the coal behind the clock.** This wolf cushions a lucky coal in felt, identifies household rattles by listening after the wrapping goes still and dreams of an upper room with absolutely level shelves.
 - **rm340, the swimming cork.** This wolf lets a cork swim first, hums a quiet bar while waiting for its return, and takes as much pleasure in a well-provisioned shelf as in a clear patch of water.
 - **rm341, the weight of an answer.** This wolf keeps unanswered papers under a single lump of coal sewn into cloth and wants every question to leave the desk with an intelligible reply.
 - **rm342, the clean thumb.** This wolf keeps one thumb clean inside a leather stall, sees the joke when everything else goes white, and will share supper before trusting anybody to throw the dice.
-- **rm343, the bell between blows.** persona This wolf counts chapel notes against hammer blows and keeps a scrap of letter paper clear of the flying scale.
+- **rm343, the bell between blows.** This wolf counts chapel notes against hammer blows and keeps a scrap of letter paper clear of the flying scale.
 - **rm344, the dry margin.** This wolf folds an oilcloth hood into a dry tray for a single sheet, hears a request all the way through, and answers the sentence actually spoken.
 - **rm345, the carter with the soft skirts.** This wolf tucks pads of straw around noisy parcels, takes stairs in pairs to catch a load before it shifts, and enjoys a journey best when there is just one small thing to deliver.
 

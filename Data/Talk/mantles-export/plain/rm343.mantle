@@ -16,7 +16,7 @@ hopes an_even_ring_from_edge_to_edge
 topics work +0.6 day +0.5 memories +0.3 pastimes +0.2
 styles comfort=plain gossip=curious refuse=brisk tease=none
 marks oath saying
-persona persona #self.first# counts chapel notes against hammer blows and keeps a scrap of letter paper clear of the flying scale.
+persona #self.first# counts chapel notes against hammer blows and keeps a scrap of letter paper clear of the flying scale.
 
 words
 oath! = Ring my tongs flat | Peen my last pip

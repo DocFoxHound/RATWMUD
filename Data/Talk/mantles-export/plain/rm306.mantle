@@ -16,7 +16,7 @@ hopes a_warm_heel_for_the_last_arrival
 topics work +0.6 food +0.5 friends +0.4 memories +0.3
 styles comfort=generous gossip=inquisitive refuse=gentle tease=none
 marks oath saying
-persona persona #self.first# remembers favours by the shape of a bread heel and keeps an end of the table clear for late arrivals.
+persona #self.first# remembers favours by the shape of a bread heel and keeps an end of the table clear for late arrivals.
 
 words
 oath! = Dock my crust | Butter my boot welt
