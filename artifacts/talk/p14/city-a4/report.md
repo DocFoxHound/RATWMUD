@@ -165,7 +165,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm227, rm244, rm247, rm250.
 - Friend also listed as kin — rm228, rm238, rm241, rm246, rm258.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm221, rm224, rm229, rm232, rm235. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm227, rm245, rm246, rm250, rm253, rm255. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 The Sump quarter includes households on Northgate and the headland. The territory in a street or workplace field describes an area. It cannot establish ownership of a named shop. The text treats rm222's charcoal-camp recollection as a longing for quiet. The resident's birthplace and upbringing place the wolf in Ridgemere. Two fellow pupils, rm223 and rm225, share a father. The dialogue avoids treating the friend slot as a separate, unrelated visitor. The door work in rm246 has no workplace or trade phrase. A crane hand in rm250 has a district workplace and no job classification. Trade-specific dialogue uses the live work facts. The accusation in rm255's backstory and the purported list of bribes in rm262's brief supplied neither a verified deed nor an in-world witness. The writers used personality, interests and the experience of living in the quarter for those voices.
