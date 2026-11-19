@@ -1,0 +1,287 @@
+# rm909, the list that goes missing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm909
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the list that goes missing
+fits stage=young|adolescent|adult|old
+prefers temper=nervy warmth=warm
+traits temper=nervy talk=plain warmth=warm humour=none honesty=frank piety=devout drive=steady
+quirk writes_the_day_on_a_scrap_and_loses_it_by_noon
+likes a_long_list fresh_bread crossing_things_off the_noon_bell
+dislikes being_late surprises
+fears forgetting_the_one_thing_that_mattered
+hopes one_day_with_nothing_forgotten
+topics day +0.4 food +0.3 prices +0.3 faith +0.2 health +0.2 animals +0.1 festival -0.2
+styles comfort=practical gossip=careful refuse=soft tease=none
+marks oath saying
+persona #self.first# writes every day out on a scrap of paper at dawn, frets over it all morning, loses it by noon, and is kind, honest and forever patting pockets for the list.
+
+words
+oath! = Ink and oatcakes | Pins and parsnips | Stubs and string
+saying! = Write it down or it never happened | Better a long list than a short memory | If it's not on the list, it's on my mind
+list = my list | the list for today
+scrap = a scrap of paper | an old bill, turned over
+stub = my pencil stub | the stub of pencil behind my ear
+pocket = the wrong pocket | my other pocket
+loaf = a fresh loaf | the morning loaf, still warm
+mouse = the mouse | the mouse behind the dresser
+noon = by noon | before the noon bell
+crossed = crossed off | crossed through, neat as you like
+forgot = the one thing I didn't write | something, I know I've forgotten something
+stalls = the stalls | every stall in the market
+worry = a worry | a little worry nagging at me
+
+any
+opinion @1 merchants mixed 1 : I write the prices down at every stall. They change between the first and the last. Every time.
+opinion @1 watch for 1 : I sleep better knowing the Watch walk past. I'd sleep better still if they walked past twice.
+opinion @1 church for 2 : I put my worries to the Bright One every evening, one at a time, in order. It helps. It truly does.
+opinion @1 festivals against 1 : Too much happening at once. I lose #list# in the first hour and never find it.
+opinion @1 times against 1 [world.times=hard|lean] : When times are lean, my list gets shorter and the worry gets longer. I'd swap them back if I could.
+
+grown
+line @1 greet [pair.band=strangers] : Oh! #greet#. You startled me, that's all. | #greet#. Sorry, I was miles away, looking for my list.
+line @2 greet [here.time=dawn] : Morning. I've written the whole day out already. | Morning. Up too early again; my head wouldn't stop going over things.
+line @1 kin.open [pair.kin!=no] : There you are. Have you seen my list? No, of course not. | Oh, good, it's you. I've a worry, and you're the one to hear it.
+line @1 again.open : You again. I'm glad. I've lost #list# since this morning. | Twice in a day. That wasn't on the list, but I'm pleased.
+line @1 greet.return : #greet#. Sorry, I'm all of a flap today. | #greet#, #address#. It's good to see a calm face. | #greet#. I was just checking my pockets. Again.
+line @1 farewell : #farewell#. Don't forget anything. I always do. | Go careful, #address#. Watch the cobbles.
+line @1 farewell.return : #farewell#. Mind yourself out there. | #farewell#, #address#. I'll try to remember what we said.
+line @1 react.news.new : #oath#! I'll have to write that down. | Oh, my. I didn't know a word of that.
+line @1 react.news.known : I knew it. I'd written it down, somewhere. | Yes, I'd heard. It worried me half the night.
+line @1 react.news.doubt : I hope that's wrong. I'll wait and see before I fret. | Oh, I can't believe that. I won't, not yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. Oh, that's dreadful. | That's awful. The Bright One will hear about that tonight, from me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely news. Something good, at last. | How lovely. I'll write it down so I don't forget to be glad.
+line @1 answer.how : Flustered. Same as ever. But well. | Well, I think. I've a feeling I've forgotten something. | Fair. The list's still in my pocket, and that makes a good day.
+line @1 sympathise : Oh, that's hard. I'm so sorry. | You're going in my prayers tonight. First on the list.
+line @1 reassure : Don't fret. I worry for the both of us; you needn't. | Things mostly come right. I tell myself that every morning.
+line @1 decline : I'd like to, I really would, but my list runs off the bottom of the page. | Not today, I'm sorry. I'd forget halfway and feel dreadful.
+line @1 accept_decline : Of course. Another day, if you remember. | That's all right. I'd forget, anyway.
+line @1 thank : Oh, thank you. That's one off my mind. | You're very good. I'll not forget it, truly.
+line @1 deflect_thanks : Oh, it was nothing. I'm glad it helped. | Don't thank me; I nearly forgot.
+line @1 preclose : Oh, the bell. Three jobs before it rings again, at least. | I must go. I've just remembered something. I think.
+line @1 accept_preclose : Go on, go on. Don't let me keep you. | Off with you. See you soon, if I remember where I'm going.
+line @1 ack : #bc_i_know# | Yes, yes, quite right.
+rule @list_bark
+when concept=bark
+does aside
+cooldown 6h
+say Where's my list? It was right here. | Bread, thread, the rent... no, what was the third thing?
+
+rule @noon_bark
+when concept=bark here.time=day
+does aside
+cooldown 10h
+say Is that the noon bell already? I've done half of nothing. | The bell, the bell. Where did the morning go?
+
+scene lost_list
+when topic=day|smalltalk
+does tell.complaint / ask.detail / answer.detail / assess
+a : Lost #list# again. Wrote it at dawn, gone #noon#. Every single day. | I found yesterday's list in my boot. Today's, I can't find anywhere. | I wrote the list on my paw this time. Then I washed.
+b : Where did you last have it? | In your boot? | What was on it?
+a : In my paw, at the bread stall. After that, nobody knows. | In my boot. How, I couldn't tell you. Nobody could. | Bread, the rent, and a third thing. I'll remember it at midnight.
+b : It'll turn up. | Lists wander. | #bc_bad_luck#
+
+scene market_prices
+when topic=prices|day here.day=market
+does tell.complaint / react.complaint / assess
+a : I wrote down every price at #stalls#. Three were dearer by the time I'd walked back. | Market day, and I've lost #list# between the bread and the onions. | I always buy one thing too many at the market. It's never on the list.
+b : They do creep up. | Between the bread and the onions? | That's how markets get you.
+a : They creep, and I write. One day I'll catch them at it. | Somewhere in there. Somebody's reading my shopping now. | It is. I know it, and they know I know it.
+
+scene mouse_list
+when topic=animals|home
+does tell.self / react.self / assess
+a : #mouse.capitalize# ate the corner off my list last night. The corner with the rent on it. | There's a mouse in the dresser that I can't bring myself to trap. | I left a crumb out for the mouse. Don't tell anybody. I worry it's hungry.
+b : A clever mouse. | Soft of you. | It'll bring its friends.
+a : Too clever. I pay the rent anyway. I wrote it twice. | I know. It looks at me and I look at it, and I can't. | Oh, don't say that. Now I'll worry about that too.
+
+scene morning_loaf
+when topic=food here.time=dawn|day
+does tell.feeling / react.self / assess
+a : #loaf.capitalize# and a bit of butter. That's the one thing I never forget. | First thing on the list, every day: bread. I've never once missed it. | The baker's loaves were warm today. I nearly cried. It's been a long week.
+b : Never once? | A fine thing to remember. | Warm bread helps.
+a : Not once. Everything else, yes. Never bread. | It's the one I'm proud of. | It does. It truly does.
+
+scene storm_fret
+when topic=weather here.weather=storm
+does tell.worry / reassure / assess
+a : I hate a storm. I've checked the shutters three times. | Thunder like that and I can't settle to anything. | A storm, and my washing still on the line. I'll not get it now.
+b : They're holding. | It'll pass by dark. | It'll dry again after.
+a : I'll check them once more, all the same. | I hope so. I'll sit by the lamp till it does. | It will. Once I've stopped fretting about it.
+
+scene rain_ink
+when topic=weather here.weather=rain
+does tell.complaint / sympathise / assess
+a : Rain got in my pocket and ran #list# into blue soup. | I write in pencil when it rains. Ink runs. I learned that the hard way. | Wet day. I can't read my own writing on a wet day.
+b : That's unlucky. | Good thinking. | Nobody can, in this.
+a : I'll write it again. Badly, from memory. | It's the only good thinking I've done all week. | No. I'll guess, and hope.
+
+scene evening_prayer
+when topic=faith
+does tell.self / react.self / assess
+a : I say my worries to the Bright One every night, in order. Like a list. | I keep a little list for the Bright One. Folk to pray for. It's long. | I asked the Bright One to help me keep my list. I lost it the next morning.
+b : In order? | That's a kind list. | Perhaps it was a hint.
+a : Biggest first. Then I'm calmer for the little ones. | It's the one list I never lose. | Ha, perhaps. A hint I'll heed, then.
+
+scene health_worry
+when topic=health
+does tell.worry / reassure / assess
+a : I've had a cough two days. I'm sure it's nothing. I'm nearly sure. | I couldn't sleep. Up three times, checking the door. | My head aches when I worry, and I always worry.
+b : It'll be the damp. | Sleep comes back. | Try not to fret.
+a : The damp. Yes. I'll tell myself that. | I hope so. I'll try a warm cup before bed. | I'll try. That's the trouble: trying is worrying too.
+
+scene work_behind
+when topic=work self.working=yes
+does tell.worry / reassure / assess
+a : I'm behind. Half a morning's work and I can't find the list that says what's next. | I made a list for my work, and a list for the list. Still behind. | Somebody asked me for something and I forgot. I've written it on my paw now.
+b : You'll catch up. | That sounds like too many lists. | It's there now, at least.
+a : I always do. Just never calmly. | It is. I can't stop. It's how I stay on my feet. | It's there. Until I wash, anyway.
+
+scene gossip_fret
+when topic=gossip|crime topic.claim_kind=theft|violence|victim|death
+does tell.gossip / reassure / assess
+a : #topic.subject.capitalize# #topic.claim#, they say. My latch has been checked all day. | They're saying #topic.subject# #topic.claim#. Supper went cold on my plate after. | Dreadful talk at the stalls. #topic.subject.capitalize# #topic.claim#.
+b : Your latch is fine. | Try to eat. | Don't let it eat at you.
+a : I know. I'll check it again anyway. | I'll try. A bit of bread, maybe. | I'll try not to. I'm not good at not.
+
+scene gossip_glad
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Good news for once. #topic.subject.capitalize# #topic.claim#. I've written it down. | They're saying #topic.subject# #topic.claim#. I'm so pleased I could sit down. | I heard #topic.subject# #topic.claim#. Isn't that lovely? It is.
+b : Written it down? | Sit, then. | It is lovely.
+a : So I remember to be glad. I forget the good things first. | I will. Good news makes me wobbly too. | It is. I'll be happy all afternoon.
+
+scene nothing_forgotten
+when topic=dreams
+does confide / react.self / assess
+a : Just once, I'd get to bedtime with nothing forgotten. Just one day. | I dream about a list where everything's crossed off. Every line. | If I ever kept a list till evening, I'd frame it.
+b : You'll manage it. | That's a good dream. | You'd frame it?
+a : Maybe. It's going on the list, that one. | It is. I wake up and the list's still blank. | Frame it and hang it over the door. Then I'd always know where it was.
+
+story washed_list [self.age>=25]
+  : Years ago I wrote a whole festival's work across my paw in ink. Every pie, every errand.
+  : Then I helped wash the pots before anything else, and it all came off in the water.
+  ask : What would you do, with a clean paw and a hundred promises?
+  b : Guess, and hope for the best.
+  b[old] : Ask round what I'd promised, and own up.
+  : I went door to door asking what I owed folk. Most were very kind about it. One got two pies.
+
+story long_list [self.age>=30]
+  : Once I tried to write down everything I'd ever forgotten. I thought it would help.
+  : I got to the bottom of the page and remembered I'd forgotten the bread.
+  b : Did you get the bread in the end?
+  : I did. I wrote it on a new scrap. #saying#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Oh! #greet#. Sorry, I'm hunting for a bit of paper. You wanted something?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You haven't seen a list lying about? Never mind. How are you?
+dlg @1 resident.bye : #farewell#. Mind how you step; I worry about the cobbles.
+graft resident.hub
+choice What are you always looking for in your pockets? -> pocket_list
+node pocket_list
+say My list. I write the day out every morning, all of it. And every day, by noon, it's gone. Somewhere.
+mood keen
+free
+choice Why not keep it somewhere safe? -> list_safe
+choice Goodbye. -> bye
+node list_safe
+say I've tried a box, a jar, my boot and my hat. It gets out of all of them. I think it wants to be lost.
+mood warm
+choice Good luck finding it. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#. I made a list today. A whole list! | #greet#. Sorry, I'm looking for something.
+line @1 farewell.return : Bye! Don't lose anything. | Bye. Be careful.
+line @1 react.news.new : Really? Is that bad? I hope not. | #oath#. I'll remember that.
+line @1 answer.how : Good, I think. I didn't lose anything yet. | A bit worried. I don't know why.
+line @1 thank : Thank you! That's going on my list. | Thanks. You're very kind.
+line @1 decline : I'd better not. I might get lost, and then I'd worry. | No, thank you. I'm meant to go straight home.
+rule @pup_list
+when concept=bark
+does aside
+cooldown 8h
+say Where did I put it? It was right here! | One, wash. Two, bread. Three... I forget three.
+
+scene pup_first_list
+when topic=day|smalltalk
+does tell.boast / react.self / assess
+a : I wrote a list of everything I have to do. It's got six things. | I can write lists now. I wrote one for the whole house. | I lost my list. I wrote a list of where to look for it.
+b : Six whole things? | Did they read it? | Clever.
+a : Six. I've done two. I'll do the others after supper. | Nobody read it. I read it to them. Twice. | It didn't work. But it was a good list.
+
+scene pup_mouse
+when topic=animals|home
+does tell.self / react.self / assess
+a : There's a mouse in our wall. I can hear it at night. I named it. | I saw a mouse with a crumb bigger than its head. | I put a crumb out for the mouse. I hope it found it.
+b : Has it got a name? | Bigger than its head? | It'll have found it.
+a : Scratch. Because that's all it does. | Bigger. It was very proud of it. | I hope so. I'll check in the morning.
+
+scene pup_bread
+when topic=food
+does tell.self / react.self / assess
+a : I'm allowed to fetch the bread now. I've only forgotten twice. | The bread was warm, so I ate the end on the way home. | I like bread with butter. That's my best food.
+b : Only twice? | Somebody will notice. | Mine too.
+a : Twice. And once I got the wrong bread. That doesn't count. | Yes. I'll say it came like that. | It's the best.
+
+scene pup_worry_kin
+when topic=family self.mother
+does confide / reassure / assess
+a : I worry when #self.mother# is late home. I watch the door. | I want #self.mother# to be proud of my lists. | When #self.mother# is cross, I tidy everything.
+b : Late isn't lost. | Proud already, I'd bet. | Tidying helps everyone.
+a : I know. I still watch the door. | I hope so. I'll make an extra-good one. | I do it really neatly.
+
+scene pup_thunder
+when topic=weather here.weather=storm|rain
+does tell.feeling / reassure / assess
+a : I don't like the thunder. It's too loud. | I hid under the table when the thunder came. Just for a bit. | The rain is so loud on the roof. I can't sleep.
+b : It can't hurt you indoors. | That's a good place. | It'll stop soon.
+a : I know. I still don't like it. | It is. I'll go there again if it comes. | I'll count the drops till it does.
+
+story pup_lost_shoe
+  : I lost my shoe one morning and looked everywhere. Under the bed, in the larder, in the yard.
+  : I was so worried I nearly cried.
+  ask : Where would you look first, if you were me?
+  b : On your other foot?
+  : On my foot. I'd put it on first thing and forgotten. Now I check my feet before I worry.
+
+dlg @3 resident.hub : #greet#. Have you seen a bit of paper with writing on? It's mine.
+dlg @1 resident.job : No job yet. I make lists. Somebody has to.
+
+adolescent
+line @1 greet.return : #greet#. Sorry, I'm in a rush. I'm always in a rush. | #greet#. Hang on, I'm just checking my list.
+line @1 farewell.return : Bye. I'll remember, I promise. | See you. Watch your step.
+line @1 react.news.new : What? Who said so? I'll write it down. | #oath#. That's worrying.
+line @1 answer.how : Fine. Nervous. It's normal for me. | Busy. I've a list longer than my tail.
+rule @teen_list
+when concept=bark
+does aside
+cooldown 8h
+say I wrote it down, I know I wrote it down. | Errands first, worrying after. That's the rule.
+
+scene teen_errands
+when topic=day|work
+does tell.self / react.self / assess
+a : I got sent for six things and came back with five. I'd written six. | I'm doing errands for folk now. I write each one down. I lose about half. | I finished every errand today and remembered every one. First time ever.
+b : Five's close. | Half's not bad. | Every one?
+a : Close isn't six. I'll go back. | It's bad. I'll get better. I'm practising. | Every one. I'm keeping the list forever.
+
+scene teen_nerves
+when topic=friends|smalltalk
+does confide / reassure / assess
+a : My friends laugh because I worry about everything. I can't help it. | I had to speak in front of everyone and my voice went all wobbly. | I'm always sure I've left the door open. I go back. It's always shut.
+b : Worrying shows you care. | Everyone's voice wobbles. | Better to check than wonder.
+a : I hope that's what it shows. | Not like mine. Mine sounded like a goose. | I'll keep checking, then.
+
+scene teen_cooking
+when topic=food|home
+does tell.self / react.self / assess
+a : I made bread. I wrote down every step. It came out flat. | I'm learning to cook. I follow the list exactly, and it still goes wrong. | My first pie had no salt in it. Salt was the one thing I forgot to write.
+b : Flat bread's still bread. | Lists don't cook for you. | Next time, then.
+a : So I told them. Nobody ate it. | No. I wish they did. | Next time it's at the top, in big letters.
+
+dlg @4 resident.hub : #greet#. I've a moment, I think. What's wanted?

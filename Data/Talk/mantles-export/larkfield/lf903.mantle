@@ -1,0 +1,290 @@
+# lf903, the candle-ends (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf903
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier spare
+written_by claude
+title the candle-ends
+fits stage=young|adolescent|adult|old
+prefers piety=devout talk=quiet
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=devout drive=content
+quirk saves_candle_ends_to_light_for_travellers
+likes oat_porridge chapel_quiet snowfall lavender
+dislikes wasted_wax loud_boasting
+fears a_traveller_not_coming_home
+hopes a_lamp_in_every_window
+topics faith +0.4 travel +0.3 home +0.3 weather +0.2 friends +0.2 food +0.2 gossip -0.4 prices -0.2
+styles comfort=quiet gossip=reluctant refuse=gentle tease=dry
+marks oath saying
+persona #self.first# speaks little and kindly, saves every candle end in an old tin and lights one in the window for anyone still out on the road, and keeps faith with the Bright One in small, steady ways.
+
+words
+oath! = Wick and wax | By the small flame | Bright One mind the road
+saying! = A little light goes a long way | Leave a light for the late ones | Every road ends at somebody's window
+stubs = the candle ends | my candle ends
+tin = the tin | the old toffee tin
+flame = a small flame | a flame no bigger than a thumbnail
+window = the window | the front window
+road = the road | the long road out
+traveller = whoever's out on the road | the ones still walking
+porridge = oat porridge | a bowl of porridge with salt
+lavender = lavender | a sprig of lavender
+chapelquiet = the chapel quiet | a quiet chapel at noon
+snowfall = snow falling | a soft snowfall
+wax = wax | good wax gone to waste
+dusklamp = lamp-lighting time | the hour the lamps go up
+mm = Mm | Ah
+taper = the taper | a long taper
+
+any
+opinion @1 church for 2 : The chapel's the one door in town that's never locked. I'd keep it so, if it were up to me. #mm#.
+opinion @1 festivals for 1 : I like a feast for the lamps. Every #window# lit at once; the Bright One must enjoy the sight.
+opinion @1 strangers for 1 : A stranger's somebody's child, a long way from home. Feed them first and ask after, I say.
+opinion @1 road mixed 1 : #road.capitalize# takes folk away. Mostly it brings them back. I leave a light either way.
+opinion @2 road against 2 [world.wagons=raided] : Carts robbed on #road#. I'll have #flame# lit for every soul on it tonight.
+opinion @1 drink mixed 1 [self.stage=adult|old] : A cup of #ale# by the fire's no sin. Three, and you'll not find your door in the dark.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. You're welcome here. | #greet#. Step out of the wind a moment.
+line @2 greet [here.time=dawn] : #greet#. Early for both of us. | #greet#. The Bright One's light is only just up.
+line @1 kin.open [pair.kin!=no] : There you are. Come and sit; the bench is warm. | You. Good. I'd a candle lit for you.
+line @1 again.open : Twice today. The Bright One's being generous. | Back so soon, and welcome, #address#.
+line @1 greet.return : #greet#. A welcome face, yours. | #greet#. Sit, if you've a moment.
+line @1 farewell : #farewell#. I'll leave a light for you. | #farewell#. The Bright One keep your road.
+line @2 farewell [here.time=dusk|night] : #farewell#. Watch for #window#; it'll be lit. | #farewell#. Go straight home, mind.
+line @1 farewell.return : #farewell#, #address#. | #farewell#. Go careful.
+line @1 react.news : #mm#. I'll think on that. | Well. I'll carry that with me today.
+line @1 react.news.new : #surprise#. I hadn't heard. | That's new to me. I'll mull it over, quietly.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll light a candle tonight. | Oh, that's sad. #sympathy#. I'll remember it in my prayers.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. The Bright One be thanked. | Oh, that's good to hear. I'm glad, #address#.
+line @1 answer.how : Well enough, thanks to the Bright One. | #fine#. Quiet, which suits me.
+line @1 ask.how : And yourself? Eating enough, I hope. | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit here by me. You needn't talk. | That's heavy. I'll light #flame# for you tonight.
+line @1 decline : #hedge#. I'd better not. I've #window# to see to before dark. | Not this time, I'm sorry. I'm wanted at chapel, and I never miss it.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. Go on, #address#.
+line @1 thank : #thanks#. That's kind. | Bless you for that, #address#.
+line @1 preclose : #preclose#. #stubs.capitalize# won't sort themselves. | I'd best be getting home before #dusklamp#.
+line @1 tease [pair.band=friends] : You'd lose your own tail if it weren't fixed on. | You've porridge on your chin, #fool#.
+scene candle_window
+when topic=home|faith
+does tell.self / ask.detail / answer.detail / ack
+a : There's a candle end lit in #window# every night somebody's out on #road#. | I keep #stubs# in #tin#. Nothing wasted, and somebody's always out late. | It's an old habit. A light in the window for whoever isn't home yet.
+b : Every night? | Does it help? | Who taught you?
+a : Every night somebody's out. That's most nights. | It helps me. And once or twice it's helped a lost one home. | An old wolf down our lane, when I was #child.a#. I never stopped.
+b : #bc_lovely# | #bc_i_hope_so# | #bc_good#
+
+scene snow_on_road
+when topic=weather|season here.weather=snow
+does tell.feeling / ask.detail / answer.detail
+a : #snowfall.capitalize#. I could watch it all day. | Snow on #road#. I'll put an extra candle in tonight.
+b : It's cold out. | Why an extra one?
+a : Cold, and quiet. I'll take quiet. #mm#. | Snow hides #road#. A light shows it.
+
+scene noon_chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Noon's my chapel hour, when nobody's there. #chapelquiet.capitalize# is my favourite thing. | I don't ask the Bright One for much. A safe road for the ones out on it.
+b : Nobody at all? | Not even for yourself?
+a : Sometimes a cat. It doesn't talk either. #mm#. | I've all I need. That's a prayer answered already.
+
+scene salted_oats
+when topic=food
+does tell.self / challenge / insist
+a : #porridge.capitalize# every morning, with salt. I'll not be moved on it. | I've a pot on most days. There's always enough for one more #hungry# mouth.
+b : Salt, not honey? | That's kind.
+a : Salt. Honey's for feast days. #oath#, I'll stand by that. | It's only oats. Kindness is cheap, when it's oats.
+
+scene lamp_hour
+when topic=day here.time=dusk
+does tell.feeling / ask.detail / answer.detail
+a : #dusklamp.capitalize#. My favourite hour. | The lamps are going up. I'll light mine in a moment.
+b : Why that hour? | Which lamp?
+a : Everything slows down. Folk come home. #mm#. | The one in #window#. For #traveller#.
+
+scene lavender_sprig
+when topic=home|pastimes
+does tell.self / ask.detail / answer.detail
+a : I keep #lavender# in with the linen. Smells like summer in winter. | There's #lavender# by my door. I pick a sprig for anyone who's poorly.
+b : It does. | Does it help them?
+a : It does. Small things carry a long way. #saying#. | I think so. It helps me, anyway, the picking. #mm#.
+
+scene robbers_near
+when topic=travel|bandits world.bandits=near
+does tell.worry / reassure / assess
+tone serious / serious / even
+a : There's talk of robbers on the roads. I'll keep a candle lit all night. | I worry for anyone walking out this week. #oath#, I do.
+b : They'll come home safe. | #reassure#.
+a : The Bright One willing. I'll keep the light till they do. | I know it. I'll worry anyway. It's how I pray, #address#.
+
+scene friend_first
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : #self.friend# is welcome at my table, asked or not. | When I light #window#, I think of #self.friend# first.
+b : That's a good friend. | Why first?
+a : The best I've had. #mm#. | Habit. And love, I suppose. I'll not make a speech of it.
+
+scene spouse_light
+when topic=family|home self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I light #window# for my #self.spouse_word# first, even when we're both home. | My #self.spouse_word# is the reason I'm content. I'll say that plainly.
+b : Even when you're both home? | That's a lovely thing to hear.
+a : Habit. It's all one to the Bright One, lit or not. | It's true. Some things want saying aloud, now and then. #mm#.
+
+scene glad_word
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. That's worth a candle end tonight. | They say #topic.subject# #topic.claim#. #gladnews#.
+b : That's good to hear. | It is.
+a : It is. Good news wants marking. | I'll remember it at prayers tonight. #mm#.
+
+scene lean_oats
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times. I've started cutting #stubs# smaller. | Folk are going without. I've an extra bowl of #porridge# for whoever knocks.
+b : Will they last? | That's good of you.
+a : Long enough. After that, it's in the Bright One's paws. | It's oats and water. I'll not miss it, #address#.
+
+rule @window_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say One for #road#. There. | #flame.capitalize#, and the Bright One mind whoever needs it.
+
+rule @waste_bark
+when concept=bark here.time=day
+does aside
+cooldown 10h
+say Who left a candle burning in daylight? #wax.capitalize#. | Don't throw that end away. Give it here, #address#.
+
+dlg @1 resident.hub : #greet#. You're welcome. Sit a moment, if you're tired. | #greet#, #address#. Have you eaten today?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I've had a candle lit for you, some nights. | #greet#, #topic.player#. You came back safe. Good.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Whatever's troubling you, I'll listen. Quietly, if you like, #address#.
+dlg @1 resident.job : This and that. Whatever the day asks. I keep a light in #window#, too. | Honest work, and not much talk about it. #mm#.
+dlg @1 resident.bye : #farewell#. I'll leave a light. | #farewell#. Walk in the Bright One's light.
+graft resident.hub
+choice What's the candle in your window for? -> window_candle
+node window_candle
+say For anyone still out on the road. A candle end, saved from somewhere. It isn't much, but it's seen a long way off in the dark.
+mood warm
+free
+choice Has it ever helped anyone? -> candle_helped
+choice Goodbye. -> bye
+node candle_helped
+say Once or twice, a lost one's knocked, following it. Most nights it just burns down. I don't mind. That's what it's for.
+choice I'll watch for it on the road. -> hub
+choice Goodbye. -> bye
+
+story long_night [topic=memories|faith self.age>=30]
+  : One winter a neighbour's pup went missing on the downs. We searched till our lamps gave out.
+  : I went home and put every candle end I had in #window#. #tin.capitalize# was empty by midnight.
+  : Near dawn the little one walked in, following the light, cold through and very pleased with itself.
+  ask : Do you believe a light can call somebody home?
+  b : I'd like to.
+  b[stage=old] : I've seen stranger things.
+
+story three_ends [topic=memories|faith self.age>=18]
+  : The first candle end I ever saved came from the chapel. I asked very politely.
+  : The old priest gave me three and said to light them for somebody, never for myself.
+  : I've kept to that. I've never lit one for me.
+  b : Not even once?
+  b[job=priest] : That's good counsel. I may borrow it.
+  : Not once. #saying#.
+
+
+young
+line @1 greet : #greet#. I'm collecting candle ends, if you've any spare. | #greet#. I saw you from #window#.
+line @1 greet.return : #greet#. I'm glad it's you. | #greet#. Sit by me, if you like.
+line @1 farewell : #farewell#. I'll leave a light for you. | #farewell#. Go careful on #road#.
+line @1 farewell.return : #farewell#. Come back safe. | #farewell#. I'll look out for you.
+line @1 react.news : #mm#. I'll say a little prayer about it. | Oh. I'll think about that for a while.
+line @1 decline : I'd better not. I promised to be home before the lamps go up. | Not today, thank you. I've #stubs# to sort.
+line @1 thank : #thanks#. That's kind of you. | Ta. I'll put you in my prayers tonight.
+scene candle_tin_young
+when topic=pastimes|home
+does tell.self / ask.detail / answer.detail / ack
+a : I keep #stubs# in #tin#. I've got eleven now. | When a candle's nearly gone, I ask for the end. Nobody minds.
+b : What are they for? | And then what?
+a : For lighting, when somebody's out late. | I light them for #traveller#. One at a time.
+b : #bc_lovely# | That's kind.
+
+scene snow_young
+when topic=weather here.weather=snow
+does tell.feeling / react.self / assess
+a : #snowfall.capitalize#. I watched it from #window# till my nose went cold. | It's snowing. Everything's gone hushed, like chapel. #mm#.
+b : Did you go out in it? | It does go quiet.
+a : Only to the gate. Then I came back for #porridge#. | I like it. You can hear yourself think, #address#.
+
+scene chapel_back_bench
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Back bench in chapel, that's mine. It's the warmest bit. | My prayers have everyone I know in them. It takes ever so long.
+b[stage=adult|old] #grown : The back's where the wise ones sit. | And do you get to the end?
+b : Is it? | Everyone?
+a@grown : I didn't know that. I just like the warm. #mm#. | Mostly. I nod off sometimes, near the end.
+a : Next to the stove. Don't tell anyone, #address#. | Everyone. Even the ones I don't like much.
+
+scene salt_porridge_young
+when topic=food
+does tell.self / challenge / insist
+a : #porridge.capitalize# is best. Not sugar. Salt. | I had two bowls of porridge this morning. I was very #hungry#.
+b : Salt? | Two?
+a : Salt. #oath#, and that's final. | Two. The second was the better one.
+
+scene taper_young
+when topic=day|work here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At #dusklamp# I help carry #taper#. I'm allowed now. | I watched them light the lamps along the street. I counted every one.
+b : Mind your fur. | How many?
+a : I do. I hold it far out, like this. | Fourteen. One wouldn't catch, then it did. #mm#.
+
+rule @tin_bark_young
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say There. #flame.capitalize#, for anyone still out. | Eleven candle ends. Twelve, if I find one.
+
+dlg @young resident.hub : #greet#. Are you lost? The chapel's that way, if it helps. | #greet#. You can sit here, if you're tired.
+dlg @young resident.job : I'm too small for a trade. I help with the lamps and the candles. | I sort #stubs#. It's a sort of job.
+story followed_the_light [topic=memories self.mother]
+  : One night I left a candle end burning in #window#, and a carter knocked.
+  : He'd lost the road in the dark and followed the light all the way.
+  : #mum.capitalize# gave him porridge. I didn't say it was my candle.
+  ask : Would you have said?
+  b : Maybe not. It's nicer kept to yourself.
+  b[stage=young] : I'd have told everyone.
+
+
+adolescent
+line @1 greet : #greet#. I'm on my way to chapel, but there's time. | #greet#. It's a fair morning for walking, or evening, or whatever it is.
+line @1 greet.return : #greet#. I'm well, thank you. And you? | #greet#. Come and sit a bit.
+line @1 farewell : #farewell#. I'll light one for you tonight. | #farewell#. Mind #road#.
+line @1 farewell.return : #farewell#. Go safe. | #farewell#, #address#.
+line @1 react.news : #mm#. I'll keep that in my prayers. | Oh. That's a lot to think on.
+scene chapel_unmade
+when topic=faith|friends
+does tell.self / react.self / assess
+a : The others laugh because I go to chapel without being made to. | Somebody asked why I bother praying. I said it's quieter than arguing. #mm#.
+b : Let them laugh. | Fair answer.
+a : I do. They come to me when they're frightened, all the same. | It is. Nobody argued with it, either.
+
+scene careful_hands
+when topic=work self.working=yes
+does tell.self / reassure / assess
+a : I'm slow at the work, but careful. Nothing's been spoiled yet. | They say I'm quiet. I'm listening, that's all. #mm#.
+b : Careful's better. | That's a good habit.
+a : I hope so. I'd sooner slow than #wax# and waste. | It's the only one I've got, near enough.
+
+scene window_not_world
+when topic=travel|dreams
+does tell.self / ask.detail / answer.detail
+a : Some want to leave and see the world. I'd sooner light the way for them. | I walked to the next village once, and back. Once was plenty. #mm#.
+b : You don't want to go? | Was it?
+a : Not much. Somebody has to keep #window# lit. | Plenty. My own bed looked like a feast after.
+
+rule @wick_bark_adol
+when concept=bark
+does aside
+cooldown 8h
+say Wick trimmed, tin full. That'll do. | Mind the draught. #flame.capitalize# won't last in that.

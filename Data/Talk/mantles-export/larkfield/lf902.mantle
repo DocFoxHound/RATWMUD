@@ -1,0 +1,291 @@
+# lf902, the trader-up (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf902
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier spare
+written_by claude
+title the trader-up
+fits stage=young|adolescent|adult|old
+prefers temper=calm drive=ambitious
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=sly piety=ordinary drive=ambitious
+quirk trades_one_small_thing_up_for_a_better_every_market
+likes barley_sugar card_games quiet_evenings first_frost
+dislikes shouting soggy_bread
+fears an_empty_purse
+hopes a_shop_with_my_name_over_it
+topics prices +0.4 work +0.3 gossip +0.3 newcomer +0.3 pastimes +0.2 times +0.2 faith -0.2 family -0.2
+styles comfort=practical gossip=sly refuse=smooth tease=dry
+marks oath saying
+persona #self.first# is calm, dry and hard to read, brings one small thing to every market and trades it up for something better by dusk, and never tells an outright lie, nor quite the whole truth either.
+
+words
+oath! = Swap and swagger | By the better bargain | Thread to thimble
+saying! = Every swap leaves somebody smiling | Trade up, never down | Nobody asks what a thing was before
+swap = a swap | a fair-ish swap
+trinket = a little trinket | some small nothing
+purse = my purse | a purse I keep close
+ribbon = a length of ribbon | a ribbon somebody wanted more than me
+button = a brass button | a button off a good coat
+barley = barley sugar | a twist of barley sugar
+cards = cards | a hand of cards
+shopname = a shop with my name over it | my name over a door
+between = Between ourselves | Just between us
+frost = first frost | a white morning
+hm = Mm | Well, now
+rowend = the end of the row | the quiet end of the market
+backpocket = my back pocket | the back pocket where I keep things
+soft = soft at a swap | soft as warm butter at a bargain
+
+any
+opinion @1 merchants for 2 : A good trader sells you what you came for and something you didn't. I'd call that a skill, not a sin. #hm#.
+opinion @1 newcomers for 1 : New folk don't know the prices yet. I'm always glad to see them, and they're glad to see me, at first.
+opinion @1 watch mixed 1 : A quiet market's a profitable one, so the Watch and I get along nicely. I've never given them cause to look at me twice.
+opinion @1 church mixed 0 : A coin on the plate now and then. Not much, mind. The Bright One knows what's in #purse# without my showing it.
+opinion @1 houses mixed 1 [self.stage=adult|old] : Every House started with #swap# once, same as anybody. They'd rather you forgot that. I don't.
+opinion @1 dole against 1 [self.stage=adult|old] : Bread for nothing teaches nothing. I'd sooner they had #trinket# to trade, and the wit to trade it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. New faces are my favourite kind. | #greet#. You'd know #swap# when it's offered, I'd wager.
+line @2 greet [here.time=dawn] : #greet#. Early. The best swaps happen before folk are properly awake. | #greet#. Up before the stalls. So am I; funny, that.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. I'll not try to sell you #trinket#. Today. | You. Sit; you're the one wolf I don't bargain with.
+line @1 again.open : Twice today. Either you like me or you want #swap#. | You again. I'll start to think it's my charm, #address#.
+line @1 greet.return : #greet#. Now, what might I do for you. | #greet#. You've my ear; I'll decide later what it cost you.
+line @1 farewell : #farewell#. And if anyone asks, we never spoke. | #farewell#. Think on my offer; it won't keep for ever.
+line @1 farewell.return : #farewell#. Mind your purse; the rest aren't as nice as me. | #farewell#. A pleasure, as ever.
+line @1 react.news : #hm#. Now that's worth something to somebody. | #ack#. I'll put that in #backpocket#.
+line @1 react.news.new : #surprise#. That slipped past me, which doesn't happen often. | Did it, now. And who else has heard, I wonder.
+line @1 react.news.doubt : #doubt#. I'd want to know who gains by saying it. | #hm#. Somebody's selling that story. I'm not buying yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a poor end to anyone's week. | That's bad news, and I'll not make light of it. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's done well out of that. | Well, good. I'll send a little something round; it never hurts.
+line @1 answer.how : Comfortable, and quietly better off than yesterday. | #fine#. I'll tell you more when it's settled.
+line @1 sympathise : #sympathy#. Sit. I'll not charge for listening. | Life's handed you #bad# goods there. You'll trade up from it.
+line @1 decline : #hedge#. Tempting, only there's something on that pays better, I'm afraid. | Not this time. That hour's spoken for, and the one who spoke for it is paying.
+line @1 accept_decline : #no_matter#. I'll ask again when you're in a better mood. | #bc_fair_enough# Offers keep, mostly. Mine do.
+line @1 thank : #thanks#. I'll remember it, and you'll know I did. | That's handsome of you. I'll owe you a small favour. Small.
+line @1 preclose : #preclose#. Something's waiting to be traded up. | Well. I've a pair of gloves to turn into a hat. #hm#.
+line @1 tease [pair.band=friends] : You'd swap your tail for a ribbon if the ribbon was blue. | You've been diddled, #fool#. I can see it on you.
+line @1 give.advice : #advise.capitalize#: never be the first to name a price. | Smile, say little, and let them fill the quiet. They always do. #saying#.
+scene trade_up
+when topic=pastimes|prices
+does tell.boast / ask.detail / answer.detail / ack
+a : Started the week with a tin cup. It's a pair of good boots now, by way of a hen and a lamp. | Every market I bring #trinket# and see what it'll become by dusk. | Folk ask what I'm selling. Nothing. I'm swapping. There's a difference.
+b : A hen? | And what does it become? | What's the difference?
+a : A hen. Don't ask about the hen. #oath#, the hen. | Something better. It always does, if you're patient and you smile. | Selling, somebody leaves with silver. Swapping, everybody leaves thinking they won.
+b : #bc_ha# | #bc_clever# | #bc_wise#
+
+scene gossip_kept
+when topic=gossip|smalltalk
+does tell.gossip / ask.detail / answer.detail / ack
+a : I heard something at the stalls. I'll not say what. Not for free, anyway. | Folk tell me things. I'm the sort who listens and nods and says very little.
+b : Go on, then. | And do you pass them on?
+a : Buy me a cup and we'll see. #hm#. | Only to the right ears, and only for the right reasons. #between#.
+b : #bc_ha# | #bc_i_hope_so#
+
+scene gossip_passed
+when topic=gossip|crime topic.claim_kind=theft|violence|wanted|bandit|promise_broken
+does tell.gossip / react.news / assess
+a : #between#: they say #topic.subject# #topic.claim#. And I never told you so. | They're saying #topic.subject# #topic.claim#. I'd keep that in your back pocket.
+b : I won't say a word. | Why keep it?
+a : Good. Nor will I, except to the ones who'll pay attention. | Knowing a thing first is worth more than #money#. #hm#.
+
+scene shop_plan
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / assess
+a : One day there'll be #shopname#. Not a stall: a door, and a bell on it. | I've a plan. I'll not tell you all of it. Enough to say it ends on the square.
+b : Why a bell? | Why not all of it?
+a : So I hear every customer and every thief. They sound different, you know. | Plans told are plans copied. #hm#. Half a plan's safe enough to say.
+b : #bc_clever# | #bc_fair_enough#
+
+scene white_morning
+when topic=weather|season here.season=winter here.time=dawn here.weather=clear|snow
+does tell.self / ask.detail / answer.detail
+a : #frost.capitalize#. Everyone's slow and cold, and slow cold folk make poor bargains. | White on every roof. Quiet, and you can see who's been walking where.
+b : That's hard of you. | Who's been walking where?
+a : It's trade. I'm warm, they're cold; that's not my doing. #hm#. | Ah. That'd be telling. #between#, though, I've an idea.
+
+scene barley_grown
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I still keep #barley# in my coat. A sweet opens more doors than a smile. | A pup offered me half a bun for my #barley# today. I took the bun. A lesson, that.
+b : Does it really? | What lesson?
+a : Every door I've tried. Even the Watch house, once. | Never offer half before you know what the other half's worth. #hm#.
+
+scene cards_evening
+when topic=pastimes here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : There's a game of #cards# most evenings at #rowend#. I seldom lose. | I've a rule at #cards#: lose the first hand, win the rest.
+b : Seldom? | Why lose the first?
+a : Seldom. Losing now and then keeps the others coming back to #rowend#. | So they think they've got my measure. They haven't. #hm#.
+
+scene new_faces
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New faces in town. They don't know the prices yet. #hm#. I'll go and say hello. | A stranger asked me the way today. I told them, and sold them a map as well.
+b : Be kind to them. | You had a map?
+a : I'm always kind. It costs nothing and pays well. #hm#. | I had a bit of paper with lines on. It was a map by the time I'd done. #saying#.
+
+scene lean_market
+when topic=times|prices world.times=hard|lean
+does tell.self / challenge / insist
+a : Lean times. Folk are swapping again instead of buying. My kind of market. | Hard times, and everyone's purse is shut. Mine too, mind. Shut, and full.
+b : Not good for everyone. | Full, is it?
+a : No. But somebody has to keep the trade moving, and better me than some fool. | Fuller than I let on. #between#.
+
+scene fat_market
+when topic=times|prices world.times=good|boom
+does tell.self / challenge / insist
+a : Silver's moving. Folk buy things they don't need, and I help them. | Good times. Everyone's generous, and generous folk are #soft#.
+b : Kind of you. | That's sly of you.
+a : I'm all heart. #hm#. | Sly? I'd say awake. Somebody has to be, #address#.
+
+scene plate_prayer
+when topic=faith
+does tell.self / challenge / insist
+a : I pray now and then. Mostly that the Bright One isn't keeping accounts. | I give at the chapel. Enough to be seen, not so much as to be noticed.
+b : I'd say the Bright One keeps them. | Is there a difference?
+a : Then I'll pray louder. #hm#. | All the difference in the world. Ask any trader who's worth #purse#.
+
+rule @swap_bark
+when concept=bark here.place=market|street
+does aside
+cooldown 8h
+say Anyone with a hat they've tired of? I've gloves. | I'll trade you a lamp for something better. Anything better.
+
+rule @frost_bark
+when concept=bark here.season=winter
+does aside
+cooldown 10h
+say Cold enough to slow anyone's thinking. Good. | #frost.capitalize#. Somebody'll want gloves today, and I've gloves.
+
+dlg @1 resident.hub : #greet#. Everyone's welcome at my end of the row. What brings you? | #greet#, #address#. There's a buying look on you, I'd say.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'd a feeling you'd be back. They usually are. | #greet#, #topic.player#. Come for another bargain, or only my company?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Easy. Whatever you've heard, I never said it, and I never sold it.
+dlg @1 resident.job : Odds and ends. I trade them up. #saying#. | I turn #trinket# into better things. Ask me how, and I'll smile.
+dlg @1 resident.bye : #farewell#. If you've anything to swap, you know where I'll be. | #farewell#. Mind who you trade with. Present company excepted.
+graft resident.hub
+choice What are you trading today? -> trade_today
+node trade_today
+say This morning it was a brass button. Now it's a candle-holder, and by dusk it'll be something better. Got anything you'd swap?
+mood keen
+free
+choice How do you always come out ahead? -> trade_ahead
+choice Goodbye. -> bye
+node trade_ahead
+say I don't, always. I just know what folk want more than what they've got. Everybody goes home happy. Me a little happier, that's all.
+choice Clever. -> hub
+choice Goodbye. -> bye
+
+story the_hen [topic=memories|pastimes self.age>=20]
+  : Years back I traded a cracked jug for a hen. The hen laid nothing for a month.
+  : I swapped her on to a farmer who swore she'd lay for him. Next morning she laid two.
+  : He's never let me forget it, and I've never offered to swap back. #hm#.
+  ask : Would you have swapped her back?
+  b : Never. A hen that lays is a hen you keep.
+  b[job=farmer] : Not for anything. That's farming for you.
+
+story ribbon_and_knife [topic=memories self.age>=25]
+  : When I was #child.a#, I traded up from #ribbon# to a fine knife in one market day.
+  : Then I swapped the knife back for the ribbon, to the same girl, because she cried.
+  : #between#, mind. It's bad for business.
+  b : Your secret's safe with me.
+  b[friends] : I always knew you had a soft spot somewhere.
+
+
+young
+line @1 greet : #greet#. I've got something you'll want. Probably. | #greet#. Don't look in my pocket. There's nothing in it.
+line @1 greet.return : #greet#. What've you got on you? Only asking. | #greet#. I was just going, but I can stay a bit.
+line @1 farewell : #farewell#. If anybody asks, I wasn't here. | #farewell#. Think about my offer. It's a good one.
+line @1 farewell.return : #farewell#. The button's still going, remember. | #farewell#. I'll keep it for you, for a bit.
+line @1 react.news : #hm#. I'll keep that one quiet. It might be worth something later. | #hm#. Who else knows it? Nobody? Good.
+line @1 decline : I'd better not. I'd get the blame, even if it wasn't me. | Not today. I've #swap# on, and it's at the tricky bit.
+line @1 answer.how : Better than this morning. I've traded up twice since breakfast. | #fine#. I've a button now that was a pebble yesterday.
+scene pebble_to_button
+when topic=pastimes|smalltalk
+does tell.boast / ask.detail / answer.detail / ack
+a : I started with a pebble this morning. Now I've got #button#. | I swapped my bent spoon for a glass marble. The marble's worth more. Nobody told the other pup.
+b : How did you manage that? | That's not very fair.
+a : I said it was a lucky pebble. It might be. Nobody's proved it isn't. | The spoon was wanted, and I wanted the marble. #saying#.
+b : #bc_ha# | #bc_maybe#
+
+scene barley_young
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I've #barley# in my pocket. I'm not sharing it. | Half your bun buys a bit of #barley#. A small bit.
+b : Not even a bit? | How small?
+a : Maybe a bit. If you've got something to swap for it. | Small enough that you'll still say yes. #hm#.
+
+scene marbles_found
+when topic=family|home self.mother
+does tell.self / ask.detail / answer.detail / ack
+a : #mum.capitalize# found the marbles under my bed. All forty. | I got told off for swapping my good boots. I got a tin whistle for them, though.
+b : Were they all yours? | Was it a good whistle?
+a : Most of them. By the end, anyway. #hm#. | The best whistle in the street. I'd do it again, only quieter. #hm#.
+b : #bc_ha#
+
+scene name_over_door
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail
+a : When I'm grown I'll have a stall. Then a bigger one. Then #shopname#. | I'm going to have my name over a door one day. Big letters, painted gold.
+b : What will you sell? | Which door?
+a : Whatever folk want more than they want their #money#. | A good one, on the square. #oath#, a big one.
+
+scene cards_young
+when topic=pastimes
+does tell.boast / ask.detail / answer.detail
+a : A carter taught me #cards#. I win most times now. | I can tell when somebody's got a good hand. Their ears go flat.
+b : Do you cheat? | Do mine?
+a : I never cheat. I just watch very hard, #address#. | Yours went flat just now. #hm#. I'm only saying.
+
+rule @pebble_bark
+when concept=bark
+does aside
+cooldown 8h
+say Pebble, button, marble... what's next, I wonder. | Anyone want a lucky pebble? Very lucky, this one.
+
+dlg @young resident.hub : #greet#. Want to see something? It's for swapping, not for nothing. | #greet#. I've #trinket# you might like. Might.
+dlg @young resident.job : No trade yet. I trade things, though. That's nearly the same. | Swapping. I'm better at it than most grown folk.
+story first_swap [topic=memories|pastimes]
+  : The first swap I ever did, I gave a bigger pup a feather for a whole apple.
+  : I said it came off a bird that flew very high. It did. Pigeons fly high.
+  ask : Would you have known the difference?
+  b : Probably not. Did it ever come out?
+  b[stage=young] : I'd have known. I think.
+  : Not yet. #hm#. I ate the apple quick.
+
+
+adolescent
+line @1 greet : #greet#. Don't mind me, I'm only watching the stalls. | #greet#. You look like somebody with something to trade.
+line @1 greet.return : #greet#. I've a minute, if it's worth my while. | #greet#. Go on. I'm listening, and I'm cheap.
+line @1 farewell : #farewell#. If you change your mind about the knife, you know where I'll be. | #farewell#. I'd best go and see a pup about a hat.
+line @1 farewell.return : #farewell#. Mind your purse; not from me, from the others. | #farewell#. I'll see you by the stalls.
+line @1 react.news : #hm#. That's worth knowing. I wonder who'd pay for it. | Is it, now? I'll put that by for later.
+scene ribbon_to_knife
+when topic=pastimes|prices
+does tell.boast / ask.detail / answer.detail
+a : I've traded #ribbon# up to a pocket-knife in a fortnight. Six swaps. | Started this market with #button#. I've a pair of gloves now, near enough new.
+b[stage=adult|old] #grown : Six swaps, and nobody cheated? | Near enough new. Where did they come from?
+b : Not bad. | That's quick.
+a@grown : Nobody I'd call cheated. They all went home smiling. #saying#. | From somebody who wanted a button more than gloves. Odd, but there it is.
+a : Not bad at all. Next market it's a hat. | Quick and quiet. That's the trick of it, #address#.
+
+scene minding_till
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I watch how they price things where I work. Never the same twice. | They let me mind the till now. I count it twice, and so do they.
+b : Learning, then. | Don't they trust you?
+a : Learning. Quietly. I'll have my own prices one day. | Nobody trusts anybody with a till. #hm#. That's only sense.
+
+scene magpie_name
+when topic=friends|smalltalk
+does tell.self / ask.detail / answer.detail
+a : The others call me the magpie. I've decided it's a compliment. | Somebody said I'd sell my own tail. Not at that price, I wouldn't.
+b : Is it, though? | What price, then?
+a : Magpies always eat. #hm#. | More than anybody here's got. That's rather the point.
+
+rule @knife_bark
+when concept=bark
+does aside
+cooldown 8h
+say Good knife going. Fair offers, or unfair ones; I'll listen. | #oath#. Who'd have thought gloves would go so quick.

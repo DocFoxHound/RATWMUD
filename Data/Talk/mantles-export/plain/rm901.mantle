@@ -1,0 +1,305 @@
+# rm901, the smoke-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm901
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the smoke-reader
+fits stage=young|adolescent|adult|old
+prefers talk=quiet temper=calm
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk reads_the_chimney_smoke_before_deciding_anything
+likes still_mornings roof_views hot_chestnuts supper_fires
+dislikes loud_questions gusty_days
+fears a_chimney_fire a_wind_that_never_settles
+hopes a_window_that_looks_over_every_chimney
+topics weather +0.5 day +0.3 home +0.3 season +0.3 food +0.2 gossip -0.5
+styles comfort=quiet gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# says little, looks up at the chimney smoke before deciding anything at all, keeps private business private, and reads the city's weather off the roofs better than any almanac.
+
+words
+oath! = Smoke and slate | Up the flue | Ash and air
+saying! = Watch which way it leans | Smoke never lies about the wind | Look up before you speak
+smoke = the chimney smoke | the smoke off the roofs | the smoke
+chimneys = the chimneys | the chimney pots | every chimney on the row
+slates = the slates | the rooftops
+still = a still morning | a morning with no wind at all
+chestnuts = hot chestnuts | chestnuts off the brazier
+gust = a gusty day | wind that can't make up its mind
+flue = our flue | the flue at home
+grate = the grate | the kitchen grate
+hm = Hm | Mm
+almanac = the almanac | the printed almanac
+coal = the coal | a scuttle of coal
+sweep = an old sweep | a sweep off the hill
+
+any
+opinion @1 watch for 1 : The Watch keep to their beat and leave me to mine. That suits me well enough.
+opinion @1 houses mixed 1 : The Houses have the tallest chimneys in the city. What goes on under them is their own affair.
+opinion @1 city for 2 : Thousands of chimneys, and every one of them tells you something. I'd not trade that view for any other.
+opinion @1 strangers mixed 1 : A stranger asks a lot of questions. I answer the one about the weather and keep the rest.
+opinion @1 festivals mixed 1 : Bonfire smoke goes every way at once. I can't read a thing on a feast night, so I go home early.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. | #greet#. Not from this row, I think.
+line @2 greet [here.time=dawn] : #greet#. The smoke's barely up yet. | #greet#. First fires going, and you with them.
+line @1 greet.return : #greet#. | #greet#. #hm#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in under the eaves. | #greet#. Good. It's only you.
+line @1 farewell : #farewell#. | #farewell#. Mind the wind at the corner.
+line @1 farewell.return : #farewell#. | Go well. Look up now and then.
+line @1 react.news : #hm#. Go on. | I'm listening. Say it plain.
+line @1 react.news.new : That's new to me. | #oath#. I'd not heard a word of it.
+line @1 react.news.doubt : #doubt#. | I'll wait and see which way that one blows.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's hard news to carry. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. | Good. Something to be glad of, for once.
+line @1 answer.how : Steady. Nothing worth the telling. | #fine#. I keep my own counsel on the rest.
+line @1 decline : #hedge#, no. There's work of mine waiting, and it won't. | I'd rather not. It isn't a thing I put my paw to.
+line @1 accept_decline : #no_matter.capitalize#. | It'll wait. Most things will, left alone.
+line @1 thank : #thanks#. I won't forget it. | Kindly done. I'll say no more than that.
+line @1 preclose : Well. #preclose#. | The smoke's turned. I'd best be off.
+line @1 accept_preclose : Go on, then. | Off you go. Mind the gusts.
+line @1 ack : #hm#. | #bc_i_know#
+scene smoke_leaning
+when topic=weather|day here.weather=clear|overcast here.time=dawn|day
+does tell.self / ask.detail / answer.detail / assess
+a : See #smoke#? It's lying flat over the roofs. | Look up. #chimneys.capitalize# are all leaning east this morning. | Smoke's going straight up. Not a breath of wind anywhere.
+b : What does that mean? | And what's that say to you? | Is that good?
+a : Rain before supper, most likely. I'd take a hood. | Wind off the river by noon. I'd hang nothing out. | Good for washing. Bad for anyone with a smoky flue.
+b : #bc_fair_enough# | I'll remember that. | #bc_ha#
+
+scene still_air
+when topic=weather|day here.time=dawn here.weather=clear
+does tell.feeling / react.self / assess
+a : #still.capitalize#. I'd keep one of these in a jar if I could. | No wind at all. The smoke stands up like a row of ropes. | Quiet like this, you can hear a kettle three doors down.
+b : It is peaceful. | Ropes? | Can you, now?
+a : It won't last. That's what makes it worth standing in. | Ropes to the sky. Climb one and you'd be over the Heights. | Three doors, and the lid rattling. I'd know that kettle anywhere.
+
+scene gusts_again
+when topic=weather here.weather=storm|overcast here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #gust.capitalize#. The smoke goes one way, then back the other. | Wind's blowing every chimney down its own flue today. | I can't read a thing. Every pot on the row says something different.
+b : Rotten day for it. | Smoky in the houses, then. | Then don't read it.
+a : I'll stay in and wait for it to make up its mind. | Every grate coughing. Mine too, I'd wager. | Then I'll go out blind, like everyone else. I don't care for it.
+
+scene winter_breath
+when topic=season|weather here.season=winter
+does tell.self / ask.detail / answer.detail / assess
+a : Every chimney's going in winter. The whole city breathes out at once. | Winter smoke hangs low. You can taste the coal in it. | I mark the cold chimneys in winter. A cold chimney's a cold house.
+b : You can see it from the hill, I'm told. | What else can you taste? | Why mark them?
+a : A grey roof over the roofs. I'd paint it if I had the knack. | Pine, and someone's burnt supper. There's always one. | So I know whose step wants a bit of kindling left on it. I don't say whose.
+b? : #bc_lovely# | #bc_ha# | #bc_wise#
+
+scene brazier_corner
+when topic=food here.season=autumn|winter
+does tell.self / react.self / assess
+a : There's a brazier at the corner doing #chestnuts#. The smell's reached me already. | I bought a twist of #chestnuts# and ate them standing in the smoke. | Best thing about the cold. #chestnuts.capitalize#, too hot to hold.
+b : I can smell it too. | Standing in the smoke? | Burnt fingers, every time.
+a : Follow your nose, then. It won't steer you wrong. | The brazier's smoke. Warmer than the wind, and it smells of supper. | Every time. I'm slow to learn, and glad of it.
+
+scene drawing_well
+when topic=home self.homeless!=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #flue.capitalize# draws well. I swept it myself last spring. | I can see six chimneys from my window. I know every one. | A good fire keeps its smoke to itself. Ours does, mostly.
+b : You swept it yourself? | Whose are they? | And a bad one?
+a : With a brush on a pole and my eyes shut. Never again. | Neighbours'. I know them by their smoke, not their names. | Puts it in your curtains and your fur. I've lived with one.
+b? : #bc_ha# | #bc_fair# | #bc_true#
+
+scene kept_upstairs
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I see a lot from up the stairs. I keep it there. | Folk think a quiet one hears nothing. I hear plenty. | You'll get the weather out of me. Not the neighbours.
+b : Go on. Tell me one thing. | Like what? | Not even a little?
+a : One thing, then. The smoke's leaning east. That's all you'll have. | Like who's up at night and why. No, I won't say. | Not a little, and not a lot. #saying#.
+b : #bc_ha# | #bc_fair_enough# | Have it your way.
+
+scene cold_pots
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Fewer chimneys going on our row. That tells you the times. | Thin smoke from the bakers. They're saving on #coal#. | Half the pots on the hill are cold. Hard winter or hard purses.
+b : Hard for everyone. | You can tell that from smoke? | Purses, I'd guess.
+a : For most. I keep an eye out. That's all I'll say of it. | You can tell near everything from smoke, if you look. | Purses. The cold's no worse than last year's.
+b? : #bc_true# | #hm# | #bc_poor_soul#
+
+scene heads_down
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I don't talk much at work. The work does it for me. | Head down till the bell. Then I look up at #smoke#. | I'll finish this, then I'll listen. Not before.
+b : Fair enough. | And then what? | I'll wait, then.
+a : Most think me sullen. I'm only busy. | Then I know what the evening's doing, and I go home. | You'll not wait long. I'm quick when I'm left be.
+
+scene smoke_and_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : Smoke goes up. Prayers too, they say. I'd not argue with either. | I go to chapel and sit at the back. Nobody asks me anything there. | The Bright One sees it all from above. Same as the sweeps do.
+b : That's a kind way to see it. | That's why you go? | The sweeps!
+a : That's how I've always seen it. | Half why. The other half's my own. | The sweeps see more. And they're less forgiving.
+
+scene new_smoke
+when topic=newcomer|player
+does tell.self / ask.detail / answer.detail / assess
+a : Somebody new moved onto the row. I'll know them by their smoke before their name. | Somebody asking questions down the street. I gave them the weather. | Strangers look at the ground. Locals look at the sky. That's how you tell.
+b : What does their smoke say? | Only the weather? | Which do I do?
+a : Damp wood, and too much of it. They'll learn. | It's free, and it's true. The rest costs more. | You looked up just now. Close enough.
+b? : #bc_ha# | #bc_fair# | #hm#
+
+scene supper_smoke
+when topic=day|home here.time=dusk
+does tell.self / ask.detail / answer.detail / assess
+a : That's the supper fires going up. Every house at once. | Look at #slates# at this hour. They go blue. | Dusk is when the smoke tells you who's home.
+b : It smells good. | Blue? | Who's home, then?
+a : Onions, mostly. Somebody always has onions on. | Blue, then grey, then gone. I watch it most nights. | Most of the row. Not all. I don't say who isn't.
+b? : #bc_lovely# | #bc_every_night# | #bc_fair_enough#
+
+story the_row_caught [topic=memories|home self.age>=25]
+  : When I was a #child#, a chimney on our row caught. The smoke went black, then orange at the top.
+  : #sweep.capitalize# came up a ladder with a wet sack and stuffed the pot. That was all. Quiet as you like.
+  ask : Have you ever seen one catch?
+  b[old] : More than one. They're fearsome things.
+  b : Never. Was anyone hurt?
+  : Nobody. I've watched every chimney since, and I'll not stop now.
+
+story roofer_lesson [topic=weather|lore self.age>=18]
+  : An old roofer taught me, years back. Sat me on a ridge and said, watch the smoke, never the clouds.
+  : The clouds lie, he said. They're too high to care. The smoke's right here and has nothing to hide.
+  ask : Do you trust the clouds, yourself?
+  b[old] : Never have. They've soaked me too often.
+  b : I'd never once thought to look at smoke.
+  : Most never do. Try it. The smoke's quicker, and drier.
+
+rule @leaning_bark
+when concept=bark here.time=dawn|day here.weather=clear|overcast
+does aside
+cooldown 8h
+say Leaning east. Hoods by noon. | Straight up. A still day, then, and about time.
+
+rule @gust_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say Every pot on the row says something else. #oath#. | Wind can't make up its mind. Nor can I, today.
+
+dlg @1 resident.hub : #greet#. Say what you need. | #greet#. I'm listening. Keep it short.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What is it today? | #topic.player#. You again. Go on.
+dlg @1 resident.job : I work. I don't say much about it. | Work's work. Ask me about the weather instead.
+dlg @1 resident.bye : #farewell#. Look up now and then. | #farewell#. The wind's turning.
+graft resident.hub
+choice Why do you keep looking up at the chimneys? -> smoke_read
+node smoke_read
+say The smoke tells me the wind, and the wind tells me the day. Rain, still or gusty. I look before I decide anything.
+mood calm
+free
+choice What does it say today? -> smoke_today
+choice Goodbye. -> bye
+node smoke_today
+say Ask me tomorrow, and I'll tell you whether I was right. That's as much as I give away.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. I'm watching the smoke. | #greet#. You can stand here, if you're quiet.
+line @1 greet.return : #greet#. I'm busy looking up. | #greet#. Shh. It's doing something.
+line @1 farewell.return : Bye, then. Look up sometimes. | Bye. Don't tread on my coal.
+line @1 react.news : Oh. Who said so? | Really? Nobody tells me things.
+line @1 answer.how : All right. I'm watching the chimneys. | Fine. It's quiet. I like quiet.
+line @1 decline : I can't. I've to stay near the step, I was told. | I'd rather not. I'm watching something important.
+line @1 accept_decline : All right. That's fair. | That's all right. Ask me later.
+scene pup_smoke_shapes
+when topic=day|pastimes here.weather=clear|overcast
+does tell.self / react.self / assess
+a : The smoke off the bakery looks like a cat. A fat one. | I watched #smoke# all morning. It never does the same thing twice. | If you stand very still, the smoke makes faces.
+b[stage=adult|old] #grown : A cat, is it? I see a cloud. | You've the patience for it, then. | Faces? What sort?
+b : Where? | All morning? | Faces?
+a@grown : Look again. There's the tail. | I've nothing else to do. Not really. | Cross ones. Like somebody's gran.
+a : There. Over the bakery. It's going now. | All morning. Nobody bothered me once. | Yes. Mostly cross ones.
+
+scene pup_quiet_step
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I don't talk much. Everybody says so. | I like sitting on the step. Nobody makes you say anything there. | The other pups shout all day. I don't see why.
+b : That's all right. | Can I sit too? | They like the noise.
+a : I know. I'm listening, though. | If you're quiet. You can have the end. | I like the noise too. Other people's.
+
+scene pup_hearth_help
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #self.mother# lets me poke the fire if I'm careful. | #self.mother# says I'll crick my neck staring at chimneys. | I help #self.mother# carry the coal. Just the small bits.
+b[stage=adult|old] #grown : Careful's the word with fire. | You might, at that. | Every bit helps.
+b : Lucky. | Will you? | Just the small bits?
+a@grown : I am careful. I keep my whiskers back. | My neck's fine. I checked. | That's what I tell everyone.
+a : Very lucky. I'm good at it. | No. I'm only looking. | The big ones are for when I'm bigger.
+
+scene pup_told_you
+when topic=weather here.weather=overcast|fog
+does tell.boast / react.self / assess
+a : It's going to rain. The smoke's lying down. | I told everyone it would rain. Nobody listened. | Smoke flat on the roofs means wet feet. I know it.
+b[stage=adult|old] #grown : Lying down, is it? We'll see. | Did it rain, then? | Who taught you that?
+b : How do you know? | Did it? | Is that true?
+a@grown : You'll see. Bring your washing in. | Yes. Right on supper. | Nobody. I watched, and I worked it out.
+a : The smoke said. It always says. | Yes. I was right. | It is. You'll see by tonight.
+
+scene pup_burnt_one
+when topic=food here.season=autumn|winter
+does tell.self / react.self / assess
+a : The chestnut seller gave me a burnt one for nothing. | Chestnuts smell better than they taste. Nearly. | I held a hot chestnut till it stopped hurting.
+b[stage=adult|old] #grown : The burnt ones are the best. | Nearly? | You'll scorch your paw that way.
+b : Was it good? | Nearly? | Did it hurt?
+a@grown : It was. I ate the black bit too. | Nearly isn't much. The smell wins. | I didn't. I was quick about it.
+a : Mostly. The middle was good. | Nearly. The smell always wins. | Only at first. Then it was supper.
+
+story pup_black_smoke [topic=memories|day self.stage=young]
+  : Once the smoke from the end house went black. Really black, like ink.
+  : I ran and told, and they put out a fire in the chimney. Only a little one.
+  b[stage=adult|old] : You did right to tell. Were you frightened?
+  b : Were you scared?
+  : A bit. Then I wasn't. I watch that chimney every single day now.
+
+rule @pup_shapes_bark
+when concept=bark here.weather=clear|overcast
+does aside
+cooldown 8h
+say That one's a cat. That one's a boat. | The smoke's leaning. I knew it would.
+
+dlg @3 resident.hub : #greet#. I'm watching the chimneys. You can watch too. | #greet#. Quiet, please. I'm looking at something.
+
+adolescent
+line @1 greet.return : #greet#. I was just going. | #greet#. Don't mind me.
+line @1 farewell.return : Bye, then. | See you. Mind the wind at the corner.
+line @1 react.news : Go on. I'm listening. | #hm#. Tell me the rest.
+line @1 answer.how : All right. Busy with errands. | Fine. I'd rather not say more than that.
+line @1 decline : I'd rather not. I've chores, and nobody else will do them. | Not today. I'm already late for the coal yard.
+scene teen_reading_now
+when topic=weather|day here.weather=clear|overcast
+does tell.self / react.self / assess
+a : I get the weather right most days now. From the smoke. | Folk on the row ask me whether to hang washing out. I tell them. | I was wrong about the rain yesterday. First time in a month.
+b[stage=adult|old] #grown : Most days is better than #almanac#. | Do they listen? | Once a month? That's not bad.
+b : Most days? | Do you charge them? | What happened?
+a@grown : #almanac.capitalize# was printed in spring. The smoke is fresh. | When it suits them. | Not bad. I'm still cross about it.
+a : Most. The wind turns sometimes. | No. They'd stop asking. | The wind turned at noon. It does that.
+
+scene teen_coal_errands
+when topic=day|work self.stage=adolescent
+does tell.self / react.self / assess
+a : I fetch coal for half the row now. I know every grate. | Errands all morning. I don't mind. Nobody asks me to talk. | The coal man lets me weigh the sacks now. I'm careful.
+b[stage=adult|old] #grown : Mind your back with those sacks. | Quiet work suits some. | Careful's good, with coal.
+b : Every grate? | You don't like talking? | Weigh them?
+a@grown : I lift with my legs. Somebody told me once. | It suits me fine, quiet work. | And with the coal man. He watches me.
+a : Every one. Some draw better than others. | Not much. | On the hook scale. Weighed true, every sack.
+
+scene teen_called_chimney
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : The others call me the chimney. I only smoke and never speak, they say. | Somebody said I was sullen. I'm not. I'm thinking. | I'd rather listen than talk. You learn more.
+b : That's a bit unkind. | Thinking about what? | You do, at that.
+a : It's a bit funny too. I'll let it stand. | The wind, mostly. And them. | You do. Folk tell the quiet ones everything.
+
+rule @teen_smoke_bark
+when concept=bark here.weather=overcast|clear
+does aside
+cooldown 8h
+say Lying flat. Rain by supper. Told you so. | Washing in, everyone. Trust me on this.
+
+dlg @4 resident.hub : #greet#. Ask me the weather and you'll get an answer. Anything else, try next door.

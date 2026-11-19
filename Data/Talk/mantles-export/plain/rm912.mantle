@@ -1,0 +1,280 @@
+# rm912, the walking knitter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm912
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the walking knitter
+fits stage=young|adolescent|adult|old
+prefers drive=ambitious humour=merry
+traits temper=calm talk=plain warmth=warm humour=merry honesty=frank piety=devout drive=ambitious
+quirk knits_on_the_walk_and_never_drops_a_stitch
+likes soft_wool a_full_basket chapel_singing a_fair_bargain
+dislikes dropped_stitches idle_paws
+fears growing_old_with_nothing_put_by
+hopes a_stall_of_my_own_with_my_name_over_it
+topics work +0.4 prices +0.3 dreams +0.3 faith +0.3 animals +0.2 weather +0.2 crime -0.2
+styles comfort=company gossip=easy refuse=soft tease=merry
+marks oath saying
+persona #self.first# knits while walking and never drops a stitch, puts a copper by every week toward a stall of one's own, thanks the Bright One for wool and weather alike, and laughs easily without losing count.
+
+words
+oath! = Needles crossed | Wool and wonder | Bless the sheep
+saying! = One stitch, then the next | A full basket never sulks | Slow wool makes a warm winter
+needles = my needles | the needles, clacking away
+wool = good wool | a skein of grey wool
+sock = a sock | a sock for somebody's cold foot
+stall = a stall of my own | my own stall, one day
+basket = the basket | my basket of skeins
+sheep = the sheep | the sheep come in off the downs
+coppers = a copper or two | the coppers I put by
+scarf = a scarf | a long striped scarf
+rows = twelve rows | twenty rows since the gate
+steps = the chapel steps | the steps outside the chapel
+
+any
+opinion @1 merchants for 1 : A good stallholder's worth ten bad ones. That's what I'll be: the good sort, fair with it.
+opinion @1 church for 2 : I knit through the long sermons and sing through the short ones. The Bright One gets both from me.
+opinion @1 festivals for 1 : A festival sells more scarves in a day than a month of ordinary mornings. I'm all for them.
+opinion @1 times mixed 1 [world.times=hard|lean] : Lean times, folk mend instead of buying. Then I knit patches. Mending always pays a little.
+opinion @1 drink against 1 : Ale costs coppers, and coppers are my stall. I'll have water, and keep my jar heavy.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Don't mind the needles; I can talk and knit both. | #greet#. Mind my wool there; it trails.
+line @1 kin.open [pair.kin!=no] : There you are. Hold out your paw; I want to see if this sock fits. | You! Come here. I've a new stitch to show you.
+line @1 again.open : Twice in a day. I've done a whole cuff since the last time. | You again. That's twelve rows' worth of gone.
+line @1 greet.return : #greet#. Walk with me; I'm knitting as I go. | #greet#, #address#. Lovely to see you. | #greet#. You've caught me between rows, so it's a good moment.
+line @1 farewell : #farewell#. Keep your feet warm. | #farewell#. Bright blessings on you, and your socks.
+line @1 farewell.return : #farewell#, #address#. Mind how you step. | #farewell#. I'll knit you something one day.
+line @1 react.news.new : #oath#! I nearly dropped a stitch. | Well, there's news. I'll think on that over a row or two.
+line @1 react.news.known : Heard it on the chapel steps. Old as my oldest scarf. | Yes, that's gone round the market twice.
+line @1 react.news.doubt : I'll not believe that till I hear it from somebody steadier. | That's a tale with a few stitches missing, I'd say.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's sad. I'll pray on that tonight. | That's hard. The Bright One keep them, whoever they are.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, lovely! That wants a blanket knitting. | Good news. I'll be the first with a gift.
+line @1 answer.how : Well, praise be. Busy paws, easy heart. | Fair. A good week for wool. | Grand. Not a stitch dropped all morning.
+line @1 sympathise : Oh, that's hard. Come and sit; I'll keep my needles still. | That's rotten luck. I'm sorry, truly.
+line @1 reassure : It'll come right, a stitch at a time. Most things do. | Don't fret. The Bright One sees further than we do.
+line @1 decline : I'd love to, but every hour's a copper toward my stall. Another day? | Not today. I've a scarf promised by evening.
+line @1 accept_decline : Another time, then, and gladly. | No matter. I'll knit while I wait.
+line @1 thank : Bless you. That's kind. | Thank you. I'll knit you a pair of socks for that.
+line @1 deflect_thanks : Oh, it was nothing. Two needles and a bit of wool. | Don't thank me. Thank the sheep.
+line @1 preclose : Well, these rows won't knit themselves. I'll be off. | I'd best get on; my basket's half empty.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I'll be here, clacking.
+line @1 tease [pair.band=friends] : Your scarf's on inside out. I'm only saying because I made it. | You walk so slow I could knit a sock between your steps.
+line @1 tease.return : Ha! Cheek. You'll get lumpy socks for that. | Oh, you. I'll knit you a hat with a bobble on it.
+line @1 ack : #bc_true# | Mm. Just so.
+rule @knit_bark
+when concept=bark
+does aside
+cooldown 8h
+say Knit two, slip one, and on we go. | Not a stitch dropped. Not one.
+
+rule @stall_bark
+when concept=bark here.place=market
+does aside
+cooldown 10h
+say Socks and scarves, warm as an oven! | One day there'll be a stall here with my name on it.
+
+scene walking_knit
+when topic=day|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : Knitted #rows# on the walk from the gate. Didn't trip once. | Somebody bumped me in the market today. Didn't drop a stitch. | I can knit in the dark, walking, in the rain. I've never once dropped a stitch.
+b : How do you not look where you're going? | Not even a little one? | Never once?
+a : My feet know the way. My paws know the wool. My eyes just watch. | Not one. I'll not say I didn't wobble, mind. | Never once. I knock on wood when I say it.
+b : Clever paws. | #bc_ha# | You'd better knock harder.
+
+scene wool_prices
+when topic=prices|day here.day=market
+does tell.self / react.self / assess
+a : Bought #wool# at a fair price this morning. The seller wanted more. I laughed till they didn't. | Wool's dearer this week. I'll pay it; good wool earns its price back. | I sold six pairs of socks at the market today. Every copper's put by.
+b : Laughed them down? | Is it worth it? | Six pairs!
+a : It works. Smile, wait, laugh. They come round. | It is. Cheap wool pills by winter. Nobody comes back for that. | Six. That's another shelf in my stall, one day.
+
+scene stall_dream
+when topic=dreams|work
+does confide / react.self / assess
+a : I want #stall#. Scarves on one side, socks on the other, my name over the top. | Every week I put #coppers# by. It'll add up to a stall. | I know just which corner I want for my stall. By the bread, where folk stand still.
+b : You'll have it. | That'll take a while. | Clever corner.
+a : I will. I've decided. The Bright One knows I'm stubborn. | Years. I'm patient. Patience is just knitting with time. | Folk waiting for bread want warm paws. I'll be right there.
+
+scene sheep_gate
+when topic=animals
+does tell.self / react.self / assess
+a : #sheep.capitalize# came through the gate this morning. I said thank you to every one of them. | A sheep stopped right in front of me in the street and stared. I think it knew. | I love a sheep. Daft faces, warm coats, never a word of complaint.
+b : Did they answer? | Knew what? | Daft is the word.
+a : One did. Bleated at me. I'll call that a welcome. | That I'd its cousin's wool round my neck. Awkward, that. | Daft and generous. Better than most folk.
+
+scene winter_socks
+when topic=season|weather here.season=winter
+does tell.plan / react.self / assess
+a : Winter. Everybody wants socks at once. I've been knitting since autumn. | Cold snap, and there's a queue for scarves. Bless it. | I knit thicker in winter. Two strands together. Warm as a hearth.
+b : Clever planning. | A queue? | Two strands?
+a : A stall needs planning, and a stall's what I'm after. | A queue. Short, but a queue. My first. | Two. Takes longer, sells quicker. Fair trade.
+
+scene chapel_needles
+when topic=faith
+does tell.self / react.self / assess
+a : I knit through the long sermons. The Bright One doesn't mind; it's a kind of prayer. | Chapel singing beats any other sound I know. I hum along over my needles. | I thank the Bright One for wool every evening. And for sheep. And for paws that work.
+b : The priest might mind. | It is lovely. | That's a good list.
+a : The priest's never said. I sit at the back, mind. | It is. Best with a full basket beside me. | It's the same every night. It never gets old.
+
+scene rain_wool
+when topic=weather here.weather=rain
+does tell.complaint / reassure / assess
+a : Rain makes the wool smell of wet sheep. Honest smell, mind. | Wet day. I've tucked the basket under my coat and I'm knitting on the steps. | Rain on the needles. They go slippy. I'll slow down a bit.
+b : It'll dry. | Clever. | Mind your fingers.
+a : It will, and smell of nothing again. | Dry wool, wet tail. Fair trade. | I'll mind them. Never dropped a stitch yet.
+
+scene work_breaks
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I knit through every break. A sock a day, near enough. | Work's steady, and between times my needles are going. Nothing wasted. | Somebody asked why I never sit idle. I've a stall to buy, that's why.
+b : That's a lot of socks. | Nothing at all? | A good reason.
+a : It is. Nobody in this street has cold feet. | Not a minute, where I've a say. | It is. And I mean to have it.
+
+scene friend_scarf
+when topic=friends|pastimes
+does tell.self / react.self / assess
+a : I'm knitting a scarf for somebody. I won't say who. It's long. | I gave a pair of socks to a neighbour. They wore them to chapel. I nearly cried. | My friends laugh at me knitting on the walk. Then they ask for socks.
+b : Lucky somebody. | That's lovely. | They would.
+a : Very lucky. It's got stripes. | It was. Best thanks there is. | They do. And they get them, too.
+
+scene gossip_wedding
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Did you hear? #topic.subject.capitalize# #topic.claim#. I'm knitting something already. | Word at the stalls: #topic.subject# #topic.claim#. That's a happy row. | They're saying #topic.subject# #topic.claim#. The Bright One bless it.
+b : Already? | It is happy. | Bless it indeed.
+a : A blanket. Or a scarf. I'll see how far I get. | Happy news knits quicker. I'll swear to it. | Indeed. I'll say so at chapel.
+
+scene gossip_hard
+when topic=gossip|crime topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+a : Sad word on the steps. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. My needles stopped when I heard. | Hard news going round. #topic.subject.capitalize# #topic.claim#.
+b : That's terrible. | It's a sad thing. | Hard indeed.
+a : It is. I'll pray on it tonight. | It is. They've started again; I can't help it. Slower. | Hard. I'll keep my laughing quiet today.
+
+story first_scarf [self.age>=25]
+  : The first scarf I ever knitted came out shaped like a ladder. Wide at the top, thin at the bottom.
+  : An old neighbour bought it off me for a copper anyway. Wore it every winter.
+  ask : Do you know what I did with that copper?
+  b : Spent it on sweets, I'd guess.
+  : Put it by. The very first one. It's the first coin of my stall, and I've never spent it.
+
+story sheep_square [self.age>=30]
+  : Years ago a whole flock got loose in the market square. Sheep in every stall.
+  : I stood in the middle with my needles and knitted, and they all just walked round me.
+  b : Weren't you frightened?
+  : Of sheep? Not a bit. One stopped and looked at my wool very hard. I think it was checking my work.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Don't mind the needles. Ask away, and I'll answer between rows.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You look cold. I've a scarf nearly done, you know.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. I'll keep knitting while you talk. Say what's wanted.
+dlg @1 resident.bye : #farewell#. The Bright One keep your feet warm.
+graft resident.hub
+choice How do you knit while walking without tripping? -> knit_walk
+node knit_walk
+say My feet know the streets and my paws know the wool. I just let them get on with it. Never dropped a stitch.
+mood pleased
+free
+choice What are you saving for? -> knit_stall
+choice Goodbye. -> bye
+node knit_stall
+say A stall of my own. Scarves on one side, socks on the other, my name across the top. One copper at a time.
+mood warm
+choice I hope you get it. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#! Look, I'm knitting. | #greet#. I've done three rows today.
+line @1 farewell.return : Bye! I'll knit you something. | Bye. Mind your toes.
+line @1 react.news.new : Really? Oh, I dropped a stitch! | #oath#! I didn't know.
+line @1 answer.how : Good! I'm learning to knit. | Happy. I found a coin and saved it.
+line @1 thank : Thank you! Bless you. | Thanks. I'll knit you a sock. Just one, for now.
+line @1 decline : I can't, I'm practising my stitches. Maybe later? | No, thank you. I'm saving my coins, so I can't spend them.
+rule @pup_knit
+when concept=bark
+does aside
+cooldown 8h
+say Knit one, knit one, knit one. | Oh no. Oh no. It's all right, I've got it.
+
+scene pup_learning
+when topic=pastimes|smalltalk
+does tell.boast / react.self / assess
+a : I'm learning to knit. I made a square. It's nearly square. | I can knit and walk now. A bit. I bumped a wall. | I made a scarf for my toy. It's very long.
+b : Nearly's a start. | Mind the walls. | How long?
+a : Next one'll be square all over. | The wall was fine. I was fine. The wool was fine. | Longer than the toy. It's a lot of scarf.
+
+scene pup_sheep
+when topic=animals
+does tell.self / react.self / assess
+a : The sheep came in past the gate today. I waved at them. | A sheep looked at me and went baa, right at me. | Sheep give us wool. I said thank you to one.
+b : Did they wave back? | That's friendly. | What did it say?
+a : One flicked its ear. That counts. | I baaed back. We're friends now. | Baa. I think it meant you're welcome.
+
+scene pup_coins
+when topic=prices|dreams
+does confide / react.self / assess
+a : I've got four coins in a jar. I'm saving for a stall. | When I'm big I'll have a stall with scarves on it. | I found a copper on the chapel step and I put it in my jar.
+b : A whole stall? | That's a fine plan. | Lucky find.
+a : A whole stall. I'll need more coins. | I've decided. That's how plans start. | I said thank you to the Bright One for it.
+
+scene pup_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I sat very still in chapel and sang all the songs. Most of them. | At chapel I knit in my head when the talking's long. | I said a prayer for the sheep. They work hard.
+b : Most's good. | In your head? | That's kind.
+a : I hummed the ones I didn't know. | Knit one, purl one. It makes it go quicker. | Somebody has to think about the sheep.
+
+scene pup_cold
+when topic=weather|season here.season=winter
+does tell.self / react.self / assess
+a : It's cold, so I'm wearing two pairs of socks. | My nose is cold. I'm going to knit it a hat. | Snow! I want to knit a scarf for the snow.
+b : Clever pup. | A nose hat? | For the snow?
+a : Warm toes are the best toes. | A nose hat. Nobody's thought of it. | So it doesn't get cold. It's very cold.
+
+story pup_tangle
+  : I got all tangled up in a ball of wool once. All round my legs and my tail.
+  : I couldn't move. I just stood there in a big woolly knot.
+  ask : Would you have cut it, if it was you?
+  b : I'd have cut it, I think.
+  : No! I unwound it, slowly, and wound it back up. Not one bit was cut. #saying#.
+
+dlg @4 resident.hub : #greet#! Look at my knitting. It's nearly a square.
+dlg @1 resident.job : I'm too little for a job. I knit. And I save coins for my stall.
+
+adolescent
+line @1 greet.return : #greet#. Hold on, end of a row. There. | #greet#. Walk with me; I'm knitting.
+line @1 farewell.return : See you. I'll have a cuff done by then. | Bye. Keep warm.
+line @1 react.news.new : Really? #oath#, I nearly lost count. | Truly? Tell me every bit.
+line @1 answer.how : Well. I sold a scarf! | Fine. Busy. I've orders now.
+rule @teen_orders
+when concept=bark
+does aside
+cooldown 8h
+say Two scarves and a hat by restday. I can do it. | Count's right. Good.
+
+scene teen_first_sale
+when topic=work|prices
+does tell.boast / react.self / assess
+a : I sold my first scarf. A real copper, from somebody I didn't know. | I've got orders now. Three pairs of socks. I've written them down. | My jar's half full. That's half a stall, nearly.
+b : Well done! | Three already? | Half a stall?
+a : I've kept the copper. I'm not spending that one. | Three. And they're paying. Properly. | Well. A leg of one. A start.
+
+scene teen_teased
+when topic=friends|smalltalk
+does tell.complaint / reassure / assess
+a : My friends say I knit like an old granny. I knit faster than any granny. | Somebody hid my needles for a joke. I found them. I wasn't laughing. | They tease me about saving. They'll stop when I've a stall.
+b : Faster's what matters. | Not funny. | They will.
+a : It is. And I make them socks anyway. | Not a bit. I'd a sock on them. | They will. And they'll buy socks off me.
+
+scene teen_chapel
+when topic=faith|day
+does tell.self / react.self / assess
+a : I sing in the chapel now. In the back row, but still. | I give a copper to the chapel box every month. One for the Bright One, the rest for my stall. | I knitted a blanket for the chapel. They put it on the bench.
+b : Good for you. | That's fair. | That's kind.
+a : Next year, the middle row. | I think the Bright One understands. | It's a warm bench now.
+
+dlg @5 resident.hub : #greet#. I've a moment, if you don't mind me knitting.

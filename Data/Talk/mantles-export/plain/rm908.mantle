@@ -1,0 +1,284 @@
+# rm908, the thread-winder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm908
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the thread-winder
+fits stage=young|adolescent|adult|old
+prefers talk=quiet humour=dry
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk winds_every_loose_thread_round_a_thumb
+likes goat_cheese plain_grey_cloth quiet_mornings a_needle_that_holds_its_eye
+dislikes frayed_hems loud_rooms
+fears paws_too_stiff_to_sew
+hopes one_coat_that_lasts_a_whole_life
+topics work +0.3 home +0.3 animals +0.3 weather +0.2 gossip -0.4 festival -0.2
+styles comfort=practical gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# says little and sees a great deal, winds every stray thread found onto a thumb and then onto a ball kept for mending, likes goats and goat's cheese, and answers plainly or not at all.
+
+words
+oath! = Thread and thumb | Spindle and spit | Knots and gristle
+saying! = Pull one end and the rest follow | Nothing's lost that's wound up | A loose end is only a start
+thread = a loose thread | a stray end
+ball = the ball of ends | my little ball of odd threads
+thumb = my thumb | my left thumb, wound red and grey
+goats = the goats on the hill path | the milking goats
+cheese = goat's cheese | a heel of goat's cheese
+hem = a hem | a hem coming down
+needle = a good needle | the needle I trust
+coat = an old coat | the coat that's lasted
+hush = a quiet hour | an hour with nobody in it
+racket = all that racket | the din
+spool = a spool | an empty spool
+cloth = plain cloth | good grey cloth
+
+any
+opinion @1 merchants against 1 : Half the cloth on the stalls is folded to hide the weave. I turn it over. Always.
+opinion @1 houses mixed 0 : The Houses buy #cloth# and wear it badly. That's theirs to worry over, not mine.
+opinion @1 festivals against 1 : Too loud. I'll mend the torn sleeves after. That's the useful part of a festival.
+opinion @1 church for 1 : The chapel's quiet. I'd go for that alone, and the Bright One can make of it what pleases.
+opinion @1 drink against 1 : Drink turns folk loud, and careless with their sleeves. I've stitched up enough of both.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Not seen you before. | #greet#. You've a thread hanging off your cuff.
+line @2 greet [here.time=dawn] : Morning. Quiet hour, this. The best one. | Morning. Nobody's talking yet. Good.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. I'll finish this end first. | You. Good. Hold this while I wind it.
+line @1 again.open : You again. Twice is fine by me. | Back already. I'd barely got the needle threaded.
+line @1 greet.return : #greet#. Pull up a stool. | #greet#, #address#. I'm listening. | #greet#. Keep your voice low and stay as long as you like.
+line @1 farewell : #farewell#. Mind your hems. | Right. Off you go, then.
+line @1 farewell.return : #farewell#. Go steady. | #farewell#, #address#. Keep dry.
+line @1 react.news.new : #oath#. Didn't know that. | That's new. I'll think on it.
+line @1 react.news.known : Heard it. Twice, already. | Old news by the time it reached my stool.
+line @1 react.news.doubt : I'd want that from somebody who saw it. | Doubt it. Stories grow a sleeve each telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Very bad. | Hard news. Whoever it falls on, I pity.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Some news ought to be. | Glad of that. Truly glad.
+line @1 answer.how : Steady. Paws work, eyes work. | Fair. Nothing to complain of, so I won't. | Well. Quiet day, which suits me.
+line @1 sympathise : That's rotten. Sorry to hear it. | Sit down. No need to talk.
+line @1 reassure : It'll hold. Most things do, if they're stitched right. | Give it a day. Then worry, if you must.
+line @1 decline : Best not. I've work to finish before the light goes. | Not today, #address#. I'm no use in a crowd.
+line @1 accept_decline : Fair enough. No harm done. | Another time, then. I'll still be here.
+line @1 thank : Thank you. That's meant. | Kind of you. Noted, and kept.
+line @1 deflect_thanks : It was nothing. A few stitches. | Don't. It took me no time at all.
+line @1 preclose : Right. I've a hem waiting. | That'll do for talk. Work's calling.
+line @1 accept_preclose : Go on, then. I'm not going anywhere. | Off you go. I've plenty to wind.
+line @1 tease [pair.band=friends] : You talk with your paws. I'd tie them down if I had the thread. | That coat's worn thin at the elbows. Again.
+line @1 tease.return : Hm. Fair hit. | I'll mend that remark later.
+line @1 ack : #bc_true# | Mm. That's so.
+rule @thread_bark
+when concept=bark
+does aside
+cooldown 8h
+say Another loose end. Come here, you. | Round the thumb, and that's tidy.
+
+rule @racket_bark
+when concept=bark here.place=tavern|market
+does aside
+cooldown 8h
+say Too many voices. I can't hear my own needle. | Loud in here. Loud everywhere, these days.
+
+scene thread_ball
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : #ball.capitalize# is the size of a fist now. Every colour there is. | Found a red thread on the chapel step this morning. It's round #thumb# now. | I keep every loose end I come across. Folk think it's odd. It isn't.
+b : What's it for? | Where's it going after that? | Why keep them?
+a : Mending. Somebody always needs exactly the colour I've got. | Onto the ball, with the rest. Nothing's wasted. | Because a stray thread in the gutter is a sleeve somebody didn't fix.
+b : Thrifty. | #bc_fair_enough# | I'd not thought of it that way.
+
+scene goat_path
+when topic=animals
+does tell.self / react.self / assess
+a : One of #goats# ate the end off my scarf this morning. Stood there chewing, looking at me. | I like goats. They don't talk and they don't pretend. | Watched a goat get its head stuck in a fence. Got itself out again, too. Clever.
+b : Cheeky beast. | Not like folk, then. | Goats are cleverer than they look.
+a : It was a cheap scarf. The goat had the better of the deal. | No. A goat wants a thing, a goat eats the thing. Simple. | They are. Cleverer than most of the street, some days.
+
+scene cheese_supper
+when topic=food
+does tell.self / react.self / assess
+a : #cheese.capitalize#, a heel of bread and an onion. That's supper. Always is. | I'd eat #cheese# every day. Most days I do. | Somebody gave me a sweet pastry once. Too much. Gave me #cheese# any day.
+b : Plain fare. | Every day? | Sweet's nice now and then.
+a : Plain's good. Nothing to argue with in an onion. | Every day. It's never let me down. | Now and then is too often, for me.
+
+scene fog_hush
+when topic=weather here.weather=fog
+does tell.feeling / react.self / assess
+a : Fog. The street goes quiet in it. I like that. | Can't see across the lane. Can't hear much either. Suits me. | Fog's the only weather that hushes the city.
+b : I find it eerie. | It's damp, though. | It does muffle things.
+a : Eerie's just quiet you're not used to. | Damp I can mend. Noise I can't. | It does. I'd keep it, if I could.
+
+scene autumn_mending
+when topic=season|work here.season=autumn
+does tell.plan / react.self / assess
+a : Time to look over the winter coats. Every seam, before the cold finds them. | First cold wind, and I'm already counting the elbows that'll need patching. | Autumn's when folk find their coats have holes. Then they come looking for thread.
+b : Sensible. | That's a lot of elbows. | Wise, before the snow comes.
+a : A seam caught early is ten minutes. Caught late, it's a new coat. | It is. I've the thread for it. | Much. Snow gets in every gap.
+
+scene work_steady
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : Steady work today. Paws busy, mouth shut. My favourite kind. | Long day. I'd sooner it than an idle one. | Work's fine. Nobody's asked me to hurry, which helps.
+b : Sounds a good day. | Idle days drag. | Hurrying never helps.
+a : It is. No complaint. | They do. I can't sit with nothing in my paws. | It doesn't. Rushed work comes back to you, frayed.
+
+scene frayed_coats
+when topic=smalltalk|friends here.outdoors=clear|overcast
+does tell.complaint / react.complaint / assess
+a : Saw a coat in the street today with every seam going. Hurt to look at. | Folk walk round with their hems down and think nobody sees. I see. | A button hanging by one thread. All morning, in front of me. Nearly asked to fix it.
+b : Not your coat, though. | You notice everything. | Why didn't you?
+a : No. Still hurt. | I notice cloth. Folk, less so. | Nobody likes being told. I said nothing and itched.
+
+scene home_lamp
+when topic=home here.time=dusk|night
+does tell.feeling / react.self / assess
+a : Evening's mine. Lamp, needle, #hush#. | I sit by the lamp and mend whatever's come in. It's the best of the day. | Nobody knocks after dark. I'm glad of it.
+b : Sounds peaceful. | Do you never rest? | Quiet suits some.
+a : It is. Nobody asks me anything. | Mending is resting. My paws think so. | It suits me. I've had plenty of the other.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One gets a word from me while I sew. A short one. | I don't need a sermon. A quiet hour does the same work. | The chapel's the one room in the city where nobody shouts.
+b : The Bright One hears short ones too. | Some find the sermons help. | That's true enough.
+a : I'd hope so. I've no long ones in me. | Good for them. I'll keep my hour. | That's why I go. Mostly.
+
+scene gossip_once
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept|other
+does tell.gossip / react.news / assess
+a : I'll say it once and not again. #topic.subject.capitalize# #topic.claim#. | Heard at the market: #topic.subject# #topic.claim#. No more than that. | Somebody told me #topic.subject# #topic.claim#. Passing it on bare, mind.
+b : That's all you know? | #bc_so_they_say# | Fair enough.
+a : That's all I'll say. Not the same thing. | So they do. I'll not add to it. | Good. Now it's yours, and I'm done with it.
+
+scene gossip_heavy
+when topic=gossip|crime topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+a : Bad word going round. #topic.subject.capitalize# #topic.claim#. | You'll hear it anyway. #topic.subject.capitalize# #topic.claim#. | I'd rather not carry this one. #topic.subject.capitalize# #topic.claim#.
+b : That's hard. | Thank you for saying it plain. | It's heavy, that.
+a : It is. I'll be quiet a while. | Plain's all I've got. | Heavy. I'll put it down soon as I can.
+
+story first_needle [self.age>=30]
+  : An old aunt taught me to thread a needle when I was too small to see the eye.
+  : She made me do it eyes closed. Said the paws learn faster than the eyes.
+  ask : Can you thread one without looking?
+  b : Never tried. I'd stab myself.
+  b[old] : Once. Not anymore.
+  : Try it. You'll stab yourself twice, and the third time it'll go in. That's how she did it with me.
+
+story scarf_goat [self.age>=20]
+  : I once left a coat on a fence on the hill path, for an hour.
+  : Came back and a goat had eaten one sleeve clean off. Just the one.
+  b : What did you do with it?
+  : Made it a waistcoat. Wore it ten years. #saying#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Ask. I'll answer if I can.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Your cuff's fraying. Stand still and I'll see to it later.
+dlg @1 resident.bye : #farewell#. Mind the loose ends.
+graft resident.hub
+choice Why is your thumb wound with thread? -> thumb_ends
+node thumb_ends
+say Every loose end I find goes round it. When it's full, it goes onto the ball. Saves thread. Keeps the paws busy.
+mood calm
+free
+choice What's the ball for? -> ball_use
+choice Goodbye. -> bye
+node ball_use
+say Mending. Odd colours, odd lengths. Somebody's sleeve always wants the very bit I've got.
+mood pleased
+choice Clever. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet.return : #greet#. I'm winding. You can watch. | #greet#. You've a thread on you. Can I have it?
+line @1 farewell.return : Bye. Watch your sleeves. | Bye, then. Mind the loose bits.
+line @1 react.news.new : Oh. I didn't know that. | #oath#. Nobody tells me things.
+line @1 answer.how : Fine. My ball's bigger today. | All right. Quiet. I like quiet.
+line @1 thank : Thank you. It's going on the ball. | Thanks. That's a good one for the ball.
+line @1 decline : Not me, thanks. Too much noise over there. | Rather not. Home's where I'm meant to stay today.
+rule @pup_thread
+when concept=bark
+does aside
+cooldown 8h
+say A thread! Mine. | Round and round, and round.
+
+scene pup_ball
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I've got a ball of threads. Every one I found. | I found a blue thread today. Blue's rare. | My thumb's all wound up in thread. It doesn't hurt.
+b : What's it for? | Where did you find it? | Doesn't it pinch?
+a : Nothing yet. It's for when something needs it. | By the chapel door. Nobody wanted it. | A bit. I unwind it at bedtime.
+b : #bc_clever# | Lucky find. | Sensible.
+
+scene pup_goat
+when topic=animals
+does tell.self / react.self / assess
+a : A goat ate my ribbon. It didn't even say sorry. | I saw the goats on the hill path. One looked right at me. | I gave a goat some grass and it ate my sleeve instead.
+b : Goats never say sorry. | Goats do that. | That sounds like a goat.
+a : It should. It was a good ribbon. | I looked back. It looked away first. | I like goats anyway. They're honest about it.
+
+scene pup_cheese
+when topic=food
+does tell.self / react.self / assess
+a : I like goat's cheese. Everybody says it smells. | I had cheese and bread for supper. That's my favourite. | I don't like sweet things much. Is that strange? I think it's fine.
+b : It does smell. | Good choice. | It's fine.
+a : I don't care. It tastes nice. | It's always my favourite. | Good. I'll keep not liking them.
+
+scene pup_father_wish
+when topic=family self.father
+does confide / react.self / assess
+a : I want to be patient like #self.father#. I'm practising. | #self.father# doesn't shout. I like that. I don't shout either. | I sit quiet near #self.father#. Nobody has to talk.
+b : That's a good thing to practise. | Neither should you. | That's nice.
+a : It's hard. I'm getting better. | I won't. I'll be quiet instead. | It is. It's my favourite way to sit.
+
+scene pup_fog
+when topic=weather here.weather=fog
+does tell.feeling / react.self / assess
+a : It's foggy. I can't see the goats, but I can hear them. | The fog makes everything quiet. I like it. | I walked in the fog and lost sight of my own feet.
+b : They're up there. | It is quiet. | Watch where you step.
+a : I know. They sound cross. | I wish it was always like this. | I did. Slowly.
+
+story pup_red_thread
+  : I found a red thread once, lying in the road. The longest one ever.
+  : I wound it round my thumb, all the way, until my thumb went fat and red.
+  ask : Guess how many times it went round.
+  b : Ten times?
+  : Forty. I counted. It went onto the ball after, and it's the best one there.
+
+dlg @3 resident.hub : #greet#. Have you any loose threads? I collect them.
+dlg @1 resident.job : I'm too small for a job. I wind threads. That's practice.
+
+adolescent
+line @1 greet.return : #greet#. I've a seam going, but talk away. | #greet#. Don't mind me winding.
+line @1 farewell.return : Bye. Mind your cuffs. | See you, then.
+line @1 react.news.new : #oath#. That's news to me. | Hm. I'll keep that one.
+line @1 answer.how : Fine. Learning to mend. | Well enough. Quiet, and I like quiet best.
+rule @teen_thread
+when concept=bark
+does aside
+cooldown 8h
+say Who leaves a good thread lying about? | Another end. The ball's getting heavy.
+
+scene teen_mending
+when topic=work|day
+does tell.boast / react.self / assess
+a : I mended a whole sleeve today. Nobody can see where. | I'm allowed the good needle now. I've not lost it once. | Somebody paid me to fix a hem. A copper. My first.
+b : Nobody at all? | That's trust. | Spend it wisely.
+a : Nobody. I looked twice. | It is. I keep it in my collar. | I'll spend it on thread. That's wise.
+
+scene teen_quiet
+when topic=friends|smalltalk
+does tell.complaint / reassure / assess
+a : My friends never stop talking. I'm not like that. | They say I'm too quiet. I'm only listening. | Everyone shouts to be heard. I'd sooner not.
+b : They like you anyway. | Listening's useful. | Quiet folk get heard in the end.
+a : I know. I like them too. Quietly. | It is. I hear things they miss. | Good. I'll wait, then.
+
+scene teen_goats
+when topic=animals|day here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : I got sent up the hill path for goat's milk. The goats followed me halfway back. | Learned to milk a goat this week. It kicked the pail once. | One goat on the hill knows me now. It comes to the fence.
+b : They like you. | Only once? | That's a friend.
+a : They like my pockets. I'd crusts in them. | Once. I moved the pail. It learned, I learned. | It is. It doesn't talk. Best sort.
+
+dlg @4 resident.hub : #greet#. Quick, if you can. I've a seam to finish.

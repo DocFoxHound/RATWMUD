@@ -1,0 +1,321 @@
+# sw902, the sand-map drawer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw902
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier spare
+written_by claude
+title the sand-map drawer
+fits stage=young|adolescent|adult|old
+prefers temper=calm talk=quiet
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=devout drive=steady
+quirk draws_maps_in_the_sand_with_a_stick
+likes old_maps quiet_chapel barley_soup long_walks
+dislikes crowds haggling
+fears forgetting_the_way_home
+hopes to_map_every_well_in_the_waste
+topics lore +0.4 travel +0.3 land +0.3 faith +0.3 weather +0.2 gossip -0.4 festival -0.2
+styles comfort=practical gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# draws a map in the sand with a stick for anyone who asks the way, and for many who don't: quiet, calm and dry, devout in a plain way, and never once lost.
+
+words
+oath! = Stick and sand | Bright One mark the way | By the drawn line
+saying! = Draw it before you walk it | The road you drew is the road you know | A map lasts till the wind, and that's long enough
+stick = my stick | the drawing stick
+sandmap = a map in the sand | lines in the sand
+lines = the lines | every line I've drawn
+landmark = the leaning palm | the red rock by the road
+wadi = the dry wadi | the wadi bed
+bench = the chapel bench | the cool bench by the chapel wall
+broth = barley broth | barley broth with a pinch of pan-salt
+walk = a long walk | a walk out to the far cistern
+press = the press at the well | a crowd at the well-mouth
+shouting = the shouting over prices | all that haggling
+cairn = a cairn | a stone cairn by the road
+greylight = first light | the grey before the sun
+oldmap = the old map | the old map on the inn wall
+quietly = Mm | So
+farcistern = the far cistern | the old cistern past the dunes
+trail = the trail | the track over the sand
+goat = the goat | our old goat
+wellm = the well | the well-mouth
+skymap = the sky | the night sky
+
+any
+opinion @1 church for 2 : The chapel's the one quiet room I know. I go to sit on #bench#, and the Bright One lets me.
+opinion @2 road for 1 : A road's as good as its markers. Ours are fair. I'd add a #cairn# or two on the bad stretch.
+opinion @3 festivals against 1 : A square full to the walls is no square for me. I watch from a roof; it's a #good# feast from up there.
+opinion @4 merchants against 1 : I can't abide #shouting#. Say a number, and I'll say yes or no.
+opinion @6 road against 2 [world.wagons=raided] : #bandits.capitalize# on the road. I'll draw the long way round for anyone who asks, and some who don't.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. If it's the way you want, I can draw it. | #greet#. You look like someone looking for somewhere.
+line @2 greet [here.time=dawn] : #greet#. #greylight.capitalize#. The best hour for a walk. | #greet#. Up early. So am I, with #stick#.
+line @3 greet [here.time=dusk|night] : #greet#. A cool evening for the road. | #greet#. Late to be lost; I'll draw it quick.
+line @1 again.open : #welcome_back#. The way's where it was at dawn. | You again. #quietly#. I'll take it kindly.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @1 farewell : #farewell#. | #farewell#. Left at #landmark#, mind.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Keep to #trail#.
+line @1 react.news.new : #surprise#. Where was it, exactly? | #quietly#. I'd not heard. #bless#.
+line @1 react.news.doubt : #doubt#. I'll wait till it's walked and measured. | I'd not draw that on any map yet, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll say a word for them at the chapel. | That's hard. #bless#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'm glad of it. | #good.capitalize#. A new line on the map of the town.
+line @1 answer.how : #fine#. Walked my miles. | Steady. #trail.capitalize# hasn't moved, and nor have I.
+line @1 decline : #hedge#, no. I've a walk to make before the heat. | Not today, #address#. My own well needs drawing, as they say.
+line @1 accept_decline : #no_matter#. | Another day. It'll keep, like a road does.
+line @1 thank : #thanks#. | That's kind. #bless#.
+line @1 deflect_thanks : It was only #lines#. | #deflect#. The wind will have it by noon.
+line @1 preclose : #preclose#. | Well. #walk.capitalize# won't walk itself.
+line @1 accept_preclose : #farewell#, then. | Go on. Mind #trail#.
+scene way_asked
+when topic=travel|player|newcomer
+does tell.self / ask.detail / answer.detail / assess
+a : A traveller wanted Ridgemere today. I drew it in the dust with #stick#. | Folk ask me the way more than they ask my name. I don't mind. | I drew the way to #farcistern# for someone who'll never go. They liked the drawing.
+b : Did they understand it? | Not your name? | Why draw it, then?
+a : Two lines and #landmark#. Anyone can follow that. | A name won't get you home. A map might. | Because they asked. #saying#.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene wind_takes
+when topic=weather here.weather=sandstorm|overcast
+does tell.self / react.self / assess
+a : #wind.capitalize# today. Every map I've drawn this week, gone. | The sand moves the road a little every storm. I'll walk it tomorrow and draw it new. | I don't mind the wind having my maps. It gives the road back changed.
+b : All of them? | Every storm? | Changed how?
+a : All. #quietly#. They're in my head, which is the better place. | Every one. That's why I walk it after. | A dune a step to the left. Small things. They matter.
+
+scene dawn_walk
+when topic=day|pastimes here.time=dawn self.likes=long_walks
+does tell.self / react.self / assess
+a : I walked to #farcistern# and back before the sun. | #greylight.capitalize#, and nobody on #trail# but me and a hare. | I walk at dawn the way others pray. Well. I pray as well. #bless#.
+b : That's a fair walk. | A hare? | Both, then.
+a : Four miles to #farcistern#, if you count the dune. I do. | Running from me, or racing me. I couldn't say. | Both. The Bright One doesn't mind the walking.
+
+scene noon_still
+when topic=weather|day here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : #hot.capitalize#. I don't walk at noon. Nobody sensible does. | I keep to the shade with #stick# and draw the morning's walk. | Noon's for lines in the shade, not paces in the sun.
+b : Wise. | All of it? | I'll remember that.
+a : Wise, or idle. The sun can't tell. | Every step. And the hare. | Do. #saying#.
+
+scene night_map
+when topic=lore|weather here.time=night here.weather=clear
+does tell.self / react.self / assess
+a : #skymap.capitalize#'s a map tonight. Every carter's road is up there. | #grandad# taught me the low stars. They're older than any road. | On a night like this, nobody need be lost. If they look up.
+b : Can you read it? | Older? | And if it's cloudy?
+a : Enough to get home. That's all a map's for. | Older than the well. Steadier, too. | Then sit and wait. #quietly#. The stars come back.
+
+scene chapel_bench
+when topic=faith self.likes=quiet_chapel
+does tell.self / react.self / assess / ack
+a : I sat on #bench# this morning. Nobody else came. It was #very# good. | I don't say much in the chapel. I don't need to. | I drew the way home on the chapel floor once. With my paw. In the dust. I asked pardon.
+b : A good start to a day. | No need, with the Bright One. | Did you get it?
+a : The best. #bless#. | None. The Bright One knows the map already. | I think so. The floor was swept by noon.
+b? : #bc_lovely# | #bc_true# | #bc_ha#
+
+scene old_map
+when topic=lore|pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : There's #oldmap#, and it's wrong in three places. I've told nobody. | I'd give a month's bread for a map as old as #wellm#. | Old maps show roads that aren't there now. I like knowing where they were.
+b : Which three? | Is there one? | Why does that matter?
+a : #wadi.capitalize#'s in the wrong place, and two wells are dry now. | Somebody says so. I've never seen it. I'd walk a long way to. | A road nobody walks is still a road. It's only resting.
+b : #bc_ha# | #bc_i_hope_so# | #bc_wise#
+
+scene crowd_square
+when topic=festival|day self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : #press.capitalize#, and the square full. I went up on a roof. | #press.capitalize# again. I'll draw water at dusk, when it's quiet. | A crowd's a map with every line crossed.
+b : The roof's a good seat. | Dusk is better. | #bc_ha#
+a : The best. I see all of it from there, and none of it touches me, #quietly#. | It is. The well and I prefer it. | Untidy. #quietly#. I'd rather the empty road.
+
+scene haggle_noise
+when topic=prices|work self.dislikes=haggling
+does give.opinion / react.self / assess
+a : The shouting at the stalls this morning. I bought nothing. I couldn't think. | I pay the asking price, or I go on by. I can't abide #shouting#. | A price should be a line. Straight. Not a quarrel.
+b : You'd pay more, though. | Walk on? | That'd be nice.
+a : A little more. And less of my morning. A fair trade. | Walk on. There's always another stall, or no need. | It would. #saying#. Nobody listens.
+
+scene carts_late
+when topic=caravan|travel world.wagons=late|raided
+does tell.worry / reassure / assess
+a : The carts are late. I've walked out to #landmark# twice to look. | No dust on #trail#. I've been drawing where they might be. | Late carts. I keep thinking of the soft sand past #farcistern#.
+b : They'll come. | Where might they be? | They'll know it.
+a : #reassure#. They will. The Bright One keep them. | Past the second dune, I'd guess. Going slow. | They will. I drew it for one of them myself.
+
+scene gossip_declined
+when topic=gossip|crime
+does tell.gossip / react.self / assess
+a : Something's being said at #wellm#. I left before I heard it. | People talk about people. I'd rather talk about roads. | I heard a name and walked on. #quietly#. It's not mine to draw.
+b : You must hear some. | Roads don't argue back. | Fair enough.
+a : Some. I leave it at the well-mouth. #gossip_none# | No. Nor do they whisper. | It isn't. Let it blow off, like the sand.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Fewer carts, fewer folk asking for #lines#. | I walk a little less. Walking makes you hungry. | Hard times draw short lines. Nobody goes far.
+b : It'll turn. | That's sense. | They'll go far again.
+a : #reassure#. It always has. | Sense, and an empty bowl. #quietly#. | They will. The road waits; it's patient.
+
+story wrong_line [topic=memories|travel self.age>=25]
+  : Once, years ago, I drew a line wrong for a carter. One bend left at #landmark#, where it should have been right.
+  : The carter lost a day in the dunes. Came back thirsty, and didn't shout, which was worse.
+  ask : What do you think I did, in my place?
+  b : Said sorry, and drawn it again.
+  b[old] : Walked it with them next time.
+  : I did both. I've never drawn a line I haven't walked since. #saying#.
+
+rule @map_bark
+when concept=bark here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say Left at #landmark#. Always left. | #oath#. Who's walked through my lines?
+
+rule @crowd_bark
+when concept=bark self.dislikes=crowds here.day=market|festival
+does aside
+cooldown 10h
+say Too many paws at #wellm#. I'll come back at dusk. | #press.capitalize#. #annoyed#.
+
+dlg @3 resident.hub : #greet#, #address#. Is it the way you're after? I can draw it. | #greet#. Speak. I'm listening, and I've #stick# if you need a map.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Lost again, or just passing? | #topic.player#. #greet#. Your road's the same as yesterday.
+dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. Plainly, then, #address#. You'll have a plain answer.
+dlg @6 resident.job [self.working=yes] : #self.trade_words.capitalize#. And I draw maps, between. | My work's my work. My maps are free.
+dlg @7 resident.bye : #farewell#. Left at #landmark#. | #farewell#, #address#. The road will hold.
+graft resident.hub
+choice Can you draw me the way somewhere? -> drawn_way
+node drawn_way
+say I can. Hold on. There's the well, and there's the road, and that cairn there. Where are you going? It's all lines from here.
+mood calm
+free
+choice Why draw it, and not just tell me? -> drawn_way_why
+choice Goodbye. -> bye
+node drawn_way_why
+say Words go in one ear. A line you've seen in #sandmap# stays. Draw it before you walk it, I say. The wind will have it by noon, but you won't.
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet [pair.band=strangers] : #greet#. I'm drawing. You can watch. | #greet#. Mind #sandmap#; that's the well.
+line @1 greet.return : #greet#. | #greet#. Don't step on #lines#.
+line @1 farewell : #farewell#. Go left at #landmark#. | #farewell#. I'll draw where you went.
+line @1 farewell.return : #farewell#. | #farewell#. Mind the soft sand.
+line @1 react.news.new : #surprise#. Where did it happen? I'll draw it. | Oh. I didn't know that, #very#.
+line @1 react.news.doubt : That doesn't sound true to me. Who saw it? | #doubt#. I'll wait and see.
+line @1 answer.how : #good.capitalize#. I drew the whole hamlet today. | Quiet. That's #good#, for me.
+line @1 decline : I'd rather not. I'm halfway through #sandmap#. | No, thank you. I'm told to keep near #wellm#.
+line @1 accept_decline : #no_matter#. | That's all right. Ask me later, by #wellm#.
+rule @y_draw_bark
+when concept=bark here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say There. That's the well, and that's us. #oath#. | Nobody step on #sandmap#. Please.
+
+scene y_sand_drawing
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I drew the hamlet in the sand with #stick#. Every roof. | This line's #trail#. That's #wellm#. That little one's me. | I drew #wadi# from memory. I only got one bend wrong.
+b[stage=adult|old] #grown : Every roof? Even mine? | And where am I in it? | Which bend?
+b : Every roof? | Which one's you? | Only one?
+a@grown : Yours has #goat# on it. I drew #goat#. | Here. You're the long line. You walk a lot. | The second one. I've fixed it now.
+a : Every one. And the palms, #oath#. | The little one. I'm small. | One. The second bend. I'll fix it.
+
+scene y_lost_goat
+when topic=animals|home here.region=waste
+does tell.story / react.story / assess
+a : #goat.capitalize# went off. I drew where goats go, and I found it. | I followed #goat# and drew the tracks. They went round in a circle. | A goat ate #sandmap#. Not the sand. The lines, with its feet.
+b[stage=adult|old] #grown : That's clever. Where was it? | Goats don't know where they're going either. | Then you'll draw it again, better.
+b : Clever. | A circle? | Rude goat.
+a@grown : Behind the vines. Where I drew. #oath#. | It's a silly animal. I still like it. | Better. And further from #goat#.
+a : I just thought like #goat#. | A big circle. Back to our door. | #very.capitalize# rude.
+
+scene y_chapel_quiet
+when topic=faith|day
+does tell.self / react.self / assess
+a : I like an empty chapel. You can hear the Bright One not talking. It's #very# good. | I sat on #bench# and nobody told me to be quiet. I was already quiet. | I drew the chapel in #sandmap#. I made the door very big, so anyone could come in.
+b[stage=adult|old] #grown : That's a wise thing for a pup to hear. | You're the only pup I know who doesn't need telling. | A big door is right. That's how it should be.
+b : That's a nice thought. | Good. | A big door.
+a@grown : I go when it's #hot#. It's cool in there too. | I like quiet. It's my best thing. | So nobody has to knock.
+a : It's true. You listen. | It's #good#. | For everybody.
+
+scene y_wind_rubs
+when topic=weather here.weather=sandstorm|overcast here.region=waste
+does tell.complaint / react.self / assess
+a : The #wind# took #sandmap#. All of it. | I drew #trail# three times today. The wind keeps rubbing it out. | Everything I draw, the sand wind takes. I don't mind. Much.
+b[stage=adult|old] #grown : Then you'll draw it again. That's the way of sand. | The wind's a poor reader. Keep drawing. | That's the Waste for you. Nothing kept but what you remember.
+b : All of it? | Three times? | Only much?
+a@grown : I will. I remember it. That's where it really is. | I'll draw it a fourth time. #oath#. | I remember all of it. The wind can't take that.
+a : All of it. I remember #lines#, though. | Four, now. | A #little#.
+
+scene y_broth
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : There's #broth# tonight. I'll have two bowls. | I drew a bowl of #broth# in the sand and then I was hungry. | #broth.capitalize# is the best. It's warm and it doesn't hurry you.
+b[stage=adult|old] #grown : Two? Then you'll grow. | That's what drawing food does. Go and eat. | A good thing about broth, that.
+b : Two bowls! | Ha. | Good food.
+a@grown : I'll grow and draw bigger maps. | I'm going. Slowly. | It's my favourite thing to eat. #tasty.capitalize#.
+a : Two, and the bread. | I was, #very#. | The best.
+
+scene y_star_lines
+when topic=lore|weather here.time=night here.weather=clear
+does tell.self / react.self / assess
+a : I drew the stars in the sand. Then I drew lines between them, like a map of #skymap#. | #grandad# says the stars are a map. I'm learning to read it. | If you join the low stars with a line, it points at #farcistern#.
+b[stage=adult|old] #grown : That's what the old carters did, joining them up. | Read it well, and you'll never be lost. | Does it? I never knew that.
+b : A sky map. | A map? | Does it?
+a@grown : I didn't know. I just thought of it. | I'll read it every night. | It does. I checked. I walked a bit of #trail#.
+a : #skymap.capitalize#'s the biggest map. | The best one. | It does, #oath#.
+
+story y_first_map [topic=memories|family]
+  : The first map I ever drew was the way from our door to #wellm#. It had four lines.
+  : I gave it to #grandad#, who knew the way already, and walked it anyway, to please me.
+  ask : Have you ever walked somewhere just to be kind?
+  b : More often than I'd say.
+  b[stage=adult|old] : Every day, little one. You'll find out.
+  : I'm glad. I'll walk your way one day, if you draw it.
+
+dlg @1 resident.hub : #greet#. Do you need the way? I can draw it. | #greet#. Stand there; you're on the road. In #sandmap#, I mean.
+dlg @2 resident.job : I'm a pup. I draw maps. In the sand, with #stick#. | No work. I draw. The #wind# rubs it out. Then I draw again.
+
+adolescent
+line @1 greet.return : #greet#. | #greet#. Mind #lines#; I've only just finished.
+line @1 farewell.return : #farewell#. | #farewell#. Keep left of #landmark#.
+line @1 react.news.new : #surprise#. Where was it? | I hadn't heard. Tell it plainly, if you can.
+line @1 answer.how : #fine#. I walked to #farcistern# and back. | Quiet. I like it so.
+rule @a_walk_bark
+when concept=bark here.region=waste
+does aside
+cooldown 8h
+say Four hundred paces to #farcistern#. I counted twice. | #oath#. That cairn's moved, or I have.
+
+scene a_map_carter
+when topic=work|travel
+does tell.self / react.self / assess
+a : A carter wanted the salt flats. I drew it with #stick#, and the carter copied it on a board. | Somebody paid me a copper for a map. A map in the sand. I'd have done it for nothing. | I drew the long way round the soft sand for a cart. They got through.
+b[stage=adult|old] #grown : Copied it? That's praise, from a carter. | Take the copper. Your maps are worth it. | Then you've saved someone a stuck wheel.
+b : Clever. | A copper! | Good.
+a@grown : I didn't say so. I nodded. | I took it. I'll buy a better #stick#. | A wheel, and a temper. #bc_ha#
+a : Plain lines. That's all it needs. | I'll keep it. #oath#. | I watched till the dust was gone.
+
+scene a_too_quiet
+when topic=friends|smalltalk
+does tell.feeling / reassure / assess
+a : They say I'm too quiet. I'm not. I'm just listening, #quietly#. | My friends talk and I draw #lines#. It suits us. | Somebody asked if I was sulking. I was thinking about #wadi#.
+b : Listening's no fault. | It sounds like it does. | Thinking's allowed.
+a : #bc_true#. I hear things they miss. | It does. They do the talking; I do #lines#. | It is. #wadi.capitalize# had a bend I'd forgotten.
+
+scene a_far_cistern
+when topic=travel|land here.region=waste
+does tell.boast / react.self / assess
+a : I walked out to #farcistern# alone. I knew every step, because I'd drawn it. | Out past the dunes there's a #cairn# nobody's drawn but me. | I went as far as #landmark# and turned back at noon, like I was told.
+b[stage=adult|old] #grown : Alone? Next time, tell someone first. | Nobody's? Then it's yours to name. | Good. The noon would have had you, past there.
+b : Alone? | Nobody's? | Good thinking.
+a@grown : I told #goat#. I'll tell somebody better next time. | I won't name it. I'll just draw it. | I know. I drew where the shade stops.
+a : Alone. It wasn't far, once I'd drawn it. | Only mine. | #quietly#. The sun was very #hot#.
+
+story a_story_shortcut [topic=memories|travel]
+  : I drew a shortcut once over the dunes with #stick#. It looked shorter. It wasn't.
+  : I walked it to be sure, and came back after dark with sand in everything.
+  ask : Would you have turned back, or kept going?
+  b : Turned back, I hope.
+  b[stage=adult|old] : Kept going. We all do, at your age.
+  : I kept going. Now I draw the long way and call it the short one.

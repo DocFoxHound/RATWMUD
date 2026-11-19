@@ -1,0 +1,304 @@
+# sm902, the hen-fretter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm902
+revision 1
+state ready
+dialect southmeadow
+accent broad light
+tier spare
+written_by claude
+title the hen-fretter
+fits stage=young|adolescent|adult|old
+prefers temper=nervy talk=chatty
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=devout drive=content
+quirk frets_over_the_hens
+likes fresh_straw honey_cakes misty_dawns old_tales
+dislikes rats night_noise
+fears a_fox_at_the_coop a_hen_gone_missing_at_dusk
+hopes an_egg_from_every_hen a_coop_with_a_proper_lock
+topics animals +0.4 home +0.3 food +0.3 faith +0.2 gossip +0.2 travel -0.3
+styles comfort=food gossip=plain refuse=soft tease=merry
+marks oath saying
+persona #self.first# counts the hens in at dusk and out at dawn and frets over every one, then laughs at the fretting: chatty and merry, nervy, private about anything closer to home than the coop, devout, plain in speech, and content with a full nest box.
+
+words
+oath! = Feathers and fret | By the brown hen | Bless the brood
+saying! = Count them in and count them out | A hen fretted over is a hen still here | Worry's only love with its feathers up
+hens = the hens | the yard hens
+coop = the coop | the hen-house
+eggs = an egg | a warm brown egg
+fox = a fox | the fox
+latch = the latch | the coop latch
+straw = fresh straw | clean straw in the nest boxes
+honeycake = a honey cake | a sticky honey cake
+mist = the mist | a white mist on the meadow
+corn = the corn | the corn bin
+brownhen = the brown hen | the little brown hen that wanders
+oh_my = Oh, bless | Oh, my
+
+any
+opinion @1 watch for 1 : I'm glad of the Watch at night. Foxes don't care, but thieves do.
+opinion @1 church for 2 : I pray for #hens# every night. The Bright One's never said I shouldn't.
+opinion @1 festivals for 1 : A feast's lovely. I'll be home before dark, mind, to shut #coop#.
+opinion @1 strangers mixed 1 : I'll say #greet# to any #stranger#. I'll not leave #coop# open while they pass, though.
+opinion @1 dole for 1 : Nobody should go without #eggs# in a town full of hens. I'd give one, and I do.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Mind #hens# by the gate; they'll not move for you. | #greet#. A new face. Shut the gate behind you, if you would.
+line @2 greet [here.time=dawn] : Morning. I've let the hens out and counted them twice. | Morning, #address#. All twelve out and scratching.
+line @1 again.open : Back again! I've only counted #hens# once since you went. | You again. #good.capitalize#. I was short of something to fret about.
+line @1 greet.return : #greet#. | #greet#, #address#. Come in; mind the hen.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit down; you'll want to hear what #hens# got up to. | #greet#. #oh_my#, it's you. #good.capitalize#.
+line @1 farewell : #farewell#. | #farewell#, #address#. Shut the gate, please.
+line @2 farewell [here.time=dusk|night] : #farewell#. I'm off to check #latch#. Again. | #farewell#. Mind the dark lane, and don't mind the owls.
+line @1 farewell.return : #farewell#. | #farewell#. #bless#.
+line @1 react.news.new : #surprise#. #oh_my#, that's the first I've heard. | #marvel#. That's new, and I'll be thinking on it all night.
+line @1 react.news.doubt : #doubt#. I'll not fret till it's certain. Well, I'll try not to. | Is it so? I'll wait for the second telling, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, that's hard. I'll pray on it tonight. | That's #bad#. I'll take an egg or two round; it's what I have.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! #oh_my#, I'm glad. | That's #good#. I'll take round a basket of eggs.
+line @1 answer.how : #fine#, mostly. #brownhen.capitalize#'s off laying, and I'm fretting. | Well enough, #address#. Twelve hens in, so I'm well.
+line @1 decline : #hedge#, I'd love to, but I'm home before dark for #coop#. I always am. | Not this time, #address#. Plainly, I'd fret the whole time.
+line @1 preclose : Well. #preclose#. | I'd best go and count #hens#. Don't laugh.
+rule @call_in
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Chook, chook, chook! In you come. | One, two, three... #oath#, where's #brownhen#?
+
+rule @night_listen
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say What was that? Was that #coop#? | #oh_my#. Only the wind. Only the wind, I hope.
+
+scene counting_in
+when topic=animals here.time=dusk
+does tell.worry / reassure / assess / ack
+a : Eleven in. Where's #brownhen#? It's always that one. | I count #hens# in at dusk and out at dawn. Twice each way. | Twelve in, #latch# down, peg in. Now I can breathe.
+b : Under the hedge, likely. | Twice is plenty. | You worry too much.
+a : There. By the trough. #oh_my#, I could cry. | Twice. Once for me, once for the Bright One. | I do. I'll worry less when foxes can't count.
+b? : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene fox_prints
+when topic=animals|crime here.time=dusk|night
+does tell.worry / reassure / assess / ack
+a : There's #fox# about. I saw the prints by the ditch. | Something was in the yard in the night. Up I got, with a lamp, in my nightshirt. | They say a fox took a whole coop two farms over. I've not slept since.
+b : The latch is sound. | And was it anything? | That's two farms off.
+a : It is. I'll check it again anyway. | A hedgehog. I said sorry to it. | Two farms is nothing to #fox#. Still. I'll try.
+b? : #bc_hope_so# | #bc_ha# | #bc_true#
+
+scene nine_eggs
+when topic=food|animals
+does tell.self / react.self / assess
+a : Nine eggs this morning! Nine. I've not had nine since spring. | #brownhen.capitalize# laid in the hedge again. I found it by the smell. That's an old one. | There's a basket of eggs by the door. Take some; I mean it.
+b : Nine! | Oh dear. | I'll take two.
+a : Nine. I nearly danced. Did, a bit. #oath#. | Old and loud. I'll not say more. | Take four. They'll only fret me if they sit.
+
+scene nest_boxes
+when topic=home|animals self.likes=fresh_straw
+does tell.self / react.self / assess
+a : #straw.capitalize# in the nest boxes. The hens went daft for it. | I put new straw down in my own house too, after. Smells like a summer. | There's nothing like #straw#. Hens think so, and so do I.
+b : Lucky hens. | It does. | Hens and you both.
+a : Lucky me. They lay better for it. | It does. I'll sleep sound tonight. Nearly. | Both. We're alike, #hens# and me. Fussy.
+
+scene mist_meadow
+when topic=weather|day here.weather=fog here.time=dawn self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. You can hear the hens before you see them. | I love a misty dawn. Everything soft and quiet. Even me. | I let the hens out into #mist#. Puzzled, every one of them.
+b : Lovely. | Even you? | Neither do I, mostly.
+a : It is. I'll not fret on a morning like this. Not much. | Even me. For an hour. | #oh_my#, they looked so cross. Bless them.
+
+scene wet_hens
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize#, and #hens# all under the cart, looking at me like it's my fault. | Wet hens are the saddest things alive. I fetched them all in. | I've been out three times to see #coop#'s not flooding. It's not.
+b : It's not your fault. | Saddest? | Then stop going out.
+a : I know. Tell them that. | Saddest. Then they dry and they're fine. I'm not. | I will. After one more look. #oath#.
+
+scene corn_bin
+when topic=animals|home self.dislikes=rats
+does tell.complaint / react.complaint / assess
+a : Rats in #corn#. I could scream. I did, a little. | I've put a cat in the barn. I don't know who's more scared, the rats or the cat. | Something's been at #corn#. I'll sit up tonight.
+b : Get a better lid. | Ha! | Sit up all night?
+a : I've ordered one. Iron. #good.capitalize#. | The cat, I think. It's #very# young. | Till midnight. Then I'll pray and go to #bed#.
+
+scene twelve_names
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say a prayer for #hens# every night. The Bright One knows each of them by now. | I'm at chapel every Restday, front row. The singing settles my nerves. | I don't ask the Bright One for much. Twelve hens safe till morning. That's all.
+b : By name? | Does it help? | That's not much.
+a : By name. I've said them often enough. #oath#. | Yes. An hour of singing and I don't fret at all. | No. It's everything I've got, though.
+
+scene hen_outran
+when topic=pastimes|lore self.likes=old_tales
+does tell.story / react.story / assess
+a : There's an old tale of a hen that outran #fox# the whole length of the valley. I believe it. | The old tale of the goose who married the miller. I love that one. | #gran.capitalize# told the old tales by the fire. I only remember the ones with hens in.
+b : The whole valley? | That's a good one. | That'd be most of them.
+a : The whole valley. The fox gave up and went home. #saying#. | It is. I cry at the end every time. | Most of them. #gran.capitalize# knew who was listening.
+
+scene fretting_cakes
+when topic=food self.likes=honey_cakes
+does offer / accept / assess
+a : There's #honeycake# for anyone who sits down. Go on. | I bake honey cakes when I'm fretting. I baked a lot this week. Have one. | Honey cake and an egg for breakfast. Have the same; I'll not tell.
+b : I'll sit, then. | I will, thank you. | Go on, then.
+a : #good.capitalize#. Mind the crumbs; the hens will. | Have three. I've plenty, worse luck. | #tasty.capitalize#, isn't it? I'll not apologise for it.
+
+scene friend_laughs
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one who tells me to stop fretting. I don't, but it helps. | When the hens were poorly, #self.friend# sat up with me all night. | #self.friend# makes me laugh when I'm worried. That's a gift.
+b : That's a friend. | That's kind. | It is.
+a : A friend. Not that I'd say so to #self.friend#'s face. Too soppy. | Kinder than I'd earned, #address#. I remember it. | A gift. Lucky me, and I know it. #oath#.
+
+scene heard_hedge
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : #oh_my#, have you heard? #topic.subject.capitalize# #topic.claim#. That's what they're saying. | I heard over the hedge that #topic.subject# #topic.claim#. I'll not add anything; I've no more. | They're saying #topic.subject# #topic.claim#. I don't know what to make of it.
+b : I hadn't. | Fair enough. | Nor me.
+a : Well, now you have. I'll do the fretting; you needn't. | That's all of it, plain as I heard it. | We'll know more by market day, I expect. #oath#.
+
+scene scraps_winter
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Corn's dear, so the hens are on scraps. They don't think much of it. | Lean times. I've been selling eggs I'd rather give away. | I worry about the winter. I worry about everything, but the winter most.
+b : They'll manage. | You have to eat. | It'll come round.
+a : They'll manage. They'll grumble. Like me. | We do. The Bright One knows I'm sorry for it. | #saying#. I'll believe it when #corn#'s cheap.
+
+story broom_night [topic=memories|animals self.age>=25]
+  : When I was a #child#, #fox# got into our coop. I heard it and ran out in the dark with a broom.
+  : I didn't catch it. But it dropped the hen, and the hen lived. Lost its tail feathers, mind.
+  ask : Would you have gone out, at that age?
+  b : I'd have hidden under the bed.
+  b[old] : I did the same once. Every pup does, if they love the hens.
+  : That hen lived six more years with no tail. I've been fretting ever since.
+
+story chalk_wall [topic=memories|food self.age>=20]
+  : Years back I counted every egg the hens laid, all year, in chalk on the barn wall.
+  : At the end of it there were over a thousand marks. I stood and stared at that wall an hour.
+  b : A thousand!
+  b[old] : That's a good wall.
+  : A thousand eggs, and I'd fretted over every hen that laid one. I'd do it all again.
+
+dlg @3 resident.hub : #greet#. Mind #hens#. What's wanted? | #greet#, #address#. Come in, quick, before one gets out.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. All twelve are in, so I've time for you.
+dlg @1 resident.job [self.job=farmer|herder] : I keep stock. Hens most of all, and I fret over every one.
+dlg @2 resident.job : Whatever needs doing. And #hens#, always #hens#. | #work.capitalize# all day, and #coop# at dusk. That's me.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Unless you count #brownhen# laying in the hedge. | Nothing, #address#. Quiet as #coop# at night.
+dlg @2 resident.bye : #farewell#. Shut the gate, please. | #farewell#, #address#. Mind #hens# on the way out.
+graft resident.hub
+choice How many hens do you keep? -> hen_count
+node hen_count
+say Twelve. Well, twelve when the brown one's home. I count them in every dusk and out every dawn. Twice. Don't laugh.
+mood warm
+free
+choice Why count them twice? -> hen_twice
+choice Goodbye. -> bye
+node hen_twice
+say In case I'm wrong the first time. And because a fox took one when I was small, and I've never forgotten it. Counting's how I sleep.
+mood calm
+choice That makes sense. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! #brownhen.capitalize# laid an egg! A real one! | #greet#, #address#. I've lost a hen. A brown one.
+line @1 greet.return : #greet#! | #greet#. I counted #hens#. All there.
+line @1 farewell : #farewell#! I've to shut #coop#. | Bye, #address#! Mind you don't step on a hen.
+line @1 farewell.return : #farewell#! | Bye, #address#!
+line @1 react.news : #surprise#! Is everyone all right? | #oh_my#. I'll tell #hens#.
+line @1 decline : No. I've to shut the hens in before dark, and I'm frightened of #fox#. | Not now, #address#. #brownhen.capitalize#'s wandered off again.
+scene y_warm_egg
+when topic=animals|food
+does tell.self / react.self / assess
+a : I found #eggs# in the hedge! Still warm. | #brownhen.capitalize# laid one in my boot. I didn't know till I put it on. | I carry the eggs in now, all by myself. I've only dropped one.
+b[stage=adult|old] #grown : Well found. Carry it gently. | Ha! In your boot! | Only one? That's good going.
+b : Lucky! | In your boot? | Only one?
+a@grown : Gently. Like it's asleep. #oath#. | I know! It was a #good# one, too. Nearly. | Only one. And it was a #little# one.
+a : I'm going to find more. | Squashed now. Poor egg. | Only one, I promise. #oath#.
+
+scene y_eleven
+when topic=animals|home here.time=dusk
+does tell.worry / reassure / assess
+a : I counted the hens in. Eleven. There should be twelve. | #brownhen.capitalize#'s not in. I've looked everywhere. | I count them twice, in case one's hiding.
+b[stage=adult|old] #grown : Count again, slowly. | It'll be under a bush. | That's wise.
+b : Count again. | Try under the hedge. | Twice is good.
+a@grown : Eleven. Twelve! It was behind the water trough. | Under a bush. I'll look. I'll take a lamp. | Wise, and a #little# bit scared. Mostly scared.
+a : Twelve! I missed the black one. #oath#. | Not there. I'll look by the barn. | Twice. Sometimes three times.
+
+scene y_latch_dream
+when topic=animals|home here.time=night
+does confide / reassure / assess
+a : I dreamed #fox# came. I woke up and checked #latch#. Twice. | I heard a noise in the yard. It was only the cat. | When I'm in bed, I listen for #hens#. They make a little noise in their sleep.
+b[stage=adult|old] #grown : The latch'll hold. | Cats make plenty of noise. | That's the hens dreaming.
+b : It'll be shut tight. | Only the cat, then. | They do, at that.
+a@grown : I know. I checked it a third time to be sure. | They do. I told it off. | Dreaming of #corn#, I think. #good.capitalize# dreams.
+a : Shut tight. I pulled it. | Only the cat. I still didn't sleep. | They do. Like a tiny snore.
+
+scene y_cake_crumbs
+when topic=food
+does tell.self / react.self / assess
+a : I had #honeycake# and #hens# wanted some. I gave them crumbs. | Honey cake's my favourite. After eggs. Before bread. | There's honey on my chin. I'm saving it.
+b[stage=adult|old] #grown : Hens don't need cake! | You've an order for it, then. | Wipe your chin.
+b : Lucky hens. | After eggs? | Saving it?
+a@grown : They liked it. They said so, in hen. | I do. I'm #very# careful about it. | Later. After #supper#.
+a : #very.capitalize# lucky. #oath#. | After eggs. Eggs are first. | For later, #address#.
+
+scene y_ghost_hens
+when topic=weather|day here.weather=fog
+does tell.self / react.self / assess
+a : #mist.capitalize#'s that thick I couldn't see #coop#. I nearly cried. | I held the fence the whole way down to #hens#. | In the mist the hens look like ghosts. Little white ones.
+b[stage=adult|old] #grown : The coop didn't go anywhere. | That's the way. | Ghosts!
+b : Was it there? | All the way? | Ghost hens!
+a@grown : I know. I still counted them. All there. | All the way. I'm brave, a #little#. | Little hen ghosts. I said hello anyway.
+a : It was. With all the hens in. #oath#. | Every step. #good.capitalize# fence, that. | Ghost hens. #oh_my#, they're funny.
+
+rule @y_chook
+when concept=bark
+does aside
+cooldown 8h
+say Chook, chook, chook! Come in, come in! | One, two, three... where's #brownhen#? #oath#.
+
+dlg @1 resident.hub : #greet#! Have you seen #brownhen#? It wanders. | #greet#, #address#. Mind #hens#, please.
+dlg @1 resident.bye : #farewell#! Shut the gate behind you. | Bye! Don't let #hens# out.
+
+adolescent
+line @1 greet : #greet#. I've just shut the hens in. All twelve. | #greet#, #address#. Sorry, I'm in a hurry. Well, not much.
+line @1 greet.return : #greet#. | #greet#. #good.capitalize# timing; I've only just sat down.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind #hens# by the gate.
+line @1 react.news : #surprise#. Oh, I'll be up all night thinking about that. | #marvel#. Truly? I'll tell #hens#; they like news.
+line @1 decline : #hedge#, I can't. I'd only fret about #coop# the whole time. | Not tonight, #address#. I'm that tired, and the hens want me.
+scene ad_two_bolts
+when topic=animals|home
+does tell.self / react.self / assess
+a : I made a new latch for #coop#. Two bolts. #fox.capitalize# would need fingers. | Everyone laughs at me for checking #latch# at night. I check it anyway. | I've named every hen. Twelve names. I'll not tell you them; you'd laugh.
+b : Two bolts! | Let them laugh. | I'd not laugh.
+a : Two. And a peg. I'll sleep, now. Maybe. | I do. I laugh too, after. #oath#. | You would. One's named after a pudding.
+
+scene ad_learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning a trade. I keep thinking I've done it wrong, and then I haven't. | I asked the same question three times today. They were kind about it. Mostly. | I'm #good# at the careful bits. The quick bits frighten me.
+b : That's how it goes. | Three's fine. | Careful's the better half.
+a : I hope so. I'll stop fretting, #someday#. | It is, #address#. I wrote it down after. | It is. I'll get quick later. #saying#.
+
+scene ad_feast_dash
+when topic=festival|season
+does tell.self / react.self / assess
+a : I danced at the feast, ran home to shut the hens in, then ran back. | Everyone stayed out late. I went home at dusk. #hens.capitalize# don't know it's a feast. | There's singing at the feast tonight. I'll go, once #coop#'s shut.
+b : You ran both ways? | They don't, no. | Go, then.
+a : Both ways. I missed one dance. Worth it. | Somebody has to shut #coop#, and that's me. #oath#. | I will. Late, but I'll go. #good.capitalize#.
+
+rule @ad_rat_bark
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Rats at #corn#! Out, out! | #annoyed#. Something's been at #corn#.
+
+story ad_nine_chicks [topic=memories|animals]
+  : One spring #brownhen# was gone three days. I cried every night.
+  : On the fourth morning it walked out of the hedge with nine chicks behind it.
+  ask : What do you think I did then?
+  b : Cried again, I'd guess.
+  b[stage=young] : Did you count the chicks?
+  : Cried, and counted them. Nine. I've counted everything since.
+
+dlg @2 resident.hub : #greet#. Sorry, I'm keeping an eye on #hens#. Go on. | #greet#, #address#. What's wanted?

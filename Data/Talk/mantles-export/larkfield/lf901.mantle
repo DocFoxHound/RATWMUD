@@ -1,0 +1,297 @@
+# lf901, the knotted string (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf901
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier spare
+written_by claude
+title the knotted string
+fits stage=young|adolescent|adult|old
+prefers temper=nervy humour=merry
+traits temper=nervy talk=chatty warmth=warm humour=merry honesty=frank piety=ordinary drive=restless
+quirk ties_a_knot_in_a_string_for_every_promise
+likes treacle_tart kite_flying market_mornings long_summer_evenings
+dislikes broken_promises wet_wool
+fears forgetting_a_promise
+hopes to_see_past_the_last_hill
+topics friends +0.4 pastimes +0.4 travel +0.3 festival +0.3 gossip +0.2 food +0.2 prices -0.3
+styles comfort=company gossip=eager refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# talks fast and laughs faster, frets over small things, keeps a string in a pocket with a knot tied for every promise made, and is forever looking past the last hill of the downs.
+
+words
+oath! = Knots and nettles | By the last knot | String and sixpence
+saying! = A promise is a knot till it's kept | Tie it tight and keep it tighter | Say it, then knot it
+laugh! = Ha, hark at me | Oh, sell me silly
+string = my knotted string | the promise string
+knot = a knot | a fresh knot
+pocket = my pocket | the pocket with the string in
+kite = the kite | my patched kite
+tart = treacle tart | a wedge of treacle tart
+hill = the last hill | the hill past the last hill
+downs = the downs | the open downs
+wool = wet wool | a fleece left out in the rain
+fret = fretting | a worry going round and round
+marketmorn = market morning | the market at first light
+gabble = Listen to me gabbling | There I go again
+ridge = the far ridge | the blue ridge past the downs
+lane = the lane | our lane
+
+any
+opinion @1 festivals for 2 : Feast days are the best days there are. #marketmorn.capitalize# with music on top, and nobody minds if you run.
+opinion @1 strangers for 1 : A stranger's only somebody from past #hill#. I'd ask them a hundred things, if they'd stand still long enough.
+opinion @1 merchants mixed 1 : A trader's word is #knot# too. Some tie it tight, and some tie it with a slip in it, and you only find out at home.
+opinion @1 city mixed 1 [self.stage=adult|old] : Ridgemere's a long way past #downs#. I'd go, mind, just to say I'd been. Then I'd come home for the quiet.
+opinion @1 watch for 1 [self.stage=adult|old] : When the Watch promise to walk #lane# at night, they walk it. Keeping your word is the whole of it, to my mind.
+opinion @2 road against 2 [world.wagons=raided] : Carts robbed again. #oath#. That's every promise made to every cart broken in one go.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. New face. I'll have your whole story by dusk, fair warning. | #greet#. You've the look of somebody from past #hill#. Lucky you.
+line @2 greet [here.time=dawn] : #greet#. Up with the larks and twice as noisy, that's me. | #greet#. Grey light, and nobody about but us and the hens.
+line @1 kin.open [pair.kin!=no] : There you are. I've #knot# with your name on, near enough. | Oh good, it's you. Down you sit; there's everything to tell, twice over.
+line @1 again.open : Back again. That's a knot's worth of meeting in one day. | Two meetings in one day. That's #luck#, and I'm keeping it.
+line @1 greet.return : #greet#! I'd only that minute thought of you. | #greet#. Go on, then, I'm all ears and most of a tail.
+line @2 greet.return [pair.band=friends|family] : #greet#, #dear#. Come here; I've news and half of it's true. | #greet#. You're a sight, and a good one.
+line @1 farewell : #farewell#. And mind what you promised. | #farewell#! Bring me a story next time.
+line @1 farewell.return : #farewell#, #address#. I'll hold you to it. | #farewell#. Don't be a stranger, now.
+line @1 react.news : #surprise#. Go on, the rest of it, every bit. | Tell me again, slowly. I want to keep it.
+line @1 react.news.new : #surprise#! And me the last to hear it. | #oath#. I hadn't a whisper of that, and I'm a wolf who hears things.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, that's hard. I'll not sleep for thinking of it. | That's cruel news. #sympathy#, truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I want every bit of it. | Oh, that's lovely. #laugh#. I'll be telling it all week.
+line @1 answer.how : #fret.capitalize# over nothing, as usual, and laughing at myself for it. | #fine#. Better than I'd feared, which is most days.
+line @1 sympathise : #sympathy#. Sit with me. I'll talk, or not, whichever helps. | Oh, #dear#. Come here. That's too heavy for one to carry.
+line @1 decline : #hedge#, but I can't. I've promised that hour already, and I keep my promises. | I'd love to, truly, but there's #knot# in #string# says I'm elsewhere.
+line @1 accept_decline : #no_matter#. Another day, and I'll remember it. | Never mind. I'll ask again; I always do.
+line @1 thank : #thanks#! That's a kindness I'll not forget. | Oh, ta. I owe you one, and I keep count.
+line @1 preclose : #preclose#. I'll talk your ear off otherwise. | Right. I've three promises to keep before #supper#.
+line @1 tease [pair.band=friends] : You've the face of somebody who's forgotten a promise. Which one? | You walk like a wet sheep, #fool#.
+line @1 give.advice : #advise.capitalize#: never promise before breakfast. You'll say yes to anything. | Write it down, or tie it. A promise kept in your head slips out your ear.
+scene promise_string
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / ack
+a : Seven knots in #string# this morning. Seven. I said yes to the whole street. | #oath#, I've lost track. Is this knot the bread or the fence? | I picked a knot loose last night. A promise three months old, kept. I slept like a stone.
+b : Why not just say no? | You don't know? | Three months?
+a : I try. Then somebody asks nicely, and there's another knot. | It's the fence. It's always the fence. I'd best go and mend it. | Three months, and I fretted every one of them. #saying#.
+b : #bc_ha# | Ha. Go on, then. | #bc_good#
+
+scene past_the_hill
+when topic=travel|dreams
+does tell.feeling / ask.detail / answer.detail / assess
+a : Every evening I look at #hill# and think, one day. | I walked to the top of #ridge# once, and it's only another ridge. I nearly cried. | A carter told me the sea's past all this. I don't quite believe in it yet.
+b : Why not go, then? | And past that one? | The sea's real enough.
+a : Promises. There's always one more knot holding me here. | More. Always more. That's the beauty of it, and the trouble. | Then I'll have to see it. That's a promise to myself, knotted.
+b : #bc_fair_enough# | #bc_true# | #bc_i_hope_so#
+
+scene market_morning
+when topic=day|smalltalk here.time=dawn here.day=market here.region=larkfield
+does tell.feeling / react.self / assess
+a : #marketmorn.capitalize#. Hear them setting up? Best noise in the world. | Stalls going up in the half-dark. Nothing in the week beats it, to my ear.
+b : It's loud. | Do you buy anything?
+a : Loud's good. Loud means everyone's come. | Not much. I come for the noise and the news. #laugh#.
+
+scene wet_wool
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# again. The whole town smells of #wool#. | I got caught on the hill in it. Soaked through, and laughing like a fool.
+b : You get used to it. | Laughing?
+a : Never. I wrinkle my nose every single time. | Couldn't help it. A wet sheep gave me a look, as though I'd rained on it myself. #laugh#.
+
+scene fretting_night
+when topic=health|smalltalk
+does tell.worry / reassure / assess
+a : I lay awake half the night #fret#. Over nothing, it turns out. | My heart goes like a hare's when I think I've forgotten a promise.
+b : #reassure#. | Most worries are nothing.
+a : You're right. I'll fret about something else tonight instead, ha. | Most. That's what keeps me #fret# about the rest.
+
+scene treacle_tart
+when topic=food
+does tell.feeling / ask.detail / answer.detail
+a : The baker does #tart# on Marketdays. I'm there before the cloth's off. | I'd walk to #ridge# for a good #tart#, and walk back for another.
+b : Is it good? | That far?
+a : Sticky to the elbow. I'd marry it if I could. | Further, if pushed. #oath#, I'm hungry now.
+
+scene trusted_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd hand #self.friend# every knot in #string# and not worry once. | When I'm #fret#, I go and find #self.friend#. It stops, mostly.
+b : Good to have somebody like that. | Mostly?
+a : It is. I'd keep any promise made to #self.friend#, twice over. | Mostly. The rest goes once I've said it out loud. #laugh#.
+
+scene feast_coming
+when topic=festival|season world.festival=today|soon
+does tell.plan / ask.detail / answer.detail
+a : Feast's coming! I've promised three dances already, and I can't dance. | I want ribbons on everything this year. Everything, #address#.
+b : Three? | Even the sheep?
+a : Three knots, three dances, and three sore feet after. Worth it. | Especially the sheep. They look so cross in ribbons.
+
+scene pup_promise
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I made #self.child# one promise I'll never untie: I'll always come home. | Every knot for #self.child# goes at the front of #string#. Those come first.
+b : That's a good one to make. | As it should be.
+a : It's the only one I never fret about. I'd crawl home if I had to. | Front of the string, front of my mind. #saying#.
+
+scene glad_gossip
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Have you heard? They say #topic.subject# #topic.claim#. I've told four folk already. | Lovely news at the well: #topic.subject# #topic.claim#. #gladnews#!
+b : I hadn't. | That's nice to hear.
+a : Five now, with you. I'm not sorry. | It is. I'll tie #knot# on it, for luck.
+
+scene grim_gossip
+when topic=gossip|crime topic.claim_kind=theft|violence|death|wanted|bandit|promise_broken
+does tell.gossip / react.news / assess
+tone serious / serious / even
+a : They're saying #topic.subject# #topic.claim#. I don't like it, and I don't mind who knows. | I heard #topic.subject# #topic.claim#. #uneasy#. I'll be #fret# till it's settled.
+b : Nor do I. | I'd heard something like it.
+a : Then we'll both keep an eye out, and a door shut. | Then it's true enough. #oath#. I'll bolt the door tonight.
+
+rule @knot_count
+when concept=bark
+does aside
+cooldown 8h
+say Bread, fence, the letter... #oath#, what's the fourth knot? | One knot loose, and good riddance to it.
+
+rule @wet_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say #wool.capitalize#, everywhere. The whole town's one wet fleece. | #rain.capitalize# on #downs# again. Of course it is.
+
+dlg @1 resident.hub : #greet#, #address#! Ask me anything; I'll likely answer twice. | #greet#. You've a story on you, I can tell. Let's have it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! Back, just as I'd hoped. I've a pocketful of news put by for you. | #greet#, #topic.player#. You kept your word and came back. I'll untie a knot for that.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : You've a hard look on you. Say your piece, and I'll hear it fair.
+dlg @1 resident.job : Whatever I've promised this week, mostly. Ask #string#. | I work, I fret, and I don't break my word. In that order, most days.
+dlg @1 resident.bye : #farewell#! Mind you come back; I'll knot it. | #farewell#. Go careful over #downs#.
+graft resident.hub
+choice What's the knotted string for? -> knot_string
+node knot_string
+say Every knot's a promise I've made. When I keep one, I pick it loose. Seven on it today. That's a busy week.
+mood pleased
+free
+choice What if you break one? -> knot_broken
+choice Goodbye. -> bye
+node knot_broken
+say I've not broken one since I was small. If I did, I'd cut that bit off and keep it in a drawer to shame me.
+choice I'll keep my promises too. -> hub
+choice Goodbye. -> bye
+
+story grey_knot [topic=memories self.age>=25]
+  : When I was #child.a#, I promised an old shepherd I'd find a lamb that had strayed on #downs#.
+  : I looked till dark. Found it asleep in a gorse bush, cross as anything.
+  : I carried it back across my shoulders, and the shepherd tied the first knot in my first string.
+  ask : Was there ever a promise you kept and wished you'd never made?
+  b : More than once. Usually the ones made in a hurry.
+  b[old] : Every one I made before I was twenty.
+
+story far_ridge [topic=travel|memories self.age>=18]
+  : I walked to #ridge# once, alone, to see what was past it.
+  : Dawn till noon, it took. At the top there was another ridge, bluer, and another past that.
+  : I sat down and laughed till a hare came to see what was wrong with me.
+  b : And did you go on?
+  b[stage=young] : Was there a bigger one past that?
+  : Not that day. I'd promised to be home for #supper#. #saying#.
+
+
+young
+line @1 greet : #greet#! I've got four knots today. Four! | #greet#. I'm not supposed to run, so I'm walking very fast.
+line @2 greet [pair.band=strangers] : #greet#. A new face! I'll know it next time; I never forget one. | #greet#. You're new. I'm good at new folk, I talk to all of them.
+line @1 greet.return : #greet#! I was hoping it'd be you. | #greet#. I can't stop long; I promised somebody.
+line @1 farewell : #farewell#! I've a promise to keep before #supper#. | #farewell#. Don't forget, you said you would.
+line @1 farewell.return : #farewell#! Run, if nobody's looking. | #farewell#. I'll remember. I've got #knot# for it.
+line @1 react.news : #surprise#! Wait, say it slower, I want all of it. | Really? I'm telling everyone, unless it's a secret.
+line @1 decline : I can't. I promised I'd be home, and I've got #knot# to prove it. | I'd love to, but I'll be in trouble. Big trouble, the kind with no pudding.
+scene knot_string_young
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / ack
+a : I've got #string#. Every knot on it is a promise. | Look. Five knots. That fat one's for feeding the hens.
+b : What happens when you keep one? | Who did you promise?
+a : I pick it loose and smooth it flat. It's the best feeling in the whole world. | Everybody. That's the trouble. I say yes too quick.
+b : #bc_good# | #bc_ha#
+
+scene kite_downs_young
+when topic=pastimes|weather here.weather=clear here.region=larkfield
+does tell.boast / react.self / assess
+a : I got #kite# up higher than the tallest roof today. Higher! | The wind on #downs# nearly took #kite# away, and me with it.
+b[stage=adult|old] #grown : Mind it doesn't take you too. | Hold on tighter next time, little one.
+b : That's high. | Did you let go?
+a@grown : It can't. I tie myself on. Not really. Mostly. | I'll hold with both paws and my teeth as well.
+a : Higher than a lark. I'm going to tell everyone I meet. | Never. I promised #kite# I wouldn't, and I keep promises.
+
+scene tart_young
+when topic=food
+does tell.feeling / challenge / insist / ack
+a : One thing every day, for ever? #tart.capitalize#, easy. | There's #tart# at the baker's and I've no #money#. Not a penny.
+b : Every day? You'd be sick of it. | Wait for a feast day.
+a : I wouldn't. I've tested it. Twice, nearly. | A feast day's ages away. I'll be #fret# till then.
+b : #bc_ha# | #bc_true#
+
+scene past_the_hill_young
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail / assess
+a : When I'm big I'm going past #hill#, and the one after that. | I asked a carter what's past #downs#. More downs, apparently.
+b : What's out there? | Did you believe it?
+a : I don't know yet. That's why I'm going. | No. Nobody would make hills go on that long, it'd be silly.
+b : #bc_fair_enough# | #bc_ha#
+
+scene promise_broken_young
+when topic=friends
+does tell.complaint / sympathise / assess
+a : Somebody promised to save me a seat on the wall, and didn't. #oath#. | A friend said they'd wait at the gate, and went without me.
+b : That's not fair. | Maybe it was forgotten.
+a : It's not. I'm keeping #knot# for it anyway, in case there's a sorry. | Forgetting's worse. You can't even be cross properly. #gabble#.
+
+rule @knot_bark_young
+when concept=bark
+does aside
+cooldown 8h
+say One, two, three knots. Still three. Good. | #oath#! I nearly forgot one.
+
+dlg @young resident.hub : #greet#! You can talk to me. I'm good at talking. | #greet#. Have you come from past #downs#? I want to know everything.
+dlg @young resident.job : I haven't got a trade yet. I've got promises, though. Look at #string#. | I fetch and carry and run errands. I'm nearly the quickest in #lane#.
+story first_knot [topic=memories|pastimes]
+  : I promised #gran# I'd learn to whistle, and I tied #knot# so I'd not forget.
+  : It took all summer. The knot went grey in #pocket#.
+  ask : Can you whistle?
+  b : I can, a bit.
+  b[stage=young] : Not yet. Will you show me how?
+  : I'll show you. It's easy once you've cried about it a bit.
+
+
+adolescent
+line @1 greet : #greet#. Don't say I've grown; everyone says it. | #greet#. I'm on an errand, but I can talk and walk at once.
+line @1 greet.return : #greet#. I'm not a pup, so you can say it straight. | #greet#. Go on, I've got a minute, nearly two.
+line @1 farewell : #farewell#. I've three knots to see to. | #farewell#. I'm late, and I promised I wouldn't be.
+line @1 farewell.return : #farewell#. I won't forget, I never do. | #farewell#. Mind you keep your end of it.
+line @1 react.news : #surprise#. And nobody told me first. That's a first. | Truly? I'll keep it close; you've my word, and a knot on it.
+scene string_teased
+when topic=smalltalk|friends
+does tell.self / tease / tease.return / ack
+a : I still keep #string#. Don't laugh. | Somebody found #string# in my coat and asked if I was knitting.
+b : I'm not laughing. Much. | Knitting what, a scarf of promises?
+a : Laugh, then. I've not broken a promise in a year, so I'll laugh too. | That's what I said! Every knot's a promise. It went very quiet after.
+b : #bc_fair_enough# | #bc_ha#
+
+scene learner_errands
+when topic=work self.working=yes
+does tell.complaint / reassure / assess
+a : They give me the dull bits. Sweeping, fetching, counting. | I'm learning quick. Nobody says so, but I am. #oath#, I am.
+b[stage=adult|old] #grown : Dull bits are how everyone starts. | They'll say so when it counts.
+b : Everyone starts there. | You'll get there.
+a@grown : I know. I promised I'd not complain, and look at me. | I'll wait, then. I'm terrible at waiting.
+a : I know. I just want the next bit, and the bit after. | I will. I'm #fret# all the same.
+
+scene past_the_hill_adol
+when topic=travel|dreams
+does tell.plan / challenge / insist / ack
+a : Soon as I'm grown I'm walking to Ridgemere. Then past it. | I've worked out how far #ridge# is. Two days' walk, if you don't stop to talk.
+b : Your folk will have a word about that. | You always stop to talk.
+a : They can. I'll write. I'll keep every promise but that one. | I'll walk faster to make up for it. #laugh#.
+b : #bc_we_will_see# | #bc_ha#
+
+rule @knot_bark_adol
+when concept=bark
+does aside
+cooldown 8h
+say Where's #string#? Oh. Pocket. | #oath#. I promised I'd be quick, and look at me.

@@ -1,0 +1,314 @@
+# sw901, the knot-cord keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw901
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier spare
+written_by claude
+title the knot-cord keeper
+fits stage=young|adolescent|adult|old
+prefers temper=even talk=chatty
+traits temper=even talk=chatty warmth=warm humour=merry honesty=frank piety=ordinary drive=restless
+quirk ties_a_knot_in_a_cord_for_every_new_face
+likes knots singing honey_cakes stars
+dislikes waiting bad_manners
+fears getting_lost_on_the_sand
+hopes to_ride_out_with_the_carts
+topics friends +0.4 newcomer +0.4 travel +0.3 pastimes +0.3 weather +0.2 faith -0.2 prices -0.3
+styles comfort=company gossip=eager refuse=soft tease=merry
+marks oath saying
+persona #self.first# ties a knot in a long cord for every new face met and has a word for each one: merry, warm, restless and frank, forever watching the road out across the sand for whoever comes next.
+
+words
+oath! = By my knotted cord | Knot and well-rope | Tie it fast
+saying! = Every stranger is a knot not yet tied | A cord with no knots is a road never walked | Tie it tight, for the road is long
+cord = my cord | the knotted cord | the long cord with all its knots
+knots = the knots | every knot on my cord
+kite = my kite | the red kite on its string
+cakes = a honey cake | honey cakes still warm
+tiles = the cool tiles | the cool floor tiles at noon
+road = the sand road | the road out past the palms
+caravan = the caravan | the long line of carts
+scorpion = a scorpion | a scorpion under the step
+faces = new faces | faces I've never seen
+farwells = wells I've never drawn from | the wells past the dunes
+songs = the carters' songs | a carter's song at dusk
+wellmouth = the well | the well-mouth
+edge = the edge of the sand | the last palm on the road
+hush = Hush, they say | Shh, and shh again
+carter = a carter | a dusty carter
+mule = a mule | the carters' mules
+
+any
+opinion @1 strangers for 3 : Every stranger at #wellmouth# is a knot I haven't tied yet. I'd give them the first draw and my seat besides.
+opinion @2 newcomers for 2 : #faces.capitalize# are the best thing that ever comes up #road#. #knots.capitalize# don't tie themselves.
+opinion @3 city mixed 1 : I'd go to Ridgemere tomorrow if somebody would take me. I'd come back, mind. I only want to have seen it, #very#.
+opinion @4 festivals for 2 : A feast brings folk in from #farwells#. I tie more knots on one feast day than in a month of ordinary ones.
+opinion @5 watch for 1 : The watch keep #road# safe enough for #caravan# to come. I want nothing more of them, and it's plenty.
+opinion @7 road against 2 [world.wagons=raided] : #bandits.capitalize# on #road# again. Every cart lost out there is a knot I'll never get to tie.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#! A new face. Sit, and let me tie you a knot. | #greet#. There's road-dust on you. Be welcome, #address#.
+line @3 greet [here.time=dusk|night] : #greet#. Stars overhead, and you under them. Sit a while. | #greet#. Late, and I'm glad of the company, #very#.
+line @1 again.open : #welcome_back#. Twice in one day; I'll have to tie a second knot. | You again. I've nothing new, but I'll talk anyway, #address#.
+line @1 greet.return : #greet#. | #greet#, #address#! Come and sit.
+line @1 farewell : #farewell#. | #farewell#. Come back when you've seen something.
+line @1 farewell.return : #farewell#. | #farewell#, and bring me a new face next time.
+line @1 react.news.new : #surprise#. I'd not heard a whisper. Tell it slowly. | #oath#! And I thought I heard everything at #wellmouth#.
+line @1 react.news.known : #knew#. #carter.capitalize# had it yesterday. | I had that before noon. Folk tell me things at #wellmouth#.
+line @1 react.news.doubt : #doubt#. I'll believe it when one who saw it says so. | Carters' talk. I love it, and I believe half, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard to hear. | Oh, that's #bad#. I'm sorry for it, #very#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! The best thing I've heard all week. | #good.capitalize# news! I'll want to meet whoever it's about.
+line @1 answer.how : Restless, as ever. #road.capitalize# keeps calling. | #fine#. Three #faces# this week. That's a good week.
+line @1 decline : #hedge#, but no. I'm waiting on #caravan#, and I'll not miss them. | I wish I could, #address#. But my word's given elsewhere, and kept.
+line @1 accept_decline : #no_matter#. I'll be back asking; you know me. | Another day, then. I'll not forget, #oath#.
+line @1 thank : #thanks#. That's a knot's worth of kindness. | You're good to me, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. You'd have done it. | Nothing. Tell me a story some day and we're even, #address#.
+line @1 preclose : Well. #preclose#. | I've talked your ear off, #address#. I'll let you go.
+line @1 accept_preclose : Go on, then. #farewell#. | Off with you, and #farewell#.
+scene cord_long
+when topic=smalltalk|newcomer|player
+does tell.self / ask.detail / answer.detail / assess
+a : #cord.capitalize# goes round my waist four times now. Every knot's a face. | I tied a knot for a traveller this morning. One more, and I'll need a second cord. | I can tell you who every knot is. Try me. Pick one of #knots#.
+b : Every one a face? | How many is it? | That one, there.
+a : Every one. Some I've forgotten, but the knot hasn't. | Four hundred and some. I lose the count, never #knots#. | #carter.capitalize# with a limp and a laugh like a goat. Twelve years back, near enough.
+b : #bc_lovely# | #marvel# | #bc_ha#
+
+scene road_calling
+when topic=travel|dreams
+does tell.feeling / ask.opinion / give.opinion / assess
+a : I've stood at #edge# a hundred times and never once gone past it. | Every time #caravan# goes, I think: this time. Then I don't. | I've knots for folk from #farwells#. Not one of them I've visited.
+b : Why not go? | Why don't you? | Would you like to?
+a : Fear, and a soft bed, and #wellmouth#. In that order. | Somebody has to stay and tie #knots#, I tell myself. | More than anything. #saying#.
+b? : #bc_true# | #bc_maybe# | #bc_i_hope_so#
+
+scene kite_grown
+when topic=pastimes here.outdoors=clear|overcast
+does tell.self / react.self / assess
+a : I still fly #kite# on a windy evening. Nobody stops me, so I don't stop. | I made a new kite from a torn sail and two palm ribs. It flies crooked, like me. | There's nothing like #kite# tugging at the string. It wants to go, like I do.
+b : Good for you. | Crooked? | I know the feeling.
+a : The pups laugh, and then they ask for a turn. | Crooked, and high, and nobody else's, #oath#. | Then you'll hold the string some evening.
+
+scene cakes_grown
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess / ack
+a : I've #cakes# put by, and I'll share them with whoever comes. | Bread, dates and #cakes#. That's a feast for me. | Somebody traded me #cakes# for a story. Best trade I ever made.
+b : I'd come for that. | A simple feast. | What story?
+a : Then come. I'll tie you a knot while you eat. | Simple, and #tasty#. #saying#. | The one about the blue knot. I tell it well.
+b? : #bc_good# | #bc_lovely# | #bc_ha#
+
+scene noon_tiles
+when topic=weather|day here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : #hot.capitalize# out. I'm lying on #tiles# till the shadows come back. | Nobody comes up #road# at noon. I'm sulking about it. | The noon's the one hour I'll keep still, and only because of #tiles#.
+b : Wise. | They'll come at dusk. | Cool tiles are a gift.
+a : Wise and bored, both. | At dusk, then. I'll be waiting at #edge#. | A gift I lie on every day. #bc_ha#
+
+scene night_stars
+when topic=weather|day here.time=night here.weather=clear self.likes=stars
+does tell.feeling / react.self / assess
+a : #cold.capitalize# tonight. I've a knot for every star, nearly. | Look up. Every one of those is a road somebody took. | I lie on the roof and pick which star I'd follow if I went.
+b : That many? | Every one? | Which one?
+a : Not quite. The stars are ahead of me, but I'm catching up. | Every one. I'll take one some day, #oath#. | That low red one. It looks like it's going #far#.
+
+scene sand_wind
+when topic=weather here.weather=sandstorm
+does tell.complaint / react.complaint / assess
+a : #wind.capitalize#. No caravan in this. Nobody new for days. | Sand between my teeth, and in #knots#. I'll be picking it out a week. | Shutters closed, and me inside, talking to the shutters.
+b : It'll blow out. | Every knot? | Talk to me instead.
+a : It will, and then #caravan# will come all at once. | Every one. #annoyed#. | Gladly. The shutters never answer, #address#.
+
+scene carts_arrived
+when topic=caravan|newcomer world.wagons=in
+does tell.news / react.news / assess
+a : #caravan.capitalize#'s in! Six #faces# at least. I'm off to tie knots. | The carts are in, and I've met everyone already, twice. | Dust on #road# all morning, and now the square's full. #oath#!
+b : Go on, then. | Twice? | #bc_about_time#
+a : I'm going! Come with me, if you like. | Twice, and one three times. That one talks. | Truly. Now I'll hear everything from #farwells#.
+
+scene carts_late
+when topic=caravan|travel world.wagons=late|raided
+does tell.worry / reassure / assess / ack
+a : #caravan.capitalize#'s late. I've been at #edge# since dawn. | No dust on #road# for three days. I don't like it. | I've a knot for every carter on that caravan. I keep counting them.
+b : They'll come. | Late isn't lost. | Count them in when they come.
+a : They will. #reassure#. I'll stand there till they do. | Late isn't lost. I'll say it to #cord#. | I will. Every last one of #knots#.
+b? : #bc_i_hope_so# | #bc_true# | #bc_we_will_see#
+
+scene gossip_passed
+when topic=gossip
+does tell.gossip / react.news / assess / ack
+a : I'll tell you straight, as I heard it: #topic.subject# #topic.claim#. | Word at #wellmouth# is that #topic.subject# #topic.claim#. I'm only passing it on. | You'll hear it anyway, so: #topic.subject# #topic.claim#.
+b : Is it true? | At the well? | I hadn't heard.
+a : I don't know. I'll not swear to it, but that's what I was told. | Well-talk. Half of it's true; I never know which half. | Now you have. I'd rather you heard it plain from me, #address#.
+b : #bc_we_will_see# | #bc_ha# | #bc_thank_you#
+
+scene lean_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess
+a : Fewer carts this month, and the ones that come bring less. | Everybody's counting coppers. Nobody's counting #knots#. | Lean times. I've tied two knots all month, and both for folk leaving.
+b : It's hard all round. | Times turn. | Leaving?
+a : It is. #wellmouth.capitalize# still runs, at least. | They do. #saying#. | Leaving to look for work. I tied them tight, for #luck#.
+
+story blue_knot [topic=memories|friends self.age>=25]
+  : Years ago a stranger came to #wellmouth# who wouldn't give a name. I tied a knot anyway, a loose one.
+  : That face came back eight summers later, grey round the muzzle, and asked if I'd kept it.
+  ask : Would you have remembered, after eight summers?
+  b : I'd like to say yes. I doubt it.
+  b[old] : At my age, I'd have forgotten the cord.
+  : I had. I tightened it that day, and got a name at last.
+
+rule @road_bark
+when concept=bark here.region=waste here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say Dust on #road#. Somebody's coming, and I'll know them by noon. | #oath#! Is that a cart? It's a cart.
+
+rule @scorpion_bark
+when concept=bark here.region=waste
+does aside
+cooldown 12h
+say #scorpion.capitalize#! Out, out, sideways thing. | Shake your boots, everyone. I saw #scorpion#.
+
+dlg @3 resident.hub : #greet#, #address#! A new face, and I've a knot ready. What's needed? | #greet#. Come into the shade; tell me where you've come from.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Your knot's still here on #cord#. What's wanted? | #topic.player#! Back again. Tell me everything.
+dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. You've a hard look, #address#. Speak your need, and we'll see.
+dlg @6 resident.job [self.working=yes] : #self.trade_words.capitalize#. It keeps me busy between caravans. | I work, and I watch #road#. The second's the better part.
+dlg @8 resident.bye : #farewell#. Come back with a story. | #farewell#, #address#. Your knot will keep.
+graft resident.hub
+choice What's that knotted cord you carry? -> knot_cord
+node knot_cord
+say My cord. A knot for every new face I've ever met. Hundreds now. It goes round me four times.
+mood pleased
+free
+choice Is there a knot for me? -> knot_cord_mine
+choice Goodbye. -> bye
+node knot_cord_mine
+say There is now. There, a tight one, near the end. I'll know you by it when you come back.
+choice I'll come back, then. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet [pair.band=strangers] : #greet#! You're new. That's a knot for #cord#. | #greet#! I've never seen your face before. #good.capitalize#.
+line @1 greet.return : #greet#! I was just counting #knots#. | #greet#, #greet#! Come and look at #cord#.
+line @1 farewell : #farewell#! Don't go far without telling me. | Bye! #farewell#! I'm off to watch #road#.
+line @1 farewell.return : #farewell#! Come back soon. | Bye! I'll keep your knot safe on #cord#.
+line @1 react.news.new : #surprise#! Nobody tells me anything! | Truly? I'm telling everyone at #wellmouth#.
+line @1 react.news.known : I knew! #carter.capitalize# told me first. | I heard already. I sit by #wellmouth#, and I hear everything.
+line @1 answer.how : #good.capitalize#! I tied two new knots today. | #bc_good# I nearly caught a lizard. Nearly.
+line @1 decline : I can't. I'm told to stay in the shade till the noon's gone. | Not now. I'm watching for #caravan#, and I'll miss it if I go.
+line @1 accept_decline : #no_matter#. Another day, then. | That's fine. I'll ask somebody else, and then you again.
+rule @y_cord_bark
+when concept=bark here.region=waste
+does aside
+cooldown 8h
+say Forty knots on #cord#! Forty! | Is that dust on #road#? It might be carts!
+
+scene y_cord_show
+when topic=smalltalk|friends|newcomer
+does tell.self / ask.detail / answer.detail
+a : Look, this is #cord#. Every knot is somebody new. | I tied a knot this morning for #carter# with a blue scarf. That's thirty-one. | #cord.capitalize# is longer than me now. I have to wind it round my wrist.
+b[stage=adult|old] #grown : A fine habit for a pup. Is there one for me? | Thirty-one! Who was first? | Mind it doesn't trip you.
+b : Every knot? | Who's next, then? | That long?
+a@grown : Not yet. Say your name slowly and there will be. | A goat. I was very small. It still counts. | It won't. I hold it up, like this.
+a : Every one. Even the grumpy ones. | Whoever comes up #road# next. Maybe you. | Longer every week. #oath#!
+
+scene y_kite
+when topic=pastimes|weather here.region=waste here.outdoors=clear|overcast
+does tell.boast / react.self / assess
+a : I got #kite# up over the big dune. Higher than the palms! | #kite.capitalize# pulled so hard it nearly took me with it. | The string broke and #kite# went off over the sand. I ran and ran.
+b[stage=young|adolescent] #pup : Let me hold it next time. | I'd have let go. | Did you find it?
+b : Higher than the palms? | Hold tight next time. | Oh no.
+a@pup : If you hold tight. Both paws. | I never let go. Never, #oath#. | A goat found it first. It had a bite out.
+a : Much higher. I could hardly see it. | I did! My paws are all red. | I found #kite# in a thorn bush. It's fine now. Mostly.
+
+scene y_scorpion
+when topic=animals|home here.region=waste
+does tell.complaint / react.complaint / assess
+a : There was #scorpion# in my sandal this morning. I shook it out first. I always shake. | I hate scorpions. They walk sideways and they look at you. | #scorpion.capitalize# again. I didn't scream. I said a word, a little one.
+b[stage=adult|old] #grown : Shake first, always. You've learned the best lesson there is out here. | They're more afraid of you. Mostly. | A little word's allowed, for a scorpion.
+b : Good thing you shook. | Ugh. | What word?
+a@grown : Shake twice, even. Once for luck. | Mostly isn't enough, #address#. | I'll keep it for the next #scorpion#.
+a : Always. Twice, now. | They do look at you! | Not telling. It was a #bad# one.
+
+scene y_cakes
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess
+a : There's #cakes# today! I had two and a lick of the spoon. | #cakes.capitalize# are the best food there is. Better than dates. | I hid #cakes# for the feast. Don't tell where.
+b[stage=adult|old] #grown : A lick of the spoon is a cook's pay. Was it yours to take? | Better than dates? Don't say that too loudly here. | Hidden cakes have a way of getting eaten.
+b : Lucky you. | Better than dates? | I won't tell.
+a@grown : I asked first. Well, I asked after. | I'll say it quietly, then. It's true, though. | Not if I hide them well. I'm good at hiding.
+a : The luckiest, #oath#. | Much better. Dates are only sweet. Honey is #tasty#. | #good.capitalize#. They're for later.
+
+scene y_hushed
+when topic=day|family here.time=day
+does tell.complaint / react.self / assess
+a : Everybody sleeps at noon and I'm not allowed to talk. #hush#. | I only said one thing and the whole house said shh. | Why must it be quiet at noon? The sun doesn't sleep. It's #hot#, that's all.
+b[stage=adult|old] #grown : Because the grown ones work in the cool. Let them rest, and talk at dusk. | One thing, at noon, is plenty. | The sun works hard enough for all of us.
+b : Whisper, then. | Only one? | Fair point.
+a@grown : I'll save it all for dusk. There's a lot. | Two things. The second was #little#. | Then it can talk to me. I'll wait.
+a : I tried. I'm a loud whisperer. | Maybe three. | I said so too, and then #hush#.
+
+scene y_carts_dream
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : When I'm big I'm going out with #caravan#. All the way to #farwells#. | I want to ride on the front of a cart and sing #songs#. | One day I'll tie a knot at every well in the realm.
+b[stage=adult|old] #grown : Learn the stars first, and the mules. The road's long and hard. | Learn the words properly. Carters notice. | That's a long cord, #address#.
+b : That's far. | Can you sing? | Every well?
+a@grown : I know four stars. And one of #mule#. | I know nearly all of one. | The longest. I'll need a bigger wrist.
+a : #far.capitalize# is the best part. | Loudly. That's nearly the same. | Every one. #saying#.
+
+story y_first_knot [topic=memories|friends]
+  : The very first knot I ever tied, I tied for #carter# who gave me a date and patted my head.
+  : I didn't know the name, so I tied it anyway and called it the date knot.
+  ask : Would you mind being remembered by what you gave?
+  b[stage=adult|old] : Not if I gave something worth it, little one.
+  b : Not if it was something sweet.
+  : It's still there, the first one on #cord#. Right at the end.
+
+dlg @1 resident.hub : #greet#! You're new, aren't you? Your name, and a knot goes on #cord# for you. | #greet#! I'm minding #wellmouth#. Not really. I'm watching.
+dlg @2 resident.job : I'm a pup. I don't have work. I watch #road# and I tie knots. | No job. I've got #cord#, and that's a lot of work.
+
+adolescent
+line @1 greet.return : #greet#. I've a knot for you already, you know. | #greet#. I was just off to #edge#.
+line @1 farewell.return : #farewell#. | #farewell#, and come back with news.
+line @1 react.news.new : #surprise#. Who brought that? I'll want to meet them. | Truly? I'd have known, if they let me near #caravan#.
+line @1 answer.how : Restless. #road.capitalize# keeps looking at me. | #fine#. Bored with sweeping, if you want it straight.
+rule @a_cord_bark
+when concept=bark
+does aside
+cooldown 8h
+say Three hundred knots on #cord#. Ask me about any one of them. | #oath#. Not one new face all day.
+
+scene a_cord_teased
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : #cord.capitalize# goes twice round my waist now. The others laugh at it. | Somebody said I'm too old for #knots#. I tied a knot for them anyway. | I still tie a knot for every new face. I'll not stop because it isn't grown-up.
+b[stage=young|adolescent] #pup : They laugh because theirs would be short. | That's a good answer. | Why would you stop?
+b : Let them laugh. | Ha. Good. | Nor should you.
+a@pup : Short and tidy. I'd rather long. | It was a #little# knot. A spiteful one. | I wouldn't. That's just what I said.
+a : I do. It's a #good# cord. | It's a tight one, too. #bc_ha# | I'll tie the last one on #cord# when I'm old.
+
+scene a_carts_work
+when topic=work|caravan
+does tell.self / ask.detail / answer.detail
+a : I watered #mule# today, and the carters let me sit up front after. | I carried bags at the inn for a whole caravan. I tied eleven knots. | #carter.capitalize# asked me what the cord was for. I told the whole story.
+b[stage=adult|old] #grown : Sitting up front's how it starts. Did they let you hold the reins? | Eleven in one night. That's a good caravan. | And did they listen to all of it?
+b : Up front? | Eleven? | What did they say?
+a@grown : For a breath. Then the mule looked round at me. | Eleven #faces#, and two more who wouldn't say their names. | All of it, and asked for more. I liked that one.
+a : Right up front, where you can see all of #road#. | Eleven. #oath#, it was a #good# night. | They said I'd make a carter. I'll hold them to it.
+
+scene a_road_itch
+when topic=dreams|travel
+does tell.feeling / reassure / assess
+a : Every time the carts go, I stand at #edge# till I can't see the dust. | My feet want to go out on #road#. The rest of me says wait. | I've tied knots for folk from #farwells#. I want to see where they came from.
+b : Your day will come. | Listen to the rest of you. | You will.
+a : #bc_i_hope_so# I'll stand there till it does. | I'm listening. My feet aren't. | I will. I'll take #cord# with me.
+
+story a_story_lost_carter [topic=memories|travel]
+  : Last winter #carter# came in on foot at night, the cart stuck in the sand a long walk back.
+  : I'd tied a knot for that face two summers before. I knew the name and ran for help.
+  ask : Do you think a knot can bring somebody back?
+  b : Maybe not. But remembering can.
+  b[stage=adult|old] : A good memory can, and that's what your knots are.
+  : That carter gave me a scarf. I tied it into #cord#, the only knot that's blue.

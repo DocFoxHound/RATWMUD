@@ -1,0 +1,303 @@
+# oh901, the pocket-swapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh901
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier spare
+written_by claude
+title the pocket-swapper
+fits stage=young|adolescent|adult|old
+prefers humour=merry drive=restless
+traits temper=even talk=chatty warmth=warm humour=merry honesty=sly piety=ordinary drive=restless
+quirk swaps_anything_for_something_better
+likes market_bustle crisp_apples dice old_maps
+dislikes rats early_bells
+fears being_caught_out_in_a_fib dying_where_i_was_born
+hopes the_best_swap_of_my_life a_road_through_the_wood_and_out
+topics prices +0.4 travel +0.3 dreams +0.3 pastimes +0.3 gossip +0.2 faith -0.3
+styles comfort=distract gossip=sly refuse=slippery tease=merry
+marks oath saying
+persona #self.first# swaps anything for something a little better and tells the truth with the corners trimmed: chatty, warm and merry, never still for long, with a pocket full of odds and ends and an eye on the road out of the wood.
+
+words
+oath! = Pips and pockets | By the bent acorn | Fair swap, near enough
+saying! = Something better's always one swap away | Both walk off smiling, that's a fair trade | Never show the first thing you'd give
+swap = a swap | a fair swap, near enough
+pocket = my pocket | the deep pocket
+apple = a crisp apple | an apple with a snap to it
+dice = the dice | the old bone dice
+map = an old map | a map with the roads drawn wrong
+market = market day | the market at full stretch
+tinker = the tinker | a pack-wolf off the road
+road = the road out | the road through the wood and out
+wink = Mm-hm | Ha, mm
+glass = a bit of blue glass | a bead of blue glass
+string = a bit of string | good string
+
+any
+opinion @1 merchants for 1 : A trader's only a swapper with a roof over the stall. I'd sooner a market than a sermon, mm, any day.
+opinion @1 road for 2 : Keep #road# open and I'll never ask for another thing. Well, hardly another.
+opinion @1 city mixed 1 : The city's all prices and no swapping, I hear. Still, I'd go and look. I'd go and look at anything.
+opinion @1 watch against 1 : #watch.capitalize# asks where I got things. I tell them a fair #swap#. That's true, mostly.
+opinion @1 festivals for 1 : A feast day's the best swapping of the year. Everybody's merry, and nobody's counting.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Those are #good# boots. I'll not ask what you gave for them. | #greet#. A new face. I like a new face; it comes with new pockets.
+line @2 greet [here.time=dusk|night] : #greet#. Late for trading, and the best hour for it. | #greet#, #address#. The lamps are lit; let's see what you've got.
+line @1 again.open : Back already. You'll be wanting #swap#. | You again. I've been saving something for you. Nearly.
+line @1 greet.return : #greet#. | #greet#, #address#. #good.capitalize# to see you, and I mean it, mostly.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit; I'll tell you the swap I made today. | #greet#. Just who I wanted. Truly, for once.
+line @1 farewell : #farewell#. | #farewell#, #address#. Keep your pockets shut on the road.
+line @2 farewell [here.time=dusk|night] : #farewell#. Step high in the dark; the wood's all ankles. | #farewell#. Sleep sound, and dream of a bargain.
+line @1 farewell.return : #farewell#. | #farewell#. And to you, with a bit over.
+line @1 react.news.new : #marvel#. I'd not heard, and I hear everything worth trading. | #surprise#. I'll be the first to pass that on, mm.
+line @1 react.news.doubt : #doubt#. I've told that sort of tale myself. | Hm. Who gains by saying it? That's where I'd look, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a #bad# business. I'd not make light of it. | Oh, that's hard. I'm sorry, #address#, and I'll not trim that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be a feast, and a feast means trading. | That's #very# good news. I'll drink to it, if somebody's buying.
+line @1 answer.how : #fine#. Ahead on the day, I'd say. | Well enough, #address#. Better if you've something to trade.
+line @1 decline : #hedge#, I'd love to, but I've a trade half done and it won't keep. | Not this time, #address#. I'd say why, but you'd only ask for a cut.
+line @1 preclose : Well. #preclose#. | I'd best be off; there's #swap# waiting on the road.
+rule @market_cry
+when concept=bark here.day=market
+does aside
+cooldown 8h
+say Swap you, swap you! Something for something! | #oath#. Who's got a better one than this?
+
+rule @road_itch
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say #road.capitalize#'s calling again. Not today. Maybe. | One day I'll be down #road#, and you'll all miss me.
+
+scene pocket_turnout
+when topic=smalltalk|pastimes
+does offer / counter / assess / ack
+a : Turn out your pockets and I'll turn out mine. We'll see who gets the better #swap#. | I've a brass button, #glass# and a bent spoon. Something for you there. | Everything I own, I got by swapping. Except my teeth, mm.
+b : I've only a bit of string. | A bent spoon? Who'd want that? | Even your coat?
+a : String! Now that's useful. I'll give you #glass# for it, and that's generous. | Bent for stirring round corners. Worth twice a straight one. #wink#. | The coat cost me a lamp and two good stories. Fair price.
+b : Done, then. | You'd sell sand to a river. | #bc_fair_enough#
+
+scene market_twice
+when topic=prices|work here.day=market self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : #market.capitalize#, and every stall's got something I want. That's the trouble. | I walk the whole market twice before I buy a thing. The second time, prices drop. | Market's where I'm happiest. All that noise, and every bit of it's a chance.
+b : What did you get, then? | Do they? | You'd live there if you could.
+a : #map.capitalize#, a jar of honey, and a better mood. #saying#. | Every time. Look like you're leaving and watch them change their tune. | I would, #address#. I'd sleep under a stall.
+
+scene road_itch
+when topic=dreams|travel
+does confide / react.self / assess
+a : I've an itch to go down #road#. I get it every spring. | #tinker.capitalize# came through with tales of the coast. I'd swap my roof for a look at it. | #vent#: I'll not die where I was born. Not if I've legs.
+b : Where would you go? | Your roof? | You'd miss the trees.
+a : Anywhere they've never seen a Rainwood acorn. I'd sell them a sackful. | Well, mm. Half a roof. The leaky half. | I would. I'd come back and tell them all about it. Trimmed a bit.
+
+scene wrong_map
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I've #map#. I love it more than a right one. | I swapped a good knife for #map#. Everybody said I was robbed. | Look at this. Somebody drew a river where there's never been one.
+b : Why a wrong one? | Were you? | Maybe there was once.
+a : A wrong map's got a story in it. A right one's only roads, #address#. | Not robbed. The knife was blunt, and I didn't say. #oath#. | That's what I'll tell the next buyer, mm. Worth double now.
+
+scene dice_after
+when topic=pastimes self.likes=dice
+does invite / accept / tease / tease.return
+a : A throw of #dice# after #supper#? Small stakes. Acorns. | I lost three throws running last night, then won the lot back on the fourth. | Come and throw #dice# with me. I don't cheat. I only know when to stop.
+b : Small stakes, then. | Go on, I'll have a throw. | That's half the game.
+a : Acorns it is. I'll go easy on you. That's a lie, mm. | #good.capitalize#. Bring acorns, and a short memory. | It's the whole game, #address#. The rest is only luck.
+b : You'll lose, and I'll enjoy it. | I'll bring my own dice, then. | #bc_ha#
+
+scene rain_roof
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# coming through the leaves. Nobody's out, so nobody's trading. | I swapped my spare hat for a bowl of soup this morning. Wet folk pay well. | I like rain. It drives folk under one roof, and then they talk.
+b : Quiet day, then. | Clever. | And you listen.
+a : Quiet as a stump. I'll count my pockets instead. | Wet folk pay twice for a dry head. #saying#. | I do. Rain's #good# for listening.
+
+scene fog_trees
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : #fog.capitalize# so thick you'd walk into a tree and say sorry to it. | Fog's the honest weather. Nobody can see what you've got, so nobody wants it. | I love a fog. Everyone's a stranger, and strangers trade.
+b : I nearly did, coming here. | Honest, is it? | You'd trade with anyone.
+a : Ha. The tree'd take it kindly, mm. | Honest for everyone but me. #wink#. | Anyone with pockets. That's most folk, #address#.
+
+scene apples_six
+when topic=food self.likes=crisp_apples
+does offer / accept / assess
+a : Have #apple#. Go on. I swapped a ribbon for six of them. | Here, catch. #apple.capitalize#, and you'll not ask where I got it. | Take one. I've a sackful, and a sack's only worth what you give away.
+b : Thank you, I will. | I'll not ask. | That's kind.
+a : #good.capitalize#. Now you owe me, mm. Only joking. Mostly. | Wise. #secret#. | Kind, and it makes me look kind. Both.
+
+scene friend_untraded
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one wolf I never trade with. Too fond. | I'd give #self.friend# anything in #pocket#. Not swap. Give. | #self.friend# knows when I'm trimming a tale. Nobody else does.
+b : That's saying something, from you. | That's love, that. | That's rare.
+a : It is. Don't spread it; it's #bad# for business. | Don't tell the others. They'll want the same. | Rare as a straight answer from me. #oath#.
+
+scene spouse_trade
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : #self.spouse# says I'd swap the bed out from under us. I wouldn't. Not without asking. | My #self.spouse_word# is the only one who ever got the better of me in a trade. | Courting #self.spouse# took a whole season of grins. Best swap I ever made.
+b : Not without asking? | How did that happen? | A whole season?
+a : Asking first. I'm sly, #address#, not rotten. | I was offered a heart and gave mine. Never regretted it. | Every day of it. I'd make that trade again, #oath#.
+
+scene gossip_trimmed
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. That's how I heard it, mm. Near enough. | Word on the market: #topic.subject# #topic.claim#. I'd charge for that, if I were a worse wolf. | #vent#: #topic.subject# #topic.claim#. I'll not add to it. Much.
+b : Near enough? | You would, too. | Not much?
+a : I've trimmed it down, not up. That's the honest part. | I would. Lucky you, mm. | Not a word. I swear it on #pocket#.
+
+scene new_pockets
+when topic=newcomer|player
+does tell.self / ask.detail / answer.detail
+a : A new face up the road. New faces have the best pockets. | Somebody new in town. I've already guessed what's in the pack. | There's #stranger.a# at the inn. I'll be friendly first, and swap after.
+b : You'll scare them off. | And what's that? | Friendly first?
+a : Not me. I'm all smiles till the trade's done. And after, mostly. | Boots and a lamp. You can tell by how a body walks. #wink#. | Always. A friend gets a better price. From me, I mean.
+
+scene lean_swaps
+when topic=times|prices world.times=hard|lean
+does tell.self / react.self / assess
+a : Lean times. Nobody's got coin, so everybody's swapping. I'm doing well, mm. | Folk are trading their good pots for flour. I'd not take advantage. Much. | When #money# gets scarce, #swap# comes into its own.
+b : That's sly of you. | Much? | It does.
+a : Sly's only clever with a #bad# name. | I give honest measure. It's the counting I'm quick at. | It's the oldest way. Older than coin. #saying#.
+
+story first_swap [topic=memories self.age>=25]
+  : The first swap I ever made, I was a #child#. My wooden horse for a tin whistle.
+  : The whistle broke in a day. The horse was still going the next spring, in somebody else's paws.
+  ask : What do you reckon that taught me?
+  b : To keep the horse, I'd say.
+  b[old] : That every swap's got a loser, mostly.
+  : To try the whistle first. I've tried every whistle since. #oath#.
+
+story tinker_coat [topic=memories|travel self.age>=25]
+  : #tinker.capitalize# came through when I was young, in a coat with forty pockets. I counted.
+  : I followed the cart a whole day, down #road#, till my #gran# fetched me back by the ear.
+  : I'd have gone all the way, mind. I still would.
+  b : Your gran had the right of it.
+  b[stage=young] : Forty pockets! What was in them?
+  : Everything, I reckoned. I've been trying to fill my own forty ever since.
+
+dlg @3 resident.hub : #greet#. You've the look of someone with something to trade. | #greet#, #address#. What's wanted? I can likely find it.
+dlg @4 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've been keeping something by for you. Nearly.
+dlg @1 resident.job [self.role=merchant] : I trade. Buying's only swapping with coin in the middle. | #work.capitalize#? Odds and ends, and the better end of them.
+dlg @2 resident.job : Whatever's going, and a swap on the side. Mostly on the side.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And if there were, I'd want something for it. Joking, mm. | Not a leaf turned, #address#. Come back on market day.
+dlg @2 resident.bye : #farewell#. Mind your pockets. | #farewell#, #address#. Come back when you've something to swap.
+graft resident.hub
+choice What have you got in your pockets? -> deep_pockets
+node deep_pockets
+say Ah. A brass button, #glass#, a bent spoon and #map#. Any of it's yours, for the right swap.
+mood keen
+free
+choice What would you want for the map? -> map_price
+choice Goodbye. -> bye
+node map_price
+say For the map? Mm. Something with a story in it. You've a story in you, I can tell. Tell me where you've been and we'll call it fair.
+mood pleased
+choice Maybe another time. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! I've got a thing in my pocket. Guess. | #greet#, #address#. I'll swap you something, if you like.
+line @1 greet.return : #greet#! | #greet#. Look what I swapped for.
+line @1 farewell : #farewell#! Don't tell anyone about #pocket#. | Bye, #address#! I'm off swapping.
+line @1 farewell.return : #farewell#! | Bye, #address#!
+line @1 react.news : #surprise#! Is that true, or a story? | Ooh. I'll tell everyone, but only a #little# bit wrong.
+line @1 decline : No, I can't. I've #swap# to do before #supper#, and it's an important one. | Not now, #address#. #mum#'ll know if I'm late.
+scene y_beetle_whistle
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : I swapped a button for a beetle, and the beetle for a whistle. Next it'll be something big. | Look. A blue stone. I told them it was lucky, and they gave me two acorns for it. | I've a pocket full of swaps. Nobody knows what's in the bottom, not even me.
+b[stage=adult|old] #grown : What's after the whistle? | Was it lucky, though? | Mind there's nothing alive down there.
+b : What'll you swap it for? | Was it, though? | Show me!
+a@grown : A knife, I think. A little one. Then a goat kid. | It might be. Nobody's proved it isn't. #oath#. | There was a frog once. I swapped it back to the pond.
+a : Something better. #saying#. | Lucky for me, anyway. Two acorns! | Only the top bit. The bottom's #secret#.
+
+scene y_apple_trade
+when topic=food
+does tell.self / react.self / assess
+a : I had #apple#. I can hear the crunch still. | I swapped half my bread for #apple#. Best trade of the week. | I know which tree has the sweetest ones. I'm not telling whose it is.
+b[stage=adult|old] #grown : Crisp ones are the best. | Half your bread? | Not scrumping, I hope.
+b : Lucky. | Was it worth it? | Tell me!
+a@grown : The #very# best. I ate the core and all. | It was. Bread's only bread. | Not scrumping. Picking up what falls. Over the wall. #oath#.
+a : #very.capitalize# lucky. #oath#. | Worth two loaves, near enough. | Never. #secret#.
+
+scene y_out_of_wood
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : One day I'm going down #road#, and I'll swap things all the way. | #tinker.capitalize# said there's a sea past the wood. I'm going to see it. | I've drawn a map of everywhere I've been. It's mostly our street.
+b[stage=adult|old] #grown : That's #far#, little one. | There is. A long way off. | Mostly?
+b : Me too! | A sea? | Can I see?
+a@grown : Not too far. I'll come back with presents. Swapped ones. | I'll get there. I'll swap my way. | There's the pond too, and the big oak. That's on it.
+a : We'll go together. I'll do the swapping. | A whole sea. Salty, #tinker# says. | Only if you swap me something, #address#.
+
+scene y_rain_jar
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# again! I'm going to swap my boots for a boat. | The leaves drip on my head every time I go under the trees. | I caught rain in a jar. I'll swap it to somebody who's thirsty.
+b[stage=adult|old] #grown : A boat! You'd sink. | That's the Rainwood for you. | Who'd want a jar of rain?
+b : Ha! | Me too. | Rain in a jar?
+a@grown : Not a good boat. I'd swap again, quick. | Drip, drip. I count them. Forty-one today. | A thirsty somebody. I'll find one. #saying#.
+a : I'd row it to the pond. #oath#. | Drip on my nose. I like it, a #little#. | It's clean rain. That's worth something, #address#.
+
+scene y_market_ribbon
+when topic=family|prices self.mother
+does tell.self / ask.detail / answer.detail
+a : #self.mother# took me to market. I swapped a ribbon before anyone noticed. | #self.mother# says I'll swap the roof off the house one day. | When #self.mother# isn't looking, I trade my greens to the hens.
+b : What did you get? | Would you? | Do the hens give you anything?
+a : A shell. A real one, from the sea. Probably. #oath#. | Only for a better roof. #saying#. | Eggs, #someday#. That's a long trade, #address#.
+
+rule @y_swap_bark
+when concept=bark
+does aside
+cooldown 8h
+say Swap you! Anybody? Swap you #good# one! | Who wants a beetle? Nearly new. #oath#.
+
+dlg @1 resident.hub : #greet#! Have you got anything to swap? I've got a beetle. | #greet#, #address#. I'm not to trade with strangers. What've you got, though?
+dlg @1 resident.bye : #farewell#! Come back if you find something good. | Bye, #address#! I'll keep #swap# for you.
+
+adolescent
+line @1 greet : #greet#. Anything you need? I can probably find it. | #greet#, #address#. You look like you've something to trade.
+line @1 greet.return : #greet#. | #greet#. I was just thinking about you. Well, about your boots.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind the roots.
+line @1 react.news : #surprise#. That'll be all round by #supper#, and I'll have the best of it. | #marvel#. Who else knows? I'll want to be first.
+line @1 decline : #hedge#, no. I've a trade on, and it'll go sour if I'm not there. | Not this time, #address#. I'm owed somewhere, and I want to be there when it's paid.
+scene ad_nail_to_knife
+when topic=pastimes|work
+does tell.self / react.self / assess
+a : I started with a bent nail last spring. I've swapped up to a good pocket knife. | I swapped a jar of honey for a hat, the hat for a lamp, and I'm keeping the lamp. For now. | The old ones won't trade with me. They say I'm too sharp.
+b : A knife from a nail? | Only for now? | They mean it as a warning.
+a : Nine swaps. Every one fair, near enough. #oath#. | Till something better turns up. #saying#. | I know. I take it kindly anyway, #address#.
+
+scene ad_learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning a trade. I've already found two quicker ways of doing it. | I'm meant to fetch and carry. I fetch, carry, and listen to every price. | They watch me like a #busybody# watches a pie. I can't think why.
+b : Keep them to yourself, maybe. | Clever. | I can.
+a : That's the plan. Till they're worth something, mm. | Prices are where #money# hides. #secret#. | Can you? I'm only quick, #address#. Quick's no crime.
+
+scene ad_feast_swap
+when topic=festival|season
+does tell.self / react.self / assess
+a : Feast day, and everyone's merry. Best day of the year for #swap#. | I swapped a ribbon for a dance at the last feast. Best trade I ever made. | I stood by the cider and listened. Folk say all sorts when the music's going.
+b : You'd trade on a feast day? | A dance! | What did you hear?
+a : Especially then. Nobody's counting, mm. | It was #good# dancing, too. I'd swap again. | That's #secret#, #address#. Worth more kept.
+
+rule @ad_crowd_bark
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 8h
+say Anybody trading? I've a #good# knife going. | #oath#. Look at all these pockets.
+
+story ad_lucky_stone [topic=memories|pastimes]
+  : When I was little I sold a pebble as a lucky stone. Two acorns, I got for it.
+  : The one who bought it found a coin the next day, and came back for another.
+  ask : Would you have sold a second one?
+  b : Not likely. Did you?
+  b[stage=young] : I would! Did you get paid?
+  : I picked a pebble up off the path and sold it. #annoyed#, it didn't work. I'm still not sure the first one did.
+
+dlg @2 resident.hub : #greet#. Need anything found? I'm the one to ask. | #greet#, #address#. What's on your mind? Or in your pack?

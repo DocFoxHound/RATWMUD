@@ -1,0 +1,304 @@
+# rm905, the first-light blesser (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm905
+revision 1
+state ready
+dialect plain
+accent none
+tier spare
+written_by claude
+title the first-light blesser
+fits stage=young|adolescent|adult|old
+prefers piety=devout warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=frank piety=devout drive=content
+quirk blesses_the_first_sun_to_strike_the_roofs
+likes first_light window_lamps honey_porridge chapel_singing
+dislikes dark_mornings unkind_talk
+fears a_winter_without_sun
+hopes a_lamp_in_every_window_on_the_row
+topics faith +0.5 day +0.4 weather +0.3 season +0.3 friends +0.3 family +0.2 gossip -0.4
+styles comfort=prayer gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# is up before the sun every day to watch it strike the roofs and say a word to the Bright One, speaks kindly but always straight, and keeps a lamp in the window for anyone out late.
+
+words
+oath! = Bright One light the ridge | Bless the first light | Sun on the slates
+saying! = Every roof gets the morning | The light finds the low streets too, in time | The sun doesn't ask who's watching
+firstlight = the first light | the first sun on the roofs
+ridges = the roof ridges | the ridge tiles
+gold = gold on the slates | the slates gone gold
+lamp = a lamp in the window | the window lamp
+blessing = a greeting for the Bright One | a small blessing
+dark = a dark morning | the black of a winter morning
+shadows = the long shadows | the shadow coming up the street
+candle = a candle end | a good tallow candle
+porridge = hot porridge | porridge with a spoon of honey
+singing = the chapel singing | the singing at chapel
+plainly = I'll be plain | I'll say it straight
+kindly = kindly meant | and I mean it kindly
+
+any
+opinion @1 church for 3 : The chapel's door is open to anyone, and that's the best thing in this city. I'd sooner lose my roof than that.
+opinion @1 dole for 2 : Nobody should go hungry under the same sun as the rest of us. The dole's the least we owe.
+opinion @1 drink mixed 1 : A cup at a feast is a gift. A cup every night is a habit, #kindly#.
+opinion @1 watch for 1 : The Watch walk the streets in the dark so the rest of us can sleep. I pray for them, and I tell them so.
+opinion @1 strangers for 2 : A stranger's only a neighbour who hasn't had breakfast with you yet. Feed one, you'll find out.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Bright blessings on you. | #greet#. You're welcome on this street.
+line @2 greet [here.time=dawn] : #greet#. You're up for #firstlight#, then. Good. | #greet#. Bless you. The light's just on the ridges.
+line @3 greet [here.time=dusk|night] : #greet#. Mind your way; there's #lamp# if you need it. | #greet#. Late out. The Bright One see you home.
+line @1 greet.return : #greet#. | #greet#. Bless you for stopping.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come here. Have you eaten? | #greet#. You're a sight I'm glad of.
+line @1 farewell : #farewell#. Walk in the Bright One's sight. | #farewell#. Go in the light.
+line @1 farewell.return : #farewell#. Bless you. | #farewell#, and safe home.
+line @1 react.news : Tell me, then. All of it, plainly. | Go on. I'd rather know than wonder.
+line @1 react.news.new : I'd not heard. #oath#. | That's new to me. Thank you for bringing it.
+line @1 react.news.doubt : #plainly.capitalize#: I'd want more before I believed that. | #doubt#. I'll wait for it in daylight.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. I'll pray for them tonight. | #pity#. The Bright One hold them close.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, bless them. That's lovely news. | #gladnews#. I'll light a candle for it.
+line @1 answer.how : Well. I saw the sun come up, and that's a good start. | #fine#, and grateful for it.
+line @1 sympathise : #sympathy#. Sit with me a while; you needn't talk. | That's heavy. You're in my prayers tonight, and I mean it.
+line @1 decline : #hedge#, I can't. I've promised the morning to a neighbour, and I'll not break it. | I'd like to, but no. I'd only do it badly, and you deserve better.
+line @1 accept_decline : #no_matter.capitalize#. There's always tomorrow, and it's usually sunny. | That's all right. Bless you for asking.
+line @1 thank : #thanks#. The Bright One notices, even when nobody else does. | Bless you for that. I'll remember it.
+line @1 deflect_thanks : #deflect.capitalize#. It's what neighbours are for. | Thank the Bright One, not me.
+line @1 preclose : Well. #preclose#. The light's moving on. | I'll let you go. Bless you for the talk.
+line @1 accept_preclose : Go on, then. Go in the light. | Off with you. Chapel, maybe, come Restday.
+line @1 ack : #bc_bless_you# | Mm. So it is.
+scene first_light_roofs
+when topic=day|faith here.time=dawn here.weather=clear
+does tell.feeling / react.self / assess / ack
+a : Look. #gold.capitalize#. That's the Bright One saying good morning. | I'm up for #firstlight# every day. When it hits #ridges# I give the Bright One good day. | There. The chapel spire first, then the Heights, then us. Every morning.
+b : It's lovely. | Every day? | Then us?
+a : It is. Every morning's new to me. #saying#. | Every day. Even when there's nothing to see, I say it anyway. | Then us, and then the low streets. The light gets everywhere in the end.
+b? : #bc_lovely# | #bc_every_day# | #bc_true#
+
+scene dark_winter_morning
+when topic=season|day here.season=winter here.time=dawn
+does tell.complaint / reassure / assess
+a : #dark.capitalize#. I got up for the light and there wasn't any. | Winter mornings are hard. I say the word anyway, in the dark. | I hate these black mornings, and I'll say so to anyone.
+b : It'll come back. | Does it help? | The days will turn.
+a : It will, I'm sure. I just miss it, that's all. | It helps me. The Bright One doesn't need the sun to hear. | They will, by the feast. I'll be counting.
+
+scene fog_no_light
+when topic=weather here.weather=fog
+does tell.feeling / react.self / assess
+a : Fog. You can't see the roofs at all. The light's in there somewhere. | I stood out for the sun this morning and got a face full of fog. | On a foggy morning the light comes on in one go, like a lamp being lit. Wait and see.
+b : It'll burn off. | Did you say the word anyway? | Like a lamp?
+a : It will. It always does. | I did. Into the fog. I'm sure it got through. | Like a lamp in a dark room. You'll see.
+
+scene rain_on_the_glass
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain. The light comes through grey, but it still comes. | I like the rain on the window when #lamp# is lit inside. Warm and wet together. | Rain washes the slates. Tomorrow they'll shine.
+b : Still comes, I suppose. | That's cosy. | If it stops.
+a : It does. #plainly.capitalize#: I'd rather have sun. But it comes. | It is. I sit by it and mend things. | It'll stop. Rain always stops, even here.
+
+scene window_lamps
+when topic=day|home here.time=dusk|night
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #lamp# lit for anyone out late. It's not much. | Look along the row. Every lamp in a window is somebody at home. | My hope is a lamp in every window on this row. We're nearly there.
+b : Who's it for? | Do you count them? | Nearly?
+a : Whoever needs it. A pup coming home late. A neighbour who's had bad news. | Sometimes. Fewer in hard times. That's how I know who to visit. | Two dark windows left. I've a candle for each, if they'll have one.
+b? : #bc_lovely# | #bc_poor_soul# | #bc_i_hope_so#
+
+scene plain_faith
+when topic=faith
+does give.opinion / ask.opinion / give.opinion / assess
+a : No priest needed for the Bright One and me. A window will do. | Faith isn't clever. It's getting up and saying thank you. | Some folk pray for things. I mostly just say good morning.
+b : That's a simple way to see it. | Is that all it is? | Do you think the Bright One listens?
+a : Simple's not the same as small. | That's most of it. The rest is being kind when you'd rather not. | I'd not keep saying it if I didn't. Would you?
+b : #bc_maybe# | #bc_fair# | I think I would.
+
+scene straight_advice
+when topic=friends|smalltalk pair.band=friends|family
+does give.advice / react.self / insist / ack
+a : #plainly.capitalize#: you've been short with folk lately, and it's not like you. | You want my advice? Say sorry first. It's cheaper later. | You look tired. Go to bed earlier. That's not a prayer, that's sense.
+b : Have I? | I'm not sure I can. | I know.
+a : You have, #kindly#. Something's on you. Tell me when you're ready. | You can. You'll feel better by supper. I promise. | Then do it. The sun comes up whether you've slept or not.
+b? : #bc_fair# | #bc_ill_try# | #bc_true#
+
+scene unkind_talk
+when topic=gossip|crime
+does tell.gossip / disagree / insist
+a : Somebody was saying cruel things on the chapel steps. I told them to stop. | Talk about a wolf who isn't here goes no further than me. | If it's unkind, keep it from me. If it's true, tell them, not me.
+b : Did they stop? | Not even a little? | That's fair.
+a : They did. They went red, and they stopped. Good. | Not even a little. I've no stomach for it. | That's how I was raised, and how I'll stay.
+
+scene hard_times_bread
+when topic=times|prices world.times=hard|lean
+does tell.worry / sympathise / reassure
+a : Hard times. More folk at the chapel door for bread than I've seen in years. | Lean, this season. I've given half my candles away. I'll manage in the dark. | Folk are quieter when they're hungry. I've noticed it on the row.
+b : It's hard all over. | Half your candles? | I've noticed too.
+a : Sharing's the only way through it. There's no other. | Half. I can find my bed blind. Others need to see to work. | Then we'll both watch for it. That's what neighbours do.
+
+scene feast_lamps
+when topic=festival|season
+does tell.feeling / react.self / assess
+a : At the feast every window's lit. The whole city glows like the morning. | I love the singing at the feast. Even when it's out of tune. Especially then. | I put an extra lamp out for the feast. One for the ones who can't afford their own.
+b : It does glow. | Out of tune? | That's kind.
+a : Like the first light, but kept up all night. | All of us at once, badly. That's what joy sounds like. | It's a lamp. It costs a little oil. It's nothing.
+
+scene children_up_early
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I get #self.child# up for the sunrise sometimes. Moaning all the way. | #self.child.capitalize# says I'm daft for watching the sun. I watch anyway. | I taught #self.child# the word for the morning. I hear it said, sometimes, when I'm not meant to.
+b : Moaning? | Daft? | That's lovely.
+a : Grumbling up every stair, then quiet at the top. That's the trick of it. | Daft, and happy. There are worse things to be. | It is. Best gift I ever gave, and it cost nothing.
+
+story the_long_winter [topic=memories|faith self.age>=30]
+  : There was a winter, years back, when the fog never lifted. Six weeks without a proper sunrise.
+  : I went up every morning anyway and said the word into the grey. Folk thought I'd lost my wits.
+  : The morning it cleared, half the row was up on the roofs with me.
+  ask : Would you have been up there with us?
+  b : I'd like to think I would.
+  b[old] : I remember that winter. I think I did.
+  : Then you know. It was the best morning of my life.
+
+story grandmother_window [topic=memories|family self.age>=20]
+  : My #gran# kept a lamp in the window every night of her life. I asked once who it was for.
+  : Somebody who'll need it, she said. She never knew who. She kept it lit anyway.
+  ask : Do you keep anything going, just in case?
+  b : A pot of tea, most days.
+  b[old] : A spare bed. It's been used, now and then.
+  : There. That's the same thing. That's kindness that waits.
+
+rule @dawn_word
+when concept=bark here.time=dawn here.weather=clear
+does aside
+cooldown 12h
+say Bright One, good morning. Thank you for the light. | #oath#. There it is, on #ridges#.
+
+rule @dusk_lamp
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Lamp in the window. There. | Light the lamp, somebody's coming home.
+
+dlg @1 resident.hub : #greet#, #address#. Blessings. What can I do? | #greet#. You're welcome here. Ask what you like.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bless you for coming back. | #topic.player#. I hoped I'd see you again.
+dlg @3 resident.hub [here.time=night] : #greet#. It's late, but the lamp's lit. Come to the light. | #greet#. Out at night? Then you'd better stand by the lamp.
+dlg @1 resident.job : I work, and I'm up before it for the sunrise. That's my day. | Work's work. I'll tell you straight: the morning's the best part.
+dlg @1 resident.bye : #farewell#. Go in the light. | #farewell#. Safe home, under the Bright One.
+graft resident.hub
+choice Why are you up on the step so early every morning? -> sunrise_step
+node sunrise_step
+say To see the sun come onto the roofs. When it touches the ridges I give the Bright One my thanks for another day. That's all it is.
+mood warm
+free
+choice Does it make any difference? -> sunrise_why
+choice Goodbye. -> bye
+node sunrise_why
+say It makes a difference to me. I start the day grateful, and it's hard to be unkind after that. Come up some morning and try it.
+choice I might. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#! I saw the sun come up. | #greet#. I'm being good today.
+line @1 greet.return : #greet#! Bless you. | #greet#. I like your face.
+line @1 farewell.return : Bye! Go in the light! | Bye. I'll say a word for you.
+line @1 react.news : Is that true? Tell me properly. | Really? Is it good or bad?
+line @1 answer.how : Good! I said the morning word. | All right. I'm hungry, but I'll be good.
+line @1 decline : I can't. I promised I'd help at chapel, and promises count. | I'd better not. I'm meant to be good today.
+line @1 accept_decline : All right. Bless you anyway. | That's all right. I'll ask the sun.
+scene pup_sun_word
+when topic=day|faith here.time=dawn|day here.weather=clear
+does tell.self / react.self / assess
+a : I say hello to the Bright One when the sun comes on the roofs. | The sun touched the chapel first today. Then our roof. I saw. | I waited on the doorstep and the sun landed right on my nose.
+b[stage=adult|old] #grown : That's a good habit for a pup. | First the chapel, always. | Warm, was it?
+b : Every day? | Then yours? | On your nose?
+a@grown : I'm going to do it every day forever. | Always. I checked three times. | Very warm. Like a hand.
+a : Every day. Even when I'm sleepy. | Then ours. It took ages. | Right on it. I sneezed.
+
+scene pup_lamp_job
+when topic=home|day here.time=dusk|night
+does tell.boast / react.self / assess
+a : I'm allowed to light the window lamp now. I'm very careful. | I put the lamp in the window so nobody gets lost. | I counted the lamps on our row. Seven. One more than yesterday.
+b[stage=adult|old] #grown : Careful's the word with lamps. | Nobody will, now. | Seven's a good count.
+b : All by yourself? | Who gets lost? | Seven?
+a@grown : I know. Whiskers well away from it. | Good. That's the point of it. | Next it'll be eight. I'm hoping.
+a : With somebody watching. But I strike it. | Pups. Grown-ups too, sometimes. | Seven. I'm going to make it more.
+
+scene pup_chapel_song
+when topic=faith|pastimes
+does tell.self / react.self / assess
+a : I sang at chapel. Loud. Nobody told me to stop. | I know three of the chapel songs. Nearly four. | I don't know all the words, so I sing the tune louder.
+b[stage=adult|old] #grown : Loud's the right way. | Nearly four is plenty. | The Bright One won't mind.
+b : Loud? | Which ones? | Does that work?
+a@grown : That's what I thought. | I'll learn the fourth this week. | Good. I'm loud for the Bright One.
+a : Very loud. The loudest. | The morning one and two others. | It works for me.
+
+scene pup_dark_morning
+when topic=weather|season here.season=winter
+does tell.complaint / reassure / assess
+a : I got up for the sun and it was still dark. So I got back under the blanket. | Winter's too dark. The sun's lazy. | It was dark when I woke and dark at supper. That's not fair.
+b[stage=adult|old] #grown : The sun's never lazy. Just far off. | It'll come back, I promise. | Not fair at all.
+b : It'll get lighter. | It is a bit lazy. | It's not.
+a@grown : Far off is lazy. | I'll hold you to that. | Somebody should tell it.
+a : When? I want it now. | Very lazy. | I'm going to say so to the Bright One.
+
+scene pup_porridge
+when topic=food
+does tell.self / react.self / assess
+a : I had #porridge# with honey this morning. The honey was the best part. | I said thank you for my breakfast and it tasted better. | If you blow on porridge it goes cold on top and hot underneath.
+b[stage=adult|old] #grown : Honey always is. | Gratitude's a good sauce. | That's porridge for you.
+b : Lucky. | Did it? | Is that true?
+a@grown : I ate it first. Then the porridge. | It's a better sauce than salt. | It's porridge for everyone.
+a : Very lucky. A whole spoonful. | It did. A bit. | It's true. I tried six times.
+
+story pup_spire_light [topic=memories|faith self.stage=young]
+  : One morning the sun came onto the chapel spire and it went all gold, like a candle.
+  : I thought it was the Bright One looking down. I waved, just in case.
+  b[stage=adult|old] : Maybe it was. Did anything happen?
+  b : Did it wave back?
+  : The light came down the street right to me. So yes, I think it did.
+
+rule @pup_sun_bark
+when concept=bark here.time=dawn here.weather=clear
+does aside
+cooldown 12h
+say Good morning, Bright One! I'm up! | There's the sun! On our roof!
+
+dlg @5 resident.hub : #greet#! Did you see the sunrise? I did. | #greet#. Bless you. That's what you say.
+
+adolescent
+line @1 greet.return : #greet#. Bless you, and good morning. | #greet#. Nice to see a friendly face.
+line @1 farewell.return : Bye. Go in the light. | See you. Bless you.
+line @1 react.news : Tell me straight. I can take it. | Go on. Good or bad, I'd rather know.
+line @1 answer.how : Up to my ears in chores. Glad of them, though. | Fine. Up early, as always.
+line @1 decline : I can't today. I've chapel chores, and I said I'd do them. | No, sorry. I promised somebody else first, and that matters.
+scene teen_up_alone
+when topic=day|faith self.stage=adolescent
+does tell.self / react.self / assess
+a : I still get up for the sunrise. The others laugh. I don't mind much. | I'm the only one my age on the chapel steps at dawn. It's quiet. I like it. | Somebody asked if I'd become a priest. I don't know. Maybe.
+b[stage=adult|old] #grown : Let them laugh. It's a good habit. | Quiet's precious at your age. | You'd make a kind one.
+b : They laugh? | Don't you get lonely? | A priest?
+a@grown : I know. I'll keep at it. | It is. I won't give it up. | Thank you. That's kind.
+a : A bit. They'll stop, or they won't. | Not with the sun for company. | Maybe. I'd have to like sermons more.
+
+scene teen_frank_friend
+when topic=friends|smalltalk self.stage=adolescent
+does tell.self / react.self / assess
+a : I told a friend the truth and they didn't speak to me for a day. | I can't fib. My face does it for me. | Somebody asked if their song was good. I said no, but the tune was.
+b[stage=adult|old] #grown : A day's not long, for a hard truth. | That's no bad thing. | Honest and kind at once. Well done.
+b : Was it worth it? | Never? | What did they say?
+a@grown : It was. We're friends again. | It is, mostly. | They practised. It's better now.
+a : Yes. We made up today. | Never. I've tried. | Nothing. Then they laughed.
+
+scene teen_lamp_round
+when topic=home|day here.time=dusk|night self.stage=adolescent
+does tell.self / react.self / assess
+a : I take candle ends round to the houses with dark windows. | I've a round now. Old folk on the row who can't reach their lamps. | I lit a lamp for somebody who lives alone. They cried a bit. Good crying.
+b[stage=adult|old] #grown : That's a blessing on the row. | Kind work for a youngster. | Good crying's allowed.
+b : Every night? | Who taught you? | Good crying?
+a@grown : I hope so. It feels like one. | Nobody. I watched my elders. | It is. I nearly did too.
+a : Most nights. When I've ends to spare. | My elders. And the sun, I think. | The kind that means thank you.
+
+rule @teen_dawn_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Morning, Bright One. Here I am again. | There it comes. On the ridges first.
+
+dlg @4 resident.hub : #greet#. Bless you. If you need anything, ask. I'll help if I can.

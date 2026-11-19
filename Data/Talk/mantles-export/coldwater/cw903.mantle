@@ -1,0 +1,289 @@
+# cw903, the question for a question (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw903
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier spare
+written_by claude
+title the question for a question
+fits stage=young|adolescent|adult|old
+prefers warmth=cold drive=ambitious
+traits temper=even talk=plain warmth=cold humour=dry honesty=guarded piety=ordinary drive=ambitious
+quirk answers_a_question_with_a_question
+likes hard_cheese cards a_full_till
+dislikes smoke night_noise
+fears owing_anyone_anything
+hopes my_own_name_over_a_door
+topics work +0.4 prices +0.4 times +0.3 pastimes +0.2 gossip -0.2 family -0.4
+styles comfort=practical gossip=hoarding refuse=short tease=dry
+marks oath saying
+persona #self.first# answers most questions with another one and keeps the rest close: cool, dry and watchful, sharp about what a thing is worth, fond of hard cheese and a hand of cards, and set on one day seeing a name of one's own over a door.
+
+words
+oath! = Cards to the chest | Hold and fold | By the shut ledger
+saying! = A question costs nothing; an answer costs plenty | Ask first and you'll learn more | Keep your best card face down
+whoasks = Who's asking | And who wants to know
+cheese = hard cheese | a heel of hard cheese
+cards = the cards | a hand of cards
+coinbox = my coin box | the box under the floorboard
+coppers = coppers | scale-coin
+plans = my plans | plans I keep to myself
+book = my little book | the book in my coat
+door = a door of my own | my own name over a door
+worth = what it's worth | what a thing's truly worth
+smokeroom = a smoky room | a room thick with pipe smoke
+under = under still water | down deep, where it's quiet
+hm = Hm | Mm-hm
+upward = up in the world | a rung higher
+shore = the shore | the shore road
+trader = a trader | a shore trader
+stillface = a still face | a face like still water
+
+any
+opinion @1 merchants mixed 2 : Every #trader# hides the true price. Fair play to them; I'd only like to be the one doing the hiding.
+opinion @1 houses for 1 : The Houses got where they are by keeping their mouths shut and their books full. I can respect #worth#.
+opinion @1 dole against 1 : Take a handout and you owe for it, one way or another. I'd go hungry first, and keep #coppers# my own.
+opinion @1 watch mixed 1 : #watch.capitalize# ask a lot of questions. I'd ask what they want the answers for.
+opinion @1 drink against 1 : A wolf on a second jar tells you everything. I keep to one, and I listen with #stillface#.
+opinion @1 newcomers mixed 1 : New faces mean new #coppers# and new trouble. I wait to see which they've brought, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Yours is a new face to me. | #greet#, #address#. You're not from this shore, by the look.
+line @2 greet [here.time=dusk|night] : #greet#. Late to be about, whatever the errand. | #greet#. You're out after the lamps, I see.
+line @1 kin.open [pair.kin!=no] : So. It's you. In, then, and shut the door behind. | There you are. Sit. Don't touch #book#.
+line @1 greet.return : #greet#. Well, what is it? | #greet#. You've a question in you; out with it.
+line @1 farewell : #farewell#. Keep it to yourself, whatever it was. | #farewell#. We'll talk again, if there's a reason.
+line @1 farewell.return : #farewell#, #address#. | #farewell#. Mind how you go.
+line @1 react.news.new : Says who? And why tell me? | #oath#. That'll be #worth# knowing.
+line @1 react.news.known : #knew#. I had it days ago; I didn't say. | I heard. What I hear goes #under#, mostly.
+line @1 react.news.doubt : And who stands to gain if I believe that? | #doubt#. Somebody wants that told. I'd ask why.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. #pity#. | That's hard news. It'll go no further from me, out of respect.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good for #topic.them#. #gladnews#. | That's #good# news. I hope it pays.
+line @1 answer.how : Why? What's #shore# been saying? | Well enough. Doing better than I let on, most days.
+line @1 sympathise : That's hard. #sympathy#. | That's a poor turn, #address#. What will you do?
+line @1 decline : No. I've other plans, and I'd sooner not say what they are. | Not this time. My evening's spoken for, and #plans# stay mine.
+line @1 accept_decline : #no_matter.capitalize#. I'll find somebody else. | #bc_fair_enough# There's no shortage.
+line @1 thank : #thanks#. That's a debt, and I'll square it. | That's good of you. Tell me what I owe.
+line @1 preclose : #preclose#. I've a thing to see to. | I've let more slip than I meant to. #hm#.
+line @1 tease [pair.band=friends] : You'd tell a stranger your own name and your #coppers# besides. | And where's your coin box, then? On your face, by the look.
+line @1 ack : #hm# | #bc_right#
+scene question_back
+when topic=smalltalk|day
+does ask.detail / answer.detail / assess / ack
+a : Why do you ask, #address#? | Which #busybody# has been telling you about me? | What makes you think I'd know?
+b : No reason, only passing the time. | Nobody. I only wondered. | You seem to know most things.
+a : Then let's pass it, and I'll keep my reasons #under#. | Wondering's free. Telling isn't. | Most things. I don't give them away. #saying#.
+b? : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene cards_late
+when topic=pastimes here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : There's a game of #cards# most nights, if you know the right door. | I won four hands tonight and lost one, on purpose. | #cards.capitalize# teach you faces. Every wolf gives something away, and I watch for it.
+b : Which door? | On purpose? | And you?
+a : If you have to ask, it's not your door. | Losing one keeps them coming back. Winning all keeps them away. | I keep #stillface#. That's why I win. #oath#.
+
+scene door_of_my_own
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / assess
+a : One day I'll have #door#. That's the whole plan. | I've a sum put by in #coinbox#. Half of what I need. Maybe more. | I'm going #upward#, slowly. Nobody sees a slow climb.
+b : What kind of place? | Only half? | Why slowly?
+a : Something with #door#. I'll say more when it's signed. | Maybe more. I said maybe. | Because a fast climb draws eyes, and eyes draw paws.
+b? : #bc_wise# | #bc_ha# | #bc_true#
+
+scene true_worth
+when topic=prices|work
+does tell.self / react.self / insist
+a : Every #trader# in #here.town# shows you one price and knows another. I want the other. | I don't haggle loud. I ask what it cost them, and watch for #stillface# slipping. | I keep prices in #book#. Who sold what, for how much, last month.
+b : They'll never tell you. | Do they answer? | What for?
+a : They do with their eyes. You only have to watch. | Never in words. The face does it for them. | So nobody can tell me a thing's dear when I know #worth#.
+
+scene lean_months
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Lean times. Folk sell things cheap for #coppers# that they'll want back dear. | Hard months. I've shut #coinbox# tight, and I'd tell you to do the same. | When times are #bad#, a wolf who saved is a wolf who buys.
+b : It'll turn. | Good advice. | That's cold.
+a : It will. I'll still be on my feet when it does. | Take it, then. It's free, which is rare for me. | Cold, maybe. True, certainly. #hm#.
+
+scene good_months
+when topic=times|prices world.times=good|boom
+does tell.self / react.self / assess
+a : #coppers.capitalize# moving. Now's when the careless spend and the careful buy. | Good times. Everyone's a friend to #coinbox# this month. I wonder why. | Prices are up. I sold what I'd held back all winter.
+b : You're a careful one. | Who's not, in good times? | Clever.
+a : Careful's cheaper than sorry. | Anyone who'll still know me in a lean month. | I waited. That's all clever ever is, #address#.
+
+scene cheese_rind
+when topic=food
+does tell.self / react.self / assess
+a : #cheese.capitalize# and a crust. I can live on that a week. | Soft cheese is for showing off. #cheese.capitalize# is for keeping. | I bought a full wheel of the hard stuff while it was cheap. It'll see me through winter.
+b : Plain fare. | You'd think it was money. | A whole wheel?
+a : Plain and paid for. Best kind. | It's near enough the same. It keeps #worth#. | A whole wheel. I know where every slice of it is.
+
+scene smoky_rooms
+when topic=day|home
+does tell.complaint / react.complaint / assess
+a : I can't think in #smokeroom#. Pipe smoke gets behind my eyes. | They play #cards# in a fug you could cut. I win anyway, but I hate it. | Somebody lit a pipe in my doorway. #smokeroom.capitalize#, uninvited.
+b : Some folk can't do without it. | You win, though. | Did you say anything?
+a : Then let them puff on #shore#, not in my doorway. | I win, and I come home smelling like a chimney. | I asked if they'd like to finish it on #shore#. They took the hint.
+
+scene owing_nobody
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I don't borrow. Not a cup of flour. A loan's a hook. | Give me something and I'll pay it back by Restday, and we're square. | I've never owed anybody a copper, and nobody's ever owed me one long.
+b : Sounds lonely, that. | Even a gift? | That's a rare thing.
+a : It's free, is what it is. Nobody tugs on me. | Even a gift. Gifts are loans with better manners. | Rare, and I'll keep it rare. #hm#.
+
+scene grey_shore
+when topic=weather here.weather=fog here.region=coldwater
+does tell.self / react.self / assess
+a : #fog.capitalize# this thick, nobody sees who's going where. Suits me. | A grey morning. Good for errands nobody needs to know about. | You can't see past the jetty in #fog#. I can hear, though.
+b : Mysterious. | What errands? | What did you hear?
+a : Private. There's a difference. | The kind I just mentioned. #hm#. | Enough. It's gone #under#.
+
+scene kept_close
+when topic=gossip|crime
+does tell.gossip / react.news / insist
+a : I heard something about somebody. I'll keep it a while and see what it's #worth#. | Everyone at the well was talking. I was listening. That's the better half. | There's a story going round. I know a piece of it nobody else does.
+b : Tell me. | What did they say? | Which piece?
+a : Not yet. A thing told is a thing spent. | Plenty. I'll sort what's true from #busybody# talk before I give any away. | The piece I'm keeping #under#. #saying#.
+
+story first_trade [topic=work|memories self.age>=25]
+  : The first real trade I made, I bought a cart of turnips the day before the frost.
+  : Everyone laughed at me. Three weeks later, I sold them for twice what I'd paid.
+  ask : Can you guess who was laughing then?
+  b : You were, I'd guess. Quietly.
+  : Quietly. I bought #coinbox# with it, and I've never told anyone what's in it.
+
+story last_hand [topic=pastimes|memories self.age>=20]
+  : I once sat at #cards# with a #trader# who'd been taking coin off the whole shore for a month.
+  : I lost every hand, smiling, until the last, and then I bet everything I'd lost and more.
+  ask : What was in my paw, would you say?
+  b : Nothing at all, from that smile of yours. Was it?
+  : Nothing. But the trader didn't know that, and folded. #oath#.
+
+rule @coin_bark
+when concept=bark
+does aside
+cooldown 8h
+say Count it twice, say it once. | #whoasks.capitalize#? Nobody. Good.
+
+rule @smoke_bark
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 10h
+say Who's smoking? Put it out or take it elsewhere. | #smokeroom.capitalize#. I'd sooner stand in the #rain#.
+
+dlg @1 resident.hub : #greet#. What are you after, then? | #greet#. You've a question. They always do.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. What do you want this time?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : And what do you want with me? Plain words, and quick.
+dlg @1 resident.job : What do I do? What's it to you? | I work. I save #coppers#. I mind my business. You could try it.
+dlg @1 resident.bye : #farewell#. You didn't hear anything from me. | #farewell#. Mind who you talk to.
+graft resident.hub
+choice Why do you answer questions with questions? -> question_why
+node question_why
+say Why, what's it to you? There. You see how it goes. A question costs nothing, and the asker shows more than any answer would.
+mood calm
+free
+choice What have you learned about me? -> question_learned
+choice Goodbye. -> bye
+node question_learned
+say That you're curious, and that you'll ask twice. That's #worth# knowing. The rest I'll keep.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. I didn't hear you coming. | #greet#. I wasn't doing anything, whatever it looks like.
+line @1 greet.return : #greet#. What is it? I'm busy with #coppers#. | #greet#. I've got a secret, and I'm keeping it #under#.
+line @1 farewell.return : #farewell#. Don't follow me. | #farewell#. I'm not saying where I'm going.
+line @1 react.news : Who told you that, #address#? | #surprise#. I'm keeping that for later.
+line @1 answer.how : Why, what's it to you? | All right. I found a copper for #coinbox#, and that's all I'm saying.
+line @1 thank : #thanks#. I'll remember I owe you, and I'll pay. | Thank you. Now we're square, #address#.
+line @1 decline : No. It's mine, and I'm saving it for something I'm not telling you. | I don't want to. You'll only tell everyone, and then it's not mine.
+scene young_treasure_box
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've got a box, kept #under#. I'm not saying where. | I keep things in #coinbox#. Coppers, a button, a shiny stone. | I've got four #coppers# saved. Nobody knows. Except you, now.
+b[stage=adult|old] #grown : A box, is it? And what's in it? | What's the button for? | Saving for something?
+b : What's in it? | What's the button for? | What will you buy?
+a@grown : Why should I say? You might be after it. | It's a good button. It might be #worth# something one day. | Something big. I'll know it soon enough.
+a : Things. Mine. #hm#. | It might be silver. I haven't decided. | Something big. You'll see. Or you won't.
+
+scene young_pebble_stall
+when topic=pastimes|work
+does tell.boast / react.self / assess
+a : I sold three pebbles to the little ones for a crust each. They're good pebbles. | I had a stall today. Pebbles and acorns. I did #very# well. | I swapped a feather for a whole apple. Then I swapped the apple for two feathers.
+b : Shrewd of you. | Did you sell out? | Clever.
+a : They wanted them. I only said they were lucky. | Everything but one acorn. I'm keeping that till it's #worth# more. | I know. Now I've got two feathers and nobody else knows how.
+
+scene young_who_wants
+when topic=smalltalk|family
+does ask.detail / answer.detail / assess
+a : Why are you asking where I live, #address#? | #whoasks.capitalize#, what I had for supper? | Why do you need to know who my friends are?
+b : Only being friendly. | Nobody. Only me. | No reason. Just asking.
+a : Friendly's how they start. #hm#. | Then I'm not saying. You'll have to guess. | Then I'll tell you when there's a reason, #address#.
+
+scene young_told_off
+when topic=home
+does tell.complaint / react.complaint / assess
+a : I got told off for hiding the bread. I was only keeping it safe. | Somebody found #coinbox#. They didn't take anything, but they looked. | I'm not allowed to sell my chores to the pup next door anymore.
+b : Safe from who? | That's not fair. | Why not?
+a : From whoever eats it. That's everyone. | It isn't. Now I've got to find a new place, and that takes days. | It was a #good# price, too. They were glad to do them.
+
+scene young_cheese_heel
+when topic=food
+does tell.self / react.self / assess
+a : I had #cheese# and I didn't share it. It was a #little# heel. | #cheese.capitalize# is best because it lasts. You can keep it for ages. | I traded my bread for #cheese#. I got the better end of that.
+b : Tasty, though? | It does keep. | How so?
+a : Very. That's why I didn't share. | Ages and ages. I've got some now. I'm not saying where. | Bread's gone by supper. #cheese.capitalize# is still there tomorrow.
+
+story young_found_coin [topic=memories|pastimes]
+  : I found a coin in the road once, all muddy, right by a cart wheel.
+  : I didn't tell anybody. I put it in #coinbox# and I looked at it every night.
+  ask : Would you have told anyone?
+  b : I'd have told everyone, and spent it by noon.
+  : That's why you haven't got one, and I have.
+
+rule @young_coin_bark
+when concept=bark
+does aside
+cooldown 8h
+say Four #coppers#. Five, come Restday. | It's mine. #whoasks.capitalize#?
+
+dlg @young resident.hub : #greet#. What do you want? | #greet#. #whoasks.capitalize#? Oh. You. What is it?
+dlg @young resident.job : No job yet. I'm getting one. A #good# one, that pays. | I run errands. For a copper, mind.
+dlg @young resident.bye : #farewell#. Don't tell anyone what I said. | #farewell#. You never saw me.
+
+adolescent
+line @1 greet.return : #greet#. What's it to be, then? | #greet#. I've an errand to run, so be quick.
+line @1 farewell.return : #farewell#. I'll know if you've told anyone. | #farewell#. Mind your own, and I'll mind mine.
+line @1 react.news : Is it? And who'd you hear it from? | #surprise#. That's #worth# something, that is.
+line @1 answer.how : Saving #coppers#. Same as always. | Why, do I look #poorly#? I'm fine, #address#.
+line @1 decline : I can't spare the time, and time's what I'm selling just now. | Not this week. I've a better-paying errand promised, and I'll not drop it.
+scene adol_errand_pay
+when topic=work
+does tell.self / react.self / assess
+a : I run errands now. A copper a message, two in bad weather. | I've three regulars and a waiting list. I made the list myself. | I carried a parcel up #shore# today. I didn't look inside it. Much.
+b : That's a fair living. | A waiting list? | Much?
+a : It's a start. Every copper's a step #upward#. | It makes them think they're lucky to get me. They are. | Enough to know it wasn't #worth# stealing. I'm careful, not foolish.
+
+scene adol_saving_up
+when topic=dreams|prices
+does tell.plan / ask.opinion / give.opinion / assess
+a : I've a sum of #coppers# in mind. When I reach it, I'm buying a share of something. | Most my age spend it on sweets. I put mine in #coinbox#. | One day I'll have #door#. I've already chosen which door.
+b : A share of what? | Do you never treat yourself? | Which one?
+a : Why would I tell you? You might get there first. | Once. It was a waste. It still nags at me. | The one with the blue latch, down by the water. Don't go buying it.
+b : #bc_fair_enough# | Fair. | #bc_ha#
+
+scene adol_not_telling
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : My friend asked what I'm saving for. I asked what my friend wanted to know for. | Everyone tells everyone everything round here. I keep mine #under#. | Somebody tried to get #plans# out of me with a honey cake. Nearly worked.
+b : Fair question, mind. | Most folk like to talk. | Nearly?
+a : It was. So was mine. We left it there. | Then they'll never have anything of their own. | I ate the cake and said nothing. A #good# trade.
+
+rule @adol_bark
+when concept=bark
+does aside
+cooldown 9h
+say Another copper. Another step #upward#. | #whoasks.capitalize#? Nobody. Good.
