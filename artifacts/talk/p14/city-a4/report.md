@@ -10,7 +10,7 @@ Branch `cloud/mantles-city-a4` from `154fd7c0`. Codex coordinated six parallel w
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | rm221 | rm_orm_fogmore | Orm Fogmore | plain | light broad | standard | young | the tune under the tongue | 70 | 23 | 3 | 6 | 27 | 4 | 6 | 1 | 14 | 176 |
 | rm222 | rm_torvald_slagton | Torvald Slagton | plain | light broad | full | adult | the thumb on the bowl | 94 | 28 | 5 | 9 | 32 | 6 | 12 | 2 | 18 | 229 |
-| rm223 | rm_corra_ropewick | Corra Ropewick | plain | light broad | standard | young | the captain of the walnut shell | 68 | 23 | 3 | 6 | 25 | 4 | 6 | 1 | 14 | 174 |
+| rm223 | rm_corra_ropewick | Corra Ropewick | plain | light broad | standard | young | the nutshell captain | 68 | 23 | 3 | 6 | 25 | 4 | 6 | 1 | 14 | 174 |
 | rm224 | rm_josephine_wetmore | Josephine Wetmore | plain | light broad | standard | young | the rest between two bells | 68 | 23 | 3 | 6 | 25 | 4 | 6 | 1 | 14 | 174 |
 | rm225 | rm_elspet_ropewick | Elspet Ropewick | plain | none | standard | adolescent | the watcher of the cork | 68 | 23 | 3 | 6 | 25 | 4 | 6 | 1 | 14 | 174 |
 | rm226 | rm_ulla_greymore | Ulla Greymore | plain | none | full | adult | the corner turned in | 94 | 28 | 5 | 9 | 32 | 6 | 12 | 2 | 19 | 229 |
@@ -35,10 +35,10 @@ Branch `cloud/mantles-city-a4` from `154fd7c0`. Codex coordinated six parallel w
 | rm245 | rm_frida_rainhand | Frida Rainhand | plain | broad light | standard | adult | the folded hill | 61 | 18 | 3 | 6 | 20 | 4 | 9 | 1 | 15 | 185 |
 | rm246 | rm_rune_wickwell | Rune Wickwell | plain | broad light | standard | old | the doorstep astronomer | 61 | 18 | 3 | 6 | 20 | 4 | 9 | 1 | 14 | 185 |
 | rm247 | rm_corwin_sootton | Corwin Sootton | plain | broad light | standard | adult | the missing beat | 61 | 18 | 3 | 6 | 20 | 4 | 9 | 1 | 14 | 185 |
-| rm248 | rm_isolde_brineton | Isolde Brineton | plain | light broad | standard | adult | the keeper of the high shelf | 71 | 18 | 3 | 7 | 29 | 4 | 9 | 1 | 13 | 171 |
+| rm248 | rm_isolde_brineton | Isolde Brineton | plain | light broad | standard | adult | the high shelf | 71 | 18 | 3 | 7 | 29 | 4 | 9 | 1 | 13 | 171 |
 | rm249 | rm_kjell_wickmore | Kjell Wickmore | plain | light broad | standard | adult | the chipped lip | 67 | 18 | 3 | 7 | 26 | 4 | 8 | 1 | 13 | 198 |
 | rm250 | rm_ivo_cinderham | Ivo Cinderham | plain | light broad | standard | adult | the pencilled lookout | 65 | 18 | 3 | 6 | 25 | 4 | 8 | 1 | 13 | 194 |
-| rm251 | rm_magnus_greycot | Magnus Greycot | plain | broad light | standard | adult | the missing beat | 64 | 18 | 3 | 6 | 25 | 4 | 7 | 1 | 12 | 193 |
+| rm251 | rm_magnus_greycot | Magnus Greycot | plain | broad light | standard | adult | the swallowed beat | 64 | 18 | 3 | 6 | 25 | 4 | 7 | 1 | 12 | 193 |
 | rm252 | rm_maren_tarhand | Maren Tarhand | plain | light broad | standard | adult | the unbroken seal | 65 | 18 | 3 | 6 | 25 | 4 | 8 | 1 | 13 | 194 |
 | rm253 | rmx_disa_bilgemarsh | Disa Bilgemarsh | plain | broad light | standard | old | the windfall holes | 65 | 18 | 3 | 7 | 25 | 4 | 7 | 1 | 12 | 194 |
 | rm254 | rmx_petra_ashgate | Petra Ashgate | plain | light broad | full | adult | the smoke in the seam | 99 | 30 | 5 | 9 | 32 | 6 | 15 | 2 | 16 | 304 |
@@ -69,7 +69,7 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 
 - **rm221, the tune under the tongue.** This wolf sets messages to little tunes and takes a broken confidence worse than a broken toe.
 - **rm222, the thumb on the bowl.** This wolf warms each bowl before the first ladleful, dodges questions of ownership, and takes a staircase two risers at a stride.
-- **rm223, the captain of the walnut shell.** This wolf rigs nutshells for distant voyages and puts every scrap of cargo in precisely the right place.
+- **rm223, the nutshell captain.** This wolf rigs nutshells for distant voyages and puts every scrap of cargo in precisely the right place.
 - **rm224, the rest between two bells.** This wolf keeps the rests as carefully as the notes and will cut a tune short when listeners pry.
 - **rm225, the watcher of the cork.** This wolf hums under a closed mouth and studies the difference between a bobbing cork and a bite.
 - **rm226, the corner turned in.** This wolf turns marked corners inside a bundle, counts bell strokes against the wrist, and bristles at questions about other households.
@@ -94,10 +94,10 @@ Game day, wear and scene coverage (G3), database load and binding, export agreem
 - **rm245, the folded hill.** This wolf creases scraps of old maps into hills and keeps the summit window folded out of sight.
 - **rm246, the doorstep astronomer.** This wolf studies the bright strips between showers and makes room on the step for another pair of eyes.
 - **rm247, the missing beat.** This wolf leaves a silent beat in a dockside dance, draws breath and listens for the next pair of feet.
-- **rm248, the keeper of the high shelf.** This wolf marks the safe height for provisions with a dried apple leaf, shifts a chair towards every guest, and turns private questions aside with the offer of something crisp to eat.
+- **rm248, the high shelf.** This wolf marks the safe height for provisions with a dried apple leaf, shifts a chair towards every guest, and turns private questions aside with the offer of something crisp to eat.
 - **rm249, the chipped lip.** This wolf eyes a stranger's manners over the rim of a cup, keeps flawed crockery for passing along quietly and can smell a false ending three turns before a tale reaches it.
 - **rm250, the pencilled lookout.** This wolf marks good views on a battered map, finds an excuse to stop and admire each one in the damp and means to leave a clear road for the next climber.
-- **rm251, the missing beat.** This wolf keeps a private dance measure with one heel, leaves a beat empty when the air catches and imagines the sway of a bunk above dry sand.
+- **rm251, the swallowed beat.** This wolf keeps a private dance measure with one heel, leaves a beat empty when the air catches and imagines the sway of a bunk above dry sand.
 - **rm252, the unbroken seal.** This wolf reads a row of masts as readily as printed letters, smooths a battered envelope against a sleeve and guards the blank side from idle fingers.
 - **rm253, the windfall holes.** This wolf collects pips in a knotted scrap, wants to know just how deep every doorstep floods and has picked a spot for an apple tree somewhere high above the Sound.
 - **rm254, the smoke in the seam.** This wolf can smell which wood warmed a wet sleeve, pares little wooden lids to fit mismatched jars and has a soft voice that makes room for a very dry joke.
@@ -116,6 +116,12 @@ Each mantle uses the stage, tier, dialect and accent coverage from its starting 
 
 | Mantle | Brief quirk | Written quirk |
 |---|---|---|
+| rm221 | trusts no one from a rival house | sets private messages to little tunes |
+| rm222 | takes the long stairs two at a time | warms each bowl before its first ladleful |
+| rm223 | watches the rain as if it might stop | rigs walnut shells for distant voyages |
+| rm224 | counts the bells from the chapel of the tide | keeps the rests between chapel strokes |
+| rm225 | hums sea songs under the breath | hums softly while watching a fishing cork |
+| rm226 | counts the bells from the chapel of the tide | turns marked corners in and counts bells against a wrist |
 | rm227 | takes the long stairs two at a time | remembers stairs by the flat place on each landing |
 | rm228 | coughs in the damp and pretends not to | sews a loose thread to read the air |
 | rm229 | hums sea songs under the breath | creases straw hulls to race in wash water |
