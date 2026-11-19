@@ -175,11 +175,12 @@ std::string joined(const std::vector<std::string>& v, const char* by = " ")
 // gossip, the business, a bare shop, a warrant...) and the mantle's line tests none of them, it would hide them: "Nothing
 // worth the telling" while a wagon lies robbed on the road (doc 84 §42, fix 8). So such a line yields: it holds only
 // where none of the tree's fact lines do (each one's first fact, negated), its score as written. The hour, the meeting,
-// the mood and the trade are how a line is said, not facts it reports; a line of the strict priority wins anyway.
+// the mood and the trade are how a line is said, not facts it reports, and so is a customer just come in (came_in, doc
+// 84 Phase 12: the keeper looked up); a line of the strict priority wins anyway.
 // (tools/mantle_check.py's window rule is the same, so a writer sees where it applies.)
 bool cosmeticFact(const Criterion& c)
 {
-    static const std::set<std::string> Cosmetic{"concept", "meeting", "time", "disposition", "trade", "stage"};
+    static const std::set<std::string> Cosmetic{"concept", "meeting", "time", "disposition", "trade", "stage", "came_in"};
     return Cosmetic.count(c.name) > 0;
 }
 

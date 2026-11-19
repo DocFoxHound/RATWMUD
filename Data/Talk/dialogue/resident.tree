@@ -24,6 +24,7 @@ node hub
 say #greet#. #talk_open# | #talk_open#
 say[topic.meeting=known] #greet#, #topic.player#. #talk_open# | #topic.player#. #talk_open#
 say[here.time=night] It's late. #talk_open#
+say[here.came_in=yes] #greet#. Come in, come in. #talk_open# | #greet#. In you come. #talk_open#
 free
 choice What's it like around here? -> town
 choice What do you do? -> job

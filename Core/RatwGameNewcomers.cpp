@@ -1066,10 +1066,6 @@ void Game::tendEvenings()
         const auto person = people_.find(accountKey(id));
         return person == people_.end() || person->second.settings.matchmaking;
     };
-    const auto status = [&](const std::string& id) {
-        const auto p = profiles_.find(id);
-        return p == profiles_.end() ? std::string("ic") : p->second.status;
-    };
     // Newcomers due an evening, by the innkeeper at work and awake where they are: welcomed together, so a room with
     // several newcomers hears one welcome; an innkeeper welcomes no one again for ten minutes.
     std::map<std::string, std::vector<std::string>> due;
@@ -1102,93 +1098,29 @@ void Game::tendEvenings()
     {
         if (const auto at = welcomedAt_.find(innkeeper); at != welcomedAt_.end() && now() - at->second < 600)
             continue;                               // (Not counted as an evening tried: it is tried again soon.)
-        const auto* inn = world_.entity(innkeeper);
-        std::vector<std::string> others;
-        for (const auto* o : world_.entitiesIn(inn->cellId))
-            if (!o->npc && !o->dead && std::find(newcomers.begin(), newcomers.end(), o->id) == newcomers.end() &&
-                status(o->id) != "ooc" && settingOn(o->id) &&
-                std::none_of(newcomers.begin(), newcomers.end(), [&](const std::string& n) { return blocked(n, o->id); }))
-                others.push_back(o->id);
+        const auto others = welcomeOthers(newcomers, innkeeper);
         for (const auto& id : newcomers)
         {
             auto& ev = evenings_[id];
             ev.lastDay = day;
             ++ev.tries;
-            ev.done = !others.empty();
         }
+        // The welcome is the innkeeper's greeting in the window (doc 84 §13.1.5, Phase 12: inn.tree's
+        // [here.newcomer=yes], then the wolves here pointed out: Game::welcomeInWindow); here the keeper only catches the
+        // newcomer's eye, and the newcomer is told how to talk with them. Done once it is said.
         if (!others.empty())
         {
             welcomedAt_[innkeeper] = now();
-            welcomeAtInn(newcomers, innkeeper, others);
+            for (const auto& id : newcomers)
+            {
+                welcomeDue_[id] = {innkeeper, world_.time() + WelcomeSeconds};
+                emote(innkeeper, id, "catches the newcomer's eye.");
+                hintedAt_.erase(innkeeper + "|" + id);
+                talkHint(id, innkeeper);
+            }
         }
         saveSoon();
     }
-}
-
-void Game::welcomeAtInn(const std::vector<std::string>& newcomers, const std::string& innkeeper, const std::vector<std::string>& others)
-{
-    const auto& m = newcomers::matchRules();
-    const auto& r = newcomers::rules();
-    // Said aloud to the newcomers, the room hearing; the wolves are named, and each listener hears them as it knows
-    // them: by name, or by look (so a name is never passed on as hearsay: doc 32, 1.5).
-    const auto say = [&](const std::string& text) {
-        ParsedPost post;
-        post.ok = true;
-        post.speech = true;
-        post.veilNames = true;
-        post.segments.push_back({"speech", text});
-        publish(innkeeper, post, Voice::Speak, newcomers);
-        npcLastSpeech_[innkeeper] = world_.time();
-    };
-    say(m.welcome);
-    std::vector<std::string> pointed;
-    for (const auto& id : others)
-    {
-        if (int(pointed.size()) >= r.eveningLines)
-            break;
-        const auto* bond = world_.bonds().find(innkeeper, id);
-        if (!bond || bond->familiarity < m.knowsFamiliarity)
-            continue;
-        std::vector<std::string> facts;
-        const auto fact = [&](const char* key) {
-            if (const auto f = m.facts.find(key); f != m.facts.end())
-                facts.push_back(f->second);
-        };
-        fact(bond->familiarity >= r.regular ? "regular" : "sometimes");
-        if (const auto p = profiles_.find(id); p != profiles_.end() && p->second.status == "lfs")
-            fact("looking");
-        const auto account = accountKey(id);
-        const auto person = people_.find(account);
-        if (availableMentor(account) || (person != people_.end() && person->second.experience == "guide" && !person->second.mentor.on))
-            fact("guide");
-        std::string what;
-        for (std::size_t i = 0; i < facts.size(); ++i)
-            what += (i == 0 ? "" : i + 1 == facts.size() ? " and " : ", ") + facts[i];
-        say(newcomers::fill(m.pointOut, {{"who", nameOf(id)}, {"what", what}}));
-        pointed.push_back(id);
-    }
-    // Names stay with their owners: each pointed out, and the newcomers, are asked to introduce themselves.
-    const auto prompt = [&](const std::string& to, const std::string& target, const std::string& words) {
-        if (auto* c = clientOf(to))
-        {
-            auto e = Value::object();
-            e.add("type", "introducePrompt");
-            e.add("target", target);
-            auto inn = labelFor(to, innkeeper);
-            if (!inn.empty())
-                inn[0] = char(std::toupper(static_cast<unsigned char>(inn[0])));
-            e.add("text", newcomers::fill(words, {{"innkeeper", inn}}));
-            e.add("seconds", 120);
-            send(c, e);
-        }
-    };
-    for (const auto& id : pointed)
-        prompt(id, newcomers.size() == 1 ? newcomers.front() : std::string(), m.promptPointed);
-    if (!pointed.empty())
-        for (const auto& id : newcomers)
-            prompt(id, {}, m.promptNewcomer);
-    for (const auto& id : newcomers)
-        logEvent("welcome", innkeeper, id, std::to_string(pointed.size()) + " pointed out");
 }
 
 bool Game::vouchCommand(Connection* c, const json::Value& j, Result& result)

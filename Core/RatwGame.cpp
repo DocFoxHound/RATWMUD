@@ -3278,7 +3278,6 @@ void Game::tick(double dt)
                 frameFor(c);
     }
     saveAccumulator_ += real;
-    ambientAccumulator_ += real;
     if (snapshotAccumulator_ >= 0.2)
     {
         snapshotAccumulator_ = 0;
@@ -3382,26 +3381,6 @@ void Game::tick(double dt)
                                if (targets.count(c->entityId))
                                    system(c, text);
                        });
-    }
-    if (ambientAccumulator_ >= 45)
-    {
-        ambientAccumulator_ = 0;
-        for (const auto& [id, e] : world_.entities())
-            if (e.npc && e.cellId == "tavern" && e.posture != "lying" &&
-                (!world_.society().resident(id) || world_.society().resident(id)->task != "sleep") &&
-                npcLastSpeech_[id] + 30 < world_.time())
-            {
-                bool heard = false;
-                for (auto* c : clients_)
-                    if (world_.hearingClarity(c->entityId, id) > 0.5)
-                        heard = true;
-                if (heard)
-                {
-                    publish(id, parsePost("The rain has eased along the sill. There may be a clear stretch of road before dusk."), Voice::Speak);
-                    npcLastSpeech_[id] = world_.time();
-                    break;
-                }
-            }
     }
 }
 
@@ -4997,6 +4976,8 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     // Said in the dialogue window: decided now, as it is said (a queued line keeps its own), and kept with the reply.
     const auto session = dialogues_.find(playerId);
     const bool window = std::exchange(windowNext_, false) || (session != dialogues_.end() && session->second.npc == npcId);
+    if (!window && !options_.residentsAnswerChat)
+        return false;                               // (Never an answer to open chat: doc 84 §13.1, Phase 12; W3.)
     if (pendingNpc_.count(npcId))
     {
         // Still answering: remember this to answer next. A crowd talking over each other keeps only the latest few.
@@ -5011,7 +4992,10 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
         return false;
     const bool identified = sense.identifiable;
     const std::string subjectId = identified ? playerId : "unidentified-voice-" + std::to_string(sequence_);
-    storylineEvent({"talk", playerId, npc->cellId, npcId, {}, 0, 0, {}});   // (Even unrecognised: doc 58, 1.)
+    // (Even unrecognised: doc 58, 1. Only in the window since doc 84 Phase 12, §13.1.7: naming a resident in chat is not
+    // talking to them. With residentsAnswerChat, chat counts as it did.)
+    if (window || options_.residentsAnswerChat)
+        storylineEvent({"talk", playerId, npc->cellId, npcId, {}, 0, 0, {}});
     auto context = dialogueContext(npcId, playerId, heardText, identified);
     if (identified)
     {
@@ -5271,6 +5255,10 @@ void Game::consolidate()
     std::weak_ptr<bool> alive = alive_;
     for (const auto& conversation : closing)
     {
+        // Only what the NPC overheard (doc 84 Phase 12: Game::overheard, chat it never answered): its plain summary
+        // stands, and the Mind is never asked to write one.
+        if (std::none_of(conversation.turns.begin(), conversation.turns.end(), [&](const MemoryTurn& t) { return t.who == conversation.npc; }))
+            continue;
         const auto* npc = world_.entity(conversation.npc);
         const std::string name = npc ? npc->name : conversation.npc;
         std::vector<std::pair<std::string, std::string>> turns;
@@ -6191,13 +6179,19 @@ void Game::command(Connection* c, const std::string& raw)
                 system(c, "Move closer so that wolf can hear you.");
                 return;
             }
-            // Choosing whom to speak to (Docs/Design/29, phase 4): the client adds them to its talk targets, and what
-            // the player writes next goes to them. Nothing is said for the player.
-            auto chosen = Value::object();
-            chosen.add("type", "talkTarget");
-            chosen.add("id", target);
-            chosen.add("name", names::capitalised(labelFor(id, target)));
-            send(c, chosen);
+            // Talk opens the dialogue window on the `talk` entry (doc 84 §13.1.3, Phase 12): everything a resident says
+            // to a player is said there. (Before it, Docs/Design/29's talk target: what the player wrote next in chat went
+            // to them. With residentsAnswerChat, as then.)
+            if (options_.residentsAnswerChat)
+            {
+                auto chosen = Value::object();
+                chosen.add("type", "talkTarget");
+                chosen.add("id", target);
+                chosen.add("name", names::capitalised(labelFor(id, target)));
+                send(c, chosen);
+            }
+            else
+                dialogueOpen(c, target, "talk");
         }
         else if (action == "steal" || action == "report" || action == "pay fine")
         {
@@ -6575,6 +6569,10 @@ void Game::command(Connection* c, const std::string& raw)
         // Who is spoken to (Docs/Design/29, phase 4): the talk targets the player chose (up to four) who can hear it,
         // anyone named, a companion asked for their thoughts; with none of those, the one resident close enough to
         // be plainly addressed, if there is exactly one. Only those answer, one after another.
+        // Since doc 84 Phase 12 (§13.1) only with residentsAnswerChat: otherwise no resident answers chat, whoever it is
+        // meant for. They hear it (each keeps what it overheard: Game::overheard), one named or chosen glances over and
+        // the player is told how to talk with them; the wolves it was meant for are told so as players are.
+        const bool answered = options_.residentsAnswerChat;
         std::vector<std::string> targets;
         for (const auto& t : j.array("targets"))
             if (t.isString() && targets.size() < 4 && std::find(targets.begin(), targets.end(), t.asString()) == targets.end())
@@ -6585,7 +6583,8 @@ void Game::command(Connection* c, const std::string& raw)
             SensoryResult sense;
             bool targeted, named, near;
         };
-        std::vector<Heard> hearers;
+        std::vector<Heard> hearers, overhearing;   // (Overhearing: kept after the line is said; `targeted`: addressed.)
+        std::string barker;                         // A companion with a word on the road, after the line is said.
         for (const auto& [npcId, e] : world_.entities())
         {
             if (!e.npc || e.transient || e.dead || e.cellId != player->cellId)
@@ -6605,11 +6604,24 @@ void Game::command(Connection* c, const std::string& raw)
             const bool targeted = std::find(targets.begin(), targets.end(), npcId) != targets.end();
             const bool inParty = parties_.companion(npcId) && parties_.together(npcId, id);
             const bool invited = inParty && (lower.find("what do you think") != std::string::npos || lower.find("your thoughts") != std::string::npos);
-            const bool interject = inParty && npcId == "npc_scout" && npcLastSpeech_[npcId] + 45 < world_.time() &&
-                                   (lower.find("road") != std::string::npos || lower.find("danger") != std::string::npos);
-            const bool named = namesWord(lower, mind::lower(e.name)) || invited || interject;
+            const bool roadTalk = inParty && (lower.find("road") != std::string::npos || lower.find("danger") != std::string::npos);
+            const bool interject = roadTalk && npcId == "npc_scout" && npcLastSpeech_[npcId] + 45 < world_.time();
+            const bool named = namesWord(lower, mind::lower(e.name)) || (answered && (invited || interject));
             const bool near = sense.hearing >= 0.5 && std::hypot(e.position.x - player->position.x, e.position.y - player->position.y) <= 6;
             hearers.push_back({npcId, perceived, sense, targeted, named, near});
+            if (!answered)
+            {
+                // Overheard, never answered (§13.1.2). A companion's interjection on the road is a bark to no one
+                // (§13.1.6), and a companion asked what they think is told so in their window ("What do you think?").
+                if (post.speech && sense.hearing >= 0.5)
+                    overhearing.push_back({npcId, perceived, sense, targeted || namesWord(lower, mind::lower(e.name)) || invited, false, false});
+                if (const auto* mine = roadTalk && post.speech ? parties_.of(id) : nullptr;
+                    mine && npcLastSpeech_[npcId] + 45 < world_.time() && world_.time() >= remarkAt_[mine->id])
+                {
+                    remarkAt_[mine->id] = world_.time() + RemarkSeconds;
+                    barker = npcId;
+                }
+            }
             if (voice != Voice::Whisper && sense.hearing >= .35)
                 world_.heardVoice(npcId, id);       // Speaking aloud gives a sneak away; a whisper stays a whisper (doc 40).
             {
@@ -6624,12 +6636,12 @@ void Game::command(Connection* c, const std::string& raw)
         std::vector<const Heard*> addressed;
         for (const auto& target : targets)          // In the order chosen.
             for (const auto& h : hearers)
-                if (h.npcId == target)
+                if (h.npcId == target && answered)
                     addressed.push_back(&h);
         for (const auto& h : hearers)
-            if (h.named && !h.targeted)
+            if (h.named && !h.targeted && answered)
                 addressed.push_back(&h);
-        if (addressed.empty() && targets.empty())
+        if (addressed.empty() && targets.empty() && answered)
         {
             const Heard* only = nullptr;
             int close = 0;
@@ -6645,9 +6657,17 @@ void Game::command(Connection* c, const std::string& raw)
         std::vector<std::string> to;
         for (const auto* h : addressed)
             to.push_back(h->npcId);
+        if (!answered)
+            for (const auto& target : targets)      // (Whom it was meant for, residents too: none of them answers.)
+                if (const auto* w = world_.entity(target); w && target != id && w->cellId == player->cellId && world_.shown(id, target))
+                    to.push_back(target);
         const auto heard = publish(id, post, voice, to, channel == "party" || channel == "chapter" ? channel : std::string());
         if (const auto* mine = parties_.of(id))
             lastPartySpeech_[mine->id] = world_.time();
+        for (const auto& h : overhearing)
+            overheard(h.npcId, id, h.text, h.sense, h.targeted);
+        if (!barker.empty())
+            companionSays(barker, "companion.road", std::string());
         const auto evidence = roleplayEvidence(post);
         // Actions count at half weight; said with a party mate listening, it is the party's scene (doc 32, 1.1).
         std::string partyScene;
@@ -6665,8 +6685,8 @@ void Game::command(Connection* c, const std::string& raw)
         social_.record({event, now(), id, player->cellId, evidence.words + evidence.actionWords / 2, false, evidence.contentHash, {},
                         partyScene},
                        heard);
-        // A chosen wolf who didn't hear: say so, rather than leave the player waiting.
-        for (const auto& target : targets)
+        // A chosen wolf who didn't hear: say so, rather than leave the player waiting. (None answers chat now.)
+        for (const auto& target : answered ? targets : std::vector<std::string>{})
             if (std::none_of(hearers.begin(), hearers.end(), [&](const Heard& h) { return h.npcId == target; }))
                 if (const auto* npc = world_.entity(target); npc && npc->npc)
                     system(c, npc->name + (npc->cellId == player->cellId ? " is too far away to hear you." : " is no longer here."));

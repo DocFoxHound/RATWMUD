@@ -1106,7 +1106,21 @@ void Game::reactions(double dt)
             const auto* life = world_.society().resident(o->id);
             if (keeps && life && life->task != "sleep" && due("customer:" + o->id + "|" + p->id, 60))
             {
-                react(o->id, p->id, "react.customer");
+                // A look, never a word (doc 84 §13.1.4, Phase 12): the keeper's greeting is the window's, which knows
+                // the customer has just come in (here.came_in, for two minutes). With residentsAnswerChat, as before.
+                if (options_.residentsAnswerChat)
+                    react(o->id, p->id, "react.customer");
+                else if (!o->offstage && o->posture != "lying" && !pendingNpc_.count(o->id))
+                {
+                    cameIn_[p->id] = {o->id, world_.time() + CameInSeconds};
+                    const auto job = jobCategoryOf(o->id);
+                    const bool counter = spec && spec->role == "merchant" && std::hash<std::string>{}(o->id + p->id) % 2;
+                    emote(o->id, p->id, job == "smith"        ? "looks up from the anvil."
+                                        : job == "innkeeper" ? "looks up from the taps."
+                                        : job == "baker"     ? "looks up from the dough."
+                                        : counter            ? "looks up from the counter."
+                                                             : "glances up at the door.");
+                }
                 break;
             }
         }

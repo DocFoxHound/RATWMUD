@@ -186,6 +186,13 @@ struct Options
     // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the talk
     // library voices them all.
     int ambientModelCallsPerHour = 0;
+    // Whether residents answer what players say in open chat (Docs/Design/84 §13.1, Phase 12; --residents-answer-chat).
+    // Off, the default: everything a resident says to a player is said in the dialogue window. Chat is still heard
+    // (publish), gives a sneak away, teaches an introduced name and counts toward scenes; a resident within earshot
+    // keeps what it overheard (Game::overheard), and one named or chosen glances over and the player is told how to
+    // talk with them. On: residents answer chat as they did before Phase 12, and a shopkeeper greets a customer aloud
+    // (react.customer) rather than looking up (the tests of what they answer).
+    bool residentsAnswerChat = false;
     // Residents' letters (doc 55, 5) polished by the light model: at most this many an hour; 0 (the default): templates.
     int letterModelCallsPerHour = 0;
     // Performing (doc 54, 1): how long a performer may be quiet, and perform at most (real seconds). Tests shorten them.
@@ -842,11 +849,14 @@ class Game
     static constexpr double RemarkSeconds = 180, QuietSeconds = 600;
     std::string whyNotJoin(const std::string& npcId) const;
     std::int64_t wageFor(const std::string& npcId) const;
-    void companionSays(const std::string& npcId, const std::string& words);
+    // A companion's few words (doc 84 §13.1.6, Phase 12): a line of the library's `concept` (companion.arrive,
+    // .danger, .wait...: Data/Talk/rules/companion.talk), in their dialect, with `facts` (topic.where...); `words` where
+    // nothing fits. Said in the window when its player has one open with them, else to the party as a bark.
+    void companionSays(const std::string& npcId, const std::string& concept, const std::string& words, const talk::Facts& facts = {});
     Result askAlong(const std::string& playerId, const std::string& npcId, bool hire);
     Result orderCompanion(const std::string& playerId, const std::string& npcId, const std::string& order);
     void releaseCompanions();
-    void companionLeaves(const std::string& npcId, const std::string& words, const std::string& why);
+    void companionLeaves(const std::string& npcId, const std::string& concept, const std::string& words, const std::string& why);
     void companionTick(double dt);
     void companionRemarks(double t);
     std::string companionContext(const std::string& npcId) const;
@@ -896,6 +906,27 @@ class Game
     int dialogueNext_ = 1;
     double dialogueLookIn_ = 0;
     std::map<std::string, double> dialogueOpened_;  // When each player last opened one (dialogueOpen: a quiet reopening).
+    // Players speak with residents only in the window (doc 84 §13, Phase 12; RatwGameWindowOnly.cpp). What a resident
+    // within earshot overhears of open chat is kept, never answered (overheard); one named or chosen glances over
+    // (emote) and the player is told, once in ten minutes for each, how to talk with them (talkHint: "Talk to Myrtle
+    // (T)"). A shopkeeper looks up as a customer comes in (cameIn_: here.came_in for 120 s, so the window's greeting
+    // fits); a newcomer is welcomed at an inn in the keeper's window (welcomeDue_: newcomer -> innkeeper,
+    // here.newcomer). By "npc|player": the last emote and the last hint.
+    void overheard(const std::string& npcId, const std::string& playerId, const std::string& heard, const SensoryResult& sense,
+                   bool addressed);
+    void emote(const std::string& npcId, const std::string& toward, const std::string& words);
+    void talkHint(const std::string& playerId, const std::string& npcId);
+    std::map<std::string, double> emotedAt_, hintedAt_;
+    std::map<std::string, std::pair<std::string, double>> cameIn_;
+    std::map<std::string, std::pair<std::string, double>> welcomeDue_;
+    static constexpr double CameInSeconds = 120, HintSeconds = 600, EmoteSeconds = 30, WelcomeSeconds = 1800;
+    // A newcomer opened their innkeeper's window with a welcome due: the wolves here pointed out (aloud, each listener
+    // hearing them as it knows them), the introduce prompts, and the words for the window (the newcomer's own labels).
+    std::string welcomeInWindow(const std::string& newcomer, const std::string& innkeeper);
+    std::vector<std::string> welcomeOthers(const std::vector<std::string>& newcomers, const std::string& innkeeper);
+    // The companion tree's "What do you think?" (doc 84 §13.1.6): the companion's view on one of the realm's issues it
+    // holds a stance on, from the library's opinion lines (its mantle's first); "" when it has none to give.
+    std::string companionOpinion(const std::string& npcId, const std::string& playerId);
     void dialogueCommand(Connection* c, const std::string& type, const json::Value& j);
     // Why a conversation must end now ("" if it goes on): walked away, out of sight, asleep, a fight, downed (doc 83,
     // decision 9). Checked once a second, and on every choice and line the player sends.
@@ -1112,7 +1143,6 @@ class Game
     std::int64_t vouchCursor_ = 0;
     void tendEvenings();
     std::map<std::string, double> welcomedAt_;
-    void welcomeAtInn(const std::vector<std::string>& newcomers, const std::string& innkeeper, const std::vector<std::string>& others);
     bool vouchCommand(Connection* c, const json::Value& j, Result& result);
     void tendVouches();
     void breakVouch(newcomers::Vouch& v);
@@ -1993,7 +2023,7 @@ class Game
     double dmExpiryAccumulator_ = 60;
     bool dmNotified_ = true;
     unsigned snapshotPhase_ = 0;
-    double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, snapshotSaveAccumulator_ = 0, ambientAccumulator_ = 0,
+    double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, snapshotSaveAccumulator_ = 0,
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;
     std::map<std::string, double> deadSince_, spawnBackoff_;
     PgClient worldDb_;

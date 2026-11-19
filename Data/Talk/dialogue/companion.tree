@@ -1,6 +1,7 @@
 # A companion (Docs/Design/83-dialogue-trees.md, Phase 3): Talk with a resident travelling in the party (doc 32). The
 # party's orders as words (follow, wait, go home, part ways: Game::orderCompanion, which they answer in their own
-# words, and the conversation ends), how they're holding up, goodbye. The wheel keeps the orders too.
+# words, and the conversation ends), how they're holding up, what they think (doc 84, Phase 12), goodbye. The wheel
+# keeps the orders too.
 
 tree companion
 for here.companion=yes
@@ -15,6 +16,7 @@ free
 choice Follow me. [here.waiting=yes] -> do order follow ; refused refused
 choice Wait here for me. [here.waiting=no] -> do order wait ; refused refused
 choice How are you holding up? -> holding
+choice What do you think? -> think
 choice Go home for now. -> do order home ; refused refused
 choice We part ways here. -> do order dismiss ; refused refused
 choice Something else... -> do open chat
@@ -28,6 +30,16 @@ say[injured=bad priority=2] I'm hurt, badly. I need to rest.
 free
 choice Follow me. [here.waiting=yes] -> do order follow ; refused refused
 choice Wait here for me. [here.waiting=no] -> do order wait ; refused refused
+choice Goodbye. -> bye
+
+# "What do you think?" (Docs/Design/84 §13.1.6, Phase 12): once said in chat to a companion and answered there; now
+# here, answered by the game from the companion's own stances (Game::companionOpinion: their view on one of the realm's
+# issues, the library's opinion lines, their mantle's first). These words where they have no view to give.
+node think
+ask companion.opinion
+say Hard to say. I'll think on it. | I've no strong view either way. | I'd sooner keep my thoughts to myself, for now.
+free
+choice How are you holding up? -> holding
 choice Goodbye. -> bye
 
 node refused

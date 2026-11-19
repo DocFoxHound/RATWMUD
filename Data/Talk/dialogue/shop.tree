@@ -15,6 +15,7 @@ entry trade greet
 node greet
 say #greet#, #address#. Looking or buying? | #greet#. #shop_offer#
 say[topic.meeting=known] #greet#, #topic.player#. #shop_offer# | Back again, #topic.player#? #shop_offer#
+say[here.came_in=yes] #greet#. Come in, come in. #shop_offer# | #greet#. Have a look around.
 say[here.shop=bare priority=2] #greet#. #shop_bare# I'll still buy, mind. | #shop_bare# What are you selling?
 say[here.shop=asleep priority=10] #shop_asleep#
 say[here.shop=asleep trade=baker priority=10] Mm... the ovens are cold... come back at dawn.

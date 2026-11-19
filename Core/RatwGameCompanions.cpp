@@ -92,12 +92,44 @@ std::int64_t Game::wageFor(const std::string& npcId) const
     return (roving(job ? job->title : spec ? spec->workLabel : std::string()) ? 10 : 6);
 }
 
-void Game::companionSays(const std::string& npcId, const std::string& words)
+void Game::companionSays(const std::string& npcId, const std::string& concept, const std::string& words, const talk::Facts& facts)
 {
+    // The library's line for the moment (doc 84 §13.1.6, Phase 12: Data/Talk/rules/companion.talk), in the companion's
+    // own dialect and voice; the written words where nothing fits (a library without them).
+    const auto* npc = world_.entity(npcId);
+    if (!npc)
+        return;
+    std::string line;
+    if (talk_.has(concept))
+    {
+        const auto q = talkQuery(npcId, std::string(), concept, facts);   // (Said to the party, no one in particular.)
+        const auto said = talkPick(q, npcId, "companion:" + npcId, 4, std::hash<std::string>{}(npcId + concept) + std::uint64_t(world_.time() * 10), false);
+        if (!said.lines.empty())
+            line = said.lines.front().second;
+    }
+    if (line.empty())
+        line = words;
+    if (line.empty())
+        return;
+    // Said in the window, when one of the party has theirs open with them; else to the party, as a bark.
+    for (auto& [playerId, d] : dialogues_)
+        if (d.npc == npcId)
+            if (auto* c = clientOf(playerId))
+            {
+                dialogueSpeak(npcId, playerId, line);
+                d.line = line;
+                d.awaiting = false;
+                d.changed = world_.time();
+                d.history.push_back({"npc", line});
+                while (d.history.size() > 4)
+                    d.history.pop_front();
+                dialogueSend(c, d);
+                return;
+            }
     ParsedPost post;
     post.ok = true;
     post.speech = true;
-    post.segments.push_back({"speech", words});
+    post.segments.push_back({"speech", line});
     publish(npcId, post, Voice::Speak, {}, "party");
     npcLastSpeech_[npcId] = world_.time();
 }
@@ -126,7 +158,7 @@ Result Game::askAlong(const std::string& playerId, const std::string& npcId, boo
         c.wage = wageFor(npcId);
         if (bond && bond->trust < -20)
         {
-            companionSays(npcId, "Not for any money. Not with you.");
+            companionSays(npcId, "companion.refuse_along", "Not for any money. Not with you.");
             return {false, "They won't work for you.", npcId};
         }
         const auto* purse = world_.society().account(playerId);
@@ -143,7 +175,10 @@ Result Game::askAlong(const std::string& playerId, const std::string& npcId, boo
         c.reason = "friend";
         if (socialLevel(playerId) < 3 || !bond || bond->affinity < 40 || bond->trust < 30)
         {
-            companionSays(npcId, !bond || bond->familiarity < 10 ? "I hardly know you." : "I don't know you well enough for that.");
+            if (!bond || bond->familiarity < 10)
+                companionSays(npcId, "companion.refuse_stranger", "I hardly know you.");
+            else
+                companionSays(npcId, "companion.refuse_friend", "I don't know you well enough for that.");
             return {false, "They won't come along as a friend. Not yet.", npcId};
         }
     }
@@ -152,7 +187,7 @@ Result Game::askAlong(const std::string& playerId, const std::string& npcId, boo
         return {false, outcome.message, npcId};
     npc->leaderId = "party:" + outcome.message;       // Off their schedule; the party leads (doc 32).
     world_.stop(npcId);
-    companionSays(npcId, hire ? "Done. I'll walk with you." : "Lead on. I'll come.");
+    companionSays(npcId, hire ? "companion.hired" : "companion.join", hire ? "Done. I'll walk with you." : "Lead on. I'll come.");
     tellParty(parties_.of(playerId)->members, names::capitalised(labelFor(playerId, npcId)) + " travels with the party now.", playerId);
     saveSoon();
     return {true, hire ? "They take your coin and come along." : "They agree to come along.", npcId};
@@ -170,16 +205,17 @@ Result Game::orderCompanion(const std::string& playerId, const std::string& npcI
     {
         c->waiting = true;
         world_.stop(npcId);
-        companionSays(npcId, "I'll wait here.");
+        companionSays(npcId, "companion.wait", "I'll wait here.");
     }
     else if (order == "follow me")
     {
         c->waiting = false;
-        companionSays(npcId, "Right behind you.");
+        companionSays(npcId, "companion.follow", "Right behind you.");
     }
     else if (order == "go home" || order == "dismiss")
     {
-        companionSays(npcId, order == "go home" ? "Home, then. Safe roads." : "Then this is where I leave you. Fare well.");
+        companionSays(npcId, order == "go home" ? "companion.home" : "companion.dismiss",
+                      order == "go home" ? "Home, then. Safe roads." : "Then this is where I leave you. Fare well.");
         parties_.releaseCompanion(npcId);
         releaseCompanions();
     }
@@ -203,13 +239,14 @@ void Game::releaseCompanions()
         }
 }
 
-void Game::companionLeaves(const std::string& npcId, const std::string& words, const std::string& why)
+void Game::companionLeaves(const std::string& npcId, const std::string& concept, const std::string& words, const std::string& why)
 {
     const auto* p = parties_.of(npcId);
     if (!p)
         return;
     const auto members = p->members;
-    companionSays(npcId, words);
+    if (!words.empty())
+        companionSays(npcId, concept, words);
     parties_.releaseCompanion(npcId);
     for (const auto& m : members)
         if (auto* c = clientOf(m))
@@ -228,7 +265,7 @@ void Game::companionTick(double dt)
     companionAccumulator_ = 0;
     const double day = world_.calendarDays();
     const double t = world_.time();
-    std::vector<std::tuple<std::string, std::string, std::string>> leaving;   // npc, words, why
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>> leaving;   // npc, concept, words, why
     // The journal and older saves know companions as resident → the one they follow.
     companionOwner_.clear();
     for (const auto& [partyId, p] : parties_.all())
@@ -249,7 +286,7 @@ void Game::companionTick(double dt)
                 continue;
             if (npc->dead)
             {
-                leaving.emplace_back(c.id, "", "they have died.");
+                leaving.emplace_back(c.id, "", "", "they have died.");
                 continue;
             }
             npc->leaderId = "party:" + partyId;
@@ -277,14 +314,14 @@ void Game::companionTick(double dt)
                         system(cl, "You pay " + labelFor(c.by, c.id) + " " + std::to_string(c.wage) + " pennies for another day.");
                 }
                 else
-                    leaving.emplace_back(c.id, "No pay, no company. I'm going home.", "you couldn't pay them.");
+                    leaving.emplace_back(c.id, "companion.leave_unpaid", "No pay, no company. I'm going home.", "you couldn't pay them.");
                 continue;
             }
             const auto* bond = world_.bonds().find(c.id, c.by);
             // A friend goes back to their own life after a day or two, unless the bond is very strong.
             if (c.reason == "friend" && day - c.joined > 2 && (!bond || bond->affinity < 70))
             {
-                leaving.emplace_back(c.id, "I should get back to my own life. It's been good travelling with you.",
+                leaving.emplace_back(c.id, "companion.leave_own_life", "I should get back to my own life. It's been good travelling with you.",
                                      "they have their own life to get back to.");
                 continue;
             }
@@ -292,7 +329,7 @@ void Game::companionTick(double dt)
             if ((c.reason == "friend" && (!bond || bond->affinity < 20 || bond->trust < 10)) ||
                 (c.reason == "hired" && bond && bond->trust < -20))
             {
-                leaving.emplace_back(c.id, "I've had enough of this. I'm going.", "they've had enough.");
+                leaving.emplace_back(c.id, "companion.leave_fed_up", "I've had enough of this. I'm going.", "they've had enough.");
                 continue;
             }
         }
@@ -308,7 +345,7 @@ void Game::companionTick(double dt)
             for (const auto& c : p->companions)
                 for (const auto& w : inc.witnesses)
                     if (w.id == c.id && w.identified)
-                        leaving.emplace_back(c.id, "I won't be part of that. I'm done with you.", "they saw what was done.");
+                        leaving.emplace_back(c.id, "companion.leave_crime", "I won't be part of that. I'm done with you.", "they saw what was done.");
     }
     if (seenIncidents_.size() > 2000)
         seenIncidents_.clear();
@@ -340,7 +377,7 @@ void Game::companionTick(double dt)
                     if (!warnedWatch_.count(c.id + "|" + b.id))
                     {
                         warnedWatch_.insert(c.id + "|" + b.id);
-                        companionSays(c.id, "Not against the Watch. I won't.");
+                        companionSays(c.id, "companion.watch", "Not against the Watch. I won't.");
                     }
                     continue;
                 }
@@ -372,8 +409,8 @@ void Game::companionTick(double dt)
                     if (const auto *a = world_.entity(c.id), *b = world_.entity(m); a && b && a->cellId == b->cellId && clientOf(m))
                         world_.bonds().mutual(c.id, m, {0.3, 0.2, 1, 0, 0}, day);
     }
-    for (const auto& [npcId, words, why] : leaving)
-        companionLeaves(npcId, words, why);
+    for (const auto& [npcId, concept, words, why] : leaving)
+        companionLeaves(npcId, concept, words, why);
     companionRemarks(t);
 }
 
@@ -450,7 +487,10 @@ void Game::companionRemarks(double t)
         std::string line = lines[(std::hash<std::string>{}(speaker + moment + place) + std::uint64_t(t)) % lines.size()];
         if (const auto at = line.find("{place}"); at != std::string::npos)
             line.replace(at, 7, place);
-        companionSays(speaker, line);
+        talk::Facts facts;
+        if (!place.empty())
+            facts["topic.where"] = place;
+        companionSays(speaker, "companion." + moment, line, facts);
         remarkAt_[partyId] = t + RemarkSeconds;
         lastPartySpeech_[partyId] = t;
     }

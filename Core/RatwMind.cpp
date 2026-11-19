@@ -130,16 +130,6 @@ std::string Client::authoredReply(const Context& c)
         return c.environment.empty() ? "We should judge the conditions where we are before taking the road." : c.environment;
     if (has("chapter"))
         return "A Chapter is a commitment to other wolves. Speak with its members before you put your name beside theirs.";
-    if (c.npcId == "npc_scout")
-        return "I'm listening. Give me a moment to put that beside what we've seen on the road; a curious nose sometimes finds what a hurried one misses.";
-    if (c.npcId == "npc_cook")
-        return "Come nearer the warm stones while we talk. I can keep an ear on your story while I tend the meal.";
-    if (c.npcId == "npc_porter")
-        return "Set your load down first. There is no sense carrying it through the whole conversation.";
-    if (c.npcId == "npc_smith")
-        return "Give me a moment to set this clasp aside. Small work needs a still paw, and a story deserves my attention.";
-    if (c.npcId == "npc_scribe")
-        return "Tell it in your own order. I would rather understand what happened than hurry you toward an ending.";
     if (!c.greeting.empty() && c.memory.empty())
         return c.greeting;
     if (!c.memory.empty())

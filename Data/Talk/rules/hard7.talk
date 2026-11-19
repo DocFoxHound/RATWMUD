@@ -1147,6 +1147,16 @@ does tell.gossip
 say Never seen #topic.subject# before. Have you? | #topic.subject# just walked in like #topic.they# owns the place. | What do you make of #topic.subject#? | Somebody new. #topic.subject#. Mind #topic.them#.
 then other: stranger.answer
 
+# What a resident overheard a stranger asking after in open chat (doc 84 §13.1.2, Phase 12: Game::overheard; topic.asked
+# is the world's words, "asking the way to the Grey Gull", a quarter of a day): talked of, never quoted, never answered.
+rule h7_st_open_asked
+when concept=talk.player topic.asked
+does tell.gossip
+priority 2
+cooldown 1d
+say #topic.subject# was #topic.asked#, loud as you like. | Did you hear #topic.subject# just now? Was #topic.asked#, for all to hear. | #topic.subject#'s been #topic.asked#. Somebody ought to tell #topic.them#. | That one was #topic.asked#. Not shy, that one.
+then other: stranger.answer
+
 rule h7_st_open_hire
 when concept=talk.player world.bandits=near self.wealth=comfortable|rich
 does tell.gossip

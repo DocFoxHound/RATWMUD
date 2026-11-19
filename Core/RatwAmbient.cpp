@@ -1287,6 +1287,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             const auto given = knows ? (namer_ ? namer_(a, id) : e.name) : std::string();
             t.talk["topic.known"] = !given.empty() ? "yes" : "no";
             t.talk["topic.subject"] = !given.empty() ? given : strangerWords(e.appearance);
+            // What a resident overheard them asking after in open chat (doc 84 §13.1.2, Phase 12: Game::overheard), in
+            // the world's words, never the player's own: talked of, never quoted.
+            if (const auto said = talkLedger_.saidOf(id, calendarDays_); said.count("asked"))
+                t.talk["topic.asked"] = said.at("asked");
             talkSexes(id, {}, t.talk);
             consider(std::move(t));
             break;

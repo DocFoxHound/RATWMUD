@@ -431,6 +431,12 @@ talk::Query Game::dialogueQuery(const std::string& playerId, const DialogueSessi
     facts["here.report_fee"] = std::to_string(reportFee(playerId));
     facts["here.tithe_fee"] = std::to_string(titheFee(playerId));
     dialogueRoleFacts(playerId, d.npc, facts);
+    // Doc 84 Phase 12 (§13.1.4-5): a customer who came in within two minutes, the keeper having looked up; a newcomer
+    // whose welcome at this inn is due (the greeting is the welcome).
+    const auto in = cameIn_.find(playerId);
+    facts["here.came_in"] = in != cameIn_.end() && in->second.first == d.npc && world_.time() <= in->second.second ? "yes" : "no";
+    const auto welcome = welcomeDue_.find(playerId);
+    facts["here.newcomer"] = welcome != welcomeDue_.end() && welcome->second.first == d.npc && world_.time() <= welcome->second.second ? "yes" : "no";
     for (const auto& [k, v] : d.bound)
         facts[k] = v;
     if (const auto job = d.bound.find("topic.job_id"); job != d.bound.end())
@@ -801,8 +807,11 @@ void Game::dialogueSpeak(const std::string& speaker, const std::string& to, cons
     post.ok = true;
     post.speech = true;
     post.segments.push_back({"speech", words});
-    publish(speaker, post, Voice::Speak, {to});
     const auto* e = world_.entity(speaker);
+    if (e && !e->npc)                               // (An introduction said there is heard as one: doc 84 Phase 12.)
+        if (const auto* npc = world_.entity(to); npc && npc->npc)
+            noticeIntroduction(speaker, to, words);
+    publish(speaker, post, Voice::Speak, {to});
     if (e && e->npc)
     {
         npcLastSpeech_[speaker] = world_.time();
@@ -966,6 +975,8 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     // voice (doc 28's facts, doc 62's rules); the node's own words where the game has nothing to say.
     if (node.ask.rfind("player.", 0) == 0)
         line = gameAnswer(d.npc, playerId, std::string(), true, node.ask.substr(7));
+    else if (node.ask == "companion.opinion")          // (The companion's view: doc 84 §13.1.6, Phase 12.)
+        line = companionOpinion(d.npc, playerId);
     talk::LineInfo lineFrom{line.empty() ? std::string() : node.ask, -1, {}};
     if (line.empty())
     {
@@ -989,6 +1000,13 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     world_.faceTalker(d.npc, playerId);
     if (!d.quiet || d.history.size() > 1)          // (A quiet window's greeting isn't said aloud: dialogueOpen.)
         dialogueSpeak(d.npc, playerId, line);
+    // A newcomer's welcome at an inn (doc 84 §13.1.5): the greeting said it; now the wolves here are pointed out.
+    if (q.facts.count("here.newcomer") && q.facts.at("here.newcomer") == "yes")
+        if (const auto more = welcomeInWindow(playerId, d.npc); !more.empty())
+        {
+            d.line = line.empty() ? more : line + " " + more;
+            d.history.back().second = d.line;
+        }
     voiced("dialogue", "tree", d.npc);
     if (options_.logTalkWords && !line.empty())
         voicedWords("dialogue", d.npc, playerId, line, &lineFrom);
@@ -1236,6 +1254,7 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         ParsedPost post;
         post.ok = post.speech = true;
         post.segments.push_back({"speech", text});
+        noticeIntroduction(playerId, d.npc, text); // ("I'm Kestrel." in the window: the resident learns the name.)
         publish(playerId, post, Voice::Speak, {d.npc});
         const int xp = dialogueExperience(playerId, d.npc, text, std::string());
         d.history.push_back({"you", text});

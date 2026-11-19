@@ -189,8 +189,9 @@ def unfilled(text: str, slots: dict, facts: dict) -> list[str]:
 LISTENER_GATE = re.compile(r'^(?:b\.|other\.)?(?:from|dialect)=')
 PERSONA_PRONOUN = re.compile(r"\b(he|she|him|her|his|hers|himself|herself|they|them|their|theirs|themselves|he's|she's|"
                              r"they're|he'd|she'd|they'd|he'll|she'll|they'll)\b", re.I)
-# How a window line is said, not what it reports: the hour, the meeting, the mood, the trade (and the section's stage).
-COSMETIC = {'topic.meeting', 'here.time', 'pair.disposition', 'trade', 'priority', 'concept', 'self.stage', 'stage'}
+# How a window line is said, not what it reports: the hour, the meeting, the mood, the trade (and the section's stage),
+# and a customer just come in (here.came_in, doc 84 Phase 12: the keeper looked up; a greeting's flavour, not news).
+COSMETIC = {'topic.meeting', 'here.time', 'pair.disposition', 'trade', 'priority', 'concept', 'self.stage', 'stage', 'here.came_in'}
 
 
 # The plain case of the commonest such nodes, for the message.
