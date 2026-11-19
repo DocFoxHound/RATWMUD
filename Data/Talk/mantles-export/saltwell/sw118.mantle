@@ -1,0 +1,283 @@
+# sw118, the puddle-namer at the forge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw118
+revision 1
+state ready
+dialect saltwell
+accent none
+tier standard
+written_for rm_finn_slagmarsh
+written_by claude
+title the puddle-namer at the forge
+fits stage=adult|old
+prefers job=smith humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk names_the_puddles_after_wells_back_home
+likes crisp_apples swimming sharp_knife autumn_wind
+dislikes early_bells gulls
+fears dying_somewhere_it_always_rains
+hopes a_berth_on_a_ship_bound_somewhere_dry
+topics weather +0.4 dreams +0.4 work +0.3 pastimes +0.3 food +0.2 friends +0.2 gossip -0.2
+styles comfort=cheerful gossip=light refuse=soft tease=playful
+marks oath saying
+persona #self.first# works hot iron all day and names every puddle in the street after a well from home: chatty, warm and full of jokes, generous with apples, and saving toward a berth on a ship bound somewhere dry.
+
+words
+oath! = Sparks and sand | By the quench tub | Bellows and dunes
+saying! = Every puddle's a well to somebody | Strike while it's still talking | A dry boot is a rich boot
+puddle = a puddle | that puddle by the door | a puddle you could drown a cart in
+wellname = the grandmother's well | the well at the crossroads | the sweet well
+forge = the forge | the big forge at the works
+iron = the iron | a bar of hot iron
+hammer = my hammer | the hammer
+apple = a crisp apple | an apple that cracks when you bite it
+swim = a swim | a dip off the wharf steps, cold or not
+blade = my knife | a knife with an edge you could shave with
+autumnwind = an autumn wind | a wind that blows the leaves down the stairs
+gulls = the gulls | those thieving gulls
+dawnbells = the dawn bells | bells before light
+ship = a ship bound somewhere dry | a berth on a ship going south
+shift = the shift | the long shift
+dryground = dry ground | somewhere the ground stays dry
+city = the city | this soggy city
+apples = apples | my pocket apples
+puddles = the puddles | the street's puddles
+works = the Works | the Works down by the water
+wharf = the wharf | the wharf steps
+granny = the grandmother | the big one by the gate
+wet = the wet | this endless wet
+
+any
+opinion @1 festivals for 3 [self.married=yes] : The fiddler at my wedding gave out before I did. Speak ill of a feast near me and you'll get #apples# thrown.
+opinion @2 strangers for 1 : A stranger is a friend short one apple. Here, have #apple#. Now we're acquainted.
+opinion @3 newcomers for 1 : There's room at #forge# for anybody who'll pull. I came from the other side of the world myself, near enough.
+opinion @4 drink for 1 : A jar with friends after #shift# does a wolf good. Two jars, and I start singing. Fair warning.
+opinion @5 houses against 1 : I've swung #hammer# for a House half my life and I couldn't tell you what one looks like. Tall, I expect.
+opinion @6 city mixed 1 : #city.capitalize# is wet, loud and full of good folk. Two out of three. I'll take it till #ship# comes in.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! New face. Mind #puddle#; it's deeper than it looks. | #greet#, #address#. Have #apple#. Go on, I've a pocketful.
+line @2 greet [self.working=yes self.job=smith] : #greet#! Stand back of the anvil; #iron# spits. | #greet#. Say it loud; #forge# is louder.
+line @3 greet [here.time=dawn] : #greet#. #dawnbells.capitalize# had me up, so I'm cheerful out of spite. | #greet#. Up before the soot, are you.
+line @4 greet [here.time=dusk|night] : #greet#! #shift.capitalize#'s done and I'm a free wolf till dawn. | #greet#. Out late, same as me.
+line @5 greet [here.outdoors=rain here.region=ridgemere] : #greet#! Mind #wellname#; it's filled up again. | #greet#. Lovely weather for ducks and wells.
+line @1 kin.open [pair.kin!=no] : There you are! Sit, sit. I saved you #apple#. | You! Good. I've a thing to tell you about #granny#, and it's mostly lies.
+line @1 again.open : Back again! #oath#, people will talk. | Back so soon. I'll have to start charging rent on #puddle#.
+line @1 greet.return : #greet#! | #greet#. Good to see you, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#! Pull up a crate. | #greet#. There's my favourite face.
+line @3 greet.return [self.working=yes self.job=smith] : #greet#! Mind your whiskers near #forge#. | #greet#. Talk away; I'll hammer in time.
+line @1 farewell : #farewell#! | #farewell#. Step over #wellname#, not in it.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the low streets; they'll be swimming by morning. | #farewell#. Keep your boots dry, if you can manage it.
+line @1 farewell.return : #farewell#! | #farewell#, #address#. Mind #puddle#.
+line @1 react.news : #surprise#! Well, there's a thing. | Is it! #oath#, you'd not catch me guessing that.
+line @2 react.news.new : That's new to me! Tell me again, slower. #forge.capitalize# rang my ears. | #surprise#. And me the last to hear, as usual.
+line @3 react.news.known : #knew#. It came round #forge# at noon. | Heard it on #shift#. Old news by now.
+line @4 react.news.doubt : #doubt#. Sounds like a tale told after the second jar. | Hm. I'd want somebody sober to tell me that, #address#.
+line @5 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's #bad#. #pity#. | That's a heavy thing. #sympathy#.
+line @6 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! That wants a jar. | Ha! #good.capitalize#. Somebody's lucky this week.
+line @1 answer.how : #fine#. Warm, fed, and nobody's stolen my apples. | Never better, and I say that every day. Some days, like #apple#, it's true.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. The orders are stacked to the rafters. | Run off my paws. #forge# doesn't do slow.
+line @1 ask.how : And you? Dodging #wet#, are you? | How's yourself, #address#? Eaten?
+line @1 decline : #hedge#, I can't. I'm on #shift# till the bell, and the foreman counts. | I'd love to, truly, but I've promised my evening already. Another night, gladly.
+line @1 accept_decline : #no_matter.capitalize#! There's always another night. | #bc_fair_enough# The offer keeps, like #apples# in a cellar.
+line @1 thank : #thanks#! | You're a good sort. I'll owe you #apple#.
+line @1 deflect_thanks : #deflect.capitalize#. You'd have done it for me. | Pay me back with a story, a #good# one.
+line @1 preclose [self.working=yes] : Right. #iron.capitalize# is going cold. | Back to #forge# before the foreman finds his voice.
+line @2 preclose : Well. #preclose#. | I'd best be off before #puddle# gets any bigger.
+line @1 accept_preclose : Go on, then! | Off you go. Mind #wet#.
+line @1 tease [pair.band=friends] : You walk like you've a horseshoe in each boot, #fool#. | You're wetter than #wellname#, and that's saying something.
+line @1 tease.return : Says you! I've seen you lose an argument with one of #gulls#. | Ha! I'll name a puddle after you for that.
+line @1 ack : #bc_ha# | #bc_it_is#
+scene puddle_names
+when topic=weather|smalltalk here.outdoors=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : See that puddle by the corner? That's #wellname#. I named it this morning. | Every puddle on my way to #forge# has a name. I've used up every well I knew back home. | I've named so many of #puddles# I've started on the wells I only heard about.
+b : Why name a puddle? | All of them? | You've run out?
+a : Where I come from, a well is the best thing there is. Here there's one every ten steps. Somebody should be grateful. | All of them. #granny.capitalize# is the deepest. Mind her. | Near enough. I'll have to make some up. Nobody in #city# will know.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene the_grandmother_floods
+when topic=weather here.outdoors=storm here.region=ridgemere
+does tell.news / react.news / assess / ack
+a : #granny.capitalize#'s over her banks. That's the big puddle by the gate. Took a cart to the axle. | Storm's filled #puddles# to the brim. I'll need new names for the new ones. | #puddle.capitalize# by my door has joined up with the one across the lane. They're married now.
+b : A cart? | New names? | Married?
+a : To the axle, and the carter laughing. We pushed him out and I named the hole after him. | New ones every storm. #city.capitalize# keeps making wells faster than I can name them. | Married, and arguing. You can see the ripples. #saying#.
+b? : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene hot_iron
+when topic=work self.working=yes self.job=smith
+does tell.self / react.self / assess
+a : #iron.capitalize# was talking this morning. You strike it while it talks and leave it when it sulks. | #forge.capitalize# is the one spot in #city# where I'm ever properly dry. I'd sleep here if they let me. | I made a hinge at #forge# today so sweet it'll outlast the door. Probably the house.
+b[job=smith] #smith : It sulked on me all week. | Dry's the only good thing about the heat. | Every hinge says that till it rusts.
+b : Talks? | Dry, at a forge? | That's a good hinge.
+a@smith : Then you've been striking it when it's tired. #saying#. | Ha! True. Dry and cooked, but dry. #saying#. | Not mine. Mine says it and means it.
+a : #iron.capitalize# hisses, it rings, it glows. If you listen, it tells you when. | Bone dry. Like home, with more shouting. | #bc_it_is# I'd show you, but it's on somebody's gate by now.
+
+scene sharp_edge
+when topic=work|pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail / assess
+a : I put an edge on #blade# every evening. It's the last thing I do before supper. | Give me #blade#, splitting an apple without a crunch and I'm happy all day. | A blunt knife's a sad thing. I sharpen my neighbours' for nothing. They bring #apples#.
+b : Every evening? | Without a crunch? | For apples?
+a : Every evening, after #shift#. It's like brushing your coat; you don't think, you just do it. | Without a sound. #apple.capitalize# doesn't know it's been cut till it falls in two. | #apples.capitalize#, bread, once a pie. I've done well out of other folk's dull knives.
+b : #bc_ha# | #bc_lovely# | #bc_good#
+
+scene end_of_shift
+when topic=day|work here.time=dusk self.working=yes
+does tell.feeling / react.self / assess
+a : Bell's gone. #shift.capitalize# is over, and I'm off to see if the sweet well has dried up yet. | That's me off #shift#. My arms are like rope and my ears are ringing like a bell. | End of #shift#. Best hour of the day. Everybody's tired and nobody's cross.
+b : Has it ever dried up? | Ringing? | Nobody?
+a : Not once. I keep checking. #bc_i_hope_so# | Ringing! #forge.capitalize# does that. Here I am talking too loud, and I can't hear myself do it. | Nobody. Too tired to be cross. That's the secret of #works#.
+
+scene too_early_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / insist / ack
+a : #dawnbells.capitalize# again. Somebody up that tower hates sleep. | What sort rings #dawnbells# before the sun's even thought about rising? | I dreamt I was on #ship# and then the bells went. Gone. Back in #city#.
+b : They're for the early shifts. | Somebody who's up already. | Bad luck.
+a : I'm on the early #shift#! I don't need telling. I need the last half hour. | Then they can shake each other awake in #city# and leave the rest of us be. | Wet as ever, too. Even my dream had #puddles# in it.
+b : #bc_ha# | Ha. | #bc_poor_soul#
+
+scene thieving_gulls
+when topic=animals here.region=ridgemere self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull took #apple# clean out of my paw this morning. Looked me in the eye while it did it. | #gulls.capitalize# have learned what my dinner cloth looks like. They wait on the roof. | One gull on the roof of #forge# knows my name, I swear. It's never kind about it.
+b : Cheeky thing. | They're clever. | Gulls are like that.
+a : Cheeky and well fed. I named #puddle# after it so it'll drown in my thoughts. | Clever, and greedy, and loud. Like a House clerk with wings. | #bc_they_are# Back home we had hawks. A hawk at least has manners.
+
+scene apples_in
+when topic=food|season self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail / assess
+a : #apple.capitalize#, cold out of the barrel. That's breakfast. | I carry #apples# about like other folk carry coin. I've given away three already today. | The apple carts are in. I bought a whole sack. You can stop smiling.
+b : Just an apple? | Why give them away? | A whole sack?
+a : Just an apple. The crunch wakes me better than #dawnbells#. | Because it's the easiest way to make a friend in #city#. | A whole sack of #apples#. They'll be gone by Restday. Half of them in other people's pockets.
+b : #bc_ha# | #bc_wise# | #bc_ha#
+
+scene learning_to_swim
+when topic=pastimes self.likes=swimming here.region=ridgemere
+does tell.self / react.self / assess
+a : I swim off #wharf# most mornings. Cold enough to stop your heart. Lovely. | Where I grew up there was nowhere for #swim#. Now I can't keep out of the water. | I swam out past #wharf# to the third post this morning. A sailor clapped. I bowed and nearly drowned.
+b : In this weather? | You couldn't swim at home? | Did you?
+a : In any weather. I'm in #wet# all day anyway; I may as well choose the wet. | Not a stroke. You'd not waste water on swimming there. Here there's water to waste. | Very nearly. Swallowed half the Sound and came up laughing. #bc_ha#
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : Feel that! #autumnwind.capitalize#. Blows the soot right off the roofs. | I love #autumnwind#. It dries #puddles#. Well, it tries. | The wind's got the leaves dancing down the stairs. Even #works# looks cheerful.
+b : It's cold, though. | Does it? | Cheerful?
+a : Cold, but dry cold. Dry anything is welcome in #city#. | It tries. I cheer it on. Go on, wind, take #wellname#. | Near enough. You squint and it's almost a feast day.
+
+scene a_ship_somewhere_dry
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I'm putting by for #ship#. Somewhere it hasn't rained since the ancestors. | One day I'll stand on a deck and watch #city# go grey behind me, and I'll wave. | I ask every sailor at #wharf# where the driest port is. They all say a different one.
+b : Where would you go? | Would you miss it? | Which one's true?
+a : South. #dryground.capitalize#, with sand and sun and one well, and everybody grateful for it. | Miss the folk. Not #wet#. Never that. | None of them, probably. I'll go on #ship# and find out, and send word.
+b : #bc_i_hope_so# | #bc_fair_enough# | #bc_ha#
+
+scene my_spouse
+when topic=family|home self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# laughs at my names for #puddles#. That's why I married a wolf with taste. | I'd be miserable in #city# without #self.spouse#. As it is I'm only damp. | My #self.spouse_word# says I'm the only wolf alive who'd name a puddle and then apologise to it.
+b : That's sweet. | Only soaked? | Do you?
+a : It's true. Ask #self.spouse#; I'll not be contradicted. #bc_ha# | Only damp. Being happy's warmer than any coat in #wet#. | Every time I step in #puddle#. It's only polite.
+
+scene good_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the best company I know, and I know half #works#. | If I'm ever on #ship#, I'll want #self.friend# beside me at the rail. | #self.friend# and I have known each other years. Long enough to stop counting.
+b : High praise. | At the rail? | That's good.
+a : Earned, too. Not given out with #apples#. | Laughing at me being sick over the side of #ship#, probably. Still, I'd want it. | It's the best thing #city# has given me, after the swimming.
+
+scene home_wells
+when topic=memories self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail
+a : Back in #self.from_town# every well had a name and a story. Here, there's water everywhere and nobody's grateful. | When I first came to #city# I saw a puddle and knelt to drink. The look I got. | My #gran# could tell you who dug every well for a day's walk. I can tell you every puddle on my street. Same thing.
+b[from=saltwell] #sw : Every one, and who to thank for it. | Ha! I did that. Near enough. | They'd have liked each other, your gran and you.
+b : Is that why you name them? | Did you drink it? | Is it, though?
+a@sw : Then you know. Somebody has to thank #puddles#. | We all do! Nobody admits it. | Two of a kind. Except I'm wetter, being in #city#.
+a : That's why. Somebody should thank #puddles#, even the muddy ones. | No! I stood up quick and pretended I'd dropped a coin. | Near enough. The names want keeping, and I keep them.
+
+scene feed_the_new_ones
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : There's a new face on our street. I've already given them #apple# and the names of three puddles. | A newcomer at #forge# today. Quiet sort. They'll be talking to me by Restday. | Somebody new came in at #wharf# this morning, looking lost. I showed them the way and the deepest puddle.
+b : That's kind. | You think so? | Why the puddle?
+a : Kind's cheap. #apples.capitalize# are cheaper. Both work. | I'll talk at them till they talk back. #bc_always# | So they don't step in it. First thing anybody should learn in #city#.
+
+scene burns_and_bruises
+when topic=health self.job=smith
+does tell.self / react.self / reassure
+a : Burnt my paw on #iron# again. Third time this month. I'm a slow learner. | My ears ring after #shift#. I hear bells that aren't there. Worse than the real ones. | I've a bruise the shape of #hammer# on my knee. Don't ask. Fine, I'll tell you.
+b : Butter on it? | That'll pass. | Go on, then.
+a : Cold water, then honey. My #gran#'s remedy. Butter's for bread. | It always does by morning. Just in time for #dawnbells#. | I dropped it. On my knee. That's the whole tale, and I'm not proud.
+
+scene hard_week_at_the_works
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / ack
+a : Orders are thin at #forge#. They've cut a shift. I'm still on, touch iron. | Hard times. #apples.capitalize# have gone dear. I'm down to giving away halves. | #works.capitalize# is quiet. Too quiet. A forge with no noise is a sad thing.
+b : You'll be all right. | Halves still count. | It'll come back.
+a : #bc_i_will# I'll stand at the door and look useful. | They do! Half #apple# is still a friend made. | It always does. Somebody always needs a gate off #forge#.
+
+story the_first_puddle [topic=memories self.away=yes self.from=saltwell self.age>=20]
+  : My first morning in #city# I walked out and there was water lying in the street. Just lying there. Nobody guarding it.
+  : I fetched a bucket and filled it, and carried it home very carefully. My neighbour watched the whole way.
+  : When I got in, it was raining. I'd carried a bucket of #rain# through the rain. I still laugh about it.
+  ask : Have you ever done a thing that daft in a new place?
+  b : Worse. I'll not say what.
+  b[from=saltwell] : Every one of us has carried that bucket. Every one.
+
+story the_wedding_reel [topic=festival|family self.married=yes]
+  : At my wedding the fiddler played till his elbow gave out. I kept dancing without him.
+  : Then the whole street was clapping the time, and nobody noticed the music had stopped.
+  : We danced to the clapping till dawn. My #self.spouse_word# still says it was the best band we ever had.
+  b : That sounds a fine wedding. | No fiddle at all?
+  b[pair.band=friends] : I was there. My paws still ache.
+
+story fell_in_the_sound [topic=pastimes self.likes=swimming here.region=ridgemere]
+  : I learned to swim the day I fell off the end of the wharf. I'd been leaning over to look at a fish.
+  : I went in like #hammer#. Came up, kicked, and found I was going somewhere.
+  : By the time they threw me a rope I didn't need it. I went back the next day on purpose.
+  ask : Would you have gone back in, after that?
+  b : Not for anything.
+  b[job=sailor|fisher] : Every morning. You did right.
+
+rule @forge_cry
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 6h
+say Mind the sparks off #iron#! | Hot iron, coming through. #oath#, shift!
+
+rule @puddle_bark
+when concept=bark here.outdoors=rain|storm here.region=ridgemere
+does aside
+cooldown 8h
+say There you are, #wellname#. You've grown. | There's a new one by #granny#. I'll call it the little sister.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere self.dislikes=gulls
+does aside
+cooldown 8h
+say Off! Off, you feathered thief! | Not #apple#. Not today.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say Yes, yes, #dawnbells#, we're awake. | Half an hour more. That's all I ever ask.
+
+dlg @1 resident.hub : #greet#! Say what's wanted. Have #apple# while you think. | #greet#, #address#. Mind #puddle#, and say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. I'd have saved you an apple if I'd known. | #topic.player#! There's a face. Mind #puddle#; what's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. You look like you've a quarrel in your pocket. Leave it there and talk.
+dlg @1 resident.job [self.job=smith] : I strike iron at #self.workplace#. Hinges, bolts, gate bars. If it's iron and it holds, I might have made it. | I'm at #forge#, all day, every day. The only dry wolf in #city#.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me in #apples# and saving for #ship#. | I work hard, I eat well, and I name #puddles#. That's most of me.
+dlg @1 resident.bye : #farewell#! Step over #wellname#. | #farewell#, #address#. Keep your boots dry.
+graft resident.hub
+choice Why do you name the puddles? [here.region=ridgemere] -> puddles
+node puddles
+say Where I grew up a well was precious, and every one had a name. Here every hole in the road holds water and nobody thanks it. So I name them.
+mood pleased
+free
+choice What's this one called? -> puddles_this
+choice Goodbye. -> bye
+node puddles_this
+say That one? The sweet well. The one by the gate is the grandmother. Don't step in her; she's deeper than she looks.
+choice I'll go round. -> hub
+choice Goodbye. -> bye

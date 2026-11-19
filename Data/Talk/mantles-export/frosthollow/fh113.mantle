@@ -1,0 +1,308 @@
+# fh113, the sleeve-airer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh113
+revision 1
+state ready
+dialect frosthollow
+accent broad light
+tier standard
+written_for rm_lavinia_bilgedale
+written_by claude
+title the sleeve-airer
+fits stage=adult|old
+prefers job=merchant drive=restless
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk airs_every_coat_on_the_sill_against_the_smoke
+likes oatcakes evening_line full_larder autumn_wind
+dislikes smoke crowds
+fears smoke_that_never_lifts staying_put_till_it_is_too_late
+hopes a_window_that_opens_on_clean_air
+topics work +0.3 home +0.3 weather +0.3 food +0.2 pastimes +0.2 travel +0.2 gossip -0.3 festival -0.2
+styles comfort=practical gossip=exact refuse=soft tease=none
+marks oath saying
+persona #self.first# helps behind the shelves, keeps every jar and cloth in its proper place, and hangs each coat on the sill to air the smoke out of it: restless, exact and plain-spoken, polite in the Estate way and broad underneath, with a fishing line kept ready for any quiet evening by the water.
+
+words
+oath! = Clear the flue | Damper and draught | Open the sash
+saying! = A thing put back is a thing found | Air it, fold it, and it'll keep | Move on before the smoke finds you
+sill = the sill | the window-sill
+coat = my coat | the good grey coat
+sniff = a sniff at the sleeve | one good sniff
+stacks = the char-stacks | the burning stacks over the camp
+reek = reek | chimney reek
+oatcake = an oatcake | oatcakes with a scrape of butter
+larder = the larder | the hall larder
+rod = my rod | the old rod and a hook
+blow = an autumn blow | a good wind off the hills
+shelf = the shelf | every shelf in its row
+list = my list | the list in my head
+crush = a crush of folk | elbows everywhere
+hall = the hall | the big hall
+nextthing = Next thing | Right, the next
+jars = the jars | every jar, label out
+floor = the floor | my clean floor
+hill = the hill | the whole hill
+pass = the pass | the top of the pass
+
+any
+opinion @1 houses against 1 [here.region=ridgemere] : I've slept under a House's roof for years and never once had a word with one of the family. #oath#. They're a name on the gate.
+opinion @1 merchants against 1 : A penny goes on the price whenever they think the street's not looking. I look, #address#. I've always looked.
+opinion @1 newcomers for 2 : Good luck to them. I've shifted my bunk more times than I can count, and I'd have another go if I'd the nerve.
+opinion @1 road for 1 : A road's only a road, #address#. Keep your wits about you and it takes you somewhere new. I want no more of one.
+opinion @1 sump against 1 [here.region=ridgemere] : Down by the docks it's all #reek# and #crush#. I keep up #hill#, thank you.
+opinion @1 city mixed 1 [here.region=ridgemere] : There's #work# in #here.town#, I'll give it that. I'd give a week's #wages# for one clean breath of it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Wipe your feet, if you please; #floor#'s fresh done. | #greet#, #address#. You'll be wanting something; I'll find it.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. Mind #shelf#; I've only just squared it. | #greet#. Ask, and I'll tell you where it lives.
+line @3 greet [here.time=dawn] : Morning, #address#. I've aired #coat# already. | Morning. You're early, and so am I, #address#.
+line @4 greet [here.time=dusk|night] : #greet#. It's late to be walking in this #reek#. | #greet#. I was just putting the last of it straight.
+line @1 kin.open [pair.kin!=no] : There you are. Come in and shut the door on that #reek#. | You. Good. Sit down, and I'll see to a cup.
+line @1 again.open : Twice in a day, #address#. I've moved nothing since. | #welcome_back#. #shelf.capitalize# is as you left it.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. I kept you a seat by the window. | #greet#. You smell of outside; open that sash.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. I'm at #shelf#, but go on. | #greet#. Talk while I fold.
+line @1 farewell : #farewell#. | #farewell#, #address#. Mind the step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Collar up, and stay where the lamps are. | #farewell#. Air your coat when you're in, #address#.
+line @1 farewell.return : #farewell#. | And yours, #address#.
+line @1 react.news : #surprise#. Get it right before you pass it on, mind. | Is it? I'll want it from somebody who saw, #address#.
+line @1 react.news.new : #surprise#. That's new to me. | #oath#. Nobody's said a word of that at #hall#.
+line @1 react.news.known : #knew#. It was round #hall# before breakfast. | I had that this morning, #address#. Nearly right, too.
+line @1 react.news.doubt : #doubt#. Who had it first, and did they see it? | That's three wolves' word for one wolf's look. #nextthing#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a #bad# thing. #pity#. | #sympathy#. I'm sorry, #very# sorry, to hear it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's moving on, and good. | That's #good# news, and we're short of it.
+line @1 answer.how : Tidy, thank you. #jars.capitalize# where they should be. | #fine#. Restless, but that's nothing new.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three things done, four to go. | Running, #address#. #list.capitalize# is long today.
+line @1 ask.how : And you, #address#? You've an aired look about you. | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit a minute; I'll put it straight after. | That's hard. Tell it slow, #address#, and I'll listen.
+line @1 decline : #hedge#, I can't. I've #list# half done and it won't finish itself. | Not today, #address#, and I'm sorry for it. They want me at #self.workplace# till close.
+line @1 accept_decline : #no_matter#. Another day, then. | It'll keep. Most things do, if they're put away right. #saying#.
+line @1 thank : #thanks#. I'll put that by and remember it. | That's kind, #address#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | It was the next thing to do, that's all. #nextthing#.
+line @1 preclose : #preclose#. | #nextthing#, and I'm off to it.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. You've a list of your own, #address#.
+line @1 ack : #nextthing#. | #bc_right#
+line @1 give.advice : #advise#: put it back where you found it, and you'll find it again. | Air your coat every night, #address#. Smoke gets in deeper than you'd think.
+scene airing_coats
+when topic=smalltalk|home
+does tell.self / ask.detail / answer.detail / assess
+a : I hang #coat# on #sill# every night. By morning the smoke's mostly out of it. | Give me a moment. #sniff.capitalize#. There. Still smoke in it. | Every coat in our room goes on #sill# by dusk. I don't ask; I just hang them.
+b : Every night? | Can you smell it? | Do they mind?
+a : Every night, #rain# or not. #saying#. | Always. I was raised in the stuff, so I know it like a voice. | They grumbled at first. Now they hang their own on #sill#. That's a win.
+b : #bc_fair_enough# | #bc_i_know# | #bc_ha#
+
+scene city_reek
+when topic=weather|smalltalk here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / assess / ack
+a : The whole hill's chimneys going at once. I can taste #reek# in my tea. | Smoke off the works, smoke off the smokehouses, smoke off every hearth. #oath#. | They say you stop noticing #reek# after a year. I've been here longer than a year.
+b : It's always worst in the morning. | It's the city. | You never stop?
+a : Worst at first light, and then it settles on the washing. | It's the city, and I'm in it. I don't have to like #reek#. | Never. I notice it the way you'd notice a draught on #floor#.
+b? : #bc_true# | #bc_fair# | #bc_i_know#
+
+scene squaring_shelf
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : I've squared #shelf# twice this morning. Somebody keeps putting #jars# back wrong. | Each jar faces out, label front. Then you can see at a look what's short. | Somebody moved the tins. I found them behind the flour. #oath#.
+b : Twice? | Sensible. | Behind the flour?
+a : Twice, and I'll do it a third. It's #little.a# thing when it's habit. | It saves a morning. Nobody hunts. | Behind the flour, like a pup hiding a bone. I put them back. #saying#.
+
+scene list_in_head
+when topic=work|day self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #list# all day. Tick, tick, and then it's done. | Five things done before the shift bell went. I counted. | When #list#'s empty I'm restless. When it's full I'm restless. #nextthing#.
+b : What's on it now? | Five? | Which do you like?
+a : #jars.capitalize#, the cloths, the step, and a word with whoever's on the door. | Five, and the sixth half done. I like a start like that on #work#. | Full, I think. At least there's something to move on to.
+b? : #bc_wise# | #bc_good# | #bc_ha#
+
+scene oatcakes_tea
+when topic=food self.likes=oatcakes
+does tell.feeling / ask.opinion / give.opinion / assess
+a : #oatcake.capitalize# and a cup of tea. That's my dinner most days. | My #mum# made them on a flat stone by the fire. I've never had better. | I bake a dozen oatcakes on a Restday and they're gone by the next.
+b : That's not much dinner. | Better than city bread? | Who eats them?
+a : It's enough. I'm not one for sitting long at #supper#. | Better than anything in a city window. Plain and #good#. | Whoever's about. I don't count them. I count everything else.
+b : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene larder_full
+when topic=food|home self.likes=full_larder
+does tell.feeling / react.self / assess
+a : I went through #larder# last night and wrote down every jar. It's full. I slept like a stone. | A full larder's the only thing that stops me pacing. Odd, but true. | Shelves to the ceiling and not a gap in them. I'd walk a long way to see that.
+b : Every jar? | Stops you pacing? | It is a good sight.
+a : Every one, and the date. #saying#. | For an evening. Then I want to be off again. | It is. Don't touch #jars#, mind. I've just got them straight.
+
+scene evening_water
+when topic=pastimes here.time=dusk self.likes=evening_line
+does tell.self / ask.detail / answer.detail / assess
+a : When #list# is done I take #rod# down to the water and sit. Nobody talks to me there. | I don't care if I catch anything. I care that I'm sitting still for once. | I caught one the size of my paw last week. I put it back. It wasn't the point.
+b : Do you catch much? | You, sitting still? | What is the point?
+a : Hardly. I'd starve on it. It's the sitting I go for, with #rod#. | Once a day, by the water. The rest of the time, no. #nextthing#. | An hour with nothing to put straight. That's the point.
+b : #bc_fair# | #bc_ha# | #bc_lovely#
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : Feel that? #blow.capitalize#. It takes the smoke off #hill# and off to sea. | Autumn's the one season #here.town# smells clean. I keep the sash up. #oath#, I do. | I'd walk out on a day like this with no coat at all, if it weren't so #cold#.
+b : It is fresh. | You'd freeze. | It's bitter, though.
+a : Fresh as #pass#. For a day. I'll have every hour of it. | I'll freeze clean, then. Better than warm and smoky. | Bitter's honest. I like #blow# that says what it is.
+
+scene rain_floors
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : #rain.capitalize# again, and every pair of boots in #hall# walked it across #floor#. | It's #rain# from the roof straight down the back stair. I've a cloth on every step. | Wet. At least it knocks #reek# down out of the air.
+b : Wet floors. | You'll not keep up with it. | There's that.
+a : Wet floors, and nobody slips but the one who just mopped them. #bc_always_is# | I won't, but I'll keep at it. That's #work#. | There's that. Rain's a #good# washer, if a #bad# guest.
+b? : #bc_true# | #bc_fair# | #bc_true#
+
+scene fog_hill
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog on the Sound, and #reek# sitting under it like a lid. | Fog to the door. I walked the street counting doors to get home. | Fog makes #hill# quiet. I almost like it. Almost.
+b : Like soup. | Counting doors? | Almost?
+a : Soup with soot in. I'll have #sill# empty and the window shut today. | Nine to the corner. I'd know it blind now. | It traps the smoke. That's the almost.
+
+scene snow_down_here
+when topic=weather here.weather=snow here.region=ridgemere
+does tell.memory / react.self / assess
+a : #snow.capitalize# on the hill. It's grey by noon here; up home it stayed white for weeks. | This isn't snow. This is wet that's had an idea. | First snow, and the city's in a panic. Up home we'd not have stopped #work#.
+b : It's still pretty. | Ha. | They're not used to it.
+a : For an hour. Then the chimneys get at it. | It'll be slush by dusk. #insist#. | They're not. I am. I've aired a pair of boots for it.
+
+scene crush_market
+when topic=pastimes|smalltalk here.region=ridgemere self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : I went to market for one thing. One. I came back with bruises. | #crush.capitalize# on the stair, every one in a hurry. I stood against the wall till it passed. | I go early or I go late. Never at the middle of the day; it's #crush#.
+b : It is busy. | Wise. | It's the only time I can go.
+a : Busy and nobody minding their elbows. I'd sooner do without. | Wise and late, but whole. #saying#. | Then I'm sorry for you, truly. Go with a basket out front.
+
+scene the_hall
+when topic=home|work self.quarter=estate here.region=ridgemere
+does tell.self / react.self / assess
+a : I sleep in a room off #hall#, with the household. We all know each other's footstep. | It's a big house, #hall#. I've counted the stairs. Ninety-one, if you count the cellar. | The family's upstairs and we're down. I've never been in a room up there.
+b : That's a lot of folk. | Ninety-one? | Never once?
+a : A lot of folk and one #sill#. You'll guess who uses it. | Ninety-one. I know because I've wiped them. | Never. I don't mind. Downstairs is where #work# gets done.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd hand #list# to if I fell ill. There's nobody else. | It's years now with #self.friend#, and I've stopped explaining myself. | I'd trust #self.friend# to put a thing back where it goes. You can't tell what that's worth to me.
+b : That's trust. | That's rare. | It matters.
+a : Trust, aye. Mine doesn't come out by the handful. | Rare as clean air. #bc_true# | It does. Small things are most of a life.
+
+scene home_stacks
+when topic=memories|home self.away=yes self.from=frosthollow
+does tell.memory / ask.detail / answer.detail / assess
+a : I was raised by #stacks# above #self.from_town#. Smoke in the bread, smoke in the bed. | Up at the camps you aired your blanket every morning or slept in #reek# all night. | Where I come from you could see the smoke of #stacks# from #pass#. That was home.
+b[from=frosthollow] #fh : I know the camps. Black paws and white snow. | Every morning, aye. My mother did the same. | You could see it for miles.
+b : Is that why you hate smoke? | Every morning? | Do you miss it?
+a@fh : Black paws and white snow. I couldn't have said it better. | Then your mother knew. #bc_true# | Miles. And it meant someone was home.
+a : I had my fill of it by ten. The rest of my life is airing out. | Every morning. I still do it. I can't help myself. | I miss #snow# and the cold air. Not one breath of the smoke.
+b? : #bc_ha# | #bc_wise# | #bc_fair_enough#
+
+scene accent_estate
+when topic=accent self.away=yes self.from=frosthollow self.quarter=estate here.region=ridgemere
+does tell.self / ask.opinion / give.opinion
+a : On the Estate they say "good day" like it's a sum. I still say #greet#, and they look at me. | Someone upstairs put me right on how I said "brass". Once. I said it the same next morning. | I talk the way the camps talked. Plain, and done with.
+b : Do you mind them looking? | Good for you. | It suits you.
+a : Let them look. I'm right about the vowels. | Twice, and I'd have said it louder. #oath#. | It saves a lot of breath, and I'm short of that in #reek#.
+
+scene restless_road
+when topic=dreams|travel self.away=yes
+does tell.plan / ask.detail / answer.detail / assess
+a : I've shifted my bunk four times since I came down. I'll shift it again before I'm old. | One day I'll walk to the end of the coast road and see if the air's clean there. | I don't stay put long. A place starts to smell of me and I'm off. #nextthing#.
+b : Where next? | Do you think it is? | Smell of you?
+a : Somewhere higher. Away from the chimneys, if there's anywhere. #oath#. | I think there's always somewhere cleaner. That's what keeps me going. | Of me, and the same four walls. That's how I live.
+b? : #bc_i_hope_so# | #bc_maybe# | #bc_ha#
+
+scene gossip_right
+when topic=gossip here.gossip=yes
+does tell.gossip / ask.detail / answer.detail / assess
+a : They say #topic.subject# #topic.claim#. I'll want it from somebody who saw it, mind. | It's all over #hall#: #topic.subject# #topic.claim#. Half the household has it wrong already. | I heard #topic.subject# #topic.claim#. That's as far as I'll pass it.
+b : Do you believe it? | Wrong how? | Why no further?
+a : Not till it's checked. A story's like #shelf#: square it or leave it. | Wrong in the small things, which is where it counts. #nextthing#. | Because I can't put it right if it goes further. #saying#.
+b : #bc_fair# | #bc_true# | #bc_wise#
+
+scene newcomer_nerve
+when topic=newcomer
+does give.opinion / ask.opinion / give.opinion
+a : A new face on the street. Good. Somebody had the nerve to move. | Newcomers see what's wrong with a place before they get used to it. I like that in them. | New folk ask where things are. I always know. It's the one time I'm popular.
+b : You'd move again? | Do they say what's wrong? | Popular?
+a : Tomorrow, if I'd the nerve. Today I've #list#. | They do, and they're mostly right, and then they stop saying it. | For a morning. Then they know where the flour is and they're off. #bc_ha#
+
+scene times_lean
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Lean weeks. #larder.capitalize# is thinner and I've moved every jar forward so it doesn't show. | Folk count their pennies at the counter now. I count with them. | Everything's dearer and #wages# haven't heard.
+b : Clever. | We all do. | They never hear.
+a : It fools nobody, but #jars# look tidier. | We do. It's quieter, at least. Nobody spends in #crush#. | Never. I write it on #list# anyway, in case.
+b? : #bc_ha# | #bc_true# | #bc_ha#
+
+scene chapel_plain
+when topic=faith
+does give.opinion / react.self / assess
+a : I go to chapel when it's empty. A full chapel's too warm and too close. | The Bright One gets my thanks every time the wind turns and takes the smoke off. | I keep my prayers short and #list# long. I think the Bright One prefers it.
+b : Empty's better. | That's a fine prayer. | Maybe so.
+a : Empty and #cold#. Nothing in it but me and the quiet. | It's the one prayer I've never had to think about. #bc_true# | I'd hope so. It's the honest way round.
+
+story burnt_sleeve [topic=memories self.away=yes self.from=frosthollow self.age>=25]
+  : As a #child# I dozed off too close to a stack and woke with my sleeve smouldering.
+  : My #mum# beat it out with a wet sack and sent me to sleep in the snow-shed for a week.
+  ask : Would you have gone back to the warm?
+  b : I'd have crept back the first night, I think.
+  b[old] : Not after that. You'd learn the cold.
+  : I didn't. I've slept by an open window ever since.
+
+story the_list [topic=work|memories self.working=yes self.away=yes self.age>=25]
+  : My first week in #here.town# I got the whole of a morning's order wrong. Every sack to the wrong door.
+  : That night I wrote it all out on the back of a sack-label, and I've kept #list# ever since.
+  ask : Do you keep one?
+  b : In my head, mostly. It's not always there when I want it.
+  b[job=merchant] : I'd be lost without mine.
+  : Then you'll know. A list is a friend that doesn't forget.
+
+story one_that_got_back [topic=pastimes self.likes=evening_line]
+  : I had a bite one evening that pulled so hard I went into the water up to the knee.
+  : I held on, soaked to the hock, and up came an old boot full of weed. I put it back.
+  b : You put the boot back?
+  b[friends] : Of course you did. It wasn't tidy, out on the steps.
+  : It was where it lived. I don't move a thing that knows its place. #saying#.
+
+rule @tidy
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say Back on #shelf#, if you please. Label out. | Who's had the tins? #oath#.
+
+rule @reek
+when concept=bark here.region=ridgemere self.dislikes=smoke
+does aside
+cooldown 8h
+say #reek.capitalize# again. Open that sash, somebody. | #oath#. Every chimney on #hill# at once.
+
+rule @wind
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say There's the wind. Blow #reek# out to sea. | #blow.capitalize#. Now I can breathe.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Coats on #sill#. Every one. | #nextthing#, and then #rod#.
+
+dlg @1 resident.hub : #greet#. What can I find for you? | #greet#, #address#. Ask; I'll know where it is.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again, and you've wiped your feet. #bc_good#
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say what it is. I've #list# to get through.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I keep #shelf# square and #floor# dry, and I know where everything lives. | I help at #self.workplace#. If it's out of place, I'll find it, #address#.
+dlg @2 resident.job : I keep at #work#, and I keep it tidy. That's all of it, near enough. | This and that, done in order. #nextthing#.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. Air your coat tonight.
+graft resident.hub
+choice Why do you keep sniffing your sleeve? -> sleeve
+node sleeve
+say Smoke. I was raised by the charcoal stacks, and I can smell it in a coat a street off. I air everything on the sill. Old habit, and a sound one.
+mood calm
+free
+choice Do you miss the camps? -> camps
+choice Goodbye. -> bye
+node camps
+say The snow, the cold clean air up on the pass. Not the smoke. Never the smoke. Is there anything else you were after?
+choice Something else. -> hub
+choice Goodbye. -> bye

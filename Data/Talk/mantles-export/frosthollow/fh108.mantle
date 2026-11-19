@@ -1,0 +1,496 @@
+# fh108, the first-fruit stallholder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle fh108
+revision 1
+state ready
+dialect frosthollow
+accent none
+tier full
+written_for rm_orla_rainworth
+written_by claude
+title the first-fruit stallholder
+fits stage=adult|old
+prefers role=merchant piety=devout
+traits temper=even talk=plain warmth=reserved humour=dry honesty=plain piety=devout drive=steady
+quirk lays_the_first_fruit_of_every_crate_aside_for_the_chapel
+likes blackberries old_tales tidy_house first_warm_day
+dislikes rats wet_floors
+fears rot_in_the_bottom_of_the_crate a_spring_frost_on_the_country_blossom
+hopes a_stall_with_a_roof_and_a_dry_floor
+topics food +0.4 faith +0.4 weather +0.3 work +0.3 lore +0.3 season +0.2 player +0.2 gossip -0.4
+styles comfort=prayerful gossip=withholding refuse=dry tease=dry
+marks oath saying
+persona #self.first# sells fruit off a stall on the square and lays the first of every crate aside for the chapel: devout, dry and close-mouthed, at war with wet boards and rats, judging everything by how long it will keep, and fond of an old tale told slowly.
+
+words
+oath! = Bless the bough and the basket | Bright One and the orchard | Bough and blessing
+saying! = Everything ripe is in a hurry | A bruise always shows by noon | Nothing keeps but a prayer
+crate = the crate | a crate off the country carts
+stall = the stall | my stall
+boards = the boards | my stall boards
+share = the chapel's share | the first of the crate
+berries = blackberries off the bush | a punnet of blackberries
+mop = the mop | my poor mop
+puddle = a puddle under the stall | water standing on the boards
+ratword = the rats | the crate rats
+oldtale = an old tale told slow | a good old tale
+warmday = the first warm day | the first day without a coat
+carts = the country carts | the carts in at the gate
+square = the square | the market square
+soft = a soft one | a bruised one
+apples = winter apples | good keeping apples
+pears = pears | the country pears
+plums = plums | the dark plums
+awning = the awning | my old awning
+city = the city | this wet city
+keeps = keeps two days | keeps till Marketday
+greens = the greens | the country greens
+uphome = up the pass | back up the mountain
+basket = the chapel basket | the little basket
+chapel = the chapel | the little chapel
+prayer = a prayer | a short prayer
+cooks = the cooks | the House cooks
+gate = the gate | the cart gate
+
+any
+opinion @1 church for 2 : The first of every crate goes to #chapel#. The Bright One kept me fed before I had #stall#, and I keep the account square.
+opinion @2 church for 1 [self.priest] : #self.priest# keeps a sermon short and #prayer# long. That's the right way round, in my book.
+opinion @1 dole for 1 : The dole's #prayer# with bread in it. I put #soft# in the basket and nobody's the worse.
+opinion @1 drink against 1 : I've watched good wolves pour themselves away a cup at a time. #saying#. They don't wait either.
+opinion @1 merchants for 1 : Keep #stall# one wet winter and you'll stop calling a fair price dear. #carts.capitalize# charge me before I charge you.
+opinion @1 road against 1 : A cart a day late is a crate a day softer. I can't sell #soft# at a #good# price.
+opinion @2 road against 2 [world.wagons=raided] : #bandits.capitalize# on the road again. They took the carts and left me #puddle# and a bare #stall#.
+opinion @1 strangers for 1 : Travellers buy one apple and tell me three towns' news. I'll take that bargain every day of #city#'s week.
+opinion @1 watch mixed 1 : #watch.capitalize# walk past #stall# often enough that thieves don't. Whose doors they walk past slow is another thing, and I'll not say it here.
+opinion @1 houses mixed 1 : I sell to #cooks# and House servants alike. What the Houses do with their #money# after is between them and the Bright One.
+opinion @1 city mixed 1 : #city.capitalize# feeds me and soaks me in the same breath. I've stopped asking it to choose.
+opinion @1 newcomers for 1 : Somebody fresh to #city# doesn't know how to haggle with me yet. I don't hurry to teach them, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Look all you like; touch what you'll buy. | #greet#. Mind #puddle#; I'm losing the fight with it.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Everything on #stall# came in this morning but me. | #greet#, #address#. #pears.capitalize# are sound today, the plums less so.
+line @3 greet [here.time=dawn] : #greet#. You're up with #carts#, then. | #greet#. The dew's still on #greens#; that's the best hour for them.
+line @4 greet [here.time=dusk|night] : #greet#. I'm covering up, but there's #little# left for the asking. | #greet#, #address#. Late for fruit. What there is will be sweet, mind.
+line @5 greet [here.outdoors=rain self.working=yes] : #greet#. Stand under #awning#; it leaks less on the left. | #greet#. Wet again, and #apples# don't mind it as much as I do.
+line @1 kin.open [pair.kin!=no] : You. Pull #crate# over and sit; it's dry for once. | Oh, it's you. Have #soft#; it won't sell anyway.
+line @1 again.open : #welcome_back#. #stall.capitalize# hasn't changed, and nor have I. | You again. #pears.capitalize# have softened since you passed.
+line @1 hail [pair.band=friends] : #address.capitalize#! Over here, out of the drip. | A word, #address#, when you're by #stall#.
+line @1 greet.return : #greet#. | #greet#, #address#. Mind the wet.
+line @2 greet.return [pair.band=friends|family] : #greet#. I'd kept you a pear back, and then I ate it. | #greet#. I had you in my prayers this morning, and here you are.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Take your time. Fruit can't run off. | #greet#. #stall.capitalize# will wait while you choose.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late. Whatever's left on #stall# you're welcome to. | #greet#. I'm half packed. Speak while I wrap.
+line @1 farewell : #farewell#. Bright One keep you dry. | #farewell#, #address#. Eat that one first; it won't wait.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the cobbles; they're slick by dark. | #farewell#. I'll say a word for you at #chapel# tonight.
+line @1 farewell.return : #farewell#. | And you, #address#. Bright One with you.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Come by tomorrow; I'll have #berries# if the carts are kind. | Go on, then. #farewell#.
+line @1 react.news : #surprise#. That'll be round #square# by noon. | News is fruit, #address#: best the day it's picked.
+line @1 react.news.new : #surprise#. Nobody at #stall# had that yet. | That's fresh. I'll not pass it on till it's #good# and sound.
+line @1 react.news.known : #knew#. It came past #stall# before the dew was off. | I had it yesterday, from a carter with wet boots at #gate#.
+line @1 react.news.doubt : #doubt#. Square gossip; it #keeps# and then it stinks. | I'll believe it when I see it with my own eyes, #address#. Half of what's said here is rot.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a hard thing. I'll put it in my prayers. #pity#. | #sympathy#. Bright One have mercy on the house it fell on.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's the first sweet thing I've heard all week. | #good.capitalize# news. Bright One be thanked, and I mean that.
+line @1 answer.how : Steady. #boards.capitalize# are dry and nothing's gone soft yet. | #fine#. The Bright One's kept me, and the rats haven't.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. I've weighed out more pears than there are pears. | Off my paws since #gate# opened, and not sorry. #carts.capitalize# came in heavy.
+line @1 ask.how : And you? Keeping out of the #rain#, at least? | How's the day using you, #address#?
+line @1 sympathise : #sympathy#. Sit on #crate# a while; it's no cost. | That's #bad#, and I'm sorry. Take an apple; it won't mend it, but it's something.
+line @1 reassure : #reassure#. The Bright One's seen worse than this through. | It'll come right. Things turn, #address#, and not only fruit.
+line @1 decline : #hedge#, I can't. Nobody minds #stall# but me, and #carts# want meeting at dawn. | Not today, I'm sorry. Everything on #boards# turns by morning if I leave it.
+line @1 accept_decline : #no_matter#. It #keeps#, as most things do. | Another day, then. I'll hold no grudge; grudges spoil like #plums#.
+line @1 thank : #thanks#. That's kindly done, and I'll remember it. | Bright One bless you for that, #address#.
+line @1 deflect_thanks : #deflect#. It was going soft anyway. | It cost me nothing but #soft#, and you're welcome to it.
+line @1 preclose [self.working=yes self.role=merchant] : Well. #boards.capitalize# won't dry themselves. | I'd best get back; #ratword# know when I'm talking.
+line @2 preclose : #preclose#. The bell at #chapel# will be going soon. | It's getting on. I've #mop# waiting and #prayer# to say.
+line @1 accept_preclose : Go on, then. #farewell#. | Go on. I've had my share of you for one day, #address#.
+line @1 tease [pair.band=friends] : You squeeze #pears# like they owe you #money#. | #cheek.capitalize#, picking over #plums# like one of #cooks#.
+line @1 tease.return : Says the one who bought #soft# and called it a bargain. | #cheek.capitalize#. I'll charge you double for that, and pray for you after.
+line @1 ack : #bc_it_is# | Mm. That #keeps#, I'd say.
+line @1 give.advice : #advise#: buy apples for keeping and pears for eating. Never the other way. | Eat what's soft first and save the sound. #saying#.
+line @1 warn [world.bandits=near] : Keep off the roads out of #city# a while, #address#. #warn#. | If you're going out past #gate#, go out with #carts#.
+line @1 confide [pair.band=friends|family] : #vent#: I know which doors the Watch walks past slow. I keep it to myself, and I keep it written. | #vent#, I'd give #stall# for a patch of ground with one apple tree on it.
+line @1 keep_confidence : #secret#. It stays under #awning# with me. | It goes no further. I keep more than fruit, #address#.
+line @1 insist : #insist#. I've sold fruit long enough to know a bad one. | No, I mean it. #saying#.
+line @1 deflect_praise : #modest#. The Bright One grew it; I only stacked it. | Don't thank me for the fruit. Thank #carts# for getting it here.
+scene first_of_the_crate
+when topic=work|faith self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess / ack
+a : See #basket# by the scales? That's #share#. The first of every crate goes in it. | Every crate I open, the top fruit goes aside before I sell a thing. | The first pear out of #crate# isn't mine. It's never been mine.
+b : Who's it for? | Even the best one? | Whose is it, then?
+a : #chapel.capitalize#, and the hungry who come there. The Bright One gets the first, and I get the rest. | The best one especially. A gift of #soft# is no gift. | The Bright One's. I just carry it to #chapel# at dusk.
+b : #bc_good# | That's a hard habit to keep. | #bc_wise#
+a? : I've kept it every day since I came down to #city#. | Hard on the purse, easy on the soul. #bc_true#. | It's the one account I've never let run short, #address#.
+
+scene wet_boards
+when topic=weather|work here.outdoors=rain here.region=ridgemere self.working=yes
+does tell.complaint / react.complaint / assess / ack
+a : Rain off #awning# straight onto #boards#. I've #puddle# and #apples# are paddling. | #mop.capitalize# again. I mop, it rains, I mop. #city.capitalize# wins every time. | Three days wet. I swear #boards# are growing moss underneath.
+b : Can't you raise them? | It's always wet here. | You'll have mushrooms next.
+a : On bricks, twice. The water finds a way round #crate# like a cat. | Always. Where I grew up, the wet came down as #snow# and stayed put. | Mushrooms I could sell. Moss just sits on #boards# and smirks.
+b? : #bc_ha# | #bc_true# | #bc_ha#
+
+scene the_crate_rats
+when topic=animals|work self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : #ratword.capitalize# were at the bottom of #crate# again. One bite out of every plum, like a tax. | Found a rat asleep in the pear straw by #stall# this morning, fat as a priest. | I set a trap by #stall# and caught my own tail. #oath#.
+b : Every plum? | What did you do? | Did it hurt?
+a : Every one. Never two bites. #ratword.capitalize# are careful, I'll give them that. | Woke it with the broom. It left slow, as if I'd been rude to it at #chapel#. | Only my pride. #ratword.capitalize# laughed, I'm sure of it.
+b : #bc_bad_luck# | #bc_ha# | #bc_ha#
+
+scene blackberry_time
+when topic=food|season here.season=summer|autumn self.likes=blackberries
+does tell.feeling / react.self / assess
+a : #berries.capitalize# came in today. I've stained paws and I don't care. | It's the one week I eat more than I sell. #berries.capitalize#, mind. | Blackberries don't keep a day. That's why I love them; they've no patience either. #saying#.
+b : Your paws are purple. | Are they good this year? | Eat them fast, then.
+a : Purple to the wrist. It'll wash out by the feast, the Bright One willing, #address#. | #good.capitalize#. Sharp at the first bite and sweet after, the way they should be. | Fast and standing up, by #stall#. Some things aren't for sitting down to.
+
+scene first_warm_day
+when topic=season|weather here.season=spring here.outdoors=clear self.likes=first_warm_day
+does tell.feeling / ask.opinion / give.opinion / assess
+a : Feel that? #warmday.capitalize#. I'd sing if I had the voice. | Coat off, sleeves up. #warmday.capitalize#, and I've waited all winter. | The sun's on #boards# and they're steaming dry. I could weep.
+b : It is warm. | Is it always this early? | You'd weep over dry boards?
+a : Warm enough to hope by. #warmday.capitalize# owes me nothing more. | Early or late, I'm grateful either way, and I say so at #chapel#. #bc_always#. | Dry boards, warm paws, nothing rotting. Yes, I'd weep. #saying#.
+b : #bc_lovely# | #bc_fair_enough# | #bc_ha#
+
+scene old_tale_slow
+when topic=pastimes|lore self.likes=old_tales
+does tell.feeling / ask.detail / answer.detail / assess
+a : I'll give #plums# for #oldtale#, so long as it's not hurried. | Folk tell tales too fast in #city#. They're always running for something. | The best tale I know takes a whole winter evening and ends on a door shutting. #tale#.
+b : What makes it good? | Too fast? | Which tale's that?
+a : Slow, with the end kept back, and nobody explaining it after. That's #oldtale#. | They gallop to the end like it's the last cart out of #gate#. A tale wants walking. | The one about the miner's lamp that wouldn't go out. I'll tell it you when there's #snow#.
+b : #bc_fair# | #bc_true# | #bc_i_hope_so#
+
+scene tidy_stall
+when topic=work|home self.likes=tidy_house
+does tell.self / react.self / assess / ack
+a : #apples.capitalize# to the left, pears in the middle, soft at the back where nobody's tempted. | I stack #stall# the way my #mum# kept a cupboard. Square, and nothing touching. | Folk buy with their eyes. A tidy #stall# sells #soft# a whole day longer.
+b : It looks it. | Nothing touching? | A whole day?
+a : It ought to. I started on it in the dark, by #gate#'s lamp. | One #bad# fruit spoils its neighbour. Same as wolves, mind. | A day's a long time in fruit, #address#. Ask any pear.
+b? : #bc_ha# | #bc_wise# | #bc_ha#
+
+scene carts_before_light
+when topic=work|day here.time=dawn self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I'm at #carts# before light to get #greens# before #cooks# do. | First at #gate# this morning. I had the pick, and I picked hard. | The best of #greens# goes in the first hour. After that you're buying what #cooks# left.
+b : How early? | What did you pick? | The cooks?
+a : Before the first bell. I can find my way to #gate# blind now. | #pears.capitalize#, two baskets of #berries#, and a cabbage the size of a pup. | #cooks.capitalize#. Sharp-eyed and quick-pawed. I'm sharper, on a #good# day.
+b : #bc_wise# | #bc_ha# | #bc_ha#
+
+scene slush_snow
+when topic=weather here.outdoors=snow here.region=ridgemere
+does tell.self / react.self / assess
+a : #snow.capitalize#, they call this. It's water that's lost its nerve. | Look at it, melting before it's touched the cobbles. #city.capitalize# doesn't know how to snow. | #snow.capitalize# on #awning#. It'll be slush by noon and puddles by dusk.
+b : It's cold enough. | Where you're from it's different? | Puddles again.
+a : #cold.capitalize# and wet. The worst of both, and none of the quiet. | Back #uphome# it lies till spring, and the quiet's so deep your ears ring. | Always puddles. #mop.capitalize#'s seen more snow than I have this year.
+
+scene fog_square
+when topic=weather|day here.outdoors=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog off the Sound so thick I can't see the far side of #square#. | Nobody buys what they can't see. Fog's a lean day at #stall#. | I can hear #cooks# coming before I see them. They argue in fog.
+b : It's thick today. | Lean? | They argue?
+a : Thick as porridge. #apples.capitalize# are beaded with it. | Lean, but the fruit #keeps# in the damp. One mercy. | About everything. You learn a lot about a House kitchen in a fog, #address#.
+
+scene grey_morning
+when topic=weather|day here.outdoors=overcast here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Grey again. I'd trade a week of this for one day of honest #snow#. | The sky's the colour of an old pot. #city.capitalize# keeps it that way on purpose, I think. | Not raining yet. I've #awning# half up and one ear open for the first drop.
+b : It'll rain by noon. | An old pot? | Half up?
+a : It will. I've seen #city#'s weather long enough to bet on it. | Dented and dull. You'll see it now I've said it, #address#. | Half up's quicker to finish. I learned that with #mop# in my paw.
+
+scene clear_day
+when topic=weather|day here.outdoors=clear here.time=day here.region=ridgemere
+does tell.feeling / react.self / assess / ack
+a : Sun on #square#. Everybody buys on a dry day, even the misers. | A clear sky over #city#. I'll believe it when it's lasted till dusk. | Dry boards and a blue sky. #oath#. I'd forgotten.
+b : They're out in crowds. | It might last. | It's lovely.
+a : The misers bought #pears#. I nearly fainted. | Might. #saying#; I'll sell while it does. | It is. I'll hold my tongue in case the sky hears me and sends the #rain#.
+b? : #bc_ha# | #bc_hope_so# | #bc_lovely#
+
+scene storm_awning
+when topic=weather here.outdoors=storm here.region=ridgemere
+does tell.worry / reassure / assess
+a : Hear that wind? #awning.capitalize# is pulling like a goat on a rope. | If this storm takes #awning#, I'm selling wet fruit to the fish. | Thunder over the Sound. I've #crate# roped and my heart in my mouth.
+b : It'll hold. #reassure#. | It's held before. | It'll pass.
+a : It will, if the Bright One's watching. I've said #prayer#, to be sure. | It has. Patched twice and stubborn. Like me, #bc_true_enough#. | It will. Everything does, given a night. Even storms, #address#.
+
+scene snow_at_home
+when topic=memories|season self.away=yes self.from=frosthollow
+does tell.memory / ask.detail / answer.detail
+a : In #self.from_town#, #snow# came at the start of winter and didn't leave till the thaw. | We saw fruit twice a year at #home#, and both times it came #uphome# wrinkled. | Nothing grows #uphome#. Rock, #snow# and a few hard cabbages.
+b[from=frosthollow] #home : Wrinkled and dear. I remember. | Rock and cabbages. That's home, all over. | The thaw was the only feast we needed.
+b : Didn't you miss green things? | Wrinkled? | So why sell fruit?
+a@home : Dear as candles. I paid a week's #money# for one pear once. | And a cabbage was a wonder. I still can't pass one without patting it. | It was. I still wake early in spring, listening for the drip off the eaves.
+a : I didn't know to miss them. You can't miss a thing you never had, #address#. | Like an old stick's paw, every one. And we fought over them. | Because I can stand by #stall# all day and never stop being surprised. #pears.capitalize#, #address#.
+
+scene up_the_pass
+when topic=travel|memories self.away=yes self.from=frosthollow
+does tell.self / react.self / assess
+a : I came down from #self.from_town# with one bag and #prayer#, and the prayer did most of the work. | Folk in #city# think a hill's a mountain. I've walked down a real one. | It's a long way down from #home#. Longer back up, I'd think, so I don't.
+b : And the bag? | You walked it? | Never been back?
+a : A spare coat and a candle. Both long gone. The prayer's kept. #bc_always#. | All of it. My knees still remember the bends #uphome#. | Not yet. The Bright One can find me here as well as there.
+
+scene accent_city
+when topic=accent here.region=ridgemere self.away=yes
+does tell.self / react.self / assess
+a : One of #cooks# told me I talk like I'm paying by the word. I said I am. | Folk in #city# use five words where one would do. I've stopped counting them. | They hear where I'm from before I've named a price. Then they haggle harder, #address#.
+b : You do talk short. | Five where one would do? | Do they win?
+a : Short #keeps#. Long goes off. Same as fruit. | Five, and three of them about the #rain#. | Never. Short talk means short patience, and I've got less than #cooks# have.
+
+scene prices_hard
+when topic=times|prices world.times=hard|lean self.working=yes self.role=merchant
+does tell.worry / react.complaint / reassure / ack
+a : Fruit's the first thing folk stop buying when it's lean. Bread first, fruit after. | Half #stall# went soft today, and I gave it to #chapel# rather than throw it. | Folk stand and look at #apples#, and walk on. That's lean times, plain.
+b : Hard for everyone. | Better than waste. | They'll come back.
+a : Hard, but the Bright One hasn't let me go #hungry# yet. #reassure#. | Better than waste, and better than nothing. The hungry don't mind a bruise. | They will. Lean times turn, like #pears# do.
+b? : #bc_true# | #bc_good# | #bc_i_hope_so#
+
+scene times_good
+when topic=times|prices world.times=good|boom self.working=yes self.role=merchant
+does tell.news / react.news / assess
+a : #pears.capitalize# gone before noon. I've not seen that in a twelvemonth. | Coin's moving at #stall#. Folk are buying fruit for no reason but they fancy it. | #carts.capitalize# can't come in heavy enough. I've #share# full and #stall# empty.
+b : Good for you. | Good times. | That's a good problem.
+a : #good.capitalize# for #chapel# too. The first of every crate's bigger when the crates are. | Good times. I'll put #little# by; they never last. | The best kind. I'll say #prayer# that it lasts a week.
+
+scene carts_late
+when topic=caravan|prices world.wagons=late self.working=yes self.role=merchant
+does tell.worry / reassure / assess / ack
+a : #carts.capitalize# were due at dawn. I've been at #gate# twice already. | Late carts mean soft fruit. Every hour on the road's an hour off #stall#. | Half a crate of #apples# and nothing else. I'm selling #boards# next.
+b : They'll come. #reassure#. | Can't be helped. | You'd sell the boards?
+a : They will. I'll still go down to #gate# and look. | It can't. I just stand here and smell #pears# turning. | Wet as they are? Nobody'd buy them. That's the only thing saving them, #address#.
+b? : #bc_true# | #bc_fair_enough# | #bc_ha#
+
+scene carts_in
+when topic=caravan|work world.wagons=in self.working=yes self.role=merchant
+does tell.news / ask.detail / answer.detail
+a : #carts.capitalize# are in, and heavy. I've #pears# to my ears. | The country sent plums today. #good.capitalize# ones, the dark kind. | Full crates this morning. #share.capitalize# went to #chapel# before I'd even had breakfast.
+b : Any good? | Dark plums? | Before breakfast?
+a : Sound, the most of them. I've only had to throw back four, #address#. | #plums.capitalize# that taste of the sun. They'll be gone by noon. | First of #crate#, first of the day. Breakfast can wait; the Bright One shouldn't.
+
+scene wagons_taken
+when topic=caravan|bandits|crime world.wagons=raided
+does tell.worry / sympathise / assess
+tone serious / tender / even
+a : They took a cart on the road. Fruit and all. I hope the carter's whole. | #bandits.capitalize# on the road again. I prayed for the carters before I prayed for the fruit. | No cart this morning. Robbed, they say. #stall.capitalize# looks like winter.
+b : #sympathy#. | That's the right order. | It'll fill again.
+a : The fruit doesn't matter. Wolves do, #address#. | It is. Fruit grows back; carters don't. #bc_true#. | It will. #saying#. Bare boards don't stay bare.
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear things at #stall#. Folk think fruit sellers are deaf. | I know whose kitchens pay late and whose doors #watch# walk past slow. | #oath#, the things said over #pears#. I could fill a ledger.
+b : Go on, then. | Whose doors? | And do you?
+a : No. It #keeps#, and so do I. | I'll not say. I write it down and say #prayer# over it. That's enough for now. | I do. A small one. And it stays shut, #address#.
+b : #bc_ha# | #bc_fair_enough# | #bc_wise#
+
+scene gossip_sorrow
+when topic=gossip topic.claim_kind=death|theft|violence|victim
+does tell.gossip / sympathise / assess
+tone serious / grave / even
+a : They're saying at #square# that #topic.subject# #topic.claim#. I'll not say more than that. | I had it over #pears#: #topic.subject# #topic.claim#. Bright One have mercy. | Folk say #topic.subject# #topic.claim#. I've said #prayer# already.
+b : That's hard. | #sympathy#. | I'd not heard.
+a : It is. I'd rather sell #bad# fruit than hear such things. | It is. I'll light a candle at #chapel# tonight. | Nor had I, till this morning. It's been a heavy day at #stall# for it.
+
+scene gossip_glad
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. Something sweet for once, #address#. | They're saying #topic.subject# #topic.claim#. I've had a smile on all morning at #stall#. | Word at #stall# is that #topic.subject# #topic.claim#. #gladnews#.
+b : #gladnews#. | That is good. | #bc_lovely#
+a : It is. I'll put a pear aside in #basket# for the luck of it. | #good.capitalize# things come round too, if you wait. | The Bright One's not only for hard days. #saying#.
+
+scene chapel_dusk
+when topic=faith|day here.time=dusk
+does tell.self / react.self / assess
+a : I carry #basket# to #chapel# at dusk. It's the best walk of my day. | I'll say #prayer# for the carters tonight. Somebody should. | #chapel.capitalize#'s warm at dusk. Warmer than my room, and quieter.
+b : Every evening? | Do they know you pray for them? | Quieter than your room?
+a : Every one. #rain.capitalize# or none. The Bright One doesn't keep hours. | They don't, and they needn't. The Bright One knows. #bc_always_is#. | My room has three housemates and a stair that creaks. #chapel.capitalize# has the Bright One.
+
+scene faith_plain
+when topic=faith
+does give.opinion / ask.opinion / give.opinion / assess
+a : I pray in the morning and I pray at #stall#. Short prayers. The Bright One's #busy#. | Some take faith like medicine, a spoonful on Restday. I take mine like bread, every day. | I'd not trust a wolf who's never once thanked the Bright One, #address#.
+b : Short ones? | And what's yours? | Not even once?
+a : Short and often. Like trade at #stall#. | Bread, as I said. Not much, but you'd miss it. #bc_true#. | Not even once. Gratitude's the cheapest thing there is, and still folk are short of it, #address#.
+b : #bc_wise# | #bc_true# | #bc_true_enough#
+
+scene neighbour_word
+when topic=friends|smalltalk self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# is the kind of neighbour I'd trust with my keys. I don't say that often. | I'd put #self.neighbour# in my prayers without being asked. That's my measure of #address#. | #self.neighbour#'s #good# company on a long grey evening. Not too much talk.
+b : Good neighbours are rare. | That's a measure. | Not too much talk?
+a : Rare as a dry Marketday. I count my blessings at #chapel#. | It is. Most folk only get the weather from me. #bc_ha#. | Just enough. A #good# neighbour's like a sound pear. You know it without a fuss.
+
+scene friend_old
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I've known #self.friend# a #good# while. Long enough to stop being polite. | If I fell in the Sound, #self.friend# would be the one I'd shout for. | There's nobody I'd sooner share a #bad# day with than #self.friend#.
+b : That's a good friend. | Would you be heard? | Only bad days?
+a : The best kind. Plain and sound, and not afraid of the #rain#. | I'd shout loud. I always do. #bc_ha#. | #good.capitalize# days take care of themselves. It's the bad ones need company.
+
+scene traveller_apple
+when topic=newcomer|player|smalltalk self.working=yes self.role=merchant
+does tell.self / react.self / assess / ack
+a : A traveller bought one apple and gave me news from three towns for it. #bc_fair#. | Strangers stop at #stall# for the way and leave with a pear. Or they should. | I like a new face. It hasn't learned to squeeze #plums# yet.
+b : A fair trade. | Do they? | They learn quick.
+a : Fair and then some. The apple was #soft#, if I'm honest. I didn't tell. | Most do. The ones that don't come back wishing they had, #address#. | They do. By the third visit they're as bad as #cooks#.
+b? : #bc_ha# | #bc_fair# | #bc_true#
+
+scene feast_day
+when topic=festival|season world.festival=today|soon
+does give.opinion / ask.opinion / give.opinion / assess
+a : A feast's #good# for #stall# and bad for #boards#. Everybody wants sweet things and nobody wipes their paws. | I'll sell everything on a feast morning and spend the evening at #chapel#. | The feast's a fine thing. The mess after it is the Dark One's own work.
+b : Which wins? | And you like it? | That bad?
+a : The coin, if I'm honest. #mop.capitalize# gets its turn after. | I do, from the far end of #square#. | Worse. Pips in every crack of #boards#, and #ratword# know it.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene market_day
+when topic=day|work here.day=market self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : Marketday. I've doubled #stall# and halved my patience. | Every one of #cooks# is on #square# this morning, and every one wants the same pear. | It's market, so I'm selling #apples# by the basket and smiles by the dozen.
+b : Halved? | Which pear? | Smiles cost extra?
+a : Halved and halved again by noon. I'll find it again at #chapel# tonight. | The top one. Always the top one. They think the rest of #crate# is hiding something. | The smiles are free. They're just harder to find by dusk, #address#.
+
+scene dreams_roof
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #stall# had a roof that didn't leak and a floor you could eat off. I woke up cross. | Some nights I dream of one apple tree, on a patch of ground that's mine. | I dreamt #ratword# learned to pay. They paid in pips.
+b : Cross? | Just the one tree? | In pips?
+a : Cross to wake, and wet within the hour. #bc_always#. | One is plenty. I'd give #share# of it to #chapel# and still have a tree. | In pips. I kept them. A dream's a dream, but pips are pips, #address#.
+b : #bc_poor_soul# | #bc_lovely# | #bc_ha#
+
+scene sore_back
+when topic=health
+does tell.self / react.self / reassure
+a : #crate.capitalize# weighs more every year, or I'm getting softer. | My paws are #cold# from the first hour at #gate#. They thaw by noon. | I've not been sick a day since I came down. Saying it once is tempting fate enough.
+b : Lift with your knees. | Gloves, maybe? | Knock on wood.
+a : Knees went years ago. I lift with my temper now, #address#. | Gloves get wet in #city#. #cold.capitalize# paws dry quicker. | Knocked, and said #prayer#. Both, to be safe.
+
+scene home_tidy
+when topic=home
+does tell.self / react.self / assess
+a : My room's small, but there's a place for everything and everything's in it. #bc_every_one#. | I share a house, so I keep my corner square. It's the only way to stay sane, #address#. | I sweep my floor twice a day. Once for the dirt and once for the peace of it.
+b : Small rooms are easy to keep. | Square? | Twice?
+a : Easy to keep, hard to forget. I know where every pin is. | Bed, chest, shelf. Nothing on the floor. #oath#, nothing. | Twice. The second time's a kind of #prayer#, I suppose.
+
+scene lore_sound
+when topic=lore here.region=ridgemere
+does tell.story / ask.detail / answer.detail / assess
+a : They say the Sound was here before #city# and it'll be here after. I believe the second half. | An old carter told me #square# was a sheepfold once. The #rain#'s the same, he said. | There's a tale the bell at #chapel# was cast from a ship's anchor. I like that one.
+b : Only the second half? | A sheepfold? | Is it true?
+a : The first half's before my time. The second half I can see from #stall#. | Sheep and #rain#. Nothing's changed but the prices. | True enough to tell. That's the best kind of #oldtale#.
+b : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+story first_apple [topic=memories|food self.away=yes self.from=frosthollow self.age>=25]
+  : When I was small, a carter came #uphome# with one red apple in a pocket. It was the first I'd seen.
+  : My #mum# cut it in six, for the six of us, and we ate the core too. I can still taste it.
+  ask : What's the first thing you remember tasting, #address#?
+  b[old] : Honey off a comb. I was sick after, and still not sorry.
+  b : Bread, I'd think. Nothing so grand as an apple.
+  : Bread's grand enough. But I've sold #apples# ever since, and I think that's why.
+
+story bramble_heap [topic=memories|lore self.away=yes self.from=frosthollow self.age>=25]
+  : There was a bramble grew on the warm side of a spoil heap near our door, #uphome#. The only bush in a mile of rock.
+  : Every summer we'd fight the birds for it. I learned to be quick and to keep my paws to myself.
+  : It's where I learned to love #berries#. And to pray, because the birds always won.
+  b : The birds always win. | Did you ever beat them?
+  b[from=frosthollow] : I knew a heap like that. Sweetest berries I ever had.
+
+story miners_lamp [topic=lore|pastimes]
+  : There's #oldtale# of a miner whose lamp wouldn't go out. Not in water, not in wind, not when he blew on it.
+  : He dug his whole life by it, and when he died they set it on his grave. It's burning still, they say.
+  : Nobody's ever gone up to check. I think that's the point of the tale, #address#.
+  ask : Would you go and look, if you knew where it was?
+  b : No. Some things are better left lit. | I'd look. I'd not touch it, though.
+  b[old] : I'd not. I'm too old to be told my tales are wrong.
+
+story first_stall [topic=work|memories self.role=merchant self.age>=25]
+  : My first morning with a stall in #city#, it rained so hard #apples# rolled off and down the gutter.
+  : I ran after them half across #square#. One of #cooks# stopped them with a foot and bought every one.
+  : Wet, bruised and full price. I've thanked the Bright One for that cook ever since.
+  b : A good start, then. | Lucky foot.
+  b[job=merchant] : That's trade. Some days the gutter buys.
+
+story the_rat_and_the_quince [topic=animals|smalltalk]
+  : A rat once dragged a whole quince off #stall#, bigger than its head, all the way to the drain.
+  : It got it to the grate and the quince wouldn't fit. It sat and looked at it a #good# while.
+  : Then it left it there and went off. I sold that quince the next morning. #saying#.
+  b : Ha! Poor rat. | Did you wash it?
+  b[friends] : That's the only time you've ever beaten a rat.
+
+rule @fruit_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Sound #pears# and keeping apples. Eat the pears first. | Fruit off #carts# this morning. Come and look.
+
+rule @wet_boards_bark
+when concept=bark here.outdoors=rain working=yes self.dislikes=wet_floors
+does aside
+cooldown 8h
+say #oath#. #puddle.capitalize#, again. | Where's #mop#? It was here a minute ago, and so were my boards.
+
+rule @rat_bark
+when concept=bark working=yes self.dislikes=rats
+does aside
+cooldown 12h
+say Out of #crate#, you thief. Out. | #ratword.capitalize# again. Bright One give me patience, and a broom.
+
+rule @dawn_bark
+when concept=bark here.time=dawn working=yes self.role=merchant
+does aside
+cooldown 8h
+say #greens.capitalize#, still wet with dew. The best of the day. | Early fruit for early wolves. #cooks.capitalize# aren't up yet.
+
+rule @dusk_bark
+when concept=bark here.time=dusk working=yes self.role=merchant
+does aside
+cooldown 8h
+say The last of the soft ones, going cheap before they go off. | Covering up soon. Last #pears#, last chance.
+
+rule @carts_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no carts. #stall.capitalize# looks like winter. | Late again. Bright One keep the carters on the road to #gate#.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. #pears.capitalize#, apples and #greens#, all off this morning's carts. | #greet#, #address#. Look all you like; it's touching I charge for.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. #pears.capitalize# are sound today; I'd say so if they weren't. | #topic.player#. Back for more, and I've kept the #good# ones low.
+dlg @3 shop.greet [here.outdoors=rain here.shop!=bare] : #greet#. Under #awning#, quick. The left side leaks less.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Name the fruit and I'll weigh it. Paws off #crate#.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #stall.capitalize#'s bare till #carts# come. I'll still buy, if you've fruit to sell.
+dlg @1 shop.prices : Fruit costs what the road costs, and the road's never cheap. #shop_dear# | Apples are fair, pears are dear, and #berries# cost what the summer lets them.
+dlg @1 shop.bye : #farewell#. Eat #soft# first. | #shop_bye#
+dlg @1 resident.hub : #greet#. Speak up; the #rain#'s loud on #awning#. | #greet#, #address#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a minute between #cooks#. What's wanted? | #topic.player#. #good.capitalize#. Say on.
+dlg @3 resident.hub [here.time=night] : It's late. If it's fruit, there's #little# left. If it's talk, ask quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain, and keep your paws off #crate#.
+dlg @1 resident.job [self.role=merchant] : I keep #stall# on #square#. Fruit off the country carts, the first of it to #chapel#. | #self.trade_words.capitalize#: that's where you'll find me. I sell fruit, I fight the #rain#, and I pray. In that order, most days.
+dlg @2 resident.job : I work, I pray, I keep my corner tidy. There's not much else needs doing. #bc_true#. | Whatever wants doing, #address#, and I do it before the wet gets in.
+dlg @1 resident.business [business=thriving] : Selling out by noon. The Bright One's kind this season, #address#.
+dlg @2 resident.business [business=steady] : Steady. Fruit goes soft, folk still eat. It #keeps# me.
+dlg @3 resident.business [business=failing] : Poorly. I'll not pretend. More goes to #chapel# than to the purse.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what came past #stall# today.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #square# this morning. Fresh, but I'd let it ripen.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only #carts#, and they're not news, they're a habit.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty over #pears#, and I keep it. That's how #stall# keeps its customers.
+dlg @2 resident.gossip [here.gossip=yes] : Folk at #square# say #topic.subject# #topic.claim#. I'll say #prayer# over it, not spread it.
+dlg @1 resident.bye : #farewell#. Bright One keep you dry. | #farewell#, #address#. Mind the cobbles.
+graft resident.hub
+choice What's in the little basket by your scales? [self.role=merchant] -> first_fruit
+node first_fruit
+say The first of every crate. It goes to #chapel# at dusk, before I sell a thing. The Bright One gets first pick.
+mood calm
+free
+choice Even the best of it? -> first_fruit_why
+choice Goodbye. -> bye
+node first_fruit_why
+say The best especially. A gift you'd not miss isn't a gift. And the hungry at #chapel# deserve a sound pear too.
+choice That's a good habit. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Which of these will keep? -> keeping
+node keeping
+say #apples.capitalize# keep a month in a cool place. #pears.capitalize# keep two days, and the plums want eating today.
+mood calm
+choice Then I'll eat the plums now. -> keeping_eat
+choice Let me see your wares. -> greet
+node keeping_eat
+say Wise. #saying#. Pick from the back of #crate#, the dark ones; they're sweetest.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

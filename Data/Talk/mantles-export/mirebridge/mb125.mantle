@@ -1,0 +1,310 @@
+# mb125, the thunder-thanker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb125
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for rm_signe_dripworth
+written_by claude
+title the thunder-thanker
+fits stage=adult|old
+prefers piety=devout warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk thanks_the_bright_one_aloud_at_every_thunderclap
+likes mutton_stew cards full_larder thunder
+dislikes flies salt_wind
+fears dying_down_here_in_the_damp an_empty_larder_at_midwinter
+hopes a_window_up_in_the_heights before_the_end the_young_ones_never_hungry
+topics faith +0.5 family +0.3 home +0.3 weather +0.2 food +0.2 pastimes +0.2 times +0.2 gossip -0.3
+styles comfort=prayer gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# lives over the fish in the low streets, thanks the Bright One aloud whenever it thunders, and means to end somewhere higher and drier: gentle, devout and plain, wary of the Watch and generous with what little there is.
+
+words
+oath! = Bright One and the high ground | Blessed be the dry stair | Bright One lift us
+saying! = Higher is drier, in this world and the next | Thunder means somebody up there's still listening | Every stair up is a stair nearer
+heights = the Heights | the high streets where the gardens are
+stair = the stair | our crooked stair
+door = the door | the door I mind
+stew = a pot of mutton stew | mutton stew with the bone in
+cards = cards | the old pack
+larder = the larder | a larder with something in it
+thunder = thunder | a good long roll of thunder
+saltwind = the salt wind | the wind off the harbour
+flies = the flies | the fish-flies
+downhere = down here | this low end of the city
+fishflat = the fish flat | the rooms over the fish
+fen = the fen | the old fen at home
+prayer = a prayer said aloud | a quiet prayer
+
+any
+opinion @1 church for 3 : When there was nothing in our bowls, the chapel filled them. That pew's mine till they carry me out, #address#.
+opinion @1 dole for 3 : The dole put bread on our table through a lean week. Speak against it in my hearing and you'll get a look. And #prayer# for whoever pays for it.
+opinion @1 drink against 1 : I've watched #drink# take the legs out from under a whole family. I'd say it grieved the Bright One as much as it grieved me.
+opinion @1 houses against 1 [here.region=ridgemere] : Every damp brick #downhere# belongs to a House, and not one's been mended in my time. They'll answer for that, one day.
+opinion @1 watch against 1 [here.region=ridgemere] : The Watch never comes #downhere# but to haul somebody away. Just once I'd like to see one carry bread.
+opinion @1 sump for 1 [here.region=ridgemere] : It's #downhere# I live, and folk #downhere# look after their own. I'd still leave tomorrow for a dry room, mind.
+opinion @1 times against 2 : Each week's a bit thinner than the last, and up in #heights# nobody seems to feel it. I pray they will, and soon.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Take your time; nobody's hurrying #downhere#. | #greet#. Bless your paws for coming down this far.
+line @2 greet [here.time=dawn] : #greet#. Up with the gulls, I see. | #greet#. Early, and the street still quiet.
+line @3 greet [here.time=dusk|night] : #greet#. Keep your purse close this late, #address#. | #greet#. Late to be about #downhere#.
+line @4 greet [self.working=yes self.job=none] : #greet#. Come in or go by; I'm only minding #door#. | #greet#. Mind the step; #door# sticks in the damp.
+line @1 kin.open [pair.kin!=no] : There you are, #dear#. Come and sit by me. | Oh, it's you. I was praying for company, and here it comes.
+line @1 again.open : #welcome_back#. You're good for an old door, coming twice. | Twice in one day. I'll count that a blessing.
+line @1 greet.return : #greet#. | #greet#, #address#. Bless you.
+line @2 greet.return [pair.band=friends|family] : #greet#, #dear#. Sit, if your legs want it. | #greet#. You're a sight for old eyes.
+line @3 greet.return [here.time=dusk|night] : #greet#. Mind the dark #stair# going home. | #greet#. Late, but welcome.
+line @1 farewell : #farewell#. Walk on the high side of every street. | #farewell#, #address#. Stay where the lamps are.
+line @2 farewell [here.time=dusk|night] : #farewell#. Get home before the rough ones are out. | #farewell#. Get your door barred before the lamps go out.
+line @1 farewell.return : #farewell#. | #farewell#, and #prayer# for you.
+line @1 react.news : #ack#. I'll pray on that. | Well. The Bright One knows what to do with it, even if I don't.
+line @1 react.news.new : #surprise#. Nobody told me. | #oath#. That's news to an old door.
+line @1 react.news.known : #knew#. It came up #stair# before you did. | I had that this morning, #address#, with the fish.
+line @1 react.news.doubt : #doubt#. Folk say all sorts #downhere#. | Show me somebody who saw it, and I'll listen. Till then, I'll pray it isn't so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, the poor souls. I'll light a candle tonight. | #pity.capitalize#. I'll say #prayer# for that house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The Bright One be thanked. That's #good# news for once. | Oh, that's lovely. That's going in my prayers tonight, the happy part of them.
+line @1 answer.how : Steady, #address#, thank the Bright One. I've a roof and a bowl. | #fine.capitalize#. The damp's in my bones, but my bones are still here.
+line @1 ask.how : And you? Eating, I hope. | How's your house keeping, #address#?
+line @1 sympathise : Oh, #dear#. Sit with me; you needn't say a word. | #sympathy#. I'll say #prayer# for you tonight, and mean it.
+line @1 reassure : #reassure#. The Bright One hasn't forgotten you. | It'll pass, #address#. Bad weeks do, even #downhere#.
+line @1 decline : #hedge#. My legs won't take me that far today, and I'd only slow you down. | Not today, #dear#. I promised to mind #door#, and a promise is a promise.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | Never mind. The Bright One sends other days.
+line @1 thank : #thanks#. That's a kindness I'll mention in my prayers. | #thanks#, #address#. I'll remember you in my prayers.
+line @1 deflect_thanks : #deflect.capitalize#. It was nothing. | Go on. You'd do it for me.
+line @1 preclose : Well. #preclose#. | I'll let you go, #address#. #saying#.
+line @1 accept_preclose : Go on, then. You're blessed whether you like it or not. | Off you go. Mind #stair#.
+line @1 ack : #bc_it_is# | Bless us, yes.
+line @1 give.advice : #advise.capitalize#: keep a little by for the bad week. There's always a bad week. | Pray first and worry after. It saves on worry, #address#.
+line @1 warn [world.bandits=near] : Keep within the walls for now, #address#. #warn#. | There's rough ones on the road again. Keep #downhere#, where folk know you.
+scene thanks_for_the_thunder
+when topic=weather here.outdoors=storm self.likes=thunder
+does tell.feeling / ask.detail / answer.detail / assess
+a : Hear that? #thunder.capitalize#. Thank you, Bright One. | There it goes again. I say thank you every time; I've said it a dozen times tonight. | #oath#, listen to it roll. Best sound there is, from under a sound roof.
+b : You thank the thunder? | Every single time? | You like it?
+a : It's not the thunder I'm thanking. It's whoever's up there making it, minding the weather. | Every time. If the Bright One troubles to make that much noise, the least I can do is answer. | I do. #downhere.capitalize#, thunder's the one thing the rich can't buy more of than us.
+b : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene rain_through_the_ceiling
+when topic=weather|home here.outdoors=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : #rain.capitalize# again, and the ceiling's weeping over my bed. I've a pot under it. | The water comes down #stair# like a little brook when it rains this hard. | Rain on the roofs. Up in #heights#, they've gutters. #downhere.capitalize#, we've buckets.
+b : Can't the landlord mend it? | A brook on your stair? | Buckets work.
+a : The landlord's a House, and Houses don't climb stairs this low. I'll pray on it. | A little brook. I sit on the top step and watch it go by, and pray it stops short of the door. | They do. I've four, and the Bright One's never once let a fifth be needed.
+b? : #bc_poor_soul# | #bc_ha# | #bc_wise#
+
+scene the_harbour_wind
+when topic=weather|season here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. It finds my eyes and won't leave till bedtime. | That wind off the harbour. Everything I own tastes of salt and fish by nightfall. | The salt wind's blowing. I'd sooner a wind that smelt of reeds. This one's all boats.
+b : It's sharp, that wind. | Fish and salt. | I like boats.
+a : Sharp, and it never says sorry. I keep a cloth for it. | And me with it. I've stopped minding, mostly. The Bright One sends what's sent. | You'd not like them every hour, #address#. I'd trade one breath of reeds for the lot.
+
+scene murk_in_the_low_streets
+when topic=weather here.outdoors=fog here.region=ridgemere
+does warn / ack / assess
+a : #fog.capitalize# in the low streets. Keep a paw on your purse in this; the quick ones love it. | Can't see across the lane. I'd want every young one indoors in this. | Murk like this, the street's full of voices and no faces. I say #prayer# and keep to the wall.
+b : I will. | Sensible. | Good idea.
+a : Do. #downhere.capitalize#, a fog's a pickpocket's feast day. | Indoors and no wandering. A fog swallows young ones whole, #address#. | It's what my #mum# taught me. Prayer and the wall. Never failed either of us.
+
+scene minding_the_door
+when topic=work|smalltalk self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : I mind #door# most days. Somebody has to say good day to folk, and I've the time. | Sitting by #door# is work, whatever the young think. You see everything. | I keep #door# and a stool and a blanket. It's a small trade, but it's mine.
+b : Just saying good day? | Everything? | Do you like it?
+a : A kind word, and mind the step, and a blessing on top. It sends them in kinder. | Who's courting, who's skint, who's poorly. I pray for all of them and tell none of it. | I do. I'd sooner sit by #door# than by an empty grate, #address#.
+b : #bc_lovely# | #bc_wise# | #bc_good#
+
+scene the_fish_flies
+when topic=animals|home here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# are thick as a choir this summer. Living over the fish, you'd expect it. | I've a fly-cloth and a swatter and a saint's patience, and still they win. | There's more flies in our rooms than there are folk in the chapel of a weekday.
+b : Summer's always the worst. | Do they win? | That many?
+a : It is. I pray for autumn and a cold snap, and the Bright One takes the hint, eventually. | Every day. But I make them work for it, #address#. | That many. The difference is the flies come every day. #saying#.
+
+scene the_bone_in_the_stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : I've #stew# on, and it'll do two days and a bit. | Nothing in this city beats #stew# on a cold night. Nothing. | I can make a stew from a bone and three carrots that'll feed four. It's the only cleverness I've got.
+b : What's the secret? | Not even fish? | Feed four?
+a : The bone, and time, and a word of thanks before you lift the lid. | Fish I've had every day of my life. Mutton's a feast, #address#. | Four, if they're polite. Three, if one of them's a growing pup.
+b : #bc_ha# | #bc_fair_enough# | #bc_ha#
+
+scene something_in_the_larder
+when topic=food|home self.likes=full_larder
+does tell.feeling / react.self / assess
+a : There's #larder# this week. I open the door just to look at it. | Before bed I go along the jars in #larder# one by one. It's a kind of prayer. | When #larder#'s full, I sleep like a pup. When it's not, I lie and listen to the rain.
+b : That's a good feeling. | A prayer? | #bc_poor_soul#
+a : The best there is, #address#. Better than coin, because you can't drop it in the gutter. | Of thanks. Every full jar is one the Bright One let us keep. | Don't pity me. It's full this week, and the Bright One's good.
+
+scene a_hand_of_cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : Evenings, it's #cards# with whoever's sat still long enough. | I've had #cards# since I came up from the fen. The kings are all bent from shuffling. | I lose at cards, and I don't mind, and that annoys them more than if I won.
+b : For money? | Bent kings? | Why don't you mind?
+a : For buttons. I'll not gamble coin; the Bright One frowns on it, and I'd not cross that frown. | Bent, and the queen's half gone. I know every card by its creases, #address#. | Because it's company, not cards. The cards are just what keeps them sitting.
+b : #bc_ha# | #bc_ha# | #bc_wise#
+
+scene my_own_young_one
+when topic=family self.parent=yes self.child
+does tell.feeling / react.self / assess
+a : Of all I've done, #self.child# is the part I'd stand on before the Bright One. That, and #stew#. | I pray for #self.child# morning and night. Twice, so the Bright One doesn't forget. | I'd go up to #heights# tomorrow if I could take #self.child# with me. Not without.
+b : That's lovely. | Twice? | You'd not go alone?
+a : It's true, and I don't care who hears it. #saying#. | Twice. There's a great many for the Bright One to keep track of, #address#. | Never. A dry room's no good if the one you'd share it with is still in the damp.
+
+scene the_one_i_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one I'd want holding my paw at the end. I can't say more of anyone than that. | #self.friend# and I have kept each other going #downhere# a long while. | If I go before #self.friend#, I've asked the Bright One to send somebody kind. If it's the other way, I'll be the somebody.
+b : That's a friend, all right. | A long while? | That's a promise.
+a : So it is. A friend like that comes once or twice in a life, if we're lucky, #address#. | Long enough to stop counting. It goes in my prayers every night, that one. | It is, #address#. I've said it in chapel, so it's binding.
+
+scene a_room_up_top
+when topic=dreams|home here.region=ridgemere
+does tell.plan / ask.detail / answer.detail / assess
+a : I mean to end up in #heights#, #address#. A dry room, a glass window, and a garden under it. | Some nights #heights# comes to me in my sleep. A window, and a bird on the sill, and no damp in the walls. | Every stair up is a stair nearer, I say. I've climbed a good few, and I'll climb more.
+b : Up top? | A bird on the sill? | Nearer what?
+a : Up top. The Bright One can see me better from there, and I'll not need buckets. | Just the one bird. I'm not greedy, #address#. A bird and a dry wall. | Nearer the high ground. Nearer the Bright One. Nearer dry, in the end.
+b : #bc_i_hope_so# | #bc_lovely# | #bc_i_hope_so#
+
+scene the_pew_and_the_bread
+when topic=faith
+does tell.self / react.self / assess
+a : I'm in the chapel every Restday, rain or worse. The Bright One's never once missed me, and I'll not miss the Bright One. | The chapel fed us when there was nothing in #larder#. I've owed it ever since, and I pay in prayers. | I pray for the whole street. It takes a while, #downhere#. There's a lot of us and most of us need it.
+b : That's faithful. | That's a debt worth paying. | That's a long prayer.
+a : It's all I've got that's worth giving, #address#. | It is. And I've never once been asked to pay it in coin. | It is. I start before the stew's on and finish when it's done. #saying#.
+
+scene reeds_and_the_chapel_boat
+when topic=memories|home self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town#, we poled to chapel in a flat boat, the whole family, singing. | I was raised on the boards in #fen#. Eels for supper, reeds for the roof, and the Bright One for everything else. | My #mum# kept a candle in the window over the water, for the boats. I keep one here, out of habit.
+b : Poled to chapel? | Reeds for the roof? | For the boats?
+a : Every Restday. The water was the road. We'd sing so the other boats knew we were coming. | Thatch of reed, a hand thick. It never leaked once, not like the slates #downhere#. | For anyone out late on the water. Now it's for anyone out late on the stair, #address#.
+b : #bc_lovely# | #bc_ha# | #bc_lovely#
+
+scene the_fen_still_in_my_mouth
+when topic=accent self.away=yes self.from=fenshore here.region=ridgemere
+does tell.self / react.self / assess
+a : Folk #downhere# still call me the fen one. I've been up here half my life and more. | I say #greet# to everybody at #door#, and the city folk look at their boots. | The young ones laugh at how I say things. I let them; it keeps the old words warm.
+b : Does it bother you? | Do they? | Good for you.
+a : Not a bit. The fen one's who I am, #address#, wherever I sit. | Every time. Then they come back the next day and say it to me. | I'll not stop, either. This tongue came with me off the boards; I'll use it till it's worn through.
+
+scene thin_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : It's thin #downhere# this month. Folk are going to the chapel for bread that never used to. | Hard times. I've watered #stew# till it's barely stew, and been grateful for the water. | Lean weeks, and nobody up top has noticed, as far as I can see.
+b : It'll turn. | You make it stretch. | They never notice.
+a : It will. Till then, we share what's in #larder#, and pray for the rest. | Stretch and pray. That's the whole of #downhere# in two words, #address#. | They will one day, when the Bright One asks them. I'd not want to be stood where they're stood.
+
+scene the_watch_comes_down
+when topic=crime|times here.region=ridgemere
+does give.opinion / ask.opinion / insist / ack
+a : When the Watch comes #downhere#, it's never to help. It's to take somebody. | I've lived #downhere# more years than I can count, and I've never seen the Watch carry a bucket. | I pray for the Watch, I do. Mostly that they'll learn the way down here for something kind.
+b : Maybe they had cause. | Never? | Will they?
+a : Maybe. But they never come asking how we're keeping, #address#. Only who to take. | Never once. Plenty of rope, and never a bucket. | The Bright One's patient. I'm trying to be, as well.
+b? : #bc_fair# | #bc_poor_soul# | #bc_i_hope_so#
+
+scene not_for_repeating
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty, sat by #door#. I pray over it and let it lie. | Folk tell an old one everything, because they think it'll go nowhere. And it doesn't. | There's talk on the stair. It stops with me; the Bright One hears enough gossip without mine.
+b : Not even a little? | That's kind of them. | Fair enough.
+a : Not a crumb, #address#. #saying#. | It's kind of me. They forget I've ears. | It is fair. Every word I don't say is one less to answer for.
+b : #bc_ha# | #bc_ha# | #bc_wise#
+
+scene pray_for_that_house
+when topic=gossip|crime topic.claim_kind=death|violence|theft
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. I'll light a candle tonight. | Did you hear? #topic.subject.capitalize# #topic.claim#. I'll be praying for that whole house. | #topic.subject.capitalize# #topic.claim#, so they're saying on the stair. That's a heavy thing.
+b : #bc_poor_soul# | It's hard to hear. | It is.
+a : A candle, and #prayer#. It's what I've got, and I give it, #address#. | It is. But hearing's how the praying starts. | Heavy, and #downhere# we carry it together, or we don't carry it.
+
+scene a_new_face_on_the_stair
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : A new face on our stair this week. I took them a bowl of #stew#. | There's a stranger come #downhere#. I said bless you, and they looked frightened. | Somebody new at #door# today. I said #greet#, and they said it back, nearly.
+b : That's kind. | Frightened? | Nearly?
+a : It's what's done. Feed a stranger once and you've a friend on the stair, #address#. | Folk aren't used to blessings in this city. They'll learn. | Nearly. They'll have it by the end of the week. They always do.
+
+
+old
+line @1 answer.how [self.age>=70] : Old, #address#, and still here, thank the Bright One. That's my news. | #fine.capitalize#. All these winters, and the damp's had a go at every one.
+line @1 greet [here.time=dawn self.age>=70] : #greet#. Old bones wake early; the gulls and I were up together.
+scene the_crooked_stair
+when topic=health|home self.age>=70
+does tell.complaint / react.self / reassure
+a : #stair.capitalize# gets longer every year. Twenty-two steps, and I say a prayer on each. | My knees are older than this street. They tell me the weather before the sky does. | I can't get to the chapel some weeks now. I pray at the window instead and hope it carries.
+b : Twenty-two prayers? | Are they right? | It carries.
+a : Twenty-two, and an amen at the top, for getting there. | Always. I'd sooner they were wrong now and then, #address#. | I hope so. The Bright One's not deaf, and I'm loud when I need to be.
+
+story the_chapel_flood [topic=memories|faith self.age>=40 self.from=fenshore]
+  : I was a pup in #self.from_town# the year the flood came into the chapel during the singing.
+  : It came up past the first pew, and the second, and the old priest never stopped. So nobody stopped.
+  : We sang till it reached the third pew, then it turned. The old ones said the Bright One liked the tune.
+  ask : Would you have kept singing, with the water coming in?
+  b[old] : I'd have run, and then come back ashamed.
+  b : I hope I would. I couldn't swear to it.
+
+story why_i_say_thank_you [topic=memories|weather self.likes=thunder]
+  : I was frightened of thunder as a pup. I'd hide under the bed with the cat.
+  : My #gran# pulled me out and said it was the Bright One rolling barrels to fill the rain butts, so nobody would go thirsty.
+  : I said thank you to the next clap, to see. I've said it ever since, and I've never once gone thirsty.
+  b : What a thing to be told.
+  b[stage=young] : Is that true? About the barrels?
+  : True enough to live by, #address#.
+
+story the_garden_up_top [topic=dreams|travel here.region=ridgemere]
+  : I carried a basket of fish up to #heights# once, years back, for a house with a gate.
+  : Behind the gate there was a garden with a little fountain in it, just for looking at. Water nobody had to carry.
+  : I stood and looked so long the cook came out and gave me a cake to make me go.
+  ask : Have you ever seen a thing so lovely you forgot your errand?
+  b : Once or twice. Not a fountain, though.
+  b[wealth=poor|destitute] : Never anything like that. I'd like to.
+
+rule @thunder_bark
+when concept=bark here.outdoors=storm self.likes=thunder
+does aside
+cooldown 6h
+say Thank you, Bright One. And again. | There it rolls. #oath#, that's a good one.
+
+rule @fly_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 8h
+say Out, you. Out of the fish and out of my hair. | #flies.capitalize# again. #annoyed#.
+
+rule @wind_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind here.outdoors=clear|overcast|storm
+does aside
+cooldown 10h
+say #saltwind.capitalize#. My eyes, my poor eyes. | Shut that window; the harbour's coming in.
+
+rule @door_bark
+when concept=bark self.working=yes self.job=none
+does aside
+cooldown 8h
+say Mind the step. Bless you. Mind the step. | #door.capitalize# sticks in the damp. Push, love, push.
+
+dlg @1 resident.hub : #greet#. Sit, if your legs want it. What is it? | #greet#, #address#. Say on; I've all day.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I prayed you'd come by again, and here you are. | #topic.player#. Sit by me. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I've nothing worth taking, #address#. If it's a question, ask it gently.
+dlg @1 resident.job [self.working=yes self.job=none] : I mind #door#. I nod folk in, wish them well, and warn them of the step. It's not nothing. | I sit by #door# and keep an eye. Somebody must.
+dlg @2 resident.job : I pray, I make #stew#, I play #cards# badly. At my age that's a full day. | Whatever my legs allow, and the Bright One the rest.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I'll pray on it.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The Bright One's keeping it quiet. | Nothing's come up #stair# today. A quiet day's a blessing.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear things by #door#, and I give them to the Bright One, not to you.
+dlg @1 resident.bye : #farewell#. Walk high and dry. | #farewell#, #address#. Mind #stair#.
+graft resident.hub
+choice Why do you thank the thunder? [self.likes=thunder] -> thunder
+node thunder
+say It's the Bright One rolling the barrels to fill the rain butts. My old gran told me that when I was small and frightened. I've said thank you ever since.
+mood warm
+free
+choice Have you ever stopped? -> thunder_stop
+choice Goodbye. -> bye
+node thunder_stop
+say Never once. I'd not want the Bright One thinking I'd stopped listening. Next time it rolls, you try it. It does you good.
+choice I might. -> hub
+choice Goodbye. -> bye

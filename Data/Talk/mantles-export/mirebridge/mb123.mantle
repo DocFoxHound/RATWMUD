@@ -1,0 +1,303 @@
+# mb123, the reed-whistler behind the counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb123
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for rm_aud_dripgate
+written_by claude
+title the reed-whistler behind the counter
+fits stage=adult|old
+prefers job=merchant humour=merry talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk pipes_a_reed_whistle_whenever_the_shop_goes_quiet
+likes roast_pork dice fresh_straw warm_rain
+dislikes salt_wind early_bells
+fears a_lie_that_sticks
+hopes a_stall_with_my_own_name_over_it
+topics pastimes +0.4 smalltalk +0.4 gossip +0.3 work +0.2 festival +0.3 weather +0.2 food +0.2 faith -0.2
+styles comfort=cheer gossip=keen refuse=plain tease=merry
+marks oath saying
+persona #self.first# helps behind the counter of a Sump odds-and-ends shop, a long way from the fens of home: chatty, merry and honest to a fault, quick to tell you the plain truth and laugh about it after, fond of dice, fresh straw and a warm rain, and piping on a reed whistle whenever the shop goes quiet.
+
+words
+oath! = Frogs and fours | Shake the cup | Bright One, roll me a six
+saying! = Every throw's a fresh throw | Straight talk saves wading
+honest = Honest answer | Straight up, no mud on it
+whistle = my reed whistle | the whistle in my apron
+dice = the dice | my two old dice
+straw = fresh straw | clean straw down on the boards
+pork = roast pork | a strip of crackling
+saltwind = the salt wind | that wind off the wharf
+warmrain = a warm rain | a summer soaking
+counter = the counter | our counter
+oddments = the oddments | string, wicks, buttons and the rest
+bell = that dawn bell | the bell before breakfast
+office = the office up the hill | the paper-shufflers up the hill
+sump = the Sump | the low streets
+city = the city | this great wet city
+buttons = buttons | a pocketful of buttons
+
+any
+opinion @1 merchants against 2 : #honest#: my pay runs out by midweek, and the big traders still eat cake. I see it from behind #counter#.
+opinion @1 watch against 1 : When the Watch turns up in #sump#, somebody's going to the cells. I've never once seen them carry a sack up a stair.
+opinion @1 festivals for 2 : Give me fiddles and a crowd and I'll dance till my paws are #hurt#. Best sleep I ever get is after.
+opinion @1 houses against 1 : The Houses own every brick round here and mend not one. #honest#, I'd mend them myself if I had the lime.
+opinion @1 newcomers for 1 : A new face is new talk and new custom, both. I'm not proud, #address#; I'll take either.
+opinion @1 drink for 1 : One jar and a song, lovely. Three jars and #dice#, and I lose my buttons. #funny#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! New, are you? I'm all talk, so stop me if you're in a hurry. | #greet#, #address#. Come in; mind #oddments# on the floor.
+line @2 greet [self.working=yes self.job=merchant] : #greet#! String, wicks, #buttons#, and gossip for free. | #greet#. You caught me on #whistle#. I'll stop. Probably.
+line @3 greet [here.time=dawn] : #greet#. #bell.capitalize# woke me too, if that's why you're up. | #greet#. Early! I've not even swept yet.
+line @4 greet [here.time=dusk|night] : #greet#. The lamp's lit and so's my tongue. | #greet#. Mind the gutter; it's dark as #mud# out.
+line @1 kin.open [pair.kin!=no] : Oh, you! Sit down; I've saved up a hundred things. | It's you! Good. News, and some of it's true.
+line @1 again.open : #welcome_back#! Twice in a day; I'm flattered. | Back already! I've had two more thoughts since, #pet#.
+line @1 hail [pair.band=friends] : #address.capitalize#! Over here, quick, before I forget it. | Oi, #pet#! A word, or six.
+line @1 greet.return : #greet#! | #greet#, #address#!
+line @2 greet.return [pair.band=friends|family] : #greet#, #pet#! Sit, sit. | #greet#! I was just thinking about you. Nothing #bad#.
+line @3 greet.return [self.working=yes] : #greet#! Mind the box; it's full of #buttons#. | #greet#. Give me a breath; I'm counting wicks.
+line @1 farewell : #farewell#! | #farewell#. Come back and say how it all turned out.
+line @2 farewell [here.time=dusk|night] : #farewell#. Stick to the lamps. | #s8_night#.
+line @1 farewell.return : #farewell#! | #farewell#, #pet#.
+line @1 react.news : #surprise#! Slowly, now, from the start. | Oh, now that's a thing. I'll be chewing that all week.
+line @1 react.news.new : #oath#! Nobody told me, and everybody tells me things. | #surprise#! That's not reached #sump# yet.
+line @1 react.news.known : #knew#. I had it across #counter# before noon. | Old news! I've told four wolves already.
+line @1 react.news.doubt : #honest#: that's #nonsense#. Whoever started it can come and tell me to my face. | #doubt#. Who said it? I'll know by the who.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's awful. No jokes from me on that one. | That's hard. Truly, I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! Oh, I love that. | That's #good# news! Somebody threw a six for once.
+line @1 answer.how : #fine#, and cheerful with it. | #skint.capitalize#, but grinning. Same as ever, #address#.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#! #buttons.capitalize# everywhere. | Run off my paws, and loving it, mostly.
+line @1 ask.how : And you? Honestly, mind, not the polite answer. | How are you keeping, #address#? Truly?
+line @1 sympathise : #sympathy#. Sit; I'll stop talking for once. | That's rotten. I'll not pretend otherwise. Sit a while, #pet#.
+line @1 reassure : #reassure#. Every throw's a fresh one. | It'll come right, #address#. And if it doesn't, I'll say so.
+line @1 decline : #hedge#, but no. I'm minding #counter# and I gave my word. | I'd love to, #address#, honestly. Only I can't leave the shop till dusk.
+line @1 accept_decline : #no_matter.capitalize#! Another time. | Oh, fair enough. Next time, then; I'll remember.
+line @1 thank : #thanks#! | Oh, you're good. I'll owe you a throw of #dice#.
+line @1 deflect_thanks : #deflect.capitalize#! | Don't thank me; I only did it to have somebody to talk to.
+line @1 preclose [self.working=yes] : Oh, look at me running on. #counter.capitalize# won't mind itself. | I'd best get back before somebody walks off with #buttons#.
+line @2 preclose : #preclose#. | I've talked your ear off. Go on, before I start again.
+line @1 accept_preclose : Go on, then! #farewell#. | Off you go. I'll save the rest for next time.
+line @1 tease [pair.band=friends] : You look like you lost at dice and paid in fur. | Look at the state of you, #fool#. Did a goose walk you home?
+line @1 tease.return : #cheek.capitalize#! You'll pay for that. In buttons. | Says the one who still owes me a throw.
+line @1 laugh : #bc_ha# | #funny#!
+line @1 ack : #bc_it_is# | Mm, go on.
+line @1 give.advice : #honest#: ask twice, buy once, and never play dice with a wolf who smiles first. | Say it plain, #address#. #saying#.
+scene reed_whistle
+when topic=pastimes|work self.working=yes
+does tell.self / react.self / tell.self / assess
+a : When the shop goes quiet, out comes #whistle#. Two tunes. Folk come in just to make me stop. | I whistle so the shop doesn't sound empty. An empty shop sounds poor, and nobody likes buying in a poor shop. | Hear that? That's me, on #whistle#. #honest#: I only know the one tune, and half of another.
+b : That's one way to bring them in. | Does it work? | Play the half, then.
+a : Best trick I know. Whistle, and they come to complain, and then they buy string. | It does! Nobody walks past a shop with a tune in it. #funny#. | You asked for it. There. That's the half. The rest I make up as I go.
+b : #bc_ha# | #bc_clever# | #bc_ha#
+
+scene whistle_from_home
+when topic=memories|pastimes self.away=yes self.from=fenshore
+does tell.memory / ask.detail / answer.detail / assess
+a : I cut #whistle# myself, from a reed by the dyke in #self.from_town#. Cut it green and let it dry in the thatch. | At #home# we'd whistle across the water so folk on the boards knew who was coming. Everybody had their own call. | My #gran# could whistle up a heron, she swore. She couldn't. But she believed it, and so did I, for years.
+b[from=fenshore] #fen : Green reed, dried in the thatch. That's the way. | We had calls too. Mine was two short and a long. | My gran said the same about eels.
+b : Can you still make one? | What was yours? | A heron?
+a@fen : The only way. A shop-bought one sounds like a gull with a cold. | Mine was three ups and a down. I still do it on the stair. | Every gran did. We all believed them. #bc_ha#
+a : If you bring me a good reed. #city.capitalize# hasn't got one. I've looked. | Three up and one down. I still do it on the stair, and the neighbours hate it. | A heron. Not once. But she'd whistle, and wait, and look so sure. I loved that.
+b : #bc_lovely# | #bc_ha# | #bc_lovely#
+
+scene dice_after_close
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail / assess
+a : After closing we play #dice# on #counter#. #buttons.capitalize# for stakes. I'm up forty this month. | I love the rattle of #dice# in a cup. The best noise in the world, after rain on straw. | People think I cheat at dice because I win. I don't. #honest#: I'm just lucky, and loud about it.
+b : Forty buttons? | Better than music? | Do you, though?
+a : Forty-one. I could sew a coat. I won't, mind. #saying#. | Better than #whistle#, anyway. #funny#. | Never. I couldn't lie to save my tail. It's a curse, truly, at dice.
+b : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene too_honest
+when topic=smalltalk|gossip
+does tell.self / ask.detail / answer.detail / assess
+a : A wolf asked me if a new hat suited them. I told them the truth. They didn't buy the hat. | Somebody asked if I liked their singing. #honest#: I said it sounded like a cat in a drain. | I can't tell a fib. Somebody asked me how they looked today, and I told them. I'm still sorry.
+b : What did you say? | Was it bad? | How did they look?
+a : That it looked like a wet duck had sat on their head. They bought a better one off us, mind. | Worse than a cat in a drain, to be honest. But we're friends now. | Tired, and in a coat that swallowed them whole. They laughed, in the end. Mostly.
+b : #bc_ha# | #bc_ha# | #bc_poor_soul#
+
+scene odds_and_ends
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : #oddments.capitalize#, that's us. If you've lost it, broken it or never had it, we've got one. | Sold a single button today, a hook, and four inches of string. A fortune, near enough. #funny#. | I know where every needle in this shop is. Ask me anything. Except where the scissors went.
+b : That's a lot of little things. | A fortune? | Where did the scissors go?
+a : It is. Little things are what folk run out of. Big things they save up for. | It all adds up. Slowly. Like a fen silting. | Nobody knows. I think the shop ate them. #oath#.
+
+scene straw_down
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I put #straw# down in the flat every week. #city.capitalize# folk think it's odd. At #home# every floor had it. | Nothing smells like clean straw. It's like a field moved indoors. | I spent my last copper on straw for the floor. #honest#: best copper I ever spent.
+b : Straw? Indoors? | It does smell nice. | Your last copper?
+a : On the boards. Keeps the damp off your paws and smells like summer. Try it. | It does. And it crackles when you walk, so you know where everybody is. | My last. #supper.capitalize# was bread and water and the smell of straw. I'd do it again.
+
+scene crackling
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail / assess
+a : Restday I'm having #pork#. I've saved all week. Don't talk me out of it. | The best bit of roast pork is the crackling, and I'll fight anybody who says it isn't. | I traded six #buttons# for a strip of crackling off the butcher's apprentice. Worth every one.
+b : Saved all week? | Fight? | Only six?
+a : A copper a day, in the jar. I can hear it crackle already, #pet#. | Not really. I'd argue, though. For hours. | Only six. Don't tell the butcher. #funny#.
+b : #bc_lovely# | #bc_ha# | #bc_clever#
+
+scene warm_rain
+when topic=weather here.outdoors=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#! I stood in it face-up like a frog for an hour. | Rain on warm cobbles; can you smell it? It's the only time #sump# smells good. | I danced in the gutter in this. #honest#, the whole street saw, and I don't care.
+b : You're soaked. | It does smell good. | Good for you.
+a : Soaked and happy. It's warm! Like a bath nobody charges for. | It smells like #home# after a dry week, near enough. | Somebody clapped. I bowed. Then I slipped. Still worth it. #bc_ha#
+
+scene salt_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#'s up again. My fur's stiff as a brush and I taste salt on my teeth. | I hate a wind off the wharf. It gets in your eyes and your ears and your bread. | The wind at #home# carried reeds and peat. #saltwind.capitalize# brings fish and tar. #oath#.
+b : It does get everywhere. | Even the bread? | #bc_true#
+a : Everywhere. I found salt in #whistle#. It sounded like a gull. | Even the bread. Salty bread, and nobody asked for it. | True, and nobody up the hill smells it. They've got gardens.
+
+scene morning_bell
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : #bell.capitalize# again! I threw my pillow at the window. Missed. | Who rings a bell before breakfast? Who needs that? I'd like a word with them. | That bell's the one thing in #city# I'd sell for a button. Half a button.
+b : Did it stop? | Somebody has to. | Half a button?
+a : No. The pillow's still on the floor. #honest#, I'll miss again tomorrow. | Not before breakfast they don't. After, fine. Ring it all you like. | Half. And I'd throw in the rope. #bc_ha#
+
+scene paper_shufflers
+when topic=smalltalk|travel here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail
+a : Ever been up to #office#? You stand in a queue till you're grey, and then they lose your paper. | Everybody in #sump# knows somebody whose paper went missing up the hill. Everybody. | #honest#: I think #office# eats paper. Like our shop eats scissors.
+b : What do they do up there? | Do they ever find them? | #bc_ha#
+a : Shuffle. Stamp. Lose. And look at you like you're the one who lost it. | Once in a while, at the bottom of somebody's drawer, a year late. #oath#. | Laugh, but you go up there. You'll see. Bring a stool and #supper#.
+
+scene sump_kin
+when topic=home|land self.quarter=sump here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Sump's home now. Wet walls, loud stairs, and nobody lets you go #hungry#. | The hill folk think everybody in #sump# is a thief. Down here, if you drop a copper, somebody shouts after you. | I love #sump#. #honest#: I love it more than I loved the fen, some days. Don't tell anybody.
+b : That's good to hear. | Truly? | Your secret's safe.
+a : It is. We look after our own, because nobody else does. | Truly. Twice I've dropped one and twice it came back. | I know. I'd not have said it otherwise. #bc_ha#
+
+scene gossip_keen
+when topic=gossip
+does tell.gossip / react.news / assess / ack
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. That's what I was told; I'll not swear to it. | Oh, listen to this: #topic.subject# #topic.claim#. #honest#: I don't know if it's true. | You'll never guess. #topic.subject.capitalize# #topic.claim#. Or so they say over #counter#.
+b : Is that true? | You and your gossip. | Go on, then.
+a : I don't know! That's why I said so. I'll find out by tomorrow. | Me and my gossip. I'd be bored stiff without it, #pet#. | That's all I've got. I'd tell you more if I had it.
+b : #bc_ha# | #bc_ha# | #bc_fair_enough#
+
+scene sad_word
+when topic=gossip|news topic.claim_kind=death|violence|victim
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : I heard #topic.subject# #topic.claim#. I've not touched #whistle# since. | They're saying #topic.subject# #topic.claim#. #pity.capitalize#. | #topic.subject.capitalize# #topic.claim#. I didn't know what to say, so I said nothing. For once.
+b : That's hard news. | #sympathy#. | It's a sad thing.
+a : It is. No jokes today, #pet#. | It is. Some news you just carry quietly. | It is. I'll find the right words tomorrow, maybe.
+
+scene glad_word
+when topic=gossip|news topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news / assess
+a : Have you heard? #topic.subject.capitalize# #topic.claim#! I could dance. | Good news over #counter#: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, they say. That's a six, that is.
+b : #bc_good# | That's nice to hear. | #bc_lovely#
+a : I might! Somebody stop me. Actually, don't. | It is. I played #whistle# the whole afternoon. | A double six. I'd bet #buttons# on it being a good year.
+
+scene feast_dance
+when topic=festival|season here.day=festival
+does tell.feeling / react.self / assess
+a : Feast day! I'm dancing till the fiddler's arm drops off. Then I'll whistle and keep going. | I love a festival. The whole of #sump# out, and nobody counting coppers for one day. | I've my good ribbon on. #honest#: it's my only ribbon. Still good, though.
+b : #bc_lovely# | #bc_me_too# | It's a nice ribbon.
+a : Come and dance! Nobody minds how badly. I don't, and I'm terrible. | One day. I'd have more if I could. | Thank you! I'd tell you if it wasn't, so you'd best tell me too.
+
+scene skint_week
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : #skint.capitalize#. A loaf costs what I earn by noon, and the rest of the day's for nothing. | Folk come in for one button now, not five. That's the times for you, and they're #bad#. | #honest#: I've been eating bread and smelling pork through the butcher's door.
+b : It's hard for everyone. | #bc_true# | That's a bad sign.
+a : Not everyone. Up the hill nobody's counting buttons. | True. Still, every throw's a fresh one. Next week might be sixes. | It is. But the smell's free, and I'll take what's free.
+
+scene new_face_chat
+when topic=newcomer|player self.working=yes
+does tell.self / react.self / assess / ack
+a : Somebody new wanted a candle and the way to the wharf. They got both, and my whole life story. | I love a new face. New coin, new news, and they don't know my stories yet. | Somebody new tried to haggle over a button. A button! They're my favourite already.
+b : Your whole life story? | They'll learn them. | Did you give in?
+a : All of it. They bought two candles to get away. #funny#. | They will. I'll tell them twice to be sure. | Never. #honest#: it was a very good button.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene the_boss
+when topic=work|friends self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss# runs the shop and I run my mouth. Between us it works. | I'd never fib to #self.boss#. Not that I fib to anybody, but especially not there. | I talk customers into staying, and they buy to escape. #self.boss# can have the credit.
+b : That's a good partnership. | That's good to have. | #bc_ha#
+a : It is. Somebody has to be quiet, and it's not going to be me. | It is. #honest#: I'd be lost without the place. | It works! That's all that matters, #pet#.
+
+story first_whistle [topic=memories|pastimes self.from=fenshore]
+  : As a #child# I cut a reed by the dyke at #home# and blew it till I was dizzy. Not a squeak.
+  : My #gran# took it off me, nicked a little notch in it with her knife, and handed it back. It sang like a bird.
+  ask : Have you ever made anything that sang?
+  b : Never. Did you learn the notch?
+  b[from=fenshore] : The notch. Everybody's gran knows the notch.
+  : I've cut a hundred since. #whistle.capitalize# is the first one that sang right on my own.
+
+story three_sixes [topic=pastimes|memories self.likes=dice]
+  : Once I threw double sixes three times running, at a table full of wharf hands.
+  : Nobody would believe it wasn't trickery. They turned #dice# over, weighed them, smelled them.
+  ask : Would you have kept the winnings, in my place?
+  b : Every copper. Luck's luck.
+  b[wealth=poor|destitute] : I'd have kept it and run.
+  : I gave them back. Couldn't bear being thought a cheat. #honest#: I've regretted it every Restday since. #bc_ha#
+
+story the_long_queue [topic=smalltalk|lore here.region=ridgemere]
+  : A lodger we had once took a paper up to #office# about a leak in the roof.
+  : Every week he went back, and every week they said it was being seen to. He did it for two years.
+  ask : What do you think happened to it?
+  b : Lost under a pile, I'd guess.
+  b[job=official] : It'll be in a drawer somewhere. They always are.
+  : Nobody ever found out. The roof fell in, in the end, and the paper's still up there somewhere, being seen to. #oath#.
+
+rule @whistle_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Three up and one down, and round again. | Where's #whistle#. Somebody fill this quiet.
+
+rule @shop_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say String, wicks, #buttons#! Come and look. | #oddments.capitalize#, cheap as anything. Well, cheapish.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 10h
+say Fur stiff with salt again. #oath#! | That wind. That wharf. That smell.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say Not yet! It's not even light! | #bell.capitalize#. Somebody take that rope away.
+
+dlg @1 resident.hub : #greet#! Ask me anything; I know most things. | #greet#, #address#. Ask away; I'm all talk.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back for gossip, or #buttons#?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #honest#: you don't look friendly. Ask your question and I'll answer straight.
+dlg @1 resident.job [self.job=merchant self.working=yes] : I help in the shop. #oddments.capitalize#, and talk, mostly talk. | #self.trade_words.capitalize#. Buttons and string, and I whistle when it's quiet.
+dlg @2 resident.job : This and that, and talking through all of it. Ask anybody.
+dlg @1 resident.business [business=thriving] : Busy! I've sold more #buttons# this week than I can count. | Doing well. #honest#: I don't know why, but I'll take it.
+dlg @2 resident.business [business=failing] : Badly. Folk buy one button now, not five. | Poorly, #honest#. Nobody's buying string.
+dlg @3 resident.business [business=steady] : Steady. Enough string sold to keep the lamp lit.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I had it across #counter#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# in #sump#. I've talked of nothing else.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd know; everybody tells me everything.
+dlg @1 resident.gossip [here.gossip=yes] : Oh, I've got one: #topic.subject# #topic.claim#. That's what I heard, anyway.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing! For once. I'm as surprised as you are.
+dlg @1 resident.bye : #farewell#! Come back with news. | #farewell#, #address#. Mind the gutter.
+graft resident.hub
+choice What's that tune you're whistling? -> whistle
+node whistle
+say Oh, that? That's #whistle#. A reed, from home, cut green and dried. I play it when things go quiet. Two tunes, and half of a third.
+mood pleased
+free
+choice Play me the half. -> whistle_half
+choice Goodbye. -> bye
+node whistle_half
+say There. That's the half. The rest I make up as I go, and it's different every time. Honestly, it's better than the real ending.
+choice That was lovely. Something else. -> hub
+choice Goodbye. -> bye

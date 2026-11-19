@@ -1,0 +1,312 @@
+# oh113, the herd's pleader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh113
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier standard
+written_for cty_stone_sunton
+written_by claude
+title the herd's pleader
+fits stage=adult|old
+prefers piety=devout talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk argues_with_the_weather
+likes oatcakes draughts new_boots summer_evenings
+dislikes night_noise bad_manners
+fears a_wet_year_that_rots_the_hay a_letter_that_comes_too_late
+hopes a_dry_byre_and_a_quiet_room
+topics weather +0.5 faith +0.4 animals +0.3 memories +0.2 work +0.2 pastimes +0.2 gossip -0.4 festival -0.1
+styles comfort=quiet gossip=closed refuse=soft tease=none
+marks oath saying
+persona #self.first# drives the herd out and back in all weathers and bargains with the sky on the cows' behalf, half under the breath, then asks the Bright One's pardon for it: quiet, devout and bone-tired, slow to speak and slower to complain, with an old unanswered letter kept folded in a coat pocket.
+
+words
+oath! = Bright One spare the byre | Horn and hoof | Mercy on the herd
+saying! = Ask the rain nicely and it rains anyway | A herd walks at the pace of its slowest cow | Milk comes when it comes, not when you call it
+herd = the herd | the cows
+byre = the byre | the cow-house
+oldcow = the old brown cow | the one with the crooked horn
+mud = the gate-mud | mud to the hock at the gate
+hay = the hay | the hay in the loft
+sky = the sky | the sky up there
+letter = the letter | an old letter, folded small
+boots = new boots | boots with the stiff still in them
+oatcakes = oatcakes | a stack of oatcakes
+oldwood = the old forest | the oaks back home
+rents = the rents | my room in the rents
+racket = noise at night | the racket under my window
+hum = Mm | Mm, well
+city = the city | this stone city
+gate = the gate | the pasture gate
+pasture = the pasture | the top field
+chapel = the chapel | the little chapel
+prayer = my prayers | my evening prayers
+candle = the candle | a stub of candle
+
+any
+opinion @1 church for 2 [self.wealth=poor|destitute] : When my house had nothing, #chapel# fed it. Say what you like about anything else, #address#, but not #chapel#.
+opinion @1 dole for 3 [self.wealth=poor|destitute] : That bread saw us through a lean week. The Bright One sent it by the dole, and I'll say so to anybody.
+opinion @1 drink against 1 : A jar takes more out of a home than it puts in. I've watched it happen. I keep to water, and #prayer#.
+opinion @1 merchants against 2 : Nothing coming in at my door, and still the bread goes up a penny. #annoyed#.
+opinion @1 times against 2 : Every week's a little harder and a little dearer, and the ones up the hill never look down. #hum#.
+opinion @1 newcomers against 1 : There's little enough work for a herder as it is. Every new pair of paws wants a share of #pasture#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind the cart ruts. | #greet#, #address#. You're not from round #byre#.
+line @2 greet [self.working=yes] : #greet#. Walk on the dry side; #mud# will have your boots. | #greet#. I'm with #herd#. Say it as we go.
+line @3 greet [here.time=dawn] : Morning, #address#. #herd.capitalize# are up before me, as ever. | Morning. You and me and #herd#, and nobody else awake.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be walking. | #greet#. I'm only now done with #herd#.
+line @1 kin.open [pair.kin!=no] : You. Sit by the fire; it's #cold# out. | Ah. Sit, #address#. I've an oatcake or two.
+line @1 again.open : You again today. #bc_good# | #welcome_back#. Nothing's changed but #sky#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|housemates] : #greet#. Sit, if you've a moment. | #greet#. A face I know. #bc_good#
+line @3 greet.return [self.working=yes] : #greet#. I'll not stop; #herd# won't wait. | #greet#. Walk with me, then, to #gate#.
+line @1 farewell : #farewell#. | #farewell#, #address#. #bless#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the dark on the hill road. | #farewell#. Sleep sound, if they'll let you.
+line @1 farewell.return : #farewell#. | And you, #address#. #bless#.
+line @1 react.news : #marvel#. I'd not heard. | Is that so. I'll think on it, slow.
+line @1 react.news.new : #surprise#. That's not come out to #byre# yet. | #oath#. News to me, #address#.
+line @1 react.news.known : #knew#. The carter brought it home. | I'd heard, #hum#. Old leaf by now.
+line @1 react.news.doubt : #doubt#. Talk travels faster than truth. | I'll wait till I've seen it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Bright One keep them. | #sympathy#. That goes in #prayer#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. We're owed some. | That's news worth the hearing. I'll give thanks for it in #chapel#.
+line @1 answer.how : #tired.capitalize#, but standing. | #fine#. #herd.capitalize#'s in, and so am I.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Out and back twice since dawn. | No stopping, #address#. #herd.capitalize# don't rest, so nor do I.
+line @1 ask.how : And you, #address#? Dry, at least? | How are you, #address#? Truly.
+line @1 sympathise : #sympathy#. Sit. I'll listen; I'm good for that. | That's hard. I'll put you in #prayer#, for what that's worth.
+line @1 reassure : #reassure#. The worst weather turns, in the end. | It'll turn, #address#. Seasons always do.
+line @1 decline : #hedge#, I can't. #herd.capitalize# want bringing in and nobody else will. | I'd like to, #address#, but I'm up before light and #tired# already.
+line @1 accept_decline : #no_matter#. Another time, then. | That's all right. In its season, #address#.
+line @1 thank : #thanks#. Bright One bless you for it. | That's kind. I'll remember it in #prayer#.
+line @1 deflect_thanks : #deflect#. | It was nothing. Anybody would, #address#.
+line @1 preclose : #preclose#. | #herd.capitalize# won't fetch themselves. I'd best go.
+line @1 accept_preclose : Go on, then. #farewell#. | Aye. We've both work waiting. #bless#.
+line @1 ack : #hum#. | #bc_true#
+line @1 give.advice : #advise#: talk to the weather if you like. Just don't expect it to listen. | Keep your feet dry and your prayers short, #address#. #saying#.
+scene bargaining_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I told the #rain# this morning: give me till noon to get #herd# across, and then pour all you like. | Third wet day. I offered #sky# a fair trade: one dry hour for a week of my patience. | I asked the rain to stop. Nicely, mind. #saying#.
+b : Did it listen? | Did it take it? | Nicely?
+a : It gave me till half past ten. I'll call that fair, near enough. | No. It took the patience and kept the rain. #annoyed#. | Nicely. Then less nicely. Then I begged the Bright One's pardon at #chapel#.
+b : #bc_ha# | #bc_bad_luck# | #bc_ha#
+
+scene sun_for_the_herd
+when topic=weather|day here.weather=clear here.time=day
+does tell.self / react.self / assess
+a : Clear sky, and #herd# panting in #pasture#. I've asked the sun for one cloud. One. | #hot.capitalize#. I told #sky# the cows want shade, not sermons. | No cloud since dawn. I said to the sun, you've had your morning, now move along.
+b : Will it give you one? | Ha. | Did it move?
+a : It never has. I keep asking. Somebody should, for #herd#. | They do. Shade under a tree, and water. #sky.capitalize# gives neither. | Not an inch. It's as stubborn as #oldcow#.
+
+scene fog_calling
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Fog down on #pasture#. I called #herd# in by voice, one by one. | Thick this morning. I told the fog to lift by milking. It hasn't heard me, #hum#. | Fog's the one weather I don't quarrel with. It's too quiet to argue with #sky#.
+b : Do they come? | Will it lift? | Too quiet?
+a : They come. They know my voice better than they know #gate#. | It'll lift when it lifts. That's fog. #saying#. | Too quiet. Like #oldcow# when something's wrong and she won't say.
+
+scene storm_byre
+when topic=weather here.weather=storm here.region=ridgemere
+does tell.worry / reassure / assess / ack
+a : Storm off the Sound, and #herd# stamping in #byre#. I sat up with them. | Thunder over #city#. I told it to take itself out to sea and leave the cows be. | The wind's in the roof of #byre#. #oath#. I've a rope on the door.
+b : They'll settle. | Did it go? | It'll hold.
+a : They settle when I sit with them. So I sat, with #candle#. | It went, near dawn. I'd like to think I had a part in it. | It'll hold. The Bright One's had #prayer# on it all night.
+b? : #bc_good# | #bc_ha# | #bc_i_hope_so#
+
+scene snow_in_the_city
+when topic=weather|season here.weather=snow here.region=ridgemere
+does tell.self / react.self / assess
+a : Snow. I told it it had the wrong town. It came anyway. #hum#. | #herd.capitalize# won't go out in snow. Nor will I, if I'm honest. | A dusting on the roof of #byre#. Under #oldwood# it never reached the ground.
+b : It won't last. | Sensible. | Never?
+a : It won't. Snow here's a visitor. #rain.capitalize#'s the landlord. | #hay.capitalize# in the rack and a shut door. Snow can wait. | Never. The oaks took it on their shoulders. #good.capitalize#, those oaks.
+
+scene byre_dawn
+when topic=work|day here.time=dawn self.working=yes self.job=none|herder|farmer
+does tell.self / react.self / assess
+a : Up before light to #byre#. #herd.capitalize# know my step before I've lifted the latch. | Dawn's the best of it. Warm cows, #cold# air, nobody talking. | Out at first light, back at dusk. That's a cowherd's day, and it's mine.
+b : They know your step? | It sounds peaceful. | Long day.
+a : Mine and nobody else's. That's the nearest to being known I've got. #hum#. | It is. Until #oldcow# decides #gate# is her enemy. | Long, aye. But it's honest, and #herd# don't lie.
+
+scene old_brown_cow
+when topic=animals|work self.working=yes self.job=none|herder|farmer
+does tell.self / ask.detail / answer.detail / assess
+a : #oldcow.capitalize# won't go through #gate# unless I go first. Every morning. | There's one cow in #herd# that stops dead at every puddle and stares at it. | I talk to #herd# more than I talk to folk. They're better listeners.
+b : Every morning? | Why the puddles? | Do they answer?
+a : Every one. Twelve years of mornings, I'd guess. She trusts me and no gate. | I think she sees #sky# in it. She doesn't like the sky either. | They chew. That's more of an answer than I get from the weather. #bc_ha#
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene new_boots_mud
+when topic=pastimes|work self.likes=new_boots
+does tell.feeling / react.self / assess
+a : I saved a season for #boots#. First day at #gate#, #mud# had one off me. | #boots.capitalize#. Stiff as a board and the best thing I own. | I'd sooner have dry feet than a full purse. Nearly.
+b : Did you get it back? | They'll soften. | Nearly?
+a : I got it back. Full. I said things to that mud I've since taken back in #prayer#. | They will. I'll wear them in, one #cold# morning at a time. | Nearly. A full purse buys boots. I've thought it through, #hum#.
+
+scene oatcake_supper
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #oatcakes.capitalize# and a bit of butter when there is any. That's #supper# most nights. | I bake #oatcakes# of a Restday and they last me the week. | An oatcake keeps in a coat pocket all day. #good.capitalize# for a herder.
+b : That's lean. | The whole week? | Handy.
+a : Lean, but filling, and I give thanks for it. #hum#. | The week, if I'm careful. I'm careful. | It is. And #herd# don't want them, which is the main thing.
+
+scene draughts_after_chapel
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail / assess
+a : There's a board at #chapel# hall after the evening service. I play whoever stays. | I'm slow at draughts. #slow.capitalize#, and steady. Folk get bored and make mistakes. | I've not won a game in a month. I'll win one yet.
+b : Do you win? | Is that how you win? | A whole month?
+a : Sometimes. More often I just sit and think, and that's worth it too. #hum#. | Mostly. It's how the weather wins against me, too. Patience. | A month. I'll lay it before the Bright One, along with #herd# and the rest.
+b : #bc_good# | #bc_ha# | #bc_i_hope_so#
+
+scene night_racket
+when topic=home|smalltalk here.region=ridgemere self.dislikes=night_noise
+does tell.complaint / react.complaint / assess / ack
+a : #racket.capitalize# till past midnight. And me up before light. | Somebody in #rents# sang the same verse twenty times last night. #oath#. | I said #prayer# for quiet. Then I said a few words to the street. Then another prayer.
+b : That's hard. | Twenty? | Did it work?
+a : Hard on a herder. #herd.capitalize# don't care how I slept. | Twenty. I counted, the way you count sheep, but crosser. #hum#. | The prayer did. The street didn't. That's about the usual order.
+b? : #bc_poor_soul# | #bc_ha# | #bc_ha#
+
+scene no_manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : A wolf pushed past me at the well and never said a word. #annoyed#. | I'll put up with weather, but not with bad manners. Weather can't help it. | Folk in #city# say sorry like it costs them coin.
+b : Some folk. | That's fair. | It's true.
+a : Some folk. I put them in #prayer# anyway. They'll need it. | Fair. #rain.capitalize# doesn't know better. Folk do. | True. In #oldwood# you'd hear sorry before you'd been trodden on.
+
+scene summer_evening_herd
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : A long summer evening, and #herd# grazing late. The only time I sit down out there. | Warm and still. Even I can't find a thing to say to #sky# tonight. | Evenings like this I nearly forgive the wet months.
+b : It's lovely. | Not one thing? | Nearly?
+a : It is. I'll give thanks for it, and mean every word. #hum#. | Not a thing. #sky.capitalize# and me, at peace for an hour. | Nearly. The wet comes back. But tonight, #hum#, nearly.
+
+scene chapel_bread
+when topic=faith self.wealth=poor|destitute
+does tell.memory / react.self / assess
+tone serious / tender / even
+a : There was a week with nothing in the pot. #chapel.capitalize# put bread on the table. I've not missed a service since. | I owe #chapel# more than coin. I pay it back in sitting there, every week. | When nobody else looked, #chapel# did. I'll not forget it.
+b : That's a debt worth paying. | That's good of you. | Some do look.
+a : It is. I'll pay it slow, like everything. #hum#. | It's not good. It's only right. | Some do. And I'll keep #prayer# for the ones who don't.
+
+scene praying_weather
+when topic=faith|weather
+does tell.self / ask.opinion / give.opinion
+a : I pray for good weather, then I argue with the weather that comes. I'm not sure that's allowed. | The Bright One sends the #rain#. I only argue with it once it's here. That's different. | Every night I ask for a dry day. Every morning I find out the answer, #hum#.
+b : I'm sure it's allowed. | Is it different? | What's the answer, mostly?
+a : I hope so. I ask pardon after, to be safe, in #prayer#. | It is to me. You don't argue with the master; you argue with the work. | Mostly no. But I'll ask again tonight. That's faith.
+
+scene home_old_forest
+when topic=memories|home self.away=yes self.from=oakhaven
+does tell.memory / ask.detail / answer.detail / assess
+a : I grew up in #self.from_town#, under the oaks. #rain.capitalize# came down to you slow through all those leaves. | In #oldwood# the weather had manners. It asked the trees first. | Back home the pigs ran under the oaks and nobody hurried for anything.
+b[from=oakhaven] #oh : Under the old oaks. Aye, the rain came slow there. | It did. The trees kept it civil. | Pigs and acorns. I miss it.
+b : Do you miss it? | And here? | Why come away?
+a@oh : It came slow. Down here it comes all at once and sideways. #hum#. | Civil. I've not had a civil word from a city sky yet. | So do I. I'll not say it often. I'll say it now.
+a : Every wet morning. That's most mornings, in #city#. | Here it doesn't ask. It just comes, and I tell it what I think. | Work. There was none at home for one more pair of paws. #hum#.
+b? : #bc_i_know# | #bc_ha# | #bc_fair_enough#
+
+scene voice_slow
+when topic=accent self.away=yes self.from=oakhaven here.region=ridgemere
+does tell.self / react.self / assess
+a : City folk hear me and think I've all day. I talk at the speed of a cow walking. That's quick enough. | I still say #greet# to folk in the lane. Some look at me like I've grown leaves. | My voice came out of #oldwood# with me. It's slower than the city's. So am I.
+b : It suits you. | Ha. | Nothing wrong with slow.
+a : It suits #herd#. That's who I talk to most. | Let them look. Leaves are no shame. | Nothing at all. Slow gets there. #saying#.
+
+scene the_letter
+when topic=memories|dreams self.married=no self.age>=30
+does confide / sympathise / assess
+tone serious / tender / even
+a : I keep #letter# in my coat. I wrote back once. No answer ever came. | There was somebody, years ago. I've a letter still. That's all I've got of it. | Some nights I take out #letter# and read it by #candle#. Then I put it back.
+b : I'm sorry. | That's hard. | Do you still hope?
+a : Don't be. It was a kindness, while it lasted. I keep it for that. #hum#. | Hard, and old. Smooth now, like a stone in a stream. | Hope's a strong word. I keep #letter#. Let's leave it at that.
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# with #herd#, and I trust nobody with #herd#. | I don't say much to anybody. I say a bit more to #self.friend#, | If I was laid up, #self.friend# would come. I know it the way I know a cow's step.
+b : That's high praise. | That's something. | That's a friend.
+a : From me, it's the highest. | It is. More than I say to the weather, and I say plenty to #sky#. | It is. I give thanks for it in #prayer#, with the rest.
+
+scene hard_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Bread's up again, and my #money# isn't. I've cut the butter. | Lean weeks. I give thanks for every oatcake and pray for the next. #hum#. | Hard times. The dole queue's longer, and I know half the faces in it.
+b : It'll turn. | You're not alone. | That's hard.
+a : It'll turn. Seasons do. I've watched enough of them from #gate#. | I know. That's the only comfort in it. | It is. Each face goes in #prayer#. It's all I've got to give.
+b? : #bc_i_hope_so# | #bc_true# | #bc_poor_soul#
+
+scene newcomers_work
+when topic=newcomer
+does give.opinion / disagree / concede / ack
+a : Somebody new at #byre# this morning asking for work. There isn't enough for the ones already here. | New folk come in every week. #pasture.capitalize# doesn't grow to fit them. | I'll not be cold to a newcomer. But I'll not pretend there's room, either.
+b : They need to eat too. | They'll find something. | That's fair.
+a : They do. I know it. I just can't make the work stretch. #hum#. | Some will. Most will stand in the queue with me. | Fair's all I can manage. They'll go in #prayer#, and I'll keep my place.
+b? : #bc_true# | #bc_i_hope_so# | #bc_fair#
+
+story the_letter_kept [topic=memories self.married=no self.age>=30]
+  : Long ago, back home, there was somebody I'd walk to the edge of #oldwood# with of an evening. Then that one went away for work.
+  : One letter came. I wrote back, slow and careful. I never heard again. I've kept #letter#.
+  ask : Have you ever waited on a letter?
+  b : I have. Waiting's the worst of it.
+  b[old] : Once, long ago. It came, in the end. Too late to matter.
+  : Too late is better than never, maybe. I'll let you know.
+
+story the_great_oak [topic=memories|weather self.away=yes self.from=oakhaven self.age>=25]
+  : When I was a #child# there was a storm at home that brought down the oldest oak in the wood.
+  : My #grandad# stood in the #rain# and shouted at #sky# the whole night. I thought he'd gone mad.
+  ask : Shall I tell you what he said in the morning?
+  b : Go on. Was he sorry?
+  b[from=oakhaven] : That the oak had it coming? Old wolves say that.
+  : That it did no good, but it did him good. I've argued with the weather ever since. #hum#.
+
+story the_cow_in_the_river [topic=animals|work self.job=none|herder|farmer self.age>=25]
+  : One spring #oldcow# walked into the river at the ford and stood there, up to her belly, and wouldn't come out.
+  : I stood on the bank all morning, asking. In the end I waded in and stood beside her, and she followed me out.
+  ask : Would you have gone in after her?
+  b : I'd have waited for her to get cold.
+  b[job=herder|farmer] : I've done the same. They want company, not shouting.
+  : She wanted company, I think. Most of us do.
+
+rule @rainplea
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say One dry hour. That's all I'm asking of #sky#. | You again. #oath#. Give #herd# a rest, at least.
+
+rule @sunplea
+when concept=bark here.weather=clear here.time=day
+does aside
+cooldown 10h
+say One cloud, if you please. For #herd#. | #hot.capitalize#. I've asked nicely. #saying#.
+
+rule @herdcall
+when concept=bark working=yes self.job=none|herder|farmer
+does aside
+cooldown 6h
+say Come on, then. Come on. #herd.capitalize# in. | Through #gate#, you old thing. I'm right behind you.
+
+rule @nightnoise
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Some of us are up before light. #annoyed#. | Quiet down there. Bright One give me patience. #hum#.
+
+dlg @1 resident.hub : #greet#. What is it, #address#? | #greet#. I've a minute before #herd#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're back. What can I do?
+dlg @3 resident.hub [here.time=night] : It's late, and I'm up before light. Say it, and I'll listen. #hum#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you want. I'll hear it from here, #address#.
+dlg @1 resident.job [self.job=none|herder|farmer] : #self.trade_words.capitalize#. Out at dawn, in at dusk, and I argue with #sky# in between. | #herd.capitalize#, #address#. I drive them out, I bring them in, and I keep #byre# sound.
+dlg @2 resident.job : I work, #address#. Steady, and in all weathers. | This and that. #slow.capitalize# and steady.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. #bless#.
+graft resident.hub
+choice Were you talking to the sky just now? -> sky
+node sky
+say Mm. I was. I ask it for a dry hour for the herd, or a cloud on a hot day. It doesn't listen. I ask anyway, then beg the Bright One's pardon.
+mood calm
+free
+choice Why keep asking? -> sky_why
+choice Goodbye. -> bye
+node sky_why
+say Somebody should speak up for the cows. They can't. My grandda shouted at a storm once, back in the old forest. It did no good, but it did him good.
+choice Something else. -> hub
+choice Goodbye. -> bye

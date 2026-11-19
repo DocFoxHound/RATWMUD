@@ -1,0 +1,36 @@
+mantle	writer	started	finished	items	alternatives	note
+sw114	X6	2026-11-18T19:00:52-07:00	2026-11-18T19:08:32-07:00	99	306	tannery hand, Sump register over Saltwell manners; quirk turned to scours_the_work_off_with_dry_sand_before_going_home
+fh108	X1	2026-11-18T18:34:48-07:00	2026-11-18T18:53:27-07:00	125	617	full fruit stall (merchant), accent none: work gated self.role=merchant; quirk turned to lays_the_first_fruit_of_every_crate_aside_for_the_chapel
+mb121	X3	2026-11-18T18:43:29-07:00	2026-11-18T18:50:32-07:00	120	565	full carpenter (crafter, merchant): trade gated self.job=crafter; home gated self.away=yes self.from=fenshore; quirk turned to sets_an_offcut_boat_in_the_gutter_for_every_prayer
+fh109	X1	2026-11-18T18:43:19-07:00	2026-11-18T18:49:00-07:00	124	597	full provisioner, accent none: Office scenes gated self.role=merchant; quirk turned to pins_every_city_office_slip_to_the_beam
+sw115	X6	2026-11-18T19:04:56-07:00	2026-11-18T19:08:32-07:00	102	288	plasterworks hand, anxious; quirk turned to walks_up_to_look_through_the_heights_gates_every_restday
+sw116	X6	2026-11-18T18:47:06-07:00	2026-11-18T19:08:32-07:00	147	530	full, runs the House plasterworks (merchant): yard talk gated self.job=crafter; quirk turned to pours_water_for_every_caller_before_any_business
+fh110	X2	2026-11-18T18:38:38-07:00	2026-11-18T18:44:47-07:00	117	461	full provisioner, accent none: store talk gated self.role=merchant; quirk turned to smells_of_the_smoke_loft_and_blames_the_hams
+mb122	X3	2026-11-18T18:56:39-07:00	2026-11-18T19:01:09-07:00	75	328	job none, Sump: work gated self.job=none; quirk turned to blames_every_cough_on_the_city_smoke
+mb123	X3	2026-11-18T19:01:09-07:00	2026-11-18T19:06:11-07:00	83	356	shop help (merchant, civilian): work gated self.job=merchant self.working=yes; quirk turned to pipes_a_reed_whistle_whenever_the_shop_goes_quiet
+fh111	X1	2026-11-18T18:49:32-07:00	2026-11-18T18:53:15-07:00	76	363	baker's help, accent none: work gated self.working=yes self.job=baker; quirk turned to slips_a_spare_heel_into_hungry_pockets_and_denies_it
+mb124	X3	2026-11-18T18:50:32-07:00	2026-11-18T18:56:39-07:00	118	533	full baker: shop.greet per case; flour scenes gated world.flour_price; quirk turned to hands_a_warm_roll_to_anyone_who_comes_in_wet
+mb125	X4	2026-11-18T18:55:35-07:00	2026-11-18T19:04:57-07:00	78	234	old, devout, job none: door work gated self.working=yes self.job=none; quirk turned to thanks_the_bright_one_aloud_at_every_thunderclap
+oh111	X8	2026-11-18T18:53:00-07:00	2026-11-18T18:58:00-07:00	71	218	printer (job official), devout and exact: printing gated self.job=official; quirk turned to reads_every_posted_notice_for_misprints
+mb126	X4	2026-11-18T19:00:15-07:00	2026-11-18T19:04:57-07:00	74	224	accent none, Office register; quirk turned to keeps_a_window_book_of_the_street
+sw117	X6	2026-11-18T18:52:10-07:00	2026-11-18T19:08:32-07:00	139	433	full infirmarian (master): master tree per case; work gated self.job=healer; quirk turned to counts_every_pulse_to_an_old_caravan_rhyme
+mb127	X5	2026-11-18T18:51:08-07:00	2026-11-18T18:56:28-07:00	77	351	distillery hand, accent none, job none: work gated self.working=yes self.job=none; quirk turned to climbs_to_the_highest_step_to_watch_the_ships
+sw118	X7	2026-11-18T19:00:15-07:00	2026-11-18T19:03:45-07:00	92	210	ironworks smith: work gated self.job=smith; quirk turned to names_the_puddles_after_wells_back_home
+mb128	X4	2026-11-18T18:40:27-07:00	2026-11-18T19:04:57-07:00	118	353	full provisioner: shop nodes per case; fen talk gated away=yes from=fenshore; quirk turned to ties_a_twist_of_dry_reed_into_every_sack_for_luck
+mb129	X4	2026-11-18T18:49:51-07:00	2026-11-18T19:04:57-07:00	121	358	full, old distiller: old section; quirk turned to tastes_every_water_before_trusting_it
+oh112	X8	2026-11-18T18:45:43-07:00	2026-11-18T19:13:24-07:00	118	347	full chandler, accent none: shop and resident nodes per case; quirk turned to rolls_a_die_for_every_small_choice
+sw119	X7	2026-11-18T19:04:06-07:00	2026-11-18T19:09:04-07:00	89	205	distillery hand, job none: work gated self.working=yes self.job=none; quirk turned to shares_the_heel_of_every_loaf_with_whoever_stands_nearest
+fh112	X1	2026-11-18T18:53:56-07:00	2026-11-18T18:57:17-07:00	78	393	porter (job carter), accent none, chatty; quirk turned to guesses_every_load_s_weight_aloud_before_lifting
+sw120	X7	2026-11-18T18:45:22-07:00	2026-11-18T18:53:24-07:00	150	375	full Fish Hall fisher (master): gutting gated self.job=fisher, no nets; master nodes per case; quirk turned to tastes_every_sack_of_salt_and_names_its_pan
+mb130	X5	2026-11-18T18:57:00-07:00	2026-11-18T19:00:38-07:00	75	316	deckhand, broad: boat talk gated self.job=sailor; debt gated self.owes=yes
+fh113	X2	2026-11-18T18:45:15-07:00	2026-11-18T18:49:22-07:00	71	294	Estate shop help, broad: work gated self.job=merchant self.working=yes; quirk turned to airs_every_coat_on_the_sill_against_the_smoke
+mb131	X5	2026-11-18T19:00:38-07:00	2026-11-18T19:05:08-07:00	71	306	no post, Works register; quirk turned to walks_once_round_the_block_before_answering_a_slight
+sw121	X8	2026-11-18T18:58:00-07:00	2026-11-18T19:02:00-07:00	69	205	butter churner, job none: work gated self.working=yes self.job=none; quirk turned to hums_a_marching_tune_in_time_with_the_churn
+sw122	X8	2026-11-18T19:02:00-07:00	2026-11-18T19:06:00-07:00	71	218	deckhand, accent none: sailor talk gated self.job=sailor; quirk turned to pays_every_lost_wager_with_a_song
+fh114	X2	2026-11-18T18:49:52-07:00	2026-11-18T18:55:21-07:00	70	275	orchard farm hand: orchard talk gated self.job=farmer; oath/saying checked by eye (§8.8)
+oh113	X2	2026-11-18T18:59:31-07:00	2026-11-18T19:04:10-07:00	73	291	cowherd, job none: work gated self.working=yes self.job=none|herder|farmer
+sw123	X8	2026-11-18T19:06:00-07:00	2026-11-18T19:13:00-07:00	72	220	docker, Sump register, accent none; quirk turned to keeps_the_stall_savings_in_a_boot_never_worn
+sw124	X7	2026-11-18T18:54:08-07:00	2026-11-18T18:59:52-07:00	147	357	full House household, Estate register: claims gated self.house / self.class=upper; quirk repeats_a_guest_s_own_words_back (brief had none)
+mb132	X5	2026-11-18T18:42:00-07:00	2026-11-18T18:51:08-07:00	127	594	full Harbour Gate guard: the watch tree per case; guard talk gated self.job=guard; quirk turned to sounds_every_puddle_before_stepping_in
+fh115	X2	2026-11-18T18:55:55-07:00	2026-11-18T18:59:13-07:00	71	276	no work, apprentice: learning gated self.apprentice=yes; quirk turned to notes_every_strange_face_in_a_pocket_book
+oh114	X5	2026-11-18T19:05:08-07:00	2026-11-18T19:08:48-07:00	74	304	timber feller, accent none: woodcutter talk gated self.job=woodcutter

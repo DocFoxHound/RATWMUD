@@ -1,0 +1,311 @@
+# sw122, the deckhand who pays in verses (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw122
+revision 1
+state ready
+dialect saltwell
+accent none
+tier standard
+written_for cty_stone_marshditch
+written_by claude
+title the deckhand who pays in verses
+fits stage=adult|old
+prefers job=sailor warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk pays_every_lost_wager_with_a_song
+likes honey_cakes singing old_maps summer_evenings
+dislikes deep_mud crowds
+fears a_letter_with_bad_news a_crowd_at_the_water_stairs
+hopes one_letter_from_home a_wager_won_fair_and_square
+topics pastimes +0.4 work +0.3 family +0.2 newcomer +0.2 lore +0.2 gossip -0.3
+styles comfort=gentle gossip=avoids refuse=gentle tease=none
+marks oath saying
+persona #self.first# crews a boat out of a cove on the Sound: gentle, calm and honest to a fault, never in a hurry, who can't turn down a wager and pays every lost one with a song, and who loves honey cakes, old maps and a summer evening that won't end.
+
+words
+oath! = By tide and tune | Stakes and stars
+saying! = Lose a wager, pay a verse | Bet small, sing loud
+wager = a wager | a small wager
+verse = a verse | a verse of something old
+boat = the boat | our boat
+cove = the cove | the cove at the north end
+shed = the shed | the net shed by the slip
+sound = the Sound | the grey water of the Sound
+lines = the lines | the wet lines
+cakes = honey cakes | a paper of honey cakes
+map = an old map | a map of coasts nobody has sailed
+evening = a summer night with no end to it | the light lasting past supper
+covemud = the cove mud | mud to the knee at low water
+song = a song | an old song from the crew
+crew = the crew | the others on the boat
+nohurry = take your time | there's no hurry
+quay = the quay | the wet quay
+skipper = the skipper | our skipper
+tide = the tide | the turning tide
+copper = a copper | one copper
+gulls = the gulls | the gulls on the posts
+point = the point | the point past the cove
+water = the water | the grey water
+cake = a cake | a honey cake
+mother = my mother | my mother, at the well
+coat = my coat | my wet coat
+
+any
+opinion @1 strangers for 1 : Feed a stranger once and you've a friend for good. I've never known it fail, #address#.
+opinion @2 newcomers for 1 : Any wolf who'll haul with the rest of us is welcome by me. Somebody took me on when I knew nothing.
+opinion @3 merchants against 2 : Every week the price creeps a penny higher, quiet as a cat. I notice. I'm only too polite to say so.
+opinion @4 houses against 1 [self.job=sailor] : Years I've hauled under their flags, and not one House face has come down to #water# to look.
+opinion @5 dole for 1 : There's bread enough in a city this size. Not one wolf should sleep on an empty belly.
+opinion @6 drink mixed 1 : One cup and #song# is a good night. More than one and I start making wagers I'll regret.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #nohurry.capitalize#; I'm not going anywhere. | #greet#, #address#. Sit down, if you like. #welcome.capitalize#.
+line @2 greet [self.working=yes self.job=sailor] : #greet#. Mind #lines#; they're wet. | #greet#. I'll keep coiling, if you don't mind.
+line @3 greet [here.time=dawn] : #greet#. Early tide and early company. That's a good start. | #greet#. The gulls are only just up.
+line @4 greet [here.time=dusk|night] : #greet#. The light's going, but there's time for a word. | #greet#. A good evening for #song#.
+line @1 kin.open [pair.kin!=no] : There you are. I saved you #cake#. | Ah, it's you. Come and sit, #address#.
+line @1 again.open : #welcome_back#. I'm glad you came back round. | Twice in one day. I'd have bet #copper# on it.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. You're a welcome sight. | #greet#. I'd hoped it'd be you.
+line @3 greet.return [self.working=yes self.job=sailor] : #greet#. Talk away; my paws know these knots. | #greet#. Step over #lines#.
+line @1 farewell : #farewell#. | #farewell#, #address#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the steps by #water# in the dark. | #farewell#, and #nohurry# getting home.
+line @1 farewell.return : #farewell#. | #farewell#. Come back soon, #address#.
+line @1 react.news : Go on. #nohurry.capitalize#. | Every bit of it, #address#. I'm listening.
+line @1 react.news.new : #surprise#. That's new to me. | #marvel#. Nobody I know had a word of it.
+line @1 react.news.known : #knew#. It reached me with the morning. | #knew#. It was all along #quay# at first light.
+line @1 react.news.doubt : #doubt#. I'd not wager on that one. | Somebody who saw it can tell me, #address#. Until then, no.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard to hear. | #sympathy#. I'm sorry for them, #very#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That deserves #song#. | #congrats#. I'm glad, #very#.
+line @1 answer.how : #fine#. Wet paws, and #cake# in my pocket. | Well enough, #address#. Better for seeing you.
+line @1 answer.how.busy [self.working=yes self.job=sailor] : #busy.capitalize#. #tide.capitalize# sets the hours, not me. | Busy, but #tide# can spare me a minute.
+line @1 ask.how : And you, #address#? How's the day been? | Keeping well, #address#?
+line @1 sympathise : #sympathy#. Sit here by me. #nohurry.capitalize#. | That's a heavy thing. Tell me as much as you want to; #nohurry#.
+line @1 reassure : #reassure#. Give it a tide or two. | It'll pass. I'd wager on it, and I'm seldom wrong about hope.
+line @1 decline : #hedge#, but I can't. There's an early start, and I'd be no use to anyone tired. | I'd go gladly, another night. Tonight's promised to somebody else.
+line @1 accept_decline : #no_matter#. Another day, then. | That's fair. I'll ask again. #nohurry.capitalize#.
+line @1 thank : #thanks#. | That's kind of you. I'll owe you #verse#.
+line @1 deflect_thanks : #deflect#. | #deflect.capitalize#. You'd do the same for me.
+line @1 preclose [self.working=yes self.job=sailor] : Well. #lines.capitalize# won't coil themselves. | I'd better get back before #tide# turns.
+line @2 preclose : #preclose#. | Well. I've kept you, and you've been kind to let me.
+line @1 accept_preclose : Of course. #nohurry.capitalize#. | Go on, then. #bless#.
+line @1 ack : #bc_it_is# | That's so.
+line @1 give.advice : #advise#: never bet more than you'd sing for. #saying#. | Feed a stranger first and ask after. It's never once gone wrong for me.
+scene any_wager
+when topic=pastimes|smalltalk
+does challenge / accept / assess / ack
+a : I'll bet you #copper# the next gull lands on that post. | Wager you #cake# it rains before dusk. | I'll bet #cake# you can't name the street we're standing on. Fair and square.
+b : Done. A copper. | A cake? You're on. | Done.
+a : There it goes. On the post. I'll take my copper, thank you. | We'll see. If I lose, I'll sing you #verse#, the way I always do. | I'd have lost that too. I never know street names. #saying#.
+b : #bc_ha# | #bc_we_will_see# | #bc_fair#
+
+scene paid_in_verse
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail / assess
+a : I lost #wager# this morning. So I sang for them, all four verses. | When I lose a bet, I pay with #song#. It's the only rule I keep. | Folk have started making bets they know I'll lose, just to hear me sing.
+b : All four? | Why a song? | On purpose?
+a : All four. And the chorus twice. #saying#. | Coin's for winning. A song's for losing. That way nobody goes home poorer. | I think so. I don't mind. I like the singing more than the winning.
+b : #bc_ha# | #bc_wise# | #bc_lovely#
+
+scene on_the_boat
+when topic=work self.working=yes self.job=sailor
+does tell.self / ask.detail / answer.detail / assess
+a : #self.trade_words.capitalize#. Ropes, sails, bailing, and whatever #skipper# shouts. | Most of the day is #lines#. Coiling them, mending them, keeping them dry. | Out past #point# at dawn, back by dusk, and wet in between.
+b : What does the skipper shout? | Dry? On a boat? | Every day?
+a : Mostly my name, and then something about #lines#. #nohurry.capitalize#; I get there. | Drier than they'd be. Nothing's dry on a boat. You just keep trying. | Most days. #sound.capitalize# decides. I don't argue with it.
+b : #bc_ha# | #bc_true# | #bc_wise#
+
+scene low_water
+when topic=work|weather self.job=sailor self.dislikes=deep_mud here.region=ridgemere
+does tell.complaint / react.complaint / assess / ack
+a : Low water this morning. #covemud.capitalize# was over my knees getting out to #boat#. | I hate #cove# at low water. You go in to the knee and leave a boot behind. | Mud on my legs, mud on #coat#, and #tide# laughing out past #point#.
+b : Wait for the tide. | And the boot? | It'll come back in.
+a : I would. #skipper.capitalize# won't. So in I go. | I did. Full of mud. I poured it out and put it back on. | It will. Then I'll be wet a different way. #oath#.
+b? : #bc_ha# | #bc_ha# | #bc_true#
+
+scene rain_on_the_water
+when topic=weather here.weather=rain here.region=ridgemere self.job=sailor
+does tell.self / react.self / assess / ack
+a : Rain on #water#. You can hear it hiss on #sound#. | It rained the whole way back to #cove#. I sang to keep my mind off it. | Wet from above, wet from below. A deckhand's lot, #address#.
+b : I'd not like to be out in it. | Did it help? | Better you than me.
+a : It's not so bad. You get used to #water#, or you get another job. | It helped me. Not sure about the others. #oath#. | That's what my #self.spouse_word# says. Every night.
+b? : #bc_true# | #bc_ha# | #bc_ha#
+
+scene fog_on_the_sound
+when topic=weather|work here.weather=fog here.region=ridgemere self.job=sailor
+does tell.worry / reassure / assess / ack
+a : No going out in this. You can't see the bow from the stern. | Fog on #sound#. We sat in #shed# all morning mending #lines#. | In fog like this you sing out, so the other boats know you're there.
+b : Better to sit it out. | Good day for mending. | Do they sing back?
+a : Better safe. The fish will wait. Or they won't. Either way. | It was. Quiet, and nobody shouting. I'd almost wish for more fog. | Some do. Some ring a bell. I sing. I think it's friendlier.
+b : #bc_wise# | #bc_true# | #bc_lovely#
+
+scene long_evening
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess / ack
+a : This is the best of the year. #evening.capitalize#, and nobody hurrying. | Light till past #supper#. I sit on the steps and sing to nobody in particular. | On nights like this one, #sound# goes gold, and then pink, and then soft.
+b : It is a lovely evening. | Nobody minds? | You've a pretty way of saying it.
+a : It is. I'd keep a jar of it for winter, if I could. | Nobody's said so. A few hum along, #address#. | It's a pretty thing to watch. I only said what I saw.
+b : #bc_lovely# | #bc_ha# | #bc_lovely#
+
+scene cakes_in_pocket
+when topic=food self.likes=honey_cakes
+does offer / accept / assess / ack
+a : I've #cakes# in #coat#. Have one; go on. | There's a stall near the water stairs that does #cakes#. I've had three today. | Somebody bet me #cake# I couldn't go a day without one. I lost. Here, have half.
+b : Thank you. | Three? | You lost? Then you owe a song.
+a : #nohurry.capitalize#; there's plenty. I always buy one more than I need. | Three, and I'm thinking about a fourth. I'll not wager on myself. | I sang it at breakfast. Now you get the cake too. It's only fair.
+b : #bc_thank_you# | #bc_ha# | #bc_ha#
+
+scene the_old_maps
+when topic=lore|pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I've #map# pinned up by the door. Half the coast on it is wrong. | I like #map# with sea creatures drawn in the corners. Nobody's seen one. | I bought a map of #sound# from a stall. It shows an island that isn't there.
+b : Why keep it? | Sea creatures? | Isn't there?
+a : Because somebody believed it, once. That's worth a nail on the wall. | Great curly things. I like to think somebody saw something and did their best. | I asked up and down #quay#. Nobody's ever seen it. I'd still like to believe it.
+b : #bc_fair_enough# | #bc_ha# | #bc_lovely#
+
+scene too_many_folk
+when topic=smalltalk|day here.crowd=crowd self.dislikes=crowds
+does tell.complaint / sympathise / assess / ack
+a : Too many folk in one place. I'd sooner be out on #sound#. | I can't stand a crowd, #address#. Everybody pushing, and nobody saying sorry. | When a crowd gathers like this, I go round the back way, even if it's twice as far.
+b : It is a crush. | Some say sorry. | Twice as far?
+a : It is. Give me four friends and a quiet table, and that's company enough. | Some. Not enough. I say it for them. | Twice as far and half as cross. That's a good trade.
+b : #bc_true# | #bc_ha# | #bc_wise#
+
+scene my_wife_works
+when topic=family self.married=yes
+does tell.feeling / react.self / assess / ack
+a : My #self.spouse_word# and I are out by dawn and home by dark. We meet in the middle for #supper#. | I'd bet anything on #self.spouse#. I never would, mind. Some things you don't wager. | The door with #self.spouse# behind it is the best door in the city.
+b : That's a long day. | You'd never bet on them? | That's a sweet thing to say.
+a : A long day, every day. Worth it for the supper. | Never. I'd lose the bet just by making it. | It's true, so I say it. The day can wait on that, #nohurry#.
+b? : #bc_true# | #bc_wise# | #bc_lovely#
+
+scene friend_beside
+when topic=friends self.friend
+does tell.feeling / react.self / assess / ack
+a : Years with #self.friend#, and we hardly need to talk any more. | My last copper and my best song, I'd hand to #self.friend# without a thought. | When I lose a bet, #self.friend# is the one who asks for the song first.
+b : The best kind. | That's a lot of trust. | Every time?
+a : It is. Some quiet's better than talk. | It is, and I've never been sorry. | Every time. I'd be sorry if it stopped.
+b? : #bc_true# | #bc_good# | #bc_lovely#
+
+scene letters_never_come
+when topic=family|memories self.away=yes self.from=saltwell
+does tell.worry / sympathise / assess / ack
+tone even / tender / even / even
+a : I've kin back in #self.from_town#. They never write. I write anyway. | Every time a cart comes up from the Waste I look for a letter. There's never one. | I send a letter home at every feast. I don't know if anyone reads them.
+b[from=saltwell] #home : Letters are slow from the Waste. They may be on the road yet. | Mine are the same. Nobody at home writes. | They read them. They just don't know what to say back.
+b : That must be hard. | Maybe it'll come. | I'm sure they do.
+a@home : I hope so. I'd wait a long time for one. | Then we can not write to each other. #bc_ha# | I'd take a blank page, if they sent one.
+a : It is, a little. I don't let it sour me. | Maybe. I'd wager on it, if I could stand losing. | I hope so. I'll keep writing either way.
+b : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene sand_to_sea
+when topic=accent|travel self.away=yes self.from=saltwell self.job=sailor
+does tell.self / ask.detail / answer.detail / assess
+a : I grew up where there's no water but the well, and I ended up on a boat. Nobody at home believes it. | Folk on #quay# laugh that a wolf from the Waste is a deckhand. I laugh too. | I'd never seen more water than a cistern till I was grown.
+b : How did that happen? | It is a bit funny. | And what was it like?
+a : A wager. Somebody bet me I wouldn't last a season. I did. | It is. #saying#. I lost a lot of bets that first year. | I thought it was the biggest well in the world. I still think it, some mornings.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene feed_the_stranger
+when topic=newcomer|player
+does give.opinion / ask.opinion / insist / ack
+a : Somebody new came down to #quay# today. I'll take them #cake# later. | Feed them and they're not strangers, #mother# used to say. #nohurry.capitalize# with them. | A newcomer wanted the market, so I walked them all the way.
+b : Kind of you. | Is she right? | All the way?
+a : It costs #cake#. It might get me a friend. That's a good wager. | She's never been wrong yet. Not about that. | It wasn't far, and they looked lost. I'd want the same.
+b : #bc_good# | #bc_true# | #bc_good#
+
+scene sing_over_talk
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : There's talk on #quay#. When it turns sour like that, I start #song#. | Somebody's saying things about somebody. I'd rather not hear them. | I'll not pass talk on. If it's true, it'll find you without me.
+b : Does it stop them? | Fair enough. | Wise.
+a : Mostly. It's hard to gossip over a chorus. | It's not mine to carry. I've enough to carry. | Not wise. Just slow. By the time I'd repeat it, it's wrong.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene ship_in_quay
+when topic=ships topic.kind=in|arrived topic.ship self.job=sailor here.region=ridgemere
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s in. I'll go down later and see if any of that crew sing. | #topic.ship.capitalize# came in on the morning tide. Long way, by the look of the sails. | They say #topic.ship# is in. I'd wager its crew will be glad of the land.
+b : Do they? | How can you tell? | Wouldn't you?
+a : The good crews do. You can hear a happy ship before you see it. | Salt-white canvas and patched in three places. That's a long way. | Glad for a week. Then they'll want the sea again. I know the feeling.
+b : #bc_lovely# | #bc_clever# | #bc_true#
+
+scene lean_days
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Hard weeks. Everybody works the same and takes home less. | Lean times. I've stopped buying #cakes#, nearly. | Folk on #quay# are tight with their coppers. Nobody's wagering.
+b : #reassure#. | Nearly? | That's bad, then.
+a : It will. #sound.capitalize# gives and takes. I keep going out. | One a day. I'm not made of stone. | That's how you know it's bad. Even I've stopped.
+b? : #bc_i_hope_so# | #bc_ha# | #bc_true#
+
+scene good_days
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess / ack
+a : Good times on #quay#. Full holds, full pockets, and everyone singing. | #money.capitalize# about. I won three wagers this week. That never happens. | Everyone's spending. The cake stall's sold out before noon.
+b : Good for you. | Three! | Sold out?
+a : Good for everybody. I'll take it while it lasts. | Three. I didn't know what to do. I sang anyway. | Before noon. I'll be there earlier tomorrow, #oath#.
+b : #bc_good# | #bc_ha# | #bc_ha#
+
+story the_long_row [topic=pastimes|work self.job=sailor]
+  : A wolf on our crew bet me I couldn't row across #cove# before the noon bell.
+  : I got halfway and the bell rang. I sang the whole way back, every verse I knew.
+  ask : How many verses do you think I know?
+  b : A dozen, maybe? | More than anyone wanted, I'd guess.
+  : Forty-one. #crew.capitalize# counted. They've never bet against me rowing since.
+
+story first_sight [topic=memories|travel self.away=yes self.from=saltwell self.age>=25]
+  : When I first saw the sea I sat down on the road and stared at it.
+  : I'd heard of it all my life. Nobody said it moved. Nobody said it never stopped moving.
+  ask : Do you remember the first time you saw it?
+  b : I do. I didn't believe it either. | I've always lived by it. I can't remember not seeing it.
+  b[from=saltwell] : I do. I wept on the shore, and I've no shame in saying so.
+  : I still sit and stare at it, some mornings. It's never once been the same.
+
+story map_island [topic=lore|pastimes self.likes=old_maps self.job=sailor]
+  : An old map I bought showed an island in #sound#, round as a coin, with a tower drawn on it.
+  : I asked #skipper#. #skipper.capitalize# had never heard of it. We sailed past where it ought to be.
+  b : Nothing there? | Maybe the sea took it.
+  b[job=sailor] : There's a shoal out there, I've heard. Maybe that's what's left.
+  : Nothing but grey water. I've kept the map. I'd rather it were there.
+
+rule @wager_bark
+when concept=bark
+does aside
+cooldown 8h
+say #copper.capitalize# says the rain holds off till dusk. Anyone? | Who'll wager me? #oath#. Nobody, then.
+
+rule @verse_bark
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Lost again. Right. #verse.capitalize#, and then I'm done. | #saying#. Here it comes, then.
+
+rule @lines_bark
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 6h
+say Mind #lines#; they're wet. | Coil it the right way, or it fights you.
+
+rule @crowd_bark
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 10h
+say Too many paws in one place. #annoyed#. | Let a wolf through, #nohurry#, but let a wolf through.
+
+dlg @1 resident.hub : #greet#. #nohurry.capitalize#. What can I help you with? | #greet#, #address#. Pull up a crate. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you again. | #topic.player#. I'd have bet you'd come back. I'd have won.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #nohurry.capitalize#. Say what you need, and I'll help if I can.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. Lines, sails, and whatever #skipper# shouts. | I crew #boat#. Out on #tide#, back on #tide#.
+dlg @2 resident.job : A bit of this and that, done honest. A day wants no more than that.
+dlg @1 resident.bye : #farewell#. #nohurry.capitalize# on your way. | #farewell#, #address#. Come back.
+graft resident.hub
+choice I'll bet you can't guess where I'm from. -> wager
+node wager
+say A wager? I never say no to one. Let me look at you. The road dust says the east road, and the boots say you've been walking a long while.
+mood pleased
+free
+choice You're wrong. -> wager_lost
+choice Goodbye. -> bye
+node wager_lost
+say Then I've lost, and I pay in song. One verse, short. There. Lose a wager, pay a verse. That's the only rule I keep.
+choice Thank you for the song. -> hub
+choice Goodbye. -> bye

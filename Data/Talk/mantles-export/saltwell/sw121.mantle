@@ -1,0 +1,290 @@
+# sw121, the churner who keeps time (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw121
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for cty_desmond_saltton
+written_by claude
+title the churner who keeps time
+fits stage=adult|old
+prefers job=none talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk hums_a_marching_tune_in_time_with_the_churn
+likes roast_pork digging quiet_chapel frosty_mornings
+dislikes deep_mud flies
+fears a_vow_broken_by_accident a_summer_with_no_end_to_the_flies
+hopes a_patch_of_ground_to_dig a_white_morning_every_week_of_winter
+topics work +0.3 faith +0.3 season +0.3 family +0.2 food +0.2 gossip -0.4
+styles comfort=quiet gossip=refuses refuse=blunt tease=none
+marks oath saying
+persona #self.first# churns butter at a dairy by the river and keeps the beat with an old marching tune hummed under the breath: quiet, blunt and a little far away, true to every word once given, fond of roast pork, an hour with a spade, a white frosty morning and the chapel before anyone else comes in.
+
+words
+oath! = By the dasher | Well-water and whey
+saying! = A vow is a well you keep drawing from | Keep the beat and the cream keeps faith
+churn = the churn | the big oak churn
+dasher = the dasher | the churn-staff
+butter = the butter | a pat of new butter
+tune = an old marching tune | the tune my grandfather walked to
+pork = roast pork | pork with the crackle on
+frost = a white morning | frost on every lid in the yard
+digging = an hour's digging | a spade and a bit of ground
+pew = the chapel before anyone's in | a back bench with nobody near
+yardmud = the yard mud | mud past the hocks
+flies = the flies | the dairy flies
+vow = my vow | the word I gave
+river = the river | the river by the dairy
+cream = the cream | a pail of cream
+dairy = the dairy | the dairy by the water
+arms = my arms | these two arms
+yard = the yard | the yard out back
+city = the city | this wet city
+pails = the pails | the cream pails
+beat = the beat | a steady beat
+
+any
+opinion @1 merchants against 3 : I buy no more than I did, and the loaf costs more every month. #annoyed#. Somebody's counting, and it isn't me.
+opinion @2 times against 2 : Each week's a little heavier than the last. Those up the hill don't see it, or see it and shrug.
+opinion @3 dole for 2 : #dole.capitalize# kept my house fed through a lean week. I'll not hear a word against it, #address#.
+opinion @4 church for 1 : When the cupboard was bare, the chapel fed us and asked nothing. I don't forget that.
+opinion @5 festivals for 1 [self.married=yes] : My wedding had dancing, and I was the worst at it. Since then every feast has my blessing.
+opinion @6 houses against 1 : #toffs.capitalize# would leave a bench empty sooner than put one like me on it.
+opinion @7 newcomers against 1 : Every new pair of paws is after the same few jobs. I know. Mine were new once.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Be welcome, #address#. | #greet#. Sit if you like. I'll not talk your ear off.
+line @2 greet [self.working=yes] : #greet#. Mind #pails#. | #greet#. I'll keep churning, if it's all the same to you.
+line @3 greet [here.time=dawn] : #greet#. Early, and the air still cool. | #greet#. Early. #cream.capitalize#'s still cold.
+line @4 greet [here.time=dusk|night] : #greet#. A long day, and a quiet end to it. | #greet#. The lamps are going up.
+line @1 kin.open [pair.kin!=no] : It's you. Sit down here a while. | Ah. You. Good. I'd been hoping.
+line @1 again.open : #welcome_back#. Twice in a day; that's a kindness. | You again, #address#. Sit. I've nothing new, but sit.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Glad it's you. | #greet#. Come and sit.
+line @3 greet.return [self.working=yes] : #greet#. Talk; #arms# don't need me. | #greet#. Mind #flies#.
+line @1 farewell : #farewell#. | #farewell#, #address#.
+line @2 farewell [here.time=dusk|night] : #farewell#. A cool night to you, and a quiet one. | #farewell#. Mind the dark on the stairs.
+line @1 farewell.return : #farewell#. | #farewell#. Peace go with you.
+line @1 react.news : #go_ahead#. I'm listening. | Say it plain, #address#. I'll hear it.
+line @1 react.news.new : #surprise#. I'd not heard. | #marvel#. Nobody where I work said a word.
+line @1 react.news.known : #knew#. The carters had it at the gate. | #knew#. It reached me before noon.
+line @1 react.news.doubt : #doubt#. Talk travels faster than truth. | Seeing comes before believing, with me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a hard thing. | #sympathy#. I'm sorry for it, #very#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. That's good. | #congrats#. I'm glad of it, #very#.
+line @1 answer.how : #fine#. Tired arms. No complaints worth saying. | #notsobad#. Low, but I'll do.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Since dawn, and no end yet. | Working since first light. It'll be done when it's done.
+line @1 ask.how : And you, #address#? Keeping? | How is it with you, #address#?
+line @1 sympathise : #sympathy#. Sit. You needn't talk. | That's heavy, #address#. I'll stay a while.
+line @1 decline : #hedge#, but no. I gave my word elsewhere, and I keep it. | I can't. Not today. Work wants me till dark, #address#.
+line @1 accept_decline : #no_matter#. Another day. | That's fair. I'd have answered the same way.
+line @1 thank : #thanks#. | Kindly done. #thanks#.
+line @1 deflect_thanks : #deflect#. | It was nothing, #address#. You'd have done it.
+line @1 preclose [self.working=yes self.job=none] : Well. #churn.capitalize# is waiting. | Back to it, #address#. #cream.capitalize# won't wait.
+line @2 preclose : #preclose#. | Well. The light's going, and #arms# want their rest.
+line @1 accept_preclose : Go on, then. Peace on you. | Of course. #bless#.
+line @1 ack : #bc_it_is# | Mm. So it is.
+line @1 give.advice : #advise#: keep a steady beat and don't look in #churn#. #saying#. | Give your word slow and keep it fast, #address#.
+scene keeping_time
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : #self.trade_words.capitalize#. I hum #tune# to keep #beat#. | Same beat all morning. Up, down, up. The tune keeps #arms# honest. | My grandfather hummed this tune walking to the well. I hum it to #churn#.
+b : What tune? | Doesn't it bore you? | Every morning?
+a : An old marching one. I don't know the words. Never did. | No. It's like walking. You stop thinking. That's the good of it. | Every morning, every churn. #butter.capitalize# likes it, I'd swear.
+b : #bc_good# | #bc_fair_enough# | #bc_ha#
+
+scene butter_wont_come
+when topic=work|day self.working=yes self.job=none
+does tell.complaint / react.complaint / reassure / ack
+a : #butter.capitalize# won't come today. An hour at #dasher# and nothing. | Warm cream. It goes thin and sulks and won't turn. | Somebody opened #dairy# door at noon. Now the whole churn's off.
+b : It'll come. | Can you cool it? | That's a shame.
+a : It will. It always does, in the end. I just keep #beat#. | A pail of #river# water round it. Slow, but it helps. | It is. I'll start again, and hum #tune# louder.
+b? : #bc_true# | #bc_clever# | #bc_ha#
+
+scene the_vow
+when topic=family|memories self.married=yes
+does tell.self / ask.detail / answer.detail / assess
+tone even / tender / even / even
+a : I swore #vow# at my wedding, and I've kept it every day since. | At my wedding I made one promise, out loud. It's the only speech I've ever made. | People make vows and forget them by the next feast. I don't.
+b : What did you swear? | Only one speech? | Never once?
+a : That my door would always be open to #self.spouse#. It is. | One. I meant every word. Nobody's needed a second. | Never once. A vow's a vow, #address#. #oath#.
+b : #bc_lovely# | #bc_good# | #bc_wise#
+
+scene spouse_hives
+when topic=family|friends self.married=yes self.spouse
+does tell.feeling / react.self / assess / ack
+a : I'd trust #self.spouse# with anything I have. Not that I've much #money#. | My #self.spouse_word# does the talking in our house. I like it that way. | Coming home to #self.spouse# is the hour I wait for all day.
+b : That's worth a lot. | Suits you, I'd say. | That's a good thing.
+a : More than silver. I'd know. I've had little of both. | It does. I nod in the right places. | It is. Worth the whole day, #very#.
+b : #bc_true# | #bc_ha# | #bc_lovely#
+
+scene frosty_morning
+when topic=weather|season here.season=winter here.time=dawn self.likes=frosty_mornings
+does tell.feeling / react.self / assess / ack
+a : Frost this morning. #frost.capitalize#. I went out in #yard# and breathed it. | A white morning. The air's clean as a knife. I'd have one every day. | Frost on the rooftops. Everything comes easier in the cold, even the work.
+b : #cold.capitalize#, though. | Every day? | Does it?
+a : Cold's honest. You know where you are with cold. | Every day of winter. I'd take the cold for that clean air. | It does. A cold morning and a good beat, and the work's done in no time.
+b? : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene waste_frost
+when topic=memories|weather self.away=yes self.from=saltwell
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# the nights go cold enough for frost on the cistern lid. Nobody believes me here. | Out on the Waste, the morning after a cold night, there's white on the sand. Gone in an hour. | My mother sent me out at dawn to see the frost before the sun took it. I've loved it since.
+b[from=saltwell] #home : I know it. White on the lid, gone by breakfast. | An hour, if that. We'd run out to touch it. | Mine did the same. Every child of the well has seen it.
+b : White frost, in the Waste? | Only an hour? | Every morning?
+a@home : Gone by breakfast. Here it stays till noon. I'm still not used to it. | So did we. Cold paws and laughing. | Then you'll see why I go out in #yard# here and stand in it.
+a : On a clear night, after a hot day, yes. Nobody believes it till they've seen it. | An hour, and then the sun. Here it stays till noon. #bc_lovely# | Whenever there was frost. Not often. That's why it mattered.
+b : #bc_true# | #bc_good# | #bc_lovely#
+
+scene empty_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail / assess
+a : Mornings I sit in #pew#. Just sit. | The chapel's best before anyone's in. You hear the building settle. | I don't pray much in words. I sit, and the quiet does the praying.
+b : What for? | Settle? | Is that enough?
+a : Nothing. That's the point. I sit, and I'm not working. | Creak, then nothing, then a creak. Like it's breathing out. | It's what I have. The Bright One can take it or leave it.
+b : #bc_fair_enough# | #bc_lovely# | #bc_true#
+
+scene roast_pork
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess / ack
+a : #pork.capitalize# on a feast day. That's all I'd ever wish for. | Restday, if there's #money#, there's #pork#. There's seldom coin. | The smell of #pork# from the cookshop on the corner stops me in the street.
+b : It's a fine wish. | Seldom? | It stops everybody.
+a : Simple wishes come true now and then. The big ones don't. | Seldom. So I wish on it, and that's free. | It does. I stand and breathe it like frost.
+b : #bc_good# | #bc_true# | #bc_ha#
+
+scene want_a_spade
+when topic=dreams|pastimes self.likes=digging
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll have #digging#. Not big. Just mine. | Give me a spade and an hour and I'll ask for nothing else. | I dream of turning earth. Wet, dark earth. Not mud, mind. Earth.
+b : What would you grow? | That's all? | What's the difference?
+a : Onions. Beans. Nothing clever. I'd just like to watch it come up. | That's all. Some wolves want a House. I want a patch. | Mud takes your boots. Earth gives you onions. #oath#, there's a world between.
+b : #bc_good# | #bc_fair_enough# | #bc_ha#
+
+scene yard_mud
+when topic=weather|work here.weather=rain here.region=ridgemere self.dislikes=deep_mud self.job=none
+does tell.complaint / react.complaint / assess / ack
+a : Rain all night. #yardmud.capitalize#'s past my hocks this morning. | I lost a boot in #yard# today. Went in to the ankle and left it. | The carts churn #yard# to soup, and then I have to walk through it.
+b : Lay some boards. | Did you get it back? | Every yard's the same.
+a : I did. The mud ate them. #annoyed#. | Got it back. Full. Emptied it on the step and walked on. | Every yard. I'd still sooner the sand.
+b : #bc_ha# | #bc_ha# | #bc_true#
+
+scene the_flies
+when topic=animals|work here.season=summer self.dislikes=flies self.job=none
+does tell.complaint / sympathise / assess / ack
+a : #flies.capitalize# are at #cream# again. I've a cloth over every pail. | Summer, and #flies# own #dairy#. I just rent it. | I wave at #flies# all day. #arms.capitalize# are tired from waving, not churning.
+b : They're everywhere this time of year. | That's hard. | Poor arms.
+a : Everywhere, and all of them at #pails#. | It is. Roll on #frost#. | Poor arms, and #flies# don't mind a bit.
+b : #bc_true# | #bc_poor_soul# | #bc_ha#
+
+scene city_mood
+when topic=times|smalltalk self.mood=low
+does tell.feeling / reassure / assess / ack
+a : I'm low today, #address#. No reason. Just low. | Some days #city# sits on you. Today's one. | I've been far away in my head all morning. Back on the sand.
+b : It'll lift. | It does that. | Nice there, was it?
+a : #reassure#. Usually by supper. | It does. I hum, and it lifts a little. | Quiet. Cool at night. I'll go back there in my head again tomorrow.
+b : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene hard_week
+when topic=times|prices world.times=hard|lean self.wealth=poor|destitute
+does tell.worry / reassure / assess / ack
+a : The bread went up again. #wages.capitalize# didn't. | Lean, this week. We've had #supper# and not much else. | I'm #skint#, #address#. I don't mind saying it. Shame's for the ones who caused it.
+b : #reassure#. | It'll turn. | That's honest.
+a : #bc_i_hope_so# I'll keep churning either way. | It will. The well fills again, my grandmother said. | It is. That's all I've got that's free.
+b? : #bc_true# | #bc_true# | #bc_good#
+
+scene gossip_kept
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : Something's being whispered round #dairy#. It stops with me. | Something was said at the gate. It stays at the gate. | Folk chatter across #churn# like I'm deaf. I'm not. I'm only quiet.
+b : Not a word? | Good for you. | Quiet's useful.
+a : Not one. A word passed on can't be called back. | It's just manners. Talk at the well stays at the well. | It is. You hear more with your mouth shut.
+b : #bc_fair# | #bc_good# | #bc_wise#
+
+scene slow_speech
+when topic=accent|travel self.away=yes self.from=saltwell
+does tell.self / react.self / assess / ack
+a : City folk think I'm slow because I wait before I answer. I'm thinking. | At home we bless a stranger before we ask their business. Here they skip the blessing. | My words come out the length they need, #address#. No longer.
+b : Nothing wrong with thinking. | That's a shame. | I like that way of talking.
+a : No. It's saved me some trouble. | It is. I still bless them. They look at me oddly. | It saves breath, and I've #churn# to breathe for.
+b : #bc_true# | #bc_ha# | #bc_ha#
+
+scene dreams_sand
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dream of the sand most nights. Walking, and the tune going. | I dreamt #churn# turned to frost and I couldn't stop it. | I dreamt once I had a garden and nothing came up but butter.
+b : Where were you going? | Did you mind? | Butter?
+a : Nowhere. Just walking. It was enough. | No. It was quiet. I woke cold. | Butter. Rows of it. I woke laughing, which isn't like me.
+b : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene good_week
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess / ack
+a : Good week. #dairy.capitalize#'s selling all it makes. | There was pork on Restday. First time in a month. | Coin's about. Even I've a copper spare.
+b : Good for you. | Was it good? | What will you do with it?
+a : Good for #dairy#. For me it's the same arms. #bc_ha# | It was. #pork.capitalize#, with crackle. I'll be thinking of it a week. | Keep it. A copper kept is a copper you don't have to find.
+b : #bc_true# | #bc_lovely# | #bc_wise#
+
+story my_grandfather_tune [topic=memories|lore self.away=yes self.from=saltwell self.age>=30]
+  : My grandfather walked the well road every morning, there and back, humming that same tune.
+  : He said it came from soldiers, long ago. He'd never been a soldier. He just liked #beat#.
+  ask : Have you got a tune somebody left you?
+  b : None I can think of. I'd like one. | One or two. They come back at odd times.
+  b[old] : A dozen. I hum them all wrong, by now.
+  : When he died I took it up. Nobody else wanted it. It keeps #arms# honest.
+
+story butter_for_the_wedding [topic=family|memories self.married=yes]
+  : At my wedding I churned #butter# for the table myself. Wouldn't let anyone else.
+  : It came in the time it takes to say a vow twice. I took it as a sign.
+  b : That's a good sign, I'd say. | You churned at your own wedding?
+  b[pair.band=spouses] : I remember. You smelled of cream all day.
+  : It was. I've kept #vow#. #butter.capitalize# kept its end.
+
+story the_frost_bet [topic=season|weather self.likes=frosty_mornings]
+  : A carter once bet me a copper there'd be no frost before the turn of the year.
+  : I went out every morning and looked. The day before the turn, there it was, white on the cart shafts.
+  ask : What do you think the carter said?
+  b : That it didn't count. | Nothing, and paid up.
+  : Paid, and said I'd hummed it there. Maybe I had.
+
+rule @churn_hum
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Up, down. Up, down. Come on, #butter#. | Hm, hm-hm, hm. #oath#. Come on.
+
+rule @flies_bark
+when concept=bark self.dislikes=flies here.season=summer
+does aside
+cooldown 8h
+say Off. Off #cream#. #annoyed#. | Every fly in #city#, and all of them here.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter
+does aside
+cooldown 12h
+say #frost.capitalize#. Look at that. | White on the lids. #good.capitalize#.
+
+rule @mud_bark
+when concept=bark here.weather=rain self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #yardmud.capitalize#. Mind your boots. | It'll have my boots off again. #annoyed#.
+
+dlg @1 resident.hub : #greet#. Speak; I'm listening. | #greet#, #address#. What is it you need?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you've a moment. | #topic.player#. Good. What's on your heart?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say it plain, #address#. I'll answer plain.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Up and down all day, and a tune to keep #beat#. | I churn. #butter.capitalize# comes, in the end. That's the work.
+dlg @2 resident.job : Whatever's needed, done steady. That's all I've ever been good for.
+dlg @1 resident.bye : #farewell#. | #farewell#, #address#. Peace on your road.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say An old marching tune. My grandfather walked to it, and I churn to it. I never knew the words.
+mood calm
+free
+choice Why hum it? -> tune_why
+choice Goodbye. -> bye
+node tune_why
+say It keeps #beat#. Keep #beat# and #cream# keeps faith. And it keeps him near, a little.
+choice That's a good reason. -> hub
+choice Goodbye. -> bye
