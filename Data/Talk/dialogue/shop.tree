@@ -22,6 +22,11 @@ say[here.shop=asleep trade=baker priority=10] Mm... the ovens are cold... come b
 say[trade=baker] #greet#, #address#. Bread's warm, loaves and pies. | #greet#. Loaves and pies, fresh. Looking or buying?
 say[trade=smith] #greet#. Mind the forge. #shop_offer# | #greet#, #address#. Tools or iron?
 say[trade=brewer] #greet#. Thirsty? #shop_offer# | #greet#, #address#. Ale's good this week.
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. #shop_offer# | Look who it is. Not since #topic.since#! #shop_offer#
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. #shop_offer# | So you're the one who #topic.deed#. #shop_offer#
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #shop_offer# | I've heard of a wolf like you, who #topic.deed#. #shop_offer#
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. Looking or buying?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | Buy something or be on your way.
 mood warm
 choice Let me see your wares. [here.shop=open|bare] -> do shop
 choice Any work going? [here.shop=open|bare here.giver=yes] -> do open work

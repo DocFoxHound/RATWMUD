@@ -324,6 +324,7 @@ json::Value Game::peopleSave() const
     projectsSave(root);                             // Town projects (doc 57).
     storylinesSave(root);                           // Storylines and tales (doc 58).
     storytellersSave(root);                         // Storytellers, their kept log, credits (doc 58).
+    playerClaimsSave(root);                         // What each player has heard (doc 84 §13.4.5).
     return root;
 }
 
@@ -358,6 +359,7 @@ void Game::peopleLoad(const json::Value& saved)
     stallsLoad(saved);
     fameLoad(saved);
     troublesLoad(saved);
+    playerClaimsLoad(saved);
     projectsLoad(saved);
     storylinesLoad(saved);
     storytellersLoad(saved);

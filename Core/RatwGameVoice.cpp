@@ -114,7 +114,7 @@ void Game::voicedWords(const char* of, const std::string& npc, const std::string
     voiceLog_.flush();
 }
 
-std::string Game::wayWords(const std::string& fromNpc, const std::string& cellId, double& far) const
+std::string Game::wayWords(const std::string& fromNpc, const std::string& cellId, double& far, std::string* dir) const
 {
     // A place's position in the world: an outdoor cell's own, an interior's by the door that leads into it from outside.
     far = -1;
@@ -150,6 +150,8 @@ std::string Game::wayWords(const std::string& fromNpc, const std::string& cellId
         return {};
     const double dx = to.x - from.x, dy = to.y - from.y;
     far = std::hypot(dx, dy);
+    if (dir)
+        *dir = compass(dx, dy);
     return c->name + " is " + (far < 40 ? "close by" : far < 200 ? "a short walk" : "a long way") + " to the " + compass(dx, dy) + ".";
 }
 

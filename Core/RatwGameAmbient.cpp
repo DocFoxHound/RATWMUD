@@ -913,6 +913,18 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
                         std::find(t.people.begin(), t.people.end(), e->id) == t.people.end() &&
                         world_.society().resident(e->id) && world_.hearingClarity(e->id, speaker, Voice::Speak) >= .5)
                         pass(e->id, .4);
+                    else if (e && !e->npc && !e->dead && world_.hearingClarity(e->id, speaker, Voice::Speak) >= .5)
+                    {
+                        // A player in earshot hears it too (doc 84 §13.4.5): their claim store, for the window's choices.
+                        Belief b;
+                        b.subject = topic.subject;
+                        b.claim = held ? held->claim : topic.claim;
+                        b.kind = held && !held->kind.empty() ? held->kind : topic.claimKind;
+                        b.object = held && !held->object.empty() ? held->object : topic.object;
+                        b.place = held && !held->place.empty() ? held->place : topic.place;
+                        if (auto c = claimHeard(e->id, b, speaker); !c.key.empty())
+                            playerHeard(e->id, std::move(c));
+                    }
                 t.gist = true;
             }
         }

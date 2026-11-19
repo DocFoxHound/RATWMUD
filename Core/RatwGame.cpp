@@ -444,6 +444,13 @@ bool Game::start(std::string& problem)
             note("info", "RATW_VOICE router " + std::string(voices_.routes() ? "on" : "off"));
         else
             note("warn", "RATW_VOICE the voice data could not be read (" + trouble + "); models answer everything");
+        // The window's own understanding of typed words (doc 84 §13.5, Phase 13): what answers them without the Mind.
+        std::ifstream in(options_.voiceData + "/understand.json", std::ios::binary);
+        std::stringstream text;
+        text << in.rdbuf();
+        if (std::string why; !in || !understanding_.load(text.str(), why))
+            note("warn", "RATW_VOICE understand.json could not be read (" + (in ? why : std::string("missing")) +
+                             "); typed words in the window go unanswered without the Mind");
     }
     // The talk library (doc 62): every written line residents say to each other, and call out. Beside the voice data
     // unless named.
@@ -4698,6 +4705,7 @@ void Game::sendSnapshot(Connection* c)
         root.add("dialogue", true);                 // (Trade and Talk open the dialogue window: doc 83.)
         root.add("dialogueWork", true);             // (And the work on the wheel: its givers' trees, Phase 2.)
         root.add("dialogueRoles", true);            // (And the roles' own: Apprentice, Report, Pay fine, Phase 3.)
+        root.add("dialogueIntroduce", true);        // (And Introduce to a resident: the window's own, doc 84 Phase 13.)
     }
     const auto patch = world_.herbPatchPosition();
     const int patchX = int(patch.x), patchY = int(patch.y);
@@ -5049,12 +5057,36 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
                      });
         return true;
     }
-    mind_.converse(context, [this, alive, npcId, subjectId, identified](const mind::Reply& reply) {
+    mind_.converse(context, [this, alive, npcId, subjectId, identified, window, playerId, heardText](const mind::Reply& reply) {
         if (alive.expired())
             return;
+        // A call for window free talk that failed or timed out (doc 84 §13.6, the user's answer Q1): the window's own
+        // understanding answers, never the Mind's old written stand-in.
+        if (window && !reply.generated && identified)
+        {
+            windowFallback(npcId, playerId, heardText);
+            return;
+        }
         speakReply(npcId, subjectId, identified, reply, reply.generated ? "model" : "written");
     });
     return true;
+}
+
+void Game::windowFallback(const std::string& npcId, const std::string& playerId, const std::string& text)
+{
+    // As speakReply would leave things, with no line of the Mind's said: then the window answers in its own way.
+    pendingNpc_.erase(npcId);
+    replyingTo_.erase(npcId);
+    windowAsked_.erase(npcId);
+    typingExpiry_.erase(npcId);
+    if (auto* npc = world_.entity(npcId))
+        npc->typing = false;
+    voiced("dialogue", "mind-failed", npcId);
+    auto* c = clientOf(playerId);
+    const auto f = dialogues_.find(playerId);
+    if (c && f != dialogues_.end() && f->second.npc == npcId)
+        dialogueUnderstand(c, f->second, text, std::string());
+    talkNext(npcId);
 }
 
 mind::Context Game::dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
@@ -5077,9 +5109,16 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.personality = spec->personality;
         context.backstory = spec->backstory;
     }
-    // The personality written for them (doc 62, decision 10), where there is one: the model voices that person.
+    // The personality written for them (doc 62, decision 10), where there is one: the model voices that person. Else the
+    // persona template of the mantle they wear (doc 84 §13.6, Phase 13), in their own words (its slots filled).
     if (const auto v = npcVoice_.find(npcId); v != npcVoice_.end() && !v->second.persona.empty())
         context.personality = v->second.persona;
+    else if (const auto worn = mantleOf_.find(npcId); worn != mantleOf_.end())
+        if (const auto* m = talk_.mantle(worn->second); m && !m->persona.empty())
+        {
+            const auto filled = inVoice(npcId, playerId, m->persona);
+            context.personality = filled.empty() ? m->persona : filled;
+        }
     // How they speak (doc 62, phase 5): their dialect's words and their habits, so the model sounds like the library.
     if (const auto card = voiceCardOf(npcId); !card.empty())
         context.personality += (context.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;

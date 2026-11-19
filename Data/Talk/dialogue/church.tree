@@ -10,6 +10,11 @@ entry talk greet
 node greet
 say #church_greet# | #blessing#. #church_greet# | #bless#. What brings you to us?
 say[here.day=rest] #blessing#. It's Restday: the service is #here.service#. | #church_greet# It's Restday: the service is #here.service#.
+say[topic.meeting=returning priority=6] Well, well. I've not seen you since #topic.since#. What brings you to us? | Look who it is. Not since #topic.since#! What brings you to us?
+say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of it still. What brings you to us? | So you're the one who #topic.deed#. What brings you to us?
+say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? What brings you to us? | I've heard of a wolf like you, who #topic.deed#. What brings you to us?
+say[pair.disposition=wary priority=3] Yes? | What is it you want? | #bless#. What brings you?
+say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | Even you are welcome here. Just.
 mood calm
 free
 choice When is the service? -> service

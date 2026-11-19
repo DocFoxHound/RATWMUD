@@ -15,6 +15,7 @@
 #include "RatwParty.h"
 #include "RatwVoice.h"
 #include "RatwTalk.h"
+#include "RatwUnderstand.h"
 #include "RatwArtwork.h"
 #include "RatwChapters.h"
 #include "RatwFactions.h"
@@ -479,7 +480,26 @@ class Game
         double changed = 0;
         bool asleepAtOpen = false, inShop = false, awaiting = false;   // awaiting: a free line is being answered.
         bool quiet = false;                         // Opened again within seconds: its greeting not said aloud.
+        // Doc 84 §13.4 (Phase 13): the move the player made with the choice that led here (an `answers` node answers it),
+        // and what was talked of in this window (topics, for the ledger's note when it closes).
+        std::string asked;
+        std::vector<std::string> topics;
     };
+    // What each player has heard (doc 84 §13.4.5, Phase 13): filled when a line asserting a claim is heard (ambient talk
+    // in earshot), or one is told in a window (the gossip); it unlocks the window's knowledge choices. Saved in the
+    // checkpoint (peopleSave). 32 a player, 14 days.
+    struct PlayerClaim
+    {
+        std::string key, kind, subject, object, place, words, from;   // words: "Wick Marshwade was robbed on the road"
+        double day = 0;
+    };
+    static constexpr std::size_t PlayerClaimsKept = 32;
+    static constexpr double PlayerClaimDays = 14;
+    void playerHeard(const std::string& playerId, PlayerClaim claim);
+    // The claim a player hears, in the words they'd bring it up in ("" when it can't be said): as the player knows the
+    // names; to its victim as "...tried to rob you".
+    PlayerClaim claimHeard(const std::string& playerId, const Belief& b, const std::string& from, const std::string& toWhom = {}) const;
+    const std::map<std::string, std::deque<PlayerClaim>>& playerClaims() const { return playerClaims_; }
     const DialogueSession* dialogueOf(const std::string& playerId) const
     {
         const auto f = dialogues_.find(playerId);
@@ -919,7 +939,9 @@ class Game
     std::map<std::string, double> emotedAt_, hintedAt_;
     std::map<std::string, std::pair<std::string, double>> cameIn_;
     std::map<std::string, std::pair<std::string, double>> welcomeDue_;
-    static constexpr double CameInSeconds = 120, HintSeconds = 600, EmoteSeconds = 30, WelcomeSeconds = 1800;
+    // A welcome due is kept until the newcomer next opens that keeper's window, for six game days (a real day) at most
+    // (doc 84 Phase 13: P12's half an hour missed most of them).
+    static constexpr double CameInSeconds = 120, HintSeconds = 600, EmoteSeconds = 30, WelcomeSeconds = 6 * 14400;
     // A newcomer opened their innkeeper's window with a welcome due: the wolves here pointed out (aloud, each listener
     // hearing them as it knows them), the introduce prompts, and the words for the window (the newcomer's own labels).
     std::string welcomeInWindow(const std::string& newcomer, const std::string& innkeeper);
@@ -928,6 +950,38 @@ class Game
     // holds a stance on, from the library's opinion lines (its mantle's first); "" when it has none to give.
     std::string companionOpinion(const std::string& npcId, const std::string& playerId);
     void dialogueCommand(Connection* c, const std::string& type, const json::Value& j);
+    // The window's talk and typed words (doc 84 §13.4-13.6, Phase 13; RatwGameWindowTalk.cpp).
+    // What the window knows of the player and the resident beyond the role facts (player.*, here.opinions..., the
+    // meeting: returning or famous), the new lists' items, a node as this wearer sees it (a mantle's grafts), the
+    // resident's line at a node (the wearer's own first, an `answers` node's answer, an `ask`, the tree's floor, never the
+    // same line twice running to the same player), the game's own asks (game.match...), and typed words answered: by the
+    // NPC Mind when it is connected, else (and when a call fails) by the window's own understanding.
+    understand::Understanding understanding_;
+    std::map<std::string, std::deque<PlayerClaim>> playerClaims_;
+    void playerClaimsSave(json::Value& root) const;
+    void playerClaimsLoad(const json::Value& saved);
+    void windowFacts(const std::string& playerId, const DialogueSession& d, talk::Facts& facts);
+    std::vector<talk::Facts> windowItems(const std::string& playerId, const std::string& npcId, const std::string& list);
+    bool windowNode(const std::string& playerId, const DialogueSession& d, const std::string& nodeId, talk::TreeNode& out);
+    std::string windowLine(const std::string& playerId, DialogueSession& d, const talk::TreeNode& node, talk::Query& q,
+                           std::uint64_t seed, talk::LineInfo& from);
+    std::string windowAsk(const std::string& playerId, DialogueSession& d, const std::string& ask, const talk::Query& q);
+    std::string windowAnswer(const std::string& playerId, DialogueSession& d, const std::string& move, const talk::Query& q);
+    // Typed words without the Mind (§13.5): a choice on show taken, a node, a move answered, or "didn't follow".
+    void dialogueUnderstand(Connection* c, DialogueSession& d, const std::string& text, const std::string& note);
+    // A choice taken (its number as shown), with the player's words; `spoken`: free words already said aloud that were it.
+    void dialogueChoose(Connection* c, DialogueSession& d, int n, std::string words, bool spoken);
+    // A call to the Mind for window free talk that failed or timed out: the window's own understanding answers instead.
+    void windowFallback(const std::string& npcId, const std::string& playerId, const std::string& text);
+    std::string windowPointer(const std::string& npcId, const std::string& playerId, const std::string& heard);
+    std::string windowFame(const std::string& npcId, const std::string& playerId);
+    understand::Lexicon dialogueLexicon(const std::string& npcId);
+    // A template in the resident's own speech (#way_close#, #refuse_gone#: the English the C++ writes, in dialect).
+    std::string inVoice(const std::string& npcId, const std::string& playerId, const std::string& text, const talk::Facts& facts = {});
+    std::string refusalInVoice(const std::string& npcId, const std::string& playerId, const std::string& why);
+    // The talk ledger with players (§13.4.7): what was asked or said in a window, kept between the two.
+    void windowNote(const std::string& playerId, const DialogueSession& d);
+    std::map<std::string, std::string> windowLast_;   // "npc|player|concept": the last line said there (line rotation)
     // Why a conversation must end now ("" if it goes on): walked away, out of sight, asleep, a fight, downed (doc 83,
     // decision 9). Checked once a second, and on every choice and line the player sends.
     std::string dialogueEnding(const std::string& playerId, const DialogueSession& d) const;
@@ -964,7 +1018,8 @@ class Game
     std::string upstairsOf(const std::string& keeper) const;
     // Which way a place is from where a resident stands, in words ("The Frozen Lantern is a short walk to the
     // north-east."), and how far in tiles (-1: they couldn't say). One rule for the router's "where" and a tree's ways.
-    std::string wayWords(const std::string& fromNpc, const std::string& cellId, double& far) const;
+    // `dir`, when given, gets the compass point alone ("north-east"), for the way in the resident's speech.
+    std::string wayWords(const std::string& fromNpc, const std::string& cellId, double& far, std::string* dir = nullptr) const;
     json::Value sceneMoments(const std::string& viewer, const SocialSession& scene) const;
     void meet(const std::string& owner, const std::string& other, const std::string& how);
     void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);
