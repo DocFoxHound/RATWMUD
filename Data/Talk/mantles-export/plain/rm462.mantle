@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for rm_wystan_coalmarsh
-title the roofline from the low sling
+title the low-sling roofline
 fits stage=adult|old
 prefers job=sailor
 traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
-quirk takes_the_long_stairs_two_at_a_time
+quirk judges_a_future_windows_height_by_the_rooftop_birds
 likes plum_tart roof_birds market_bustle frosty_mornings
 dislikes night_noise stale_bread
 fears putting_down_the_hope_of_a_higher_room

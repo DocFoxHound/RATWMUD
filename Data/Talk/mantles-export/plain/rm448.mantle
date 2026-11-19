@@ -4,11 +4,11 @@ dialect plain
 accent light broad
 tier standard
 written_for cty_frederick_ropeford
-title the sparrow's map of the road
+title the sparrow's road map
 fits stage=adult|old
 prefers honesty=guarded talk=chatty
 traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
-quirk feeds_the_sparrows
+quirk measures_a_sparrows_portion_while_watching_the_road
 likes blackberries swimming old_maps first_snow
 dislikes stale_bread wet_floors
 fears counting_the_wrong_footprints_home

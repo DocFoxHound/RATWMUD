@@ -4,7 +4,7 @@ dialect plain
 accent broad light
 tier standard
 written_for rmx_gudrun_mossdale
-title the berth with a paper roof
+title the paper-roofed berth
 fits stage=adult|old
 prefers job=none
 traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady

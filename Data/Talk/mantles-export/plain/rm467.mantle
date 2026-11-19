@@ -8,7 +8,7 @@ title the churner's unpaid wagers
 fits stage=adult|old
 prefers piety=devout temper=short
 traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
-quirk cannot_resist_a_wager
+quirk wagers_sweeping_or_silence_and_keeps_butter_off_the_stakes
 likes warm_bread roof_birds full_larder first_warm_day
 dislikes crowds haggling
 fears putting_anyone_elses_supper_at_stake
