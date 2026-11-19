@@ -1,0 +1,447 @@
+# lf150, the mark-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf150
+revision 1
+state ready
+dialect larkfield
+accent none
+tier full
+written_for rm_vigdis_rainmore
+written_by claude
+title the mark-reader
+fits stage=adult|old
+prefers role=merchant job=crafter temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk reads_the_maker_s_mark_before_saying_a_word
+likes spiced_cider long_walks fresh_straw first_warm_day
+dislikes deep_mud rats
+fears eyes_that_go_before_the_paws a_house_seal_on_a_debt
+hopes a_quiet_bench_and_honest_silver a_walk_with_nobody_asking_anything
+topics work +0.5 prices +0.3 crime +0.2 family +0.2 weather +0.1 gossip -0.5 festival -0.3
+styles comfort=quiet gossip=refuses refuse=short tease=none
+marks oath saying
+persona #self.first# sits at a jeweller's bench reading the maker's mark on everything before saying a word: quiet, short-tempered, tired, plain as a band, trusting no House's word, warmed by spiced cider and long walks alone.
+
+words
+oath! = Mark and metal | By the touchstone | Clasp and pin
+saying! = Read the back, then believe the front | The back tells what the front won't | Gold tells the truth if you let it
+mark = the maker's mark | the little stamp inside the band
+marks = the marks | the makers' marks
+glass = my glass | the eyeglass
+bench = the bench | my bench by the window
+trays = the trays | the trays under the glass
+touchstone = the touchstone | the black stone I rub the gold on
+clasp = a clasp | a clasp that won't hold
+chain = a chain | a fine chain gone to knots
+band = a band | a plain silver band
+solder = the solder | a bead of solder
+lamp = the bench lamp | the lamp I work by
+cider = a cup of cider with the cloves in | hot cider, spiced
+walk = a long walk | a walk that goes nowhere in particular
+strawfloor = straw laid clean on the boards | straw new-laid of a Restday
+mire = the mud | mud deep enough to lose a shoe in
+warmday = the first warm day | the first day you can leave the door open
+housepurse = a House purse | a purse with a House seal on it
+eyes = my eyes | my eyes, by the end of a bench day
+shopdoor = the shop door | the door with the bell on it
+ring = a ring | a silver ring
+silver = silver | good silver
+counter = the counter | the shop counter
+scales = the scales | my little brass scales
+rent = the rent | the rent on the shop
+
+any
+opinion @1 city against 1 [here.region=ridgemere] : Too many doors in this city, and nobody knows who's behind which. I keep #shopdoor# shut.
+opinion @2 festivals against 1 : Noise, spilt ale, and somebody's #clasp# broken by midnight. I'd sooner #walk#.
+opinion @3 merchants for 1 [self.role=merchant] : I keep #trays# myself. A fair price has the work in it, and folk forget the work.
+opinion @4 road against 1 : #silver.capitalize# comes up the road late and light. I weigh it twice when it comes.
+opinion @5 watch for 1 : They walk past #shopdoor# at night. That's worth what we pay them.
+opinion @6 houses against 2 [here.region=ridgemere] : Every House swears its silver's sound and the others clip theirs. I read #marks# and believe none of them.
+opinion @7 houses against 1 : I'll take a House's coin. I'll not take a House's word. #saying#.
+opinion @8 strangers mixed 0 : A stranger's ring tells me more than their face does. I look at #marks#.
+opinion @9 newcomers mixed 0 : They'll learn the streets, or #mire# will teach them. Either way I'll see them at #bench# for mending.
+opinion @10 church mixed 0 : Restday, the back pew, and out first. What I've to say to the Bright One, I say short.
+opinion @11 drink mixed 0 : One cup of #cider# at dusk, never at #bench#. A shaking paw ruins a setting.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Door shut behind you, please. | #greet#. Look, but ask before you touch #trays#.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. One moment. I'm reading #mark#. | #greet#. Mind #bench#; it's all small pieces.
+line @3 greet [here.time=dawn] : #greet#. Early. I've not lit #lamp# yet. | #greet#. You're up before #eyes# are.
+line @4 greet [here.time=dusk|night] : #greet#. I'm closing. Be quick. | #greet#. Late. #lamp.capitalize# is all the light I've got.
+line @5 kin.open [pair.kin!=no] : You're back. Sit down; I've nearly done with #clasp#. | Come in. Mind #solder#; it's still hot.
+line @6 again.open : You again. Still at #bench#, as you see. | Back. I'm where you left me, at #bench#.
+line @7 hail [pair.band=friends] : #address.capitalize#. A word. | Here. A moment, #address#.
+line @8 greet.return : #greet#. | #greet#. Mm.
+line @9 greet.return [pair.band=friends|family] : #greet#. Come in. | #greet#. Good. It's you.
+line @10 greet.return [self.working=yes self.role=merchant] : #greet#. Look all you like. | #greet#. #trays.capitalize# are priced.
+line @11 greet.return [here.time=dusk|night] : #greet#. I'm nearly shut. | #greet#. Late, but come in.
+line @12 farewell : #farewell#. | #farewell#. Shut #shopdoor# after you.
+line @13 farewell [here.time=dusk|night] : #farewell#. Keep out of #mire# going home. | #farewell#. Mind your purse after dark.
+line @14 farewell.return : #farewell#. | And you, #address#.
+line @15 farewell.return [here.time=dusk|night] : #farewell#. Sleep. | And you. Bolt your door.
+line @16 react.news : #ack#. Go on. | Hm. Let me turn that over.
+line @17 react.news.new : #surprise#. First I've heard. | Hm. Nobody brought that to #bench#.
+line @18 react.news.known : #knew#. | I'd heard. It came in over #trays#.
+line @19 react.news.doubt : #doubt#. I'll want to know who says so. | I'd look at the back of that before I believed it.
+line @20 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | That's hard. #sympathy#.
+line @21 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | Good. Somebody might want #band#, then.
+line @22 answer.how : #tired.capitalize#. Same as ever. | #notsobad#. #eyes.capitalize# ache.
+line @23 answer.how.busy [self.working=yes] : #busy.capitalize#. Three clasps and #chain#. | #busy.capitalize#. Don't ask me to stop.
+line @24 answer.how.poorly [self.mood=low|sore] : Low. No sense pretending otherwise. | #tired.capitalize#, and short with everyone. Don't take it to heart.
+line @25 ask.how : And you, #address#? | You're keeping well, #address#?
+line @26 sympathise : #sympathy#. Sit a minute. | Hard. Sit, and I'll not talk at you.
+line @27 reassure : #reassure#. | It'll hold. Most things do, mended right at #bench#.
+line @28 decline : #hedge#. I've #clasp# to finish, and #eyes# won't last past dark. | Not today. #bench.capitalize# is full and I'm short of hours.
+line @29 accept_decline : #no_matter.capitalize#. | Fine. #bench.capitalize# will keep me.
+line @30 thank : #thanks#. | #thanks#. I'll remember it.
+line @31 deflect_thanks : #deflect.capitalize#. | It was nothing. Go on with you.
+line @32 preclose [self.working=yes] : #bench.capitalize# won't wait. | I've #chain# to untangle.
+line @33 preclose : #preclose#. | Well. That's enough talk. Back to #bench#.
+line @34 accept_preclose : Go on, then. | Fine. Off you go, #address#.
+line @35 ack : Mm. | #bc_right#
+line @36 give.advice : #advise.capitalize#: look at the back of a thing before the front. | Never buy #silver# by lamplight. Bring it to me in the day.
+line @37 warn [world.bandits=near] : Keep off the roads. #warn#. | Wear nothing worth taking on the road this week.
+line @38 insist : #insist#. | I'll not change my mind. Turn it over all you like.
+line @39 tease.return : Hm. I heard you. | Very good. Now let me get back to #bench#.
+scene reading_marks
+when topic=work self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Somebody brought #ring# in. I turned it over before I looked at the stone. | #mark.capitalize# on this band is a Grayrock smith's. I'd know it anywhere. | I read #mark# first. Always. Then I'll talk.
+b : What did the back tell you? | You can tell the House? | Why the mark first?
+a : That the stone's newer than #band#. Somebody had it reset and said nothing. | Every House's smiths stamp #mark# their own way. I can tell them all. | The front's for selling. #saying#.
+b : #bc_clever# | Sharp eyes. | #bc_fair_enough#
+
+scene clasp_mending
+when topic=work self.working=yes self.role=merchant
+does tell.complaint / react.self / assess
+a : Third forced clasp this week. Folk pull instead of pressing. | #chain.capitalize# came in this morning. An hour to untangle it, ten minutes to mend. | #solder.capitalize# goes on small. Too much and the piece is spoilt.
+b : Can you save them? | Only ten minutes? | Fiddly work.
+a : Most. I'll grumble the whole time, mind. | The hour's what they pay for. Nobody believes it. | Fiddly, and #eyes# pay for it by dusk.
+
+scene the_touchstone
+when topic=work|prices self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I rub the gold on #touchstone# and read the streak. It never lies. | A wolf tried to sell me brass today and called it gold. #touchstone.capitalize# said otherwise. | I keep #touchstone# in a cloth. It's worth more to me than anything on #trays#.
+b : How does it work? | What did you say to them? | More than the gold?
+a : Good gold leaves a bright streak. Brass leaves a dull one. You learn the colour of it. | Nothing. I put the stone on #counter# and let them look. | More than the gold. Gold comes and goes. #touchstone.capitalize# stays honest.
+
+scene house_purses
+when topic=work|prices self.role=merchant here.region=ridgemere
+does give.opinion / ask.detail / insist / ack
+a : A House factor came in to buy. I counted #housepurse# twice. | They all say their silver's sound. Greatly, Fell, Grayrock, Timberland. I weigh it anyway. | I'll serve a House as quick as anyone at #counter#. I'll not take their word, that's all.
+b : Twice? | You trust none of them, then. | That's fair dealing.
+a : Twice, and I'd do it a third time. A House coin's a coin once it's on #scales#. | Not one. Each of them swears the others clip their coin. | #bc_it_is# A word's not silver.
+b? : #bc_fair# | #bc_wise# | #bc_true#
+
+scene eyes_at_dusk
+when topic=health|day here.time=dusk self.working=yes
+does tell.complaint / sympathise / assess
+a : #eyes.capitalize# go first, at this hour. The work's still there; I can't see it. | #lamp.capitalize# is lit, and it's still not light enough for #chain#. | I've read #marks# since noon. Everything's swimming.
+b : Rest them. | You need a brighter lamp. | Stop for the day.
+a : I'll rest them when #clasp# is done. | I need better eyes. No lamp sells those. | In a minute. One more mark.
+
+scene cider_at_dusk
+when topic=food self.likes=spiced_cider
+does tell.self / react.self / assess / ack
+a : #cider.capitalize#, and I'll be civil till supper. | I keep a pot of cider by the stove with the cloves in. It's the only thing that warms my paws. | One cup at dusk. Never at #bench#; it shakes the hand.
+b : Civil? You? | Smells good. | Sensible.
+a : Civil. I said nothing about cheerful. | Have a cup. I'll not offer twice. | It is. A shaking paw ruins a setting at #bench#.
+b? : #bc_ha# | #bc_thank_you# | #bc_wise#
+
+scene restday_walk
+when topic=pastimes self.likes=long_walks
+does tell.feeling / react.self / assess
+a : Restday I walk till the streets give out, and I say nothing to anyone. | #walk.capitalize#. That's the only time #eyes# get a rest. | I walked up to the high streets and back today. Nobody asked me for a thing.
+b : On your own? | Your eyes? | That's rare for you.
+a : On my own. Anyone else would want to talk. | Far things. Nothing small. #eyes.capitalize# like that. | Rare, and I'll do it again next Restday.
+
+scene door_propped
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I've propped #shopdoor# and I'm not sorry. | Sun on #trays#. The silver's never looked so honest. | Warm, at last. I'll take the long way home and not care about the time.
+b : About time. | It does catch the light. | You've earned it.
+a : It is. The damp's been in my paws since autumn. | Folk buy more on a bright day. They can see what they're paying for. | Earned it or not, I'll take #walk# while it lasts.
+
+scene rain_in_the_shop
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain at #shopdoor# again. I've put a cloth down and it's soaked through. | Every customer brings the street in on their paws. #oath#. | Wet days nobody buys. They come in to stand out of it.
+b : Can't be helped. | Sorry. I'll wipe them. | At least they come in.
+a : Nothing can, here. It's what the city costs. | #bc_thank_you# Most don't bother. | They stand, they drip on #trays#, and they go.
+
+scene lost_shoe
+when topic=weather|smalltalk self.dislikes=deep_mud here.weather=rain|overcast
+does tell.complaint / react.complaint / assess
+a : The lower streets are all #mire#. I went round three ways and still met it. | I'll not go down the hill in this. Not for any customer. | I lost a shoe in the mud this morning. Gone. Not even a mark left.
+b : Every street's the same. | Wise. | A shoe!
+a : Then I'll stay in. #bench.capitalize# doesn't flood. | Wise or idle. I'll call it wise. | A good one, too. I'll not go that way again, #oath#.
+
+scene rat_in_the_wall
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : A rat in the back room again. It had #solder# off the bench. | I heard a rat in the wall all night. I'll not sleep till it's caught. | Rats like a shiny thing. I keep #trays# locked.
+b : What would a rat want with solder? | Will you set a trap? | Do they really?
+a : Nothing. It took it anyway. That's a rat. | Two. And I'll check them before I open #shopdoor#. | They do. I found a ring in a nest once. Not mine, thank the Bright One.
+b : #bc_ha# | #bc_good# | #bc_lucky#
+
+scene over_the_shop
+when topic=home self.role=merchant
+does tell.self / react.self / assess
+a : I live over #self.workplace#. I hear the bell from the stair. | Upstairs is two rooms and a window. I don't need more. | I can be at #bench# in eleven steps from my bed. I've counted.
+b : Handy. | Enough for you? | Eleven?
+a : Handy, and no excuse to be late at #bench#. | Enough. Rooms are for sleeping. | Eleven. Twelve when I'm #tired#.
+
+scene spouse_by_me
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : I'd not manage #trays# without #self.spouse#. I don't say it often. | My #self.spouse_word# is the talker of the two of us. It suits us both. | #self.spouse# knows when to leave me be. Years teach that.
+b : Say it more, then. | Lucky. | Wise.
+a : Maybe. Not today, #address#. | It does. I'd be no good at the talking. | Years, and a few quarrels over #bench#.
+
+scene child_out
+when topic=family self.parent=yes self.child
+does tell.worry / reassure / assess / ack
+a : I worry about #self.child# every time it rains. The streets run fast down here. | I can't sit easy at #bench# while #self.child# is out. | I listen for #self.child# coming in. Every evening, with #lamp# lit.
+b : Pups are quicker than you think. | That passes, with age. | You'll always listen.
+a : Quicker than me, anyway. #reassure#. | I hope so. Before I go grey from it. | I will. Till I'm too deaf to.
+b? : #bc_true# | #bc_i_hope_so# | #bc_true#
+
+scene hours_in_it
+when topic=prices self.role=merchant
+does tell.self / react.self / assess
+a : Folk ask what #silver# weighs. I tell them, and then I tell them what my hours weigh. | Folk think a ring is the metal. It's the hours at #bench#. | I'll mend #clasp# for a copper. I'll not make a ring for less than it's worth.
+b : Fair enough. | Hours count. | Cheap mending.
+a : Most pay it. The ones who don't, I don't miss. | They do. Mine more than most; #eyes# are in them. | Cheap, so they come back for the ring.
+
+scene mark_filed_off
+when topic=crime self.role=merchant
+does tell.self / react.self / assess
+a : Somebody brought me a ring to sell with #mark# filed off. I sent them away. | If #mark#'s gone, I don't buy it. No questions, no ring. | The Watch came by asking after a stolen chain. I'd not seen it. I'd have known.
+b : Stolen, you think? | Good rule. | Would you?
+a : Nobody files #mark# off their own ring. | It's kept me out of trouble. #oath#. | I'd know it by #mark#. I'd know any piece that's passed #bench#.
+
+scene nothing_repeated
+when topic=gossip self.role=merchant
+does tell.gossip / react.news / insist / ack
+a : I hear things at #counter#. I don't repeat them. | Folk talk while I work as if I'm deaf. I'm not. | Somebody wanted me to say who'd sold me a ring. I didn't.
+b : Not one word? | You must hear plenty. | Good for you.
+a : Not a word. It's bad for trade and worse for sleep. | Plenty. It stays at #bench# with everything else. | #bc_it_is# Who sold what is between me and them.
+b : #bc_fair_enough# | #bc_wise# | #bc_true#
+
+scene heard_not_turned
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. I've not turned it over yet. | They're saying #topic.subject# #topic.claim#. I'd want to see #mark# on it first.
+b : You'll turn it over? | Maybe it's true.
+a : Like anything brought to me. #saying#. | Maybe. Show me #mark# and I'll believe it.
+
+scene silver_sold_to_me
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / react.self / assess
+a : Nobody buys a ring when bread's dear. I'm mending, not selling. | Folk bring #silver# in to sell, not to buy. That's how I know it's lean. | I've bought wedding bands this week. Nobody sells those for fun.
+b : Mending pays, at least. | Do you buy it all? | That's a sad thing.
+a : A little. Enough for #rent#, near enough. | What I can. I'll not give less than #band# is worth. | It is. I keep them a while under #trays#, in case they come back for them.
+
+scene brooch_weeks
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : Three rings sold today. I've not done that in a long while. | Folk are buying for gifts again. Brooches, mostly. | Good weeks I can say no to the dull work.
+b : Good for you. | Brooches? | Do you?
+a : Good for #rent#. I'll not get used to it. | Pins and brooches. Something to wear to a feast. | Sometimes. Not often. #bench.capitalize# still wants feeding.
+
+scene after_the_feast
+when topic=festival
+does tell.complaint / react.self / assess
+a : After every feast somebody comes in who's lost #ring# in the crowd. | Noise, spilt ale, and #clasp# broken by midnight. I'll see it in the morning. | I shut the shop for the feast and go for #walk#. Away from it.
+b : Can you find them? | Busy morning after, then. | Not one for feasts?
+a : No. I can make another. That's all I can do. | Busy and #tired#. #oath#. | Not one. They're loud, and somebody always ends in tears.
+
+scene straw_at_home
+when topic=memories|home self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : At home we laid #strawfloor# every Restday. I miss the smell of it. | My mother kept a stall in #self.from_town#. I learned the weights before my letters. | I walked the downs at home every evening. Here there's nowhere to walk that isn't a street.
+b[from=larkfield] #lark : Restday straw. I'd forgotten that. | Every stall had its own weights. | The downs at dusk. I know.
+b : Straw on the floor? | Weights first? | Do you walk here?
+a@lark : I've not. I'd know the smell anywhere. | Ours were brass. My mother polished them on Restday. | Then you know what I've lost.
+a : Clean straw, every week. It made the house smell new. | Weights first. You can't sell what you can't weigh. | Restdays. It's not the same, but #walk# is #walk#.
+
+scene city_voice
+when topic=accent here.region=ridgemere self.away=yes
+does tell.self / react.self / assess
+a : The downs have mostly gone out of my voice. I didn't mind. | Nobody here can tell where I'm from. That suits me. | I talk like the city now. Short.
+b : I can hear a little of it. | Why does it suit you? | It suits you.
+a : A little. It comes back when I'm cross, #oath#. | No questions. I'd only have to answer them. | It does. Fewer words, fewer mistakes at #bench#.
+
+scene back_pew
+when topic=faith
+does give.opinion / react.self / assess
+a : Restday I'm in the back pew, and first out the door. | I'll thank the Bright One for steady paws. The rest I keep to myself. | The chapel's done me no harm. I just don't need to be seen there.
+b : That's enough. | Steady paws are worth it. | Fair.
+a : It's what I give. The Bright One knows the rest. | They're my living, #address#. Of course I'm thankful. | #bc_it_is# Some go to be seen. I go to sit.
+
+scene owing
+when topic=dreams|times self.owes=yes
+does confide / sympathise / assess
+tone grave / tender / even
+a : I owe money I can't find. I've a date to find it by. | #vent#: I owe more than I've got, and the one I owe isn't patient. | I lie awake doing sums. They never come out.
+b : I'm sorry. If there's a thing I can do, say. | That's a hard place to be. | Everyone's sums are bad this year.
+a : I know. I'll find it, or I won't. | Somebody with a good coat and a ledger. That's all I'll say. | Not like mine. I'll manage. I always have.
+
+scene new_ring_cleaned
+when topic=newcomer self.role=merchant
+does give.opinion / ask.detail / answer.detail
+a : Somebody new has moved onto the street. I'll know them when they bring something in to mend. | New folk always come in to have #ring# cleaned. They want to look settled. | I don't greet newcomers. I nod. They learn I'm not unfriendly, only slow.
+b : That's one way. | Do they? | Slow?
+a : It's my way. A wolf's silver tells you more than their talk. | Every one. Shine on the outside, and #mark# on the back. | Slow to warm. I get there.
+
+scene traveller_brooch
+when topic=player|smalltalk self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : A traveller wanted a ring sized while they waited. I said an hour. They sat for two. | Strangers always ask if I'll buy. I look at #mark# first. | A traveller showed me a brooch from a long way off. #mark.capitalize# was one I'd never seen.
+b : Two hours? | And then? | Was it good?
+a : I don't hurry a sizing. They had a nap by #shopdoor#. | And then I know whether to answer. | Good silver, odd work. I'd have liked to keep it a day.
+
+scene winter_lamp
+when topic=season here.season=winter
+does tell.complaint / react.complaint / assess
+a : Winter, and the light's gone by four. Half my day's by #lamp#. | Cold paws don't solder. I warm them on the cider pot first. | Winter's when the clasps break. Cold metal, careless paws.
+b : It's hard on the eyes. | Clever. | Busy season, then.
+a : It is. By spring I'm squinting at everything. | It's not clever. It's cold. | Busy, and slow. Both at once, #oath#.
+
+scene few_words
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : After a long day, #self.friend# is the one I'll talk to. | I'd trust #self.friend# with #trays# and the key. | #self.friend# and I don't need many words. Never have.
+b : That's worth something. | That's trust, that is. | That's the best kind.
+a : It's worth most things. | It is. I don't give it lightly. | It is. Words are #tired# work.
+
+scene dawn_light
+when topic=day here.time=dawn self.working=yes self.role=merchant
+does tell.self / react.self / assess
+a : I sit down at #bench# before the street wakes. That's my best hour. | #eyes.capitalize# are good till noon. I do the fine work first. | Nobody's at #shopdoor# yet. I can think.
+b : Early. | And after noon? | Peaceful, then.
+a : Early's when the light's honest. | After noon I mend the coarse things. Chains and pins. | It is, till the bell goes.
+
+scene short_today
+when topic=smalltalk self.mood=low|sore
+does tell.feeling / sympathise / assess
+a : I'm #tired#. Not of anything. Just tired. | Some days I can't settle to #bench# at all. Today's one. | I've been short with everyone today. I know it.
+b : Rest a while. | It happens. | We all have those days.
+a : Maybe. The work won't do itself, though. | It does. It passes, too. | Then you'll forgive me for it.
+
+story the_tray_of_rings [topic=memories|work self.age>=25 self.role=merchant]
+  : When I was learning, the old smith I worked for gave me a tray of rings and said: tell me who made each one.
+  : I got four right out of twenty. It took me a year to get them all.
+  ask : Have you ever had to learn a thing that slowly?
+  b : More than one. Nobody hurries a trade.
+  b[job=crafter|smith] : Every trade worth having is learnt that way.
+
+story the_too_fresh_mark [topic=crime|work self.role=merchant self.age>=30]
+  : Somebody once sold me a ring with a fresh mark on it. Too fresh.
+  : Three days later the Watch came asking after it. I'd kept it in a drawer, not on #trays#.
+  ask : Would you have put it out to sell?
+  b : I'd have been tempted.
+  b[role=guard] : Then you did the Watch a good turn.
+  : I've read the back of everything since.
+
+story sheep_bells [topic=memories|travel self.away=yes self.from=larkfield]
+  : When I was young I walked over the downs at night to the next market town. No lantern.
+  : I found the road by the sheep bells. Every flock had its own note.
+  ask : Could you find your way by sound?
+  b : Not over open country. I'd be lost.
+  b[from=larkfield] : I've done it. You learn the bells or you sleep in a ditch.
+  : You learn, out there. #saying#, even with a bell.
+
+story the_brass_band [topic=memories|family self.age>=40]
+  : An old pair came in once to have their wedding ring cleaned. Their whole married life they'd worn it.
+  : Brass. Not a trace of gold. I cleaned it, gave it back, and said it was fine work.
+  ask : Would you have told them?
+  b : No. Not after all that time.
+  b[married=yes] : Never. What it meant was the gold.
+  : That's the one kindness I've told across the counter that wasn't true.
+
+story two_purses [topic=lore|prices self.role=merchant here.region=ridgemere]
+  : Two factors from two Houses came into the shop on the same morning.
+  : Each told me the other House clipped its coin. I weighed both purses.
+  ask : Which do you think was light?
+  b : Both of them, I'd guess.
+  : Both. By the same amount. I've trusted neither since.
+
+rule @trays_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Rings sized, clasps mended, chains untangled. | Look all you like. Touch nothing on #trays#.
+
+rule @turn_it
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Turn it over. Turn it over. | Whose mark is this, then? Hm.
+
+rule @eyes_done
+when concept=bark working=yes here.time=dusk
+does aside
+cooldown 10h
+say Where's #lamp#? I can't see a thing. | #oath#. #eyes.capitalize# are done.
+
+rule @door_rain
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 8h
+say Shut #shopdoor#. The wet's getting in. | Wipe your paws, please. #trays.capitalize# aren't for dripping on.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats
+does aside
+cooldown 12h
+say Rat. I heard it. | Out of my wall, you.
+
+rule @cider_bark
+when concept=bark here.time=dusk self.likes=spiced_cider
+does aside
+cooldown 12h
+say #cider.capitalize#, then bed. | Where have the cloves gone?
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Look, but ask before you touch. | #greet#. Rings, clasps, chains. Mending while you wait, mostly.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Shut the door. | #topic.player#. Back. What's broken?
+dlg @3 shop.greet [here.time=dusk|night here.shop!=bare] : #greet#. I'm nearly shut. Be quick.
+dlg @4 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Hm. Keep your paws off #trays#.
+dlg @5 shop.greet [here.shop=bare] : #greet#. #trays.capitalize# are empty. I'll buy silver, if you've any; I read #mark# first.
+dlg @6 shop.prices : #silver.capitalize#'s what it is. My hours are on top. | #shop_dear# The work costs more than the metal.
+dlg @7 shop.bye : #farewell#. Shut the door. | #shop_bye#
+dlg @8 resident.hub : #greet#. Yes? | #greet#. Make it quick; I've work at #bench#.
+dlg @9 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Go on.
+dlg @10 resident.hub [here.time=night] : It's late. What is it?
+dlg @11 resident.hub [pair.disposition=hostile|wary] : Hm. Say it, then.
+dlg @12 resident.job [self.role=merchant] : I keep #self.workplace#. Rings, clasps, chains. I read #marks# and mend what's broken. | I'm at #bench# all day. That's the work.
+dlg @13 resident.job : I'm #self.trade_words#. Paw-work at #bench#, and eye-work. | #job_busy#
+dlg @14 resident.business [business=thriving] : Busy. More mending than #bench# can hold. | Selling, for once. Don't tell anyone.
+dlg @15 resident.business [business=failing] : Poorly. #trays.capitalize# sit full and nobody buys. | Badly. I'll not pretend otherwise.
+dlg @16 resident.business [business!=thriving|failing] : Steady. Mending pays #rent#. | Steady enough. #trays.capitalize# turn over, slowly.
+dlg @17 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing's come to #bench# but broken clasps.
+dlg @18 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't repeat what's said at #counter#.
+dlg @19 resident.bye : #farewell#. | #farewell#. Shut #shopdoor# as you go.
+graft resident.hub
+choice Why do you look at the back of everything first? [self.role=merchant] -> back
+node back
+say #mark.capitalize# is on the back. It says who made a thing, and whether anybody's lied about it since. The front shows what they want seen.
+mood calm
+free
+choice Whose marks do you know? -> back_marks
+choice Goodbye. -> bye
+node back_marks
+say Every House's smiths, and most of the old makers. I'll take a House's coin. I'll not take a House's word.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you tell whether this is real gold? -> gold
+node gold
+say Give it here. I rub it on #touchstone# and read the streak. Bright is gold. Dull is brass, whatever anyone told you.
+mood calm
+choice And if it's brass? -> gold_brass
+choice Let me see your wares. -> greet
+node gold_brass
+say Then you know, and you've lost nothing but a hope. Better from me than from a buyer.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

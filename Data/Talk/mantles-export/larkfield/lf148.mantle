@@ -1,0 +1,294 @@
+# lf148, the weekly asker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf148
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_brand_cindermore
+written_by claude
+title the weekly asker
+fits stage=adult|old
+prefers job=merchant temper=short
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk asks_at_the_same_office_window_every_week
+likes hard_cheese swimming old_maps warm_rain
+dislikes crowds drizzle
+fears a_paper_lost_for_good_in_the_office
+hopes the_office_finding_what_it_lost
+topics travel +0.4 work +0.3 lore +0.2 food +0.2 weather +0.2 newcomer +0.3 festival -0.3 gossip -0.3
+styles comfort=feeding gossip=reluctant refuse=blunt tease=none
+marks oath saying
+persona #self.first# minds a sundries counter in the Commons and goes back to the same Office window every week till it answers: warm and stubborn, quick to bristle and quicker to offer cheese, happiest in cold water or a warm rain.
+
+words
+oath! = By the third window | By the drove road
+saying! = Ask again; asking's free | A no this week is a maybe the next
+maps = an old map | a map gone yellow at the folds
+window = the third window | the window at the Office
+clerk = the clerk | some clerk with ink to the elbows
+cheese = a wedge of hard cheese | hard cheese, the kind that cracks
+swim = a swim off the steps | a cold swim
+crush = a crush | elbows on every side
+counter = the counter | the sundries counter
+sundries = string, wicks and tacks | candle ends and twine
+droveroad = the drove road | the old drove road over the downs
+warmrain = a warm rain | rain you could stand in all day
+dreary = a grey wet nothing | half a rain
+steps = the harbour steps | the steps down to the water
+traveller = a traveller | somebody off the road
+
+any
+opinion @1 strangers for 2 : #traveller.capitalize# knows roads I've never walked. I'll sell them #sundries# and buy their news with #cheese#.
+opinion @1 newcomers for 2 : There's room in Ridgemere for anyone who'll carry their share. I'll not hear otherwise, #address#.
+opinion @1 city against 1 : Too many folk in too little street, and nobody knows the one next door. Give me #droveroad# any day.
+opinion @1 festivals against 1 : A feast day's all shoving and somebody in tears by dusk. I'll be down #steps# with #cheese#.
+opinion @1 dole for 1 : Every belly in Ridgemere ought to get its supper. If #dole# sees to that, I'm for it.
+opinion @1 houses mixed 0 : The Houses own the Office and the Office owns the queue. I'll stand in it, and I'll keep standing, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've come in off some road; I can tell by the boots. | #greet#. You've road dust on you yet.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. #counter.capitalize#'s open. Say what's wanted. | #greet#. #sundries.capitalize#, the lot. Take your time.
+line @3 greet [here.time=dawn] : #greet#. I've been down #steps# already. Water's #cold#. | #greet#. Early, and the streets still empty. Best hour.
+line @1 kin.open [pair.kin!=no] : You. Good. Sit; there's #cheese# in my pocket. | Oh, it's you. Good. I've been to #window# again; ask me how it went.
+line @1 again.open : You again. I'd a thing to show you, as it happens. | Back so soon. I've been to the Office and back since.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, I've #cheese#. | #greet#. Sit, sit.
+line @3 greet.return [self.working=yes self.job=merchant] : #greet#. Mind #counter#; I've #sundries# all over it. | #greet#. I'm working, but talk.
+line @1 farewell : #farewell#. | #farewell#, and mind the corners.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go by the lit streets, not the short way. | #farewell#. The lanes change in the dark, #address#.
+line @1 farewell.return : #farewell#. | #farewell#. Come back with a road for me.
+line @1 react.news : #ack#. | #surprise#. I'll mark that down.
+line @1 react.news.new : #surprise#. Nobody said a thing of it at #counter#. | That's new to me, #address#.
+line @1 react.news.known : #knew#. It came in over #counter# this morning. | I'd heard. #traveller.capitalize# had it first.
+line @1 react.news.doubt : #doubt#. I'd want to see it written and stamped first. | Who says? I'd want to walk there myself before I swallowed that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's rotten. | #oath#. I'm sorry for them, #very#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good for them. | Now that's #good#. That's made my day.
+line @1 answer.how : #fine#. Cross about #window#, but well. | Well enough. I've had #cheese# and a swim. #notsobad#.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #counter.capitalize# hasn't been empty since we opened. | Flat out, and stubborn with it.
+line @1 ask.how : And you? Eaten? I've #cheese#. | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Here, have #cheese#; it helps. | That's #bad#. Sit down a minute and say it all.
+line @1 decline : #hedge#. I'd come, but I'm on #counter# till close and can't leave it. | Not today, #address#. I've promised the shop, and I keep promises.
+line @1 accept_decline : #no_matter#. Another day, then. | Fair. I'll hold you to the next one.
+line @1 thank : #thanks#. | #thanks#. That's a kindness.
+line @1 deflect_thanks : #deflect#. | Don't. Next time it's your turn, #address#, that's all.
+line @1 apologise : #sorry#. I bit your head off. It's not you, it's me. | Sorry. I get hot. It goes as quick as it comes.
+line @1 accept_apology : #forgive#. Forget it. | Done. We're square, #address#.
+line @1 preclose [self.working=yes] : #preclose#. #counter.capitalize# won't mind itself. | Back to #sundries# for me.
+line @2 preclose : Right. #excuse#. | Well. #window.capitalize# shuts at four, and I've a word for it.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. Mind the corners.
+line @1 give.advice : #advise#: ask twice. The first answer's only to get rid of you. | Ask somebody who lives there. Maps lie, #address#; folk mostly don't.
+line @1 ack : #ack#. | #bc_right#
+scene office_again
+when topic=work|smalltalk|times here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : I was at #window# again this morning. Same window, same question, same shrug. | Every week I go up to the Office and ask at #window#. Every week they look for it. | #clerk.capitalize# knows my face now. Puts the kettle on when I come in the door.
+b : What are you asking for? | Will they ever find it? | The kettle?
+a : My own business, #address#. A paper that's somewhere in that building, and I'll not stop till it's found. | They will. #saying.capitalize#. I'm more stubborn than the building. | The kettle. Not for me; for the wait. They know I'll not leave till I've asked twice.
+b : #bc_fair_enough# | #bc_i_hope_so# | #bc_ha#
+
+scene map_stall
+when topic=lore|travel|pastimes self.likes=old_maps
+does tell.self / react.self / assess
+a : My best map puts the Long River a day too far west. I love it the way it is. | I bought #maps# off a stall for a penny. It shows Ridgemere half the size, with sheep on the hill. | I've #maps# pinned over my bed, wrong in a dozen places. I'd not change a line of it.
+b : Why love a wrong one? | Sheep? | Not one line?
+a : Because somebody walked it once and got lost, and drew what they saw. That's honest. | Sheep, and a hut. The Heights, that is now. I laugh every time I look. | Not one. It's how somebody saw it, and they're as right as anybody, #address#.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does offer / accept / assess
+a : Have #cheese#. Go on. I've a whole wedge. | I've #cheese# in my coat. I always have. Want a bit? | Here. #cheese.capitalize#, from home. Well, from a stall that says it's from home.
+b : Go on, then. | I will, thanks. | From home?
+a : #good.capitalize#. Soft cheese is for folk who don't chew. | There. Now you'll be back for more. Everyone is. | Close enough. It cracks right, and it tastes of #droveroad#.
+
+scene cold_swim
+when topic=pastimes|health self.likes=swimming here.region=ridgemere
+does tell.self / react.self / assess
+a : I had #swim# this morning. Cold as a cellar floor, and I'm better for it. | I go off #steps# most mornings. Cold water or not. | You've not lived till you've had the Sound in your ears at dawn.
+b : You're mad. | Every morning? | I'll take your word.
+a : Mad and awake. You're only one of those. | Most. The days I don't, I'm short with everyone. Shorter. | Take it. Then come down #steps# and try it once.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#! I could stand in this till dark. | I'd sooner have #warmrain# than sun. It smells of the downs at home. | I've left my coat on the hook. #warmrain.capitalize#, and I'm going out in it.
+b : You'll get soaked. | Of home? | Without a coat?
+a : Good. That's the point of it, #address#. | Chalk and grass, after a dry week. Close your eyes and it's there. | Without. It's warm. #saying.capitalize#, and you walk rain.
+
+scene grey_drizzle
+when topic=weather here.weather=rain|fog here.season=autumn|winter self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #dreary.capitalize# again. Neither one thing nor the other. #annoyed#. | I can't stand this. Rain that won't commit. | #rain.capitalize#. It gets in my maps. I've had to put them all in a tin.
+b : It's miserable. | Won't commit? | In a tin?
+a : Miserable. Give me a proper downpour or give me nothing. | Hangs about like a customer who won't buy. Gets on my nerves. | A tin, with a lid. #dreary.capitalize# finds paper like it's looking for it.
+
+scene the_crush
+when topic=smalltalk|day here.region=ridgemere self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : #crush.capitalize# down the Rag Market. I came out with somebody else's elbow in my ribs. | I can't abide #crush#. I go round by the back lanes, even if it's twice as long. | Market day. #crush.capitalize#. I'll not go out till it thins.
+b : It gets busy. | The long way? | Wise.
+a : Busy's one thing. That's a herd, #address#. #annoyed#. | Twice as long and half the elbows. I'll take it every time. | Wise or cross. A bit of both.
+
+scene counter_learning
+when topic=work self.working=yes self.job=merchant self.apprentice=yes
+does tell.self / react.self / assess
+a : I'm learning #counter#. You'd think it's just selling. It's not; it's remembering. | I know where every tack in the shop is now. Took me a month. | I gave the wrong change twice this week. There won't be a third.
+b : Remembering what? | A month? | You'll get it.
+a : Who wants what, who pays late, who'll talk your ear off. A lot to hold, #address#. | A month, and I'm proud of it. Ask me where the blue thread is. | I will. I'm stubborn, #address#. It's the one thing I'm good at.
+
+scene sundries
+when topic=work|prices self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : #sundries.capitalize#. Nobody comes in for one thing. They come in for six they forgot. | Folk laugh at a sundries shop till they need a tack at dusk. | I sold forty yards of twine this morning to one wolf. I didn't ask.
+b : Six? | Then what? | What for, though?
+a : Six, and a seventh at the door. That's the trade, #address#. | Then they're glad we're open. #bc_good# Steady business, a tack. | I said I didn't ask. I wanted to.
+
+scene boss_word
+when topic=work self.boss
+does tell.self / react.self / assess
+a : #self.boss# can stock a shelf so it sells itself. I watch and learn, #address#. | Nobody runs #self.boss# down in my hearing. Nobody, #address#. | #self.boss# has more patience with me than I've earned.
+b : Sounds a good one. | All right. | More than you've earned?
+a : A #good# one. I've had worse already, and I'm only starting. | Good. Then we'll get on. | Much more. I've not much patience myself, so I know its worth.
+
+scene father_and_me
+when topic=family|home self.father
+does tell.self / react.self / assess
+a : #self.father# and I don't agree on much, but we'd neither of us let the other go hungry. | I'll fall out with #self.father# over a road on a map and make it up over supper. | #self.father# says I'm as stubborn as a dray on a hill. That's from #self.father#, mind.
+b : That's family. | Over supper? | From where you get it?
+a : That's family. Shouting and cheese, both. #bc_it_is# | Over supper. Always. Nobody stays cross through #supper#. | You said it, not me. #oath#.
+
+scene temper_flash
+when topic=smalltalk|work
+does tell.complaint / react.complaint / apologise / accept_apology
+a : Somebody moved my maps again, and I'll find out who. | Don't tell me the Rag Market's a short cut. It's not. I've walked it. | I'll not be told how to fold a map by somebody who's never opened one.
+b : It wasn't me. | I only said. | Fair enough.
+a : I know. #sorry#. I get hot. It's gone already. | #sorry#. You're right, you only said. I'm too quick. | #sorry#. That came out harder than I meant, #address#.
+b : #forgive# | #bc_fair_enough# | #bc_of_course#
+
+scene downs_walked
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : I walked #droveroad# out of #self.from_town# with a map and lost the road by noon. Map was wrong. | At #self.from_town# there's a chalk track every pup knows and no map shows. | Larkfield maps are all market roads. The sheep tracks, you learn by your feet.
+b[from=larkfield] #lark : The drove road's never where the map puts it. | Past the chalk pit and up. I know the one. | Your feet and your gran's stick.
+b : How did you find it? | Why not? | By your feet?
+a@lark : Never. #oath#, I wondered if it was just me. | That's the one. I've looked for it on every map since. Not one has it. | And my gran's shouting. That too.
+a : Asked a shepherd. Shepherds know. Maps don't. | Nobody thought to draw it. Everybody knew it, so nobody did. | By my feet, and getting lost. That's how you learn a road. #oath#.
+
+scene the_office
+when topic=work|times|smalltalk here.region=ridgemere
+does give.opinion / react.self / insist / ack
+a : Ask anything at the Office and they send you to the next window, and the next. | The Office loses a paper and calls it filed. #annoyed#. | The Office keeps a map of every lane in the city, they say. I'd give a week's pay to see it.
+b : That's the Office. | Filed where? | Would they let you?
+a : #insist#. It shouldn't be. Somebody's paid to know where things are. | Filed in the dark, I'd say. I'd be at #window# like a tide till it came out. | Not a chance. I'd only ask questions, and they'd know it.
+b : #bc_ha# | #bc_fair_enough# | #bc_true#
+
+scene dawn_streets
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : Dawn's when I like the city. No #crush#, just the lamps going out. | Up early, down #steps#, cold water, then #counter#. Best order there is. | I walked a new lane before the shops opened. Found a yard I'd never seen.
+b : Quiet now. | Cold water first? | Where was it?
+a : Quiet. Give it an hour and it'll be elbows again. | Cold water first. Wakes the temper and washes it off. | Behind the chandler's, down some steps. No map has it, and I'll not tell one.
+
+scene lean_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Folk are buying one tack where they'd buy ten. Lean, this month. | It's thin out there, #address#. I've seen good wolves count their coppers twice at #counter#. | I'm putting a bit of #cheese# by for anyone who looks like they need it.
+b : It'll turn. | Hard to watch. | That's kind.
+a : It will. #reassure#. And when it does they'll buy the other nine. | Hard. I don't say anything. I just round down. | It's #cheese#. It's not kindness, it's just cheese.
+
+scene not_carried
+when topic=gossip|crime
+does tell.gossip / react.self / insist / ack
+a : There's talk at #counter#. I'll not repeat it. | Somebody was saying something nasty about a neighbour. I told them to stop. | I hear plenty at the shop. Most of it's wrong, like an old map.
+b : Good for you. | Did they? | Wrong how?
+a : I'll not have it said in front of me. Not about folk who aren't there. | They did. I've a temper, #address#. It's useful sometimes. | Wrong roads, wrong names, wrong ends. I don't stock gossip, #address#.
+b? : #bc_good# | #bc_ha# | #bc_wise#
+
+scene where_from
+when topic=newcomer|player|travel
+does ask.whereabouts / answer.whereabouts / assess
+a : New faces in. I always ask where they've come from. Then I ask the way they came. | #traveller.capitalize# came in for twine this morning. I kept them an hour on the roads north. | Somebody off the road is a map that talks. I'd trade the whole shelf for one.
+b : Do they mind? | An hour? | A map that talks?
+a : Not when there's #cheese# in it for them. #good.capitalize# trade, that. | An hour. I know three villages I'd never heard of, and they've a free ball of twine. | That talks, and walks, and is mostly right. Better than mine, #address#.
+
+scene faith_plain
+when topic=faith
+does give.opinion / react.self / assess
+a : I go to chapel and I mean it, mostly. The Bright One knows I'm short-tempered. | I talk to the Bright One on #steps# of a morning, cold as anything. | I'm not much for sermons. I like the quiet after them.
+b : That's honest. | Cold prayers. | The quiet's the best bit.
+a : I try to be. It's easier than the temper. | Cold and short. The Bright One doesn't need it long. | It is. Nobody's elbows in it.
+
+scene talk_of_home
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I still say fair price to folk at #counter#. They look at me like I've two heads. | Ridgemere talks fast and flat. #self.from_town# talks like it's weighing every word. | A customer giggled at my bargain this morning. I said it twice more, louder.
+b : Keep saying it. | Weighing them? | Good for you.
+a : I will. #oath#. It's the right way to say it. | Weighing them. Every word worth its price. | I'm stubborn, #address#. I'll be saying it at ninety.
+
+story the_kind_clerk [topic=work|memories|smalltalk here.region=ridgemere]
+  : The tenth week I went up to #window#, a new clerk was sat there. Young, ink on both paws.
+  : Before I'd opened my mouth, the clerk said my name and, not found yet, sorry. And put a bit of cake by me.
+  ask : Would you keep going back, after ten weeks?
+  b : I'd have given up by the third.
+  b[stage=young|adolescent] : Every week. I'd want to see the end.
+  : I'd have stopped at the third too, before that cake. Now I go for the cake as much as the paper.
+
+story first_sound_swim [topic=pastimes|memories here.region=ridgemere self.likes=swimming]
+  : The first time I went in off #steps# I came up shouting. I'd never felt water so #cold#.
+  : An old wolf sat watching laughed so hard I thought he'd fall in after me.
+  ask : Have you ever done a thing just because somebody laughed you into it?
+  b : More than once. It rarely ends well.
+  b[friends] : Every day since I met you.
+  : I've gone in every morning since, to spite him. He's long gone. I still do it.
+
+story the_wrong_turn [topic=travel|memories]
+  : I got lost in the Commons my first week. Took a map from a stall and walked straight into a wall.
+  : The map had a lane there. The wall had a cat on it, and the cat looked at me like I was daft.
+  b : Did you find your way? Or are you still lost?
+  : Asked the cat's owner. Best directions I've had in Ridgemere. That's when I started buying old maps, to see how wrong they get.
+
+rule @counter_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say #sundries.capitalize#, tacks and wicks! Whatever you forgot, we've got. | Twine by the yard, #good# and cheap.
+
+rule @crush_bark
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 8h
+say Elbows. Everywhere, elbows. #annoyed#. | Let me through. #oath#, let me through.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain|fog self.dislikes=drizzle
+does aside
+cooldown 8h
+say #dreary.capitalize#. Make your mind up. | Rain or don't. Just pick one.
+
+rule @window_bark
+when concept=bark here.place=street|market here.region=ridgemere
+does aside
+cooldown 10h
+say #saying.capitalize#. I'll be back at #window# next week. | #oath#. They'll find it, or they'll get tired of my face.
+
+dlg @1 resident.hub : #greet#. What's wanted? I'll help if I can. | #greet#. Have you come far? Sit down a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've #cheese#, if you're hungry. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say it straight. I'd sooner hear it plain.
+dlg @1 resident.job [self.job=merchant] : I'm #self.trade_words#. #sundries.capitalize#, and whatever folk forgot. | #counter.capitalize#. I'm learning it, and stubborn about it.
+dlg @2 resident.job : Whatever's in front of me. Done properly. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask me about the roads instead. | Nothing new. Only a lane I found behind the chandler's.
+dlg @2 resident.news [world.news] : #traveller.capitalize# from #world.news_from# had it: #world.news#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry that, #address#. Ask me about roads.
+dlg @1 resident.bye : #farewell#. Mind the corners. | #farewell#. Bring me a road next time.
+graft resident.hub
+choice Why do you go to the Office every week? -> office
+node office
+say Because they've lost a thing of mine, and somebody in that building knows where it is. I ask at the same window every week. #saying#.
+mood warm
+free
+choice Won't they get tired of you? -> office_tired
+choice Goodbye. -> bye
+node office_tired
+say They're tired of me already. The clerk puts a cup by the window when I climb to it. Tired isn't the same as cross.
+choice I hope they find it. -> hub
+choice Goodbye. -> bye

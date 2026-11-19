@@ -1,0 +1,445 @@
+# lf151, the wheel-spinner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf151
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for rm_wenna_naildale
+written_by claude
+title the wheel-spinner
+fits stage=adult|old
+prefers role=merchant warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=restless
+quirk spins_any_wheel_in_reach_to_hear_it_run_true
+likes pickled_herring whittling a_full_till first_warm_day
+dislikes haggling rats
+fears a_wheel_that_fails_under_a_full_load
+hopes a_yard_of_my_own_on_the_high_road
+topics work +0.5 prices +0.3 caravan +0.3 travel +0.2 food +0.2 weather +0.1 gossip -0.5 family -0.3
+styles comfort=practical gossip=never refuse=short tease=none
+marks oath saying
+persona #self.first# keeps a trade by the fish quay and keeps the door shut to strangers: cold, plain and restless, one price said once and never haggled, spinning every wheel within reach to hear whether it runs true.
+
+words
+oath! = Rim and spoke | By the felloe and the nave
+saying! = Round, or it's firewood | Spin it and it tells you | A true wheel never argues
+wheel = a cart wheel | a dray wheel
+rim = the iron tyre | the rim
+spokes = the spokes | twelve spokes
+nave = the hub | the elm hub
+runtrue = running true | true as a plumb line
+wobble = a wobble | a rim that wanders
+shed = the wheel shed | my shed by the quay
+herring = pickled herring | a herring out of the brine jar
+whittle = a bit of whittling | a spoke whittled for nobody
+fulltill = a full till | the till heavy at shutting
+quay = the quay | the fish quay
+downs = the downs | the chalk downs
+drays = the wool drays | the drays off the downs
+headwind = the wind off the headland | the headland wind
+haggler = a haggler | some haggler with a bent penny
+oneprice = one price, said once | the price I said
+carts = the carts | the carts off the road
+timber = the timber | the timber stack
+offcut = an offcut | a bit of offcut
+paws = my paws | these two paws
+hm = Hm | So
+
+any
+opinion @1 merchants for 1 : Anyone with a counter knows what #timber# costs before it's #wheel#. Nobody who's never bought elm should moan at #oneprice#.
+opinion @1 strangers against 1 : #wheel.capitalize# I can spin and test. A stranger's face I can't. The door stays shut till I can.
+opinion @1 newcomers for 1 : Come, work, pay. #hm#. I came from somewhere myself, and I'd not bar the gate to #paws# that want using.
+opinion @1 dole against 1 : Bread for standing in a line. I'd sooner it paid folk to shift #timber#; there's always some wants shifting.
+opinion @1 watch for 1 : They walk #quay# at night and the locks stay whole. That's what I pay my share for.
+opinion @1 houses mixed 1 : Grayrock pays for its wheels on the day. It's never once answered a letter. #hm#. That's a House for you.
+opinion @1 city mixed 1 : Ridgemere's wet and loud and never sits still. Neither do I, so we get on, near enough. #hm#.
+opinion @1 road mixed 1 : A bad road's trade for me, #hm#. Every rut on the High Road ends up in #shed#.
+opinion @2 road against 2 [world.wagons=raided] : A raided cart doesn't come to #shed# for mending. It comes as kindling, if it comes at all.
+opinion @1 festivals mixed 0 : A feast day's a shut door and a day's #fulltill# lost. I go for the herring stalls and come away.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Say what you want; I've #rim# on. | #greet#. You're not off #quay#, that's plain.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Mind #spokes# on the floor. | #greet#. I'm at #wheel#. Talk while I work.
+line @3 greet [here.time=dawn] : #greet#. Up before the fish carts. | #greet#. Early. #headwind.capitalize#'s still #cold#.
+line @4 greet [here.time=dusk|night] : #greet#. I'm shutting. | #greet#. Late to be about on #quay#.
+line @1 kin.open [pair.kin!=no] : You. In, and shut the door; #headwind#'s in it. | Oh, it's you. Take the bench. I'll not be a minute with #rim#.
+line @1 again.open : You again. I've not shifted from #shed# since. | Twice in a day. I've nothing new to show you.
+line @1 hail [pair.band=friends] : Here. A word, out of #headwind#. | #address.capitalize#. Over here, by #timber#.
+line @1 greet.return : #greet#. | #greet#. Say on.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in out of it. | #greet#. About time you showed your face.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. I'm listening, and I'm still working. | #greet#. Talk; I'll keep turning #nave#.
+line @4 greet.return [here.time=dusk|night] : #greet#. I'm off home soon. | #greet#. It's late for calling.
+line @1 farewell : #farewell#. | #farewell#. I've #rim# waiting.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep off the edge of #quay# in the dark. | #farewell#. Bolt your door tonight.
+line @1 farewell.return : #farewell#. | #farewell#. Go on, then.
+line @1 react.news : #ack#. | #hm#. That'll be all over #quay# by dark.
+line @1 react.news.new : #surprise#. Nobody told me that. | #hm#. Not a word of that reached #shed#.
+line @1 react.news.known : #knew#. #carts.capitalize# had it at dawn. | I'd heard. #quay.capitalize# hears everything first.
+line @1 react.news.doubt : #doubt#. I'll believe it when somebody who saw it says so. | #quay.capitalize# talk. Untested, that, and I don't buy untested.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard on them. | That's #bad# news, heavy for anyone to carry. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Something #runtrue# for once. | #good.capitalize# news. It doesn't come often off #quay#.
+line @1 answer.how : #fine#. #busy.capitalize#, which is how I like it. | Well enough. #spokes.capitalize# don't cut themselves.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three of #drays# in and one of me. | Flat out. Ask me again when #fulltill#'s counted.
+line @1 ask.how : And you? Still on your feet? | You? #runtrue.capitalize#, are you?
+line @1 sympathise : #sympathy#. Sit on the bench a minute. | That's a rough stretch of road, #address#. You'll come through it, slow.
+line @1 reassure : #reassure#. Most things come round. | It'll run. Give it a turn or two, like #wheel#.
+line @1 decline : #hedge#. I can't leave #shed#; there's #wheel# half-shod on the bench. | Not today. I've #drays# waiting and nobody else to fit them.
+line @1 accept_decline : #no_matter#. Another time. | Fair. It'll keep, like seasoned #timber#.
+line @1 thank : #thanks#. | #thanks#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | It cost me nothing. Leave it there, #address#.
+line @1 preclose [self.working=yes] : #preclose#. #nave.capitalize# won't bore itself. | I'd best get back. #rim.capitalize#'s cooling.
+line @2 preclose : Right. I'm off. #excuse#. | #excuse#. I've places to be.
+line @1 accept_preclose : Go on, then. #farewell#. | #hm#. Off you go.
+line @1 ack : #hm#. | #ack#.
+line @1 give.advice : #advise#: spin anything before you buy it. If it wanders, walk on. | Never pay a carter for #wheel# you haven't heard turn.
+line @1 warn [world.bandits=near] : Don't take the High Road alone this week. #warn#. | Go in company, or don't go past the gate at all.
+line @1 insist : #insist#. #oneprice.capitalize#. | That's the price. #saying.capitalize#.
+scene spin_to_hear
+when topic=work|smalltalk self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I spun #wheel# by the door and heard it catch at the bottom. That's a cracked spoke. | I spin every wheel I pass. The carters think I'm cracked myself. | Hear that? #wobble.capitalize#. You hear it a long while before you see it.
+b : You can hear a crack? | Every one? | And how does that sound?
+a : A tick, once a turn. #wheel.capitalize# that's #runtrue# hums and says nothing. | Every one. Better I find it than the road does. #saying.capitalize#. | Like a door that won't shut. Once you know it, you can't stop hearing it.
+b : #bc_clever# | #bc_fair_enough# | #bc_wise#
+
+scene one_price
+when topic=prices|work self.role=merchant
+does give.opinion / challenge / insist / ack
+a : I say a price once. #oneprice.capitalize#, and no talking it down. | #haggler.capitalize# came in this morning and offered half. I showed him the door. | Haggling's for the market cross. I keep #shed#, not a stall.
+b : Everyone haggles. | Half? | Where's the harm in a haggle?
+a : Not with me. If it's dear, it's dear for a reason, and the reason's in #timber#. | Half #wheel#'s no use to anyone. Neither was his offer. | An afternoon gone for a penny. I've #spokes# to cut.
+b : #bc_fair# | #bc_ha# | #bc_fair_enough#
+
+scene tyre_shrink
+when topic=work self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : Got #rim# on hot this morning and quenched it tight. You hear it bite the wood. | #nave.capitalize# split on me today. Seasoned two years, and it split anyway. | Twelve spokes in an hour. #paws.capitalize# are full of splinters and I don't care.
+b : Sounds like hard work. | That's bad luck. | Twelve in an hour?
+a : Hot work, quick work. Then it runs ten years without a word, #runtrue#. | It happens. The elm does what it likes. I'll find another in #timber#. | Twelve, and each one #runtrue#. I counted them twice.
+
+scene wagons_in
+when topic=caravan|work world.wagons=in self.role=merchant
+does tell.news / react.news / assess
+a : The wagons are in. Half of them came rattling to #shed# first. | Wagons in off the road, and every one wants #wheel# looked at. | #carts.capitalize# in. That's #fulltill# by Restday, if #paws# hold.
+b : Good for trade. | All of them? | Will they hold?
+a : Good for #takings#. Hard on my sleep. | Near enough. The road shakes everything loose that isn't pinned. | They'll hold. They always have, and I'll not jinx it by saying more.
+
+scene wagons_late
+when topic=caravan|travel world.wagons=late
+does tell.worry / reassure / assess
+a : #carts.capitalize# are late again. I've iron on order and no sign of it. | Late wagons. #hm#. That's #timber# stuck somewhere on a wet road. | Nobody in off the road today. #quay.capitalize#'s half empty and too quiet.
+b : They'll come. | #reassure#. | Quiet's not so bad.
+a : They will. I'll have nothing to do till they do, and I hate that worse. #annoyed#. | It'll weigh out, I know. It's the waiting I can't abide, #address#. | It is for me. I'll sit with #offcut# and grumble while I carve it.
+
+scene raided_road
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess
+tone serious / serious / serious
+a : A cart was robbed on the road. They'll bring me what's left of #wheel#. | Raided again. #wheel.capitalize# comes back from that with #spokes# kicked in. | #oath#. The road's had another cart. I'll not drive out this week.
+b : Was anyone hurt? | Can you mend it? | Nobody should.
+a : I don't know. I only ever see the wheels, #address#. | Most of it. Not the fright, though. That's no trade of mine. | No. Keep inside the gate till it's quiet again. #warn#.
+
+scene rain_on_quay
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# off the Sound again. #timber.capitalize# swells and nothing fits. | Wet wood, wet paws, wet floor. #annoyed#. | Rain all week. #timber.capitalize# drips like a coat on a nail.
+b : It never stops here. | You'd think you'd be used to it. | Cover it, then.
+a : No. I've stopped waiting for it to. #hm#. | I'm not used to it. I'm only quieter about it than #carts# are. | I have. The rain gets under covers. It finds the joints like #wobble# finds a hill.
+
+scene fog_quay
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog on #quay#. I walked straight into a dray I'd fitted myself. | Can't see #shed# from the steps in this. | The fog's in off the Sound. Even the gulls on #quay# have given up.
+b : Did it hold? | Thick, then. | Quiet, isn't it.
+a : It held. I'd have been more hurt if #wheel# hadn't. | Thick as a fleece. I'll work by the lamp, and slow. | Quiet. I'd like it better if I could see #paws#.
+
+scene storm_headland
+when topic=weather here.weather=storm
+does warn / react.self / assess
+a : #headwind.capitalize# has tiles off already. Stay off #quay# tonight. | Storm coming in. I've lashed #timber# down and I'm going home. | Listen to it. The whole headland's moaning like an axle gone dry.
+b : I'll keep in. | Wise. | It sounds alive.
+a : Do. Nothing on #quay# is worth a ducking. | #oath#. Wise, and soaked anyway. | It sounds it. I'll sleep through it all the same, #tired# as I am.
+
+scene first_warm
+when topic=weather|season here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : First warm day. My sleeves are up and my door's wide to #quay#. | Warm at last. I'll eat #herring# on the quay wall at noon and not move. | You can feel it in the boards. #timber.capitalize#'s not fighting me today.
+b : About time. | Sounds good. | The wood feels it?
+a : About time is right. I'll not waste a minute of it talking. | It is. Leave me be while I do it; I'll be back at #shed# by one. | It does. Dry air, true cuts. That's all I ask of a day.
+
+scene winter_raw
+when topic=season|weather here.season=winter
+does tell.complaint / react.complaint / assess
+a : #oath#. Iron's #cold# enough to take the skin off in this. | Winter on #quay#. The salt gets into your joints and settles in. | Nobody wants #wheel# in winter till one breaks in the ice.
+b : Wear gloves. | It does. | Then they all want one.
+a : Can't feel a spoke through gloves. #paws.capitalize# will bleed a bit instead. | It does. That's my whole complaint, and I've made it. #hm#. | Then they all want one by noon, and for nothing. #annoyed#.
+
+scene dawn_quay
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : I'm up before the fish carts. I like #quay# with nobody on it. | Dawn's the only quiet hour. After that it's #carts# till dark. | I've had #herring# and bread and I'm out the door. That's my morning done.
+b : Early. | It's peaceful now. | Quick.
+a : Early's when I think straight. Later I only work #shed#. | It is. Don't spoil it with talking, #address#. | Quick's how I like a morning. Sitting gets #paws# nowhere.
+
+scene dusk_shut
+when topic=day here.time=dusk self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : Shutting. If the till's heavy, I'll walk home the long way round, #hm#. | Last wheel's on the rack. I've been on my feet since before light. #tired.capitalize#. | I count #takings# twice over. Then I lock #shed#.
+b : Is it heavy? | You'll sleep tonight. | Twice?
+a : Heavy enough. #fulltill.capitalize#'s the only thing I'm soft about. | I'll sleep. Then I'll be back at #spokes# before light. | Twice. The second count's the one I trust.
+
+scene herring_jar
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail / ack
+a : #herring.capitalize# for my dinner, same as yesterday. | I buy #herring# by the jar off the quay stalls. Cheaper that way. | Nothing wrong with #herring# and a heel of bread. I'll eat it standing up.
+b : Every day? | How many in a jar? | Standing?
+a : Every day. It's cheap, it keeps, and I don't have to think about #grub#. | A dozen, near enough. I count them out a day at a time. | Standing. Sitting down's how an afternoon goes missing from #shed#.
+b? : #bc_fair_enough# | #bc_wise# | #bc_ha#
+
+scene whittling
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : I whittle of an evening. #spokes.capitalize#, mostly, little ones that'll never go on a cart. | I've a box of little wheels I've carved. #whittle.capitalize#. No reason to it. | A knife and #offcut#, and I'll sit still for once.
+b : Who gets them? | No reason? | You, sitting still?
+a : Whichever pup's nearest. They spin them on #quay# cobbles. | None. It keeps #paws# quiet when the rest of me won't be. | Once a night. For as long as #offcut# lasts.
+
+scene bare_room
+when topic=home
+does tell.self / react.self / assess
+a : #home.capitalize#'s a bed and a nail for my coat. I'm out before the house wakes. | I don't keep much at home. A knife, a box of #offcut# ends, a coat. | Home's where I sleep. #shed.capitalize#'s where I live.
+b : Is that enough? | That's all? | Sounds lonely.
+a : It's enough. More things, more to carry, #hm#. | That's all. I could leave tomorrow with the lot on my back. | It's quiet. Quiet suits me better than company, #address#.
+
+scene friend_door
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend#'s about the only one I'd let in without asking why. | I'm sparing with words, #address#. Less so with #self.friend#. | #self.friend# knows better than to talk to me before I've had #herring#.
+b : That's something. | That's a friend. | Wise.
+a : It is. I don't hand it out. #hm#. | It is. I'd not say so to #self.friend#'s face, mind. | It took a while to learn, #address#, and it stuck.
+
+scene hand_learning
+when topic=work self.hand self.working=yes
+does tell.self / react.self / assess
+a : I watch #self.hand#'s cuts on #spokes#. Each and every cut. | I'd sooner do it myself, but #self.hand# has to learn somewhere. | I don't praise #self.hand# out loud. Praise goes to the head.
+b : That's how it's learned. | Somebody has to teach. | Not even once?
+a : It is. I was watched the same at #wheel#, and I hated it. | Somebody does. It's slower than doing it myself, by half. #hm#. | Once, when it's earned. Not yet.
+
+scene rats_timber
+when topic=animals|work self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail
+a : Rats in #timber# again. They chew #offcut# ends for bedding. | I've a cat now. Hired her off #quay# for a fish a day. | Found a nest dug into #nave# blank. A whole hub, wasted.
+b : Can you get rid of them? | Does she earn it? | Can't you use it?
+a : Not on #quay#. There's fish everywhere; they'll always come back. | She sleeps on the warm bench and lets them by. I pay her anyway, #hm#. | Not for #wheel#. One with a hole in it's firewood, #hm#.
+
+scene downs_drays
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : At #self.from_town# a dray's rattle carried a mile over #downs#. Nothing to stop it. | I used to watch #drays# come in to #self.from_town# market. Every one shook, and I knew which would go. | Chalk roads on #downs#. They eat #wheel# in a year, and the carters knew it.
+b[from=larkfield] #lark : The wool drays. I'd know that rattle anywhere. | Market day, and a queue at every wheelwright. | Chalk and flint. Hard on everything.
+b : Sounds far from here. | So you started young? | So the roads taught you?
+a@lark : Then you know why I can't hear #wheel# without turning round. | A queue, and nobody willing to wait in it. #hm#. | Hard on everything. I miss #downs# anyway, some days.
+a : It is. Here #carts# are on top of you before you hear them. | Young enough. I had a knife before I had boots. | #oath#, they did. Chalk's a hard master and a fair one.
+
+scene why_left
+when topic=memories|dreams self.away=yes self.from=larkfield
+does confide / react.self / assess
+a : I left #self.from_town# because nothing moved there. Same stalls, same faces, same prices. | Everyone at home haggled over everything. I couldn't stand one more market day of it. | #home.capitalize#'s fine. I'd go back for a week. Not a day longer.
+b : And here? | That's honest. | Why not longer?
+a : Here everything moves. Too much, some days. I'll take too much over nothing, #hm#. | It is. Keep it to yourself, if you meet anyone from #downs#. | I'd be bored by the third day, and spinning their barrows for something to do.
+
+scene own_yard
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail
+a : One day a yard of my own on the High Road. First thing #carts# see coming in. | I'm putting by for a yard. #hm#. Not saying how much. | I want a sign over a door with nothing on it but #wheel#.
+b : Why the High Road? | Close, though? | No name on it?
+a : Every cart comes in that way, and half of them limping on #wobble#. | Closer than last year. And that's the whole of what I'll say. | No name. Anyone who needs it will know what it means.
+
+scene lean_times
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / react.complaint / assess
+a : Nobody's buying wheels. They bind the cracked ones up with rope and pray. | Lean, this month. #spokes.capitalize# stacked to the roof and no carts to put them on. | #wheel.capitalize# can go a season longer than it should. Folk learn that in lean times.
+b : Rope? | It'll turn. | Until it breaks.
+a : Rope. #oath#. It holds till it doesn't, and then it's me they call. | It'll turn. I'll be stood here in #shed# when it does. | Until it breaks on a hill with a load on. Then they come, #annoyed#.
+
+scene good_times
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : #fulltill.capitalize# three nights running. I don't trust it. | #carts.capitalize# everywhere, every one wanting #wheel#. I've turned two away. | Coin's moving. Even the Grayrock clerks paid on the day.
+b : Enjoy it. | Turned them away? | That's a first.
+a : I'll enjoy it once #fulltill#'s counted and locked up. | I can't make wheels out of air, #address#. They'll be back. | It is. I wrote it down in case nobody believes me. #hm#.
+
+scene gossip_shut
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear things on #quay#. I don't pass them on. | There's talk about. Not from me, there isn't. #hm#. | Folk stand at #shed# door and talk about whoever's not there. I keep working.
+b : Not even a bit? | Who's talking? | Doesn't it tempt you?
+a : Not a word. Pass on one thing and they'll bring you everything. #secret#. | Everyone on #quay#. Ask them, not me. | No. What's said at my door is the door's business.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene lock_early
+when topic=gossip|crime topic.claim_kind=theft|wanted
+does tell.gossip / react.news / assess
+a : They're saying #topic.subject# #topic.claim#. I'm locking #shed# early. | #hm#. #topic.subject.capitalize# #topic.claim#, is the talk. I'll believe it when the Watch does. | Quay talk says #topic.subject# #topic.claim#. I bolt my door either way.
+b : I'd heard. | Fair. | So do I.
+a : Then you'll bolt yours too, if you've sense. #warn#. | It's no business of mine to add to it. | Good. A bolted door never argued with anyone, #address#.
+
+scene two_locks
+when topic=crime
+does give.opinion / react.self / assess
+a : Two locks on my door and a third on #takings#. That's not fear, that's sense. | The Watch walks #quay# at night. I pay my share and I sleep. | I don't let strangers past the bench. Not since I took up in Ridgemere.
+b : Sense, yes. | Worth it? | Fair enough.
+a : Sense is cheaper than a #thief#, by a long way. | It is, the nights they walk it. #hm#. | It costs me a customer now and then. I'll pay that.
+
+scene faith_owing
+when topic=faith
+does give.opinion / react.self / assess
+a : I light a candle on Restday. That's my share, and I keep it. | The Bright One made #wheel# round. I only keep it that way. | I keep my asking of the Bright One small. I'd not want to owe.
+b : That's enough. | Ha. | Owe?
+a : It's what I've got. I don't hand out more than I have, #hm#. | You can laugh. I meant it, #address#. | Owe. Everything's weighed in the end. I'd sooner come out even, #hm#.
+
+scene splinters
+when topic=health
+does tell.self / react.self / assess
+a : Splinters in both paws. I pick them out at night by the lamp. | My back's set like a bent spoke. It'll go when I stop, and I don't stop. | Never sick. I've no time for #poorly#.
+b : Let someone look at them. | Rest it. | Lucky.
+a : Nobody touches #paws# but me. | I'll rest it when the yard's mine. | Lucky. #oath#, I shouldn't have said that out loud.
+
+scene fair_price_said
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : #quay.capitalize# laughs at the way I say fair price. I say it anyway. | City wolves think everyone off #downs# haggles. I don't. | I've stopped saying full weight. Nobody here knows what I mean by it.
+b : Say it, then. | Not you, anyway. | What does it mean?
+a : I do. #greet#, every time, so they get used to it. | Not me. I left that at #self.from_town# with the sheep. | That you got what you paid for. Nobody on #quay# expects it.
+
+scene ships_carts
+when topic=ships here.region=ridgemere self.quarter=wharf
+does tell.self / react.self / assess
+a : Ships aren't my trade. But every cargo leaves #quay# on a cart, and the cart comes to me. | I don't watch the ships. I watch what comes off them, and how heavy it is. | A ship in means #carts# out, and carts out means wheels. The sea can keep the rest.
+b : So you like ships. | Heavy, then? | Fair.
+a : I like what they bring me. Not the same thing, #hm#. | Heavy enough to crack #nave#, loaded careless. | It is. Let the sailors love it.
+
+scene incomers
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New faces on #quay#. I give them the price and nothing else. | Some traveller wanted the way to the Heights. I pointed. That's all they got. | I don't mind incomers. I mind incomers who want to talk.
+b : Fair enough. | Not much of a welcome. | Like me?
+a : They get #oneprice#, the same as everyone. That's a welcome. | It's the way here. Welcome enough, #hm#. | You're talking. I'll let it go this once, #address#.
+
+story first_wheel [topic=memories|work self.role=merchant self.age>=20]
+  : The first wheel I made on my own ran true for a day, then threw a spoke on a hill.
+  : I walked back up and found it in the ditch. I've kept that spoke since.
+  ask : Would you keep the thing that went wrong, or the thing that went right?
+  b : The right one, I'd think.
+  b[old] : The wrong one. It teaches more.
+  : The wrong one. The right ones only flatter you. #saying.capitalize#.
+
+story chalk_dray [topic=memories|travel self.away=yes self.from=larkfield]
+  : A wool dray lost a wheel on the crest of the drove road once, on #downs#. The whole load went down the bank.
+  : The carter sat on a bale and laughed till he cried. Then he paid a pup a penny to fetch #wheel#.
+  ask : What would you have done, sat on that bale?
+  b : Laughed, I suppose. What else is there?
+  b[from=larkfield] : Sold the wool where it lay, and gone home lighter.
+  : I'd have looked at #wheel# first. That's why I went into wheels.
+
+story the_letter [topic=memories|smalltalk self.errand=letter]
+  : I've a letter to take up the hill, sealed. Every time I go, nobody's home to take it.
+  : I've climbed four times. The door says come back, and I come back, #hm#.
+  ask : Would you open it, after a year of that?
+  b : Never. It's not yours to open.
+  b[stage=young|adolescent] : I would. I'd have to know.
+  : Nor would I. It stays sealed, and it rides in my coat till somebody's in.
+
+story the_long_haggle [topic=prices|work self.role=merchant]
+  : #haggler.capitalize# once spent an hour talking down a price I'd said the once.
+  : I kept working. When he'd done, I said it again, the same, to the penny. #oneprice.capitalize#.
+  ask : What do you think he did?
+  b : Paid, I'd guess. Was he angry?
+  : He paid. He's come back every year since, and never says a word about #money#.
+
+story six_pups [topic=pastimes|smalltalk self.likes=whittling]
+  : I gave a pup on #quay# one of my little carved wheels. It spun it on the cobbles till dark.
+  : Next morning there were six pups at my door, and #offcut# for each wanted.
+  b : Did you carve them one each?
+  : I did, over a week. Keep it quiet. I've a name to keep on #quay#.
+
+rule @shed_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Wheels trued, tyres shrunk, spokes fitted. #oneprice.capitalize#. | Bring #wheel# in rolling or carry it in. I'll mend it either way.
+
+rule @spin_bark
+when concept=bark here.place=street|market|work
+does aside
+cooldown 8h
+say Hear that? #runtrue.capitalize#. | #wobble.capitalize#. Somebody's going to lose a wheel before the bridge.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say Wet #timber#. #annoyed#. | Cover the stack. Cover it right over.
+
+rule @rat_bark
+when concept=bark working=yes self.dislikes=rats
+does aside
+cooldown 12h
+say Out of #timber#, you. Out. | Rats again. #oath#.
+
+rule @dawn_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say Fish carts. Up, then, #hm#. | Before #quay# wakes. Good.
+
+rule @late_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 8h
+say No carts, no wheels, no #takings#. | Still nothing on the road. #hm#.
+
+dlg @1 resident.hub : #greet#. Say it quick; I've #rim# on. | #greet#. What's wanted, then?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Same as last time. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late. Say what you need and let me lock #shed#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay out in the light, there, where I've a clear look at you. Now. #talk_open#
+dlg @1 resident.job [self.role=merchant] : I'm the #self.trade_words#. They bring it in broken and take it out #runtrue#. | I keep the trade, and I keep it myself. #oneprice.capitalize#.
+dlg @2 resident.job : Whatever wants doing. Quickly, mostly. #hm#. | #job_busy#
+dlg @1 resident.business [business=thriving] : Turning carts away. I don't like it, but I'll take #takings#.
+dlg @2 resident.business [business=steady] : Steady. #fulltill.capitalize# most nights, a light one some.
+dlg @3 resident.business [business=failing] : #bad.capitalize#. The carts go elsewhere, and that's the whole of it.
+dlg @1 resident.news [world.news] : Off #carts# from #world.news_from#: #world.news#. Weigh it yourself.
+dlg @2 resident.news [world.event_words] : Everyone on #quay#'s on about #world.event_words#. Not me.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# #quay.capitalize# talks; I don't listen. | Nothing. I've been under #wheel# all day.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't trade in that. #refuse#.
+dlg @2 resident.gossip [here.gossip=yes] : #hearsay#: #topic.subject# #topic.claim#. That's all you'll have from me.
+dlg @1 resident.bye : #farewell#. | #farewell#. Shut the door behind you.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Everything's priced, and the price doesn't move. | #greet#. Look, then. I'll be at #wheel# while you do.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #greet#, #topic.player#. The prices haven't shifted, and they won't.
+dlg @3 shop.greet [here.shop=bare] : #shop_bare# Come back when #timber#'s in. | Sold the lot. #hm#. I'll still buy, if it's good.
+dlg @1 shop.prices : #oneprice.capitalize#. If it's dear, it's because it lasts. | #shop_dear# I don't haggle, so don't start.
+dlg @1 shop.bye : #farewell#. | #shop_bye#
+graft resident.hub
+choice Why do you spin every wheel you pass? -> spin
+node spin
+say Because #wheel# tells you what's wrong with it if you let it turn. A tick's a crack. A wobble's a bent rim. #saying#.
+mood calm
+free
+choice Can you hear it in any wheel? -> spin_any
+choice Goodbye. -> bye
+node spin_any
+say Any wheel. A barrow, a dray, a pup's toy. Once you've heard a bad one you hear them all, and I can't stop now.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Will you take less? -> haggle
+node haggle
+say No. #oneprice.capitalize#. Haggling wastes your afternoon and mine, and the goods are the same at the end of it.
+mood stern
+choice Fair enough. -> greet
+choice Then why so dear? -> haggle_why
+node haggle_why
+say Good stuff, honest work and #paws#. Cheap goods get paid for again, and the second bill comes on a hill.
+choice I'll look again. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,294 @@
+# lf163, the clerk with the margin sum (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf163
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for rmx_philippa_pitchstack
+written_by claude
+title the clerk with the margin sum
+fits stage=adult|old
+prefers job=scholar humour=dry
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk keeps_a_running_sum_of_stall_savings_in_a_margin
+likes barley_soup old_tales sharp_knife misty_dawns
+dislikes gulls wet_floors
+fears the_sum_going_backwards a_desk_by_a_leaking_window
+hopes a_market_stall_of_my_own a_long_tale_on_a_long_evening
+topics work +0.4 dreams +0.4 pastimes +0.3 food +0.3 weather +0.2 home +0.2 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# clerks at a desk by day and saves for a market stall coin by coin, keeping the running sum in the margin of whatever page is nearest: quiet, warm, dry as old paper, and fond of a tale told slowly.
+
+words
+oath! = Margin and sum | By the last column
+saying! = Carry the one and keep going | Every column adds up sooner or later | A coin in the margin is a coin in the pocket
+margin = the margin | the margin of the day's page
+sum = my sum | the sum in the margin
+stall = a market stall | a market stall, one day
+desk = my desk | the desk by the draughty window
+forms = the forms | a stack of forms in triplicate
+ink = the ink | a pot of ink
+knife = my penknife | a knife that takes a hair off
+soup = barley soup | barley soup with a heel of bread
+tale = an old tale | a tale told slowly
+mist = a morning mist | mist lying in the streets at first light
+gulls = the gulls | a gull on the sill
+wetfloor = a wet floor | a floor somebody's just mopped
+figures = the figures | a column of figures
+coin = a coin | one more coin
+office = the office | the clerks' room
+column = a column | a long column
+ledger = the ledger | the big ledger
+rolls = the rolls | the city rolls
+papers = the papers | the morning papers
+form = a form | the right form
+pages = the pages | page after page
+purse = the household purse | our purse
+
+any
+opinion @1 dole for 1 : Hungry neighbours are a sum nobody should leave unpaid. I've seen #figures#; we can afford it. | I'd rather pay #dole# than step over somebody on the way to #desk#.
+opinion @1 newcomers for 1 : Anyone who'll work has a place here. I write their names on #forms# every week. | New names on #rolls#. Each one means somebody stayed.
+opinion @1 strangers for 1 : A stranger is #tale# you haven't heard yet. I'd hear it. | Strangers ask the way to #office# and stay to tell me where they've been. I don't mind.
+opinion @1 city against 1 [self.away=yes] : This city counts everybody and knows nobody. In #self.from_town# the market knew your name before you did. | Too many forms, too few faces. I say that as someone who fills in #forms#.
+opinion @1 houses mixed 0 : The Houses sign their papers in a beautiful hand. Whether they mean what they sign, #figures# don't say. | I file what the Houses send to #office#. I keep my opinion in a separate drawer.
+opinion @1 merchants for 1 : I'll be one, one day, with #stall#. I'd better think well of them. | A trader who keeps honest #figures# is a friend of every clerk.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If you're looking for the office, it's up the stairs and left. Everyone is. | #greet#. You've found me; I'm not sure that's a prize.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. One moment; I'm carrying the one. | #greet#. Mind #ink#; it's the only pot I've got.
+line @3 greet [here.time=dawn] : Good morning. I came in early to catch #mist#. | Good morning. The desks are #cold# and so am I.
+line @4 greet [here.time=dusk|night] : Good evening. I'm only just away from #desk#. | Good evening. We're both late away, then.
+line @1 again.open : #welcome_back#. I'll put you down as a regular. | Twice today. You'll want #form# for that.
+line @1 greet.return : #greet#. | #greet#. Nice to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit down; I've just finished a column. | #greet#. You're the best thing that's happened since noon.
+line @3 greet.return [self.working=yes self.job=scholar] : #greet#. Talk while I copy; I can do both. | #greet#. Give me a line to finish.
+line @1 farewell : #farewell#. | #farewell#. Mind the wet steps.
+line @2 farewell [here.time=dusk|night] : Good night. Keep out of the puddles; #rain#'s not done. | Good night. I've #sum# to add up before bed.
+line @1 farewell.return : #farewell#. | #farewell#. Go carefully.
+line @1 react.news : Is it. Every word, please; I'll file it later. | Go on. #listen#.
+line @1 react.news.new : #surprise#. It hasn't come across #desk# yet. | I read everything, and that wasn't in any of it.
+line @1 react.news.known : #knew#. It was in the morning papers on #desk#. | I'd heard. #papers.capitalize# travel faster than feet in this city.
+line @1 react.news.doubt : #doubt#. Show me a form with it on, signed. | Perhaps. I'll wait for the second copy of #form#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. #pity#. | I'm sorry. That's heavy news to carry in.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's lovely. | Good. That's the kind of thing I'd like to write in #ledger#.
+line @1 answer.how : #fine#. #sum.capitalize#'s going up, slowly. | Well, thank you. #column.capitalize# at a time.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #forms.capitalize# have bred overnight. | Up to my ears in #figures#. I'll not grumble.
+line @1 ask.how : And you? Keeping dry? #rain.capitalize#'s about. | How are you, truly? Not the short answer.
+line @1 sympathise : #sympathy#. Sit a while; I'll not hurry you. | That's heavy. Put it down a minute.
+line @1 reassure : #reassure#. Most things come out in the end. | It'll come right. #saying#.
+line @1 decline : #hedge#: I can't today. I've a column that won't add up, and it'll nag me all night. | I'm sorry, I'll have to say no. Every coin goes to #stall#, and I've promised it.
+line @1 accept_decline : #no_matter.capitalize#. Another time. | That's all right. I'll put it in #margin# for later.
+line @1 thank : #thanks#. That was kind. | Thank you. That one goes in #ledger#, on the good side.
+line @1 deflect_thanks : #deflect.capitalize#. It cost me nothing. | It was nothing. Not even #coin#.
+line @1 preclose [self.working=yes] : Well. #forms.capitalize# won't fill themselves. | #desk.capitalize# wants me back before somebody sits at it.
+line @2 preclose : Well. #preclose#. | Off you go; I've kept you. #excuse#.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. I've #sum# to see to.
+line @1 tease [pair.band=friends] : You walk like you're carrying the one in your head. #bc_ha# | You've ink on your nose. No, the other side. No, it's gone now.
+line @1 tease.return : From you, with your boots like that. #bc_ha# | I'll add that to your account in #margin#.
+line @1 ack : #bc_true# | #bc_fair#
+line @1 give.advice : #advise.capitalize#: write it down, and add it up, and then decide. | Never let a gull near your #supper#. That's all the wisdom I have.
+scene the_margin_sum
+when topic=work|dreams self.job=scholar
+does tell.self / ask.detail / answer.detail / assess
+a : There's a sum in #margin#. It's what I've saved for #stall#. I add to it every week. | I carry #sum# from page to page. When the ledger's full, it moves to the next one. | #sum.capitalize# went up by a coin today. I wrote it in very small.
+b : How much is it? | The whole way through? | Only a coin?
+a : Enough to be hopeful about. Not enough to stop counting. | Six ledgers, so far. #sum.capitalize#'s the only figure in them that's mine. | A coin's a coin. #saying#.
+b : #bc_good# | #bc_ha# | #bc_true#
+
+scene at_the_desk
+when topic=work self.working=yes self.job=scholar
+does tell.self / react.self / assess
+a : I copy #forms# all morning and check them all afternoon. Then I check the checking. | #desk.capitalize# is by a window that leaks in the rain. I've moved my papers twice. | I've a good hand for #figures#. That's why I'm here. Nobody ever asked if I liked it.
+b : That's a long day. | Twice? | Do you?
+a : Long and quiet. I don't mind quiet. | Twice, and the window's won both times. I'll try a third. #bc_we_will_see# | Mostly. I like it when #figures# come out. They usually do.
+
+scene a_wrong_figure
+when topic=work|prices self.working=yes self.job=scholar
+does tell.complaint / ask.detail / answer.detail / assess
+a : #column.capitalize# came out a penny wrong today. I went back through forty pages to find it. | Somebody wrote a seven like a one in #ledger#. I've had words with the seven. | There's a figure in #office# nobody can account for. It's been there for a year.
+b : Did you find it? | Words? | Nobody?
+a : Page thirty-eight of #ledger#. A penny carried twice. I felt like a hero for a whole minute. | Quiet ones. It's been a good seven since. | Nobody. We've started calling it the lodger.
+b : #bc_ha# | #bc_ha# | #bc_ha#
+
+scene barley_soup
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : #soup.capitalize#. On a cold day I'd trade my lunch for it twice. | I make #soup# on a Restday and eat it till the next one. | Barley, an onion and whatever's cheap. #soup.capitalize# never asks for much.
+b : Every day? | All week? | That's thrifty.
+a : When I can. The rest of the time I think about it. | All week. It gets better, then it gets #tired#. So do I. | It's for #stall#. Every onion I don't buy goes in #margin#.
+
+scene a_tale_told_slowly
+when topic=pastimes|lore self.likes=old_tales
+does tell.feeling / ask.detail / answer.detail / assess
+a : I like #tale# best, with the ending kept back as long as it'll go. | Somebody at #office# tells the old tales on a slow afternoon. I stop writing to listen. | My #grandad# could make a tale last a whole evening. I'm still trying to learn how.
+b : What's the best one? | Do you get told off? | How did he do it?
+a : The one about the clerk who wrote down the wind. It never ends the same way twice. | Once. I said I was listening for errors. | Long pauses. He'd stop and look at the fire till you begged him for #tale#.
+b : #bc_ha# | #bc_ha# | #bc_wise#
+
+scene the_penknife
+when topic=pastimes|work self.likes=sharp_knife
+does tell.self / react.self / assess
+a : #knife.capitalize# is the best thing I own. I keep the edge myself. | A blunt knife makes a ragged nib, and a ragged nib makes a ragged clerk. #saying#. | I lent #knife# once. It came back with a nick in it. I've not lent it since.
+b : The best? | That's true. | Once was enough?
+a : For the price, by a long way. It does a dozen jobs and asks nothing. | It is. I can tell who cuts their nibs carelessly by their sevens. | Once is all a knife needs to teach you.
+
+scene misty_dawn
+when topic=weather|day here.weather=fog here.time=dawn self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. I came the long way just to walk through it. | #mist.capitalize# makes the city quiet. You can hear your own feet. | When it lies like this the street ends ten yards off, and I don't mind at all.
+b : It's cold, though. | Quiet, yes. | I like it too.
+a : Cold, and kind. It hides #gulls#. | Quiet enough to think. I add #sum# on the way in. | Then we'll stop here a moment before the desks have us.
+
+scene wet_floors
+when topic=weather|work here.weather=rain self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Rain again, and #office# floor is a pond by noon. Everybody walks it in. | I slipped on #wetfloor# this morning and saved the ledger, not myself. | I keep a rag under #desk# for the floor. Nobody else seems to own one.
+b : It's always raining. | The ledger first? | Lend it out.
+a : It is. #wetfloor.capitalize# never gets easier, and nor do I. | #ledger.capitalize# first. My knee will mend; a blot won't. | I did once. It came back wetter.
+
+scene gulls
+when topic=animals here.region=ridgemere self.dislikes=gulls
+does tell.complaint / react.complaint / assess / ack
+a : A gull had my bread off the sill at first bell, and stared at me the whole while. | #gulls.capitalize# are the only thing in this city I'd fine. | There was a gull on #office# roof all morning, shouting. Nobody could add a thing.
+b : They're bold. | What would you fine them? | All morning?
+a : Bold and fat. That gull ate better than I did, and paid less for #supper#. | A crust a day, payable to me. I'd be rich. | All morning. I lost my place in #column# three times.
+b? : #bc_ha# | #bc_ha# | #bc_poor_soul#
+
+scene the_stall
+when topic=dreams|work
+does tell.self / ask.detail / answer.detail / assess
+a : I'm saving for #stall# on the Commons. Coin by coin. I'm halfway, nearly. | One day I'll have #stall# and my own figures to keep. Nobody else's. | I've already planned where every shelf of #stall# goes. I just need the shelves.
+b : What would you sell? | Your own figures? | Just the shelves?
+a : Paper, ink and knives. I know what clerks want, and none of it's sold well. | My own #figures#. I'd add them up just for the pleasure. | And the stall, and the stock. But the shelves are planned. #bc_ha#
+b : #bc_good# | #bc_lovely# | #bc_ha#
+
+scene married_life
+when topic=family self.married=yes self.spouse
+does tell.feeling / react.self / assess
+a : My #self.spouse_word# is the one who reminds me to eat. I'd have starved over a ledger by now. | #self.spouse# and I keep #purse# together. It's the one sum I don't have to do alone. | I'd trust #self.spouse# with #sum#. That's the most I can say of anyone.
+b : Good to have. | That's a help. | That's a lot.
+a : It is. I don't say it enough, so I'll say it to you. | It is. Two clerks in one house. We argue in #figures#. | It's everything, near enough.
+
+scene northgate_home
+when topic=home here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : We live up a Commons street. Two rooms, and the window looks at a wall. | The Commons are noisy and close and nobody asks for papers. I like that, after a day of papers. | Our street floods at the bottom when it rains. We're near the top, and I counted the steps before we took it.
+b : Cosy. | That's a change. | Very wise.
+a : Cosy is the kind word. Small is the other one. | It's a rest. A loud one, but a rest. | Sixteen steps. Every one is worth it in a wet week.
+
+scene home_downs
+when topic=memories|home self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : I grew up in #self.from_town#. I learned my letters from the prices chalked on the stalls. | Back in #self.from_town# the market was the whole world. I still think of a week as six days and a market. | I miss the downs on #mist# morning. Mostly I miss being able to see a long way.
+b[from=larkfield] #lark : The prices on the stalls. I learned mine the same way. | Six days and a market. That's right. | You could see the next town from the top.
+b : Do you miss it? | And here? | A long way?
+a@lark : Then we were taught by the same teacher, near enough. | It's the only calendar that ever made sense. | You could. I used to wave, just in case.
+a : When it's fine. Never the wind. #bc_never# | Here a week is five days and a ledger. It's not the same. | Clear to the sky. Here I can see as far as the next chimney.
+
+scene letters_young
+when topic=memories|lore self.age>=20
+does tell.memory / ask.detail / answer.detail / assess
+a : I could add up #column# before I could read #pages#. My #mum# had me keep her tally. | The first thing I ever wrote was somebody else's debt. I was very proud of it. | I had a slate as a #child#, and I wrote on it till the corners wore round.
+b : Her tally? | Whose debt? | Still have it?
+a : Eggs and wool, for #mum#. I was never wrong by more than an egg. | A carter's. He paid it the next day, so it can't have been my handwriting. | In a box somewhere. The corners are still round.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene keeping_it_quiet
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : Half of what crosses #desk# is somebody's business, and none of it is mine to tell. | I file things. I don't repeat them. That's the job. | Someone wanted to know today what a neighbour owed. I said I'd forgotten. I hadn't.
+b : Not even a little? | Fair enough. | That's loyal.
+a : Not even #column# of it. | It's the only rule I never bend. | It's sense. A clerk who talks doesn't stay a clerk.
+b : #bc_fair_enough# | #bc_true# | #bc_true#
+
+scene lean_months
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : #sum.capitalize# hasn't moved in a month. Bread's dear and #soup# is thinner. | Lean times. I've seen more names on #rolls# for the dole this month than I'd like. | I added #purse# twice this week to make sure it was right. It was. It was just small.
+b : It'll pick up. | That's hard to see. | That's hard.
+a : It will. #saying#. | It is. I write them carefully. Somebody should. | It is. But small and right is better than big and wrong.
+
+scene faith_on_paper
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One keeps #ledger# too, I'd guess, and adds more kindly than we do. | Feast days, I'm in the chapel. I'm not much for the rest. | I say thank you every time #column# comes out. It feels like the right sort of prayer for a clerk.
+b : A kind thought. | That's enough. | It does.
+a : Let's hope. Being carried wrong would be a poor end. | I think so. Six days in seven I'm at #desk#, and that's no secret above. | Short and often. It's how I do everything.
+
+scene new_names
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : I wrote three new names on #rolls# today. Three folk who came here to stay. | A stranger stopped at #desk# for directions and told me about the road from the east. I'd have paid to hear more. | New faces always look lost in #office#. I give them the right form first. It helps.
+b : That's good. | Would you? | It would.
+a : It is. A new name means somebody's chosen us. | A little. Out of #margin#. | It does. The wrong form has made grown wolves weep.
+
+story first_day_at_the_desk [topic=work|memories self.job=scholar self.age>=22]
+  : My first day at #desk#, I copied a whole page and then knocked the ink over it.
+  : I copied it again, and stayed late, and nobody ever knew.
+  ask : Would you have owned up?
+  b : I'd hope I would.
+  b[friends] : You never told me that.
+  : I'm owning up now. That's late, but it's honest.
+
+story the_clerk_and_the_wind [topic=lore|pastimes]
+  : There was a clerk once who was told to write down everything that passed the window.
+  : So he wrote down the wind. Every gust. Pages and pages of it.
+  : When they asked what use it was, he said now they'd know the wind's business, if it ever came to court.
+  b : Ha. Did it?
+  : Not yet. But the pages are kept, I'm told. Just in case.
+
+story the_gull_and_the_pie [topic=animals|memories self.age>=20]
+  : When I first came to the city, a gull took a whole pie out of my paws on the quay.
+  : I'd saved three days for that pie.
+  ask : Can you guess what I did?
+  b : Chased it, I'd guess.
+  : Wrote it down. Three days and a pie. It's still the biggest loss in my margin.
+
+rule @margin_bark
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Carry the one. And the one. | Where's #knife#? Somebody's had it.
+
+rule @gull_bark
+when concept=bark here.region=ridgemere self.dislikes=gulls
+does aside
+cooldown 10h
+say Off the sill, you thief. | #gulls.capitalize#. Again.
+
+rule @floor_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 10h
+say Mind the floor. Mind it, I said. | Wipe your feet, all of you.
+
+rule @sum_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say One more coin for #sum#. | Halfway. Nearly halfway.
+
+dlg @1 resident.hub : #greet#. What can I find for you? It's written down somewhere. | #greet#. Ask; I'll look it up.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. That's nice.
+dlg @3 resident.hub [here.time=night] : It's late. If it needs #form#, it'll have to wait till morning.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Name the thing you need. I'll see.
+dlg @1 resident.job [self.job=scholar] : I'm #self.trade_words#. I copy, I check, and I add things up. | I keep figures. Other people's, all day. Then mine, at night.
+dlg @2 resident.job : I work, and I save, and I add it up. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing's crossed my desk worth repeating. | Quiet. #forms.capitalize# are boring this week.
+dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. It came in on #papers#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I file things. I don't repeat them.
+dlg @1 resident.bye : #farewell#. Mind the wet steps. | #farewell#. Go carefully.
+graft resident.hub
+choice What's that sum you keep writing in the margin? -> sum
+node sum
+say What I've saved toward a market stall of my own. Every coin goes in, page to page, ledger to ledger. It's the only figure in the building that's mine.
+mood warm
+free
+choice How close are you? -> sum_close
+choice Goodbye. -> bye
+node sum_close
+say Halfway, nearly. Every column adds up sooner or later. Come and buy a knife off me, when it's done.
+choice I will. -> hub
+choice Goodbye. -> bye

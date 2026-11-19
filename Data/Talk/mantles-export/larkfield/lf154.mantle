@@ -1,0 +1,297 @@
+# lf154, the carter who talks to milestones (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf154
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rmx_percival_thornham
+written_by claude
+title the carter who talks to milestones
+fits stage=adult|old
+prefers job=carter talk=quiet
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk greets_every_milestone_on_the_road_like_a_neighbour
+likes pickled_herring roof_birds old_maps summer_evenings
+dislikes drizzle early_bells
+fears a_wheel_off_on_a_wet_hill
+hopes to_drive_every_road_on_my_old_maps_once
+topics travel +0.5 work +0.4 land +0.3 animals +0.2 memories +0.2 gossip -0.4
+styles comfort=quiet gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# drives a cart out of the city and back and nods good day to every milestone on the road as if it were a neighbour: quiet, calm and content, slow with words, keeping a satchel of old maps to dream over and a jar of pickled herring under the seat.
+
+words
+oath! = Rut and reckoning | By the second milestone
+saying! = A stone that's stood that long has earned a nod | Slow wheels get home
+stones = my milestones | the old stones along the road
+milestone = a milestone | the stone at the second mile
+leaner = the leaning one | the stone at the fourth mile that leans like it's tired
+maps = my old maps | the satchel of maps under the seat
+team = the team | my team in the traces
+cart = the cart | the long cart
+load = the load | a load roped down
+herring = pickled herring | a jar of herring in vinegar
+roofbirds = the roof birds | the jackdaws along the ridge
+tailboard = the tailboard | the back of the cart, legs hanging
+halfrain = this half-rain | a wet that can't decide
+dawnbells = the dawn ringing | bells at an hour nobody asked for
+hillroad = the hill road | the road out past the gate
+droves = the old drove roads | the green roads over the downs
+
+any
+opinion @1 road for 1 : #hillroad.capitalize# feeds me. Some days rough, some days kind, and #stones# are always there. | I drive #cart# out and I drive it home. #saying#.
+opinion @2 road against 2 [world.wagons=raided] : They've had a wagon on #hillroad#. I'll drive with company till the Watch has them. | A raided wagon's a driver with no #wages# that week. #annoyed#.
+opinion @1 times for 1 : I eat, I sleep dry, I've a team that knows me. The times will do for me. | I've a #good# team and a full jar of #herring#. What more is there?
+opinion @1 city against 1 : The city's all chimneys and nobody looks up. I look up. #roofbirds.capitalize# are the city's best part. | Too many streets, and each one changes its name halfway. #maps.capitalize# can't keep up.
+opinion @1 merchants mixed 1 : They pay on the load, mostly. One or two weigh it light and pay it lighter. | A merchant's #load# is my #wages#. I don't ask much else of them.
+opinion @1 houses mixed 1 : A House wagon pays #good#. Its stewards look at you like you're part of #team#. | I've carried for two of the Houses. Neither said a word to me. I didn't mind.
+opinion @1 newcomers mixed 0 : New folk ask the way. I tell them, and I tell them it's longer than it looks. | They're all #stranger# till they've learned the hills. So was I.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. Mind #team#; the near one bites.
+line @2 greet [self.working=yes self.job=carter] : #greet#. I'm roping #load#; talk if you like. | #greet#. #cart.capitalize#'s nearly loaded.
+line @3 greet [here.time=dawn] : Morning. #team.capitalize#'s in the traces already. | Morning. Out at first light, back after the lamps.
+line @4 greet [here.time=dusk|night] : #greet#. Just in off #hillroad#. | #greet#. #tired.capitalize#, but I'm in.
+line @1 kin.open [pair.kin!=no] : You. Sit on #tailboard#, there's room. | There you are. I've a jar of #herring# open.
+line @1 again.open : Back twice. I've not gone far. | Back already. #cart.capitalize# hasn't gone anywhere.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come up, then. | #greet#. I'd hoped you'd come by #tailboard#.
+line @3 greet.return [self.working=yes self.job=carter] : #greet#. Mind the wheel. | #greet#. Stand clear of #team#.
+line @1 farewell : #farewell#. | #farewell#. Mind the ruts.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lit side. | #farewell#. I'm for #bed#, and early.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #oath#. That's a turn. | Hm. I'd not heard that on #hillroad#.
+line @1 react.news.new : That's new to me. #marvel#. | The yard never mentioned it. #surprise#.
+line @1 react.news.known : #knew#. The yard talks. | I'd heard it at #milestone#. Folk wait there.
+line @1 react.news.doubt : #doubt#. Sounds like one of #maps#: pretty, and wrong. | I'll wait till I've seen it with my own eyes, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That's a hard thing. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good# news to drive home on.
+line @1 answer.how : #fine#. #team.capitalize#'s sound and so am I. | Quiet. That suits me, #address#.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Three loads before noon. | Can't stop long. #load.capitalize# won't rope itself.
+line @1 ask.how : And you? Keeping dry? | How's your road been, #address#?
+line @1 sympathise : #sympathy#. Sit a bit. | That's a heavy load. Sit on #tailboard# a while.
+line @1 decline : #hedge#. I'm out on #hillroad# at dawn and the team needs me sharp. | I can't, #address#. #boss.capitalize# wants #cart# back by dark.
+line @1 accept_decline : #no_matter#. Another day. | That's fair. Some other evening, on #tailboard#.
+line @1 thank : #thanks#. | That's #good# of you. I'll remember it.
+line @1 deflect_thanks : #deflect#. | It was on my way. Most things are, with #cart#.
+line @1 preclose [self.working=yes] : Well. #team.capitalize#'s getting restless. | I'd better see to #load#.
+line @2 preclose : Well. #preclose#. | The light's going. #roofbirds.capitalize# are in already.
+line @1 accept_preclose : Go on, then. | Off you go. I've #team# to see to.
+line @1 ack : #bc_it_is# | #bc_right#
+line @1 give.advice : #advise#: give every milestone a nod. They've seen worse roads than yours. | Never trust a bridge on an old map you haven't crossed, #address#.
+line @1 warn [world.bandits=near] : Keep off #hillroad# after dark. #warn#. | Drive with company this week, #address#.
+scene hitching_at_dawn
+when topic=work|day here.time=dawn self.working=yes self.job=carter
+does tell.self / react.self / assess
+a : #team.capitalize#'s in the traces and #load# is roped. With luck I'll be out before the bells. | I hitch in the dark most mornings. My paws know the buckles better than my eyes. | First out of the yard this morning. The street was empty but for #roofbirds#.
+b : Early start. | In the dark? | Peaceful, that.
+a : Early's the job. The road's clearer before the city wakes. | In the dark. You learn by feel, or you don't learn. | It is. Best hour of the day, before #dawnbells#.
+
+scene roping_down
+when topic=work self.working=yes self.job=carter
+does tell.self / ask.detail / answer.detail / assess
+a : A load's only as safe as the last knot. I rope it twice. | Lost half #load# on a bend once. Never again. I check every rope at every milestone. | #boss.capitalize# showed me a hitch that holds in the wet. Took a month to get it right.
+b : Twice? | What happened? | Show me sometime?
+a : Twice. Once for the road, once for the hill. | A barrel came loose and took the rest with it. I walked back picking up turnips. | Bring a rope. I'll show you on #tailboard#.
+b : #bc_wise# | #bc_bad_luck# | #bc_i_will#
+
+scene good_day_stone
+when topic=travel|work|smalltalk self.job=carter here.time=dawn|day
+does tell.self / ask.detail / answer.detail / assess
+a : I nod to every one of #stones# on the way out. Good day, first. Good day, second. | Folk at the yard laugh, but I say good day to #leaner# every morning. | Seven of #stones# to the first village. I know every chip on every one.
+b : Out loud? | Why that one? | Every chip?
+a : Under my breath. #team.capitalize# doesn't mind, and the stones don't answer. | Because it's tired, and it's still standing. That's worth something, in a stone. | Every chip. The third one's got a bird's nest in a crack, come spring.
+b : #bc_ha# | #bc_fair_enough# | #bc_lovely#
+
+scene the_leaning_stone
+when topic=travel|land
+does tell.self / react.self / assess
+a : #leaner.capitalize# is a little further over every winter. I'll straighten it one day. | There's a milestone past the bridge somebody's cut their mark in. I don't like that. | I eat #herring# sat against the fourth stone. Every day, same place.
+b : Can you? | Vandals. | Every day?
+a : With a spade and a mate, maybe. It's waited this long, #address#. | It's stood two hundred years. It deserves better than a knife. | Every day. It's a #good# back to lean on, that one.
+
+scene the_old_maps
+when topic=pastimes|travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #maps# under the seat. Old ones, a penny each from the rag stalls. | I like to see where the roads used to go. Half of them go somewhere that's gone. | I've a map of the hills with a village on it nobody's lived in for years. I look at it of an evening.
+b : Why old ones? | Gone where? | What's there now?
+a : New maps just show what I drive every day. Old ones show what I might have. | Fields, mostly. A wall or two. #stones.capitalize# are the only thing that stayed. | Sheep. And one milestone, all alone, pointing at nothing.
+b : #bc_fair_enough# | #bc_true# | #bc_poor_soul#
+
+scene the_bridge_on_paper
+when topic=travel|land
+does tell.self / react.self / assess
+a : One of #maps# showed a bridge over the beck. There's no bridge. Never was, by the look. | A map's a guess somebody made once and then sold. I still buy them. | The old maps have #stones# drawn on them, little crosses. The stones are still there. The roads aren't.
+b : No bridge at all? | Why buy them? | That's strange.
+a : Stones, and a ford you'd not drive #team# through. I turned round. | Because a guess is nice to look at, of an evening on #tailboard#. | It is. #saying#.
+
+scene the_roof_birds
+when topic=animals|smalltalk self.likes=roof_birds
+does tell.feeling / react.self / assess
+a : Watch #roofbirds# for a bit. They fight over the warm chimney every morning. | There's one jackdaw on the yard roof that waits for me. I give it the end of my bread. | You can tell the weather by #roofbirds#. All huddled means rain.
+b : Every morning? | It waits for you? | Does it work?
+a : Every morning. The big one always wins. | It does. It's the only one at the yard that does, #address#. | Better than #maps# do. I'd trust the birds first.
+
+scene herring_on_the_tailboard
+when topic=food self.likes=pickled_herring
+does tell.self / react.self / assess
+a : #herring.capitalize# on a crust. That's dinner on the road, every day. | I keep a jar of #herring# under the seat with #maps#. The maps smell of vinegar. | Folk at the yard won't sit near me at noon. It's #herring#.
+b : Every day? | That can't be good for them. | I'd move too.
+a : Every day. I've not tired of it yet. | The maps don't mind. They're old enough to be past caring. | Their loss. #tasty#, it is.
+
+scene summer_tailboard
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : In off #hillroad#, and there's still light. I sit on #tailboard# till it goes. | Summer evening, legs over the end of the cart, nothing to rope. I'd not trade it. | Light till near ten. I open one of #maps# and drive it in my head.
+b : Sounds restful. | Not for anything? | Till ten?
+a : It is. Nobody wants a load moved at this hour. | Not for silver. Not for a seat in the Heights. | Near enough. Summer's long when you've nowhere to be.
+
+scene the_half_rain
+when topic=weather here.weather=rain|fog self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #halfrain.capitalize#. Not enough to stop for, too much to stay dry. | The ropes go slack in this. I'll be stopping to tighten them every mile. | I'd rather a downpour than #halfrain#. A downpour at least gets it over with.
+b : It's miserable. | Every mile? | I'd agree.
+a : Miserable. And it'll be the same tomorrow, #address#. | Every mile, and the hill's a slide of #mud#. | It gets over with, and then the sun. This just sits.
+
+scene the_dawn_ringing
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.self / assess
+a : #dawnbells.capitalize# again. #team.capitalize# jumped in the traces. | I'm up before the bells anyway. They only frighten #team#. | Whoever rings the early bell has never hitched a nervous team.
+b : They jumped? | Then why mind? | Likely not.
+a : Near took the gatepost with them. I had words with the bell, in my head. | Because I've just got them calm. #annoyed#. | Likely not. Ringers sleep in after, I'd wager.
+
+scene learning_the_reins
+when topic=work|friends self.apprentice=yes self.boss
+does tell.self / react.self / assess
+a : I'm learning the road from #self.boss#. Three years at it, and I'll have my own team. | #self.boss# lets me take the reins on the flat now. Not the hills yet. | Every day #self.boss# finds one thing I did wrong. Less every month.
+b : Three years? | Not the hills? | That's a good sign.
+a : Three, give or take. There's no hurry. #saying#. | Not yet. The hills are where you learn what #load# weighs. | It is. I keep count, on the back of one of #maps#.
+
+scene the_drove_roads
+when topic=memories|land|travel self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : At home there are #droves# over the downs, wide and green, for walking sheep to market. | The drove roads round #self.from_town# are older than any map. You follow the chalk and the hedges. | The first milestone I ever said good day to was on #droves#, a long walk from home.
+b[from=larkfield] #lark : Wide enough for a flock and a cart both. | Chalk and hedges. That's the way. | The one by the sheep-wash, maybe.
+b : For sheep? | Older than any map? | Why that one?
+a@lark : And a pen of geese behind. I'd know every bend still. | Chalk and hedges and a stone at the top. I miss them. | The very one. Moss on the north side, and a split down the middle.
+a : For sheep, and the drovers after them. #far.capitalize#, and every step green. | Older than the town, some say. I believe it, #address#. | It was the only one between me and home. It felt like company.
+
+scene how_i_say_it
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : At the yard I get a grin every time I call a long haul "three days' drove". | I still say a place is a fair step when it's past the hill. City folk think I mean a short walk. | I price a load in my head like a market trader. Habit from home.
+b : What do they call it? | Isn't it? | That's useful.
+a : A long haul. Same thing. They just won't say it my way. | It's a fair step. It's always longer than it looks. | Useful at the yard. Nobody short-weighs me.
+
+scene a_raided_road
+when topic=bandits|crime|caravan world.wagons=raided
+does tell.worry / reassure / assess
+a : They had a wagon on the road. I knew the route. I've driven it a dozen times. | Everyone at the yard's driving in pairs since. #team.capitalize# doesn't like company. | They say it was past the sixth #milestone#. I'll be watching there.
+b : Be careful. | Pairs is wise. | Watch close.
+a : I will. #maps.capitalize# won't help with that. Only eyes. | Wise and slow. I'll take slow. | I will. Every bush, till we're past it.
+
+scene fog_on_the_hill
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog on #hillroad#. I walked at the lead one's head the whole way. | #stones.capitalize# vanish in this. I count them by the bumps in the road before each. | Fog's the one weather where #maps# are no use at all.
+b : The whole way? | By the bumps? | No use at all.
+a : Every step. Slow, but #cart#'s in one piece. | Seven bumps, seven stones. I still said good day to each. | None. You drive by memory, and by the sound of the wheels.
+
+scene the_friend_at_home
+when topic=friends|home self.friend
+does tell.self / react.self / assess
+a : I'd trust #self.friend# to hold #team# on a hill. That's saying a lot. | #self.friend# is the one I'd want beside me on a bad road. | #self.friend# and I can go a whole evening on ten words.
+b : That's trust. | Good to have. | Best kind.
+a : Holding a full load on a slope. It's the most I've got. | It is. I've only one. One's enough. | It is. Quiet company's the best I know, #address#.
+
+scene every_road_once
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail / assess
+a : One day I'll drive every road on #maps#, the gone ones too, as far as they still go. | I'd like to see every milestone in the realm once. Just to say good day. | When I've my own team I'll take a summer and drive the old roads home.
+b : The gone ones? | Every one? | All the way home?
+a : As far as they go. Then I'll sit on #tailboard# and look at where they went. | Every one. There's no hurry, #address#. I've got years. | All the way, the slow roads. #saying#.
+b? : #bc_i_hope_so# | #bc_fair_enough# | #bc_good#
+
+scene not_my_business
+when topic=gossip|crime
+does tell.gossip / react.news / assess
+a : I hear things at the yard. I don't carry them past the gate. | I'm on the road all day. Whatever folk say, I've missed it, and I'm glad. | Somebody told me a thing at #milestone# today. It's gone out the other ear.
+b : Not even a bit? | Lucky you. | Wise.
+a : Not a bit. It's not #load# to carry. | Lucky, maybe. Quiet, anyway. | Wise or #tired#. One of the two.
+
+scene snow_on_the_hill
+when topic=season|weather here.season=winter
+does tell.worry / react.self / assess
+a : Winter on #hillroad#. I chain the wheels and walk the team up. | Snow hides the ruts. That's when you drive by #stones# and nothing else. | Two loads a day in winter, not three. #boss.capitalize# doesn't argue.
+b : Chains? | Just the stones? | Fair.
+a : Chains, and a sack of grit. It's slow. | Just the stones. They stick up when everything else is white. | Fair, and safe. A wheel off in the snow's a long walk.
+
+story the_bridge_that_wasnt [topic=travel|work self.job=carter]
+  : I bought a map once that showed a short way over the moor, with a bridge at the bottom.
+  : I drove it. Half a day, a broken spoke, and at the bottom, nothing but a beck and two old stones.
+  : I sat on #tailboard# and laughed. Then I drove back the long way. I keep that map still.
+  ask : Would you have gone on, or turned the team round sooner?
+  b : I'd have trusted the map too. Who doesn't?
+  b[job=carter] : Every carter's done that once. Once.
+
+story first_on_my_own [topic=work|memories self.job=carter self.age>=18]
+  : The first time I drove a load alone, I was so careful I took a whole day for half a day's road.
+  : I stopped at every #milestone# to check the ropes, and said good day to each while I was there.
+  : When I got back, #boss# just nodded. That was the best thing anyone's said to me.
+  b : A nod's worth a lot, from the right one.
+  b[old] : The careful ones last longest. Keep it up.
+
+story grandad_and_the_drove [topic=memories|land self.from=larkfield self.age>=18]
+  : My #grandad# walked sheep along #droves# to market every autumn, three days there and three back.
+  : He said good day to every stone he passed. I thought he was daft. Now I do it.
+  : I tried the drove alone once, as a pup. I got lost in an hour, and he found me by whistling.
+  ask : Did anybody in your house ever find you by a sound like that?
+  b : A voice across the market. I'd know it anywhere still.
+  b[from=larkfield] : The drove roads take some learning. Everybody gets lost once.
+
+rule @walk_on
+when concept=bark working=yes self.job=carter
+does aside
+cooldown 6h
+say Walk on, now. Walk on. | Steady, the pair of you. #oath#.
+
+rule @halfrain_bark
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 8h
+say #halfrain.capitalize#. Make your mind up. | Ropes slack again. #annoyed#.
+
+rule @stone_bark
+when concept=bark working=yes self.job=carter here.time=dawn|day
+does aside
+cooldown 8h
+say Good day to you, old stone. | Still standing, #leaner#? Good.
+
+rule @birds_bark
+when concept=bark here.time=dusk self.likes=roof_birds
+does aside
+cooldown 10h
+say #roofbirds.capitalize# are in. Day's done. | There's the big one on the chimney again.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. I've a minute.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Need something carried? | #topic.player#. #talk_open#
+dlg @3 resident.hub [here.time=night] : I'm just in off the road. Be quick, if you can.
+dlg @1 resident.job [self.job=carter] : I drive for the carters. Out at dawn, back after the lamps, a load each way. | I drive #cart# out of #self.workplace# and back. I'm learning the hills.
+dlg @2 resident.job : I work, and I keep #maps#. That's me. | #job_busy# Mostly on the road.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'm on the road all day. | Nothing that reached #hillroad#.
+dlg @2 resident.news [world.news] : They were saying at the yard: from #world.news_from#, #world.news#. | Word from #world.news_from#: #world.news#. That's all I know.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Not #load# to carry.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the ruts.
+graft resident.hub
+choice Do you really talk to the milestones? -> stones
+node stones
+say Only good day. They've stood by the road two hundred years and watched every cart go by. It seems rude not to.
+mood calm
+free
+choice Do they ever answer? -> stones_answer
+choice Goodbye. -> bye
+node stones_answer
+say No. That's what I like about them. But on a bad road, in the fog, it helps to know there's an old friend every mile.
+choice Something else. -> hub
+choice Goodbye. -> bye

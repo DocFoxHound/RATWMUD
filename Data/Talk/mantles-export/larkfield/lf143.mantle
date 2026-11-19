@@ -1,0 +1,298 @@
+# lf143, the chalk-tally crane hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf143
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_gwen_brineby
+written_by claude
+title the chalk-tally crane hand
+fits stage=adult|old
+prefers temper=short warmth=warm
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk chalks_every_card_debt_on_the_nearest_wall
+likes warm_bread cards old_maps first_snow
+dislikes deep_mud salt_wind
+fears a_load_coming_down_on_somebody_s_head
+hopes a_room_up_the_hill_with_a_dry_floor
+topics pastimes +0.4 work +0.3 food +0.3 times +0.2 home +0.2 gossip -0.3
+styles comfort=feeding gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# works a winding drum on the wharf and keeps every card debt in chalk on the nearest wall: warm, quick to snap and quicker to feed you, honest to the copper, and set on a dry room up the hill.
+
+words
+oath! = By the jib and the drum | Chalk and cards
+saying! = Chalk it up and it's owed | Warm bread first, then the quarrel | Nothing's square till the chalk's rubbed out
+chalk = a stub of chalk | the chalk in my pocket
+tally = the tally on the wall | my chalk marks by the door
+cards = a hand of cards | the cards, dealt quick
+loaf = a loaf still hot | bread warm off the board
+crane = the crane | the big wharf crane
+drum = the drum | the winding drum
+load = the load | a load swinging overhead
+saltwind = the salt wind | wind off the water that stings your eyes
+uphill = a dry room on the hill | a room on the hill where the floor stays dry
+chart = my old chart | a chart of the downs wrong in every corner
+firstsnow = the first snow | first snow on the roofs
+copper = a copper | one copper, owed
+shift = the shift | a long shift on the wharf
+downs = the downs | the open downs
+
+any
+opinion @1 houses against 2 [here.region=ridgemere] : They'd leave a place empty sooner than take on a wolf off the wharf. I've asked, #oath#, and I've had the door.
+opinion @2 merchants against 2 : Nothing more in my purse, and up goes the loaf. Somebody's #bad# at the scales, and it isn't me.
+opinion @3 dole for 3 [self.on_dole=yes] : #dole.capitalize# kept me on my feet the worst week I've had. Sneer at it near me and see, #address#.
+opinion @4 sump for 1 [here.region=ridgemere] : The Sump's rough, but nobody down here lets a neighbour go #hungry# while there's a heel of bread.
+opinion @5 watch against 1 [here.region=ridgemere] : The Watch come down our stairs to take somebody, never to ask how we're keeping.
+opinion @6 strangers for 1 : A stranger fed is a friend made. Sit them down with #loaf# and see.
+opinion @7 times against 2 : Every week #copper# buys a bit less. Nobody up top so much as blinks.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind where you put your paws. | #greet#, #address#. You're not from the Sump, I'd say.
+line @2 greet [self.working=yes] : #greet#. Mind #load#; I'll not shout twice. | #greet#. Talk quick; #drum#'s turning.
+line @3 greet [here.time=dawn] : #greet#. You're up with the first ship. | #greet#. #cold.capitalize# start, this.
+line @4 greet [here.time=dusk|night] : #greet#. Shift's done, and so am I. | #greet#. Late to be down by the water.
+line @5 kin.open [pair.kin!=no] : Get in here. There's #loaf# on the board. | You've not eaten. Don't tell me you have, #dear#.
+line @6 again.open : You again, and welcome, #dear#. | Back already. #tally.capitalize#'s not changed.
+line @7 greet.return : #greet#. | #greet#. Stand clear, mind.
+line @8 greet.return [pair.band=friends|family] : #greet#, #dear#. Sit down. | #greet#. Just the face I wanted.
+line @9 greet.return [self.working=yes] : #greet#. Quick, now. | #greet#. #drum.capitalize# won't wait.
+line @10 farewell : #farewell#. | #farewell#. Keep off the slick bits.
+line @11 farewell [here.time=dusk|night] : #farewell#. Keep to the lit stairs. | #farewell#. Mind your purse going up.
+line @12 farewell.return : #farewell#. | #farewell#, #address#.
+line @13 react.news : #ack#. Go on. | #oath#. What else?
+line @14 react.news.new : #surprise#. Nobody on the wharf's said that. | #oath#. First I've heard of it.
+line @15 react.news.known : #knew#. | I had that off the gang at #crane# this morning.
+line @16 react.news.doubt : #doubt#. Who's selling that one? | I'd put that on #tally# as a maybe, and no more.
+line @17 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. | #oath#. That's cruel. I'm sorry.
+line @18 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll take some bread round. | Good. There's #good# news for once.
+line @19 answer.how : #tired.capitalize#, but fed. | #notsobad#. Arms ache from #drum#.
+line @20 answer.how.busy [self.working=yes] : #busy.capitalize#. Ship in and a short gang. | Ragged, and #load#'s still swinging.
+line @21 ask.how : You eating? | And you, #address#? Keeping warm?
+line @22 sympathise : #sympathy#. Sit, and have a bit of #loaf#. | #bc_bad_luck# Come here; I'll find you something.
+line @23 decline : #hedge#. I'm on #shift# till dark and skint till pay day. | Can't, #address#. I'm down to the last copper, and I'll not pretend.
+line @24 accept_decline : #no_matter.capitalize#. | Fair enough. Another time, then.
+line @25 thank : #thanks#. I'll chalk that on the good side. | #thanks#. I owe you, and I'll not forget.
+line @26 deflect_thanks : #deflect.capitalize#. | Get away. It was only #loaf#.
+line @27 preclose [self.working=yes] : Right. #drum.capitalize# wants me. | I'd best get back before #load# swings.
+line @28 preclose : #preclose#. | Right. I'll let you go, #address#.
+line @29 accept_preclose : Go on, then. | Go careful on the stairs, #address#.
+line @30 ack : #bc_right# | Mm.
+line @31 warn [here.region=ridgemere] : Stand clear of the cranes when a ship's in. #warn#. | Don't cut under #load#, whatever you're carrying.
+scene chalk_tally
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : See #tally#? Every copper owed at cards since the spring. | Somebody rubbed out a mark on my wall. I put it back. #oath#. | I put what I owe on #tally# as well as what I'm owed. Fair's fair.
+b : Who owes you the most? | How did you know? | Even your own?
+a : I'll not say. They know, and #tally# knows. | I keep the count in my head too. #tally.capitalize#'s only the copy. | Mine first, in the big marks. #saying#.
+b : #bc_fair_enough# | #bc_clever# | #bc_fair#
+
+scene card_night
+when topic=pastimes here.time=dusk|night self.likes=cards
+does invite / accept_invite / assess
+a : #cards.capitalize#, after #shift#? Pennies only. | I've a pack and a candle. Sit in, #address#. | There's a game on in my room. Bring a copper, and #chalk# does the rest.
+b : I'll sit in. | Go on, then. | Just the one copper?
+a : Good. I deal fast; keep up. | #bc_good# You'll lose, mind, but fairly. | One. I'll not have anybody walking home #skint# from my table.
+
+scene stand_clear
+when topic=work self.working=yes here.region=ridgemere
+does warn / apologise / assess
+tone serious / even / even
+a : Stand clear! #load.capitalize# swings wide on the turn. | Not under there, #address#. If the rope goes, it comes straight down. | Back up. I've seen #load# go through a cart like paper.
+b : Sorry. I didn't see. | I'll go round. | A whole cart?
+a : #no_matter.capitalize#. Only mind it next time. | Go round. Everyone goes round. | A whole cart, and the carter stood a yard off. Lucky.
+
+scene the_drum
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I'm on #drum# all day. Wind it up, let it down slow, and never let go. | My arms are #tired# by noon and the ships don't care. | The gang hauls, I wind. If I stop, #load# drops.
+b : Hard on the arms. | They never do. | No pressure, then.
+a : Hard, but it's #wages#, and honest. | They don't. #saying#, and the ship comes first. | Plenty. I don't think about it till after.
+
+scene salt_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# today. My eyes have been streaming since dawn. | That wind off the water gets in every crack of my coat. | Salt on my whiskers, salt in #loaf#. I'm sick of the taste.
+b : It's the wharf. | Get a better coat. | It does get in everything.
+a : It's the wharf, and I'm stuck with it till I'm in #uphill#. | With what? I'm #skint#. | Everything. Even #cards# feel gritty.
+
+scene muck_to_the_knees
+when topic=weather here.weather=rain|storm here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : The lane's all #mud# again. I lost the path twice getting here. | #mud.capitalize# to the knees on our stair. Who lets a stair get muddy? | Rain on the wharf turns it all to #mud#. I'll be scrubbing my paws an hour.
+b : It's the Sump. | Somebody careless. | Better than the cold.
+a : It's the Sump, and I love it. #mud.capitalize# I'd sell you cheap. | Everybody, and nobody. #oath#. | Barely. Cold you can wear a coat for.
+
+scene first_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : Snow on the roofs. The whole Sump's gone quiet and clean. | #firstsnow.capitalize#. I stood out in it like a pup before #shift#. | Snow hides #mud#. For a morning, it's lovely down here.
+b : It does look clean. | Like a pup? | Only a morning?
+a : Clean as anything up the hill. Not for long, but still. | Like a pup. I'll not apologise for it. | By noon it's grey. Still, I'll take the morning.
+
+scene warm_loaf
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess / ack
+a : #loaf.capitalize#, broken while it's hot. There's nothing better, and I'll fight you on it. | I go past the bakehouse on purpose for the smell of #loaf#. | When I've a copper spare I buy a loaf and give half away.
+b : I'd not fight you. | Just the smell? | Half?
+a : Good. Have some, then. | Smells are free. The loaf costs. | Half. Somebody's always hungrier than me.
+b? : #bc_thank_you# | #bc_fair# | #bc_good#
+
+scene the_chart
+when topic=travel|pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I've #chart# on my wall by the tally. The roads on it go nowhere. | Somebody drew #downs# with three rivers. There's one. | I paid #copper# for an old chart off a stall. Worth every bit.
+b : Why keep it? | Three? | Worth a copper?
+a : It's from home. Wrong home, but home. | Three, and a town on a hill that's a field. That's why it's on my wall. | Worth more. I've learnt every wrong road on it.
+
+scene room_up_the_hill
+when topic=dreams|home
+does confide / react.self / assess
+a : #vent#: #uphill# is all I'm after. Nothing grand. | I'll not die in the Sump. I've decided. Up the hill, one stair at a time. | Every copper I don't lose at cards goes in a sock for #uphill#.
+b : You'll get there. | One stair at a time. | And the ones you lose?
+a : I will. It's all on #tally#, the saving too. | One stair, then another. I'm patient when it counts. | Chalked, and paid. I don't count those in the sock.
+
+scene dole_bread
+when topic=times|food self.on_dole=yes
+does tell.self / react.self / assess
+a : #dole.capitalize# fed me through a bad week, and I'm not ashamed to say it. | I've stood in the line for #dole#. No shame in a full belly. | There's weeks #dole# is all that's on my board.
+b : It's there for that. | None at all. | Hard weeks.
+a : It is, and I'll pay it back in kind when I can. | None. Shame's for them who've never been hungry. | Hard, and they'll pass. #saying#.
+
+scene sump_looks_out
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : Down here, nobody shuts the door on a neighbour in #rain#. | The Sump's rough. It's also the only place I've been fed by strangers. | Folk call the Sump all sorts. I call it home, for now.
+b[wealth=rich] #rich : I'd not know. | Fed by strangers? | For now?
+b : That's the way it should be. | Kind folk. | Home's home.
+a@rich : No. Come down and find out, sometime. | Strangers with nothing, sharing it. You'd not see that up top. | Till I'm in #uphill#. But I'll remember who fed me.
+a : It is. Nobody taught us; we just do it. | Kind and rough, both at once. | Home, and muck, and good folk. #oath#.
+
+scene watch_on_the_stair
+when topic=crime here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : When the Watch come down our stair, somebody's leaving with them. | A purse goes missing up the hill, and it's our doors they knock. | The Watch and I don't cross. Not for guilt; for peace.
+b[role=guard] #guard : Somebody has to come. | It's orders, mostly. | We'd sooner peace too.
+b : I've seen it. | Unfair, that. | Wise.
+a@guard : Then come once without the cuffs, and see who opens. | Orders from up top. I know where the blame lives. | Then knock gentler. You'd get more said.
+a : Everybody has. Nobody says. | Unfair, and nobody up there loses sleep. | Wise, or #tired#. I'm both.
+
+scene downs_at_home
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : At home on #downs#, the flock always knew the snow was coming before we did. | In #self.from_town# the bread came out at dawn and the whole market smelt of it. | Card nights at home were in the barn, with #beasts# listening.
+b[from=larkfield] #lark : The flock always knows. | Market bread. I can smell it now. | Every barn had a game going.
+b : The sheep knew? | Market bread? | Sheep listening?
+a@lark : They do. Ours started bleating a day early. | That's why I walk past the bakehouse here. | Ours had three. And a wolf who chalked the debts.
+a : They huddle a day before. Never wrong. | Hot from the oven at the market cross. I'd hand over a day's #wages# for one. | They'd stare. Better company than some card players I've had.
+
+scene friend_in_the_house
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd send for if I was hurt. | I'd trust #self.friend# with my sock of coppers. That's saying a lot. | #self.friend# and I go back. Say nothing against that one in my hearing.
+b : That's a good friend. | Coming from you, that's something. | Fair enough.
+a : The best. #bc_it_is# | It is. Every copper's counted. | Good. I'd not want to lose my temper.
+
+scene short_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : Every time #load# lands soft, the Bright One hears from me. | I'm no chapel-goer. But the chapel put bread in me once, and I remember it. | A prayer for the gang before a big ship. Can't hurt.
+b : That's a good prayer. | That's worth remembering. | Can't hurt at all.
+a : I mean that one more than most. | I do. It's in chalk somewhere, on the good side. | No. And it keeps the gang quiet a minute.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Fewer ships, fewer shifts. I'm on #drum# three days in six. | The loaf's up and the pay's not. #grumble#. | Half #tally# is folk who can't pay this month.
+b : It'll pick up. | It always goes that way. | Will you rub them out?
+a : It will, when the ships come back. #reassure#. | Always. #bc_i_know# | Not rub out. I'll wait. They'll pay when they can.
+b? : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene heard_on_the_wharf
+when topic=gossip
+does tell.gossip / react.news / assess
+a : They're saying on the wharf #topic.subject# #topic.claim#. That's as far as I'll carry it. | I heard #topic.subject# #topic.claim#. Don't ask me more; I don't know more.
+b : Well, there's news. | Fair enough.
+a : It is. Till somebody who saw it tells me, it's chalk talk. | #bc_fair_enough# I'll not chalk it till it's true.
+
+scene new_face_fed
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : New face on our stair. I took round #loaf#. | Somebody new on the wharf today. Didn't know which end of a rope to hold. | A newcomer asked me the way to #dole#. I walked them there.
+b : That's kind. | Did you show them? | All the way?
+a : It's how you start. #saying#. | I showed them, and I shouted, and they learnt. | All the way. You don't point a hungry wolf at a door.
+
+scene ships_mean_work
+when topic=ships|work here.region=ridgemere
+does tell.self / react.self / assess
+a : Each ship in is a day's #wages# to me. I don't care what's in it. | A big ship means a long #shift#, and I'll sleep like the dead. | I can tell a heavy hold by how #drum# groans.
+b : Good for you. | Long days. | You can tell?
+a : Good for the sock. #uphill.capitalize# gets nearer. | Long and paid. I'll not grumble. | Every time. The drum never lies about weight.
+
+story the_copper_paid [topic=memories|pastimes]
+  : Somebody owed me one copper from cards for a whole year. I left the mark on #tally#.
+  : The morning of #firstsnow# they turned up at my door with it, and a loaf.
+  ask : Would you have rubbed it out, after a year?
+  b : I'd have forgotten it long before.
+  b[friends] : Never. Not you.
+  : I rubbed it out that morning, and we ate the loaf together.
+
+story the_rope_that_went [topic=work|memories self.age>=25 here.region=ridgemere]
+  : I was on #drum# the day a rope went on the next crane over.
+  : The load came down where a carter had been standing a breath before.
+  ask : Do you know what saves a wolf, at a time like that?
+  b : Luck, I'd say.
+  b[job=carter|laborer|sailor] : Being where you're told and nowhere else.
+  : Somebody shouting. I shout now. I'll always shout.
+
+story the_road_to_the_pond [topic=lore|travel self.likes=old_maps]
+  : There's a road on #chart# that runs straight over #downs# to a market town.
+  : A drover followed it once, so the tale goes, and it ran him into a pond.
+  b : Ha. A good map, that.
+  b[old] : I've heard of that pond. It's still there, they say.
+  : I keep the chart for that road. Every wrong map ought to have one.
+
+rule @stand_clear
+when concept=bark working=yes here.region=ridgemere
+does aside
+cooldown 6h
+say Stand clear! Load coming over! | Not under there. Round, round.
+
+rule @chalk_bark
+when concept=bark self.likes=cards
+does aside
+cooldown 10h
+say Where's #chalk#? Somebody owes me. | That's a copper. On the wall it goes.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 8h
+say #saltwind.capitalize#. My eyes. | Salt in my whiskers again.
+
+rule @bread_bark
+when concept=bark here.time=dawn self.likes=warm_bread
+does aside
+cooldown 12h
+say Smell that. #loaf.capitalize#. | Bread's out. Past the bakehouse, then.
+
+dlg @1 resident.hub : #greet#. What is it? Quick, mind. | #greet#, #address#. Stand clear and say on.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've eaten? Good. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Hm. Say it from there, then.
+dlg @4 resident.job : I'm #self.trade_words#. Winding, mostly, and shouting. | #job_busy#
+dlg @5 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing off the wharf but ships and #saltwind#.
+dlg @6 resident.gossip [here.gossip!=yes] : #gossip_none# | I'll not carry that. It gets back, down here.
+dlg @7 resident.bye : #farewell#. Stand clear going. | #farewell#. Keep off the slick bits.
+graft resident.hub
+choice What are all those chalk marks? -> chalk
+node chalk
+say Card debts, on #tally#. What I'm owed and what I owe, both. Mine are the big marks, so I don't forget them.
+mood warm
+free
+choice Do you ever rub them out? -> chalk_out
+choice Goodbye. -> bye
+node chalk_out
+say When they're paid, and not before. #saying#. I've never rubbed one out unpaid, and I never will.
+choice Fair enough. -> hub
+choice Goodbye. -> bye

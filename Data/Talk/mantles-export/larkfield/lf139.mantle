@@ -1,0 +1,291 @@
+# lf139, the swearer who says sorry (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf139
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_finn_wickby
+written_by claude
+title the swearer who says sorry
+fits stage=adult|old
+prefers job=merchant piety=devout
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk begs_the_bright_one_s_pardon_after_every_oath
+likes plum_tart whittling tidy_house frosty_mornings
+dislikes rats stale_bread
+fears a_debt_that_comes_due_before_the_coin a_house_let_go_to_dirt
+hopes a_clean_slate_by_the_new_moon the_little_ones_kept_fed
+topics faith +0.4 food +0.3 home +0.3 family +0.3 pastimes +0.2 gossip -0.4
+styles comfort=company gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# sweeps and carries in a family shop on the Commons, whittles little sheep of an evening and begs the Bright One's pardon after every oath: gentle, devout and unhurried, never one to send a hungry wolf off empty.
+
+words
+oath! = By the shepherd's crook | Crook and hearth | Tups and thunder
+saying! = Bread shared is never stale | Take it slow and take it clean | A swept floor is a kind of prayer
+pardon = Bright One pardon me | Begging the Bright One's pardon
+tart = a plum tart | plums baked in a crust, still warm
+knife = my whittling knife | the little knife
+whittle = a bit of whittling | whittling by the hearth
+lamb = a little wooden lamb | a carved sheep no bigger than a thumb
+rime = a white morning | frost on the cobbles
+broom = the broom | my good broom
+sawdust = the sawdust | fresh sawdust on the boards
+larder = the larder | my larder shelf
+ratword = the whiskered lot | those larder thieves
+crust = a stale crust | bread gone hard as a step
+downs = the downs | the chalk downs
+flock = the flock | my grandad's sheep
+chapel = the chapel | our little chapel
+neat = a swept hearth | the house kept neat
+bright = the Bright One | the good Bright One
+shop = the shop | our shop
+counter = the counter | the shop counter
+sheep = sheep | the old ewes
+
+any
+opinion @1 strangers for 2 : A stranger's only a neighbour you've not fed yet. #oath#, #pardon#, I mean it.
+opinion @1 newcomers for 2 : Plenty of room in #here.town# for anybody who'll lend a paw. I came in as one myself.
+opinion @1 drink against 1 : I've seen #ale# empty a family's pockets and #bright# weep for it. A cup's enough.
+opinion @1 church for 2 : Restday finds me in #chapel# whenever my legs will carry me. #bright.capitalize# has never once let me go short of hope.
+opinion @1 dole for 2 : No wolf on these streets should sleep #hungry#. #dole.capitalize# is the least of it.
+opinion @1 houses mixed 0 : Some of #toffs# are kind and some aren't. Same as any of us, only with more silver.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Take your time; there's no hurry in here. | #greet#, #address#. Step in; the wet's no friend of yours.
+line @2 greet [here.time=dawn] : #greet#. #rime.capitalize#, and #bright#'s own sky over it. | #greet#. Up with the sweeping, I see.
+line @3 greet [here.time=dusk|night] : #greet#. Late, #address#, but you're welcome. | #greet#. The lamps are lit; sit a minute.
+line @1 kin.open [pair.kin!=no] : #dear.capitalize#, you're here. #tart.capitalize# is saved for you. | Come in, #dear#. Warm your paws.
+line @1 again.open : Twice in one day. #bright.capitalize# must want us talking. | Back already, #address#. I'm glad of it.
+line @1 greet.return : #greet#. | #greet#, #address#. Bless you.
+line @2 greet.return [pair.band=friends|family] : #greet#. I was hoping you'd come by. | #greet#, #dear#. Sit down, sit down.
+line @1 farewell : #farewell#. #bless#. | #farewell#, #address#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps going home. | #farewell#. Sleep sound, and #bless#.
+line @1 farewell.return : #farewell#. | #farewell#. Bright One keep you.
+line @1 react.news : #listen#. Tell it slow; I'm listening. | #surprise#. Go on, #address#.
+line @1 react.news.new : #oath#. #pardon#. That's new to me. | Well, that's fresh to me, #address#.
+line @1 react.news.known : #knew#. I had it at #shop# this morning. | I heard. The morning's customers had it already.
+line @1 react.news.doubt : #doubt#. I'll pray it's not so. | Let me hear it from an eye that saw it, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll keep them in my prayers tonight. | That's a hard thing. Bright One hold them close.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Praise #bright#. | Now there's #good# news. I'll bake on it.
+line @1 answer.how : #fine#. Fed, swept and thankful. | Well, thank #bright#. The floor's clean and the larder's full.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. #sawdust.capitalize# wants changing twice today. | On my paws since dawn, and glad of the work.
+line @1 ask.how : And you, #address#? Eating properly? | How are you keeping? Well, I hope.
+line @1 sympathise : #sympathy#. Sit down. Kettle's going on, and I'll keep quiet. | That's a weight, #address#. You'll not carry it alone while I'm about.
+line @1 reassure : #reassure#. #bright.capitalize# sees further than we do. | It'll come right, #address#. Slow, but right.
+line @1 decline : #hedge#; I'd like to, but #shop# needs its floor done before the lamps. | I can't, #address#. I've promised the evening at home, and a promise is a promise.
+line @1 accept_decline : #no_matter#. Another day. | Bless you, that's all right. Some other time.
+line @1 thank : #thanks#. #bright.capitalize# saw that, and I'll remember it. | Bless you. That was #good# of you.
+line @1 deflect_thanks : #deflect#. Tomorrow it'll be you helping me. | Only what anybody ought. Don't think on it.
+line @1 preclose [self.working=yes] : Well. #broom.capitalize# won't push itself. | I'd best get back; there's #sawdust# to lay.
+line @2 preclose : Well. #preclose#. | I'll let you go. #bless#.
+line @1 accept_preclose : Go on, then. #bless#. | Off home, #address#, safe and dry.
+line @1 ack : #bc_true# | #bc_bless_you#
+line @1 give.advice : #advise.capitalize#: never go to bed on a quarrel, nor on #crust#. | Pray, sweep and pay what you owe. The rest sorts itself.
+scene pardon_after
+when topic=smalltalk|faith
+does tell.self / ask.detail / answer.detail / assess
+a : #oath#! #pardon#. I've done it again. | Every time I swear I say sorry to #bright# straight after. Habit from my #gran#. | I dropped a whole tray this morning. #oath#. #pardon#. Then I picked it up.
+b : Done what again? | Your gran? | Do you always say sorry?
+a : Sworn. I'm not built for swearing. It comes out and I've to send an apology after it. | She swore like a drover and prayed like a priest, both in one breath. I got the both of it. | Always. #bright.capitalize#'s had a lot of sorry from me. I hope it adds up to something.
+b : #bc_ha# | #bc_bless_you# | #bc_i_hope_so#
+
+scene sawdust_down
+when topic=work|smalltalk self.working=yes
+does tell.self / react.self / assess
+a : I lay #sawdust# at dawn and again at noon. #shop.capitalize# smells clean, at least. | I'm #self.trade_words#. I sweep, I carry and I keep out from under paws. | First thing every morning, #broom# and fresh #sawdust#. The rest of the day follows.
+b : Twice a day? | Sounds like a lot. | Sensible.
+a : Twice. A shop floor wants it. I'd rather sweep than slip. | It's honest work and I like it. Nobody asks me to be clever. | It is. #saying#.
+
+scene boss_at_the_block
+when topic=work self.boss self.working=yes
+does tell.self / react.self / assess
+a : #self.boss# runs #shop#. I'd follow #self.boss# into a storm with a candle. | #self.boss# says #counter#; I say the floor. We neither of us cross the line. | Whatever #self.boss# wants done, I do it, and I've never once been sorry.
+b : That's loyalty. | Works, then? | That's rare.
+a : It's trust, #address#. Earned, every bit of it. | Works lovely. Full weight, both of us. | It's not rare. It's luck, and I give thanks for it nightly.
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail / assess
+a : There's #tart# on the windowsill at home. I've been thinking of it since noon. | Give me #tart# and a cup of tea and I'll want for nothing. | I bought plums from a cart this morning. Tonight, #tart#.
+b : Who makes it? | Nothing at all? | Are they good plums?
+a : I do. Plums, a bit of honey, and pastry rolled thin. Nothing clever. | Nothing. #bright.capitalize# gave us plums; the rest is gratitude. | Dark ones, and sweet. #tasty.capitalize#. You'll have a slice if you come by.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene stale_crust
+when topic=food|prices
+does tell.complaint / react.complaint / assess
+a : Somebody sold me #crust# and called it this morning's. #oath#. #pardon#. | I can't abide bread gone stale. It's a waste of the baker's work and #bright#'s wheat. | Stale bread at the market today, at fresh bread's price. #robbery#.
+b : Did you take it back? | Toast it. | Shameful.
+a : I did. Politely. I got a fresh one and a dark look. | I'll toast it for the birds. I'll not eat it. | It is. I said a prayer for the seller, mind. Out loud.
+
+scene whittle_hearth
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail / assess
+a : I've #lamb# half done on the mantel. #knife.capitalize# goes slow. | #whittle.capitalize# of an evening keeps my paws out of mischief. | I carve sheep. Only sheep. I tried a wolf once and it came out a sheep.
+b : Who's it for? | What do you make? | Only sheep?
+a : For whichever pup in the street needs cheering. There's always one. | Sheep, mostly. #lamb.capitalize#, or a ewe with her head down. | Only sheep. I grew up with them. My paws remember the shape.
+b : #bc_lovely# | #bc_good# | #bc_ha#
+
+scene frosty_morning
+when topic=weather|season here.season=winter here.weather=clear self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #rime.capitalize#. I stood on the step and just breathed it. | Frost on every roof, not a cloud overhead. #bright.capitalize#'s handiwork, that. | A morning like this, the city smells clean for once.
+b : #cold.capitalize#, though. | It's lovely. | Clean?
+a : #cold#, and worth every shiver. I'll warm up sweeping. | It is. It puts me in mind of #downs# at home. | Clean. The frost holds the smoke down. You'd think it was a village.
+
+scene wet_city
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / reassure
+a : #rain.capitalize# again. I've given up drying the step; I just pray over it. | Wet for a week. #shop.capitalize# floor's more mud than #sawdust#. | This city's rain never stops; it only rests.
+b : It never lets up. | Mud everywhere. | Ha.
+a : It will. Everything does, in #bright#'s time. #reassure#. | I'll lay more #sawdust#. It's what it's for. | I'll grant it that. Even the rain gets Restday.
+
+scene ratword_larder
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : #ratword.capitalize# have been at #larder# again. #oath#. #pardon#. | I heard them in the wall last night. I lay awake praying they'd go next door. | A rat ate through a sack of oats and left the sack. Polite of it.
+b : What will you do? | Did they? | Polite?
+a : Tin everything. And set a trap I'll feel sorry about. | They did not. They came to me. I'll pray harder. | Polite as a thief. I'll forgive it when it's gone.
+b : #bc_poor_soul# | #bc_ha# | #bc_true#
+
+scene neat_house
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : I like #neat#. Not grand, just neat. A place for the kettle and the kettle in it. | First thing I do home is sweep. Even before I sit. | My #gran# said a dirty floor lets the Dark One in. I don't believe it, but I sweep anyway.
+b : A wise way to live. | Even before sitting? | Better safe.
+a : It's how I was raised, and how I'll stay. #saying#. | Even then. I sit better on a clean floor. | That's what I say. #bc_true#.
+
+scene married_home
+when topic=family self.married=yes self.spouse
+does tell.self / react.self / assess
+a : #self.spouse# and I have been through lean weeks and fat ones. I'd not change a day of it. | My #self.spouse_word# is the best thing #bright# ever sent me. I say it most nights. | I come home and #self.spouse# has the lamp lit. That's all the welcome I need.
+b : That's lovely to hear. | Most nights? | That's a good home.
+a : It's lovely to have. I give thanks for it. | Most. The other nights I'm asleep before I can. | It is. The best in #here.town#, I'd swear, and then say sorry for swearing.
+
+scene little_one
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : #self.child# is at lessons today. I'm prouder of that than of anything I've done. | I made #self.child# #lamb# when the teeth came in. It's chewed half away. | I pray for #self.child# every night. Not for anything big. Just kept and fed.
+b : Lessons! That's good. | Chewed away? | That's a good prayer.
+a : It is. More letters than I'll ever have. #thanks#, Bright One. | Half away, and still loved. That's the best a carving can hope for. | That one prayer's enough for me.
+
+scene chapel_restday
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : Restday at #chapel#, and I take the back bench so I can sing without anybody hearing. | The priest says #bright# counts every sparrow. I count on that. | I light a candle for the folk at home every Restday. Same candle, same prayer.
+b : I'd like to hear you sing. | Comforting. | A good habit.
+a : No, you wouldn't. #bright.capitalize# puts up with it; that's mercy enough. | It is. It's the best of what I know, #address#. | It's kept me. I hope it's kept them.
+
+scene downs_flock
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : At #self.from_town# my #grandad# kept sheep on #downs#. I minded #flock# as a pup. | I learned to whittle sitting with the sheep, with nothing to do but watch. | On #downs# a frosty morning, every blade of grass was white and the sheep steamed.
+b[from=larkfield] #lark : Every pup on the downs minded sheep. | The best way to learn anything. | The sheep steamed! I'd forgotten.
+b : Do you miss it? | Who taught you? | Sounds cold.
+a@lark : And lost half of them, if they were like me. | Patience, and a bad knife. That's how. | They did. Like kettles on legs.
+a : I miss the quiet, #address#. Not the cold paws. | Nobody. A pocketknife and a lot of afternoons. | It was. And lovely. #bright.capitalize#'s best work.
+
+scene accent_kept
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : Years in this city, and the baker still gets a fair price from my mouth. Old habits. | Folk hear #downs# in me and ask after sheep. I tell them, too. | I've never tried to lose how I talk. #bright.capitalize# gave me this voice.
+b : It suits you. | Do you mind? | Why would you?
+a : #thanks#. It's a homely voice, I hope. | Not a bit. I like being asked. | That's what I say. I'll talk like home till I'm home.
+
+scene welcome_newcomer
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : Somebody new came to our street. I took round #tart#. | A stranger's only a neighbour who hasn't eaten with you yet. | Somebody new in #shop# today. I gave them the good cut and said nothing.
+b : That's kind. | True enough. | Will they come back?
+a : It's only what I'd want, if I was new. I was, once. | It is. So eat with them. #saying#. | If #bright# wills it. And if they liked the cut.
+
+scene lean_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Lean, this week. #shop.capitalize#'s full of folk looking at meat they can't buy. | I've seen three families buy bones for soup that used to buy joints. | Hard times. I give a bit of what I have, and pray for the rest.
+b : Hard for everyone. | Bones? | Little else to do.
+a : It is. But we've been lean before, and #bright# saw us through. #reassure#. | Bones, and glad of them. There's #good# soup in a bone. | It is. And keep #larder# shut to rats and open to neighbours.
+b? : #bc_true# | #bc_poor_soul# | #bc_bless_you#
+
+scene debt_due
+when topic=times|dreams self.owes=yes
+does confide / reassure / assess
+a : #vent#: I owe money, and it's due by the new moon. I've told nobody but #bright#. | There's a debt hanging over me. I pray on it every night, and count every evening. | I owe. I'll pay it, every copper, if it takes my last #tart#.
+b : You'll find a way. | Can anyone help? | I'm sure you will.
+a : I will, with #bright#'s help. And I'll not borrow to do it. | Help's kind, but it's mine to pay. Thank you for asking. | Every copper. A debt is a promise, and I keep mine.
+
+scene gossip_kind
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : There's talk about #topic.subject#. It stops with me. | Something reached me at #counter#. I've put it out of my head. | Folk talk over my head at #counter#. I don't join in.
+b : Go on. | Why? | Sensible.
+a : No. It wouldn't help them, and it wouldn't help me. #oath#. #pardon#. | Because gossip's a stale crust. Nobody's fed by it. | #bright.capitalize# hears everything. I'd rather it heard me quiet.
+b : #bc_fair_enough# | #bc_true# | #bc_wise#
+
+story first_lamb [topic=memories|pastimes self.age>=20]
+  : My first whittling was a lamb, made for my #gran#. It had three legs and no face.
+  : She put it on the shelf above the fire as if it was silver.
+  : When she died it was still there. I keep it on my own shelf now.
+  ask : Did anybody ever keep a thing you made like that?
+  b[old] : Once. I didn't know till they'd gone.
+  b : Not that I know of. I hope somebody does, someday.
+
+story lost_in_the_frost [topic=memories self.away=yes self.from=larkfield self.age>=20]
+  : One winter on #downs# a ewe went missing in a frost so thick you couldn't see your paws.
+  : I went out after her with a lamp and a prayer, and found her in a hollow with a lamb already born.
+  : I carried the lamb home inside my coat. The ewe followed us all the way.
+  b : That's a lovely thing. Was the lamb all right?
+  : Grew into the best ewe in the flock. My #grandad# named her for the frost.
+
+story first_restday [topic=faith|memories here.region=ridgemere self.away=yes]
+  : My first Restday in this city I didn't know a soul, and I went into the first chapel I found.
+  : I sat at the back, crying a bit, and a wolf I didn't know passed me a bit of bread.
+  : I never learned who it was. I've passed bread to strangers ever since.
+  ask : Has a stranger ever done you a kindness like that?
+  b : Once or twice. You remember them always.
+  b[wealth=poor|destitute] : More than once. It's the only reason I'm here.
+
+rule @broom_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Mind your feet; fresh #sawdust#. | #broom.capitalize# coming through, if you please.
+
+rule @oath_bark
+when concept=bark
+does aside
+cooldown 8h
+say #oath#! #pardon#. | Oh, #oath#. #pardon#, again.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.place=home|work
+does aside
+cooldown 12h
+say There. In the corner. #ratword.capitalize#. | Shoo, all of you. Bright One forgive me.
+
+rule @frost_bark
+when concept=bark here.time=dawn here.season=winter here.outdoors=clear
+does aside
+cooldown 10h
+say Look at that frost. Bless it. | #rime.capitalize#. Thank you, Bright One.
+
+dlg @1 resident.hub : #greet#. Take your time; there's no hurry. | #greet#, #address#. Something wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bless you for coming back. | #topic.player#! Stay a while, if you can.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. But if you need something, ask.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #hedge#. I'll not quarrel. Tell me what's wanted, and if it's in my paws, it's yours.
+dlg @1 resident.job : I'm #self.trade_words#. I sweep, I carry, I lay #sawdust#. It's honest. | A bit of everything. Whatever's needed, I do it, and I'm grateful for the work.
+dlg @1 resident.bye : #farewell#. #bless#. | #farewell#, #address#. Mind the step.
+graft resident.hub
+choice Why do you apologise every time you swear? -> pardon
+node pardon
+say Habit. My #gran# swore like a drover and prayed like a priest, and I got the both of it. The oath comes out, so the sorry goes after it.
+mood warm
+free
+choice Does the Bright One mind? -> pardon_mind
+choice Goodbye. -> bye
+node pardon_mind
+say I hope not. I've sent a great deal of sorry upward. I like to think it adds up to something kind.
+choice I'm sure it does. -> hub
+choice Goodbye. -> bye

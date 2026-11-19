@@ -1,0 +1,307 @@
+# lf156, the picker with three stories (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf156
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for cty_pell_plumgarth
+written_by claude
+title the picker with three stories
+fits stage=adult|old
+prefers talk=quiet honesty=guarded
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk tells_the_same_three_stories
+likes hard_cheese roof_birds festival_bells warm_rain
+dislikes crowds flies
+fears a_winter_with_no_picking forgetting_the_stories
+hopes to_see_the_old_stones_on_the_downs_again
+topics memories +0.5 lore +0.4 work +0.3 food +0.2 festival +0.2 newcomer -0.2 gossip -0.4
+styles comfort=quiet gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# picks apples on the hills outside the city and lives poor in it: quiet, guarded and honest, low more often than not, fond of a hard old cheese and a warm rain, and forever telling the same three stories, the oldest about a ring of standing stones above home, said to remember every paw laid on it.
+
+words
+oath! = Stone and windfall | Bark and bell
+saying! = The old stones forget nothing | A story told often is a story kept
+apples = the apples | a basket of windfalls
+ladder = the picking ladder | the long ladder against the tree
+basket = my basket | the picking basket on my hip
+racks = the drying racks | the slatted racks in the drying house
+orchard = the orchard | the rows on the hill
+cheese = old cheese | a wedge of cheese that wants a knife and patience
+stones = the old stones | the standing stones up on the downs
+three = my three stories | the three I always tell
+bells = the feast bells | the bells when a feast day breaks
+warmwet = a warm wet | rain as warm as bathwater
+press = the press of folk | a street too full to turn in
+gulls = the roof gulls | the gulls along the ridge tiles
+flies = the flies | flies on the windfalls
+pickers = the pickers | the rest of us on the ladders
+window = my window | the one window I've got
+
+any
+opinion @1 church for 1 : When there was nothing in the pot, the chapel filled it with #grub#. I've not forgotten. | I go when I can. They were kind when kindness was short, and I keep #three# about such things.
+opinion @1 dole for 2 : The parish loaf saw me through a thin week. Speak ill of it to somebody else. | There's no shame in #dole#. Only in being too proud to take it.
+opinion @1 merchants against 2 : My pay stands still and the loaf climbs. Every week, a farthing more. | They'll take #apples# off us cheap in autumn and sell them dear in spring.
+opinion @1 houses against 1 : They'd leave a bench empty sooner than give it to the likes of #pickers#. | The Houses own #orchard#, I think. Never seen one of them up a ladder.
+opinion @1 newcomers against 1 : There's little enough work up #ladder# as it is, and more come every season after it. | New folk ask for work at #orchard#. Some days I'm the one sent home.
+opinion @1 times against 2 : Each week weighs a bit more than the last. Nobody on the hill feels the difference. | Lean, and leaner. I eat #cheese# by the sliver now.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. You'll be wanting somebody else, I expect.
+line @2 greet [self.working=yes self.job=none] : #greet#. I'm up #ladder#; mind the basket. | #greet#. Talk if you must. I'll keep picking.
+line @3 greet [here.time=dawn self.job=none] : Morning. Cold up on #orchard# at this hour. | Morning. I'm on my way out to #orchard#.
+line @5 greet [here.time=dawn] : Morning. Raw, this early. | Morning, #address#. You're up with #gulls#.
+line @4 greet [here.time=dusk|night] : #greet#. Late in the day for it, #address#. | #greet#. Late. My legs are #tired#.
+line @1 kin.open [pair.kin!=no] : You. Sit, then. There's a heel of #cheese#. | There you are. I'd wondered, #address#.
+line @1 again.open : You again. #orchard.capitalize# hasn't changed since. | Back. I've not moved, and nor has my mood.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in. | #greet#. It's good you came.
+line @3 greet.return [self.working=yes self.job=none] : #greet#. Mind #ladder#. | #greet#. I'll not come down, if you don't mind.
+line @1 farewell : #farewell#. | #farewell#. Mind yourself.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps. | #farewell#. I'm for #bed#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #oath#. That's news. | Hm. That's not come my way, #address#.
+line @1 react.news.new : That's new to me. #marvel#. | Nobody tells #pickers# anything.
+line @1 react.news.known : #knew#. It came round by noon, #address#. | I'd heard. Folk talk, even to #pickers#.
+line @1 react.news.doubt : #doubt#. I'll wait and see. | Somebody's story, that. I've #three# of my own; I know the sound.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That's a hard thing. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good#, then. Something to be glad of.
+line @1 answer.how : Low, if you want the truth. It'll pass, like #rain#. | #tired.capitalize#. Same as most days.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. The trees won't wait. | Two baskets full and #ladder# to move again.
+line @1 ask.how : And you? Keeping well, #address#? | How are you, #address#? Truly?
+line @1 sympathise : #sympathy#. I know how that sits. | That's heavy. Sit by #window# a while; I'll not talk.
+line @1 reassure : #reassure#. These things pass, mostly. | It'll lift. Things do, given a season.
+line @1 decline : #hedge#. I can't. I'm up at first light and sleep's all I have. | I'd best not, #address#. There's no silver for it this week.
+line @1 accept_decline : #no_matter#. Another time. | That's all right. I understand it, #address#.
+line @1 thank : #thanks#. | Kindly done. I'll keep it with #three#.
+line @1 deflect_thanks : #deflect#. | It was nothing much. #basket.capitalize#'s a basket.
+line @1 preclose [self.working=yes] : Well. #apples.capitalize# won't pick themselves. | I'd better move #ladder#.
+line @2 preclose : Well. #preclose#. | That's me done. #tired.capitalize#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I'll be here, #address#.
+line @1 ack : #bc_it_is# | #bc_true#
+line @1 give.advice : #advise#: never pick from the top rung. | Keep a bit of #cheese# by you. A lean day's shorter with it.
+line @1 warn [world.bandits=near] : Keep off the hill roads after dark. #warn#. | Don't walk the hill roads alone this week, #address#.
+scene up_the_ladder
+when topic=work self.working=yes self.job=none
+does tell.self / react.self / assess
+a : I'm on #ladder# from first light. You pick by feel up there; your eyes are full of leaves. | You twist one of #apples#, you don't pull it. Pull it and the next year's bud comes with it. | I can fill #basket# in the time it takes to say it. Most days.
+b : By feel? | I didn't know that. | That's quick.
+a : By feel. A ripe one comes off into #basket# like it was waiting. | Few do. It's the one thing worth knowing about #apples#. | Quick, and sore by noon. #saying#.
+
+scene the_drying_racks
+when topic=work self.working=yes self.job=none self.workplace
+does tell.self / ask.detail / answer.detail / assess
+a : At #self.workplace# we slice them thin and lay them on #racks#. A week and they're leather. | The drying house smells of #apples# and smoke. It gets in your coat for good. | I'm on #racks# when it rains. Turning slices, one by one.
+b : A week? | For good? | One by one?
+a : A week if it's dry. Two if it's like this. #apples.capitalize# keep a year after. | For good. I smell of #orchard# even in my sleep. | One by one, thousands, along #racks#. It's quiet work. I don't mind it.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene windfalls_and_flies
+when topic=work|weather here.season=summer|autumn self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#, the whole length of the row. The windfalls draw them. | I can't stand under a tree in autumn without #flies# in my ears. | They swarm the baskets as soon as you set one down. I pick with one paw and swat with the other.
+b : Horrible. | Every tree? | Sounds tiring.
+a : Horrible, and it's every year. You'd think I'd be used to #flies#. | Every tree with a windfall under it. Which is all of them. | It is. I'd pay a day's #wages# for a cold snap.
+
+scene picking_season
+when topic=season|work here.season=autumn
+does tell.self / react.self / assess
+a : Autumn's my season. There's work every day and #apples# to show for it. | The best of #orchard# comes ripe all at once. Then it's #ladder# from dawn to dark. | I eat #apples# as I pick, a bit. Nobody minds. The windfalls go to the pigs anyway.
+b : Busy, then. | Dawn to dark? | Fair enough.
+a : Busy, and glad of it. The other three seasons, #pickers# go thin. | Dawn to dark, three weeks. Then it's over, and I'm looking for work again. | Fair, and #good# apples too. I don't eat the bad ones.
+
+scene winter_no_picking
+when topic=season|work|times here.season=winter
+does tell.worry / react.self / reassure
+a : No picking in winter. Some days on #racks#, most days nothing. | Winter's long when you pick for your bread, and #skint# by the turn of it. I count what's left in the jar. | I sit by the window and watch #gulls# and wait for spring.
+b : Hard. | Is there anything else? | Spring comes.
+a : Hard, but I've done it before. I'll do it again, #address#. | Mending, sometimes. Sweeping out the drying house, if they'll have me. | It does. #saying#. I tell myself #three# while I wait.
+
+scene a_wedge_of_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess
+a : I keep #cheese# in my pocket on the hill. A sliver at a time lasts all day. | #cheese.capitalize#, hard enough you need to mean it. That's the only cheese I'll buy. | At home they made a cheese you could crack a tooth on. I'd give a lot for a wedge of it.
+b : All day? | Hard as that? | Could you not buy it here?
+a : All day, with an apple. That's dinner, and #good# enough. | Hard as that. Soft cheese is gone before you've tasted it. #cheese.capitalize# stays. | Not the same. City cheese has never seen the downs.
+
+scene the_roof_gulls
+when topic=animals|home self.likes=roof_birds
+does tell.feeling / react.self / assess
+a : I watch #gulls# from my window of an evening. They stand on one leg and argue. | One of #gulls# has been on our roof every morning I've lived here. | I like a bird on a roof. It means the roof's still there.
+b : One leg? | Every morning? | That's one way to see it.
+a : One leg, and the other tucked up warm. They know something we don't. | Every one. I've stopped wondering if it's the same bird from #window#. I've decided it is. | Some weeks there's no other way to see it.
+
+scene warm_wet
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #warmwet.capitalize#. I'll stand out and let it soak me. It's the one weather I don't mind. | Warm rain on #orchard#, and the leaves smell green for a day. | I like rain you don't have to fight. This is that.
+b : You'll be soaked. | I've noticed that. | Lucky, then.
+a : I'll dry. I've stood in worse, up #ladder#. | It's the best smell there is, nearly. Better than #apples#. | Lucky, for once. I'll take it, #address#.
+
+scene cold_wet_city
+when topic=weather here.weather=rain|storm here.season=autumn|winter here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : City rain in autumn. It's cold and it never ends. #ladder.capitalize# goes slippy. | No picking when it's like this. A wet apple rots in #basket#. | The wind off the water comes in under my door. I've stuffed a sack in the gap.
+b : It never ends. | So you stop? | A sack?
+a : It ends. Then it starts again by morning. | We stop, and we don't get paid. That's the rain's price. | A sack, and my coat on top. It helps #little#.
+
+scene feast_bells
+when topic=festival|faith|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : I wake before #bells# on a feast morning, just to lie and hear them start. | #bells.capitalize# here are louder than at home. I like them anyway. | When #bells# go, I always think of a story I've told you. I'll spare you, today.
+b : That's a nice thing. | Louder? | You've told me?
+a : It's one of the few #good# things, so I keep it. | Louder, and more of them. You feel them in your teeth. | Likely. It's one of #three#. You'll hear it again, I expect.
+
+scene the_press_of_folk
+when topic=smalltalk|festival|day self.dislikes=crowds
+does tell.complaint / react.self / assess
+a : #press.capitalize# is no good to me. Three streets round I'll walk, to miss a market. | On a feast day I stay at #window# and listen. The crowds are no good to me. | I got lost in a crowd as a pup. I've hated them since.
+b : Three streets? | You miss the feast? | Lost?
+a : Three, and gladly. I'd walk ten to miss #press#. | I miss the crowd. I keep #bells#. That's the part I want. | Lost for an hour. It's one of #three#, that. I'll tell it you sometime.
+
+scene heard_it_before
+when topic=memories|smalltalk
+does tell.story / react.story / assess / ack
+a : Did I ever tell you about the stones on the downs? I have. I'll tell it again. | There's the one about the feast and the crowd. You've heard it. It's still true. | I've only #three# and I tell them all. Folk say I should find a fourth.
+b : You have. Go on, then. | I have. | Will you?
+a : #stones.capitalize# remember everyone who touches them. That's the end of it. Short today. | Still true, every word. That's why it's one of #three#. | I've looked. Nothing else happened to me worth telling. #oath#.
+b? : #bc_fair_enough# | #bc_true# | #bc_maybe#
+
+scene the_stones_remember
+when topic=lore|faith|memories self.away=yes self.from=larkfield
+does tell.self / react.self / insist / ack
+a : Up on the downs above #self.from_town# there's a ring of #stones#. Older than anything. | I believe #stones# remember. Everyone who's touched them, every one. | Put your paw on a standing stone in winter and it's warm. That's memory, that is.
+b[from=larkfield] #lark : The ring above the town. I know it. | My #gran# said the same. | I've felt that. Warm, in snow.
+b : Remember? | Every one? | Warm?
+a@lark : Then you've touched #stones# too. They'll know you. | Then your #gran# knew. Most of the old ones did. | Then you know. Don't let anybody tell you it's the sun.
+a : Remember. I'll not argue it; I just know. #saying#. | Every one. I put my paw there as a pup. It knows me still. | Warm. Like something living, that sleeps. I'll not say more.
+b : #bc_maybe# | #bc_i_hope_so# | #bc_fair_enough#
+
+scene the_downs_from_here
+when topic=memories|land|travel self.away=yes self.from=larkfield
+does tell.feeling / react.self / assess
+a : Before my legs give out, I want the downs under me again. | You can't see a hill from here that isn't a roof. At home it was all hills. | Sometimes I think I'll walk home to #self.from_town#. I never do.
+b : Will you go? | All hills? | Why not?
+a : Maybe. When there's #money# for the road. There never is. | Green ones, short grass, and #stones# on the top. Not roofs. | The picking's here. And nothing's there for me now, but #stones#.
+
+scene the_chapel_fed_us
+when topic=faith|times self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : One winter, when nobody else would, the chapel kept my house fed. I go every Restday since. | Say what you like of the priest; that pot of soup kept us. | I'm not a great one for prayers. But I go, for the #grub# that winter.
+b : Good of them. | Fair. | That's reason enough.
+a : #good.capitalize#, and they didn't ask questions. I remember that most. | Fair. Owed is owed. | It's my reason. The Bright One knows it, and doesn't seem to mind.
+
+scene leaner_every_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : A loaf's dearer than last week, and no more work up #ladder# to pay for it. | They've cut #pickers#. Two of us sent home today. Not me, this time. | I eat #cheese# by the sliver and #apples# I'm given. That's lean.
+b : Hard for everyone. | Not you. Good. | That is lean.
+a : Harder at the bottom. Up the hill they've no idea. | This time. I'll be up #ladder# early tomorrow, so they see me. | It is. #reassure#, I tell myself. Most days I believe it.
+b? : #bc_poor_soul# | #bc_i_hope_so# | #bc_true#
+
+scene new_pickers
+when topic=newcomer|work
+does give.opinion / react.self / assess
+a : New pickers again this week. There's not the trees for them. | A stranger asked for my row of #orchard# this morning. I didn't give it. | New faces at #orchard# every season, and fewer trees.
+b : Hard on everyone. | Good for you. | Fewer trees?
+a : Hard, and harder for the ones who were here first. | It's my row. I've filled #basket# from it four seasons. | They cut some down for the drying house. Fewer trees, more mouths.
+
+scene the_neighbour
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# is decent to me. I don't need much more than that from a neighbour. | I'd trust #self.neighbour# with a story I've not told anyone. If I had one. | #self.neighbour# and I nod on the stair. It's enough.
+b : That's good. | If you had one? | Nods are something.
+a : It is. Decent's not common, round here. | I've only #three#, and everyone's heard them. | Nods are plenty. I'm not one for more, #address#.
+
+scene the_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# has heard all #three# and never once said so. That's a friend. | When it's lean, #self.friend# is the one I'd go to. | I don't keep many close. #self.friend# is one I do.
+b : That's kind. | Good. | One's enough.
+a : Kind, and patient. Not many would sit through #stones# a fourth time. | Good, and I'd go. That's rare for me. | One's enough. One's what I've got.
+
+scene keeping_mum
+when topic=gossip|crime
+does tell.gossip / react.news / assess
+a : I hear things between the rows of #orchard#. I don't carry them. | There's talk going round #orchard#. Not from me. | I keep #three# and nothing else. Other folk's stories aren't mine to tell.
+b : Not even a hint? | Fair. | Wise.
+a : Not a hint. I've enough of my own to repeat. | Fair, and safer. #pickers.capitalize# get sent home for less. | Wise or tired. Both, likely.
+
+scene knees_and_rungs
+when topic=health self.age>=40
+does tell.self / react.self / reassure
+a : My knees know every rung of #ladder#. They tell me about it at night. | I fell off the second rung of #ladder# last autumn. Only the second. It still aches. | I've a cough that comes with the damp. It goes with the spring.
+b : Rest them. | The second? | Look after it.
+a : When the picking's done. Not before. | The second. It's not the height, it's the landing. | I will. #warmwet.capitalize# and it'll be gone.
+
+story the_stones_on_the_downs [topic=lore|memories self.from=larkfield]
+  : Above #self.from_town# there's a ring of standing stones, older than the town, older than anything.
+  : As a pup, I went up with my #gran# in the snow, and she laid my paw flat on the tallest one. It was warm.
+  : She said #stones# remember everyone who's ever touched them. It's remembered me ever since.
+  ask : Have you ever touched something that old?
+  b : Not that I know. It's a good story, though.
+  b[old] : I have. You feel it, don't you? Something there.
+  : I'll see them again one day. They'll know me.
+
+story lost_on_feast_morning [topic=festival|memories self.age>=25]
+  : One feast morning, a pup still, I heard #bells# start and the whole town came out at once.
+  : I let go of a paw in the crush and I was lost. An hour, among legs and coats and noise.
+  : An old shepherd found me by the cross, sat me on a sack, and gave me a piece of hard cheese.
+  ask : Do you remember being lost, when you were small?
+  b : Once, at a market. I remember the legs most.
+  b[old] : Everyone's been lost once. It's the finding you remember.
+
+story the_tree_at_the_top [topic=work|food|memories self.job=none]
+  : My first season picking, I found an old tree on the hilltop nobody bothered with. Bent double.
+  : I climbed it anyway. #apples.capitalize# were small and yellow and the sweetest I've ever eaten.
+  : Next year it was gone. Cut for the drying house. I still look for it, every autumn.
+  b : That's a sad one.
+  b[job=farmer|herder] : The old trees are always the best. They cut them for being slow.
+
+rule @picking
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Twist, don't pull. Twist. Into #basket#. | That's #basket# full. #oath#.
+
+rule @flies_bark
+when concept=bark here.season=summer|autumn self.dislikes=flies
+does aside
+cooldown 8h
+say Go on, off. Off #apples#, the lot of you. | #flies.capitalize#. Every year.
+
+rule @bells_bark
+when concept=bark here.time=dawn here.day=festival self.likes=festival_bells
+does aside
+cooldown 12h
+say There. #bells.capitalize#. | Listen to that. #bells.capitalize#, just listen.
+
+rule @wet_bark
+when concept=bark here.weather=rain|storm here.season=autumn|winter
+does aside
+cooldown 8h
+say No picking today. No #wages# either. | Wet again. #ladder.capitalize#'ll be slick as soap.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. I've not much to say, but ask.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. | #topic.player#. #talk_open#
+dlg @3 resident.hub [here.time=night] : Late, #address#. First light comes early for me.
+dlg @1 resident.job [self.working=yes self.job=none self.workplace] : I pick apples, and when it's wet I turn them on #racks# at #self.workplace#. | Up #ladder#, down #ladder#, #basket# on my hip. That's the work.
+dlg @2 resident.job : I work when there's #work#. Not much else to say. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'm out on the hill all day. | Nothing's reached me, #address#.
+dlg @2 resident.news [world.news] : They were saying between the rows of #orchard#: from #world.news_from#, #world.news#. | Word from #world.news_from#: #world.news#. That's what I heard.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I've #three# of my own. I don't need anybody else's.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind yourself.
+graft resident.hub
+choice Tell me one of your stories. -> stories
+node stories
+say I've only three. The stones on the downs, the feast I got lost, and the old hilltop tree. The stones, then: they remember every paw.
+mood calm
+free
+choice Do you believe that? -> stories_believe
+choice Goodbye. -> bye
+node stories_believe
+say I do. I put my paw on the tallest one as a pup, in snow, and it was warm. I'll go back one day, and it'll know me.
+choice Something else. -> hub
+choice Goodbye. -> bye

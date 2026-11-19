@@ -1,0 +1,480 @@
+# sm130, the censer-smoke chorister (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm130
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier full
+written_for rm_corwin_kelpby
+written_by claude
+title the censer-smoke chorister
+fits stage=adult|old
+prefers job=priest temper=short
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk smells_of_censer_smoke_whatever_the_weather
+likes hard_cheese cards tidy_house thunder
+dislikes rats night_noise
+fears losing_the_top_note a_roof_that_lets_the_storm_in
+hopes a_dry_deck_going_south a_young_voice_to_teach
+topics faith +0.5 work +0.4 home +0.3 weather +0.2 times +0.3 pastimes +0.2 memories +0.2 gossip +0.1
+styles comfort=talk gossip=eager refuse=short tease=none
+marks oath saying
+persona #self.first# sings in the cathedral choir and climbs home to a room in the Sump every night: talkative and quick to flare, plain-dealing, proud of a tidy room and a clean top note, and never free of the smell of censer smoke.
+
+words
+oath! = Smoke and psalter | By the long note | Censer and sheaf
+saying! = Hold the note and the note holds you | A cracked voice still reaches the back pew | Sing it like you mean the harvest
+choir = the choir | the choir stalls
+hymn = a harvest hymn | the old reaping hymn
+censer = the censer | the incense smoke
+church = the cathedral | the great church up the hill
+topnote = the top note | the high note at the end
+voice = my voice | this old voice
+cheese = a hard cheese | cheese with a rind like bark
+cards = the cards | a round of cards on the stair
+tidy = a tidy room | everything in its place
+storm = a good storm | thunder over the roofs
+rats = the rats | rats in the meal crock
+din = the night din | the drunks under the window
+stair = the stair | the stair up to our room
+loaf = the Restday loaf | the church bread
+roof = our roof | the roof over our room
+pew = the back pew | the far pews
+cassock = my cassock | this old cassock
+gullend = the street below | our end of the Sump
+crust = a crust | a dry end of bread
+uphill = up the hill | up on the hill
+here_below = down here | down our end
+
+any
+opinion @1 church for 2 : When there was nothing on the table, #church# fed us. I'll stand up for it to anyone, #oath#.
+opinion @1 dole for 2 [self.on_dole=yes] : There was a week our table had nothing on it but #loaf#. Speak ill of the dole near me and you'll hear about it.
+opinion @2 dole for 1 : Nobody in this city should go to bed #hungry#. The dole's the least of what's owed, and it's given grudging.
+opinion @1 festivals for 1 [self.married=yes] : My wedding had a fiddler, a barrel and the whole stair dancing. After that, I'm a feast's friend for life, #oath#.
+opinion @2 festivals for 1 : Come a feast, even the Sump eats like the hill for a day. Let it, I say, and sing loud.
+opinion @1 houses against 1 : Every slate over our heads is a House's, and not one's been nailed down in my time. #roof.capitalize# drips into their purses.
+opinion @1 merchants against 1 : My pay won't stretch to #crust# by Stoneday, yet I've never seen a stall-keeper thin. Work that out, #address#.
+opinion @1 sump for 1 [self.quarter=sump] : #here_below.capitalize#, when you fall, a neighbour picks you up. I'll take #gullend# over a fine street with cold doors.
+opinion @1 times against 2 : Every week weighs a pip more, and #toffs# never look down to see it.
+opinion @1 watch against 1 : When the Watch come down #gullend#, it's with a rope, never a ladder. I've yet to see them help.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll forgive the smell; it's #censer#, not me. | #greet#, #address#. Mind the step, it's rotten.
+line @2 greet [self.working=yes self.job=priest] : #greet#. I'm between hymns, so make it quick and make it civil. | #greet#. Shh, mind; #choir# is practising.
+line @3 greet [here.time=dawn] : #greet#. Up for the dawn office, are you? I'm always up for it. | #greet#. The bells will start in a minute; brace yourself.
+line @4 greet [here.time=dusk|night] : #greet#. I'm on my way down #stair# and my feet are done. | #greet#. Late, and the lamps already lit #here_below#.
+line @5 greet : #greet#. | #greet#, #address#. #blessing#.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Sit down, do; I've been talking to the wall. | #greet#. Wipe your feet; I've only just swept.
+line @1 again.open : Back so soon, #address#, and still no hymn requested. | You again. I've not stopped talking since this morning, so sit.
+line @1 hail [pair.band=friends] : Here! I've saved up news all day for you. | #address.capitalize#! Wait, wait, I've news.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. I was just thinking of you, and here you are. | #greet#. Come in; I'll put the kettle over.
+line @3 greet.return [self.working=yes self.job=priest] : #greet#. Quietly, if you would. | #greet#. I've a minute before the next hymn.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late for it, but welcome. | #greet#. Mind the drunks on the corner going home.
+line @1 farewell : #farewell#. | #farewell#. #bless#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go straight home, and bolt the door. | #farewell#. Sleep, if #din# lets you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. #bless#.
+line @1 react.news : #surprise#. Now there's a thing. | Is that the talk? #oath#.
+line @1 react.news.new : #surprise#. #choir.capitalize# never had a breath of that. | #oath#. And me in #church# all day hearing nothing but scales.
+line @1 react.news.known : #knew#. #choir.capitalize# had it before the sermon. | It was up #stair# before I'd my boots on. Everybody's on about it.
+line @1 react.news.doubt : #doubt#. Who said it? I'll want to know who. | Street talk. It's #nonsense# till somebody proves it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. They'll be in my prayers at the office. | That's a cruel thing. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I'd sing at that one for nothing. | #good.capitalize#! Something worth a hymn, for once.
+line @1 answer.how : Well enough. #voice.capitalize#'s holding and #roof#'s not fallen in. | #fine#. Ask me again after Restday.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Three services and a wedding, and the tenors can't count. | Rushed. I've a hymn to learn by dusk.
+line @1 ask.how : And you? How are you keeping? | How's it been with you, #address#? Tell me.
+line @1 sympathise : #sympathy#. Sit down; the kettle's going on. | That's heavy on you. You'll stay and have #crust# with me.
+line @1 reassure : #reassure#. It's in better paws than ours. | It'll mend. I've said a word for it already.
+line @1 decline : #hedge#, no. #choir.capitalize# won't wait for me, and the choirmaster won't either. | Not today. I'm due at #church# and I'll not be late for anybody.
+line @1 accept_decline : #no_matter#. Another day, then. | Fair. I'll ask somebody who's less busy than you, #address#.
+line @1 thank : #thanks#. | Bless you for that. I'll remember it in the office.
+line @1 deflect_thanks : #deflect#. | Don't. I'd do it twice for anyone.
+line @1 preclose [self.working=yes] : Well. #choir.capitalize# will be missing a voice. | I'd best climb back to #church# before they start without me.
+line @2 preclose : Well. #preclose#. | That'll do. My throat wants resting, if my tongue doesn't.
+line @1 accept_preclose : Go on, then. #bless#. | Off with you. I've worn your ears out, I know.
+line @1 ack : #bc_right# | Mm. #agree#.
+line @1 give.advice : #advise#: honey, hot water, and no shouting. That's half of everything. | Keep a tidy room and the rest follows. #saying#.
+line @1 warn [world.bandits=near] : Stay off the roads, #address#. #warn#. | Keep inside the walls a while. There's trouble out there.
+line @1 insist : #insist#. I know what I heard. | I'll not be moved on it, #address#. That's that.
+scene choir_practice
+when topic=work self.working=yes self.job=priest
+does tell.complaint / ask.detail / answer.detail / assess
+a : We spent the whole morning on one line of #hymn# because the tenors won't count. | The choirmaster had me sing #topnote# nine times. Nine. My throat's raw. | Somebody in #choir# hums through the bits they've forgotten. I know who. My lips are sealed.
+b : Did they get it in the end? | Why nine? | Why not say?
+a : By noon. Then they forgot it by the next hymn, #oath#. | Eight times sharp, I'm told. I'll be the judge of that. | Because I'd shout, and you don't shout in #church#. Not even at tenors.
+b : #bc_ha# | #bc_poor_soul# | #bc_fair_enough#
+
+scene dawn_office
+when topic=work|faith|day here.time=dawn self.job=priest
+does tell.self / react.self / assess
+a : Up #stair#, down the street, #uphill#, and into #choir# before the bells. Every morning. | The dawn office is the best one. Six of us, a cold church, and the light coming in grey. | I sing the dawn hymn with my eyes half shut. Nobody's ever noticed, #address#.
+b : That's a long climb. | It sounds lovely. | I won't tell.
+a : Long, and I'm #tired# before I've opened my mouth. Then I open it, and I'm not. | It is. Don't tell the choirmaster I said so. | See you don't. I've a reputation for being awake.
+
+scene restday_service
+when topic=faith|day here.day=rest self.job=priest
+does tell.self / ask.detail / answer.detail / assess
+a : Restday. The cathedral's full and every voice in #choir# has a cold. | Restday's long for us. Two services, a wedding if somebody's lucky, and then #loaf#. | It's Restday, so I've ironed #cassock# and I'll not be sitting down in it.
+b : Every voice? | Then the bread? | Why not sit?
+a : Every one but mine. I gargle honey and vinegar like my #gran# taught me. | The bread for the #hungry#. I hand it out, and some weeks I take a loaf home myself. | Sit in it and it creases, and the choirmaster notices creases. #oath#.
+b : #bc_wise# | #bc_bless_you# | #bc_ha#
+
+scene hymn_from_home
+when topic=faith|memories self.from=southmeadow self.away=yes self.job=priest
+does tell.memory / react.story / assess
+a : At home we sang #hymn# as the last wagon came in. I've got #choir# singing it now, after a year of nagging. | In #self.from_town# the whole field sang when the last sheaf was cut. Nobody taught us; we just knew. | I learned to sing behind a hay wagon. The choirmaster says he can still hear the hay.
+b[from=southmeadow] #meadow : The last-wagon hymn. I'd forgotten it. | We sang it every year. | You can hear it in your voice.
+b : They sing it now? | Just knew? | Can he?
+a@meadow : You never forget it, not really. Hum two notes and it comes back. | Every year, and the year it rained we sang it louder. | I hope so. I'd not want to lose it.
+a : They do, and the city folk ask what the words mean. I tell them it means harvest. | Just knew. It was in the ground, like the wheat. | He can. He says it like it's a fault, and I take it like a compliment.
+
+scene censer_smoke
+when topic=smalltalk|health
+does tell.self / react.self / assess
+a : Do I smell of smoke? It's #censer#. I could scrub for a week and still carry it. | Folk sniff when I come in. I say it's holiness, and they mostly believe me. | Even #roof# smells of #censer# now. The whole room's like a chapel.
+b : It's not unpleasant. | Do they? | Better than some smells.
+a : It's not. It's only that it never leaves, rain or shine, #address#. | Mostly. A few think I've been in a fire. | Much better. #here_below.capitalize# it's the best smell going.
+
+scene thunder_roof
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / ask.detail / answer.detail / assess
+a : Hear that? #storm.capitalize#. I'd sit and listen to it all night, if #roof# would hold. | Thunder's the only music I don't have to sing. I love it. | When the thunder comes I go and stand in the porch of #church# and let it shake me.
+b : Your roof doesn't hold? | You love it? | Doesn't it frighten you?
+a : It holds where it likes. I put the pots out and listen anyway. | Love it. That's the Bright One tuning up, my #grandad# said. | Not a bit. It's rats and drunks that frighten me. Thunder's honest.
+b : #bc_ha# | #bc_lovely# | #bc_ha#
+
+scene rain_leaks
+when topic=weather|home here.weather=rain here.region=ridgemere self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : Rain again, and three pots on the floor catching it. #roof.capitalize# leaks like a sieve. | Rain down #gullend# runs ankle-deep and smells of everything. #annoyed#. | It's rained in through the corner all night. I moved the bed twice.
+b : Can't they mend it? | It's a mess down there. | Twice?
+a : They could. They won't. It's not their bed that's wet. | It is. The hill sends it down to us and calls it weather. | Twice, and the second place was wetter. #oath#.
+
+scene fog_climb
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog so thick I counted the steps #uphill# to find the cathedral. A hundred and nine. | I can't see the street from #stair# this morning. Just smoke and fog and somebody coughing. | Fog's #good# for one thing. Nobody can see me singing to myself.
+b : A hundred and nine? | Grim. | Do you do that often?
+a : A hundred and nine, and all of them wet. #oath#. | Grim, and #cold# with it. I'll be glad of #censer#. | Often. Fog or no fog, #address#.
+
+scene summer_close
+when topic=weather|season here.season=summer here.weather=clear
+does tell.complaint / react.complaint / assess
+a : Summer, and our room's an oven. I'd not wish it on anyone. | #hot.capitalize# under #roof#, and the window won't open. I sleep on the floor. | The Sump stinks in summer. Even #censer# can't beat it.
+b : Open a window? | On the floor? | It's bad, yes.
+a : It's painted shut. I sweat for the Bright One instead. | It's cooler there, and #rats# are honest about it. | It's #bad#. Come autumn I'll forgive it.
+
+scene winter_room
+when topic=season|home here.season=winter self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Winter. We go to bed in our coats and get up in them. | #cold.capitalize# in the room, #cold# in the street. #voice.capitalize# goes thin as a reed. | I'll burn anything that'll burn this winter, bar the bed.
+b : That's hard. | Can you still sing? | Anything?
+a : It is. But it's tidy, and it's ours. | I can. I sing louder to keep warm. The neighbours call it a racket. | Anything but the bed. I'd sooner burn my boots.
+
+scene rats_crock
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail / assess
+a : #rats.capitalize# again last night. They've had half the meal and left their calling cards. | I set a trap for #rats# and caught nothing but my own toe. | A cat would sort them, if I could feed a cat. I can barely feed us.
+b : Did you get any? | Your toe? | Could you get a cat?
+a : One. The rest laughed at me. I'll not have rats in a tidy room, #oath#. | My own toe, at midnight. I said a word I'll not say in #church#. | Somebody down #gullend# has kittens. We'll see, #address#.
+b : #bc_good# | #bc_poor_soul# | #bc_i_hope_so#
+
+scene night_din
+when topic=home|day here.time=night|dusk self.dislikes=night_noise
+does tell.complaint / react.complaint / assess / ack
+a : #din.capitalize# again. Singing, and not the good kind. I've to be up for the dawn office. | Somebody kicked a barrel down the street at midnight. I went to the window and gave them a hymn. | A week's bread, I'd give, to have #here_below# hushed like the cathedral at noon.
+b : Every night, it seems. | A hymn? | Not likely here.
+a : Every night. I shout at them, and they shout back, and none of us sleep. #annoyed#. | Loud. They went off swearing at me. It worked, #oath#. | Not likely. #annoyed#. I've stuffed rag in the shutters.
+b? : #bc_poor_soul# | #bc_ha# | #bc_poor_soul#
+
+scene tidy_room
+when topic=home self.likes=tidy_house self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : We've one room and I keep it like a vestry. Every cup on its hook, #address#. | I swept #stair# this morning. Not our stair, the whole stair. Somebody had to. | Poor's no excuse for a mess. I keep #tidy# if it kills me.
+b : That's a fine thing. | The whole stair? | It's a lot of work.
+a : It's the one thing in this city I can make right with my own paws. | The whole stair. The neighbours stared like I'd gone soft in the head. | It is. But a tidy room's a prayer you can stand in.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.feeling / ask.detail / answer.detail / assess
+a : #cheese.capitalize# and #crust#. If I had that every day I'd ask for nothing else. | There's a stall sells #cheese# I could cut a hymn into. I buy a sliver on payday. | A hard cheese keeps. That's what I like in it. It doesn't spoil while you're saving it.
+b : Only that? | Just a sliver? | Saving it for what?
+a : Only that. And maybe an onion, #address#. | A sliver. I make it last the week. You learn. | For Restday. A bit of something after the last service. That's my feast.
+b : #bc_ha# | #bc_poor_soul# | #bc_lovely#
+
+scene cards_on_stair
+when topic=pastimes|friends self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : There's a game of #cards# on our landing most nights. I play for buttons. | I lost three buttons at #cards# last night. #cassock.capitalize# is held together with hope. | I play #cards# well. I keep count of every one that's gone. Nobody likes it.
+b : Buttons? | Who won them? | Is that cheating?
+a : Buttons. Nobody #here_below# has coin to lose, #address#. | A carter's wife off the top floor. I'll have them back. #oath#. | It's not. It's paying attention. I'm a chorister; I count everything, #oath#.
+b : #bc_ha# | #bc_go_on_then# | #bc_fair#
+
+scene husband_home
+when topic=family self.married=yes
+does tell.feeling / react.self / assess / ack
+a : I'd not have stayed in this city a week without #self.spouse#. | #self.spouse# and I share the one room and never once wished for two. | My #self.spouse_word# is the one I sing for when the room's empty of everyone else.
+b : You're lucky in that. | Never once? | Every night?
+a : The best thing I've got, #address#, and I know it. | Well. Once. In a hot summer. We don't speak of it. | Every night. Bless that patience; I'd have thrown me out by now.
+b? : #bc_lovely# | #bc_ha# | #bc_ha#
+
+scene wedding_dance
+when topic=festival|memories self.married=yes
+does tell.memory / react.story / assess
+a : At my wedding the fiddler's arm gave out before my feet did. I've loved a feast ever since. | Best day of my life, my wedding. I danced, then I sang #hymn# for the whole stair. | I was so nervous at my wedding I sang the wrong hymn. Nobody minded. Everybody joined in.
+b : That's a good memory. | You sang at your own wedding? | Which hymn?
+a : It is. When I'm low I hum that tune, #address#. | Of course. It's what I do. I'd have sung through my own funeral if they'd let me. | A funeral hymn. They all sang it anyway, louder than a wedding one. #oath#.
+
+scene dole_bread
+when topic=times|faith self.on_dole=yes
+does tell.self / react.self / reassure
+a : There was a week #loaf# was all we had. I'll carry that to the green ground. | I hand out #loaf# on Restday, and some weeks I take one home myself. There's no shame in it. | Some think the dole's charity. It's not. It's what's owed to folk who work and still go #hungry#.
+b : There's no shame in that. | None at all. | You're right.
+a : I know. I say it out loud so the others don't feel it, #address#. | None. It's bread, and it's honest. | I am. And I'll tell it to anyone #uphill#, #oath#.
+
+scene houses_bricks
+when topic=times|lore here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : The Houses hold every slate down our way, and they've not sent a mender in years. | We pay rent to a House that's never seen our stair. #roof.capitalize# leaks into their profit. | I sang at a House wedding once. They paid in compliments. I can't eat those.
+b : They're not all the same. | Somebody must mend it. | Compliments?
+a : Maybe not. I'll believe it when one of them lends a ladder. | Somebody must. It's never them, #address#. | Compliments, and a slice of cake I had to share with the tenors. #annoyed#.
+b : #bc_fair_enough# | #bc_true# | #bc_poor_soul#
+
+scene bread_dear
+when topic=prices|times self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : My week's pay won't reach as far as a loaf by the end of it, and the stall-keepers are all fat. | A heel of bread costs what a loaf did last spring. Who's getting the difference? | I sing for the Bright One and eat on what's left. It's not much left.
+b : It's hard everywhere. | Not us. | You'll manage.
+a : Not #uphill# it isn't. Up there they've never heard the price of a loaf. | Not us, and not the baker. Somebody, #oath#. | I will. I always have. But I'd like to say so out loud, #address#.
+
+scene watch_down
+when topic=crime here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Watch come down #gullend# with a rope, never a ladder. | I've never once seen the Watch down #gullend# when there was trouble. After, always. | A watchman stopped me on the hill last week and asked what I was doing there. Singing, I said.
+b[role=guard] #guard : We come when we're called. | We can't be everywhere. | We have to ask.
+b : That's not right. | After? | Did he believe you?
+a@guard : Then nobody's calling. Come down unasked once, and see. | No. But you could be somewhere #here_below#, now and then. | Ask, then. I'll keep answering. Singing, every time.
+a : It's not. But it's how it is, #address#. | After. Counting the broken windows. #annoyed#. | He let me go. I sang a verse at him anyway, to be sure.
+
+scene sump_home
+when topic=home|smalltalk self.quarter=sump here.region=ridgemere
+does tell.self / react.self / assess
+a : #gullend.capitalize# isn't pretty, but nobody here goes under alone. You'll not see that on the hill. | When I was poorly, the whole stair brought soup. That's the Sump, #address#. | I live in the Sump and sing on the hill. I'd not swap #stair# for a fine street.
+b : That's good to hear. | The whole stair? | Not even for a dry roof?
+a : It's true. You'll not hear it from the Watch, but it's true. | The whole stair, and three kinds of soup. #oath#. | A dry roof. Well. I'd think about it. For a minute.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Harder by a pip each week, and the hill never feels it. | More at the church door every Restday, and the same bread to share. | We've gone to one meal a day. Two on Restday. #oath#.
+b : Hard for everyone. | It can't go on. | That's hard.
+a : Not everyone, #address#. Not up there. | It can, and it will, till somebody sings loud enough. | It is. But the hymn's still free, and I've #crust#.
+b? : #bc_true# | #bc_i_hope_so# | #bc_poor_soul#
+
+scene good_weeks
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Folk are putting coin in the plate again. I can hear the difference from #choir#. | Good times, they say. I had cheese twice this week, so I'll believe it. | Even down #gullend# there's meat in the pots. I can smell it on #stair#.
+b : You can hear it? | Twice! | That's good to hear.
+a : Copper rings, and silver thuds. There's been thudding. | Twice. #oath#. I'll not get used to it. | It is. Restday I'll sing for it, and mean every word.
+
+scene gossip_heard
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Word on #stair# this morning: #topic.subject# #topic.claim#. | Have you heard? #topic.subject.capitalize# #topic.claim#. #choir.capitalize#'s talking of nothing else. | You'll know this already: #topic.subject# #topic.claim#. Or so they say #here_below#.
+b : Is it true? | Nothing else? | I hadn't.
+a : I don't know. I'm only telling you what I was told, #address#. | Nothing else, and the hymn went to pieces because of it. | Now you have. Don't say it came from me.
+
+scene gossip_grief
+when topic=gossip|crime topic.claim_kind=death
+does tell.gossip / sympathise / assess
+a : Sad word today: #topic.subject# #topic.claim#. I'll carry it to the office. | Sad news on #stair#: #topic.subject# #topic.claim#. | You'll have heard. #topic.subject.capitalize# #topic.claim#. #pity#.
+b : That's terrible. | Poor souls. | I'm sorry.
+a : It is. On Restday I'll sing for #topic.them#, if the choir will let me. | Poor souls, all of them. #bless#. | So am I. It makes the room feel colder.
+
+scene young_voice
+when topic=work|dreams self.master=yes self.job=priest
+does tell.plan / ask.detail / answer.detail / assess
+a : I'd take on a young voice, if one came. Somebody to give #topnote# to when mine goes. | There's no apprentice in #choir# yet. I keep listening for one in the street. | I've taught every hymn I know to the wall. I'd rather teach a pup.
+b : How would you tell? | In the street? | Why a pup?
+a : They'll sing without being asked. That's how I started, behind a wagon. | Down #gullend#, the pups sing for coppers. One of them's got it. I'll ask. | Because a pup hasn't learned to be shy yet. That comes later. #saying#.
+b : #bc_i_hope_so# | #bc_good# | #bc_wise#
+
+scene dry_deck
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I dream of a dry deck going south. Sun, and not a drop of rain for a month. | Some nights I dream I'm on a ship and it's never once rained. I wake up wet. | One day I'll stand on a deck in the sun with nothing to sing and nobody to tidy for.
+b : Where would it go? | Wet? | Nothing to sing?
+a : South. That's as far as the dream goes, #address#. | #roof.capitalize#. It always comes back to #roof#. | Well. I'd hum. I'd not be able to help it.
+b : #bc_lovely# | #bc_poor_soul# | #bc_ha#
+
+scene voice_of_home
+when topic=accent self.from=southmeadow
+does tell.self / react.self / assess
+a : The choirmaster says I sing my vowels like a harvest field. Wide open, he says. | City folk hear #self.from_town# in #voice# the minute my temper's up. That's most days. | I talk like home and sing like home. I'll not change either for a city.
+b : That's a fine thing. | Often? | Why should you?
+a : He means it as a fault. I take it as a blessing, #oath#. | Often enough. #annoyed#. There, you heard it. | I shouldn't, and I won't, #address#.
+
+scene throat_care
+when topic=health
+does tell.self / react.self / reassure
+a : My throat's raw from the damp. #remedy.capitalize#, and no talking. Which I can't manage. | I've a cough that comes every autumn and leaves every spring. I sing through it. | I've never missed a service in years. Hush about it, or I will.
+b : Rest your voice. | Sing through it? | I'll whisper.
+a : Rest it? I'd sooner rest my feet. It's the one bit of me that works, #address#. | Through it. The choirmaster says it gives the low notes character. | Do. The Bright One has good ears, and so does bad luck.
+
+scene stranger_pew
+when topic=newcomer|player
+does tell.self / react.self / assess / ack
+a : There was a stranger in #pew# this morning. Sat through the whole office and never sang. | New face on our stair. I took round #crust#. You do, #here_below#. | A traveller came into #church# and asked if #choir# was for hire. I said only to the Bright One.
+b : Shy, maybe. | That's kind. | Was it a joke?
+a : Shy, or tone-deaf. I'll find out next Restday. | Kind's free, #address#. A crust nearly is. | Half a joke. I'd sing at a wedding for a cheese, mind.
+b? : #bc_maybe# | #bc_true# | #bc_ha#
+
+scene temper_flare
+when topic=smalltalk|work self.job=priest
+does tell.complaint / react.complaint / insist / ack
+a : Somebody talked all through the last hymn. I turned round and glared at them. | A boy laughed at #cassock# on the hill. I told him what I thought of his manners. | The tenors were late again. I've told them, and I'll tell them louder next time.
+b : Did they stop? | What did he say? | They'll learn.
+a : They stopped. My glare's better than #voice#, some say. | Nothing. Ran off. #oath#. | They'll learn, or they'll go deaf. #annoyed#.
+b? : #bc_ha# | #bc_good# | #bc_ha#
+
+scene event_talk
+when topic=event|news world.event_words
+does tell.news / react.news / assess
+a : The whole choir's on about #world.event_words#. We barely got through the office. | #world.event_words.capitalize#. It came up #stair# before I'd my boots on. | All this talk of #world.event_words#. I'll put it in a prayer and leave it there.
+b : I heard the same. | So early? | Good idea.
+a : Then we've the same news and nothing to do about it, #address#. | Early. News comes up #stair# faster than I go down it. | Prayer's all I can do with it, #oath#.
+
+story first_cathedral [topic=work|memories self.job=priest self.away=yes self.age>=25]
+  : The first time I sang in #church# I was so frightened I couldn't find the note.
+  : The choirmaster leaned over and hummed it in my ear, very low, like he was sharing a secret.
+  : After that I found it every time. I've hummed it to three new voices since, the same way.
+  ask : Do you remember who taught you your trade?
+  b : I do. You never forget that.
+  b[old] : I remember. Most of them are in the green ground now.
+
+story last_wagon [topic=memories|harvest self.from=southmeadow self.age>=25]
+  : At home the last harvest wagon came in at dusk, and the whole lane walked behind it singing.
+  : I was a #child#, up on my #dad#'s shoulders, singing words I didn't know yet.
+  : I still sing #hymn# as it came to me up there. Too loud, and a bit ahead of everybody.
+  b : A lovely thing to keep.
+  b[from=southmeadow] : The last wagon. Every lane had it. I can hear it now.
+
+story the_roof_came_in [topic=weather|home self.wealth=poor|destitute here.region=ridgemere]
+  : One night in a great storm the corner of #roof# came in. Slates, rain, and a pigeon, all at once.
+  : We stood under the table till dawn while the thunder went over. I'll not lie: I loved it.
+  : In the morning we swept up, put out the pots, and the pigeon stayed a week.
+  ask : Would you have stayed to sweep, or gone?
+  b : Stayed. Where would I go?
+  b[wealth=rich] : Gone, I think. You're braver than me.
+
+story the_censer_fire [topic=work|faith self.job=priest]
+  : The first year I carried #censer#, I swung it too wide and set the back of #cassock# smoking.
+  : I sang the whole hymn with smoke coming off me. Nobody said a word.
+  : Afterwards the choirmaster said it was the most devout he'd ever seen me look. I've smelled of it since.
+  b : Ha! Were you burnt?
+  : Only my pride, and the hem. #oath#.
+
+story the_wrong_hymn [topic=festival|memories self.married=yes]
+  : On my wedding day I was so nervous I started the funeral hymn instead of the wedding one.
+  : By the second line the whole hall had joined in, and nobody stopped me.
+  : We sang it all the way through. It's the happiest I've ever heard that hymn.
+  ask : Has anything gone that wrong for you and come out right?
+  b : Once or twice. It's the best feeling.
+  b[pair.band=spouses] : Every day, near enough. That's what marrying's for.
+
+rule @scales
+when concept=bark working=yes self.job=priest
+does aside
+cooldown 6h
+say La, la, la... no. Again. | #topnote.capitalize#. Hold it. Hold it. There.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 8h
+say There it goes. Lovely. Louder! | #storm.capitalize#, and the pots are out. #oath#.
+
+rule @rats_bark
+when concept=bark self.dislikes=rats here.place=home
+does aside
+cooldown 10h
+say Out! Out of my meal, you thieves! | #rats.capitalize# again. Blight take them.
+
+rule @din_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Some of us sing at dawn! | #din.capitalize#. Every blessed night.
+
+rule @restday_bark
+when concept=bark here.day=rest here.time=dawn self.job=priest
+does aside
+cooldown 1d
+say Restday. Cassock, boots, #uphill#. | Bells in a minute. Don't be late, don't be late.
+
+rule @tidy_bark
+when concept=bark here.place=home self.likes=tidy_house
+does aside
+cooldown 10h
+say Who moved that cup? It goes on the hook. | There. #tidy.capitalize#, and nobody's touched it.
+
+dlg @1 church.greet [here.day=rest] : #blessing#. It's Restday: the service is #here.service#. Come and hear #choir#. | #church_greet# Restday, and the service is #here.service#. Sit near the front; the back's draughty.
+dlg @2 church.greet [here.day!=rest] : #church_greet# I'm only #choir#, but I know where everything is. | #blessing#. Come in, and mind the wet step.
+dlg @3 church.greet [here.day!=rest topic.meeting=known] : #greet#, #topic.player#. Back again. What brings you #uphill#? | #topic.player#. #bless#. In you come, off the street.
+dlg @4 church.greet [here.day!=rest pair.disposition=hostile|wary] : This is the Bright One's house. Say what you've come for, and say it quietly. | Peace, here. Whatever it is, keep your voice down.
+dlg @1 church.service [here.day=rest] : Today, #here.service#. I'll be in #choir#; listen for the one a bit ahead of the others. | Today: #here.service#. Come and stay; the hymns are the best part.
+dlg @2 church.service [here.day!=rest] : Every Restday, #here.service#. The sermon's short and the hymns are long. | On Restday, #here.service#. Come and hear us. I'll be the loud one.
+dlg @1 church.poor : On Restday the hungriest houses get a day's bread. I hand it out, #address#, and some weeks I've carried one home myself. | Bread on Restday, for any house that has none. Nobody's turned away.
+dlg @1 church.offering : Whatever you can spare. Every copper's a loaf for somebody down the hill. | Anything helps. I know where it goes; I carry the bread.
+dlg @1 church.thanked : #blessing#. That'll feed somebody on our stair. | Bless you. I'll sing a little louder for that.
+dlg @1 church.refused : #topic.why# | Bless you for thinking of it. #topic.why#
+dlg @1 church.bye : #blessing#. | #bless#. Mind the step going down.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? #learn_offer# Ask me anything; I've been waiting for somebody to. | You want to learn it? Then you'll want a strong throat and early mornings. Ask away.
+dlg @2 master.learn [here.teaches=no] : I've a pupil already, I'm afraid. But ask what you like; I'll talk about it all day.
+dlg @1 master.work : Early mornings, cold stone, and the same line forty times till it's right. I love every minute. | Long days in #church#. You stand, you sing, you stand again.
+dlg @1 master.wages : Nobody's paid to learn it. You stand beside me and pick it up twice as fast as alone. | Pay? You'll be paid in hymns, and #crust# after the office.
+dlg @1 master.takes [here.take_on=yes] : I'll teach the one, and only one I trust. You'd do. Ask, and it's settled.
+dlg @2 master.takes [here.take_on=no] : I teach the one, and only one I trust. #here.take_on_why#
+dlg @1 master.taken : #learn_taken# And bring something for your throat. | Good. Dawn office, at the door of #church#. Don't be late.
+dlg @1 master.refused : #topic.why# | Not yet, #address#. #topic.why#
+dlg @1 master.bye : #farewell#. | #farewell#. Rest that voice.
+dlg @1 resident.hub : #greet#. Come in, come in. What's wanted? | #greet#, #address#. I've a minute, and a lot to say.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I was hoping for you. | #topic.player#. Sit, if there's room. There never is.
+dlg @3 resident.hub [here.time=night] : Late, and the dawn office comes early. Be quick, #address#. | Night. Keep your voice down; #stair#'s asleep, for once.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it? Say it plain and don't shout. | I'm listening. Keep it civil, #address#.
+dlg @1 resident.job [self.job=priest] : #self.trade_words.capitalize#. Dawn office, Restday services, and every wedding that'll pay. | I sing in #choir#. It's not much coin, but it's the best work in the city.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me on my feet and out of trouble. | Work's work, #address#. #self.trade_words.capitalize#, and I'd not swap it.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. The whole stair's talking of it. | I heard from #world.news_from#: #world.news#. Make what you will of it.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at #church#. We could hardly sing for it.
+dlg @3 resident.news [world.wagons=raided] : Somebody robbed a wagon out on the road. Bread'll be dearer by Restday, you watch.
+dlg @4 resident.news [world.death=recent] : There's been a death this week. I've a hymn in my head for it.
+dlg @5 resident.news [world.wedding=recent] : There was a wedding! I'd have sung at it for nothing, and gladly.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the rain, and the rain's not news #here_below#. | Nothing new. The tenors are still flat; that's old news.
+dlg @1 resident.gossip [here.gossip=yes] : Word up #stair# is #topic.subject# #topic.claim#. Take it as told. | Folk #here_below# say #topic.subject# #topic.claim#. Don't quote me.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# The stair's been quiet, for once. | Nothing I'd repeat, #address#. And I repeat most things.
+dlg @1 resident.bye : #farewell#. #bless#. | #farewell#. Mind the rotten step.
+graft resident.hub
+choice You smell of smoke. Is something burning? -> censer
+node censer
+say Burning? No, no. It's #censer#. I carry it in #choir#, and it's in my fur for good, rain or shine. Folk think I've been in a fire.
+mood calm
+free
+choice Doesn't it wash out? -> censer_wash
+choice Goodbye. -> bye
+node censer_wash
+say I've tried. Soap, rain, a bucket in the yard. Still there. I've stopped minding. It's a holy sort of smell, I tell myself.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft church.greet
+choice What does the choir sing? -> hymns
+node hymns
+say Psalms, mostly, and the old hymns. And one harvest hymn from where I grew up, that I nagged them into. Listen for it on Restday.
+mood pleased
+choice Sing me a line of it? -> hymns_line
+choice Goodbye. -> bye
+node hymns_line
+say Here, then. Quietly. The last sheaf's in, the wagon's home, the lane sings it in. There. That's the start of it.
+choice Thank you. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,293 @@
+# lf140, the crust-saver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf140
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_una_plankton
+written_by claude
+title the crust-saver
+fits stage=adult|old
+prefers job=cook talk=chatty
+traits temper=calm talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk saves_the_kitchen_crusts_for_the_roof_birds
+likes plum_tart roof_birds market_bustle autumn_wind
+dislikes smoke haggling
+fears the_top_stair_giving_way a_kitchen_fire
+hopes a_window_box_of_my_own a_tart_good_enough_for_the_high_table
+topics animals +0.4 food +0.4 smalltalk +0.3 work +0.3 weather +0.2 home +0.2
+styles comfort=company gossip=eager refuse=soft tease=none
+marks oath saying
+persona #self.first# cooks in a great kitchen up the hill, lives at the top of a long stair in the Sump and keeps a pocket of crusts for the roof birds: chatty, gentle and curious, glad of any face and any market crowd.
+
+words
+oath! = Crumbs and chimneys | By the top stair | Ladles and larks
+saying! = There's always a crumb for somebody | A full pot's for sharing | Up's only stairs
+crusts = the crusts | a pocket of crusts
+birds = the roof birds | the sparrows on the slates
+stair = the top stair | the last flight up
+slates = the slates | the wet slates
+court = the court | our court
+kitchen = the big kitchen | the kitchens up the hill
+ladle = my ladle | the long ladle
+stockpot = the stockpot | the great black pot
+tart = plums under a lattice | a tart with the plums showing through
+roar = the market at full roar | Marketday at its loudest
+slatewind = an autumn wind with some push | a wind that rattles the slates
+ovensmoke = the oven smoke | smoke off the kitchen fires
+backforth = haggling | arguing a copper up and down
+window = my window | the window under the roof
+chimneys = the chimneys | a forest of chimneys
+gossipy = Oh, and | And another thing
+oh = Oh | Ooh
+city = the city | this city
+market = the market | the stalls
+chapel = the chapel | the little chapel
+stairs = the stairs | all those stairs
+downs = the downs | the high downs
+
+any
+opinion @1 houses against 2 : Not one of #toffs# has ever put a head round a back door where I've worked. #oath#.
+opinion @1 merchants against 1 : My pay hardly runs to a loaf, while #market# always looks fat. Still, I'll not haggle.
+opinion @1 dole for 2 : #dole.capitalize# kept our court in bread when the pay ran out. A kind word for it from me, always.
+opinion @1 festivals for 1 : Everybody out in the street, every #ale# and every song. I love a feast day.
+opinion @1 watch against 1 : They only come up #court# to take somebody away. Never once to ask if we're all right.
+opinion @1 strangers for 1 : #stranger.capitalize#? Only somebody you've not fed yet. I'll feed them; I can't help it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! A new face. #gossipy#, I hope you're settling in. I'll be brief, I promise. | #greet#, #address#. I'm glad of somebody to talk to.
+line @2 greet [here.time=dawn] : #greet#. Up early, like #birds#. | #greet#! I've been up since before the bread.
+line @3 greet [here.time=dusk|night] : #greet#. Late, but I'm always glad of company. | #greet#. I've just come down #stair#. My legs are telling me about it.
+line @1 kin.open [pair.kin!=no] : #oh#, it's you! Come here, #dear#. | There you are, #dear#. I've been saving up things to tell you.
+line @1 again.open : You again! I'd hoped so; I saved up more to tell you. | Twice in a day. That's my lucky day, #address#.
+line @1 greet.return : #greet#! | #greet#, #address#. Lovely to see you.
+line @2 greet.return [pair.band=friends|family] : #greet#! Sit down, I've so much to tell you. | #greet#, #dear#. I was just thinking about you.
+line @1 farewell : #farewell#! | #farewell#, #address#. Mind #stairs#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Lamps all the way home, mind. | #farewell#. Sleep well; #birds# will be up before us.
+line @1 farewell.return : #farewell#! | #farewell#, and come back soon.
+line @1 react.news : #listen#. Go on, go on, tell me all of it. | #surprise#. Who said? When?
+line @1 react.news.new : #oath#! I'd not heard a whisper. | Well, sell me. That's new to me, #address#.
+line @1 react.news.known : #knew#. By noon every landing knew. | I heard it on #stairs# this morning. Everyone on #court# knows.
+line @1 react.news.doubt : #doubt#. That sounds like kitchen talk to me. | I'd not swear to that one. #market.capitalize# gets carried away.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #oh#, that's #bad#. #pity#. | #oh#, no. I'm so sorry to hear it. I'll take something round.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #oh#, #gladnews#! I'll bake something for it. | That's #tasty# news. I'm so glad. Truly.
+line @1 answer.how : #fine#, thank you. Fed, warm and chattering. | #oh#, well enough. My legs ache from #stair#, but I'm well.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#! Run ragged since dawn, and the day's not half done. | Run ragged, and glad of it, #address#.
+line @1 ask.how : And you, #address#? Are you eating properly? | How are you, #dear#? Tell me everything.
+line @1 sympathise : #sympathy#. #oh#, come here. Sit with me a while. | That's hard. I'll put #ladle# of something warm in your paws and listen.
+line @1 reassure : #reassure#. It'll come right, you'll see. | #oh#, it'll pass. Most hard things do, a step at a time.
+line @1 decline : #hedge#; I'd love that, only I'm due back at #work# and they'll miss me. | #oh#, I can't today. I've #stair# to climb and an early start.
+line @1 accept_decline : #no_matter#. Another time, then. | #oh#, never mind. Next time, then.
+line @1 thank : #thanks#! That's so kind of you. | #oh#, ta. I'll not forget it, #address#.
+line @1 deflect_thanks : #deflect#. You'd have done the same. | #oh#, it was nothing. I like to.
+line @1 preclose [self.working=yes] : #oh#, look at me chattering. #stockpot.capitalize# won't stir itself. | Back to #work# with me, before they send somebody.
+line @2 preclose : Well. #preclose#. Listen to me going on. | I'll let you go. I'd chatter till dark if you let me.
+line @1 accept_preclose : #oh#, go on, then. #farewell#. | Off you go. #farewell#. The rest keeps.
+line @1 ack : #bc_lovely# | #bc_true#
+scene crusts_pocket
+when topic=animals|work self.job=cook
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #crusts# in my apron for #birds#. The kitchen would only throw them out. | Every evening I bring home the crusts from #kitchen#. The sparrows know to the minute when I climb home. | There's a sparrow with one bad foot who waits on my sill. I save the softest crust for that one.
+b : Doesn't the kitchen mind? | They know the time? | One bad foot?
+a : They don't know, and I'd not tell them. Nobody counts #crusts#. | To the minute. I hear them on #slates# before I'm halfway up. | Hops on the good one. Eats faster than the lot of them.
+b : #bc_ha# | #bc_lovely# | #bc_poor_soul#
+
+scene birds_on_slates
+when topic=pastimes|animals self.likes=roof_birds
+does tell.feeling / react.self / assess
+a : From #window# I can watch #birds# all morning. Better than any play. | There's a pair of pigeons courting on the chimney. He bows, and she walks off. Every day. | I can tell the sparrows apart now. Don't laugh. One has a white feather in its tail.
+b : That sounds nice. | Every day? | I won't laugh.
+a : It is. They squabble like a market and never once haggle. #oath#, I love them. | Every day. I think he's learning nothing. #oath#, I'm rooting for him. | Good. I've told everybody on #court#. Most of them laughed.
+
+scene big_kitchen
+when topic=work self.job=cook self.working=yes
+does tell.self / react.self / assess
+a : Up at #kitchen# they eat what #city# eats, only twice as much and off silver. | We had forty for dinner up the hill today. I made the sauce. The sauce! | I'm #self.trade_words#. It sounds grand. It's mostly onions.
+b : Off silver? | That's grand. | Onions?
+a : Off silver, and they never once look at it. I'd look at it. | It is. Nobody up there will know my name, but they'll know my sauce. | Onions, and #stockpot#, and a great deal of washing up.
+
+scene feast_rush
+when topic=work|festival self.job=cook
+does tell.worry / reassure / assess
+a : There's a feast up the hill and #kitchen# is in a state. I've not sat down since dawn. | Sixty covers tonight. I've been stirring #stockpot# so long my arm's gone numb. | The head cook shouted at me today. I don't mind; I'd shout at me too, with sixty to feed.
+b : You'll manage. | That's a lot. | Don't let it trouble you.
+a : I will. We always do, somehow. #saying#. | It is. I'll sleep like a stone tonight, if I get up #stair#. | I won't. Tomorrow she'll give me the leftovers and say sorry with pie.
+
+scene oven_smoke
+when topic=work|weather self.dislikes=smoke self.job=cook
+does tell.complaint / react.complaint / assess
+a : #ovensmoke.capitalize# gets in my eyes all day. I come home blinking like an owl. | I can't abide smoke. I open every window I can reach and they shut them behind me. | The chimney in #kitchen# draws backwards when the wind's wrong. We cook in a cloud.
+b : That's no good. | Who shuts them? | In a cloud?
+a : It's not. I wash my face in cold water at the top of #stair# and it's better. | The head cook. Says draughts spoil the bread. Smoke spoils my eyes. | A cloud. You can taste it in the gravy, if you're unkind.
+
+scene plum_lattice
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail / assess
+a : I made #tart# last night. The plums were almost black. | #tart.capitalize#, and I'm anybody's friend. | Up the hill they have plum tart every week. I make it and they never finish it.
+b : How do you make it? | Anything? | What happens to the rest?
+a : A lattice on top, honey under, and the plums cut so the stones come out clean. | Nearly anything. Not #backforth#. | It comes down #stair# with me, and the neighbours get it. Don't tell.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene market_roar
+when topic=smalltalk|pastimes self.likes=market_bustle here.region=ridgemere
+does tell.feeling / react.self / assess
+a : I love #roar#. Everybody shouting, everybody wanting something. | I go down to #market# on my half-day just to stand in it. | The Rag Market on a full day is the best noise in #city#.
+b : It's loud. | Just to stand? | Best noise?
+a : It's loud! That's the joy of it. Nobody's lonely in a crowd like that. | Just to stand, and listen, and buy one apple. I make it last. | Better than bells. Bells only say one thing.
+
+scene no_haggle_market
+when topic=prices|smalltalk self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : I can't haggle. I pay whatever they say, and then I'm cross with myself all the way home. | #backforth.capitalize# makes me go hot in the face. I'd rather pay a copper over. | My #mum# could haggle a stallholder down to nothing. I got none of it.
+b : Everyone does it. | A copper over? | Shame.
+a : I know. I'll try next Marketday at #market#. I'll fail, but I'll try. | A copper over and a smile. I'd call that a #good# trade. | I got her pastry, though. That's worth more.
+
+scene slate_wind
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : Listen to that! #slatewind.capitalize#. I love it. | The wind's taken half the leaves off the court tree and #birds# are riding it. | #slatewind.capitalize#. It clears the smoke right out of the Sump.
+b : It's cold, though. | Riding it? | It does.
+a : Cold and clean. I'd take it over smoke any day. | Up and down like kites. I could watch them for hours. | It does, for a day. Then the chimneys catch up.
+
+scene wet_top_floor
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.self / reassure
+a : #rain.capitalize# again, and the roof over my bed has found a new hole. | I've a pan under the leak and another under the other leak. | Wet #slates# all week. The birds are sulking in the gutters.
+b : Tell the landlord. | Two leaks? | So am I.
+a : I have. Three times. I've a pan now; I'll have a bucket by spring. | Two that I know of. I'll find the third tonight, in my sleep. | #oh#, don't sulk. It always stops. #reassure#.
+
+scene top_stair
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : I live at #stair#. Five flights. I counted them once and never again. | From my window I can see #chimneys# right down to the Sound. | It's small up by #slates#, but nobody walks over my ceiling.
+b : Five flights! | All that way? | Fair point.
+a : Five, and I go up #stairs# twice a day with a basket. My legs are strong as a carter's. | All the way. On a clear day I can see the ships come in. | It's the best thing about it. That and #birds#.
+
+scene court_neighbours
+when topic=home|friends here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : Down here on #court# everybody knows everybody's business. I love it, mostly. | Somebody's always got a pot on for the court. If it's not me, it's next door. | Up the hill they've big houses and nobody talks. Down here we've small rooms and nobody stops.
+b[wealth=rich] #rich : Sounds crowded. | Generous of you. | That's unfair on the hill.
+b : That's the Sump. | Lovely. | Ha, true.
+a@rich : It is. Crowded and warm. I'd not swap #court# for a palace. | Not generous. It's just what you do. | Maybe. I've worked under their roofs and never met one of #toffs# yet.
+a : It is. Folk look after their own here. #saying#. | It is. Nobody on #court# goes to bed without a bowl. | True as #ladle#. Come down and hear for yourself.
+
+scene parish_bread
+when topic=times|prices self.on_dole=yes self.job=cook
+does confide / react.self / assess
+a : #vent#: I've been on #dole# this month. Cook's pay doesn't stretch to the end of it. | The parish bread got me through last week. I'm not ashamed of it, #address#. | I cook for the richest house in #city#, and I queue for the parish loaf. Funny old world.
+b : No shame in that. | Good. Nor should you be. | That's not right.
+a : No. I'll give it back one day, in #tart#. | I'm not. I just don't say it loud on #court#. | It's not right. It's just how it is. #saying#, and I'll share mine.
+
+scene lean_court
+when topic=times world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Hard times. Half #court# is eating the same soup three days running. | Each week's a bit leaner, and the hill never sees it. | The bakers sell every last crust now. Even #birds# are feeling it.
+b : Hard for everyone. | They never do. | Even the birds?
+a : It is. But a pot of soup shared is a feast, near enough. #reassure#. | They never look down. I'll not stop looking up. | Even them. I've started buying #crusts#. Don't laugh.
+b? : #bc_true# | #bc_poor_soul# | #bc_ha#
+
+scene market_at_home
+when topic=memories self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : Back in #self.from_town# my #mum# had a pie stall on Marketday. I sold my first pie at six. | The market at home was the loudest place in the world, I thought. Then I came here. | On #downs# at home the larks went up so high you only heard them.
+b[from=larkfield] #lark : I'd have bought a pie. | Wait till you hear the inn back home on a fair night. | Every morning, the larks.
+b : Six! | And now? | Only heard them?
+a@lark : You'd have had a good one. Her crust was the best on #downs#. | I've heard it! Louder than here, almost. Almost. | Every single morning. I miss it most of anything, #address#.
+a : Six, and I got the change muddled. #mum.capitalize# made it up from her own purse. | Now I know better. #city.capitalize# never stops. I love it, mind. | Only heard them. Little dots in the sky, singing their hearts out.
+
+scene how_i_talk
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : Up the hill they giggle at my fair price. So I say fair price twice as often. | I've been in #city# years, and I still call supper tea. They'll not change me. | A wolf in the kitchen asked if everyone in #self.from_town# talks like me. I said the nice ones do.
+b : Good for you. | Why would they? | Ha!
+a : It's my voice. #mum.capitalize# gave it me with the pastry. | They can try. I'll talk back, all day. | They do, mostly. The rest are carters.
+
+scene new_face
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : There's somebody new on #court#. I've already taken round #crusts#. For the birds, I said, but really for them. | I love a new face. New faces have new stories, and I've heard all of ours. | Somebody new was at my apple stall today. I showed them the best ones.
+b : That's kind. | True enough. | That's a start.
+a : It's only bread. But you'd be surprised what bread does for a wolf. | I've heard ours twice over. I'd give a tart for a new one. | It's the best start there is. Apples, and where the warm corner is.
+
+scene the_gossip
+when topic=gossip
+does tell.gossip / react.news / assess
+a : #gossipy#, have you heard? They're saying #topic.subject# #topic.claim#. | Everybody on #stairs# this morning was talking about #topic.subject#. | I heard at the pump that #topic.subject# #topic.claim#. True or not, I couldn't say.
+b : No! | What about them? | Nor do I.
+a : It's what they're saying. I'll not swear to it, mind. | That #topic.subject# #topic.claim#. I've told you every scrap I had. | Well, now we both don't know it. That's something.
+
+scene chapel_fed
+when topic=faith
+does give.opinion / react.self / assess
+a : #chapel.capitalize# fed our court in a bad week, and only it did. I go to say thank you, mostly. | Sermons aren't for me. I like the singing, and the bread after. | Every winter there's a candle from me for #birds#. Is that silly? The priest didn't laugh.
+b : That's a good reason. | The bread? | Not silly.
+a : It's the only reason I need. #oath#. | And the singing. But the bread's very #good#. | #thanks#. I'll light another, then.
+
+story first_sparrow [topic=animals|memories self.age>=15]
+  : The first winter I lived up #stair#, a sparrow came in at my window and couldn't find the way out.
+  : I sat with it all night in the dark, so it wouldn't be frightened, and opened the window at dawn.
+  : It went straight out, and came back the next morning for a crust. It's been coming ever since. Or its grandchildren have.
+  ask : Have you ever had a creature choose you like that?
+  b : Once. A cat. It chose me and then left.
+  b[old] : More than once. They always know who'll feed them.
+
+story first_day_cooking [topic=work|memories self.job=cook self.age>=18]
+  : My first day in #kitchen# I was set to peel onions, and I peeled the whole sack before noon.
+  : The head cook came and looked at the pile and said, those were for the week.
+  : I cried into the onions, and nobody could tell. We had onion soup for a fortnight.
+  ask : Did you ever start a place by doing too much?
+  b : Every place I've ever worked. I can't help it.
+  b[job=cook] : The first day I burnt the porridge. Doing too much is better.
+
+story lost_at_the_fair [topic=memories self.away=yes self.from=larkfield self.age>=15]
+  : When I was a #child# I got lost at the big fair in #self.from_town#. I thought I'd never see home again.
+  : A drover found me under a cart, crying, and carried me round on his shoulders till I spotted my #mum#.
+  : I didn't want to come down. I could see the whole fair from up there.
+  b : That's a lovely memory. Was your mum cross?
+  : Cross, and crying, and then she bought me a pie. I've loved a crowd ever since.
+
+rule @crust_bark
+when concept=bark self.job=cook here.time=dusk|dawn
+does aside
+cooldown 8h
+say Here, birds. Crusts. | Come on, then. There's plenty for everyone.
+
+rule @smoke_bark
+when concept=bark working=yes self.dislikes=smoke
+does aside
+cooldown 8h
+say #oh#, the smoke. Open a window, somebody. | My eyes. #ovensmoke.capitalize# again.
+
+rule @stair_bark
+when concept=bark here.region=ridgemere here.time=dusk|night
+does aside
+cooldown 10h
+say Five flights. #oath#. | Up we go. One more, then one more.
+
+rule @wind_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast
+does aside
+cooldown 10h
+say There's the wind! Hold on to your hats. | Listen to it on the slates.
+
+dlg @1 resident.hub : #greet#! Oh, a new face. Where are you from, then? | #greet#, #address#. I'm glad of a chat.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! I hoped you'd come back. | #topic.player#! Sit down, I've so much to say.
+dlg @3 resident.hub [here.time=night] : It's late, but I'm always up for a word. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Oh. You've a cross look. I'll listen, if you'll talk gently.
+dlg @1 resident.job [self.job=cook] : I'm #self.trade_words#. Onions, sauces, #stockpot#, and a great deal of washing up. | I cook. Up the hill they eat what we eat down here, only off silver.
+dlg @2 resident.job : #oh#, a bit of everything. I like to keep busy. | Work's work. I'd rather talk about the birds, honestly.
+dlg @1 resident.bye : #farewell#! Come back soon. | #farewell#, #address#. Mind #stairs#.
+graft resident.hub
+choice Why do you keep crusts in your apron? -> crusts
+node crusts
+say For #birds#! The kitchen throws them out, so I bring them home. There's a sparrow with a bad foot who gets the soft bits.
+mood warm
+free
+choice Do they know you? -> crusts_know
+choice Goodbye. -> bye
+node crusts_know
+say They know the minute I start climbing home. I'm the only wolf on the court they'll sit beside.
+choice That's lovely. -> hub
+choice Goodbye. -> bye

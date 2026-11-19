@@ -1,0 +1,310 @@
+# lf145, the notched stick (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf145
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for rm_gunnar_mudstack
+written_by claude
+title the notched stick
+fits stage=adult|old
+prefers job=laborer piety=devout drive=restless
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=restless
+quirk keeps_a_stick_notched_for_every_town_still_to_see
+likes plum_tart wrestling fresh_straw frosty_mornings
+dislikes smoke rats
+fears dying_in_the_one_town
+hopes the_high_road_and_every_town_on_it
+topics travel +0.5 dreams +0.4 faith +0.3 work +0.3 pastimes +0.2 gossip -0.4
+styles comfort=prayer gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# hauls stone and mortar in a masons' yard and keeps a stick by the bed with a notch for every town still to be seen: devout, plain, restless, slow to speak, praying for patience and never quite getting it.
+
+words
+oath! = Bright One hold the wall | Stone and sinew
+saying! = A heavy stone's an honest one | Carry it once and carry it right | Lift with the back you've got
+stick = my stick | the notched stick by my bed
+notch = a notch | another notch on the stick
+road = the High Road | the long road out of the city
+yard = the yard | the masons' yard
+block = a block | a dressed block of grey stone
+barrow = the barrow | a barrow of rubble
+mortar = the mortar | a tub of mortar
+tart = plum tart | a plum tart with the juice running out
+fall = a fall on the green | a clean fall on the turf
+straw = clean straw | a bed of new straw
+frost = a frosty morning | a morning the frost crunches
+towns = the other towns | every town I've not seen yet
+patience = patience | a bit more patience than I've got
+smoke = the smoke | smoke sitting low over the yard
+chapel = the chapel | the chapel on the corner
+bag = my bag | the bag under my bed
+green = the green | the wrestling green
+ladder = the ladder | the long yard ladder
+bread = the parish loaf | the loaf from the parish
+pay = my pay | a week's pay
+wall = the wall | a new wall going up
+sheds = the sheds | the yard sheds
+restday = Restday | a Restday afternoon
+downs = the downs | the open downs
+
+any
+opinion @1 church for 2 : When #pay# ran short, #chapel# didn't. I'll stand at the back every Restday for that.
+opinion @2 dole for 3 [self.on_dole=yes] : #bread.capitalize# kept me going through a hard week. Whoever runs it down hasn't been hungry.
+opinion @3 drink against 1 : Drink takes a wolf's legs first and the rest after. #frost.capitalize# clears my head better than any jar.
+opinion @4 houses against 2 [here.region=ridgemere] : I've carried a House's stone a long while and no one of the House has ever looked at me. They see #wall#, not the paws under it.
+opinion @5 merchants against 2 : A loaf costs more than I earn in an hour at #yard#, and the stalls never go short.
+opinion @6 road for 1 : #road.capitalize# is just stones and distance. Faith and sense get you down it.
+opinion @7 sump for 1 [here.region=ridgemere] : It's home for now, and the folk down here look out for each other. I'd not say that of the hill.
+opinion @8 times against 2 : Harder each week, and nobody up top feels it. I pray for #patience#.
+opinion @9 watch against 1 [here.region=ridgemere] : I've never seen the Watch on our stair with a kind word. Only with cuffs.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Pleased to meet you, #address#. | #greet#. Not from round here, I'd say.
+line @2 greet [self.working=yes] : #greet#. One moment; let me set #block# down. | #greet#. Stand clear of #barrow#.
+line @3 greet [here.time=dawn] : #greet#. #cold.capitalize# enough to crack the bricks. | #greet#. Early, and #cold#.
+line @4 greet [here.time=dusk|night] : #greet#. The yard's shut. I'm off home. | #greet#. Late, but I'm not sleepy.
+line @5 kin.open [pair.kin!=no] : Come here. #tart.capitalize#'s put by for you. | Come in. Sit on #straw# if you like; it's clean.
+line @6 again.open : You again. Good. | Back already. I've not gone past #yard#.
+line @7 greet.return : #greet#. | #greet#. Bright One keep you.
+line @8 greet.return [pair.band=friends|family] : #greet#. Good to see you. | #greet#. Sit a while.
+line @9 greet.return [self.working=yes] : #greet#. Mind #mortar#. | #greet#. I can talk while I carry.
+line @10 farewell : #farewell#. | #farewell#. Bright One go with you.
+line @11 farewell [here.time=dusk|night] : #farewell#. Mind the dark stairs. | #farewell#. Sleep well.
+line @12 farewell.return : #farewell#. | And you. Safe road.
+line @13 react.news : #ack#. Go on. | Hm. Tell me the rest, #address#.
+line @14 react.news.new : #surprise#. I'd not heard. | Bright One. Nobody at #yard# said a thing.
+line @15 react.news.known : #knew#. | I'd heard. It went round #yard# this morning.
+line @16 react.news.doubt : #doubt#. I'll wait till somebody's sure. | I'd not lean on that till it's tested.
+line @17 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll pray for them. | #bc_im_sorry# Bright One keep them.
+line @18 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Thank the Bright One. | Good. That's lighter than #block#, for once.
+line @19 answer.how : #fine#. Back's sore, but fine. | #tired.capitalize#, and itching to be off somewhere.
+line @20 answer.how.busy [self.working=yes] : #busy.capitalize#. Three barrows behind. | Busy. #mortar.capitalize# won't wait.
+line @21 ask.how : And you, #address#? | You keeping well, #address#?
+line @22 sympathise : #sympathy#. I'll say a prayer for you. | #bc_im_sorry# Sit a while, if it helps.
+line @23 reassure : #reassure#. | Faith and a good footing, like #wall#. It'll stand.
+line @24 decline : #hedge#. I'm at #yard# till the bell, and I can't leave the barrow standing. | Not this week, #address#. There's nothing left over.
+line @25 accept_decline : #no_matter.capitalize#. | Another time, then. No harm.
+line @26 thank : #thanks#. Bright One bless you. | #thanks#. That's kind.
+line @27 deflect_thanks : #deflect.capitalize#. | It was nothing. Anyone would.
+line @28 preclose [self.working=yes] : #barrow.capitalize# won't push itself. | I'd better get #block# where it's going.
+line @29 preclose : #preclose#. | Well. My legs want walking.
+line @30 accept_preclose : Go on, then. | Off you go. Mind #barrow# on your way.
+line @31 ack : Mm. | #bc_right#
+line @32 give.advice : #advise.capitalize#: lift with your legs, and pray with the rest of you. | #saying#. It saves a second trip.
+scene the_notched_stick
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I've #stick# by my bed. A notch on it for every town I mean to see. | #notch.capitalize# last night. I heard a carter talk of a town past the lake. | Eleven notches on #stick#, and I've stood in two of those towns.
+b : How many notches? | Which town? | Only two?
+a : Nine still on #stick#. I'll cut them off as I go. | One I'd never heard of. That's the best kind of notch. | Two. The other nine are waiting. #patience#, I tell myself.
+b : #bc_good# | #bc_lovely# | #bc_we_will_see#
+
+scene high_road_calling
+when topic=travel|dreams
+does confide / react.self / assess
+a : Some mornings I look at #road# and my feet start walking before I do. | #vent#: I can't stay in one town my whole life. I'd go mad. | I've #bag# packed. I've had it packed a year.
+b : Then go. | Some do. | A whole year?
+a : When I've enough put by from #pay#. The Bright One will tell me when. | I pray for #patience#, and I get a little. Never enough. | A year. I unpack it on #restday# to air, and pack it again.
+
+scene heavy_block
+when topic=work self.working=yes self.job=laborer
+does tell.self / react.self / assess
+a : I carried #block# up three ladders today. My back's still talking about it. | They give me the heavy ones. I don't mind. #saying#. | #block.capitalize# goes on #wall# once. Drop it, and it has to go up again, and that one costs.
+b : Your poor back. | Honest how? | Do you drop many?
+a : It'll be quiet by morning. It always is. | It's either the weight it says, or it's not. No lying in a stone. | Not one this year, and I mean to keep it that way.
+
+scene mortar_mixing
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I've #mortar# to mix before noon. Lime, sand, water, and a strong arm. | Mind the lime, if you're near #yard#. It burns a wet paw. | I mix #mortar# as an old hand taught me, and nobody's faulted it yet.
+b : How much water? | Does it hurt? | Who taught you?
+a : Enough to hold, not enough to run. You feel it in the spade. | It does. You learn quick, or you learn twice. | Somebody long gone now. I say a prayer for that one.
+
+scene patience_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : I pray every night. Mostly for #patience#. The Bright One's heard it a thousand times. | I stand at the back of #chapel# on Restday. I can't sit still in a pew. | The Bright One made the roads as well as the towns. I think about that.
+b : Patience comes slowly. | At the back? | That's a good thought.
+a : It does. Slower than I'd like. That's the joke of it. | At the back, near the door. I'm always half on my way out. | It is. If the roads are blessed, the walking is.
+
+scene parish_loaf
+when topic=faith|times self.on_dole=yes
+does tell.self / react.self / assess
+a : #bread.capitalize# saw me through the month I came. I don't forget a thing like that. | I take #dole# and say a prayer over it. Both. | When #pay#'s thin, the door of #chapel# is still open.
+b : Good of them. | Both is right. | It is.
+a : Good, and quiet about it. I drop a copper in the box when I've one. | Bread and prayer. I've never had one without the other. | Always. That's what a chapel's for.
+
+scene frosty_dawn
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : #frost.capitalize#, and the yard's all white. Best hour of the winter. | Frost on the bricks, and my breath going up like smoke. The good kind. | #frost.capitalize# clears my head. I can think, out in it.
+b : It's freezing. | The good kind? | What do you think about?
+a : It is. I like it that way. Cold's clean. | Breath, not chimneys. That's a smoke I don't mind. | #road.capitalize#. Always, first thing.
+
+scene yard_smoke
+when topic=weather|work here.region=ridgemere self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #smoke.capitalize# again. The kilns down the way, and the wind bringing it. | Smoke in my eyes all morning. I can't see where I'm putting my feet. | Scrub as I like, I go to bed smelling of #yard# fires.
+b : It's the city. | Mind your step, then. | You do smell of it.
+a : It is. Out on #road# there's no smoke at all. | I do. Slowly, and with a prayer. | I know. I'll smell of it till I'm out on #road#.
+
+scene plum_tart
+when topic=food self.likes=plum_tart
+does tell.self / react.self / assess / ack
+a : #tart.capitalize#, on Restday. It's the one thing I'll spend on that I don't need. | There's a stall that does plum tart on a Marketday. I go past it twice. | Give me #tart# and a cold morning and I'll not complain for a week.
+b : Worth it. | Twice? | A whole week?
+a : Every crumb. The Bright One gave us plums for a reason. | The first time to look. The second to buy. | A whole week. I've done it before.
+b? : #bc_good# | #bc_ha# | #bc_lovely#
+
+scene wrestling_green
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail / assess
+a : There's wrestling on #green# some Restday afternoons. I'm there when the yard lets me. | I took #fall# last Restday. Fair and square. | Wrestling's honest. You can't talk your way out of a hold.
+b : Do you win? | Who threw you? | Can't you?
+a : Some. I'm strong, but I'm slow to start. | A wolf half my size. I've been thinking about it all week. | No. You work your way out, or you're down. I like that.
+b : #bc_good# | #bc_ha# | #bc_true#
+
+scene fresh_straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I put #straw# down on my floor every week. It's the one comfort I'll pay for. | My room's small, but it smells of #straw#, not #smoke#. | #straw.capitalize#, and I'm asleep before I've lain down.
+b : Smells good. | Better than smoke. | That quick?
+a : It does. Like a barn, and a barn's a good smell. | Much better. That's why I pay for it. | That quick. Heavy, and still, like #block#.
+
+scene rats_in_the_yard
+when topic=animals self.dislikes=rats
+does tell.complaint / react.complaint / assess
+a : #sheds.capitalize# have rats again. The sack ties are chewed through. | A rat ran over my feet this morning. I nearly dropped #block#. | I can't abide rats. I'll pray for most things, but not for a rat.
+b : Get a cat. | That's close. | Not even one?
+a : We had one. The rats chased it. | Too close. Bright One, it was close. | Not one. The Bright One can see to them without my help.
+
+scene the_quiet_downs
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : In #self.from_town# a sheep bell carried a mile. Here I can't hear myself. | I miss the quiet more than anything. #downs.capitalize# at night were so still. | I left #self.from_town# with one bag and a stick with no notches.
+b[from=larkfield] #lark : The bells carry for miles up there. | Still as a church, the downs. | One bag. Same as me.
+b : That quiet sounds good. | Do you think of going back? | No notches?
+a@lark : They do. I'd know our flock's bell anywhere. | Stiller. A church has folk coughing. | Then you know. You don't need much to start.
+a : It was. I'll find quiet again somewhere on #road#. | Back, no. Onward. There's a difference. | None. I cut the first one for the city, the day I came.
+
+scene house_faces
+when topic=work|times here.region=ridgemere self.workplace
+does give.opinion / react.self / assess
+a : I've laid stone for #self.workplace# a long while and never seen one of the House up close. | They build the city's walls, and the paws that build them are ours. | The House says the stone's theirs. My back says otherwise.
+b[role=guard] #guard : They're busy folk. | Somebody has to plan it. | Your back's not wrong.
+b : That's the way of it. | It's true. | Fair enough.
+a@guard : Busy, I'm sure. Busy is easy, with other paws to carry. | Somebody plans, somebody carries. I'd like a turn at the planning. | It never is. It knows every block.
+a : It is. I pray for them, and I carry. | True, and they'd not thank you for saying it. | Fair. I'll say no more where it's heard.
+
+scene friend_to_lean_on
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd walk the High Road with, if I ever go. | I'd trust #self.friend# to hold the other end of anything. | #self.friend# has known me a long while. That one knows I'm restless and doesn't mind.
+b : A good friend. | That's trust. | That's rare.
+a : The best. I'll not say it twice; it'd embarrass us both. | It is. I'd do the same in return. | Rare. I'm thankful for it.
+
+scene neighbour_next_door
+when topic=smalltalk self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# keeps a quiet house. That suits me in a neighbour. | I'd sooner have #self.neighbour# through the wall than a crowd. | I don't know #self.neighbour# well. We nod on the stair, and that does.
+b : Quiet's good. | Fair enough. | It is enough.
+a : It is. I've noise enough at #yard#. | I'm not one for crowds either way. | It is. A nod's honest.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : #yard.capitalize#'s short of work. Fewer walls going up, fewer barrows to push. | The loaf's dearer and my pay's the same. I've stopped buying #tart#. | I put less by for #road# this month. Nothing, really.
+b : It'll pick up. | That's a shame. | It'll come.
+a : It will. #reassure#. I'll pray it does. | It is. #restday.capitalize#'s not the same without it. | It will. #road.capitalize# isn't going anywhere.
+b? : #bc_i_hope_so# | #bc_true# | #bc_true#
+
+scene talk_passed_on
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. I'll not add anything to it. | They're saying at #yard# that #topic.subject# #topic.claim#. Whether it's so, I can't tell you.
+b : Fair enough. | Maybe it is.
+a : Talk's heavier than #block#. Mine stays off the pile. | Maybe. That's for the Bright One to know, not me.
+
+scene wet_bricks
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Rain on #yard# means wet mortar and slipping ladders. I go slower. | Rain all day. Everything I carried weighed twice what it should. | Wet weather, and I'm stuck under a roof wishing I was on #road#.
+b : Careful, then. | It soaks in. | Even in the rain?
+a : Careful and slow. Bright One hold #ladder#. | It does. #block.capitalize# drinks it up. | Even in the rain. I'd not mind getting wet if I was going somewhere.
+
+scene sump_for_now
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : The Sump's home, for now. Folk here look out for each other. | I've a room at the top of a house in the Sump. I can see the walls from my window. | The Sump's no worse than anywhere. Poorer, maybe. Kinder, I'd say.
+b : For now? | The walls? | Kinder, I'd believe.
+a : For now. #stick.capitalize# has nine more notches on it. | The walls, and #road# going out past them. I look every night. | Kinder. That counts for more than money, most days.
+
+story the_first_notch [topic=memories|travel self.away=yes self.from=larkfield]
+  : The day I walked out of #self.from_town#, I cut a stick off a hedge by the road.
+  : The first night in the city, I cut a notch in it. One town seen. Then I cut one more for every town I'd heard of.
+  ask : Do you keep anything like that?
+  b : Nothing so tidy. I keep a list in my head.
+  b[old] : I did, once. I lost it somewhere on the way.
+  : Keep it in your head, then. But keep it.
+
+story the_leaning_wall [topic=work|faith self.age>=20 self.job=laborer]
+  : There was a wall at #yard# that started to lean one morning. Just a little.
+  : I put my back to it and said a prayer, and the others ran for props.
+  ask : Would you have run, or pushed?
+  b : Run, I'd say, and be ashamed after.
+  b[job=laborer|crafter] : Pushed. You do, without thinking.
+  : It held till the props came. I don't know whether it was me or the Bright One. Both, I'd guess.
+
+story the_little_wrestler [topic=pastimes self.likes=wrestling]
+  : The last bout on #green#, they put me in with a wolf half my size.
+  : I thought it would be quick. It was. I was on my back before I'd set my feet.
+  b : Ha. Size isn't everything.
+  b[old] : The little ones are quick. Always were.
+  : I've been practising my footing since. Next Restday, I'll ask for that one again.
+
+rule @heave
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Up she comes. Steady. | #oath#. That one's heavy.
+
+rule @mortar_bark
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Lime's hot. Keep your paws back. | #mortar.capitalize#'s going stiff. Move, move.
+
+rule @smoke_bark
+when concept=bark here.region=ridgemere self.dislikes=smoke
+does aside
+cooldown 8h
+say #smoke.capitalize#. Again. | Can't see #ladder# for the smoke.
+
+rule @notch_bark
+when concept=bark here.time=dusk|night
+does aside
+cooldown 12h
+say Another day in the one town. | Bright One, give me #patience#. Or a road.
+
+dlg @1 resident.hub : #greet#. What can I do? | #greet#. Say on; I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Still in town, then.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Hm. Say it, then, and I'll listen.
+dlg @4 resident.job [self.job=laborer] : I'm at #self.workplace#. I carry stone, I mix #mortar#, I push #barrow#. | I'm a pair of strong paws at #yard#. It's honest work.
+dlg @5 resident.job : I'm #self.trade_words#. It pays, and it keeps me tired enough to sleep. | #job_busy#
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing new at #yard# but the weather.
+dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. I've #barrow# for carrying.
+dlg @8 resident.bye : #farewell#. Safe road. | #farewell#. Bright One go with you.
+graft resident.hub
+choice What are the notches on your stick? -> notch
+node notch
+say A notch for every town I mean to see. Two I've seen. The rest are waiting on #road#, and so am I.
+mood warm
+free
+choice Why so many? -> notch_why
+choice Goodbye. -> bye
+node notch_why
+say I can't live my whole life in one town. I'd go mad. I pray for #patience#, and the stick reminds me what it's for.
+choice I hope you see them all. -> hub
+choice Goodbye. -> bye

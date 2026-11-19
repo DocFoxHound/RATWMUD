@@ -1,0 +1,279 @@
+# lf149, the button-mender (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf149
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for rm_gerrit_gullham
+written_by claude
+title the button-mender
+fits stage=adult|old
+prefers job=crafter talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk sews_loose_buttons_back_on_for_nothing
+likes mutton_stew old_tales old_maps warm_rain
+dislikes rats haggling
+fears the_houses_falling_out_before_winter
+hopes a_warm_coat_on_every_back_in_the_street
+topics lore +0.4 food +0.3 work +0.2 weather +0.2 times +0.2 home +0.1 gossip -0.4 family -0.2
+styles comfort=quiet_help gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# sews in a tailor's back room in the Commons and says little: warm, quiet and close about personal matters, quick to sew a loose button back on for nothing, slow to tell the end of an old tale.
+
+words
+oath! = Thimble and thread | By the shears
+saying! = A button's cheap till it's gone | Mend it while it's small
+button = a loose button | a button hanging by a thread
+needle = my needle | a needle and a bit of thread
+thimble = my thimble | the old brass thimble
+stew = a mutton stew | mutton stew with barley in it
+tale = an old tale | a tale told slow
+seams = the seams | a split seam
+cloth = the good grey wool | a bolt of cloth
+fleece = a fleece off the downs | good downland fleece
+looms = the looms at home | the long loom sheds
+backroom = the back room | the bench in the back
+mm = Mm | Mm, well
+
+any
+opinion @1 houses against 1 : #mm#. Four Houses and one city, and each wants the bigger share. That ends in a quarrel, sooner or later.
+opinion @2 houses against 2 [pair.band=friends|family|housemates] : Between us: I'd not be surprised to see the Houses at each other's throats before #cold# weather. Keep it close.
+opinion @1 city against 1 : Folk live wall to wall here and never learn each other's names. At home you'd know a neighbour by their coat.
+opinion @1 dole for 1 : No belly should go empty in a street with bread in it. I'll put my penny in and not ask whose.
+opinion @1 newcomers for 1 : Come in, find work, mend what you break. That's all anyone asks, #address#.
+opinion @1 merchants mixed 0 : I'll not haggle. I sew. The front of the shop sets the price; I just make it worth paying.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've #button# there. I'll see to it. | #greet#. In you come, #address#; mind the step.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. Mind the pins on the floor. | #greet#. #mm#. Come through to #backroom#.
+line @3 greet [here.time=dawn] : #greet#. Early. #needle#'s not warm yet. | #greet#. First light, and quiet with it.
+line @1 kin.open [pair.kin!=no] : You. Come in. There's #stew# on. | #mm#. Sit down. Let me see that sleeve.
+line @1 again.open : Back again. #welcome_back#. | You've come round twice. That's #very# kind.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit, if you like. | #greet#. #stew.capitalize#'s on, if you're hungry.
+line @3 greet.return [self.working=yes self.job=crafter] : #greet#. I'll keep sewing, if that's all right. | #greet#. Say on. #needle.capitalize# keeps going.
+line @1 farewell : #farewell#. | #farewell#. Mind your buttons.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep your coat buttoned; it's #cold#. | #farewell#. Go careful in the dark.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #mm#. | #ack#.
+line @1 react.news.new : #surprise#. I'd not heard. | #mm#. That's new to me.
+line @1 react.news.known : #knew#. It came into #backroom# this morning. | #hearsay#, but I'd heard it.
+line @1 react.news.doubt : #doubt#. Folk add a bit every time it's told. | #mm#. I'll wait for somebody who saw it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. | That's #bad#. I'm sorry for them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize#. | That's warm news. I'm glad of it.
+line @1 answer.how : #fine#. Quiet, which suits me. | Well enough. #mm#. Mending.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Six coats in and a hem on each. | Busy. #needle.capitalize#'s not stopped since dawn.
+line @1 ask.how : And you? Warm enough? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit by the stove and get warm through. | That's #very# hard. Take your time.
+line @1 decline : #hedge#. I'd help, but there's a coat promised by dusk and I'll not break that. | #hedge#, #address#. #backroom.capitalize#'s piled high and I'm behind.
+line @1 accept_decline : #no_matter#. Another time. | It'll keep, like a good hem.
+line @1 thank : #thanks#. | #thanks#. That's kind, #address#.
+line @1 deflect_thanks : #deflect#. | It was a button. A button costs nothing, #address#.
+line @1 preclose [self.working=yes] : #preclose#. #seams.capitalize# won't close themselves. | I'd better get back to #backroom#.
+line @2 preclose : #mm#. I'll let you go. | #excuse#.
+line @1 accept_preclose : Go on, then. #farewell#. | #mm#. Off you go.
+line @1 give.advice : #advise#: a stitch at the first loose thread, not the second. | Buy good wool once. It's dearer, and it's cheaper. #saying.capitalize#.
+line @1 ack : #mm#. | #ack#.
+scene button_free
+when topic=smalltalk|work
+does offer / accept / assess / ack
+a : You've #button# on your coat. Stand still a moment; I'll have it on. | #mm#. That cuff's hanging. Give it here; it's a minute's work. | Hold still. #needle.capitalize# is quicker than talking.
+b : What do I owe you? | That's kind. | Go on, then.
+a : Nothing. A button costs nothing. #saying.capitalize#. | It's nothing. There. Tight as the day it was sewn. | There. #good.capitalize#. You'll not lose that one now.
+b? : #bc_thank_you# | #bc_thank_you# | #bc_lovely#
+
+scene seams_bench
+when topic=work self.working=yes self.job=crafter
+does tell.self / react.self / assess
+a : Three hems and #seams# on a wedding coat today. My eyes are #tired#. | The cutter cuts; I sew. It's a fair split, and everyone knows where they stand. | I've been on the same coat since morning. It's #cloth#, and it won't be rushed.
+b : A wedding coat? | Sounds a good arrangement. | Good cloth, then.
+a : A wedding coat. I'll not say whose. #mm#. It'll be #very# fine, though. | It is. Quiet, and the work gets done. That's how I like a shop. | #good.capitalize# cloth. It forgives you nothing, and that's why it's worth the price.
+
+scene no_haggle
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.complaint / assess
+a : A customer wanted to haggle over a hem. I pointed at the front of the shop. I don't haggle. | I can't do it, #address#. Somebody starts on a price and I go quiet. | #mm#. Haggling. I'd sooner give it away than argue over it.
+b : Somebody has to. | Quiet's not so bad. | You'd give it away?
+a : Somebody does. It's not me. The front of the shop's better at it. | Quiet loses money, but it keeps the peace. I'll take the peace. | I nearly do. Buttons, I give. Coats, I leave to the front of the shop.
+
+scene stew_pot
+when topic=food self.likes=mutton_stew
+does offer / accept / assess
+a : #stew.capitalize# is keeping warm on the stove. Have a bowl. | I made #stew# last night. It's better today. Sit down. | Mutton, barley, an onion. #stew.capitalize#, the way we had it at home.
+b : I will, thanks. | It always is. | At home?
+a : #bc_good# Eat slow; there's plenty. | It always is. The barley takes its time, like a tale. | #mm#. Downs mutton's better, but the stew's the same.
+
+scene old_tale
+when topic=lore|pastimes self.likes=old_tales
+does tell.story / ask.detail / answer.detail / assess
+a : There's #tale# about a shepherd who sewed the wind into his coat. I'll tell you the end another day. | My gran had a tale for every button on her apron. I've forgotten half. | I like #tale# told slow. Ending kept back till the kettle's gone cold.
+b : Why the wind? | Do you remember any? | Why keep it back?
+a : So it'd never blow his flock away. That's all I'll say for now, #address#. | One. The bone button was for the wolf who came back from the sea. #mm#. | A good end's worth waiting for. Like a coat. #saying.capitalize#.
+b : #bc_fair_enough# | #bc_lovely# | #bc_ha#
+
+scene warm_rain_door
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #rain.capitalize#, and warm with it. I've the back door open just to hear it. | A warm wet day, after the dust. It smells like the downs. | I'll stand in this a minute. #mm#. Don't tell the shop.
+b : It's a good sound. | Does it? | I won't.
+a : It is. Better than talk, most days. | It does. Chalk and wet grass. I can't tell you how. | #bc_good# A minute's all I need. Then back to #seams#.
+
+scene winter_coats
+when topic=season|weather|work here.season=winter
+does tell.self / react.self / assess
+a : #oath#, winter, and everyone's coat is coming apart at once. I'm mending in my sleep. | #cold.capitalize#. Folk bring me coats they should have brought in autumn. | I've sewn more linings this month than all summer. #mm#.
+b : Good for trade. | Too late, then? | That's a lot of linings.
+a : Good for trade, hard on my eyes. #mm#. I'll manage. | Never too late. Just later than they'd like. | A lot. I'd like every back in the street warm. I'm nearly there.
+
+scene fog_street
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog on the street. I can hear the gulls and not see them. | Fog off the Sound. It gets into the cloth and I have to dry it by the stove. | #mm#. A fog like this, the shop goes quiet. I like it.
+b : Eerie. | Into the cloth? | Quiet suits you.
+a : A bit. I keep the lamp lit and the door shut. | Damp wool smells like a wet sheep. I'd know it anywhere. | It does. I'd keep a fog all week, if the coats would wait.
+
+scene dusk_lamp
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : Dusk. I light the lamp and sew the fine work now. Fewer folk to talk to. | The shop's shut and I'm still at #backroom#. #mm#. It's the best hour. | I put #thimble# down at dusk and pick up #needle# again an hour later.
+b : You don't stop. | Best for you? | Why pick it up?
+a : I stop. I just don't stop sewing. That's different. | It is. Nobody asks me anything. | Habit. My paws don't know what to do without #needle#.
+
+scene rats_cloth
+when topic=animals|home self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail
+a : Rats in the store again. They chewed a hole in #cloth# you could put your paw through. | I heard rats in the larder last night. I sat up with a broom till dawn. | #oath#. There's nothing I hate more than a rat in the cloth.
+b : Can it be saved? | Did you catch one? | Nothing?
+a : I'll patch it and sell it cheap. #saying.capitalize#. | No. I'm not quick. I just sat. They knew I was there, I think. | Nothing. Not even haggling. Haggling's only rude; a rat's ruin.
+
+scene houses_quarrel
+when topic=times|gossip|news pair.band=friends|family|housemates
+does confide / keep_confidence / assess
+a : #vent#: I think the Houses will fall out before winter. Don't ask me why. | I'll say this once, and only to you. Four Houses, and none of them content. | I watch who comes to have coats made, and for what. #mm#. Something's coming.
+b : I'll keep it to myself. | It stays here. | I'll not repeat it.
+a : #bc_thank_you# I could be wrong. I'd like to be. | Thank you. I'll not say it again till I'm sure. | Thank you. It's a feeling, #address#. Nothing more.
+
+scene kin_friend
+when topic=friends|family self.friend
+does tell.feeling / react.self / assess
+a : Years, #self.friend# and me. Long years. I'd go a long way for that one. | If I'm stuck, it's #self.friend# I'd go to. First and only. | I don't say much to anyone. #self.friend# knows what I'd say anyway.
+b : That's a lot to say. | Good to have. | That's rare.
+a : It is. Once is enough to say it. #mm#. | Worth more than #cloth#, and I've handled plenty. | It is. #very# rare. I'm lucky.
+
+scene looms_home
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : At #self.from_town# you'd hear #looms# from the street at dawn. Like rain on a roof. | I learned my stitches on #fleece# cloth at #self.from_town#. Rough, and honest. | The downs above #self.from_town#, white with sheep. I'd count them for my gran.
+b[from=larkfield] #lark : I know that sound. You'd wake to it. | Rough enough to take your skin off. | Every pup counted them for somebody.
+b : Like rain? | Honest cloth? | How many?
+a@lark : You would. I still wake listening for it. #mm#. | It would, and we'd wear it anyway. | Every pup. I always lost count at the second hill.
+a : Like a soft rain, all day. I miss it. | Cloth that doesn't pretend. It's warm, and that's all it says. | Hundreds. I'd lose count and start again. She never minded.
+
+scene ship_in
+when topic=ships here.region=ridgemere world.ships=in
+does tell.self / react.self / assess
+a : #world.ship_name# came in this morning. I watched from the wall before work. | There's a ship in. #mm#. I like to see them come round the point. | I stood on the steps and watched #world.ship_name# tie up. Took an hour.
+b : Do you know the ships? | Good sight. | An hour?
+a : Some. I watch them. That's my own business, #address#. | It is. A ship coming home is worth getting up early for, #address#. | An hour. I'd nothing better to do, and it was #very# well done.
+
+scene not_saying
+when topic=smalltalk|family|home
+does ask.after / answer.after / assess
+a : How's your family keeping? I don't like to ask outright. | #mm#. You asked after me. I'm well. That's all there is. | Folk ask what I do of an evening. I sew. And I keep the rest to myself.
+b : Well enough, thanks. | That's all? | Fair enough.
+a : #bc_good# That's what I'd hoped. | That's all I'll say. I'm not much for telling. | #bc_fair_enough# Nothing worth telling in it anyway.
+
+scene gossip_mended
+when topic=gossip|crime
+does tell.gossip / react.self / assess
+a : I hear things in #backroom#. Folk forget I'm sat there. It goes no further. | #mm#. There's talk. Not from me. | Gossip's like a split seam. Pull at it and it only gets worse.
+b : Not a word? | Fair. | It does.
+a : Not a word. Folk trust me with their coats. I'll not lose that. | #gossip_none# | It does. Better to leave it, or mend it quiet.
+
+scene lean_mending
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Nobody's having new coats made. They're all being mended. #mm#. | Lean times. I'm sewing patches on patches. | I've mended three coats this week and charged for none. Don't tell the front of the shop.
+b : At least there's work. | They'll last. | That's kind.
+a : There's work. There's not much money in it. | They'll last. #fleece.capitalize# lasts forever, if you let it. | Kind or soft. #mm#. A cold back's a cold back, whoever's it is.
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : I say a prayer to the Bright One over #needle# of a morning. Quietly. | I'll go to chapel, and sit at the back. I'm no singer. | The Bright One keeps the cold off, I think. I just help a little with the coats.
+b : That's a good prayer. | The back's fine. | You help a lot.
+a : It's the one I know. Short, and kept. | It is. Nobody looks at the back. #mm#. | A little. #little.capitalize#. A button at a time.
+
+scene stranger_button
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : New face at the door today. I sewed a button on before they'd said a word. | Travellers come in ragged. I like that. There's something to mend. | I don't talk to strangers much. I sew their buttons on instead.
+b : Did they thank you? | Something to mend? | That's a welcome.
+a : They looked at me as if I'd lost my wits. Then they thanked me. #mm#. | A torn hem's half a story. I don't ask for the rest. | It's the one I'm good at, #address#.
+
+story thirteen_buttons [topic=memories|work self.job=crafter self.age>=25]
+  : The first coat I ever sewed alone had thirteen buttons. I put the thirteenth on the inside, for luck.
+  : Nobody's ever found it. The coat's still walking about Ridgemere somewhere.
+  ask : Do you think you've passed it in the street?
+  b : I might have. I'll look at every coat now.
+  : #mm#. So do I. Every coat I see, I wonder.
+
+story the_wind_coat [topic=lore|memories self.away=yes self.from=larkfield]
+  : My gran told of a shepherd on the downs who sewed the wind into his coat, so it couldn't scatter the flock.
+  : All winter the sheep stayed close. Then one day he unbuttoned it in the market, and every hat in #self.from_town# blew away.
+  ask : Would you have kept it buttoned, knowing?
+  b : I'd have kept it buttoned forever.
+  b[from=larkfield] : My gran had that one. Only it was the church bells that blew away.
+  : He never did. Some days you need the wind out. That's how she ended it.
+
+story button_ledger [topic=smalltalk|memories]
+  : I kept count once, for a year, of every button I sewed back on for nothing. Two hundred and six.
+  : I stopped counting. Counting made it a ledger, and it isn't one.
+  b : Two hundred! You must know half the city's coats.
+  : Half their coats and none of their names. #mm#. That suits me.
+
+rule @needle_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say #needle.capitalize#. Where's #thimble#? | Hems, seams and buttons. Mind the pins.
+
+rule @button_bark
+when concept=bark here.place=street|market
+does aside
+cooldown 8h
+say That coat's got #button#. Somebody'll lose it by the corner. | #mm#. Hanging by a thread, that one.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.season=spring|summer self.likes=warm_rain
+does aside
+cooldown 8h
+say Warm rain. #bc_lovely# | Listen to that. Like #looms#.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.place=work|home
+does aside
+cooldown 12h
+say Rats. #oath#. Not in the cloth. | Out. Out of #cloth#.
+
+dlg @1 resident.hub : #greet#. What can I do? | #greet#. You've #button# there; shall I?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #mm#. Come in. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Say what you need. I'm listening.
+dlg @1 resident.job [self.job=crafter] : I'm #self.trade_words#. Hems, seams, buttons. I sew; I don't sell. | #backroom.capitalize#, mostly. #needle.capitalize# and #thimble#.
+dlg @2 resident.job : I help where I can. Quietly. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# I'm in #backroom# all day. | #mm#. Nothing I'd pass on.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry that, #address#.
+dlg @1 resident.bye : #farewell#. Mind your buttons. | #farewell#, #address#.
+graft resident.hub
+choice Could you sew this button back on? -> button
+node button
+say Hold still. There. #mm#. Tight as the day it was sewn. No, put your purse away; a button costs nothing.
+mood warm
+free
+choice Why do it for nothing? -> button_why
+choice Thank you. Goodbye. -> bye
+node button_why
+say Because a coat's no use with a gap in it, and the thread's a farthing a mile. #saying#. That's all.
+choice That's kind of you. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,292 @@
+# sm128, the crier with chalk under the lid (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm128
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for rmx_ebba_heath
+written_by claude
+title the crier with chalk under the lid
+fits stage=adult|old
+prefers job=laborer humour=dry
+traits temper=even talk=plain warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk chalks_every_debt_on_the_underside_of_the_tray
+likes warm_bread dancing full_larder first_warm_day
+dislikes crowds haggling
+fears a_lid_too_full_of_chalk_to_read
+hopes a_clean_lid_and_a_stall_with_a_roof
+topics work +0.4 prices +0.4 times +0.3 pastimes +0.2 food +0.2 gossip -0.1 faith -0.2
+styles comfort=practical gossip=blunt refuse=short tease=dry
+marks oath saying
+persona #self.first# cries laces, buttons and needles from a tray in the rag market and chalks every debt, owed or owing, on the underside of its lid: blunt, dry, honest to the penny, and fonder of a dance than anyone would guess.
+
+words
+oath! = Buttons and blight | By the chalk on the lid
+saying! = Every penny comes home to the lid | Chalk forgets nothing, and nor do I
+tray = my tray | the tray on its strap
+lid = the lid | the underside of the lid
+chalk = my chalk | a stub of chalk
+laces = laces | a pair of bootlaces
+buttons = buttons | a card of buttons
+needles = needles | a paper of needles
+cry = my cry | the call I put up
+loaf = warm bread | a loaf that's still hot inside
+shelf = a stocked shelf | a cupboard with food in it
+dance = a dance on a feast night | a turn round the floor
+warmday = the first warm day | the first morning without a shawl
+crush = the crush | a crowd packed tight as a sheaf
+haggler = a haggler | somebody chewing a farthing off
+stair = my room up the stair | the top of the stair
+ragstalls = the rag stalls | the market down by the water
+
+any
+opinion @1 merchants against 3 : What #tray# brings in won't stretch to a loaf, and the shopkeepers never go short. Chalk that up, #address#.
+opinion @1 times against 2 : Each week bites a pip harder than the last, and the hill never so much as looks down.
+opinion @1 dole for 2 : The dole bowl saw me through a lean week. I chalked it on #lid# too, and it'll be paid, in kind, some day.
+opinion @1 church for 1 : When our house had nothing, the chapel's bowl was full for us. That's chalked down, and it stays.
+opinion @1 houses against 1 : I've cried wares under House windows for years, and not one face has looked out.
+opinion @1 newcomers against 1 : Every new crier means one more tray on the same corner, and the same few coppers spread thinner.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Laces, buttons, a needle? Cheap, and honest. | #greet#, #address#. Name it and I'll tell you if it's on #tray#.
+line @2 greet [self.working=yes] : #greet#. Mind #tray#; it's my whole shop. | #greet#. Buy something or shift; you're blocking the corner.
+line @3 greet [here.time=dawn] : #greet#. You're out before the stalls are. So am I. | #greet#. First light, and #tray# already on.
+line @4 greet [here.time=dusk|night] : #greet#. Last of the laces going cheap. | #greet#, #address#. I'm packing up, but I'll sell.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. Sit, and don't knock #tray#. | You. #good.capitalize#. I've a bit of bread, if you're #hungry#.
+line @1 again.open : Twice. You owe me nothing yet, so we're square. | #welcome_back#. #tray.capitalize#'s lighter since you saw it.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Took your time. | #greet#. I was hoping for a face I knew.
+line @3 greet.return [self.working=yes] : #greet#. Quick, before somebody wants a lace. | #greet#. I'll talk and sell at once.
+line @1 farewell : #farewell#. | #farewell#. Mind the ditch.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep your purse close going home. | #farewell#. Sleep sound, neighbour.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #surprise#. Nobody at the stalls has that yet. | #marvel#. Well, pick me.
+line @1 react.news.new : #oath#. Not a breath of that reached the stalls, and I hear everything. | #surprise#. Not a whisper of it down by the water.
+line @1 react.news.known : #knew#. The stalls had it before noon. | Old chaff, that. Half the corner knew by dawn.
+line @1 react.news.doubt : #doubt#. Market talk. Show me it paid for and I'll believe. | Sounds wormy. Who's spreading that, and why?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a debt nobody can pay. | #sympathy#. Hard, that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. There'll be dancing, then. | #good.capitalize#. Something on the right side of the lid.
+line @1 answer.how : #fine#. #tray.capitalize#'s half empty, which is the good half. | Square, #address#. Nobody owes me today, and I owe nobody.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Sold every lace I had by noon. | Run off my paws. Still crying, mind.
+line @1 answer.how.poorly [self.wealth=poor|destitute] : #skint.capitalize#. #lid.capitalize#'s fuller than my purse. | Thin week. No use pretending otherwise.
+line @1 ask.how : And you? Square with the world? | How's the day, #address#? Owing or owed?
+line @1 sympathise : #sympathy#. Sit a minute. #tray.capitalize# can wait. | That's blight, that. Sorry, truly sorry.
+line @1 decline : #hedge#, no. I can't leave #tray# on a market day. | Not this time. I've a corner to keep and nobody to keep it.
+line @1 accept_decline : #no_matter.capitalize#. It'll keep. | Fair, bless it. I'd have said no myself.
+line @1 thank : #thanks#. That's chalked on the right side. | Kind. That goes on #lid#, and it'll be paid.
+line @1 deflect_thanks : #deflect.capitalize#. You'd do the same. | It was nothing, #address#. We're square.
+line @1 preclose [self.working=yes] : Well. #laces.capitalize# won't sell themselves. | Back to #cry#, then.
+line @2 preclose : Well. #preclose#. | That's me done. Early start tomorrow.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go, #address#. We're square.
+line @1 tease [pair.band=friends] : You owe me a farthing from last Restday. I've got it on #lid#. | You walk like you've a needle in your boot, #fool#.
+line @1 tease.return : Says the windfall who still can't count change. | #cheek#. I'll chalk that against you.
+line @1 ack : #bc_it_is# | #bc_fair#
+scene chalk_lid
+when topic=work|smalltalk self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : See under #lid#? Every mark's somebody. What they owe me, or what I owe them. | I chalk every debt under #tray#. A lace on tick, a penny lent, the lot. | Turn #lid# over and you'll see my whole life in chalk.
+b : All of them? | Doesn't it rub off? | Whose is that one?
+a : All. Owed and owing, both sides, fair. #saying.capitalize#. | Never. I go over it every night with #chalk#. | Mine. I owe the baker two loaves. I'll pay Restday.
+b : #bc_fair_enough# | #bc_clever# | #bc_good#
+
+scene the_cry
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : You've to put #cry# up over the whole market, or nobody hears you but the gulls. | I cry the same five things every day. #laces.capitalize#, #buttons#, #needles#. Folk know my voice. | Some days I cry till I'm hoarse and sell two #laces#.
+b : Loud work. | They know you? | Two laces?
+a : Loud, and #cold#, and it pays when it pays. | They know it. They come when they hear it, or they cross the street. | Two. I chalked a third on tick, so call it two and a half.
+
+scene haggle_tray
+when topic=prices|work self.dislikes=haggling self.working=yes
+does tell.complaint / react.complaint / insist / ack
+a : A wolf haggled me down to half a farthing on a bootlace. Half a farthing. | I'll not haggle. The price is the price, and it's a fair one. | #haggler.capitalize# had me a quarter hour over #buttons#. Then bought nothing.
+b : There's always one. | Fair's fair. | Nothing at all?
+a : Not with me. I took the lace back and put it in my pocket. | It is. I've the lowest prices in the market and I know it. | Nothing. I chalked the time against them. Under "owes me a quarter hour".
+b? : #bc_ha# | #bc_fair# | #bc_ha#
+
+scene crush_corner
+when topic=smalltalk|day self.dislikes=crowds here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Market day, and #crush# right up to my corner. I couldn't lift #tray# for elbows. | I hate #crush#. Funny thing, for a crier. | Too many folk is as bad as none. Nobody can get to you through #crush#.
+b : Crowds mean buyers, though. | It is funny. | Isn't it good for trade?
+a : Buyers you can't reach are just noise. | I know. I cry to them and hope they go home. | Not when they're all shoving past to somewhere else.
+
+scene lean_week
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / reassure / ack
+a : Lean week. Folk mend their laces with string sooner than buy new ones. | #lid.capitalize#'s more chalk than slate this month. Everybody owes, me included. | When nobody can spare a farthing for a button, you know the times are #bad#.
+b : It'll turn. | Everyone? | Hard on you.
+a : It will. I'll be on my corner when it does. | Everyone. I'll not rub out a mark that hasn't been paid, mind. | Hard on all of us. #notsobad#, though. I've had leaner.
+b? : #bc_hope_so# | #bc_fair# | #bc_true#
+
+scene good_week
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Sold out of #laces# by noon. I've rubbed four marks off #lid# this week. | Coin's moving. Folk buy a button just because they like the look of it. | #good.capitalize# times. I bought #loaf# today and didn't count the coppers.
+b : Good for you. | Just for the look? | Didn't count?
+a : Four marks gone. I could dance. I might. | Just for the look. I'll not argue with it. | Not once. Felt like one of #toffs# for a whole minute.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / offer / accept / thank / assess
+a : #loaf.capitalize#. If there's a penny spare come dusk, that's where it goes. | I stand by the bakery door on purpose. The smell's free. | Nothing in the world better than #loaf#, torn with your paws.
+b : Can't argue with that. | Free? | Torn, not cut?
+a : Nobody can. Here, have a corner of mine. | Free, and the best thing in the market. Have a sniff on me. | Torn. Cutting's for #toffs#. Here, try it.
+b : #bc_thank_you# | #bc_ha# | #bc_lovely#
+a : #bc_good# Square, now. | Go on. It's on the house. | Told you. #bc_it_is#
+
+scene shelf_full
+when topic=food|home self.likes=full_larder
+does tell.feeling / react.self / assess
+a : I've #shelf# for once. Oats, onions, a heel of cheese. I keep looking at it. | Nothing sends me to sleep like knowing there's food on the shelf for tomorrow. | When the shelf's bare I cry louder. Funny how that works.
+b : It's a good feeling. | It is. | Does it sell more?
+a : The best there is. Better than a dance, nearly. | Food tomorrow means I can think about today. | It sells about the same. But it feels like it's doing something.
+
+scene dance_night
+when topic=pastimes|festival self.likes=dancing
+does tell.feeling / ask.detail / answer.detail / assess
+a : Give me #dance# and I'll forgive the whole week. | Nobody thinks a crier dances. I dance till the fiddler gives up. | I learned to dance back home on a barn floor. I've never stopped.
+b : The whole week? | Till he gives up? | Barn dances?
+a : Every mark on #lid#, for one good reel. Nearly. | He always does first. Then I dance to the drum. | Barn dances. Harvest suppers, straw on the floor. The city's floors are harder.
+b : #bc_ha# | #bc_ha# | #bc_lovely#
+
+scene warm_day
+when topic=weather|season here.season=spring here.outdoors=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I took my shawl off at noon and nearly cried with it. | Feel that sun. The whole market's in a better mood; even the hagglers. | I stood in the light by the fountain and let the dust of #chalk# warm off my paws.
+b : It's lovely. | Even the hagglers? | Warm paws at last.
+a : It is. Worth every #cold# morning of the winter. | Even them. One paid full price. I'll remember the day. | At last. Now I can count change without dropping it.
+
+scene rain_corner
+when topic=weather here.outdoors=rain here.region=ridgemere self.working=yes
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# on the tray, and #chalk# running down the lid. I'll lose a week's debts. | Wet #laces# don't sell. Nobody wants a soggy bootlace. | Every drop on #lid#'s a debt washed out. Mine and theirs.
+b : Can you cover it? | No, I suppose not. | Theirs as well?
+a : I keep an oilcloth over it, and still it finds a way. | Not a one. I'll sell them dry tomorrow. | Theirs as well, which is the only #good# part. I'll remember them anyway.
+
+scene home_quiet
+when topic=memories|land self.away=yes self.from=southmeadow
+does tell.memory / react.self / assess
+a : Back home in #self.from_town# you could hear yourself think. Here I can't hear myself cry. | I grew up in #self.from_town#, where the loudest thing was the threshing. I miss it. | Nobody owed anybody much in #self.from_town#. Nothing to #chalk#.
+b[from=southmeadow] #home : I miss the quiet too. | The threshing. I can still hear it. | Nobody had much to owe.
+b : Do you miss it? | The threshing? | Sounds simpler.
+a@home : Then we'll miss it quiet together, neighbour. | So can I, on a #bad# day. | Nobody had much at all. Same thing.
+a : The quiet, yes. Not the being #skint#. | Flails on a barn floor. Half the town at it. Then the dancing after. | Simpler. Poorer, mind. I'd not go back to be poorer.
+
+scene new_criers
+when topic=newcomer here.region=ridgemere
+does give.opinion / ask.opinion / give.opinion
+a : There's a new crier on the next corner. Same #laces# as me, a farthing cheaper. | More newcomers every week, and the same few coppers in the market. | A new face wanted my corner today. I didn't move.
+b : Does it hurt your trade? | Is that so bad? | Good for you.
+a : It does. My price stays where it is; I'll cry louder. | For them, no. For the rest of us, it means thinner. That's just sums. | I've stood there three winters. A corner's earned, not found.
+
+scene friend_square
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s the only one I'd never #chalk#. We just keep each other square without counting. | I'd trust #self.friend# with #tray# and my lid both. | #self.friend# and I don't owe each other a thing, and never have.
+b : That's rare. | Both? | Lucky.
+a : It is. Everyone else is on #lid#, me included. | Both. That's as far as my trust goes. | Lucky, or just honest. It's the same, near enough.
+
+scene faith_chalk
+when topic=faith
+does give.opinion / react.self / assess
+a : I reckon the Bright One keeps a lid too. I'd like mine to come out square. | I'm no chapel-goer, but I owe the chapel bread, and I'll pay it. | If the Dark One's keeping a tally, I'd sooner not see it.
+b : That's a thought. | Fair enough. | Nor me.
+a : It keeps me honest, the thought of it. | It's chalked. That's as #good# as a prayer, from me. | Best keep your own lid clean and not wonder.
+
+scene gossip_plain
+when topic=gossip here.gossip=yes
+does tell.gossip / react.news / insist / ack
+a : The rag stalls say #topic.subject# #topic.claim#. Take it for what it's worth. | Heard it by the water: #topic.subject# #topic.claim#. | Here's one for free: #topic.subject# #topic.claim#. That's what the corner says.
+b : Is it true? | Who said? | Free?
+a : No idea. I pass it on and that's my part done. | I don't name names. Bad for trade. | Free. The only free thing I sell, so don't get used to it.
+b : #bc_fair# | #bc_fair_enough# | #bc_ha#
+
+scene fog_stalls
+when topic=weather here.outdoors=fog here.region=ridgemere self.working=yes
+does tell.self / react.self / assess
+a : Fog down by the water so thick I cried #laces# to a post for a quarter hour. | Nobody can see #tray# in this, so I cry twice as loud. | In fog the gulls go quiet and I'm the only noise on the corner.
+b : Did the post buy any? | Does it work? | Lonely.
+a : No, and it didn't haggle either, which is more than most. #bc_ha# | Some. Folk follow the voice. Then they're surprised it's me. | Not lonely. Peaceful, near enough. Then the fog lifts and #crush# comes back.
+
+scene dusk_lid
+when topic=day|work here.time=dusk self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Dusk, and I go over #lid# on the doorstep with #chalk#. Every mark, every night. | End of the day I count what's on #tray# and what's on #lid#. One goes down, one goes up. | I've three marks to rub out tonight. Nothing sweeter all day.
+b : Every one? | Which goes up? | Three paid?
+a : Every one. A mark you don't go over is a mark you forget. | The lid. Always the lid. #bc_they_always_do# | Three paid, square and fair. I'll sleep sound on that.
+b : #bc_wise# | #bc_ha# | #bc_good#
+
+story the_long_debt [topic=work|memories self.working=yes]
+  : There's a mark on #lid# older than any of the others. A penny I lent a stranger my first winter.
+  : Never seen them since. Every night I go over it with #chalk# so it doesn't fade.
+  ask : Would you rub it out, after all this time?
+  b : I would. It's only a penny.
+  b[wealth=poor|destitute] : Never. A penny's a penny.
+  : I won't. Not because of the penny. Because I said I'd wait.
+
+story barn_dance [topic=pastimes|memories self.away=yes self.from=southmeadow self.likes=dancing]
+  : The harvest supper back home, I danced every reel and then the fiddler's own after he'd gone.
+  : My #mum# had to carry me home over her shoulder at dawn, still humming.
+  b : Ha! You must have been small.
+  b[old] : I remember suppers like that. The dancing went on till the cocks crowed.
+  : Small, and stubborn. I'm still both.
+
+story the_paid_back [topic=memories|friends|work self.working=yes]
+  : A wolf took three #laces# on tick one winter and swore blind they'd pay.
+  : Spring came, nothing. Summer, nothing. I left the marks on #lid# all the same.
+  : Then one autumn morning there were six laces' worth of coppers on #tray#, and nobody in sight.
+  ask : Who do you think it was?
+  b : The same wolf, surely.
+  b[friends] : Not a word from me. Could've been anybody.
+  : Somebody square, anyway. I rubbed the marks out and danced that night.
+
+rule @cry_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say #laces.capitalize#! #buttons.capitalize#! #needles.capitalize#! Cheap and honest! | Laces for a farthing! Buttons by the card!
+
+rule @chalk_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Two loaves owed, one penny owing. Square by Restday. | #oath#. Where's #chalk# gone?
+
+rule @crowd_bark
+when concept=bark self.dislikes=crowds here.day=market here.region=ridgemere
+does aside
+cooldown 10h
+say Mind #tray#! There's a shop on it! | #crush.capitalize#. I'll not get my elbow out till dusk.
+
+rule @haggle_bark
+when concept=bark working=yes self.dislikes=haggling
+does aside
+cooldown 12h
+say The price is the price. Ask the gulls if you want cheaper. | No haggling. #saying.capitalize#.
+
+dlg @1 resident.hub : #greet#. Laces, buttons, or something else? | #greet#, #address#. Say what you need.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You owe me nothing, so you're welcome. | #topic.player#. #good.capitalize#. What is it today?
+dlg @3 resident.hub [here.time=night] : I'm packing up, but go on. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? Say it quick, and your paws away from #tray#.
+dlg @1 resident.job [self.working=yes] : I'm #self.trade_words#. #laces.capitalize#, #buttons#, #needles#, and my voice. | I cry wares from #tray# and chalk who owes what under #lid#.
+dlg @2 resident.job : I work, I keep my debts square, and I dance when I can. | Whatever brings a penny in honest, #address#.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Heard it by the water this morning.
+dlg @2 resident.news [world.event_words] : The stalls are full of #world.event_words# today. Hard to sell a lace over it.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing worth the chalk, #address#.
+dlg @1 resident.gossip [here.gossip=yes] : The stalls say #topic.subject# #topic.claim#. Take it for what it's worth.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I've a lid full of debts and no room for gossip.
+dlg @1 resident.bye : #farewell#. We're square. | #farewell#, #address#. Mind your purse.
+graft resident.hub
+choice What's all that chalk under your tray lid? [self.working=yes] -> lid
+node lid
+say Debts. Every one, owed or owing. A lace on tick, a penny lent, two loaves I owe the baker. I go over the marks every night.
+mood calm
+free
+choice Do I owe you anything? -> lid_mine
+choice Goodbye. -> bye
+node lid_mine
+say Not yet. Buy a lace on tick and you will. I'll #chalk# you as fair as I chalk myself.
+choice I'll keep it square, then. -> hub
+choice Goodbye. -> bye

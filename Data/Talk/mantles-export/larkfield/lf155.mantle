@@ -1,0 +1,479 @@
+# lf155, the churner who grades grandmothers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf155
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for cty_bramble_hazeldell
+written_by claude
+title the churner who grades grandmothers
+fits stage=adult|old
+prefers master=yes talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk has_opinions_about_everyone_s_grandmother
+likes warm_bread wrestling sharp_knife warm_rain
+dislikes rats deep_mud
+fears butter_that_will_not_come rats_in_the_cream
+hopes a_young_one_of_the_household_taken_into_great_service
+topics family +0.5 work +0.4 food +0.3 pastimes +0.2 memories +0.2 weather +0.1 gossip -0.3
+styles comfort=practical gossip=guarded refuse=short tease=none
+marks oath saying
+persona #self.first# churns butter on the city's edge and grades every grandmother in earshot like a pound at market: quiet, guarded and tired, a master at the churn, fond of warm bread, a keen knife and a wrestling match, and close about everything else.
+
+words
+oath! = Cream and crock | Buttermilk and brine
+saying! = Butter comes when it's ready, not when you are | Salt it well and it'll see the winter out
+churn = the churn | the big barrel churn
+dash = the dasher | the churn handle
+stroke = a stroke | another turn of the dasher
+cream = the cream | the soured cream
+crock = the crock | a stone crock
+buttermilk = the buttermilk | a jug of buttermilk, cold
+pats = the butter pats | my two wooden pats
+print = my butter print | the print with the wheatsheaf cut in it
+brine = the brine | a tub of salt water
+pound = a pound | a pound, full weight
+dairy = the dairy | the cold room at the dairy
+cows = the cows | the herd
+milkcart = the milk cart | the cart off the hill
+blade = my knife | a knife that'd split a hair
+loaf = a heel of warm bread | a loaf with the heat still in it
+match = the wrestling | two big lumps grappling on the grass
+softrain = a warm rain | rain you can stand in without a coat
+yardmud = the yard mud | mud that keeps your boot
+lane = the dairy lane | the lane out to the dairy
+ratword = the rats | whiskers at the cream
+oldgran = gran | old gran
+grade = a first-weight gran | a full-pound gran
+shortgran = a short-weight gran | a gran with the salt left out
+step = a clean step | a step scrubbed white
+cross = the market cross | the cross at home
+downs = the downs | the chalk downs at home
+hill = the hill | the long hill out of the city
+shoulders = my shoulders | these two shoulders
+
+any
+opinion @1 city against 1 : #oath#, the smoke. Nobody up #hill# knows whose #oldgran# lives next door, and that's no way to live. | The city's all elbows. I come in for #loaf# and go out again.
+opinion @1 houses mixed 1 : They'd not have the likes of me on a bench. A young one with manners, though, they might, and that'd be worth the bowing. | A House is as good as its old grans. Some are #grade#, some aren't.
+opinion @1 merchants against 1 : A merchant's thumb finds the scale when your back's turned. I watch the thumb. | I've seen #pound# sold that wasn't. That's a merchant, mostly.
+opinion @1 strangers against 1 : A face I can't place stays on the far side of my door. Tell me the #oldgran#, I'll think on it. | Strangers can talk to somebody else. I've #churn# to see to.
+opinion @1 newcomers mixed 0 : New folk are new folk. Some were raised right, some weren't, and you can't tell from the coat. | I'll wait and see what they're made of. Like #cream#.
+opinion @1 church mixed 0 : I go on Restday. I don't stay for the talking after; #cows# don't milk themselves. | The Bright One knows I turn #churn# honest. I leave the hymns to others on a weekday.
+opinion @1 festivals for 1 : A feast's worth it for #match# alone. The rest is noise. | I'll stand an hour in the crowd for a #good# fall on the grass.
+opinion @1 drink mixed 0 : A cup's no harm. A #oldgran# who drank was a different matter, mine said. | #ale.capitalize# at the end of a long day, one, and then #bed#.
+opinion @1 watch mixed 0 : They mind the streets. I mind #dairy#. We get on, mostly. | The Watch never came out #lane# for a rat yet.
+opinion @1 times against 1 [world.times=hard|lean] : Folk are buying butter by the half-pound now. That's how you know. | When the half-pounds outsell #pound#, the times are #bad#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll want somebody else, likely. | #greet#. Mind #step#, it's slick with cream.
+line @2 greet [self.working=yes] : #greet#. I can talk and turn #churn#. Not both well. | #greet#. Don't stop me mid-stroke, #cream# will spoil.
+line @3 greet [here.time=dawn self.working=yes] : Morning. I've been at #churn# since the milking. | Morning. #cream.capitalize#'s cold enough to set your teeth.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be wandering, #address#. | #greet#. I'm only just off my feet, and #tired#.
+line @6 greet [here.time=dawn] : Morning. Up early, same as me. | Morning, #address#. A #cold# one.
+line @5 greet [pair.band=friends|family] : #greet#. You're a sight. Sit. | #greet#. I'd wondered when you'd come out #lane#.
+line @1 kin.open [pair.kin!=no] : There you are. I've #loaf# kept back. | You. Good. Shut the door, the draught's on #cream#.
+line @1 again.open : You again. I'm still at the same work, #address#. | Twice today. I've nothing new since the morning #milkcart#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Come in, then. | #greet#. I'd a feeling it was you, #pet#.
+line @3 greet.return [self.working=yes] : #greet#. Mind #churn#. | #greet#. Talk while I work, if you like.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late for it. | #greet#. I was nearly asleep on my feet, #tired#.
+line @1 farewell : #farewell#. | #farewell#. Mind #yardmud#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lamps, #address#. | #farewell#. I'm for #bed#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Come again. | #farewell#. Don't leave it a month, #pet#.
+line @1 react.news : #oath#. There's a thing. | Hm. I'd not heard, and I'm not sure I wanted to, #address#.
+line @1 react.news.new : That's new to me. #marvel#. | That's the first of it to reach me. Nobody tells #dairy# anything.
+line @1 react.news.known : #knew#. Old news by the time it came out #lane#. | I had that already. #milkcart.capitalize# brings everything.
+line @1 react.news.doubt : #doubt#. Somebody's #oldgran# would want proof. | I'll believe it when I see it weighed, and not before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #very# hard. | That's a hard thing. #sympathy#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's #oldgran#'ll be pleased. | Good. That's #good# news, for once.
+line @1 answer.how : #tired.capitalize#. Same as ever. | Middling. #shoulders.capitalize# know they've worked.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Three churns before noon. | Can't stop. #saying#.
+line @1 ask.how : And you? Keeping out of the #rain#? | How's your day been weighing, #address#?
+line @1 sympathise : #sympathy#. Sit a bit; it'll keep. | That's a heavy thing. Have #loaf#.
+line @1 reassure : #reassure#. Most things come right with time. | It'll come. Like #cream#. Slow, then all at once.
+line @1 decline : #hedge#. I can't. The work won't wait and nobody else does it right. | I'd best not. I'm up before #cows# and I need my sleep.
+line @1 accept_decline : #no_matter#. Another day. | That's fair. In your boots I'd say no too, #address#.
+line @1 thank : #thanks#. | That's #good# of you. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | Leave it. It cost me nothing but #stroke# or two.
+line @1 preclose [self.working=yes] : Well. #cream.capitalize# won't wait. | #churn.capitalize#'s waiting on me.
+line @2 preclose : Well. #preclose#. | That'll do me. My feet are #tired#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I've my own work waiting too, #address#.
+line @1 ack : #bc_it_is# | #bc_true#
+line @1 give.advice : #advise#: never trust a wolf whose #oldgran# you've not heard about. | Keep #blade# sharp and your door shut. That's all the sense I've got.
+line @1 warn [world.bandits=near] : Keep off #hill# road after dark. #warn#. | Don't walk out past #lane# alone this week, #address#.
+line @1 disagree : #demur#. I've seen otherwise. | I'd not say that. Not by my weighing.
+scene churn_at_dawn
+when topic=work|day here.time=dawn self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Up before the milking, and #cream# not warm enough to turn. | Two hundred strokes on #dash# before the sun's over #hill#. I count them, some days. | My breath's smoking in #dairy#. That's how #cold# it is at this hour.
+b : That's early. | Every stroke? | Cold work.
+a : Butter doesn't care how early. #saying#. | Some days. Most days I turn and think about other folk's grans. | #cold.capitalize# keeps the butter firm. I'll not complain till my paws stop.
+
+scene the_butter_comes
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail / assess
+a : You can hear it when the butter comes. #churn.capitalize# goes thick, all at once. | Half an hour of nothing, then #dash# goes heavy under your paw. | There's a moment you feel #cream# catch. I've never once missed it.
+b : What sort of sound? | How do you know it's ready? | Never once?
+a : Like boots in #yardmud#. Wet and slapping. Then you know. | It fights the handle. You stop, or it turns to grease. | Not since I was a #child#. My #gran# saw to that.
+b : #bc_fair_enough# | Fair enough. | #bc_ha#
+
+scene print_on_the_pound
+when topic=work|pastimes self.working=yes self.job=none
+does tell.self / react.self / assess
+a : Every pound gets #print# pressed on top. That's how folk know it's mine. | I cut #print# myself. Took a winter. | #pound.capitalize# without a print could be anybody's. Short, too, for all you'd know.
+b : Your own mark? | You carved it? | Do they check?
+a : My own. I'd know it in a market of a thousand, #address#. | With #blade#, of an evening. It's the only thing I've made that I'm proud of. | The careful ones weigh it in their paw. They never find it #bad#.
+
+scene salt_and_brine
+when topic=work|food self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : You wash it in #brine# till the water runs clear. Skip that, and it's rank in a week. | Salt's the whole secret. Too little and it turns, too much and nobody buys twice. | Most of my day's not #churn#. It's washing and working and patting.
+b : How long does it keep, done right? | How much salt, then? | Patting?
+a : Washed and salted, #crock# will last a winter. #saying#. | A pinch to #pound#. You learn it in your paw, not your head. | With #pats#. You shape it and squeeze the last water out. Slow work.
+
+scene whiskers_at_the_cream
+when topic=animals|home|work self.dislikes=rats
+does tell.complaint / react.complaint / insist / ack
+a : #ratword.capitalize# were at #cream# again. Lid shifted, and tracks in it. | I set a trap by #crock# and it caught my own tail. Never again. | One got in #dairy# last week. Tipped a whole jug.
+b : Can't you get a cat? | Did it hurt? | A whole jug?
+a : A cat at a dairy is a cat that's fat in a week and #worthless#. | Enough to make me swear. #oath#. | A whole jug. I tipped the rest out after; I'd not sell it, not at any price.
+b : #bc_fair# | Ha. | #bc_bad_luck#
+
+scene bread_with_the_heat_in
+when topic=food self.likes=warm_bread
+does tell.feeling / react.self / assess / ack
+a : #loaf.capitalize#, and a lick of my own butter melting into it. That's the best thing there is. | I'd walk the whole of #hill# for #loaf#. I have done. | Bread should be eaten warm or not at all. Cold bread's #very# sad.
+b : That sounds good. | The whole hill? | Not at all?
+a : It is. You'd stop talking, if you had it. | Twice, in the #rain#. Worth it both times. | Well. Toasted, if you must. But warm's #good#.
+b? : #bc_lovely# | #bc_ha# | #bc_fair_enough#
+
+scene buttermilk_jug
+when topic=food|work
+does tell.self / react.self / assess
+a : What's left in the churn is #buttermilk#. I drink a cup at noon and give the rest away. | Folk turn their noses up at #buttermilk#. More for me. | #buttermilk.capitalize# in a loaf, and the bread rises lighter. My #gran# knew that.
+b : Is it sour? | I've never liked it. | Does it really?
+a : A bit sharp. It wakes you. | Then you've not had it cold, straight off #dash#. | It does. Your own #oldgran# likely knew it too, if she was any use.
+
+scene keen_knife
+when topic=pastimes|work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail / assess
+a : I keep #blade# for the butter and nothing else. Nobody touches it. | A blunt knife drags the butter and spoils the edge of #pound#. | I put an edge on #blade# every Restday. It's the one hour I give myself.
+b : Why so careful? | Does it matter that much? | On a stone?
+a : A clean cut sells. A ragged one looks like it's been at #ratword#. | It does. A clean pound is half the price of it, #address#. | A grey stone my #gran# left me. It's worn to a dip in the middle.
+b : #bc_wise# | Fair. | #bc_true#
+
+scene the_wrestling
+when topic=pastimes|festival self.likes=wrestling
+does tell.feeling / ask.opinion / give.opinion / assess
+a : I'll stand in any crowd to watch #match#. The only crowd I'll stand in. | Saw a fair fall on the green on Restday. Over the shoulder, clean as #blade#. | #match.capitalize#'s honest. You're on your back or you're not.
+b : You like the wrestling? | Who won? | Not always honest, surely.
+a : I like a thing that ends plain. Most things don't. | The smaller one. Low and patient. I'd have laid #bet# on it. | Honest enough. You can't lie on your back and call it standing.
+b : #bc_fair_enough# | #bc_ha# | #bc_true#
+
+scene warm_rain_standing
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : This is #softrain#. I'll stand out in it and not care. | A soft wet after the dust. #cream.capitalize# will be sweeter for the grass. | I like a rain you don't need to run from. This is #softrain#.
+b : You'll be soaked. | Sweeter? | It is pleasant.
+a : I'll dry. Most things do. | #cows.capitalize# eat better, and #cream# comes richer. Rain's half my trade. | Pleasant. Keep that to yourself, #address#.
+
+scene cold_rain_city
+when topic=weather here.weather=rain|storm here.season=autumn|winter here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : City #rain#. Cold, and it comes sideways. | Rain off the Sound, and #yardmud# up to the step. | #milkcart.capitalize# was late for the rain. It's always the rain here.
+b : It never stops. | Up to the step? | Always is.
+a : It stops. For an hour. To breathe. | Up and over, by noon. I'll be scraping my boots till Restday. | At home on #downs# it rained and then it dried. Here it just rains.
+
+scene fog_on_the_hill
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog on #hill#. I couldn't see #cows# from the dairy door. | You walk into fog and the whole world's the yard and #churn#. | Fog keeps #cream# cool. That's the only good I'll say of it.
+b : Couldn't see them? | Strange feeling. | That's something.
+a : Heard them, though. #cows.capitalize# are never quiet. | It's restful, almost. Nobody can find you in #dairy#. | It's something. #little.capitalize#.
+
+scene the_yard_mud
+when topic=weather|land|home self.dislikes=deep_mud here.weather=rain|overcast
+does tell.complaint / ask.detail / answer.detail / ack
+a : #yardmud.capitalize# again. I lost a boot in it this morning. | I'd pave #lane# myself if I had the stone. | Mud doesn't wash out of a churn-cloth. Ask me how I know.
+b : Did you find the boot? | Why don't they? | How do you know?
+a : I found it. It took two paws and a word I'll not repeat. | Nobody spends a penny on #lane# when #toffs# never walk it. | Because I've thrown three away. #oath#.
+b : #bc_ha# | #bc_true# | #bc_bad_luck#
+
+scene winter_butter
+when topic=season|work here.season=winter
+does tell.self / react.self / assess
+a : Winter #cream#'s stubborn. I warm it by the stove, a bit at a time, or it'll never come. | Winter butter's pale. Folk think it's poorer. It isn't, it's #good#. | My paws crack in #dairy#. I rub them with butter, which is waste, but there it is.
+b : By the stove? | Isn't it? | Does that help?
+a : Not too near. Too warm and it's oil. There's a knack, #address#. | Same weight, same salt. It's only the colour of the grass. | It does. My #gran# did the same and her paws were soft till the end.
+
+scene summer_soft
+when topic=season|weather here.season=summer
+does tell.worry / react.self / assess
+a : Summer's hard on butter. It won't set, and it sweats on #milkcart#. | I turn #churn# at night in the #hot# weeks. Cooler. | #hot.capitalize# days, the butter goes soft as cheese by noon. No one buys a puddle.
+b : What do you do? | At night? | A puddle?
+a : Cold water, the cellar, and a lot of swearing. | It's quieter, too. Just me and #churn# and the owls. | A puddle in #print#. I've sold it cheap and hated every penny.
+
+scene grading_grans
+when topic=family|smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : I grade grans like I grade butter. Some are #grade#. Some are #shortgran#. | There's not a #oldgran# in this city I've no opinion on. I've met maybe four. | Your #oldgran# makes you. Not your mum, your gran. I'll argue that to anyone.
+b : How do you grade them? | Only four? | Why the gran?
+a : Firmness, mostly. And whether they salt their words or not. | Four's plenty. The rest I've heard about. That's enough to weigh them. | Because the gran raised the mum. It's all in the keeping, like #crock#.
+b : #bc_ha# | Fair enough. | #bc_maybe#
+
+scene your_gran
+when topic=family|friends|smalltalk
+does tell.self / react.self / insist / ack
+a : I'd want to hear about your #oldgran# before I trusted you with #crock#. | Somebody's #oldgran# raised you careful. I can tell by how you stand. | I'll tell you what I think of a wolf once I've heard about their #oldgran#.
+b : My gran? | That's kind. | And if they never had one?
+a : Yours. If she kept #step#, I'll know you're good for it. | Not kind. True. I've an eye for it, #address#. | Everybody had one. Some just won't say. That tells me plenty too.
+b : #bc_fair_enough# | #bc_bless_you# | #bc_ha#
+
+scene the_house_grans
+when topic=lore|gossip|family here.region=ridgemere
+does give.opinion / ask.opinion / insist / ack
+a : The old ladies of the four Houses, now. Those are grans you'd not cross. | I saw one of the House grans carried by in a chair once. Straight as #dash#. | A House lasts as long as its old #oldgran# keeps it in hand. After that, it's gone in a generation.
+b : You've seen them? | Did she see you? | Is that so?
+a : From a gate, once or twice. I'd call them #grade#, every one. | Looked straight through me. Quite right, #address#. | Mark it. When the gran goes, watch the House.
+b : #bc_ha# | #bc_true# | #bc_we_will_see#
+
+scene my_own_nan
+when topic=memories|family self.away=yes self.from=larkfield self.age>=25
+does tell.memory / react.story / assess
+tone tender / even / even
+a : My #gran# churned at #self.from_town# all her life. I learned on her old churn. | My #gran# could tell a short pound by looking. She'd never touch the scales at #cross#. | My #gran# had a print with a lark on it. I made mine to be different, and wished after I hadn't.
+b[from=larkfield] #lark : I'd have bought from her. | Every stall had one like that. | A lark. I've seen those.
+b : All her life? | By looking? | Why different?
+a@lark : You likely did, if you bought butter at #cross#. | Not like her. Hers was right every time. | You'd have seen hers, then. It was the best of them, #address#.
+a : All her life, and never sat down at it. #grade.capitalize#, that one. | Weighed it by eye. I can nearly do it now. Nearly. | Because I was young and wanted my own. Now I'd give #print# for hers.
+
+scene market_cross_butter
+when topic=memories|prices|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : At home they weighed butter at #cross#, on the town's own scales. No arguing. | In #self.from_town# a short pound got your name cried at #cross#. Nobody tried it twice. | Butter was sold on Marketday under #cross#, and gone by noon.
+b : The town's own scales? | They cried your name? | Gone by noon?
+a : Brass, and older than anybody's #oldgran#. Honest as daylight. | Out loud. In front of every #oldgran# in the square. Worse than #gaol#. | If it was #good#. Mine went by ten, the year I left.
+
+scene the_downs_at_home
+when topic=land|travel|memories self.away=yes self.from=larkfield
+does tell.feeling / react.self / assess
+a : I miss #downs#. You can watch the weather walk toward you from three hills off. | Sheep on #downs#, and the grass short as a carpet. You don't get that here. | Up on #downs# the wind dries your washing in an hour.
+b : From three hills off? | No, you don't. | An hour!
+a : Three. In the city it drops on you out of a chimney. | Here it's #cows# and wet grass and #hill# that won't stop. | An hour. Here it hangs a week and still smells of the Sound.
+
+scene city_or_hill
+when topic=travel|home here.region=ridgemere
+does give.opinion / react.self / assess
+a : I live in the city and work out on #hill#. Best of both, folk say. Worst of both, I say. | Every morning I walk out #lane# past the last houses, and I breathe easier. | The city has every sort of wolf and hardly a soul who knows a neighbour's #oldgran#.
+b : Worst of both? | Easier? | Does that matter so much?
+a : City rent, country hours. Somebody did well out of that, and it wasn't me. | The air's cleaner past the wall. And nobody's elbows, #address#. | It matters to me. You can't trust what you can't place.
+
+scene how_i_talk
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : They laugh when I say #gran# instead of grandmother. Let them. | I still price everything in my head the way they do at #cross#. City folk think I'm haggling. | Folk here say "a pound of butter". At home it's "#pound#". There's a difference.
+b : It's a nice word. | Are you? | What's the difference?
+a : It's the right word. Grandmother's for letters, #address#. | Only when they deserve it. | One's what they hand you. The other's what you're owed.
+
+scene young_one_in_service
+when topic=dreams|family
+does tell.plan / ask.detail / answer.detail / assess
+a : I'd want one of the young ones of our house taken into service with a House. A proper place. | If I could have one thing, it'd be a #good# place for a young one. Up #hill#, in livery. | Service with a House is a life. Better than #churn#, and drier.
+b : Which House? | Livery? | Is it really better?
+a : Any of the four that'd have them. I'd not be choosy. | Livery, and a bed that's not damp, and my #gran#'s pride in it, were she living. | Drier, at least. I'll take drier, #address#.
+b? : #bc_i_hope_so# | #bc_fair_enough# | #bc_maybe#
+
+scene restday_quiet
+when topic=faith|day here.day=rest
+does tell.self / react.self / assess
+a : Restday. I go to the chapel, I sharpen #blade#, I sleep. Nothing more to it. | I thank the Bright One on Restday for the butter coming. I ask for nothing else. | A quiet Restday, and nobody wanting #pound#. I'd not trade it.
+b : Sounds peaceful. | Just that? | Nor would I.
+a : Peaceful till somebody knocks. Don't be that somebody. | Just that. I'm not greedy, and #cream# keeps a day. | Well, then. We understand each other, #address#.
+
+scene arms_and_shoulders
+when topic=health
+does tell.self / react.self / reassure
+a : #shoulders.capitalize# are knots from the churn. They creak going up #hill#. | I've a bad wrist this week. Turned it wrong on a stiff batch. | I've not been #poorly# a day since I came here. Too #tired# to be sick.
+b : You should rest it. | Bind it, then. | That's lucky.
+a : Rest it and the butter doesn't come. Butter wins. | I have. A bit of rag and some patience. It'll mend, #address#. | Lucky, or stubborn. My #gran# would say both.
+
+scene trusted_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd trust #self.friend# with #print#. That's more than I'd say of most. | If the roof came down on me, it's #self.friend# I'd send for. | I don't make friends quick. #self.friend# was worth the wait, #address#.
+b : That's high trust. | Good to have. | Most are.
+a : The highest I've got. | It is. One's enough, if it's the right one. | Not all. That one was. #bc_true#
+
+scene the_neighbour
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# keeps #step#. I notice a thing like that. | I'd wager #self.neighbour# had #grade#, without ever asking. | I'm glad of #self.neighbour# next door. Quiet, and no nose in my business. That's a gift.
+b : You notice everything. | Without asking? | Rare, that.
+a : Steps and grans. Not everything. | You can tell. It's in the manners, #address#. | Rare in the city. At home everybody's in your churn.
+
+scene held_tongue
+when topic=gossip|crime
+does tell.gossip / react.news / insist / ack
+a : I hear things off #milkcart#. I keep them. | Folk say plenty over #pound#. It goes no further than me. | There's talk going round. I'll not be the one carrying it, #address#.
+b : Go on, tell me. | You must hear a lot. | Not even a hint?
+a : No. It'll keep, and so will I. | A lot. And I'm #crock# with the lid on. Nothing pours out. | Not a hint. You'd only tell your #oldgran#, and she'd tell the street.
+b : #bc_ha# | #bc_fair_enough# | Ha. Fair.
+
+scene theft_talk
+when topic=gossip|crime topic.claim_kind=theft
+does tell.gossip / react.news / assess
+a : They're saying #topic.subject# #topic.claim#. I'd not want to be #topic.their# #oldgran# today. | Word off #milkcart# is #topic.subject# #topic.claim#. That's a short pound of a wolf. | #topic.subject.capitalize# #topic.claim#, they say. I only heard it. I'd not put my print on it.
+b : If it's true. | Hard words. | Nor would I.
+a : If. Somebody's #oldgran# will know the truth of it. | Hard, but somebody has to say it, #address#. | Best not. #hearsay.capitalize#.
+
+scene wedding_talk
+when topic=gossip|news topic.claim_kind=marriage
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# #topic.claim#. Two grans at one table. I'd pay to watch. | A wedding, then. #topic.subject.capitalize# #topic.claim#. #gladnews#. | They say #topic.subject# #topic.claim#. Somebody'll want #crock# for the feast.
+b : Two grans! | Good news. | You'll sell some, then.
+a : Two grans, and only one can be right. #bc_ha# | Good. There's #little# enough of it. | Twenty pounds, if it's a proper one. #good.capitalize#.
+
+scene new_faces
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : There's a new face about. I'll know what to make of it when I've heard about the #oldgran#. | New folk come out #lane# asking for work. I send them to #boss# and keep my mouth shut. | A traveller wanted the road off me. I gave it, and I go no further with #stranger#.
+b : You'll wait and see? | Wise. | That's fair.
+a : I'll wait and see. #cream.capitalize# doesn't come for hurrying. | Wise or #tired#. Both, mostly. | Fair, and short. Short's best with strangers.
+
+scene lean_half_pounds
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Folk want half-pounds now. Nobody can run to #pound#. | #dairy.capitalize#'s cut a churn. I'm turning less and getting less. | Butter's a thing people stop buying first. I see the times in the orders off #milkcart#.
+b : Hard for everyone. | Less pay? | What do they buy instead?
+a : Hard. It'll turn. Times do, like #cream#. | Less #wages#, same rent. #oath#. | Lard. Or nothing. Nothing, mostly.
+b? : #bc_true# | #bc_i_hope_so# | #bc_poor_soul#
+
+scene full_orders
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : The orders are heavy this month. Every cook up the Heights wants #crock#. | Four churns a day and still behind. #busy.capitalize#. | Coin about. Folk are buying #pound# and asking for the print.
+b : Good for the dairy. | Still behind? | For the print?
+a : Good for #dairy#. #shoulders.capitalize# aren't so sure. | Behind, and glad of it, mostly. | They know it's honest weight. #print.capitalize#'s worth a penny on the price.
+
+story nan_taught_me [topic=memories|family self.age>=25 self.from=larkfield]
+  : My #gran# put me on a stool at her churn when I was a #child#, and told me to count.
+  : Three hundred strokes. I cried at a hundred. She said #cream# doesn't care if you cry.
+  : At two hundred and ninety it came. I've never forgotten the sound.
+  ask : Can you still hear whoever taught you your first work, when you were small?
+  b[old] : Somebody long gone, like yours. I still hear them.
+  b : Nobody so patient. I picked things up as I went.
+
+story the_batch_that_never_came [topic=work|memories self.age>=25]
+  : Once I turned #churn# from dawn till dark and the butter never came. Not a fleck.
+  : An old dairyman looked in, put his paw on the side, and said #cream# was too young.
+  : He was right. Next morning it came in forty strokes. I've waited a day on cream ever since.
+  b : Too young! What a thing to know.
+  b[old] : The old ones always know. That's what they're for.
+
+story gran_on_the_green [topic=pastimes|festival|memories self.age>=20 self.from=larkfield]
+  : At a fair at home there was a big lump of a drover, threw everybody who came.
+  : Then an old #oldgran# stepped onto the green, sleeves up, and asked him to try her.
+  : She had him on his back in a breath. Turned out she'd been the champion when she was young.
+  ask : Would you have stepped on the green against her?
+  b : Never, not for any money. Good for her.
+  b[old] : I'd have known better. The old ones keep their tricks.
+
+story the_short_pound [topic=lore|prices|memories self.from=larkfield]
+  : There was a seller at #cross# once who hid a stone inside his butter. Wrapped it neat as a gift.
+  : A #oldgran# bought it, took it home, and cut it open for her #supper#.
+  : She walked back with the stone in her paw and set it on the town's scales for all to see.
+  : He never sold at #cross# again.
+  b : Serves him right!
+  b[job=merchant] : I'd have run him out myself. One like that spoils it for all of us.
+
+story first_city_winter [topic=memories|travel|weather self.away=yes here.region=ridgemere]
+  : My first winter here, #cream# froze on #milkcart# on the way down #hill#.
+  : I carried #crock# into the dairy one at a time, under my coat, to thaw them.
+  : Half the city got its butter late that week. Nobody said #thanks#.
+  ask : Have you had a winter like that, where nothing would go right?
+  b : Once or twice. They pass.
+  b[from=larkfield] : The cold here's a wet cold. Not like at home.
+
+rule @churning
+when concept=bark working=yes self.job=none
+does aside
+cooldown 6h
+say Come on, then. Come. #oath#. | Two hundred and ten. Two hundred and eleven. Come on, #cream#.
+
+rule @rats_bark
+when concept=bark working=yes self.dislikes=rats
+does aside
+cooldown 10h
+say Get out of it. Out of #cream#. | #ratword.capitalize# again. I'll have a cat in, see if I don't.
+
+rule @knife_bark
+when concept=bark working=yes self.likes=sharp_knife
+does aside
+cooldown 10h
+say Who's had #blade#? Somebody's dulled it. | Nobody touches #blade#. Nobody.
+
+rule @dawn_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say #cream.capitalize# is cold as a well. | Up before #cows# again.
+
+rule @mud_bark
+when concept=bark here.weather=rain|storm self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Look at #lane#. #yardmud.capitalize#, the whole length. | Somebody lay a plank, for pity's sake. #annoyed#.
+
+rule @warm_rain_bark
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 12h
+say There. #softrain.capitalize#. Let it come. | Warm #rain#. The grass'll thank it.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#. Quick, if you please, #address#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've not much time. What's wanted? | #topic.player#. You again. #go_ahead#.
+dlg @3 resident.hub [here.time=night] : It's late, and I'm up before #cows#. Be quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I've no notion who you are. Out with your business, then on your way. | #greet#. Say it short. I've work waiting, #address#.
+dlg @1 resident.job [self.working=yes self.job=none self.workplace] : I churn the butter out at #self.workplace#. Pounds, printed and salted. That's my day. | I turn #churn# and wash the butter and press #print# on it. Not much to tell.
+dlg @2 resident.job : I work. I keep to myself. That's about the size of it. | #job_busy# Mostly I'm #tired#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask #milkcart#. | Nothing comes out #lane# worth repeating.
+dlg @2 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what #milkcart# says. | The cart had it from #world.news_from#: #world.news#.
+dlg @3 resident.news [world.event_words] : It's all #world.event_words#, if you believe #milkcart#. | Everyone's on about #world.event_words#. I'm not.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I'm #crock# with the lid tied down. Nothing pours out of me.
+dlg @2 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'd not swear to it. | Folk say #topic.subject# #topic.claim#. #hearsay.capitalize#, mind.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind #yardmud#.
+dlg @1 master.learn [here.teaches=yes] : You want to learn #churn#? It's arms and patience. I'll teach the arms; the patience is yours to find. | #learn_offer# You'll want strong shoulders and no hurry in you.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Back for another go at #churn#, #topic.player#? Roll your sleeves up. | #topic.player#. Your strokes were uneven last time. We'll fix that.
+dlg @3 master.learn [here.teaches=no] : I've a learner already, and one's my limit. Ask me what you like, though. | I can't take another on. I'll answer a question or two about #churn#.
+dlg @1 master.work : Up before #cows#, three or four churns a day, and the washing after. It's not pretty. | Turning, washing, salting, patting. And watching for #ratword#.
+dlg @1 master.wages : Nobody pays a learner. You turn beside me, you learn it quicker than alone, and what you make you sell. | No #wages# for learning. That's the old way and the fair one.
+dlg @1 master.takes [here.take_on=yes] : One learner at a time, and one I trust. You'd do. Ask, and it's settled. | Strong arms and a still tongue. You've the one; I'll take your word on the other.
+dlg @2 master.takes [here.take_on=no] : One at a time, and one I know. #here.take_on_why# | Not now. #here.take_on_why#
+dlg @1 master.bye : #farewell#. Come back with your sleeves rolled. | #farewell#. Mind #shoulders#.
+graft resident.hub
+choice What would you make of my grandmother? -> gran
+node gran
+say Your gran? I'd want to hear how she kept her step and how she salted her words. A gran who keeps a firm step raises a wolf you can trust with a crock.
+mood calm
+free
+choice And what about yours? -> gran_mine
+choice Goodbye. -> bye
+node gran_mine
+say Mine? First weight, and never a short pound in her life. I learned the churn on her stool. More than that, you'll not have from me.
+choice Something else. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do you know when the butter's ready? -> come
+node come
+say You hear it before you see it. The slosh goes thick and slapping, and the handle fights you. Stop then, or it turns to grease.
+mood calm
+free
+choice What happens after? -> come_after
+choice Back to the trade. -> learn
+node come_after
+say Drain the buttermilk, wash the butter in brine till the water runs clear, salt it, pat it, and press the print on top. Then you've a pound you can sell.
+choice Back to the trade. -> learn
+choice Goodbye. -> bye

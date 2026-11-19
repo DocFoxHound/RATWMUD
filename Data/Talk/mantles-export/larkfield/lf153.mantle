@@ -1,0 +1,289 @@
+# lf153, the coin-weigher at the door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf153
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_disa_sootley
+written_by claude
+title the coin-weigher at the door
+fits stage=adult|old
+prefers job=merchant humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=ambitious
+quirk weighs_every_coin_in_the_paw
+likes warm_bread stars new_boots first_snow
+dislikes deep_mud waiting
+fears a_debt_that_comes_due_before_the_coin_does
+hopes a_corner_shop_with_the_family_name_over_it
+topics prices +0.4 work +0.3 dreams +0.3 food +0.2 weather +0.2 family +0.2 festival -0.4 gossip -0.2
+styles comfort=practical gossip=reluctant refuse=dry tease=dry
+marks oath saying
+persona #self.first# keeps watch at a shop door in the Commons and weighs every coin in the paw before it goes in: quiet, dry as chalk, plain-dealing, and still full of plans for a corner shop with the family name over it.
+
+words
+oath! = Heft and halfpenny | By the light coin
+saying! = Heavy coin, honest paw | Weigh it first, thank them after
+coin = a coin | a silver penny
+heft = the heft of it | the weight in my paw
+clipped = a clipped coin | a light one, shaved at the rim
+door = the shop door | this door
+step = the step | my bit of step
+boots = new boots | boots with the stiff still in them
+loaf = a warm loaf | bread hot enough to burn your paws
+stars = the stars | the stars over the roofs
+firstsnow = the first snow | the year's first white
+corner = a shop on the corner | a corner with our name over it
+brood = my lot | the young ones
+dryly = Mm | Well
+
+any
+opinion @1 festivals against 2 : A feast's a day's #takings# gone and the rent still due. I'll keep #door# open, thank you.
+opinion @1 houses against 1 : Nobody climbs in Ridgemere without a House saying yes. I'll be first to cheer the day somebody does. #dryly#.
+opinion @1 dole against 1 : Everything on my table I earned. Pride's a poor supper, but it's mine. #dryly#.
+opinion @1 strangers for 1 : A stranger pays the same as a neighbour, and brings news besides. I'll have both.
+opinion @1 road against 1 : The roads were kinder in my young days, whatever anybody says. Or I was quicker. One of the two.
+opinion @1 merchants mixed 0 : Some of them weigh true. Some of them want watching. I watch all of them; it saves deciding.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Come in, if you're buying. Stand there, if you're not. | #greet#. You're letting the warm out, #address#.
+line @2 greet [self.working=yes] : #greet#. Mind #step#; it's been mopped. | #greet#. Go on through. I'll be on #step#.
+line @3 greet [here.time=dawn] : #greet#. You're up before #loaf#. | #greet#. Early. The baker's not even lit.
+line @1 kin.open [pair.kin!=no] : You. Come here, let me look at you. | There's #brood#. Sit; you'll eat before you go.
+line @1 again.open : You again. #door#'s glad of it. | Twice today. I'll start charging for the step.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit on #step#; it's dry. | #greet#. #dryly#. You'll do.
+line @3 greet.return [self.working=yes] : #greet#. I'm minding #door#; say on. | #greet#. Talk. I'll watch the street.
+line @1 farewell : #farewell#. | #farewell#. Mind the mud on the corner.
+line @2 farewell [here.time=dusk|night] : #farewell#. Look up on your way; #stars# are out. | #farewell#. Straight home, #address#.
+line @1 farewell.return : #farewell#. | #farewell#. Don't dawdle.
+line @1 react.news : #dryly#. | #ack#.
+line @1 react.news.new : #surprise#. That got past #door#. | #dryly#. First I've had of that.
+line @1 react.news.known : #knew#. Everybody comes past #door#. | I'd heard. It reached #step# yesterday.
+line @1 react.news.doubt : #doubt#. I'd weigh that in my paw before I took it. | #dryly#. Feels light to me, that does; somebody's trimmed it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. | Hard news, #address#. My heart goes out to them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. #good.capitalize#. | Well. Something worth the weight, for once.
+line @1 answer.how : #fine#. Still standing, which is the main thing. | #notsobad#. My feet complain; I don't listen.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every soul in the street's been through #door#. | Up and down #step# all day.
+line @1 ask.how : And you? Eating properly? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Come and stand by the warm. | #dryly#. That's a hard turn, #address#. You'll mend.
+line @1 decline : #hedge#. I'd come, but somebody's got to mind #door#, and it's me. | Not today, #address#. I've a debt of an hour to the shop and I pay my debts.
+line @1 accept_decline : #no_matter#. Another time. | Fair. It'll keep; I'm not going anywhere.
+line @1 thank : #thanks#. | #thanks#. I'll remember that.
+line @1 deflect_thanks : #deflect#. | It cost me nothing, #address#. Don't make a fuss.
+line @1 tease [pair.band=friends|family] : You walk like your boots owe you money. | #dryly#. You're looking prosperous. Who'd you rob?
+line @1 tease.return : #cheek#. | Says the one with mud to the hocks.
+line @1 preclose [self.working=yes] : #preclose#. #door.capitalize# won't mind itself. | Back to #step#, then.
+line @2 preclose : #dryly#. I'll let you go. | #excuse#.
+line @1 accept_preclose : Go on, then. | #farewell#. Off you trot.
+line @1 give.advice : #advise#: weigh every coin, even from friends. Especially from friends. | Never wait for the price to come down. It only comes down after you've bought.
+line @1 ack : #dryly#. | #ack#.
+scene coin_in_paw
+when topic=work|prices self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Every coin through #door# goes in my paw first. I know a light one by #heft#. | I weighed #coin# this morning and it was a hair short. A hair. I said so. | Give me a purse in the dark and I'll tell you what's in it by the weight.
+b : Can you really tell? | What did they say? | Every coin?
+a : I can. Years of it. A good one sits; a light one shifts. | They said I was mad. Then they found another coin. #saying.capitalize#. | Every one. #dryly#. It's a free trick, and it's never once let me down.
+b : #bc_clever# | #bc_ha# | #bc_wise#
+
+scene clipped_coin
+when topic=prices|crime
+does tell.complaint / react.complaint / assess
+a : Somebody's passing #clipped# in the Commons. I've had two this week. | #clipped.capitalize#. Shaved round the edge, neat as you like. #robbery#. | Feel that. Go on. That's not a penny, that's most of one.
+b : Who'd do that? | Neat? | It's light.
+a : Somebody who thinks old paws can't feel. They're wrong. | Neat enough to fool a young one. Not me. | It's light. I'll keep it on the shelf, and show it to the next clever one.
+
+scene minding_door
+when topic=work|smalltalk self.working=yes
+does tell.self / react.self / assess
+a : I mind #door#. That's my job. I watch who comes, who goes, and who looks twice. | People think minding a door's nothing. It's knowing who to let past. | I've stood on #step# so long the street knows me better than the shop does.
+b : Who looks twice? | Is it hard? | That's a long time.
+a : The ones with empty pockets and full sleeves. I know the look by #heft#. | Hard? No. Dull, mostly. I've a head for dull, #address#. | Long enough. I'll be part of the doorframe soon. #dryly#.
+
+scene no_waiting
+when topic=smalltalk|day self.dislikes=waiting
+does tell.complaint / react.self / assess
+a : I can't abide waiting. And here I am, minding a door. Somebody up there's laughing. | Waiting for the baker, waiting for the rent, waiting for the young ones to listen. #annoyed#. | If I liked waiting, I'd have been born a stone. #dryly#.
+b : That's a joke on you. | They'll listen. | Ha.
+a : It is. I've had worse. I laugh when nobody's looking. | One day. When I'm dead, probably. They'll say I was right. | You can laugh. I'd laugh too, if it was you.
+
+scene warm_loaf
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : #loaf.capitalize# is the best thing in the city, and it's a penny. | I buy #loaf# at dawn and eat the heel on the walk home. Every day. | Bread gone cold is just bread. #loaf.capitalize# is a kindness.
+b : A penny's cheap. | The heel's the best bit. | A kindness?
+a : Cheapest pleasure there is. I'd pay two, and don't tell the baker. #dryly#. | It is. The rest I take home to #brood#. | A kindness. You hold it in both paws and you're warm to the elbows.
+
+scene star_watch
+when topic=day|pastimes here.time=night here.weather=clear self.likes=stars
+does tell.feeling / react.self / assess
+a : Look up. #stars.capitalize#, all of them out at once. Worth staying up for. | I sit on #step# at night and watch #stars# come out. One by one, like customers. | You can't see #stars# half the year in Ridgemere. When you can, you look.
+b : They're bright tonight. | Like customers? | I'm looking.
+a : Bright and free. Nothing in the city's free but those. | Slow at first, then all at once. And never a one haggles. | Keep looking. Hold your breath; it helps, somehow.
+
+scene first_white
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : #firstsnow.capitalize#. I'll stand in it a minute. Don't laugh. | Snow! I've seen more of them than I can count and I still run to the window. | #firstsnow.capitalize# covers the mud. That's reason enough to love it.
+b : I won't. | Still? | It does.
+a : Good. It's the one minute a year I'm soft. Don't spread it about. | Still. Some things don't wear out. #dryly#. Few enough. | For a day. Then it's worse mud. But that's tomorrow.
+
+scene deep_mud
+when topic=weather here.weather=rain here.region=ridgemere self.dislikes=deep_mud
+does tell.complaint / react.complaint / assess
+a : #mud.capitalize# on the corner up to my hocks. #annoyed#. | The street's a bog. It took a boot off me last winter. Nearly lost the leg. | Rain, and the corner's #mud# again. I'll be scrubbing #step# till dusk.
+b : It's terrible. | A boot? | Somebody should fix it.
+a : Terrible, and nobody fixes it. #toffs.capitalize# would have it fixed if it was on the hill. | A good boot. I went back for it. The mud kept it. | Somebody should. I've told the street. The street said yes and did nothing.
+
+scene new_boots
+when topic=smalltalk|home self.likes=new_boots
+does tell.self / react.self / assess
+a : Look at these. #boots.capitalize#. A whole season's pennies went on them. | Nothing like #boots# the first week. They argue with you, then they're yours. | I bought #boots# and walked the long way home just to wear them in.
+b : They're good boots. | Do they pinch? | All the way round?
+a : They are. Heavy, honest leather. I weighed them in my paw at the stall. | They pinch. #oath#, they pinch. They'll stop; I always win. | All the way. #dryly#. The street thinks I've lost my wits. I've gained boots.
+
+scene the_corner
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail / assess
+a : I want #corner#. A proper shop. I've the spot picked out. | Everyone thinks I'm too old for plans. I've got more plans than the young ones have. | #oath#, one day #door# I mind will be ours. Mark me.
+b : Where? | Like what? | How?
+a : I'll not say. Somebody'd get there first. That's how Ridgemere works, #address#. | A second door. Lamps one side, sundries the other. Never a slow day. | Saving. Weighing. Not spending on nonsense. It adds up, #address#.
+b : #bc_we_will_see# | #bc_good# | #bc_i_hope_so#
+
+scene my_lot
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : #brood.capitalize# don't listen to me. They'll listen when I'm gone. | I raised #brood# on bread and good sense. One took. #dryly#. | Every one of #brood# is cleverer than me. I made sure of it.
+b : They listen more than you think. | Which one? | That's a good thing.
+a : Maybe. I'd not bet #coin# on it; I need the coin. | I'll not say. They'd all want to know. | It is. Clever, and they can weigh a coin. That's all I wanted.
+
+scene the_debt
+when topic=times|prices self.owes=yes
+does confide / reassure / assess
+tone serious / tender / even
+a : I'll say it plain. I owe a House factor, and the moon's not waiting. | There's a debt on me. I'll find it. I always have. | I don't like owing. I like it less with a date on it.
+b : You'll find it. | #reassure#. | Can I help?
+a : I will. I'll weigh every penny twice till I do. #oath#. | It will. I'll not sleep much till it does, mind. | No. Thank you. It's mine to pay, and I'll pay it.
+
+scene downs_market
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.story / assess
+a : At #self.from_town# market they weighed everything, even the gossip. I learned #heft# there. | I sold eggs at #self.from_town# cross when I was small. A penny a dozen, and I weighed the penny. | The downs at #self.from_town#, and the sheep coming down at dusk. I'd forgotten the sound.
+b[from=larkfield] #lark : Everything weighed, and every weight argued. | A penny a dozen! Those were the days. | The bells, coming down all at once.
+b : Even the gossip? | You weighed the penny? | What sound?
+a@lark : Argued and settled. #dryly#. Better than here. Here they just pay and look sour. | They were. I'd not go back to the price, mind. | All at once. You'd hear it from the market. I'd stop counting to listen.
+a : Even the gossip. Light gossip, you threw back. | Weighed it. Gave one back once, light. The wolf never forgave me. | Bells, and the wind behind them. My gran called it the downs singing.
+
+scene lean_door
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : Folk are coming to #door#, looking, and going. Lean times. | I've had more light coins this month than all year. Hard times make clever paws. | Nobody's buying anything they can't eat. #dryly#. Can't blame them.
+b : It'll turn. | Clever paws? | No.
+a : It'll turn. I'll be on #step# when it does, counting. | Clever and hungry. I don't blame them. I still don't take the coin. | No. I'd do the same. I do do the same.
+
+scene not_weighed
+when topic=gossip|crime
+does tell.gossip / react.self / assess
+a : I hear things on #step#. Most of it's light. I don't pass light coin. | #dryly#. Gossip. Weigh it and it comes to nothing. | Folk stop at #door# to pick over whoever's out of earshot. I let them.
+b : Not a word? | Nothing at all? | And then?
+a : Not a word. If it was worth anything, it'd be news. | Nothing worth a penny. #gossip_none# | And then I forget it. I've a full head already.
+
+scene strangers_pay
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : A stranger came through #door# today and paid in good silver. I like a stranger. | Travellers pay the same as neighbours and bring news besides. Two for one. | New faces, new coins. I weigh both.
+b : Good silver? | That's a bargain. | Both?
+a : Good, heavy #money#. I nearly thanked them twice. #dryly#. | It is. #luck.capitalize#, and you don't get that from the folk next door. | Both. The face tells you if the coin will be light.
+
+scene faith_weighed
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One weighs us all in the end, they say. I'll be ready. I've had practice. | I go to chapel at Restday. I listen. I sleep a bit too. | I'll pray for a fair weight. That's all anyone needs.
+b : Ready, are you? | Everyone does. | That's a good prayer.
+a : As ready as anyone. #heft.capitalize# doesn't lie, even up there. | Everyone does. The Bright One's seen worse. | That's my whole prayer. Short and honest. #saying.capitalize#.
+
+story first_coin [topic=memories|prices self.away=yes self.from=larkfield self.age>=60]
+  : My gran put #coin# in one of my paws and a stone in the other, and said, weigh them.
+  : I said the coin was heavier. She said, then that coin's honest. Learn the feel of it.
+  ask : Have you a lesson like that, one you use every day?
+  b : My mother. I never thanked her.
+  b[old] : A teacher I've outlived by thirty years.
+  : I've weighed every coin since, every day of it. She'd laugh at me.
+
+story the_light_shilling [topic=prices|crime|smalltalk]
+  : A smooth fellow paid me once with a coin so light it nearly floated.
+  : I handed it back. That one's hungry, I told him; feed it and come again.
+  ask : Would you have taken it, to be kind?
+  b : I might have, to be kind. Did he come back?
+  : Next week, with good silver, and a face like a wet Restday. #dryly#. We get on fine now.
+
+story the_snow_night [topic=weather|memories self.likes=first_snow]
+  : One year #firstsnow# fell after dark, and I went out in my slippers to stand in it.
+  : The Watch found me at midnight and walked me home, very polite, as if I'd been lost.
+  ask : Have you ever been taken home by the Watch?
+  b : Not yet. There's time.
+  : There is. #dryly#. I recommend it. They carried my slippers.
+
+rule @door_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say In or out. #door.capitalize# lets the cold in. | Mind #step#. And wipe your feet.
+
+rule @coin_bark
+when concept=bark working=yes here.place=work|market
+does aside
+cooldown 8h
+say That's light. That's #clipped#. | #heft.capitalize#. Hm. That one's honest.
+
+rule @mud_bark
+when concept=bark here.weather=rain self.dislikes=deep_mud
+does aside
+cooldown 8h
+say #mud.capitalize#. To the hocks. #oath#. | Somebody fix that corner before it eats a pup.
+
+rule @star_bark
+when concept=bark here.time=night here.weather=clear self.likes=stars
+does aside
+cooldown 12h
+say There they come. One, two. Look at that. | #stars.capitalize#. Worth the cold.
+
+dlg @1 resident.hub : #greet#. What's wanted? Speak up; the street's loud. | #greet#. In or out, then.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. #welcome_back#. What is it?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. I'm watching you, and I'm good at it. Say what you want.
+dlg @1 resident.job [self.working=yes] : I'm #self.trade_words#. I watch who comes and goes, and weigh what they pay. | #door.capitalize#. I mind it. It's more than it looks.
+dlg @2 resident.job : A bit of this, a bit of that. #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# And I'd know; it all comes past #door#. | Nothing worth the weight.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't pass light coin, #address#, and gossip's light.
+dlg @1 resident.bye : #farewell#. Mind #step#. | #farewell#. Wipe your feet next time.
+graft resident.hub
+choice Why do you weigh every coin? -> heft
+node heft
+say Because a coin's honest or it isn't, and your paw knows before your head. A light one shifts; a good one sits. #saying#.
+mood calm
+free
+choice Could you weigh mine? -> heft_mine
+choice Goodbye. -> bye
+node heft_mine
+say Give it here. Hm. That's honest. You can keep it. #dryly#. I'd tell you if it wasn't.
+choice Thank you. -> hub
+choice Goodbye. -> bye
+
+
+old
+scene these_knees
+when topic=health
+does tell.self / react.self / assess
+a : My knees know the weather before the sky does. Rain by dusk; mark me. | I'm sixty-odd and I stand all day. My feet have filed a complaint. | I've outlived three doctors who told me to sit down. #dryly#.
+b : They're usually right. | Sit a while. | Three?
+a : Always right. Nobody believes them till it rains. | I will, when I'm dead. Not before, #address#. | Three. I sent flowers to two. The third owed me money.
+
+scene when_wool_was_dear
+when topic=memories|times|prices
+does tell.memory / react.self / assess
+a : In #olddays# a fleece bought you bread till the month was out. Now it's a week's worth, and they call it progress. | When I was young you could leave #door# open and nobody would take a thing. | I remember when a penny was a penny. Heavy. You could feel it.
+b : Things change. | Truly? | Isn't it still?
+a : They do. Mostly for somebody else's good. | Truly. Or nobody had anything worth taking. One of the two. | Lighter now. They've been trimming it for years. My paw knows.
+
+line @1 answer.how [self.stage=old] : Old, and still on the step. #notsobad#. | Creaking, but here. That's a win at my age.
+line @1 give.advice [self.stage=old] : #advise#: never let them sit you down. You don't get up again. | Keep moving and keep weighing. That's how you get to my age.

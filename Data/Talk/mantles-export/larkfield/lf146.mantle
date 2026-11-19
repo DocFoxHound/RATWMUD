@@ -1,0 +1,457 @@
+# lf146, the stamp-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf146
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for rm_frida_wickwell
+written_by claude
+title the stamp-reader
+fits stage=adult|old
+prefers role=merchant job=crafter humour=dry
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk reads_the_house_stamp_before_the_crack
+likes fried_fish swimming a_full_till autumn_wind
+dislikes night_noise drizzle
+fears the_shutters_coming_down_for_good a_winter_of_empty_benches
+hopes a_stall_of_my_own_up_on_the_commons
+topics work +0.5 prices +0.3 dreams +0.3 home +0.2 weather +0.2 food +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# mends pots and kettles at a bench in the Sump and turns each one over for the maker's stamp before looking at the hole: quiet, dry and quick to bristle, honest at the till, putting coppers by for a stall up on the Commons.
+
+words
+oath! = Pewter and pins | By the cracked kettle | Solder and spite
+saying! = A patch is honester than a promise | Read the stamp, then the crack | Mended's better than new, and cheaper
+bench = my bench | the mending bench
+solder = the solder | a bead of solder
+iron = the iron | my little soldering iron
+kettle = a kettle | some poor kettle
+pots = pots | pans
+stamp = the stamp | the House mark on the bottom
+crack = the crack | a hairline crack
+rivet = a rivet | a copper rivet
+till = the till | my tin of coppers
+heavytill = a heavy till at shutting | the till too full to rattle
+jar = the stall jar | my savings jar
+pot = a pot | a pan
+shop = the shop | this shop
+tin = the tin | the metal
+downs = the downs | the open downs
+coppers = coppers | the odd copper
+stall = a stall on the Commons | a stall of my own up top
+fish = a fried fish off the stall | fish done crisp in the pan
+dip = a swim | a cold dip off the stone steps
+gust = a proper autumn gust | wind with leaves in it
+mizzle = this drizzle | the fine wet that never quite falls
+racket = the racket after dark | the noise through the floor at night
+patch = a patch | a tin patch
+seam = the seam | a bad seam
+shutters = the shutters | my shutters
+sumpsteps = the Sump steps | the wet steps to the quay
+dry = Mm | Well, there's a thing
+
+any
+opinion @1 houses against 1 : The bricks round here are House bricks, and House bricks never get mended. #oath#. I'd do it myself for the price of #solder#.
+opinion @2 houses against 2 [world.times=hard|lean] : Times like these, the Houses stamp their marks bigger and their tin thinner. I read both.
+opinion @1 merchants mixed 1 : Some sell fair weight. Most sell #stamp# and charge you for the pot.
+opinion @1 dole for 2 : #dole.capitalize# kept bread on my table in a thin spell. Run it down near me and see, #address#.
+opinion @1 sump for 1 : It's home. Down here we lend a pot before we're asked, and I mend it after for nothing.
+opinion @1 times against 2 : Each week bites a lark's worth deeper, and up the hill nobody's counting.
+opinion @1 church for 1 : The chapel fed us when #till# was empty. I'll drop coppers in its plate for that while I have them.
+opinion @1 watch mixed 1 : They come down #sumpsteps# for a thief and go back up with whoever's nearest. Some of them are fair. Some.
+opinion @1 festivals against 2 : All noise, spilt ale and somebody crying on my step at midnight. #dry#.
+opinion @1 city against 1 : #racket.capitalize#, smoke, and not a neighbour who knows your face up the hill. The Sump's the only bit with manners.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If it leaks, set it down. If it doesn't, state your business. | #greet#. Shut the door; #mizzle# gets in.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Mind #iron#; it's hot. | #greet#. Pots on the left, talk on the right.
+line @3 greet [here.time=dawn] : #greet#. #shutters.capitalize# are half up. So am I. | #greet#. Early. Nothing's mended yet.
+line @4 greet [here.time=dusk|night] : #greet#. Late for mending. I'm counting #till#. | #greet#. Shutters are coming down, so be quick.
+line @1 kin.open [pair.kin!=no] : You. Don't touch #bench#; it's all in order. | Oh, it's you, #pet#. Sit down, there's tea in the pot.
+line @1 again.open : Twice in a day. Something's leaking, then, #address#. | Back again. #bench.capitalize# hasn't moved.
+line @1 hail [pair.band=friends] : Here, a minute. #listen#. | Over here, #address#. Quick, before #solder# sets.
+line @1 greet.return : #greet#. | #greet#. Set it down.
+line @2 greet.return [pair.band=friends|family] : #greet#. Pull the stool over. | #greet#. I'd a feeling you'd turn up.
+line @3 greet.return [self.working=yes] : #greet#. Talk; my paws are busy but my ears aren't. | #greet#. Don't mind the hissing.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, but come in. | #greet#. Quiet, mind; the street's asleep. Mostly.
+line @1 farewell : #farewell#. | #farewell#. Door shut after, mind.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep off #sumpsteps# in the dark. | #farewell#. Mind who's out after the lamps.
+line @1 farewell.return : #farewell#. | #farewell#. And don't drop it again.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Bring the fish next time. | #farewell#. Mind the step, it's loose.
+line @1 react.news : #listen#. Go on, then. From the start. | #surprise#. Who's saying it?
+line @1 react.news.new : #oath#. That's new to me. | Not a whisper of that at #bench# till now.
+line @1 react.news.known : #knew#. Stale by the time it reaches #bench#. | Had it this morning, with #kettle#.
+line @1 react.news.doubt : #doubt#. Sounds like it came with a stamp on it. | #dry#. Mend it first, then I'll believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. There's no #patch# for that. | That's hard. I'm sorry for it, #very#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. We could do with some. | Now that's full weight. I'll drink to it.
+line @1 answer.how : Steady. A bench full of holes and #coppers# in #jar#. | #fine#. Mended, mostly.
+line @2 answer.how.busy [self.working=yes] : #busy.capitalize#. Six #pots# and #kettle# by dusk. | Up to the elbows in #solder#. Ask me tomorrow.
+line @1 ask.how : And you? Holding water, #address#? | How's your lot, then? Full weight?
+line @1 sympathise : #sympathy#. Sit. There's tea, and I'll not ask. | That's a hard knock, #address#. Some things you only wait out.
+line @1 reassure : #reassure#. It's a crack, not a hole. | It'll mend. Nearly everything mends, if you don't rush #solder#.
+line @1 decline : #hedge#, but no. I've #pots# promised by dusk and I keep my word. | Not today. #till.capitalize#'s light, and I can't leave #bench# for nothing.
+line @1 accept_decline : #no_matter#. Another day. | No sale, then. No hard feelings.
+line @1 thank : #thanks#. That's a kindness. | #thanks#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. You'd do the same. | It was #rivet# and a minute. Leave it there.
+line @1 praise : That's a tidy job. No lumps in #seam#. | Good #work#. I'd not be ashamed of that on my bench.
+line @1 deflect_praise : #modest#. It's only a pot that holds water. | It's what I'm paid for. Fair price, mostly.
+line @1 preclose [self.working=yes] : Well. #pots.capitalize# won't mend themselves. | That's #solder# cooling. Back to it.
+line @2 preclose : Well. #preclose#. | I've talked myself dry. #excuse#.
+line @1 accept_preclose : Go on, then. #farewell#. | Off you go. I've #pots# anyway.
+line @1 tease [pair.band=friends] : You walk like #kettle# with a dent in it. | You've a face like a pan with the bottom gone, #fool#.
+line @1 tease.return : #cheek#. I'll mend your manners for a copper. | #dry#. You'll keep.
+line @1 disagree : #demur#. I've seen #tin#, and it's thin. | No. I'll not have that said in #shop#.
+line @1 insist : #insist#. #saying#. | Said once, and I'll say it again at the same price.
+line @1 ack : #bc_right# | #dry#.
+line @1 give.advice : #advise.capitalize#: flip any pan you're buying. Read #stamp#, then knock it. | Never buy a pot for its mark. #saying#.
+line @1 warn [world.bandits=near] : Keep off the road. #warn#. | If you've a cart going out, send somebody with it. #warn#.
+scene stamp_first
+when topic=work|smalltalk self.job=crafter
+does tell.self / ask.detail / answer.detail / assess
+a : I turn every pot over before I look at the hole. #stamp.capitalize# tells me more than #crack# does. | Somebody brought me #kettle# this morning with a lovely House mark on it. Tin like paper. | I can tell you who made a pan by the bottom of it. Not who owned it; who made it.
+b : What does the stamp tell you? | Whose was it? | Can you?
+a : Whose House cut corners, and where. They all short-weigh. Each in its own place. | I'll not say. But #stamp# was big, and #tin# was thin. That's always the way. | Every House has a seam it skimps. I know them all by now. #oath#.
+b : #bc_wise# | #bc_ha# | #bc_fair_enough#
+
+scene house_tin
+when topic=work|prices self.job=crafter here.region=ridgemere
+does give.opinion / challenge / insist / ack
+a : The Houses put their mark on everything now. Bigger every year. #tin.capitalize# gets thinner to pay for it. | A House pan costs twice a plain one and comes to me twice as often. | I don't trust #stamp#. I trust #seam# I've looked at myself.
+b : That's a hard thing to say. | Maybe you're unlucky. | A stamp means something.
+a : Not hard. True weight. Come and see my bench. | Lucky for #till#, maybe. Not for theirs. | It means a House wants paying for its name. That's all it's ever been worth down #sumpsteps#.
+b : #bc_fair# | #bc_ha# | #bc_true_enough#
+
+scene kettle_on_bench
+when topic=work|news self.job=crafter self.working=yes
+does tell.news / react.news / assess
+a : I've #kettle# on #bench# with a hole you could post a letter through. | Somebody's boiled a pan dry and brought it to me like it was my fault. | Three #pots# in and all three with one bad seam. One stamp on the lot.
+b : Can you save it? | Was it? | One stamp?
+a : With #patch# and a prayer. It'll boil. It won't be pretty. | No. But I'll mend it like it was. That's #work#. | One House, one seam, one week. #dry#. Somebody's saving on tin.
+
+scene till_counting
+when topic=work|prices self.role=merchant here.time=dusk self.likes=a_full_till
+does tell.self / react.self / assess
+a : This is the bit I like. #shutters.capitalize# down, #till# on #bench#, and counting. | #heavytill.capitalize#. I'll sleep tonight. | I count #till# twice. Once for the sum, once for the pleasure.
+b : A good day, then. | Lucky. | Twice?
+a : Fair weight. Not a fortune. Enough. | Not lucky. Six #pots#, mended right. | Twice. Some nights I'd count #coppers# three times if nobody saw.
+
+scene till_light
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : #till.capitalize#'s light this week. Folk are keeping their holes and boiling round them. | Nobody mends #pot# they can't afford to fill. | I've had three #pots# left and not fetched. #oath#. That's a bad sign.
+b : Hard for everyone. | That's grim. | Will they come back?
+a : Hard down here, and harder for some. #reassure#. | It is. I'd mend them on tick, if the tick ever came back. | When the bread's cheaper. #pot.capitalize# waits; a belly doesn't.
+b? : #bc_true# | #bc_poor_soul# | #bc_i_hope_so#
+
+scene till_heavy_times
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Silver's about. Folk buy new over mending. Good for them. | I've more #pots# than bench this week. #busy.capitalize#. | #heavytill.capitalize#, three nights running. I'll not say it louder.
+b : Good for you, too. | Can you keep up? | Why not louder?
+a : Less than you'd think. New #pots# don't need me for a year. | Just. I've #iron# hot from dawn. | Say a full till loud and the Dark One hears it.
+
+scene stall_jar
+when topic=dreams|work self.role=merchant
+does confide / react.self / assess
+a : There's #jar# behind #bench#. Every good day, a copper goes in. | #vent#: I want #stall#. Not a big one. My own. | I'll have #stall# one day. A copper at a time, and no hurry.
+b : How full is it? | A good thing to save for. | You'll get there.
+a : Fuller than last year. Not as full as I'd like. That's every #jar#. | It's the only thing I want that money can buy, #address#. | I will. Slow, but I will. #saying#.
+
+scene fried_fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail / assess
+a : #fish.capitalize#, and I'll forgive the day anything. | There's a stall by the water fries them in a black pan. I'd climb the whole hill for it. | #fish.capitalize# on Restday. Coppers go uncounted for that, and only that.
+b : Where's that? | The whole hill? | What's in it?
+a : Down #sumpsteps# by the boats. Follow your nose. | Well, #sumpsteps#. Going back up on a full belly, it's a hill. | Hot fat, salt and a bit of bread. Nothing clever. Fair price, too.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+
+scene the_swim
+when topic=pastimes|weather here.season=summer self.likes=swimming
+does tell.self / react.self / assess
+a : I had #dip# before #shop# opened. Cold enough to stop your heart. | Folk think I'm soft in the head. I swim most mornings, cold or not. | The water off #sumpsteps# is brown, I know. I swim in it anyway.
+b : Brave. | Most mornings? | Brown?
+a : Not brave. #dip.capitalize# wakes me better than tea and costs nothing. | When I can. It's the only hour nobody brings me #kettle#. | Brown and bitter. Still water's water, #address#. You come up clean enough.
+
+scene swim_at_home
+when topic=pastimes|memories self.away=yes self.from=larkfield self.likes=swimming
+does tell.memory / react.self / assess
+a : At home in #self.from_town# there was the mill pond. Clear to the bottom. I learned in it. | We swam in the dew-pond on #downs#, the sheep watching. | First swim of the year at home was on midsummer day. I always went the week before.
+b[from=larkfield] #lark : The mill pond! The miller hated us. | The sheep never minded. | Everybody went early. Nobody owned up.
+b : Clear to the bottom? | The sheep? | The week before?
+a@lark : Hated us and never once came in after us. | They didn't. They had more sense than to swim. | Nobody ever did. I'll own up now.
+a : You could see your own feet. Here you can't see your knees. | Watching, and chewing. Judging, I always thought. | To be first. It's the only race I ever won.
+
+scene autumn_gust
+when topic=weather|season here.season=autumn here.weather=clear|overcast self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #gust.capitalize# up #sumpsteps# this morning. Blew the smoke clean out of the Sump. | I like a wind that means it. #gust.capitalize#, and this city's almost clean. | Leaves in the gutter and a wind that takes your hat. That's my weather.
+b : Cold, though. | Means it? | You like it?
+a : Cold and clean. I'll take that over warm and #mizzle#. | Means it. Pushes. Doesn't hang about in your fur like #mizzle# does. #dry#. | I do. It reminds me of #downs#. Don't tell anyone.
+
+scene drizzle_again
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #mizzle.capitalize#. Not rain, not dry, just wet on everything. | It's been drizzling since Marketday. #solder.capitalize# won't take on damp tin. | I'd sooner a proper downpour than #mizzle#. At least a downpour ends.
+b : It never really stops here. | Can you dry it? | It always ends?
+a : It stops for an afternoon to fool you. #annoyed#. | By the stove, #pot# at a time. Slow. | It does. Then #mizzle# comes back to tidy up.
+
+scene fog_bench
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog up from the water. I can't see across the street, and nobody can see my sign. | In fog the Sump goes quiet. I don't trust it, #address#. | Fog in #shop#. #iron.capitalize# spits at it.
+b : Slow day, then. | Don't trust it? | Spits?
+a : Slow as treacle. I'll catch up on #bench#. | When it's quiet down here, someone's being quiet on purpose. | Hisses. Damp on hot iron. It sounds like it's cross with me. #dry#.
+
+scene night_racket
+when topic=home here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #racket.capitalize#. Somebody's singing under my window and they don't know the words. | #racket.capitalize#. The alehouse comes through two walls and a floor. | There's a cart goes past at midnight every night with a wheel that screams.
+b : Every night? | That's the Sump. | Can't they oil it?
+a : Every night I've a pot promised for dawn. They know, I'm sure of it. | It is. Home's home. I'd just like it a lark's worth quieter. | I've offered. Twice. For nothing. Some wolves like a noise.
+
+scene married_bench
+when topic=family|work self.married=yes self.spouse
+does tell.self / react.self / assess
+a : #self.spouse# and I don't talk much at #bench#. We don't need to. | My #self.spouse_word# makes the tea and I mend the #pots#. That's a fair split. | I'd not have come this far without #self.spouse#. I'll say that once.
+b : That's a good match. | Fair enough. | Once?
+a : Quiet pair, we are. Suits #shop#. | Fair weight. Neither of us would swap. | Once is plenty. Say it twice and it goes to a wolf's head.
+
+scene hand_at_front
+when topic=work self.hand self.role=merchant
+does tell.self / react.self / assess
+a : #self.hand# minds the front while I'm at #bench#. I'd trust #self.hand# with #till#. | I'm no good at the counter. #self.hand# names the fair price; I mend. | #self.hand# is the reason #shop#'s open when I'm up to my wrists.
+b : Good to have help. | You don't like talking? | Worth a lot.
+a : It is. I'd be shut by noon without it. | Not to customers. They want a price and a promise, and I've only the price. | More than the wage. Don't tell any market-mouth I said so.
+
+scene sump_own
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : Folk up the hill call it the Sump like it's a smell. It's #home#. | Down here, if #pot# cracks, somebody lends you theirs. | The Sump bails the Sump. Nobody else is coming.
+b[wealth=rich] #rich : I'd not know. | Is it that bad? | The hill does what it can.
+b : It is. | That's good of them. | True enough.
+a@rich : No. You'd not. Come down #sumpsteps# one evening and see. | Not bad. Hard. They're different things. | It does what's cheap. I'll grant it that.
+a : #home.capitalize#, and I'll say it to any of #toffs#. | Good of all of us. That's how it's done here. | True. #oath#, it's the one thing down here that doesn't leak.
+
+scene watch_steps
+when topic=crime|gossip here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Watch come down #sumpsteps# for a thief and take whoever's slowest. | I keep #shutters# up when the Watch are about. Not for them; for the ones they're chasing. | A Watch lamp down at the foot of #sumpsteps# means somebody's in trouble. It never means help.
+b[role=guard] #guard : We take who we're told. | Sensible. | It can mean help.
+b : That's how it looks. | Who are they chasing? | Never?
+a@guard : I know. I'd have words with who's telling. | It's sense, or it's habit. Same thing, in the Sump. | Once, maybe. I'll grant you once.
+a : #bc_it_is# Slow wolves and poor ones, mostly. | Somebody #hungry#, usually. | Not that I've seen. I'd like to be wrong.
+
+scene brick_owners
+when topic=lore|smalltalk here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / assess
+a : Every brick in this street belongs to a House. Not one of them's been up here with a trowel. | The roof's been leaking since spring. The House that owns it sent a letter. | I mend everything in #shop# but the roof. That's not mine to mend.
+b : Which House? | What did it say? | Can't you?
+a : I'll not say which. Short-weighed, the same as all the others. | That the roof's been looked at. By whom, it didn't say. | Not without being charged for touching their tin. #robbery#.
+b : #bc_poor_soul# | #bc_ha# | #bc_true#
+
+scene downs_wind
+when topic=memories|land self.away=yes self.from=larkfield
+does tell.memory / react.self / assess
+a : Up on #downs#, the wind came over the top and took everything with it. Clean. | At #self.from_town# we flew kites off the chalk in #gust#. Mine never came down whole. | I miss a sky with nothing in it. In #here.town#, chimneys fill every gap.
+b[from=larkfield] #lark : Took your washing with it, too. | Every kite on the downs came home in pieces. | Nothing but larks and weather.
+b : Do you miss it? | Never whole? | Always?
+a@lark : Took mine twice in one week. I'd forgotten that. | Mine was in more pieces than most. I mended it with #solder# once. | Larks and weather. And fair price at the cross on Marketday.
+a : The wind, yes. Not the walk to the well. | I mended it every time. That's where I started. | Always. Even on the Sump steps you can't see the sky for washing.
+
+scene market_cross_home
+when topic=memories|lore self.away=yes self.from=larkfield
+does tell.memory / ask.detail / answer.detail / assess
+a : There was a tinker at the #self.from_town# market cross every Marketday. I sat and watched him all morning. | My #mum# took every cracked pan we owned to that tinker. He knew our pans better than we did. | The tinker at home said a mend should outlast the pot. I believed him. I still do.
+b : What did you learn? | Better than you? | Does it?
+a : To look before touching. He'd turn a pot over a full minute before he picked up #iron#. | Every dent. Which one my #dad# dropped and which one I did. | A good one does. The pot gives up round it. I've seen it happen.
+b : #bc_wise# | #bc_ha# | #bc_true#
+
+scene city_voice
+when topic=accent self.away=yes self.from=larkfield
+does tell.self / react.self / assess
+a : They hear #downs# in me the minute I name a price. Fair weight, I say, and they grin. | Up the hill they think a #self.from_town# voice is a joke. It's a voice that won't be short-changed. | I've been here years and I still say tea for supper. I'll not stop.
+b : It suits you. | Good for you. | Why stop?
+a : #thanks#. It suits #till# too. Nobody tries to diddle a voice like mine twice. | Folk who laugh pay the same as anyone. | I won't. It's mine.
+
+scene gossip_dry
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear plenty over #bench#. Folk forget a tinker's ears work. | There's talk about #topic.subject#. Carry it yourself; I'll not. | Half of what's said in #shop# is about somebody who isn't in it.
+b : Go on. | Why not? | And the other half?
+a : No. I mend #pots#, not reputations. | Because talk's #pot# with #crack# in it. It leaks on whoever's holding it. | About the price of tin. Same as ever. #dry#.
+b : #bc_fair_enough# | #bc_wise# | #bc_ha#
+
+scene theft_word
+when topic=crime|gossip topic.claim_kind=theft
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. I'm locking the tins up. | Word on #sumpsteps# is #topic.subject# #topic.claim#. Keep your shutters fast. | #topic.subject.capitalize# #topic.claim#, so they're saying. Down #sumpsteps# that'll mean a search.
+b : #bc_poor_soul# | I will. | #doubt#.
+a : Lock up what you'd miss, #address#. Little else to be done. | Good. And mind the back door; that's the one they use. | Doubt it all you like. The Watch won't.
+
+scene newcomer_pots
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : A new face came in this morning, didn't ask the price, didn't ask the time. Just stood. | Strangers bring me the oddest things. A helmet today. I mended it. | I don't mind #stranger#. One with a leaking pot is a customer.
+b : What did you do? | A helmet? | Fair enough.
+a : Mended a pan and waited. They bought nothing and said thanks. I'll take it. | It was #pot# once, I think. It holds water now, anyway. | Fair weight. The rest can stay strangers.
+
+scene chapel_bread
+when topic=faith
+does give.opinion / react.self / assess
+a : The chapel gave us bread in a bad week. I've not forgotten it, and I'll not. | I'm no great prayer. The plate gets my odd copper, and the chapel's urn gets mended free. | The Bright One and I have an arrangement. I mend things; the Bright One mends the rest.
+b : That's fair. | For nothing? | That's a good arrangement.
+a : It's more than fair weight. It's owed. | Every time. It's not a sermon, but it's what I've got. | Most days it works. The other days I mend twice. #dry#.
+
+scene burnt_paw
+when topic=health self.job=crafter
+does tell.self / react.self / reassure
+a : #iron.capitalize# caught my paw again. Third time this month. | My eyes aren't what they were for the fine seams. I squint like an old owl. | Solder fumes give me a head by dusk. I open the door and let #mizzle# in. Worse.
+b : Butter on it. | Get some spectacles. | Bad trade for the head.
+a : Butter's for bread. Cold water and a curse. #oath#. | With what #coppers#? They're in #jar#. | Bad trade for everything but #till#.
+
+scene cat_on_bench
+when topic=animals self.role=merchant
+does tell.self / react.self / assess
+a : There's a cat sleeps on the warm end of #bench#. I don't feed it. It doesn't ask. | A rat ran across #shop# this morning with my last rivet. I want it back. | The gulls sit on #shutters# and scream at the fish stall. I side with the gulls.
+b : You like it, then. | Your last one? | Why the gulls?
+a : I tolerate it. It tolerates me. Fair price both ways. | The last copper one. I've tin. Tin's not the same. | They're honest about wanting the fish. More than I can say for some.
+
+scene dawn_shutters
+when topic=day here.time=dawn self.role=merchant
+does tell.self / react.self / assess
+a : Shutters up before the bells. If I'm late, somebody's porridge goes cold in a cracked pan. | An hour after dawn, the street hushes. Even the alehouse sleeps. | First thing I do is count the #pots# left overnight. Then the coppers. Then the tea.
+b : That's early. | Even the alehouse? | Tea last?
+a : Early's when they come, on the way to work. I'd lose half my trade lying in. | For about an hour. Then it's #racket# again. | Tea last. You have to earn it. #saying#.
+
+scene friend_kept
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd lend my last rivet to. That's not a small thing, from me. | I'd trust #self.friend# with #till# and my secrets. Both, and I don't say that lightly. | #self.friend# and I have known each other long enough not to need the talking.
+b : That's a real friend. | Both? | Lucky.
+a : It is. I've not got many. I don't need many, #address#. | Both. And neither's ever come back light. | Lucky, and I know it. Full weight.
+
+scene neighbour_nod
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour# hears me through the wall, I'm sure of it. We both pretend not. | If #shutters# stuck, #self.neighbour# is who I'd shout for. | I mend #self.neighbour#'s #pots# for nothing. It's cheaper than a quarrel.
+b : That's neighbours. | Would they come? | Fair trade.
+a : It is. Polite deafness. It's how the Sump keeps the peace. | I'd think so. I'd go the other way. That's the deal. | Fair weight. And they know it.
+
+story first_mend [topic=memories|work self.age>=20]
+  : My #gran# had #kettle# with a hole in the spout. I was a #child#, and I mended it with a pin and a lump of wax.
+  : It held for one boil. One. Then it hissed all over the stove and put the fire out.
+  : She laughed till she cried and gave me a copper for trying. I've still got it.
+  ask : Have you still got the first thing you ever made?
+  b[old] : I don't. I wish I'd thought to.
+  b : No. I'd not have kept mine; it was terrible.
+
+story the_stamped_pan [topic=work|prices self.job=crafter self.age>=25]
+  : A pan came to me once with the finest House stamp I'd ever seen. Gilt in the letters.
+  : The seam was glued. Glued, not soldered. It came apart in my paws like wet bread.
+  : I mended it properly and kept #stamp#. It's nailed over #bench# to remind me.
+  ask : Seeing that gilt, would you have bought it?
+  b : I would. That's what the gilt is for.
+  b[role=merchant] : I'd have sold it. That's worse.
+
+story millpond_dare [topic=pastimes|memories self.away=yes self.from=larkfield self.age>=20]
+  : At home in #self.from_town# there was a dare: swim across the mill pond in autumn, before the leaves were down.
+  : I went in at dusk with half the street watching. Halfway, my legs stopped answering.
+  : I floated on my back and kicked with my arms till I touched the far side. Nobody counted that as cheating.
+  b : That's not cheating. Did anyone else make it?
+  : Nobody else tried that year. I was the dare for a while.
+
+story the_singer [topic=home|memories here.region=ridgemere self.age>=25]
+  : There was a drunk sang under my window every night one winter. The same song, the same wrong note.
+  : One night I went down with a pot of tea and told him the right note.
+  : He sang it right the next night, and every night after, and I liked it less.
+  b : Ha! Should've left the wrong note. Did he ever stop?
+  : Come spring, he moved on. I missed him, wrong note and all.
+
+story the_first_copper [topic=dreams|work self.role=merchant]
+  : The first copper I put in #jar# was off a bucket I mended for a pup who'd lost the handle.
+  : The pup paid me in #coppers# that smelled of fish. I didn't wash them.
+  : I've never spent that one. It's at the bottom, under all the others.
+  ask : Have you ever kept a coin you'd never spend?
+  b : I've never had one spare enough to keep.
+  b[wealth=rich] : A few. Not with a story like that.
+
+rule @bench_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Pots mended, kettles patched, fair price. | Holes stopped, handles back on. Fair price.
+
+rule @stamp_bark
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Let's see #stamp#. #dry#. Thought so. | #oath#. That House again, and that seam.
+
+rule @mizzle_bark
+when concept=bark here.outdoors=rain self.dislikes=drizzle
+does aside
+cooldown 8h
+say #mizzle.capitalize#. Again. | Shut the door on #mizzle#, somebody.
+
+rule @racket_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Some of us open #shutters# at dawn. | #racket.capitalize#. Bright One give me patience.
+
+rule @till_bark
+when concept=bark self.role=merchant here.time=dusk
+does aside
+cooldown 10h
+say One for #till#, one for #jar#. | Coppers, #coppers#. #heavytill.capitalize#, maybe.
+
+rule @gust_bark
+when concept=bark here.season=autumn here.outdoors=clear|overcast
+does aside
+cooldown 10h
+say There's #gust#. Hold your hats. | #gust.capitalize#. That's better.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Pots, pans, kettles, buckets. If it held water once, I'll make it again. | #greet#. Set it down and I'll tell you if it's worth it.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Not the same kettle, I hope. | #topic.player#. Back again. What's short-weighed you now?
+dlg @3 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Name it. I'll name what it costs. Fair price, no more.
+dlg @4 shop.greet [here.shop=bare] : #greet#. #shop_bare# Nothing mended to sell, but I'll buy old tin.
+dlg @1 shop.prices : A patch is a copper, a seam's three, a new bottom's dear. #saying#. | #shop_dear# Tin doesn't come cheap down here.
+dlg @1 shop.bye : #farewell#. Read #stamp# before you buy, mind. | #shop_bye# Don't drop it again.
+dlg @1 resident.hub : #greet#. Make it short; #iron#'s hot. | #greet#. What's leaking?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. I don't mind it.
+dlg @3 resident.hub [here.time=night] : It's late. If #pot#'s not leaking, it'll keep till morning.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I don't know your face. Stand where the light is and say what you want.
+dlg @1 resident.job [self.job=crafter] : I'm #self.trade_words#. Pots, pans, kettles, anything tin. I read #stamp# and stop the hole. | I mend. Every hole on the street comes to my bench sooner or later.
+dlg @2 resident.job : Honest #work#, fair price, and I'm paid on the day. That'll do. | This and that, at a fair price. Whatever comes through the door.
+dlg @1 resident.business [business=thriving] : #heavytill.capitalize#. Hush, or it'll hear me. | More holes than hours. I'm not complaining.
+dlg @2 resident.business [business=failing] : Light. Folk are keeping their holes. | Badly. I've three #pots# nobody's fetched.
+dlg @3 resident.business [business!=thriving|failing] : Steady. A copper in #jar# most nights. | Fair. #till.capitalize#'s not heavy, but it's honest.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That's what reached #bench#. | They're saying #world.news#. I mend #pots#; I don't check it.
+dlg @2 resident.news [world.event_words] : All anyone's talking about over #bench# is #world.event_words#.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Just holes, as ever. | Nothing. A quiet week at #bench#, which means a loud one somewhere.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Don't tell anyone where you heard it.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I mend #pots#. Talk's a pot I don't touch.
+dlg @1 resident.bye : #farewell#. | #farewell#. Shut the door; #mizzle# gets in.
+graft resident.hub
+choice Why do you look at the bottom first? -> stamp
+node stamp
+say The House mark. Every House saves its tin in its own spot, and the mark says where to look. Stamp first, then the crack.
+mood calm
+free
+choice Which House is worst? -> stamp_worst
+choice Goodbye. -> bye
+node stamp_worst
+say I'll not say it in front of a customer. Whichever one's stamp is biggest this year. That's the one saving on tin to pay for it.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is it worth mending, or should I buy new? -> worth
+node worth
+say Show me. If it's a good pot with a bad seam, mend it. If it's a bad pot with a good stamp, buy a plain one and save the coppers.
+mood calm
+choice Let me see your wares. -> greet
+choice What's it cost? -> prices
+choice Goodbye. -> bye
