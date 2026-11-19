@@ -8,7 +8,7 @@ title the tide's doorstop
 fits stage=adult|old
 prefers job=merchant
 traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk knows_which_streets_flood_first
+quirk reads_floodwater_by_the_colour_of_a_threshold
 likes pickled_herring dice new_boots thunder
 dislikes deep_mud rats
 fears a_stranger_turned_out_in_a_flood
