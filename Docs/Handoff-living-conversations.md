@@ -139,3 +139,40 @@ test knows plain. The 145 are reloaded into `ratw_ridgemere3` and exported. What
 - **`written_by` is always `claude-<batch>`**, whoever writes the batch: make it a parameter.
 - **The plain kits will fail `test_mantle_check.py`** until its kit table gets a plain-to-Ridgemere entry (the handbook
   allows that one-line edit).
+
+## 9. Status update, 2026-11-18 (stages 1-4 live; writing trimmed for budget)
+
+Done and live (`ridgemere2` `a7d5f3e7`, laptop world restarted, central deployed): the section 8 fixes (`d33aad57`),
+U1 (a wearer's own mantle first; U1 16% to 20%, `1b134b80`), stage 4 (P12 + P13 + the stage end and its review,
+`a7d5f3e7`: residents never answer open chat, only a glance and a "Talk to X (T)" hint; the window carries all
+NPC-to-player talk; typed words go to the Mind only when it is connected), DEV's `live.dialects` refreshed. Sections 3
+and 4 above are superseded: both WIP branches were finished and merged.
+
+Mantles: **378 of 773 residents wear one** (43 pilot, 102 by Codex in cw-1/cw-2/lf-1, 159 town residents, 74 city
+residents in the Commons), plus **32 spares** (plain 12, Coldwater 5, Larkfield 5, 2 each for the five small pools).
+Batch reports: `artifacts/talk/p14/*/report.md`, `artifacts/talk/p15/spares-1/report.md`.
+
+**Left for later (dropped at the user's request to save tokens):**
+
+1. **395 Ridgemere city residents** still without a mantle (Heights, Sump, Office, Works, Estate, Wharf, and the rest of
+   the Commons). Batch `city-a3` (36) was cancelled mid-writing: its drafts are uncommitted in
+   `.claude/worktrees/r3-mantles-city-a/Saved/Mantles/city-a3/drafts/` (5 complete by their writers' gates, 5 partial,
+   none G3-checked or loaded). Batches `city-a4`..`city-a6` (125 residents, ids rm221-rm345) are planned in
+   `.claude/worktrees/r3-mantles-city-a/Saved/Mantles/`; pass `--dir` to that folder so ids don't collide. The rest of
+   the city needs planning with `mantle_batch.py plan`.
+2. **Spares:** a third spare for each small pool (Frosthollow, Oakhaven, Southmeadow, Saltwell, Mirebridge) to be green
+   in year 1 and inside the honesty mix; Coldwater needs about one more. `mantle_check --pools --world ridgemere3`.
+3. **The 16 stage kits and the mark banks** (P15); mark banks are writable since fix 8.
+4. **The final listen-through (P16):** a ticking 100-hour listen, the second blind ratings, review, and deleting the
+   ambient Mind path.
+5. **Small known items:** G1 refuses `self.house` on graft choices (the fix belongs in one helper shared with P13's window
+   choice parsing); older plain mantles rm105-rm110 have greetings that ask a question; 274 everyday-English 5-word runs
+   shared across dialects in one writer's six city files (G2 doesn't compare across dialects); `rm117` and `cw197` each
+   carry one G2 warning; one T2 line in the card is a stale snapshot in the scorer; R1 (first identical talk) is an
+   open hard gate at about 3.7 h, below its target since Slice 2.
+6. **Resident data the writers flagged** (doc §40/§41 and the batch reports): workplaces that are districts, friend
+   slots pointing at kin, fen backstories on Saltwell residents, Watch guards with no post, many briefs sharing the same
+   few quirks and backstories. A facts pass by the owner.
+7. **A desktop client release** for P12/P13's client changes (ask the user before tagging).
+
+Reserved dialogue-tree node names (doc 84 §45) must not be used for mantle graft nodes.
