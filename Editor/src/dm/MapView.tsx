@@ -16,7 +16,7 @@ export interface Marker { id: string; x: number; y: number; color: string; glyph
 /** Drawn under the markers, in surface tiles: painted tiles, whole-place fills and lines through numbered points. */
 export interface Overlay {
     tiles: {x: number; y: number; color: string; strong: boolean}[];
-    rects: {x: number; y: number; w: number; h: number; color: string; strong: boolean}[];
+    rects: {x: number; y: number; w: number; h: number; color: string; strong: boolean; label?: string}[];
     paths: {points: [number, number][]; color: string; numbered: boolean; loop: boolean}[];
     /** Soft discs under everything else (the LIVE map's weather): middle and radius in surface tiles, 0..1 strength. */
     circles?: {x: number; y: number; r: number; color: string; strength: number; label: string}[];
@@ -24,9 +24,11 @@ export interface Overlay {
 
 /** The world or one place, with area tiles, route lines and NPC spawn-point markers.
  *  Wheel zooms; drag pans (right-drag while painting); click selects or picks; drag paints in paint mode. */
-export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onOpen, cluster = 0, onMarkerDrop}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
+export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onPaintEnd, onOpen, showElevationControl = true, cluster = 0, onMarkerDrop}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
     selected: string | null; mode: Mode; onClick: (place: Place | null, marker: Marker | null) => void; onPaint: (place: Place | null, start: boolean) => void;
     onOpen: (cell: string) => void;
+    onPaintEnd?: (place: Place | null) => void;
+    showElevationControl?: boolean;
     /** Below this zoom (pixels a tile), markers close together on screen are drawn as one count (the LIVE map); 0 never. */
     cluster?: number;
     /** A draggable marker dropped on a tile (or off the map: null). */
@@ -101,6 +103,13 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
             g.fillRect(ox + r.x * s, oy + r.y * s, r.w * s, r.h * s);
             g.globalAlpha = r.strong ? .95 : .5; g.strokeStyle = r.color; g.lineWidth = r.strong ? 2 : 1;
             g.strokeRect(ox + r.x * s + 1, oy + r.y * s + 1, r.w * s - 2, r.h * s - 2);
+            if (r.label) {
+                g.font = '600 12px Inter, system-ui, sans-serif';
+                const px=ox+r.x*s, py=oy+r.y*s, width=g.measureText(r.label).width+8;
+                const ly=py>=18?py-17:py;
+                g.globalAlpha=.9; g.fillStyle='#14201b'; g.fillRect(px,ly,width,16);
+                g.fillStyle=r.color; g.textAlign='left'; g.textBaseline='top'; g.fillText(r.label,px+4,ly+1);
+            }
         }
         for (const t of overlay.tiles) {
             g.globalAlpha = t.strong ? .55 : .28; g.fillStyle = t.color;
@@ -210,7 +219,7 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
                 else if (mode !== 'paint') { const m = markerAt(e); if (m !== hover) setHover(m); }
             }}
             onPointerUp={e => {
-                if (painting.current !== null) { painting.current = null; return; }
+                if (painting.current !== null) { painting.current = null; onPaintEnd?.(placeAt(e)); return; }
                 const d = drag.current; drag.current = null;
                 if (d?.marker && d.moved) { setGhost(null); onMarkerDrop?.(d.marker, placeAt(e)); return; }
                 if (d?.moved || e.button !== 0 || mode === 'paint') return;
@@ -218,9 +227,10 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
             }}
             onDoubleClick={e => { if (surface.kind !== 'world' || mode === 'paint') return; const [tx, ty] = tile(e);
                 const c = surface.cellAt(Math.floor(tx), Math.floor(ty)); if (c) onOpen(c.id); }}
+            onPointerCancel={()=>{painting.current=null; drag.current=null; setGhost(null); onPaintEnd?.(null);}}
             onPointerLeave={() => showTile(null)} />
         <div className="map-readout" ref={readoutRef} hidden aria-live="off" />
-        <ElevationControl mode={elevation} onChange={relief} shortcut="E" />
+        {showElevationControl && <ElevationControl mode={elevation} onChange={relief} shortcut="E" />}
     </div>;
 }
 

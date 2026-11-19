@@ -714,7 +714,7 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
     }
     const std::string name = names::capitalised(s->name);
     fightLine(b, f.id, killer, "death", name + " falls: " + grade + (fire >= .5 ? ", burnt." : "."));
-    recordEvent({"hunted", killer, a->second.species, b.cellId, 0, 0, {}, takenKinds, 0, grade});
+    recordEvent({"hunted", killer, a->second.species, b.cellId, 0, 0, {}, takenKinds, 0, grade, f.x, f.y});
     if (hunted_.size() < 256)
         hunted_.push_back({killer, a->second.species, grade, calendarDays_});   // (For a festival's hunting contest: doc 54, 6.)
     if (auto* k = entity(killer); k && !k->npc && k->bestiary.size() < 200)

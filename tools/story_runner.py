@@ -13,7 +13,7 @@ import story_program as rules
 
 DATA = Path(__file__).resolve().parents[1] / 'Data'
 EXAMPLES = DATA / 'Storylines/programs'
-EVENT_COLUMNS = ('id', 'kind', 'day', 'actor', 'target', 'cell', 'item', 'quantity', 'coins', 'detail')
+EVENT_COLUMNS = ('id', 'kind', 'day', 'actor', 'target', 'cell', 'item', 'quantity', 'coins', 'detail', 'x', 'y')
 
 
 def world_id(conn):
@@ -31,7 +31,7 @@ def catalogue():
         'eventTypes': [{**e, 'components': story_library.components(e)} for e in story_library.entries()],
         'triggerRules': {
             'events': [e for e in rules.EVENTS if e != 'dm signal'] + [rules.triggers.SIGNAL],
-            'conditions': ['all', 'any', 'not', 'counter', 'field', 'mission'],
+            'conditions': ['all', 'any', 'not', 'counter', 'field', 'mission', 'region'],
             'comparisons': list(rules.triggers.COMPARE),
             'actions': ['set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter'],
             'scopes': ['story', 'player'],
@@ -60,7 +60,18 @@ def game_day(conn, world):
     return row[0]
 
 
+def check_tile(conn, world, cell, x, y):
+    dimensions = conn.execute(
+        'SELECT width,height FROM world.cells WHERE world_id=%s AND id=%s '
+        'UNION ALL SELECT width,height FROM world.interiors WHERE world_id=%s AND id=%s',
+        (world, cell, world, cell),
+    ).fetchone()
+    rules.require(dimensions and x < dimensions[0] and y < dimensions[1], f'Tile ({x},{y}) lies outside {cell}.')
+
+
 def references(conn, world, program):
+    for r in program.get('regions', []):
+        check_tile(conn, world, r['cell'], r['x2'], r['y2'])
     if any(ph.get('triggers') for ph in rules.phases_of(program)):
         rules.require(
             conn.execute("SELECT to_regclass('dm.story_trigger_history')").fetchone()[0],
@@ -132,6 +143,13 @@ def references(conn, world, program):
                     },
                     'Unknown DM quest template.',
                 )
+            if e['kind'] == 'npc.walk':
+                check_tile(conn, world, e['cell'], e['x'], e['y'])
+            if e['kind'] == 'story.area.item':
+                rules.require(
+                    e['item'] in {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']},
+                    'Unknown item for a region grant.',
+                )
             if e['kind'] == 'project.post':
                 rules.require(
                     e['project'] in {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']},
@@ -194,6 +212,7 @@ def enter(conn, run, program, who, state, cursor, cause):
             'guestVoices': phase.get('guestVoices', []),
             'missions': opening,
             'previousMissions': previous,
+            'regions': program.get('regions', []),
             'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'],
         },
     )
@@ -341,7 +360,16 @@ def write_relation(conn, w, faction_id, other_id, disposition, stance, reason, u
     )
 
 
-def submit_effect(conn, world, run, who, actor, effect):
+def submit_effect(conn, world, run, who, state, effect, phase):
+    kind = effect['kind']
+    if kind in rules.SCENE_EFFECTS:
+        payload = {k: v for k, v in effect.items() if k not in ('kind', 'npc')}
+        return queue(conn, who, kind, effect['npc'], {**payload, 'run': run, 'visit': state['visits']})
+    if kind.startswith('story.area.'):
+        bounds = phase['_regions'][effect['region']]
+        payload = {k: v for k, v in bounds.items() if k != 'id'}
+        payload.update({k: v for k, v in effect.items() if k != 'kind'})
+        return queue(conn, who, kind.replace('story.area.', 'story.area_'), run, {**payload, 'visit': state['visits']})
     if effect['kind'] == 'faction.relation':
         faction, other = effect['faction'], effect['other']
         found = conn.execute(
@@ -358,7 +386,7 @@ def submit_effect(conn, world, run, who, actor, effect):
     elif effect['kind'] == 'story.finish':
         receipt = queue(conn, who, 'story.finish', run, {})
     else:
-        receipt = queue(conn, who, *action(effect, actor))
+        receipt = queue(conn, who, *action(effect, state['actor']))
     return receipt
 
 
@@ -377,7 +405,7 @@ def delivered(conn, world, run, phase, state, who, receipts):
     if len(receipts) > len(effects):
         return True
     effect = effects[len(receipts) - 1]
-    receipt = submit_effect(conn, world, run, who, state['actor'], effect)
+    receipt = submit_effect(conn, world, run, who, state, effect, phase)
     if receipt is None:
         return False
     conn.execute(
@@ -417,7 +445,7 @@ def tick_run(conn, world, run, clock):
         return
     if state.get('triggerEffects'):
         effect = state['triggerEffects'].pop(0)
-        receipt = submit_effect(conn, world, run, who, state['actor'], effect)
+        receipt = submit_effect(conn, world, run, who, state, effect, phase)
         if receipt is not None:
             state['triggerReceipt'] = receipt
             conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
@@ -438,7 +466,7 @@ def tick_run(conn, world, run, clock):
     published_at = state.get('publishedAt', 0)
     wall_elapsed = max(0, (time.time() - published_at) / 86400) if published_at else 0
     rows = conn.execute(
-        """SELECT id,kind,game_day,actor,target,cell,item,quantity,coins,detail,extract(epoch from recorded_at)::float8 FROM game.events
+        """SELECT id,kind,game_day,actor,target,cell,item,quantity,coins,detail,x,y,extract(epoch from recorded_at)::float8 FROM game.events
                            WHERE world_id=%s AND id>%s ORDER BY id LIMIT 128""",
         (world, cursor),
     ).fetchall()
@@ -468,6 +496,10 @@ def tick_run(conn, world, run, clock):
         if fact['kind'] in ('dm signal', 'clock', rules.triggers.SIGNAL) or (
             fact['kind'] == 'story phase' and fact['actor'] == run
         ):
+            continue
+        if fact['kind'] in rules.SCENE_EVENTS and (fact['target'] != run or fact['quantity'] != state['visits']):
+            continue
+        if fact['kind'] in rules.REGION_EVENTS and fact['detail'] != run:
             continue
         if dispatch(fact, fact['day'], elapsed):
             enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
@@ -710,14 +742,18 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None):
 def atlas(conn, world, query):
     rules.require(isinstance(query, str) and len(query) <= 100, 'Search using a short name or ID.')
     rows = conn.execute(
-        """SELECT kind,id,name FROM (SELECT kind,id,name,world_id FROM world.cells UNION ALL
-            SELECT kind,id,name,world_id FROM world.interiors UNION ALL SELECT 'npc',id,name,world_id FROM dm.story_residents
-            UNION ALL SELECT 'faction',id,name,world_id FROM live.factions) atlas
+        """SELECT kind,id,name,width,height FROM (SELECT kind,id,name,world_id,width,height FROM world.cells UNION ALL
+            SELECT kind,id,name,world_id,width,height FROM world.interiors UNION ALL
+            SELECT 'npc',id,name,world_id,NULL,NULL FROM dm.story_residents UNION ALL
+            SELECT 'faction',id,name,world_id,NULL,NULL FROM live.factions) atlas
             WHERE world_id=%s AND (strpos(lower(id),lower(%s))>0 OR strpos(lower(name),lower(%s))>0)
             ORDER BY name,id LIMIT 100""",
         (world, query, query),
     )
-    return {'matches': [dict(zip(('kind', 'id', 'name'), r)) for r in rows]}
+    return {'matches': [
+        {**dict(zip(('kind', 'id', 'name'), r)), **({'width': r[3], 'height': r[4]} if r[3] is not None else {})}
+        for r in rows
+    ]}
 
 
 def context(conn, world, npc):
@@ -764,6 +800,8 @@ def main():
     parser.add_argument('--world', required=True, help='Registered world key')
     parser.add_argument('--once', action='store_true')
     args = parser.parse_args()
+    if not rules.triggers.story_native.interpreter():
+        parser.error('Build ratw_server and its ratw_story library, or set RATW_STORY_LIBRARY to that library.')
     with world_db.connect(args.world, 'dm') as conn:
         world = world_id(conn)
         while True:

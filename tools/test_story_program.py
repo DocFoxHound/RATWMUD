@@ -23,6 +23,7 @@ class AuthorTests(unittest.TestCase):
                 'river-relief',
                 'reed-ford',
                 'winter-ferries',
+                'siege-at-greyfen',
             },
         )
         for p in examples.values():
@@ -274,6 +275,48 @@ class AuthorTests(unittest.TestCase):
         info = story_author.request({'op': 'draft', 'example': 'wagon'}, {})
         self.assertTrue(story_author.request({'op': 'rehearse', **info}, {})['passed'])
 
+    def test_region_edges_missing_evidence_and_condition_groups(self):
+        program = runner.catalogue()['blank']
+        program['regions'] = [{'id': 'breach', 'cell': 'gate', 'x1': 0, 'y1': 4, 'x2': 2, 'y2': 5}]
+        inside = {'test': 'region', 'region': 'breach'}
+        true = {'test': 'field', 'field': 'item', 'op': '=', 'value': 'rope'}
+        conditions = {
+            'inside': inside,
+            'outside': {'test': 'not', 'condition': inside},
+            'either': {'test': 'any', 'conditions': [inside, true]},
+            'neither': {'test': 'not', 'condition': {'test': 'any', 'conditions': [inside, true]}},
+            'not-both': {'test': 'not', 'condition': {'test': 'all', 'conditions': [inside, true]}},
+        }
+        phase = program['phases'][0]
+        phase['triggers'] = [
+            {
+                'id': key,
+                'on': 'bandit falls',
+                'if': condition,
+                'actions': [{'do': 'add', 'key': key, 'value': 1, 'scope': 'story'}],
+            }
+            for key, condition in conditions.items()
+        ]
+        for position, expected in [
+            ({'cell': 'gate', 'x': 0, 'y': 4}, ['inside', 'either', 'not-both']),
+            ({'cell': 'gate', 'x': 2, 'y': 5}, ['inside', 'either', 'not-both']),
+            ({'cell': 'gate', 'x': 3, 'y': 5}, ['outside', 'neither', 'not-both']),
+            ({'cell': 'other', 'x': 2, 'y': 5}, ['outside', 'neither', 'not-both']),
+            ({'cell': 'gate'}, ['not-both']),
+            ({'item': 'rope'}, ['either']),
+        ]:
+            with self.subTest(position=position):
+                case = program['tests'][0]
+                case.update(events=[{'id': 'a', 'kind': 'bandit falls', 'day': 0, **position}], expectTriggers=expected)
+                self.assertTrue(rules.review(program)['passed'])
+        phase['triggers'][0]['if'] = {'test': 'region', 'region': 'lost'}
+        with self.assertRaisesRegex(ValueError, 'Unknown story region'):
+            rules.validate(program)
+        phase['triggers'][0]['if'] = inside
+        program['regions'][0]['x1'] = 3
+        with self.assertRaisesRegex(ValueError, 'tile bounds'):
+            rules.validate(program)
+
     def test_reward_requires_player(self):
         p = runner.catalogue()['examples']['wagon']
         p['phases'][1]['exits'][0].pop('participant')
@@ -319,14 +362,14 @@ class RuntimeTests(unittest.TestCase):
         self.conn.execute('SET LOCAL ROLE ratw_dm')
         self.examples = runner.catalogue()['examples']
 
-    def fact(self, kind, actor='', target='', day=10, item='', quantity=0):
+    def fact(self, kind, actor='', target='', day=10, item='', quantity=0, **fields):
         self.conn.execute('SET LOCAL ROLE ratw_game')
         self.conn.execute(
             'SELECT game.record_events(%s,%s::jsonb)',
             (
                 self.world,
                 json.dumps(
-                    [{'kind': kind, 'actor': actor, 'target': target, 'day': day, 'item': item, 'quantity': quantity}]
+                    [{'kind': kind, 'actor': actor, 'target': target, 'day': day, 'item': item, 'quantity': quantity, **fields}]
                 ),
             ),
         )
@@ -350,6 +393,104 @@ class RuntimeTests(unittest.TestCase):
 
     def tick(self):
         runner.tick(self.conn, self.world)
+
+    def test_only_reviewed_tiles_and_current_scene_receipts_drive_the_run(self):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'gate','cell')", (self.world,))
+        self.conn.execute(
+            """INSERT INTO world.cells(world_id,id,name,x,y,width,height)
+                             VALUES (%s,'gate','Gate',200,100,8,6)""",
+            (self.world,),
+        )
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        p = runner.catalogue()['blank']
+        zone = {'id': 'breach', 'cell': 'gate', 'x1': 1, 'y1': 2, 'x2': 8, 'y2': 5}
+        p['regions'] = [zone]
+        with self.assertRaisesRegex(ValueError, 'outside gate'):
+            runner.references(self.conn, self.world, p)
+        self.assertEqual(runner.atlas(self.conn, self.world, 'Gate')['matches'],
+                         [{'kind':'cell','id':'gate','name':'Gate','width':8,'height':6}])
+        zone['x2'] = 7
+        phase = p['phases'][0]
+        phase['triggers'] = [
+            {
+                'id': 'defend',
+                'on': 'bandit falls',
+                'audience': 'participant',
+                'if': {'test': 'region', 'region': 'breach'},
+                'actions': [
+                    {'do': 'add', 'key': 'defended', 'scope': 'player', 'value': 1},
+                    {
+                        'do': 'effect',
+                        'effect': {'kind': 'npc.speak', 'npc': 'rm111', 'text': 'Hold the gate.', 'cue': 'report'},
+                    },
+                ],
+            },
+            {
+                'id': 'reward',
+                'on': 'scene spoken',
+                'match': {'detail': 'report', 'actor': 'rm111'},
+                'actions': [
+                    {
+                        'do': 'effect',
+                        'effect': {'kind': 'story.area.buff', 'region': 'breach', 'buff': 'fed', 'hours': 2},
+                    }
+                ],
+            },
+            {
+                'id': 'stand-watch',
+                'on': 'region entered',
+                'match': {'target': 'breach'},
+                'audience': 'participant',
+                'actions': [{'do': 'add', 'key': 'visits', 'scope': 'story', 'value': 1}],
+            },
+        ]
+        self.examples['local'] = p
+        self.launch('local')
+        self.answer()
+        ash = self.cohort[0]
+        for coordinates in [{}, {'x': 0, 'y': 2}, {'x': 1, 'y': 2}]:
+            self.fact('bandit falls', ash, cell='gate', **coordinates)
+        self.tick()
+        self.tick()
+        receipt = self.status()['actions'][-1]['id']
+        self.assertEqual(
+            self.conn.execute('SELECT kind,target_id,payload FROM dm.actions WHERE id=%s', (receipt,)).fetchone(),
+            ('npc.speak', 'rm111', {'text': 'Hold the gate.', 'cue': 'report', 'visit': 1, 'run': self.run}),
+        )
+        self.assertEqual(self.status()['state']['counters']['player'], {ash: {'defended': 1}})
+        trace = self.status()['trace'][0]
+        self.assertEqual((trace['cell'], trace['x'], trace['y']), ('gate', 1, 2))
+        self.answer()
+        self.fact('scene spoken', 'rm111', 'other-run', quantity=1, detail='report')
+        self.fact('scene spoken', 'rm111', self.run, quantity=3, detail='report')
+        self.fact('region entered', ash, 'breach', detail='other-run')
+        self.tick()
+        self.assertFalse(self.status()['state'].get('triggerEffects'))
+        self.fact('region entered', ash, 'breach', detail=self.run)
+        self.fact('scene spoken', 'rm111', self.run, quantity=1, detail='report')
+        self.tick()
+        self.tick()
+        receipt = self.status()['actions'][-1]['id']
+        kind, target, payload = self.conn.execute(
+            'SELECT kind,target_id,payload FROM dm.actions WHERE id=%s', (receipt,)
+        ).fetchone()
+        self.assertEqual((kind, target), ('story.area_buff', self.run), self.status())
+        self.assertEqual(
+            payload,
+            {
+                'region': 'breach',
+                'cell': 'gate',
+                'x1': 1,
+                'x2': 7,
+                'y1': 2,
+                'y2': 5,
+                'buff': 'fed',
+                'hours': 2,
+                'visit': 1,
+            },
+        )
+        self.assertEqual(self.status()['state']['counters']['story'], {'visits': 1})
 
     def test_distinct_cohort_and_durable_cursor(self):
         self.launch('wardens')

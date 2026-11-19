@@ -327,6 +327,9 @@ void downedAndUp()
     }
     expect(downed, "Enough bites put a guard down");
     expect(hasEvent(w, "downed", seen), "It is an event");
+    const auto defeat = std::find_if(seen.begin(), seen.end(), [&](const auto& e) { return e.kind == "downed" && e.target == guard; });
+    expect(defeat != seen.end() && defeat->x >= 0 && defeat->y >= 0 && defeat->cell == w.entity(guard)->cellId &&
+           !defeat->actor.empty(), "The falling fighter's tile and attacker accompany the defeat");
     expect(!w.entity(guard)->dead, "Down is not dead");
     for (int i = 0; i < 2000 && w.inBattle("player-ada"); ++i)
     {

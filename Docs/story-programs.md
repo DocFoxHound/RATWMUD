@@ -4,6 +4,7 @@ Open **Dungeon Master → Story Creator → World stories**. Choose **New blank 
 
 | Example | What makes it advance |
 | --- | --- |
+| The breach at Greyfen | Three bandits fall inside the breach. A runner carries the report through the barracks door. Two guards must reach their posts before relief missions open. |
 | Ninety days on the winter ferries | A weekly watch and a spring council continue across phase changes. The winter changes household prosperity. At day 90 the ferry stores determine the market outcome. |
 | Two ways across Reed Ford | Deliver rope or negotiate passage. Both routes send the same signal and award the wolf who opens the crossing. A notice or a two-day timer settles the story. |
 | A wheel for the south road | Speak to the carter, then hand that resident an actual cart wheel. Its maker and quality can vary. The wolf who delivers it earns the deed. |
@@ -13,6 +14,22 @@ Open **Dungeon Master → Story Creator → World stories**. Choose **New blank 
 | The cost of holding the road | A volunteer brings a bandit camp into play. The blockade changes market conditions and the watch’s stance toward the road company. A camp clearance begins recurring watches. A caravan or an authorized accord can bring peace. |
 
 The bundled programs are templates. Use **World references for an author** to find the intended residents, cells and factions on the destination world. In particular, the war example needs the two named factions or their local replacements. Approval checks resident, player, map and faction IDs used by effects. The game makes the final decision on current world conditions, including placement, eligibility and economic rules.
+
+## Where the rules run
+
+The native `ratw_story` library evaluates live event–condition–action rules. The game server records the action and any witnessed tile, moves the residents, delivers speech and applies world effects. The Python runner reads the event log, schedules deadlines, tracks journal missions and commits each decision with its event cursor. PostgreSQL keeps approved program documents, run progress, trigger history and game receipts. Authors can change the approved story content through Studio without changing the server code. Source-only rehearsals can use the Python implementation offline.
+
+Install the matching runner, Studio, migration 0070 and native build together. Building the `ratw_server` target builds its story library. For a source deployment in a custom build directory, point `RATW_STORY_LIBRARY` at that library.
+
+## Drawing a breach and directing a scene
+
+A named region is an inclusive rectangle within one map cell. Draw its opposite corners, name it, then choose that region in a trigger condition. A tile on the boundary is inside. A matching pair of coordinates in another cell is outside. Historical records and world-wide events that lack a witnessed tile cannot establish that something happened inside or outside the rectangle. A named story signal carries the original fact’s location. A timer expiry has no witnessed tile. To detect the crossing itself, listen for `region entered` or `region left` with the region ID as the target. Entry records the first tile inside. Exit records the last tile inside. Starting a run or logging in establishes the starting position, so a player already inside must leave and return to cause an entry. A camp can spawn in the rectangle. An area effect can damage eligible occupants, give them items, or apply the timed fed benefit. Occupancy is sampled by the game when it applies the order.
+
+In **The breach at Greyfen**, the gap is the south road in the bundled town, tiles (29, 34) through (34, 38). The story opens a bandit camp there. Each `bandit falls` event names the defender who landed the last blow and records the tile where the bandit fell. The area condition tests the fallen enemy’s tile. The scenario awards one personal defeat to the eligible defender and adds one to the shared total. Three defeats by one defender or by several open the same next phase.
+
+Harrow takes the king’s part in Greyfen’s watch muster. He sits at the command post while Sloe runs from the gap to the barracks and delivers her report. Harrow rises, crosses the hall and calls Birch and Tamsin forward. Each guard’s confirmed arrival counts once. Once both reach their posts, players can take the supply and roll-call missions. A blocked actor can send the scene to its reserve ending. The example uses ordinary Greyfen doors and residents. For a different palace, bind the throne, route, breach and cast to that world’s cells and residents.
+
+Each order has a short cue chosen by the author. A walk produces `scene arrived` after the resident reaches the destination tile. A spoken line and a change of posture produce `scene spoken` and `scene posed`. Use those events, the speaker or mover’s ID, and the cue for the next beat. A live scene cue belongs to its release and phase visit. **Rehearse all paths** exercises a shared defense, a solo defense, misplaced or unlocated kills, and an interrupted courier. [Greyfen siege program](../Data/Storylines/programs/siege-at-greyfen.json)
 
 ## Composing triggers
 
@@ -81,7 +98,7 @@ Approval requires passing scenarios covering every reachable phase. The digest c
 
 The runner observes checkpointed world events, persists its cursor and votes, and queues each entry’s journal message and effects in order. It waits for a receipt before sending the next effect. A refusal or expiry pauses the run and records the reason. Refresh **Releases** to inspect votes, phase history, queue receipts and delegated lines. **Stop run** cancels future phases and queues journal closure. Previously delivered effects, including faction changes, persist under their normal game rules. Once the underlying condition has been corrected, **Retry refused action** resubmits that one effect and preserves earlier progress. A changed program requires a new approval.
 
-The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Mission journals require migration 0068. Trigger programs require migration 0069, the matching runner and Studio, and a game server and client with world-story support. The runner and native game exchange receipts through the world database. It uses no model or AI key.
+The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Apply migrations through 0070 for the event tile columns. Use the matching runner, Studio, native library, game server and world-story client. The runner and native game exchange receipts through the world database. It uses no model or AI key.
 
 ```sh
 python3 tools/story_runner.py --world WORLD_KEY

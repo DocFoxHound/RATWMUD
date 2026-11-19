@@ -2369,6 +2369,12 @@ Result World::setPosture(const std::string& id, const std::string& posture)
     if (!a || !stablePosture(posture))
         return {false, "Invalid posture.", {}};
     stop(id);
+    if (a->sceneDirected && a->offstage)
+    {
+        // Offstage residents skip the animation integrator, as when their schedule settles them to sleep.
+        settle(*a, posture.c_str());
+        return {true, "Posture changed.", {}};
+    }
     if ((a->posture == "rising" && a->postureTarget == posture) || a->posture == posture)
         return {true, a->posture == "rising" ? "Already changing posture." : "Posture unchanged.", {}};
     double duration = 0.0;
@@ -3143,6 +3149,8 @@ std::string eventsJson(const std::vector<WorldEvent>& events)
         jsonText(out, e.target, 80);
         out += ",\"cell\":";
         jsonText(out, e.cell, 80);
+        if (!e.cell.empty() && e.x >= 0 && e.y >= 0)
+            out += ",\"x\":" + std::to_string(e.x) + ",\"y\":" + std::to_string(e.y);
         out += ",\"item\":";
         jsonText(out, e.item, 40);
         out += ",\"detail\":";
@@ -3156,13 +3164,24 @@ std::string eventsJson(const std::vector<WorldEvent>& events)
     return out + "]";
 }
 
+std::pair<int, int> World::eventTile(const Entity& who) const
+{
+    // During a battle the visible world lineup is stationary. The arena uses the cell's tile coordinates.
+    if (const auto* b = battleOf(who.id))
+        if (const auto* f = b->fighter(who.id)) return {f->x, f->y};
+    return {int(std::floor(who.position.x)), int(std::floor(who.position.y))};
+}
+
 void World::recordEvent(WorldEvent event)
 {
     event.time = time_;
     event.day = calendarDays_;
-    if (event.cell.empty())
-        if (const auto* who = entity(event.actor))
-            event.cell = who->cellId;
+    if (const auto* who = entity(event.actor))
+    {
+        if (event.cell.empty()) event.cell = who->cellId;
+        if (event.x < 0 && event.y < 0 && !who->offstage && who->cellId == event.cell)
+            std::tie(event.x, event.y) = eventTile(*who);
+    }
     bondsFromEvent(event);
     rumoursFromEvent(event);
     noteNews(event);
@@ -4905,8 +4924,8 @@ bool World::continueSchedules(double budgetMs)
                 auto& e = it->second;
                 if (e.offstage && !unseenErrands_ && !following_.count(it->first))
                     continue;                       // Out of sight: on the unseen's step (Society::UnseenStep).
-                if (e.transient)
-                    continue;                       // The road folk go their own ways (tendRoadFolk).
+                if (e.transient || e.sceneDirected)
+                    continue;                       // Road folk and the actors in a scene have their own routes.
                 while (lifeAt != lives.end() && lifeAt->first < it->first)
                     ++lifeAt;
                 const auto* life = lifeAt != lives.end() && lifeAt->first == it->first ? &lifeAt->second : nullptr;
@@ -5237,6 +5256,30 @@ void World::planWantedRoutes()
         headFor(*e, want.task, want.goalCell, want.target, budget);
         it = routeWanted_.upper_bound(id);
     }
+}
+
+void World::sceneHold(const std::string& id, bool hold, int pace)
+{
+    auto* e = entity(id);
+    if (!e) return;
+    if (!inBattle(id) && e->leaderId.empty()) stop(id);
+    legs_.erase(id);
+    routeWanted_.erase(id);
+    pathRetryAt_.erase(id);
+    e->sceneDirected = hold;
+    e->pace = pace;
+}
+
+void World::sceneWalk(Entity& e, const std::string& cell, Vec2 tile)
+{
+    // Many troops may set off together. Use the same bounded route queue as other onstage residents.
+    if (!e.offstage)
+    {
+        if (e.path.empty()) routeWanted_.try_emplace(e.id, RouteWant{"on a story errand", cell, tile});
+        return;
+    }
+    RouteBudget budget;
+    headFor(e, "on a story errand", cell, tile, budget);
 }
 
 void World::headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget)

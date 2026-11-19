@@ -304,7 +304,7 @@ class DatabaseTests(unittest.TestCase):
     def test_the_event_log_is_written_once(self):
         import json
         events = [{'kind': 'economy', 'actor': 'wren', 'target': 'player-ada', 'cell': 'town', 'time': 12.5,
-                   'day': 3.25, 'item': 'meal', 'quantity': 1, 'coins': 6, 'detail': 'resident food purchase'},
+                   'x': 0, 'y': 3, 'day': 3.25, 'item': 'meal', 'quantity': 1, 'coins': 6, 'detail': 'resident food purchase'},
                   {'kind': 'death', 'actor': 'wren'}]
         with self.as_role('game') as game:
             self.assertEqual(2, game.execute('SELECT game.record_events(%s, %s::jsonb)', ('w', json.dumps(events))).fetchone()[0])
@@ -312,6 +312,7 @@ class DatabaseTests(unittest.TestCase):
                                "FROM game.events WHERE world_id = 'w' ORDER BY id").fetchall()
             self.assertEqual(('economy', 'wren', 'player-ada', 'town', 12.5, 3.25, 'meal', 1, 6, 'resident food purchase'), row[0])
             self.assertEqual(('death', 'wren', '', '', 0.0, 0.0, '', 0, 0, ''), row[1], 'Missing fields are empty or zero')
+            self.assertEqual([(0, 3), (None, None)], game.execute("SELECT x,y FROM game.events WHERE world_id='w' ORDER BY id").fetchall())
             for change in ("UPDATE game.events SET detail = 'rewritten'", 'DELETE FROM game.events'):
                 with self.assertRaises(psycopg.errors.InsufficientPrivilege, msg=change):
                     game.execute(change)
@@ -498,14 +499,14 @@ class ScratchRegistry:
 
 
 class RegistryTests(ScratchRegistry, unittest.TestCase):
-    def test_the_registry_lists_the_three_worlds(self):
+    def test_the_registry_lists_the_shipped_worlds(self):
         # 2026-10-31: DEV is Ridgemere 2.0 (its database ratw_ridgemere2); the old DEV is the archive dev-old.
-        self.assertEqual(W.keys(), ['prod', 'dev', 'dev-old'])
+        self.assertEqual(W.keys(), ['prod', 'dev', 'dev-old', 'ridgemere3'])
         self.assertEqual(W.keys('live'), ['prod'])
         self.assertEqual((W.kind('dev'), W.upstream('dev'), W.upstream('dev-old'), W.kind('dev-old')), ('dev', 'prod', None, 'dev'))
         self.assertEqual((W.world('dev')['name'], W.world('dev-old')['name']), ('Ridgemere 2.0 (dev)', 'Ridgemere (old map, archive)'))
         self.assertEqual(W.DATABASES, {'prod': 'ratw_prod', 'dev': 'ratw_ridgemere2', 'ridgemere2': 'ratw_ridgemere2',
-                                       'dev-old': 'ratw_dev'})
+                                       'dev-old': 'ratw_dev', 'ridgemere3': 'ratw_ridgemere3'})
         with self.assertRaisesRegex(W.DatabaseError, 'Unknown world'):
             W.world('atlantis')
 
@@ -588,7 +589,7 @@ class RegistryTests(ScratchRegistry, unittest.TestCase):
         self.assertIn('side', W.DATABASES)
         lines = self.registry.read_text().splitlines()
         self.assertEqual(lines[0], '{"worlds": [')
-        self.assertEqual(len(lines), 6, 'one world a line')
+        self.assertEqual(len(lines), len(W.keys()) + 2, 'one world a line, plus the opening and closing lines')
         self.assertEqual(W.world('side')['database'], 'ratw_side')
         status, out, _ = self.run_quietly('list')
         self.assertEqual(status, 0)

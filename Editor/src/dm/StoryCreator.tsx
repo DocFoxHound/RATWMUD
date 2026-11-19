@@ -101,7 +101,7 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
             <button aria-pressed={mode === 'write'} onClick={() => setMode('write')}>Write draft</button>
             <button aria-pressed={mode === 'rehearse'} onClick={() => setMode('rehearse')}>Inspect rehearsal</button>
             <button onClick={openPersonal}>Personal storylines and storytellers</button></nav>
-        {mode === 'program' ? <StoryProgramPanel canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
+        {mode === 'program' ? <StoryProgramPanel world={world} canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
             <fieldset disabled={!editable}><label>Story title<input value={draft.title} onChange={e => edit({title:e.target.value})}/></label>
             <StoryPicker world={world} roster={roster} resident={draft.resident} place={draft.place}
                 onResident={resident => edit({resident})} onPlace={place => edit({place})} />

@@ -13,6 +13,21 @@ namespace ratw::storylines
 {
 using json::Value;
 
+bool readRegions(const Value& value, Regions& regions)
+{
+    regions.clear();
+    if (value.isNull()) return true; // Older stories have no watched areas.
+    if (!value.isArray() || value.items().size() > 128) return false;
+    for (const auto& entry : value.items())
+    {
+        const auto id = entry.string("id");
+        const auto bounds = story::Region::read(entry);
+        if (!bounds || id.empty() || id.size() > 80 || !regions.emplace(id, *bounds).second)
+            return false;
+    }
+    return true;
+}
+
 namespace
 {
 std::filesystem::path dataFile(const std::string& name)
@@ -258,10 +273,12 @@ void Book::erase(const std::string& id)
 void Book::reindex()
 {
     waiting_.clear();
+    activeScenes_.clear();
     for (const auto& [id, s] : all_)
     {
         if (!s.live())
             continue;
+        if (!s.sceneOrders.empty()) activeScenes_.insert(id);
         const auto at = s.current();
         if (at >= s.steps.size())
             continue;
@@ -428,6 +445,19 @@ Value saveStoryline(const Storyline& s)
     o.add("template", s.templateId); o.add("owner", s.owner); o.add("authorAccount", s.authorAccount);
     o.add("author", s.authorCharacter); o.add("title", s.title); o.add("premise", s.premise); o.add("chapter", s.chapter);
     o.add("state", s.state); o.add("began", s.began); o.add("ended", s.ended); o.add("lastActivity", s.lastActivity);
+    if (!s.sceneOrders.empty())
+    {
+        auto orders = Value::object();
+        for (const auto& [npc, order] : s.sceneOrders)
+        {
+            auto j = Value::object();
+            j.add("kind", order.kind); j.add("cue", order.cue); j.add("cell", order.cell); j.add("words", order.words);
+            j.add("posture", order.posture); j.add("x", order.x); j.add("y", order.y); j.add("pace", order.pace);
+            j.add("previousPace", order.previousPace); j.add("done", order.done);
+            orders.add(npc, std::move(j));
+        }
+        o.add("sceneOrders", std::move(orders));
+    }
     auto steps = Value::array();
     for (const auto& st : s.steps)
     {
@@ -481,6 +511,18 @@ Value saveStoryline(const Storyline& s)
     o.add("tracking", list(s.tracking));
     o.add("invited", list(s.invited));
     o.add("asked", list(s.asked));
+    if (!s.regions.empty())
+    {
+        auto regions = Value::array();
+        for (const auto& [id, r] : s.regions)
+        {
+            auto region = Value::object();
+            region.add("id", id); region.add("cell", r.cell);
+            region.add("x1", r.x1); region.add("y1", r.y1); region.add("x2", r.x2); region.add("y2", r.y2);
+            regions.push(std::move(region));
+        }
+        o.add("regions", std::move(regions));
+    }
     o.add("admitted", list(s.admitted));
     if (s.calledOn)
     {
@@ -498,6 +540,10 @@ Storyline loadStoryline(const Value& o)
     s.authorCharacter = o.string("author"); s.title = o.string("title"); s.premise = o.string("premise"); s.chapter = o.string("chapter");
     s.state = o.string("state", "running"); s.began = o.number("began"); s.ended = o.number("ended", -1);
     s.lastActivity = o.number("lastActivity");
+    if (!readRegions(o["regions"], s.regions)) s.regions.clear();
+    for (const auto& [npc, j] : o.object("sceneOrders").fields())
+        s.sceneOrders[npc] = {j.string("kind"), j.string("cue"), j.string("cell"), j.string("words"), j.string("posture"),
+            int(j.number("x")), int(j.number("y")), int(j.number("pace")), int(j.number("previousPace")), j.boolean("done")};
     for (const auto& j : o.array("steps"))
     {
         Step st;

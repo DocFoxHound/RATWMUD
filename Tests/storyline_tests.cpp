@@ -101,6 +101,143 @@ void say(Town& t, Client& c, const std::string& text, const std::string& to)
     t.run(1);
 }
 
+void storyAreaEffects()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyareas-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 9.99); // Last tile inside the region.
+        t.enter(t.bo, 2, "bo", "Bo", 1, 10.0);    // Member just outside.
+        t.enter(t.cy, 3, "cy", "Cy", 1, 8.5);     // Visitor inside.
+        auto& world = t.g.world();
+        const auto run = "world-area-test";
+        auto phase = parsed(R"({"title":"Breach","phase":"defend","journal":"Hold the wall.","visit":1})");
+        auto members = json::Value::array();
+        members.push(t.ash.entityId);
+        members.push(t.bo.entityId);
+        phase.set("players", members);
+        phase.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8}])"));
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "area story started");
+        auto area = parsed(R"({"region":"wall","visit":1,"cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
+        auto apply = [&](const char* effect) {
+            return t.g.applyDmAct({"2", std::string("story.area_") + effect, run, "dm", json::dump(area)});
+        };
+        auto* ash = world.entity(t.ash.entityId);
+        auto* bo = world.entity(t.bo.entityId);
+        auto* cy = world.entity(t.cy.entityId);
+        area.set("points", 12);
+        expect(apply("damage").ok && ash->hurt == 12 && bo->hurt == 0 && cy->hurt == 0, "damage selects just eligible occupants");
+        t.place(t.bo, 1, 8.5);
+        area.set("hours", 8);
+        area.set("buff", "fed");
+        expect(apply("buff").ok && std::abs(ash->fedUntil - world.calendarDays() - 8. / 24) < 1e-7 &&
+               bo->fedUntil == ash->fedUntil && cy->fedUntil < world.calendarDays(), "native timed Fed effect on both members");
+        area.set("x1", 8);
+        expect(!apply("damage").ok && ash->hurt == 12 && bo->hurt == 0, "altered region differs from the approved visit");
+        area.set("x1", 7);
+        area.set("visit", 2);
+        expect(!apply("damage").ok && ash->hurt == 12, "wrong visit refused before applying damage");
+        area.set("visit", 1);
+        area.set("item", "meal");
+        area.set("quantity", 2);
+        auto stock = [&](const Client& c) { return Society::stock(*world.society().account(c.entityId), "meal"); };
+        const int ashStart = stock(t.ash), boStart = stock(t.bo);
+        expect(apply("item").ok && stock(t.ash) == ashStart + 2 && stock(t.bo) == boStart + 2, "group reward reaches real inventory");
+        expect(world.society().create(t.bo.entityId, "meal", 10000 - stock(t.bo), "dm grant: full pack fixture"),
+               "filled a participant's pack");
+        expect(!apply("item").ok && stock(t.ash) == ashStart + 2 && stock(t.bo) == 10000,
+               "one full pack refuses the group reward before anyone receives it");
+        area.set("item", "no-such-world-item");
+        expect(!apply("item").ok && stock(t.ash) == ashStart + 2, "invalid good refused");
+        area.set("count", 2);
+        const auto n = world.roads().camps.size();
+        expect(apply("spawn").ok && world.roads().camps.size() == n + 1, "a real camp is created");
+        const auto& camp = world.roads().camps.back();
+        expect(camp.cell == cellId(1) && camp.x >= 7 && camp.x < 10 && camp.y >= 8 && camp.y < 9 &&
+               camp.strength == 6, "camp anchored inside the specified tiles");
+        const auto& born = world.recentEvents().back();
+        expect(born.kind == "bandits called" && born.cell == camp.cell && born.x == int(camp.x) && born.y == int(camp.y),
+               "the camp event carries its exact tile for further region conditions");
+        area.set("x2", 300);
+        expect(!apply("spawn").ok && world.roads().camps.size() == n + 1, "out-of-map rectangle refused");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
+void scriptedResidentScene()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-scene-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeStrip(root);
+    const auto visit = parsed(R"({"title":"Breach","phase":"report","journal":"Await the courier.","visit":1,"players":["player-ash"]})");
+    auto order = [&](Town& town, const std::string& kind, const std::string& npc, json::Value payload) {
+        payload.add("visit", 1); payload.add("run", "world-scene");
+        return town.g.applyDmAct({"4", kind, npc, "dm", json::dump(payload)});
+    };
+    {
+        Town town(world, save, 120);
+        town.enter(town.ash, 1, "ash", "Ash", 1, 7.5);
+        auto& w = town.g.world();
+        expect(town.g.applyDmAct({"1", "story.phase", "world-scene", "dm", json::dump(visit)}).ok, "scene visit opened");
+        expect(w.teleport("u1", cellId(0), 4, 7).ok, "courier at breach");
+        auto goal = parsed(R"({"pace":"run","cue":"runner-at-palace","x":8,"y":7})");
+        goal.add("cell", cellId(1));
+        expect(order(town, "npc.walk", "u1", goal).ok, "runner dispatched");
+        expect(w.entity("u1")->cellId == cellId(0) && !town.g.storylineBook().find("world-scene")->sceneOrders.at("u1").done,
+               "accepting the route did not report arrival");
+        expect(!order(town, "npc.speak", "u1", parsed(R"({"cue":"too-soon","text":"Arrived."})")).ok,
+               "busy resident refuses an overlapping direction");
+        town.g.save();                              // Snapshot while the route is outstanding.
+    }
+    {
+        Town town(world, save, 120);
+        auto& w = town.g.world();
+        town.enter(town.ash, 1, "ash", "Ash", 1, 7.5);
+        town.enter(town.bo, 2, "bo", "Bo", 7, 7.5);
+        std::vector<WorldEvent> cues;
+        w.setEventWatcher([&](const WorldEvent& e) { if (e.kind.rfind("scene ", 0) == 0) cues.push_back(e); });
+        for (int n = 0; n < 480 && cues.empty(); ++n) town.run(.25);
+        expect(cues.size() == 1 && cues[0].kind == "scene arrived" && cues[0].actor == "u1" && cues[0].target == "world-scene" &&
+               cues[0].cell == cellId(1) && cues[0].quantity == 1 && cues[0].detail == "runner-at-palace",
+               "resumed runner crosses a cell and reports exactly one actual arrival");
+        expect(int(w.entity("u1")->position.x) == 8 && int(w.entity("u1")->position.y) == 7, "courier on the ordered tile");
+        expect(order(town, "npc.pose", "u1", parsed(R"({"cue":"seated","posture":"sitting"})")).ok, "seat the speaker");
+        town.run(1);
+        expect(order(town, "npc.pose", "u1", parsed(R"({"cue":"standing","posture":"standing"})")).ok, "rise for the address");
+        town.run(2);
+        expect(cues.size() == 3 && cues.back().kind == "scene posed" && w.entity("u1")->posture == "standing", "posture confirmed in the simulation");
+        expect(order(town, "npc.speak", "u1", parsed(R"({"cue":"address","text":"Reinforce the breach."})")).ok, "address ordered");
+        town.run(2);
+        expect(cues.size() == 4 && cues.back().kind == "scene spoken" && cues.back().detail == "address", "speech ends the scene beat");
+        const auto heard = [](const Client& client) {
+            return std::any_of(client.events.begin(), client.events.end(), [](const json::Value& e) {
+                return contains(json::dump(e), "Reinforce the breach");
+            });
+        };
+        expect(heard(town.ash) && !heard(town.bo), "the speaker reaches a nearby listener through ordinary local speech");
+        auto home = parsed(R"({"pace":"walk","cue":"return","x":4,"y":7})");
+        home.add("cell", cellId(0));
+        expect(order(town, "npc.walk", "u1", home).ok && w.setDead("u1", true).ok, "a resident's return journey is interrupted");
+        town.run(1);
+        expect(cues.size() == 5 && cues.back().kind == "scene blocked" && cues.back().detail == "return",
+               "an interrupted journey emits its blocked cue once");
+        expect(order(town, "npc.speak", "u1", parsed(R"({"cue":"missing-courier","text":"Report."})")).ok,
+               "a valid order for an unavailable resident can take its fallback");
+        town.run(1);
+        expect(cues.size() == 6 && cues.back().kind == "scene blocked" && cues.back().detail == "missing-courier" &&
+               !w.entity("u1")->sceneDirected, "unavailable at dispatch emits one scoped blocked cue without holding the resident");
+        expect(town.g.applyDmAct({"5", "story.stop", "world-scene", "dm", "{}"}).ok, "scene stopped");
+        town.run(1);
+        expect(!w.entity("u1")->sceneDirected && !order(town, "npc.pose", "u1", parsed(R"({"cue":"stale","posture":"lying"})")).ok,
+               "ordinary resident schedule resumes and stale directions are refused");
+        w.setEventWatcher({});
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 void inTheGame()
 {
     const auto root = fs::temp_directory_path() / ("ratw-storylines-" + std::to_string(::getpid()));
@@ -130,9 +267,43 @@ void inTheGame()
         auto speakers = json::Value::array();
         speakers.push("u1");
         phase.add("guestVoices", speakers);
+        auto patch = parsed(R"([{"id":"road-watch","x1":7,"y1":1,"x2":7,"y2":8}])");
+        patch.items().front().add("cell", w.entity(ash)->cellId);
+        phase.add("regions", patch);
         auto deliver = [&]() { return t.g.applyDmAct({"1", "story.phase", "world-run-test", "dm", json::dump(phase)}); };
         expect(deliver().ok && deliver().ok && t.g.storylineBook().find("world-run-test")->steps.size() == 1, "duplicate phase is harmless");
         expect(t.g.worldStoryLine("u1", ash) == line.string("text") && t.g.worldStoryLine("u1", "outsider").empty(), "only participants hear the clue");
+        const auto original = w.entity(ash)->position;
+        w.takeEvents();
+        w.entity(ash)->position = {7.5, 4.5};
+        t.g.tick(.05);
+        w.entity(ash)->position = {7.5, 5.5};
+        t.g.tick(.05);
+        w.entity(ash)->position = original;
+        t.g.tick(.05);
+        std::vector<WorldEvent> crossings;
+        for (const auto& e : w.takeEvents())
+            if (e.target == "road-watch") crossings.push_back(e);
+        expect(crossings.size() == 2 && crossings.front().kind == "region entered" && crossings.back().kind == "region left"
+               && crossings.front().actor == ash && crossings.front().detail == "world-run-test" && crossings.front().y == 4
+               && crossings.back().x == 7 && crossings.back().y == 5, "Only actual boundary crossings fire, with the occupied tile");
+        w.entity(ash)->position = {6.98, 5.5};
+        t.g.tick(.05); // A warp from x=9 to x=6 crosses no intermediate cells of the strip.
+        const auto warpEvents = w.takeEvents();
+        expect(std::none_of(warpEvents.begin(), warpEvents.end(), [](const auto& e){return e.target == "road-watch";}),
+               "A warp across a region does not create intermediate visits");
+        const auto wasClientWalking = w.entity(ash)->clientWalks;
+        w.setClientWalks(ash, true);
+        t.g.pose(&t.ash, w.entity(ash)->poseSeq + 1, 8.02, 5.5, 0., 0., 0.);
+        const auto afterStride = w.takeEvents();
+        crossings.clear();
+        for (const auto& e : afterStride)
+            if (e.target == "road-watch") crossings.push_back(e);
+        expect(crossings.size() == 2 && crossings[0].kind == "region entered" && crossings[1].kind == "region left" &&
+               crossings[0].x == 7 && crossings[1].x == 7, "One accepted stride across a thin area records both boundaries in order");
+        w.setClientWalks(ash, wasClientWalking);
+        w.entity(ash)->position = original;
+        t.g.tick(.05);
         auto guest = R"({"npc":"u1","visit":1,"text":"I lost it on the bridge."})";
         expect(t.g.applyDmAct({"2","story.voice","world-run-test","dm",guest}).ok &&
                t.g.worldStoryLine("u1", ash) == "I lost it on the bridge.", "a delegated line belongs to this phase");
@@ -148,7 +319,17 @@ void inTheGame()
         mission.set("missions", ledger);
         auto sendMissions = [&]() { return t.g.applyDmAct({"4", "story.missions", "world-run-test", "dm", json::dump(mission)}); };
         expect(sendMissions().ok && sendMissions().ok, "repeated mission snapshots are harmless");
-        const auto personal = t.selfOf(t.ash).array("journal").front().array("steps").front().array("missions").front();
+        // The connected client may still hold the phase-opening snapshot while waiting for the next journal update.
+        json::Value personal;
+        for (int poll = 0; poll < 8 && personal.isNull(); ++poll)
+        {
+            const auto self = t.selfOf(t.ash);
+            for (const auto& story : self.array("journal"))
+                if (story.string("id") == "world-run-test")
+                    for (const auto& step : story.array("steps"))
+                        for (const auto& objective : step.array("missions"))
+                            if (objective.string("title") == "Rig the line") personal = objective;
+        }
         expect(personal.string("instruction") == "Deliver four ropes." && personal.number("amount") == 2 &&
                !personal.boolean("credited") && !contains(json::dump(personal), "another-volunteer"),
                "the journal shows only this participant’s track");
@@ -162,6 +343,7 @@ void inTheGame()
         expect(!t.g.applyDmAct({"3","story.voice","world-run-test","dm",guest}).ok, "expired speaker cannot change the ending");
         storylines::Book restored;
         restored.load(t.g.storylineBook().save());
+        expect(restored.find("world-run-test")->regions.count("road-watch") == 1, "Named areas survive checkpoint restore");
         expect(restored.find("world-run-test")->state == "done", "world story survives a save and load");
         expect(!sendMissions().ok && restored.find("world-run-test")->steps.front().missions.items().size() == 1 &&
                restored.find("world-run-test")->steps.front().missions.items().front().object("tracks")[ash].items()[1].asNumber() == 2,
@@ -310,6 +492,8 @@ int main()
     try
     {
         pure();
+        scriptedResidentScene();
+        storyAreaEffects();
         inTheGame();
         sources();
     }

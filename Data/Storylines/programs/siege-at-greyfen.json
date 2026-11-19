@@ -1,0 +1,896 @@
+{
+  "format": "ratw-story-program",
+  "version": 1,
+  "id": "siege-at-greyfen",
+  "title": "The breach at Greyfen",
+  "start": "hold",
+  "audience": {
+    "kind": "active",
+    "days": 7
+  },
+  "regions": [
+    {
+      "id": "breach",
+      "cell": "town",
+      "x1": 29,
+      "y1": 34,
+      "x2": 34,
+      "y2": 38
+    }
+  ],
+  "phases": [
+    {
+      "id": "hold",
+      "journal": "Defend the gap on Greyfen’s south road. Three bandits must fall inside the breach. Each defender earns personal credit for the foes they bring down.",
+      "effects": [
+        {
+          "kind": "story.area.spawn",
+          "region": "breach",
+          "count": 3
+        }
+      ],
+      "exits": [],
+      "triggers": [
+        {
+          "id": "count-defeat",
+          "on": "bandit falls",
+          "audience": "participant",
+          "if": {
+            "test": "region",
+            "region": "breach"
+          },
+          "actions": [
+            {
+              "do": "add",
+              "scope": "player",
+              "key": "defeats",
+              "value": 1
+            },
+            {
+              "do": "add",
+              "scope": "story",
+              "key": "line-held",
+              "value": 1
+            },
+            {
+              "do": "emit",
+              "signal": "check-breach"
+            }
+          ]
+        },
+        {
+          "id": "dispatch-runner",
+          "on": "story signal",
+          "signal": "check-breach",
+          "if": {
+            "test": "counter",
+            "scope": "story",
+            "key": "line-held",
+            "op": ">=",
+            "value": 3
+          },
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "council"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "council",
+      "journal": "Sloe carries the count from the breach to the barracks. Harrow takes the king’s part at the watch table. Wait for his orders and for both guards to reach the south road.",
+      "effects": [
+        {
+          "kind": "npc.walk",
+          "npc": "harrow",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4,
+          "pace": "walk",
+          "cue": "at-throne"
+        }
+      ],
+      "exits": [],
+      "triggers": [
+        {
+          "id": "take-seat",
+          "on": "scene arrived",
+          "match": {
+            "actor": "harrow",
+            "detail": "at-throne"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.pose",
+                "npc": "harrow",
+                "posture": "sitting",
+                "cue": "seated"
+              }
+            }
+          ]
+        },
+        {
+          "id": "collect-report",
+          "on": "scene posed",
+          "match": {
+            "actor": "harrow",
+            "detail": "seated"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.walk",
+                "npc": "sloe",
+                "cell": "town",
+                "x": 30,
+                "y": 36,
+                "pace": "run",
+                "cue": "at-breach"
+              }
+            }
+          ]
+        },
+        {
+          "id": "carry-report",
+          "on": "scene arrived",
+          "match": {
+            "actor": "sloe",
+            "detail": "at-breach"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.walk",
+                "npc": "sloe",
+                "cell": "barracks",
+                "x": 21,
+                "y": 4,
+                "pace": "run",
+                "cue": "at-court"
+              }
+            }
+          ]
+        },
+        {
+          "id": "give-report",
+          "on": "scene arrived",
+          "match": {
+            "actor": "sloe",
+            "detail": "at-court"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.speak",
+                "npc": "sloe",
+                "text": "Three down at the breach. The line holds, but the south road is still open.",
+                "cue": "report-heard"
+              }
+            }
+          ]
+        },
+        {
+          "id": "king-rises",
+          "on": "scene spoken",
+          "match": {
+            "actor": "sloe",
+            "detail": "report-heard"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.pose",
+                "npc": "harrow",
+                "posture": "standing",
+                "cue": "on-feet"
+              }
+            }
+          ]
+        },
+        {
+          "id": "pace-the-hall",
+          "on": "scene posed",
+          "match": {
+            "actor": "harrow",
+            "detail": "on-feet"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.walk",
+                "npc": "harrow",
+                "cell": "barracks",
+                "x": 19,
+                "y": 7,
+                "pace": "walk",
+                "cue": "at-table"
+              }
+            }
+          ]
+        },
+        {
+          "id": "give-orders",
+          "on": "scene arrived",
+          "match": {
+            "actor": "harrow",
+            "detail": "at-table"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.speak",
+                "npc": "harrow",
+                "text": "Birch, take the left side. Tamsin, the right. Through the breach together. We bring every defender home.",
+                "cue": "orders-given"
+              }
+            }
+          ]
+        },
+        {
+          "id": "send-guards",
+          "on": "scene spoken",
+          "match": {
+            "actor": "harrow",
+            "detail": "orders-given"
+          },
+          "actions": [
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.walk",
+                "npc": "birch",
+                "cell": "town",
+                "x": 30,
+                "y": 37,
+                "pace": "run",
+                "cue": "left-post"
+              }
+            },
+            {
+              "do": "effect",
+              "effect": {
+                "kind": "npc.walk",
+                "npc": "tamsin",
+                "cell": "town",
+                "x": 33,
+                "y": 37,
+                "pace": "run",
+                "cue": "right-post"
+              }
+            }
+          ]
+        },
+        {
+          "id": "left-post-held",
+          "on": "scene arrived",
+          "match": {
+            "actor": "birch",
+            "detail": "left-post"
+          },
+          "actions": [
+            {
+              "do": "add",
+              "scope": "story",
+              "key": "guard-posts",
+              "value": 1
+            },
+            {
+              "do": "emit",
+              "signal": "check-posts"
+            }
+          ],
+          "once": "visit"
+        },
+        {
+          "id": "right-post-held",
+          "on": "scene arrived",
+          "match": {
+            "actor": "tamsin",
+            "detail": "right-post"
+          },
+          "actions": [
+            {
+              "do": "add",
+              "scope": "story",
+              "key": "guard-posts",
+              "value": 1
+            },
+            {
+              "do": "emit",
+              "signal": "check-posts"
+            }
+          ],
+          "once": "visit"
+        },
+        {
+          "id": "open-relief",
+          "on": "story signal",
+          "signal": "check-posts",
+          "if": {
+            "test": "counter",
+            "scope": "story",
+            "key": "guard-posts",
+            "op": ">=",
+            "value": 2
+          },
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "relief"
+            }
+          ]
+        },
+        {
+          "id": "send-reserves",
+          "on": "scene blocked",
+          "actions": [
+            {
+              "do": "enter",
+              "phase": "reserves"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "relief",
+      "journal": "Birch and Tamsin have crossed the breach. Open the relief route. Speak with Wren about stock for the road and report the watch strength to Harrow. The work can be shared.",
+      "effects": [],
+      "exits": [
+        {
+          "on": "missions completed",
+          "missions": [
+            "stores",
+            "roll-call"
+          ],
+          "to": "secured"
+        }
+      ],
+      "missions": [
+        {
+          "id": "stores",
+          "title": "Provision the relief watch",
+          "mode": "either",
+          "objectives": [
+            {
+              "label": "Ask Wren to set aside supplies for the watch.",
+              "on": "conversation",
+              "match": {
+                "target": "wren"
+              }
+            }
+          ]
+        },
+        {
+          "id": "roll-call",
+          "title": "Account for the defenders",
+          "mode": "either",
+          "objectives": [
+            {
+              "label": "Give Harrow the names of those who held the breach.",
+              "on": "conversation",
+              "match": {
+                "target": "harrow"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "secured",
+      "journal": "The relief route is open. The watch has its supplies and every name is accounted for.",
+      "effects": [],
+      "exits": []
+    },
+    {
+      "id": "reserves",
+      "journal": "The reserves take the watch. The road to the command post was blocked before the counterattack could be ordered.",
+      "effects": [],
+      "exits": []
+    }
+  ],
+  "tests": [
+    {
+      "name": "Two defenders, one crossing",
+      "cohort": [
+        "player-ash",
+        "player-fern"
+      ],
+      "events": [
+        {
+          "id": "1",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "barracks",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "2",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 28,
+          "y": 36
+        },
+        {
+          "id": "3",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town"
+        },
+        {
+          "id": "4",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "unlisted-wolf",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "5",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 29,
+          "y": 34
+        },
+        {
+          "id": "6",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "7",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 34,
+          "y": 38
+        },
+        {
+          "id": "8",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "harrow",
+          "detail": "at-throne",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "9",
+          "day": 1,
+          "kind": "scene posed",
+          "actor": "harrow",
+          "detail": "seated",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "10",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "sloe",
+          "detail": "at-breach",
+          "cell": "town",
+          "x": 30,
+          "y": 36
+        },
+        {
+          "id": "11",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "sloe",
+          "detail": "at-court",
+          "cell": "barracks",
+          "x": 21,
+          "y": 4
+        },
+        {
+          "id": "12",
+          "day": 1,
+          "kind": "scene spoken",
+          "actor": "sloe",
+          "detail": "report-heard",
+          "cell": "barracks",
+          "x": 21,
+          "y": 4
+        },
+        {
+          "id": "13",
+          "day": 1,
+          "kind": "scene posed",
+          "actor": "harrow",
+          "detail": "on-feet",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "14",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "harrow",
+          "detail": "at-table",
+          "cell": "barracks",
+          "x": 19,
+          "y": 7
+        },
+        {
+          "id": "15",
+          "day": 1,
+          "kind": "scene spoken",
+          "actor": "harrow",
+          "detail": "orders-given",
+          "cell": "barracks",
+          "x": 19,
+          "y": 7
+        },
+        {
+          "id": "16",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "tamsin",
+          "detail": "right-post",
+          "cell": "town",
+          "x": 33,
+          "y": 37
+        },
+        {
+          "id": "17",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "birch",
+          "detail": "left-post",
+          "cell": "town",
+          "x": 30,
+          "y": 37
+        },
+        {
+          "id": "18",
+          "day": 1,
+          "kind": "conversation",
+          "actor": "player-ash",
+          "target": "wren"
+        },
+        {
+          "id": "19",
+          "day": 1,
+          "kind": "conversation",
+          "actor": "player-fern",
+          "target": "harrow"
+        }
+      ],
+      "expect": [
+        "hold",
+        "council",
+        "relief",
+        "secured"
+      ],
+      "expectCounters": {
+        "player": {
+          "player-ash": {
+            "defeats": 2
+          },
+          "player-fern": {
+            "defeats": 1
+          }
+        },
+        "story": {
+          "line-held": 3,
+          "guard-posts": 2
+        }
+      }
+    },
+    {
+      "name": "One defender can hold the road alone",
+      "cohort": [
+        "player-ash",
+        "player-fern"
+      ],
+      "events": [
+        {
+          "id": "1",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "2",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "3",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "4",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "harrow",
+          "detail": "at-throne",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "5",
+          "day": 1,
+          "kind": "scene posed",
+          "actor": "harrow",
+          "detail": "seated",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "6",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "sloe",
+          "detail": "at-breach",
+          "cell": "town",
+          "x": 30,
+          "y": 36
+        },
+        {
+          "id": "7",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "sloe",
+          "detail": "at-court",
+          "cell": "barracks",
+          "x": 21,
+          "y": 4
+        },
+        {
+          "id": "8",
+          "day": 1,
+          "kind": "scene spoken",
+          "actor": "sloe",
+          "detail": "report-heard",
+          "cell": "barracks",
+          "x": 21,
+          "y": 4
+        },
+        {
+          "id": "9",
+          "day": 1,
+          "kind": "scene posed",
+          "actor": "harrow",
+          "detail": "on-feet",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "10",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "harrow",
+          "detail": "at-table",
+          "cell": "barracks",
+          "x": 19,
+          "y": 7
+        },
+        {
+          "id": "11",
+          "day": 1,
+          "kind": "scene spoken",
+          "actor": "harrow",
+          "detail": "orders-given",
+          "cell": "barracks",
+          "x": 19,
+          "y": 7
+        },
+        {
+          "id": "12",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "tamsin",
+          "detail": "right-post",
+          "cell": "town",
+          "x": 33,
+          "y": 37
+        },
+        {
+          "id": "13",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "birch",
+          "detail": "left-post",
+          "cell": "town",
+          "x": 30,
+          "y": 37
+        }
+      ],
+      "expect": [
+        "hold",
+        "council",
+        "relief"
+      ],
+      "expectCounters": {
+        "player": {
+          "player-fern": {
+            "defeats": 3
+          }
+        },
+        "story": {
+          "line-held": 3,
+          "guard-posts": 2
+        }
+      }
+    },
+    {
+      "name": "Fighting outside the gap earns no credit",
+      "cohort": [
+        "player-ash",
+        "player-fern"
+      ],
+      "events": [
+        {
+          "id": "1",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "barracks",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "2",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 28,
+          "y": 36
+        },
+        {
+          "id": "3",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-fern",
+          "target": "camp_story",
+          "cell": "town"
+        },
+        {
+          "id": "4",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "unlisted-wolf",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        }
+      ],
+      "expect": [
+        "hold"
+      ],
+      "expectCounters": {}
+    },
+    {
+      "name": "A blocked messenger calls out the reserves",
+      "cohort": [
+        "player-ash",
+        "player-fern"
+      ],
+      "events": [
+        {
+          "id": "1",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "2",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "3",
+          "day": 1,
+          "kind": "bandit falls",
+          "actor": "player-ash",
+          "target": "camp_story",
+          "cell": "town",
+          "x": 31,
+          "y": 36
+        },
+        {
+          "id": "4",
+          "day": 1,
+          "kind": "scene arrived",
+          "actor": "harrow",
+          "detail": "at-throne",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "5",
+          "day": 1,
+          "kind": "scene posed",
+          "actor": "harrow",
+          "detail": "seated",
+          "cell": "barracks",
+          "x": 22,
+          "y": 4
+        },
+        {
+          "id": "6",
+          "day": 1,
+          "kind": "scene blocked",
+          "actor": "sloe",
+          "detail": "at-breach",
+          "cell": "barracks",
+          "x": 13,
+          "y": 12
+        }
+      ],
+      "expect": [
+        "hold",
+        "council",
+        "reserves"
+      ]
+    }
+  ]
+}

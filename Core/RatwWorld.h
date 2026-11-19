@@ -263,6 +263,7 @@ struct Entity
     double sneakSkill = 0.0, hearingSkill = 0.0; // Skill values in [0, 100].
     double smell = 1.0, noseHealth = 1.0, scentSkill = 0.0;
     double dexterity = 50.0, stamina = 100.0; // Server-owned, [0,100].
+    bool sceneDirected = false;                   // Rebuilt from the world story book after loading.
     int pace = 0;                             // Requested travel pace, 0 (walk) .. 10 (sprint).
     bool exhausted = false;                   // Recovery hysteresis; never a client speed override.
     double staminaRate = 0.0;                 // Last simulation step's net change per second.
@@ -624,6 +625,7 @@ struct WorldEvent
     int quantity = 0;
     std::int64_t coins = 0;
     std::string detail;
+    int x = -1, y = -1; // Event tile in cell, when known. A missing location never means tile (0, 0).
 };
 
 // Events as the JSON array game.record_events takes (migration 0021): text cut to the table's limits on whole
@@ -739,6 +741,8 @@ class World
     const std::map<std::string, FactionDefinition>& factions() const { return factions_; }
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
+    void sceneHold(const std::string& id, bool hold, int pace);
+    void sceneWalk(Entity& actor, const std::string& cell, Vec2 tile);
     Result relocateResident(const std::string& npc, const std::string& destination, double x, double y);
     // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
     // where they carry on. Not someone in a fight, or a tile they couldn't stand on.
@@ -958,6 +962,7 @@ class World
     // its own (arrivals, conversations, spawns...) with recordEvent. takeEvents() hands over everything since the
     // last call, oldest first. Uncollected, at most EventsKept are kept (the oldest are dropped and counted).
     static constexpr std::size_t EventsKept = 50000;
+    std::pair<int, int> eventTile(const Entity& who) const;
     void recordEvent(WorldEvent event);
     // A host's watcher, told of every event as it is recorded (doc 55: residents' letters come from deeds, not scans).
     void setEventWatcher(std::function<void(const WorldEvent&)> watcher) { eventWatcher_ = std::move(watcher); }
@@ -1501,6 +1506,7 @@ class World
     // Bandits called up near someone (the Dungeon Master: doc 33): a small camp of `count` (1..6) five to ten tiles away,
     // on open ground away from doors; they come out at once, as any camp does when someone is near.
     Result callBandits(const std::string& near, int count);
+    Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count);
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins

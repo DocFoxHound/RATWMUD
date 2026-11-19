@@ -137,14 +137,21 @@ class DungeonMasterLive(unittest.TestCase):
             # Clean shutdown checkpoints the first visit so publication can bind the character and event watermark.
             server.send_signal(signal.SIGTERM)
             server.communicate(timeout=40)
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                saved = conn.execute('SELECT data FROM game.characters WHERE key=%s', (wolf,)).fetchone()[0]
+            tile = {'cell': saved['cell'], 'x': int(saved['x']), 'y': int(saved['y'])}
             program = story_library.blank()
+            program['regions'] = [{'id': 'watchpost', 'cell': tile['cell'],
+                                   'x1': tile['x'], 'x2': tile['x'], 'y1': tile['y'], 'y2': tile['y']}]
             program['audience'] = {'kind': 'players', 'players': [wolf]}
             program['phases'][0]['triggers'] = [
                 {
                     'id': 'join-watch',
+                    'if': {'test': 'region', 'region': 'watchpost'},
                     'on': 'arrival',
                     'audience': 'participant',
                     'actions': [
+                        {'do': 'effect', 'effect': {'kind': 'story.area.buff', 'region': 'watchpost', 'buff': 'fed', 'hours': 8}},
                         {'do': 'schedule', 'signal': 'winter', 'days': 28, 'scope': 'campaign'},
                         {'do': 'schedule', 'signal': 'thaw', 'days': 90, 'scope': 'campaign'},
                         {'do': 'enter', 'phase': 'watch'},
@@ -193,7 +200,7 @@ class DungeonMasterLive(unittest.TestCase):
                     'name': 'Return',
                     'cohort': [wolf],
                     'events': [
-                        {'kind': 'arrival', 'actor': wolf, 'day': 0, 'id': 'return'},
+                        {'kind': 'arrival', 'actor': wolf, 'day': 0, 'id': 'return', **tile},
                         {'kind': 'clock', 'day': 28, 'id': 'ice'},
                         {'kind': 'clock', 'day': 90, 'id': 'thaw'},
                     ],
@@ -251,6 +258,7 @@ with world_db.connect('dev','dm',dbname=database) as conn,conn.transaction():
                 character = conn.execute(
                     'SELECT data FROM game.characters WHERE world_id=%s AND key=%s', (world, wolf)
                 ).fetchone()[0]
+                self.assertGreater(character['fedUntil'], saved.get('fedUntil', -1))
                 self.assertIn('cracked_rib', [i['type'] for i in character.get('injuries', [])])
                 deeds = conn.execute(
                     "SELECT payload::jsonb #> '{people,deeds}' FROM game.checkpoints WHERE world_id=%s", (world,)

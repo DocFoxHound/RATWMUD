@@ -6,6 +6,7 @@
 // kind of objective to the storylines waiting on one, so nothing scans them in the tick. ("Journal" on screen; doc 31's
 // RatwJournal is the save's journal, doc 32's Stories are scenes chained, so the code says storylines and tales.)
 #include "RatwJsonDoc.h"
+#include "RatwStoryRegion.h"
 
 #include <cstdint>
 #include <functional>
@@ -63,6 +64,17 @@ struct CastMember
     std::string name, looks;
 };
 
+using Regions = std::map<std::string, story::Region>;
+bool readRegions(const json::Value& value, Regions& regions);
+
+// The last direction each resident accepted during this world-story visit. A completed order
+// holds the resident for the next scene beat until the visit ends.
+struct SceneOrder
+{
+    std::string kind, cue, cell, words, posture;
+    int x = 0, y = 0, pace = 0, previousPace = 0;
+    bool done = false;
+};
 struct Storyline
 {
     std::string id;
@@ -71,9 +83,11 @@ struct Storyline
     std::string owner;                              // A personal storyline's character.
     std::string authorAccount, authorCharacter;     // A tale's storyteller.
     std::string title, premise, chapter;
+    std::map<std::string, SceneOrder> sceneOrders;
     std::vector<Step> steps;
     std::map<std::string, Participant> participants;
     std::vector<CastMember> cast;
+    Regions regions; // Active world-story watches, restored from the native checkpoint.
     std::string state = "running";                  // draft, running, paused, done, failed, abandoned.
     double began = 0, ended = -1, lastActivity = 0; // Unix seconds.
     std::set<std::string> tracking;                 // Characters with its marker on their map.
@@ -154,6 +168,7 @@ class Book
     std::vector<const Storyline*> of(const std::string& who) const;
     int counting(const std::string& who, const std::string& kind) const;
     // Kinds of objective someone is waiting on now (for the game's cheap checks: who needs a place probe).
+    const std::set<std::string>& activeScenes() const { return activeScenes_; }
     bool waiting(const std::string& kind) const;
     std::set<std::string> waitingFor(const std::string& kind) const;   // Characters taking part in one waiting on it.
     std::uint64_t version() const { return version_; }   // Bumped at every change (the journal views follow it).
@@ -163,6 +178,7 @@ class Book
     void load(const json::Value& saved);
 
   private:
+    std::set<std::string> activeScenes_;
     void reindex();
     std::vector<Progress> settle(Storyline& s, double now);
     std::map<std::string, Storyline> all_;

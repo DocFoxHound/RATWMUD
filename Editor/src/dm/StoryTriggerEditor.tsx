@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import type {Region} from './StoryRegions';
 import type {Mission, Objective} from './StoryMissions';
 
 import {effectName,makeEffect,StoryEffectFields,type Effect} from './StoryEffectFields';
@@ -13,6 +14,7 @@ export type Condition =
     | {test:'all'|'any'; conditions:Condition[]}
     | {test:'not'; condition:Condition}
     | {test:'mission'; id:string}
+    | {test:'region'; region:string}
     | {test:'field'; field:string; op:string; value:string|number}
     | {test:'counter'; scope:string; key:string; op:string; value:number};
 export interface Trigger {
@@ -22,8 +24,8 @@ export interface Trigger {
 export interface Component {role:string; label:string; trigger?:Trigger; objective?:Objective; gate?:Pick<Mission,'mode'|'percent'|'contributors'>; action?:Action}
 export interface ComponentSource {id:string; title:string; category:string; components:Component[]}
 interface Props {
-    index:number; select:(index:number)=>void;
-    ruleGroups:{phase:number|null; label:string; rules:Trigger[]; missions:Mission[]}[];
+    regions:Region[]; index:number; select:(index:number)=>void;
+    ruleGroups:{phase:number|null; label:string; rules:Trigger[]; missions:Mission[]; effects:Effect[]}[];
     navigate:(phase:number|null,index:number)=>void;
     campaign:boolean; triggers:Trigger[]; sources:ComponentSource[]; events:string[]; effects:Record<string,string[]>;
     phases:string[]; missions:Mission[]; change:(triggers:Trigger[])=>void; changeMissions:(missions:Mission[])=>void;
@@ -34,6 +36,7 @@ function editableCondition(v:unknown,depth=0):boolean {
     if(!record(v) || depth>5) return false;
     if(v.test==='all'||v.test==='any') return Array.isArray(v.conditions) && v.conditions.every(c=>editableCondition(c,depth+1));
     if(v.test==='not') return editableCondition(v.condition,depth+1);
+    if(v.test==='region') return typeof v.region==='string';
     if(v.test==='mission') return typeof v.id==='string';
     return (v.test==='counter'||v.test==='field') && ['string','number'].includes(typeof v.value);
 }
@@ -42,29 +45,33 @@ export function editableRule(v:unknown) {
         && Array.isArray(v.actions) && v.actions.every(a=>record(a) && (a.do==='effect' ? record(a.effect) && typeof a.effect.kind==='string'
             : ['enter','emit','set','add','schedule','cancel'].includes(String(a.do))));
 }
+const sceneEvent=(on:string)=>['scene arrived','scene spoken','scene posed','scene blocked'].includes(on);
 const fields=['actor','target','item','cell','detail'];
 const amounts=['quantity','coins'];
 const operators=['=','!=','>','>=','<','<='];
-function condition(kind:string,missions:Mission[]):Condition {
+function condition(kind:string,missions:Mission[],regions:string[]):Condition {
     const base:Condition={test:'counter',scope:'story',key:'supplies',op:'>=',value:1};
     switch(kind) {
     case 'all': case 'any': return {test:kind,conditions:[base]};
     case 'not': return {test:'not',condition:base};
+    case 'region': return {test:'region',region:regions[0] ?? ''};
     case 'mission': return {test:'mission',id:missions[0]?.id ?? ''};
     case 'field': return {test:'field',field:'item',op:'=',value:''};
     default: return base;
     }
 }
 const options=(values:string[])=>values.map(v=><option key={v}>{v}</option>);
-function ConditionRow({node,edit,missions,depth=1}:{node:Condition; edit:(c:Condition)=>void; missions:Mission[];depth?:number}) {
-    return <fieldset><label>Test<select aria-label="Test" value={node.test} onChange={e=>edit(condition(e.target.value,missions))}>
-        {options([...(depth<5?['all','any','not']:[]),'field','counter',...(missions.length?['mission']:[])])}</select></label>
+function ConditionRow({node,edit,missions,regions,depth=1}:{node:Condition; edit:(c:Condition)=>void; missions:Mission[];regions:string[];depth?:number}) {
+    return <fieldset><label>Test<select aria-label="Test" value={node.test} onChange={e=>edit(condition(e.target.value,missions,regions))}>
+        {options([...(depth<5?['all','any','not']:[]),'field','counter',...(regions.length?['region']:[]),...(missions.length?['mission']:[])])}</select></label>
         {(node.test==='all'||node.test==='any') && <>
-            {node.conditions.map((child,i)=><div key={i}><ConditionRow node={child} missions={missions} depth={depth+1}
+            {node.conditions.map((child,i)=><div key={i}><ConditionRow node={child} missions={missions} regions={regions} depth={depth+1}
                 edit={next=>edit({...node,conditions:node.conditions.map((c,n)=>n===i?next:c)})}/>
                 <button disabled={node.conditions.length<2} onClick={()=>edit({...node,conditions:node.conditions.filter((_,n)=>n!==i)})}>Remove condition {i+1}</button></div>)}
-            <button disabled={node.conditions.length>=8} onClick={()=>edit({...node,conditions:[...node.conditions,condition('field',missions)]})}>Add condition</button></>}
-        {node.test==='not' && <ConditionRow node={node.condition} edit={c=>edit({...node,condition:c})} depth={depth+1} missions={missions}/>}
+            <button disabled={node.conditions.length>=8} onClick={()=>edit({...node,conditions:[...node.conditions,condition('field',missions,regions)]})}>Add condition</button></>}
+        {node.test==='not' && <ConditionRow node={node.condition} edit={c=>edit({...node,condition:c})} depth={depth+1} missions={missions} regions={regions}/>}
+        {node.test==='region' && <label>Event inside region<select value={node.region} onChange={e=>edit({...node,region:e.target.value})}>
+            {options(regions)}</select></label>}
         {node.test==='mission' && <label>Completed mission<select aria-label="Completed mission" value={node.id} onChange={e=>edit({...node,id:e.target.value})}>
             {missions.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>}
         {node.test==='counter' && <><label>Counter scope<select aria-label="Counter scope" value={node.scope} onChange={e=>edit({...node,scope:e.target.value})}>{options(['story','player'])}</select></label>
@@ -101,6 +108,7 @@ function reorder<T,>(items:T[],from:number,to:number) {
 function describeCondition(c:Condition):string {
     if(c.test==='field') return c.field+' '+c.op+' '+c.value;
     if(c.test==='counter') return c.key+' '+c.op+' '+c.value;
+    if(c.test==='region') return 'Inside '+c.region;
     if(c.test==='mission') return c.id+' complete';
     if(c.test==='not') return 'Not ('+describeCondition(c.condition)+')';
     return '('+c.conditions.map(describeCondition).join(c.test==='all'?' and ':' or ')+')';
@@ -116,13 +124,17 @@ function describeAction(a:Action) {
         case 'cancel':return 'Cancel '+a.signal;
     }
 }
-export function StoryTriggerEditor({index,select,ruleGroups,navigate,campaign,triggers,sources,events,effects,phases,missions,change,changeMissions}:Props) {
+export function StoryTriggerEditor({regions,index,select,ruleGroups,navigate,campaign,triggers,sources,events,effects,phases,missions,change,changeMissions}:Props) {
+    const regionIds=regions.map(r=>r.id);
     const [filter,setFilter]=useState('');
     const [search,setSearch]=useState('');
     const [eventSearch,setEventSearch]=useState('');
     const [recipe,setRecipe]=useState('');
     const [piece,setPiece]=useState(0);
     const [missionId,setMissionId]=useState('');
+    const sceneCues=Array.from(new Set(ruleGroups.flatMap(g=>[...g.effects,
+        ...g.rules.flatMap(t=>t.actions.flatMap(a=>a.do==='effect'?[a.effect]:[]))])
+        .flatMap(effect=>typeof effect.cue==='string' && effect.cue?[effect.cue]:[])));
     const at=Math.min(index,triggers.length-1);
     const rule=triggers[at];
     const found=sources.filter(s=>(s.title+' '+s.category+' '+s.components.map(c=>c.label+' '+(c.trigger?.on ?? '')).join(' ')).toLowerCase().includes(search.toLowerCase()));
@@ -208,18 +220,27 @@ export function StoryTriggerEditor({index,select,ruleGroups,navigate,campaign,tr
             })}</details>}
             <div className="trigger-inspector"><fieldset><legend>Event</legend><label>Find an event<input type="search" value={eventSearch} onChange={e=>setEventSearch(e.target.value)}/></label><label>Listen for<select aria-label="Listen for" value={rule.on} onChange={e=>{
                 const {signal,afterDays,...rest}=rule; const on=e.target.value;
-                revise({...rest,on,match:undefined,...(on==='story signal'?{signal:'route-open'}:{}),...(on==='clock'?{afterDays:1,once:'visit',audience:'world'}:{})});
+                revise({...rest,on,match:undefined,...(sceneEvent(on)?{audience:'world',once:rest.once==='player'||rest.once==='member'?'each':rest.once}:{}),
+                    ...(on==='story signal'?{signal:'route-open'}:{}),...(on==='clock'?{afterDays:1,once:'visit',audience:'world'}:{})});
             }}>{options(events.filter(k=>k===rule.on || k.toLowerCase().includes(eventSearch.toLowerCase())).sort())}</select></label>
+            {sceneEvent(rule.on) && <label>Scene cue to wait for<input list="story-scene-cues" placeholder="Any cue" value={rule.match?.detail ?? ''} onChange={e=>{
+                const match={...rule.match};if(e.target.value)match.detail=e.target.value;else delete match.detail;
+                revise({...rule,match});
+            }}/><datalist id="story-scene-cues">{options(sceneCues)}</datalist></label>}
+            {(rule.on==='region entered'||rule.on==='region left') && <label>Crossed region<select value={rule.match?.target ?? ''} onChange={e=>{
+                const match={...rule.match}; if(e.target.value)match.target=e.target.value; else delete match.target;
+                revise({...rule,match});
+            }}><option value="">Any region</option>{options(regionIds)}</select></label>}
             {rule.on==='story signal' && <label>Incoming signal<input value={rule.signal ?? ''} onChange={e=>revise({...rule,signal:e.target.value})}/></label>}
             {rule.on==='clock' && <label>Delay in game days<input type="number" step="any" value={rule.afterDays ?? 1} onChange={e=>revise({...rule,afterDays:Number(e.target.value)})}/></label>}
-            <label>Whose event<select aria-label="Whose event" disabled={rule.on==='clock'} value={rule.audience ?? 'world'} onChange={e=>revise({...rule,audience:e.target.value})}>{options(['world','participant'])}</select></label>
+            <label>Whose event<select aria-label="Whose event" disabled={rule.on==='clock'||sceneEvent(rule.on)} value={rule.audience ?? 'world'} onChange={e=>revise({...rule,audience:e.target.value})}>{options(['world','participant'])}</select></label>
             <label>Fire<select aria-label="Fire" disabled={rule.on==='clock'} value={rule.once ?? 'each'} onChange={e=>revise({...rule,once:e.target.value})}>
-                <option value="each">Every matching event</option><option value="visit">Once this phase visit</option><option value="player">Once per player this visit</option><option value="campaign">Once per campaign</option><option value="member">Once per player per campaign</option></select></label>
-            <details><summary>Match event fields</summary>{fields.map(k=><label key={k}>{k}<input value={rule.match?.[k] ?? ''} onChange={e=>{
+                <option value="each">Every matching event</option><option value="visit">Once this phase visit</option><option value="player" disabled={sceneEvent(rule.on)}>Once per player this visit</option><option value="campaign">Once per campaign</option><option value="member" disabled={sceneEvent(rule.on)}>Once per player per campaign</option></select></label>
+            <details><summary>Match event fields</summary>{fields.filter(k=>(k!=='target' || (rule.on!=='region entered' && rule.on!=='region left')) && (k!=='detail' || !sceneEvent(rule.on))).map(k=><label key={k}>{k}<input value={rule.match?.[k] ?? ''} onChange={e=>{
                 const match={...rule.match}; if(e.target.value) match[k]=e.target.value;else delete match[k];revise({...rule,match});
             }}/></label>)}</details></fieldset>
-            <fieldset><legend>Conditions</legend>{rule.if?<><ConditionRow node={rule.if} missions={campaign?[]:missions} edit={c=>revise({...rule,if:c})}/>
-                <button onClick={()=>revise({...rule,if:undefined})}>Clear conditions</button></>:<button onClick={()=>revise({...rule,if:condition('all',missions)})}>Add condition group</button>}</fieldset>
+            <fieldset><legend>Conditions</legend>{rule.if?<><ConditionRow node={rule.if} regions={regionIds} missions={campaign?[]:missions} edit={c=>revise({...rule,if:c})}/>
+                <button onClick={()=>revise({...rule,if:undefined})}>Clear conditions</button></>:<button onClick={()=>revise({...rule,if:condition('all',missions,regionIds)})}>Add condition group</button>}</fieldset>
             <fieldset><legend>Actions in order</legend>{rule.actions.map((a,i)=><fieldset key={i}><legend>Action {i+1}</legend>
                 <label>Action type<select aria-label="Action type" value={a.do} onChange={e=>changeAction(i,makeAction(e.target.value,phases,effects))}>
                 <option value="emit">Send a story signal</option><option value="set">Set a counter</option><option value="add">Add to a counter</option>
@@ -238,9 +259,9 @@ export function StoryTriggerEditor({index,select,ruleGroups,navigate,campaign,tr
                     <label>Counter name<input value={a.key} onChange={e=>changeAction(i,{...a,key:e.target.value})}/></label>
                     <label>Value source<select aria-label="Value source" value={typeof a.value==='number'?'number':a.value} onChange={e=>changeAction(i,{...a,value:e.target.value==='number'?1:e.target.value})}>{options(['number',...amounts])}</select></label>
                     {typeof a.value==='number' && <label>Counter value<input type="number" value={a.value} onChange={e=>changeAction(i,{...a,value:Number(e.target.value)})}/></label>}</>}
-                {a.do==='effect' && <><label>World effect<select aria-label="World effect" value={a.effect.kind} onChange={e=>changeAction(i,{do:'effect',effect:makeEffect(e.target.value,effects[e.target.value])})}>
+                {a.do==='effect' && <><label>World effect<select aria-label="World effect" value={a.effect.kind} onChange={e=>changeAction(i,{do:'effect',effect:makeEffect(e.target.value,effects[e.target.value],regionIds)})}>
                     {Object.keys(effects).filter(k=>k!=='npc.line').map(k=><option key={k} value={k}>{effectName(k)}</option>)}</select></label>
-                    <StoryEffectFields effect={a.effect} fields={effects[a.effect.kind] ?? []} change={effect=>changeAction(i,{...a,effect})}/></>}
+                    <StoryEffectFields regions={regions} effect={a.effect} fields={effects[a.effect.kind] ?? []} change={effect=>changeAction(i,{...a,effect})}/></>}
                 <button disabled={!i} onClick={()=>revise({...rule,actions:reorder(rule.actions,i,i-1)})}>Move action earlier</button>
                 <button disabled={i===rule.actions.length-1} onClick={()=>revise({...rule,actions:reorder(rule.actions,i,i+1)})}>Move action later</button>
                 <button onClick={()=>revise({...rule,actions:rule.actions.filter((_,n)=>n!==i)})}>Remove action</button></fieldset>)}

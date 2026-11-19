@@ -304,6 +304,12 @@ void Game::journalRestored()
 
 void Game::record(unsigned what, const std::string& character)
 {
+    recordCharacters(what, character.empty() ? std::vector<std::string>{} : std::vector<std::string>{character});
+}
+
+// All characters affected by a single story action must commit in the same journal record as its receipt.
+void Game::recordCharacters(unsigned what, const std::vector<std::string>& characters)
+{
     auto* writer = store_ ? store_->journal() : nullptr;
     if (!writer)
     {
@@ -460,8 +466,9 @@ void Game::record(unsigned what, const std::string& character)
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
     whole(what & Companions, shadow_.companions, companionsOf(companionOwner_), "companions");
     whole(what & Accounts, shadow_.signIns, accounts_.state(), "accounts");
-    if ((what & Character) && !character.empty())
+    for (const auto& character : characters)
     {
+        if (!(what & Character)) break;
         const Entity* e = world_.entity(character);
         if (!e)
             if (const auto saved = characters_.find(character); saved != characters_.end())

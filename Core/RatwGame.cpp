@@ -1407,6 +1407,15 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         }
         saveSoon();
     }
+    else if (kind == "npc.walk" || kind == "npc.pose" || kind == "npc.speak")
+    {
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem))
+            outcome = directSceneResident(kind, target, payload);
+        else
+            outcome = {false, "Invalid scene direction.", target};
+    }
     else if (kind == "story.voice")
     {
         json::Value payload;
@@ -1456,7 +1465,11 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             const bool finished = kind == "story.finish";
             if (finished && !story->steps.empty() && !story->steps.back().objectives.empty())
                 story->steps.back().objectives.front().doneAt = now();
+            if (story->live()) releaseSceneResidents(*story);
+            story->sceneOrders.clear();
             storylines_.end(target, finished ? "done" : "abandoned", now());
+            storiesWatchingRegions_.erase(target);
+            if (storiesWatchingRegions_.empty()) lastStoryTile_.clear();
             record(StoryBook);
             outcome = {true, finished ? "World story completed." : "World story stopped.", target};
         }
@@ -1651,6 +1664,14 @@ Result Game::applyDmAct(std::vector<PgValue> row)
     {
         const auto* npc = world_.entity(target);
         outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
+    }
+    else if (kind.rfind("story.area_", 0) == 0)
+    {
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem)
+                      ? applyStoryArea(kind, target, payload)
+                      : Result{false, "Invalid story area action.", target};
     }
     else if (kind == "bandits.call")
     {
@@ -2360,6 +2381,43 @@ void Game::connect(Connection* c)
     lobby(c);
 }
 
+namespace
+{
+template<class Tile>
+void recordRegionCrossings(World& world, const storylines::Book& book, const std::set<std::string>& watches,
+                           const std::string& actor, const Tile& previous, const Tile& current)
+{
+    for (const auto& run : watches)
+    {
+        const auto* s = book.find(run);
+        if (!s || !s->live()) continue;
+        for (const auto& [id, area] : s->regions)
+        {
+            const bool inside = area.contains(current.cell, current.x, current.y);
+            if (inside == area.contains(previous.cell, previous.x, previous.y)) continue;
+            const auto& at = inside ? current : previous;
+            world.recordEvent({inside ? "region entered" : "region left", actor, id, at.cell,
+                                0, 0, {}, 0, 0, run, at.x, at.y});
+        }
+    }
+}
+} // namespace
+
+void Game::observeStoryTile(const std::string& actor)
+{
+    if (storiesWatchingRegions_.empty()) { lastStoryTile_.clear(); return; }
+    const auto* who = world_.entity(actor);
+    if (!who || who->npc || who->offstage) return;
+    const auto [x, y] = world_.eventTile(*who);
+    const StoryTile current{who->cellId, x, y};
+    auto [it, first] = lastStoryTile_.try_emplace(actor, current);
+    if (first) return; // Opening a story or logging in establishes the initial position.
+    if (it->second.cell == current.cell && it->second.x == x && it->second.y == y) return;
+    const auto previous = it->second;
+    it->second = current;
+    recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, actor, previous, current);
+}
+
 void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
 {
     if (!c || c->entityId.empty() || c->movementMode == Fighting)
@@ -2373,7 +2431,30 @@ void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double fac
         c->keysWalking = false;                    // Poses again: the client walks it.
         world_.setClientWalks(id, true);
     }
+    const auto from = player->position;
+    if (!storiesWatchingRegions_.empty()) observeStoryTile(id);
     const auto check = world_.placeByClient(id, seq, x, y, facing, ix, iy);
+    if (check.accepted && !storiesWatchingRegions_.empty())
+    {
+        // On a straight horizontal/vertical stride even the validator's alternate wall-slide route is
+        // this same segment. Emit interior tile crossings before the landing. Never sweep a portal,
+        // teleport, refused pose, or an ambiguous diagonal route through intermediate areas.
+        auto seen = lastStoryTile_.find(id);
+        if (!check.crossed && seen != lastStoryTile_.end() && seen->second.cell == player->cellId &&
+            (from.x == player->position.x || from.y == player->position.y))
+        {
+            const int endX = int(std::floor(player->position.x)), endY = int(std::floor(player->position.y));
+            const int dx = (endX > seen->second.x) - (endX < seen->second.x);
+            const int dy = (endY > seen->second.y) - (endY < seen->second.y);
+            while (std::abs(endX - seen->second.x) > 1 || std::abs(endY - seen->second.y) > 1)
+            {
+                const StoryTile next{player->cellId, seen->second.x + dx, seen->second.y + dy};
+                recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next);
+                seen->second = next;
+            }
+        }
+        observeStoryTile(id);
+    }
     if (check.accepted || !player->clientWalks)
         return;
     // Where the wolf truly is: the client goes back there, eased.
@@ -2716,6 +2797,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     advanceAge(player, world_.calendarDays());
     characters_[actor] = player;
     world_.observe(actor);
+    observeStoryTile(actor);
     logEvent("arrival", actor);
     record(Economy | Character, actor);
     if (!storageReady_)
@@ -2782,6 +2864,8 @@ void Game::leaveCharacter(Connection* c)
         world_.bonds().setAway(e->id, true);
         characters_[e->id].awayInBed = world_.bedIsTheirs(*e);   // (Only a bed it has a right to rests it fully: doc 54.)
         characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0 || (lodgingOf(e->id) && innUpstairs(e->cellId) && lodgingOf(e->id)->cell == e->cellId);
+        observeStoryTile(id);
+        lastStoryTile_.erase(id);
         logEvent("departure", id);
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
         {
@@ -3258,8 +3342,11 @@ void Game::tick(double dt)
             beforeCells[e->id] = e->cellId;
     {
         perf::Scope world(meter_, perf::World);
+        tickStoryScenes(dt);
         world_.tick(dt);
     }
+    if (!storiesWatchingRegions_.empty())
+        for (const auto* client : clients_) observeStoryTile(client->entityId);
     if (meter_)
     {
         const auto& last = world_.tickProfile().last;

@@ -481,13 +481,18 @@ void Society::furnishHomes(const std::set<std::string>& homeCells)
     }
 }
 
+bool Society::canCreate(const std::string& accountId, const std::string& item, int quantity) const
+{
+    const auto* wallet = account(accountId);
+    return wallet && itemValid(item) && quantity >= 1 && stock(*wallet, item) <= StockLimit - quantity &&
+           (wallet->stock.count(item) || wallet->stock.size() < MaxGoodsKinds);
+}
+
 bool Society::create(const std::string& accountId, const std::string& item, int quantity, const std::string& reason)
 {
-    const auto found = state_.accounts.find(accountId);
-    if (found == state_.accounts.end() || !itemValid(item) || quantity < 1 || stock(found->second, item) > StockLimit - quantity ||
-        (!found->second.stock.count(item) && found->second.stock.size() >= MaxGoodsKinds))
+    if (!canCreate(accountId, item, quantity))
         return false;
-    found->second.stock[item] += quantity;
+    state_.accounts.at(accountId).stock[item] += quantity;
     record(reason, "made", accountId, item, quantity, 0);
     return true;
 }

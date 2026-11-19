@@ -2,6 +2,8 @@
 
 import operator
 
+import story_native
+
 SIGNAL = 'story signal'
 COMPARE = {
     '=': operator.eq,
@@ -63,6 +65,9 @@ def validate(phase):
         elif kind == 'not':
             shape(c, ('test', 'condition'))
             condition(c['condition'], depth + 1)
+        elif kind == 'region':
+            shape(c, ('test', 'region'))
+            require(rules.identifier(c['region']) and c['region'] in phase.get('_regions', {}), 'Unknown story region.')
         elif kind == 'mission':
             shape(c, ('test', 'id'))
             require(
@@ -130,6 +135,7 @@ def validate(phase):
             isinstance(match, dict) and all(k in rules.FIELDS and rules.word(v, 400) for k, v in match.items()),
             'Invalid trigger filters.',
         )
+        rules.check_region_source(t, phase.get('_regions'))
         if 'if' in t:
             condition(t['if'], 1)
         actions = t['actions']
@@ -179,7 +185,7 @@ def validate(phase):
                 require(rules.identifier(a['signal']), 'Name the timer signal.')
             elif kind == 'effect':
                 shape(a, ('do', 'effect'))
-                rules.validate_effect(a['effect'], phase['id'])
+                rules.validate_effect(a['effect'], phase['id'], phase.get('_regions'))
                 require(
                     a['effect']['kind'] != 'npc.line',
                     'Set resident dialogue on phase entry.',
@@ -220,14 +226,27 @@ def counter_store(state, scope, actor, write=False):
     return store.get(actor, {}) if scope == 'player' else store
 
 
-def satisfied(c, state, event, ready):
+def satisfied(c, state, event, ready, regions=None):
+    """A missing historical position is unknown, including when an author negates the test."""
     kind = c['test']
-    if kind == 'all':
-        return all(satisfied(x, state, event, ready) for x in c['conditions'])
-    if kind == 'any':
-        return any(satisfied(x, state, event, ready) for x in c['conditions'])
+    if kind in ('all', 'any'):
+        decisive = kind == 'any'
+        unknown = False
+        for child in c['conditions']:
+            value = satisfied(child, state, event, ready, regions)
+            if value is decisive:
+                return decisive
+            unknown = unknown or value is None
+        return None if unknown else not decisive
     if kind == 'not':
-        return not satisfied(c['condition'], state, event, ready)
+        value = satisfied(c['condition'], state, event, ready, regions)
+        return None if value is None else not value
+    if kind == 'region':
+        x, y, cell = event.get('x'), event.get('y'), event.get('cell')
+        if type(x) is not int or type(y) is not int or not (0 <= x <= 4095 and 0 <= y <= 4095) or not cell:
+            return None
+        r = regions[c['region']]
+        return cell == r['cell'] and r['x1'] <= x <= r['x2'] and r['y1'] <= y <= r['y2']
     if kind == 'mission':
         return c['id'] in ready()
     if kind == 'counter':
@@ -240,6 +259,9 @@ def satisfied(c, state, event, ready):
 
 
 def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
+    native = story_native.interpreter()
+    if native:
+        return story_native.fire(native, phase, state, event, day, elapsed, ready, emit, trace)
     actor = event.get('actor', '')
     for t in phase.get('triggers', ()):
         kind = event['kind']
@@ -257,7 +279,7 @@ def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
         token = t['id'] if bucket == 'fired' or t['id'] in phase.get('_sharedIds', ()) else phase['id'] + '/' + t['id']
         if repeat != 'each' and owner in state.get(bucket, {}).get(token, []):
             continue
-        if 'if' in t and not satisfied(t['if'], state, event, ready):
+        if 'if' in t and not satisfied(t['if'], state, event, ready, phase.get('_regions')):
             continue
         if repeat != 'each':
             state.setdefault(bucket, {}).setdefault(token, []).append(owner)

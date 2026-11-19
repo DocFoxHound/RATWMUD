@@ -1599,9 +1599,38 @@ Result World::callBandits(const std::string& near, int count)
     camp.x = spot.x;
     camp.y = spot.y;
     roads_.camps.push_back(camp);
-    recordEvent({"bandits called", "dungeon master", near, e->cellId, 0, 0, {}, count, 0, camp.id});
+    recordEvent({"bandits called", "dungeon master", near, e->cellId, 0, 0, {}, count, 0, camp.id, int(spot.x), int(spot.y)});
     return {true, std::to_string(count) + (count == 1 ? " bandit gathers" : " bandits gather") + " a few strides from " + e->name + ".",
             camp.id};
+}
+
+// A scene's authored camp has an exact footprint, even when it first appears after a reload.
+Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count)
+{
+    if (!ensureLoaded(cellId).ok)
+        return {false, "The camp's cell is unavailable.", cellId};
+    const auto* c = cell(cellId);
+    if (!c || x1 < 0 || y1 < 0 || x2 >= c->width || y2 >= c->height || x2 < x1 || y2 < y1 || count < 1 || count > 6)
+        return {false, "Invalid camp bounds or strength.", cellId};
+    for (int y = y1; y <= y2; ++y)
+        for (int x = x1; x <= x2; ++x)
+        {
+            const Vec2 at{x + .5, y + .5};
+            if (!standable(cellId, at) || nearPortal(cellId, at, 1))
+                continue;
+            const auto index = roads_.camps.size() + 1;
+            std::string id = "camp_story_" + std::to_string(index);
+            std::size_t next = index;
+            while (std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == id; }))
+                id = "camp_story_" + std::to_string(++next);
+            BanditCamp camp{id, cellId, 3.0 * count, 50, -100, true};
+            camp.x = at.x;
+            camp.y = at.y;
+            roads_.camps.push_back(camp);
+            recordEvent({"bandits called", "dungeon master", id, cellId, 0, 0, {}, count, 0, id, x, y});
+            return {true, "A bandit camp gathers in the story area.", id};
+        }
+    return {false, "No open ground in the story area for bandits.", cellId};
 }
 
 bool World::hostile(const std::string& id) const
@@ -1672,7 +1701,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
         for (int i = 0; i < n; ++i)
         {
             Vec2 at{camp.x + std::cos(i * 1.3) * 1.5 * (i > 0), camp.y + std::sin(i * 1.3) * 1.5 * (i > 0)};
-            if (!standable(camp.cell, at))
+            if (camp.id.rfind("camp_story_", 0) == 0 || !standable(camp.cell, at))
                 at = {camp.x, camp.y};
             const std::string id = "road:" + camp.id + ":" + std::to_string(i);
             const std::string name = i == 0 ? "the bandit leader" : BanditNames[roll(id, 7) % std::size(BanditNames)];

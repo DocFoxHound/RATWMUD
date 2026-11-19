@@ -400,6 +400,173 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
     return true;
 }
 
+// Scene orders belong to one approved run and journal visit. Accepting an order and reaching
+// its cue are distinct: arrival is observed from the resident in the native simulation.
+Result Game::directSceneResident(const std::string& kind, const std::string& npc, const Value& p)
+{
+    const auto run = p.string("run"), cue = p.string("cue");
+    auto* story = storylines_.find(run);
+    auto* actor = world_.entity(npc);
+    if (!story || !story->live() || story->source != "storykeeper" || p.number("visit", -1) != std::strtod(story->sourceRef.c_str(), nullptr))
+        return {false, "The requested scene visit is no longer open.", npc};
+    if (npc.empty() || npc.size() > 80 || (actor && !actor->npc))
+        return {false, "A scene order must name a resident.", npc};
+    if (cue.empty() || cue.size() > 80 || cue.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.:-") != std::string::npos)
+        return {false, "Give the scene cue an identifier.", npc};
+    for (const auto& other : storylines_.activeScenes())
+        if (other != run && storylines_.find(other)->sceneOrders.count(npc))
+            return {false, "Another story is directing this resident.", npc};
+    const auto prior = story->sceneOrders.find(npc);
+    if (prior != story->sceneOrders.end() && !prior->second.done)
+        return {false, "Wait for this resident's pending scene cue.", npc};
+    storylines::SceneOrder order;
+    order.kind = kind;
+    order.cue = cue;
+    const auto held = sceneActors_.find(npc);
+    order.previousPace = prior != story->sceneOrders.end() ? prior->second.previousPace
+                         : held != sceneActors_.end() ? held->second.previousPace : actor ? actor->pace : 0;
+    if (kind == "npc.walk")
+    {
+        order.cell = p.string("cell");
+        const double x = p.number("x", -1), y = p.number("y", -1);
+        const auto pace = p.string("pace");
+        if (x < 0 || y < 0 || x > 4095 || y > 4095 || std::floor(x) != x || std::floor(y) != y ||
+            (pace != "walk" && pace != "run") || !world_.ensureLoaded(order.cell).ok)
+            return {false, "Choose a valid destination tile and pace.", npc};
+        order.x = int(x); order.y = int(y); order.pace = pace == "run" ? 10 : 0;
+        const auto* tile = world_.cell(order.cell)->tile(order.x, order.y);
+        if (!tile || tile->solid)
+            return {false, "Choose a walkable destination tile.", npc};
+    }
+    else if (kind == "npc.pose")
+    {
+        order.posture = p.string("posture");
+        if (order.posture != "standing" && order.posture != "sitting" && order.posture != "lying")
+            return {false, "Choose a scene posture.", npc};
+    }
+    else
+    {
+        order.words = p.string("text");
+        if (order.words.empty() || json::utf8Prefix(order.words, 200) != order.words ||
+            order.words.find_first_of("\r\n") != std::string::npos)
+            return {false, "Supply a single spoken line of up to 200 characters.", npc};
+    }
+    if (actor && world_.society().resident(npc) && !actor->dead && !world_.inBattle(npc) && actor->downedLeft <= 0 && actor->leaderId.empty())
+    {
+        world_.sceneHold(npc, true, kind == "npc.walk" ? order.pace : order.previousPace);
+        sceneActors_[npc] = {order.previousPace, world_.time(), actor->cellId, actor->position};
+        if (kind == "npc.walk") actor->activity = order.pace ? "running on a story errand" : "walking on a story errand";
+    }
+    story->sceneOrders[npc] = std::move(order);
+    storylines_.touch();
+    record(StoryBook);
+    return {true, "Scene direction accepted.", npc};
+}
+
+void Game::releaseSceneResidents(const storylines::Storyline& story)
+{
+    for (const auto& [npc, order] : story.sceneOrders)
+    {
+        world_.sceneHold(npc, false, order.previousPace);
+        sceneActors_.erase(npc);
+    }
+}
+
+void Game::tickStoryScenes(double dt)
+{
+    const auto& runs = storylines_.activeScenes();
+    if (runs.empty() && sceneActors_.empty()) return;
+    nextSceneCheck_ -= dt;
+    if (nextSceneCheck_ > 0) return;
+    nextSceneCheck_ = .25;
+    std::set<std::string> held;
+    bool changed = false;
+    for (const auto& run : runs)
+    {
+        auto* story = storylines_.find(run);
+        std::vector<std::string> blocked;
+        for (auto& [npc, order] : story->sceneOrders)
+        {
+            held.insert(npc);
+            auto* e = world_.entity(npc);
+            auto& actor = sceneActors_[npc];
+            const bool available = e && e->npc && !e->dead && world_.society().resident(npc) &&
+                                   !world_.inBattle(npc) && e->downedLeft <= 0 && e->leaderId.empty();
+            if (available && !e->sceneDirected)
+            {
+                world_.sceneHold(npc, true, order.kind == "npc.walk" && !order.done ? order.pace : order.previousPace);
+                actor = {order.previousPace, world_.time(), e->cellId, e->position};
+            }
+            if (order.done) continue;
+            const char* event = nullptr;
+            if (!available)
+                event = "scene blocked";
+            else if (order.kind == "npc.walk")
+            {
+                if (e->cellId != actor.cell || std::hypot(e->position.x - actor.position.x, e->position.y - actor.position.y) >= .35)
+                {
+                    actor.position = e->position; actor.cell = e->cellId; actor.progressAt = world_.time();
+                }
+                if (e->cellId == order.cell && std::floor(e->position.x) == order.x && std::floor(e->position.y) == order.y)
+                    event = "scene arrived";
+                else if (!world_.canWalkBetween(e->cellId, order.cell) || world_.time() - actor.progressAt >= 180)
+                    event = "scene blocked";
+                else
+                    world_.sceneWalk(*e, order.cell, {order.x + .5, order.y + .5});
+            }
+            else if (order.kind == "npc.pose")
+            {
+                if (e->posture == order.posture) event = "scene posed";
+                else world_.setPosture(npc, order.posture);
+            }
+            else if (order.kind == "npc.speak")
+            {
+                ParsedPost post;
+                post.ok = post.speech = true;
+                post.segments.push_back({"speech", order.words});
+                publish(npc, post, Voice::Speak);
+                npcLastSpeech_[npc] = world_.time();
+                event = "scene spoken";
+            }
+            if (!event) continue;
+            if (std::string_view(event) == "scene blocked")
+            {
+                blocked.push_back(npc);
+                held.erase(npc);
+                if (!e || !e->sceneDirected) sceneActors_.erase(npc);
+            }
+            else world_.sceneHold(npc, true, order.previousPace);
+            WorldEvent fact{event, npc, run, e ? e->cellId : std::string{}, 0, 0, {}, std::stoi(story->sourceRef), 0, order.cue};
+            if (e && std::string_view(event) != "scene blocked")
+            {
+                // A directed speaker or seated resident holds this tile even without observers.
+                // Offstage travel also finishes at the specific tile before it can emit arrival.
+                fact.x = int(std::floor(e->position.x));
+                fact.y = int(std::floor(e->position.y));
+                if (order.kind == "npc.walk") e->activity = "waiting at the destination";
+            }
+            world_.recordEvent(std::move(fact));
+            order.done = true;
+            changed = true;
+        }
+        for (const auto& npc : blocked) story->sceneOrders.erase(npc);
+    }
+    for (auto it = sceneActors_.begin(); it != sceneActors_.end();)
+    {
+        if (held.count(it->first)) { ++it; continue; }
+        world_.sceneHold(it->first, false, it->second.previousPace);
+        it = sceneActors_.erase(it);
+    }
+    if (changed)
+    {
+        // The cue and post-arrival position leave with the checkpoint that marks the direction
+        // complete. A storybook-only journal record could retire the order before its cue survived.
+        storylines_.touch();
+        ++revision_;
+        save();
+    }
+}
+
 // The DM runner owns transitions. Only reached phases and their audience enter the game checkpoint.
 Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
 {
@@ -417,6 +584,14 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     if ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1)))
         return {false, "World story phases arrived out of order.", run};
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
+    if (!storylines::readRegions(p["regions"], story.regions))
+        return {false, "Invalid world story region.", run};
+    for (const auto& [id, r] : story.regions)
+    {
+        const auto* cell = world_.cell(r.cell);
+        if (!cell || r.x2 >= cell->width || r.y2 >= cell->height)
+            return {false, "Story region does not fit its live cell: " + id, run};
+    }
     story.id = run;
     story.kind = "world";
     story.source = "storykeeper";
@@ -428,6 +603,7 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
         for (const auto& who : p.array("players"))
             if (who.isString()) story.participants[who.asString()] = {now(), -1};
     }
+    story.sceneOrders.clear();
     story.admitted.clear();
     for (const auto& voice : p.array("guestVoices"))
     {
@@ -460,7 +636,13 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     story.state = p.boolean("end") ? "done" : "running";
     story.lastActivity = now();
     if (p.boolean("end")) story.ended = now();
+    if (prior && prior->live()) releaseSceneResidents(*prior);
+    // Sample pending movement against the previous watches before changing this run.
+    for (const auto* client : clients_) observeStoryTile(client->entityId);
     const auto& kept = storylines_.add(std::move(story));
+    if (kept.live() && !kept.regions.empty()) storiesWatchingRegions_.insert(run);
+    else storiesWatchingRegions_.erase(run);
+    for (const auto* client : clients_) observeStoryTile(client->entityId);
     for (const auto& [who, member] : kept.participants)
         if (member.active()) if (auto* client = clientOf(who)) storylineToast(client, kept.title + ": " + p.string("journal"));
     logEvent("story phase", run, p.string("phase"), kept.title);
@@ -509,6 +691,10 @@ void Game::storylinesSave(Value& root) const
 void Game::storylinesLoad(const Value& saved)
 {
     storylines_.load(saved.find("storylines") ? saved["storylines"] : Value::array());
+    storiesWatchingRegions_.clear();
+    lastStoryTile_.clear();
+    for (const auto& [id, s] : storylines_.all())
+        if (s.source == "storykeeper" && s.live() && !s.regions.empty()) storiesWatchingRegions_.insert(id);
     journalViews_.clear();
 }
 

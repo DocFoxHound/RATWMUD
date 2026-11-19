@@ -2062,6 +2062,8 @@ void eventLog()
     expect(w.trade("player-log", "npc_keeper", "meal", 1, true).ok, "A purchase");
     expect(w.setDead("npc_keeper", true).ok && w.setDead("npc_keeper", false).ok, "A death and a revival");
     w.recordEvent({"arrival", "player-log", {}, {}, 0, 0, {}, 0, 0, "logged in"});
+    w.recordEvent({"message", "player-log", {}, "other-cell", 0, 0, {}, 0, 0, {}});
+    customer->position = {5.5, 3.5}; // Moving later cannot change where the arrival happened.
     const auto events = w.takeEvents();
     const auto find = [&](const std::string& kind) {
         for (const auto& e : events)
@@ -2076,6 +2078,11 @@ void eventLog()
     const auto* death = find("death");
     expect(death && death->actor == "npc_keeper" && death->cell == "tavern", "The death is logged where it happened");
     expect(find("revival") && find("arrival") && find("arrival")->detail == "logged in", "and the rest");
+    expect(find("arrival")->x == 9 && find("arrival")->y == 7, "Arrival carries the actor's tile at event time");
+    expect(find("message") && find("message")->x == -1 && find("message")->y == -1,
+           "A notice about another cell does not borrow the actor's current tile");
+    expect(eventsJson({*find("arrival")}).find("\"x\":9,\"y\":7") != std::string::npos &&
+           eventsJson({*find("message")}).find("\"x\":") == std::string::npos, "Only a known tile goes to storage");
     expect(death->time == w.time() && death->day == w.calendarDays(), "with the time it happened");
     expect(w.takeEvents().empty(), "Events are handed over once");
     for (int i = 0; i < int(World::EventsKept) * 2; ++i)

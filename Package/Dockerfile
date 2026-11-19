@@ -45,6 +45,7 @@ RUN apt-get update \
  && install -d -o ratw-admin -g ratw-admin -m 0700 /var/lib/ratw/admin \
  && install -d -o root -g root -m 0700 /etc/ratw /etc/ratw/host /var/lib/ratw/backup-requests /var/ratw /var/ratw/manage
 COPY --from=build /build/ratw_server /opt/ratw/bin/ratw_server
+COPY --from=build /build/libratw_story.so /opt/ratw/bin/libratw_story.so
 # (The Editor's page is /opt/ratw/Editor/dist: the hosted studio serves it, and /opt/ratw/Data/Portraits, only to a
 # signed-in Editor session, through the helper; the client checks every file against bundle.json's signature.)
 COPY app/ /opt/ratw/

@@ -2572,12 +2572,12 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     }
     if (!e->mouth.empty())
         dropItem(b, f);
-    recordEvent({"downed", by, f.id, b.cellId, 0, 0, {}, 0, 0, b.id});
+    recordEvent({"downed", by, f.id, b.cellId, 0, 0, {}, 0, 0, b.id, f.x, f.y});
     if (auto* camp = campOf(f.id))
     {
         const auto folk = folk_.find(f.id);
         camp->strength = std::max(0.0, camp->strength - (folk != folk_.end() ? folk->second.share : 1));
-        recordEvent({"bandit falls", by, camp->id, b.cellId, 0, 0, {}, 0, 0, e->name});
+        recordEvent({"bandit falls", by, camp->id, b.cellId, 0, 0, {}, 0, 0, e->name, f.x, f.y});
         // Their leader down, the rest break and run.
         if (f.id.size() >= 2 && f.id.compare(f.id.size() - 2, 2, ":0") == 0)
             for (auto& o : b.fighters)

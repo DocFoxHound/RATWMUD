@@ -208,3 +208,14 @@
 .program-workspace > aside { grid-template-columns: minmax(0, 1fr); }
 .program-workspace > aside button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .program-workspace pre { overflow: auto; max-width: 100%; }
+
+.story-regions { border-block-start: 1px solid var(--line, #34423c); padding-block: .65rem; }
+.story-regions .region-toolbar, .region-corners, .region-footer, .region-sheet-heading {
+    display: flex; align-items: end; flex-wrap: wrap; gap: .45rem .8rem; margin-block: .55rem;
+}
+.story-regions .region-toolbar label { flex: 1 1 11rem; min-width: 0; }
+.story-regions .region-corners label { flex: 1 1 4.5rem; min-width: 0; }
+.story-regions .region-sheet-heading, .story-regions .region-footer { align-items: center; justify-content: space-between; }
+.story-regions .region-sheet { overflow: hidden; border: 1px solid #43564b; border-radius: .35rem; }
+.story-regions .map-wrap { width: 100%; height: clamp(13rem, 33vw, 23rem); }
+.story-regions .region-hint { margin-block: .45rem; }

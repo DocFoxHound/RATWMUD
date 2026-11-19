@@ -1486,6 +1486,22 @@ class Game
     // The Dungeon Master's list of story visitors (live.story_visitors; tests set it).
     void setStoryVisitors(const json::Value& list);
     // A storyline step's line for a resident's Mind while it is current (doc 58, 9): "" if none.
+    struct StoryTile { std::string cell; int x, y; };
+    std::map<std::string, StoryTile> lastStoryTile_;
+    std::set<std::string> storiesWatchingRegions_;
+    void observeStoryTile(const std::string& actor);
+    Result directSceneResident(const std::string& kind, const std::string& npc, const json::Value& payload);
+    void tickStoryScenes(double dt);
+    void releaseSceneResidents(const storylines::Storyline& story);
+    struct SceneActor
+    {
+        int previousPace = 0;
+        double progressAt = 0;
+        std::string cell;
+        Vec2 position;
+    };
+    std::map<std::string, SceneActor> sceneActors_;
+    double nextSceneCheck_ = 0;
     Result applyWorldStoryPhase(const std::string& run, const json::Value& payload);
     std::string worldStoryLine(const std::string& npc, const std::string& wolf) const;
     std::string storylineBrief(const std::string& npc, const std::string& wolf) const;
@@ -2473,6 +2489,8 @@ class Game
     // Journals what a valuable command changed (or, with no journal, saves whole and waits, as before). Replies to
     // the command's client wait for the record to be written.
     void record(unsigned what, const std::string& character = {});
+    void recordCharacters(unsigned what, const std::vector<std::string>& characters);
+    Result applyStoryArea(const std::string& kind, const std::string& run, const json::Value& payload);
     // The journal's view of what was last recorded, to find what changed since.
     struct Shadow
     {

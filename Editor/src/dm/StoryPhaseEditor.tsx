@@ -1,4 +1,6 @@
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
+import type {Project} from '../model/model.mjs';
+import {StoryRegions,type Region} from './StoryRegions';
 import {StoryMissions, type Mission, type EventType} from './StoryMissions';
 
 import {StoryTriggerEditor, type Trigger} from './StoryTriggerEditor';
@@ -9,7 +11,7 @@ interface Exit {
     on:string; to:string; match?:Record<string,string>; afterDays?:number; percent?:number; players?:number; participant?:boolean;
 }
 interface Phase {campaignRules?:boolean;triggers?:Trigger[]; missions?:Mission[]; guestVoices?:string[]; id:string; journal:string; effects:Effect[]; exits:Exit[]}
-export interface WorldProgram {triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
+export interface WorldProgram {regions?:Region[];triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
 export interface ProgramCatalogue {blank:WorldProgram;triggerRules:{events:string[]}; eventTypes:EventType[]; missionEvents:string[]; missionMeasures:Record<string,string[]>; events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
 
 function newExit(on:string, to:string):Exit {
@@ -19,7 +21,25 @@ function newExit(on:string, to:string):Exit {
     return {on,to};
 }
 
-export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:string)=>void; program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void}) {
+// Region IDs can occur in nested conditions, effects, entrance/exit filters and rehearsal assertions.
+function regionReferences(program:WorldProgram) {
+    const refs:[Record<string,unknown>,string][]=[];
+    function visit(value:unknown) {
+        if(!value || typeof value!=='object')return;
+        if(Array.isArray(value)){value.forEach(visit);return;}
+        const node=value as Record<string,unknown>;
+        if(typeof node.region==='string')refs.push([node,'region']);
+        if([node.on,node.kind].some(event=>event==='region entered'||event==='region left')) {
+            if(typeof node.target==='string')refs.push([node,'target']);
+            if(node.match && typeof node.match==='object' && 'target' in node.match)refs.push([node.match as Record<string,unknown>,'target']);
+        }
+        Object.values(node).forEach(visit);
+    }
+    visit(program);
+    return refs;
+}
+
+export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Project|null;start:(id:string)=>void; program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void}) {
     const [index,setIndex] = useState(0);
     const [scope,setScope]=useState<'phase'|'campaign'>('phase');
     const [ruleIndex,setRuleIndex]=useState(0);
@@ -27,9 +47,19 @@ export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:stri
     function goScope(s:'phase'|'campaign') {setScope(s);setRuleIndex(0);}
     const at = Math.min(index,program.phases.length-1);
     const phase = program.phases[at];
+    const refs=useMemo(()=>program.regions?.length?regionReferences(program):[],[program]);
     if (!phase) return null;
     function update(patch:Partial<Phase>) {
         onEdit({...program,phases:program.phases.map((p,i)=>i===at?{...phase,...patch}:p)});
+    }
+    const regions=program.regions ?? [];
+    const regionIds=regions.map(r=>r.id);
+    function changeRegions(next:Region[],rename?:[string,string]) {
+        const updated=rename?structuredClone(program):program;
+        if(rename) for(const [obj,key] of regionReferences(updated)) {
+            if(obj[key]===rename[0])obj[key]=rename[1];
+        }
+        onEdit({...updated,regions:next});
     }
     function rename(next:string) {
         const renamed=(id:string)=>id===phase.id?next:id;
@@ -52,6 +82,7 @@ export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:stri
                 onChange={e=>onEdit({...program,audience:{kind:'players',players:e.target.value.split('\n')}})}/></label>}
         <label>Opening phase<select value={program.start} onChange={e=>onEdit({...program,start:e.target.value})}>
             {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label></details>
+        <StoryRegions world={world} regions={regions} change={changeRegions} used={id=>refs.some(([obj,key])=>obj[key]===id)}/>
         <div className="phase-strip"><h4>Campaign phases</h4><nav aria-label="Campaign phases">{program.phases.map((p,i)=><button key={i}
             aria-current={at===i?'step':undefined} onClick={()=>goPhase(i)}>{p.id}</button>)}</nav>
         <button onClick={()=>{let n=program.phases.length+1; while(program.phases.some(p=>p.id==='phase-'+n)) n++;
@@ -71,9 +102,9 @@ export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:stri
             <button aria-pressed={scope==='campaign'} onClick={()=>goScope('campaign')}>Campaign triggers</button></div>
         {scope==='campaign' && <label><input type="checkbox" checked={phase.campaignRules ?? !!(phase.triggers?.length || phase.exits.length)}
             onChange={e=>update({campaignRules:e.target.checked})}/>Run campaign triggers during {phase.id}</label>}
-        <StoryTriggerEditor index={ruleIndex} select={setRuleIndex}
-            ruleGroups={[{phase:null,label:'Campaign',rules:program.triggers ?? [],missions:[]},
-                ...program.phases.map((p,i)=>({phase:i,label:p.id,rules:p.triggers ?? [],missions:p.missions ?? []}))]}
+        <StoryTriggerEditor regions={regions} index={ruleIndex} select={setRuleIndex}
+            ruleGroups={[{phase:null,label:'Campaign',rules:program.triggers ?? [],missions:[],effects:[]},
+                ...program.phases.map((p,i)=>({phase:i,label:p.id,rules:p.triggers ?? [],missions:p.missions ?? [],effects:p.effects}))]}
             navigate={(target,rule)=>{if(target!==null)setIndex(target);setScope(target===null?'campaign':'phase');setRuleIndex(rule);}}
             key={scope+'-'+phase.id} campaign={scope==='campaign'} triggers={(scope==='campaign'?program.triggers:phase.triggers) ?? []} sources={catalog.eventTypes} events={catalog.triggerRules.events} effects={catalog.effects}
             phases={program.phases.map(p=>p.id)} missions={phase.missions ?? []} change={triggers=>{if(scope==='phase') update({triggers});
@@ -108,10 +139,10 @@ export function StoryPhaseEditor({program,catalog,onEdit,start}: {start:(id:stri
         <label>Optional guest speakers (resident IDs, one per line)<textarea rows={2}
             value={(phase.guestVoices ?? []).join('\n')} onChange={e=>update({guestVoices:e.target.value ? e.target.value.split('\n') : []})}/></label>
         <h4>When this phase opens</h4>{phase.effects.map((e,i)=><fieldset key={i}><legend>{effectName(e.kind)}</legend>
-            <StoryEffectFields effect={e} fields={catalog.effects[e.kind] ?? []} change={next=>effect(i,next)}/>
+            <StoryEffectFields regions={regions} effect={e} fields={catalog.effects[e.kind] ?? []} change={next=>effect(i,next)}/>
             <button onClick={()=>update({effects:phase.effects.filter((_,n)=>n!==i)})}>Remove effect</button></fieldset>)}
-        <label>Add phase effect<select value="" onChange={e=>{const kind=e.target.value; const next=makeEffect(kind,catalog.effects[kind]);
+        <label>Add phase effect<select value="" onChange={e=>{const kind=e.target.value; const next=makeEffect(kind,catalog.effects[kind],regionIds);
             update({effects:[...phase.effects,next]});}}><option value="">Choose an effect</option>
             {Object.keys(catalog.effects).map(kind=><option key={kind} value={kind}>{effectName(kind)}</option>)}</select></label>
-        </details><StoryRehearsalEditor cases={program.tests} events={catalog.events} phases={program.phases.map(p=>p.id)} change={tests=>onEdit({...program,tests})}/></>;
+        </details><StoryRehearsalEditor regions={regions} cases={program.tests} events={catalog.events} phases={program.phases.map(p=>p.id)} change={tests=>onEdit({...program,tests})}/></>;
 }

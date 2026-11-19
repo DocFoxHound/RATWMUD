@@ -7,7 +7,12 @@ import re
 
 import story_triggers as triggers
 
+SCENE_EVENTS = ('scene arrived', 'scene spoken', 'scene posed', 'scene blocked')
+REGION_EVENTS = ('region entered', 'region left')
+SCENE_EFFECTS = ('npc.walk', 'npc.speak', 'npc.pose')
 EVENTS = (
+    *SCENE_EVENTS,
+    *REGION_EVENTS,
     'conversation',
     'arrival',
     'enter place',
@@ -163,6 +168,13 @@ FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 # Actions here map to existing, bounded world operations. Story-only dialogue expires on phase exit.
 EFFECTS = {
     'npc.line': ('npc', 'text'),
+    'npc.walk': ('npc', 'cell', 'x', 'y', 'pace', 'cue'),
+    'npc.speak': ('npc', 'text', 'cue'),
+    'npc.pose': ('npc', 'posture', 'cue'),
+    'story.area.damage': ('region', 'points'),
+    'story.area.item': ('region', 'item', 'quantity'),
+    'story.area.buff': ('region', 'buff', 'hours'),
+    'story.area.spawn': ('region', 'count'),
     'npc.move': ('npc', 'cell', 'x', 'y'),
     'npc.protect': ('npc',),
     'npc.unprotect': ('npc',),
@@ -218,6 +230,9 @@ def number(v, low, high):
 
 # Mission objectives take evidence from the participant who acted. Ambient events can open or close a phase.
 MISSION_EVENTS = (
+    *REGION_EVENTS,
+    'bandit falls',
+    'downed',
     'archive work',
     'contract taken',
     'contract done',
@@ -461,7 +476,13 @@ def mission_snapshot(phase, state):
     return result
 
 
-def validate_effect(effect, pid):
+def check_region_source(rule, regions):
+    if rule['on'] in REGION_EVENTS:
+        name = rule.get('match', {}).get('target')
+        require(regions and (name is None or name in regions), 'A boundary crossing must use a region in this story.')
+
+
+def validate_effect(effect, pid, regions=None):
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
     shape(effect, ('kind', *EFFECTS[kind]))
@@ -479,6 +500,20 @@ def validate_effect(effect, pid):
             ok = integer(v, 1, 6)
         elif k == 'skill':
             ok = v in ('craft', 'commerce', 'labour', 'service', 'travel', 'watch')
+        elif k == 'region':
+            ok = identifier(v) and v in (regions or {})
+        elif k == 'pace':
+            ok = v in ('walk', 'run')
+        elif k == 'posture':
+            ok = v in ('standing', 'sitting', 'lying')
+        elif k == 'buff':
+            ok = v == 'fed'
+        elif k == 'quantity':
+            ok = integer(v, 1, 100)
+        elif k == 'hours':
+            ok = integer(v, 1, 168)
+        elif k == 'points' and kind == 'story.area.damage':
+            ok = integer(v, 1, 99)
         elif k == 'points':
             ok = integer(v, -100, 100) and v != 0
         elif k == 'days':
@@ -503,7 +538,13 @@ def validate_effect(effect, pid):
         )
 
 
+def region_index(program):
+    return {r['id']: r for r in program.get('regions', [])}
+
+
 def effective_phase(program, phase):
+    if program.get('regions'):
+        phase = {**phase, '_regions': region_index(program)}
     shared = program.get('triggers', [])
     if shared and (phase.get('campaignRules', bool(phase.get('exits') or phase.get('triggers')))):
         return {
@@ -529,8 +570,22 @@ def validate(p):
     shape(
         p,
         ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests'),
-        ('triggers',),
+        ('triggers', 'regions'),
     )
+    rectangles = p.get('regions', [])
+    require(isinstance(rectangles, list) and len(rectangles) <= 128, 'Choose up to 128 named regions.')
+    names = set()
+    for r in rectangles:
+        shape(r, ('id', 'cell', 'x1', 'y1', 'x2', 'y2'))
+        require(
+            identifier(r['id']) and r['id'] not in names and identifier(r['cell']),
+            'Give each region a unique ID and a cell.',
+        )
+        require(
+            all(integer(r[k], 0, 4095) for k in ('x1', 'y1', 'x2', 'y2')) and r['x1'] <= r['x2'] and r['y1'] <= r['y2'],
+            'Choose ordered, inclusive tile bounds for the region.',
+        )
+        names.add(r['id'])
     require(
         p['format'] == 'ratw-story-program' and type(p['version']) is int and p['version'] == 1,
         'Unknown story format or version.',
@@ -566,7 +621,7 @@ def validate(p):
         'Choose up to 64 campaign triggers.',
     )
     # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
-    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared})
+    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared, '_regions': region_index(p)})
     ids = set()
     for phase in p['phases']:
         shape(
@@ -600,7 +655,7 @@ def validate(p):
         )
         speakers = set()
         for effect in phase['effects']:
-            validate_effect(effect, pid)
+            validate_effect(effect, pid, phase.get('_regions'))
             kind = effect['kind']
             if kind == 'npc.line':
                 require(
@@ -614,6 +669,9 @@ def validate(p):
         )
         mission_ids = validate_missions(phase)
         triggers.validate(phase)
+        for mission in phase.get('missions', []):
+            for objective in mission['objectives']:
+                check_region_source(objective, phase.get('_regions'))
         for e in phase['exits']:
             if isinstance(e, dict) and e.get('on') == MISSION_GATE:
                 shape(e, ('on', 'to', 'missions'))
@@ -650,6 +708,7 @@ def validate(p):
                 isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
                 f'{pid}: invalid event filter.',
             )
+            check_region_source(e, phase.get('_regions'))
             require(
                 'participant' not in e or type(e['participant']) is bool,
                 f'{pid}: participant must be true or false.',
@@ -685,6 +744,7 @@ def validate(p):
                         isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
                         'Invalid prerequisite filter.',
                     )
+                    check_region_source(step, phase.get('_regions'))
             if 'afterDays' in e or e['on'] == 'clock':
                 require(
                     number(e.get('afterDays'), 1 / 1440, 36500),
@@ -809,6 +869,7 @@ def dispatch(p, phase, state, event, day, trace, elapsed):
 
     for fact in queue:
         track_missions(phase, state, fact, credited)
+        trace_start = len(trace) if trace is not None else 0
         target = triggers.fire(
             phase,
             state,
@@ -820,6 +881,9 @@ def dispatch(p, phase, state, event, day, trace, elapsed):
             emit,
             trace,
         )
+        if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
+            for firing in trace[trace_start:]:
+                firing.update(cell=fact['cell'], x=fact['x'], y=fact['y'])
         target = target or exit_for(phase, state, fact, day)
         if target:
             state.pop('previousMissions', None)
@@ -947,10 +1011,14 @@ def review(p):
 
         record_entry(p, state, path, intended, visit_credits)
         for ev in case['events']:
-            shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays'))
+            shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y'))
             require(
                 identifier(ev['id'])
                 and ev['kind'] in EVENTS
+                and (
+                    ('x' not in ev and 'y' not in ev)
+                    or (identifier(ev.get('cell')) and integer(ev.get('x'), 0, 4095) and integer(ev.get('y'), 0, 4095))
+                )
                 and number(ev['day'], 0, 1e8)
                 and all(isinstance(ev[k], str) and len(ev[k]) <= 400 for k in FIELDS if k in ev)
                 and all(integer(ev[k], -(10**12), 10**12) for k in ('quantity', 'coins') if k in ev),
