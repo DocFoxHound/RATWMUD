@@ -1,6 +1,6 @@
-# cw171, the dry-day marker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw171, the dry-day marker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw171
-revision 1
+revision 2
 state ready
 dialect coldwater
 accent light broad
@@ -64,7 +64,7 @@ line @1 greet [pair.band=strangers] : #greet#, #dear#. In you come; boots on the
 line @2 greet [here.time=dawn] : Morning, #address#. I've swept already. | Morning. Up with me, #dear#? Good.
 line @3 greet [here.time=dusk|night] : #greet#. Out under the lamps at this hour, #dear#. Come in. | #greet#. In from the dark with you.
 line @4 greet [here.weather=rain] : #greet#. It'll stop. I'm watching it. | #greet#, #address#. Shake off on #step#, not in here.
-line @1 kin.open [pair.kin!=no] : Here's my #pet#. I've only just put #cards# away. | Oh, it's you. I'll warm #stew# up.
+line @1 kin.open [pair.kin!=no] : Oh, #pet#. I've only just put #cards# away. | Oh, it's you. I'll warm #stew# up.
 line @1 again.open : Back again, #dear#. You'll wear my step out. | Twice in a day, #dear#. Something's on your heart.
 line @1 greet.return : #greet#. | #greet#, #dear#.
 line @2 greet.return [pair.band=friends|family] : #greet#. Sit, sit. I'll fetch a cup. | #greet#, #pet#. I'd hoped you'd come.

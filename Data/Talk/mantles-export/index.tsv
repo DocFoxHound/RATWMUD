@@ -3,7 +3,7 @@ cw101	coldwater	standard	ready	2	cty_dray_merewell	claude-p11-pilot
 cw102	coldwater	standard	ready	2	tn_oh_briar_greenshaw	claude-p11-pilot
 cw103	coldwater	standard	ready	1	tn_fh_jory_rimepeak	claude-codex-cw-1
 cw104	coldwater	standard	ready	1	tn_sm_hob_cornwell	claude-codex-cw-1
-cw105	coldwater	standard	ready	1	tn_oh_varg_acorndell	claude-codex-cw-1
+cw105	coldwater	standard	ready	2	tn_oh_varg_acorndell	claude-codex-cw-1
 cw106	coldwater	full	ready	1	tn_cw_fallow_lakewick	claude-codex-cw-1
 cw107	coldwater	standard	ready	1	tn_fh_marl_cragpeak	claude-codex-cw-1
 cw108	coldwater	standard	ready	1	tn_lf_wolde_downfield	claude-codex-cw-1
@@ -69,7 +69,7 @@ cw167	coldwater	standard	ready	1	rm_rupert_cindergate	claude
 cw168	coldwater	standard	ready	1	rmx_josephine_wickwick	claude
 cw169	coldwater	standard	ready	1	rm_fenwick_millmarsh	claude
 cw170	coldwater	full	ready	1	rm_dagny_rustcot	claude
-cw171	coldwater	standard	ready	1	rmx_delphine_birch	claude
+cw171	coldwater	standard	ready	2	rmx_delphine_birch	claude
 cw172	coldwater	standard	ready	1	rm_edda_bilgeridge	claude
 cw173	coldwater	standard	ready	1	rm_vidar_gullwick	claude
 cw174	coldwater	full	ready	1	rmx_corra_pennock	claude
@@ -144,7 +144,7 @@ mb109	mirebridge	standard	ready	2	tn_sm_bram_harvestgarth	claude-p11-pilot
 mb110	mirebridge	standard	ready	2	cty_ivo_sootridge	claude-p11-pilot
 mb111	mirebridge	standard	ready	2	cty_sloe_mistwick	claude-p11-pilot
 mb112	mirebridge	standard	ready	2	cty_ivar_wickcot	claude-p11-pilot
-mb113	mirebridge	standard	ready	2	cty_jasper_greymore	claude-p11-pilot
+mb113	mirebridge	standard	ready	3	cty_jasper_greymore	claude-p11-pilot
 mb114	mirebridge	standard	ready	2	cty_stone_marshmore	claude-p11-pilot
 mb115	mirebridge	standard	ready	2	cty_yrsa_plankgate	claude-p11-pilot
 mb116	mirebridge	standard	ready	2	cty_jory_corncroft	claude-p11-pilot
