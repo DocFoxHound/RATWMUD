@@ -1,0 +1,453 @@
+# cw181, the wick-trimmer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw181
+revision 1
+state ready
+dialect coldwater
+accent none
+tier full
+written_for rm_emmerich_sootley
+written_by claude
+title the wick-trimmer
+fits stage=adult|old
+prefers role=merchant job=crafter talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk trims_any_wick_in_reach_with_a_pocket_knife
+likes hard_cheese dancing market_bustle autumn_wind
+dislikes salt_wind waiting
+fears a_fire_in_the_shop_at_night never_finding_quiet_again
+hopes a_shop_that_smells_of_beeswax a_festival_night_that_never_ends
+topics work +0.4 pastimes +0.3 season +0.3 food +0.2 smalltalk +0.2 gossip -0.4
+styles comfort=quiet gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# makes candles and lamp oil and lives over the shop: quiet, dry and watchful, slow to speak and quick to notice, with a pocket knife ready for any wick that smokes.
+
+words
+oath! = Tallow and tinder | Wick and whet
+saying! = Trim it before it smokes | A square wick burns honest
+knife = my pocket knife | the little knife
+whet = the wet stone | my whetstone
+wick = a wick | a wick trimmed square
+tallow = tallow | rendered tallow
+vat = the vat | the tallow vat
+candles = candles | dipped candles
+candle = a candle | a dipped candle
+wicks = wicks | the wicks
+lamp = a lamp | an oil lamp
+cart = the cart | that cart
+fiddle = a fiddle | the fiddler's bow
+wax = beeswax | good yellow wax
+dips = the dips | a rack of dips
+lamps = the lamps | every lamp on the street
+oil = lamp oil | good clear oil
+cheese = hard cheese | a wedge of old hard cheese
+dance = the dancing | a turn on the floor
+din = the market at its loudest | a full market
+blow = a blowy autumn day | the autumn wind
+saltwind = the salt wind | that wind off the sea
+upstairs = upstairs | up over the shop
+quiet = the quiet | a bit of quiet
+camp = the charcoal camp | the burners' camp in the woods
+smoke = a smoky wick | smoke
+mm = Mm | Hm
+counter = the counter | my counter
+
+any
+opinion @1 merchants for 1 [self.role=merchant] : I sell light by the inch. I know what #tallow# cost me, and so does every customer who asks.
+opinion @1 road against 1 [self.role=merchant] : A late cart means no #tallow#, and no tallow means no #dips#. I hate waiting more than I hate the road.
+opinion @1 watch for 1 : #lamps.capitalize# and the Watch between them keep thieves off #counter#. I'm grateful to both.
+opinion @1 city against 1 : Too loud to think, most days. I came for the work and stayed for #din#. The rest I'd sell.
+opinion @1 festivals for 1 : A festival is the one night I'll talk. Mostly with my feet. #dance.capitalize# does the rest.
+opinion @1 church mixed 0 : I sell the chapel its #candles#. What they're lit for is between the lighter and the Bright One.
+opinion @1 houses mixed 0 : The Houses buy #wax# by the crate and pay late. I take their coin and keep my opinions.
+opinion @1 newcomers mixed 0 : New faces want light like anyone. Whether they'll stay is another matter. #mm#.
+opinion @1 drink mixed 0 : One cup on a festival night, then #dance#. Two cups and I'd talk, and nobody wants that.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Take your time. | #greet#, #address#. Shut the door; the draught finds #wick#.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Mind the dips; they're still soft. | #greet#. I'll be with you once this wick's square.
+line @3 greet [here.time=dawn] : Morning. I've #vat# warming. | Morning. Quiet still, which is how I like it.
+line @4 greet [here.time=dusk|night] : Evening. #lamps.capitalize# are being lit. | #greet#. You'll want a light home.
+line @1 kin.open [pair.kin!=no] : There you are. Kettle's near boiling; pull up a stool. | Oh. You. #mm#. Good.
+line @1 again.open : Twice today. You'll wear the step down. | You again. #counter.capitalize#'s just as you left it.
+line @1 hail [pair.band=friends] : Here. A word. | #address.capitalize#. This way, out of #saltwind#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I wondered. | #greet#. Kettle's on, if you're staying.
+line @3 greet.return [self.working=yes self.role=merchant] : #greet#. Talk; I'm only dipping. | #greet#. Go on. My paws are busy, my ears aren't.
+line @4 greet.return [here.time=dusk|night] : Evening. Lamps lit, I see. | #greet#. Dark out already; come in.
+line @1 farewell : #farewell#. | #farewell#. Mind the step.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take a light. | #farewell#. Keep to where #lamps# are lit.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Don't be a stranger. | Go on. #farewell#.
+line @1 react.news : #mm#. Go on. | That's a thing. Tell me the rest.
+line @1 react.news.new : #surprise#. I'd not heard. | #oath#. That's new.
+line @1 react.news.known : #knew#. It came over #counter# at noon. | Heard it already. Folk talk while I wrap.
+line @1 react.news.doubt : #doubt#. I'll wait and see. | #hedge#. I'd want that from somebody who was there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll light one for them. | That's #bad#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That calls for #dance#. | #good.capitalize#. There'll be candles wanted.
+line @1 answer.how : Steady. #wick.capitalize#, then another. | #fine#. Nothing's caught fire.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every lamp in the street wants oil at once. | Busy. Ask me after #dips# are hung.
+line @1 answer.how.poorly : Eyes sore from close work. #tired.capitalize#. | Burnt a finger on #vat#. It'll pass.
+line @1 ask.how : And you? | How's the day treating you, #address#?
+line @1 sympathise : #sympathy#. Sit. Have some #cheese#. | That's hard. I've no clever words. I'll listen.
+line @1 reassure : #reassure#. These things burn down. | It'll pass, given a night or two. Like #smoke#.
+line @1 decline [self.working=yes self.role=merchant] : #hedge#, but I can't. The vat won't mind itself, and I've nobody to leave it with. | I'd like to. Only #dips# need hanging before they set crooked.
+line @2 decline : Not today, #address#. I'm poor company, and I know it. | I'll pass, this once. I've had my fill of talk for the week.
+line @1 accept_decline : #no_matter#. Another time. | It'll keep. Like #wax#.
+line @1 thank : #thanks#. | That's good of you, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. | It was nothing. A wick, a bit of oil.
+line @1 praise : That's #good#. Square and true. | Neat work. I'd put it in my window.
+line @1 deflect_praise : #modest#. | #mm#. It's only a candle.
+line @1 preclose [self.working=yes] : Well. #tallow.capitalize# is cooling. | I'd best see to #dips#.
+line @2 preclose : Well. #preclose#. | That's me. #farewell#, near enough.
+line @1 accept_preclose : Go on, then. | #bc_fair_enough# I'll not keep you.
+line @1 tease [pair.band=friends] : You talk like a smoky wick. All splutter. | Your whiskers want trimming worse than this wick.
+line @1 tease.return : Says the one who's said four words today. | #mm#. I'll trim that remark.
+line @1 ack : #mm#. | #bc_true#
+line @1 give.advice : #advise#: trim your wick before you light it. Saves a sooty ceiling. | Buy #candles# in autumn, before everyone remembers it gets dark.
+line @1 warn [world.bandits=near] : #warn#. Keep inside the city gates tonight. | Within the gates is safer this week. Keep #lamp# by the door.
+scene knife_on_wick
+when topic=smalltalk|work self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Hold still. That lamp of yours is smoking. There. #knife.capitalize#, one cut. | I trim every wick I pass. Shop, chapel, the inn. Can't help it. | #wick.capitalize# should burn without a whisper. Listen. Nothing.
+b : You trim other folk's lamps? | The inn, too? | How do you get it so quiet?
+a : If they smoke. Nobody's ever stopped me yet. | The landlord pretends not to notice. The lamps burn better, so he lets me. | Cut it square, keep it short. #saying.capitalize#.
+b : #bc_ha# | #bc_fair_enough# | #bc_clever#
+
+scene stone_and_knife
+when topic=smalltalk|pastimes
+does tell.self / react.self / assess / ack
+a : #whet.capitalize# lives in my pocket with #knife#. I give the blade a few strokes while folk talk. | A dull knife tears a wick. A sharp one leaves it square. So I sharpen. | I'm not much for talk. Sharpening gives my paws something to say.
+b : While they talk? | Square matters? | Your paws talk for you?
+a : It helps me listen. Folk say more when you're looking at something else. | It matters to the flame. It burns crooked otherwise. | Better than my mouth does. #mm#.
+b? : #bc_wise# | #bc_true# | #bc_ha#
+
+scene dipping
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Forty dips this morning. In, out, cool, in again. | #tallow.capitalize# wants to be just warm. Too hot and it runs off the wick. | The trick with #dips# is patience. I've plenty. It's the only thing I've plenty of.
+b : How many times each? | How do you know it's right? | Patience for what?
+a : A dozen, give or take. Then they hang till morning. | You dip a finger. If you swear, it's too hot. | For the cooling. Hurry it and they crack. #mm#.
+b : #bc_ha# | Ha. That's one way. | #bc_wise#
+
+scene tallow_smell
+when topic=work|home self.job=crafter
+does tell.complaint / react.complaint / assess
+a : The #tallow# smell's in my fur for good. Folk know me in the dark. | Rendering day. The whole street holds its nose when I open #vat#. | I'd like to work only in #wax#. It smells of summer. Tallow smells of the butcher's back door.
+b : Folk grow used to it. | They'll live. | Can't you?
+a : I have. Nobody else has. | They'll buy the #candles# after, nose or no nose. | Not at Commons prices. #wax.capitalize# is for the Heights.
+
+scene wax_or_tallow
+when topic=prices|work self.role=merchant self.working=yes
+does tell.self / ask.opinion / give.opinion / ack
+a : The Heights buy #wax#. The Commons buy #tallow#. The Sump buys the ends. | Somebody came in for #wax# today and paid without asking the price. I nearly fainted. | #tallow.capitalize#'s cheap and smoky. Wax is dear and sweet. I sell both, and I'd rather burn neither.
+b : Which would you buy? | Who was it? | Neither?
+a : #tallow.capitalize#. I'm a chandler, not a fool. | Didn't ask. I took the coin and said #thanks#. | I sit in the dark, mostly. #mm#. It's restful.
+b : #bc_ha# | #bc_lucky_you# | #bc_fair_enough#
+
+scene dark_comes_early
+when topic=season|work here.season=autumn|winter self.role=merchant
+does tell.self / react.self / assess
+a : The nights are drawing in. Folk suddenly remember they need #candles#. | Winter's my harvest. Everyone wants light, and they want it now. | First dark evening of the year, and there was a queue out the door.
+b : Good for trade. | Busy, then? | A queue? For candles?
+a : Good for trade, hard on the paws. | Busy enough that I talk. That's busy. | For #candles#. Folk forget the dark every spring. I don't.
+
+scene autumn_blow
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #blow.capitalize#. Leaves in the gutters and every shutter rattling. I'd stand out in it till dark. | That wind's blown three of my #candles# out today. I don't care. I love it. | I walked the long way home to stay out in #blow#.
+b : Not too cold for you? | You love it? | The long way?
+a : Cold's honest. It's the damp I can't abide. | It clears my head. The shop's all fumes and quiet. | Up past the chapel and round. Wind in my ears the whole way. #mm#. Grand.
+
+scene salt_in_fur
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess / ack
+a : #saltwind.capitalize# again. It leaves my fur stiff as a brush. | When the wind turns off the sea, my #candles# sweat salt. Customers think they're old. | I grew up with fresh water. This sea wind still tastes wrong to me.
+b : It's the city. | Sweat salt? | Fresh water's better.
+a : It is. I'd change that one thing. | A white crust. I wipe them every morning. | It is. Sea's for looking at. #saltwind.capitalize# is for nobody.
+b? : #bc_true# | #bc_poor_soul# | #bc_mine_too#
+
+scene rain_trade
+when topic=weather here.weather=rain self.role=merchant
+does tell.self / react.self / assess
+a : Rain. Good for #candles#. Folk stay in and light one. | Rain all day, and the shop smells of wet coats and #wax#. | I like the rain on the shop window. Quiet sort of noise.
+b : An ill wind, then. | Not a bad smell. | It's a good sound.
+a : For somebody. For me, mostly. #mm#. | Better than #tallow#. Most things are. | The best kind. It doesn't want an answer.
+
+scene fog_lamps
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog. #lamps.capitalize# look like they're floating. | You can't see three doors down. I lit an extra lamp in the window for whoever's lost. | Fog like this, #candle#'s worth twice what it was yesterday.
+b : It's eerie. | That's kind. | Twice?
+a : I like it. Everything's quieter in fog. | It's good sense. Lost folk buy #candles#. | To whoever's out in it. I don't charge twice. I think about it.
+
+scene the_din
+when topic=smalltalk|pastimes self.likes=market_bustle
+does tell.feeling / ask.detail / answer.detail / assess
+a : I go down to #din# on market day and stand in the middle. I never say a word. | Folk think a quiet one wants quiet. I like #din#. I just don't add to it. | Best sound in the city, a full market. Everybody shouting, nobody at me.
+b : Why go and say nothing? | Truly? | Nobody at you?
+a : I listen. You hear more in a crowd than anywhere. | Truly. It's like standing in the rain. You don't have to be the rain. | That's the joy of it. #mm#. A crowd wants nothing of you.
+b : #bc_fair_enough# | Ha. Fair. | #bc_true#
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese self.role=merchant
+does offer / accept / assess
+a : Here. #cheese.capitalize#. Go on, cut yourself a piece. | I keep #cheese# under the counter. A bite between customers. | Have some of this. It's older than some of my customers and twice as sharp.
+b : Thank you, I will. | Under the counter? | That's sharp, all right.
+a : Take the rind too. Best part. | Where else? Nobody steals cheese from a chandler. | Told you. #cheese.capitalize# bites back. I like that in a food.
+
+scene dance_night
+when topic=pastimes|festival self.likes=dancing
+does tell.self / react.self / assess / ack
+a : Folk who know me are always surprised. I say ten words a week and dance all night. | Give me a fiddle and a full floor, and I'm a different wolf till dawn. | My feet do my talking at a festival. They talk a lot.
+b : You dance? | A different wolf? | What do they say?
+a : Every reel they play. I'll sleep Restday. | Till dawn. Then I'm back to #counter# and nobody believes it. | That I've been quiet long enough. #mm#.
+b? : #bc_ha# | #bc_go_on# | Ha.
+
+scene festival_candles
+when topic=festival self.role=merchant
+does tell.self / react.self / assess
+a : Festival week. I've sold every lantern candle I dipped. | Festival nights, the whole street's lit. Half of it's mine. | I close early on a festival and go dancing. #dance.capitalize# won't wait.
+b : Good business. | You can be proud. | You close early?
+a : Good business, and then a good night. | I am, a bit. Don't spread it. | Early. The customers know where to find me: on the floor.
+
+scene waiting_on
+when topic=day|smalltalk self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : I've waited all morning on a cart that said dawn. #mm#. | Waiting's the worst part of any day. I'd sooner work twice as hard. | Stood in line at the bank an hour. I could've dipped sixty #candles#.
+b : Carts are always late. | Twice as hard? | An hour?
+a : Then they shouldn't say dawn. I've whetted #knife# thin, waiting. | Twice, and gladly. Waiting tires me more than work. | Sixty. I counted them in my head.
+
+scene quiet_at_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : I grew up near #camp# in the woods above #self.from_town#. Smoke and silence. I miss the silence. | Up at #camp# you'd hear a twig snap across the clearing. Here the street never lets up. | My first knife was a burner's. Up there you sharpen or you go without.
+b[from=coldwater] #home : The woods above the lake. I know them. | I know that quiet. | Burners keep a good edge.
+b : Do you go back? | Sounds peaceful. | Go without what?
+a@home : Then you know what I gave up. #mm#. | Then you'll see why evenings make me quiet. | They do. I learned from the best of them.
+a : Not yet. The shop won't mind itself. | It was. Smoke in everything, but peaceful. | Kindling, mostly. A dull knife won't split it.
+
+scene plain_talk
+when topic=accent self.away=yes self.from=coldwater
+does tell.self / react.self / assess / ack
+a : Folk here think I'm city-born. I don't talk enough for them to tell. | Back home they all still sound like #self.from_town#. I lost it somewhere on the road down. | People ask where I'm from and I say the woods. That ends it.
+b : Not enough to tell? | Do you miss it? | Does it?
+a : Three words at a time. Hard to catch a lake in three words. | Sometimes. When I'm tired it comes back. | Mostly. Nobody wants a story about #camp#.
+b? : #bc_ha# | #bc_true# | Ha.
+
+scene mother_near
+when topic=family self.mother
+does tell.self / react.self / assess / ack
+a : #self.mother# thinks I talk too little. #self.mother# is right, but I'll not say so. | I'd do a great deal for #self.mother#. I don't say it. I think it's known. | #self.mother# can tell a good candle from across the room. I couldn't fool #self.mother# if I tried.
+b : Tell your mother so. | It's known. | Have you tried?
+a : I will. One day. Maybe in writing. | I hope so. #mm#. | Once, as a pup. Never again.
+b : #bc_ha# | #bc_good# | #bc_ha#
+
+scene friend_near
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# can sit with me an hour and say nothing. That's rare. | I'd trust #self.friend# with the keys and the till. | #self.friend# makes me laugh. Not many do. I don't say that, either.
+b : That's a good friend. | High trust. | You should say it.
+a : The best kind. Quiet. | It's earned. #mm#. | Maybe. Saying it would spoil it.
+
+scene hand_learning
+when topic=work self.hand self.job=crafter
+does tell.self / ask.detail / answer.detail / assess
+a : I'd let #self.hand# run #vat# alone now. That's something. | #self.hand# talks enough for both of us. I don't mind. It fills the shop. | I watch #self.hand# trim a wick and say nothing. If it's crooked, I'll say one word.
+b : Took long? | Doesn't it wear on you? | What word?
+a : A season. Burnt fingers, mostly. | No. I listen. It saves me talking. | Again. #mm#. That's usually enough.
+b : #bc_good# | #bc_ha# | #bc_ha#
+
+scene over_the_shop
+when topic=home self.role=merchant
+does tell.self / react.self / assess
+a : I live #upstairs#. The floor's warm from the vat and the walls smell of wax. | My bed's over the dipping rack. I fall asleep to the smell of honey. | Two rooms over the shop. I hear every customer who knocks after hours.
+b : Warm floor in winter. | Honey? | Do you answer?
+a : That's the one blessing of #tallow#. | #wax.capitalize#. On a good week. Tallow on a bad one. | If they knock twice. Once is the wind.
+
+scene candle_for
+when topic=faith
+does give.opinion / react.self / assess
+a : I sell the chapel its #candles#. I light one myself at midwinter. That's my share. | I don't pray much. I keep #lamp# in the window. It's the same thing, near enough. | The Bright One likes a steady flame, I think. A smoky wick would be an insult.
+b : That's enough. | Near enough. | You'd know.
+a : I hope so. #mm#. | Near. I'd not argue the difference. | I would. I trim theirs too, when nobody's looking.
+
+scene stub_ends
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.worry / reassure / assess / ack
+a : Folk are buying the ends and stubs now. Nobody's buying whole #candles#. | Hard month. I've #dips# hanging that nobody can afford. | I've started selling single #wicks# for those who melt their own ends down.
+b : It'll turn. | Lower the price. | Clever.
+a : It will. Winter comes whatever the times. #reassure#. | Already have. #tallow.capitalize# won't come down with it. | Needs must. Light's light, whether it's #wax# or ends.
+b? : #bc_i_hope_so# | #bc_true# | #bc_wise#
+
+scene good_light
+when topic=times|work world.times=good|boom self.role=merchant
+does tell.news / react.news / assess
+a : #wax.capitalize# is flying off the shelf. Even the Commons want it. | Sold out of #oil# by noon. Twice this week. | I've a waiting list for festival lanterns. Me. A list.
+b : Good times, then. | Twice? | A list?
+a : Good enough that I hum over #vat#. | Twice, and I've ordered more #oil#. If it comes. | Written down, and everything. I'm almost proud.
+
+scene cart_wait
+when topic=caravan world.wagons=late self.role=merchant
+does tell.worry / reassure / assess
+a : The tallow cart's late again. I've two days' worth in #vat#. | No wax in this week. I'm dipping #tallow# and apologising. | Waiting on #cart#. I hate waiting on anything.
+b : It'll come. | Folk won't mind. | Nobody likes it.
+a : It'll come. I'll be sharp with the carter. | They'll mind the smell of #tallow#. They'll buy anyway. | I like it less than most. I'll whet #knife# till it comes.
+
+scene let_it_burn
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : Folk say a great deal over #counter#. I wrap their candles and forget it. | I've heard things across #counter#. I let them burn down. | Gossip's like a smoky wick. Better trimmed short.
+b : Go on, tell me one. | Burn down? | Trimmed short?
+a : No. #mm#. It'll keep. | Like #candle#. Leave it long enough and there's nothing left. | Cut off before it blackens the ceiling. #saying.capitalize#.
+b : #bc_ha# | #bc_fair_enough# | #bc_wise#
+
+scene lamp_at_door
+when topic=crime
+does tell.news / react.news / give.advice
+a : #topic.victim.capitalize# robbed, I hear. I've set #lamp# at my own door since. | Thieves about. #topic.victim.capitalize#, this time. | I heard #topic.victim# was robbed. I keep a light burning downstairs now, all night.
+b : A lamp? | Another one. | All night?
+a : Thieves don't like being seen. A lamp's cheaper than a lock. | #pity#. I'll keep my door barred. | All night. Costs me #candle#. Cheaper than what they'd take.
+
+scene new_face
+when topic=newcomer
+does tell.self / react.self / assess
+a : #topic.subject.capitalize# is new on the street, I hear. Someone will want #candles#. | New faces always buy #lamp# the first week. Rooms are dark when you don't know them. | I was a new face here once. I bought #candle# and sat in the dark anyway.
+b : They'll find you. | Every newcomer? | Why the dark?
+a : They will. The smell finds them first. | Every time. I keep a few cheap ones by the door for it. | I was saving it. #mm#. Turned out I didn't need it.
+
+scene close_work_eyes
+when topic=health self.job=crafter
+does tell.self / react.self / reassure
+a : My eyes ache from close work. Trimming by lamplight, all day. | Burnt my paw on #vat# this morning. It's always the same paw. | The smoke's put a cough in my chest. #remedy.capitalize# and it'll pass.
+b : Rest them. | Same paw? | Mind it.
+a : I'll rest them in the dark. I've plenty of dark. | The one I'm careless with. #mm#. | I will. Wax burns cleaner. I tell myself that.
+
+scene dream_lamp
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt of #lamp# that never needed trimming. I woke up sad. | I dream of #quiet#. Not a cart, not a voice. Then a cart. | Dreamt I was dancing and couldn't stop. I didn't mind.
+b : Sad? | Then a cart? | All night?
+a : What would I do with my paws? #mm#. I'd have to talk. | Every morning. The first cart of the day. | Till the fiddler fell asleep. Then I woke.
+b : #bc_ha# | #bc_poor_soul# | Ha.
+
+story first_dip [topic=memories|work self.job=crafter self.age>=25]
+  : The first candle I ever dipped came out like a parsnip. Thick at the bottom, a point at the top.
+  : #gran.capitalize# kept it on the shelf for years. Never lit it.
+  ask : Do you have something like that, kept for no reason?
+  b : A wooden spoon. Too ugly to use.
+  b[old] : Shelves of them. Nobody's ever brave enough to throw them out.
+  : That's what shelves are for. #mm#.
+
+story burners_knife [topic=memories self.away=yes self.from=coldwater self.age>=20]
+  : An old burner at #camp# gave me my first knife and a stone to go with it.
+  : Said a dull blade was a lazy wolf's excuse. I was eight, and lazy.
+  ask : Is there a voice you still hear when you work?
+  b : None. I taught myself, and badly.
+  b[from=coldwater] : A burner's, same as yours. They taught half the woods.
+  : I still hear that burner, every time I whet a blade. #saying.capitalize#.
+
+story dark_street [topic=memories|work here.region=ridgemere self.role=merchant]
+  : One winter night every lamp on our street went out in the wind at once.
+  : Folk came knocking with coins and candle stubs. I sold every candle I had by midnight.
+  : I lit the last one myself and stood in the window.
+  ask : Have you ever been glad of a bad night?
+  b : Once. I met someone in a storm.
+  : That's the kind. #mm#. I sold out and slept like a stone.
+
+story fiddler_quit [topic=pastimes|festival self.likes=dancing]
+  : At a festival, #fiddle# played till dawn and I danced every reel.
+  : The fiddler put the bow down and said, I'm done, and you're mad.
+  b : Were you?
+  : Mad for #dance#. I keep quiet all year to save up for it.
+  b[friends] : I've seen it. You're a different wolf with a fiddle playing.
+
+story cheese_wager [topic=food|pastimes self.likes=hard_cheese]
+  : I bet a carter I could tell a cheese's age by taste alone.
+  : Six cheeses. I got five right and the sixth was soap.
+  ask : What would you have bet?
+  b : Nothing. I'd have eaten the soap.
+  : Somebody's idea of a joke. I won the cheese anyway. #oath#. Worth it.
+
+rule @cry_bark
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say #candles.capitalize#, dips and lamp oil. Wicks trimmed while you wait. | #wax.capitalize# and #tallow#. Light by the inch.
+
+rule @knife_bark
+when concept=bark
+does aside
+cooldown 8h
+say That wick's smoking. Hold still. | #knife.capitalize#'s blunt. #whet.capitalize#, then.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 10h
+say #saltwind.capitalize#. My fur'll be stiff by noon. | Wind's off the sea. #oath#.
+
+rule @wait_bark
+when concept=bark self.dislikes=waiting world.wagons=late
+does aside
+cooldown 10h
+say Still waiting. #mm#. | That cart said dawn. It's not dawn.
+
+rule @blow_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 12h
+say Listen to that wind. Grand. | #blow.capitalize#. Shutters rattling. Good.
+
+rule @dusk_bark
+when concept=bark here.time=dusk self.role=merchant
+does aside
+cooldown 8h
+say Dusk. Every lamp on the street wants oil now. | There go #lamps#, one by one.
+
+dlg @1 resident.hub : #greet#. What is it? | #greet#, #address#. Take your time.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. #greet#. Back again. | #greet#, #topic.player#. What'll it be?
+dlg @3 resident.hub [here.time=night] : It's late. Mind, I'm up anyway. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you want. Quickly.
+dlg @1 resident.job [self.job=crafter self.role=merchant] : I make #candles# and sell lamp oil. #self.workplace.capitalize#, and I live upstairs. Light by the inch.
+dlg @2 resident.job : #job_busy# I keep my paws busy and my mouth shut. | #self.trade_words.capitalize#. That's all there is to it.
+dlg @1 resident.business [business=thriving] : Selling out by noon. I'm not complaining. #mm#.
+dlg @2 resident.business [business=steady] : Steady. Winter's better. It always is.
+dlg @3 resident.business [business=failing] : Poorly. Folk are making do with stubs.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Came over #counter# this morning.
+dlg @2 resident.news [world.event_words] : All the talk's of #world.event_words#. I listen and wrap #candles#.
+dlg @3 resident.news [world.wagons=raided] : Robbers stopped a wagon beyond the gates. Keep within them, and keep #lamp# lit.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing I've heard. I don't ask.
+dlg @1 resident.gossip [here.gossip=yes] : Folk say #topic.subject# #topic.claim#. I just wrap the #candles#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I let talk burn down. Nothing to tell.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the step; it's waxy.
+dlg @1 shop.greet [here.shop!=bare self.job=crafter] : #greet#. Candles, dips, lamp oil. Wax by the window, tallow at the back. | #greet#. Look round. Ask if you want a wick trimmed.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Browse; I'll not hover. | #greet#, #address#. Take your time.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. #greet#. Same as last time?
+dlg @4 shop.greet [here.shop=bare] : #shop_bare# The cart's late. Come back tomorrow.
+dlg @1 shop.prices [self.job=crafter] : Wax is dear, tallow's cheap. Oil's somewhere between. #shop_dear#
+dlg @2 shop.prices : #shop_dear# The carts set my costs, not me.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Keep it trimmed.
+graft resident.hub
+choice What's that knife for? -> knife
+node knife
+say #wicks.capitalize#. A smoky wick wastes oil and blackens the ceiling. I trim any I see. Yours, if you'd like.
+mood calm
+free
+choice Do you trim everyone's? -> knife_everyone
+choice Goodbye. -> bye
+node knife_everyone
+say If they smoke. Chapel, inn, the lamp on the corner. Nobody's stopped me yet. Cut it square, keep it short, and it burns honest.
+choice I'll let you get on. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Which candle burns longest? [self.job=crafter] -> longest
+node longest
+say #wax.capitalize#, by a long way. Tallow's half the price and half the night. If you're reading late, buy wax.
+mood calm
+choice And if I'm just going to bed? -> longest_bed
+choice Show me what you have. -> greet
+node longest_bed
+say Then #tallow#. It'll see you up the stairs and out before you're asleep. No sense paying for light you won't see.
+choice Thank you. -> greet
+choice Goodbye. -> bye

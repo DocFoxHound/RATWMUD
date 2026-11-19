@@ -1,0 +1,457 @@
+# cw164, the warden who owes nothing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw164
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for rmx_fenwick_mossdale
+written_by claude
+title the warden who owes nothing
+fits stage=adult|old
+prefers job=guard temper=nervy
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk remembers_every_debt_owed_or_owing
+likes pickled_herring riddles new_boots warm_rain
+dislikes wet_floors flies
+fears dying_with_a_debt_unpaid a_flooded_floor_at_market_hour
+hopes a_petition_answered books_that_balance_to_the_copper
+topics work +0.4 pastimes +0.3 family +0.2 memories +0.2 crime +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=apologetic tease=none
+marks oath saying
+persona #self.first# keeps a hall of stalls in the city and keeps every debt in mind, owed or owing, to the copper: warm, anxious, plain-spoken, fond of a riddle and a jar of pickled herring, and forever asking after a petition lost somewhere in the City Office.
+
+words
+oath! = Lake and ledger | By every scale owed | Settle it, Bright One
+saying! = A debt floats till it's paid | Dry boards and clear books | Owe a penny, lose a night
+tally = my tally | the reckoning in my head
+owed = owed and not forgotten | owed, and I know to whom
+stalls = the stalls | the stallholders' tables
+boards = the boards | my good oak floor
+puddle = a puddle on the boards | wet boards and muddy prints
+mop = the mop | a mop and a bucket
+herring = pickled herring | a jar of herring in vinegar
+riddle = a riddle | a riddle with a hook in it
+boots = new boots | boots that still creak
+petition = my petition | the paper I put in at the Office
+office = the City Office | the Office stairs
+keys = the keys | my ring of keys
+flies = the flies | flies off the meat stalls
+warmrain = warm rain | a soft warm rain, the kind you can stand in
+jetty = the old jetty | the jetty back home
+fret = I'll fret on it | that'll keep me up
+square = square | settled square
+copper = a copper | a scale-coin
+hall = the hall | this hall
+doors = the doors | the big doors
+rounds = my rounds | a turn of the stalls
+pie = the pie stall | that pie stall
+lowstairs = the low stairs | the stairs up from the Sump
+sums = my sums | sums that won't come out
+sleep = a night's sleep | a whole night's sleep
+slate = a clean slate | nothing owing
+penny = a penny | one penny
+
+any
+opinion @1 city against 2 : Soot on every sill, twenty doors to a stair, and not one wolf behind them knows my face. Back on #jetty# I knew every soul.
+opinion @1 drink against 1 : A jar loosens the tongue, and a loose tongue lends. Half the debts I carry were made in drink, and #very# few by me.
+opinion @1 houses for 1 : Grumble at the Houses all you want. They pay what they owe, on the day, and I get #sleep# after.
+opinion @1 road against 1 : Out past the walls? Not me. A cart that doesn't come back is a debt nobody can settle. #oath#.
+opinion @1 sump against 2 : Every bad coin in this city starts out down #lowstairs# and climbs. I've watched it come in at #doors# on a market day.
+opinion @2 sump against 3 [world.crime=recent] : There, you see. Trouble up #lowstairs# again, and the Watch three streets behind it.
+opinion @1 times for 1 : Grumble? Not me. I'd be #daft# to. #tally.capitalize# comes out #square# most weeks.
+opinion @1 watch for 1 : The Watch tramps past under my window after dark, and I rest easier for the sound. That's worth #money# to me.
+opinion @1 merchants mixed 0 : A stallholder will owe you a week and swear it was a day. Still, they pay in the end, mostly, and I like them the better for it, #address#.
+opinion @1 strangers mixed 1 : A stranger owes nobody, and nobody owes a stranger. That's #slate#, and it makes me #very# nervous.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Wipe your paws, if you'd be so kind. | #greet#. New to the Commons, by your boots, #address#.
+line @2 greet [self.working=yes self.job=guard] : #greet#. Mind #boards#; they're just mopped. | #greet#. #doors.capitalize# are open, and I'm watching them.
+line @3 greet [here.time=dawn] : #greet#. Early. I like early; nobody owes anybody yet. | Morning, #address#. First light, and not a debt made.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be about, #address#. | Evening. I'm adding up the day in my head, don't mind me.
+line @5 greet [here.weather=rain] : #greet#. Shake off outside, I beg you. | #greet#. #rain.capitalize# again, and #boards# know it.
+line @1 kin.open [pair.kin!=no] : Oh, it's you. I'd started to #fret#. | You're back. Sit, before I start asking where you've been, #pet#.
+line @1 again.open : Back twice before supper. I'd best start a tally for you, #address#. | You again. #good.capitalize#. I've nothing new, but #good#.
+line @1 hail [pair.band=friends] : #address.capitalize#! A word, if you've a minute. | Over here, #address#. Mind the wet.
+line @1 greet.return : #greet#. | #greet#, #address#. All well?
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. I was just thinking of you. | Ah, it's you. #greet#, #pet#.
+line @3 greet.return [self.working=yes] : #greet#. Speak up; #stalls# are loud. | #greet#. Walk with me, I'm on #rounds#.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late, isn't it? I've only now done #sums#. | Evening, #address#. Still water to you.
+line @1 farewell : #farewell#. | #farewell#. Mind how you go, #address#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lit streets, now. | Calm sleep to you, #address#. Lock your door.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Go careful.
+line @2 farewell.return [here.time=dusk|night] : And calm sleep to you. | Go careful, #address#. It's dark early on the Commons.
+line @1 react.news : #oath#. Is that how it is? | #marvel#. I'll be thinking on that tonight.
+line @1 react.news.new : #surprise#. That's slipped past me entirely. | #oath#. Not a whisper of that reached #doors#, and most things do.
+line @1 react.news.known : #knew#. Every stall had it by noon. | I heard. Three times, from three folk, and all different, #address#.
+line @1 react.news.doubt : #doubt#. Bring me somebody with eyes on it and I'll believe. | I'd not stake #copper# on that till it's proven, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That sits heavy. | #oath#. That's a sorrow, and I mean it truly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! That's a fair thing to hear. | Now that's news I'd pay #copper# for. #good.capitalize#.
+line @1 answer.how : #fine#. #tally.capitalize# comes out square, more or less. | Fretting, if I'm honest. I always am. It keeps me #very# sharp.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Every stall wants me at once. | On #rounds#, and behind on them. #oath#.
+line @1 ask.how : And you, #address#? Owing nobody, I hope. | How are you keeping? Dry, at least, #address#?
+line @1 sympathise : #sympathy#. If I can help, say it, and I'll not even count it. | That's a hard thing. Sit a while, #address#.
+line @1 reassure : #reassure#. Worse has been put right. | Don't fret it, #address#. I fret enough for two.
+line @1 decline : #hedge#, but I can't. I'd owe you the time, and I owe enough. | I'd like to, truly. Only I'm on #doors# till dark and they won't mind themselves.
+line @1 accept_decline : #no_matter#. I'll not hold it against you. | That's fair. Another day, and I'll remember it, #address#.
+line @1 thank : #thanks#. I'll not forget it. | That's kind. I owe you one, #address#, and I'll pay it.
+line @1 deflect_thanks : You owe me nothing. Truly. #slate.capitalize#. | #deflect.capitalize#. Call it square.
+line @1 preclose [self.working=yes] : Well. #stalls.capitalize# won't watch themselves. | I'd best do #rounds#. Something's always dripping.
+line @2 preclose : Well. #preclose#. | Off you go, then. I've #sums# to do in my head.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. Off you go; I've kept you, #address#.
+line @1 ack : #bc_it_is# | #ack#.
+line @1 give.advice : #advise.capitalize#: pay a debt the day it falls due, and you'll sleep. | Never lend what you'd miss. #saying.capitalize#.
+line @1 warn [world.bandits=near] : Stay within the walls for now, #address#. #warn#. | Leave the road be till it's safe. I'd not risk it for #money#.
+line @1 apologise : #sorry#. That came out wrong. | I beg your pardon, #address#. I'm short when I'm fretting.
+scene wet_boards
+when topic=weather|work here.weather=rain self.job=guard
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# all morning, and every paw that comes in brings half of it along. Look at #boards#. | I've had #mop# out four times since dawn. Four. | Somebody went down on #puddle# by the herring stall. Nobody hurt, but my heart stopped.
+b : It's only water. | Four times? | Thank the Bright One nobody's hurt.
+a : Only water till somebody cracks a hip on it. Then it's my fault. | Four, and I'll do it a fifth. #puddle.capitalize# and I don't get on. | I do. And then I fetched #mop#, and I'll fetch it again.
+
+scene warm_rain_out
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#. Smell it, #address#. That's the one thing this city does right. | I'd stand in this all day. It's on #boards# I can't abide it. | Back home a rain like this brought every soul out onto #jetty#.
+b : It's pleasant enough. | Out here, but not indoors? | Did it?
+a : Pleasant? It's #good#. The soot comes off everything. | Out here it's a gift. Indoors it's #mop#. I'll have it out here. | Every soul. Faces up, nobody minding. #bc_lovely#
+
+scene lake_mist
+when topic=weather|memories here.weather=fog
+does tell.memory / react.self / assess
+a : This fog's nearly the kind we had on the lake. Not quite. City fog tastes of the smokehouses. | Fog like this, the old ones on #jetty# would sit and wait it out. | I can't see the far end of #stalls#. I don't like not seeing them.
+b : It'll lift by noon. | Sensible of them. | They'll be there.
+a : I hope so. A day I can't see across, #fret#. | Nobody ever drowned sitting still, they'd say. | They will. I'll walk down and look anyway, on #rounds#.
+
+scene opening_doors
+when topic=day|work here.time=dawn self.job=guard
+does tell.self / ask.detail / answer.detail / assess
+a : First thing, before #keys# go in the lock, I say over who owes what. Every morning. | #doors.capitalize# open at first light. I'm there a half-hour before, walking #boards#. | I count #stalls# going up. Forty-two, most mornings.
+b : Who owes what to whom? | Why the half-hour? | And if it's not forty-two?
+a : Rent to #hall#, coin between stalls, and a jar of herring I owe a cooper. All of it. | To look for wet. And for anything that went missing in the night. | Then somebody's behind, and I know who before I've had my breakfast.
+b : #bc_clever# | #bc_wise# | #bc_ha#
+
+scene locking_up
+when topic=day|work here.time=dusk self.job=guard
+does tell.self / react.self / assess / ack
+a : Last stall's packed and I'm locking up. I've #copper# short in my head and I'll find it before I sleep. | Dusk, and #doors# shut. #tally.capitalize# for the day, then home to #supper#. | There's always one stallholder who wants five minutes more. Always the same one.
+b : One copper? | Supper sounds good. | Give them the five minutes.
+a : One. It'll be #pie#. It's always #pie#. | #herring.capitalize#, if there's any left. #bc_i_hope_so# | I do. I give it every night, and I note it down in my head.
+b? : #bc_ha# | #bc_lovely# | #bc_fair_enough#
+
+scene who_owes
+when topic=smalltalk|friends
+does tell.self / ask.detail / answer.detail / assess
+a : I couldn't forget a debt if I tried. Every #copper# anybody owes me, every one I owe, it's all in there. | I owe a carter #penny# since spring. One penny. It wakes me at night. | Ask me who owes #hall# a week's rent and I'll tell you to the day.
+b : Every one? | Why not just pay it? | Go on, then. Who?
+a : Every one. Since I was a #child#. It's a curse, near enough. | I've tried. Never there when I go. I've it wrapped in a twist of paper, ready. | No. I said I'd know, not that I'd tell. #saying.capitalize#.
+b : #bc_poor_soul# | #bc_i_hope_so# | #bc_ha#
+
+scene owed_jar
+when topic=friends|food self.likes=pickled_herring
+does tell.complaint / react.complaint / insist / ack
+a : There's a jar of #herring# owed me three Restday mornings back. I've not said a word. | Somebody borrowed my good herring fork and never brought it back. I know who. | I lent a jar of herring at midwinter. I'd like it back before the next one.
+b : Ask for it, then. | Who? | It's only a jar.
+a : And seem mean over a jar? No. I'll just remember it. Every day. | I'll not say. But I'll know, every time I see them at #supper#. | Only a jar to you. To me it's #owed#.
+b? : #bc_ha# | #bc_fair_enough# | #bc_poor_soul#
+
+scene petition_again
+when topic=times|work here.region=ridgemere self.away=yes
+does tell.complaint / ask.detail / answer.detail / assess
+a : I've been up #office# again. Seventh time. They've still not found #petition#. | Every week I go and ask after #petition#. Every week a different clerk. | Somewhere in #office# there's a paper of mine, under a cup of cold tea.
+b : What's it for? | Do they ever find anything? | Under a cup?
+a : A small thing. A stall's rent owed #hall# and never paid. Owed two years. | Once. They found a paper of somebody else's and asked me if it would do. | Under something. I'll go up again on Marketday. #oath#.
+b : #bc_poor_soul# | #bc_ha# | Good luck to you.
+
+scene office_stairs
+when topic=dreams|times here.region=ridgemere self.away=yes
+does tell.plan / react.self / assess
+a : One day I'll climb #office# and they'll hand it to me first time. I'll not know where to put myself. | I dream they've answered #petition#, and then I wake and #boards# are wet. | When it's settled I'll buy #boots# and walk all the way home in them.
+b : You'd find something new to fret about. | Wet in the dream too? | All that way? On foot?
+a : I would. You know me. #bc_i_know# | Wet, in the dream. #puddle.capitalize#, always. | On foot, slowly, so the whole shore sees the boots.
+
+scene riddle_hook
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : Here's one for you. What runs all day and never leaves its bed? | Try this, #address#. The more you take, the more you leave behind. What am I? | #riddle.capitalize#: what has keys but opens no door?
+b : I give up. What? | No idea. Go on. | Me, on a bad day?
+a : The river. The lake's no good for it; it doesn't run. | Footsteps. On #boards#, wet ones. #oath#. | A tune on a box-harp. Though I'd say you, as well, on a bad day.
+b : #bc_ha# | Ha. Clever. | #bc_clever#
+
+scene riddle_trade
+when topic=pastimes self.likes=riddles
+does tell.feeling / react.self / assess / ack
+a : I'll trade #riddle# for #riddle#. Nobody on the Commons will give me a new one. | My #mum# had a riddle for every chore. I learned the floors with them. | I'd sooner have #riddle# than a full purse. Nearly.
+b : I've none, sorry. | For every chore? | Nearly?
+a : Then you'll owe me one, and I'll remember. | Every one. Sweep the step and she'd ask what's always coming and never comes. Tomorrow. | Nearly. A full purse pays debts. #riddle.capitalize# only passes the time.
+b? : #bc_fair# | #bc_ha# | #bc_true#
+
+scene herring_jar
+when topic=food self.likes=pickled_herring
+does tell.self / react.self / assess
+a : #herring.capitalize# on a crust, nothing else. There's nothing in this city better, and I've looked. | They don't pickle it right up here. Too much sugar. Back home it bites. | I keep #herring# under the warden's desk. For the long afternoons.
+b : Herring? I can't stand it. | You'd know. | Under the desk?
+a : More for me, then. I'll not make you. | I would. I'd go #far# for a proper jar. | Under the desk, behind the ledger. Not a ripple from me to the stalls.
+
+scene new_boots
+when topic=smalltalk|pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail / assess
+a : #boots.capitalize#. Look at them. Two days old. | I've stood on wet boards in old boots for a year. Never again, #address#. | I bought #boots# on Marketday and paid for them that hour. Nothing owing.
+b : Very fine. Dear? | What changed? | You always pay that hour?
+a : Fair for what they are, and paid for. That's what makes them fine. | Wet feet once too often. Spent the #money# and slept that night. | Always. A thing I'm still paying for, I can't enjoy. Not even #boots#.
+b : #bc_wise# | #bc_good# | #bc_fair_enough#
+
+scene summer_flies
+when topic=animals|season here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#. Every summer, the length of #hall#. I've hung vinegar rags; they laugh at them. | A summer with no flies, and I'd hand over a week's #wages# for it. | A fly landed in my herring. My herring. #oath#.
+b : They're bad this year. | A week's pay? | You didn't eat it, surely.
+a : #bad.capitalize# every year, and worse by the meat end. | A week, and gladly. I'd not count it. | Picked it out and ate the rest. I'll not waste #herring# over a fly.
+
+scene wife_home
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# says I count in my sleep. I don't argue. I'd only lose count. | I owe #self.spouse# more than I'll ever settle, and that's the one debt I'm glad of. | When I come home fretting, the kettle's on before I've my boots off. That's a marriage, that.
+b : Do you, though? | That's a good debt to carry. | That's worth having.
+a : Probably. Somebody has to keep #sums#, even asleep. | It is. I don't keep a tally of that one. | It is. I'll never be #square# on it, and I don't want to be.
+
+scene mother_debt
+when topic=family|memories self.mother
+does tell.feeling / react.self / assess
+a : #self.mother# taught me to keep a tally on my claws before I could read. | I owe #self.mother# my good sense and my #bad# nerves. Fair trade, both. | Whatever I am, I got from #self.mother#. The counting most of all.
+b : On your claws? | Both from one wolf? | A handsome thing to own to.
+a : Ten claws, ten debts. Past ten you're owing too much, I was told. | Both. I'd not give either back. #bc_never# | It's true, and I'd say it to anyone, #address#.
+
+scene friend_keys
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# could have #keys# off me without a thought. | If I'm fretting, #self.friend# is the one who can talk me down. | I don't keep a tally with #self.friend#. Not #copper# of it.
+b : That's trust. | Good to have. | Not even a copper?
+a : It is, and I don't give it often. | It is. I'd be up all night otherwise, #fret#. | Not one. By that, I know it's sound.
+
+scene shore_debts
+when topic=memories|lore self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# nobody wrote a debt down. The whole shore remembered it for you. | Back home a debt was settled on #jetty#, in front of anyone fishing. You'd not dare cheat. | Where I was a pup you paid in fish or labour or coin, and everyone knew the rate.
+b[from=coldwater] #cw : The shore never forgot a thing. | The jetty, aye. My #grandad# settled his there. | In eels, mostly.
+b : No ledgers at all? | In front of everyone? | That sounds simpler.
+a@cw : Never. Same as me. Maybe that's where I got it. | Everyone's #grandad# did. Calm water to him. | Eels, aye. And you knew where you stood.
+a : None. Didn't need them. Now I'm my own ledger, out here. | In front of the lake itself. You'd pay up. | It was. Up here they need paper, and then they lose it in #office#.
+
+scene still_lake
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.feeling / ask.detail / answer.detail / assess
+a : I miss the still of #self.from_town#. Up here something's always dripping. | Some nights I lie awake and wish for the lake on a flat morning. | I came up to the city for the #wages#. I stayed for them. I didn't stay for the quiet.
+b : Will you go back? | What's it like then? | Do you regret it?
+a : For a visit, when #petition#'s answered. Not before. | Like a sheet of glass, with #fog# lying on it. You hear a gull a mile off. | No. Some evenings. Not on payday.
+b : #bc_i_hope_so# | #bc_lovely# | #bc_fair_enough#
+
+scene the_low_streets
+when topic=crime|times here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : Every bit of bother at #doors# comes up #lowstairs#. Every bit. | I've a stout pair of shoulders on the doors on market days now, just for the stairs side. | I'd not walk the Sump after dark, not with #keys# on me.
+b : That's not fair on the folk down there. | Is that needed? | You'd be fine.
+a : Maybe not on all of them. I've only seen the ones who come up to me. | Needed? A purse went off a stall in the spring. I'll not lose another. | I'd be fine. My nerves wouldn't, #address#.
+b? : #bc_maybe# | #bc_fair_enough# | #bc_ha#
+
+scene gossip_doors
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear everything at #doors#. I keep what folk owe and let the rest drift by. | Somebody's always telling me about somebody. I never pass it on. | Gossip's a debt too, #address#. Repeat it and you owe the one you spoke of.
+b : Not even a little? | Never? | That's one way to see it.
+a : Not a word. I've enough in my head without that, #fret#. | Never. #stalls.capitalize# know it, which is why they tell me. | That's how I see it, and I can't unsee it. #saying.capitalize#.
+b : #bc_fair# | #bc_ha# | #bc_true#
+
+scene theft_news
+when topic=crime|news topic.claim_kind=theft
+does tell.news / react.news / assess
+a : They say #topic.subject# #topic.claim#. Every lock in #hall# gets tried twice tonight. | You've heard? #topic.subject.capitalize# #topic.claim#. #oath#. | Word at #doors#: #topic.subject# #topic.claim#.
+b : #pity# | Check twice. | Terrible.
+a : Twice. And then I'll lie awake, #fret#. | I will. And count #stalls# again in the morning. | It is. Somebody owes somebody a great deal, now.
+
+scene good_word
+when topic=news|gossip topic.claim_kind=marriage|promise_kept
+does tell.news / react.news / assess
+a : Here's a happy thing: #topic.subject# #topic.claim#. | Did you hear? #topic.subject.capitalize# #topic.claim#. That warmed me. | #topic.subject.capitalize# #topic.claim#. Nice to have #good# news at #doors#.
+b : That's lovely. | #gladnews# | Good.
+a : It is. A promise kept is a debt paid, I always say. | It is. I'll smile at #stalls# all afternoon. | #good.capitalize#, and rare. I'll remember it.
+
+scene lean_rent
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess / ack
+a : Half #stalls# are behind on rent. I've let them owe, and it's keeping me up. | Lean times. I'm carrying more debts in my head than I've room for. | I let the cheese stall off a week. It's the right thing, and #fret#.
+b : They'll pay in time. | #reassure# | You did right.
+a : They will. Most of them. I know which ones won't. | I hope so. It's not my #money#, it's the hall's. That's worse. | I know it. I'll still count it every morning.
+b? : #bc_i_hope_so# | #bc_true# | #bc_good#
+
+scene good_times
+when topic=times|prices world.times=good|boom
+does tell.news / react.news / assess
+a : Every stall's let, and every one paid up front. I've not seen that since I came. | Good times. I slept the whole night through. First in a month. | Coin's moving. Even #pie# paid on the day.
+b : Good for you. | All night? | The pie stall?
+a : Good for all of us. #tally.capitalize# comes out square and I can breathe. | All night. #sleep.capitalize#, and I woke frightened I'd missed something. | #pie.capitalize#. I nearly asked if they were ill.
+
+scene carts_late
+when topic=caravan|prices world.wagons=late
+does tell.worry / react.self / assess
+a : Carts are late, and #stalls# are half bare. Half bare means half rent. | Late again. Stallholders standing about with nothing to sell and rent owing. | I'll have to let rents slide if the carts don't come by Marketday.
+b : They'll come. | Not their fault, the rent. | You'll manage.
+a : They'd better. I hate an empty stall. Looks like a missing tooth. | No. I'll not push it. I'll note it, #owed#. | I will. I always do. I just #fret# first.
+
+scene drink_promises
+when topic=smalltalk|pastimes
+does give.opinion / ask.opinion / give.opinion / ack
+a : I don't take #drink#. Not since I saw what folk promise over a jar and forget by morning. | Every debt in this city that went sour started in a tavern. I'd swear to it. | A jar at a wedding, maybe. Never in a tavern. Folk lend there, #address#.
+b : Not even one? | Do you mind if I do? | What's wrong with lending?
+a : Not one. My nerves are #bad# enough sober. | Not a bit. Just don't promise me anything while you're at it. | Nothing, till it's not paid. Then everything.
+b : #bc_fair_enough# | Ha. Agreed. | #bc_true#
+
+scene bright_one
+when topic=faith
+does give.opinion / react.self / assess
+a : I light a candle on Restday and ask the Bright One for dry floors and honest stallholders. | There's a ledger kept above us too, my #gran# said. I mean to come out square. | Chapel's not my place, much. I say my thanks when #sums# come out.
+b : Have you had either? | That's a fair hope. | That's a prayer, of a kind.
+a : Dry floors, now and then. I'll keep asking. | #square.capitalize#, and #copper# over if I can manage it. | It's the only one I'm sure of. #bc_i_hope_so#
+
+scene nerves
+when topic=health
+does tell.self / react.self / reassure
+a : My stomach's been in knots since Marketday. A sum that won't come out. | I sleep badly. Always have. A head full of #sums# is a noisy bed. | My #mum# gave me #remedy# for nerves as a pup. Didn't work then, doesn't now.
+b : Let the sum go. | Try a walk before bed. | Some things don't.
+a : I can't. It'll come out wrong, and I'll be the last to know. | I've tried. I count the cobbles instead, #fret#. | They don't. I take it anyway. Habit.
+
+scene new_face
+when topic=newcomer|player
+does tell.self / react.self / assess
+a : Somebody new came in at #doors# this morning. Paid for a pie in coin and didn't ask for credit. I liked them at once. | Strangers in #hall# don't owe anybody yet. I watch them all the same. | There's a traveller walking #stalls#. Hasn't bought a thing. I don't know what to make of that.
+b : That's a low bar. | Why watch them? | Maybe just looking.
+a : It's the bar I've got. Most folk trip on it. | Because I don't know their tally. I like to know. | Maybe. Looking costs nothing. It's the touching I mind.
+
+scene winter_hall
+when topic=season|weather here.season=winter
+does tell.complaint / react.complaint / assess
+a : Winter on #boards# means slush. Slush means #mop#. I'll be mopping till spring. | The hall's #cold# as the lake in winter. The braziers owe me heat and don't pay. | Snow on every boot that comes in, and every boot comes in.
+b : Put sawdust down. | Cold as the lake? | Spring's not far.
+a : Sawdust. I'll try it. I'll try anything for #boards#. | Near enough. #chill.capitalize# off the stone, and no fur left on my paws. | It's never far. It's never here, either, #address#.
+
+scene accent_city
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : Folk on the Commons laugh when I say still water for good morning. I've stopped minding. | All these years in the city and they still hear the lake in me. | I tried to talk city for a year. Gave up. My tongue owed too much to the lake.
+b : It's a nice way to say it. | All these years? | Better to sound like yourself.
+a : It is. Calmer than "morning". #bc_it_is# | Every one of them. I'll not count them for you. | It is. And folk remember who I am, #address#.
+
+story first_debt [topic=memories self.age>=25]
+  : As a #child# I borrowed a fishhook off an old #busybody# on #jetty# and lost it the same day.
+  : I worked those nets a whole week to pay it back. Nobody ever asked me to.
+  ask : Would you have owned up, at that age?
+  b : I'd like to think so. I'm not sure.
+  b[stage=young|adolescent] : I'd have hidden.
+  : I didn't sleep till it was paid. I haven't changed much.
+
+story flood_night [topic=memories|work self.job=guard self.age>=25]
+  : Once the gutters choked in a storm and #hall# flooded the night before market.
+  : I was up till dawn with #mop# and two buckets, and the stallholders came in to dry boards.
+  : Not one of them knew what it had cost me. I knew, though.
+  b : You should have told them.
+  b[job=guard] : That's the job. Nobody ever sees it.
+
+story the_hook_riddle [topic=pastimes|lore self.likes=riddles]
+  : There was an old ferryman on our lake who'd not take you across unless you gave him #riddle# he'd never heard.
+  : Folk would stand on the shore half a day, thinking. One wolf swam it rather than try.
+  ask : Swum or thought, you, if it were you on that shore?
+  b : Swum. I've no riddles.
+  b[old] : Thought. I'd have bored him across.
+  : Ha. He'd have liked you, I think, #address#.
+
+story the_penny [topic=smalltalk|friends]
+  : I once owed a carter #penny# for a ride. Couldn't find him for a year.
+  : When I did, I paid him the penny and a pie for the wait. He'd forgotten all about it.
+  b : And you hadn't.
+  b[friends] : That's you all over.
+  : Not for #sleep# of it.
+
+story first_boots [topic=memories|smalltalk self.likes=new_boots self.age>=25]
+  : My first boots I bought on credit, #copper# a week, from a cobbler by the water.
+  : I wore them only on Restday till the last copper was paid. They pinched the whole time.
+  ask : Ever bought something you couldn't enjoy?
+  b : More than once. Never again, I say each time.
+  b[wealth=poor|destitute] : I've never bought anything I could enjoy.
+  : I've paid on the day ever since. #saying.capitalize#.
+
+rule @hall_doors
+when concept=bark working=yes self.job=guard
+does aside
+cooldown 6h
+say Wipe your paws coming in! #boards.capitalize# are just done. | Mind the step, mind #stalls#, mind the wet.
+
+rule @wet_bark
+when concept=bark here.weather=rain self.dislikes=wet_floors
+does aside
+cooldown 8h
+say #oath#. Who's dripped all down #boards#? | Another puddle. Where's #mop#?
+
+rule @flies_bark
+when concept=bark here.season=summer self.dislikes=flies
+does aside
+cooldown 10h
+say Out, you. Out. Off the meat. #annoyed#. | #flies.capitalize# again. I'll be swatting till dusk.
+
+rule @tally_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Cooper, a jar. Carter, #penny#. #pie.capitalize#, a week. | #copper.capitalize# short. #fret.capitalize#.
+
+rule @dusk_bark
+when concept=bark here.time=dusk self.job=guard
+does aside
+cooldown 10h
+say #doors.capitalize# in a quarter-hour! Pack it up! | Last call, the hall. #keys.capitalize# are coming out.
+
+rule @warmrain_bark
+when concept=bark here.weather=rain self.likes=warm_rain
+does aside
+cooldown 10h
+say Now that's a rain. Out here, mind. Out here. #good.capitalize#. | #warmrain.capitalize#. I'd stand in it if I'd the time.
+
+dlg @1 resident.hub : #greet#, #address#. How can the hall help you? Mind the wet. | #greet#. Speak up; it's loud in here.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good to see you. You owe me nothing, I'll say that first. | #topic.player#. Back again. What's wanted, #address#?
+dlg @3 resident.hub [here.time=night] : It's late, #address#. I'm only half here. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm listening, #address#. Say what you want, plainly.
+dlg @1 resident.job [self.job=guard] : Warden of #self.workplace#. I open #doors#, I lock them, and I know who owes what in between. | I keep #self.workplace#. Mostly I keep #boards# dry.
+dlg @2 resident.job : #self.trade_words.capitalize#. It keeps me on my feet and up at night. | Work enough to fret over. That's all of it, #address#.
+dlg @1 resident.news [world.news] : Word at #doors# from #world.news_from#: #world.news#. That's all I had. | I heard from #world.news_from#: #world.news#, #address#.
+dlg @2 resident.news [world.event_words] : Everybody at #stalls# is on about #world.event_words#. I've heard nothing else all day.
+dlg @3 resident.news [world.wagons=raided] : A cart was taken on the road. #oath#. Stay inside the walls.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only who owes what, and I'll not tell you that. | Nothing new. Folk paid #hall# their rent, mostly. That's my news.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I'd not repeat it, #address#, but you asked.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# I keep debts, not tales. | I hear plenty at #doors#. I keep it to myself.
+dlg @1 resident.bye : #farewell#. Watch the wet floor going out. | #farewell#, #address#. We're square.
+dlg @1 watch.hub [here.wanted=no] : #greet#. All quiet, and I'd like it kept that way. | #watch_greet#
+dlg @1 watch.bye : #farewell#. Keep the peace and we'll stay square. | #watch_bye#
+graft resident.hub
+choice They say you remember every debt. Is that true? -> debts
+node debts
+say Every one. Owed to me, owed by me, owed between folk I've never met. Since I was a #child#. I'd give it up if I could.
+mood warm
+free
+choice Do I owe you anything? -> debts_mine
+choice Goodbye. -> bye
+node debts_mine
+say Not #copper#. You've #slate# with me, and I'll tell you the day that changes.
+choice Good to know. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice What's this petition you keep asking about? [here.region=ridgemere] -> petition
+node petition
+say A paper I put in at #office#, about a debt owed #hall#. They lost it. I go up every week and ask. I'll keep going.
+mood calm
+choice Will they ever find it? -> petition_hope
+choice Goodbye. -> bye
+node petition_hope
+say They might. Paper doesn't vanish. It just sits somewhere, #owed#. Like everything else.
+choice I hope they do. -> hub
+choice Goodbye. -> bye

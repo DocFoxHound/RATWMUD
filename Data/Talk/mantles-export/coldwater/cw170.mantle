@@ -1,0 +1,495 @@
+# cw170, the berth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw170
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for rm_dagny_rustcot
+written_by claude
+title the berth-keeper
+fits stage=adult|old
+prefers job=sailor temper=calm
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes pickled_herring knots festival_bells frosty_mornings
+dislikes night_noise deep_mud
+fears a_fouled_line_and_no_blade_to_hand a_hull_lost_on_a_quiet_night
+hopes one_more_winter_by_a_frozen_lake every_berth_squared_before_dark
+topics ships +0.5 work +0.4 weather +0.3 memories +0.2 pastimes +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps the harbour's berths and its ledger in a slow, quiet hand: calm, plain-spoken, tired at the edges, never without a little blade and a wet stone, and three strokes on it at every turn of the tide.
+
+words
+oath! = Ebb and edge | Slack water, sharp steel
+saying! = Tie it so it'll untie | The tide comes whether you hurry or not
+mm = Mm | Mm-hm
+blade = the little blade | my line-knife
+hone = my bit of wet stone | the stone I keep in a pocket
+strokes = three strokes on the stone | three slow strokes
+turn = the tide's turn | slack water
+berths = the berths | every berth on the quay
+ledger = the berth ledger | the big ledger
+dues = the harbour dues | the berthing dues
+quay = the quay | the long quay
+bollard = a bollard | the iron bollard by the steps
+knot = a monkey's fist | a crown knot, worked neat
+knots = fancy knots | knots worked for the pleasure of it
+herring = pickled herring | herring out of the brine jar
+rime = rime on the bollards | a white frost on the quay
+mud = the low-tide mud | mud to the hocks
+racket = the night racket | singing under the window at all hours
+bells = the feast bells | bells carried over the water on a feast day
+lake = the lake at home | a lake that keeps still
+skipper = a skipper | some skipper with a short temper
+window = my window over the quay | the office window
+lamps = the quay lamps | the lamps along the water
+steps = the quay steps | the wet steps
+sound = the Sound | the grey Sound
+hull = hull | keel
+hulls = hulls | keels
+tide = tide | water
+crew = crew | hands
+headland = headland | point
+edge = edge | blade
+candle = a candle | a tallow candle
+boards = the boards | the wet boards
+slowly = slowly | in my own time
+stillness = quiet | stillness
+pen = my pen | the scratchy pen
+singers = the singers | whoever's singing down there
+cord = a length of cord | a fathom of line
+
+any
+opinion @1 city mixed 1 : Ridgemere keeps the #tide# like any wet place. It's only louder about it, and later to sleep.
+opinion @1 houses for 2 : The Houses keep the quays from sliding into the Sound. Without that coin #berths# would be #mud# inside a year.
+opinion @1 sump against 1 : Most of #racket# climbs up from the Sump. I'd not call the folk bad. I'd say they don't sleep.
+opinion @1 dole against 1 : I pay into the dole and don't grudge much of it. I'd sooner the coin paid hands on #quay#, that's all.
+opinion @1 times for 1 [self.job=sailor] : #berths.capitalize# are full and #dues# come in. Grumbling at that would be asking for a holed net.
+opinion @1 watch for 1 : They walk #quay# after #lamps# are lit. That's worth more to me than anything they say.
+opinion @1 strangers mixed 1 : Folk off the ships are mostly just tired and lost. I take them as they tie up.
+opinion @1 festivals for 1 : I'd put up with any crowd for #bells#. The rest of a feast I can take or leave.
+opinion @1 drink against 1 [self.job=sailor] : A drunk #crew# on a narrow quay ends in the water. I've had the hook out for enough of them.
+opinion @1 church mixed 1 : A candle goes up from me for every boat still out. I don't need a sermon to tell me why.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #mm#. You'll be off a ship, or after one. | #greet#, #address#. Careful on #boards#.
+line @2 greet [self.working=yes self.job=sailor] : #greet#. Let me finish the line in #ledger# first. | #greet#. If it's a berth, the answer's tomorrow.
+line @3 greet [here.time=dawn] : Morning. Up before #lamps# are out, I see. | Morning, #address#. Early on the water, the two of us.
+line @4 greet [here.time=dusk|night] : #greet#. #lamps.capitalize# are lit, so it's late enough. | #greet#. #stillness.capitalize# for once. Let's keep it so.
+line @5 greet [here.season=winter here.time=dawn here.region=ridgemere] : Morning. #rime.capitalize#. My favourite kind of cold. | Morning, #address#. A frost like this is worth getting up for.
+line @1 kin.open [pair.kin!=no] : Sit down, you. I'll finish this #edge# first. | Oh, it's you. Good. Mind #blade#.
+line @1 again.open : Twice in a day. Something must want saying. | You again. #tide.capitalize#'s turned since.
+line @1 hail [pair.band=friends] : #address.capitalize#. Over here, by #bollard#. | A word, when you've a breath. I'm down by #steps#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Good. I'd hoped it was you. | #greet#. Sit down, there's room.
+line @3 greet.return [self.working=yes self.job=sailor] : #greet#. Speak while I write. | #greet#. #ledger.capitalize# can wait a breath.
+line @4 greet.return [here.time=dusk|night] : #greet#. You're out late, #address#. | #greet#. Mind #steps# in the dark.
+line @1 farewell : #farewell#. | #farewell#. Careful on #boards#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep under #lamps#. | #farewell#. Sleep, if #singers# let you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @2 farewell.return [here.time=dusk|night] : #farewell#. Watch #steps# going up. | #farewell#. A #stillness# to your night, if there is one.
+line @1 react.news : #mm#. Go on. | Plainly, now. I'm listening.
+line @1 react.news.new : #surprise#. That's not come past me yet. | #oath#. That's new to me.
+line @1 react.news.known : #knew#. It came off the boats yesterday. | I had it off #steps# already, near enough.
+line @1 react.news.doubt : #doubt#. I'll not write it down till somebody's seen it. | Talk off #steps#. Half of it floats and half of it sinks.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's hard to hear. | #oath#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. We're owed some of that. | Good. I'm glad of it, #address#.
+line @1 answer.how : #fine#. #tired.capitalize#. I'm always that. | Calm enough. #tide.capitalize#'s kept its hours. | Steady. Nothing's sunk today.
+line @1 answer.how.busy [self.working=yes self.job=sailor] : Every berth spoken for, and #ledger# open. | #busy.capitalize#, and going at it #slowly#.
+line @1 ask.how : And you? Keeping out of the #wind#? | How's the water with you, #address#?
+line @1 sympathise : #sympathy#. Sit a while; I'm in no hurry. | #pity#. That's a heavy line to haul.
+line @1 reassure : #reassure#. Most knots come loose with patience. | It'll ease. Things do, come #turn#.
+line @1 decline : I'd help if I could, #address#. Only I'm spoken for till dark, and I don't go back on that. | #hedge#, but no. I've a thing to finish, and I finish things #slowly#.
+line @1 accept_decline : #no_matter#. It'll keep. | #later.capitalize#, then. No harm.
+line @1 accept_preclose : Go on, then. #farewell#. | Of course. #excuse#.
+line @1 thank : #thanks#. | Good of you, #address#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | #modest#. Truly.
+line @1 preclose [self.working=yes self.job=sailor] : Well. #ledger.capitalize# won't fill itself. | #tide.capitalize#'s turning. I'd best be on #quay#.
+line @2 preclose : Well. #preclose#. | I'll not keep you. #later.capitalize#, then.
+line @1 ack : #mm# | #bc_it_is#
+line @1 give.advice : #advise.capitalize#: tie it so you can cut it. | Keep a knife where your paw can find it in the dark.
+line @1 warn [world.bandits=near] : Don't go past the gate till it's cleared. #warn#. | Past the gate, never alone, #address#.
+line @1 insist : #insist#. I'll not move on it. | I've said it #slowly# so you'd only need to hear it once.
+line @1 concede : #concede#. You're right, and I was slow. | #good.capitalize#. I'll mark that down.
+scene tide_strokes
+when topic=smalltalk|pastimes self.working=yes self.job=sailor
+does tell.self / ask.detail / answer.detail / assess
+a : #turn.capitalize#. Hold on; #strokes#. | There. Slack water, and #blade# has had its due. | Every tide I give #blade# its strokes. Twice a day, near enough.
+b : Every tide? | Its due? | Why at the tide?
+a : Every one. It's how I know the day's moving when I've not looked up from #ledger#. | Three strokes. If ever I need #blade#, I'll need it sharp, not sorry. | The #tide# stops for a breath, so I do. It keeps me from hurrying.
+b : #bc_fair_enough# | #bc_wise# | Strange habit. A good one, though.
+
+scene fouled_line
+when topic=smalltalk|work self.job=sailor
+does tell.self / react.self / assess
+a : A line fouled on #bollard# today. Wet rope, a #hull# pulling. #blade.capitalize# had it through in a breath. | Folk ask why I carry #blade#. A rope that won't let go, that's why. | I've seen a paw caught in a line with the #hull# still moving. I keep #blade# sharp for that.
+b : Good thing you had it. | Has it happened to you? | Bad sight, that.
+a : I always have it. That's the whole of the point. | Once. I had no knife, and someone else did. I've carried #blade# since. | Bad enough that I'd rather be laughed at for #blade# than caught without it.
+
+scene berths_full
+when topic=work|ships self.job=sailor self.working=yes here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #berths.capitalize# are full again. Two #hulls# waiting off #sound# and nowhere to put them. | #skipper.capitalize# shouted at me for a berth this morning. Shouting doesn't make the quay longer. | Every #hull# wants the berth by #steps#. There's one berth by #steps#.
+b : Can't you squeeze them in? | And you said? | First come, surely.
+a : Squeeze one in and you scrape two. They'll wait for #turn#. | I told him the hour of the #tide#. He went quiet after. | First come and paid up. That's the only rule I keep at #window#.
+
+scene ledger_hand
+when topic=work self.job=sailor self.master=yes
+does tell.self / ask.detail / answer.detail / assess
+a : I write every #hull# into #ledger# in my own hand. Name, berth, draught, the hour she tied up. | #ledger.capitalize# goes back further than I do. My entries are the slow ones, and the neat ones. | Some days #pen# says more than I do. I don't mind it.
+b : Why the draught? | Neat matters? | Not even a little?
+a : So I know what she'll scrape on at low water. #mud.capitalize# doesn't forgive guessing. | It matters when someone comes asking who was moored where. #ledger.capitalize# knows. | Not at all. #pen.capitalize# doesn't argue back.
+b? : #bc_wise# | Fair. | #bc_lucky_you#
+
+scene dues_argued
+when topic=prices|work self.job=sailor self.working=yes
+does tell.complaint / react.complaint / insist / ack
+a : #skipper.capitalize# tried to pay #dues# on half a hull. Said the other half was still at sea. | Every crew thinks #dues# went up yesterday. They're what's on the board, same as ever. | I had a crew count copper at #window# for an hour. I let them. The tide had time.
+b : Half a hull? | Folk always think so. | An hour?
+a : I told him the half at sea could pay its #dues# when it got in. | Let them think it. I'll show #ledger# to anyone who asks. | An hour. #tide.capitalize# wasn't in a hurry, and nor was I.
+b : #bc_ha# | Fair enough, then. | Patient of you.
+
+scene fog_pilot
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.worry / reassure / assess
+a : #fog.capitalize# on the Sound. Nothing moves till the pilot can see a bow-length. | Thick out there. I can't see #bollard# from ten strides. | Mist like this, I listen. You hear a #hull# before you see her.
+b : It'll lift by noon. | That thick? | What do you listen for?
+a : It might. The #tide# won't wait for it to. | That thick. I'll be lighting #lamps# at noon. | Oars, a bell, someone swearing. Swearing carries best over #sound#.
+
+scene frost_morning
+when topic=weather|season here.season=winter here.time=dawn here.region=ridgemere self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #rime.capitalize#. Look at it. The whole quay's gone white and quiet. | A frost like this and I'm a #child# again for an hour. | Cold enough to take the smell off the Wharf. I could stand on #steps# till noon.
+b : Cold, though. | Young again? | It does smell better.
+a : Cold and clean. I'll take #chill# over warm and wet any day. | Hard frost meant ice on #lake#. I've loved it since. | Better, and #very# quiet. Even the gulls haven't the heart to shout.
+
+scene rain_mud
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain on the tide-flats. By low water it'll be #mud# from the steps to the hulls. | I lost a boot in #mud# once. Stood on one foot till someone threw me a rope. | #rain.capitalize# I don't mind. It's what it leaves behind on #quay#.
+b : It's only mud. | What did you do? | It'll dry.
+a : Not that mud. #mud.capitalize# keeps what it takes. | Went in after it. Nobody walks #quay# in one boot. | It won't. Not here. It only gets fresher with every #tide#.
+
+scene storm_lines
+when topic=weather here.weather=storm self.job=sailor
+does tell.worry / ask.detail / answer.detail / assess
+a : Storm coming in. I've doubled every line on #quay#. | Hear that #wind#? I'll be up all night counting #hulls#. | A blow like this, I walk #berths# with #blade# in my paw.
+b : Will they hold? | All night? | In your paw?
+a : The doubled ones will. It's the lines #skipper# tied up that I fret over. | Every hour. Count, sit, count again, till I'm #tired# through. | A line parting is #bad#. A line that won't part with a #hull# dragging is worse.
+b? : #bc_i_hope_so# | #bc_poor_soul# | #bc_wise#
+
+scene still_day
+when topic=weather|day here.weather=clear here.time=day here.region=ridgemere self.away=yes
+does tell.feeling / react.self / assess
+a : #sound.capitalize#'s flat as a plate today. Nearly still water, like #home#. | Clear out past #headland#. I can count the sails from #window#. | A day like this nobody's in trouble on the water. I can sit by #window#.
+b : Like home? | How many? | Lucky you.
+a : Nearly. Salt water never quite lies down, not the way #lake# does. | Seven #hulls#. Six moving, and one becalmed and cross about it. | Lucky for an afternoon. #bc_we_will_see#.
+
+scene dusk_lamps
+when topic=day|smalltalk here.time=dusk here.region=ridgemere
+does tell.self / react.self / assess
+a : #lamps.capitalize# going on, one by one. I like to watch them reach the end. | Dusk. The day #crew# go up the hill and the night ones come down. | This hour #sound# goes the colour of slate. I stop what I'm doing to look.
+b : They're pretty from up the hill. | Busy hour, then. | The colour of slate?
+a : Prettier from down here. You see each one twice, once in #sound#. | Busy, and noisier after. I'll be indoors before #racket# starts. | Grey-blue, with a shine on it. #cold.capitalize# to look at, and lovely.
+
+scene night_racket
+when topic=smalltalk|home here.time=night here.region=ridgemere self.dislikes=night_noise
+does tell.complaint / sympathise / assess / ack
+a : #racket.capitalize# again. Somebody's been singing the same verse since the bells. | Carts at midnight, doors at one, #singers# at two. I counted. | I'd give a week's #wages# for one night without a voice under my window.
+b : Every night? | You counted? | You and half the street.
+a : Most. #singers.capitalize# get worse as the jug goes down. | I count when sleep won't come. #mm#. | Then half the street should go down and say so. I'm too #tired#.
+b? : #bc_poor_soul# | #bc_every_night# | #bc_ha#
+
+scene herring_jar
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail / assess
+a : I keep a jar of #herring# on the windowsill. A bit at noon and I'm good till dark. | #herring.capitalize#, black bread, an onion. That's a meal. | City folk wrinkle their noses at #herring#. More for me.
+b : On the sill? | Just that? | What's it taste of?
+a : Where the #cold# gets at it. It keeps better there. | Just that, and #drink# after. | Salt, vinegar and #chill#. Like winter, in the best way.
+b : #bc_fair_enough# | #bc_fair# | Not for me, I think.
+
+scene knots_evening
+when topic=pastimes self.likes=knots
+does tell.self / react.self / assess / ack
+a : I've been working #knot# all evening. Pointless, and it's the best part of my day. | Give me #cord# and an hour, and I'll give you a monkey's fist for a door-pull. | My paws want rope when they're idle. #knots.capitalize#, mostly.
+b : Pointless? | For a door? | What sort?
+a : It holds nothing. #knots.capitalize# don't have to hold; they only have to be right. | I've given half the street door-pulls. They get pulled, which pleases me. | A crown knot, a sheet bend dressed pretty. Ones that untie clean when you ask them to.
+b? : #bc_lovely# | #bc_clever# | #bc_wise#
+
+scene feast_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess / ack
+a : #bells.capitalize# this morning. I stood on the steps till the last one stopped. | A feast, then. I'll forgive the crowds a great deal for #bells#. | Dancing's not for me, and drink barely. I go for #bells# and come home.
+b : They were loud. | And the dancing? | Only the bells?
+a : Loud's the point. They go out across the water and come back off the far side. | Others can dance. I'll hold the coats. | Only those. The dancing and #drink# are somebody else's feast.
+b? : #bc_lovely# | #bc_fair_enough# | #bc_true#
+
+scene friend_trust
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the one I'd hand #blade# to and not watch what was done with it. | I don't keep many friends, #address#. #self.friend# I keep. | Years, with #self.friend#. We can sit an hour by the water and say ten words between us.
+b : High praise, from you. | Choosy. | Restful, that.
+a : It's the highest I've got. I'd not hand #blade# to many. | Choosy, and slow. It saves trouble #later#. | Restful. Most folk think a #stillness# means something's wrong.
+
+scene chapel_candle
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : When a #hull#'s overdue I light #candle# in the chapel by the water. Not before. | The Bright One and I keep a quiet arrangement. I don't ask much and I say thank you. #mm#. | Feast days I go in for #bells# and stay for the words. Mostly.
+b : Does it help? | A fair bargain. | Mostly?
+a : The #hull# comes in or it doesn't. #candle.capitalize# helps me wait. | Fair to me. I've never asked what the other side thinks of it. | Mostly. Some sermons run longer than a #tide#.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# the lake went still as glass at dawn. You could hear an oar from #far#. | I learned my #knots# on a jetty in #self.from_town#, from an old boatman with no patience. | Winters, the lake at #self.from_town# froze from the edges in. We'd go out with a pole, testing, #cold# to the bone.
+b[from=coldwater] #home : Still water. I miss that. | Every jetty had one of those. | Nobody's mam let them, and everyone went.
+b : Do you miss it? | No patience? | Out on the ice?
+a@home : #bc_me_too#. Salt water never settles the same. | Ours shouted, #very# loud. I learned faster for it. | And we'd come home soaked, and #mum# knew anyway.
+a : The quiet, mostly. #sound.capitalize# talks all night. | None. Tie #knot# wrong and he'd cut it and hand the end back. | Out on the ice on our bellies, #child# and all, listening for the crack.
+
+scene city_ears
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A clerk asked me what "still water" meant. I said it means hello. They wrote that down. | I've lived in the city a long while and I still say calm water to everyone. Most say it back now. | City folk hear #lake# in my mouth before I've said three words.
+b : What did they write? | They say it back? | Does it bother you?
+a : #mm#. Hello, with a question mark after it. I've not been back to that desk. | Most. The Coldwater ones say it first and grin. | Not much. I'd sooner sound like #home# than like nowhere.
+
+scene ship_due
+when topic=ships topic.kind=due topic.ship self.job=sailor
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s due, I'm told. I've a berth kept for her by #steps#, if she keeps her hour. | #topic.ship.capitalize#'s on my list for the #tide#. I'll believe the hour when I see a bow. | A #hull# due, #topic.ship#. Someone will want the berth by #steps# for her.
+b : And if she's late? | Do they ever come on time? | Will they get it?
+a : Then the berth sits empty and I write down why in #ledger#. | Some. The ones with an old skipper and a young #crew#. | If they've paid. #ledger.capitalize# decides, not me.
+b? : #bc_fair# | #bc_ha# | #bc_fair_enough#
+
+scene ship_in
+when topic=ships topic.kind=in topic.ship self.job=sailor
+does tell.news / react.news / assess / ack
+a : #topic.ship.capitalize# tied up on the morning #tide#. Clean lines, for once. | #topic.ship.capitalize#'s in. I've written her into #ledger# and gone looking for my tea. | She's in, #topic.ship#. The #crew# were off her before the plank was down.
+b : Good. All well? | You've earned it. | Thirsty lot, then.
+a : All well. Nobody in the water, nothing on fire. #mm#. | Earned it, and I'll let it go cold by #window#, likely. | Thirsty, and loud. I'll hear #singers# tonight, I expect.
+b? : #bc_good# | #bc_ha# | #bc_poor_soul#
+
+scene ship_late
+when topic=ships topic.kind=late topic.ship here.region=ridgemere
+does tell.worry / reassure / assess
+a : #topic.ship.capitalize#'s late. I keep looking out at #sound# like that'll fetch her. | No word of #topic.ship#. Late's not lost. I tell myself so, every #tide#. | #topic.ship.capitalize#, overdue. #oath#. I'll light a candle if it goes another tide.
+b : Late isn't lost. | She'll come. | Winds have been odd.
+a : No. Not yet. I'll keep one of #lamps# lit, all the same. | They mostly do. It's the waiting that wears. | Odd enough. I'll give her the night before I light #candle#.
+
+scene ship_lost
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : #topic.ship.capitalize#'s gone down, they say. #oath#. I'll not say it aloud till I must. | They're calling #topic.ship# lost. #cold.capitalize# news, and no way to warm it. | Lost, #topic.ship#. Somebody's waiting for a #hull# that won't come.
+b : #pity#. | That's hard. | The poor souls.
+a : Hard. I'll light #candle# tonight, and another if no word comes. | Hard. Every #crew# is somebody's. | Somebody, and then somebody else. #rest.capitalize#.
+
+scene ship_sailed
+when topic=ships topic.kind=sailed topic.ship self.job=sailor
+does tell.news / react.news / assess
+a : #topic.ship.capitalize# went out on the ebb. A clean leaving, past #headland#. | #topic.ship.capitalize#'s sailed. One berth free by #steps#, and six asking for it. | She's gone, #topic.ship#. #farewell# to her, and to whoever's aboard.
+b : Sorry to see her go? | Six? | Good sailing to them.
+a : Neither glad nor sorry. A #hull#'s a worry till she's past #headland#, and then she's not mine. | Six, each with a reason. #ledger.capitalize# will sort them. | And calm water past #headland#. That's where they'll want it.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean here.region=ridgemere
+does tell.worry / react.complaint / reassure / ack
+a : Hard times show on the quay first. Fewer #hulls#, smaller loads, more folk asking for a day's carrying. | Lean, this season. I see it in who comes asking for work at #steps#. | Times like these, I count less and listen more.
+b : Hard all over. | Can you help them? | Listen for what?
+a : All over. The water doesn't care, and that's a comfort somehow. #reassure#. | Some. I know which boats want a hand, and I say so at #window#. | Who's in trouble before they say so. Folk go quiet first, like #sound# before a blow.
+b? : #bc_true# | #bc_good# | #bc_wise#
+
+scene good_times
+when topic=times world.times=good|boom here.region=ridgemere
+does tell.news / react.news / assess
+a : Hulls in every berth and coin on #quay#. I've not seen it so in a while. | Good times. The #crew# are spending ashore, and #singers# have got louder. | #money.capitalize#'s moving. You can see it in the new rope.
+b : Good for everyone. | Louder? | New rope?
+a : Good for everyone, if it lasts. I'll not count it till winter. | Louder, and later. That's the price of good times down by #steps#. | Nobody buys new rope in a #bad# year. They splice the old.
+
+scene gossip_held
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear a good deal, sitting still as #lake#. I'll not be repeating it. | Folk tell me things down at #steps#. They think the water carries it off. | There's talk on #quay#. There's always talk. #secret#.
+b : Not even a little? | Does it? | Go on.
+a : Not a word. I keep names, not stories. | It doesn't. I do. #secret.capitalize#. | No. #insist#.
+b : #bc_fair_enough# | Fair. | #bc_ha#
+
+scene theft_news
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / warn / ack
+a : They say #topic.subject# #topic.claim#. I'll lock my door twice against any #thief#. | Word on #quay#: #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I'm told. I keep #blade# for rope, but it's a comfort.
+b : Lock up, yes. | Is it true? | Mind yourself.
+a : Lock up and count your #money# twice. | Only heard it. #hearsay.capitalize#. | I always do. #slowly.capitalize#, and twice over.
+b? : #bc_wise# | #bc_fair# | #bc_good#
+
+scene new_faces
+when topic=newcomer here.region=ridgemere self.away=yes
+does give.opinion / react.self / assess
+a : New faces every #tide#, near enough. Most only want to know where the dry beds are. | I came here new myself, off a cart with a bag and #lake# in my voice. I remember the looks. | A newcomer wanted the Heights today. I pointed up. It's always up, #address#.
+b : Do you help them? | Were you made welcome? | That's true enough.
+a : When they ask plainly. I'm slow, but I'm not unkind. #welcome.capitalize#, I say. | Not much. I made my own welcome, #slowly#. | Easiest thing to find in the city. Every one of #steps# goes there.
+
+scene tired_bones
+when topic=health|day
+does tell.self / sympathise / assess
+a : I'm #tired#. I've been so a long while. Nothing ails me but that. | #tired.capitalize#. Slept four hours, and the four were noisy. | My knees know every one of #steps#. They tell me about it at dusk.
+b : Rest, then. | Four's not enough. | Mine too.
+a : I rest by going #slowly#. It's the only way I've found that works. | It isn't. I'll make it up on Restday, if #singers# let me. | Then we're a pair. Sit, and let them be quiet a moment.
+
+scene dreams_still
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #sound# went still overnight and I rowed right across it. | I dream of #lake# frozen hard and nobody on it but me. | Last night I dreamt #blade# had gone dull and I couldn't find #hone#. I woke up reaching.
+b : Row across? To where? | Lonely? | Reaching?
+a : Nowhere. All the way over, and not a soul shouted at me the whole #tide#. | Not lonely. #stillness.capitalize#. There's a difference. | For my belt. #blade.capitalize# was there. It's always there.
+b? : #bc_lovely# | #bc_true# | #bc_poor_soul#
+
+scene cormorants
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : There's a cormorant that dries its wings on #bollard# every morning. I've started to expect it. | The gulls on the Wharf would steal the ink out of #pen#. | A seal came up by #steps# today. Looked at me a while and went down again.
+b : Like a flag. | Bold birds. | Lucky.
+a : Like a flag, and about as useful. I'd miss it off #bollard#, though. | Bold, and loud, and fat on everyone's #grub#. | I thought so. They don't come in close to #quay#, as a rule.
+
+scene good_rooms
+when topic=home self.wealth=rich|comfortable self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : I've good rooms now and a fire that draws. I still wake listening for water under #boards#. | My rooms are quieter than #quay#. Not quiet. Quieter. | I've rooms to spare. I use one chair.
+b : Water? | That's something. | One chair?
+a : I grew up over a jetty, near enough. Water under #boards# was the sound of sleep. | It is. Until #singers# start. | The one that looks at #sound#. The others are for show.
+
+scene summer_flats
+when topic=season|weather here.season=summer here.region=ridgemere self.job=sailor
+does tell.complaint / react.complaint / assess
+a : Summer on #quay#. The tide-flats bake and the Wharf stinks of them. | Long light, long hours. #skipper.capitalize# wants to come in at every one of them. | The heat makes #crew# short-tempered, and short-tempered crews make work for me.
+b : It does reek. | Every one? | Work how?
+a : It reeks. I'd trade a month of it for #rime#. | Every one. Summer I'm #tired# from the first tide to the last. | Fights on the boards. Lines cut in temper. I keep #blade# for the honest kind of cutting.
+
+story the_fouled_line [topic=memories self.age>=25 self.from=coldwater]
+  : Back on #lake#, as a #child#, I watched an old boatman get his paw caught in a mooring line with the boat still drifting.
+  : He shouted for a knife and nobody had one. A stranger on the jetty cut him loose with a gutting blade.
+  : I got my first little knife that week, and I've never been without #blade# since.
+  ask : Do you carry anything you'd feel bare without?
+  b[job=sailor|fisher] : A knife, same as you. Every hand should.
+  b : Nothing like that. Maybe I ought to.
+
+story ice_on_the_lake [topic=memories|season self.age>=25 self.away=yes self.from=coldwater]
+  : There was a winter #lake# froze so hard the carts went straight across it instead of round.
+  : I walked out to the middle at dawn with frost on everything, and stood there till my feet were #cold# through.
+  : It was the quietest I've ever been, anywhere. I've been looking for that #stillness# since.
+  b[from=coldwater] : I remember a winter like that. Everyone does.
+  b : I'd have liked to see that. Did you find it again?
+  : Not here. A frosty morning on #quay# comes close, for an hour.
+
+story first_monkeys_fist [topic=pastimes|memories self.likes=knots self.age>=20]
+  : A deckhand showed me a monkey's fist when I was a #child#. A ball of rope, round as a plum, for throwing a line ashore.
+  : I made forty of them that winter. Gave them to anyone who'd stand still, #very# proud of every one.
+  : I still make one every feast day, when #bells# start. Out of habit, and a little for luck.
+  ask : Have you ever made a thing over and over, just to get it right?
+  b : Bread, I suppose. Never the same twice.
+  b[job=crafter|smith] : Every day of my working life.
+
+story bell_in_the_fog [topic=ships|work self.job=sailor self.age>=30 here.region=ridgemere]
+  : Years back a #hull# came in blind through fog. No lamp would show, so I rang the quay bell.
+  : An hour I rang it, slow, the same beat, till my arm was dead and the bow came out of the grey beside #bollard#.
+  : The skipper never said thank you. He sent round a jar of #herring# instead. Better.
+  b : An hour? Your poor arm.
+  b[job=sailor|fisher] : A bell like that has saved more crews than any pilot.
+
+story bells_over_the_water [topic=festival|memories self.from=coldwater self.away=yes self.age>=20]
+  : At home, on a feast morning, the bells from the far shore came over the lake a breath after you saw the ringers.
+  : You'd see the rope go, then wait, and then the sound came across, slow, the way everything did on #lake#.
+  : I stand by the water here on feast days and wait for that breath. It never comes; #sound#'s too close.
+  ask : Is there a sound from when you were small that you still listen for?
+  b : A voice calling me in at dusk. I hear it in every doorway.
+  b[old] : Plenty. Most of them stopped long ago.
+
+rule @slack_water
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 6h
+say #turn.capitalize#. #strokes.capitalize#, then back to it. | There's the tide turned. #oath#.
+
+rule @racket_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Some of us sleep. #singers.capitalize#, have a heart. | #racket.capitalize#. Every night, the same verse.
+
+rule @mud_bark
+when concept=bark here.weather=rain self.dislikes=deep_mud
+does aside
+cooldown 8h
+say That'll be #mud# by low water. | #annoyed#. My good boots, and this.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn here.region=ridgemere self.likes=frosty_mornings
+does aside
+cooldown 12h
+say #rime.capitalize#. Now that's a morning. | Hard frost. Good. #chill.capitalize# keeps the Wharf sweet.
+
+rule @berths_bark
+when concept=bark working=yes self.job=sailor world.ships=in
+does aside
+cooldown 8h
+say Clear #steps#. #hull.capitalize# coming alongside. | Lines ready. #slowly.capitalize#. That's it.
+
+rule @late_bark
+when concept=bark world.ships=late here.region=ridgemere
+does aside
+cooldown 8h
+say Still nothing past #headland#. | Late, and #sound# keeps quiet about it.
+
+dlg @1 resident.hub : #greet#. #mm#. What is it you're after? | #greet#, #address#. Speak slow; I listen slow.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again, then. | #topic.player#. #greet#. Sit if you're staying.
+dlg @3 resident.hub [here.time=night] : It's late, and I'm #tired#. Ask it quick and I'll answer it slow. | Late hour. #lamps.capitalize# are lit; say your piece.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak your piece from where you stand, #stranger#. | #mm#. I'm listening. From there.
+dlg @1 resident.job [self.job=sailor self.master=yes] : I'm #self.trade_words#. Berths, dues, #ledger#, and whoever's shouting at the window. | I keep #berths# and write down every hull that ties up. Slowly, and right.
+dlg @2 resident.job : I'm #self.trade_words#. Slow work, done right. | #job_busy#
+dlg @1 resident.news [world.news] : Word's come in from #world.news_from#: #world.news#. #dunno#. | From #world.news_from#: #world.news#. Weigh it yourself.
+dlg @2 resident.news [world.event_words] : Everyone's on about #world.event_words#, down by #steps#. | It's all #world.event_words# today.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon was robbed out on the road, they're saying. Best keep behind the walls for a bit. #warn#.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing's come up #steps# worth passing on.
+dlg @1 resident.gossip [here.gossip=yes] : Talk is, #topic.subject# #topic.claim#. #hearsay.capitalize#. | Folk say #topic.subject# #topic.claim#. I've no more than that, #address#.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I don't carry talk. It's heavy and it leaks.
+dlg @1 resident.trouble : #trouble_none# | Nothing #blade# and a bit of patience won't sort.
+dlg @1 resident.bye : #farewell#. Careful on #boards#. | #farewell#, #address#.
+dlg @1 master.learn [here.teaches=yes self.job=sailor] : Harbour work? You'll learn the tide first and #ledger# after. | It's slow work, and I teach it slow. Ask what you want about #berths#.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? I'll teach it, #slowly#. Ask your questions. | #learn_offer# Ask; I'll answer once and plain.
+dlg @3 master.learn [here.teaches=no] : I've a learner of my own already. Ask, all the same. | #mm#. I have mine already, and one is all I take. Ask anyway.
+dlg @1 master.work [self.job=sailor] : Up at #turn#, whichever hour it falls. Berths, lines, dues, and a lot of standing in the wind. | You'll learn to read the water before you write a word in #ledger#.
+dlg @1 master.wages : No #wages# for learning. Work at my side; anything you make, you sell. | Learning's not paid. You'll pick it up quicker beside me than alone.
+dlg @1 master.takes [here.take_on=yes] : I take a single learner, one I've come to trust. You'll suit. | #mm#. Only one, and one I know. You'll do.
+dlg @2 master.takes [here.take_on=no] : A single learner, someone I trust. #here.take_on_why# | Not yet. #here.take_on_why#
+dlg @1 master.taken [self.job=sailor] : Good. Be at #steps# at #turn#, and bring a knife. | Settled. #turn.capitalize# tomorrow; don't be late for it.
+dlg @2 master.taken : Good. Settled, then. Come early. | #learn_taken#
+dlg @1 master.refused : #topic.why# | Not now. #topic.why#
+dlg @1 master.bye : #farewell#. Come back on a slack tide. | #farewell#. Careful on #boards#.
+graft resident.hub
+choice What's the little knife at your belt for? -> blade
+node blade
+say #blade.capitalize#? For a line that won't let go. A rope fouls, a hull pulls, a paw gets caught. Then you want an edge, and you want it sharp.
+mood calm
+free
+choice Why the wet stone? -> blade_stone
+choice Goodbye. -> bye
+node blade_stone
+say #strokes.capitalize# at every turn of the tide. It keeps the edge, and it keeps me from hurrying. #mm#.
+choice I'll let you get back to it. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice How do you keep track of every ship? [self.job=sailor self.master=yes] -> ledger_talk
+node ledger_talk
+say In #ledger#. Every hull that ties up, in my own hand: name, berth, draught, the hour. Some skippers think I'm slow. I'm right, which is better.
+mood calm
+free
+choice Can I see it? -> ledger_see
+choice Goodbye. -> bye
+node ledger_see
+say No. It's the harbour's, not mine to show. But you can stand at #window# and watch me write, if you've the patience.
+choice Another time. -> hub
+choice Goodbye. -> bye

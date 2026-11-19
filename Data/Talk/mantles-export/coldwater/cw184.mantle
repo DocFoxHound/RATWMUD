@@ -1,0 +1,307 @@
+# cw184, the forge-and-sea docker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw184
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rm_gorm_slagworth
+written_by claude
+title the forge-and-sea docker
+fits stage=adult|old
+prefers job=sailor talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk swears_by_the_forge_and_the_sea
+likes oatcakes knots fresh_straw warm_rain
+dislikes stale_bread haggling
+fears a_dropped_crate_on_a_wet_pier the_stall_money_gone
+hopes a_stall_of_my_own_on_the_commons
+topics work +0.4 prices +0.3 times +0.3 pastimes +0.2 weather +0.2 gossip -0.1
+styles comfort=practical gossip=plain refuse=blunt tease=none
+marks oath saying
+persona #self.first# hauls cargo off the ships at the piers and lives up a Sump stair: talkative, blunt and honest to a fault, swearing by forge and sea in one breath, tying fancy knots in any bit of line, and putting coppers by for a market stall.
+
+words
+oath! = Forge and sea | By hammer and harbour | Anvil and anchor
+saying! = What the sea brings, a back carries | A good knot holds its tongue
+crates = the crates | a crate off the ship
+hold = the hold | a ship's hold
+hook = my cargo hook | the hook
+gang = the gang | the unloading gang
+knot = a fancy knot | a bowline with a twist in it
+straw = fresh straw | clean straw on the boards
+oatcake = an oatcake | an oatcake with a scrape of butter
+crust = stale bread | a crust gone to wood
+warmrain = a warm rain | rain that comes down warm
+stall = a market stall | my own boards on the Commons
+jar = the copper jar | my jar of coppers
+back = my back | this old back
+shift = the shift | a long shift
+gangplank = the gangplank | a wet gangplank
+piers = the piers | the long piers
+stairs = the stairs | the stairs down to the water
+loaf = a loaf | a heel of bread
+rent = the rent | the rent on my room
+ship = a ship | a fat-bellied ship
+haggle = haggling | chiselling over coppers
+
+any
+opinion @1 houses against 2 : #oath#, I've hauled their cargo since I was grown and no House lord has ever come down #piers# to look.
+opinion @1 merchants against 3 : My pay won't stretch to #loaf# some weeks, and the ones selling it get fatter. That's net-weed, that is.
+opinion @1 watch against 1 : #watch.capitalize# come down #stairs# for one thing: to drag somebody off. Never to help.
+opinion @1 dole for 2 : The dole kept bread on our boards one lean week. Say a word against it near me, shore-friend, and see.
+opinion @1 sump for 1 [self.quarter=sump] : The Sump's rough, but it's home, and we look after our own down here. #saying#.
+opinion @1 newcomers against 1 : Every new face on #piers# is one more back after the same few shifts. I'll be civil. I'll not be glad.
+opinion @1 church for 1 : When nobody had a crumb for us, the chapel did. A copper in their bowl, holed or not.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind your feet; it's wet underfoot. | #greet#, #address#. You're not from down here.
+line @2 greet [self.working=yes self.job=sailor] : #greet#. Mind your feet, #crates# coming through. | #greet#. Step back off #gangplank#, would you.
+line @3 greet [here.time=dawn] : Morning. First ship's in and I've #hook# on already. | Morning, #address#. Up with the gulls, I see.
+line @4 greet [here.time=dusk|night] : #greet#. Dark down here; watch #stairs#. | #greet#. Late, and the stairs get lively after dark.
+line @1 kin.open [pair.kin!=no] : There you are. Sit; I'll find #oatcake#. | Come in, come in. Kick #straw# straight.
+line @1 again.open : #welcome_back#. Can't keep away from me. | Twice in a day, #address#. You're getting a habit.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [self.working=yes] : #greet#. Talk while I lift; I can do both. | #greet#. Mind #hook#.
+line @3 greet.return [pair.band=friends|family] : #greet#. Good. I wanted somebody to talk at. | #greet#. Pull up a crate.
+line @1 farewell : #farewell#. Mind #stairs#. | #farewell#. Keep your purse close down here.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lit stairs. | #farewell#. Sleep sound, if the neighbours let you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #go_ahead#. Straight, mind. | Spit it out, shore-friend. I'm listening.
+line @1 react.news.new : #surprise#! That's news to me, shore-friend. | #oath#. Not a whisper of it reached #piers#.
+line @1 react.news.known : #knew#. It was all over #piers# by noon. | #knew#. The gang had it at first light.
+line @1 react.news.doubt : #doubt#. Who told you? I'd want a name. | That sounds like pier talk. Half of it's weed.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a rotten thing. | #sympathy#. I'll say it plain: that's cruel.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's luck came in. | Ha, #good#! I'll drink to that, if somebody's buying.
+line @1 answer.how : #tired.capitalize#, and #back# knows it. But I'm here. | #fine#. Another copper in #jar# today.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Three ships and one gang. | Run off my feet on #piers#. Say it quick.
+line @1 ask.how : And you? Holding up? | How's the world down your way, #address#?
+line @1 sympathise : That's a heavier load than #crates#. Sit down a minute. | #sympathy#. No use making it pretty; that's hard.
+line @1 decline : #hedge#, but no. I need every shift there is, and that's the truth. | I can't, shore-friend. #jar.capitalize# won't fill itself, and I'm due on #piers#.
+line @1 accept_decline : #no_matter#. Honest answer. I like that. | Fair enough. #no_matter#.
+line @1 thank : #thanks#. I'll not forget it. | #thanks#, shore-friend. Truly.
+line @1 deflect_thanks : #deflect#. You'd do the same. | Don't thank me. Thank #back#.
+line @1 preclose : #preclose#. #shift.capitalize#'s waiting. | Well. #crates.capitalize# won't lift themselves.
+line @1 accept_preclose : Go on, then. Mind your feet on #stairs#. | Off you go. #farewell#.
+line @1 ack : #bc_true# | #agree#.
+line @1 give.advice : #advise#, lift with your legs and never stand under a crane. | Save a copper a day, even a holed day. #saying#.
+line @1 warn [world.bandits=near] : Don't stray past the walls just yet. #warn#. | Don't go out on the road. Not now, not with #jar# to think of.
+line @2 warn [here.region=ridgemere here.time=night] : Keep off the bottom of #stairs# after dark, shore-friend. | #warn#. Purses walk off on their own down here at night.
+scene crates_down
+when topic=work self.working=yes self.job=sailor here.region=ridgemere
+does tell.self / react.self / assess
+a : Forty #crates# off one ship this morning, and every one of them heavier than it looked. | I can lift a crate the size of a pup with #hook# and one shoulder. | Somebody tied the load wrong on the last ship. Half #crates# slid in #hold#. #oath#.
+b[job=sailor|laborer] #gang : Forty's a good morning. | Mind your shoulder doing that. | That's how backs go.
+b : That's a lot of lifting. | One shoulder? | Was anyone hurt?
+a@gang : A good morning and a sore afternoon, shore-friend. | I mind it. It doesn't mind me. | It is. I tied it again proper before I'd touch it.
+a : It is. #back.capitalize# will tell me so tonight. | One shoulder. The other's for complaining about #back#. | Nobody, this time. I'll tie it myself next time, #saying#.
+
+scene down_the_hold
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail / assess
+a : Down in #hold# it's dark, hot and stinks of whatever the last cargo was. | You go down #hold# on a rope and come up with your fur full of somebody's grain. | First one down #hold# gets the foulest air. I always go first. Somebody has to.
+b : What was it this time? | Grain? | Why you?
+a : Fish oil. I'll smell of it for a week, #oath#. | Grain, sand, salt, once a load of feathers. The feathers were worst, #oath#. | Because I can see in the dark, near enough, and I'm not frightened of it.
+b? : #bc_poor_soul# | #bc_ha# | #bc_somebody_has_to#
+
+scene pay_day
+when topic=prices|work self.job=sailor
+does tell.complaint / react.complaint / assess
+a : Paid today. Half of it's rent before I've walked home. | They pay by #ship#, not the hour. A slow one's a holed week. | I've counted my pay twice and it's still short. #oath#. Somebody's got a heavy thumb.
+b : Same for everyone. | That's not fair. | Will you say something?
+a : Same for everyone down here. Not for them up the hill. | Fair doesn't come into it on #piers#. | I will. Frank's all I've got. I'll ask straight.
+
+scene stall_saving
+when topic=dreams|work|prices
+does tell.plan / ask.detail / answer.detail / assess
+a : Every day a copper goes in #jar# for #stall#. | One day I'll stand behind #stall# and somebody else will carry #crates#. | #jar.capitalize#'s a third full. When it's full, I'm off #piers# for good.
+b : What would you sell? | When, do you think? | A third? That's something.
+a : Fancy knots, rope work, little things for boats. Things I make myself. | Two years. Three if #rent# goes up again, and it will. | It is. Slow as the tide, but #jar# fills.
+b : #bc_i_hope_so# | #bc_we_will_see# | #bc_good#
+
+scene no_haggling
+when topic=prices self.dislikes=haggling
+does tell.complaint / ask.opinion / give.opinion / ack
+a : I can't abide #haggle#. Say a price, I'll say yes or no, and we're done. | Somebody tried to knock me down over a bit of rope work. I walked off. | I'll want a stall, and I'll hate every haggler who comes to it. #oath#.
+b : Everyone haggles. | Did you lose the sale? | Won't that be a problem?
+a : Not me. Frank price, frank answer. | I lost the sale and kept my temper. Fair trade, shore-friend. | It will. I'll write the price on a board and point at it.
+b? : #bc_ha# | #bc_fair_enough# | #bc_clever#
+
+scene fancy_knots
+when topic=pastimes self.likes=knots
+does tell.self / react.self / assess / ack
+a : Give me a bit of line and a quiet minute and I'll tie you #knot# you've never seen. | I tie knots when I'm waiting for #ship#. Half #gang# wear one I made. | There's a knot for every job on #piers#. I know forty. I'm after forty-one.
+b : Show me one. | Half the gang? | What's the forty-first?
+a : Watch. Over, under, through, and pull. There. #knot.capitalize#. | Bracelets, cords, a lanyard for #hook#. They like them, though they'll not say so. | One an old sailor showed me once and I've forgotten. It's driving me mad.
+b : #bc_clever# | #bc_ha# | #bc_poor_soul#
+
+scene oatcake_lunch
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : #oatcake.capitalize# on a crate at noon, and the ships coming in. That's a good dinner. | I keep #oatcake# in my coat. Cheap, they don't go off, and they fill a hole. | My #mum# made oatcakes on a hot stone by the lake. I've never had better.
+b : Simple. | In your coat? | Nobody's mum is ever beaten.
+a : Simple's what I can afford, and I like it anyway. | In the inside pocket, wrapped. Fluff and all, some days. | True enough. Mine wasn't, not once. #oath#.
+
+scene stale_loaf
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / insist / ack
+a : The baker by #stairs# sold me #crust# and swore it was baked this morning. | Down here they sell #crust# at today's price. I've had enough of it. | I bit #crust# so hard I near lost a tooth. #oath#.
+b : They all do it. | Take it back. | Soak it in your tea.
+a : They do, and I tell every one of them to their face. I'm frank like that. | I did. Got a dirty look and a softer loaf. | I'll not. Bread should be bread. #insist#.
+b? : #bc_true# | #bc_good# | #bc_fair_enough#
+
+scene warm_rain
+when topic=weather here.outdoors=rain here.season=spring|summer self.likes=warm_rain here.region=ridgemere
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize# after a dry week. I stood out on #piers# with my face up in it. | Feel that? Warm as bathwater. The whole Sump smells clean for once. | #rain.capitalize# like this I don't mind getting waterlogged. Lake rain was never warm.
+b : You'll catch a chill. | Clean? The Sump? | Never warm?
+a : Not in this. This rain's a kindness. | For an hour. Then it smells like the Sump again. | Never once. Cold as a fish, every drop of it.
+
+scene cold_rain_piers
+when topic=weather here.outdoors=rain|storm here.season=autumn|winter here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Cold rain on #piers#. #gangplank.capitalize# like a slide and the crates like ice. | This rain finds the gap in my collar and sits in it all shift. #oath#. | Wet and cold, and still #crates# want lifting. They don't care about the weather.
+b : Mind your footing. | Wrap up. | They never do.
+a : I do. A slip on a wet plank and you're in the water with the crate on top. | With what? I've the one coat and it's soaked. | Never. Neither does #rent#, shore-friend.
+
+scene straw_floor
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : #straw.capitalize# down of a Restday. Nothing smells finer, bar #oatcake#. | I put #straw# down every week, even when I can't afford much else. | A room with #straw# in it feels like a palace. A small, cold palace.
+b : Straw? Not boards? | Every week? | A palace?
+a : Boards and straw. Straw's warmer on the paws. | Every week. That copper I never begrudge. | A palace, up four flights and leaking at the corner. Still.
+
+scene sump_own
+when topic=home|smalltalk here.region=ridgemere
+does give.opinion / disagree / insist
+a : Folk up the hill think the Sump's all thieves. It's not. We look after our own. | The Sump's rough, I'll give you that. But if you fall over down here, somebody picks you up. | The Heights could offer me a house and I'd stay down here. Well. Maybe not a house.
+b : It's got a name for trouble. | Somebody picks your pocket, too. | Not even for the Heights?
+a : It has, and some of it's earned. Not most. | Sometimes. And sometimes the same wolf picks you up. #insist#. | Not even. A wolf who talks plain would scare them half to death.
+
+scene watch_down
+when topic=crime here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The Watch came down #stairs# last night. Not to help. To drag somebody off. | You never see the Watch on our stairs when there's trouble. Only after. | The Watch looks at a Sump wolf like we're all on a list. #oath#.
+b : They're only doing their job. | That's how it is. | Maybe we are.
+a : Their job's to keep the peace. Ours as well as theirs. | That's how it is, and it's wrong. I'll say that to any of them. | Then they'd better have a long list, shore-friend.
+
+scene houses_shadow
+when topic=times|gossip here.region=ridgemere
+does give.opinion / react.self / assess
+a : Every crate I lift has a House mark on it. I've never seen one House face on #piers#. | They say the Houses run the city. They don't run it. We carry it. | All my working days I've been under their shadow. I'd like to see what they look like, just once.
+b : They're busy folk. | That's true enough. | Nothing special, I'd think.
+a : Busy counting, aye. Not lifting. | True, and nobody up there says thank you. | Nothing special. Same fur, softer paws.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Fewer ships, fewer shifts. Two days' work this week, and #jar# knows it. | Lean times. #jar.capitalize#'s going down instead of up. | The belt goes in a hole every week, and up the hill they'd never know. #oath#.
+b : It's the same all over. | That's hard. | They never do.
+a : Same all over, and worse down here. | It is. I'll fill it again when the ships come back. #saying#. | Never. But we notice. We always notice.
+b? : #bc_true# | #bc_i_hope_so# | #bc_true#
+
+scene ships_to_unload
+when topic=ships topic.kind=in|arrived topic.ship self.job=sailor
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s in. That's my day spoken for, and #back# with it. | They're saying #topic.ship# has tied up. Good. A ship in is #shift# paid. | #topic.ship.capitalize# tied up at dawn, riding deep. It'll be a heavy one.
+b : Good for you. | Paid's good. | You'll be tired tonight.
+a : Good for #jar#. Bad for #back#. | Paid's good. Paid fills #jar#. | #tired.capitalize#, and paid. I'll take it.
+
+scene home_lake_forge
+when topic=memories self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : In #self.from_town# there was a smithy right on the shore. Hammer on one side, water on the other. | I grew up hearing a forge and the lake both at once. That's where the swearing comes from. | In #self.from_town# the lake was still and fresh. Down here it's salt and never sits still a minute.
+b[from=coldwater] #home : I know the one. Or one like it. | Calm water and a hot forge. That's home. | It never does, the sea.
+b : Do you miss it? | The swearing? | Which do you like better?
+a@home : Then you know the sound, shore-friend. | That's home, aye. #good.capitalize# to hear it said. | Never, no. I've stopped expecting it to.
+a : The hush of it, some nights. Never the cold. | #oath#. Iron and water. I swear by what I grew up with. | Fresh to drink, salt to work. I'll not choose.
+b : #bc_i_know# | #bc_fair_enough# | #bc_fair#
+
+scene friend_house
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is one wolf I'd trust with #jar#. That's saying a lot. | I'd stand by #self.friend# in any trouble, and say so to anybody who asks. | #self.friend# and I have shared a stair a long while. Good company, plain talk.
+b : That's trust. | Good to have. | Plain talk's rare.
+a : It is. I don't give it out cheap. | It is. Everyone needs a friend at the shoulder. | Rare down here and up the hill both. I'll keep it.
+
+scene new_backs
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New faces on #piers# again. One more back for the same shifts. | A new wolf asked to join #gang# today. I said there's no work. There isn't. | Folk keep coming down to the city thinking there's work. There's a little. Not enough.
+b : They need work too. | That's harsh. | It's hard all round.
+a : They do, and I need it as much. That's the trouble. | It's frank. Frank's not harsh, shore-friend. | Hard all round, and hardest at the bottom.
+
+scene faith_bowl
+when topic=faith
+does give.opinion / react.self / assess
+a : When nobody else fed us, the chapel did. I thank the chapel for it, and the Bright One besides. | I'm not a praying wolf. But I know who opened their door when #jar# was empty. | I put a copper in the chapel bowl even when #jar#'s low. I owe them that.
+b : That's decent of you. | That's what matters. | Even when it's low?
+a : It's only fair. A debt's a debt. | It is. Words are cheap, bread isn't. | Even then. #saying#.
+
+story forge_and_sea [topic=memories self.age>=25]
+  : My #dad# beat iron in a smithy by the lake, and my #mum#'s folk were all water folk.
+  : At supper one would swear by the anvil and the other by the tide, and I took both.
+  ask : Did your folk swear by anything?
+  b : My gran swore by her kettle.
+  b[old] : Everyone's did, in my day. Mine swore by the weather.
+  : So that's why. Forge and sea, every time I stub a toe.
+
+story first_crate [topic=work|memories self.job=sailor self.age>=25]
+  : My first day on #piers#, I dropped a crate of wine off #gangplank#.
+  : Red all over the boards and the foreman red in the face to match.
+  ask : What do you think they did to me?
+  b : Took it out of your pay, I'd think.
+  b[job=sailor|laborer] : Let you go, if it was mine.
+  : Took it from my pay for a month. I've never dropped one since.
+
+story knot_wager [topic=pastimes self.likes=knots]
+  : An old sailor bet me a copper I couldn't tie a knot he'd not seen.
+  : I tied three. He'd seen two. He paid up with a grin and taught me one back.
+  b : Ha! Which was the third?
+  b[job=sailor] : I'd like to see the third.
+  : My own. I made it up on the spot. Never told him that.
+
+rule @crate_cry
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 6h
+say Mind your feet! #crates.capitalize# coming through! | Clear #gangplank#! Crate coming down!
+
+rule @oath_bark
+when concept=bark working=yes
+does aside
+cooldown 8h
+say #oath#! My paw! | #oath#, that's heavy.
+
+rule @crust_bark
+when concept=bark here.place=market self.dislikes=stale_bread
+does aside
+cooldown 10h
+say That's #crust# if ever I saw one. | #crust.capitalize# at fresh prices. #oath#.
+
+rule @rain_bark
+when concept=bark here.outdoors=rain here.season=spring|summer self.likes=warm_rain
+does aside
+cooldown 10h
+say #warmrain.capitalize#. Lovely. | Ha. #warmrain.capitalize#. I'll stand in that.
+
+dlg @1 resident.hub : #greet#. What is it? Say it plain; I will. | #greet#, #address#. Mind your feet. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. What's on your mind? | #topic.player#. Good. Say on.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : What do you want? Straight out, now.
+dlg @1 resident.job [self.job=sailor] : I'm #self.trade_words#. #crates.capitalize#, sacks, barrels: whatever the ship brings, my back carries. | I unload ships. Hard on #back#, honest pay, mostly.
+dlg @2 resident.job : I work with #back#. Always have. | Whatever's going, shore-friend. Whatever pays.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ships in, ships out. | Nothing I've heard, and I hear most things on #piers#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing worth the breath, and I'd say it if there was. #saying#.
+dlg @1 resident.bye : #farewell#. Mind your feet. | #farewell#, #address#. Keep your purse close.
+graft resident.hub
+choice Could you show me a good knot? -> knots
+node knots
+say Course I can. Give us that bit of line. Over, under, round the back, through. There: a bowline with a twist. Holds anything, lets go when you ask.
+mood pleased
+free
+choice Where did you learn that? -> knots_where
+choice Goodbye. -> bye
+node knots_where
+say Off sailors, waiting for ships. Every one knows a knot the rest don't. I trade them, a knot for a knot.
+choice Thank you. -> hub
+choice Goodbye. -> bye

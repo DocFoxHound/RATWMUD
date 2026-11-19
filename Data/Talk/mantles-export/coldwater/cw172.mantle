@@ -1,0 +1,297 @@
+# cw172, the coal in the pocket (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw172
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_edda_bilgeridge
+written_by claude
+title the coal in the pocket
+fits stage=adult|old
+prefers job=merchant warmth=warm
+traits temper=calm talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk keeps_a_pocketful_of_coal_for_luck
+likes warm_bread dice quiet_chapel thunder
+dislikes early_bells salt_wind
+fears a_debt_called_in_early running_out_of_luck_on_a_bad_day
+hopes a_clear_slate_by_the_new_moon a_storm_to_watch_from_a_dry_window
+topics pastimes +0.4 faith +0.3 weather +0.3 food +0.3 work +0.2 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=gentle tease=dry
+marks oath saying
+persona #self.first# helps behind a butcher's counter in the city and keeps a few lumps of coal in a pocket for luck: calm, warm and dry, fond of dice, warm bread and a good thunderstorm, and happiest in an empty chapel.
+
+words
+oath! = Coal in my pocket | By the black lump | Soot and good luck
+saying! = Luck's heavier than it looks | Keep a bit of black for a bright day | A lump in the pocket's worth two in the grate
+coal = a lump of coal | my lucky coal | the coal in my pocket
+loaf = a warm loaf | a loaf just out of the oven | bread with the heat still in it
+bones = the dice | a throw of the bones
+chapel = the empty chapel | the chapel at an empty hour
+thunder = thunder | a proper thunderstorm | thunder walking over the roofs
+bells = the dawn bells | bells before light
+saltwind = the salt wind | that wind off the water
+cleaver = the cleaver | the big cleaver
+sawdust = the sawdust | fresh sawdust on the boards
+shop = the shop | the butcher's
+chops = a chop | a pair of chops
+lake = the lake | the big lake
+moon = the new moon | the dark of the moon
+dryly = Mm | Fancy that
+
+any
+opinion @1 strangers for 2 : Travellers buy #chops# and stay for the talk. I'd sooner a stranger at the counter than an empty shop.
+opinion @2 newcomers for 2 : Anybody who'll carry their share is welcome on our street. I came in from somewhere else myself, #address#.
+opinion @3 dole for 1 : A city this rich can spare a bowl for anybody #hungry#. If the dole fills one belly, good.
+opinion @4 city against 1 : It's all elbows and smoke. I know my street and the two either side, and past that it's strangers.
+opinion @5 houses against 1 [self.owes=yes] : A House factor smiles while he counts what you owe. I've a lump of #coal# that's warmer.
+opinion @6 church for 1 : I like the chapel best when the sermon's done and everybody's gone home. Then it's #chapel#, and it's mine.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Step in off the cobbles. | #greet#, #address#. Don't mind the sawdust; it's clean.
+line @2 greet [self.working=yes] : #greet#. Mind the floor, I've just swept. | #greet#. Point at a cut and I'll wrap it.
+line @3 greet [here.time=dawn] : #greet#. You're up before #bells#, then. | #greet#. Bit early for chops, but come in.
+line @4 greet [here.time=dusk|night] : #greet#. You're abroad late. | #greet#. Nearly shutting, but there's time.
+line @5 kin.open [pair.kin!=no] : Oh, it's you. Sit; the kettle's on and #loaf# is out. | There you are. I'd kept a heel of #loaf# back.
+line @6 again.open : #welcome_back#. You can't keep away from the sawdust. | Twice today. I'll start saving you a stool, #address#.
+line @7 greet.return : #greet#. | #greet#, #address#.
+line @8 greet.return [pair.band=friends|family] : #greet#. Good to see you. | #greet#. Come here, then.
+line @9 greet.return [here.time=dusk|night] : #greet#. We've both had a day of it, by the look. | #greet#. Still up, then.
+line @10 farewell : #farewell#. | #farewell#. Mind the step.
+line @11 farewell [here.time=dusk|night] : #farewell#. Stick to the lamps going home. | #s8_night#.
+line @12 farewell.return : #farewell#. | #farewell#, #address#. Good luck to you.
+line @13 react.news : #surprise#. Well, now. Tell it again, slowly. | Well, that'll give the street something to chew.
+line @14 react.news.new : #surprise#. Nobody's breathed that to me. | #dryly#. That's new to me, #address#.
+line @15 react.news.known : #knew#. It came over the counter this morning. | I had it with #loaf#, first thing.
+line @16 react.news.doubt : #doubt#. I'll hold off till there's a witness. | #dryly#. That sounds like counter talk to me.
+line @17 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | Oh, no. Here, hold #coal# a moment. It can't hurt.
+line @18 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's lovely, that is. | #congrats.capitalize#. Somebody's luck's in, then.
+line @19 answer.how : Steady, #address#. The coal's still in my pocket, so I'm doing all right. | #fine#. Can't complain, and I don't.
+line @20 answer.how.busy [self.working=yes] : #busy.capitalize#. Half the street wants chops today. | Run ragged, but the till's happy, #address#.
+line @21 ask.how : And you? Keeping well? | How are you keeping, #address#?
+line @22 sympathise : #sympathy#. Here. Take a lump of #coal#; it helps more than you'd think. | That's hard. Sit a minute in #shop#. Nobody's in a hurry here.
+line @23 reassure : #reassure#. Luck turns. It always does. | It'll come right, #address#. Give it a week.
+line @24 decline : #hedge#, but not today. I've the counter to mind and nobody to mind it. | I'd love to, #address#, but I'm needed in #shop# till close.
+line @25 accept_decline : #no_matter.capitalize#. Another time. | That's fine. It'll keep, #address#.
+line @26 thank : #thanks#. | That's kind, #address#. I'll remember it.
+line @27 deflect_thanks : #deflect.capitalize#. You'd have done it in my shoes. | Oh, hush. It was nothing.
+line @28 preclose [self.working=yes] : Well. There's meat to hang in #shop#. | Back behind the counter for me, #address#.
+line @29 preclose : #preclose#. | There. I've kept you long enough, #address#.
+line @30 accept_preclose : Go on, then. #farewell#. | Off you go. Good luck with it.
+line @31 tease [pair.band=friends] : #dryly#. You've the luck of a wet match. | You dress like you lost a bet with #saltwind#.
+line @32 tease.return : #dryly#. Says the one who owes me a game of #bones#. | Careful. I've coal in this pocket and I'm not afraid to throw it.
+line @33 ack : #bc_it_is# | #dryly#.
+line @34 give.advice : #advise.capitalize#: don't roll #bones# hungry; you'll chase your losses. | Keep something in your pocket for luck, #address#. Doesn't matter what.
+scene counter_wrap
+when topic=work self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I wrap #chops# in paper so tight it squeaks. Somebody taught me young, and it stuck. | I've swept #sawdust# out and put fresh down three times today. The floor's my pride. | I mind #self.workplace# when the boss is at the block. I'm the one who smiles.
+b : Who taught you? | Three times? | And the boss doesn't?
+a : #gran.capitalize#'s neighbour, a butcher with paws like shovels. Long gone. | Three. Blood on the boards puts folk off their supper. | The boss smiles at the meat. I smile at the customers. #dryly#.
+b : #bc_ha# | #bc_wise# | Ha.
+
+scene the_cleaver
+when topic=work|smalltalk self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : I'm not allowed near #cleaver#. I'd lose a finger and blame the coal. | Folk think it's all blood in #shop#. Mostly it's string, paper and sweeping. | The best sound in #shop# is #cleaver# coming down clean on the block. One stroke.
+b : Probably wise. | String? | One stroke?
+a : Very wise. I wrap, I weigh, I sweep. #cleaver.capitalize# can stay where it is. | String, paper, sweeping, and a bit of talk. That's my day. | One. Two means the edge is going, and then there's grumbling.
+
+scene lucky_coal
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : I've three lumps of #coal# in this pocket. Not for burning. For luck. | You'll hear me rattle when I walk. That's #coal#, not my bones. | Every morning I pick the luckiest lump out of the grate and pocket it.
+b : Why coal? | Doesn't it mark your clothes? | How do you know which is luckiest?
+a : #gran.capitalize# kept coal for luck. A lump of coal is a fire you haven't lit yet. | Every pocket I own is black inside. I've made my peace with it. | It's the one that sits right in the paw. You'll know when you hold it.
+b : #bc_fair_enough# | #bc_ha# | #bc_maybe#
+
+scene coal_offered
+when topic=health|smalltalk|faith
+does offer / accept / assess / ack
+a : You look like you could use a bit of luck. Here, hold this lump a moment. | Take a lump of #coal# for the day. I've spare. | Rub #coal# with your thumb. It's had a lucky week.
+b[from=coldwater] #home : I remember that. We kept coal on the sill. | We all did, back home. Thank you. | My gran did that.
+b : Coal? Go on, then. | All right. Thank you. | Like this?
+a@home : On the sill, by the lamp. Same as ours. #saying.capitalize#. | We all did. Some of us just never stopped. | Then you know it works.
+a : There. You're luckier already. #saying.capitalize#. | Hang on to it till the luck's spent, then bring it back. | Just like that. Now don't lose it.
+b? : #bc_thank_you# | #bc_i_will# | #bc_ha#
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess / ack
+a : Hear that? #thunder.capitalize#. I'd sit up till dawn for that, at a dry window. | #thunder.capitalize#, and me under a good roof. Best seat in the city. | Every time it booms I count to see how far off it is. Four. Getting closer.
+b : It's loud. | Under a roof, maybe. | Four what?
+a : That's what I love about it. Something louder than the street for once. | Under a roof, with a cup. Out there I'd sing a different tune. | Just counting. The bigger the gap, the farther off. Now it's three. #surprise#.
+b? : #bc_ha# | #bc_true# | #bc_lovely#
+
+scene salt_on_the_wind
+when topic=weather here.region=ridgemere here.weather=overcast|storm|clear
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#'s up today. I can taste it on my lips. | #saltwind.capitalize# gets into the meat if you're not careful. Salt where you didn't want it. | I grew up on fresh water. This salty stuff still feels wrong in my whiskers.
+b : I can taste it too. | Into the meat? | Fresh water?
+a : Can't wash it off either. It just sits there. | A bit. We keep the shutters half down on days like this. | Fresh as rain. Salt's for the table, not the air.
+
+scene bells_too_early
+when topic=day|faith here.time=dawn
+does tell.complaint / react.complaint / assess / ack
+a : #bells.capitalize# again. I was in the middle of a good dream. | Who rings a bell before the sun's up? Not anybody I'd want to meet. | Every morning, #bells#. I've started sleeping with the pillow over my ears.
+b : What was the dream? | They mean well. | Does it work?
+a : I'd just thrown a double six. Then the bells. #dryly#. | They mean well very loudly. | Not a bit. Just a stiff neck and bells.
+b : #bc_ha# | #bc_true# | #bc_poor_soul#
+
+scene warm_loaf
+when topic=food
+does tell.feeling / ask.detail / answer.detail
+a : The baker two doors down puts the first batch out at dawn. I'm there before #loaf# cools. | Nothing in the world beats #loaf#, torn by paw and eaten in the street. | I'd swap the best joint on the hooks for #loaf# right now, and the boss would never know.
+b : Every morning? | Torn, not cut? | Would you really?
+a : Every one. The baker knows my knock by now. | Torn. Cutting lets the warm out. Everybody knows that. | No. But I'd think about it. #dryly#.
+
+scene dice_on_restday
+when topic=pastimes self.likes=dice
+does tell.self / ask.opinion / give.opinion / assess
+a : Restday nights I throw #bones# with a few from the street. Pennies only. | I won four games of #bones# straight last week. I'm still not sure how. | People think dice is luck. It's half luck and half knowing when to stop.
+b : Do you win? | The coal? | And do you know when?
+a : More than I lose. The coal sees to that. | Must have been. I'd had a good lump in my pocket that day. | Usually. Not always. #saying.capitalize#.
+b? : #bc_ha# | #bc_lucky_you# | #bc_wise#
+
+scene quiet_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : I slip into #chapel# between services, when there's not a soul. Just to sit. | #chapel.capitalize#'s the one quiet corner this city's got. I'd pay for it, if they charged. | Praying's not my strong suit. I sit in #chapel# and let the Bright One do the talking.
+b : That sounds peaceful. | They might, if they heard you. | And does the Bright One talk?
+a : It is. Nothing in my week beats it. | Then keep it quiet. #dryly#. | Not out loud. But I always leave lighter than I arrived.
+
+scene the_debt
+when topic=times|work|smalltalk self.owes=yes
+does confide / sympathise / reassure / ack
+tone serious / tender / even / even
+a : I owe a House factor money, and I've been told to find it by #moon#. | Between us, #address#, I've a debt hanging over me. A House one. Due by #moon#. | I've been rubbing #coal# so hard lately it's half worn away. I owe somebody.
+b : That's a weight to carry. | Can you find it? | Who do you owe?
+a : It is. I'll carry it, though. I'll not let it show in #shop#. | I'll find it. A bit here, a bit there. Luck and long hours. | A factor. The kind who smiles. That's all I'll say.
+b? : #bc_i_hope_so# | Good luck with it. | #bc_poor_soul#
+
+scene the_boss
+when topic=work|family self.boss self.working=yes
+does tell.feeling / react.self / assess
+a : #self.boss# runs #shop# like a clock. I'd not want to work for anybody else. | #self.boss# is the straightest pair of paws on the street. I'd vouch for that anywhere. | #self.boss# and I hardly need to speak at the counter. A nod does it.
+b : That's lucky. | That's trust. | That's a good partnership.
+a : It is. And I've the coal to thank for it, I expect. #dryly#. | It is. Hard won and easy kept. | It is. We've had practice.
+
+scene friend_close
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : Storm or no storm, give me #self.friend# at my elbow. | If I had one lump of coal left, I'd give it to #self.friend#. | #self.friend# and I go back further than either of us likes to say.
+b : That's a friend. | Your last one? | That's the best kind.
+a : The best I've got. | The very last. And I'd not ask for it back. | It is. Nobody else remembers what I was like before.
+
+scene the_lake_back_home
+when topic=memories|season self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : Back in #self.from_town# we'd stand on the jetty and watch the storms come in over #lake#. | I learned dice on a jetty in #self.from_town#, with the water slapping under the boards. | #gran.capitalize# in #self.from_town# kept a lump of coal on every window sill. For luck.
+b[from=coldwater] #home : I did that too. We were always shouted in. | Everyone did. I lost a fortune in pennies. | Mine too! On the sill, by the lamp.
+b : Weren't you scared? | Did you win? | Did it work?
+a@home : Mine shouted too. We never came in till the first drop. | Same. And the pennies went into the lake, half the time. | Then you know where I got it from.
+a : Never. The thunder was the best part. | Lost everything, twice, then learned. I've been winning since. | We never had a fire in the house, so I'd say yes.
+b? : #bc_ha# | #bc_wise# | #bc_lovely#
+
+scene no_accent
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : Not one customer here has me down for a lake wolf. I left the voice behind on the High Road, I think. | #gran.capitalize# had a voice you could hear across the water. I came out plain. | Now and then a word of home slips out, and a customer looks at me funny.
+b : Do you miss it? | Plain's no bad thing. | What word?
+a : Sometimes. It's still in there. It slips out after a long day. | No. It sells chops just as well. #dryly#. | #greet#. They look round for the water every time.
+
+scene northgate_street
+when topic=smalltalk|home here.region=ridgemere
+does tell.self / react.self / assess
+a : I like our end of the Commons. Bakers, a chapel, and a butcher's that sells honest meat. | I live above #shop#. I can smell the bread from the baker's before I'm out of bed. | Our street's loud from dawn till dusk, and then it's quieter than you'd believe.
+b : Sounds a good street. | Lucky you. | Quieter?
+a : It is. I've no wish to live anywhere else in the city. | I know it. I touch my coal every morning for it. | You can hear the rain on the cobbles, and somebody's dice two doors down.
+
+scene lean_weeks
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / reassure / ack
+a : Folk are buying bones for soup instead of chops. I don't blame them. | Lean, this month. The boss is letting some folk pay next week, and I keep the tally. | You can tell hard times in a butcher's. Folk point at the cheaper cuts and look away.
+b : Soup's still food. | Will they pay? | That's hard to watch.
+a : It is. Good soup, too, if you know what you're doing. | They will. Slow, but they always do. | It is. I slip an extra bone in the paper sometimes. Nobody's counting.
+b? : #bc_true# | #bc_i_hope_so# | #bc_good#
+
+scene new_face
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess
+a : Had a new face in #shop# first thing. Bought one sausage and asked the way to everywhere. | A stranger came in, looked at the hooks, and went white. Not a meat eater, I'd say. | There's a newcomer up our street. I gave them a lump of coal for luck.
+b : Did you tell them? | Poor thing. | And did they keep it?
+a : Everywhere I knew. Sent them off with the sausage and a map in their head. | I gave them a bit of bread from my own lunch. Kinder than a chop. | Looked at it like it might bite. Kept it, though. That's a start.
+
+scene dream_dice
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt I threw #bones# and they never stopped rolling. Down the street and into the lake. | I dream of a storm I can watch from a window of my own. A big window. | I keep dreaming my pockets are empty and I can't find the coal.
+b : Where did they land? | Your own window? | Do you find it?
+a : Never saw. I woke up still waiting. #dryly#. | My own, and no one to say close it. | Always, in the end. In the last pocket I look in.
+
+story gran_coal [topic=memories|faith self.age>=25]
+  : When I was little, #gran# put a lump of #coal# in my paw before I went anywhere new.
+  : #gran.capitalize# said a lump of coal is a fire you haven't lit yet, and that's the best kind of luck.
+  ask : Did anybody give you a thing like that, when you were small?
+  b : A ribbon, once. Gone by teatime.
+  b[old] : A button from my father's coat. I've still got it somewhere.
+  : Then keep looking for it. Luck doesn't like to be lost, #address#.
+
+story four_sixes [topic=pastimes self.likes=dice]
+  : One Restday I threw four sixes in a row. The whole table went quiet.
+  : Somebody asked to see my pockets. I turned them out, and three lumps of #coal# fell on the table.
+  b : Ha! What did they say?
+  b[friends] : I remember that. Nobody would play you for a month.
+  : They let me keep the pennies, but they made me play the next round with empty pockets. Lost it, too. #dryly#.
+
+story storm_stall [topic=weather|memories here.region=ridgemere]
+  : The worst storm I've seen in this city, the stalls blew clean across the Commons.
+  : I stood in the doorway of #shop# and watched it all go by, cabbages and all.
+  ask : Have you ever watched something you shouldn't enjoy, and enjoyed it anyway?
+  b : More than once. Storms especially.
+  : Then you know. I helped pick it all up after, mind. I'm not a monster, #address#.
+
+rule @shop_cry
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 6h
+say Fresh chops, sausages, and a soup bone for a penny! | Mind the sawdust. Clean meat, honest scales, #address#.
+
+rule @bell_bark
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say #bells.capitalize#. Again. #dryly#. | Somebody take that bell away from them.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There it goes. One, two, three... #surprise#. | Listen to #thunder#. Lovely.
+
+rule @coal_bark
+when concept=bark
+does aside
+cooldown 10h
+say Still there. Good. | One, two, three lumps. All present. #saying.capitalize#.
+
+dlg @1 resident.hub : #greet#. What can I wrap for you, or is it just talk? | #greet#, #address#. Step in, mind the sawdust.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're looking lucky today. What's wanted?
+dlg @3 resident.hub [here.time=night] : It's late. Meat's put away for the night. Talk I've still got.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Yes? What is it, #address#?
+dlg @5 resident.job : I'm #self.trade_words#. Wrapping, weighing, sweeping, smiling. | I help out. I'm the one with paper and string, not #cleaver#.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only the price of mutton, and that's not news. | Nothing new. It's been a quiet week on our street, #address#.
+dlg @7 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep counter talk at the counter.
+dlg @8 resident.bye : #farewell#. Good luck to you. | #farewell#, #address#. Mind the step.
+graft resident.hub
+choice What's rattling in your pocket? -> coal
+node coal
+say Coal. Three lumps of it. Not for burning; for luck. #gran.capitalize# kept it on every sill, and mine's lived in a pocket ever since.
+mood warm
+free
+choice Does it work? -> coal_works
+choice Goodbye. -> bye
+node coal_works
+say I've never had a fire in my house I didn't want, and I win at dice more than I lose. You decide. Here, hold one if you like.
+choice I'll take my chances without. -> hub
+choice Goodbye. -> bye

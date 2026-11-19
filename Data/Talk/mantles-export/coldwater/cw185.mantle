@@ -1,0 +1,291 @@
+# cw185, the nib-sharpener (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw185
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rmx_disa_slagwick
+written_by claude
+title the nib-sharpener
+fits stage=adult|old
+prefers job=scholar honesty=guarded
+traits temper=even talk=plain warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk sharpens_every_quill_on_a_wet_stone_before_writing_a_word
+likes smoked_eel evening_line market_bustle first_warm_day
+dislikes bad_manners gulls
+fears a_paper_lost_for_good a_life_spent_indoors
+hopes passage_south_to_a_dry_country a_desk_by_a_window_that_opens
+topics work +0.4 pastimes +0.3 dreams +0.3 family +0.2 gossip -0.4
+styles comfort=practical gossip=closed refuse=courteous tease=none
+marks oath saying
+persona #self.first# copies and files in a city office with a small wet stone at the elbow, never writing a word with a blunt quill: warm under a careful manner, guarded, exact, fond of smoked eel and a fishing line at dusk, and quietly dreaming of passage to somewhere dry.
+
+words
+oath! = Blot and sand | Nib and knife | Ink in my eye
+saying! = Nothing's lost, only filed wrong | A sharp nib keeps an honest hand | Ask twice, write once
+quill = my quill | a quill cut fine
+stone = the wet stone | my little whetstone
+penknife = my pen-knife | the small knife I keep keen
+ledger = the register | the big bound register
+files = the files | shelves of files to the ceiling
+desk = my desk | the desk in the corner, no window
+eel = smoked eel | a slice of smoked eel on brown bread
+eveningline = my rod and line | an hour on the harbour wall with a rod
+warmspring = the first warm day | the first morning I leave the coat on the peg
+gulls = the gulls | those thieving gulls
+courtesy = manners | common courtesy
+southward = passage south | a ship going somewhere the rain's a rumour
+noon = my noon hour | the noon bell and an hour off my stool
+clerks = the clerks | a room full of clerks
+office = the Office | the Office window
+ink = the ink | a pot of black ink
+blot = a blot | an inky blot
+papers = the papers | a stack of papers
+lists = the dole lists | the long lists of names
+shelf = the wrong shelf | a shelf nobody dusts
+harbourwall = the harbour wall | the wall by the harbour steps
+
+any
+opinion @1 newcomers for 1 : There's room in this city for anyone who'll pull their weight. I've filed #papers# for half of them, and most pull it.
+opinion @1 dole for 1 : I copy #lists#. A city this rich ought to feed every mouth in it, and I'd put it to #ledger# in my best hand.
+opinion @1 city against 1 : Ten thousand doors, and whose is next to mine I could hardly say. Up the lake we knew every chimney by its smoke.
+opinion @1 houses mixed 0 : I copy their #papers# every day. They're careful with #ink# and careless with folk. Both, at once.
+opinion @1 strangers mixed 1 : A stranger's only a paper not yet filed. I'll be polite and watch the purse, #address#.
+opinion @1 watch mixed 0 : #watch.capitalize# file their reports with me. Some write neatly. That tells you more than you'd think.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If it's a paper, I'm the one to see. | #greet#. A paper or a question, I can take either.
+line @2 greet [self.working=yes] : #greet#. One moment; this sentence wants its full stop. | #greet#. Mind #ink#.
+line @3 greet [here.time=dawn] : Morning. Early, for #office#. | Morning. I've not even cut #quill# yet.
+line @4 greet [here.time=dusk|night] : #greet#. #files.capitalize# are shut for the night. | Evening. Late to be out, #address#.
+line @1 kin.open [pair.kin!=no] : Come in, come in. I'll put the kettle on. | Oh, it's you. #good.capitalize#.
+line @1 again.open : You again. I've your answer, if you've the patience. | Back already. I'd not got to the bottom of #files# yet.
+line @1 greet.return : #greet#. | #greet#. How do you do?
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. Oh, #good#, it's you. | #greet#. Sit; I've news, and none of it filed.
+line @3 greet.return [self.working=yes] : #greet#. Mind #papers#, please. | #greet#. A moment while I sand this.
+line @1 farewell : #farewell#. | #farewell#. Mind how you go.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take the lamplit way home. | #farewell#. Safe home, #address#.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #ack#. Go on. | I see. #hearsay.capitalize#, or seen?
+line @1 react.news.new : #surprise#. That never crossed #desk#. | #oath#. That's new to me.
+line @1 react.news.known : #knew#. It came through #office# this morning. | I'd heard. Half #clerks# were whispering it.
+line @1 react.news.doubt : #doubt#. Has anyone written it down who saw it? | I'll want that confirmed, #address#, before I believe a word.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm #very# sorry. | #oath#. That's a sad thing to hear.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'll be glad to file that one. | How lovely. #good.capitalize# news is rare at #desk#.
+line @1 answer.how : #fine#, thank you. Everything in its place. | Well enough, #address#. My back knows the stool.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #files.capitalize# never end. | Ink to the elbows, thank you.
+line @1 ask.how : And yourself, #address#? | How are you keeping, #address#?
+line @1 sympathise : #sympathy#. Sit a while; nothing needs filing just now. | That's hard, #address#. I'm sorry for it.
+line @1 decline : #hedge#, but I can't. #ledger.capitalize# wants copying before the bell and nobody else will. | Forgive me; it must be no. I've promised #office# my evening.
+line @1 accept_decline : #no_matter#. Another time. | Quite all right, #address#. I understand.
+line @1 thank : #thanks#. That's #very# kind. | Kind of you, #address#. It's noted, on the good side.
+line @1 deflect_thanks : #deflect.capitalize#. | It's no trouble. It's what #desk# is for.
+line @1 preclose : Well. #excuse#. | #papers.capitalize# are waiting, I'm afraid.
+line @1 accept_preclose : Of course. #farewell#. | Go on, then. Mind the steps.
+line @1 ack : #bc_right# | #ack#.
+scene the_quill
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Three strokes on #stone#, every quill, every morning. I won't write with a blunt one. | A blunt nib leaves #blot#, and a blot's a lie. Somebody reads it wrong. | I keep #penknife# and #stone# in my sleeve. #clerks.capitalize# laugh. Their copies smudge.
+b : Every morning? | A lie? | Do they?
+a : Every morning, and again at noon. It takes a breath. It saves an hour. | A nine reads as a four, a name as another name. That's a life gone wrong over #ink#. | Theirs smudge and mine don't. I stopped minding the laughing. #saying.capitalize#.
+b : #bc_wise# | #bc_true# | #bc_ha#
+
+scene lost_paper
+when topic=work self.job=scholar
+does tell.self / react.self / insist / ack
+a : Somebody came to #desk# today sure #office# had lost their paper. It's in there. Somewhere. | Every paper ever handed in is in #files#. Finding it is the work. | They think a paper vanishes. It doesn't. It goes on #shelf# and waits.
+b : Did you find it? | That's a lot of shelves. | Waits for what?
+a : Not yet. It'll turn up under my paw before the month's out. | It is. I know most of them by smell, near enough. | For somebody patient. That's usually me, at #desk#.
+b? : #bc_i_hope_so# | #bc_ha# | #bc_good#
+
+scene rude_callers
+when topic=work|smalltalk self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : A House steward banged on #desk# today. Banged. As if I'd shelve faster for it. | Nobody says please at #office#. They say "where's my paper". | I'll help anyone who asks properly. #courtesy.capitalize# costs nothing.
+b : That's how some are. | That's rude. | It costs nothing, true.
+a : Too many. I served him last. Politely. #bc_of_course#. | It is. I answer with please anyway. It confuses them. | And buys a great deal, at #office#. #bc_true#.
+
+scene market_noon
+when topic=smalltalk|pastimes here.region=ridgemere self.likes=market_bustle
+does tell.feeling / react.self / assess
+a : I spend #noon# in the Commons market. Noise, folk, colour. Everything #office# isn't. | When the market's roaring I stand in the middle of it and let it go past. | I buy nothing at the market, most days. I just walk it. It rinses #ink# from my thoughts.
+b : Too loud for me. | Just stand there? | Nothing at all?
+a : After a morning of quiet copying, loud's a gift. #bc_it_is#. | Just stand. It's like standing in a river, #address#. | A slice of #eel#, sometimes. That's all.
+
+scene smoked_eel
+when topic=food self.likes=smoked_eel
+does tell.self / react.self / assess
+a : #eel.capitalize#. That's #noon#, most days. Nothing better in the city. | There's a stall that smokes eel the way they did at home. I'd know it blindfold. | My #self.spouse_word# can't abide eel. More for me. #bc_ha#
+b : Eel? Really? | Like home? | Ha. Fair.
+a : Really. Brown bread, #eel#, a pinch of salt. Perfect. | Close. Not quite. Close enough that I go back every week. #bc_every_time#. | Fair, and fortunate.
+
+scene evening_line
+when topic=pastimes here.time=dusk self.likes=evening_line
+does tell.feeling / react.self / assess
+a : After the bell I take #eveningline#. I catch nothing, mostly. That isn't the point. | An hour with a rod at dusk, and nobody wanting a thing from me. That's my rest. | I learned to sit with a rod as a #child#. I still sit the same way on #harbourwall#.
+b : What is the point, then? | That's peaceful. | Do you catch anything?
+a : The sitting. The water. No #papers#. | It is. I come home a different wolf. #bc_every_time#. | Now and then. A small one. Back it goes; it's done nothing wrong.
+
+scene gull_thieves
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull took my eel out of my paw at noon. Out of my paw. | #gulls.capitalize# sit on the roof of #office# and watch my window. I'm sure of it. | I can't sit on #harbourwall# without some gull eyeing #eel#.
+b : They're bold here. | Watch you? | They're hungry too.
+a : Bold and fat. I'd file a complaint if they read. | Watching, waiting for the window. I keep it shut. #bc_always#. | Hungry, and thieves with it. #annoyed#.
+
+scene first_warm
+when topic=season|weather here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmspring.capitalize#. I walked to #office# without a scarf and nearly sang. | First warm morning. I'll take #noon# outside and #files# can wait an hour. | There's one morning every spring when the city smells clean. This is it, #address#.
+b : Nearly sang? | An hour? | It does, a bit.
+a : Nearly. I'm a clerk, #address#. We don't sing. We hum, inside. | A whole hour. #desk.capitalize# keeps me late for it, gladly. | Enjoy it. Tomorrow it'll rain, and #ink# won't dry.
+
+scene rain_glass
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# on #office# windows all day. Every clerk's in a mood. | #rain.capitalize#, and #files# go damp, and #ink# won't dry. #oath#. | I don't mind rain. I mind wet petitioners dripping on #papers#.
+b : It's this city. | Won't dry? | Ha.
+a : It is. A desk brought me here. The weather came free. | Not on a wet day. I sand twice. | I keep a cloth at #office# for them. Most ignore it.
+
+scene my_spouse
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# keeps the house and watches the street. I come home to everything in its place. | I tell #self.spouse# about my day and leave the names out. Old habit. | #self.spouse# could have the key to #desk# for the asking. Not that I'd hand it over.
+b : That's a good home. | Leave the names out? | Not even then?
+a : It is. Fortunate, and I'm aware of it. | Clerks don't carry names home. Not even to the pillow. | Not even then. #saying.capitalize#.
+
+scene the_lake
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : I grew up on the lake at #self.from_town#. I came for #desk# and I've not seen still water since. | Back home I'd sit on the shore of an evening with a rod. Here I sit on #harbourwall# with #gulls#. | When I left #self.from_town# I took a whetstone and a good coat. The whetstone's in my sleeve.
+b[from=coldwater] #cw : The lake at evening. Nothing like it. | The shore. I remember. | And the coat?
+b : Do you miss it? | Gulls? | Just the stone?
+a@cw : Nothing. I'd trade a month's pay for one evening of it. | You'll know the light, then. The way it lies flat. | Worn through years back. #stone.capitalize#'s outlasted it.
+a : On a quiet evening, yes. Never on payday. | Gulls, and tar, and no stillness at all. #annoyed#. | Just the stone. It's sharpened every quill I've ever written with.
+
+scene dry_passage
+when topic=dreams|travel
+does tell.plan / ask.plan / answer.plan / assess
+a : One day I'll buy #southward#. Somewhere dry, where the rain's a story. | I copy the ships' #papers# at work. Every one bound south, I read twice. | I've a little put by. Not much. For #southward#, if it ever comes.
+b : Why dry? | Where would you go? | Will you go?
+a : Because I've been wet since I was born, #address#. Lake, then city. | Anywhere a cloak's a choice. I'll know the place when its name crosses #desk#. | Maybe. Saying it aloud helps. It's filed, now.
+b : #bc_ha# | #bc_good# | #bc_i_hope_so#
+
+scene newcomers_welcome
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New folk come to #office# every week with their papers. Most of them want work and nothing more. | I filed a family's #papers# today, just in off the road. They said thank you three times. | There's room here for anyone who'll work. I see the lists. There is.
+b : Some say they take the work. | That's nice. | Is there?
+a : Some say that. I copy the numbers. The numbers say otherwise. | It was. I put their paper on top of #files#. | There is. Not easy to find, but there, #address#.
+
+scene dole_lists
+when topic=times
+does give.opinion / react.self / assess
+a : I copy #lists#. Every name on them is somebody who'd rather not be. | A rich city with #hungry# beds in it. I write that in the margins, small. | I've watched #lists# grow. I don't like it.
+b : They're grateful, though. | In the margins? | Hard times.
+a : Grateful and ashamed, both. Neither helps. | Small, in pencil. Somebody might read it one day. | Hard for some. Never for the ones who sign at the bottom of #ledger#.
+
+scene clerks_keep
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I read everybody's #papers#. I say nothing. That's the job, and the job's the reason I keep it. | Folk think a clerk's a well to drop a bucket in. I'm not. | I could tell you a great deal. I won't. #oath#.
+b : Not even a hint? | Never? | Fair enough.
+a : Not a hint. A hint's half a paper. | Never. The day I tell is the day I'm done at #desk#. | Thank you. Not everyone thinks so, #address#.
+b : #bc_fair# | #bc_wise# | #bc_true#
+
+scene chapel_ledger
+when topic=faith
+does give.opinion / react.self / assess
+a : Restday I'm in chapel, and I copy nothing all day. That's my prayer. | The Bright One's register is a clean one, I'd guess. I hope my page reads well. | I like the hymns. I don't sing. I follow the words with my eyes like a page of #ledger#.
+b : A day off is holy enough. | So do I. | Like a page?
+a : It is, for a clerk. #bc_true#. | I check it twice, in my head. #bc_mostly#. | Old habit. I'd sooner read a hymn than sing one.
+
+scene neighbour_trust
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# is good company over the wall of an evening. Few enough of those to be found here. | I'd leave a key with #self.neighbour#. I'm careful who gets keys to anything, #desk# or door. | If anything happened at our door, #self.neighbour# would see it before I did.
+b : Rare indeed. | That's trust. | That's useful.
+a : Rare, and I'm grateful for it. | It is. I don't hand it out. #bc_never#. | Useful, and kind with it.
+
+scene accent_window
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : At #office# I speak like #office#. At home I still sound like the lake. | Nobody at work has guessed where I'm from. I've had years to sand it smooth. | My #self.spouse_word# says I talk lake in my sleep. I wouldn't know.
+b : Two voices. | Why hide it? | Maybe you do.
+a : Two voices. One for #papers#, one for people. | Not hiding. Filing. It's in a drawer. | Maybe. It's the only time it gets out. #bc_maybe#.
+
+scene lean_lists
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : #lists.capitalize# are twice as long this month. I copy them slower. I don't know why. | Lean times. Even #clerks# are bringing their noon from home. | Folk at my window want help I can't give. I give them the right form, at least.
+b : That's hard to see. | Even clerks? | That's something.
+a : It is. Every line's a family. | Even us. The eel stall has a short queue. | It's something. It's all I have at #desk#.
+
+story first_desk [topic=memories|work self.job=scholar self.age>=30]
+  : My first week at #office# they gave me a blunt quill and a pile of copying, to see what I'd do.
+  : I cut the quill again with my own knife, on my own stone, before I wrote a word. The senior clerk watched every stroke.
+  ask : Would you have said anything, or just written?
+  b : Just written. It's your first week.
+  b[job=scholar|official] : Cut the quill. Anyone who knows would.
+  : She gave me the hard copying after that. I took it as a compliment.
+
+story the_wrong_shelf [topic=work|smalltalk]
+  : A wolf came to my window every week for a year asking for a paper. Every week, not found.
+  : One day I took down #shelf#, untouched since before my time. It was there, behind it, fallen.
+  b : A year! Were they pleased?
+  : They cried. Then they asked why it took a year. Fair question. #saying.capitalize#.
+
+story lake_eel [topic=memories|food self.from=coldwater self.age>=25]
+  : When I was a #child# there was a smoker on our shore who did eel in a barrel with a lid of turf.
+  : The whole lane smelled of it the week through, every autumn. Shut my eyes and it's back.
+  ask : Is there a smell that takes you home like that?
+  b : Bread. Always bread.
+  b[from=coldwater] : That barrel. I remember it, or one like it.
+  : That's why I buy #eel# at noon. It's a ticket home that costs a copper.
+
+rule @quill_bark
+when concept=bark self.job=scholar self.working=yes
+does aside
+cooldown 6h
+say Three strokes. There. Now I can write. | Where's #stone#? Who's moved #stone#?
+
+rule @gull_bark
+when concept=bark here.place=street|market|shore self.dislikes=gulls
+does aside
+cooldown 8h
+say Shoo. Shoo, you thief. #annoyed#. | #gulls.capitalize#. Every noon.
+
+rule @manners_bark
+when concept=bark self.dislikes=bad_manners
+does aside
+cooldown 10h
+say A please would get you served sooner. | One at a time, and with #courtesy#, if you please.
+
+rule @warm_bark
+when concept=bark here.season=spring here.weather=clear self.likes=first_warm_day
+does aside
+cooldown 12h
+say #warmspring.capitalize#. #files.capitalize# can wait. | Smell that. Spring, at last. #bc_about_time#.
+
+dlg @1 resident.hub : #greet#. How may I help you? | #greet#. Have you a paper, or a question, #address#?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember your face. What brings you to #desk#? | #topic.player#. Good to see you. Sit, please.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'm listening. Politely, if you'll do the same, #address#.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I copy, I file, and I find what others lose. | I keep #files# at #self.workplace#. #saying.capitalize#.
+dlg @2 resident.job : I work with #papers#, #address#. Somebody has to. | #self.trade_words.capitalize#. It's quiet work, and I'm good at it.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing that's been filed, anyway. | Nothing I may repeat, #address#.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | A clerk hears a great deal and repeats none of it.
+dlg @1 resident.bye : #farewell#. Mind the steps. | #farewell#, #address#. Safe home.
+graft resident.hub
+choice Why do you sharpen your quill every time? -> quill
+node quill
+say A blunt nib blots, and #blot# can turn a nine to a four or one name into another. Three strokes on #stone# saves a life gone wrong over ink.
+mood calm
+free
+choice Has that ever happened? -> quill_ever
+choice Goodbye. -> bye
+node quill_ever
+say Not on my papers. I've found it on others', more than once. I put it right when I can. That's half the job, #address#.
+choice Thank you. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,304 @@
+# cw168, the hour-keeper at the needle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw168
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rmx_josephine_wickwick
+written_by claude
+title the hour-keeper at the needle
+fits stage=adult|old
+prefers job=crafter warmth=cold
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_the_bells_from_the_chapel_of_the_tide
+likes hard_cheese long_walks festival_bells autumn_wind
+dislikes stale_bread haggling
+fears being_short_paid_on_a_long_day the_paper_never_found
+hopes the_paper_found_and_signed a_wage_that_needs_no_counting
+topics work +0.3 faith +0.3 festival +0.2 food +0.2 newcomer -0.3 gossip -0.3
+styles comfort=practical gossip=wary refuse=short tease=none
+marks oath saying
+persona #self.first# sews in a tailor's back room in the Works and counts every bell off the chapel against the hours owed: suspicious, cold to strangers, coat always brushed, and off to the Office each week about a paper nobody can find.
+
+words
+oath! = Bell and bobbin | Needle and lake-mist
+saying! = Count it yourself or it's not counted | A brushed coat asks no favours
+bells = the chapel bells | the bells across the roofs
+tally = eleven bells | nine bells and the half
+owed = what I'm owed | every bell I'm owed
+needle = my needle | the needle
+seam = a seam | a long seam that won't lie flat
+backroom = the back room | the tailor's back room
+paper = my paper at the Office | the paper they lost
+clerk = a clerk | the clerk with the ink on his cuff
+cheese = hard cheese | a cheese with some bite in it
+crust = stale bread | a crust gone to stone
+walk = a walk out to the walls | a long walk round the water's edge
+coat = my coat | a brushed coat
+gusty = a gusty autumn day | wind with leaves in it
+lake = the lake | the still lake
+count = my count | the count I keep
+shop = the shop | the tailor's
+loaf = a loaf | the day's loaf
+door = my door | the door with two bolts
+brush = the brush | my old coat-brush
+cloth = the cloth | good grey wool
+coin = my coin | the week's coin
+works = the Works | the Works streets
+
+any
+opinion @1 merchants against 2 : Ten bells at #needle# buys #loaf# and half #cheese#, not the whole. The counter men never sit short, by #count#.
+opinion @1 strangers against 2 : Faces I can't name stay the far side of #door#. #saying#.
+opinion @1 dole for 2 : One black winter the dole was all my house ate. Speak against it near me and I'll have words.
+opinion @1 times against 2 : #loaf.capitalize# shrinks a little every week and #owed# comes a little later. Up the hill they've no clock for that.
+opinion @1 church for 1 : When #shop# let my house go #hungry#, the chapel didn't. When #bells# go I'm in my pew, and I stay to the end.
+opinion @1 houses against 1 : Years I've turned House hems and not one House eye has ever turned my way. They know #backroom# by the bill.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've a want on you. Say it. | #greet#. Say it from there.
+line @2 greet [self.working=yes self.job=crafter] : #greet#. #needle.capitalize#'s in, so don't jog my elbow. | #greet#. I'm on the shop's bells. Be quick.
+line @3 greet [here.time=dawn] : Morning. First bell's not rung, so you're early by #count#. | Morning, #address#. Two bells of sewing done in my head already.
+line @4 greet [here.time=dusk|night] : #greet#. Last bell's gone. Late for knocking. | #greet#. I'd both bolts near shot.
+line @1 kin.open [pair.kin!=no] : There you are. #brush.capitalize#'s by the door; use it before you sit. | Oh, it's you. I'd been counting till you came.
+line @1 again.open : You again. Three bells since, by #count#. | Twice in one day. Must be wanting something.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Kettle's on, near enough. | #greet#. Shoot the bolt behind you.
+line @1 farewell : #farewell#. | #farewell#. Mind #coat# on the rail.
+line @2 farewell [here.time=dusk|night] : #farewell#. Home before the next bell, mind. | #farewell#. Bolt your door.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Go on, then. I'm counting. | Out with the whole of it, #address#.
+line @1 react.news.new : #surprise#. That's not come down to #works# yet. | #oath#. First word of it.
+line @1 react.news.known : #knew#. Had it two bells after it happened. | I'd heard. I sat on it.
+line @1 react.news.doubt : #doubt#. Whose mouth did it come out of first? | I'll count it true when I've seen it with these eyes.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's a cold one. | #oath#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good. | That's #good#. We're due a bit.
+line @1 answer.how : #fine#. Paid in full this week, which is news. | Steady. #needle.capitalize# and me are still on speaking terms.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Seams to my ears. | Busy. Come back after the next bell.
+line @1 ask.how : And you? Paid up this week? | Keeping #coat# dry, are you?
+line @1 sympathise : #sympathy#. Sit. I've nothing clever, but I'll hear it. | That's a knot in the thread. I'm sorry.
+line @1 decline : #hedge#, but no. No #coin# spare and no bells either. | Not this time, #address#. I can't stretch to it, and pretending won't stretch it.
+line @1 accept_decline : #no_matter#. | Fair. #later.capitalize#, maybe.
+line @1 thank : #thanks#. | Kind of you. That goes in #count#.
+line @1 deflect_thanks : #deflect#. | Cost me nothing worth counting.
+line @1 preclose : Well. #preclose#. | There's the bell. I'm off.
+line @1 ack : #bc_right# | #bc_true#
+line @1 insist : #insist#. I counted. | Twice I counted it. It's right.
+scene bell_tally
+when topic=work|smalltalk self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Ten bells off the chapel since I sat down. I'm owed for ten. | I keep my own count of #bells#. #shop.capitalize#'s clock runs slow of a Marketday. | #tally.capitalize#. That's how long #needle# has been in my paw today.
+b : You count every one? | Slow? | That's a long day.
+a : Every one. Nobody else will count them for me. | Slow enough to cost me a bell's #wages# a week. I told them so. | Long, and I'll be paid for every bell of it. #count.capitalize# says so.
+b : #bc_wise# | Good for you. | #bc_poor_soul#
+
+scene counted_short
+when topic=work|prices self.working=yes self.dislikes=haggling
+does tell.complaint / react.complaint / insist / ack
+a : Nine bells' pay for ten, again. I hate haggling, and #shop# makes me do it every week. | I stood and argued over half a bell's #wages#. I'd sooner have sewn another seam. | Short by one bell. It's not the #coin#. It's being taken for a fool.
+b : Did you get it? | That's a shame. | Same thing, really.
+a : Got it. I had #count#; they hadn't one. #saying#. | It is. Pay me right and I'd never open my mouth. | Not the same. The coin I can go without. Being #cheated# I can't.
+b : #bc_good# | #bc_true# | Fair point.
+
+scene needle_work
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : Hems, mostly. The tailor cuts and I do the long seams nobody else sits still for. | #seam.capitalize# today. First bell to the fourth on it. | My paws are slower than they were. #needle.capitalize# still runs straight.
+b : Hard on the eyes. | That's a long time. | Straight's what counts.
+a : Hard on everything. I sit by the window in #backroom# and squint. | Long, but right. I'll not hand a crooked one back. | It is. Not one of mine has ever come back to #shop#.
+
+scene brushed_coat
+when topic=smalltalk|health
+does tell.self / ask.detail / answer.detail / assess
+a : #brush.capitalize# goes over #coat# every morning before I'm out the door. Every one. | You'll not see me in #works# with a burr in my fur. | Folk weigh you by #coat# before you've said a word.
+b : Every morning? | Never? | Do they?
+a : Every one. A clean coat's mine outright, and nothing else is. | Never. A neat coat's my answer to anyone minded to look down at me. | They do. So I hand them nothing to weigh.
+b : #bc_fair_enough# | #bc_good# | #bc_wise#
+
+scene the_paper
+when topic=times|smalltalk here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / assess
+a : Up at the Office again about #paper#. Same answer as the Restday before. | Weekly I climb up and ask after #paper#. Weekly #clerk# says it's in hand. | They've had #paper# so long the ink's likely gone brown on it.
+b : What answer? | In whose hand? | What is it, this paper?
+a : They're looking. Since spring, they've been looking. I'll climb up again next Restday. | Nobody's. That's the trouble. I'll ask till somebody's it is. | Mine. Nobody gets more than that out of me. #oath#.
+b : #bc_poor_soul# | #bc_bad_luck# | Fair enough.
+
+scene old_post
+when topic=work|memories self.age>=40
+does confide / react.self / assess
+tone serious / even / even
+a : I sat in a better chair once. Somebody with friends wanted it more. I sat where the city put me. | I sewed for a fine house before #shop#. Then a cousin of somebody's fancied my stool. | I'll not go over the old place. I'll say this much: I was #good# at it.
+b : That's hard. | Not fair. | I don't doubt it.
+a : Hard, and done with. I don't dwell. Much. | Nothing's fair that's got a cousin in it. | Good, and quick, and straight. Not one of those kept me the stool.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / react.self / assess
+a : #cheese.capitalize# and an apple. That's my dinner, and plain suits me. | A good hard cheese lasts a week if you slice it like I do. | Soft cheese is for #toffs#. Hard cheese keeps.
+b : Sounds good to me. | A week? | Keeps, yes.
+a : It is good. Plain's not the same as poor. | A week, cut thin as #cloth#. I know how thin. | Keeps and fills. A supper needn't do more.
+
+scene stale_bread
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : The baker sold me #crust# and called it this morning's. I know this morning's. | #loaf.capitalize#'s gone dearer and staler both. That takes some doing. | I'd go without before I'd eat #crust# again.
+b : Did you take it back? | It does. | Hard choice.
+a : Back it went. No haggling; I set it down on the board and waited him out. | It does. And nobody's counting it but me. | Not hard. #hungry.capitalize# is honest. Stale's a cheat.
+
+scene long_walk
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail / assess
+a : Restday I take #walk#. Nobody to answer, no bells to keep. | When sleep won't come I walk. Out to the walls and back, slow. | #walk.capitalize# clears #backroom# out of my head.
+b : Where to? | Alone? | Does it?
+a : Nowhere particular. That's the use of it. | Alone. I've no wish for company on a walk. | It does. Out by the walls, not a bell reaches me.
+b : #bc_lovely# | #bc_fair_enough# | #bc_lucky_you#
+
+scene feast_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : Feast morning. Every bell in the city at once, and I can't keep #count# of a single one. | I like the feast bells. It's the one morning #count# doesn't matter. | I stood at my window and let #bells# ring on and on. Didn't count. Not once.
+b : Too many to count. | You like not counting? | Not once?
+a : Too many, and I don't mind it. A rest, of a kind. | A single morning a year. That'll do me. | Not once. Keep that to yourself.
+
+scene autumn_gusts
+when topic=weather|season here.season=autumn self.likes=autumn_wind
+does tell.feeling / react.self / assess
+a : #gusty.capitalize#. I could walk in this from first bell to last. | Wind off the Sound and leaves down every street. Best weather the city has. | I like a #very# good blow. It shifts the smoke and the folk together.
+b : Bit wild for me. | Leaves everywhere. | Shifts the folk?
+a : Wild's fine. I keep #coat# buttoned to the chin. | Everywhere. I'll brush them off and go out again. | Folk stay in when it blows. #works.capitalize# are mine, then.
+
+scene rain_works
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain in #works#. Every gutter running black. | I'll be at #coat# with #brush# till Restday after this. | #rain.capitalize#, and the roof over #backroom# drips on #cloth#.
+b : Filthy, yes. | Leave it, surely. | That's bad.
+a : Filthy. The rain at #home# came down clean, at least. | Leave it? A wet coat goes sour. | Bad. I move #cloth# and count the drips instead.
+
+scene winter_cold
+when topic=weather|season here.season=winter
+does tell.complaint / sympathise / assess
+a : Winter in #works#. My fingers stiffen by the third bell. | It's #cold# in #backroom#. The tailor's mean with the coal. | Long cold nights, I count #bells# so I'll not think about my toes.
+b : Stiff fingers, bad for sewing. | Mean? | Does it work?
+a : Bad for sewing and bad for #wages#. | Mean as #crust#, and that's me being kind. | Some nights. Others I lose #count# and start over.
+
+scene my_child
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : #self.child#'s the one thing I've done right, and nobody will tell me different. | I count the bells till #self.child# is in. Can't help it. | #self.child# says I fret. I say somebody in this house must.
+b : That's something to be proud of. | Every night? | Somebody must.
+a : I am proud. I don't say it aloud often. | Most nights. #count.capitalize# stops when I hear the bolt. | Somebody must. It's always fallen to me.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : In #self.from_town# the chapel bell came across #lake# slow, so you heard it twice. | On a flat day I miss #lake#. Nothing moving, nobody wanting. | I left #self.from_town# for work. I'd not go back for less than work.
+b[from=coldwater] #home : I know that bell. | Flat as a plate, some mornings. | Same with me.
+b : Do you miss it? | Nobody wanting? | No?
+a@home : Then you'll know why I count them here. | Nothing in the city lies that flat. | Then you know how it goes.
+a : The quiet, some. Not the #cold#. | Nobody wanting a seam by noon. | No. Missing a place won't pay the rent.
+
+scene new_faces
+when topic=newcomer
+does give.opinion / react.self / assess
+a : More new faces in #works# every week, and each one after a stool somebody else had. | I don't know them, and my bolts don't either. Simple as that. | Newcomers come cheap. That's why #shop# takes them, and it's us that pay.
+b : They need work too. | Bit harsh. | Cheap, yes.
+a : They do. There's not enough for them and me both. | Harsh costs less than sorry. | Cheap, and #shop# is glad of it.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.complaint / assess / ack
+a : Hard week. I counted #coin# three times and it came out short every time. | Lean. #shop.capitalize#'s cut a bell off the day and calls it a kindness. | Times like these I slice #cheese# thin and walk instead of riding.
+b : Hard for everyone. | A kindness? | Thin's still food.
+a : Not everyone. I've seen the lamps late up the hill. | That's their word for it. Mine's short. | It is. #skint.capitalize#, but fed.
+b? : #bc_true# | #bc_ha# | #bc_true#
+
+scene chapel_faith
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : The tide chapel fed my house one winter. I've not missed a Restday since. | I count #bells#, and I go when they call. The Bright One keeps the other half of that count. | I'm not one for words in chapel. I say thank you and I mean it.
+b : That's loyalty. | Fair enough. | That's enough.
+a : It's owing. I pay what's #owed#, same as I want paying. | Fair, and kept. By #count#, anyway. | Enough. The Bright One can count the rest.
+
+scene gossip_shut
+when topic=gossip
+does tell.gossip / react.news / insist / ack
+a : I hear things in #backroom#. They stay in #backroom#. | Somebody's forever saying something. I don't pass it along. | Gossip's a debt you never signed for. I'll not carry it.
+b : Not even a little? | Nothing? | A debt?
+a : Not a word. #secret#. | Nothing. Try somebody with bells to waste. | Somebody always pays for it after. Not me.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene theft_heard
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / warn / ack
+a : They say #topic.subject# #topic.claim#. Both my bolts are shot already. | Word in #works# is #topic.subject# #topic.claim#. #robbery#. | #topic.subject.capitalize# #topic.claim#, I'm told. That's why #door# stays shut to faces.
+b : Get a third bolt. | Is it true? | Can't blame you.
+a : I might. I've counted my bolts before. | Heard, not seen. #hearsay.capitalize#. | No. Careful's never cost me a bell.
+b? : #bc_ha# | #bc_fair# | #bc_true#
+
+story first_bell [topic=memories self.from=coldwater self.age>=25]
+  : #gran.capitalize# had me counting on the chapel bell that came over #lake# of an evening.
+  : One, two, three, and then how many were left in the day, and what wanted doing before the last.
+  : I've counted bells since. I couldn't stop now if I tried.
+  ask : Did anyone give you a habit you've never been able to put down?
+  b : My father taught me to whistle. I still do it when I'm worried.
+  b[old] : A dozen things. Half of them I wish I could put down.
+
+story the_better_post [topic=work|memories self.age>=40]
+  : I sewed for a fine house once. Good #cloth#, a warm room, and a mistress who paid on the day.
+  : Then a niece of somebody's came wanting work, and I was told my seams had gone slow.
+  : They hadn't. I walked out with #needle# and #coat#, and I've not had a warm room since.
+  b : That's a cruel thing to do to somebody.
+  b[wealth=poor|destitute] : Same story as mine. There's always a niece.
+
+story long_walk_out [topic=pastimes|memories self.likes=long_walks]
+  : One autumn I walked out past the walls to see how far the road went before #bells# gave out.
+  : I walked till I couldn't hear a single one. Sat on a stone and ate #cheese#. Nobody wanted a thing.
+  : Then I walked back, and counted every bell from the first I heard to my own #door#.
+  b : That's a long way to go for a bit of quiet.
+  b[friends] : Next time, take me. I'll not talk.
+
+rule @count_bark
+when concept=bark working=yes
+does aside
+cooldown 6h
+say Seven. That's seven by #count#. | Another bell. #owed.capitalize#, that one too.
+
+rule @crust_bark
+when concept=bark here.place=market self.dislikes=stale_bread
+does aside
+cooldown 10h
+say That's yesterday's, and you know it. | #crust.capitalize#, at that price. #oath#.
+
+rule @wind_bark
+when concept=bark here.season=autumn self.likes=autumn_wind
+does aside
+cooldown 10h
+say There's #gusty#. Good. | Blow, then. Clear #works# out.
+
+rule @haggle_bark
+when concept=bark here.place=market self.dislikes=haggling
+does aside
+cooldown 12h
+say Name a price and keep to it. | No haggling. Say it once, and say it fair.
+
+dlg @1 resident.hub : #greet#. Well? | #greet#. Be quick; I'm counting.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. | #topic.player#. #greet#. In, then.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : That face isn't one I know. Your business, from the step. | #greet#. Near enough, that.
+dlg @1 resident.job [self.job=crafter] : I'm #self.trade_words#. Long seams and hems, and every bell I'm there gets counted. | I sew. The tailor cuts, I sew. Straight, and slow.
+dlg @2 resident.job : I'm #self.trade_words#. It pays, nearly. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing that's come down to #works#.
+dlg @2 resident.news [world.news] : From #world.news_from#: #world.news#. That's what reached me. | Word from #world.news_from#: #world.news#. Count it how you like.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | Talk's a thing I leave lying. Somebody always pays for it.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the next bell.
+graft resident.hub
+choice Why do you count the bells? -> owed
+node owed
+say So I know what I'm owed. The shop's clock runs slow when it suits them. The chapel's doesn't. I count, and I'm paid for every bell.
+mood calm
+free
+choice Have they ever short-changed you? -> owed_short
+choice Goodbye. -> bye
+node owed_short
+say Every week they try. Every week I have my count, and they can't argue with it.
+choice Good for you. -> hub
+choice Goodbye. -> bye

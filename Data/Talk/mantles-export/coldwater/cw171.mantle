@@ -1,0 +1,320 @@
+# cw171, the dry-day marker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw171
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for rmx_delphine_birch
+written_by claude
+title the dry-day marker
+fits stage=adult|old
+prefers warmth=warm stage=old
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk watches_the_rain_as_if_it_might_stop
+likes mutton_stew cards tidy_house first_warm_day
+dislikes deep_mud salt_wind
+fears the_frame_running_out_of_room a_floor_left_unswept
+hopes a_whole_week_of_marks one_more_spring_on_the_lake
+topics weather +0.5 home +0.4 pastimes +0.3 memories +0.3 faith +0.2 gossip -0.2
+styles comfort=feeding gossip=gentle refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a spotless room in the Commons and watches every shower from the window as if it might stop, ready to cut one more dry-day mark into the frame: gentle, plain and careful, cards on the table, a pot of mutton stew on the hob.
+
+words
+oath! = Bright One dry the step | Mercy and mop-water
+saying! = Count the dry days; the wet ones count themselves | A put-away cup can't be knocked over
+marks = my dry-day marks | the little cuts on the window frame
+frame = the window frame | my window frame
+sill = the sill | my windowsill
+stew = mutton stew | stew with the barley swelled in it
+step = my step | the front step
+cup = a cup | a cup of tea
+room = my room | my little room
+table = the table | my table
+knees = my knees | these old knees
+fence = the fence | the back fence
+pot = the pot | a pot on the hob
+floor = the floor | my scrubbed floor
+knife = my paring knife | the little paring knife
+wharf = the wharf | that wharf
+dole = the dole | the parish dole
+bowl = a bowl | a hot bowl
+cards = a hand of cards | the cards
+patience = a game of patience | patience laid out on the table
+broom = my broom | the broom
+warmday = the first warm day | the morning the window can stay open
+mire = the deep mud | mud that keeps your boot
+saltwind = the salt wind | wind off the Sound with salt in it
+brother = my brother | the brother I had
+lake = the lake | the old lake
+kettle = the kettle | my old kettle
+speck = not a speck | not a speck of dust
+
+any
+opinion @1 church for 2 : When my house had nothing, the chapel fed it. Every Restday since, I've had my seat, #dear#.
+opinion @1 dole for 3 [self.on_dole=yes] : The dole kept a pot on my hob through a lean week. Anyone who sneers at it can come and sneer at my #kettle#.
+opinion @1 strangers for 1 : Nobody stays a stranger once they've had #bowl# at #table#. A pot of #stew# stretches to one more; it always has.
+opinion @1 road against 1 [self.age>=50] : The roads were kinder when I was a #child#. I walked them; I'd know.
+opinion @1 houses against 2 [self.age>=50] : The wharf House took #brother#, and not one of them came to our door. I'll not forgive that while I've breath.
+opinion @1 times against 1 [self.on_dole=yes self.age>=60] : I never thought I'd stand in #dole# line. And there I stand, every week, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #dear#. In you come; boots on the mat. | #greet#. You'll take a cup, won't you? I've the kettle on.
+line @2 greet [here.time=dawn] : Morning, #address#. I've swept already. | Morning. Up with me, #dear#? Good.
+line @3 greet [here.time=dusk|night] : #greet#. Out under the lamps at this hour, #dear#. Come in. | #greet#. In from the dark with you.
+line @4 greet [here.weather=rain] : #greet#. It'll stop. I'm watching it. | #greet#, #address#. Shake off on #step#, not in here.
+line @1 kin.open [pair.kin!=no] : Here's my #pet#. I've only just put #cards# away. | Oh, it's you. I'll warm #stew# up.
+line @1 again.open : Back again, #dear#. You'll wear my step out. | Twice in a day, #dear#. Something's on your heart.
+line @1 greet.return : #greet#. | #greet#, #dear#.
+line @2 greet.return [pair.band=friends|family] : #greet#. Sit, sit. I'll fetch a cup. | #greet#, #pet#. I'd hoped you'd come.
+line @1 farewell : #farewell#. | #farewell#, #dear#. Mind how you go.
+line @2 farewell [here.time=dusk|night] : #farewell#. Straight home, now. | #farewell#. Keep to the lamps.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : Go on, #dear#. I'm listening. | Tell me slowly, #dear#. I like it in order.
+line @1 react.news.new : #surprise#. Nothing of that came over #fence#. | #oath#. Well, that's new.
+line @1 react.news.known : #knew#. My neighbour had it this morning. | I'd heard, #dear#. Over the fence.
+line @1 react.news.doubt : #doubt#. I'll wait till somebody's sure. | Folk say a lot. I'll not put a mark to it yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, that's hard. | #oath#. Poor souls, all of them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Oh, I'm glad. | That's lovely news, #dear#. Lovely.
+line @1 answer.how : #fine#. Swept, fed, and the cards are out. | Steady, #dear#. Two marks on #frame# this week.
+line @1 ask.how : And you, #dear#? Eating properly? | Are you keeping warm, #address#?
+line @1 sympathise : #sympathy#. Sit with me. There's #stew#. | Oh, #dear#. Every bit of it, if you like; I've the evening.
+line @1 reassure : #reassure#. It's only weather. | It'll go by, #dear#. Wet weeks always do.
+line @1 decline : #hedge#, #dear#, but no. My knees won't take me that far today. | I would, #address#, only #broom#'s not been round yet and I'll not leave a floor half done.
+line @1 accept_decline : #no_matter#. | That's all right, #dear#. Another day.
+line @1 thank : #thanks#. | That's kind of you, #dear#.
+line @1 deflect_thanks : #deflect#. | It was nothing, #dear#.
+line @1 preclose : Well. #preclose#. | You've your own sweeping to do, #dear#.
+line @1 accept_preclose : Go on, then, #dear#. | Of course. Mind #step#.
+line @1 ack : #bc_right# | #bc_true#
+line @1 give.advice : #advise.capitalize#: put it away when you've used it, and you'll always find it. | Take #broom# to it before you sit. Then you can sit easy.
+scene dry_mark
+when topic=weather|smalltalk here.weather=clear|overcast
+does tell.self / ask.detail / answer.detail / assess
+a : Dry today. I'll cut another mark in #frame# tonight. | That's three dry days. Three little cuts on #frame#, all in a row. | I keep #marks# on the window. It's a comfort, counting them.
+b : You mark every one? | Three in a row? | What do you count them for?
+a : Every one, with #knife#. It's a little thing, but it's mine. | Three. I've not had four since the spring. #saying#. | So I know there are some. In this city you'd forget otherwise.
+b : #bc_lovely# | #bc_good# | #bc_fair_enough#
+
+scene rain_window
+when topic=weather here.weather=rain
+does tell.feeling / react.self / assess
+a : I sit by #sill# and watch it. I keep thinking it'll stop. | #rain.capitalize# again. I've #knife# ready, in case it gives over before dark. | It always looks like it's easing, from #sill#. It never is.
+b : It might. | Before dark? | It never is, no.
+a : It might. And if it does, I'll be the first to know. | Before dark, and I'll have a mark. If not, there's tomorrow. | No. But I'll watch, all the same. Somebody ought to.
+
+scene tidy_room
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : Every cup has its hook in #room#, #dear#, and every hook its cup. | I can't sit down till #floor#'s swept. Never could. | #speck.capitalize#. You could eat off my table, and I'd let you.
+b : Restful, that. | Never? | I believe it.
+a : It's a quiet way. A tidy room doesn't argue with you. | Never. #mum# was the same. It's in the blood. | You'll eat at it, too. I'll not have you go hungry.
+
+scene dawn_sweep
+when topic=day|home here.time=dawn
+does tell.self / react.self / assess
+a : I've swept #step# and #floor# and the bit of street outside. | First thing, #broom#. Then the kettle. Then the window, to see what the day's doing. | Morning's for #broom#. Afternoon's for #cards#.
+b : The street too? | In that order? | That's a fine plan.
+a : The bit by my door. Somebody's got to. | Always that order. If I change it, the day goes wrong. | It's served me well enough this long.
+
+scene hand_of_cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail / assess
+a : #cards.capitalize# of an afternoon, if anyone will sit with me. I play fair and I play slow. | I won three hands off the neighbour yesterday. Didn't crow, mind. | I'd play cards with anyone who'll sit. Even the ones who cheat.
+b : I'll sit with you. | Didn't you? | Even them?
+a : Then sit, #dear#. I'll deal. Mind, I count every card. | Not out loud. I crowed in the kitchen afterwards. | Even them. I always know, and they always lose anyway.
+b : #bc_ha# | #bc_ha# | #bc_good#
+
+scene patience_alone
+when topic=pastimes|home
+does tell.self / react.self / assess
+a : Of an evening I lay out #patience#. Over and over, till it comes right. | Patience is a good game for one. It never asks you to talk. | I've played patience on #table# every night for years. It knows me.
+b : Does it come right? | Restful. | Every night?
+a : Once in a while. Once is plenty to bring me back to it. | Restful, and tidy. Every card in its row. | Every night. The rain on the window, and the cards. That's my evening.
+
+scene mutton_stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : There's #stew# on the hob. There's always stew on the hob. | I make a pot of stew on Restday and it does me the week. | Mutton, barley, an onion and a long slow fire. That's all #stew# needs.
+b : Always? | All week? | No herbs?
+a : Always. You never know who'll come by #hungry#. | The week, and #bowl# for whoever knocks. | A bay leaf, if I've one. Nothing fancy. Fancy's for folk who can't wait.
+b : #bc_lovely# | #bc_good# | #bc_fair_enough#
+
+scene first_warm_day
+when topic=season|weather here.season=spring self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I opened my window and left it open. | It's warm! The first one this year. I took my chair out to #step#. | Every year I wait for #warmday#. It's the best morning there is.
+b : Lovely, isn't it? | Out on the step? | The best?
+a : Lovely. I'll cut a mark for it, and a big one. | On #step#, with a cup, watching folk go by. | The best. Better than a feast. It comes for everybody.
+
+scene salt_wind
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize# again. It gets in the window and leaves a crust on everything. | I can taste the Sound in #cup# when the wind's that way. | That salt wind's no friend to a clean sill. I wipe it three times a day.
+b : It does get everywhere. | In your tea? | Three times?
+a : Everywhere, and I can't abide it. #lake.capitalize# never did that. | In #cup#, in my fur. I'd rather #lake#'s wind, cold as it was. | Three, and it's back before the cloth's dry.
+
+scene deep_mire
+when topic=weather|travel here.weather=rain self.dislikes=deep_mud
+does tell.complaint / sympathise / assess
+a : I'll not go out in it. #mire.capitalize# in the lane, and my knees not what they were. | #mire.capitalize# took a boot off me once, years back. I've not trusted that lane since. | Mud's the one thing I can't sweep. It just comes back.
+b : Best stay in. | A whole boot? | It does.
+a : I'll stay in and watch it from #sill#. | A whole boot. A neighbour fished it out with a rake. | It does, #dear#. Like bad news.
+
+scene brother_wharf
+when topic=memories|family self.age>=50 here.region=ridgemere
+does confide / sympathise / assess
+tone grave / tender / even
+a : I had a brother who worked #wharf#. #wharf.capitalize# took him, and its House never once came to our door. | #brother.capitalize# went down to #wharf# one morning and didn't come home. It's a long time ago. It isn't. | I don't go near #wharf#. You'll know why, if anyone's told you.
+b : I'm sorry. | Long ago, and not. | I hadn't heard.
+a : Thank you, #dear#. It's still there, under everything. | That's how it is. I set his cup out every Restday. | Few have. I'd rather it stayed that way, mostly.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : At home in #self.from_town# the rain came in off #lake# and went off again. Here it stays. | I miss #lake#. Flat calm at sunup, and the mist coming off it. | I've been in the city longer than I was ever in #self.from_town#. I still say home and mean #lake#.
+b[from=coldwater] #home : Still water. Aye. | The mist, yes. | So do I.
+b : Do you miss it? | The mist? | Still, after all these years?
+a@home : Then you know, #pet#. You know. | Lifting off the water like breath. | Then there's the two of us missing it.
+a : Every day, a little. Not enough to go. | Lifting off the water like breath. Nothing here does that. | Still. Some things you don't put down.
+
+scene city_speech
+when topic=accent self.away=yes here.region=ridgemere
+does tell.self / react.self / assess
+a : Folk in the Commons still pick out #lake# in my voice, after all this time. | Every morning the baker gets a "still water" off me. Took the poor soul a year to say it back. | The lake's never left my talk. I didn't try to shift it.
+b : It suits you. | Does the baker say it now? | Why would you?
+a : Thank you, #dear#. Of all I carried here, that's what stayed. | Every morning. It's our little thing. | Exactly. It's mine.
+
+scene the_neighbour
+when topic=friends self.neighbour
+does tell.self / react.self / assess
+a : If my spare key went to anyone, it'd go to #self.neighbour#. | I keep #bowl# of stew back for #self.neighbour#, most nights. | #self.neighbour# and I play cards of a Restday. Fair, mostly.
+b : That's rare, these days. | Lucky neighbour. | Mostly?
+a : It is rare. I don't take it for granted. | Lucky both ways. It's nice to have somebody to feed. | Mostly. I count. I always count.
+
+scene chapel_fed
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : The chapel put bread in my house the winter nobody else did. | I go every Restday, rain or dry. I mark the dry ones after. | I'm not one for long prayers. A dry day and a full #pot#, and I say my thanks for both, plain as that.
+b : That's a debt, of sorts. | Rain or dry? | That's plenty.
+a : A debt I'm glad to owe, #dear#. | Rain or dry. The Bright One doesn't mind wet fur. | It's plenty for me.
+
+scene dole_line
+when topic=times self.on_dole=yes
+does confide / sympathise / assess
+a : I stand in #dole# line every week now. I never thought I'd see it. | The dole's kept #pot# going. I'm grateful, and I'll say so to anyone. | I'm not ashamed of #dole#. I was, at first. Not now.
+b : No shame in it. | Good. | Good for you.
+a : No. I paid in, all those years. It's my turn, that's all. | It's a kindness, and I'm grateful. There's no more to say, #dear#. | Shame doesn't fill a pot, #dear#. #stew# does.
+
+scene new_faces
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : New faces? Bring them here. Nobody's a stranger once they've had #bowl#. | I always feed a newcomer. They look so lost, the first week. | There's a new family on the stair. I've taken them a pot already.
+b : That's kind. | Lost, yes. | Already?
+a : It's only stew. It costs me an onion. | Lost, and hungry, and holding it in. A bowl sorts both. | Already. I'd not have them go hungry their first week.
+
+scene gossip_gentle
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I hear things over the fence, #dear#, but I'll not pass on what might hurt. | Folk tell me things because I'm old and quiet. I keep them. | Gossip's like mud. It gets on everything and you can't sweep it.
+b : Very proper. | Do they? | That's true.
+a : Proper, or careful. One or the other. | They do. And they stay with me. #secret#. | True. I keep my floor clean, and my mouth.
+
+scene death_heard
+when topic=gossip|crime topic.claim_kind=death topic.subject
+does tell.news / sympathise / assess
+tone grave / tender / even
+a : They say #topic.subject# #topic.claim#. #pity#. | I heard #topic.subject# #topic.claim#. I'll light a candle tonight. | #topic.subject.capitalize# #topic.claim#, #dear#. Another one gone.
+b : #pity#. | That's kind of you. | Another one.
+a : #rest#. That's all we can say. | It's little enough. But I'll do it. | They go, one by one. You count them, like the dry days.
+
+
+old
+line @1 greet [here.time=day] : #greet#, #dear#. Come and sit; my knees won't stand for long. | #greet#. Pull up a chair, #dear#. I'll not get up.
+line @1 answer.how.poorly : My knees are bad today. The damp gets in them. | Stiff, #dear#. The stairs know it.
+scene old_days
+when topic=memories|times self.age>=65
+does tell.memory / react.story / assess
+a : In my day you'd know every face on the street. Now I know three. | When I was young, #dole# was a loaf on the chapel step. Now it's a line and a ledger. | I've seen this street go from mud to cobbles. It's still muddy.
+b[old] #elder : Three's more than I know. | A loaf, I remember. | Cobbles and mud, both.
+b : Three's something. | Which was better? | Still?
+a@elder : Then we'll know each other, at least. | You remember. Good. Not many left who do. | Both. The city never finishes anything.
+a : It is. They're good ones, the three. | The loaf. You could thank a face for a loaf. | Still. You can't sweep a whole city.
+
+scene the_stairs
+when topic=health|home self.age>=65
+does tell.self / sympathise / assess
+a : Twenty-two stairs up to my room. I count them, going up. | #knees.capitalize# go before the weather does. They know rain a day early. | I take the stairs one at a time now, and a rest on the landing.
+b : That's a lot of stairs. | Before the sky? | Take your time.
+a : Twenty-two, every day. They keep me going, I tell myself. | Before the sky. My knees are cleverer than the almanac. | I've time, #dear#. That's one thing I've plenty of.
+
+story the_brothers_cup [topic=memories|family self.age>=50]
+  : My #brother# used to drink his tea from a blue cup with a chip in the rim. Wouldn't use any other.
+  : After #wharf# took him, I kept the cup. I set it out every Restday, full, and pour it away at night.
+  : Folk think it's sad. It isn't. It's tidy. Everything has its place, and that's his.
+  ask : Do you keep anything of somebody who's gone?
+  b : A coat. I can't wear it, and I can't give it away.
+  b[old] : More than I can count, love. My whole room.
+
+story frozen_lake [topic=memories|season self.away=yes self.from=coldwater self.age>=40]
+  : One winter at home #lake# went to ice from shore to shore, and you could walk right across.
+  : My #mum# took me out on it at dawn. Not a sound, not a breath of wind. Just the two of us and the ice.
+  : I've never been anywhere so quiet since, and I've looked.
+  b[from=coldwater] : I remember winters like that. Few and far between.
+  b : That sounds like a dream. Did it ever happen again?
+  : Not that I saw. Once was enough to keep.
+
+story the_first_mark [topic=memories|weather self.away=yes self.age>=40]
+  : I cut the first mark on #frame# the week I got to the city. Nine wet days in a row, it had been.
+  : The tenth day was dry, and I was so glad I took a knife and marked it, so I'd remember there'd been one.
+  : The frame's half full now. I've had to start on the other side.
+  ask : Do you keep a count of anything, just to know it's there?
+  b : Coins, I suppose. Never enough of them.
+  b[friends] : I count your dry days with you. You know I do.
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 6h
+say It's easing. I think it's easing. | Come on, now. Give over, and I'll have a mark.
+
+rule @dry_bark
+when concept=bark here.weather=clear here.time=dusk
+does aside
+cooldown 12h
+say Dry all day. That's a mark. | Another one for #frame#. #oath#.
+
+rule @salt_bark
+when concept=bark here.region=ridgemere self.dislikes=salt_wind
+does aside
+cooldown 10h
+say #saltwind.capitalize#. My clean sill. | Shut that window, someone. The Sound's coming in.
+
+rule @sweep_bark
+when concept=bark here.time=dawn self.likes=tidy_house
+does aside
+cooldown 12h
+say Broom first. Kettle after. | #speck.capitalize#. Just so.
+
+dlg @1 resident.hub : #greet#, #dear#. Come in. Is it #stew# you're after, or the company? | #greet#. Sit, #dear#. You'll have a cup?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again. Sit down. | #topic.player#, #dear#. I'd a cup set out, half thinking you'd come.
+dlg @3 resident.hub [here.time=night] : It's late, #dear#. In you come from the dark, then, and tell me.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : #greet#. Now then. No need for that face in a tidy house. | Speak gently, and I'll listen.
+dlg @1 resident.job : I watch the street and the rain, #dear#. I'm old; I've earned the window. | #job_busy#
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# | Nothing over the fence today, #dear#.
+dlg @2 resident.news [world.news] : From #world.news_from#: #world.news#. So the neighbour says. | Word from #world.news_from#: #world.news#. Fancy that.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I'll not pass on talk, #dear#. It's never kind.
+dlg @1 resident.bye : #farewell#, #dear#. Mind #step#. | #farewell#. Come back for stew.
+graft resident.hub
+choice What are those marks on your window frame? -> marks
+node marks
+say Dry days. One cut for every day it didn't rain, since I first got here. The frame's half full. I watch the rain in case it stops, so I'll not miss one.
+mood warm
+free
+choice Why count them? -> marks_why
+choice Goodbye. -> bye
+node marks_why
+say So I know there were some. In a wet city you'd forget. Count the dry days, #dear#; the wet ones count themselves.
+choice I'll keep count too. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,454 @@
+# cw179, the humming preserver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw179
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for rmx_ulla_brindle
+written_by claude
+title the humming preserver
+fits stage=adult|old
+prefers role=merchant talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk hums_a_tune_over_a_cough_in_the_damp
+likes spiced_cider stars full_larder first_warm_day
+dislikes deep_mud drizzle
+fears a_shelf_of_jars_gone_to_mould losing_the_counter_to_a_stranger
+hopes a_counter_that_stays_in_the_family a_clear_night_every_week
+topics work +0.5 food +0.4 season +0.3 weather +0.3 memories +0.2 gossip +0.1 health -0.4
+styles comfort=feed_them gossip=wry refuse=soft tease=dry
+marks oath saying
+persona #self.first# keeps a preserves counter under the market hall roof: chatty and dry, honest at the jar, fond of spiced cider and a clear sky, and humming a scrap of tune whenever the damp gets at the throat.
+
+words
+oath! = By the wax seal | Lids and ladles | Plums and still water
+saying! = Nothing keeps that wasn't put up right | A jar's honest or it's empty | Seal it hot, open it glad
+hum = hm-hm, hm-hm | la, la-la | a scrap of a tune
+jar = jar | crock
+jars = jars | crocks
+lid = lid | jar lid
+pan = the big pan | the copper pan
+seal = the wax | a good seal | the lid's pop
+fruit = fruit | soft fruit
+plums = plums | damsons | dark plums
+jelly = crab-apple jelly | rowan jelly | red jelly
+pickles = pickles | pickled onions
+honey = honey | clover honey
+cider = spiced cider | a cup of hot cider | cider with a clove in it
+stove = the stove | my little stove
+stars = the stars | a sky full of stars | the first stars
+warmday = the first warm day | a morning you can leave the shawl off
+mud = mud to the hocks | deep mud | a lane gone to soup
+drizzle = this drizzle | the thin wet | a drizzle that won't commit
+larder = the larder | my shelves at home
+hall = the hall | the market hall
+counter = the counter | my counter
+lake = the lake | Glasswater
+shore = the shore | the lakeshore
+berries = shore berries | the bramble bushes
+cook = an old cook | a cook in a big kitchen
+dryly = Well | There it is, then
+
+any
+opinion @1 merchants for 1 : I keep #counter# myself. #fruit.capitalize#'s dear, wax is dear, and the carter wants feeding too. Somebody's got to say it.
+opinion @2 road against 1 : The fruit carts come late, and a plum two days on the road is half a plum. #oath#.
+opinion @3 road against 2 [world.wagons=raided] : Another cart robbed. Some #thief# sat on a load of #plums#; I hope they choke on the stones.
+opinion @4 watch for 1 : #watch.capitalize# take a turn through #hall# and the quick paws go elsewhere. That's worth #jar.a# now and then.
+opinion @5 houses against 2 : I'll sell to any House but the one that keeps the wharf. I've my reasons, and they stay in #jars#.
+opinion @6 strangers for 1 : A traveller buys #jar.a# for the road and pays for it with news. I like that bargain, #address#.
+opinion @7 newcomers for 1 : New folk eat like anybody else. If they're buying, they're welcome at #counter#.
+opinion @8 city against 1 : Elbows and #drizzle#, this city. Nobody here knows who lives two doors down, and nobody asks.
+opinion @9 festivals for 1 : One day in the year the whole street's out at once. I'll put #cider# on for that.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Have a look; tasting's free if you don't make a meal of it. | #greet#, #address#. Mind the crate at your feet.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. One moment, this pan won't stir itself. | #greet#. Everything on #counter#'s this season's.
+line @3 greet [here.time=dawn] : #greet#. Early for jam, but I'm open. | #greet#. #hall.capitalize#'s not woken yet, and neither have I.
+line @4 greet [here.time=dusk|night] : #greet#. Lamps are lit, so I'm still selling. | #greet#. Late one. Have you looked up? Sometimes there's #stars#.
+line @5 kin.open [pair.kin!=no] : Ah, it's you. Sit down, there's #jar.a# open. | Oh, good. Come and taste this, tell me it's not too sharp, #dear#.
+line @6 again.open : #welcome_back#. Same #jars#, same face. | Twice in a day. You'll have me thinking you like #plums#.
+line @7 hail [pair.band=friends] : #address.capitalize#! Here, try a spoon of this. | Over here, #address#. I've kept something back for you.
+line @8 greet.return : #greet#. | #greet#, #address#. Watch the crate.
+line @9 greet.return [pair.band=friends|family] : #greet#. I was hoping. | #greet#. Sit down, there's a stool.
+line @10 greet.return [self.working=yes self.role=merchant] : #greet#. Bear with me; the wax is #hot#. | #greet#. Browse; I'll be a moment.
+line @11 greet.return [here.time=dusk|night] : #greet#. Long day, this. | #greet#. Nearly closing, but not quite.
+line @12 farewell : #farewell#. | #farewell#. Eat it before the new moon.
+line @13 farewell [here.time=dusk|night] : #farewell#. Look up on your way home, there may be #stars#. | #s8_night#.
+line @14 farewell.return : #farewell#. | #farewell#, #address#. Bring the #jar# back when it's empty.
+line @15 react.news : #surprise#. Well, I'll stir that one a while. | Is it, now. That'll be round #hall# by noon.
+line @16 react.news.new : #oath#. That's not come past #counter# yet. | #surprise#. #hall.capitalize# hadn't heard it, or I'd know.
+line @17 react.news.known : #knew#. Three customers had it before you. | Heard it over #counter# this morning, #address#.
+line @18 react.news.doubt : #doubt#. Not till it's set, I won't. | #dryly#. Sounds like market talk. Half of that's #wind#.
+line @19 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #pity#. | #sympathy#. Hard news to carry home.
+line @20 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That wants #cider#. | #congrats.capitalize#. I'll put #jar.a# by for them.
+line @21 answer.how : Steady. #jars.capitalize# are full and my feet are holding. | #fine#. #hum.capitalize#. No, nothing, just a tune stuck in me.
+line @22 answer.how.busy [self.working=yes self.role=merchant] : #busy.capitalize#. Two pans on and a queue to the door. | Up to my wrists in #plums#, and that's how I like it.
+line @23 answer.how.poorly [self.mood=low|sore] : #poorly.capitalize#. It'll pass. Most things do, given #honey#. | Low. I'll have #cider# and see.
+line @24 ask.how : And yourself? Fed, #address#? | Keeping well out there?
+line @25 sympathise : #sympathy#. Sit; I'll find you a spoon of something. | That's a weight. Here, have a taste of #jelly#. It won't help, but it's sweet.
+line @26 reassure : #reassure#. It'll set, give it time. | Things come right, #address#. Jam does, if you leave it alone.
+line @27 decline : #hedge#, but no. I've two pans on and they'll burn the minute I turn. | I'd like to, #address#, only #counter# doesn't mind itself.
+line @28 accept_decline : #no_matter.capitalize#. It'll keep, like a good #jar#. | #bc_fair_enough#. Another day.
+line @29 thank : #thanks#. | Kindly done, #address#. I'll remember it at the scales.
+line @30 deflect_thanks : #deflect.capitalize#. You'd do the same. | Buy #jar.a# and we're square.
+line @31 preclose [self.working=yes] : Well. #pan.capitalize#'s wanting me. | I'd best stir before #pan# catches.
+line @32 preclose : #preclose#. | Right, #address#. I'll let you go.
+line @33 accept_preclose : Go on, then. #farewell#. | Away with you, then. Watch the puddles.
+line @34 tease [pair.band=friends] : You've jam on your whisker. No, the other one, #pet#. | You look #tired#; I've seen livelier #pickles#.
+line @35 tease.return : Says the one who ate a whole #jar# standing up. | #dryly#. I'll put that remark in vinegar and keep it.
+line @36 ack : #bc_it_is# | #dryly#.
+line @37 give.advice : #advise.capitalize#: hot jar, hot fruit, and never rush the wax. | Buy #fruit# when it's cheap and put it up. Winter's long.
+line @38 warn [world.bandits=near] : The roads aren't safe this week. #warn#. | Going out past the gates? Go with somebody, #address#.
+scene wax_seal
+when topic=work self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I listen for #seal# on every #jar#. If it doesn't pop as it cools, it goes on my own shelf. | Forty #jars# sealed this morning, and I heard every #lid# go. | One #jar# in the last batch never popped. I'm watching it like a #thief#.
+b[job=merchant|cook|baker] #trade : Forty in a morning? Your arms must ache. | And the bad ones you eat yourself? | Could be the lid. Did you try another?
+b : What's the pop? | Every one? | What happens if it doesn't?
+a@trade : They do, and I keep going. That's the trade, #address#. | I do. Saves waste, and I'm never short of breakfast. | Twice. It's the #jar#. It's got a crack I can't see.
+a : The #lid# pulling down as it cools. It means the air's out and the fruit's safe. | Every one. A #jar# that doesn't pop is a #jar# that spoils. | It spoils. Mould by midwinter. #saying.capitalize#.
+b? : #bc_wise# | #bc_ha# | #bc_true#
+
+scene plums_in
+when topic=work|season here.season=autumn self.role=merchant
+does tell.news / ask.detail / answer.detail / assess
+a : The #plums# are in. My paws are purple to the elbow and I'll not be sorry. | Damson time. The whole hall smells of #pan#. | I bought two baskets of #plums# off a cart this morning. The rest went to the brewers.
+b : Purple? | It smells good. | Two baskets?
+a : Purple till the new year, if last year's anything to go by. #dryly#. | It does. Folk stop at the door just to breathe it, #address#. | Two. That's forty #jars#, if I'm careful, and I am.
+b : #bc_ha# | #bc_lovely# | #bc_good#
+
+scene jelly_set
+when topic=work self.working=yes self.role=merchant
+does tell.worry / reassure / assess / ack
+a : The #jelly# won't set. Third batch this week. | I've a pan of #jelly# that's been thinking about setting since breakfast. | Cold plate test, and it ran off like water. #oath#.
+b : It'll set. | Give it time. | Boil it longer?
+a : It will, or it'll be sauce and I'll sell it as sauce, #address#. | Time I've got. #fruit.capitalize# I haven't. | Longer, and hotter, and I'll stand over #pan# this time.
+b? : #bc_ha# | #bc_true# | #bc_good#
+
+scene damp_hum
+when topic=weather|health here.weather=fog|rain|overcast here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #hum.capitalize#. Don't mind me, I hum when it's damp. | This weather gets into everything, the #jars#, the wax, my chest. #hum.capitalize#. | The wet sits under #hall# roof like a lodger who won't pay.
+b : Was that a cough? | Your chest? | Is it bad?
+a : That was a tune. A low note. #hum.capitalize#, see? | I said the #jars#. Did I say chest? I meant the #jars#. | Only for the wax. It sets cloudy in #fog# like this.
+b : #bc_maybe# | Ha. | #bc_bad_luck#
+
+scene drizzle_again
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize#. If it's going to rain, I wish it'd mean it. | Wet on the cobbles and #mud# on every boot through my door. | It doesn't fall, it hangs about. That's city #rain# for you.
+b : At least it's not pouring. | I wiped my feet. | It does hang.
+a : I'd take pouring. At least a downpour's honest, like a good #jar#. | You did. You're the first today, #address#. | Like a customer who won't decide. I've a few of those too, #dryly#.
+
+scene deep_mud
+when topic=weather|season here.season=spring|autumn here.outdoors=rain|overcast|fog
+does tell.complaint / ask.detail / answer.detail
+a : The lane to my door's gone to #mud#. I came in brown to the knees this morning. | I lost a clog in the #mud# on the way here. Went back for it; it didn't want to come. | Every cart through the market churns it worse. By noon it'll be #mud#, all of it.
+b : Brown to the knees? | And the clog? | Can't they lay boards?
+a : Near enough. I've scrubbed twice and I'm still #bad#. #annoyed#. | Came out eventually, with a sound I'll not repeat, #address#. | They could. They'd sooner sell boards than lay them. #dryly#.
+
+scene warm_morning
+when topic=season|weather here.season=spring here.weather=clear
+does tell.feeling / react.self / assess / ack
+a : #warmday.capitalize#. I left my shawl on the hook and nobody can make me fetch it. | Feel that? Sun on the cobbles, and it's actually warm. I could weep, #address#. | First warm morning, and every customer's smiling. Sells more #jelly# than any cry.
+b : You'll catch cold. | It is warm. | Does it?
+a : Then I'll catch it smiling. #dryly#. | Warm. Don't say it too loud; the city might hear. | It does. Warm folk buy sweet things. #cold.capitalize# folk buy #pickles#.
+b? : #bc_ha# | #bc_lovely# | #bc_true#
+
+scene night_stars
+when topic=day|weather here.time=night here.weather=clear
+does tell.feeling / react.self / assess
+a : Look up. #stars.capitalize#, and the smoke's let them through for once. | A clear night in this city's rarer than an honest scale. I'm stopping to look at #stars#. | I count the first stars on my way home when I can see them. Seven tonight, #address#.
+b : I see them. | Rarer? | Seven?
+a : On #lake# you'd see so many you'd lose count. Here I'm glad of a handful. | Rarer, and I've met a few honest scales. Mine, for one. #dryly#. | Seven. Last clear night it was nine before I reached my door. #very.capitalize# lucky.
+
+scene hot_cider
+when topic=food|season here.season=autumn|winter
+does tell.self / react.self / tease / tease.return
+a : I've a pot of #cider# on the back of #stove#. A cup with a clove in it and the cold can do what it likes. | Hot cider, a pinch of spice, and a stool by #stove#. That's all I want from winter. | I put a cinnamon stick in #cider# last night and I've been smug about it since.
+b : I could smell it from the door. | Is that all? | Smug about cider?
+a : That's on purpose. Folk follow their noses to #counter#. | That, and #jars# selling. And #stars# now and then. | Very. You'd be too. Try a cup and tell me I'm wrong, #address#.
+b? : #bc_ha# | #bc_fair_enough# | #bc_go_on_then#
+
+scene full_shelves
+when topic=home|food
+does tell.feeling / ask.detail / answer.detail
+a : I like #larder# full. Every #jar# a winter morning I won't go #hungry#. | I keep the #jars# that didn't seal for myself. My shelves are a museum of near misses. | There's nothing on my shelves at home I didn't put up myself, #address#.
+b : How many jars? | Near misses? | Nothing at all?
+a : I stopped counting at sixty. It made me feel greedy. #dryly#. | A slightly runny #jelly#. A pickle gone a bit fierce. All perfectly good. #saying.capitalize#. | Bread. I'm no baker. I'd ruin a loaf before I'd ruin a #jar#.
+
+scene living_alone
+when topic=home self.married=no
+does tell.self / react.self / assess
+a : I live on my own up at #self.street#. Nobody to argue with but the kettle. | Two rooms and a window, and #stove# that likes me most days. | I come home, take my boots off, and nobody asks me anything. It's lovely, #address#.
+b : Do you not get lonely? | Sounds snug. | Lovely, that.
+a : Some evenings. Then I go and sell #jelly# to strangers and it passes. | It is. Snug as a #jar# with the lid on. | It is. Keep it to yourself, or they'll all want to visit. #dryly#.
+
+scene the_hall
+when topic=smalltalk|work here.region=ridgemere self.working=yes
+does tell.self / react.self / assess
+a : #hall.capitalize#'s loud today. Fishwives on one side and a cheesemonger on the other who never stops talking. | I've had this corner of #hall# long enough that folk give directions by me. "Left at the jam." | You hear the whole city go past under #hall# roof. Every accent, every price.
+b : Can you hear yourself think? | Left at the jam? | Every accent?
+a : Not since spring. #hum.capitalize#. I hum to keep my place. | Left at the jam, right at #pickles#. That's me too. | Every one. Mine's the one they ask me to say again, #address#.
+
+scene counter_kept
+when topic=work|family self.role=merchant
+does tell.plan / ask.plan / answer.plan
+a : This #counter# came free and I took it with both paws. It stays in the family, if I've a say. | I'd like to hand #counter# on one day to somebody of mine. Somebody who'll stir properly. | Folk have asked to buy my corner of #hall#. I tell them it isn't for sale.
+b : Which family? | Who'll that be? | Not even for a good price?
+a : Whatever family I find. A cousin, a niece. Somebody. #dryly#. | I don't know yet. But I'll know them when they stir #pan#. | Not for any price. A counter's not a coat, #address#.
+
+scene cook_taught
+when topic=work|memories self.age>=25
+does tell.memory / ask.detail / answer.detail
+a : I learnt the trade from #cook# in one of the big House kitchens. #honey.capitalize#, not sugar, was the first thing I was told. | A House cook taught me to put up #fruit#. Slapped my paw with a ladle the first time I rushed it. | Everything I know about a #jar# I had off #cook#. The rest I learnt by burning things.
+b : Why honey? | Slapped you? | What did you burn?
+a : Keeps longer and tastes of something. Sugar just tastes of sugar. | Once. I've not rushed a #jar# since. | Three pans and a sleeve. The sleeve was the worst of it, #address#.
+
+scene brother_lost
+when topic=memories|family self.age>=30
+does tell.memory / sympathise / assess
+tone grave / tender / even
+a : A brother of mine went to work on the wharf, and the wharf kept him. It was a long while ago. | When the ships come in I don't go down to look. A brother of mine worked those boards once. | There's a House in this city I'll not sell #jars# to. It's about a brother of mine, and I'll leave it there.
+b : I'm sorry. | #sympathy#. | I'll not ask, then.
+a : Thank you. It's an old #jar#, that one. Sealed. | #bc_thank_you#. I stir and I keep going. | No. Thank you for that, #address#.
+
+scene lake_berries
+when topic=memories|season self.away=yes self.from=coldwater
+does tell.memory / ask.detail / answer.detail / assess
+a : Up in #self.from_town# we picked #berries# along #shore# every autumn, with the mist still on the water. | In #self.from_town# #lake# froze, and we kept the #jars# in the cold cellar under the jetty boards. | I learnt to count in #jars#, back in #self.from_town#. #mum.capitalize# made me tally them for the winter.
+b[from=coldwater] #home : The ones by the reed beds? Sweetest on the lake. | Under the jetty? Mine used the old boathouse. | Mam did the same. Every jar, every year.
+b : Did you eat more than you picked? | In a cellar? | How many jars?
+a@home : Those ones. I can still taste them, and it's years. | The boathouse was colder. We were jealous of it, #address#. | So that's where my counting comes from. Mam's fault.
+a : Every year. #mum.capitalize# knew; she counted the purple on my paws. | #cold.capitalize# as #lake# itself. Nothing spoilt down there. | Ninety-one, the best year. I've never got near it since.
+b? : #bc_ha# | #bc_wise# | #bc_lovely#
+
+scene accent_at_counter
+when topic=accent self.away=yes self.from=coldwater here.region=ridgemere
+does tell.self / react.self / assess
+a : I said #greet# to a customer and got asked if I'd lost something in the water. | City folk like my voice. They buy #jar.a# to hear me say #plums# again. | Years in this city, and I still say #rain# when they say drizzle.
+b : And your answer? | Do they? | It's the same thing.
+a : That it's a lake greeting, and welcome to it. #dryly#. | They do. I charge the same, but I say it twice, #address#. | It's not. #rain.capitalize# comes and goes. #drizzle.capitalize# lives here.
+
+scene down_the_road
+when topic=travel|memories self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : I came into the city with a crate of #jars# and a letter for a cook who'd already gone. | I walked here from #self.from_town# in a wet spring. The road was #mud# the whole way. | #lake.capitalize# sees me once in a long while. #counter.capitalize# doesn't mind itself.
+b : Gone? | The whole way? | Do you miss it?
+a : Gone. So I sold the #jars# on the street, and I've been selling since. | The whole way. That's where I learned to hate #mud#. | The quiet, and #stars#. I've #cider# and I don't think about it.
+
+scene hand_trusted
+when topic=work|friends self.hand
+does tell.feeling / react.self / assess
+a : #self.hand# has the steadiest paw at #pan# I've met. I'd trust it with the best #fruit#. | I'd leave #counter# with #self.hand# and not count the #jars# after. | There's nobody I'd rather have by #stove# on a busy day than #self.hand#.
+b : That's rare. | High praise. | A good help is everything.
+a : Rare as a clear night here. I know it. | I mean it. I'm sparing with praise, #address#. | Everything. Half the work, and none of the fuss. #luck.capitalize#, that.
+
+scene friend_close
+when topic=friends self.friend
+does tell.feeling / react.self / assess / ack
+a : If I took ill, #self.friend# is who I'd want at the door. Nobody else. | Every #jar# I'm proudest of, #self.friend# gets the first spoon. | #self.friend# and I can sit an hour with #cider# and not need to say a thing.
+b : That's a friend. | Lucky spoon. | That's the best kind.
+a : That's what I'd call one, #address#. | The first spoon, and an honest word about it. #dryly#. | It is. Most folk can't sit still that long.
+b? : #bc_true# | #bc_ha# | #bc_lovely#
+
+scene faith_quiet
+when topic=faith
+does give.opinion / react.self / assess
+a : A good set earns the Bright One a word of thanks. A bad set gets a word too, but not upward. | I'm no chapel regular. I light a candle at the turn of the year and mean it. | When a batch seals, every #jar#, I say a word upward. It costs nothing.
+b : That seems fair. | That's something. | Does anyone answer?
+a : Fair to both of us. The Bright One's got enough to hear. #dryly#. | It's what I can give. A candle and an honest #jar#. | The #jars# do. Pop, pop, pop. That's answer enough.
+
+scene jam_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt every #jar# on #counter# popped at once, like applause. | I dream of a counter of my own with a window over #lake#. Silly, I know. | I had a dream #pan# was as big as #hall#, and I was stirring it with an oar.
+b : That's a good dream. | Why silly? | Did it set?
+a : It was, till I woke and two hadn't. #dryly#. | Because #lake#'s four days off and the counter's here. | Never. I woke still stirring, #address#.
+b : #bc_ha# | #bc_poor_soul# | Ha.
+
+scene lean_jars
+when topic=times|prices world.times=hard|lean self.role=merchant
+does tell.self / ask.opinion / give.opinion / ack
+a : I've started selling half-jars. Folk can't stretch to a whole #jar# this month. | When the year's lean the pickles move and the jelly gathers dust. #counter.capitalize# tells me the times before the criers do. | I've put the seconds out front at half a penny. Runny #jelly#'s still jelly.
+b : Is it worth your while? | And this year? | Do they sell?
+a : Barely. But a half-jar sold beats a whole one sat on #counter#. | #pickles.capitalize#, and more pickles. That's a lean year in vinegar. | Faster than the good ones. #dryly#. Says it all.
+b? : #bc_true# | #bc_ha# | #bc_poor_soul#
+
+scene good_jars
+when topic=times|prices world.times=good|boom self.role=merchant
+does tell.boast / tease / tease.return
+a : A House kitchen's ordered twenty #jars# of #jelly#, half paid up front. | The good #jelly# was gone by noon. Folk are buying jam just because they fancy it. | My shelves at #counter# are bare by dusk and I'm not even sorry.
+b : Which House? Not the wharf one? | Pleasure? You'll be rich. | Bare? Who are you and what have you done with the jam seller?
+a : One that pays. I'll not ask more, #address#. And not that one. | Rich in sticky paws. #dryly#. | Same one. Just tired, and counting #money# for once.
+
+scene fruit_late
+when topic=caravan|prices world.wagons=late
+does tell.complaint / ask.detail / answer.detail
+a : No fruit carts since Marketday. I'm putting up onions so my paws have something to do. | The carts are late, and the last #plums# in my store are going soft on me. | I've #jars# washed, wax melted, and not a basket to fill them from.
+b : Onions? | Soft already? | What will you do?
+a : Pickled. A lean #jar#, but it keeps, and folk buy it. | Soft by tomorrow. They'll be jam whether I'm ready or not. | Wait. Melt the wax again. Wait some more. #oath#.
+
+scene fruit_in
+when topic=caravan|work world.wagons=in self.role=merchant
+does tell.news / ask.detail / answer.detail / assess
+a : The fruit came in at dawn, and it's the good stuff for once. | Baskets up to the rafters out back. #hall.capitalize# smells like an orchard. | I spent half my #takings# on #fruit# off the carts this morning, and I'd do it again.
+b : What did you get? | All of it yours? | Half?
+a : #plums.capitalize#, a basket of quince, and pears soft enough for butter. | Every basket. I'll be stirring till my arms drop off. | Half. Good #fruit# pays itself back by the new moon.
+b? : #bc_lovely# | #bc_ha# | #bc_wise#
+
+scene new_customer
+when topic=newcomer|player here.region=ridgemere
+does tell.self / react.self / assess
+a : A stranger at #counter# asked for a jam made of cloudberries. I've never seen a cloudberry. | New face this morning tried every #jar# on the front row, then bought #honey#. | Somebody fresh off the road asked me what a damson was. I gave them one and watched their face.
+b : Is that a real berry? | Honey? After all that? | What did they make of it?
+a : So I'm told. Up north somewhere. I said I'd keep an ear out. | After all that. I'd have laughed, but they paid well, #address#. | Puckered up, then bought #jar.a#. Most do.
+
+scene gossip_heard
+when topic=gossip|crime topic.claim_kind=theft|wanted|prowling
+does tell.gossip / react.news / assess
+a : The talk under #hall# roof is that #topic.subject# #topic.claim#. I'm only passing it on with the jam. | A customer leaned over #counter# and said #topic.subject# #topic.claim#. Watch your purse. | They're saying #topic.subject# #topic.claim#. #hearsay.capitalize#; I'd not swear to it.
+b : #bc_so_they_say# | That's worrying. | Who said?
+a : I've put the cash tin under the counter, all the same. | Worrying enough that I'll not leave #jars# unwatched. | A customer. Folk say a deal over a free spoon of #jelly#.
+
+scene gossip_sealed
+when topic=gossip|smalltalk
+does tell.self / react.self / insist / ack
+a : Folk tell a jam seller all sorts. They think I'm part of #counter#. | Talk comes to me over the tasting spoons. I seal it like #jar.a# and put it on a high shelf. | A customer began on somebody's neighbour this morning. I offered a taste of #pickles# instead.
+b : You must know everything. | A high shelf? | Did it work?
+a : Everything, and none of it leaves this #counter#. | Where nobody can reach it, me included. #dryly#. | It did. Vinegar stops a mouth, #address#.
+b : #bc_ha# | #bc_wise# | Ha.
+
+scene feast_cider
+when topic=festival|season world.festival=today|soon
+does tell.plan / ask.detail / answer.detail / assess
+a : For the feast I'll set a pot of #cider# by the door with a ladle and an honesty box. | Feast day's my best for #jelly#. Folk buy a sweet thing when they're happy. | On the feast I'll shut #counter# at dusk and stand out under the lamps with a cup.
+b : An honesty box? | Your best? | Just stand?
+a : I'll lose a penny or two. It's a feast. #dryly#. | Better than midwinter, nearly. The jars walk off the shelf. | Stand, drink #cider#, look for #stars#. I don't dance, #address#.
+b : #bc_ha# | #bc_good# | #bc_fair_enough#
+
+scene throat_tune
+when topic=health
+does tell.self / ask.detail / answer.detail / assess
+a : Never ill. Haven't been in years. #hum.capitalize#. | The healer wanted to hear my chest. I hummed at them till they went away. | I take a spoon of #honey# at night. For the voice. I sing, you know.
+b : You hum a lot. | Did they go? | Do you sing?
+a : I'm a cheerful soul. Is that a crime, #address#? | Eventually. Took #jar.a# with them, too. | Only when it's damp. #dryly#. And you can stop smiling.
+b : #bc_maybe# | #bc_ha# | Ha.
+
+story honey_lesson [topic=work|memories self.age>=25]
+  : The first day in the House kitchen, #cook# put a spoon of #honey# in my mouth and a spoon of sugar after it.
+  : "Which one tasted of anything?" I couldn't say the sugar did, #address#.
+  ask : Which would you have picked?
+  b : The honey, I suppose. I like the taste.
+  b[job=cook|baker] : Honey for keeping, sugar for cakes. But I know what you mean.
+  : That was the whole lesson. I've used #honey# ever since, and paid twice for it.
+
+story first_batch [topic=work|memories self.role=merchant self.age>=25]
+  : My first batch alone, I boiled the jam so long it set like a brick in #pan#.
+  : I sold it as toffee. Folk loved it. I've never managed to make it again. #dryly#.
+  ask : Have you ever done a thing better by mistake than on purpose?
+  b : More often than I'd like to say.
+  b[friends] : Most days. You know that.
+  : Then you're a cook at heart, #address#. That's the whole trade.
+
+story star_count [topic=pastimes|memories self.from=coldwater self.age>=25]
+  : As a #child#, out on #shore#, my mam and I lay on the jetty and counted #stars# till we lost count.
+  : Then we'd start again from the far edge of the sky.
+  : I've never once got to the end. #mum.capitalize# said that was the point.
+  b : I'd like to try that. Is the sky clear up there?
+  : Clearer than here. Ten times. I'd take you, if the road weren't four days, #address#.
+
+story the_runaway_jar [topic=smalltalk|pastimes]
+  : A #jar# rolled off #counter# once and went straight out the door, down the market steps and into the gutter.
+  : Didn't break. A carter picked it up, looked at it, and bought it, #address#.
+  b : Ha! A jar that sold itself.
+  b[old] : Best salesman you've ever had, I'd wager.
+  : I charged full price. The #jar# had done the walking, after all.
+
+story mud_clog [topic=weather|smalltalk self.dislikes=deep_mud]
+  : One spring #mud# on my lane took a clog right off my foot and kept it.
+  : I went back with a stick and a lamp and dug for it like a badger, #address#.
+  ask : Would you have left it, or gone digging?
+  b : Left it. A clog's a clog.
+  b[wealth=poor|destitute] : Dug. A clog's a week's bread.
+  : Dug it out, I did, and it's still on my foot. #bad.capitalize#, but mine.
+
+rule @jam_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Jams, jellies, #pickles#! This season's, every #jar#. | Taste before you buy. Plum, damson, and #jelly# that sets.
+
+rule @hum_bark
+when concept=bark here.weather=fog|rain|overcast
+does aside
+cooldown 8h
+say #hum.capitalize#. There. Just a tune. | La. #hum.capitalize#. Nothing wrong with a song.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain self.dislikes=drizzle
+does aside
+cooldown 10h
+say #drizzle.capitalize# again. Make up your mind. | #rain.capitalize#, without the decency to fall properly.
+
+rule @star_bark
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 12h
+say There's one of #stars#. And there's two. | #stars.capitalize#. Look at that.
+
+rule @fruit_late_bark
+when concept=bark working=yes world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no #fruit#. I'll be jarring air by Restday. | No carts. #oath#.
+
+rule @dusk_bark
+when concept=bark here.time=dusk working=yes self.role=merchant
+does aside
+cooldown 8h
+say Lids on, cloth over #jars#. There's the day. | Last #jar#, and then #cider#.
+
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Jams, jellies, #pickles#; taste what you like. | #greet#, #address#. This season's #fruit#, every #jar# of it.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. Back for another #jar#? I kept one back. | #topic.player#. #good.capitalize#, the damson's just set.
+dlg @3 shop.greet [pair.disposition=hostile|wary here.shop!=bare] : Looking or buying? Either's fine; touching isn't, #address#. | Say what you want. The prices are on every #lid#.
+dlg @4 shop.greet [here.weather=rain|fog here.shop!=bare] : #greet#. Out of the wet, quick. #hum.capitalize#. Don't mind me.
+dlg @5 shop.prices : #fruit.capitalize#'s dear and #honey#'s dearer, and the #jar# costs too. | #shop_dear# It's on the #lid#, and it's fair.
+dlg @6 shop.bye : #farewell#. Bring the #jar# back when it's empty. | #shop_bye# Eat it on bread, not off the spoon.
+dlg @7 resident.hub : #greet#. What'll it be? | #greet#, #address#. Mind the crate; what is it?
+dlg @8 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a spoon of something for you. What's wanted?
+dlg @9 resident.hub [here.time=night] : Late, this. If it's jam, I'm closed. If it's talk, I've #cider#.
+dlg @10 resident.hub [pair.disposition=hostile|wary] : Yes? Say it plain, #address#.
+dlg @11 resident.job [self.role=merchant] : I'm #self.trade_words#. Jams, jellies, #pickles#, and I put up every #jar# myself. | I put up #fruit#. #plums.capitalize# mostly. Then I sell it and buy more.
+dlg @12 resident.job : #busy.capitalize#, #address#. Stir, seal, sell, sleep. | #job_busy#
+dlg @13 resident.business [business=thriving] : The #jars# go faster than I can fill them. | Thriving. My arms ache, so I know it's true, #address#.
+dlg @14 resident.business [business=failing] : Thin. Jam's the first thing folk stop buying. #dryly#. | #bad.capitalize#, #address#. I'll not pretend.
+dlg @15 resident.business [business!=thriving|failing] : Steady. #fruit.capitalize# in, #jars# out, and the wax bill in between. | It pays for #fruit# and a bit over. That's enough.
+dlg @16 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# #hall.capitalize#'s all prices and weather today. | Nothing new. Ask the cheesemonger; that one never stops, #address#.
+dlg @17 resident.gossip [here.gossip!=yes] : #gossip_none# | I keep talk sealed, like a #jar#.
+dlg @18 resident.bye : #farewell#. Bring the #jar# back. | #farewell#, #address#. Mind the puddles.
+graft resident.hub
+choice Are you humming to yourself? -> hum
+node hum
+say A tune, that's all. #hum.capitalize#. It's the damp; it gets in the jars and I like to keep my spirits up.
+mood calm
+free
+choice It sounded like a cough to me. -> hum_cough
+choice Goodbye. -> bye
+node hum_cough
+say A low note. I've a low voice. #honey.capitalize# in hot water and it's gone by morning, which it would be anyway, being nothing. Anything else?
+choice Never mind. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do you know a jar's good? [self.role=merchant] -> jar_good
+node jar_good
+say Listen for the #lid#. When it cools, it pops down. No pop, and it goes on my own shelf, not yours.
+mood pleased
+choice What happens to the ones that don't pop? -> jar_bad
+choice Goodbye. -> bye
+node jar_bad
+say I eat them. Slowly, and with no complaint. #saying.capitalize#. Now, which one takes your fancy?
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

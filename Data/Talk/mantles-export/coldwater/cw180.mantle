@@ -1,0 +1,475 @@
+# cw180, the bell-counting founder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw180
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for rm_runa_coalhand
+written_by claude
+title the bell-counting founder
+fits stage=adult|old
+prefers role=merchant job=smith temper=short
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk counts_the_bells_from_the_chapel_of_the_tide
+likes crisp_apples wrestling old_maps summer_evenings
+dislikes crowds flies
+fears a_pour_gone_wrong losing_count_of_the_bells
+hopes the_letter_in_the_right_paw a_long_evening_on_the_step
+topics work +0.4 day +0.3 pastimes +0.3 lore +0.2 prices +0.2 festival -0.3 gossip -0.2
+styles comfort=practical gossip=wary refuse=short tease=dry
+marks oath saying
+persona #self.first# runs a foundry in the Commons for a House that counts every farthing: stubborn, wry and plain, short with fools, forever counting the bells off the tide chapel, with an old map in one pocket and a letter nobody is home to take in the other.
+
+words
+oath! = Slag and still water | Ladle and lake
+saying! = Cool it slow or it cracks | Iron remembers every hurry
+bells = the tide chapel's bells | the bells down at the tide chapel
+foundry = the foundry | the casting floor
+furnace = the furnace | the big furnace
+moulds = the moulds | the sand moulds
+slag = the slag | the dross off the top
+ledger = the House ledger | the House's book
+letter = the letter | this letter in my coat
+apple = a sharp green apple | an apple that bites back
+bout = a wrestling bout | a fall or two on the grass
+maps = my old maps | the maps older than their roads
+evening = a summer evening that won't end | the long light at summer's end
+crush = the crush | elbows on every side
+flies = the flies | the summer flies
+lake = Glasswater | the lake
+jetty = the jetty | the old jetty
+iron = iron | good grey iron
+sand = sand | moulding sand
+hmph = Hmph | Well, there it is
+casters = my casters | the hands on the floor
+temper = my temper | this temper of mine
+street = our street | the street
+step = my step | the front step
+carts = the carts | the charcoal carts
+carters = the carters | the carters at the gate
+clerk = the House clerk | the clerk with the inkpot
+count = my count | the count
+hill = the hill | the hill road
+
+any
+opinion @1 houses for 1 : A House keeps its word to the farthing. The purse comes on the quarter-day, and #ledger# never once lied to me. | Pull the Houses out and see who mends the walls. #hmph#.
+opinion @1 city against 1 : All these years here and I still can't hear myself think. It's #crush# and soot from the bridge to #hill#. | Nobody on #street# knows the next door's name. At home we knew the next town's.
+opinion @1 dole against 1 : My tithe feeds the parish loaf, and I've seen some of the same faces in that line twice. #hmph#.
+opinion @1 festivals against 1 : A feast drowns #bells#. I lose my count by noon and my temper by dusk.
+opinion @1 merchants for 1 [self.role=merchant] : I sell what we pour. I can tell you to the penny what #carts# cost before they're off-loaded. Nobody's robbing anybody.
+opinion @1 road against 1 [self.job=smith] : Every late cart is #furnace# standing cold, and the carts come later every season. #oath#.
+opinion @2 road against 2 [world.wagons=raided] : Robbers on the road again. #hmph#. A cart that never comes costs more than any cart that does.
+opinion @1 sump against 1 : Trouble climbs out of the Sump like damp up a wall. I'm glad of #watch# at the bottom of #hill#.
+opinion @1 watch for 2 : #watch.capitalize# pass my door twice a night, and I sleep the sounder for it. I'd stand any of them a hot cup.
+opinion @1 times for 1 : The times treat me fair enough. Grumbling at them would be ungrateful, and loud.
+opinion @1 church mixed 0 : I go when #bells# call and not much oftener. They do most of my praying for me.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Plain words, and you'll get plain back. | #greet#, #address#. You've caught me between bells.
+line @2 greet [self.working=yes self.job=smith] : #greet#. Stand back from #moulds#; they're still warm. | #greet#. Mind your tail by #furnace#.
+line @3 greet [here.time=dawn] : Morning. #bells.capitalize# haven't rung the hour yet, so you're early. | Morning, #address#. The street's still asleep and I'm glad of it.
+line @4 greet [here.time=dusk|night] : Evening. That's the last of #bells# gone for the day. | #greet#. Late to be about, #address#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit, and don't touch #maps#. | Oh, it's you. #good.capitalize#. I'd sooner it was you than anybody.
+line @1 again.open : Twice today. I'll start counting you with #bells#. | Back again. No news since you left; #bells# have been my only talk.
+line @1 hail [pair.band=friends] : Here! Spare me a word between #bells#. | #address.capitalize#! Over here, out of #crush#.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family] : #greet#. I wondered when you'd turn up. | #greet#. Sit down; you look like you've walked the hill.
+line @3 greet.return [self.working=yes self.job=smith] : #greet#. Talk while I watch #furnace#. | #greet#. Quick, before the pour.
+line @4 greet.return [here.time=dusk|night] : #greet#. Late to be calling, but you're welcome. | Evening. The lamps are lit on #street#, so you may as well stop.
+line @1 farewell : #farewell#. | #farewell#. Mind the ruts at the corner.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep to the lit side. | #farewell#. Count the bells home, if you can't sleep.
+line @1 farewell.return : #farewell#. | #farewell#, #address#. Mind how you go.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Come by on Restday; I'll have apples. | Go on, then. #farewell#.
+line @1 react.news : #oath#. Say it again, slower. | That's a thing. #carters.capitalize# will want the rest of it, and so do I.
+line @1 react.news.new : #surprise#. I'd not heard a whisper. | #oath#. That's not reached #street# at all.
+line @1 react.news.known : #knew#. The carters had it at dawn. | I'd heard. #street.capitalize# hums with it.
+line @1 react.news.doubt : #doubt#. I'll wait for the second telling before I carry it. | #hedge#. I'll weigh that once it comes from an eye that saw it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That sits heavy on me. | That's #bad# news. I'm sorry to the bone.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Something to ring a bell for. | #good.capitalize#. I'll drink to that, once.
+line @1 answer.how : Steady. #iron.capitalize# behaves, mostly, and so do I. | #fine#. Nothing cracked today, and I've counted every bell.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. Ask me after the pour. | Run ragged since the first of #bells#, with half the day still to go.
+line @1 answer.how.poorly : #hurt.capitalize# across the shoulders. It'll pass by Restday. | #tired.capitalize#. I'll sleep tonight like a dropped anvil.
+line @1 ask.how : And you? Staying clear of #crush#? | How's the day using you, #address#?
+line @1 sympathise : #sympathy#. Sit a moment; the street will wait. | That's a weight. I'll not tell you it's #little#.
+line @1 reassure : #reassure#. Things cool and set, given time. | It'll mend. Most things do, like #iron#, if nobody hurries them.
+line @1 decline [self.working=yes self.job=smith] : #hedge#, but no. I've a pour to watch and nobody else I'd trust to watch it. | I'd like to, only #ledger# wants me before the bells ring again.
+line @2 decline : Not today. I've promised my feet a rest on #step#, and I keep my promises. | I'll say no this once. #temper.capitalize#'s frayed today and I'd spoil it for you.
+line @1 accept_decline : #no_matter#. It'll keep. | Then another day. I'll hold you to it, #address#.
+line @1 thank : #thanks#. I'll not forget it. | That's decent of you, #address#. I owe you, and I always settle.
+line @1 deflect_thanks : #deflect#. You'd do the same. | Don't thank me. Pay me in #apple#.
+line @1 praise : That's #good# work. I'd put my name to it. | #very.capitalize# well done. I don't say it often, so keep it.
+line @1 deflect_praise : #modest#. The iron did the hard part. | #hmph#. Tell me again when it's cooled.
+line @1 preclose [self.working=yes] : Well. #furnace.capitalize# won't mind itself. | Back I go, before somebody opens one of #moulds# early.
+line @2 preclose : Well. #preclose#. | That's #bells#. I'm off before the next lot.
+line @1 accept_preclose : Go on, then, #address#. I've kept you. | #bc_fair_enough# Off you go.
+line @1 tease [pair.band=friends] : You lurch like #carts# on a cobbled hill. | You've soot on your nose, #fool#. Leave it; it suits you.
+line @1 tease.return : Says the one who counts #bells# for a living. | #hmph#. I'll weigh that remark and send you the bill.
+line @1 ack : #bc_true# | #hmph#.
+line @1 give.advice : #advise#: never open a mould before it's ready. Or a letter. | Count before you speak. #saying.capitalize#.
+line @1 warn [world.bandits=near] : #warn#. Keep off the roads till the Watch says otherwise. | Beyond the walls, travel in company or not at all, #address#.
+scene bells_counting
+when topic=smalltalk|day here.region=ridgemere self.away=yes
+does tell.self / ask.detail / answer.detail / assess
+a : Hush. #bells.capitalize#. Six, seven... eight. There. | I count #bells# every time they go. I've done it since the day I came up the hill road. | You spoke over the seventh bell, #address#. Now I'll never know if it rang nine.
+b : What are you counting for? | Why count them? | Does it matter?
+a : For nothing. #bells.capitalize# are all that keeps time honest in this city. | The place I grew up was quiet. Here I needed something to hold on to, so I took #bells#. | It matters to me. #hmph#. I'll count the next lot twice.
+b : #bc_fair_enough# | That's a good reason. | Sorry. I'll hush next time.
+
+scene pour_day
+when topic=work self.job=smith self.working=yes
+does tell.self / react.self / assess / ack
+a : We pour at noon. #foundry.capitalize# goes quiet when #furnace# is tapped. Even I hold my tongue. | Three cooking pans for the House this week, and every one wants the same thickness to a hair. | I sent a new hand off #foundry# for chattering at the pour. It's not cruelty; it's iron.
+b[job=smith|crafter] #trade : The tap's the worst moment of the day. | The same thickness, by hand? | Iron doesn't forgive chatter.
+b : Quiet for the iron? | Is that hard? | That seems harsh.
+a@trade : It is. Then it's the best, once #iron# runs clean. | By eye, by feel, and by swearing at #moulds#. | It doesn't. Neither does #temper#, during a pour.
+a : Quiet for #iron#. It hears everything, and it holds a grudge. | Hard enough. #saying.capitalize#. | It's kinder than a burnt paw. The hand will thank me by Restday.
+b? : #bc_ha# | #bc_true# | #bc_maybe#
+
+scene cracked_casting
+when topic=work self.job=smith
+does tell.complaint / ask.detail / answer.detail / assess
+a : A whole casting cracked across the middle last night. Somebody opened one of #moulds# early. | I've a bracket split clean in two on #foundry#. A day's work for the scrap heap. | We lost a pour today. A week of charcoal, gone to #slag#.
+b : Who opened it? | How did it split? | What went wrong?
+a : I didn't ask. I looked down the line, and one of #casters# looked at the floor. | It cooled too quick in a draught off the yard door. #saying.capitalize#. | Wet #sand# in the mould. The iron spat it back at us like a cat.
+b : That'll be the one, then. | A hard lesson. | Nobody hurt, I hope.
+
+scene house_ledger
+when topic=work|prices self.role=merchant self.job=smith
+does tell.complaint / react.complaint / insist / ack
+a : The House sends a clerk on Riverday to go through #ledger# with me. Every line of it. | They count every farthing that leaves #foundry#, and every one that doesn't come back. | I asked the House for a new bellows. #clerk.capitalize# brought me a form.
+b : Every line? | Strict, then. | Did you fill it in?
+a : Every line, and the margins. I don't mind; I'd be the same in #clerk#'s chair. | Strict, and right to be. #iron.capitalize# isn't cheap and charcoal's worse. | Twice. #hmph#. The bellows will come when the form has grown a beard.
+b : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene the_letter
+when topic=smalltalk|dreams here.region=ridgemere self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I've carried #letter# since spring. The lord it's for is never at home. | Up to the Heights again today with #letter#. Same door, same servant, same "not in". | Somebody asked me once what's in #letter#. I said I'd tell them when it's handed over.
+b : Who's it for? | Why not leave it with the servant? | And what is in it?
+a : A House lord. Which one is my business till #letter# is in his own paw. | Because I promised it to the lord's own paw, and my word's iron. | I don't know. #letter.capitalize# is sealed, and I like not knowing, by now.
+b : #bc_fair_enough# | Stubborn, but fair. | #bc_ha#
+
+scene rain_hiss
+when topic=weather|work here.weather=rain here.region=ridgemere self.job=smith
+does tell.self / react.self / assess
+a : Hear that hiss? The rain finds the roof over #furnace# and goes straight back up as steam. | This city rains as if somebody's paying it by the hour. #rain.capitalize# on the Commons again. | Rain in my fur all the way up from #foundry#. I'll steam by the fire like a kettle.
+b : Steam, from rain? | It never stops, here. | You'll dry.
+a : Steam, and a smell like wet coins off #furnace#. I've come round to it. | It stops. Just long enough to fool #street# into hanging washing. | I'll dry by morning. #temper.capitalize# takes longer.
+
+scene fog_bells
+when topic=weather here.weather=fog here.region=ridgemere self.away=yes self.from=coldwater
+does tell.feeling / react.self / assess / ack
+a : #fog.capitalize# this thick, and I can still hear #bells# through it. That's what bells are for. | Fog. At home it rolled off the water and smelled of #lake#. Here it smells of coal. | #street.capitalize# vanishes three doors down. I walked into a lamp-post and begged its pardon.
+b : You could find your way by them. | Coal fog's the worst kind. | Did it forgive you?
+a : I did once, by #count#. Eleven bells and a left turn. | Coal and wet stone. You learn to breathe shallow. | It said nothing, which is more than most on #street# manage.
+b? : #bc_ha# | #bc_true# | Ha. Fair.
+
+scene summer_step
+when topic=season|day here.season=summer here.time=dusk self.likes=summer_evenings
+does tell.feeling / ask.opinion / give.opinion / assess
+a : #evening.capitalize#. The day's work is banked and the sky's still pink over the roofs. | This is my hour. I sit on the step with #apple# and let the street go by. | Light till near the last of #bells#. On nights like this I count them from #step#.
+b : Do you stay out late? | What's on the street at this hour? | Do you ever lose count?
+a : Till #bells# say otherwise. Then I go in, and I'm glad of it. | Carts going home, pups going in, and not one soul on #street# with a question for me. | Only when a neighbour talks. #hmph#. I forgive them, in summer.
+b : #bc_lovely# | Sounds a fine hour. | #bc_ha#
+
+scene winter_floor
+when topic=season|work here.season=winter self.job=smith self.working=yes
+does tell.self / react.self / assess
+a : Winter's the one season folk queue to work for me. #foundry.capitalize# is the warmest room in the Commons. | Cold enough out there to freeze a bucket, and inside you could bake bread on #moulds#. | I let #carters# stand inside the door to warm their paws. They pay me in gossip.
+b : Lucky them. | Bread on the moulds? | Good gossip?
+a : Lucky till the first pour. Then they learn what warm means. | Near enough. The new hands try it every winter, and #moulds# win every time. | Middling. I keep the good bits to myself.
+
+scene sharp_apples
+when topic=food self.likes=crisp_apples
+does tell.self / react.self / assess / ack
+a : There's a stall on the Commons sells #apple#. I buy two and eat both before the corner. | Give me #apple# over a pie any day. Something that fights back a little. | The tree behind my #mum#'s house grew small hard apples nobody wanted. I miss them, which is daft.
+b : Both? | Pie's better. | Not so daft.
+a : Both. The second one's for the climb back up #hill#. | Pie's soft. I get enough soft talk on #street#. | Daft enough. I'd still give a coin for one.
+b? : #bc_ha# | #bc_fair_enough# | #bc_mine_too#
+
+scene wrestling_feet
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail / assess
+a : There's #bout# behind the drovers' yard on Restday. I've not missed one this year. | I wrestled when I was young. Threw a miller's son in a ditch once and was proud for a month. | I watch #bout# for the feet. Anyone can heave; it's the feet that win it.
+b : Who wins, mostly? | Into a ditch? | The feet?
+a : The ones who don't shout before they grab. Mark that; it goes for more than wrestling. | Head first. His mother never forgave me. He did, the next summer. | Watch where the weight goes. Whoever moves it first falls second.
+b : #bc_wise# | #bc_ha# | I'll watch for it.
+
+scene wrong_maps
+when topic=pastimes|lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail / assess
+a : Another one for #maps#, off a rag stall. The roads on it are all wrong, and I love it for that. | I've a map of this city from before the walls were done. Half the streets run into the sea. | #maps.capitalize# hang over my bed. I read them like other folk read sermons.
+b : Why buy a wrong one? | Into the sea? | What do you read in them?
+a : A wrong map tells you what somebody hoped. A right one only tells you what's there. | Somebody drew what they meant to build. The sea had other ideas. | Where folk thought they were going. Most of them were mistaken. #hmph#.
+b : #bc_ha# | #bc_true# | That's a fine way to read a map.
+
+scene market_crush
+when topic=smalltalk|day here.region=ridgemere self.dislikes=crowds
+does tell.complaint / react.complaint / assess / ack
+a : Market day. #crush.capitalize# from the fountain to the bridge, each one with a basket. | Down to the market for nails, and #crush# sent me home with bruises instead. | I'll walk round three streets to miss #crush#. My time's cheaper than my temper.
+b : It's always like that. | Bruises? | Three streets?
+a : It is. I count #bells# on #step# and wait it out. | An elbow to the ribs, a basket to the knee. #hmph#. And no nails. | Three, and gladly. Nobody shoves you on a back street.
+b? : #bc_true# | #bc_bad_luck# | #bc_fair_enough#
+
+scene summer_flies
+when topic=animals|season here.season=summer self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : Summer brings #flies#, and each one of them wants to sit in my ear. | I'd pay a copper for every hundred dead flies. I'd be #skint# in a week. | #flies.capitalize# have found the midden in this heat. I can't think what they want with it.
+b : Smoke keeps them off. | You'd be rich, not skint. | Warmth, maybe.
+a : Not mine. They like smoke. They like everything I don't. | Rich in flies and poor in coin. That's no trade. | They can have the warmth. I'd give them the whole midden to leave my ear alone.
+
+scene lake_home
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.self / assess
+a : At home you could hear #jetty# creak from the top of the town. Here I can't hear myself. | When the mist lifted off #lake#, the whole water lay flat as a slate. Still water, right to the far shore. | I left #self.from_town# with a bundle and a hammer I'd borrowed and never gave back.
+b[from=coldwater] #home : I know that creak. | Still water. I miss it too. | Who did you borrow it from?
+b : Do you miss it? | It sounds peaceful. | You stole a hammer?
+a@home : Then you know why #street# sounds wrong to me. | Most mornings. #bells.capitalize# help, a little. | A smith on the shore road. I'll pay it back in iron one day.
+a : Now and then. The folk, never the #cold#. | Peaceful and #cold#. You'd want both coats on. | Borrowed. It's made me a living since. #hmph#. I'll call that interest.
+
+scene accent_water
+when topic=accent self.away=yes self.from=coldwater
+does tell.self / react.self / assess
+a : The Commons still hear the water in my voice. A carter asked me yesterday if I'd come in on a boat. | Half this street thinks my way of saying good day is a weather report. | I've lost some of #lake# from my talk. Not the slow bits. Those I keep on purpose.
+b : Did you? | A weather report? | Why keep them?
+a : I came in on a cart, sore and sorry. A boat would've been kinder. | It is, where I'm from. Calm water's a blessing worth wishing. | Slow talk makes fast folk listen. That's worth a lot in this city.
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# is the only one I'd let near #maps# with a cup in paw. | I'd trust #self.friend# with my purse and my temper both. That's #very# rare. | #self.friend# and I go years back. We argue over everything and agree on what matters.
+b : High praise, from you. | Your temper? | That's the best kind.
+a : #hmph#. Don't go telling #self.friend# I said it. | My temper's the dearer of the two. #bc_ha# | It is. The arguing keeps us both honest.
+
+scene hand_coming_on
+when topic=work self.hand self.job=smith here.region=ridgemere
+does tell.self / ask.detail / answer.detail / assess
+a : #self.hand# is coming on. I'd let #self.hand# skim #slag# alone now. | I'm hard on #self.hand#. Somebody was hard on me once, and I'm still standing. | I'd put #self.hand# against any hand in the Commons, given a year.
+b : Do you say so out loud? | Who was hard on you? | A year?
+a : Not yet. Praise too early and #iron# hears it. | An old founder at a forge up the shore. I hated every hour and kept every lesson. | A year, and fewer questions. #saying.capitalize#.
+b : #bc_wise# | #bc_true# | #bc_ha#
+
+scene faith_bells
+when topic=faith here.region=ridgemere self.away=yes self.from=coldwater
+does give.opinion / react.self / assess
+a : Sermons aren't for me. But I'd go a long way to stand under #bells# when they ring. | The Bright One gets my thanks on Restday and #count# every other day. | A candle at the tide chapel when the boats are out on the water. Habit from #home#.
+b : That's a kind of praying. | Counting counts. | A good habit to keep.
+a : Maybe it is. #bells.capitalize# don't seem to mind either way. | #bc_ha# I'd like to think the Bright One keeps a tally too. | A good one. #lake.capitalize# taught it me, and the city's not got it out of me yet.
+
+scene lean_orders
+when topic=times|prices world.times=hard|lean self.job=smith self.role=merchant
+does tell.worry / react.complaint / reassure / ack
+a : Orders are thin. The House wants #takings# kept up off half the work. | I had to send two of #casters# home early this week. I hated it. | Folk are mending old pots instead of buying new. I can't blame them.
+b : It'll turn. | You'd no choice. | Mending's cheaper.
+a : It will. #iron.capitalize# is always wanted in the end. #reassure#. | No choice, and no comfort in that either. #hmph#. | Cheaper till the mend gives. Then they'll come to me.
+b? : #bc_i_hope_so# | #bc_true# | #bc_ha#
+
+scene full_orders
+when topic=times|work world.times=good|boom self.job=smith
+does tell.news / react.news / assess
+a : Three new orders from the Heights this week. Gates, railings, and a fountain. | #foundry.capitalize# is running two pours a day. I've not seen that in years. | Even #ledger# looks pleased with me this month.
+b : Busy, then. | Two a day? | A pleased ledger?
+a : #busy.capitalize#, and I'll take it while it's going. | Two, and #casters# grumbling about overtime they're paid for. | It's #clerk# that's pleased. The book just looks a little less sour.
+
+scene carts_late
+when topic=caravan|work world.wagons=late self.job=smith
+does tell.worry / reassure / assess / ack
+a : The charcoal carts are late again. #furnace.capitalize# eats faster than I can stack. | No ore come in this week. I've #casters# sitting on upturned buckets. | #carts.capitalize# late, and #clerk# asking me why the pour is. I'll draw them a map.
+b : They'll come. | Find them other work. | A map?
+a : They'll come when they come. I'll count #bells# till then. | They've swept the floor three times. It's the cleanest floor in the city. | A map of the road, with the carts drawn on it, stuck. #hmph#.
+b? : #bc_i_hope_so# | #bc_ha# | Ha. Fair.
+
+scene carts_in
+when topic=caravan|work world.wagons=in self.job=smith
+does tell.news / react.news / assess
+a : #carts.capitalize# in at dawn, stacked to the rafters. I could have hugged the carter. | Ore's in. Grey and heavy and wet from the road, and I don't care a bit. | The road's sent us everything at once. Now #foundry# has no room left for any of it.
+b : Did you? | Wet ore? | A good problem to have.
+a : I gave the carter #apple# instead. It went down better. | Wet's no matter. #furnace.capitalize# dries everything in the end. | The best kind. #oath#. I'll stack it in the yard and pray it stays dry.
+
+scene street_gossip
+when topic=gossip topic.claim_kind=promise_kept|promise_broken|newcomer|marriage|prowling|other
+does tell.gossip / react.news / assess / ack
+a : #carters.capitalize# say #topic.subject# #topic.claim#. I'll not swear to it. | I heard at the apple stall that #topic.subject# #topic.claim#. Take it for what it weighs. | #topic.subject.capitalize# #topic.claim#, or so #street# says. Streets say a lot.
+b : Do you believe it? | Who told the stall? | The street's often right.
+a : Half. I'll believe the rest when somebody shows me. | I didn't ask. I bought my apple and left. | Often enough. I'll wait for the second telling.
+b : #bc_fair_enough# | #bc_ha# | #bc_wise#
+
+scene theft_heard
+when topic=crime
+does tell.news / react.news / assess
+a : #topic.victim.capitalize# robbed, I hear. That's #very# low. | Another theft on the Commons. #topic.victim.capitalize#, this time. | #topic.victim.capitalize# was robbed, they say. I've barred my door twice over since.
+b : That's a shame. | Another one. | Bad business.
+a : A shame, and worse. #watch.capitalize# can't stand on every corner, more's the pity. | #pity#. I'd thrash whoever did it, and gladly. | Bad, and getting no better. I'll stand #watch# a cup when they pass.
+
+scene new_hands
+when topic=newcomer self.job=smith self.role=merchant
+does tell.self / ask.opinion / give.opinion / ack
+a : New faces at my gate every week, wanting work on #foundry#. | #topic.subject.capitalize# is new to the Commons, I hear. #topic.they.capitalize#'ll be wanting work like the rest. | I came here green myself, with a borrowed hammer and nobody to vouch for me.
+b : Do you take them on? | Would you hire them? | Did it take long to settle?
+a : The ones who look at the iron before they look at me. | If they can keep quiet at a pour. Most can't. | Years. #hmph#. This city doesn't hurry for anybody.
+b : #bc_wise# | #bc_fair# | #bc_true#
+
+scene burnt_paw
+when topic=health self.job=smith
+does tell.self / ask.detail / answer.detail / assess
+a : Burnt my paw on a ladle handle this morning. All these years, and I still do it. | My back says it's done lifting #moulds#. I tell it to hush. | #remedy.capitalize# on the burns, and a cold cloth after. That's my whole medicine chest.
+b : Is it bad? | Does it listen? | Does it work?
+a : A blister and some swearing. I've had worse from a bad apple. | Never. We've been arguing since spring. | Well enough. #saying.capitalize#, and that goes for paws too.
+b : #bc_poor_soul# | #bc_ha# | #bc_good#
+
+scene feast_drums
+when topic=festival
+does tell.complaint / react.complaint / assess / ack
+a : Feast day. The drums drown #bells# and I lose my count before noon. | Festivals are drums, drink and somebody's pup lost in the press. I stay in. | The only part of a feast I like is #bout# on the green after.
+b : You could count the drums instead. | A lost pup? | The wrestling?
+a : Drums don't keep time like a bell. They just shout. | One every feast. I found one under my table last year and gave it #apple#. | #bout.capitalize#. The rest can drown in its own ale, for me.
+b? : #bc_ha# | That was kind. | #bc_fair_enough#
+
+scene still_dreams
+when topic=dreams
+does tell.self / ask.detail / answer.detail / assess
+a : I dreamt #bells# rang thirteen and nobody else noticed. | I dream of still water some nights. Flat and grey, and not a sound on it. | I dreamt one of #maps# had my own street on it, drawn wrong.
+b : Thirteen? | Sounds restful. | Wrong how?
+a : Thirteen. I counted twice. I woke up cross about it. | Restful, till I wake and the street's shouting. | It ran straight down to the water by a road that isn't there. I'd walk it, though.
+b : #bc_ha# | #bc_true# | I'd walk it with you.
+
+scene sump_damp
+when topic=smalltalk|lore here.region=ridgemere
+does give.opinion / disagree / concede / ack
+a : The Sump breeds the trouble and the hill pays for it. I've watched it happen. | I knew a Sump wolf once who could out-work any three of the Commons. Don't tell anyone I said so. | #watch.capitalize# always look down #hill# first, and they're not always wrong.
+b : Not everyone down there makes trouble. | Why keep it quiet? | Not always right, either.
+a : Not everyone. Enough of them. #hmph#. | I've a name for being hard. I'd hate to lose it. | No. I'll grant you that one.
+b : #bc_fair# | #bc_ha# | Fair enough.
+
+scene houses_hold
+when topic=lore here.region=ridgemere
+does give.opinion / disagree / insist / ack
+a : The Houses hold this city up. Pull one out and the rest would sit down in the mud. | I've known House folk. Hard, fair, and they pay on the day. | Curse the Houses if you must; somebody had to build the walls.
+b : Not everyone thinks so. | Fair? | They built them with other folk's paws.
+a : Not everyone's tried running anything. | Fair to the farthing. Not a farthing over. | Paid paws, mostly. I'll not pretend it was all of them.
+b : #bc_maybe# | #bc_ha# | #bc_fair_enough#
+
+story borrowed_hammer [topic=memories self.age>=40 self.away=yes]
+  : The morning I left #self.from_town# I had a bundle, a heel of bread, and a hammer off a smith on the shore road.
+  : I meant to send it back the first winter. The first winter came and went, and so did twenty more.
+  ask : Have you ever kept a thing you meant to give back?
+  b : A book. I still feel bad about it.
+  b[old] : More than I'd like to count.
+  : The hammer's on my wall. I nod to it on Restday. #hmph#. It's the nearest I come to saying sorry.
+
+story first_pour [topic=work|memories self.job=smith self.age>=25]
+  : The first pour I ran on my own, I opened the mould early to look. I was that proud.
+  : It cracked from end to end with a noise like ice breaking on a pond.
+  : The old founder made me sweep the floor for a week and never said a word about it.
+  ask : Would you have said a word, in that founder's place?
+  b : I'd have shouted. Sweeping was kinder.
+  b[job=smith|crafter] : Not one. The crack said it all.
+  : #saying.capitalize#. I've never once opened one early since.
+
+story storm_bells [topic=memories|lore here.region=ridgemere]
+  : The big storm a few winters back, the wind got into the tide chapel and rang #bells# all night, no hour to it.
+  : I sat up and counted every one. Three hundred and some.
+  ask : What would you do with a night like that?
+  b : Pull the blanket over my ears, I think.
+  : That's what sensible folk did. I counted. I was cross for days that I lost the exact number.
+
+story map_hill [topic=pastimes|lore self.likes=old_maps]
+  : I've a map that puts a hill east of the city where there's only flat field.
+  : A carter followed it once, the story goes, and spent a whole day looking for a road round a hill that wasn't there.
+  ask : Would you trust a map over your own eyes?
+  b : Not over my eyes. Did the carter ever find the road?
+  b[friends] : I'd trust yours. You'd buy the moon if it were drawn wrong.
+  : Only on the map. That's why I bought it. Any fool can draw what's there.
+
+story ice_wrestle [topic=memories|pastimes self.away=yes self.from=coldwater self.age>=25]
+  : One hard winter #lake# froze right across, and we wrestled on the ice for a ham.
+  : I threw a big lump from the soap works, and the two of us slid halfway to the far shore.
+  ask : Have you ever won something you couldn't eat for laughing?
+  b : Never a ham. I'd like to have seen that.
+  b[from=coldwater] : I remember that ice. You still had the ham?
+  : We ate it together, after. #oath#. Best ham I ever had.
+
+rule @tap_bark
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 6h
+say Ladles up! Mind your feet by #furnace#. | Quiet on the floor. #iron.capitalize# is running.
+
+rule @bells_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Seven. Eight. #oath#, I've lost it. | There go #bells#. Hush, the lot of you.
+
+rule @flies_bark
+when concept=bark self.dislikes=flies here.season=summer
+does aside
+cooldown 10h
+say Off, you. Go and bother the midden. | #flies.capitalize#, in my ear again.
+
+rule @crush_bark
+when concept=bark self.dislikes=crowds here.place=market
+does aside
+cooldown 8h
+say Elbows! Mind your elbows. | #crush.capitalize#. I'll go round by the back way.
+
+rule @carts_bark
+when concept=bark working=yes self.job=smith world.wagons=late|raided
+does aside
+cooldown 8h
+say Still no charcoal. #furnace.capitalize# won't wait for ever. | Late again. #oath#.
+
+rule @dusk_bark
+when concept=bark here.time=dusk here.season=summer self.likes=summer_evenings
+does aside
+cooldown 12h
+say There's the long light. Best hour of the year. | #evening.capitalize#. I'll take my step and an apple.
+
+dlg @1 resident.hub : #greet#. Plain question, plain answer. | #greet#, #address#. Quick, before the next bell.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've the look of someone with a question. | #topic.player#. #welcome_back#. Go on, then.
+dlg @3 resident.hub [here.time=night] : It's late. #bells.capitalize# have rung the last, and most of my patience went with them. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : State your business quickly. #temper.capitalize# won't stretch to circling.
+dlg @1 resident.job [self.job=smith self.role=merchant] : I run #self.workplace# for a House that counts every farthing. #iron.capitalize# in, castings out, and nobody burnt if I can help it.
+dlg @2 resident.job : #job_busy# I keep my word and my count. The rest is just work. | #self.trade_words.capitalize#. That's the sum of it.
+dlg @1 resident.business [business=thriving] : Orders waiting and the floor never cold. #good.capitalize#, and I'll not jinx it by saying more.
+dlg @2 resident.business [business=steady] : Steady. #ledger.capitalize# balances, which is as near to praise as the House comes.
+dlg @3 resident.business [business=failing] : Badly. The orders have gone thin and #clerk# counts harder every week.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. #carters.capitalize# had it before I did.
+dlg @2 resident.news [world.event_words] : All the street talks of is #world.event_words#. I can barely hear #bells# for it.
+dlg @3 resident.news [world.wagons=raided] : Robbers had a wagon on the road. Travel beyond the walls in company, if you must go.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Ask the carters; they talk for a living. | Nothing new. #bells.capitalize# rang the hours and that's all I've heard.
+dlg @1 resident.gossip [here.gossip=yes] : #street.capitalize# says #topic.subject# #topic.claim#. I'm not adding to it.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I count #bells#, not tongues.
+dlg @1 resident.bye : #farewell#. Mind the ruts at the corner. | #farewell#, #address#.
+dlg @1 shop.greet [here.shop!=bare self.job=smith] : #greet#. Pots, grates, brackets and hinges, all cast on #foundry#. Look, but don't lean on anything warm.
+dlg @2 shop.greet [here.shop!=bare] : #greet#. Have a look round; hands off till you've asked. | #greet#, #address#. Everything's priced and nothing's haggled.
+dlg @3 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. #greet#. Come for more, or come to talk?
+dlg @4 shop.greet [here.shop=bare] : #shop_bare# There'll be more after the next pour, if the carts come.
+dlg @1 shop.prices [self.job=smith] : Charcoal's dear and iron's dearer. #shop_dear# | The price is what #ledger# says. I don't move it a farthing.
+dlg @2 shop.prices : #shop_dear# I don't set what the carts cost me.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Mind the step down; it's iron and it's slippery.
+graft resident.hub
+choice Were you counting something just now? [here.region=ridgemere] -> counting
+node counting
+say The bells off the tide chapel. I count them every time they ring. I lost the last lot when you spoke, but I'll forgive you.
+mood calm
+free
+choice Why count them? -> counting_why
+choice Goodbye. -> bye
+node counting_why
+say The town I grew up in was quiet enough to hear yourself think. Here the bells keep time honest, and nothing else does. So I keep count of them.
+choice I'll let you get back to it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Do you cast to order? [self.job=smith] -> cast_order
+node cast_order
+say I do, if you can tell me what you want and wait for it. Iron's not to be hurried. Hurry it and it cracks, and then we both wait longer.
+mood formal
+choice How long would it take? -> cast_wait
+choice Not today. -> greet
+node cast_wait
+say A week for small work, more if the carts are late. I'll not promise sooner. I keep my promises, so I make few.
+choice I'll think about it. -> greet
+choice Goodbye. -> bye

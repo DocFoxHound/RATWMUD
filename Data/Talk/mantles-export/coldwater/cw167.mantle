@@ -1,0 +1,299 @@
+# cw167, the lamplighter who counts the drowned (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw167
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for rm_rupert_cindergate
+written_by claude
+title the lamplighter who counts the drowned
+fits stage=adult|old
+prefers job=laborer drive=ambitious
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk counts_the_lamps_the_rain_puts_out
+likes fried_fish swimming festival_bells thunder
+dislikes night_noise stale_bread
+fears a_whole_street_gone_dark_on_my_round growing_old_on_a_ladder
+hopes the_keys_of_the_lamp_store a_quiet_room_with_a_window
+topics work +0.4 weather +0.4 dreams +0.3 memories +0.2 festival +0.1 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# walks a round of street lamps at dusk with a pole and an oil can, counting every lamp the rain puts out: calm, plain, reserved, set on rising, missing the quiet of the woods above the lake, and never heard to complain.
+
+words
+oath! = Oil and flint | By the long pole | Flame and gutter
+saying! = Rain puts them out, I put them back | Light the next one, not the last one | A dark street's only a lamp short
+pole = my pole | the long lighting pole
+lamps = my lamps | the forty lamps on my round
+round = my round | the walk from the harbour stair to the gate
+oilcan = the oil can | a can of lamp oil
+drowned = a drowned lamp | a lamp the rain's put out
+tally = seven drowned | eleven drowned, by my count
+lightup = lighting-up time | the hour the lamps go on
+fried = fried fish | fish out of the pan, hot
+hardbread = stale bread | bread gone hard as a step
+din = the din after dark | shouting under my window
+camp = the burners' camp | the charcoal heaps in the hills over the water
+hush = the hush up there | the woods' quiet
+keeper = keeper of the lamp store | the keys to the lamp store
+ladder = the ladder | my short ladder
+glass = the glass | a cracked lamp glass
+posts = my posts | every post on my round
+smudge = a smudge | a smudge of light in the grey
+gloom = the dark | a dark corner
+heights = up the hill | the Heights
+copper = a copper | one copper
+room = a room with a window | a room with a door that shuts
+thunder = thunder | a roll of thunder off the Sound
+
+any
+opinion @1 houses against 3 : #heights.capitalize# get new #glass# every spring. Mine on the low stairs have been cracked since before I came.
+opinion @1 merchants against 2 : #oilcan.capitalize# costs the store more each month, they say. My pay doesn't, I notice.
+opinion @1 dole for 2 : The parish loaf got me through the week the old place went. I'll speak up for it in front of #heights#.
+opinion @1 festivals against 1 : I love #lightup# on a feast night, and the bells before it. The day off with no pay, I don't love.
+opinion @1 newcomers against 1 : Every week somebody new asks at the store for a round. There's only so many #posts# in a city.
+opinion @1 watch against 1 : I see #watch# every night on #round#. They lean on my posts and move along anyone poorer than them.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. | #greet#. Mind #pole#.
+line @2 greet [self.working=yes] : #greet#. Walk alongside; #lamps# won't wait. | #greet#. Hold #ladder#, if you're stopping.
+line @3 greet [here.time=dawn] : Morning. I'm just in off #round#. | Morning. Every lamp's snuffed and I'm near enough snuffed myself, #tired#.
+line @4 greet [here.time=dusk|night] : #greet#. #lightup.capitalize#. I can't stop long. | Evening. Let me get #glass# open on this one.
+line @1 kin.open [pair.kin!=no] : You. #greet#. Sit down. | There you are. I hope there's some of that #fried# left.
+line @1 again.open : You again. #greet#. | Back so soon. #lamps.capitalize# will start to talk.
+line @1 greet.return : #greet#. | #greet#, #address#.
+line @2 greet.return [pair.band=friends|family|spouses] : #greet#. #good.capitalize# to see you. | #greet#. Pull up a step.
+line @3 greet.return [self.working=yes] : #greet#. I'm on #round#. | #greet#. Mind the oil.
+line @4 greet.return [here.time=dusk|night] : #greet#. I'm halfway down #round#. | Evening, #address#. They're nearly all lit.
+line @1 farewell : #farewell#. | #farewell#. Walk under #lamps#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Go home by the lamps, not the alleys. | #farewell#. I've left them all burning for you.
+line @1 farewell.return : #farewell#. | #farewell#, #address#.
+line @1 react.news : #ack#. | Huh. #hearsay.capitalize#.
+line @1 react.news.new : #surprise#. I'd not heard. | #oath#. News to me, and I'm out every night.
+line @1 react.news.known : #knew#. Heard it on #round#. | Old news. It climbed the stairs before #lamps# were lit.
+line @1 react.news.doubt : #doubt#. Night talk grows in the telling. | I'd want that said again by daylight, #address#, by somebody sober.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. That's #bad#. | #oath#. That's a dark thing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. That's a lamp lit. | #good.capitalize#. We could do with a bit more of that.
+line @1 answer.how : #fine#. Every lamp lit, last night. | Steady. #tired.capitalize#, but steady.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#. #lamps.capitalize# won't wait for dark. | On #round#. Walk alongside or let me go.
+line @1 ask.how : And you, #address#? | Keeping well, #address#?
+line @1 sympathise : #sympathy#. That's hard. | That's a long night, #address#. It ends.
+line @1 decline : #hedge#, but I can't. #lightup.capitalize# comes on its own time, not mine. | #hedge#, but no. Every copper's spoken for, and that's the truth.
+line @1 accept_decline : #no_matter#. | Fair enough. Another day, #address#.
+line @1 thank : #thanks#. | #thanks#. That's owed back, and it'll be paid.
+line @1 deflect_thanks : #deflect.capitalize#. | It was nothing. Keep to #lamps# going home.
+line @1 preclose : Right. #excuse#. | I'd best get on. #lamps.capitalize# won't light themselves.
+line @1 accept_preclose : Go on, then. #farewell#. | #farewell#. Mind the dark bits.
+line @1 ack : #bc_right# | #ack#.
+scene the_round
+when topic=work|day here.time=dusk self.working=yes
+does tell.self / ask.detail / answer.detail / assess
+a : #lightup.capitalize#. Forty lamps from the harbour stair to the gate, and all of them before full dark. | First one on #round# just took. I always stop and look at it. Just a breath. | Oil, wick, flame, #glass#. Forty times a night. #oath#. My arms know it in their sleep.
+b : All forty? | Why stop? | Every night?
+a : All forty. Some nights I'm racing #gloom# and it nearly wins. | Because it's the first. The street changes. Folk look up at #posts#. | Every night. #rain.capitalize#, snow, feast day. #lamps.capitalize# don't take a day off.
+b : #bc_good# | #bc_lovely# | #bc_poor_soul#
+
+scene rain_count
+when topic=weather here.weather=rain
+does tell.complaint / ask.detail / answer.detail / assess
+a : #tally.capitalize# last night. I go back round for every one. | I can't stop watching #rain#. Every gust, I'm counting which lamp it's taken. | Rain's my enemy. Every drop is after a lamp I lit with #pole#.
+b : Every one? | Can't you just let them go? | It's only rain.
+a : Every one. #gloom.capitalize#'s where folk get hurt. | No. #drowned.capitalize# is a corner somebody walks home through. | Only rain. And I'm only one wolf with #pole#.
+b : #bc_poor_soul# | #bc_fair_enough# | #bc_true#
+
+scene thunder_from_under
+when topic=weather here.weather=storm self.likes=thunder
+does tell.feeling / react.self / assess
+a : Listen to that. I'd stand in a doorway and hear it all night, if it weren't for #lamps#. | #thunder.capitalize#, like a cart on cobbles. I love it. I hate what it does to #round#. | A storm blows half #lamps# out and I hardly mind, while #thunder# keeps going.
+b : It frightens me. | Love and hate. | You don't mind?
+a : It shouldn't. The sky's only shifting its furniture. #bc_ha# | Both at once. That's the city, near enough, for me and #pole#. | Not while it's loud. After, I mind. I go back round with #oilcan#.
+
+scene fog_lamps
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : In this #fog# my lamps are only smudges. You'd walk into a post before you saw the light on it. | #fog.capitalize# nights I light them anyway. Somebody might need #smudge#. | I lost my way on #round# last fog. Counted #posts# to find it again.
+b : What's the use, then? | Kind of you. | Counted posts?
+a : #smudge.capitalize#'s more than nothing. Folk steer by it. | It's the job. Kind doesn't come into it, #address#. | Forty of them. I know #posts# like my own teeth.
+
+scene dawn_snuff
+when topic=work|day here.time=dawn self.working=yes
+does tell.self / react.self / assess
+a : First light. I've walked #round# again putting every lamp out. Strange, undoing your own work. | Snuffing them at first light, I count how many lasted. A fair night: thirty-eight. | Morning's when I'm most #tired# and the city's just waking. We pass each other.
+b : Sounds odd. | Thirty-eight's good. | Get some sleep.
+a : Odd and quiet. I like it more than #lightup#, some days. | It's #very# good. #rain.capitalize# would've had a dozen. | I will. If #din# lets me.
+
+scene fried_fish
+when topic=food self.likes=fried_fish
+does tell.self / react.self / assess
+a : #fried.capitalize# off the stall by the steps after #round#. Most nights that's #supper#. | There's nothing #fried# can't put right. Not much, anyway. | I can smell the fish pan from four #posts# off. I walk faster.
+b : Every night? | Not much? | Ha.
+a : When I've #copper#. Most nights. | A wet round. Even that, nearly. #bc_mostly#. | I do. The last lamps get lit #very# quick. #bc_ha#
+
+scene stale_loaf
+when topic=food|prices self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : Bought a loaf at dawn, cheap. It was yesterday's. And the day before's. #robbery#. | #hardbread.capitalize#. I'd sooner go without, and I have. | They sell last week's loaves down here for half. Half's still too much for #hardbread#.
+b : Soak it in soup. | That's a shame. | You get what you pay for.
+a : I did. The soup gave up first. #bc_ha# | It is. I'll pay for fresh one day, when I've #keeper#. | I paid for bread. I got a doorstop. #annoyed#.
+
+scene swim_harbour
+when topic=pastimes self.likes=swimming
+does tell.self / react.self / assess
+a : Hot nights after #round# I go down the harbour stair and swim in the black water. | A swim takes the smell of #oilcan# off better than any soap. | Back home I swam every summer. Here the water tastes of tar, but it's water, and it's #cold#.
+b : In the dark? | Does it? | Tar?
+a : In the dark. I know every step. I lit the lamp over them. | It does. And the #cold# wakes you up for #supper#. | Tar and fish. You stop noticing after a few strokes. #bc_mostly#.
+
+scene feast_bells
+when topic=festival|season self.likes=festival_bells
+does tell.feeling / react.self / assess
+a : The bells on a feast morning. I lie in bed and hear every one before I let myself sleep. | Feast days are nothing much to me. The bells, I'll give them, #address#. | On a feast night every lamp's lit early and the bells go at dusk. Best #round# of the year.
+b : They're loud. | Just the bells? | Best round?
+a : Loud's the point. They mean it. #bc_it_is#. | Just the bells. The rest is lost #wages#. | The only night anyone says thank you on #round#.
+
+scene night_din
+when topic=home|day here.time=night self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : #din.capitalize# till the small hours. I'm up at dusk. I need my sleep by day. | Somebody on the stair at midnight singing one verse. Over and over. #annoyed#. | The Sump never sleeps. One night of nothing, that's all I'd ask, and #hush#.
+b : That's the Sump. | Same verse? | A night of nothing?
+a : It is, and it stays as it is. I'd change my window, though, for #room#. | Over and over. I know the words now. I don't want to. | No shouting, no stair, no carts. #hush.capitalize#.
+
+scene the_woods
+when topic=memories|travel self.away=yes self.from=coldwater
+does tell.memory / react.story / assess
+a : I grew up by #camp#. Smoke all day and #hush# all night. | Up in the woods over #self.from_town# the only sound at night was the heaps ticking. | I miss #hush# more than anything. More than the lake, even.
+b[from=coldwater] #cw : The burners up in the woods? | I know that quiet. | More than the lake? Strong words.
+b : And now? | Ticking? | Will you go back?
+a@cw : The same. You'd see their smoke from the jetty, a #little# grey line. | Then you'll know why #din# gets to me. | I mean them. I'd swap #lamps# for it tomorrow.
+a : Now it's #din# all night and I'm out in it with #pole#. | The heaps settling as they burn. Like a slow clock in #gloom#. | Not to stay. Not till I've made something here first. #saying.capitalize#.
+
+scene lamp_keeper
+when topic=dreams|work
+does tell.plan / ask.plan / answer.plan / assess
+a : I'll have #keeper# one day. The whole store, all the rounds. You watch. | No climbing #ladder# at fifty for me. I'll be the one sending the young ones up. | A copper a week goes in a sock. Not for drink. For #room#.
+b : How will you get there? | How soon? | Is that all?
+a : Turning up, every night, never a lamp missed. They'll notice. #oath#. | Not as long as they think. #saying.capitalize#. | It's a start. After #room#, the store.
+b : #bc_i_hope_so# | #bc_good# | #bc_fair_enough#
+
+scene old_place
+when topic=work|times here.region=ridgemere self.drive=ambitious
+does confide / sympathise / assess
+a : There was other work before #lamps#. It went to somebody with friends. I don't make a song of it. | #lamps.capitalize# weren't my first trade here. I took them when the other went. | I don't complain where folk can hear. You asked, so there it is.
+b : That's hard luck. | It's honest work, though. | Not a word from me.
+a : It is. I'll make my own luck next time, with #pole# if I must. | It is. I do it properly. #oath#. | #thanks#. It goes no further.
+
+scene heights_glass
+when topic=times|gossip here.region=ridgemere
+does give.opinion / react.self / assess
+a : #heights.capitalize# get #glass# replaced every spring. Mine on the stairs have cracks and a lean. | Not a House face on #round#, ever. They don't come down after dark. | The Houses own half #posts# and pay for none of the oil.
+b : They pay taxes. | Why would they? | Who pays, then?
+a : Not on my stairs, they don't. #bc_never#. | They've their own lamps. Better ones, with #glass# that's whole. | The store, and the store pays me. Barely. #skint.capitalize#.
+
+scene parish_loaf
+when topic=times self.on_dole=yes
+does confide / react.self / assess
+a : I take the parish bread. Since the old place went. I'll stop when I can, #oath#. | No shame in a loaf. That's what I say to myself on Restday, in the line. | The dole kept me fed while I learned #round#. I'd be dead without it, near enough.
+b : No shame. | You should. | Glad it was there.
+a : Maybe not. It still sits heavy, like #hardbread#. | I do. Some weeks I believe it. #bc_mostly#. | So am I. #bc_i_know#.
+
+scene new_ladders
+when topic=newcomer|times
+does give.opinion / react.self / assess
+a : Three new faces asked at the store this week for a round. There aren't three rounds. | They walk in off the road sure the city's full of work. It's full of folk, and short of #lamps#. | I was new once. I know. I still want #round#, #address#.
+b : They've to eat too. | Some find work. | That's fair.
+a : They have. Elsewhere, I'd hope. Not proud of that. #bc_sorry#. | Some. Not on #round#. | It's only honest. #bc_true#.
+
+scene the_watch
+when topic=crime here.region=ridgemere
+does give.opinion / react.self / assess
+a : I see #watch# every night. They lean on my posts and chase off anyone poorer than them. | When there's #drowned# and somebody's hurt in the dark, it's me they shout at. | A wolf got jumped under #drowned# last month. I should have been quicker.
+b : They keep order. | Not fair. | Not your fault.
+a : They keep #heights# tidy. Down here they keep their distance. | It's not. I didn't put the rain there. | Feels it. I count #drowned# twice now.
+
+scene chapel_lamps
+when topic=faith
+does give.opinion / react.self / assess
+a : I light the lamps by the chapel last, so they burn longest. That's my prayer, I suppose. | I don't go in much. I make sure the way there's lit. #bc_every_night#. | The Bright One keeps me going, and I keep #gloom# down. Fair trade.
+b : That's a good prayer. | That's something. | Fair arrangement.
+a : Mine, such as it is. #bc_i_hope_so#. | It's what I can do with #pole#. | So far. #bc_mostly#.
+
+scene my_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #pole.capitalize# goes to nobody but #self.friend#. | If I'm late in from #round#, #self.friend# would be the first to notice. | I don't talk much. #self.friend# gets more out of me than #lamps# do.
+b : That's trust. | Good to have someone. | That's something.
+a : Aye. And it's a good pole, #pole#. | It is. One's enough, #address#. | It is. More than most get. #bc_true#.
+
+scene lean_oil
+when topic=times|prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : They've cut the oil. Every other lamp on the low stairs. I'm to choose which ones. | Lean times. #oilcan.capitalize#'s half full and #round#'s the same length. | Folk ask me why their corner's dark. I tell them to ask #heights#.
+b : That's not right. | Can you stretch it? | Will they?
+a : No. I light the corners by the stairs and the doors. Choosing hurts. #oath#. | I trim the wicks low. They burn dim, but they burn, #smudge#. | No. But it makes them think.
+
+story first_lamp [topic=memories|work self.age>=20]
+  : My first night on #lamps# I couldn't reach the third one. Too short a pole, too long a post.
+  : I climbed the post instead, burned my paw on #glass# and lit it anyway.
+  ask : Would you have climbed it, or gone back for a longer pole?
+  b : Gone back. I'm not climbing anything.
+  b[job=laborer] : Climbed. You don't go back on your first night.
+  : They gave me #pole# the next day. I never asked for it.
+
+story the_lamp_that_stayed [topic=lore|weather here.region=ridgemere]
+  : There's one lamp on #round# that's never once gone out. Not in rain, not in wind, not in the big storm last spring.
+  : I've changed nothing about it. Same wick, same oil, same #glass#. It just stays lit.
+  b : Strange. Lucky lamp. Have you worked out why?
+  : No. I light it first now, for luck. #saying.capitalize#.
+
+story camp_night [topic=memories self.from=coldwater self.age>=20]
+  : When I was a #child# at #camp# I had to sit up one night and watch a heap in case it broke through.
+  : I sat by it till dawn, listening to it tick, jumping at every owl in #gloom#.
+  ask : Ever had a night you were scared of nothing much?
+  b : Plenty. The dark's good at it.
+  b[stage=young|adolescent] : Most nights, if I'm honest.
+  : It didn't break. I've liked the night ever since, #hush# and all.
+
+rule @lightup_bark
+when concept=bark here.time=dusk self.working=yes
+does aside
+cooldown 8h
+say #lightup.capitalize#! Mind #pole#! | One lit. Thirty-nine to go. #oath#.
+
+rule @drowned_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 6h
+say There goes another. #drowned.capitalize#. | #tally.capitalize#. Back round, then.
+
+rule @din_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 10h
+say Some of us sleep by day, you know. #annoyed#. | #din.capitalize#. Every night.
+
+rule @thunder_bark
+when concept=bark here.weather=storm self.likes=thunder
+does aside
+cooldown 10h
+say Now that's #thunder#. | Go on, then. Louder. #bc_good#.
+
+dlg @1 resident.hub : #greet#. What is it? I've #lamps# to light. | #greet#, #address#. Quick, before dark.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come along with me; #round# won't wait.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Say what you want. I'm not stopping long, #stranger#.
+dlg @1 resident.job [self.workplace] : #self.trade_words.capitalize#. Out of #self.workplace#, forty #posts#, every night. | I light #lamps#. Then I count the ones the rain puts out.
+dlg @2 resident.job : Whatever pays, for now. I'm working my way to #keeper#. | I work nights. Ask me about it at dawn, #address#.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Only #tally#. | Nothing. #round.capitalize# was quiet last night, mostly.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear things after dark. They stay in #gloom#.
+dlg @1 resident.bye : #farewell#. Walk under #lamps#. | #farewell#.
+graft resident.hub
+choice How many lamps did the rain put out last night? -> drowned
+node drowned
+say #tally.capitalize#. I count every one, and I go back round for every one. A dark corner's where folk come to harm.
+mood calm
+free
+choice Why not leave them till tomorrow? -> drowned_why
+choice Goodbye. -> bye
+node drowned_why
+say Because somebody walks home tonight, not tomorrow. I'd rather lose sleep than have them lose their way in #gloom#.
+choice That's good of you. -> hub
+choice Goodbye. -> bye
