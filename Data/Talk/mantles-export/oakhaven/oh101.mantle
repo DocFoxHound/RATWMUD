@@ -1,6 +1,6 @@
-# oh101, the knife among the greens (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# oh101, the knife among the greens (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle oh101
-revision 2
+revision 3
 state ready
 dialect oakhaven
 accent light broad
@@ -186,7 +186,7 @@ a : All smoke and elbows, this city. I couldn't tell you who lives three doors d
 b[from=ridgemere] #city : It grows on you. | Names come slow here. | Twice is wise.
 b : True enough. | It's the same everywhere. | Smoke gets in everything.
 a@city : It's grown on me. Like moss on a north wall. | Slow is fine. I've time, #oath#. | It's the only way they'll sell.
-a : At home you knew the whole lane by their walk. | Not where I grew up. You'd know them by their cough. | It does. My shawl, my fur, my #supper#.
+a : At home you knew the whole lane by their walk. | Not where I grew up. You'd know them by their cough. | It does. My shawl, my fur, #supper#.
 
 scene first_face
 when topic=friends self.friend self.away=yes
@@ -388,7 +388,7 @@ dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. 
 dlg @4 resident.hub [pair.disposition=warm|fond] : There you are. #greet#. What can I do for you?
 dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. Say what you want, and gently. I've a knife at my belt and I'd sooner it stayed there.
 dlg @6 resident.hub [here.time=night] : It's late. I was dreaming on my feet. What is it?
-dlg @1 resident.job [self.role=merchant] : I keep a #self.trade_words#. #greens.capitalize#, mostly, and whatever the carts bring in good.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. #greens.capitalize#, mostly, and whatever the carts bring in good.
 dlg @1 resident.business [business!=thriving|failing] : Steady. Leaves don't make anyone rich, but they keep #money# coming. | Steady enough. Better on a dry week.
 dlg @1 resident.news [self.role=merchant !world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Only what comes past my stall, and I let most of that go by. | #news_none#
 dlg @1 resident.gossip [here.gossip!=yes] : I don't carry tales. They wilt worse than #greens#. | #gossip_none#

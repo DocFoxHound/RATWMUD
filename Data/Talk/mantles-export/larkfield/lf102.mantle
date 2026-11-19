@@ -1,6 +1,6 @@
-# lf102, the low-street reckoner (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# lf102, the low-street reckoner (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle lf102
-revision 2
+revision 3
 state ready
 dialect larkfield
 accent light broad
@@ -31,7 +31,7 @@ apple = a crisp apple | an apple with a snap to it
 cards = a hand of cards | a quiet game of cards
 tidy = a tidy room | a swept floor and everything in its place
 garret = my top floor | my bit of room under the roof
-flies = flies in summer | the flies off the fruit
+flies = flies in summer | flies off the fruit
 farthing = to the farthing | to the last farthing
 jars = jars back, a farthing off | a jar returned is a jar paid for
 
@@ -259,7 +259,7 @@ say Whose deal is it? #cards.capitalize#, and then bed. | One more hand. Buttons
 
 dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You'll want to keep up the hill round here. What is it? | #greet#. Lost? Most are, down here.
 dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Carry something, or keep out of the wet.
-dlg @1 resident.job : I'm #self.trade_words#. #pans.capitalize# and jars, all day. | #job_busy#
+dlg @1 resident.job : #self.trade_words.capitalize#. #pans.capitalize# and jars, all day. | #job_busy#
 dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Only what's coming up the drains. #news_none# | #lowstreets.capitalize# were under last week. That's my news.
 dlg @1 resident.gossip [here.gossip!=yes] : I'll not carry that, #address#. Down here it gets back to you. | #gossip_none#
 dlg @1 resident.bye : #farewell#. Keep high. | #farewell#. Mind the steps; they're slick.

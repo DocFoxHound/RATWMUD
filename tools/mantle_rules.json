@@ -9,7 +9,7 @@
             "Oakhaven", "Frosthollow", "Mirebridge", "Glasswater", "Deepvein", "Heatherside", "Larkdowns", "Soundside",
             "Greatly", "Fell", "Grayrock", "Timberland", "House", "Houses", "Watch", "Commons", "Heights", "Sump", "Wharf",
             "Estate", "Works", "Office", "Rag Market", "High Road", "Long River", "Bright One", "Dark One", "Restday",
-            "Dawnday", "Emberday", "Hearthday", "Marketday", "Riverday", "Stoneday", "Times", "Council", "Market Board",
+            "Dawnday", "Emberday", "Hearthday", "Marketday", "Riverday", "Stoneday", "Restdays", "Dawndays", "Emberdays", "Hearthdays", "Marketdays", "Riverdays", "Stonedays", "Times", "Council", "Market Board",
             "Ochre", "Oasis", "Oasis Inn", "Withy Creek", "Fenside", "Rivermouth", "Fen Shore", "Dune"],
   "forbidden": [
     {"match": "\\bdogs?\\b", "why": "never the word dog in world text (wolves; pups for the young)"},

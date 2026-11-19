@@ -1,6 +1,6 @@
-# mb101, the hearth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb101, the hearth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb101
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -19,7 +19,7 @@ hopes an_answer_to_an_old_letter
 topics work +0.4 home +0.3 animals +0.3 pastimes +0.2 food +0.2 gossip -0.4 prices -0.2
 styles comfort=practical gossip=reluctant refuse=firm tease=none
 marks oath saying
-persona #self.first# #self.trade_words#: exact, quick to take offence and slow to forget it, and never without crumbs for the sparrows.
+persona #self.first# (#self.trade_words#): exact, quick to take offence and slow to forget it, and never without crumbs for the sparrows.
 
 words
 oath! = Ash and embers | By the old grate | Embers and ash, and mind the boards
@@ -218,7 +218,7 @@ a : #bc_fair_enough# Rules are rules. | Every card. I'd not touch it after. #bc_
 scene apple_cart
 when topic=food
 does tell.self / react.self / assess
-a : #apple.capitalize# and a bit of cheese. That's my #supper#, standing up. | The apple cart came round. Half were mealy. I sent them back. | Nothing better than #apple#. You hear it before you taste it.
+a : #apple.capitalize# and a bit of cheese. That's #supper#, standing up. | The apple cart came round. Half were mealy. I sent them back. | Nothing better than #apple#. You hear it before you taste it.
 b[job=cook|innkeeper|baker] #kitchen : You don't eat your own pot? | Mealy apples are for pigs. | Spoken like someone who's never cooked one.
 b : Plain, but #good#. | Good for you. | #bc_true#
 a@kitchen : I smell it all day, fen-friend. That's enough. | That's what I told the carter. Boggy, that lot. | Cooked apples are a waste of #apple#.
@@ -227,7 +227,7 @@ a : #bc_good# | They'll bring better or they'll not see #money# of mine. | Snap,
 scene supper_standing
 when topic=food self.job=innkeeper here.time=dusk|night
 does tell.self / react.self / assess
-a : I eat behind the bar, off a board, standing. No time for a chair. | #supper.capitalize# was the end of the pot and #apple#. | I'd my #supper# at midnight. The room was full till then.
+a : I eat behind the bar, off a board, standing. No time for a chair. | #supper.capitalize# was the end of the pot and #apple#. | I'd #supper# at midnight. The room was full till then.
 b : You'll ruin your stomach. | #bc_lovely# | #bc_about_time#
 a : It's ruined already, fen-friend. It knows the work. | It does me. #bc_good# | It does. I'm not complaining. I was #hungry#, mind.
 
@@ -309,7 +309,7 @@ a : Folk say you can hear the drowned bell some nights. I've heard the fen-wind 
 b[priest] #chapel : Old Mirebridge's chapel bell. Pray for the souls under it. | It might have been. Some things don't drown. | That's wisdom, of a kind.
 b : #bc_so_they_say# | #bc_maybe# | #bc_wise#
 a@chapel : I'll leave the praying to you. I've #hearth# to mind. | Then let them ring. I'll not answer. #bc_never# | It's sense. Wisdom's for chapels.
-a : #wind.capitalize# and frogs. That's my answer. | It wasn't the #wind#, mind. | I keep the shutters up and #hearth# in.
+a : #wind.capitalize# and frogs. That's my answer. | It wasn't #wind#, mind. | I keep the shutters up and #hearth# in.
 
 scene faith_ordinary
 when topic=faith

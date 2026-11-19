@@ -1,6 +1,6 @@
-# mb102, the counter-keeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb102, the counter-keeper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb102
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -19,7 +19,7 @@ hopes a_second_room_on_the_stores
 topics work +0.4 prices +0.3 faith +0.3 lore +0.2 food +0.2 dreams +0.2 travel -0.3
 styles comfort=practical gossip=reluctant refuse=firm tease=none
 marks oath saying boast
-persona #self.first# is #self.trade_words#: devout, ambitious and plain-spoken, suspicious of anything with a city stamp on it, and sure no wolf on the river reads eel water better.
+persona #self.first# (#self.trade_words#): devout, ambitious and plain-spoken, suspicious of anything with a city stamp on it, and sure no wolf on the river reads eel water better.
 
 words
 oath! = Lamp and ledger | Bright One keep the count | By the lamp and the book
@@ -173,7 +173,7 @@ a : That's how I was raised, and that's how I'll keep it. | Mud's mud. A rule's 
 scene market_bustle
 when topic=work|smalltalk here.day=market
 does tell.feeling / react.self / assess
-a : #bustle.capitalize#. That's my favourite sound, coin on the counter. | I like it busy. Busy, mind, not a #crush#. | Every Marketday I sell out of something. Today it's lamp wicks, #address#.
+a : #bustle.capitalize#. That's my favourite sound, coin on the counter. | I like it busy. Busy, mind, not #crush#. | Every Marketday I sell out of something. Today it's lamp wicks, #address#.
 b[job=merchant] #counter : Mine too, as long as they're buying. | There's a difference? | Lucky you.
 b : #bc_lovely# | Where's the line, then? | #bc_lucky_you#
 a@counter : They're buying, thanks to the Bright One. | Busy is a queue. #crush.capitalize# is a fight. | It's not #luck#. I order heavy for market.
@@ -216,7 +216,7 @@ when topic=weather here.weather=fog
 does tell.self / react.self / assess
 a : Fen-murk all morning, and not a soul through the door. | I hung a lamp out so folk could find the stores in the #fog#. | Can't see the creek from my step. I'll not open #lines# in this.
 b : #bc_nobody# | Thoughtful of you. | #bc_wise#
-a : They'll come at noon, all at once. A #crush#, no doubt. | It's not thought, it's custom. A lamp sells oil. | #saying#. And a wolf who sees, #reckon#.
+a : They'll come at noon, all at once. #crush.capitalize#, no doubt. | It's not thought, it's custom. A lamp sells oil. | #saying#. And a wolf who sees, #reckon#.
 
 scene clear_market_morning
 when topic=weather here.weather=clear here.time=dawn|day
@@ -268,7 +268,7 @@ a : Folk ask if I'll open a stall in the city. Never. #citymade.capitalize# come
 b[from=ridgemere] #city : You'd do well there. | That's just the city's way. | We know where things come from.
 b : #bc_ha# | #bc_bad_luck# | #bc_true#
 a@city : Well, and robbed. #thief.capitalize# on every corner, by the tales. | Then I'll keep to my way. | You know which wagon. Not which water, #address#.
-a : My #shelves# are here, and so am I. | Lighter, and wiser. #saying#. | I know the boiler, the trapper and the reed. That's trade.
+a : #shelves.capitalize# are here, and so am I. | Lighter, and wiser. #saying#. | I know the boiler, the trapper and the reed. That's trade.
 
 scene stores_lore
 when topic=lore here.region=fens
@@ -330,7 +330,7 @@ a : #saying#. | #bc_lucky#, and long hours. | #oath#. A second room by spring.
 scene festival_shut
 when topic=festival
 does give.opinion / react.self / assess
-a : A feast day's a shut counter and the bills still come Dawnday. | I open for an hour on a feast morning. Folk forget rope till they need it. | Everybody out on the boards, a #crush# at every corner. I'll stay in with #ledger#, #address#.
+a : A feast day's a shut counter and the bills still come Dawnday. | I open for an hour on a feast morning. Folk forget rope till they need it. | Everybody out on the boards, #crush# at every corner. I'll stay in with #ledger#, #address#.
 b : You'll miss the fun. | #bc_clever# | #bc_ha#
 a : I'll have my fun Dawnday, counting. | An hour, and then I shut. Even I keep a feast, #bc_mostly#. | #ledger.capitalize# doesn't push. It's better company.
 

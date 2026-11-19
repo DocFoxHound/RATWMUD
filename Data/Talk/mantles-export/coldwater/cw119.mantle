@@ -1,6 +1,6 @@
-# cw119, the crooked map (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw119, the crooked map (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw119
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent light broad
@@ -136,7 +136,7 @@ a : Until they bend without wetness. | When one side has had the air.
 scene old_hands
 when topic=memories
 does tell.self / react.self / assess
-a : I learned the #orchard# work from hands older than mine. | A #saying# comes out of my mouth when I hear the #ladder# creak.
+a : I learned the #orchard# work from hands older than mine. | A saying comes out of my mouth when I hear the #ladder# creak.
 b : Do you remember who taught you? | Does the saying help?
 a : Every one of them. | It makes me check my footing.
 

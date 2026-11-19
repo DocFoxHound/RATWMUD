@@ -1,6 +1,6 @@
-# cw101, the deckhand without a deck (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw101, the deckhand without a deck (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw101
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent none
@@ -188,7 +188,7 @@ a : #bc_fair_enough# | No. Try, though, and see what #money# it gets you. | #bc_
 scene new_faces
 when topic=newcomer
 does give.opinion / react.self / assess
-a : Every new face is another wolf after the same scraps of #work# I am. | I've nothing against them. I just got here first. | More come every month. The #work# doesn't grow.
+a : Every new face is another wolf after the same scraps of #work# I am. | I've nothing against them. I just got here first. | More come every month. #work.capitalize# doesn't grow.
 b : They've to eat too. | Fair enough. | It's hard on everyone.
 a : I know it. I'd still rather they ate somewhere else. | I'll not be short with them for it. Not unless they're short first. | It is. #bc_it_is#
 

@@ -1,6 +1,6 @@
-# cw143, the storm walker (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# cw143, the storm walker (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle cw143
-revision 2
+revision 3
 state ready
 dialect coldwater
 accent light broad
@@ -111,7 +111,7 @@ line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] :
 line @1 answer.how : I was awake through the #night#, but I am standing. | A clear #sky# would settle me more.
 line @1 answer.how.busy [self.working=yes] : A full #row# still needs picking. | The #trays# are waiting for the last #crate#.
 line @1 ask.how : Did the #storm# wake you? | Did you find time for a hot drink?
-line @1 sympathise : I can walk with you while you talk. | I will not dress it up with a #saying#.
+line @1 sympathise : I can walk with you while you talk. | I will not dress it up with a saying.
 line @1 reassure : A #storm# passes, even when it takes its time. | We can find the #path# again in daylight.
 line @1 decline : No. I will not take the #road# by the #wood#. | The #store# needs me for this #crate#.
 line @1 accept_decline : Your answer is enough. | I shall not press you.

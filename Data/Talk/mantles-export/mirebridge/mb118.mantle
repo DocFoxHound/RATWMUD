@@ -1,6 +1,6 @@
-# mb118, the storm-sleeper (Docs/Design/84). Exported from ridgemere3 at revision 2: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+# mb118, the storm-sleeper (Docs/Design/84). Exported from ridgemere3 at revision 3: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle mb118
-revision 2
+revision 3
 state ready
 dialect mirebridge
 accent light broad
@@ -115,7 +115,7 @@ a : Went in off the strand this morning. #dip.capitalize#. Woke up properly. | C
 b[stage=young] #pup : Can I come next time? | Is it cold? | A seal?
 b : You're mad. | #bc_ha# | In this?
 a@pup : If you hold my tail and don't let go. | Freezing. It's lovely. | A real one. Very rude.
-a : Mad and clean. #oath#. | It's true, though. #saying#. | In any. The water doesn't know the weather. #dip.capitalize#'s a #dip#.
+a : Mad and clean. #oath#. | It's true, though. #saying#. | In any. The water doesn't know the weather. #dip.capitalize#'s #dip#.
 
 scene warm_loaf
 when topic=food here.region=fens
@@ -124,7 +124,7 @@ a : #loaf.capitalize#. I'd walk the length of the boardwalk for one. | The baker
 b[wealth=poor|destitute] #poor : When there's a copper for it. | Did they give you one? | I'll not tell.
 b : #bc_lovely# | #bc_ha# | Your secret's safe.
 a@poor : When. Aye. Share it, then. #saying#. | Gave me a heel. For looking pitiful. | Good. Have some, then you're in it too.
-a : It's the best thing in the fen. #saying#. | I'm not proud. | It's never safe. Have some #loaf#.
+a : It's the best thing in the fen. #saying#. | I'm not proud. | It's never safe. Have #loaf#.
 
 scene bells_dawn
 when topic=day here.region=fens here.time=dawn
