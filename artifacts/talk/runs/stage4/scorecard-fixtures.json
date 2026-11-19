@@ -1,6 +1,6 @@
 {
  "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
- "generated": "2026-11-19T04:13:55+00:00",
+ "generated": "2026-11-19T04:45:10+00:00",
  "runs": {
   "L1": "artifacts/talk/runs/stage4/fixtures-L1",
   "L2": "artifacts/talk/runs/stage4/fixtures-L2",
@@ -1077,19 +1077,19 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.6 ms or less (gate: talk_bench)",
-   "value": 0.1951462247191013,
+   "value": 0.17783166861598465,
    "passes": true,
    "by_profile": {
-    "L1": 0.171,
-    "L2": 0.161,
-    "L3": 0.18,
-    "L4": 0.195,
-    "L5": 0.184,
-    "L6": 0.178,
-    "L7": 0.188,
-    "L10": 0.12
+    "L1": 0.148,
+    "L2": 0.147,
+    "L3": 0.176,
+    "L4": 0.178,
+    "L5": 0.171,
+    "L6": 0.165,
+    "L7": 0.178,
+    "L10": 0.113
    },
-   "control": 0.1951462247191013,
+   "control": 0.17783166861598465,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -1101,19 +1101,19 @@
    "better": "lower",
    "gate": "soft",
    "target": "3 ms or less (gate: talk_bench)",
-   "value": 0.698324,
+   "value": 0.590737,
    "passes": true,
    "by_profile": {
-    "L1": 0.542,
-    "L2": 0.561,
-    "L3": 0.621,
-    "L4": 0.698,
-    "L5": 0.643,
-    "L6": 0.584,
-    "L7": 0.597,
-    "L10": 0.387
+    "L1": 0.476,
+    "L2": 0.527,
+    "L3": 0.583,
+    "L4": 0.589,
+    "L5": 0.591,
+    "L6": 0.507,
+    "L7": 0.556,
+    "L10": 0.394
    },
-   "control": 0.698324,
+   "control": 0.590737,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -1125,21 +1125,21 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 ms or less (gate: talk_bench)",
-   "value": 16.275356,
+   "value": 14.473443,
    "passes": false,
    "by_profile": {
-    "L1": 15.263,
-    "L2": 16.275,
-    "L3": 6.788,
-    "L4": 6.051,
-    "L5": 0.112,
-    "L6": 0.116,
-    "L7": 0.107,
-    "L8": 0.042,
-    "L9": 0.028,
-    "L10": 8.165
+    "L1": 13.42,
+    "L2": 14.473,
+    "L3": 7.06,
+    "L4": 6.063,
+    "L5": 0.099,
+    "L6": 0.103,
+    "L7": 0.101,
+    "L8": 0.031,
+    "L9": 0.034,
+    "L10": 8.503
    },
-   "control": 16.275356,
+   "control": 14.473443,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -1151,21 +1151,21 @@
    "better": "higher",
    "gate": "hard",
    "target": "150+",
-   "value": 2.342832587976762,
+   "value": 2.425779799445106,
    "passes": false,
    "by_profile": {
-    "L1": 15.284,
-    "L2": 8.32,
-    "L3": 6.72,
-    "L4": 4.694,
-    "L5": 2.386,
-    "L6": 2.394,
-    "L7": 2.343,
+    "L1": 16.767,
+    "L2": 9.098,
+    "L3": 6.801,
+    "L4": 4.793,
+    "L5": 2.426,
+    "L6": 2.524,
+    "L7": 2.444,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 10.415
+    "L10": 11.873
    },
-   "control": 2.342832587976762,
+   "control": 2.425779799445106,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -1398,10 +1398,10 @@
    },
    "B1_detail": {
     "beats": 13819,
-    "beat_max": 8.921669,
+    "beat_max": 6.791868,
     "looks": 71995,
-    "look_mean": 0.997756305965692,
-    "look_max": 719.287285
+    "look_mean": 0.8584366678658225,
+    "look_max": 585.876365
    },
    "_counts": {
     "lines": 14501,
@@ -1604,10 +1604,10 @@
    },
    "B1_detail": {
     "beats": 7450,
-    "beat_max": 8.596697,
+    "beat_max": 6.895263,
     "looks": 71999,
-    "look_mean": 0.8546125806886206,
-    "look_max": 770.569493
+    "look_mean": 0.7384416058417479,
+    "look_max": 616.652465
    },
    "_counts": {
     "lines": 7881,
@@ -1791,10 +1791,10 @@
    },
    "B1_detail": {
     "beats": 4945,
-    "beat_max": 3.548178,
+    "beat_max": 2.556854,
     "looks": 71999,
-    "look_mean": 0.3252654592702677,
-    "look_max": 865.525293
+    "look_mean": 0.3037056661481411,
+    "look_max": 645.993412
    },
    "_counts": {
     "lines": 5310,
@@ -1967,10 +1967,10 @@
    },
    "B1_detail": {
     "beats": 3293,
-    "beat_max": 4.832754,
+    "beat_max": 0.887932,
     "looks": 71999,
-    "look_mean": 0.29081628047611785,
-    "look_max": 1032.583548
+    "look_mean": 0.2509096889540133,
+    "look_max": 731.809384
    },
    "_counts": {
     "lines": 3502,
@@ -2142,10 +2142,10 @@
    },
    "B1_detail": {
     "beats": 1622,
-    "beat_max": 3.03587,
+    "beat_max": 0.78106,
     "looks": 71999,
-    "look_mean": 0.22530835457436912,
-    "look_max": 928.930903
+    "look_mean": 0.19941781984472007,
+    "look_max": 703.844491
    },
    "_counts": {
     "lines": 1710,
@@ -2322,10 +2322,10 @@
    },
    "B1_detail": {
     "beats": 1714,
-    "beat_max": 3.326097,
+    "beat_max": 2.523058,
     "looks": 71999,
-    "look_mean": 0.22933190824872568,
-    "look_max": 977.491219
+    "look_mean": 0.20390282910873764,
+    "look_max": 669.931337
    },
    "_counts": {
     "lines": 1824,
@@ -2499,10 +2499,10 @@
    },
    "B1_detail": {
     "beats": 1539,
-    "beat_max": 3.292496,
+    "beat_max": 0.792131,
     "looks": 71999,
-    "look_mean": 0.2187259851664607,
-    "look_max": 831.708824
+    "look_mean": 0.18930384683120594,
+    "look_max": 611.39777
    },
    "_counts": {
     "lines": 1595,
@@ -2645,8 +2645,8 @@
     "beats": 0,
     "beat_max": 0,
     "looks": 71999,
-    "look_mean": 0.0089664580202502,
-    "look_max": 4.046127
+    "look_mean": 0.008815558049417272,
+    "look_max": 1.364127
    },
    "_counts": {
     "lines": 0,
@@ -2789,8 +2789,8 @@
     "beats": 0,
     "beat_max": 0,
     "looks": 71999,
-    "look_mean": 0.00787200166668974,
-    "look_max": 0.294051
+    "look_mean": 0.00846907462603644,
+    "look_max": 1.049975
    },
    "_counts": {
     "lines": 0,
@@ -2986,10 +2986,10 @@
    },
    "B1_detail": {
     "beats": 5701,
-    "beat_max": 1.373953,
+    "beat_max": 1.54162,
     "looks": 35999,
-    "look_mean": 0.6872893873718716,
-    "look_max": 864.802821
+    "look_mean": 0.542442994527626,
+    "look_max": 604.452495
    },
    "_counts": {
     "lines": 6037,

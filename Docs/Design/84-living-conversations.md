@@ -21,7 +21,10 @@ health and `mantle_pool.py`, the DM's acts, Atlas's column, sync and packages; n
 (the writer's kit and the pilot)** is built (2026-11-17, branch `r3-talk-p11`, §40: `mantle_brief`, `mantle_index`, the
 writer's guide, 43 pilot mantles for Saltwell, Fenshore and the eight placed luna residents loaded into DEV and bound,
 the Saltwell and Mirebridge kits, G3, the Mantles panel), and **Slice 3's end** is done (§41: the ticking listen, the
-card, and the mantle format and the rows' shape frozen); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+card, and the mantle format and the rows' shape frozen), fix 8 and U1 (§42, §43), **Phase 12 (window-only plumbing)** and
+**Phase 13 (the window's talk and typed words)** are built (2026-11-18, §44, §45), and **Stage 4's end** is done
+(2026-11-19, branch `r3-talk-s4`, §46: the suite, the window played end to end in the client, the ticking listen, the
+review and its fixes); P14's mantle batches are being written; nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -5709,3 +5712,174 @@ X1, the timings under the card's own load). Nothing refrozen in the committed ba
 - Not built: the Mind's own window brief does not yet list the claim store or the ledger's notes with this player; a
   player offline when the ledger prunes loses the callback; the window's matchmaking pointer is still the written line
   (doc 52's), not a mantle's.
+
+## 46. Stage 4's end: the suite, the window played end to end, the ticking listen, the review (2026-11-19)
+
+Branch `r3-talk-s4`: P12 and P13 (`r3-talk-p13`, ce6232e4) with `ridgemere2` merged in (3c039b11). **The merge had no
+conflicts**: since P13's base (1b134b80, which already held fix 8 and U1) `ridgemere2` had only the P14 batches (sfo-1,
+rm-cw-1, rm-cw-2, rm-lfsm-1, rm-mix-1 and their content fixes): 159 more mantles, 304 in the export and bound in DEV.
+(DEV's rows hold 341 by now: the city writers' branch loads as it goes; the scratch server and the ticking listen read
+the rows, the card and the gates the export's 304.)
+
+**The suite.** Core: the full ctest, **119 of 120** with the Postgres suites run against the local database (`pg_client`
+skipped as before), after two fixes:
+- `mantle_export_rules` refused **sm110** ("over the hedge"): P13 had made "over the hedge" one of southmeadow's
+  `#way_close#` words, so the merged mantle's own line, written meanwhile, became another dialect's distinctive phrase.
+  **The data was wrong, not the test**: southmeadow's `#way_close#` is now "a hedge or two off".
+- `talk_scorecard_quick` fails only under load (`B1L`, a director look's 99th percentile, 2.98 against 1.92 ms while 12
+  jobs and the ticking listen shared the machine); alone it passes, three times of three. **Neither was wrong**: a timing
+  row on a busy machine, as §41 found.
+Client: typecheck, 225 unit tests, the build, **11 of 11 browser tests** (the one that needs `ratw_server` and
+`ratw_identity` runs once build-core has them). Editor: typecheck, 165 tests (78 and 87), the build, the render smoke (17
+panels). Central: 86 tests. Python: `test_mantle_check`, `_load`, `_pool`, `test_talk_score` (43), `test_talk_rate`,
+`test_dialect_check`, `test_talk_lint`, `test_talk_p7`, `_p8`, `test_dungeon_master`, `test_world_sync`, `test_studio`.
+Talk: `talk_check --validate` (188 files), `--render-trees` (every tree line in every voice), `--mantle` (304, 0 refused),
+`talk_lint` (58, 0 new), `mantle_batch gates` over the whole export (**G1, G2 --strict, the lint and G3 pass**: 0 holes
+in the core moves, 7,067 of 7,741 scenes heard, **W1 99.7%**: 19,360 of 19,420 window lines at the hub, goodbye, job and
+greeting the wearers' own), `dialect_check` (0 failures over the files).
+
+`dialect_check --world ridgemere3` fails 7: **DEV's `live.dialects` rows are older than P13's grammars** (they lack the
+`#way_*#` and `#refuse_*#` symbols; the database copy wins at load). Nothing breaks without them (a voiced way that
+can't be filled falls back to plain's words, `Game::dialoguePlaces`), but going live wants the rows refreshed:
+`python3 tools/talk_seed.py --only dialects --world ridgemere3` (not run here: it writes the live world's rows).
+
+**The card** (`artifacts/talk/runs/stage4`, every profile in both modes over P0's fixture, the 304 worn from the export),
+against P13's (§45), fixtures / frozen: **U1 6.21 / 6.45 → 11.2 / 8.02%** (the merged mantles heard); C1 95.3 / 97.1 →
+96.3 / 97.1%; C3 99.8 / 100 both; R1 6.22 / 2.30 both; R4 507 / 2,298 → 502 / 2,294; K1 45.0 / 70.6 → 45.7 / 71.2%;
+K2 23.9 / 15.3 → 23.8 / 15.1%; X1 23.1 / 18.9 → 23.2 / 19.0%; D3 → 89.5 / 66.2%; C4, C6, T1, T3, R5, D2 and K3 0. Its
+first scoring broke two hard gates P13 held and showed a third row off zero, all from the merged mantles, none an engine
+fault:
+- **D2 1**: cw177's goodbye "#farewell#. Sleep sound, #address#." came out "Farewell. Sleep sound, neighbour.", word for
+  word one of southmeadow's night goodbyes. **The grammar was wrong** (a phrase any dialect could say counted as
+  southmeadow's): southmeadow's is now "Sleep sound under the thatch" (its own three mantles' "Sleep sound, neighbour"
+  is now just theirs).
+- **K3 1**: Winifred Pitchdale cut in twice, a day apart, to defend a friend from the same slander told by the Grey
+  Gull's keeper to two others. `Game::joiners` lets kin and friends who heard it join to defend by design (Slice 2's
+  review), and the scorer counted them told. **The scorer was wrong**: K3 no longer counts a joiner who defends or
+  objects (`test_talk_score`'s `test_k3_a_friend_defending_twice_is_not_told_twice`).
+- **T2 0.047 → 0.024** per 1,000: fh108's story "My first morning with a stall in this wet city..." read as rain
+  (truth.json's `rain_now` now passes "this wet city", **the rule was wrong**); and Gorm Plankgate's "My wife is the only
+  one who can tell me to sit down" (sw117, a scene gated `self.married=yes`), flagged because the run's
+  `residents.jsonl` is written at its start and he married on day 35 of the replayed 25 (the fixture's checkpoint holds
+  the wedding). **The scorer's snapshot is stale**, one line in 42,360; left as it is and noted (talk_sim would have to
+  write the residents each game day).
+`talk_card` exits 1 on the soft rows §43-§45 left (C8, C9, O1, D1B, U2, K2, X1, R8, the timings); no hard gate broken.
+(Scored last on the final build, after the undoubling below: the same figures, 5 min 36 s.)
+
+**End to end in the client** (a scratch server of this build on `ridgemere3`, `--dev-identity --dev-tools`, no Mind;
+Playwright-style through `tools/client/browser.mjs`; screenshots in the job's `shots-s4/`):
+- **Chat beside residents: never a word back.** "Orla, what do you sell today?" at her stall, "Rosamund, what's good
+  today?" in the Grey Gull, "Ivo, ..." at the forge: each **glances over** ("pricks up an ear.", "looks up from the
+  taps.", "looks up.") and the player gets **"Talk to Orla Rainworth (T)"**; an unnamed line ("Good morning, everyone.
+  Where is the Grey Gull?") gets nothing. The first run found **no glance and no hint at all**: a resident was "named"
+  only by the whole name, and players say first names (fixed below).
+- **T opens the window** (the hinted resident). **The hub** shows 8 or 9 choices (never more): the wares, work, a trade
+  to learn, news, Ask about..., "I'm Wren.", a heard claim ("I heard Rupert Greyley tried to steal from Oskar
+  Millwell."), **Orla's graft** ("What's in the little basket by your scales?"), Goodbye. **Ask about...** (yourself,
+  her quirk, what she makes of things, the town, the way), yourself → her job in her mantle's words ("I keep my stall on
+  the square. Fruit off the country carts, the first of it to the little chapel."), "How are you keeping?" answered
+  ("Well enough. The Bright One's kept me, and the rats haven't."). **Introduce**: "Wren. I'm Orla Rainworth. Good to
+  know you." and her name known; "I'm Wren." not offered again.
+- **Typed words with no Mind**: "What do you sell?" → her wares at their prices; "Where is the Grey Gull?" → "The Grey
+  Gull Inn is a short walk to the west. Torvald Slagton is there, most days."; nonsense ("purple lanterns sing backwards
+  under the moon") → "Now then. I'm not so sure." / "Fascinating. I understood none of it.", the choices shown again.
+- **A shopkeeper's trade**: "Let me see your wares." opens the shop window. **A job**: Ivo Slagby's "Any work going?" →
+  four wagon guards at 12p; one's details, its pay ("It pays 12 pennies, before this day is out."), declined ("Another
+  tide, then."). **An innkeeper**: Rosamund's greeting (nine choices), a bed for 2p ("Up the stairs, second door..."),
+  "Anyone here I should meet?" typed → the matchmaker's node. **A mantle's graft node**: Orla's `@fh108.first_fruit`
+  ("The first of every crate. It goes to the chapel at dusk... The Bright One gets first pick.").
+- A choice's round trip in Ridgemere, measured from the page: 150-165 ms, nearly all of it the script's own polling.
+
+**The ticking 100-hour listen** (Q6, the one the user allows at a stage's end; reported): `talk_sim --world ridgemere3
+--tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,rm_the_bilge,cn_saltwell_inn,
+cn_fenshore_alehouse,cn_frosthollow_alehouse,cn_oakhaven_alehouse --hours 100 --seed 1 --ablate shuffle`
+(`artifacts/talk/runs/stage4-tick`): §41's six rooms and, so the merged town mantles are heard where they live, the
+Frosthollow and Oakhaven alehouses; from DEV's save at game day 43.6, nothing written, the mantles read from DEV's rows.
+**3,583 s (59 min 48 s) of wall time, 1.42 GiB peak**; 7,482 conversations, 27,128 lines, 1,072 of them a mantle's own.
+It ran on this branch before the review's fixes (none of which touch talk between residents) and before the undoubling
+below. Against Slice 3's end (§41's four rooms), the four Ridgemere rooms and the four town inns, the shuffled control in
+brackets:
+
+| | Metric | Slice 3's end, four rooms | **Now, the four rooms** | **Now, the four town inns** |
+|---|---|---|---|---|
+| R1 | first identical talk, earliest listener (h) | 4.09 | **3.69** (19.1) | **23.8** (12) |
+| R2 | first repeated opener (h) | 4.09 | **12.9** (12.9) | **12.3** (12.3) |
+| R4 | a sentence heard again in 10 h, per 100 h | 1,135 | **1,705** (1,804) | **210** (230) |
+| R6 | the most-spoken sentence (%) | 0.923 | **1.23** (1.25) | **2.39** (1.98) |
+| R7 | distinct replies per 1,000 | 75.3 | **93.8** (93.2) | **205** (270) |
+| C1 | owed answers answered (%) | 95.5 | **95.5** (23.5) | **99.6** (41.7) |
+| C3 | good endings (%) | 98.5 | **98.7** (79.3) | **96.1** (86.7) |
+| C7 | lines per talk | 3.51 | **3.67** (3.67) | **3.17** (3.17) |
+| T2 | untrue presuppositions per 1,000 | 0 | **0** (9.39) | **0** (3.15) |
+| T3 | self-reference per 1,000 | 0 | **0** (0.161) | **0** (0) |
+| K1 | everyday topics (%) | 44.8 | **44.6** (44.6) | **50.1** (50.1) |
+| K2 | the largest topic (%) | 27.5 | **25.6** (25.6) | **25.4** (25.4) |
+| K3 | the same news twice | 0 | **0** (0) | **0** (0) |
+| D1 | accent none with dialect words (%) | 0 | **0** (2.66) | **0** (0) |
+| D1L | light (%) | 0.821 | **2.64** (2.62) | **35.3** (41.2) |
+| D1B | broad (%) | 0.795 | **1.9** (1.8) | **22.4** (20.4) |
+| D2 | another dialect's words | n/a | **0** (0) | **0** (1) |
+| D3 | dialect guessed (%) | 82.7 | **86.7** (89.8) | **50** (50) |
+| U1 | a resident's own words (%) | 0.13 | **15** (6.24) | **20** (15.3) |
+| U2 | look-alikes told apart (%) | 53.7 | **59.1** (55.8) | **0** (0) |
+| X1 | replies sharing a word (%) | 24 | **25.6** (2.23) | **19.8** (2.38) |
+| R8 | habit lines (%) | 0.0574 | **0.233** (0.293) | **1.23** (0.986) |
+
+Every hard gate holds but R1 in the Ridgemere rooms (3.69 h, open since Slice 2, as §41's 4.09) and B5 (the timing
+under load). What the 304 mantles moved: **U1 0.13 → 15.0%** in the Ridgemere rooms (20.0% in the town inns), **D1L
+0.82 → 2.64%** and **D1B 0.80 → 1.90%**, R7 75 → 94, R2 4.1 → 12.9 h, U2 54 → 59%; R4 1,135 → 1,705 and R6 0.92 →
+1.23% rose with them (the wearers' scenes heard again within ten hours: P14's later batches and P15's kits spread
+that). The town inns: Saltwell's 521 talks and Fenshore's 171, but Frosthollow's 5 and Oakhaven's 4 (their keepers
+alone most hours), so D3 and U2 there say nothing. **What I read** (the packet, `artifacts/talk/listen/stage4-tick.md`
+and `.html`, 60 conversations, `talk_listen.py --packet 60 --seed 11`, and a scan of all 27,128 lines): no "dog", no
+deity but the Bright One, "tells" only as "it tells you", male or female throughout; **13 lines said a word or a run of
+words twice** where a symbol's value repeated its line's own: "There's my my heart." (a mantle's `heart` in a shared
+`kn_occ_name_day`), "a swim off the steps off the steps", "your the day's silver", "I carved my own my knucklebone
+dice", "Every a wet turf", "the face of the face of the cutting", "talked of it of it". **Fixed in the engine**
+(`tidy`'s `undouble`: a determiner straight after another, and a run of two to four words said again with nothing
+between, are said once; "Bring her a comb" and "Still water, still water" stay as written; `talk_tests`), so the
+writers needn't chase each one; the card above was scored again on that build.
+
+**The review** (one, of `origin/ridgemere2...r3-talk-s4` in Core, Server and the client, by a reviewer reading the code
+cold). Its findings, and what was done:
+1. **An out-of-bounds read that could crash the server** (`dialogueChoose`): a choice was found again by its index in
+   the node, but the node is rebuilt at every step (a wearer's grafts fill what room the hub has, which moves with the
+   claims heard, the shop open or not, the hour), so the index could point past the end, or at the neighbour (Goodbye
+   becoming the graft before it). **Fixed**: a choice carries what it is (`ShownChoice::key`: its words, way, action,
+   list) and is found by that. `dialogue_tests`' `windowMantle`: a graft shown only at night, Goodbye chosen at noon and
+   taken at night and the other way round.
+2. **A typed refusal did what it refused**: "No, I won't pay the fine" holds every word of "Pay the fine." **Fixed**:
+   words that refuse (no, not, never... after the contractions) never match a choice that doesn't refuse, nor take an
+   action that pays or commits (`Understanding::refuses`); `understand_tests` (W2 unchanged, 97.0 / 70.0%).
+3. **A failed Mind call answered a window that had moved on** (another choice taken, the window shut and opened again):
+   **fixed**, the fallback answers only the window still awaiting it.
+4. **Unbounded state**: a graft node's invitation was added on every visit (**one standing invitation now**, tested);
+   a window's topics and the ledger note's keys grew with every choice (**capped, each once**); the glance and hint maps
+   were never pruned (**pruned past their ten minutes**).
+5. **Names**: the wheel's Introduce and typed "I'm..." gave the resident's name back whatever, a sleeping resident
+   included, and a wearer's own line at the name node could say it unwilling. **Fixed**: one rule, `Game::givesName`
+   (willing, awake, told the player's name first) for all four; a sleeping resident doesn't hear an introduction
+   either (tested). Typed "Where can I find u3?" no longer tells a stranger's whole name from a surname or a near-miss
+   (someone met, or the name said in full; tested).
+6. **The wheel's Introduce said "I'm Wren." aloud on every open**, past chat's limits: **now as chat** (not when
+   silenced, a line a second).
+7. **Performance**: every query voiced the way to every workplace in town before keeping six (a query and an expansion
+   each), and the count `here.places` voiced them too: **now only the six kept, and the count none**; the chat handler's
+   "what was asked after" (a scan of every cell and resident for "where") is read once a line, not once a hearer. The
+   rest of a choice's cost measured small (above); no rate limit added (the tests choose many in an instant, and the
+   window's typed words keep chat's one a second).
+8. `ask_quirk` could take a wearer's graft not on offer (its `when`): **now only one that holds**; typed "missions"
+   skipped the day's board: **now made as dialogueOpen makes it**.
+The reviewer found **safe**: no window action, node, `@mantle` node or `game.*` ask a client can name that it wasn't
+offered (the session and the shown number are checked; graft nodes only the wearer's); the Mind reached only with the
+Mind live, after silencing and the one-a-second limit; roleplay XP only through `dialogueExperience`'s caps (none from
+Introduce or from typed words taken as a choice); no player words in a resident's mouth (slots from the world's lexicons
+only); the claim store capped (32 a player) and saved; no window at a distance or to the dead.
+And from playing it: **a resident named by the first name now glances over** ("Rosamund, what's good?"; capitalised,
+three letters or more; the answering path, for tests only, unchanged); `game_tests`' W3 check has it.
+
+**Safe to go live?** Yes, as far as these tests reach, with three steps: the **server** restarted onto a build of
+`ridgemere2` with this branch merged (P12 and P13 change what residents say to players; the browser client is served by
+the server); DEV's **`live.dialects` refreshed** (above); and a **desktop client release** for §13.2 and P13's
+Introduce (an older desktop client against the new server gets no answer to chat, by design, and has neither the hint's
+T nor Introduce in the window). Not PROD: PROD is still the old map.

@@ -1,6 +1,6 @@
 # Talk scorecard
 
-Generated 2026-11-19T04:13:55+00:00 by `tools/talk_score.py` (Docs/Design/84 §15.3).
+Generated 2026-11-19T04:45:10+00:00 by `tools/talk_score.py` (Docs/Design/84 §15.3).
 
 Runs: `L1`, `L2`, `L3`, `L4`, `L5`, `L6`, `L7`, `L8`, `L9`, `L10`.
 Shuffled control (talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)): L1, L10, L2, L3, L4, L5, L6, L7, L8, L9.
@@ -47,10 +47,10 @@ Shuffled control (talk_sim --ablate shuffle: lines after the first replaced by l
 | W1 | window lines from mantles (%) | n/a | | | 40%+ | soft | n/a until Phase 13 |
 | W2 | free-text understanding | n/a | | | 85%+; wrong 8% or less | hard | n/a until Phase 13 |
 | W3 | a resident answers chat with the option off | n/a | | | 0 | hard | n/a until Phase 12 |
-| B1 | one beat: the director's mean (ms) | 0.195 | 0.195 | 0% (the control scores better) | 0.6 ms or less (gate: talk_bench) | soft | yes |
-| B1P | one beat: the director's 99th percentile (ms) | 0.698 | 0.698 | 0% (the control scores better) | 3 ms or less (gate: talk_bench) | soft | yes |
-| B1L | a director look: 99th percentile (ms) | 16.3 | 16.3 | 0% (the control scores better) | 5 ms or less (gate: talk_bench) | soft | no |
-| B5 | exchanges simulated a second | 2.34 | 2.34 | 0% (the control scores better) | 150+ | hard | no |
+| B1 | one beat: the director's mean (ms) | 0.178 | 0.178 | 0% (the control scores better) | 0.6 ms or less (gate: talk_bench) | soft | yes |
+| B1P | one beat: the director's 99th percentile (ms) | 0.591 | 0.591 | 0% (the control scores better) | 3 ms or less (gate: talk_bench) | soft | yes |
+| B1L | a director look: 99th percentile (ms) | 14.5 | 14.5 | 0% (the control scores better) | 5 ms or less (gate: talk_bench) | soft | no |
+| B5 | exchanges simulated a second | 2.43 | 2.43 | 0% (the control scores better) | 150+ | hard | no |
 | X1 | lexical cohesion: replies sharing a content word with the line before (%) | 23.2 | 2.17 | 91% (coherence) | diagnostic (not in §15.3): shows the control is discriminating | soft | n/a |
 | H1 | blind naturalness 1-5 | n/a | | | 3.8+ | soft | n/a until slice ends (talk_rate.py) |
 | H2 | 'written whole by a writer?' (%) | n/a | | | 40%+ | soft | n/a until slice ends (talk_rate.py) |
@@ -96,10 +96,10 @@ Shuffled control (talk_sim --ablate shuffle: lines after the first replaced by l
 | K1 | 43 | 44.2 | 52.8 | 46.2 | 45.7 | 54.1 | 54.1 | 0 | 0 | 43 |
 | K2 | 21.7 | 38.2 | 18.8 | 24.7 | 27 | 13 | 23.3 | 0 | 0 | 15.9 |
 | K3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| B1 | 0.171 | 0.161 | 0.18 | 0.195 | 0.184 | 0.178 | 0.188 | n/a | n/a | 0.12 |
-| B1P | 0.542 | 0.561 | 0.621 | 0.698 | 0.643 | 0.584 | 0.597 | n/a | n/a | 0.387 |
-| B1L | 15.3 | 16.3 | 6.79 | 6.05 | 0.112 | 0.116 | 0.107 | 0.042 | 0.028 | 8.16 |
-| B5 | 15.3 | 8.32 | 6.72 | 4.69 | 2.39 | 2.39 | 2.34 | 0 | 0 | 10.4 |
+| B1 | 0.148 | 0.147 | 0.176 | 0.178 | 0.171 | 0.165 | 0.178 | n/a | n/a | 0.113 |
+| B1P | 0.476 | 0.527 | 0.583 | 0.589 | 0.591 | 0.507 | 0.556 | n/a | n/a | 0.394 |
+| B1L | 13.4 | 14.5 | 7.06 | 6.06 | 0.099 | 0.103 | 0.101 | 0.031 | 0.034 | 8.5 |
+| B5 | 16.8 | 9.1 | 6.8 | 4.79 | 2.43 | 2.52 | 2.44 | 0 | 0 | 11.9 |
 | X1 | 24.8 | 27.4 | 17.5 | 17.2 | 18.6 | 20.7 | 21.8 | 0 | 0 | 25 |
 
 ## Details

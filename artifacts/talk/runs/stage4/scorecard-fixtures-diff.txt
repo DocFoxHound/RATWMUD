@@ -5,6 +5,6 @@ O1 (opinions given per 10 conversations): 0 regresses more than 10% from the bas
 D1B (lines with a dialect's words (%): broad speakers): 7.36 regresses more than 10% from the baseline's 8.28 (1937 events against 2643 at the baseline's rate; by chance 1.7e-31)
 U2 (distinguishability of look-alike residents (%)): 40.2 regresses more than 10% from the baseline's 45.7
 K2 (largest topic's share (%)): 23.8 regresses more than 10% from the baseline's 21.1
-B1 (one beat: the director's mean (ms)): 0.195 regresses more than 10% from the baseline's 0.11
-B1P (one beat: the director's 99th percentile (ms)): 0.698 regresses more than 10% from the baseline's 0.353
+B1 (one beat: the director's mean (ms)): 0.178 regresses more than 10% from the baseline's 0.11
+B1P (one beat: the director's 99th percentile (ms)): 0.591 regresses more than 10% from the baseline's 0.353
 X1 (lexical cohesion: replies sharing a content word with the line before (%)): 23.2 regresses more than 10% from the baseline's 26.8
