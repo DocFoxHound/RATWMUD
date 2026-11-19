@@ -1,0 +1,382 @@
+mantle rm319
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_wynn_sootworth
+title the iron question mark
+fits stage=adult|old
+prefers role=merchant job=smith
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk bends_a_scrap_into_a_question_to_think_with
+likes hard_cheese riddles fresh_straw autumn_wind
+dislikes wet_floors flies
+fears a_blind_bend_in_iron a_promise_signed_before_reading
+hopes a_basket_of_good_questions dry_straw_round_the_threshold
+topics pastimes +0.5 work +0.4 faith +0.4
+styles comfort=practical gossip=careful refuse=direct tease=none
+marks oath saying
+persona #self.first# turns bent scraps of iron into puzzles, talks freely about the search for an answer, and treats a confidence as carefully as a hot piece on the bench.
+
+words
+oath! = Crooked shank | Flies in the filings
+saying! = Feel where the question catches | A mark earns trust by its measure
+crook = a scrap curved like a question | my iron question
+flatloop = a closed oval of iron | my little flat loop
+headsize = the broadest nail head | a cap of dark iron
+blackflake = a scale of iron | a black speck of scale
+chalkface = a squared chalk mark | a chalked flat
+strawring = a rim of new straw | a bright straw twist
+drybed = the strip of dry boards | the rough dry footing
+shortend = a stub of rod | one cropped tip
+redwax = a pellet of sealing wax | a soft red crumb
+cheesestone = a lump of aged cheese | a firm bite of cheese
+wirepair = two loops of wire | my crooked double loop
+ringline = a pale circular scratch | a scored ring
+palmdent = a faint hollow | a smooth little pit
+woodplug = a square wooden plug | a short wedge
+answerhole = the hidden gap | the opening at the turn
+
+any
+opinion church for 1 : There are questions a hammer can't drive any deeper. I take some to the Bright One and speak them very slowly.
+opinion dole for 1 : Bread in a hungry paw is practical worship. A loaf fills bellies that fine words about charity leave hollow.
+opinion city for 1 : A puzzle put before a whole city gets a wealth of answers. Even the wrong ones show up lovely unsuspected difficulties.
+opinion drink against 1 : I prefer my judgement with all its edges on. A full measure of strong drink makes a very blunt answer.
+opinion merchants for 1 : A counter is a promise to stand there again if anything you sold goes amiss. Most of us take that promise seriously.
+opinion road against 1 : Every day spent waiting for iron from the road is another day asking the old stock to stretch.
+opinion watch for 1 : If there's an ugly argument over a load I'd rather a uniform came and stood in view before anybody had to shout.
+opinion festivals for 1 : At festival you can put a puzzle into an unfamiliar paw and go home with quite an unexpected answer.
+
+grown
+line greet : There's room beside the puzzle for another mind.
+line greet [pair.band=strangers] : Welcome. Have a look before you commit to speaking.
+line greet [here.time=dawn] : I've shaken the first flake of night off my eyes. Come near.
+line greet [here.time=dusk|night] : The quiet hour is a fine one to consider a question.
+line greet [self.working=yes] : Keep this far from my wrist and we can speak in comfort.
+line kin.open [pair.kin!=no] : I'd give you the first turn of the loop.
+line again.open : We meet on a different side of the old puzzle.
+line greet.return : Your greeting carries with a clear ring.
+line greet.return [pair.band=friends|family] : That friendly voice has lifted the scale off my spirits.
+line greet.return [self.working=yes] : Your word came clear over the ringing and I'll put this down.
+line greet.return [here.time=dusk|night] : The voice comes out of the dark quite cleanly.
+line farewell : May the difficult bend open at your touch.
+line farewell.return : I'll give the question another turn while you go.
+line farewell [here.time=dusk|night] : Keep your footing sure beyond the last light.
+line react.news : Give me leave to turn that in the light.
+line react.news.new : Now there's a piece my old answer didn't fit.
+line react.news.known : I've seen that question wearing another face.
+line react.news.doubt : Would the answer hold if we turn the piece about?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Give the hurt its own space. I can carry one of the small worries.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a bright ring to that piece of news.
+line ask.how : Any matter you could use another pair of ears on?
+line answer.how : I've a question to keep me and enough patience to stay with it.
+line answer.how [self.working=yes] : My hands are doing what I mean them to do, which is pleasant.
+line sympathise : The worst twist is often the one nobody else sees from outside.
+line reassure : We'll turn it slowly till there is a way past.
+line decline : I can't pass on what was given to me in confidence.
+line accept_decline : I'll leave the unspoken piece in your charge.
+line thank : That eased a bend I couldn't see my way round.
+line deflect_thanks : Give the puzzle another try. That's thanks enough for now.
+line preclose : I've got a small unfinished matter lying at my elbow.
+line preclose [self.working=yes] : My work won't wait on the edge indefinitely.
+line accept_preclose : Go in peace with your own answer.
+line hail [pair.band=friends] : Come by the iron loops, friend. I've a new one.
+line ack : It fits.
+
+scene twoends
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : My iron question has one open end too narrow for its answer. | There's a loop inside this loop, free to come away.
+b : Must the answer bend? | Won't the iron need cutting?
+a : Only your idea of it. Give the answer its narrow edge and the gap looks generous. | It went in cold. Turn it where the two flat sides meet and it'll come out cold.
+
+scene nailhead
+when topic=work self.job=smith self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A head too small for its shank is a nail that forgets the job halfway. | I make the edge of the head tell my thumb how square it sits.
+b : Can a little head still hold? | Can't you see it?
+a : It may drive neatly through both pieces. That's a remarkably exact way of not fastening anything. | I can. Sometimes the light makes a bright corner look wider than it feels.
+
+scene cheesecut
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : My favourite cheese gives a little click when I break a knob off. | A crumbling cheese is a good lesson in taking hold gently.
+b : Do you listen before you buy? | Does a firm grip spoil it?
+a : If the seller cares to give a crumb. It's a pretty sound and an excellent excuse for a taste. | Only for a wolf who wants a wedge. If you wanted crumbs you'd be doing splendidly.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I lay straw crisply along my doorstep, well away from any hearth. | Fresh straw makes a very honest doormat.
+b : Why put it there? | In what way is a mat honest?
+a : It catches the first wet footprints as they come inside. I can bunch it up to dry afterwards. | Track in some mud and the straw will exhibit the whole offence on its brightest side.
+
+scene seasonwind
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind pokes a cool finger down the back of a warm collar. | A blowing autumn afternoon is fine for coming home through.
+b : Is that comfortable? | Only for coming home?
+a : Just long enough to remind me I've a second collar to turn up. | Yes. A door closing on a good hard gust gives a room a wonderful quiet.
+
+scene fly
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly has never asked me a riddle it didn't answer by landing in my dinner. | I cover my cheese even for the walk from shelf to plate.
+b : How did you answer the fly? | From shelf to plate?
+a : By putting a cloth over the next piece. Some answers are best delivered in advance. | A fly has a much shorter journey. I'd sooner inconvenience myself than share.
+
+scene dryfloor
+when topic=weather self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I put a dry strip of board where I need to stand and turn. | I dislike a bright floor the moment there's a puddle on it.
+b : Why keep a special strip? | Because of the wet?
+a : A good footing should be a thing the legs can trust without a thought. | Because I can see the reflected ceiling and miss the dip right underfoot.
+
+scene prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Some prayers of mine have the same shape as #crook#. | I can pray quite clearly with my mouth shut.
+b : Bent round on themselves? | What tells you the prayer's done?
+a : They come round to asking how I can help. That's usually a good place to begin acting. | When I've a practical kindness in mind. Then I should get on and do it.
+
+scene father
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.father# first look at a riddle that's quite beaten me. | I could carry a family puzzle for years before asking #self.father# for the answer.
+b : Would you like a hint? | Why wait that long?
+a : Just where to put my thumb. It'd be a pleasure to finish the rest myself. | Because asking is part of the pleasure and I'd like a good long walk for the question.
+
+scene quietmemory
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A sight caught by accident doesn't become mine to sell in the street. | I remember a face once turned away to get a moment's peace.
+b : Wouldn't anybody wonder what you saw? | Was there a story behind it?
+a : Let the wondering fall on me. No other wolf need pay for it. | If so it belonged to that face. I remember the need for peace and leave the rest alone.
+
+scene marktrust
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : A nailer can stamp a mark on poor work as easily as good. | I test the sample whatever fine seal came round the bundle.
+b : What wins your confidence? | Doesn't that take offence at the seller?
+a : A dozen heads sitting square. One handsome mark is the question, not the answer. | A good seller may take pride in passing the test. If there's offence, I'll hear it after testing.
+
+scene shopline
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I speak the price while the piece is between us on the counter. | I like a buyer to try the fit before opening a purse.
+b : Why not hand the piece over first? | What if it gets no sale?
+a : Because then it feels half bought before the price has settled. I'd prefer the agreement as square as the work. | It leaves my counter clear of the wrong promise. The piece can find the proper buyer.
+
+scene landmarks
+when topic=land self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : You can hear an open Works lane widen into a yard. | There's a trick to following an echo between the Works walls.
+b : Without looking? | What sort of trick?
+a : The ringing spreads sideways instead of coming straight back. I'd still look before stepping out. | Turn one ear and then the other. The clearer note generally comes from the open way.
+
+scene wronganswer
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : A very good wrong answer makes me keep a riddle longer. | I never give my whole hint at once.
+b : What makes a wrong answer good? | Do you like to make the guessing last?
+a : When it fits every word but the last and gives you a fine reason to inspect that last word. | Yes. I'd hate to put a whole loaf in a mouth that had only asked for the smell of bread.
+
+scene wares
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A scrap ring can go a long distance in a coat without much weight. | A traveller can bring me something very small and please me greatly.
+b : Is the ring for paying a toll? | Something to fit the ring?
+a : For any long wait. I'd rather play with cold iron than stand trying to warm my temper. | A new riddle. If it slips into my ear it saves me carrying it in my coat.
+
+scene temple
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : If a bell goes while I'm listening to news I let the speaker finish. | A rumour with a solemn sound is still a rumour.
+b : Doesn't the bell cover the words? | Could a rumour be right?
+a : Sometimes. It's kinder to ask for the missing word than supply the one I think ought to be there. | Yes. Find out and tell me the solid bit. I like the truth with a plain surface.
+
+scene coveredbench
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A pale cloth under little dark things makes counting pleasant. | My home bench holds exactly one unanswered question in plain sight.
+b : Does the cloth stay pale? | Where do the others go?
+a : Not long. I turn it over, then wash it. A week's count shouldn't cost a new cloth. | In a drawer. Too many questions all spread out can leave no room for answering any.
+
+scene mentor
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A willing wolf with five minutes is an excellent audience for a puzzle. | None of my little rings is too precious to be tried.
+b : What if there isn't time to finish? | What if someone breaks one?
+a : Then we both have a reason to be pleased at meeting again. | I'd rather mend a well-tried puzzle than polish a thing nobody's ever bothered with.
+
+scene freeze
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Cold iron chills my paw faster than the air suggests. | I keep my simplest questions for chilly weather.
+b : Even after a bright morning? | Do riddles feel the cold?
+a : The light can be bright as a spark and the iron still biting. I touch lightly before taking a whole handful. | Fingers certainly do. My narrowest loops can wait for a comfortable grip.
+
+scene festgather
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At festival I set my easiest puzzle first and watch which corner sees the answer. | A ring can take a whole journey round a crowd.
+b : Why an easy beginning? | Do you get it back?
+a : When a wolf steps close enough to answer, the harder question has already found company. | Usually. I can spare the iron more readily than I could buy the sight of twenty different ways of trying it.
+
+scene surface
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : I hold a dark piece against clean chalk to see the edge. | A smudge under a line can hide an ugly bend.
+b : Is the chalk a measure? | Does it need much light?
+a : Only a background. There are times a clear look saves the trouble of fetching a rule. | Enough to show the two surfaces separately. I can wait a breath and wipe both clean.
+
+scene waiting
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I stop looking at the shape of iron when dusk makes all the corners round. | A blunt pencil makes a pleasant evening companion.
+b : Do your paws see the edges better? | Why a blunt one?
+a : They feel the edges, but the eye's entitled to rest and the work can wait till daylight. | All the marks I make then are broad ideas. I'll give them sharp corners tomorrow.
+
+scene safety
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I keep straw where my feet can find it, never where a spark can. | My bench brush lives a step away from the glowing pieces.
+b : Won't the straw follow your boots? | Why leave the step between?
+a : I knock spare lengths loose before I cross. One dry stalk burns gaily enough to keep me attentive. | Because a timber handle has no business finding the heat by itself.
+
+scene acts
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : When I give thanks I think of the things I have been able to put right that day. | I can feel closer to worship with soap on my sleeves.
+b : And the things that stayed wrong? | At the workbench?
+a : I ask to be shown another way to take hold, and remember I may have to listen to somebody else. | At a neighbour's basin full of dirty plates, too. The Bright One knows whose cuffs got dirty doing useful work.
+
+scene fairweight
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd sooner hear that a customer wants one cheap honest nail than a heap of pretty failures. | I ask what must be held before I put a price to an answer.
+b : Does an honest nail look different? | Is a small answer always cheap?
+a : Just sound and straight. Pretty is perfectly welcome after that. | A small difficult answer can take me a morning. I'd explain that before taking any coin.
+
+scene darkdream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt a corridor had a closed loop for every door handle. | My dream riddle had a solution I could hear ringing round a corner.
+b : Were you locked in? | Did the answer ever show its face?
+a : Till I put the loops on my wrist and pushed the door with my shoulder. I'd been trying to lift the wrong thing. | Never. In the morning I remembered the note precisely and hadn't a clue about the answer.
+
+scene thincoat
+when topic=travel|weather
+does tell.self / ask.detail / answer.detail
+a : I put thin iron bits in a cloth fold inside a coat. | A loose loop wears a hole wherever it rides.
+b : So you don't hear them knock? | Even if it's smooth?
+a : So they don't draw a new map of holes on the lining. The knocking's pleasant enough. | In time. I change the pocket every few days to share the work around.
+
+scene newriddle
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : When a strange wolf brings a question I listen for the words that differ from mine. | I've had my riddle changed just by telling it to a new pair of ears.
+b : Why listen particularly for those? | Did the answer change too?
+a : Because the word that sounds odd may be the reason my old answer won't do. | Yes. A wolf used a different name for the object and suddenly the clue meant a different sort of opening.
+
+story loopwash [topic=pastimes]
+  : I dropped a puzzle ring into soapy water while scrubbing my darkened pads.
+  : When I fished it up the answer had slipped partway out, helped along by slippery soap.
+  b : Did you count it as a fair solution?
+  : I dried the pieces and put them back to try the same movement. Soap supplied the hint. The clean answer was mine.
+
+story equalnails [topic=work self.job=smith]
+  : I set a dozen nails, seemingly all alike, on a pale board.
+  : One kept rolling no matter how square I put it. A fleck of old lime was stuck beneath the shank.
+  b : Was the crooked part in the nail or the board?
+  : In my judgement. I tried correcting the nail before looking where I had put it.
+
+story warmcrumb [topic=food self.likes=hard_cheese]
+  : I warmed a very hard edge of cheese beside the hearth and went to fetch a plate.
+  : On my return a soft thread of gold stretched from the edge to the board.
+  b : Was it wasted?
+  : I wound it on a corner of bread. Delicious. A straight edge is not the great virtue in supper that it is in certain sorts of work.
+
+story threewords [topic=memories]
+  : I wrote a riddle very neatly on a strip of wood and left space on the back for the answer.
+  : When I finally tried the answer it was three words longer than the bit of wood available.
+  b : How did you get the last words on?
+  : I used the narrow edge for the hints and the broad face for the whole answer. There's a riddle you can turn over twice.
+
+story strawsweep [topic=home]
+  : I spread a handful of pale straw by the doorstep and admired what a light patch it made.
+  : A gust swept the whole patch across the floor. Each little hollow in the boards caught its share.
+  b : Did you leave it there?
+  : I swept it back. Next time I bent myself a low rim to go round the mat and gave the wind a proper puzzle.
+
+rule @forge
+when concept=bark self.job=smith self.working=yes
+does aside
+cooldown 8h
+say Clear of the dark bit as well as the glow! | Lay the little heads in their own row.
+
+rule @riddle
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say Try the narrow face before you turn the whole ring. | Don't force an answer that ought to slide.
+
+rule @straw
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Clean straw at the threshold only. | Keep the loose ends off the hearthside.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Test the floor when the shine's on it. | Wet soles stop outside the dry strip.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Cloth over the cheese till the fly gives up. | Let the winged visitor dine elsewhere.
+
+rule @even
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Best put the sharp questions away by dusk. | Keep the broad outline till it's light.
+dlg resident.hub : I've a little puzzle to put down and a mind free for your question.
+dlg resident.hub [topic.meeting=known] : Our last conversation left its own curious shape in my mind, #topic.player#.
+dlg resident.hub [here.time=night] : My eyes are resting. My ears are still open to a caller.
+dlg resident.hub [pair.disposition=wary|hostile] : Let the matter stay between us on the counter while we speak.
+dlg resident.job [self.job=smith] : #self.trade_words.capitalize#. I like a head that holds and an answer that can bear being tested.
+dlg resident.job : I earn my place finding out how an awkward joining ought to fit.
+dlg resident.news [world.news] : This is the piece I can turn over plainly. #world.news#.
+dlg resident.news [world.event_words] : The question raised by #world.event_words# has reached even this bench.
+dlg resident.gossip [here.gossip!=yes] : No private tale has been given leave to stand on my counter.
+dlg shop.greet [here.shop!=bare] : Welcome. Let the purpose of the piece guide the looking.
+dlg shop.greet [here.shop=bare] : Nothing for sale just now. I'll gladly hear what you have in mind.
+dlg shop.prices : Ask after the piece you mean to fit. A price that fits another will tell you little.
+dlg shop.bye : May your purchase stand the use you intend.
+dlg resident.bye : I'll leave that question with you to turn at leisure.
+
+graft @wire_question resident.hub
+choice What releases the smaller loop? -> wire_question
+node wire_question
+say Put its flat side against your thumb. Now look at the big loop edge-on. The little question you want to ask is whether those surfaces really have to cross.
+choice Can the answer go the long way round? -> wire_question_more
+choice Nest the loops together. -> hub
+node wire_question_more
+say Precisely. It goes over the end you thought was the beginning. Try it once more without my paw there; that's the answer you'll remember.
+choice Nest the loops together. -> hub
+choice Leave the iron on the bench. -> bye
+
+graft @truthstamp resident.hub
+choice Don't you trust the mark on good iron? -> truthstamp
+node truthstamp
+say A stamp tells me where something came from. A square shank and a sound head tell me what I may ask the piece to hold. I want both kinds of knowledge.
+choice Would you test a piece with your own stamp? -> truthstamp_more
+choice Return the sample. -> hub
+node truthstamp_more
+say Sooner than anybody else's. I've promised my own judgement with that mark. I'd rather catch a fault here than have it come looking for me in a broken chair.
+choice Return the sample. -> hub
+choice Walk away from the counter. -> bye

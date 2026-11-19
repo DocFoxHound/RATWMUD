@@ -1,0 +1,263 @@
+mantle rm341
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ilse_cindercot
+title the weight of an answer
+fits stage=adult|old
+prefers job=scholar drive=ambitious
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk moves_a_wrapped_coal_weight_from_questions_to_answers
+likes oatcakes evening_line tidy_house first_warm_day
+dislikes gulls rats
+fears a_petition_mistaken_for_a_reply
+hopes a_desk_where_no_question_is_buried
+topics work +0.6 dreams +0.4 pastimes +0.3 gossip -0.3
+styles comfort=answer gossip=precise refuse=formal tease=none
+marks oath saying
+persona #self.first# keeps unanswered papers under a single lump of coal sewn into cloth and wants every question to leave the desk with an intelligible reply.
+
+words
+oath! = A loose docket | Coal through the lining
+saying! = Weight the question first | An empty heading settles nothing
+weight = my cloth weight | the sewn weight
+coal = the lump inside | a polished piece of coal
+flap = a turned corner | the loose flap
+list = the answer list | my open docket
+hookline = the evening line | a light fishing cord
+float = a narrow cork | the plain float
+heap = an uneven stack | the open pile
+cake = a buttered oat round | the oatcake half
+wrapper = the folded linen | a square of cloth
+ring = an old mug ring | the brown circle
+loose = the upper slip | a loose sheet
+mend = the double stitch | the dark seam
+
+any
+opinion city for 2 : A city ought to be able to answer a simple question without taking three copies of the question as payment.
+opinion houses against 1 : It is surprising how promptly a House can locate a missing paper when the paper happens to be worth money.
+opinion dole for 1 : An accurate distribution list is mercy in a form a tired clerk can help with.
+opinion merchants mixed 0 : Itemise the charge and I'll judge the price. A confident flourish at the bottom carries no weight with me.
+opinion church mixed 0 : A little quiet and a real answer deserve credit wherever a wolf finds them.
+opinion watch mixed 0 : I value a report that admits exactly where the witness stopped seeing things.
+
+grown
+line greet : Hello. I've shifted the weight aside. | Welcome. The next matter has my attention.
+line greet [pair.band=strangers] : Our acquaintance starts with a clear page. | A new arrival. I can hear you at once.
+line greet [here.time=dawn] : Morning. The unanswered things have waited politely overnight. | A fresh day to get something decided.
+line greet.return : Yes, hello returned. This sheet can wait. | I'm attending. I've marked my place.
+line greet.return [pair.band=friends|family] : Your voice can go straight past the waiting pile. | A familiar interruption is very agreeable.
+line greet.return [here.time=night] : A late word can have an early place tomorrow. | Hello. No writing needed to recognise a voice.
+line again.open : Our earlier matter must have left a little room. | Another appearance before I've closed today's business.
+line hail [pair.band=friends] : Here, come see a question actually get an answer. | One moment at the edge of this desk, please.
+line farewell : Leave your questions in a place you can find them. | May your next answer arrive promptly.
+line farewell.return : I shall mark this visit concluded. Goodbye. | That settles today's conversation satisfactorily.
+line react.news : Set down the part that can be answered for. | The occurrence first. Its heading can come afterwards.
+line react.news.new : I haven't encountered that in any account yet. | News without an earlier entry. Proceed.
+line react.news.known : Yes. I remember the earlier account quite distinctly. | The essential point is already in my notes.
+line react.news.doubt : It resembles a heading in search of evidence. | I'd hesitate to sign even the margin of that.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Whatever we call that loss, somebody still has to bear it. Sit down. | I won't hurry this into a neat account. Say what needs saying.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, something worth entering in a particularly clear hand. | I'd welcome a full page of news of that quality.
+line ask.how : Does the day owe you a decent answer yet? | How much business is weighing on you today?
+line answer.how : Present, quite determined, somewhat short of unfilled hours. | Still steady. A little impatient with unfinished business.
+line decline : I haven't the authority to sign my name to that. | It would keep an earlier promise sitting unanswered.
+line accept_decline : I'll cross the request out. It needn't trouble you further. | Thank you for being definite about the limit.
+line preclose : I've a loose sheet that really requires answering. | I'd better lift the weight and see to the top sheet.
+line accept_preclose : Clear to go. I'll see the loose ends through. | You're quite entitled to close the matter there.
+line thank : You made a difficult question possible to answer. My thanks. | That saved me from burdening the wrong wolf.
+line deflect_thanks : The reply was within my reach. I gave it. | I could settle the matter and chose to do so.
+line sympathise : Your hurt doesn't need an impeccable explanation to deserve attention. | I can see the weight of it from where I'm sitting.
+line reassure : We can clear enough space to consider one question first. | Even a partial answer gives us somewhere firm to begin.
+line ack : That enters clearly on my side. | The distinction is properly made now.
+line give.advice : Put the question on top before looking for the answer. | Keep a clean corner where the next page can land.
+
+scene coalbag
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : Under my little cloth weight I keep questions that still want an answer. | I put coal on one pile at my desk quite deliberately.
+b : What recommended the coal? | Doesn't it dirty the paper?
+a : It fitted my paw, was already mine and reminded me of a quieter place. | Sewn up in stout cloth. The papers need a weight, not smudges.
+
+scene movemark
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A reply moves the paper before it moves the weight. | One stack must always be visibly smaller when I've answered something.
+b : Which way does it move? | What if the answer is a refusal?
+a : Across the desk into the returned pile. The cloth stays on what remains. | Then I've written a refusal. The question's entitled to know that too.
+
+scene delayedmemo
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : An unanswered paper left underneath an answered one might as well be down a well. | I don't let a stack arranged by date stand in for a list of duties.
+b : How can you avoid a buried question? | Surely dates are useful?
+a : Leave the top corner of every pending sheet in sight. I can count the little staircase. | Extremely. Less useful when the one old question sits under twenty new answers.
+
+scene clothturn
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My paperweight has two faces of different cloth. | One side of this little parcel gets dirtier than the other.
+b : Do you turn it over? | Any reason for different colours?
+a : When I put work away, yes. Tomorrow I begin with a clean patch facing me. | So I can remember which side last rested on wet ink.
+
+scene oatcrumb
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : Oatcakes and butter belong on their own bit of cloth, well clear of accounts. | I like a neatly buttered oatcake with no official attachments.
+b : You mean paperwork? | Ever bitten a page?
+a : I mean keeping my lunch from gluing itself to public business. | No. I'd like to keep my record clear of that distinction.
+
+scene eveningcast
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : The appeal of a fishing line is that nobody asks why the fish hasn't replied yet. | I don't keep a register of bites when I sit down to fish.
+b : Wouldn't it help next time? | Do you catch much?
+a : Possibly. Not being required to improve next time constitutes a considerable pleasure. | Enough quiet to satisfy me. Anything else goes towards supper.
+
+scene cleanrooms
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy table means I can tell at once what still requires effort. | I make one little space entirely clear before attempting to tidy a room.
+b : And then? | Wouldn't you collect the scattered things first?
+a : Then I've somewhere to put the things worth keeping without losing them again. | They can wait while I make a clear destination. Purpose counts.
+
+scene springair
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : With the first breath of spring I open a window and give my weight some real employment. | A spring breeze is an enthusiastic clerk with no regard for sequence.
+b : Papers fly everywhere? | Does the weight hold?
+a : Only the ones I was careless enough to leave free. A fairly exact audit of my habits. | Usually. My chief objection is to the breeze signing its work all over the floor.
+
+scene gullnoise
+when topic=animals self.dislikes=gulls
+does tell.complaint / ask.detail / answer.detail
+a : A gull has opinions out of all proportion to the time spent studying a question. | I dislike a gull's claim on the crust in my own paw.
+b : Hardly a written claim. | Do you ever feed them?
+a : Loud enough to require no paper. Still entirely unfounded. | Never intentionally. I'd like the record to be quite clear on that distinction.
+
+scene ratscorner
+when topic=animals self.dislikes=rats
+does warn / react.self / assess
+a : Keep food well away from the corner where the files stand. | A rat doesn't distinguish wrapping paper from correspondence.
+b : What harm can it do to a heading? | Why keep them apart?
+a : Leave us a neat little half moon and no indication who asked the question. | I'd rather the search for crumbs didn't pass through a stack of unanswered things.
+
+scene espouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I can put the papers down entirely for a quiet meal with #self.spouse#. | I'd choose an evening of easy company with #self.spouse# over a late account.
+b : All the way down? | What becomes of the weight?
+a : All the way. I have more than one duty and a dinner cools fairly quickly. | It sits right where I left it. Quite capable of waiting without supervision.
+
+scene officehome
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : An Office street gives a wolf plenty of evidence that paper is surprisingly heavy in bulk. | I recognise the walk of somebody carrying too much folded business round the Office.
+b : By the ink on the sleeves? | What's the walk like?
+a : By the raised chin over the top bundle. The ink is only supporting evidence. | Very straight and slightly blind. I give such processions plenty of room.
+
+scene campquiet
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I still know the dry small sound of charcoal shifting on a hillside. | My desk weight recalls a place quieter than a stack of paper ought to be.
+b : What place was that? | Can wood turning to coal make a sound?
+a : A charcoal camp with plenty of air round it. I could think through a whole thought there. | Finished pieces do, rubbing together. It was a remarkably distinct sound in the trees.
+
+scene smalltruth
+when topic=gossip
+does give.opinion / react.self / assess
+a : I refuse to put a rumour under the weight reserved for real questions. | A half-heard allegation can take up more of a desk than a genuine difficulty.
+b : Would you ignore the tale? | What makes a question genuine?
+a : Until there's somebody prepared to say what was actually heard, certainly. | A precise thing a wolf might answer. Dislike of a neighbour makes a wretched heading.
+
+scene lineprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A modestly priced line can determine how I spend my evening. | Let me inspect the whole cord extended before counting out coin.
+b : Checking for weak spots? | Too careful for a pastime?
+a : Among other things. I'd rather not purchase a respectable length of knots. | Care before buying gives me an evening free of quite avoidable repairs.
+
+scene thinpaper
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Good paper has a second face, increasingly worth remembering in close times. | I keep copies on old sheets when the paper allowance shrinks.
+b : What distinguishes the superseded writing? | Will a spare face always do?
+a : A thick crossing stroke through the superseded side. No reader should need to guess. | For work in progress, yes. A final decision deserves a clean readable sheet.
+
+scene hopesdesk
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like every unanswered petition visible from the chair where its reply must be written. | My ambition fits into an ordinary room with a very well arranged desk.
+b : Furniture's all you want? | Why must they all be visible?
+a : Responsibility. The desk would just give it a nice practical shape. | So no wolf need take a third journey to remind us a first question ever came in.
+
+scene quietprayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can pray for a patient temper without pretending the delay was reasonable. | Perhaps I ought to pray before opening the bottom of the pile.
+b : For what exactly? | Expecting a surprise?
+a : That I'll speak to the wolf waiting as civilly as to the one working at the next desk. | Only work I ought to do. It's the tone of my eventual reply that could use a little grace.
+
+grown
+
+story brownring [topic=work|memories self.job=scholar]
+  : One wet morning I took my cup off a scrap and found a perfect ring. Put the cloth weight down to stop the scrap blowing away.
+  : At the day's end I was convinced some weighty circular question remained to be answered.
+  b : Was there any writing on it?
+  : Only on the reverse. A perfectly ordinary list for supper. I answered it with a trip to market.
+
+story coalstitch [topic=memories|pastimes]
+  : I repaired the weight's cover with an extra pocket for spare fishing cord. Felt quite pleased with my economy.
+  : Next evening I took the whole object fishing and put it down on the bank.
+  b : Did the cord work?
+  : Admirably. It was the first evening I fished in the company of my office paperweight. I removed the pocket.
+
+story coldcake [topic=food|memories]
+  : I once left a wrapped oatcake among the open questions and took a folded petition along to eat.
+  : Noticed the difference before unwrapping either thing.
+  b : What gave the petition away?
+  : An oatcake rarely goes into my pocket sounding like a dry leaf. I'd like that counted in my favour.
+
+rule @pending
+when concept=bark
+does aside
+cooldown 8h
+say Open questions here beside the cloth weight. | No answer yet. That corner stays in sight.
+
+rule @work
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Please leave the first written question attached to the reply. | One sheet crossed over. One less outstanding.
+
+rule @space
+when concept=bark
+does aside
+cooldown 8h
+say I need a clear square where the next paper can lie flat. | There's the free corner. Leave it clear.
+
+rule @line
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say A quiet stretch of cord and nobody requesting a heading. | A float needn't submit a report to earn a close look.
+
+dlg resident.hub : There's a question mark to spare. What would you like to put before it?
+dlg resident.hub [topic.meeting=known] : #topic.player#, I still have a clear recollection of our previous business.
+dlg resident.hub [here.time=night] : Late questions may be entered now and answered in better light.
+dlg resident.hub [pair.disposition=wary|hostile] : Set out the point plainly and keep your paws away from the open papers.
+dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I'm trying to reduce the interval between a question arriving and a useful answer leaving.
+dlg resident.job : I prefer work in which somebody can point to a thing settled and say what changed.
+dlg resident.bye : May the business you take away with you be easily settled.
+
+graft resident.hub
+choice What exactly is wrapped in the paperweight? -> coalsquare
+node coalsquare
+say A coal lump with the corners rubbed off. It scarcely rolls when I knock it. I added the cloth after a mishap with an immaculate cuff.
+free
+choice Does that make it an official seal? -> coaloffice
+choice It sits comfortably enough. -> hub
+node coaloffice
+say Absolutely not. It has no authority beyond keeping paper out of a draught. In my experience that's already a considerable service to the city.
+choice Understood. A weight only. -> hub
+choice I shall leave your papers in order. -> bye

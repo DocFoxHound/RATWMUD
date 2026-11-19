@@ -1,0 +1,375 @@
+mantle rm337
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_magnus_wetherell
+title the second breath of the wick
+fits stage=adult|old
+prefers job=laborer
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk coughs_in_the_damp_and_pretends_not_to
+likes hard_cheese swimming sharp_knife thunder
+dislikes salt_wind stale_bread
+fears running_out_of_breath_before_help_arrives
+hopes making_a_light_that_can_be_trusted
+topics work +0.5 health +0.4 pastimes +0.3 weather +0.3
+styles comfort=practical gossip=careful refuse=gentle tease=none
+marks oath saying
+persona #self.first# waits through a second steady breath before trusting a wick and offers the same unhurried attention to a tired companion.
+words
+oath! = Smoke curl my sleeve | Snuff my trimming scrap
+saying! = Wait for the second breath | A light can settle
+snipbit = a silver-grey snipping | a dark coil of burnt thread
+wickfoot = a foot of dry wick | a flat lamp thread
+saucer = a shallow catch dish | a brown pottery saucer
+drawline = a thin smoke thread | a line of dark vapour
+saltcloth = a square for my muzzle | a small dry cloth
+cheesebit = a narrow slice of cheese | a little hard yellow wedge
+watermark = a line on a stone | a rippled water mark
+oilskin = a waxed wrapper | a folded oilproof scrap
+knifeback = a blunt knife back | a smooth bit of steel
+shoulderrest = a low wall | a convenient rail
+stormroll = a long thunder roll | a low fading growl
+lampglass = a shield of clear glass | a clean chimney
+lastcrumb = a crumb from a heel | a flake of dry crust
+windside = the lee of a post | a sheltered corner
+burnspot = a speck of black | a little grey scorch
+breathgap = a long enough pause | a quiet space
+rushend = a neat rush tip | a short pale fibre
+
+grown
+
+opinion houses against 1 : A post ought to go to the hands that can keep a steady light in it.
+opinion merchants mixed 1 : The price of one good wick can look foolishly high until a cheap one chokes the room.
+opinion dole for 2 : A stale heel is no great charity unless somebody has considered how to make it edible.
+opinion city mixed 1 : There's good work in this city and less room than I'd like between a favour and an appointment.
+opinion church for 1 : A lamp burning quietly does better justice to thanks than a show of sparks.
+opinion strangers for 1 : A stranger can make use of a lit step without giving any account of the journey.
+opinion festivals mixed 1 : I like the lights after the noise has drawn everybody a little farther up the road.
+opinion watch mixed 1 : If someone guards a street I like a dark stretch to count as much as a grand lit doorway.
+line greet : Come stand where the air has stopped hurrying.
+line greet [here.time=dawn] : Morning. The daylight's taken the watch off a great many wicks.
+line greet [pair.band=strangers] : Welcome. Here you can breathe before you explain yourself.
+line greet.return : You've caught me on the easier part of a breath.
+line greet.return [self.working=yes] : A moment for this to settle and my ears are free.
+line greet.return [pair.band=friends|family] : A known voice keeps its own light about it.
+line again.open : Here we are before the same little flame again.
+line hail [pair.band=friends] : Quiet patch over here, if you'd like a word.
+line kin.open [pair.kin!=no] : Stay close. I can speak softly to my own.
+line farewell : Keep some breath for the last stretch home.
+line farewell.return : May your light carry clear of the draught.
+line react.news : I'll see what remains when the first smoke lifts.
+line react.news.new : That puts a different shape against the glass.
+line react.news.known : I recognise the outline under the new telling.
+line react.news.doubt : That flared up too sharply for me to trust it yet.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a quiet light for a household in pain.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a reason to put a warm glow in the window.
+line ask.how : Have you enough breath to spare for this bit of road?
+line answer.how : Going steadily. That's an answer I'm content with.
+line answer.how.busy [self.working=yes] : Still working. Nothing that needs a rush of air from me.
+line decline : I'd sooner keep my hands free for something I can do properly.
+line accept_decline : Set that offer back on the shelf, then.
+line thank : You gave me the extra second I needed.
+line deflect_thanks : Nobody loses a light by giving you a share.
+line sympathise : I can stay through the part when words are too much trouble.
+line reassure : A little time to settle can change the look of everything.
+line ack : That comes through clear after a moment.
+line preclose : My hands had better return before the light goes astray.
+line accept_preclose : Slip away while there's enough light for the first steps.
+line offer : Here, take the side sheltered by my shoulder.
+line give.advice : Let the first puff pass before deciding how the thing will burn.
+
+scene work_1
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I watch what a thread does after the first show is over.
+b : What shows up on the second look? | Can a thread fool you?
+a : Whether the feed will keep pace with what's being used. The first flash borrows against its future. | If I only look once. Some things begin splendidly and run short three breaths later.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I have a little trick for making an inconvenient cough look like thought.
+b : Does it convince anybody? | Wouldn't it be easier to cough?
+a : Somebody polite may indulge me. A friend will put a cup within reach without mentioning it. | Quite. I'm allowed one foolish little piece of pride if I don't make you listen to too many.
+
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I like a swim with a view of my starting point and the place I'll get out.
+b : No exploring then? | Do you count your strokes?
+a : Explore along the bank first. A little knowledge on dry feet makes the swim a finer pleasure. | Only till I've settled. There's a part of the swim I like to let go uncounted.
+
+scene food_1
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I want a cheese firm enough to cut a thin shaving from the corner.
+b : Is one shaving enough? | What about the hard outside?
+a : Several. I like each bite to have a separate beginning. | I keep the good part for broth. A bare rind has another quiet service left in it.
+
+scene weather_1
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder makes the little noises a lamp gives off seem quite private.
+b : Are you worried about the flame? | Which noise pleases you?
+a : If I've good glass round it I can take pleasure in the difference between inside and out. | The long roll at the end most of all. It gives the whole sky time to breathe again.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend may notice the cough. I'd be glad to have the noticing done gently.
+b : Would you accept help? | How can I tell when to ask?
+a : Set a cup by and let me pick it up myself. That's a fine kind of help. | If there's a choice between asking and leaving a little room, I'd take the room first.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I dislike a crust so hard I have to spend all my breath getting through it.
+b : Would you discard the crust? | What softens one best?
+a : No, but I won't call it a meal till it's been made fit for a mouth again. | Hot broth when there's any. A covered bowl and a little steam can do for less.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A small steady light seems the right size for asking the Bright One a private favour.
+b : Would you say what favour? | Does the light make a difference?
+a : Time to put somebody ahead of my temper. It is a favour I need with some regularity. | It keeps my eyes from running round the room and collecting reasons to hurry.
+
+scene work_2
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner deserves to see the awkward second attempt as well as the first neat demonstration.
+b : What if you get it wrong? | Do you make a deliberate mistake?
+a : All the better if I can show where I went wrong without blaming my tools. | No need. Real work supplies a generous number if we stay honest about them.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I pay for steel that keeps its edge without much calling attention to itself.
+b : How can steel prove itself? | Wouldn't a bright polish show quality?
+a : Try a clean cut in a scrap. A sharp knife doesn't make the material argue first. | It would show me I'd brushed my fur before leaving home. I'm buying an edge, not a mirror.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Salt air can make my coat feel like a dried net. | I like walking by the water once the sharpest wind has turned.
+b : How do you clear the brine?
+a : A damp cloth and a dry cloth. I'd rather clear it off than spend the night tasting the shore. | Turn my collar up on the windward side. I only need one ear for the water.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've worked under others' names with my own hands most of my life.
+b : Does a better name make a better job? | Wish the old post were yours again?
+a : It might open a door. After that a crooked cut's still crooked. | I want the work I do now to be worth doing well. That holds even on a resentful morning.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember putting an old lamp down for the last time and feeling my fingers carry its weight home.
+b : Was it heavy? | Did you miss the place?
+a : Familiar. That weighs a surprising amount more when a post has just been taken away. | Parts. I've learnt to want the pleasant pieces back without becoming a lodger in the memory.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Poor weeks teach a lamp to burn in one well-chosen corner.
+b : Do you shorten the wick? | Why not blow it out?
+a : Only till the smoke clears and the flame stands steady. A miserly little smoke maker wastes oil as well as breath. | One light with folk gathered round gives quite a bit of school, supper and mending for the oil.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : There's a shallow saucer for odds and ends that might still have a use.
+b : Even burnt wick ends? | Doesn't that fill the bench?
+a : A short clean end can show a learner what too much flame takes off a thread. | One dish is the limit. If something new goes in, an old scrap has to justify its berth.
+
+scene family_1
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd take a steady light to #self.mother# before I'd take a grand account of my troubles.
+b : Wouldn't you want a hearing? | Why take a lamp?
+a : A warm clear spot to sit in makes it easier to tell just as much as needs telling. | It gives my hands something besides my own worries to carry to the door.
+
+scene health_2
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I can generally judge my own hurry by the length of the first sentence I can't finish.
+b : Would you stop walking? | Why not say less?
+a : Ease down before I get to stopping. The trick's hearing the early warning. | My point exactly. I've been trying to persuade myself of it for an admirable length of time.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : After a swim I like to sit and listen till the water starts to take itself up the bank again.
+b : Sitting wet and cold? | Doesn't the water land at once?
+a : Dry off first. There's no prize for spoiling a good afternoon in its final minute. | It does, but it takes longer for my own splashing to quit being the loudest thing out there.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Damp can put a tickle very far down a perfectly respectable throat.
+b : Shall we find a roof? | Should I stay quiet a while?
+a : If there's one near. I can reach it without staging a little play about being quite well. | Talk a little slower. That way I needn't pretend a pause is a particularly thoughtful answer.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A good sharp knife makes supper look more generous without having to pretend.
+b : How does a knife add food? | What would you cut first?
+a : It doesn't. It makes thin slices anybody can share without having to tear them smaller. | The cheese. A stale heel needs wetting before it needs cutting.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can keep my place at a friend's side without marching at a soldier's pace.
+b : What if the friend hurries? | Does keeping pace matter?
+a : Say I'm falling behind early. Nothing loyal about making another wolf turn back half a street. | Keeping company does. Sometimes one of us can do that best by sitting still.
+
+scene work_3
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I wait a breath between putting the tool down and turning to the next job.
+b : Counting your work? | Isn't that wasted time?
+a : Counting my fingers after a fashion. I want them clear of one edge before finding the next. | I've wasted more cleaning up the end of a hurried job than I've ever spent on a pause.
+
+scene land_1
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city looks most divided when every window starts lighting itself for the evening.
+b : Wouldn't all that light join it up? | Is any one window different?
+a : At a distance. Come closer and you'll see how many shades have been drawn between neighbours. | The open one that shines a strip onto a common stair. It has already crossed a boundary.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I expect those proud Houses to have sharp words sooner or later. I'm no prophet of the hour.
+b : What makes you expect it? | Will you choose a side?
+a : I've seen enough favours pulling in opposite directions. That's an opinion, not an appointment with fate. | I'd rather mind who gets left carrying an ordinary lamp through the disturbance.
+
+scene travel_2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I favour a route with one quiet stopping place in sight before the last one disappears.
+b : Why plan a simple walk? | Do your feet tire that quickly?
+a : Because a place to stop looks perfectly ordinary till a chest needs it. Then it's the whole map. | My feet would go further. I carry a few other parts entitled to vote.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I trim a loose thread off my own cuff before I let it go near a flame.
+b : Worried about fire? | Does that ruin the stitching?
+a : A little respect does better work than worry. The loose end has no business dangling there. | Only if I pull instead of cutting. The seam can go on doing its job quite undisturbed.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can put a light where a late arrival will see the turn before the steep step.
+b : Would you stay out there? | Which height works best?
+a : Till the steps are known. Then I'd leave a steady glow and get my own feet warm. | I bend to the height of a tired pup. If the rise shows clearly there, most callers will do nicely.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The talk burning along the street says #topic.subject# #topic.claim#.
+b : Are you sure of that? | Will you tell it again?
+a : I know it's been repeated. Even poor oil can burn brightly for an instant. | I'd say where my knowledge stops before letting that spark loose in another room.
+
+story cough [topic=memories]
+  : I was trying to make a cough look like a very thoughtful pause.
+  : I put my hand on my chin and watched my eyes water as if deeply moved.
+  b : Did it work?
+  : Somebody fetched a cup. I'd have spent far less effort just admitting I wanted one.
+
+story wick [topic=work]
+  : I once trimmed a wick so neatly I forgot to draw a little more up underneath.
+  : The flame made a splendid appearance and retired almost immediately.
+  b : How did you repair it?
+  : I took the time I'd saved pretending to be clever and used it to feed the lamp properly.
+
+story swim [topic=pastimes]
+  : I put my dry shirt on a warm rock before trying a short swim.
+  : When I climbed ashore again the rock was shaded and a much smaller rock was taking all the sun.
+  b : Did you move the shirt?
+  : I moved myself and spread the shirt across my knees. Got the pair of us warm with one little patch.
+
+story edge [topic=food]
+  : I shaved a slice of cheese so thin I laid it on a page to see if any writing showed through.
+  : It stuck to the page and grew very reluctant to come away.
+  b : Did it take the words?
+  : Just enough ink to give my tongue an opinion on keeping food well clear of correspondence.
+
+story lamp [topic=memories]
+  : I set two lamps at the ends of a passage and got a deep black shadow between them.
+  : It belonged to a pail I hadn't noticed while placing all that careful light.
+  b : How did you shift the shadow?
+  : I moved the pail. A solution lying outside my particular expertise had been sitting at my feet.
+
+rule @burn
+when concept=bark
+does aside
+cooldown 8h
+say Let it find the second breath before touching the glass. | A clear steady tip can manage without my fuss.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Excuse the throat. It's noticed the damp ahead of my ears and paws. | Little sip and then the next sound will come quite easily.
+
+rule @edge
+when concept=bark
+does aside
+cooldown 8h
+say A clean knife needn't make a show of the cut. | Get the scrap clear before you open the blade.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Good light on the step is a kindness to tired toes. | A little oil can take a visitor all the way upstairs.
+
+rule @teach
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say A learner can watch it fail as well as seeing it burn. | Leave a pause where the question ought to go.
+
+rule @wind
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Hold the glass steady till the big noise passes. | Thunder outside, small clean flame in here.
+dlg resident.hub : Stand within an easy glance of me without getting a draught in yours.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your voice has reached a quiet patch.
+dlg resident.hub [here.time=night] : There's light left for a little unhurried talk.
+dlg resident.hub [pair.disposition=wary|hostile] : We needn't gust at each other to get an answer.
+dlg resident.job [self.job=laborer] : At #self.workplace# I'm useful in small instalments and in no great hurry to be admired.
+dlg resident.job : Give me work that benefits from one more patient look.
+dlg resident.news [world.news] : Here's what's showing clear enough to pass along. #world.news#.
+dlg resident.gossip [here.gossip=yes] : One account says #topic.subject# #topic.claim#. I'm watching to see whether it smokes or settles.
+dlg resident.bye : Easy breathing to you round the next corner.
+dlg master.work : One good look after your first attempt can teach more than five hurried repetitions.
+dlg master.wages : There's no wage while learning. Beside me you'll learn three times as fast and anything you turn out is yours for sale.
+dlg master.bye : Take the pace your hands can keep.
+
+graft resident.hub
+choice What is the second breath of a wick? -> rush_second
+node rush_second
+say The first flame looks grand on the oil nearest the tip. I wait to see if the thread can keep bringing enough through to feed it.
+choice What does a poor light do? -> rush_sick
+choice I'll watch the smaller flame. -> hub
+node rush_sick
+say It stretches just a little too tall, smokes and starts sinking. A steady one stands its own height without our applause.
+choice I'll watch the smaller flame. -> hub
+
+graft master.learn
+choice Would you let me watch a mistake? -> rush_watch
+node rush_watch
+say Certainly. A mistake you can explain is as good as a lesson once you've put the damage right.
+choice How do I start explaining? -> rush_explain
+choice I'll remember where it changed. -> learn
+node rush_explain
+say Tell me the last moment everything was as you intended. We'll begin there and leave the blushes out of it.
+choice I'll remember where it changed. -> learn

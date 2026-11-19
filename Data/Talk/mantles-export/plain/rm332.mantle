@@ -1,0 +1,399 @@
+mantle rm332
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_orm_carlisle
+title the level for a loaded wheel
+fits stage=adult|old
+prefers role=merchant job=laborer
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk uses_a_whetting_stone_to_find_the_tilt_of_a_cart_bed
+likes blackberries dice festival_bells first_warm_day
+dislikes night_noise rats
+fears a_load_paid_for_twice a_winter_of_divided_roads
+hopes an_even_road_book a_quiet_house_after_the_last_bell
+topics work +0.6 travel +0.5 pastimes +0.3 season +0.3 prices +0.2
+styles comfort=formal gossip=reserved refuse=precise tease=none
+marks oath saying
+persona #self.first# checks a loading floor with water on a whetting stone, has a very distinct carrying voice and remembers which bend of a road punishes a badly placed parcel.
+
+words
+oath! = Cant the axle | Chip my level
+saying! = Ask a drop before a wheel | Settle the load while it is standing
+stone = the long grey whetstone | my square-faced hone
+drop = a bead of water | one clear droplet
+heel = the low back corner | the trailing corner
+team = a pair in harness | a well-matched team
+rut = an oblique wheel rut | the worn outer track
+berry = a plump blackberry | the ripe end berry
+bloom = a purple bloom | the faint dusting on a berry
+die = my cubical bone | the large plain die
+board = the level board | my trial plank
+lash = a flat strap | the broad leather fastening
+bell = a high festival peal | the opening bronze note
+pad = my square of wool | the small carriage pad
+rod = a short ash rod | the measuring stick
+wrap = the close-woven cover | a light wrapping cloth
+turn = the long road bend | a shallow turn
+slate = my little route slate | the strip of dark slate
+lamp = a hooded lamp | a small shielded light
+cord = a taut linen line | the straight measuring string
+
+any
+opinion @1 houses for 1 : I value a great House as I value a wheel. The road will scarcely thank us if four of them pull apart before winter.
+opinion @2 watch for 2 : A reliable night round preserves both property and the far rarer commodity of an uninterrupted sleep.
+opinion @3 road against 2 : A rate agreed for an ordinary road leaves the carrier to absorb the extraordinary condition of its ruts.
+opinion @4 dole against 1 : I would prefer a second portion to follow a careful check that the last household in line has received the first.
+opinion @5 festivals for 1 : A procession is orderly transport with the agreeable addition of bells and no collection of freight at the destination.
+opinion @6 city for 1 : Ridgemere can put a poor load to a proper test between the water and the upper houses.
+opinion @7 merchants for 1 : A price written at the counter begins with the condition of the road a full day earlier.
+opinion @8 times against 1 : A season of late arrivals is quite as serious as a single broken wheel and much less likely to attract attention.
+opinion @9 sump against 1 : I dislike the lower approaches where a good wheel has insufficient space to avoid a flooded rut.
+
+grown
+line @1 greet [pair.band=strangers] : You may set your parcel here while we are introduced. | A clear place has been left for your arrival.
+line @2 greet [here.time=dawn] : Morning. The first wheels sound remarkably distinct. | You are welcome at the quieter end of the day.
+line @3 greet [here.weather=rain] : A wet approach calls for a steady welcome. Here it is. | Attend to your footing at the turn and come closer.
+line @4 greet [self.working=yes] : Welcome, just beyond the measuring line. | You have arrived at a convenient interval between duties.
+line @5 greet.return : You have made yourself heard quite clearly. Welcome. | I return the courtesy without reservation.
+line @6 greet.return [pair.band=friends|family] : There is a better standing place for an established friend. | I had no difficulty placing that civil voice.
+line @7 greet.return [here.time=dusk|night] : A quieter passage for the evening visitor. | My voice can accommodate the late hour.
+line @8 farewell : May the wearing course hold through the last turn. | An even journey for your company and your baggage.
+line @9 farewell.return : Your departure may be made without further formality. | I wish you decent paving and a timely arrival.
+line @10 again.open : We have drawn up at the same point once more. | A return engagement on an agreeable road.
+line @11 kin.open [pair.kin!=no] : There is no occasion to announce family from a distance. | Take the position nearest me, as kin may properly do.
+line @12 hail [pair.band=friends] : Here at the measured corner! | There is an excellent view from this side!
+line @13 react.news : I prefer to hear the particular circumstance before estimating its effect. | Let me have the full weight of what arrived.
+line @14 react.news.new : That is a new item for my route notes. | I have received no previous advice of that development.
+line @15 react.news.known : The same circumstance has appeared in an earlier report. | I recognise the course of that account.
+line @16 react.news.doubt : I find an incline in the telling which the facts hardly justify. | A second independent reading might straighten that account considerably.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : A grievous interruption. We must give those concerned the room they require. | The ordinary schedule is of little consequence beside that hurt.
+line @18 react.news.glad [topic.kind=birth|marriage] : There is news deserving a fine clear peal. | I should gladly arrange a place of honour for that account.
+line @19 answer.how : Tolerably well balanced for the road before me. | Quite ready to give a measured account.
+line @20 decline : I should have to disturb a sound arrangement in order to undertake that. | There is insufficient margin for me to promise it responsibly.
+line @21 accept_decline : I acknowledge the limit as stated. | You have given a perfectly legible answer.
+line @22 sympathise : There is no advantage in asking a troubled wolf to keep an ordinary pace. | The burden may remain here while you gather yourself.
+line @23 thank : That was both considerate and exactly timed. | Your assistance has corrected a difficulty of some consequence.
+line @24 deflect_thanks : I already had the necessary equipment to hand. | I have merely put a small imbalance right.
+line @25 preclose : I must return my attention to an unsettled measurement. | I have other arrangements approaching their appointed hour.
+line @26 accept_preclose : Make your departure at the convenient point. | I appreciate the notice of your next engagement.
+line @27 farewell [here.weather=rain] : Allow a little extra room on a shallow bend. | Keep the covers fastened until you are indoors.
+line @28 farewell [here.time=night] : May the only night noise be your own latch falling. | A properly quiet close to your journey.
+line @29 answer.how [self.working=yes] : There is work in hand and room in the account for all of it. | I am occupied without being hurried.
+line @30 greet [here.season=spring] : A promising turn in the temperature. Welcome. | Come to the clear side of this early sun.
+line @31 preclose [here.time=dusk] : It is time to consider the final entries for today. | My accounts prefer a little natural light.
+
+scene level
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put #drop# on #stone# and set it across a plank. | My whetting stone is somewhat overqualified for the care of blades.
+b : Where is the water meant to go? | What other employment does it enjoy?
+a : Nowhere. If it runs to either end, I know which side will bear the load. | As a small portable level. A droplet has no stake in the outcome.
+
+scene berries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : #bloom# on #berry# means it has survived the journey without excessive acquaintance with other fruit. | I prefer a shallow punnet for blackberries, even if it requires two trips.
+b : Why is the surface so important? | Does it truly matter how far fruit is stacked?
+a : The surface is an honest report. The flavour is the reward for attending to it. | Try the bottom fruit beneath two more layers. It arrives almost in liquid form.
+
+scene dielevel
+when topic=pastimes self.likes=dice
+does tell.self / react.self / assess
+a : #die# can reveal faults in #board# before it reveals anything about my fortune. | I roll towards the cross grain once before agreeing to a game.
+b : Wouldn't water be better for testing level? | Would one throw settle the question?
+a : For a test, yes. Introduce water at a dice table and people expect a lecture. | Enough to look more closely. I am quite willing to spend an extra throw on certainty.
+
+scene bells
+when topic=season self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : A festival bell can straighten a streetful of moving heads in an instant. | #bell# is the one signal I do not insist on issuing myself.
+b : Do you like seeing all those ears turn together? | It would be difficult to compete with a good bell.
+a : I like the silence before they turn back to their own concerns. | It would be in poor taste to make the attempt, though volume might be found.
+
+scene warmroad
+when topic=season here.season=spring
+does tell.plan / ask.detail / answer.detail
+a : The first warm day deserves a slow trip made strictly for inspection. | I should like a walk just as the upper surface begins to dry.
+b : Are you inspecting the day itself? | What does a drying road show you?
+a : The roads in both directions. I shall certainly enjoy the temperature along the way. | Pale high patches beside the little sags that remain damp. A free survey of the next rut.
+
+scene noise
+when topic=smalltalk self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : A repeated thump after nightfall proposes an investigation nobody is properly dressed to make. | Night noise belongs in a detailed complaint under the name of its actual cause.
+b : Suppose it is only a shutter? | Would you list every tap separately?
+a : A small wedge would answer the case more agreeably than an elaborate inquiry. | Only until their spacing showed which part was loose. Then I should prefer repairs.
+
+scene rats
+when topic=smalltalk self.dislikes=rats
+does tell.worry / reassure / assess
+a : I dislike the small movement behind a well-arranged row of parcels. | Fresh gnaw marks would unsettle the most orderly yard book.
+b : What would you shift first? | Even if the contents remained untouched?
+a : The nearest parcel. I want the floor visible before anyone steps back in alarm. | Especially then. There might still be time to preserve the next parcel.
+
+scene yard
+when topic=work self.role=merchant self.job=laborer self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I measure a load where it stands before I let anybody call it ready. | I learnt the work at #self.workplace# with the view from between a pair of leather reins.
+b : Why not rely on the nominated weight? | Would a different team give you an entirely different picture?
+a : An accurate weight can be most unfortunately distributed. A wheel soon draws the distinction. | A different pull certainly. The difficult corner stays where the road put it.
+
+scene handmeasure
+when topic=work self.role=merchant self.hand
+does tell.plan / ask.detail / answer.detail
+a : An independent reading by #self.hand# would be welcome at a cart's tail. | I'd willingly set a second measuring rod by for #self.hand#.
+b : Even when the first measurement came from you? | Is the first rod insufficient?
+a : Particularly then. I like to find a difference before the first wheel turns. | One reading tells me a figure. Two can tell me where somebody has shifted a foot.
+
+scene rates
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : A sensible carriage rate includes time spent keeping the contents in a saleable condition. | I would rather quote for a slower sound arrival than a fast damaged one.
+b : Would the customer pay for empty minutes spent adjusting a strap? | Some loads will tolerate a bruise or two.
+a : The customer wants the whole load. A few timely minutes are among the items purchased. | Very well. Let us agree which cargo we have before fixing the pace.
+
+scene height
+when topic=land self.quarter=heights
+does tell.self / react.self / assess
+a : From the Heights one can see a cart take half a street to recover from cutting a corner. | The advantage of an upper window is that the route explains itself before the team comes into hearing.
+b : How can you tell what happened from such a high window? | And the disadvantage?
+a : The line of waiting traffic shifts outwards ahead of the cart, like water before a bow. | A distant rut can look like an ornamental feature until your own wheel lands inside it.
+
+scene princely
+when topic=prices self.wealth=rich
+does give.opinion / disagree / concede
+a : It is worth paying for reasonable silence if the arrangement extends to one's neighbours. | A comfortable household may still be interested in the exact cost of getting bread to the door.
+b : Would you purchase an entire lane's quiet? | Do you begrudge the carrier that modest charge?
+a : I would purchase a hinge pin before allowing an entire lane to purchase sleeplessness. | I hardly begrudge the charge I should recommend the carrier make. I want the particulars correct.
+
+scene houserow
+when topic=times here.region=ridgemere
+does tell.worry / reassure / assess
+a : Four interests using one road give me some concern for the coming winter. | I fear the four Houses may attempt to pass one another at a narrow place.
+b : Have any of them actually quarrelled there? | Can't large interests agree to a timetable?
+a : I claim a judgement about the approach, not a report of an incident. | Certainly. I should be more comfortable hearing the terms before the first frost.
+
+scene berrieshome
+when topic=food
+does offer / accept / assess
+a : Take the upper berries first, if you please. | I can offer fruit that has scarcely been obliged to move at all.
+b : Wouldn't you save the best for yourself? | What has held it so steady?
+a : The best use of an undamaged berry is a prompt welcome. | #pad# and a small shallow tray. A modest journey quite properly attended.
+
+scene dicepledge
+when topic=pastimes
+does give.opinion / disagree / concede
+a : I consider a throw against a wall a poor form of argument. | There ought to be no slope favouring the wolf nearest the door at a dice table.
+b : You could simply take turns at that seat. | Is it worth measuring a table put out for fun?
+a : A curious way to share an avoidable fault. I would level the table once. | The amusement improves considerably when nobody has occasion to inspect the legs afterward.
+
+scene springpace
+when topic=travel
+does tell.self / react.self / assess
+a : A team may step with extraordinary confidence with the first mild air on its back. | A fine breeze can persuade a driver that the wagon is lighter than yesterday.
+b : Who is likely to object to cheerful animals? | Wouldn't it actually lighten the canvas a little?
+a : Nobody. I still inspect the straps that must share the enthusiasm. | Possibly. I would decline to revise the freight note on that basis.
+
+scene strangeface
+when topic=newcomer
+does tell.self / react.self / assess
+a : A traveller's account of a road can be quite exact if one asks the size of the wheels. | On first meeting a new driver I ask how the final bend treated the wheels.
+b : Surely the hole is one size regardless of the wheel chosen? | Isn't that rather a personal question?
+a : Quite. But one wheel reports an inconvenience and another reports the end of an axle. | It is the road under examination. I would very much value the driver's observations.
+
+scene gossip
+when topic=gossip
+does give.opinion / disagree / concede
+a : A rumour travels at a magnificent pace without accepting any responsibility for its load. | An account with no named source has all the stability of a loose berry basket.
+b : Some true things come without a label. | Wouldn't you at least lift the cover?
+a : Quite so. Until they are identified I shall keep them off the manifest. | Only to find evidence, never to give its contents a grander description.
+
+scene triptime
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon is an inconvenience specifying neither the cause nor the length of its delay. | The one thing I wish to know about a late team is where it last travelled at its proper pace.
+b : What would you enter first? | Why the point before the trouble?
+a : The most recent reliable sighting. It provides somewhere firm for the inquiry to begin. | The distance beyond it places a sensible limit upon our guessing.
+
+scene nightbell
+when topic=dreams
+does tell.self / react.self / assess
+a : My ideal evening has one final distinct noise and a long silence behind it. | I could appreciate an entire supper passing without a single unexplained rattle outdoors.
+b : The last bell, presumably? | You would not even get up to check the shutters?
+a : Preferably the latch on my own door. A bell usually generates some further discussion. | I should have done so before supper. The order of these pleasures matters.
+
+scene blackstain
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : The juice at the corner of #wrap# tells one how much a bundle has endured. | Blackberry ink leaves an exceptionally forthright record on pale cloth.
+b : Can you tell a bump from a gradual squeeze? | Would you note a journey in berry ink?
+a : A bump generally marks one edge. A long squeeze announces itself throughout the weave. | For a short memorandum. I would hesitate to lick a precious record off my paw.
+
+scene frontlash
+when topic=work
+does ask.advice / give.advice / assess
+a : Where would you place #lash# on two bundles of different heights? | How would you secure a long light parcel against #heel#?
+b : Pad the lower bundle first, then draw across both. | Give it a chock before you tighten the strap.
+a : Yes. A low bundle held under slack leather has paid for an imaginary restraint. | Exactly. The strap should hold the parcel against something that cannot itself roll away.
+
+scene lampwalk
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : I intend to inspect the approach by #lamp# on a perfectly quiet evening. | I should enjoy observing what lamplight reveals about #rut# before the next loaded team arrives.
+b : Won't a daytime inspection show far more? | Why insist on a low light?
+a : More surface at once. A low lamplight gives each little ridge a useful long shadow. | It is the very condition a returning driver may be facing.
+
+scene stoneoil
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I clean #stone# after its work as a level before using it on an edge. | A whetting stone carried loose has very soon acquired the complexion of its pocket.
+b : Could water make a blade worse? | Why not leave it in its case?
+a : No, but a grain of grit collected from a loading floor can mark a very fine edge. | I do. There is a reason why the case itself travels in a separate fold.
+
+scene townnotes
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : These terraces make Ridgemere an exacting examiner of the difference between straight paving and a properly level road. | A city can draw an admirably short route straight up a hill.
+b : Do you award the city good marks? | Isn't that sometimes the useful one?
+a : For thoroughness, very high. For kindness toward the hind axle, considerably lower. | For a message on two feet. I should quote a different route for a cart full of jars.
+
+scene thinweek
+when topic=times world.times=hard|lean
+does give.opinion / disagree / concede
+a : In a lean week an avoidable breakage is an unusually expensive lesson. | I prefer a measured small delivery to a large show of boxes containing nothing sound.
+b : Someone may have no spare cloth to pad a parcel. | How would you keep the small delivery affordable?
+a : Then the carrier should lend a square and take it back at the door. | Combine stops on the same street. The road should do its share of the economy.
+
+scene feastwait
+when topic=season self.likes=festival_bells
+does tell.self / react.self / assess
+a : I enjoy the gap between the first high festival note and the fuller peal. | Festival traffic would interest me with the bells still awaiting their ropes.
+b : Are you waiting for a particular note to join it? | Surely it's the bells you actually go for.
+a : No. I like hearing a single instruction turn into something the whole square recognises. | Most assuredly. I can be attentive to two well-arranged events at once.
+
+scene palplay
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I should be pleased to offer #self.friend# the first throw on a genuinely level board. | Another dish of unbruised berries would be my choice for #self.friend#.
+b : Suppose your friend had a favourite tilted table? | How will you keep a full dish so presentable?
+a : Then I would insist upon playing for amusement only and accept an introduction to its peculiarities. | Keep the fruit in one layer. Good presentation is mostly a matter of resisting the extra handful.
+
+scene calmday
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I should like to report an entire day's business in the single word arrived. | An account of travel devoid of surprises strikes me as a finer achievement than a handsome adventure.
+b : Wouldn't that leave the report a trifle thin? | It might be a poor tale at supper.
+a : The preparations behind that entry would be quite substantial. | I can offer the poor tale with excellent preserves. Most guests accept the exchange.
+
+scene lessonturn
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I remember learning an unfamiliar bend by the pull on a pair of reins. | One season with the team gave me a reliable appreciation of the last wheel in line.
+b : Which direction did the pull come from? | What has the last wheel that the first one lacks?
+a : Not always the one the eyes suggest. I began looking at the ruts ahead much earlier. | A chance to fall into a hole broadened slightly by everything in front.
+
+story perfect_board [topic=pastimes]
+  : I measured a dice board before a friendly game and found a consistent slope toward the window. We put a paper shim under the lower leg.
+  : The first die rolled the other way rather handsomely. I turned it over in my paw.
+  b : Was the board still out of level?
+  : No. The die had a large chip at one corner. One accurate instrument cannot answer every question in a room.
+
+story one_punnet [topic=food]
+  : I once placed a fine blackberry alone in a handsome deep box. It had scarcely travelled to the next corner before it rolled along the whole length.
+  : There was an excellent purple diagram of the journey when I lifted the lid.
+  b : Did you save the berry?
+  : I ate it. For the next one I selected a shallow dish and a folded leaf, which proved the superior vehicle.
+
+story bell_count [topic=lore]
+  : There is an account of a wealthy wolf who paid to have a festival bell stop precisely at the moment supper was laid.
+  : The bell obliged, but half a street of echoes arrived while the soup was being served.
+  b : Did the kitchen delay the meal?
+  : Not an instant. The wolf counted the echoes as uninvited guests and declined to offer them a chair.
+
+story last_strap [topic=work]
+  : On a training run I laid two equal parcels against opposite sides of a cart. We rounded the first turn and they met in the middle.
+  : I had been so delighted with their equal weights I had neglected to consider their equal freedom to slide.
+  b : How did the next bend go?
+  : Without conversation between the parcels. A proper strap proved an excellent chaperone.
+
+story night_latch [topic=dreams]
+  : A steady tapping kept me at the window through half an evening. I could locate it exactly until I stepped out onto the path.
+  : Indoors again, I held a lamp near the shutter and found a small hard seed caught on the cord.
+  b : How did you dispose of the offender?
+  : Put it in the ground. If it insists on tapping my window in future it will have to grow a substantial branch.
+
+rule @level
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say A drop placed centrally, please. | Allow the liquid to give its own report.
+
+rule @berries
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say A shallow tray and a gentle corner. | No additional weight upon that fruit.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say That knock warrants a better explanation. | One properly closed latch is sufficient.
+
+rule @spring
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say A very promising first dry patch. | Observe the change in the going.
+
+rule @measure
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say A fair throw deserves an even board. | The nick is on the inside corner.
+
+rule @quiet
+when concept=bark self.quarter=heights
+does aside
+cooldown 8h
+say One can distinguish that from an upper window. | A little less disturbance would travel quite sufficiently.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You have my attention. What matter has brought you to this point?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I am pleased to renew our acquaintance on level terms.
+dlg @3 resident.hub [here.time=night] : There is no need for either of us to compete with an empty street.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : State your purpose at the present distance, if you please.
+dlg @5 resident.job [self.role=merchant self.job=laborer self.workplace] : I keep #self.workplace#. A customer is entitled to know the condition in which a parcel will arrive.
+dlg @6 resident.job : I concern myself with sound measurements and their practical consequences.
+dlg @7 resident.news [world.news] : The latest account to arrive reads as follows. #world.news#
+dlg @8 resident.bye : I wish you a properly uneventful passage.
+dlg @9 shop.greet [here.shop=open] : Inspect the goods closely. A satisfactory arrangement begins with an accurate description.
+dlg @10 shop.greet [here.shop=bare] : There is nothing available for purchase now. I shall consider whatever you have brought to sell.
+dlg @11 shop.greet [here.shop=asleep] : Mm. No further entries until I have opened both eyes.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you will find the usual care has gone into the arrangement.
+dlg @13 shop.prices : I can account for the charge as well as state it. #shop_offer#
+dlg @14 shop.bye : Thank you. I trust the arrangement will travel well.
+dlg @15 resident.hub [here.season=spring] : The surface is beginning to dry. We have ample opportunity to speak while the paving changes colour.
+
+graft resident.hub
+choice Why put water on a whetstone? -> trial_drop
+node trial_drop
+say Its flat face travels very well and a small bead runs immediately to the low end. Many an expensive disagreement can be answered with a single drop.
+choice Even a disagreement between the Houses? -> road_interests
+choice Let us leave the stone level. -> hub
+node road_interests
+say I should welcome an instrument so obliging. For now I can only hope they will discover a little room to pass before winter makes the road narrower still.
+choice I take your meaning about the road. -> hub
+choice I shall leave you to your measurements. -> bye
+
+graft shop.greet
+choice What do you include in a carriage charge? [here.shop=open] -> carried_price
+node carried_price
+say Loading, the journey, and the delivery of the item in its proper condition. A parcel bruised beyond use is not much improved by arriving exactly on the hour.
+choice Can a shorter route cost more? -> short_grade
+choice Back to the goods. -> greet
+node short_grade
+say Certainly. A severe gradient can require a second pair in harness. Count the road and the team together before you compare two handsome figures.
+choice That explains the arrangement. -> greet
+choice I appreciate the account. -> bye

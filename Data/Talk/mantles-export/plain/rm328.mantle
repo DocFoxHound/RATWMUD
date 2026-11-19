@@ -1,0 +1,257 @@
+mantle rm328
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_theodora_driphand
+title the umpire of supper
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk deals_a_card_to_settle_trivial_disputes
+likes fried_fish cards full_larder first_snow
+dislikes early_bells gulls
+fears mistaking_a_tired_face_for_an_untruthful_one
+hopes for_a_table_that_always_seats_one_more
+topics work +0.4 friends +0.3 pastimes +0.3 food +0.2
+styles comfort=warm gossip=close refuse=soft tease=dry
+marks oath saying
+persona #self.first# deals a card to settle harmless supper disputes and takes pains to hear the quiet objection.
+
+words
+oath! = Forge me an ace | Deal me the tide
+saying! = A card can judge the washing up | Keep the king out of serious business
+deck = my spare pack | the worn supper cards
+ace = the red ace | a painted ace
+fish = a flake of white fish | a hot brown fillet
+bone = a fine fish spine | the curved bone
+plate = the broad supper plate | a square trencher
+pan = a shallow iron pan | my black frying pan
+purse = a soft food purse | the kitchen purse
+card = a greasy card | the card with a nick
+peg = the serving hook | a cupboard peg
+snow = the untouched white sill | a dusting of first snow
+bell = an untimely peal | a brass intrusion
+gull = a gull with great claims | a white-feathered beggar
+
+any
+opinion houses for 1 : The Houses keep our public rooms standing. I like to see those rooms open to a small voice too.
+opinion watch for 1 : A steady patrol gives the late walker a little more time to consider what to say at the door.
+opinion festivals for 2 : A dance floor's the pleasantest court I know. Everyone can make a motion.
+opinion strangers for 1 : A newcomer at supper can reach the far bowl on a table. That's an excellent argument for another plate.
+opinion times for 1 : My larder will furnish another plate without asking a grave sacrifice. That's good fortune in my eyes.
+
+grown
+line greet [pair.band=strangers] : You're welcome without a formal introduction. | A new face at my informal table.
+line greet [self.working=yes] : Speak freely on this side of my business. | I'll grant a little working space.
+line greet [here.time=dawn] : Morning. First hearing goes to you. | New light on the table. Welcome.
+line greet [here.time=dusk|night] : Evening brings better company than documents. | Come inside the warmer ring.
+line kin.open [pair.kin!=no] : Kin have leave to approach the supper plate. | Good. Family need no summons.
+line again.open : A second appearance on friendly terms. | Your case comes round again.
+line greet.return : Hello. No form required. | Here I am, with an ear unoccupied.
+line greet.return [pair.band=friends|family] : You have permission to tease the umpire. | I know the voices worth interrupting for.
+line greet.return [self.working=yes] : I can hear a visitor between two formalities. | Let me put the serious pen aside.
+line greet.return [here.time=dusk|night] : Evening. I'll sharpen my ears for you. | Welcome to the quieter sitting.
+line farewell : An easy walk and a fair supper. | May your errand need no hearing.
+line farewell.return : I release you into your own custody. | Leave on your own good word.
+line farewell.return [here.time=night] : Fair lamplight beyond this hearing. | Walk towards the bright corner tonight.
+line react.news : Pass me the substance of it. | Let's hear the account before the verdict.
+line react.news.new : A fresh matter altogether. | Nobody brought me that turn of events before.
+line react.news.known : That's been round my little table. | I recognise the account fairly well.
+line react.news.doubt : I'd reserve judgment on that particular account. | I'd keep that story simmering awhile.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That deserves a warm seat and no questions. | I should like to make the day gentler for you.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A favourable turn for the best reasons. | Bring more accounts with such a kind ending.
+line ask.how : How has the day pleaded with you? | Anything gone decidedly in your favour?
+line answer.how : Equal measures of good business and tired feet. | Holding my own quite civilly.
+line decline : I'd rather keep my energy for the next serious affair. | I fear that would be one hearing too many.
+line accept_decline : A civil refusal is quite sufficient. | Very well. The matter rests handsomely.
+line thank : A kindness entered in the right place. | I'd rule that very much in my favour.
+line sympathise : You can take the seat with arms. | I'll hear whatever portion you want heard.
+line reassure : A misstep doesn't settle a whole case. | There are kinder interpretations yet to hear.
+line preclose : I should bring this sitting to a close. | My other business is beginning to clear its throat.
+
+scene supper
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : At supper I sometimes deal one card to settle a burning issue.
+b : How serious an issue? | Highest card wins?
+a : Which paw does the washing. I keep justice and soap separate otherwise. | Lowest chooses the towel. Highest has no excuse for leaving.
+
+scene office
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep the next word for the wolf who hasn't had one.
+b : Does that slow the sitting? | How do you notice?
+a : Less than trying a matter twice because we hurried the first hearing. | Look where a chair leans forward while its occupant has barely managed a syllable.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I think a hot fillet merits the broadest plate in the cupboard.
+b : For show? | What if it's a small fillet?
+a : For keeping the edges clear of the sauce. Crisp skin hates a bath. | A scrap can have the same dignity as a feast.
+
+scene larder
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A larder looks comfortable to me when I needn't count the last jar.
+b : Do you forget what's there? | Expecting company?
+a : Never the last jar. I just enjoy the privilege of leaving it alone. | Always prepared to be pleasantly surprised.
+
+scene first
+when topic=season self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow lets me see my own rather decisive footprints.
+b : Decisive how? | Are they straight?
+a : Deep at the heel as if each step had already heard the evidence. | Until something good to eat comes within range.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : Gulls make the same application at every supper.
+b : Do you grant it? | Loudly?
+a : I keep the fillet. They appeal but never prevail. | A gull seems personally insulted by an intact plate.
+
+scene clock
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell summons the whole city on the very faintest grounds.
+b : Just for the hour? | Won't it wake you anyway?
+a : The hour certainly knows its own business without shouting for witnesses. | That's the particular feature I object to.
+
+scene pair
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I like to have #self.spouse# opposite me for a good story.
+b : For the laugh? | Does the story have two ends?
+a : For the quiet afterwards when I can put the entertainer's voice away. | Certainly. One where I address the room and one where I come home.
+
+scene kinfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# decide which card stays out of a troublesome pack.
+b : Wouldn't that give an advantage? | Which would you take out?
+a : For a minute. A friendly game can survive a little voluntary disadvantage. | The sticky one that keeps trying to bring its neighbour into every argument.
+
+scene pain
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : One sound from the wharf can bring an empty chair very near to me.
+b : Would it help to speak? | Is that place still hard to pass?
+a : Perhaps another time. There's a grief there I handle privately. | Some days easier. A decent walk and decent company help.
+
+scene manner
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I value an objection given with a straight face and a civil voice.
+b : Always civil yourself? | Even a foolish objection?
+a : I try. A woolly objection can make the effort rather visible. | I hear it. Then nobody can say the sensible answer came by accident.
+
+scene stranger
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I offer a visitor the near side of the table.
+b : Is it warmer? | Closer to you?
+a : It's nearer the door. Staying is nicer when leaving remains easy. | Near enough for conversation, sufficiently far from my troublesome frying pan.
+
+scene fry
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I distinguish a hot argument from a hot pan by the remedy.
+b : What's the remedy? | Which is simpler?
+a : Move the pan. Move only one speaker at a time in an argument. | A pan has yet to object to being taken off the heat.
+
+scene wealth
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can spare another serving and still have the whole evening free.
+b : Why mention the evening? | Would you send it out?
+a : Because somebody had to work for the food that made my leisure possible. | Or set a place. A guest can have a preference.
+
+scene health
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Tired ears want kinder words near the close of a day.
+b : Softer words? | Even sitting quietly?
+a : More deliberate ones. I hear well enough. I just like sense served plainly. | Quiet doesn't always spare the ears the effort of attending.
+
+scene feast
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a dance I like to lose every notion of precedence.
+b : Who goes first then? | Even the finest coat?
+a : Whoever the music finds with a foot already free. | Particularly that coat. A bit of dust would lend it character.
+
+scene clear
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : In clear weather my windowsill becomes an informal drying rack.
+b : For papers? | For laundry?
+a : For cards that have spent too much time beside a greasy dish. | Nothing that respectable. Mostly yesterday's after-supper business.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt my pack of cards petitioned to be excused from playing.
+b : Did you grant leave? | What was the argument?
+a : I heard every suit and woke up before giving the decision. | Far too much handling after fish. A perfectly reasonable grievance.
+
+story grease [topic=pastimes self.likes=cards]
+  : At supper I once claimed the highest card in the pack had vanished. I'd dealt it straight onto the underside of a greasy plate.
+  : I lifted the plate to make a point. The ace dropped face up in the exact middle of my conclusions.
+  b : Did you win the trick?
+  : I conceded the argument. That seemed to be the trick worth winning.
+
+story pansong [topic=food]
+  : I once carried a pan of sizzling fish beside a closed window and heard a roar of approval from outside. I should have felt exquisitely flattered.
+  : I opened the shutter to find several gulls with very professional views on what ought to happen next.
+  b : Did you admit any of them?
+  : I closed the shutter and admitted only that the cooking smelled rather good.
+
+story sleeve [topic=memories]
+  : I arranged some chairs very neatly once and sat down to admire the result. My sleeve caught an arm and drew the entire row beautifully out of line.
+  : I stood up, which made the disorder a little worse. By then I could see room for one more seat in the gap.
+  b : Did you straighten the row?
+  : I added the chair. Sometimes the sleeve that causes the trouble finds the remedy.
+
+rule @aside1
+when concept=bark self.working=yes self.job=official
+does aside
+cooldown 6h
+say One speaker till the thought's complete. | Room for the quiet objection now.
+
+rule @aside2
+when concept=bark self.likes=cards
+does aside
+cooldown 7h
+say No grease on the court cards! | The ace can judge the plates tonight.
+
+rule @aside3
+when concept=bark self.dislikes=early_bells
+does aside
+cooldown 8h
+say Who summoned all these ears at once? | Let the next bell wait its turn.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say A little oil for the late hearing. | My supper plate requires an appearance.
+
+dlg resident.hub : Come inside the informal rail. I have a chair for conversation as well as one for weightier affairs.
+dlg resident.job [self.job=official self.workplace] : At #self.workplace# I watch whose mouth is open and whose words are actually reaching the room.
+dlg resident.news [world.news] : The words I can pass on fairly are these. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, your face already has a friendly entry in my book.
+dlg resident.bye : A fair ending to your errands and a reasonably crisp supper.
+
+graft resident.hub
+choice Can your cards really settle a dispute? -> deck_law
+node deck_law
+say They have a very limited office. They can decide which wolf puts the dishes away. I wouldn't ask even the finest painted king to decide somebody's livelihood.
+free
+choice Why let them judge even the dishes? -> deck_dishes
+choice I'll keep serious business away from the pack. -> hub
+node deck_dishes
+say The dishes must be put away and everyone would rather linger over supper. The loser gets my best towel and plenty of cheerful company.
+choice That should make washing go faster. -> hub
+choice I shall keep my hands clean awhile. -> bye

@@ -1,0 +1,263 @@
+mantle rm344
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_oskar_gullworth
+title the dry margin
+fits stage=adult|old
+prefers job=official honesty=guarded
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk folds_an_oilcloth_hood_into_a_dry_tray_for_a_single_page
+likes fried_fish riddles new_boots thunder
+dislikes cold_tea waiting
+fears a_seal_on_an_unread_page a_petition_lost_between_desks
+hopes a_clear_desk_before_the_lamps_are_lit
+topics work +0.5 lore +0.3 weather +0.3 food +0.2 gossip -0.5
+styles comfort=practical gossip=closed refuse=formal tease=none
+marks oath saying
+persona #self.first# folds an oilcloth hood into a dry tray for a single sheet, hears a request all the way through, and answers the sentence actually spoken.
+
+words
+oath! = Fold and counterfold | Ink below the rim
+saying! = A wet margin will outlast a good excuse | One sheet lies flat
+oiltray = a square of folded oilcloth | a shallow black tray
+lastfold = the last inward fold | a firm crease along the rim
+dripedge = the downturned corner | a narrow drip lip
+blankline = a ruled blank | a narrow writing space
+receipt = a small counterfoil | my half of the slip
+sideink = the ink against the grain | a mark bled into the margin
+teaskin = a dull skin on the tea | the cold ring at the rim
+heelstamp = a crisp heel print | the square print of a new heel
+stormcount = the interval before thunder | a long quiet after a flash
+fishpaper = paper darkened by butter | a square of kitchen paper
+thinmark = a fine stroke in the margin | a short slanting mark
+
+any
+opinion houses for 2 : A promise from a House can span a generation. Precisely for that reason I prefer to have the terms in writing.
+opinion dole against 2 : Count the bowls first and the claimants separately. I distrust a distribution that declines the second count.
+opinion watch for 1 : A patrol that keeps a path clear gives a quiet street its full use.
+opinion city for 1 : A city survives because somebody once troubled to keep the second copy.
+opinion strangers against 2 : A name is a courtesy at the beginning of business. An introduction is better.
+opinion times for 1 : My accounts balance. I decline to extend that observation to everybody else's.
+opinion sump against 1 : A dispute from the lower streets can be heard a long way uphill. It does little good to increase the volume further.
+
+grown
+line greet : I can receive a single matter at present.
+line greet [pair.band=strangers] : An introduction may precede the business.
+line greet [here.time=dawn] : Morning. The paper is dry and the light adequate.
+line greet [here.time=dusk|night] : The lamps allow us a few minutes more.
+line greet.return : I acknowledge the greeting. Please continue.
+line greet.return [pair.band=friends|family] : You may omit the introduction on this occasion.
+line greet.return [self.working=yes] : The line is unfinished. My attention is available.
+line greet.return [here.time=dusk|night] : A voice carries remarkably well at this hour.
+line kin.open [pair.kin!=no] : A family word takes very little space.
+line again.open : I retained the point at which we stopped.
+line hail [pair.band=friends] : Over here. I have reserved a moment for you.
+line farewell : I wish you a satisfactory conclusion.
+line farewell.return : And a dry journey for your papers.
+line react.news : I can give the account one careful hearing.
+line react.news.new : My first notice of that matter has just arrived.
+line react.news.known : That account has been brought to me previously.
+line react.news.doubt : One detail appears to have escaped the margin.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A loss deserves time that cannot be set down in columns.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I am pleased to hear a matter has ended well.
+line ask.how : Has the day left you anything requiring attention?
+line answer.how : I have the ordinary number of matters in hand.
+line thank : I am obliged for the trouble you took.
+line deflect_thanks : The small correction was within my reach.
+line sympathise : This chair is available if you wish to sit in silence.
+line reassure : We may leave the next question until you are ready.
+line decline : My time for that purpose is already spoken for today.
+line accept_decline : I will take your refusal as given.
+line preclose : I have reached a suitable stopping place on the page.
+line accept_preclose : Very well. I have recorded where we left matters.
+
+scene paper_tray
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A hood has one other practical use. | #oiltray.capitalize# holds a single sheet very well.
+b : Apart from keeping you dry? | Why only one?
+a : Fold the corners in and a sheet can travel through a shower. | Because a second sheet can conceal the first.
+
+scene short_question
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : Two questions on one line may receive only one answer. | I leave #blankline# for the part nobody thought to mention.
+b : Which answer counts? | Does it fill?
+a : The one that belongs to the question actually asked. | With depressing regularity.
+
+scene private_seal
+when topic=lore here.region=ridgemere
+does give.opinion / react.self / assess
+a : A handsome seal is exceptionally good at obscuring its own small print. | The emblem can be identified from across a room.
+b : Do you trust a plain one more? | Is that of use?
+a : I trust the chance to read before either sort is applied. | To the eye, yes. Agreement takes rather closer inspection.
+
+scene cold_tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I can tell a long audience by #teaskin#. | Cold tea changes the flavour of a finished conversation.
+b : No clock required? | Towards bitterness?
+a : A clock cannot be drunk either. The results appear evenly disappointing. | Towards brevity on the next occasion.
+
+scene fish_fork
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Hot fish should arrive separately from any paper one wishes to keep. | I would welcome a piece of crisp skin and no sauce.
+b : Does butter travel far? | Unusually simple.
+a : An alarming distance across a clean sheet. | Simplicity is appropriate when the fish has been cooked properly.
+
+scene small_riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What becomes easier to overlook the more carefully one frames it? | I prefer a riddle with precisely the information needed.
+b : A painting? | What spoils it?
+a : The empty space where the answer was to go. I collect such little traps. | An answer requiring an uncle nobody has previously introduced.
+
+scene heels
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : The pleasure of a new heel is the impression it leaves in clean dust. | Scrupulously black boots reveal one small fact about their owner.
+b : What about the fit? | Wealth?
+a : A poor fit would prevent my going far enough to make the impression. | Recent access to a brush. The other inference is premature.
+
+scene thunder_range
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : I time #stormcount# without consulting a clock. | A roof is tested more thoroughly by a storm than by a receipt.
+b : What do you count with? | So the receipt is useless?
+a : The syllables of a sentence I know to run too long. | Quite useful when the roof fails the first test.
+
+scene quiet_door
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : Around our offices a closed door can suggest six things to a caller. | A second chair is convenient for papers until a guest arrives.
+b : Which do you mean? | Do you move them?
+a : Usually the undistinguished fact that the door is shut. | At once. A matter resting on a chair has no claim to precedence.
+
+scene hates_wait
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I dislike being told to expect an unspecified interval. | Waiting fills more of the day if one has brought no work.
+b : Would a precise hour help? | You always carry a sheet?
+a : Even a frankly inconvenient hour allows a little planning. | I carry a hood. The sheet appears with remarkable frequency.
+
+scene human_trust
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I would leave #self.friend# an unsealed note. | I keep time free for #self.friend# without demanding a subject in advance.
+b : Nothing private in it? | A standing appointment?
+a : That depends on whose hand opens the note. My preference is clear. | A personal courtesy. It requires fewer entries.
+
+scene belated_load
+when topic=times|travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A missing arrival time has a most definite effect on a page. | The wagons are overdue. I would keep cause and consequence in separate columns.
+b : A gap in the record? | Which can you enter?
+a : Exactly. No amount of black ink will put the wheels in that space. | The delay alone. I have no satisfactory account of its cause.
+
+scene prudent_neighbour
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer can be directed to the right door without being given every key. | It costs little to spell a new name correctly.
+b : You prefer a narrow welcome? | What do you charge?
+a : I prefer useful directions to useless assurances. | A moment's attention, payable by the writer.
+
+scene quiet_ledger
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A name in a rumour is quite distinct from a signature. | The question before me appears to concern another wolf's private affairs.
+b : You will not give me either? | Have you considered it?
+a : I can promise the rumour no assistance from this direction. | To the extent of identifying the proper point to stop.
+
+scene actual_notice
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. The account identifies #world.news_from# as its source. | From #world.news_from# the wording is as follows: #world.news#.
+b : Does it require action? | Is there a second page?
+a : This is a report, and I have given you the substance of it. | None that I can place before you.
+
+scene rain_bound
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : If a page gets wet, let the writing lie uppermost. | My collar may suffer a little on account of a piece of paper.
+b : Even in this rain? | An important paper?
+a : Under cover, naturally. I had credited us both with that degree of prudence. | Unreadable ones have a way of becoming important.
+
+scene light_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can sit through quiet prayer without trying to put the silence into words. | I would count the day complete with one honest act laid before the Bright One.
+b : Does that come easily? | A great accomplishment?
+a : With practice. One need not file an account of every private thought. | A small exact one would do.
+
+scene square_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : An empty desk with a whole hour of daylight left would meet my present aspirations. | I should like to put a clean page aside at dusk.
+b : No grander ambition? | For tomorrow?
+a : You underestimate the number of entries implied by an empty desk. | For its own sake. A blank need not always signify an omission.
+
+story wet_signature [topic=memories self.age>=20]
+  : I once turned a wet sheet too briskly and transferred my signature to the blotter.
+  : It was far more legible in reverse than in the original.
+  b : Did that alter your hand?
+  : It altered my opinion of mirrors. I write somewhat more slowly now.
+
+story unequal_cups [topic=food|memories]
+  : I set two cups on a narrow table and put my papers beside the nearer one.
+  : By the time I had finished both cups were cold.
+  b : What purpose did the second one serve?
+  : An independent confirmation that I had spent too long reading.
+
+story boot_print [topic=travel|memories]
+  : My first pair of fine new boots left two decidedly different marks on a pavement.
+  : I inspected the soles with some indignation.
+  b : Was there a defect?
+  : A leaf on one heel. I withdrew my complaint before anybody heard it.
+
+rule @fold_one
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Corners inwards. A margin clear of drips, please.
+
+rule @close_line
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say The figure belongs on the line with the question.
+
+rule @clear_desk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One clean corner of the table recovered.
+
+rule @dry_return
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Morning light is a particularly exacting examiner of dried ink.
+
+dlg resident.hub : Begin with the matter for which you came.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Your name is already familiar to me.
+dlg resident.hub [here.time=night] : The hour recommends a concise account.
+dlg resident.hub [pair.disposition=hostile|wary] : I can hear at this distance. There is no reason to reduce it.
+dlg resident.job [self.job=official] : My business at present is #self.trade_words#. You may address a particular question to me.
+dlg resident.job : I prefer a day which leaves a legible account.
+dlg resident.news [world.news] : I have one report from #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : If the question depends upon my repeating a private name, it will remain unanswered.
+dlg resident.bye : I trust your next appointment allows the journey.
+
+graft resident.hub
+choice Why fold the hood with exactly four corners? -> tray_corner
+node tray_corner
+say The fourth fold holds the third in place. Without it the sheet is protected from rain but entirely at liberty to blow into a puddle.
+choice And when you need the hood? -> hood_again
+choice That would be an inconvenient liberty. -> hub
+node hood_again
+say I remove the sheet first. Surprisingly many difficulties can be disposed of by observing the order of two small actions.
+choice That explains the folds. -> hub
+choice I shall leave matters in that order. -> bye

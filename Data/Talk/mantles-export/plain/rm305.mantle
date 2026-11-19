@@ -1,0 +1,294 @@
+mantle rm305
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_edmund_sootdale
+title the stall that sells a minute
+fits stage=young|adolescent|adult|old
+prefers humour=dry honesty=guarded
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=guarded piety=ordinary drive=steady
+quirk counts_the_bells_from_the_chapel_of_the_tide
+likes warm_bread evening_line festival_bells frosty_mornings
+dislikes deep_mud cold_tea
+fears having_a_private_price_read_aloud
+hopes owning_a_counter_as_long_as_both_arms
+topics prices +0.6 pastimes +0.4 food +0.3 faith +0.2
+styles comfort=quiet gossip=guarded refuse=soft tease=dry
+marks oath saying
+persona #self.first# prices minutes of quiet on a paper counter and keeps the actual savings out of sight.
+words
+oath! = Ring my empty till | Blunt my best pencil
+saying! = Quiet costs extra | Nobody owns the minute between
+ticket = a little paper chit | a corner of old wrapping
+stall = my folded counter | a shop as wide as my sleeve
+copperbit = one hiding copper | a coin gone warm
+bellgap = a bell's fading breath | a long quiet beat
+baitend = a tiny dough pellet | a little curl of crust
+pricepin = a pin with a pale head | a bit of tack
+waxline = a waxed fishing line | a short dark thread
+shelftag = a crooked label | a tag with a turned corner
+teaend = a skin on the tea | a cold dark stain
+chalkcoin = a chalk circle | a round white mark
+mudpence = a penny of dried mud | a brown disc of clay
+
+any
+
+opinion merchants mixed 1 : A good shop lets you read the tag before your paw lands on the counter.
+opinion houses mixed 1 : A House can't buy tomorrow's first minute and make it come any sooner.
+opinion city for 1 : A low street can hear a high bell for exactly the same price.
+opinion strangers mixed 1 : I'll say what my time costs. What's in my pocket stays in there.
+opinion festivals for 1 : Bells sound better when nobody's counting how much work ought to fit between strokes.
+opinion road mixed 1 : A short cut through mud is often a very long way for your boots.
+line react.news : I'll leave a little space for the rest of that.
+line react.news.known : That one's already got a ticket.
+line react.news.new : There's a fresh mark for my count.
+line react.news.doubt : I'd keep that off the price list till someone looked closer.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I could ring a small bell especially for that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The next quiet minute ought to belong to whoever needs it.
+
+young
+
+line greet : Hullo. You've come in the free minute.
+line greet.return : My ears are open for business again.
+line farewell : Keep the ticket if you like. It's only paper.
+line farewell.return : Next look at my shop's free too.
+line decline : No, that's the bit of my account that's folded inside.
+line answer.how : I'm a little richer in paper than in actual pennies.
+line ask.how : Did you get a minute all to yourself?
+line thank : You didn't try to peek under the counter. Thanks.
+line accept_decline : Then the price is nothing and we're square.
+line sympathise : I can shut the little shop and sit still.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've opened #stall#. Today's thing for sale is a quiet minute.
+b : How much for one? | Can I have two together?
+a : Free if you keep both paws still. Scratching's a penny. | Two together makes a wait. I ought to pay you for that.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep a price list down one side of my slate.
+b : Price of a sum? | Do you charge for mistakes?
+a : One crust for the easy ones. I wouldn't trust anybody selling a very cheap hard sum. | No. I've so many free samples already.
+
+scene faith_1
+when topic=faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Each chapel bell gets counted in my empty paw.
+b : What are the bells buying? | Can you really hold a bell?
+a : All my attention. It's a generous amount for that little noise. | Just the space it leaves. I shut my fingers on the quiet.
+
+scene food_1
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Warm bread's a better purse warmer than any penny.
+b : Will you wrap the loaf round your coin? | How long does the heat last?
+a : No, the loaf's mine to eat. My pocket can look after the money. | Longer if I hold it. Much shorter if I remember the crust is there.
+
+scene family_1
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.mother# my whole little shop with the till kept shut.
+b : Afraid she'll count your money? | Don't you want a proper customer?
+a : I want her to see the shop before she sees how much I've still to save. | She's welcome to look without buying. I've a special free ticket for that.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A frosty morning would give my stall a silver front.
+b : What will you sell there? | How will you keep your paws warm?
+a : Footprints, if I can persuade anybody to buy one before it melts. | Put a bit of warm bread in each paw and consider myself very well off.
+
+scene pastimes_2
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I could put a fishing line behind my shop when evening comes.
+b : Suppose a fish and a customer both turn up? | What would the fish cost?
+a : Customer holds the rod. I'll hold the money. That's a partnership till the fish gets loose. | It can keep its money if it can get itself off the hook.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Mud pennies are splendid money until it rains.
+b : Do you have a great many? | Can somebody cheat and make more?
+a : I had lots. Now I have one very expensive brown smear. | Yes, but it makes for a remarkably affordable shop.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A cup gone cold's like a minute that nobody wanted.
+b : Would you give it away? | Couldn't you just warm it?
+a : That would be a mean use of a perfectly good present. | Then it's a minute bought back. I'd better put that in the book.
+
+story rental [topic=memories]
+  : I charged my paper customers one pebble for a whole quiet afternoon.
+  : They paid in paper pebbles. I'd cut them out myself.
+  b : Did you mind?
+  : Only when I tried to buy real bread before remembering who ran the other shop.
+
+rule @minute
+when concept=bark
+does aside
+cooldown 8h
+say There's a little quiet going cheap just now. | Tickets safe under my thumb.
+
+rule @sums
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say One sum left with no price on it. | I can count without showing what's in my paw.
+dlg resident.hub : We're open. You'll have to lean close to see the merchandise.
+dlg resident.job [self.job=child] : Lessons for now. The paper shop's mine when a sum lets me go.
+dlg resident.bye : You've spent a minute very nicely.
+
+graft resident.hub
+choice How much does a minute cost? -> minute_price
+node minute_price
+say Yours or mine? Mine's free if I choose to give it, and terribly dear if somebody just takes it.
+choice What if we're both talking? -> minute_pair
+choice I'll keep my ticket. -> hub
+node minute_pair
+say Then it's two minutes rolled into one and I've no idea how to add it up. No charge till I work that out.
+choice I'll keep my ticket. -> hub
+
+adolescent
+
+line greet : Welcome inside the imaginary line of my future counter.
+line greet.return : I can put the reckoning down for you.
+line farewell : Spend a few minutes as if nobody could tax them.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'm working out what a stall costs when every hour has to be counted.
+b : Do you count time asleep? | Is waiting for a buyer work?
+a : Only if the stall can manage to keep me awake without selling a thing. | Very definitely. The customer might need that quiet just to decide.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I've offered a friend the first invitation when my stall opens.
+b : A free purchase too? | How far off is that day?
+a : An invitation has no string tied to a purse. I won't spoil it by naming a price. | Far enough to keep the promise small and near enough to keep saving.
+
+story label [topic=memories]
+  : I wrote a tiny label for a very dear imaginary parcel.
+  : I'd made the writing so neat I couldn't work out which way up to read it.
+  b : Did you change your price?
+  : I put an arrow on it. A six became a nine once and that was quite enough commerce for me.
+
+grown
+
+line greet : Come take the unpriced bit of this hour with me.
+line greet.return : You've landed neatly between two claims on my attention.
+line farewell : Leave some time loose in your pocket.
+line farewell.return : May the next wait run in your favour.
+line decline : I'd prefer to keep those figures inside their fold.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I always set a value on the wait as well as the goods.
+b : Whose wait counts? | Would you charge for an empty shop?
+a : The buyer's, especially. Mine's already in the price on the tag. | I'd count it. Charging for it is rather more ambitious.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Fishing still water keeps me honest about the value of an hour.
+b : Caught anything worth the time? | Don't you grow impatient?
+a : Peace enough to speak civilly when I get home. Pricier than a fish sometimes. | A sure sign is catching myself urging the cork to do the fish's job.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Fresh bread makes me absurdly generous with change.
+b : Is that good business? | Would you have bread beside your till?
+a : It makes a happy customer of me and I ought to consider that angle sometimes. | Better out of reach. A warm crust could talk me out of the furniture.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A bell divides work more kindly than my own arithmetic.
+b : How can a bell be kind? | Doesn't a bell call you back to work?
+a : I can leave my sums unfinished while the note is still alive. | Yes, but it calls a pause into being first. I take every bit of that.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : One hooked nail by a door is a very economical kind of cupboard.
+b : Isn't everything on show? | How much can a nail hold?
+a : I hang only what company may see. Some accounts keep folded in a sleeve. | Exactly one coat more than I think till the plaster gives way.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend can spend a whole afternoon with me and owe nothing for it.
+b : Even a busy afternoon? | Would you close a stall early?
+a : Provided the elbows share the work when there's work in reach. | To sit with somebody who needed me there, certainly. I'd put an honest sign up.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My first savings took less space than the plans to spend them.
+b : Did you really have a plan? | Was a shop always the idea?
+a : A stall big enough for two elbows. I priced the dream before the timber. | I mostly wanted to choose between buying and setting the price.
+
+scene weather_1
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : There's a clean rim round every price in snow.
+b : You'd leave the tags outside? | Doesn't the snow hide the figures?
+a : I'd bring the goods in. I rather like the look of labels promising a drift. | Briefly. Gives a buyer the pleasure of looking before putting a value to things.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'd like a kettle with a bell that rang just before tea went cold.
+b : Another bell to count? | Why not drink it sooner?
+a : One with a purpose I understood without asking anyone else's leave. | I've been known to finish the conversation and forget where my mouth was going.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I can tell weariness by which numbers I start adding twice.
+b : Would you quit for the day? | Suppose you're paid to finish?
+a : Till a warm cup's been emptied. I can generally manage that much retirement. | Then I'd best rest long enough to finish the right thing.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A road through deep mud should display a separate price for getting a boot back.
+b : Would you pay the fee? | What coin does mud take?
+a : Only if a kind passer-by came with the purchase. | Patience chiefly, and every so often a perfectly good sole.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean month makes an untallied hour feel like rather a luxury.
+b : Is it wasteful? | Do you still take one?
+a : It's dearer to spend every minute frightened of the next one. | When I can. Sometimes all I manage is the space one bell takes to fade.
+
+story shopbell [topic=memories]
+  : I tied a little brass bell under a shelf to ring when the board was lifted.
+  : Forgot all about the string and sat down to think beneath it.
+  b : What woke you?
+  : My own knee raised the board. First customer I ever summoned by accidentally stretching.
+
+rule @hush
+when concept=bark
+does aside
+cooldown 8h
+say I can count quite well without announcing the total. | That's a minute nobody has billed for yet.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Before the first call there's room for a quiet reckoning. | Warm cup first and figures after.
+dlg resident.hub : We can take the time this matter actually costs.
+dlg resident.news [world.news] : This came across clear as a struck bell. #world.news#.
+dlg resident.bye : Here's your minute back with my gratitude.

@@ -1,0 +1,398 @@
+mantle rm326
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_lionel_platt
+title the forgiving tally
+fits stage=adult|old
+prefers role=merchant job=woodcutter
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk cuts_a_second_notch_when_a_debt_is_forgiven
+likes fried_fish singing tidy_house thunder
+dislikes crowds flies
+fears a_kindness_counted_as_profit an_unclaimed_envelope
+hopes a_clear_shelf_at_home a_tally_that_matches_both_ends
+topics work +0.6 friends +0.3 food +0.3 weather +0.4 dreams +0.3
+styles comfort=generous gossip=discreet refuse=gentle tease=none
+marks oath saying
+persona #self.first# pares a second notch across each forgiven debt, carries a letter kept for a stubbornly absent recipient and has a steady voice for singing over bad weather.
+
+words
+oath! = Split my last lath | Warp the tally
+saying! = Cut across a debt to clear it | Kindness keeps its own account
+tally = my slender tally | the little squared stick
+cross = the second notch | a crosswise nick
+fold = the letter fold | my undelivered packet
+fish = the hot brown fillet | a crisp fish corner
+rack = a row of square hooks | the neatly spaced pegs
+buzz = an unwelcome fly | the hovering pest
+roar = the long thunder roll | a deep booming note
+scrap = a curl of soft wood | the pale clean shaving
+ruler = a straight measuring slip | my marked wooden foot
+grain = the true grain | a pale line in the board
+curl = the splintered end | a standing sliver
+drybit = the sheltered patch | a dry corner of the stack
+part = the lower harmony | my steady low part
+board = a planed offcut | the smooth square
+seat = a modest stool | my little wooden seat
+coin = the last small copper | a spare bit of copper
+wrap = a greaseproof fold | the second twist of paper
+
+any
+opinion @1 church for 2 : A full account can be kept in a book. The Bright One also sees what I choose to let go uncollected.
+opinion @2 dole for 2 : A fellow wolf's supper shouldn't go to bed itself just because the buyer has an empty pocket.
+opinion @3 merchants for 1 : Somebody has to pay for timber before a customer ever gets to look at the grain.
+opinion @4 newcomers for 1 : Offer a newcomer an unoccupied piece of board. Everybody has to take a first hold somewhere.
+opinion @5 road against 1 : A late wagon can cost a whole afternoon without putting a scratch on a single piece of freight.
+opinion @6 watch for 1 : I'll give credit for a quiet counter to the feet that walk the night round.
+opinion @7 drink against 1 : A cup that eats the money for a family's cupboard has taken an excessive helping.
+opinion @8 city for 1 : A wolf can come through the Commons with sawdust under the cuffs and have something to offer the next street.
+opinion @9 strangers for 1 : We haven't done business yet. That's an opening, not an argument for shutting the door.
+
+grown
+line @1 greet [pair.band=strangers] : Here's a clear end of timber for your parcel. Welcome. | Come within reach of the clean board.
+line @2 greet [here.time=dawn] : First light sits kindly on the grain today. | Morning, with a fresh tally still to fill.
+line @3 greet [here.weather=rain] : Dry off where the pine smells strongest. | Welcome beneath this bit of sound timber.
+line @4 greet [self.working=yes] : Stay on the planed side and come close. | Here's an eye and an ear clear of the work.
+line @5 greet.return : A welcome with both ends of it accounted for. | Glad of the good sound your greeting makes.
+line @6 greet.return [pair.band=friends|family] : Some voices live on my credit side for good. | Here's some room cleared with you in mind.
+line @7 greet.return [here.time=dusk|night] : The day's nearly squared away. A word's welcome. | We've enough light left for kind faces.
+line @8 farewell : May your load lie true through all the turnings. | Home safe with the weight settled evenly.
+line @9 farewell.return : I'll keep our account in friendly order. | A peaceful road beyond this parting place.
+line @10 again.open : Another turn across the marked board. | Here's that voice again, right on the grain.
+line @11 kin.open [pair.kin!=no] : No tally needed on a place held for family. | Set your knees under this side beside me.
+line @12 hail [pair.band=friends] : Over here with the fine sawdust! | A good corner left free for you!
+line @13 react.news : Let's have the account with the weight on both ends. | Where did that word first take hold, I wonder.
+line @14 react.news.new : There's a mark my tally didn't have before. | First sight of that particular turn in the grain.
+line @15 react.news.known : I've an older nick for the same account. | The first telling had about that weight too.
+line @16 react.news.doubt : I can't make the two notches match on that statement. | Something rough has slipped in beneath a very smooth telling.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Let the account wait. The hurt wants company. | That brings a heavy end of the timber down on a household.
+line @18 react.news.glad [topic.kind=birth|marriage] : I've a good strong harmony for a word like that. | That's news to set the last notch shining.
+line @19 answer.how : Good at the grain and easy at heart. | My work and my word line up well enough.
+line @20 decline : I'd have to leave another wolf short to cover that promise. | There isn't enough in my reckoning to take that on honestly.
+line @21 accept_decline : A straight answer leaves both ends sound. | The limit you set is fair enough for me.
+line @22 sympathise : Come sit. Nobody has to lift the whole board alone. | The load can lie still while you find your breath.
+line @23 thank : I have an excellent memory for that sort of kindness. | That deserves a deep and favourable notch.
+line @24 deflect_thanks : A gift goes across my stick with the account already cleared. | Just take the comfort without carrying a debt.
+line @25 preclose : I've a few small nicks to put in order. | Time I went back to my stubborn little errand.
+line @26 accept_preclose : Keep your day's balance as even as you can. | Go on. I can hold this end awhile.
+line @27 farewell [here.weather=rain] : Stay well inside the drips at the roof edge. | Wrap the good paper with the folds downhill.
+line @28 farewell [here.time=night] : May the hearth be bright when you get there. | A gentle hour when your latch drops.
+line @29 greet [pair.band=friends] : There's the voice that can hold up my lower part. | Room at the song and at the board.
+line @30 preclose [self.working=yes] : The stack has stood without my eye long enough. | I'll settle the timber before I settle myself.
+line @31 answer.how [here.time=night] : Almost ready for a clear table and a quiet voice. | Worn just enough to take a decent rest.
+
+scene crossnick
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I cut #cross# where a wolf need never pay me back. | A single mark is a debt. Overcut it once and the stick has a kinder memory.
+b : Why keep the mark if the debt is gone? | Does the wood know the difference?
+a : Lest a busy head send a fresh bill for an old kindness. | My thumb does. It keeps me from asking twice.
+
+scene shelftidy
+when topic=pastimes self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I leave one peg on #rack# bare. | An empty space on my shelf has a proper occupation.
+b : Waiting for another hat? | Serving as furniture for a pocket of air?
+a : For whatever a guest comes carrying. A well-appointed house can take a surprise. | For a little while. Then a late parcel generally asks to borrow it.
+
+scene fried
+when topic=food self.likes=fried_fish
+does offer / accept / assess
+a : Take #fish# and I'll fold #wrap# round the rest. | I can offer you a browned edge of fish before it cools.
+b : I'll take the bit nearest your thumb. | I'd rather not take your best bit.
+a : Good. It's crisp right through and the wrapping won't stick. | I've saved a fine one under the fold. Eat before the steam spoils the edge.
+
+scene sing
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I take #part# when two voices start up close together. | A low note can prop up a hesitant voice without taking the tune.
+b : Do you have to know the words? | Wouldn't it be simpler just to sing louder?
+a : Only where to breathe. The words come clear when the rest are comfortable. | Lift underneath and the other voice can stay where it's happy.
+
+scene thunder
+when topic=weather self.likes=thunder
+does tell.self / react.self / assess
+a : #roar# puts a fine bass under anything a wolf wants to sing. | I enjoy the little trail of silence behind a thunderclap.
+b : There's not much use in trying to outsing it. | You mean after the shaking stops?
+a : No need. I enjoy keeping time with a voice much grander than mine. | Just before. You feel the board tremble after the sound starts to leave.
+
+scene fly
+when topic=smalltalk self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #buzz# has an absurd affection for the crispest flank of my fish. | A fly can't read the courteous distance I've left between plates.
+b : Cover it with the paper, then. | What would make the distance legible?
+a : I have. Now the pest's trying to inspect the underside. | A generous sweep of cloth. I can make my meaning quite clear.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does ask.advice / give.advice / assess
+a : What's a kind way through a crowd when both elbows are carrying planks? | How would you give a little breathing room without shouting?
+b : Wait for a turn and call out which end is coming. | Raise your free hand before you lift the wood.
+a : Agreed. Hearing the purpose often makes a decent space. | A moment well spent to preserve everybody's ribs and good will.
+
+scene keeper
+when topic=work self.role=merchant self.job=woodcutter self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I turn #grain# toward the buyer before entering a price. | Every board at #self.workplace# has a second side deserving a look.
+b : Even if it shows a rough spot? | Is a pretty surface misleading?
+a : Especially so. I'd rather explain a knot than have a neighbour find it under strain. | Only half a promise. I sell the whole thickness.
+
+scene familyseat
+when topic=family self.spouse
+does tell.plan / ask.detail / answer.detail
+a : I'd build #seat# even and broad for #self.spouse#. | I have a quiet note of thanks to take home to #self.spouse#.
+b : Where would the stool stand? | What would you set the words to?
+a : Near enough to the table for our knees to touch underneath. | No tune. There's speech that deserves to keep its ordinary pitch.
+
+scene hand
+when topic=work self.role=merchant self.hand
+does tell.plan / ask.detail / answer.detail
+a : I'd value a second eye on my figures from #self.hand#. | I've a troublesome plank I'd save to discuss with #self.hand#.
+b : What made you look again? | Would you own a mistake to a worker?
+a : Two ends with the same mark but different wear. I keep a ruler handy. | Yes. Errors multiply wonderfully in the dark.
+
+scene devout
+when topic=dreams self.piety=devout
+does tell.feeling / sympathise / assess
+a : I'd like the Bright One to find the grain of my word running true at day's end. | My wish is to remember the debts I owe more readily than those due me.
+b : Even when you'll lose by it? | Can one prayer alter a memory?
+a : It isn't always losing. A cleared debt makes a neighbour easier in the street. | It can give the next notch a purpose before I carve.
+
+scene owners
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : There's always a little weight of somebody else's money on the counter I keep. | I account for the last shaving even when I'd like to call it a gift.
+b : What do you get to give freely then? | Do you remember it all?
+a : My own share. It's worth keeping very clear which hand is being generous. | I keep #tally# with me. Pride isn't as fit for carrying figures.
+
+scene letterdoor
+when topic=dreams
+does tell.worry / reassure / assess
+a : I'm still carrying #fold# that ought to be under a grand roof already. | A good seal grows worn while its intended owner stays elsewhere.
+b : Couldn't you set it down outside the door? | Does a worn seal trouble you?
+a : A sill won't give its word it has the letter. I'd be uneasy all night. | It does. I haven't the right to improve it and won't let it come apart through carelessness.
+
+scene office
+when topic=land self.quarter=office
+does tell.self / react.self / assess
+a : Here in the Office quarter there's paper for reckoning exactly how much sawdust sticks to my cuffs. | Clean faces on figures please me as well as clean faces on cut grain.
+b : Do you enter the sawdust as profit? | Is that an Office habit you take home?
+a : Only if somebody offers me a handsome price to take the lot away. | Yes. It doesn't disturb a quiet home to know exactly what the cupboard holds.
+
+scene towntrade
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : The Commons will teach a trader to make enough room at the board for somebody carrying dinner. | In Ridgemere a long plank needs three voices to get round a street turn.
+b : How much room's a decent amount? | I can only think of the two ends. Who's the third?
+a : Enough to set a small hot parcel down without the buyer having to step back out in the crowd. | The wolf already round the turn who calls the path clear.
+
+scene earnprice
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : A cheap wrong board can cost two fine ones before the job is complete. | If a price buys the right measure I can defend it in a neighbour's kitchen.
+b : You'd still like to sell the dearer one. | Your buyer may only have the cheap price to hand.
+a : I would like a second visit when the work's stood a winter. | Then let's see if a smaller sound piece will do the job.
+
+scene donate
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Let me put the cost of another bowl among my own tally notches. | I've saved something for a hand that's come up short this week.
+b : I'd receive it more easily if I needn't hear my name read out. | I'd put it back when I can manage.
+a : Your name needn't come anywhere near my pencil. | Give when you can and keep no particular wolf in arrears.
+
+scene wagons
+when topic=travel world.wagons=late
+does tell.complaint / react.complaint / assess
+a : A late wagon can put an entire row of sound timber out of use for the morning. | We can have a whole task laid straight except the load that hasn't got here.
+b : You can put the time to another job? | Is it worth shaving the minor bits first?
+a : I can if the delay's admitted early. An honest word saves an idle hour. | Quite. Sometimes the smallest scraps take the longest to settle just right.
+
+scene wrapside
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : The clean fold round a fish supper keeps the crispness in the right place. | I keep the fish lifted above the grease while I walk.
+b : Where exactly's the right place? | In what sort of delicate contrivance?
+a : At the browned edges. Let the steam go out above the middle. | Two plain scraps laid across the folded paper. Enough to keep dinner from taking a long bath.
+
+scene roarcount
+when topic=weather world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I can sing through the minute before thunder starts without a single thought of money. | Thunder's best roll comes free in a poor week.
+b : What happens to the figures while you're singing? | But suppose your roof still leaks?
+a : They can wait for the silence. Debts aren't in fear of being forgotten. | Put the basin where the drops have good rhythm. Then see about a patch.
+
+scene squarecase
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like to put #ruler# beside a deliberately crooked piece. | A wood curl held up to the light can tell you why a cut went wrong.
+b : Wouldn't a straight piece be better company? | And is it all the fault of the blade?
+a : I learn more from the disagreement. A straight piece stays useful either way. | No. I sometimes insisted on going against #grain# to save myself an extra minute.
+
+scene truewage
+when topic=work
+does give.opinion / disagree / concede
+a : A wolf paid for a whole board should get the sound edge as well as the heart. | I'd have the time spent straightening a load counted in its price.
+b : Surely the outer scraps go to the keeper? | Wouldn't that make everything dearer?
+a : The buyer should know if the deal includes the right to keep the cuttings. | Only clear. A hidden charge still comes out of somebody's supper.
+
+scene welcome
+when topic=newcomer
+does offer / accept / assess
+a : Take #drybit# while I shift the loose timber. | A new face can have the first look along the true edge here.
+b : I'll tuck my bundle close. | I'd hardly know what I was looking for.
+a : Thank you. We like a welcome to leave enough room to work as well. | Look for light under the ruler. The timber will explain the rest.
+
+scene mirror
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : An old story follows a tally cut so lightly only its maker could read it. | I know a tale where a single shaving pays a huge board debt.
+b : How was anybody to know when it was cleared? | What makes the shaving so precious?
+a : By the second cut. That one was deep enough for all the street to see. | It was the piece that raised a table leg where a whole meal would have slid off.
+
+scene quietdoor
+when topic=dreams
+does tell.self / react.self / assess
+a : I'd deliver one special envelope and go home with my pocket lying quite flat. | Some sorts of debt had better go to the exact address in a single piece.
+b : You wouldn't mind the pocket feeling strange? | A gift can come to a different door and still be welcome.
+a : I'd mark the emptiness with #scrap# if I felt lopsided. | True. A sealed word is less readily transferred than a gift of bread.
+
+scene household
+when topic=family self.married=yes self.spouse
+does tell.plan / ask.detail / answer.detail
+a : I want a clean hour away from trade to share with #self.spouse#. | I would leave a good end of fish on the warm plate for #self.spouse#.
+b : Is a whole hour without an account in it possible? | Would you keep count of which part was yours?
+a : In a home with two chairs prepared, a decent hour is quite a small demand. | No. Supper's a pleasure, not a sale.
+
+scene singalong
+when topic=pastimes
+does tease / tease.return / laugh
+a : That note's sitting down on the job; shall I prop it up? | Your song has a very honest way of arriving late.
+b : If you'll saw it exactly to size. | I was letting your harmony get a lead on me.
+a : Then I'd have to go round charging by the foot of chorus. | A generous explanation. Come in on the next clap with me.
+
+scene letterrain
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : This coat must not leak at the corner with #fold# in it. | I don't much mind wet shoulders if my papers stay crisp.
+b : Turn your body with the wet side to the wind. | They're wrapped twice, aren't they?
+a : That's the stance. The rest of me will dry quite readily. | One fold for the letter and another so I don't mistake my own writing for the address.
+
+scene handmeasure
+when topic=work
+does ask.advice / give.advice / assess
+a : How would you finish this straight edge with its sharp standing sliver? | Would you price a pretty offcut before feeling whether it's firm?
+b : A single light pass along the splinter first. | Press its end against a sound board and listen.
+a : Yes. The tool should leave #curl# no chance at a worker's cuff. | Good. A solid edge and a pretty face might earn different prices.
+
+scene lasting
+when topic=dreams
+does tell.self / react.self / assess
+a : I'd like the largest mark on my last tally to be a debt I chose to forgive. | Some evenings I can see every generous piece of work in the order of my shelves.
+b : A whole lost sum worth a place of honour? | What does generosity look like on a shelf?
+a : A fair trade: the worry off another household for a harmless cut in wood. | A well-fitted open space for something that's gone where it was needed.
+
+story two_edges [topic=work]
+  : I cut a tally for a borrowed plank. When I went to settle it I found the nick on both edges of the stick.
+  : There had only been one loan. I thought back until I remembered making the second cut to test a new knife.
+  b : How did you distinguish them?
+  : The test nick slanted with the grain. A real charge ran across it. I've kept careless cutting away from my accounts since.
+
+story fish_balance [topic=food]
+  : Two crisp fish ends in a folded paper looked equal. I gave one a lift and felt it weigh almost nothing.
+  : It was only skin formed over a pocket of steam. The other had the supper in it.
+  b : Which did you take?
+  : Shared the proper end and divided the crackling skin. Both of us had what we'd thought was on the paper.
+
+story wet_door [topic=lore]
+  : A traveller in a story carried a letter through a week of downpours. Took off a coat, then a waistcoat, to keep the folded pages dry.
+  : The door opened on a thoroughly soaked wolf and one immaculate seal.
+  b : Did the letter explain the soaking?
+  : The first line sent good wishes for kindly weather. One can't shift a word once the seal is set.
+
+story low_voice [topic=pastimes]
+  : I was singing a slow part over a board when a low growl went on beneath the note after I stopped. I tried the note again to see what answered.
+  : The window rattled and the light slipped sideways over the grain.
+  b : Thunder in the hills?
+  : A cart making the turn outside. I gave it a decent last note and went back to work.
+
+story clean_space [topic=dreams]
+  : I cleared the top shelf and set my prayer book in the centre. There was a pale rectangle at each side where a box had stood.
+  : I started putting the boxes back, saw how square the pale spaces looked, and left them alone.
+  b : What occupies those spaces now?
+  : Sometimes bread for a neighbour. Sometimes just air. Both have good cause to be there.
+
+rule @stack
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 8h
+say Line up the lower edge first. | Good clear grain to the light.
+
+rule @letter
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Paper dry at the inner fold. | A coat can stand the wetter side.
+
+rule @prayer
+when concept=bark self.piety=devout
+does aside
+cooldown 8h
+say May the Bright One see level grain in this gift. | Let the unasked kindness come to mind.
+
+rule @tally
+when concept=bark self.role=merchant
+does aside
+cooldown 8h
+say Mark the bit that went freely. | A small account can deserve a good line.
+
+rule @home
+when concept=bark self.married=yes
+does aside
+cooldown 8h
+say Two clean seats for the evening. | The unpriced part of a day.
+
+rule @fish
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say Still crisp along the lean edge. | Share while the steam's rising.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I'll make some room along the counter for a new voice.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, no need to measure out your welcome again.
+dlg @3 resident.hub [here.time=night] : The work has gone quieter. I'll gladly give you a full hearing.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Bring your errand forward and leave your anger a pace behind.
+dlg @5 resident.job [self.role=merchant self.job=woodcutter self.workplace] : I run #self.workplace#. What goes out under my word has had its edges checked.
+dlg @6 resident.job : I square the patch of board where somebody else will begin.
+dlg @7 resident.news [world.news] : This much has reached my working board. #world.news#
+dlg @8 resident.bye : Leave our account easy on your shoulders.
+dlg @9 shop.greet [here.shop=open] : You're welcome to examine the measure before we consider the price.
+dlg @10 shop.greet [here.shop=bare] : Bare shelves for the moment. I'll listen to offers from a seller.
+dlg @11 shop.greet [here.shop=asleep] : Mm. The tally's shut and my eyes have followed.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a clear grain and a clear welcome to you.
+dlg @13 shop.prices : You'll see the figure beside the goods. Ask me what needful work it covers. #shop_offer#
+dlg @14 shop.bye : Thank you for the time you've spent examining my work.
+dlg @15 resident.hub [here.weather=rain] : Even a wet visit can come in and lay its bundle down.
+
+graft resident.hub
+choice What does the crossed cut stand for? -> cleared_debt
+node cleared_debt
+say A single stroke keeps a thing due in mind. A crosswise cut tells my thumb I've already chosen to give the thing freely.
+choice Why leave it where you can feel it? -> fair_memory
+choice Close the tally awhile. -> hub
+node fair_memory
+say So some future tight week doesn't make me remember the owing and forget the giving. The gift would hardly be worth the name.
+choice That squares the account. -> hub
+choice Good will between us. -> bye
+
+graft shop.greet
+choice May I inspect the underside? [here.shop=open] -> underside_view
+node underside_view
+say Of course. Let me show how much sound material your money would purchase, all the way through. Turn the edge toward this patch of light.
+choice What about the little nick? -> edge_nick
+choice Let's look at the rest. -> greet
+node edge_nick
+say I'd mark it on the record of the sale and tell you how much trim you'll need. No fair measure leaves a buyer guessing where the grain ends.
+choice Let me consider the goods. -> greet
+choice My thanks for the look. -> bye
