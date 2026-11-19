@@ -162,7 +162,7 @@ All talk traits match the starts.
 
 - District in the workplace slot — rm330, rm334.
 - Friend also listed as kin — rm307, rm309, rm314, rm328, rm335, rm339, rm340, rm341.
-- Pupil with no kin row — none. Household membership alone cannot establish parentage.
+- Pupil with no kin row — rm329. Household membership alone cannot establish parentage.
 - Job field set to `none` — rm312, rm314, rm315, rm320, rm321, rm334, rm335. Consult each resident’s trade and work facts when reviewing employment dialogue.
 
 The source uses overlapping civic titles. The post for rm310 describes the Chancellor of the Council, while the description calls the same resident the Speaker. The dialogue follows the post slot where office matters. The separate Chancellor of Ridgemere, rm344, keeps the oilcloth-paper habit of a guarded officeholder. Neither resident speaks invented decisions for the Houses. A charcoal-camp story and a missing sibling recur in the briefs. The new voices avoid treating those stories as corroboration of a deed or a current kin relationship.
