@@ -1,0 +1,84 @@
+talk_sim: sim-l1-0 listens in r2_the_knucklebones (work; 9 free there now, 5 with someone to talk to)
+talk_sim: sim-l1-1 listens in rm_the_grey_gull_inn (tavern; 11 free there now, 6 with someone to talk to)
+talk_sim: sim-l1-2 listens in rm_the_rainbarrel (tavern; 0 free there now, 0 with someone to talk to)
+talk_sim: sim-l1-3 listens in rm_the_bilge (work; 5 free there now, 0 with someone to talk to)
+talk_sim: sim-l1-4 listens in cn_saltwell_inn (tavern; 2 free there now, 2 with someone to talk to)
+talk_sim: sim-l1-5 listens in cn_fenshore_alehouse (tavern; 2 free there now, 2 with someone to talk to)
+talk_sim: sim-l1-6 listens in cn_frosthollow_alehouse (tavern; 1 free there now, 0 with someone to talk to)
+talk_sim: sim-l1-7 listens in cn_oakhaven_alehouse (tavern; 1 free there now, 0 with someone to talk to)
+talk_sim tick-L1: 2 h, 213 exchanges
+talk_sim tick-L1: 4 h, 298 exchanges
+talk_sim tick-L1: 6 h, 506 exchanges
+talk_sim tick-L1: 8 h, 551 exchanges
+talk_sim tick-L1: 10 h, 551 exchanges
+talk_sim tick-L1: 12 h, 626 exchanges
+talk_sim tick-L1: 14 h, 822 exchanges
+talk_sim tick-L1: 16 h, 892 exchanges
+talk_sim tick-L1: 18 h, 1098 exchanges
+talk_sim tick-L1: 20 h, 1434 exchanges
+talk_sim tick-L1: 22 h, 1724 exchanges
+talk_sim tick-L1: 24 h, 1808 exchanges
+talk_sim tick-L1: 26 h, 2021 exchanges
+talk_sim tick-L1: 28 h, 2097 exchanges
+talk_sim tick-L1: 30 h, 2305 exchanges
+talk_sim tick-L1: 32 h, 2386 exchanges
+talk_sim tick-L1: 34 h, 2592 exchanges
+talk_sim tick-L1: 36 h, 2658 exchanges
+talk_sim tick-L1: 38 h, 2861 exchanges
+talk_sim tick-L1: 40 h, 2923 exchanges
+talk_sim tick-L1: 42 h, 3120 exchanges
+talk_sim tick-L1: 44 h, 3159 exchanges
+talk_sim tick-L1: 46 h, 3348 exchanges
+talk_sim tick-L1: 48 h, 3682 exchanges
+talk_sim tick-L1: 50 h, 3972 exchanges
+talk_sim tick-L1: 52 h, 4031 exchanges
+talk_sim tick-L1: 54 h, 4230 exchanges
+talk_sim tick-L1: 56 h, 4291 exchanges
+talk_sim tick-L1: 58 h, 4492 exchanges
+talk_sim tick-L1: 60 h, 4556 exchanges
+talk_sim tick-L1: 62 h, 4758 exchanges
+talk_sim tick-L1: 64 h, 4810 exchanges
+talk_sim tick-L1: 66 h, 5003 exchanges
+talk_sim tick-L1: 68 h, 5073 exchanges
+talk_sim tick-L1: 70 h, 5281 exchanges
+talk_sim tick-L1: 72 h, 5318 exchanges
+talk_sim tick-L1: 74 h, 5514 exchanges
+talk_sim tick-L1: 76 h, 5850 exchanges
+talk_sim tick-L1: 78 h, 6141 exchanges
+talk_sim tick-L1: 80 h, 6196 exchanges
+talk_sim tick-L1: 82 h, 6393 exchanges
+talk_sim tick-L1: 84 h, 6456 exchanges
+talk_sim tick-L1: 86 h, 6655 exchanges
+talk_sim tick-L1: 88 h, 6725 exchanges
+talk_sim tick-L1: 90 h, 6928 exchanges
+talk_sim tick-L1: 92 h, 6989 exchanges
+talk_sim tick-L1: 94 h, 7177 exchanges
+talk_sim tick-L1: 96 h, 7239 exchanges
+talk_sim tick-L1: 98 h, 7440 exchanges
+talk_sim tick-L1: 100 h, 7482 exchanges
+talk_sim tick-L1: 7482 exchanges, 27128 lines in 100 world hours; 3583.12 s wall
+	Command being timed: "/tmp/s4-bin/talk_sim --world ridgemere3 --tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,rm_the_bilge,cn_saltwell_inn,cn_fenshore_alehouse,cn_frosthollow_alehouse,cn_oakhaven_alehouse --hours 100 --seed 1 --ablate shuffle --talk-data /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r3-talk-s4/Data/Talk --out /tmp/s4-tick/tick-L1 --run tick-L1"
+	User time (seconds): 3677.40
+	System time (seconds): 289.16
+	Percent of CPU this job got: 110%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 59:48.05
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1485292
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 42051896
+	Voluntary context switches: 39009593
+	Involuntary context switches: 297372
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+rc=0
+2026-11-19T04:34:50Z

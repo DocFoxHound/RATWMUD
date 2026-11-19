@@ -223,6 +223,7 @@ bool duration(const std::string& text, double& days)
 
 // A line's punctuation tidied after its words are filled in: a full stop straight after a ? or ! (a tag that asks, ", no?",
 // before the line's own stop) is dropped.
+void undouble(std::string& line);
 void tidy(std::string& line)
 {
     // Spaces a symbol that said nothing left: none at the ends, never two together, none before a stop.
@@ -240,6 +241,77 @@ void tidy(std::string& line)
     for (std::size_t i = 1; i < line.size(); ++i)
         if (line[i] == '.' && (line[i - 1] == '?' || line[i - 1] == '!') && (i + 1 >= line.size() || line[i + 1] != '.'))
             line.erase(i--, 1);
+    undouble(line);
+}
+
+// Words said twice where a symbol's value repeats its line's own (stage 4's ticking listen: a mantle's `heart = my heart`
+// in a shared "There's my #heart#", "a swim off the steps off the steps", "your the day's silver"): a determiner straight
+// after another (my my, your the, my own my, every a) and a run of two to four words said again at once, with nothing
+// between, are said once. Repeats with punctuation between ("Still water, still water") are the writer's and stay.
+void undouble(std::string& line)
+{
+    std::vector<std::string> w;
+    for (std::size_t at = 0; at < line.size();)
+    {
+        const auto end = line.find(' ', at);
+        w.push_back(line.substr(at, end == std::string::npos ? std::string::npos : end - at));
+        at = end == std::string::npos ? line.size() : end + 1;
+    }
+    const auto lower = [](std::string x) {
+        for (auto& c : x)
+            c = char(std::tolower(static_cast<unsigned char>(c)));
+        return x;
+    };
+    const auto bare = [&](const std::string& x) { return !x.empty() && std::all_of(x.begin(), x.end(), [](char c) { return std::isalpha(static_cast<unsigned char>(c)) || c == '\''; }); };
+    // (The word without what ends it: "it." is "it", its stop kept for whatever is left in its place.)
+    const auto stem = [&](const std::string& x) {
+        auto e = x.size();
+        while (e > 0 && std::ispunct(static_cast<unsigned char>(x[e - 1])) && x[e - 1] != '\'')
+            --e;
+        return lower(x.substr(0, e));
+    };
+    static const std::set<std::string> Owners{"my", "your", "our", "his", "her", "their", "the", "a", "an"};
+    // ("her" leads nothing: "Bring her a comb" is said as written.)
+    static const std::set<std::string> Lead{"my", "your", "our", "his", "their", "the", "a", "an", "every"};
+    bool changed = false;
+    for (std::size_t i = 0; i + 1 < w.size(); ++i)
+    {
+        // A determiner after a determiner (or after "my own"): the second goes.
+        std::size_t j = i + 1;
+        if (bare(w[i]) && Lead.count(lower(w[i])) && j < w.size() && lower(w[j]) == "own" && Owners.count(lower(w[i])))
+            ++j;
+        if (bare(w[i]) && Lead.count(lower(w[i])) && j + 1 < w.size() && bare(w[j]) && Owners.count(lower(w[j])) &&
+            lower(w[j]) != "her")
+        {
+            w.erase(w.begin() + std::ptrdiff_t(j));
+            changed = true;
+            continue;
+        }
+    }
+    for (std::size_t n = 4; n >= 2; --n)
+        for (std::size_t i = 0; i + 2 * n <= w.size(); ++i)
+        {
+            bool same = true;
+            for (std::size_t k = 0; k < n && same; ++k)
+            {
+                const auto& a = w[i + k];
+                const auto& b = w[i + n + k];
+                // Every word of the first run bare (nothing ends it); the second's last may carry the line's stop.
+                same = bare(a) && (k + 1 < n ? bare(b) && lower(a) == lower(b) : stem(b) == lower(a));
+            }
+            if (!same)
+                continue;
+            w[i + n - 1] += w[i + 2 * n - 1].substr(stem(w[i + 2 * n - 1]).size());
+            w.erase(w.begin() + std::ptrdiff_t(i + n), w.begin() + std::ptrdiff_t(i + 2 * n));
+            changed = true;
+            --i;                                    // (size_t wraps at 0 and comes back with ++i.)
+        }
+    if (!changed)
+        return;
+    std::string out;
+    for (const auto& x : w)
+        out += (out.empty() ? "" : " ") + x;
+    line = out;
 }
 bool hasMove(const Moves& book, const std::vector<std::string>& moves, const std::string& kind);   // (Below.)
 } // namespace
