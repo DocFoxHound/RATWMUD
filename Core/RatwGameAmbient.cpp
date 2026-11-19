@@ -423,7 +423,18 @@ bool Game::ambientBegin(AmbientTalk& t, const talk::Query& start, const mind::Ex
         }
     }
     t.conv.claim = t.pick.topic.key;               // (Phase 6: what it is about, never told a listener twice.)
-    auto first = talk_.begin(t.conv, q, talkFreshness(t, 0));
+    // Doc 84 §43 (U1): the talk asked the other way round, for the engine to cast a scene of the listener's own mantle
+    // with them opening it (never on a claim: the teller's to tell). Built only for a listener who wears one.
+    std::optional<talk::Query> turned;
+    if (talk_.settings().mantleFirst && !claimTopic(t.pick) && mantleOf_.count(t.pick.listener))
+    {
+        AmbientPick other = t.pick;
+        std::swap(other.teller, other.listener);
+        world_.talkFor(other.hearer);
+        turned = exchangeQuery(other, exchangeWords(other));
+        world_.talkFor({});
+    }
+    auto first = talk_.begin(t.conv, q, talkFreshness(t, 0), nullptr, turned ? &*turned : nullptr);
     if (!first && t.conv.ended == "told")
         return false;                               // (Its only openers would tell the listener again: no talk, written or not.)
     if (first)
@@ -1189,6 +1200,14 @@ std::vector<std::string> Game::talkFavourites(const std::string& id)
     return favourites_[id] = out;
 }
 
+std::vector<std::string> Game::talkCovers(const std::string& id) const
+{
+    // Doc 84 §43 (U1): the topics the resident's mantle has whole scenes of its own for (none for one who wears none).
+    if (const auto worn = mantleOf_.find(id); worn != mantleOf_.end())
+        return talk_.mantleTopics(worn->second);
+    return {};
+}
+
 void Game::ambientFinish(AmbientTalk& t, const std::string& reason)
 {
     if (t.spoken == 0)
@@ -1485,3 +1504,4 @@ void Game::sermons(double dt)
     }
 }
 } // namespace ratw::game
+

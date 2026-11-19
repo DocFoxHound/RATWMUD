@@ -355,6 +355,125 @@ void wornByItsWearer()
     expect(lib.setCharacter("keeper", "", problem) && !lib.find("keeper.own"), "an empty text takes it away");
 }
 
+// Doc 84 §43 (U1): within the hybrid, a wearer's own content has first claim whenever they are either party: their own
+// scene opens the talk they open; the one spoken to's own scene is cast with them opening it; their own line at the edges.
+void mantleFirst()
+{
+    auto lib = library();
+    std::vector<talk::MantleText> texts;
+    for (const auto& f : fs::recursive_directory_iterator(Fixture))
+        if (f.path().extension() == ".mantle")
+            texts.push_back({"", read(f.path().string()), f.path().string()});
+    std::vector<talk::Library::MantleRefusal> refused;
+    lib.setMantles(texts, refused);
+    expect(lib.settings().hybrid, "the real library plays the hybrid");
+    const auto topics = lib.mantleTopics("cw017");
+    expect(std::find(topics.begin(), topics.end(), "weather") != topics.end() &&
+               std::find(topics.begin(), topics.end(), "memories") != topics.end() && lib.mantleTopics("nobody").empty(),
+           "a mantle's topics are its scenes' and stories'");
+    talk::Query w;                                  // (The keeper, who wears cw017, opens on the weather by day.)
+    w.concept = "talk.weather";
+    w.a = speaker("keeper", "cw017", "coldwater");
+    w.b = speaker("neighbour", "", "coldwater");
+    w.facts = {{"here.time", "day"}, {"here.place", "street"}, {"here.weather", "clear"}, {"here.outdoors", "clear"},
+               {"pair.band", "acquaintances"}, {"here.region", "coldwater"}};
+    const auto own = [](const talk::Said& s) { return s.id.rfind("cw017.", 0) == 0; };
+    int on = 0, off = 0;
+    for (std::uint64_t s = 1; s <= 40; ++s)
+    {
+        lib.setMantleFirst(true);
+        on += own(lib.converse(w, s, {}, {}));
+        lib.setMantleFirst(false);
+        off += own(lib.converse(w, s, {}, {}));
+    }
+    expect(on == 40 && off < 40, "the opener's own scene first: " + std::to_string(on) + " of 40, without it " + std::to_string(off));
+    // Heard already (every thread), it gives way to the shared library's: no talk heard twice for the mantle's sake.
+    lib.setMantleFirst(true);
+    const auto heard = [](const std::string& id) { return id.rfind("cw017.", 0) == 0; };
+    int again = 0;
+    for (std::uint64_t s = 1; s <= 40; ++s)
+        again += own(lib.converse(w, s, heard, {}));
+    expect(again < 40, "a heard own scene doesn't claim the talk (" + std::to_string(again) + " of 40)");
+
+    // The neighbour opens, the keeper is spoken to: her own scene is cast with her opening it (its `a` turns hers).
+    auto t = w;
+    std::swap(t.a, t.b);
+    const auto facts = [&](int, int) { return t; };
+    int cast = 0;
+    for (std::uint64_t s = 1; s <= 40; ++s)
+    {
+        talk::Conversation c;
+        c.seed = s;
+        auto first = lib.begin(c, t, talk::Freshness{}, nullptr, &w);
+        expect(first.has_value(), "the talk begins");
+        if (first->entry.rfind("cw017.", 0) != 0)
+            continue;
+        ++cast;
+        expect(first->who == 1 && first->to == 0 && c.cast == first->entry, "cast: the keeper (b) opens her own scene");
+        std::vector<talk::SaidLine> lines{*first};
+        while (auto l = lib.next(c, facts, talk::Freshness{}))
+            lines.push_back(*l);
+        expect(lines.size() >= 2 && lines[1].entry == first->entry && lines[1].who == 0 && lines[1].turn == 1,
+               "the scene played as written, its b turn the neighbour's");
+        for (std::size_t i = 1; i < lines.size(); ++i)
+            expect(lines[i].who != lines[i - 1].who || lines[i].entry == lines[i - 1].entry, "nobody twice running");
+    }
+    expect(cast == 40, "every talk the keeper's own scene fits is hers, cast (" + std::to_string(cast) + " of 40)");
+    int uncast = 0;
+    for (std::uint64_t s = 1; s <= 20; ++s)
+    {
+        talk::Conversation c;
+        c.seed = s;
+        if (auto first = lib.begin(c, t, talk::Freshness{}))
+            uncast += first->entry.rfind("cw017.", 0) == 0;
+        auto claim = t;                             // (A claim is the teller's to tell: never cast over it.)
+        claim.b.facts["knows"] = "no";
+        auto turned = w;
+        turned.a.facts["knows"] = "no";
+        talk::Conversation k;
+        k.seed = s;
+        if (auto first = lib.begin(k, claim, talk::Freshness{}, nullptr, &turned))
+            uncast += first->entry.rfind("cw017.", 0) == 0;
+        lib.setMantleFirst(false);
+        talk::Conversation o;
+        o.seed = s;
+        if (auto first = lib.begin(o, t, talk::Freshness{}, nullptr, &w))
+            uncast += first->entry.rfind("cw017.", 0) == 0;
+        lib.setMantleFirst(true);
+    }
+    expect(uncast == 0, "never cast without the talk the other way round, on a claim, or with mantle_first off");
+
+    // The edges: small talk at dusk, where she has no scene; a shared scene carries it, and her goodbye is her own.
+    auto dusk = w;
+    dusk.facts["here.time"] = "dusk";
+    dusk.concept = "talk.smalltalk";                // (A talk long enough for its goodbyes.)
+    int bye = 0, byeOwn = 0, byeOff = 0, byeOffOwn = 0;
+    for (std::uint64_t s = 1; s <= 100; ++s)
+        for (const bool first : {true, false})
+        {
+            lib.setMantleFirst(first);
+            const auto said = lib.converse(dusk, s, {}, {});
+            for (const auto& l : said.info)
+                if (l.who == 0 && l.part == "close")
+                {
+                    (first ? bye : byeOff) += 1;
+                    (first ? byeOwn : byeOffOwn) += l.entry.rfind("cw017.", 0) == 0;
+                }
+        }
+    lib.setMantleFirst(true);
+    expect(bye > 0 && byeOwn == bye && byeOffOwn < byeOff,
+           "her goodbyes her own: " + std::to_string(byeOwn) + " of " + std::to_string(bye) + ", without it " +
+               std::to_string(byeOffOwn) + " of " + std::to_string(byeOff));
+    // Heard already, her own goodbye takes its chances with the rest: no wearer says the same farewell every time.
+    int heardBye = 0, heardOwn = 0;
+    for (std::uint64_t s = 1; s <= 100; ++s)
+        for (const auto& l : lib.converse(dusk, s, heard, {}).info)
+            if (l.who == 0 && l.part == "close")
+                ++heardBye, heardOwn += l.entry.rfind("cw017.", 0) == 0;
+    expect(heardBye > 0 && heardOwn < heardBye, "a heard goodbye of her own isn't first: " + std::to_string(heardOwn) + " of " +
+                                                    std::to_string(heardBye));
+}
+
 void theHotReload()
 {
     auto lib = library();
@@ -1137,6 +1256,7 @@ int main(int argc, char** argv)
         theSyntax();
         theChecks();
         wornByItsWearer();
+        mantleFirst();
         theHotReload();
         inTheGame();
         passingOn();

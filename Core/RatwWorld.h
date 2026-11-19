@@ -1997,6 +1997,8 @@ class World
     std::vector<AmbientTopic> agendaFor(const std::string& a, const std::string& b);
     // Each resident's favourite topics (topics.json's favourites, by their traits; a mantle's from Phase 9): the game's.
     void setTalkFavourites(std::function<std::vector<std::string>(const std::string&)> f) { talkFavourites_ = std::move(f); }
+    // The topics a resident's mantle has whole scenes for (doc 84 §43; empty for one who wears none): the game's.
+    void setTalkCovers(std::function<std::vector<std::string>(const std::string&)> f) { talkCovers_ = std::move(f); }
     // Every topic ambientTopic weighs for a pair, as it is weighed, its score final (doc 84, Phase 5: talk_sim
     // --dump-topics, the proof that topics.json's numbers are today's). Observation only.
     std::function<void(const std::string& a, const std::string& b, const AmbientTopic& t)> onTopic;
@@ -2039,7 +2041,7 @@ class World
     void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
     // Every topic the two might talk of, scored, cooled and warmed (topics.json), handed to `take` as it is weighed.
     void weighTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& take);
-    std::function<std::vector<std::string>(const std::string&)> talkFavourites_;
+    std::function<std::vector<std::string>(const std::string&)> talkFavourites_, talkCovers_;
     std::string talkHolder_;                        // (See talkFor.)
     std::function<std::string(const std::string&)> holderOf_;
     mutable std::map<std::string, std::vector<Society::PriceMove>>* talkPricesMemo_ = nullptr;   // (While ambientPicks runs.)

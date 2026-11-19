@@ -273,6 +273,9 @@ void World::weighTopics(const std::string& a, const std::string& b, const std::f
     std::vector<std::string> favA, favB;
     if (book.favourite != 0 && talkFavourites_)
         favA = talkFavourites_(a), favB = talkFavourites_(b);
+    std::vector<std::string> covA, covB;
+    if (book.mantleCovers != 0 && talkCovers_)
+        covA = talkCovers_(a), covB = talkCovers_(b);
     const auto told = [&](const std::string& listener, const std::string& key) { return book.toldOnce && ledger.wasTold(listener, key); };
     double closeness = 0;
     if (!book.pairBonus.empty())
@@ -302,6 +305,20 @@ void World::weighTopics(const std::string& a, const std::string& b, const std::f
                 topic.score += book.favourite;
                 if (!fa && everyday)
                     topic.source = b;               // (The one whose favourite it is brings it up.)
+            }
+        }
+        // §43 (U1): an everyday topic a wearer's mantle has whole scenes of its own for gets mantle_covers, and its
+        // wearer raises it. Never news (the week's events, a newcomer, the prices, the wagons): what is happening keeps
+        // its own weight and its teller, whoever wears what.
+        if (book.mantleCovers != 0 && everyday && (!covA.empty() || !covB.empty()))
+        {
+            const bool ca = std::find(covA.begin(), covA.end(), topic.kind) != covA.end();
+            const bool cb = std::find(covB.begin(), covB.end(), topic.kind) != covB.end();
+            if (ca || cb)
+            {
+                topic.score += book.mantleCovers;
+                if (topic.claim.empty() && topic.said.empty())
+                    topic.source = ca ? (cb && topic.source == b ? b : a) : b;
             }
         }
         if (onTopic)
@@ -972,8 +989,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         t.talk["topic.where"] = townWords(other);
         if (!c.manifest.empty())
             talkGood(c.manifest.front().first, t.talk);   // ("nails", "hides", as a line says it mid-sentence; topic.is.)
-        if (const auto* driver = entity(c.driver))
-            t.talk["topic.who"] = driver->name;
+        if (const auto* driver = entity(c.driver); driver && driver->id != a && driver->id != b)
+            t.talk["topic.who"] = driver->name;   // (Never the carter to their face, nor of themselves: T3. §43's card.)
         if (kind == "late" && !c.lateCause.empty())
             t.talk["topic.why"] = c.lateCause;                            // ("a broken axle", "the weather": Phase 8.)
         if (kind == "due")
@@ -1005,7 +1022,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         t.talk["topic.where"] = townWords(d.from);
         if (!d.manifest.empty())
             talkGood(d.manifest.front().first, t.talk);
-        if (const auto* driver = entity(d.driver))
+        if (const auto* driver = entity(d.driver); driver && driver->id != a && driver->id != b)
             t.talk["topic.who"] = driver->name;
         t.facts.push_back("A wagon from " + townWords(d.from) + " is posted to come here.");
         consider(std::move(t));

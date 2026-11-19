@@ -553,6 +553,7 @@ bool Game::start(std::string& problem)
     world_.setProtected([this](const std::string& id) { return isProtected(id); });   // (Doc 57, 6.)
     world_.setHolderOf([this](const std::string& player) { return accountOf(player); });   // (Talk's prices: doc 79, 11.)
     world_.setTalkFavourites([this](const std::string& id) { return talkFavourites(id); });   // (Doc 84 §8.5.)
+    world_.setTalkCovers([this](const std::string& id) { return talkCovers(id); });           // (Doc 84 §43.)
     world_.talkLedger().enabled = options_.talkLedger;   // (Off for fast economy sims: --no-talk-ledger.)
     world_.setKnower([this](const std::string& knower, const std::string& subject) {   // (As the town knows them: doc 57, 5.)
         const bool named = knowsName(knower, subject);

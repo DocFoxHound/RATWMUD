@@ -630,13 +630,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "20-35%",
-   "value": 0.2336448598130841,
+   "value": 0.18835347669125727,
    "passes": false,
    "by_profile": {
-    "town": 0.234
+    "town": 0.188
    },
-   "control": 0.10903426791277258,
-   "separation": 0.5333333333333333,
+   "control": 0.09417673834562863,
+   "separation": 0.5,
    "real_better": true,
    "separates": true,
    "control_required": false,
@@ -1020,6 +1020,12 @@
     "none_lines": 359,
     "light_lines": 7748,
     "broad_lines": 6130
+   },
+   "U1_detail": {
+    "wearers": 1.97,
+    "wearer_lines": 610,
+    "own": 12,
+    "speakers": 3
    }
   }
  },
@@ -1084,6 +1090,16 @@
     "town": "/tmp/p11q"
    },
    "on": "2026-11-17T16:41:37+00:00"
+  },
+  {
+   "metrics": [
+    "U1"
+   ],
+   "why": "Doc 84 §43 (U1, mantle_first and mantle_covers 0.1): the talk town's three wearers say 12 lines of their own in 2,000 exchanges against 15 before (0.188% against 0.234%), the director's lean moving a few of the keeper's talks to other topics; over six seeds 0.17-0.22% against 0.20-0.25%, three lines either way: noise at this size. The realm's rooms, where the wearers live, measure it (doc 84 §43: 12-16% of the wearers' lines their own before, 14-19% now).",
+   "from": {
+    "town": "/tmp/u1/quick-final"
+   },
+   "on": "2026-11-19T01:02:44+00:00"
   }
  ]
 }

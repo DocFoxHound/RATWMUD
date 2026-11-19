@@ -400,6 +400,7 @@ bool Library::readSettings(const std::string& text, std::string& problem)
     // §37: the hybrid ("hybrid": true; "hybrid_stitch": the lines stitched after a body, goodbyes aside).
     settings_.hybrid = doc.boolean("hybrid", false);
     settings_.hybridStitch = int(doc.number("hybrid_stitch", settings_.hybridStitch));
+    settings_.mantleFirst = doc.boolean("mantle_first", false);   // (§43: a wearer's own content first.)
     // Doc 84 §12 (Phase 10): how long a dead wolf's mantle rests, and the pools a dialect with nothing to give borrows.
     settings_.mantleRestDays = doc.number("mantle_rest_days", settings_.mantleRestDays);
     settings_.mantleFallback.clear();
@@ -3665,8 +3666,9 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
     // itself; and a return to a talk left unfinished on this topic (§8.10: "As I was saying..."), unless it returns
     // itself. An opener that says nothing of what it does (Phase 7 tags it) is left as it is.
     if (c.legacy || c.concept.rfind("talk.", 0) != 0 || said.info.empty() || said.info.front().moves.empty() ||
-        c.people.size() < 2 || said.info.front().who != 0)
+        c.people.size() < 2 || (said.info.front().who != 0 && c.cast.empty()) || said.info.front().who > 1)
         return;
+    const int opener = said.info.front().who;       // (§43: 1 when the one spoken to opens a scene of theirs, cast.)
     const auto does = [&](const std::string& what) {
         const auto& first = said.info.front().moves;
         return std::any_of(first.begin(), first.end(), [&](const std::string& m) {
@@ -3737,7 +3739,7 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
     const auto one = [&](const std::string& move) {
         Conversation::Open o;
         o.moves = {move};
-        auto s = answer(c, o, q, 0, fresh, nullptr);
+        auto s = answer(c, o, q, opener, fresh, nullptr);
         return s.id.empty() || s.info.size() != 1 ? Said{} : s;
     };
     // A thread left unfinished on this topic (Phase 4: pair.thread, kept two game days; the ledger's from Phase 5).
@@ -3761,7 +3763,7 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         onTopic.facts["conv.topic"] = c.topics.back();
         Conversation::Open o;
         o.moves = {"recall"};
-        if (auto s = answer(c, o, onTopic, 0, fresh, nullptr); !s.id.empty() && s.info.size() == 1)
+        if (auto s = answer(c, o, onTopic, opener, fresh, nullptr); !s.id.empty() && s.info.size() == 1)
             back = std::move(s);
     }
     // (§37: nor a greeting before a goodbye: "Evening, neighbour. Mind how you go." A talk that is only its leave-taking.)
@@ -3853,7 +3855,7 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         prepend(greet, "greeting");
 }
 
-std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace) const
+std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace, const Query* turned) const
 {
     // The opener: the concept's, as pick chooses it (the director's topic; Phase 5's agenda chooses from Phase 5).
     setUp(c, q);
@@ -3880,6 +3882,45 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
         said = {};
         if (told && c.ended.empty())
             c.ended = "told";
+    }
+    c.cast.clear();
+    // §43 (U1): where the opener's own mantle carries nothing here, the one spoken to's own scene does, cast with them
+    // opening it: a whole scene of theirs that fits, unheard, said by them as written. Only where the talk would
+    // otherwise be a shared scene (or nothing at all), never over a rule that says the topic's facts or a line that must
+    // be said, and never on a claim (`knows`: the teller's to tell).
+    if (turned && hybrid && settings_.mantleFirst && !q.alone && !turned->alone && !q.b.facts.count("knows") &&
+        q.b.facts.count("mantle"))
+    {
+        const auto* chosen = said.id.empty() ? nullptr : find(said.id);
+        const bool shared = !chosen || (chosen->scene && said.info.size() >= 2 && chosen->priority < settings_.strict &&
+                                        !ownEntry(*chosen, asked, 0));
+        if (shared)
+        {
+            auto other = *turned;
+            accommodate(other);
+            auto cast = pickOne(other, mix(c.seed ^ 0xCA57CA57ULL), fresh.heard, recent, 0, false, nullptr, true, true);
+            const auto* e = cast.id.empty() ? nullptr : find(cast.id);
+            // (Never saying less of the topic's facts than the scene it takes the place of: the director chose them.)
+            const bool saysAsMuch = !e || !chosen || factsSaid(*e, cast, other).size() >= factsSaid(*chosen, said, asked).size();
+            if (e && e->scene && cast.info.size() >= 2 && saysAsMuch && !toldAlready(c, *e, other, 0, fresh) &&
+                !collides(cast, other, fresh))
+            {
+                for (auto& l : cast.lines)
+                    l.first = 1 - l.first;
+                for (auto& l : cast.info)
+                {
+                    l.who = 1 - l.who;
+                    if (l.to == 0 || l.to == 1)
+                        l.to = 1 - l.to;
+                }
+                if (trace)
+                    trace->why += "; cast with the one spoken to opening their own " + cast.id;
+                said = std::move(cast);
+                c.cast = said.id;
+                c.frames = framesFor(other);        // (Their frames: an innkeeper casting her own is the host.)
+                c.ended.clear();
+            }
+        }
     }
     if (said.id.empty())
     {
@@ -4079,7 +4120,10 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         Query by;
         by.a.facts["id"] = c.people[std::size_t(due.who)];
         const bool collided = collides(turn, by, fresh);
-        if (!collided && stillHolds(due, beatQuery(c, facts, 0, 1, side)))
+        auto now = beatQuery(c, facts, 0, 1, side);
+        if (!c.cast.empty() && due.entry == c.cast)
+            std::swap(now.a, now.b);                // (§43: a cast scene is checked the scene's way round.)
+        if (!collided && stillHolds(due, now))
             return sayNext(c);
         if (trace)
             trace->why += "; " + due.entry + "'s turn " + std::to_string(due.turn + 1) +
@@ -4738,6 +4782,15 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
     for (const auto& o : options)
         top = std::max(top, o.fit);
     options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return o.fit < top; }), options.end());
+    // §43 (U1): at the edges of a talk of residents (a greeting, an answer, a joiner's word, the goodbyes), the speaker's
+    // own line first where one fits as well as any (within its share, above) and those who'd hear it haven't heard it:
+    // a wearer's one farewell isn't every goodbye they say (heard, it takes its chances with the rest).
+    if (settings_.mantleFirst && c.hybrid && !own.empty())
+    {
+        const auto mine = [&](const Option& o) { return ownEntry(*o.entry, q, speaker) && !(fresh.heard && fresh.heard(o.entry->id)); };
+        if (std::any_of(options.begin(), options.end(), mine))
+            options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return !mine(o); }), options.end());
+    }
     const bool bestOnly = !owed.concept.empty() && settings_.bestOnly.count(owed.concept);
     const auto choice = chooseOption(options, settings_, mix(c.seed ^ (std::uint64_t(c.beat + 1) * 0x9E3779B97F4A7C15ULL)), bestOnly);
     auto& chosen = options[choice.chosen];
@@ -4753,8 +4806,26 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
     return std::move(chosen.said);
 }
 
+std::set<std::string> Library::factsSaid(const Entry& e, const Said& said, const Query& q) const
+{
+    std::set<std::string> out;
+    for (const auto& c : e.when)                    // (A flag the topic carries, tested: topic.bare=yes.)
+        if (const auto f = q.facts.find("topic." + c.name); c.ns == Ns::Topic && f != q.facts.end() && f->second == "yes")
+            out.insert(c.name);
+    for (const auto& [k, v] : q.facts)
+        if (k.rfind("topic.", 0) == 0 && k != "topic.kind" && v.size() >= 4 && v != "yes")
+            for (const auto& l : said.info)
+                if (lower(l.text).find(lower(v)) != std::string::npos)   // ("A dun wolf" begins a sentence.)
+                {
+                    out.insert(k.substr(6));
+                    break;
+                }
+    return out;
+}
+
 Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
-                      const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst) const
+                      const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst,
+                      bool ownOnly) const
 {
     const auto cands = forConcept(q.concept, q, speaker);
     if (cands.empty())
@@ -4776,6 +4847,8 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         }
         if (e.scene && (chained || speaker != 0))
             continue;                               // (A scene is a whole talk: never a chain's later beat.)
+        if (ownOnly && (!e.scene || !ownEntry(e, q, speaker)))
+            continue;                               // (§43: the one spoken to's own scenes, to cast.)
         if (e.scene && untrueScene(e, q))
         {
             if (trace)
@@ -4805,6 +4878,18 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         {
             if (trace)
                 trace->passed.push_back(e.id + ": a turn can't be spoken (no line holds, or a fact is missing)");
+            continue;
+        }
+        // (§43: a scene rendered so that one turn says another's words again, the same question asked back word for
+        // word, isn't said: never the same words twice in one talk, C6. Mantle-first plays the mantles' scenes far
+        // more, and a writer's slip shows: "Was it really safer?" / "Was it really safer?")
+        if (e.scene && std::any_of(said.info.begin(), said.info.end(), [&](const LineInfo& l) {
+                return !l.text.empty() && std::count_if(said.info.begin(), said.info.end(),
+                                                        [&](const LineInfo& o) { return o.text == l.text; }) > 1;
+            }))
+        {
+            if (trace)
+                trace->passed.push_back(e.id + ": one of its turns says another's words again");
             continue;
         }
         if (moodMuted(e, q))
@@ -4854,21 +4939,7 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         // topic in general (market_behaviors: "and it's said: the shelf bought bare").
         // (A topic fact is said where its lines, as rendered, say its words: "fourteen pence the dozen", "a broken
         // axle"; or a flag the topic carries is tested. Not its kind, nor a short word that could stand for anything.)
-        const auto topicFacts = [&](const Option& o) {
-            std::set<std::string> out;
-            for (const auto& c : o.entry->when)     // (A flag the topic carries, tested: topic.bare=yes.)
-                if (const auto f = q.facts.find("topic." + c.name); c.ns == Ns::Topic && f != q.facts.end() && f->second == "yes")
-                    out.insert(c.name);
-            for (const auto& [k, v] : q.facts)
-                if (k.rfind("topic.", 0) == 0 && k != "topic.kind" && v.size() >= 4 && v != "yes")
-                    for (const auto& l : o.said.info)
-                        if (lower(l.text).find(lower(v)) != std::string::npos)   // ("A dun wolf" begins a sentence.)
-                        {
-                            out.insert(k.substr(6));
-                            break;
-                        }
-            return out;
-        };
+        const auto topicFacts = [&](const Option& o) { return factsSaid(*o.entry, o.said, q); };
         // The most of the topic's facts any line that holds would say; a scene that says as much carries the talk, else
         // a rule that does, as a short exchange.
         std::size_t most = 0;
@@ -4904,6 +4975,28 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
             options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return !whole(o); }), options.end());
         else if (trace)
             trace->why += "no whole scene fits; ";
+        // §43 (U1): of what is left, the speaker's own (their mantle's) has first claim, while one of it is unheard: a
+        // wearer's own scene carries the talk where one fits, before the shared library's.
+        // (Unheard: neither the entry, where it may not be heard again, nor this thread of it, even where the concept
+        // repeats, as the weather's do: a wearer's one weather scene isn't their every word on the weather.)
+        const auto fresh = [&](const Option& o) {
+            return !o.heard && !(heard && !o.said.info.empty() && heard(o.entry->id + "#" + std::to_string(o.said.info.front().alt)));
+        };
+        if (settings_.mantleFirst && !ownOnly)
+        {
+            const auto mine = [&](const Option& o) { return fresh(o) && ownEntry(*o.entry, q, speaker); };
+            if (std::any_of(options.begin(), options.end(), mine))
+            {
+                options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return !mine(o); }), options.end());
+                if (trace)
+                    trace->why += "the speaker's own first; ";
+            }
+        }
+        if (ownOnly)                                // (Only an unheard whole one is cast: else the shared library's.)
+            options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return !whole(o) || !fresh(o); }),
+                          options.end());
+        if (options.empty())
+            return {};
     }
     // A chain's later beats take the best tier, so its answers stay coherent (before Phase 3's fit: legacyNext).
     const auto choice = chooseOption(options, settings_, seed, chained || settings_.bestOnly.count(q.concept) > 0);
@@ -5892,3 +5985,5 @@ std::string jobCategory(const std::string& title, const std::string& label, cons
     return "none";
 }
 } // namespace ratw::talk
+
+

@@ -3244,6 +3244,18 @@ void hybridTalk()
                    said.info[0].part == "scene" && said.info[4].part == "close",
                "the scene as written, then its goodbyes (" + std::to_string(said.lines.size()) + " lines)");
     }
+    // 1b. (§43) A scene one of whose turns says another's words again ("Was it really safer?" asked back) isn't said.
+    {
+        auto lib = hybrid();
+        expect(lib.parse("scene hy_t_echo\nwhen topic=work\na : Was it safer then?\nb : Was it safer then?\na : Safer, aye.\n"
+                         "scene hy_t_fine\nwhen topic=work\na : Was it safer then?\nb : Not by much.\na : Safer, aye.\n",
+                         "hy_t3.talk", problem),
+               problem);
+        int echo = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+            echo += lib.converse(moment("talk.work"), seed, None, {}).id == "hy_t_echo";
+        expect(echo == 0, "a scene that says the same words twice is never said (" + std::to_string(echo) + " of 40)");
+    }
     // 2. Past the body, a direct question it owes is answered at the edge (a scene owes only what is written).
     {
         auto lib = hybrid();
