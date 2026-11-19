@@ -1,0 +1,471 @@
+# rm193, the cabbage league-keeper (doc 84 P14, batch city-a3): written for rm_mogens_dripley (Mogens Dripley: greens stall on Market Square, Ridgemere-born).
+mantle rm193
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_mogens_dripley
+title the cabbage league-keeper
+fits stage=adult|old
+prefers role=merchant job=merchant humour=dry
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk ranks_every_country_farm_by_the_state_of_its_greens
+likes barley_soup long_walks a_full_till warm_rain
+dislikes stale_bread wet_floors
+fears a_frost_in_late_spring the_north_road_shut_a_whole_week
+hopes a_pitch_under_the_market_hall_roof a_till_that_rattles_every_night
+topics work +0.5 prices +0.4 caravan +0.4 food +0.3 weather +0.3 season +0.3 pastimes +0.2 newcomer +0.2 gossip -0.2
+styles comfort=feeds_you gossip=passes_it_dry refuse=soft tease=dry
+marks oath saying
+persona #self.first# sells greens on Market Square, meets the country carts in the dark for first pick, keeps a running league of which farm grows the best cabbages, and says the driest things with the kindest face on the square.
+
+words
+oath! = Rot my turnips | Slugs in the lettuce
+saying! = A wilted leaf can't lie | Up with the carts, home with the coin
+greens = the greens | my greens | a stall's worth of greens
+league = my league | the farm league | my table of farms
+topfarm = the farm at the top of my league | this week's champion farm
+bottomfarm = the bottom of my league | the farm I'd not feed to a goat
+carts = the country carts | whatever wheels down from the farms
+pick = first pick | the pick of the carts
+trestle = the trestle | my trestle on the square
+till = a full till | the till heavy at lamplight
+soup = barley soup | barley stewed till the spoon stands
+walk = a walk that ends where it started | a walk for the legs' sake
+warmrain = warm rain | rain you could bathe a pup in
+stalebread = stale bread | a loaf gone to brick
+wetfloor = a wet floor | boards you could skate on
+farthing = a farthing | a single farthing
+hallroof = a pitch under the Market Hall roof | a dry pitch indoors
+leaves = the outer leaves | the tired leaves
+kale = kale | winter kale, stiff as boot leather
+crates = the crates | the green crates
+dawn = the hour before the gate opens | the dark before the gate
+
+any
+opinion @1 dole for 1 : So many kitchens round our square, yet somebody's belly is empty at bedtime. A disgrace. What's left on my trestle at dusk goes to the parish table. | A loaf and a bowl for the hungry costs the city less than the hungry do, left alone.
+opinion @2 merchants for 1 : Everybody grudges the stallholder his farthing till they've paid a carter themselves. | I've seen what a cart costs from the far farms. My prices are kinder than the road.
+opinion @3 newcomers for 2 : Room enough for anybody who'll lift their end of the crate. That's the only question I'd ask. | New folk eat greens the same as old folk. Bring them on.
+opinion @4 road against 1 : The north road's slower every month, and every hour lost is a leaf gone limp. | Late carts mean tired greens, and tired greens mean I'm the one apologising.
+opinion @5 road against 2 [world.wagons=raided] : #bandits.capitalize# up north, at it once more. They emptied a wagon of cabbages, for all I know. A cabbage! What does a robber want with one? | Some wagon's been picked clean up north. Every greengrocer with a pitch will feel it by Marketday.
+opinion @6 strangers for 2 : Travellers buy an apple and leave a story. Best trade on the square. | Half my news comes over the trestle from somebody passing through.
+opinion @7 watch for 1 : The Watch walks the square at dawn and nothing goes missing off my trestle. Fair exchange for a few apples now and then. | Light paws keep off my crates while the Watch is about. Fair trade.
+opinion @8 city for 1 : Smoke when I was born, wet when they bury me, and greens in between. | Show me another place where a cabbage gets this much attention. There isn't one.
+opinion @9 houses mixed 0 : The Houses buy the best of my trestle for their kitchens, and they pay. Past that, I've no dealings, and want none. | They've their business and I've mine. Theirs is bigger. Mine's greener.
+opinion @10 times mixed 1 [world.times=hard|lean] : Lean times, and folk buy one leek where they bought three. Can't fault them; I count my own leeks too.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. New face on the square. The greens are better than they look, and they look good. | #greet#, #address#. Come closer; I don't bite, and neither does the kale.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Mind the crates; the cabbages are touchy this morning. | #greet#. Talk, and I'll stack while you do.
+line @3 greet [here.time=dawn] : #greet#. Awake with the carters, are you? Good. | #greet#. I met the gate while it was dark as a cellar.
+line @4 greet [here.time=dusk|night] : #greet#. What's left at this hour is sold cheap or given away. | #greet#. Late. The greens are tired and so am I.
+line @5 greet [pair.band=friends] : There's my favourite customer, and you've never bought a thing. | You. Good. I kept a crisp one back, out of pure soft-heartedness.
+line @6 greet : #greet#. | #greet#. Fine morning for leaves.
+line @1 kin.open [pair.kin!=no] : Sit on that crate. It's the sturdy one. | Here. There's soup on, and you're having some.
+line @1 again.open : Back already. The cabbages will think you fancy them. | Twice today. That patch of cobble will be yours by law soon.
+line @1 hail [pair.band=friends] : Here! I've farm news worth hearing. Well, worth hearing to me. | This way. These carrots need a witness.
+line @1 greet.return : #greet#. | #greet#. Good to see you about.
+line @2 greet.return [pair.band=friends|family] : #greet#. Perfect timing. The square's dull as porridge. | #greet#. I'd half decided the pigeons had carried you off.
+line @3 greet.return [self.working=yes] : #greet#. Paws full of radishes, ears all yours. | #greet#. Say on; the leeks won't mind.
+line @4 greet.return [here.time=dusk|night] : #greet#. Lamps up already. Where did the day go. | Evening. The square's emptying and I'm not sorry.
+line @1 farewell : #farewell#. Eat something green today. | #farewell#. Tell your friends the cabbages are honest here.
+line @2 farewell [here.time=dusk|night] : #farewell#. I'm for my bowl and my bed. | Good night. The carts come early and so do I.
+line @1 farewell.return : #farewell#. | And you. Mind the cabbage leaves; they're slippery.
+line @2 farewell.return [pair.band=friends|family] : #farewell#. Look in tomorrow; I'll have gossip or carrots. | Off you go. Mind you eat.
+line @1 react.news : Right, I'm all ears. Mostly ears. | Out with it. I've stacked enough leeks to earn a story.
+line @1 react.news.new : #oath#. That's new, and no driver brought it. | Well. That's a first for this trestle.
+line @1 react.news.known : That rolled in with the carts before light. | #knew#. I heard it unpacking the turnip cart.
+line @1 react.news.doubt : Show me and I'll credit it. I see most things from here. | A tale grows on the road like a marrow in wet weather. I'll wait.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sorry thing, and no place for my jokes. | #pity#. Some news even I can't sweeten.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Best thing I've heard since the carrots came in. | #gladnews#. Somebody will want greens for a feast.
+line @1 answer.how : Steady. The till outweighs the crates, the proper order of things. | #fine#. Nothing's gone limp yet, me included.
+line @2 answer.how [here.weather=rain] : Wet, and the greens love it, so I'm told to love it too. | Damp to the tail, but the lettuce has never looked happier.
+line @1 answer.how.busy [self.working=yes] : Run ragged. The whole street wants leeks at once. | Busy as a slug in a salad, and about as welcome.
+line @1 answer.how.poorly : My back's taken against the crates. It'll forgive them by Restday. | Off colour. Too much standing in the wet.
+line @1 ask.how : And you? Eating your greens, I hope. | And yourself? When did you last sit down to a bowlful?
+line @1 sympathise : That's a hard row. Take the sturdy crate and tell it. | #sympathy#. I've soup at home, and a chair nobody's using.
+line @1 reassure : It'll mend. Most bad weeks are only a bad morning that got ideas. | #reassure#. I've seen worse seasons come good by harvest.
+line @1 decline : #hedge#, I'd gladly, only the trestle needs me standing at it. The pigeons would have it bare in a minute. | Not today. I've one pair of paws and three crates to empty.
+line @1 accept_decline : Right you are. The offer keeps, like a good turnip. | #no_matter.capitalize#. Another day, then.
+line @1 thank : #thanks#. That's a kindness I'll pay back in carrots. | Very good of you. There's a crisp apple in it, next time you pass.
+line @1 deflect_thanks : #deflect.capitalize#. It cost me a leaf and a minute. | Hush about it. Folk will start expecting it.
+line @1 preclose [self.working=yes self.role=merchant] : Well. The leeks are wilting while I gossip. | Right. Somebody's eyeing my radishes, and I want their farthing.
+line @2 preclose : That's me talked out, which doesn't happen often. | Quick, escape. Another minute and you'll get the farm rankings.
+line @1 accept_preclose : Off you go. The greens and I will manage. | Go on. I've a league to keep up.
+line @1 ack : #bc_right#. | #bc_fair_enough#. | Mm, fair.
+line @1 give.advice : Squeeze it, smell it, then buy it. In that order. | Never buy greens after noon. They've given up by then.
+line @2 give.advice [here.weather=rain] : Buy your lettuce today; rain like this makes it sing. | Stand under the awning and wait. It'll pass, and the greens will be better for it.
+line @1 warn [world.bandits=near] : #warn#. The carters are riding together. You'd do well to copy them. | Keep your journeys short and walled this week. Even the cabbages are nervous.
+line @1 tease [pair.band=friends] : I'd bet you've never eaten a vegetable on purpose. | You still owe me for a carrot from last spring. I've written it in my heart.
+line @1 tease.return : That's rich, from somebody who sniffs every leek on the square before buying one. | Careful. I know which crate the slugs live in.
+line @1 disagree : #demur#. I've watched this square too long to believe that. | That's too far for me, and I've stood on this square longer than most.
+line @1 concede : All right. You've me there, and I'll admit it. | #concede#. Even a turnip's right twice a year.
+
+scene the_dark_at_the_gate
+when topic=work|day here.time=dawn self.role=merchant self.job=merchant here.region=ridgemere
+does tell.self / ask.detail / answer.detail / ack / assess
+a : I'm at the gate before the bar's off, every morning. First cart through, I'm on its tailboard. | The country carts come in black dark, and I'm waiting with my lantern held low to catch any wilt. | Missed first pick this morning by a whisker. A whisker! I'll be grumbling till noon.
+b : Why so early? | Looking for what? | Who beat you to it?
+a : Because the good greens go first and the tired ones go to whoever sleeps in. | Crisp hearts, tight heads, no slug holes. And the farmer's face; watch the smile go when I turn the head over. | A cook from up the hill. Cooks don't sleep, I've decided.
+b : #bc_clever# | A trained eye, then. | #bc_bad_luck#
+a : Not clever. Just awake. | Long practice. Anybody would. | Tomorrow I'll be there before the bar's even thought about.
+
+scene the_league_this_week
+when topic=work|smalltalk self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : I keep a league of the farms. Who grows the best greens, week by week. There's been an upset. | New champion in my league this week. The farm with the blue door's dropped to third. | The farm propping up my league sent me cabbages I'd not feed to a goat.
+b : A league? Of cabbages? | What knocked them down? | Will you tell them?
+a : Somebody has to keep score. The farmers never do. | Slug holes. Two in one crate. I don't forgive slug holes. | Never. I just buy elsewhere and let the league speak.
+b? : #bc_fair# | #bc_wise# | #bc_right#
+
+scene who_tops_the_league
+when topic=work|food self.role=merchant here.season=summer|autumn
+does tell.boast / react.self / assess
+a : This week's top farm sent leeks as thick as my wrist. I nearly wept. | #topfarm.capitalize# has done it again. Three weeks running. They'll get proud. | Carrots so sweet I ate one while a customer watched. Bad for trade. Couldn't help it.
+b : Who's top? | They might. | Did they buy one?
+a : I never say names on the square. Farmers have ears in every crate. | Pride's fine in a farmer. It's slugs I mind. | Two bunches. So it was good for trade, as it happens.
+
+scene warm_rain_on_the_square
+when topic=weather here.weather=rain here.season=summer|spring
+does tell.feeling / react.self / assess
+a : Rain, and warm with it, after all that dust. The whole square smells green. | Feel it? Like bathwater. The lettuce is standing up straight, first time in days. | This is my weather. Warm and wet, and every leaf on the trestle looks pleased with itself.
+b : You're soaked through. | They do look better. | Pleased with itself?
+a : Soaked and happy. There's worse ways to stand about. | Rain's the best thing a greengrocer can get for nothing. | You've never seen a smug radish? Look closer.
+
+scene cold_rain_and_the_boards
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : Cold rain, and the boards under my trestle are like a skating pond. | Somebody's tracked the gutter in under the awning. The floor's swimming. | Rain I don't mind. Wet boards under my feet I mind a great deal.
+b : Put sawdust down. | It's only water. | Why the boards?
+a : I did. It's sawdust soup now. | Only water till you go down on your tail with a crate of eggs. | Slip once with a crate of cabbages and you'll know why.
+
+scene storm_and_the_awning
+when topic=weather here.weather=storm
+does tell.worry / reassure / assess
+a : That gust near took my awning to the Sound. I'd have had to go after it in a boat. | Thunder, and the square's emptied. Just me and the pigeons and a crate of beets. | The wind's got under the tarp. I'm sitting on the corner to hold it down.
+b : It'll hold. | Go in, then. | That's one way.
+a : It'll hold if I hold it. That's the arrangement. | Not while the beets are out. I'm not losing them to the weather. | Best seat on the square, as it happens. I can see everything.
+
+scene fog_and_no_customers
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fog like wet wool. Half this square's vanished. Folk walk into the trestle and apologise to it. | Nobody buys greens they can't see. I'm talking to the leeks. | The Sound's breathed fog over everything. My lettuces look like ghosts.
+b : They'll come when it lifts. | Do they answer? | They'll keep, at least.
+a : They will. Fog makes folk hungry, I find. | Better than some customers. Less haggling. | They will. Cool and damp is a lettuce's idea of a holiday.
+
+scene clear_morning_trade
+when topic=weather|day here.weather=clear here.time=dawn|day self.role=merchant
+does tell.self / react.self / assess
+a : Clear sky, dry boards, and a queue already. This morning's put fresh colour in everything. | Sun on the square and the greens fresh from the cart. That's a good morning by any reckoning. | Fine day. Folk buy more when the sun's out. I've no idea why, and I'll not argue.
+b : #bc_lucky_you# | It is. | Maybe they're cheerful.
+a : Lucky and early, which is mostly the same thing. | It is. Mark it; it won't last. | Cheerful folk buy salads. Gloomy folk buy potatoes. That's my science.
+
+scene spring_first_greens
+when topic=season|food here.season=spring self.role=merchant
+does tell.feeling / react.self / assess
+a : First spring greens came in this morning. After a winter of kale, I could have kissed the cart. | Young lettuce! The first of the year. I've put it front of the trestle like a bride. | Spring's here; the carts say so. The crates are green again, not brown.
+b : Did you? | Like a bride? | Long winter, that.
+a : Nearly. The driver stepped back, just in case. | Give it the best spot. It's earned it, coming through the frost. | It has. Folk have been looking at turnips with real hatred.
+
+scene summer_glut
+when topic=season|prices here.season=summer self.role=merchant
+does tell.complaint / react.self / assess
+a : Summer, and every farm's sent me twice what I asked for. I'm drowning in beans. | Too many marrows, too few mouths. I'll be giving them away by noon. | The glut's on. Prices down, crates up, and my back counting the difference.
+b : Lower the price, then. | Give me one. | #grumble#
+a : Lower than this and I'll be paying folk to take beans. | Take two. You'd be doing me a favour. | Glad of it, really. A full trestle beats an empty one, even when it's beans.
+
+scene autumn_roots
+when topic=season|work here.season=autumn self.role=merchant
+does tell.self / react.self / assess
+a : Roots season. Everything on the trestle's knobbly and brown and honest. | The first good parsnips came in. Frost-kissed, the farmer said. Farmers say a lot. | Autumn's my steady season. Potatoes don't wilt, and they don't sulk.
+b : Sounds dull. | Were they? | Does a lettuce sulk?
+a : Dull keeps. I'll take dull through the winter. | They were, as it happens. I'll give the farmer that. | Leave one in the sun for an hour and watch its face.
+
+scene winter_kale
+when topic=season|work here.season=winter self.role=merchant
+does tell.complaint / react.self / assess
+a : Winter. Kale, cabbages, and more kale. I've forgotten what colour lettuce is. | Nothing's come off the carts but #kale# all week. | The frost had the last leeks overnight. I'm selling what the frost didn't want.
+b : Kale's good for you. | Folk still buy it? | Will it last?
+a : So's a cold bath. Nobody queues for one. | They buy it with a long face, but they buy it. | Till spring, if I'm careful. And I'm always careful in winter.
+
+scene barley_bowl
+when topic=food here.season=autumn|winter
+does tell.feeling / react.self / assess
+a : #soup.capitalize# when the cold's in my paws. That's what I stand out here all day for. | There's barley on at home, with the leftover leeks in it. Nothing goes to waste in my house. | Barley, a leek, salt between two claws, then a slow fire. Don't tell me there's better.
+b : With bread? | Good. | Is there?
+a : Fresh bread. Never stale. I'd sooner go without. | Waste's a sin, and leek soup's a pleasure. | No. I've looked, believe me.
+
+scene stale_bread
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : A baker passed me a loaf at dawn that was baked last Restday. I'd trust it to prop the trestle up. | Stale bread. I can't abide it. Let the sparrows try it. I've better uses for my teeth. | A loaf gone to brick. You'd think a baker would know better.
+b : Dip it in soup. | I'll have it. | You're fussy.
+a : Even soup gives up on some loaves. | Take it, and good luck to your teeth. | About bread and greens, I am. About everything else, hardly at all.
+
+scene full_till_at_lamplight
+when topic=work|day here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : Counted up. #till.capitalize#, and only three tired lettuces left. That's a good day. | The box is heavy and the trestle's light. That's the way round I want it. | Sold out of leeks by noon and out of everything else by dusk. I'll sleep tonight.
+b : #bc_lucky_you# | You've earned it. | #bc_good#
+a : Lucky, and up at the dark hour. One follows the other. | I have. My back says so, at length. | Good enough to buy a bowl of soup out instead of making it.
+
+scene coin_by_coin
+when topic=dreams|work self.role=merchant
+does tell.plan / ask.detail / answer.detail / assess
+a : I save toward #hallroof#. A farthing a day, near enough. | One day I'll sell greens where the rain can't reach. Coin by coin, I'm getting there. | Every coin over my keep goes in the jar beneath a loose board. The jar's for a pitch indoors.
+b : How far along? | Why indoors? | Under the floor?
+a : Far enough to see it. Not near enough to touch it. | Dry boards. Enough winters I've stood on wet ones. | Where else? The pigeons can't get at it, and nor can I, which is the point.
+b? : #bc_hope_so# | #bc_fair_enough# | #bc_clever#
+
+scene the_hand_learning
+when topic=work self.master=yes self.hand self.role=merchant
+does tell.self / react.self / assess
+a : I'm teaching #self.hand# to choose a cabbage. Not to buy one; to choose one. There's a difference. | If #self.hand# can show me a lettuce with the dew still in its heart, I'll praise that choice aloud. | Teaching the trade means saying the same thing a hundred times. Squeeze, smell, look underneath.
+b : What's the difference? | Good teaching. | Does it stick?
+a : Buying's paying. Choosing's knowing. Anybody can pay. | Praise is like salt. A little, at the right time. | It does, about the hundredth time.
+
+scene pigeons_and_the_lettuce
+when topic=animals|work self.role=merchant
+does tell.complaint / react.self / assess
+a : One pigeon on this square knows which crate is the lettuce. Every morning. Same pigeon. | The market cat sleeps on my sacks and keeps the mice off. I pay it in fish heads I beg off the fish stall. | Some gull snatched a carrot off the trestle at noon and flew off over the Rain Hall with it.
+b : Same one? | Good arrangement. | Did you chase it?
+a : It has a white wing. We know each other. We're not friends. | The best hand I've got. Never asks for wages. | Chase a gull? I'd sooner chase the weather. Let it have the carrot.
+
+scene long_walk_on_restday
+when topic=pastimes here.day=rest
+does tell.self / react.self / assess
+a : Restday, and I'm off walking beyond the walls, aiming at nothing in particular. | My idea of a holiday is a walk with no cart waiting at the far end. | I walk till my legs forget the trestle. Takes about two hours.
+b : Where to? | Sounds good. | Then what?
+a : Nowhere. That's the point. If there's a place, it's an errand. | It is. Come along, if you can keep up and keep quiet. | Then I about-face and walk back hungry for soup.
+
+scene the_parish_table
+when topic=faith|work self.role=merchant here.time=dusk
+does tell.self / react.self / assess
+a : What's left at lamplight goes to the parish table. Tired greens, but they'll make a soup. | I take the last of the crates to the chapel door at dusk. I'd sooner the Bright One saw empty bowls than a full midden. | No neighbour of mine goes hungry while I've leeks going soft.
+b : That's kind. | You don't sell them cheap? | #bc_bless_you#
+a : It's tidy, that's all. A clean trestle and a fed street. | Some I do. The rest are past selling, but not past eating. | Bless the soup, more like. It's doing the work.
+
+scene market_hall_roof
+when topic=dreams|home here.region=ridgemere self.role=merchant
+does tell.feeling / react.self / assess
+a : I stood under the Market Hall roof at opening, only for the feel of it. Dry as a bone, in a downpour. | The stalls under the Market Hall roof never get wet boards. Imagine that. | Some year I'll trade indoors and the rain can sulk outside.
+b : You'll get there. | Imagine that. | #bc_i_hope_so#
+a : I will. Slowly, but a turnip grows slowly too. | Never once slipped on a wet board. I'd not know myself. | Me too. Till then, I've a good awning and a stubborn face.
+
+scene carts_late
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / react.self / give.advice / assess
+a : No wagons yet. What's on the trestle is yesterday's, and it knows it. | Not one farm wagon in since Marketday. My crates are empty as a promise. | I met the gate at dark and stood there till light. Nothing came down the north road.
+b : What will you do? | That's bad. | Nothing at all?
+a : Sell what I've got, cheap and honest, and tell folk why. | It is. The whole square's eyeing its neighbour's crates. | A drover with goats. Goats don't count, unless you're selling grass.
+b? : #bc_fair# | #bc_true# | #bc_bad_luck#
+
+scene carts_in_again
+when topic=caravan world.wagons=in self.role=merchant
+does tell.news / react.news / assess
+a : The carts are in! Six of them at the gate before light, and I had my pick of every one. | Fresh crates off the north road. I've stacked the trestle higher than my head. | In at dawn, wheels caked to the axle, and every crate full. I could sing.
+b : #bc_about_time# | You'll sell out. | Don't sing.
+a : High time. I was down to selling the crate itself. | By noon, if the weather's kind. | I won't. The cabbages have suffered enough this week.
+
+scene raided_cart
+when topic=bandits|caravan world.wagons=raided
+does tell.news / react.news / give.opinion
+a : A wagon's been stopped and stripped up north. Whatever was on it, somebody's going without. | #bandits.capitalize# again. The gatekeepers are one wagon short. | Another wagon robbed. Whose, nobody's told me. My crates are thin, that's all I know.
+b : #uneasy# | Was anybody hurt? | It's getting worse.
+a : It is. They'll not stop till somebody rides out after them. | Nobody said. I'd not make it up. | It is. And it's me telling customers there's no leeks.
+
+scene word_across_the_trestle
+when topic=gossip here.gossip=yes self.role=merchant
+does tell.gossip / react.news / assess
+a : Arrived with a customer and a bunch of carrots: #topic.subject# #topic.claim#. | Here's the square's latest, for what it's worth. #topic.subject.capitalize# #topic.claim#. | This came with the early carrots, mind. They say #topic.subject# #topic.claim#.
+b : Is that true? | Who said it? | #bc_so_they_say#
+a : True enough to repeat. Not true enough to swear on. | Somebody buying radishes. Radish folk are mostly honest. | They do. And by noon it'll have grown a second head, like a bad cabbage.
+
+scene gossip_theft_counted
+when topic=gossip|crime topic.claim_kind=theft|wanted self.role=merchant
+does tell.gossip / react.news / give.advice
+a : Count your coins tonight. They say #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, so the square says. My till's going home in my coat. | I heard #topic.subject# #topic.claim#. I've moved the jar under a different board.
+b : #uneasy# | Do you believe it? | Sensible.
+a : Uneasy's right. I've started counting the cabbages, and I never count cabbages. | Enough to be careful. Not enough to point a paw. | Sensible costs nothing. A lost jar costs every coin in it.
+
+scene new_faces_buying
+when topic=newcomer|gossip
+does tell.self / react.self / assess
+a : There's somebody new on the square. Bought a lettuce, asked my name, didn't haggle. I like them already. | New folk in the city; the queue's full of them. Strangers buy carefully. It shows in the squeezing. | A newcomer, still dusty, asked me what a leek was for. I nearly gave it away out of pity.
+b : They'll be back. | And your answer? | Did you?
+a : They will. Nobody forgets a good lettuce. | Tomorrow I'll know more. A name's a fair trade for custom. | I sold it half price and explained soup. Took a while.
+
+scene hard_times_leeks
+when topic=times|prices world.times=hard|lean
+does tell.self / react.self / assess
+a : Folk are buying one leek where they bought three. I don't blame them. | Lean season. I've cut my prices to the bone and the bone's complaining. | Nobody's spending. Even the cooks from up the hill are squeezing longer.
+b : #grumble# | Can you manage? | It'll pass.
+a : Nobody does. Times like these, the till's light for everybody. | I'll manage on soup. I've managed on soup before. | It will. Cabbages grow whether folk can afford them or not.
+
+scene good_times_queue
+when topic=times|work world.times=good|boom self.role=merchant
+does tell.self / react.self / assess
+a : Good times. Folk buying two cabbages to put one on the windowsill. | The till's never been so cheerful. I'm watching for the catch. | Coin about. Everybody wants the fancy greens now, not the honest ones.
+b : #bc_lucky_you# | There's always a catch. | Fancy greens?
+a : Lucky for now. I'm putting the luck in the jar while it's here. | There is. I'll find it, and then I'll sell it. | Little curly ones that taste of nothing. They sell like hot bread.
+
+scene festival_square
+when topic=festival|pastimes here.day=festival
+does tell.self / react.self / assess
+a : Festival day, and the square's full of folk who've never bought a vegetable in their lives. | Everybody's eating pies today. Leeks are friendless. I'm resting my arms. | Bells, bunting, and a crowd. I've moved the trestle back before somebody dances into it.
+b : Shut up shop, then. | Rest them while you can. | Wise.
+a : And miss watching? I'll sell three apples and see the whole show. | Tomorrow they'll all want greens, after the pies. Mark my words. | Wise is what a lot of festivals does to you.
+
+scene a_friend_i_trust
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# with my till and my secret jar both. That's saying something. | I could bear to lose an argument about cabbages to #self.friend#. Few others. | There's not many I'd share soup with. #self.friend.capitalize# is one.
+b : Your till? Truly? | What's there to argue about? | Lucky.
+a : Truly, and I'm stingier with trust than carrots. | The squeak of a cabbage. Give a fresh one a twist. You'll hear it. | I am. Knowing it is half the luck.
+
+scene back_and_the_crates
+when topic=health self.age>=40
+does tell.complaint / sympathise / assess
+a : My back's had a word with me about the crates. It wants me to hire a cart. | Lifted a crate of beets wrong this morning. I felt it in my ears. | All those crates, and now my back's started keeping a tally of its own.
+b : Get your hand to do it. | That sounds sore. | #bc_poor_soul#
+a : Maybe, but then supper would have no complaining in it. | True enough. A Restday ramble should shift it. Walking cures most things. | Poor back, more like. The rest of me's fine.
+
+scene a_traveller_looking
+when topic=player
+does tell.self / react.self / assess
+a : See that traveller? Been looking at my apples three times now. Hungry, I'd say. | That one's not from here. They look at the square like it might bite. | A traveller with a full pack and an empty face. Wants feeding, I'd guess.
+b : Give them one. | It might. | Feed them, then.
+a : I will, if they ask. Pride's a thing; I'd not trample it. | Only if they haggle. Otherwise we're a friendly square. | Soup's on at home. Greens I can spare. One or the other.
+
+story the_first_trestle [topic=work|memories self.age>=30 self.role=merchant]
+  : My first trestle was a door off its hinges on two crates, and I sold windfall apples off it.
+  : The first day I sold four. Four apples. I went home and told everybody like it was a fortune.
+  : The second day it rained and the door warped, and I sold the apples off my lap.
+  ask : Can you remember the first thing you sold?
+  b : Nothing so honest as apples.
+  : Then you missed a good lesson. Four apples were my first master, and a good one.
+
+story the_frost_in_may [topic=season|memories self.age>=30 self.role=merchant]
+  : One year a frost came after the blossom. One night, and every farm I bought from was black by morning.
+  : No lettuce, no beans, nothing green for a month. I sold nettles, and I'm not ashamed.
+  : Folk bought them. Made soup of them. We all got through it.
+  ask : Have you ever eaten nettle soup?
+  b[old] : In hard years. More than once.
+  b : Never. Doesn't it sting?
+  : Not once it's boiled. Like most troubles, really. You boil them down and they're food.
+
+story the_carrot_thief [topic=memories|animals self.age>=25]
+  : Back when my fur was all one colour, a goat lived on the square and belonged to nobody.
+  : It ate from every stall and nobody could catch it. The Watch tried. Twice.
+  : In the end an old stallholder set carrots at intervals along the exit road. The goat ate its way out of the city and never came back.
+  ask : Chase it, or carrots? Which for you?
+  b : Carrots. I'm not daft.
+  : Then you'd have done better than the Watch, and they had spears.
+
+story the_long_walk_north [topic=pastimes|memories self.age>=25]
+  : Once I went on foot to the farms, to see where the greens came from. Took me all day.
+  : Rows and rows of cabbages, and the farmer stared as if I'd dropped from the moon.
+  : I stood in a field and ate a carrot out of the ground. Best thing I ever tasted.
+  b : Straight from the soil? Did the farmer mind?
+  : Charged me a farthing for it. Fair. I'd have charged two.
+
+story the_wet_floor_fall [topic=memories|weather self.age>=25]
+  : I came down on wet boards once with a crate of eggs. Not mine; I was minding the stall next door.
+  : Thirty eggs. Not one survived. I sat in the mess and laughed till the egg-seller came back.
+  : I paid for every one, and I've hated wet floors ever since.
+  ask : Have you ever laughed at the worst moment?
+  b : At a burying, once. I've never forgotten it.
+  : Some things are too bad not to laugh at. Eggs are one of them.
+
+rule @greens_cry
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Greens! Dawn-fresh, listen to those stems snap! | Leeks, lettuce, turnips! Squeeze them; they don't mind!
+
+rule @dusk_cheap
+when concept=bark working=yes self.role=merchant here.time=dusk
+does aside
+cooldown 10h
+say Last of the day, half price, and still better than a stale loaf! | Going cheap! Tired greens, honest price!
+
+rule @warm_rain_bark
+when concept=bark here.weather=rain here.season=summer|spring
+does aside
+cooldown 9h
+say There's the rain. Drink up, lettuces. | Warm as a bath. Best weather there is.
+
+rule @wet_boards_bark
+when concept=bark here.weather=rain here.season=autumn|winter
+does aside
+cooldown 10h
+say Boards like a pond. Careful, all. | Who brought the gutter in under my awning?
+
+rule @carts_late_bark
+when concept=bark world.wagons=late self.role=merchant
+does aside
+cooldown 10h
+say Nothing on the road yet. I'll sell the crates next. | Empty north road, empty trestle.
+
+rule @pigeon_bark
+when concept=bark self.role=merchant here.time=day
+does aside
+cooldown 12h
+say Off, you! That's not your lettuce! | The white-winged one's back. Watch the crates.
+
+dlg @1 resident.hub : #greet#. Something green, or just passing the time? | #greet#. Ask away; the cabbages won't listen.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! I kept a good one back, in case. | #greet#, #topic.player#. A familiar face among all these cabbages.
+dlg @3 resident.hub [here.time=night] : Late, and I'm tired. Short questions, short answers. | #greet#. I'm off home to my soup. Quick, then.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : That's a sour look. Even my lemons don't look that sour. | We can talk across the boards. The trestle's between us for a reason.
+dlg @1 resident.job [self.role=merchant self.job=merchant] : Greens on Market Square. I'm at the gate before light for first pick, and here till the last leek's gone. | #self.trade_words.capitalize#. Cabbages since I could lift one, and I've not tired of them.
+dlg @2 resident.job [self.working=yes] : My morning belonged to the job before I had my breakfast. | I've been earning my soup since the light came in.
+dlg @3 resident.job : Work, walks, and a reckoning of who grows the best food. That's me, more or less. | Honest work, and soup waiting when it's done.
+dlg @1 resident.news [world.news] : A driver from #world.news_from# had this: #world.news#. | The drivers say #world.news#. They had it in #world.news_from#.
+dlg @2 resident.news [world.event_words] : Everybody at the trestle's on about #world.event_words#. | Every stall's on about #world.event_words#, top of the square to bottom.
+dlg @3 resident.news [world.wagons=raided] : Somebody's wagon was robbed up the road. That makes me think twice about the price of greens. | Wagons robbed up north again. Keep within the walls, I would.
+dlg @4 resident.news [world.death=recent] : Sad word of a death. I'd take hot soup if I knew where it was wanted. | Somebody's gone. Even my brisk tongue wants a rest when I hear news like that.
+dlg @5 resident.news [world.wedding=recent] : A wedding! I'd pick the tiniest peas for a feast like that. | Somebody's married, and the square's still smiling about it.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts brought cabbages and nothing else. | Quiet. The biggest news on my trestle is a carrot shaped like a hand.
+dlg @1 resident.gossip [here.gossip=yes] : Off the trestle this morning: #topic.subject# #topic.claim#. That's the very wording I heard. | They say #topic.subject# #topic.claim#. I'm only the greengrocer; don't quote me.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Count your coins. They say #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. My till's sleeping in my coat.
+dlg @3 resident.gossip [here.gossip!=yes] : Nothing worth repeating. The cabbages are discreet. | #gossip_none# Try again on Marketday.
+dlg @1 resident.business [business=thriving] : Selling out by noon. I've had to buy a second crate of everything. | Couldn't be better. The jar under the floor's getting heavy.
+dlg @2 resident.business [business=steady] : Steady. Folk need their greens, and I've always got them. | Steady as a turnip. No complaints.
+dlg @3 resident.business [business=failing] : Poorly, as you'd see in a glance at the till. Folk aren't buying, and the greens won't wait. | Bad. I'm selling what I can and giving away the rest.
+dlg @1 resident.bye : #farewell#. Eat something green. | #farewell#. Tell them the greens are honest here.
+dlg @2 resident.bye [here.time=night] : Night. Soup's waiting. | #farewell#. The carts come early.
+dlg @1 shop.greet [here.shop!=bare self.role=merchant] : #greet#. Squeeze anything you like; it's all fresh this morning. | #greet#, #address#. Leeks, lettuce, roots. Two for a farthing on the small ones.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. The crisp ones are tucked behind the crate, kept for you. | Back again, #topic.player#. The good farm sent something special.
+dlg @3 shop.greet [here.shop=bare] : #greet#. Sold to the last radish. Come at dawn tomorrow. | The trestle's bare. Even the pigeons gave up. Tomorrow, early.
+dlg @4 shop.greet [here.shop!=bare] : #greet#. #shop_offer# Everything's from this morning's carts. | #greet#. Have a look. Don't mind the cat; it's resting.
+dlg @1 shop.prices : Cheap if it's summer, dear if it's winter, and fair every season. | Prices follow the carts. Late carts, dear greens. That's the whole secret.
+dlg @2 shop.prices [world.wagons=late] : Late wagons, dear greens. No sense hiding it. | Up this week. Blame the north road, not me.
+dlg @1 shop.bye : #shop_bye# Wash them before you eat them. | #farewell#. Keep them cool and they'll keep.
+dlg @1 master.learn [here.teaches=yes self.role=merchant] : Greens? It's up in the dark and wet paws all winter. Still keen? Then I'll teach you to choose. | First lesson: squeeze, smell, look underneath. Second lesson: the same, but faster.
+dlg @2 master.learn [here.teaches=yes] : #here.trade_title.capitalize#? Early hours and sore feet. Ask what you like. | It's learned by doing it beside me. Come at dawn and see.
+dlg @3 master.learn [here.teaches=no] : One hand's all my trestle can feed, and I've got one. Questions cost nothing. | #self.hand.capitalize# has the learning of it now. Ask me anything else.
+
+graft resident.hub
+choice Which farm grows the best greens? -> league
+node league
+say A league in my head, week by week. No names on the square; farmers have ears in every crate. This week's top farm sent leeks thick as your wrist.
+mood pleased
+free
+choice How do you judge them? -> league_how
+choice Thanks. Back to it. -> hub
+node league_how
+say Tight heads, crisp leaves, no slug holes, and how they look after three days on my trestle. A good farm's greens still stand up straight on day three.
+choice I'll squeeze before I buy. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's freshest today? [self.role=merchant] -> freshest
+node freshest
+say Whatever's at the front. I put the best in front, always; hiding the good stuff at the back is how a stall loses friends. Today, the lettuce.
+mood warm
+choice Let me see the greens. -> greet
+choice Why the front? -> front
+node front
+say Because the eye buys before the teeth do. Show them the best and they trust the rest. Show them the worst and they walk.
+choice Let me see the greens. -> greet
+choice Goodbye. -> bye

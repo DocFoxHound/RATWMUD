@@ -1,0 +1,340 @@
+mantle rm203
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_olaf_stoneley
+title the lid fiddler
+fits stage=young|adolescent|adult|old
+prefers talk=quiet temper=even
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk tests_small_sounds_with_a_tin_lid
+likes plum_tart wrestling festival_bells thunder
+dislikes early_bells drizzle
+fears noise_covering_a_call
+hopes a_box_of_sounds
+topics pastimes +0.6 smalltalk +0.4 day +0.3 food +0.2 gossip -0.4
+styles comfort=quiet gossip=spare refuse=level tease=dry
+marks oath saying
+persona #self.first# listens from the edge of a crowd and gets a surprising range of noises from a dented tin lid, usually with a straight face.
+
+words
+oath! = Hot rivets and cold brine | Tongs in the breakers
+saying! = Let the little noise finish | Turn a lid and the room changes
+tin = my battered lid | the little tin disc
+rim = the rolled lip | the bent edge
+ding = a high thin note | a bright little ping
+woolpad = folded wool | a scrap of felt
+stick = my tapping twig | a dry sliver
+plum = a baked plum | a pocket of plum jam
+crust = the brown corner | the flaky rim
+throw = a clean tumble | a sideways roll
+slam = two boards clapping | a plank slapping stone
+drip = the quietest drip | a slow bead falling
+pause = the gap between strokes | a breath of silence
+box = a narrow box | a shallow tray
+
+any
+opinion church for 1 : Best door in my book opens before anybody asks if you believe enough to come inside.
+opinion dole for 2 : Hunger makes even a little noise hurt. Give a wolf something to chew first.
+opinion merchants against 1 : I notice a short measure quicker than I notice a shiny sign.
+opinion festivals mixed 1 : Plenty to listen to at a feast. I'd give the shouting a holiday too.
+opinion city for 1 : Stone changes the sound every few steps here. You can travel with your ears.
+opinion times against 1 [world.times=lean|hard] : The queue for a crust goes round the corner. An empty belly shouldn't have to walk that far.
+any
+line greet : Mind the lid underfoot. There's room beyond it. | Come round this side. I can hear you better.
+line greet.return : Hello. I heard the tread before the voice. | Here I am, beside the wall.
+line farewell.return : I'll keep the last bit of our talk. | Away with you, then. I'll hear your feet go.
+line farewell : My ears will miss your company. | Till another quiet patch finds us.
+line react.news : I need a quiet second with that news. | I heard the whole thing that time.
+line react.news.new : That's the first I've caught of it. | You have my ears now.
+line react.news.doubt : I'd give a witness my better ear. | A good echo can sound like another witness.
+line react.news.known : That bit reached this corner already. | I could have tapped along to that telling.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put the lid away for a while. | Seems wrong to make a racket after hearing that.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice] : There's news that deserves a little ring. | That merits my finest little flourish.
+line decline : I'd sooner stay here and finish listening. | Keep my turn for somebody with quicker feet.
+line accept_decline : I'll count you out this round. | You can watch alongside me instead.
+line accept_preclose : Go while the way's still clear. | I've had enough of your time already.
+line preclose : I hear something over there I want to catch. | My little experiment will have to start soon.
+line sympathise : You could sit by me without explaining any of it. | I'd have trouble swallowing that too.
+line reassure : A bad sound dies out eventually. I'll wait beside you. | We'll take it a little piece at a time.
+line ask.how : Anything been wearing on your ears lately? | Have you found yourself a minute of peace?
+line answer.how : Steady as tin laid flat. | Quite content till somebody stamps nearby.
+line thank : You left me time to say it. Thanks. | A quiet kindness, that. I heard it.
+line deflect_thanks : Listen for somebody else when you can. | Plenty of room in a pause for two.
+line hail [pair.band=friends] : I've saved you a corner where the voices carry. | Over here, past the loud bunch.
+line kin.open [pair.kin!=no] : Family gets the good listening place. Step up. | Come by my shoulder. You know the drill.
+line again.open : We've made a neat little circuit today. | Those footsteps came round again.
+line greet.return [here.time=dusk|night] : I almost missed you in the dim. | A quiet voice carries far this late.
+line greet.return [pair.band=friends] : Recognised the step. Good to see the rest of you. | My favourite interruption has arrived.
+
+scene echo_test
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep #tin# for the noise, not the shine. | Sounds bigger if I hold it up here.
+b : Where's the noise in it? | Does the height matter?
+a : Touch #rim# with #stick#. There it is. | Try it against your belly. All you get is a thud.
+
+
+scene dry_rim
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain plays a dent differently from flat tin. | A bead stuck on #rim#. See it shiver.
+b : Does it change the note? | Going to tip it off?
+a : On the flat it ticks. In the dent it gives a little grunt. | No, I want to see which drop sends it over.
+
+
+scene crust_corner
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I'll cut a tart crooked if the corner's crisp. | I eat round the plum till there's an island left.
+b : Doesn't somebody get a small slice? | And how do you pick up the island?
+a : Mine. I like a thin bit of scorched crust. | With some ambition and a spoon.
+
+
+scene holds
+when topic=pastimes self.likes=wrestling
+does tell.self / react.self / assess
+a : I'd give a wrestler points for landing quietly. | I like a throw where both wolves get up laughing.
+b : Then a soft patch of earth would win. | Less bruising that way.
+a : Earth hasn't learned to throw yet. | I was thinking more of the sound.
+
+
+scene tin_hearsay
+when topic=gossip
+does tell.gossip / ask.detail / answer.detail
+a : A rumour gets louder the farther it travels. Funny thing. | I could pass on a whole tale in three taps.
+b : You sound doubtful. | What would the taps mean?
+a : I am. Try shouting from the next street and see how far the truth carries. | Couldn't hear it. That's the whole tale from me.
+
+
+scene two_seats
+when topic=friends
+does tell.self / react.self / assess
+a : Sit just there and we'll hear different things. | I like a companion who leaves me a little quiet.
+b : I'll pass on whatever reaches this ear. | Can I leave too much?
+a : That's the best part. I only brought one pair of ears. | I'll tap twice if I need words.
+
+grown
+
+scene rest_lid
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put #woolpad# under things that rattle. | Set a cup down gently enough and it'll seem to land twice.
+b : Even the tin? | Twice how?
+a : Especially that. I want to choose when it speaks. | Once in your paw and once in your ear.
+
+
+scene roof_talk
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder makes all the little things stop rattling for a moment. | There's the loud roof voice again.
+b : Really stop? | You're enjoying that.
+a : Perhaps I just can't hear them. A difference worth listening for. | Better a roof that answers than one that lifts.
+
+
+scene spare_shift
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A worn handle squeaks on every third twist. | I know a finished job by ear.
+b : Why only the third? | Which sound gives it away?
+a : That's when I change my grip. I took the handle's blame for it. | The first easy breath after the last hard one.
+
+
+scene bent_note
+when topic=lore|pastimes
+does tell.self / react.self / assess
+a : If I knock the dent flat I'll lose this note. | Had a chance at an undented lid myself.
+b : Better leave it crooked. | It sounds as if you passed.
+a : I do. Nobody's ever offered to buy the dent. | I've got no use for a lid that sounds like every other lid.
+
+
+scene still_news
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : I let a newcomer choose how loud to speak. | The usual welcome is a great many questions at once.
+b : What if you can't hear? | What would you change?
+a : I can lean closer. That's my half of the welcome. | Leave a gap wide enough for one answer.
+
+
+scene season_leaf
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : These leaves are turning the street into paper. | Hear that rustle under us.
+b : I can hear every step. | You like that, do you?
+a : I wonder who'll make the first quiet one. | Yes. The street usually keeps its opinions to itself.
+
+
+scene hum_lip
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When my head rings I put #tin# down. | Ever heard a sound go on when the room is quiet?
+b : Glad of a rest? | Does it bother you?
+a : Mainly I'm trying to find which of us is ringing. | Less now I know I can wait it out.
+
+
+scene gate_stone
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : On these steps I can tell stone from a loose board by ear. | The hill gives a shout a second little tail.
+b : Do you shut your eyes to do it? | Where does it end?
+a : Only after I've sat down safely. | At the next wall, unless someone there joins in.
+
+
+scene cloth_gift
+when topic=friends
+does tell.self / react.self / assess
+a : A square of wool is a fine present if you know what rattles. | I wouldn't wrap a gift in tin.
+b : Might need explaining. | Too loud for a surprise?
+a : I can demonstrate in one tap. | Too tempting to keep the wrapper myself.
+
+
+scene quiet_prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My lips scarcely move, even over a prayer. | I wait for the last footstep before I pray.
+b : Even after good news? | Does it help?
+a : Especially then. Good news can make a fair din without me. | I can finish a thought without mistaking it for somebody else's.
+
+
+scene sleeping_tools
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt of a forge that beat like a surf line. | In my dream the sea had a lid.
+b : How did the smith keep up? | Who lifted it?
+a : Slept through the whole shift. Dream forges can run themselves. | Nobody. That's how I knew I'd overslept.
+
+
+scene share_sound
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Lend me an ear for one tap. | A tap's easy enough to miss.
+b : Where do you want me? | You reckon I missed one?
+a : Behind the board. Listen for what reaches you first, wood or tin. | Yes. That smile means you caught the second.
+
+young
+
+scene lesson_game
+when topic=pastimes|day
+does tell.self / ask.detail / answer.detail
+a : I've made a game you can play without moving from this step. | Pick a noise and keep it secret.
+b : Have I already started? | How will you know if I'm right?
+a : Yes. Next cart through, count the squeaks. | When it comes again, point. I'll point as well.
+
+
+scene pot_band
+when topic=pastimes|friends
+does tell.self / react.self / assess
+a : My band has one lid and no pay. | I need a musician whose whole part is keeping still.
+b : What's the band called? | I could manage that.
+a : Late for supper. We finish our whole programme in four taps. | Lovely. You've learnt the hard bit.
+
+
+scene lesson_crump
+when topic=day self.job=child
+does tell.self / ask.detail / answer.detail
+a : I made the chalk squeak at lessons and nearly bit my tongue. | My slate's quiet now. I've found the trick.
+b : Were you trying not to laugh? | A softer chalk?
+a : Yes. The chalk sounded more surprised than the teacher. | No. Wrote the sums with the right end.
+
+
+scene school_prize
+when topic=dreams
+does tell.self / react.self / assess
+a : If there were prizes for keeping quiet I'd have a shelf full. | My dream is a cupboard of tiny sounds.
+b : You'd have to say thank you. | Mightn't they escape?
+a : There goes my prize. | That's what the lid's for.
+
+
+scene puddle_ring
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I'm holding #tin# out till a drop hits dead centre. | My ears can tell when drizzle gets serious.
+b : What's the prize if it does? | Which part tells you?
+a : I get to take it in. My arm's aching. | The cold bit underneath my fur.
+
+adolescent
+
+scene learned_tune
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can play a tune on three cups now. | I found a fourth note by accident.
+b : Is it one I know? | Can you do it again?
+a : You'll know it if I remember the middle. | Only if I drop the cup again. I quite like the cup.
+
+
+scene proper_bout
+when topic=pastimes self.likes=wrestling
+does tell.plan / react.self / assess
+a : I want a bout where neither of us has to boast. | I'll wrestle if nobody's keeping score.
+b : How will you know when to stop? | Won't you want to know who won?
+a : When one of us asks. That's how I'd like to be treated. | I'll be close enough to tell.
+
+any
+
+story blanket_band [topic=memories]
+  : I once folded a blanket over some tin so I could practise quietly. One layer swallowed high notes. Two swallowed low ones.
+  : By the third I had a splendid silent concert under way.
+  b : Was there an audience?
+  : A sleeping one. Best review I could have hoped for.
+
+
+story borrowed_step [topic=smalltalk]
+  : I drummed a marching pace on my knee and a beetle came over to listen.
+  : I halved the pace. The beetle carried on across my knee without me.
+  b : Didn't take direction well.
+  : Only musician I've met with a proper reason to walk offstage.
+
+
+story pit_rattle [topic=food]
+  : The stone came out of a plum and stuck in a seam of my pocket.
+  : I washed the pocket and wore it twice before I found out what was rattling at me.
+  b : You kept the stone, didn't you?
+  : My coat had learned how to play. I wasn't going to spoil that.
+
+
+rule @rimcry
+when concept=bark
+does aside
+cooldown 8h
+say Hush a breath. The tin hasn't finished yet. | Last note's the little one. Wait for it.
+
+
+rule @faircry
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say That's a proper festival clang! The tin agrees. | Bells like those could get a lid dancing.
+
+
+rule @raincry
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Drop on the lip, plop in the middle. | Water's practising scales on my lid.
+
+
+rule @supcry
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say Save the smallest slice with the burnt edge! | Nobody wants that crooked crust? Excellent.
+
+dlg resident.hub : Give me a second to still this rattle. There, I'm listening.
+dlg resident.hub [topic.meeting=known] : #topic.player#, come hear what the lid does today.
+dlg resident.hub [here.time=night] : Voices carry nicely in the dark. You needn't raise yours.
+dlg resident.hub [pair.disposition=wary|hostile] : I'd prefer to hear you from right where you stand.
+dlg resident.job [self.job=child] : Lessons. I can usually tell which slate's going to squeak.
+dlg resident.job : #self.trade_words.capitalize#. Ask me again once my ears have had a rest.
+dlg resident.bye : Take some quiet with you if there's any left.
+graft resident.hub
+choice What does the dent do to the sound? -> rim_dent
+node rim_dent
+say It makes two notes argue. Catch the edge gently and you can hear the lower one win.
+free
+choice Can I try tapping it? -> rim_stroke
+choice I'll listen instead. -> hub
+node rim_stroke
+say Use the side of your claw. Tap it flat and all you hear is your own tap.
+choice I heard the second note. -> hub
+choice I'll leave you to it. -> bye

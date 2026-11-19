@@ -1,0 +1,399 @@
+mantle rm212
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_njal_ashford
+title the unpainted underside
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk judges_a_fine_piece_by_the_surface_hidden_underneath
+likes spiced_cider whittling quiet_chapel thunder
+dislikes salt_wind cold_tea
+fears borrowed_reputations a_missed_split
+hopes a_chair_that_outlasts_its_maker a_storm_heard_in_peace
+topics work +0.5 faith +0.2 pastimes +0.4 family +0.3 weather +0.2 gossip -0.2
+styles comfort=repair gossip=sceptical refuse=direct tease=gentle
+marks oath saying
+persona #self.first# tips fine things over for a look at the underside, keen to put a sound chair under a guest and disinclined to trust a fine coat's account of the workmanship.
+
+words
+oath! = Twist my offcuts | Knot in the cradle rail
+saying! = Turn the fine side to the floor | Polished lips tell you little about a cup
+offcut = a short end of wood | my little waste block
+plane = a smoothing plane | the narrow plane
+curl = a thin shaving | a translucent curl
+peg = the wooden peg | a square of hardwood
+square = my scratched square | the modest wooden square
+tip = the hidden face | the underside nobody oils
+level = a shallow saucer of water | the little water dish
+cidercup = the cider cup | my warm earthen cup
+clove = a whole brown clove | a single hard spice
+drift = a fine dusting of shavings | a scatter of clean chips
+brace = the diagonal rail | a short cross rail
+seat = a broad stool top | a seat an elbow wide
+thread = a little cord line | a straight length of twine
+knife = my little carving blade | the short whittling knife
+tap = a quiet tap | a single dry knock
+grainline = a dark curved stripe | a thread of grain
+
+any
+opinion @1 city for 1 : A city is a lot of separate things made to fit together. The odd little infill pieces interest me most.
+opinion @2 dole for 2 : If somebody's hungry, sit the wolf down and bring the bowl within reach. There'll be time for figures later.
+opinion @3 festivals against 1 : I like a feast till the shouting drives the quiet guests into the street.
+opinion @4 houses mixed 1 : Look at the work without the colours on it. Then tell me whether a House name ought to alter the bill.
+opinion @5 merchants for 1 : I value a seller who will point to the flaw before quoting a price.
+opinion @6 newcomers for 1 : It often takes fresh attention to discover that we've been stepping over a loose board for years.
+opinion @7 road against 1 : Freight shaken to fragments comes to the same price as freight lost, and it's untidier.
+opinion @8 strangers for 1 : A visitor tries the chair without knowing what the maker was proud of. That's a fair test.
+opinion @9 watch for 1 : You want a patrol that looks round the back as well as admiring the front entrance.
+
+grown
+line @1 greet [pair.band=strangers] : New company. Have the sound seat. | Welcome. I was saving this patch of elbowroom.
+line @2 greet [self.working=yes self.job=crafter] : Just brushing the shavings aside. There, welcome. | Come clear of the moving end of the board.
+line @3 greet [here.time=dawn] : Dawn and a fresh edge to the day. | There's the first clean light. Come where it falls.
+line @4 greet [here.time=dusk|night] : Evening. A stool beats trying to see the paving. | Welcome in the falling light.
+line @5 greet.return : A solid welcome, returned in kind. | Well met, and here's a clear place for you.
+line @6 greet.return [pair.band=friends|family] : Nobody has to brush up for you. | I'm glad to see the familiar wear on those boots.
+line @7 greet.return [self.working=yes] : Loud enough. I'm hearing you between strokes. | Keep that voice coming, my paws can manage alone.
+line @8 greet.return [here.time=dusk|night] : Evening to your side of the sill. | A good hour to set things down and talk.
+line @9 kin.open [pair.kin!=no] : For family there's always the broad seat. | Shift over here beside me, there's room to spare.
+line @10 again.open : The day's fitted us together twice. | Back within the span of a good long shaving.
+line @11 hail [pair.band=friends] : Here, friend! There's a proper resting spot! | Over the way, by the good light!
+line @12 farewell : I wish you sound boards under every step. | Go easily with whatever you have to carry.
+line @13 farewell.return : There's work and warmth behind this parting. | Till the street puts us abreast again.
+line @14 react.news : Turn the account round. What's it look like from the back? | Let's have the plain edge of the story.
+line @15 react.news.known : Same grain running through it this time. | I know the front of that account well enough.
+line @16 react.news.new : That's fresh wood to my blade. | First telling that's found its way to me.
+line @17 react.news.doubt : I'd like to handle the join before declaring it sound. | The loudest part of that report seems poorly supported.
+line @18 react.news.sorrow [topic.kind=loss|death|crime] : That's a hard load. Somebody ought to mind the household while it grieves. | Sad work carrying that word about.
+line @19 react.news.glad [topic.kind=marriage|birth] : Make the gathering table a little longer. | That's a day worth leaving a clean mark for.
+line @20 answer.how : Inclined to a quick word, trying to make it a kind one. | A little rough round the patience, otherwise sound.
+line @21 ask.how : Are you carrying something that needs a second pair of paws? | How's the day sitting on your shoulders?
+line @22 decline : I'd only do it in a temper and that won't serve. | I've another claim on both my paws today.
+line @23 accept_decline : Best to know what'll hold before putting weight on it. | An honest refusal saves two wolves a wasted journey.
+line @24 sympathise : Let me find a seat that won't make you shift about. | I've something warm and no insistence on talking.
+line @25 reassure : We only need to get the first edge true today. | There's still something solid underneath the damage.
+line @26 thank : You held the awkward bit steady. Much appreciated. | That's good work and I intend to remember it.
+line @27 deflect_thanks : Pay it out next time somebody needs a lift. | The thing needed doing and my paws were handy.
+line @28 preclose : I want a quiet stretch before I get back to work. | There's a small repair I ought to see to.
+line @29 accept_preclose : Right then, back to the business that needs you. | I'll let you get your shoulders square again.
+line @30 give.advice : Look beneath the thing before you admire the finish. | A trial fit saves temper at the end.
+line @31 apologise : My answer had a sharper edge than your question deserved. | I spoke crossly. You can have a better hearing now.
+line @32 ack : Sound where it counts. | Yes, that fits closely.
+
+scene inside_seat
+when topic=pastimes|work
+does tell.self / ask.detail / answer.detail
+a : I always look at #tip# first, even on a grand chair. | A beautiful stool troubles me till I've turned it upside down.
+b : Why begin where nobody looks? | Afraid the legs will fall off?
+a : Because nobody's paid anybody to flatter me underneath. | No. Curious whether the maker liked the work enough to finish the hidden bit.
+
+scene warm_cup
+when topic=food self.likes=spiced_cider
+does tell.self / react.self / assess
+a : I like #cidercup# with one clove still swimming in it. | One spice kept whole makes a drink last longer.
+b : There's something to chase round the rim. | Does it give up the flavour slowly?
+a : That's it. Makes a quiet occupation for the last mouthful. | I'm too busy steering it away from my teeth to gulp.
+
+scene bad_crest
+when topic=work self.job=crafter
+does give.opinion / disagree / concede
+a : I'd sooner look at an unsigned joint than a crest over a door. | A coat badge makes me turn the goods over twice.
+b : There's skill in the crest too. | Why punish a badge?
+a : There can be, certainly. It just isn't holding the door up. | Same inspection I'd give my own work if I caught it boasting.
+
+scene hingewhisper
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : There's a particular noise that makes me look round for a loose hinge. | A door whispering under its breath is asking very nicely for attention.
+b : Is it the squeak? | How does it ask less nicely?
+a : No. The little clack just before the squeak. | By dropping the fastening in your supper.
+
+scene square_test
+when topic=work self.job=crafter
+does ask.advice / give.advice / assess
+a : How would you check this square without trusting a second square? | What's a carpenter to do when the measuring tool looks doubtful?
+b : Draw a line with it, then flip it and try again. | Check it against its own mark the other way about.
+a : That's a sensible answer. I trust a disagreement I can actually see. | Aye. Even an honest mistake has trouble telling the same tale backwards.
+
+scene home_knock
+when topic=family self.married=yes
+does tell.feeling / sympathise / assess
+a : When I picture a good evening it's a little privacy with #self.spouse#. | I've a whole peaceful afternoon in mind for #self.spouse#.
+b : No guests allowed? | What have you planned?
+a : Guests another day. A marriage needs an empty chair once in a while. | Taking the plans clean out of it. That includes mine.
+
+scene lesson_stick
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.child# a crooked scrap before I'd offer a perfect one. | I'd like #self.child# to teach me a new use for #offcut#.
+b : Why start crooked? | You're short of ideas?
+a : There's already a shape to notice. A straight piece asks a big question of a small imagination. | I'm full of old ones. That's the trouble.
+
+scene salt_rim
+when topic=travel here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : I like the view across the Sound. I could do without taking its salt home on my collar. | The sea manages to salt my lips a good way inland.
+b : What would you put between them? | Does it spoil the view?
+a : A good clean window would suit me. | No, but it makes me think I ought to rinse my ears before supper.
+
+scene old_shaving
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : The nicest bit of whittling is when #curl# holds up to the light. | I like to stop before the scrap looks finished.
+b : You look at what comes off? | What do you keep it for, then?
+a : Course. What's left sits still. The shaving makes a little dance of it. | Another evening. If I finished the lot I'd have to find a new bit to like.
+
+scene chapel_quiet
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / sympathise / assess
+a : A quiet chapel makes the little noises in a coat sound loud. | I like going where a wolf can hear the last part of a footstep.
+b : All those buttons? | The last part?
+a : Buttons, buckles, the grit at the hem. It's nice to hear such small company. | Yes. After the heel's down, there's a little sigh of leather.
+
+scene roof_storm
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like a storm better with the roof doing its full share of the listening. | Thunder makes even a heavy cupboard feel light a moment.
+b : Do roofs listen? | Can you feel it move?
+a : Mine makes a good show of answering anyway. | Just a little in the glass. Good time to admire a solid floor.
+
+scene fair_price
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : The costly part of a chair is often air. | Count the space for the sitter when you're judging my work.
+b : Air doesn't need cutting. | I'd normally count the timber.
+a : Try fitting knees under a table with no room. That free bit needs careful making. | The timber's dear enough. The knee you keep from bruising is dearer.
+
+scene cold_tea
+when topic=food
+does tell.complaint / react.complaint / assess
+a : Cold tea has a way of looking as promising as a hot cup. | Worst moment of a long errand is coming back to tea gone flat.
+b : Can't you tell by the steam? | Could you make a fresh pot?
+a : In good light. In poor light the lip finds out before the eye. | I could. It's the lost pleasure I came back expecting that bothers me.
+
+scene rolltest
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep one round bead for checking whether a surface tilts. | When company comes I set #level# squarely between the salt and bread.
+b : Does it roll straight off? | Expecting a spill?
+a : Only where there's trouble. You can hear it coming, too. | No. It saves having the salt cellar slide into a visitor's lap halfway through.
+
+scene ship_noise
+when topic=travel|lore here.region=ridgemere
+does tell.self / react.self / assess
+a : By the wharf, a load swinging on a line can silence a whole argument. | The quiet when a crate's in the air tells me more than all the shouting afterwards.
+b : Because everybody looks up? | What does the quiet tell you?
+a : Because everybody looks at everybody else's feet. Good sense, that. | That every wolf there knows something heavy depends on a small fastening.
+
+scene rough_back
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : See that little splinter on the underside? Your eyes would never find it while you sat. | When I smooth a shelf, I leave the last pass for the back.
+b : Would a sitter even notice? | Even a shelf that goes against a wall?
+a : Whoever carries the chair certainly would. | Especially that one. Somebody's got to carry it to the wall.
+
+scene weak_peg
+when topic=smalltalk
+does tell.worry / reassure / assess
+a : A little rattle from #peg# will occupy my ear clear through a meal. | I can't quite let a soft knock under a stool go unexplained.
+b : Try holding the peg still while somebody sits. | Lift it up and look.
+a : Good. I'd rather share a three-breath job than brood over it all evening. | That's my habit. Only I've got to wait for the guest to finish sitting.
+
+scene newcomer_seat
+when topic=newcomer
+does offer / accept / assess
+a : Worn out from travelling? Lean the awkward bundle my way. | There's a dry seat if you want to let your soles have a holiday.
+b : You're sure it's steady there? | That's a fine offer after a walk.
+a : If it shifts, I'll feel it. Both of us can take our eyes off it. | Shake your boots out too. Nobody begrudges the paving a bit of its own dirt.
+
+scene colour_test
+when topic=work|smalltalk self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I cover any maker's mark before I give an opinion on something offered for sale. | I'll ask twice about a piece with a choice bit of varnish.
+b : Even your own mark? | Why not just scratch the varnish?
+a : Mine most of all. I know just how much nonsense I'll believe from myself. | Because it's decent work to varnish well. I'm asking what else was done well.
+
+scene wake_cider
+when topic=food self.likes=spiced_cider
+does tell.plan / ask.detail / answer.detail
+a : I mean to make a cup with a thumb hollow wide enough to warm the joint. | Next time there's cider left I'm putting it in a smaller cup.
+b : Any particular drink in mind? | It won't make any more that way.
+a : Cider. Tea cools while I'm still admiring my clever hollow. | No, but what's left will feel like a proper helping.
+
+scene memory_grain
+when topic=memories
+does tell.self / react.self / assess
+a : I remember faces by the things that keep their paws occupied. | Some days a little twist in the grain of a board gives me a sharper memory than a name does.
+b : What would you remember of me? | What sort of memory?
+a : Give me your coat to mend and I might remember every stitch in it. | The feel of a handle that fitted when I was small.
+
+scene lost_news
+when topic=news world.news
+does tell.news / react.news / assess
+a : Take the wrapping off and the news is this: #world.news#. | What's come in from #world.news_from# is #world.news#.
+b : Who supplied the wrapping? | Any additions of your own?
+a : The usual company. There's always somebody to put a shine on plain news. | No. I've seen what adding wedges to a neat fit can do.
+
+scene hard_week
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : In lean times even a good repair can sit waiting for the cost of a peg. | Hard times make folk look twice before asking for a little help.
+b : Can a scrap be made to fit? | Hard on the pride?
+a : Often. That's why I save the short bits. | Harder on the thing wearing out while nobody asks.
+
+scene festival_lantern
+when topic=festival
+does give.opinion / disagree / concede
+a : I like the hour when the feast lanterns come down. | My favourite festival duty would be counting the benches home.
+b : Seems a pity to take the lights away. | Wouldn't you miss the games?
+a : They're somebody's good lamps. It's pleasant to see them carried home whole. | Only a few. I'd see the happiness in the wear on every plank.
+
+scene chill_door
+when topic=season here.season=winter
+does tell.self / react.self / assess
+a : In winter you can feel a bad sill through a boot. | Light grows terribly precious when you're looking for a winter draught.
+b : Before any water gets in? | I'd have thought warmth mattered more.
+a : Yes. There's that one line across the toes that never warms. | It does. A little blade of daylight shows where the warmth keeps slipping off.
+
+scene dry_time
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Rain gets into a half-finished thought much as it gets into a joint. | A wet board feels heavier the moment somebody asks you to carry it upstairs.
+b : Swells it? | Is that the rain or the stairs?
+a : That's it. By the time you've dried off you can't remember how the parts fitted. | The question, mostly. I'll carry it just the same.
+
+scene quiet_friend
+when topic=friends self.friend
+does tell.feeling / sympathise / assess
+a : I'd as soon share a job with #self.friend# as take a day off altogether. | If I had one perfect chair I'd offer it to #self.friend#.
+b : That's an unusual sort of rest. | You wouldn't keep it?
+a : Paws occupied, no explanations needed. That'll do me very well for a holiday. | An empty seat would teach me precious little.
+
+scene joint_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt I made a cupboard with doors on every side, including underneath. | I dreamed I was making a little box for holding a whole afternoon.
+b : What did it hold? | How big did it get?
+a : Nothing at all. I spent the dream trying to put a floor in without spoiling a door. | Quite small. All a decent afternoon needs is a seat and a little quiet.
+
+scene cart_arrival
+when topic=caravan world.wagons=late
+does tell.self / react.self / assess
+a : With wagons late I use the waiting to look through #drift# for decent bits. | A missing delivery leaves a great clean space where I meant to put it.
+b : Anything worth keeping? | Can't you enjoy the space?
+a : Usually one small thing with a lovely face, too short for the first job I'd planned. | Yes. That's the embarrassing part of having things turn up at last.
+
+scene last_pass
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : You know when a piece is done? When the next stroke would be for my pride alone. | I try to finish with the tool still moving easily.
+b : Isn't pride allowed? | Why stop while it's easy?
+a : Allowed, yes. But it needn't be allowed to spoil a good surface. | Because a blade that's fought the last inch will want an argument with the next.
+
+story upside_down [topic=memories self.age>=25]
+  : I once carried a chair home upside down because I liked the work underneath so much.
+  : Somebody leaned from a window and told me the sitter would never stay on that way.
+  b : Did you turn it back?
+  : No. I invited a fly to take a seat. One did, to everybody's satisfaction.
+
+story spilt_cider [topic=food]
+  : I found a board with a hollow in it and set my cider there for safety.
+  : All afternoon I worked happily without knocking the cup. Then came time to lift the board.
+  ask : Which bit do you think slipped my mind?
+  b : The cup itself, I'd lay a little money on it.
+  : The cup and its beautiful safe hollow. Had to fetch a cloth for both.
+
+story quiet_wager [topic=pastimes]
+  : An old traveller bet me a pear that a wooden spoon could hold more on its back than in its bowl.
+  : I turned it over and balanced a handful of small nuts there, losing one after the other.
+  b : What did the traveller put on it?
+  : A whole pear, with the stalk slipped through the hanging hole. A very well earned supper.
+
+story thin_letter [topic=memories self.age>=30]
+  : There was a winter I got a letter on paper thinner than a good shaving. I spent a week trying to pare wood as fine.
+  : On my last try the curl came away thin enough to read through.
+  b : Did you write back on it?
+  : Meant to. A single dab of ink went straight through and wrote my first word on the table.
+
+story ratchet_song [topic=work self.job=crafter]
+  : I mended a loose rail in a stair that had always croaked at the third step.
+  : The following afternoon I found the owner standing on the good step with a puzzled look.
+  b : Had your repair worked?
+  : Too well. The stair had been the signal to put a second cup on. We agreed on a little doorbell.
+
+rule @hidden
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 8h
+say Inspect the underside while your money's still your own. | Good workmanship reaches the rearmost edge.
+
+rule @shave
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say One clean curl for the light. | That's a whole little ribbon off a rough end.
+
+rule @cup
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say A cup with a hollow the thumb remembers. | A spice clinging hard to the last warm mouthful.
+
+rule @hush
+when concept=bark here.place=chapel
+does aside
+cooldown 8h
+say Easy with the loose buckle here. | Let the quiet have the whole floor.
+
+rule @spills
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep that wet end off the plaster. | Rain dripping straight down the cuffs again.
+
+rule @caravan
+when concept=bark world.wagons=late
+does aside
+cooldown 8h
+say Save a space under cover for the late load. | Missing wheels leave a long quiet stretch.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Take the seat in the light. You've a question, I take it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you can try the seat I've just set level.
+dlg @3 resident.hub [here.time=night] : Mind the sill this late. Come over where the light's steadier.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Straight words and a little room between our boots.
+dlg @5 resident.job [self.job=crafter] : Carpentry for a living. I like the hidden face of a joint as smooth as the face you bought it for.
+dlg @6 resident.job : If a thing's coming to pieces I usually end up taking a look at it.
+dlg @7 resident.news [world.news] : The plain account is #world.news#. All I know for sure.
+dlg @8 resident.news [world.event_words] : #world.event_words.capitalize# is what I'm hearing about. Ask somebody nearer for the particulars.
+dlg @9 resident.gossip [here.gossip=yes] : Word is #topic.subject# #topic.claim#. Keep a little room in the tale for error.
+dlg @10 resident.business [business=failing] : Business could be sounder. I'm keeping what comes in for the necessary outgoings.
+dlg @11 resident.bye : Put this visit down to good use of an hour.
+dlg @12 shop.greet [here.shop=open] : Look the goods over as carefully as you please. I'm here to answer for them.
+dlg @13 shop.greet [here.shop=bare] : Nothing here to sell you for the moment. I'd look at an offer all the same.
+dlg @14 shop.prices : See the price while you've got the piece in view. #shop_offer#
+dlg @15 shop.bye : You know what I promised and I know what I owe. Safe home.
+
+graft resident.hub
+choice What do you look for on the underside? -> hidden_finish
+node hidden_finish
+say A moment's consideration for the wolf who has to lift the thing. You can tell quite a lot by the finish on a hidden edge.
+choice Even on something cheap? -> cheap_edge
+choice That's all I wanted to know. -> hub
+node cheap_edge
+say Especially then. Nobody who can only afford a cheap stool deserves a splinter with it.
+choice I've another matter in mind. -> hub
+choice Goodbye and thanks. -> bye
+
+graft shop.greet
+choice Would a famous maker's mark sway your opinion? -> maker_mark
+node maker_mark
+say I put my thumb over the mark till I've finished looking. A House can afford a very large brand. That tells me nothing about a joint.
+choice What if it was your own mark? -> thumb_test
+choice Let's see what you sell. -> greet
+node thumb_test
+say Same thumb, and I'd press it down harder. I'm as easy to flatter as the next fool.
+choice I'll look for myself. -> greet
+choice Good day. -> bye

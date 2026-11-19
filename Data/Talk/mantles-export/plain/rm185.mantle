@@ -1,0 +1,461 @@
+# rm185, the bell on the label (doc 84 P14, batch city-a3): written for rm_rupert_pitchford (Rupert Pitchford: apothecary on Market Square, Ridgemere-born). Name-free.
+mantle rm185
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_rupert_pitchford
+title the bell on the label
+fits stage=adult|old
+prefers role=merchant job=healer talk=chatty
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk writes_the_chapel_bell_on_every_dose_label
+likes hard_cheese riddles full_larder misty_dawns
+dislikes bad_manners gulls
+fears the_houses_falling_out a_jar_on_the_wrong_shelf
+hopes a_riddle_nobody_in_the_city_can_answer a_larder_full_before_the_first_frost
+topics health +0.5 work +0.4 pastimes +0.4 food +0.3 weather +0.2 lore +0.2 gossip +0.2 festival +0.2 crime -0.2
+styles comfort=remedies gossip=eager refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps an apothecary's counter by Market Square and talks the whole time the salve sets: loud, loyal and warm, earnest about every dose, writes the chapel bell to take it by on every label, sure the Houses will fall out before winter, and happiest with a hard cheese, a full larder, a misty dawn and a riddle nobody else knows.
+
+words
+oath! = Bells and balsam | Balm and bell-rope
+saying! = Every ill keeps its own hour | On the bell and not a breath before
+jars = the jars | my jars in their rows
+label = the label | a label in my best hand
+dosebell = the first bell | the noon bell | the evening bell
+salve = the comfrey salve | a pot of salve
+counter = the counter | my scrap of counter
+cheese = a wedge of cheese hard as a doorstop | a rind-on cheese
+larder = the larder | a larder packed to the lintel
+mist = a misty dawn | a fleece of Sound mist
+gulls = the gulls | those thieving gulls
+rude = folk with no manners | wolves raised in a byre
+cough = a chesty cough | a cough that rattles
+drops = the drops | three drops in warm water
+mortar = the mortar | my old stone mortar
+houses = the Houses | the four Houses
+shelf = the high shelf | the shelf nobody touches but me
+bells = the chapel bells | the chapel's ringing
+chest = your chest | the chest
+
+any
+opinion houses mixed 1 : #houses.capitalize# bow to one another under the Rain Hall roof and whet knives below stairs. Before winter's out, one will say a thing there's no unsaying.
+opinion houses against 2 [world.times=hard|lean] : Lean times, and #houses# counting who owes whom. That's how the quarrels start, and the Commons pays for every one.
+opinion city for 1 : Born to the sound of #bells#, and I'll go to it. Rain and all, there's no city like it, and I've never wanted one.
+opinion dole for 1 : Nobody should have to pick between bread and a remedy. I've watched folk pick, and they always pick wrong.
+opinion drink against 1 : Ale's all right till it starts talking for you. Have your cup, then go home and drink water.
+opinion drink against 1 [self.job=healer] : I've cleaned more cuts from a fourth cup than from any fight sober. One's cheer. Four's my trade.
+opinion festivals for 1 : The whole city out in the street and chattering to its neighbours. Monthly, if they let me choose.
+opinion merchants for 1 [self.role=merchant] : Mine's a counter trade. I can price a sack of dried herbs before it's through the gate.
+opinion newcomers for 1 : There's room on every terrace for anyone who'll work. And they bring riddles I've never heard.
+opinion road against 1 : A late cart is a remedy I can't make. Worse roads every year, and later carts on them.
+opinion times against 1 : The square's quieter every week. Folk put off a remedy till it's a sickness, and then it costs them double.
+opinion watch mixed 0 : The Watch are civil enough to me. Whether they're as civil down the hill, I couldn't swear.
+opinion sump mixed 1 : The Sump pays what it can and owes what it can't, same as anywhere. I'll stand up for the folk; it's the damp I'd sooner see gone.
+
+grown
+line greet [pair.band=strangers] : #greet#! In, in. The step drops lower than you'd think. | #greet#, #address#. New to me. I'll have your name off you before you go, I promise.
+line greet [self.working=yes self.job=healer] : #greet#. Give me one breath, I'm writing a label. | #greet#! Stand by #counter#, I've salve on the warm.
+line greet [here.time=dawn] : #greet#. First bell's hardly done ringing and here's you, up and about. | #greet#! Up with the bells, both of us. Early's healthy.
+line greet [here.time=dawn here.weather=fog] : #greet#! Look at that mist. A morning like wool, and I love every inch of it. | #greet#. Fog to the rooftops. Best kind of morning there is.
+line greet [here.time=dusk|night] : #greet#. Evening bell's been and gone, and I'm still talking. | #greet#, #address#. Late, and a visitor's welcome all the same.
+line greet [pair.band=friends|family] : Ah, you! Your name was on my tongue a moment ago. | #greet#! Turn round, let me see. You look well, and I'd know.
+line greet : #greet#! A face, at last, and a good one. | #greet#, #address#. #bells.capitalize# are quiet, so I'm all yours.
+line kin.open [pair.kin!=no] : Here you are. Sit. Cheese is on the board. | In you come. Something's happened, it's on your face; let's have it.
+line again.open : Twice today! I'll be giving you your own stool. | Back already. Good; three more things came to me since.
+line hail [pair.band=friends] : Hoy! Wait there, I'm coming over. | There's a face I know. Hold up, hold up!
+line greet.return : #greet#! And a good one to you as well. | #greet#. In you come, then.
+line greet.return [pair.band=friends|family] : And there's you! I'd hoped so. | #greet#! Take the stool before your knees give.
+line greet.return [self.working=yes] : #greet#. Talk away; the paws are writing, the ears are free. | #greet#. Mind the jars, and say on.
+line greet.return [here.time=dusk|night] : Evening to you. I'll have the lamp lit in a moment. | #greet#. Late already. I never notice till the bells tell me.
+line farewell : #farewell#! And mind #chest# in this damp. | Off you go, then. #saying#.
+line farewell [here.time=dusk|night] : #farewell#. Keep your scarf up; the night air's raw. | Good night, #address#. Sleep on your side if you're wheezy.
+line farewell.return : #farewell#, and come back soon, mind. | And you. The counter misses a face.
+line farewell.return [pair.band=friends|family] : Go on. A heel of the cheese is yours next time. | Mind the step. I'll see you at the next bell, near enough.
+line react.news : Every word, now, from the start. Go on. | Wait, wait. Let me put this jar down. Now.
+line react.news.new : #oath#! Not a word of that's reached me. | Well! First I've heard, and very little gets past me.
+line react.news.known : That reached me while I was drawing water. Give me your telling anyway. | Oh, that's been round the square twice already.
+line react.news.doubt : Who saw it, though? An ear's not an eye. | Hm. News grows on its way up the terraces, like ivy.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's cruel. That's cruel to hear. | That's hard news. Kettle's on; sit a minute.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's the happiest word all week! | Oh, good! Good! I'll tell everyone I see.
+line answer.how : Hale and loud, the way I like to be. | Very well, thank you. Cheese in the larder and nobody poorly at my end.
+line answer.how.busy [self.working=yes] : Up since the first bell and not sat once. | Busy as the noon bell. Ask again after lamplighting.
+line answer.how.poorly : A bit hoarse. Too much talking, they tell me. | Under the weather, and you know I hate to say so.
+line ask.how : And you? How's #chest#? | And how's yourself? The honest answer, mind.
+line sympathise : Oh, sit down. Say what would help. | That's a weight. Leave a bit of it here with me.
+line reassure : It'll heal. Nearly everything heals, given rest and somebody fussing. | Worse has turned round, and this will.
+line decline : I'd love to, only the whole day's spoken for, and I'll not go back on it. | Not today, I'm sorry. Come back tomorrow. I'll say yes before you've finished.
+line accept_decline : Ah well. Some other day, and I'll be after you for it. | Fair enough. I'll not nag. Not much, anyway.
+line thank : Oh, that's kind. That's very kind. | #thanks#. I'll not forget that.
+line deflect_thanks : Pfft. A minute of my time, no more. | Don't thank me. Take the drops on the bell; that's thanks enough.
+line preclose [self.working=yes] : Right, I've a label wants writing before the bell. | Well. These jars won't fill themselves.
+line preclose : Listen to me prattling. Off you go. | Well, my chatter's kept you standing long enough.
+line accept_preclose : Go on, go on. Next bell, maybe. | Right you are. Off with you.
+line ack : #bc_right# | Just so.
+line give.advice : Hot water and honey, and stay off the slick cobbles. | Sleep with the window cracked. Damp air's worse when it's shut in.
+line give.advice [self.job=healer] : Take it at #dosebell# and not before. The label says so for a reason. | Rub #salve# in after a wash, never before.
+line warn [world.bandits=near] : Travelling north alone? Wait for company. Those cuts are ugly to dress. | Bide behind the wall a few days. I'd sooner sell you nothing than stitch you.
+line congratulate : Well done! Oh, well done. | That's grand. That's grand news for you.
+
+scene bell_labels
+when topic=work self.job=healer
+does tell.self / ask.detail / answer.detail / assess
+a : Every label I write has a bell on it. Two drops at the noon bell, that sort of thing. | I wrote "evening bell" on a jar of cough syrup today, and I'll stand by it. | Folk can't all read figures, but they can all hear the chapel.
+b : Why the bell and not the hour? | Why the evening one? | So the bell does the reading for them?
+a : Because the whole city hears the bells. Not everyone owns an hour. | A cough settles at night if you dose it at dusk. Earlier and it's wasted. | That's it. The chapel rings, and the paw reaches for the spoon.
+b : That's a clever habit. | I'll remember that. | #bc_clever#
+
+scene counting_bells
+when topic=faith|lore here.region=ridgemere
+does tell.self / react.self / assess
+a : Every ring the chapel gives, I count it. Every one, every day. | The chapel rang eleven this morning when it ought to have rung ten. I counted. | There's a cracked note in the third bell. Listen next time and you'll hear it.
+b : Every one? What for? | Did anyone else notice? | I've never listened that close.
+a : So I know where the day's got to. And because they're lovely. Both. | Nobody. I mentioned it on the steps and got a funny look for my trouble. | Most don't. It's been cracked as long as I've had ears. I'd miss it if they mended it.
+
+scene misty_dawn
+when topic=weather here.weather=fog here.time=dawn
+does tell.feeling / react.self / assess
+a : Look at it. The square's gone to nothing but grey, and I wouldn't change a thing. | The mist's come up from the Sound and swallowed the chapel whole. | I walked here through #mist# and never once saw my own feet.
+b : You like this? It's cold as a cellar. | You can still hear the bells, though. | Nor did I. I followed the smell of bread.
+a : Cold, yes. But quiet. A city this loud ought to have one quiet hour. | That's the joy of a mist. The bells come through anything. | Good nose. Half the city finds its way by smell on a grey dawn.
+
+scene rain_chests
+when topic=weather|health here.weather=rain self.job=healer
+does tell.complaint / react.complaint / assess
+a : Rain three days running, and the whole street's coughing. | Each wet spell I sell out of goose grease by noon. | Wet paws, wet chests. I'd lock the door on rain if I could.
+b : Is it the rain, or the cold that comes with it? | What's goose grease for? | You'd lose half your trade.
+a : The damp. It settles in a chest and won't shift without a fight. | Rub it on the chest and wrap up warm. Old, but it works. | I'd sooner lose the trade than hear the coughing.
+
+scene thunder_jars
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : Hear that thunder! The jars rattle on the shelf every time it goes. | A proper storm. Every gull in the city's gone quiet, and good riddance to the noise. | The chapel bells and the thunder together. I can't count either of them.
+b : You'll lose a jar one day. | Where do they go, in a storm? | Does that trouble you?
+a : I've lost two. Both pickled onions, thank the Bright One. | Under the eaves, sulking. Best place for them. | A little. I lose my place in the day.
+
+scene winter_rush
+when topic=season|health here.season=winter self.job=healer
+does tell.self / react.self / assess
+a : Winter's my busy season. Every chest in the Commons goes at once. | First frost, and the queue for cough syrup went right out the door. | I've made more salve this week than in the whole of summer.
+b : Do you ever catch it yourself? | Did you have enough? | For chapped paws?
+a : Never once. I talk too much for anything to settle in my chest. | Just. I was scraping the bottom of the pot by dusk. | Chapped paws and cracked noses. Winter's hard on a face.
+
+scene hard_cheese
+when topic=food here.region=ridgemere
+does tell.self / react.self / assess
+a : I've #cheese# at home that'd stop a door. | Give me cheese with a rind on it and you can keep the rest of the table. | There's a farm cart that stands by the north gate and sells the best cheese in the city.
+b : Is it any good to eat, then? | Not even bread? | Which cart?
+a : The best. Shave it thin and it melts on the tongue. | Bread's a plate for the cheese. That's all bread is. | I'll not say. If I told everyone, there'd be none left for me.
+
+scene autumn_larder
+when topic=home|food|season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : I've filled the larder for winter. Jars right up to the lintel. | Every autumn I count the larder twice, just to hear the number. | A full larder is the best sleeping draught going, and I'd know.
+b : What's in them? | And what's the number? | Better than willow bark?
+a : Pickled onions, plums, and a cheese wrapped up high where nobody reaches. | Fifty-three this year. Two more than last. | Better than any bark. Nobody frets with a full larder.
+
+scene riddle_up_and_down
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : A riddle for you. What climbs the hill every evening and rolls back down at dawn, and never once takes the stairs? | A riddle for you. What comes up to the sea wall twice a day and never gets in? | A riddle for you. What's lit every dusk, put out every dawn, and never once thanked?
+b[stage=young|adolescent] #pup : The fog! It's the fog! | The tide! | The street lamps!
+b : The fog? | A ship that can't find its berth? | The lamplighter?
+a@pup : Clever pup! The mist it is, climbing from the Sound to the Rise. | Right first time. You'll be setting me riddles next. | That's it! Who's been telling you my riddles?
+a : The mist! It climbs from the Sound to the Rise. I made that one myself. | The tide. It's been knocking on that wall since before there was a city. | Close. The lamps. The lamplighter, at least, gets paid.
+
+scene riddle_swaps
+when topic=pastimes self.job=healer here.region=ridgemere
+does tell.self / react.self / assess
+a : A carter in from the North Road gave me a riddle last week, and I still haven't cracked it. | I swap riddles with anyone who'll stand still. A cough drop for a good one, sometimes. | I write down the riddles I like, on the last leaves of the label book.
+b : Won't you ask the carter? | Does anyone take you up on that? | How many have you got?
+a : And have the answer handed to me? Never. I'll get there. | More than you'd think. Folk are prouder of a riddle than of their own pups. | Forty-odd. I'd trade every one for one that stumps all Ridgemere.
+
+scene gulls_square
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A gull snatched a pasty from a pup in the square today. Snatched it! | #gulls.capitalize# are on the chapel roof again, screaming over the bells. | I'd pay a penny a gull to anyone who'd clear the square of them.
+b : Did the pup get it back? | They're only birds. | You'd be #skint# in a week.
+a : Back? It was over the Sound before the pup had shut its mouth. | Birds with no manners, and I can't abide no manners. | Worth every penny. A square with no gulls is a square I'd sing in.
+
+scene no_manners
+when topic=smalltalk|day
+does tell.complaint / react.complaint / assess
+a : A wolf in the square shoved past me today. Never a word, never a sorry. | I kept a door open for a young one this morning and got nothing for it. Not a nod. | There's no charge for "please". I don't know why folk are so mean with it.
+b : Some folk are raised that way. | Young ones are like that now. | #bc_true#
+a : Raised in a byre, then. I said so, too, loud enough to carry. | I was a pup myself, and I nodded. My gran saw to that. | Free, and it'd cure half the quarrels in this city.
+
+scene houses_before_winter
+when topic=lore|times here.region=ridgemere
+does tell.worry / react.self / give.opinion
+a : Mark my words, #houses# will fall out before the next winter. | I hear the Rain Hall's gone very polite lately. Polite is how it starts. | One city, four Houses. Somebody's going to reach for more than a fourth.
+b : You've said that before. | Polite's bad? | There have always been four.
+a : And I'll go on saying it, and pray I'm a fool for it. | Polite is what you are just before you stop speaking. I'd sooner they shouted. | Four, and always hungry. A hard winter makes them hungrier.
+
+scene lean_counter
+when topic=times world.times=hard|lean self.job=healer
+does tell.worry / react.self / assess
+a : Folk are coming to me later and later. They wait till a cough's a fever. | I've started selling half-pots of salve. A half-pot's better than none. | Times are thin. I'm giving away more than I'm selling, and I'll not grudge it.
+b : Can't you get them in sooner? | Do they take them? | Who covers the missing coin?
+a : I tell everyone I see: come early, it's cheaper early. Nobody listens. | Gladly. A half-pot's all most purses stretch to this month. | My larder's full and my roof's sound. I can stand to be out of pocket a while.
+
+scene good_counter
+when topic=times world.times=good|boom self.job=healer
+does tell.self / react.self / assess
+a : Coin's about. Folk are buying a remedy before they need one, which is the right way round. | Good times. I've bought a new mortar and still had change. | Busy counter, full larder. I've no complaints this month, and I always have complaints.
+b : Long may it last. | And the old mortar? | Not one?
+a : Long as #houses# behave themselves. There's always that. | It's for the strong stuff now. You don't grind foxglove and peppermint in one bowl. | Not one. Mark the day; it won't come again.
+
+scene herbs_dear
+when topic=prices world.herbs_price=up self.job=healer
+does tell.complaint / react.complaint / assess
+a : Willow bark's dearer again. Everything that comes in on the carts is. | Herbs are up, and I've had to add a penny to the cough drops. | A sack of dried nettle cost me more this week than a cheese would.
+b : Will folk pay it? | Only a penny? | That's a dear sack.
+a : They'll pay it, then they'll come in later, and sicker. That's what dear does. | One penny, and I felt it more than they did. | Dear as cheese. It's not right, nettles costing what cheese does.
+
+scene price_rise
+when topic=prices topic.dir=up topic.good
+does tell.news / react.news / assess
+a : They've put up #topic.good# again. I heard it from three folk before noon. | #topic.good.capitalize#, gone up. I'll be hearing about it all week. | Everybody on the square's talking about the price of #topic.good#.
+b : It goes up every month. | Will you go without? | Is it the roads?
+a : Every month, and the wages stand still like a cart in mud. | I'll go without the second helping. Never the first. | The roads, the weather, and somebody's profit. Mostly the last.
+
+scene herb_cart_late
+when topic=caravan world.wagons=late self.job=healer here.region=ridgemere
+does tell.worry / react.self / reassure / assess
+a : Carts behind again, and I've three jars standing empty. | Still waiting for the northern wagon, and my dried herbs are on it. | I watched the gate all morning for the herb cart. Nothing.
+b : Can you make do? | Will it come? | They'll come by dusk, maybe.
+a : I'll stretch what I have. Thinner doses, longer between bells. | It'll come. Late is better than robbed. | Maybe. I'll be at the gate again by the evening bell.
+b : You'll get by. You generally do. | Late's better, aye. | #bc_hope_so#
+
+scene wagons_in
+when topic=caravan world.wagons=in here.region=ridgemere
+does tell.news / react.self / assess
+a : Wagons in! I've been down to look already. | Carts in this morning, and the square's loud with it. | Wagons rolled in at first light; the wheels woke me.
+b : Anything good on them? | Loud's good. | That early?
+a : Dried camomile, and a cheese I didn't need and bought anyway. | Loud's coin. A loud square is a fed one. | Before the first bell, even. I counted the wheels, then the bells.
+
+scene gossip_passed
+when topic=gossip topic.subject topic.claim_kind=other|newcomer|marriage|promise_kept
+does tell.gossip / react.self / assess
+a : You'll have heard this, surely: #topic.subject# #topic.claim#. | It came over the well this morning. #topic.subject# #topic.claim#. | Here's one for you. They say #topic.subject# #topic.claim#.
+b : I hadn't, no. | From who? | Do they, now.
+a : Well, it's yours now. Remember who told you. | From a wolf at the well, and then from two more. That's three. | That's the account I heard. My seal isn't on it.
+
+scene gossip_hard
+when topic=gossip topic.subject topic.claim_kind=death|violence|theft
+does tell.gossip / sympathise / assess
+tone serious / serious / even
+a : Have you heard? #topic.subject# #topic.claim#. I've carried it since breakfast. | They're saying #topic.subject# #topic.claim#. It's a hard thing. | I'd rather not believe it, but #topic.subject# #topic.claim#, they say.
+b : That's a sorry thing. | #pity#. | Let's hope it's wrong.
+a : It is. That's not one for idle chatter. | Hard. A taper goes up from me at the chapel, whatever it's worth. | Let's hope. I'll keep it behind my teeth till I'm sure.
+
+scene newcomer_welcome
+when topic=newcomer topic.subject
+does tell.news / react.self / assess
+a : #topic.subject#, newly come, I hear. Somebody ought to say where the good cheese is. | A new face, they tell me: #topic.subject#. I'll want to hear where from. | I hear #topic.subject# has settled in. I'll call round with a good day before the week's out.
+b : You'll do it yourself, I expect. | Does it matter where from? | That's kind.
+a : Somebody has to, and I've the loudest voice on the street. | Every town has its own riddles. I like to collect them. | Kind's cheap. Two words at a door cost nothing and buy a lot.
+
+scene festival_wheel
+when topic=festival world.festival=today|soon
+does tell.plan / react.self / assess
+a : Festival's coming, and I've laid in a whole wheel of cheese for it. | The whole city in the streets, everyone talking. No day of the year comes near it. | I'll be out from noon on festival day, and you'll hear me before you see me.
+b : A whole wheel? | Everyone? | I believe that.
+a : A whole one. I'll share it, before you ask. Most of it. | Everyone. Even the Rise comes down the hill for it. | Loud and glad. That's what a festival's for.
+
+scene light_paws
+when topic=crime|gossip topic.claim_kind=theft topic.subject
+does tell.news / react.news / assess
+a : Thieves again. They say #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I've taken to locking the larder, and I never lock the larder. | There's light paws about. #topic.subject# #topic.claim#, they're saying.
+b : The Watch will look into it. | Your larder? | Keep your purse close.
+a : I hope so, and I'll tell the next one I see as much. | The cheese is in it. A wolf has to guard something. | Close and buttoned. I've told everyone on my stretch of street.
+
+scene friend_trusted
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : If I were ever poorly, I'd want #self.friend# by me. Not that I ever am. | #self.friend# and I can talk the bells round and still not be done. | I'd trust #self.friend# with my larder key. That's the highest praise I give.
+b : A friend like that's worth a lot. | All day? | High praise.
+a : The best. Everybody should have one like that, and most don't. | Morning bell to evening bell, and back again on Restday. | The highest. Nobody else gets near the cheese.
+
+scene settled_not_wed
+when topic=family self.married=no self.parent=no
+does tell.self / react.self / assess
+a : No mate and no pups, and a house so full of folk I never notice. | Folk ask me when I'll settle down. I'm settled. I just haven't married. | I've nobody of my own, and plenty of folk I'd walk through a storm for.
+b : Do you mind it? | There's a difference? | That's family, of a kind.
+a : Not much. There's always someone at the door wanting a word. | A big one. Settled means the larder's stocked and nothing nags at me. | The best kind. You pick it yourself.
+
+scene eleven_years
+when topic=health self.age>=25
+does tell.self / react.self / assess
+a : Eleven years and never a sick day. Cheese and loud talking, that's my secret. | This weather's bad for chests. Keep yours wrapped, whatever else you do. | Honey and hot water before bed. Never fails me.
+b : Eleven years? Truly? | Mine's fine, for now. | Never?
+a : Eleven. Hush, though; luck has ears. | Keep it that way. Wrap up, and mind the wet. | Once. I'd forgotten the honey.
+
+scene what_they_need
+when topic=health|work self.job=healer
+does tell.self / react.self / assess
+a : Somebody came in today wanting something for a broken heart. I sold them camomile and a listening ear. | I'll not sell the strong drops without knowing who they're for. Folk think I'm nosy. I'm careful. | Mostly I'm telling folk they'll be all right.
+b : Did it help? | Is there a difference? | And will they be?
+a : The listening did. Camomile's just something to hold. | A big one. Nosy wants to know. Careful needs to. | Mostly. And when they won't, I tell them that too, kindly.
+
+scene lids_on
+when topic=day|work here.time=dusk self.job=healer
+does tell.self / react.self / assess
+a : Evening bell's rung. Lids on the jars, lamp out, and home to the cheese. | I write the last label of the day by lamplight. My best hand's my last hand, oddly. | End of the day, and I've talked more than I've sold. Same as ever.
+b : You've earned it. | Why's that? | Was it a good day, then?
+a : I have. Every crumb of it. | No hurry by then. Nobody's waiting at the counter. | A good one. Talking is half the trade, whatever anyone says.
+
+scene before_first_bell
+when topic=day here.time=dawn here.region=ridgemere
+does tell.self / react.self / assess
+a : I'm up before the first bell every morning. I like to hear the city start. | First bell, and #gulls# are already shouting. No manners, gulls. | Dawn's my hour. Cold, quiet, and nobody poorly yet.
+b : Before the bell? Why? | They never stop. | Nobody poorly?
+a : So I can count it properly. You can't count a bell you're woken by. | Never. Not even on Restday. The bells rest; the gulls don't. | Not yet. By noon, half the street. But at dawn, nobody.
+
+scene tide_chapel_lore
+when topic=lore|memories here.region=ridgemere
+does tell.memory / react.self / assess
+a : My gran said the chapel down the hill rang for every boat that came home. Every one. | They say the third bell was a ship's bell once, pulled from a wreck in the Sound. | I used to think the bells rang the tide in. I thought the chapel was in charge of the sea.
+b : Do they still? | Is that true? | I thought the same once.
+a : Not every boat. Too many boats now. But it comes back to me whenever they ring. | It's what they say. I've never asked. I'd hate to find it wasn't. | I'm glad it wasn't only me. I half believe it still, on a calm morning.
+
+scene loud_voice
+when topic=accent self.quarter=commons
+does tell.self / react.self / assess
+a : I talk Northgate, loud and quick. You can hear me from across the whole square. | Folk up the Rise say I shout. I don't shout; I make sure the doorway hears too. | My voice carries. Handy in a fog, less so in the chapel.
+b : I'd say that's fair. | Do you, though? | #bc_ha#
+a : Fair and loud. That's me. | Hardly ever. Only when I'm pleased, and I'm mostly pleased. | I keep it down in the chapel. Mostly.
+
+scene wrapped_scarf
+when topic=weather|health here.season=autumn|winter here.region=ridgemere
+does give.advice / react.self / assess
+a : Wind's coming off the Sound with an edge to it. Scarf up, over the nose. | The stairs were slick with damp at first light. Mind your footing and your chest both. | It's the season for wet feet. Dry socks at the hearth, every night.
+b : You sound like my mother. | My chest's fine. | Every night?
+a : Then she was a wise one, and you should've listened sooner. | It'll stay fine if you wrap it. That's all I'm saying. | Every night. It's the cheapest remedy there is, and I'd know.
+
+story first_label [topic=work self.job=healer self.age>=25]
+  : While I learned the trade, an old herb-seller down by the wharf kept the jars, and I kept the labels.
+  : The doses went down in figures. An old rope seller came back a week later, worse, never having learned figures, and too proud to own it.
+  ask : Would your pride have let you say so?
+  b : Maybe not. Pride's a hard thing to swallow.
+  : So I started writing bells. Everybody can hear a bell. I've done it on every label since.
+
+story wrong_shelf [topic=health|memories self.job=healer self.age>=25]
+  : Once, years back, I reached for the cough syrup and had the foxglove in my paw instead.
+  : I'd have poured it. It was the noon bell ringing that stopped me, because the label said evening.
+  ask : Do you know what foxglove does?
+  b : No, and I don't think I want to.
+  : Stops a heart, in the wrong dose. The strong jars went up out of reach that day, and there they've stayed.
+
+story lost_in_mist [topic=memories|weather here.region=ridgemere self.age>=20]
+  : As a pup, I lost the way home from the sea wall one dawn, the mist came up that thick.
+  : I stood still, and I counted the chapel bells, and walked towards them, and stopped when they stopped.
+  ask : Have you ever been lost in your own city?
+  b : Once or twice, in the fog. How did you get home?
+  : I found the chapel steps and sat on them till it cleared. My gran was furious. I've loved a mist ever since.
+
+story sailors_riddle [topic=pastimes|memories self.age>=25]
+  : An old sailor on the wharf set me a riddle long ago and kept the answer to himself.
+  : What do you carry everywhere and never once lift? I chewed on it all winter.
+  ask : Will you guess before I tell you?
+  b : Your shadow? Your name?
+  : My name. I went back to tell him, and his ship had sailed. I've passed it on ever since.
+
+story gull_wedding [topic=animals|memories here.region=ridgemere]
+  : At a wedding feast down on the wharf, a long while ago, a gull came down and took the whole top off the cake.
+  : Snatched it clean while the pair of them watched. Then three more gulls fought it for the crumbs.
+  ask : Do you wonder I can't abide them?
+  b : Not now I've heard that.
+  : Not one wolf who was there has a kind word for a gull to this day. Nor have I.
+
+rule @label_bark
+when concept=bark working=yes self.job=healer
+does aside
+cooldown 6h
+say Noon bell. Two drops, noon bell. Write it, then. | Evening bell, the label says. Evening bell.
+
+rule @cry_bark
+when concept=bark working=yes self.role=merchant self.job=healer
+does aside
+cooldown 8h
+say Salves and syrups! Coughs seen to, cuts cleaned! | Remedies for any cough in the Commons! Step in, step in!
+
+rule @gull_bark
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast
+does aside
+cooldown 9h
+say Shoo! Go on, shoo! Rude birds. | #gulls.capitalize#. Manners of a midden, the lot of them.
+
+rule @bell_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say There's the chapel. One, two, three, and the cracked one. | Hark at #bells#. Right on time.
+
+rule @fog_bark
+when concept=bark here.weather=fog
+does aside
+cooldown 10h
+say There's the mist. Oh, lovely. | Can't see the square. Wouldn't change it.
+
+rule @cheese_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say Home to the cheese, and the cheese is waiting. | Larder, chair, cheese. In that order.
+
+dlg resident.hub : #greet#! In, in. What's ailing, or what's wanted? | #greet#, #address#. Something on your mind, by your face.
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#! You came back, good. | #topic.player#. Good. Your name was in my head this morning.
+dlg resident.hub [here.time=night] : Late, isn't it? The evening bell's long gone. Still, say on. | #greet#. Late for a visit, but I'm awake.
+dlg resident.hub [pair.disposition=hostile|wary] : You'll find I'm civil if you are. Go on. | Your business, then. Civil, mind.
+dlg resident.job [self.job=healer] : Salves, syrups and drops, with the bell to take them by on every label. | Coughs, cuts and aches. Mostly coughs, in this city.
+dlg resident.job : #self.trade_words.capitalize#. I talk while I work, and I work while I talk. | Busy paws, and the bells counted.
+dlg resident.job [self.working=yes self.job=healer] : You've caught me mid-label. Talk on; I can write and listen. | Mind the mortar. It's full.
+dlg resident.news [world.news] : Word from #world.news_from#, come in with the carts: #world.news#. | From #world.news_from#, they're saying #world.news#. I've told everyone since.
+dlg resident.news [world.event_words] : It's all #world.event_words# on the square. Not another word to be had. | Even among the stoppered jars I hear it: #world.event_words#.
+dlg resident.news [world.wagons=raided] : Some wagon was stripped by robbers, out beyond the gate. Stop home, I would. | There's a cart been stripped bare on the road. Go careful.
+dlg resident.news [world.death=recent] : Word of a death. I've no clever comfort for that. | Somebody's died. I counted the last bell without hearing a note.
+dlg resident.news [world.wedding=recent] : News of a wedding always makes my nose go red. It's gone red now. | Somebody's married. I've been humming wedding tunes to myself since I heard.
+dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Come back tomorrow; I'll have heard something by then. | Nothing new, and that's rare for me. I'll have something by the next bell.
+dlg resident.gossip [here.gossip=yes] : Well, since you ask: #topic.subject# #topic.claim#. Heard it twice. | Two mouths have told me #topic.subject# #topic.claim#, so it's going round.
+dlg resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Keep your purse close. They say #topic.subject# #topic.claim#. | Mind your pockets. #topic.subject# #topic.claim#, they're saying.
+dlg resident.gossip [here.gossip!=yes] : Not a thing, would you believe it. A quiet week. | #gossip_none# And I usually have plenty.
+dlg resident.business [business=thriving] : Run off my paws. Can't keep the jars full. | Busier than the noon bell. I'm not complaining.
+dlg resident.business [business=steady] : Steady. There's always a cough somewhere. | Steady enough. Rent paid, larder full.
+dlg resident.business [business=failing] : Poorly, I'll own it. Folk can't spare the coin for a remedy. | Badly. If it doesn't turn soon, I'll be selling the mortar.
+dlg resident.bye : #farewell#! And mind #chest# in this damp. | #saying.capitalize#. Off you go.
+dlg resident.bye [here.time=night] : Good night. Keep your scarf up. | Bed, and warm socks on, mind.
+dlg shop.greet [here.shop!=bare self.job=healer] : #greet#! Salves, syrups and drops. Tell me what ails you. | #greet#. Coughs on the left, cuts on the right, and nothing off the high shelf without asking.
+dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Back for more, or back because it worked? | #greet#, #topic.player#. The usual, or are we trying something?
+dlg shop.greet [here.shop!=bare] : #greet#. Have a look. If a label puzzles you, ask; I'd rather you asked. | #greet#, #address#. Look all you like. #shop_offer#
+dlg shop.greet [here.shop=bare] : #greet#. Empty shelves, I'm sorry to say. Come back after the carts. | Nothing left, I'm afraid. Not a drop. I'll still buy, mind.
+dlg shop.prices : Prices are what the herbs cost me, and a penny for my trouble. | Dearer than I'd like. #shop_dear#
+dlg shop.bye : #farewell#. And take it on the bell, mind. | #shop_bye# Keep #chest# warm.
+
+graft resident.hub
+choice Why write a bell on the label? [self.job=healer] -> bell
+node bell
+say So you know when to take it. The chapel rings for everyone; not everyone reads figures. Noon bell means noon bell.
+mood warm
+free
+choice What if I can't hear the bells? -> bell_far
+choice Back to it. -> hub
+node bell_far
+say Then you're too far from the chapel, and you should come home. Ask anyone near you which bell it is; somebody always knows.
+choice I'll listen for them. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Got a riddle for me? -> riddle
+node riddle
+say Always. What runs down every lane in Ridgemere and never once climbs a stair?
+mood pleased
+free
+choice The rain? -> riddle_answer
+choice I give up. -> riddle_answer
+node riddle_answer
+say The rain! Down every lane and never up one. Bring me one I don't know, and you'll have a friend for life.
+choice Let me see your wares. -> greet
+choice Goodbye. -> bye

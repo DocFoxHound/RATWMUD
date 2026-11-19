@@ -1,0 +1,515 @@
+# rm206, the straw-raker at the tap (doc 84 P14, batch city-a3): written for rm_hollis_gullmore (Hollis Gullmore: keeping the taproom, Ridgemere-born). Name-free. Window lines on the news, gossip, business and inn nodes say their case; a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm206
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_hollis_gullmore
+title the straw-raker at the tap
+fits stage=adult|old
+prefers role=merchant job=innkeeper humour=none
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk rakes_fresh_straw_over_the_floor_whenever_a_tab_is_settled
+likes smoked_eel long_walks fresh_straw frosty_mornings
+dislikes crowds deep_mud
+fears a_slate_full_of_names_that_never_pay going_back_down_the_hill
+hopes a_small_house_with_a_gate_on_the_rise every_tab_cleared_by_restday
+topics work +0.4 caravan +0.3 prices +0.3 weather +0.2 pastimes +0.2 dreams +0.2 gossip -0.2 family -0.4
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# keeps the taproom by the north gate: blunt, exact and unsmiling, chalks every tab and knows every one by heart, rakes clean straw across the boards each time a slate is wiped, walks the walls on frosty mornings, and means to end up somewhere better than where it all started.
+
+words
+oath! = Chalk and clear | Wiped and raked | Clear the board
+saying! = Owed is owed and paid is paid | Count on a slate to keep its grudges | Coin on the bar, then talk
+slate = the slate | the slate behind the tap
+tab = a tab | a name on the slate
+straw = clean straw | a forkful of new straw
+rake = the rake | the long rake by the door
+tap = the tap | the taproom
+casks = the casks | the barrels down below
+eel = smoked eel | a strip of smoke-cured eel
+rise = the Rise | the big doors up the Rise
+gate = the gate | the north gate
+drovers = the drovers | drovers fresh from the northern drive
+frost = a hard frost | white on every cobble
+muck = the muck | road muck to the ankle
+crush = a crush of bodies | elbows on all sides
+walk = a long walk | a walk round the walls with no errand
+chalk = the chalk | my stub of chalk
+cups = the cups | the pewter
+bell = the closing bell | the gate bell at dusk
+hill = the hill | every step up from the bottom
+
+any
+opinion watch for 2 : The Watch earn their keep at my door. One whistle and a fight's outside before the first cup breaks.
+opinion sump against 1 : Those lower streets taught me what a stair costs. Most of the trouble I put out of my door came up the same stairs. I'm allowed to say so.
+opinion dole against 1 : I pay into the parish bread. I'd keep a count of the loaves myself. I keep count of everything else I pay into.
+opinion drink for 1 : Ale's an honest trade when the measure's honest. Mine is. Ask anyone who's watched me draw it.
+opinion houses for 1 : The Houses pay their tabs on the nail. I wish I could say that of the drovers.
+opinion merchants for 1 : Anybody with a counter knows a late cart costs before the customer does. I don't begrudge a fair price.
+opinion newcomers for 1 : A new face that pays first is the best kind of face. I don't care where it walked in from.
+opinion road against 1 : Every load that limps in late is a bench left empty at my tap. I've stopped expecting better.
+opinion road against 2 [world.wagons=raided] : A robbed cart leaves its drover precious little to settle a tab with. Chalk'll carry the tab for now.
+opinion strangers for 1 : Folk off the road are half my takings and every bit of my news. I'll serve any of them who can count.
+opinion times for 1 : Rattle my purse and there's an answer. So far that's been enough.
+opinion city for 1 : I started life at the foot of these terraces. I mean to finish above the smoke. It's a fair climb and I'm halfway.
+
+grown
+line greet [pair.band=strangers] : #greet#. Bench or bar. Pick one. | #greet#. Coin first, then whatever you like.
+line greet [self.working=yes self.job=innkeeper] : #greet#. I can pour and listen both. | #greet#. Say it. My paw's on the tap, not my ears.
+line greet [here.time=dawn] : Morning. The casks aren't tapped yet. | Morning. I've walked the wall already.
+line greet [here.time=dusk|night] : Evening. Lamps are lit, slate's clean. | Evening. You're ahead of the drovers.
+line greet [pair.band=friends] : You. Good. That seat keeps your face in view. | #greet#. Your stool's free.
+line greet [here.weather=rain] : #greet#. Scrape the mud off first. Fresh straw down. | #greet#. Mat first. I mean it.
+line greet : #greet#. What'll it be. | #greet#. Plain question, plain answer.
+line kin.open [pair.kin!=no] : Here, the end nearest the cask is yours. | It's you. Take the dry end.
+line again.open : Back. You've nothing on the slate, so that's fine. | You're getting your money's worth out of that stool today.
+line greet.return : #greet#. Same to you. | And you. #greet#.
+line greet.return [pair.band=friends|family] : There you are. Good. | You. I'd kept a seat.
+line greet.return [self.working=yes] : And you. I'm pouring, mind. | Same. Busy, but I hear you.
+line greet.return [here.time=dusk|night] : Evening. A full one tonight. | Evening. Feel for the sill with your foot.
+line farewell : #farewell#. Ask for the slate if you need a reckoning. | Right. Off you go, clear.
+line farewell [here.time=dusk|night] : Night. Go round by the gate lamps. | Night. Take the lamplit side past the wheel ruts.
+line farewell.return : And you. | #farewell#. Settled.
+line farewell.return [here.time=dusk|night] : Night. | Good night to you.
+line react.news : Go on. Plainly. | Let's have it.
+line react.news.new : That's new. It's not come over my bar yet. | How'd that get past my tap?
+line react.news.known : Two nights ago a drover brought me that. | Old. The benches had it by noon.
+line react.news.doubt : Who told you? Did they pay for their drink? | I'll want it twice from two mouths.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news to take to bed. | Bad. I'll not pretend otherwise.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth a cup, that is. | That's one piece of good news this week.
+line answer.how : Fair. Slate's mostly clear. | Well enough. I've no complaints worth saying.
+line answer.how.busy [self.working=yes] : Busy. Three tabs open and a cask to change. | Ask after the bell. Even the empty cask needs carrying.
+line answer.how.poorly : Stiff. I'll work it off. | Below my best. It won't stop me pouring.
+line ask.how : You? Plain answer. | And you, then. How's it going?
+line sympathise : Bad luck. Sit. The first cup's mine. | That's hard. Take a bench and keep it.
+line reassure : It'll come square in time. Most debts do. | You'll get through. I've poured for folk who came through worse.
+line decline : Not that. I've the tap to keep and nobody else to keep it. | No, I'll not. I don't lend, and I don't borrow either.
+line accept_decline : Fair. Plain answer. I respect that. | Right. Nothing owed either way.
+line thank : #thanks#. Noted. | One mark in your favour.
+line deflect_thanks : No need. We're even. | It's nothing. Call us clear.
+line preclose [self.working=yes] : There's a cup wants filling. I'm off. | Tab to close at the far bench. That's me.
+line preclose : That's enough from me. | I've said my piece.
+line accept_preclose : Go on. You're clear. | Right. Safe footing to you.
+line ack : #bc_right# | Noted.
+line give.advice : Pay as you go, and nobody can call you anything. | Never drink where they don't chalk it. You'll be cheated.
+line warn [world.bandits=near] : I'd sleep inside the walls while those robbers are abroad. | Not alone through the gate. Go with a cart or don't go.
+line congratulate : Good. Well earned. | That's done right. Good.
+line hail [pair.band=friends] : Here. Your stool. | You. Over here.
+
+scene tab_cleared
+when topic=work self.job=innkeeper self.working=yes
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : That's one name off #slate#. Pass me #rake#. | Paid in full, after three weeks. Out comes the straw. | Last tab of the night wiped. Now the floor.
+b : The rake? What for? | Straw, for a paid tab? | Why the floor?
+a : A clean slate wants a clean floor. I've done it that way since my first cask. | Every time. Fresh straw for every debt cleared. You'll see the floor shine on Restday. | Wiped slate, raked floor. One goes with the other, or neither counts.
+b : Odd habit. | That's a tidy custom. | You're particular.
+a : It keeps me honest and the boards clean. Both worth having. | It is. And folk pay sooner to see me do it. | I'm exact. There's a difference.
+
+scene slate_names
+when topic=work|gossip self.job=innkeeper
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Four names on #slate# since Marketday. One's paid. | Somebody tried to rub their own name off #slate# with a wet sleeve.
+b : Who's the other three? | Did it work?
+a : Not your business. Not mine either, till they pay. | No. I keep a copy in my head.
+b : Fair. | You would.
+a : Fair is all I deal in. | I would. Every name, every cup.
+
+scene elbows_everywhere
+when topic=work|day self.dislikes=crowds here.day=market|festival self.job=innkeeper
+does tell.complaint / react.complaint / answer.detail / react.self / assess
+a : Packed to the walls. I count the cups, not the faces. | Not a bench to spare. A dozen still on their feet. I hate a crush. An empty till scares me more.
+b : Good for trade, though. | Can't you close the door?
+a : It is. My nerves keep their own accounts. | Close it on coin? I'm not that sort of fool.
+b : Ha. Fair. | I suppose not.
+a : When it thins I'll take a walk and get my head back. | No. I'll pour. I'll mind it later.
+
+scene white_cobbles
+when topic=weather here.season=winter here.time=dawn self.likes=frosty_mornings here.region=ridgemere
+does tell.feeling / ask.detail / answer.detail / react.self / assess
+a : #frost.capitalize# this morning. I walked the wall out from the arch till I could see water before anyone stirred. | White on every cobble. Best hour of the month, and I had it to myself.
+b : Wasn't it cold? | Doing what?
+a : Bitter enough to suit me. Clears the head of a week's chalk. | Walking. Breathing. Nobody asking me for anything.
+b : Each to their own. | Sounds peaceful.
+a : Mine's a frost and a long road without an errand waiting. | It was. Then I opened the tap.
+
+scene nowhere_to_be
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Walked out the North Road a mile and back before opening. No errand. | I go round the whole wall on my day off. Takes the morning.
+b : What for? | Every week?
+a : For nothing. Can't charge a walk to anybody. | Every Restday, rain or not. Unless it's deep muck.
+b : I'd want a reason. | That's a lot of walking.
+a : A reason's an errand. I've enough of those behind the bar. | It's a lot of quiet. I need about that much.
+
+scene eel_and_bread
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : #eel.capitalize#, bread cut from the crusty end, a cup I've paid for myself. That's my supper. | The smokehouses out on the headland do eel better than anyone in the walls.
+b : Every night? | Better how?
+a : Most. I don't need it to change. | Slower smoke. Oak, not pine. You taste it.
+b : Simple. | You know your eel.
+a : Simple's cheap and it's honest. | Know my own taste. Know its price too.
+
+scene muck_on_the_boards
+when topic=weather here.weather=rain self.dislikes=deep_mud self.job=innkeeper
+does tell.complaint / react.complaint / answer.detail / react.self / assess
+a : North Road's soup. The drovers walk half of it onto my boards. | Rain since dawn. Muck to the ankle beneath the arch. It'll all find its way onto my straw.
+b : Rain and clean boards never did agree. | The straw must be sodden.
+a : It can. There's a mat by the door. Nobody looks down. | Raked it twice already. I'll rake it again at dusk.
+b : You'll wear out that rake. | That's a lot of raking.
+a : I've worn out three. I'll buy a fourth. | It's a lot of floor. I like it clean.
+
+scene a_gate_on_the_rise
+when topic=dreams self.wealth=rich|comfortable
+does tell.plan / ask.detail / answer.detail / react.self / assess
+a : I'll have a house up #rise# before I'm done. Small one. With a gate. | Each copper under that loose board has the Rise written on it.
+b : Why the Rise? | Many stairs left to earn?
+a : Because I've spent years down below looking up at it. | Not as long as some. I've counted it.
+b : You'll get there. | Good luck to you.
+a : I will. I've never missed a step yet. | Luck's for dice. I've got a slate.
+
+scene every_step_paid
+when topic=memories self.age>=40 here.region=ridgemere
+does tell.memory / ask.detail / answer.detail / react.self / assess
+a : My first roof was at the foot of this hill. I've bought my way up stair by stair. | The first roof I ever had dripped on my bed. I've not forgotten what dry walls cost.
+b : Nobody helped? | Is that why you count so close?
+a : A few. I paid them back, every one, and I know the day I did. | It is. You don't waste a copper once you've slept under that roof.
+b : That's a hard way up. | Makes sense.
+a : I wouldn't know another way to reckon. | It does to me.
+
+scene dry_rooms
+when topic=home
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : My rooms are dry, quiet and mine. You don't know what that's worth till you've had wet walls. | I keep my room the way I keep the tap. Clean and nothing owed on it.
+b : That sounds good. | Nothing owed?
+a : Yes. Damp behind fancy plaster is damp just the same. | Not a copper. Paid a month ahead, always.
+b : Good for you. | That's well kept.
+a : Good for anyone who can manage it. | It is. It took work.
+
+scene carts_in_cups_out
+when topic=caravan world.wagons=in self.job=innkeeper
+does tell.news / react.news / answer.detail / react.self / assess
+a : Carts are in. The room's full of drovers and I've changed two casks since noon. | The North Road wagons rolled over the sill just after dawn. Thirsty, every one.
+b : Good for the tap. | Any news off them?
+a : Good for the slate too, if they pay before they go. | Plenty. I pour, I listen, and I swallow more news than ale.
+b : Will they? | Most of it?
+a : They'll settle. My stool faces the exit. | The useful bits I keep. The rest I let wash out with the cups.
+
+scene empty_benches
+when topic=caravan world.wagons=late self.job=innkeeper
+does tell.worry / reassure / answer.detail / react.self / assess
+a : No carts, no drovers, and the casks just sit there. | Third day with nothing through the gate. Half the benches are bare.
+b : They'll come. Mud, most likely. | Can you weather it?
+a : They'll come late, like always. I'll not weep over it. | I've had leaner weeks than this. That's what the odd coppers behind the clock are for.
+b : That's the spirit. | Sensible.
+a : It's not spirit. It's sums. | A tap can't run on any other terms.
+
+scene stripped_wagon
+when topic=caravan world.wagons=raided self.job=innkeeper
+does tell.news / sympathise / answer.detail / react.self / assess
+tone serious / serious / even / even / even
+a : Drovers came in quiet last night. A road gang had emptied a cart. | A load gone to thieves. I poured for them and I didn't chalk it.
+b : That's grim. Were they hurt? | A free cup, from you?
+a : Shaken. I didn't ask. They'll say when they want. | It wasn't charity. That cup's a gift. I can remember which is which.
+b : Poor beggars. | You never forget anything.
+a : Robbers don't pay tabs. Nobody's ever stood one at my bar. | No. That's why folk trust the slate.
+
+scene heard_at_the_bar
+when topic=gossip topic.subject here.region=ridgemere
+does tell.gossip / react.news / answer.detail / react.self / assess
+a : Here's the wording off my benches: #topic.subject# #topic.claim#. | Heard at the bar, plain as the wood under your elbow. #topic.subject.capitalize# #topic.claim#.
+b : Do you believe it? | Who said it?
+a : The teller's tab was clear. I can vouch for the chalk on my slate. | A drover with a clear tab. That counts for something with me.
+b : Odd way to judge. | Fair enough.
+a : I've seldom lost by it. | A settled debt tells me somebody kept count.
+
+scene hard_talk
+when topic=gossip topic.claim_kind=death|violence|victim here.region=ridgemere
+does tell.gossip / sympathise / react.self / assess
+tone serious / serious / even / even
+a : There's hard talk at the bar. #topic.subject.capitalize# #topic.claim#. | They're saying #topic.subject# #topic.claim#. The room went quiet when it came in.
+b : That's cruel news. | Wish you'd had kinder news.
+a : It is. I'll not pass it round as entertainment. | So am I. I'll keep the tap quiet tonight.
+b : Right. | Good.
+
+scene names_unpaid
+when topic=times world.times=hard|lean self.job=innkeeper
+does tell.worry / reassure / answer.detail / react.self / assess
+a : Half #slate# unpaid and I know every name on it by heart. | Lean weeks. Folk drink the same, they just pay slower.
+b : Maybe the next pay packet will stretch. | Do you chase them?
+a : Some will. Some won't. I know which. | I don't chase. On pay day my door stays open.
+b : You're patient, then. | That works?
+a : Patient and exact. Not the same as soft. | Every time. Nobody likes being looked at by name.
+
+scene clean_slate_restday
+when topic=times world.times=good|boom self.job=innkeeper
+does tell.self / congratulate / answer.detail / react.self / assess
+a : Every tab paid by Restday. Never known it before. | Good weeks. I've raked fresh straw four times since Marketday.
+b : That's a fine thing. | Four times?
+a : It is. The floor's never looked better. | Four tabs settled. Four forkfuls. That's how I keep count.
+b : You'll run out of straw. | Ha. That's one way.
+a : I'll buy more. Gladly. | It's my way. It works.
+
+scene festival_floor
+when topic=festival world.festival=soon|today self.job=innkeeper
+does tell.plan / ask.detail / answer.detail / react.self / assess
+a : Festival night. I'll work it from the first lamp to the bell, and mind every elbow. | The festival's on us. I've a cask spare and a door I'll be stood at.
+b : Will you enjoy any of it? | Stood at the door?
+a : The takings. And the quiet after. | Coin goes in before the cup comes out. Festival or not.
+b : That's something. | Sensible.
+a : It's plenty. | It's how I've always run it.
+
+scene paid_before_asked
+when topic=newcomer
+does tell.news / react.news / answer.detail / react.self / assess
+a : New face at the bar last night. Paid before I asked. That earns a clean first mark. | A fresh name's up on a door near the arch. Hasn't been in yet.
+b : Who was it? | Will you call on them?
+a : Didn't ask. The coin was good. That's the introduction I need. | No. If they want a cup they know where the tap is.
+b : Practical. | Fair.
+a : Always. | I don't fetch custom. It comes, or it doesn't.
+
+scene put_out
+when topic=work self.job=innkeeper
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Two drovers went at each other over dice last night. I had them both outside before the bench went over. | Somebody tried to slip out without settling. I was at the door before the latch.
+b : How'd you manage that? | What did you do?
+a : I said their names. Out loud. Folk don't like their names said in a full room. | Held the door shut and said the sum. Paid on the spot.
+b : That's all? | Simple as that.
+a : That's all it takes, mostly. A name and a stare. | Simple. I don't need a cudgel. I need a memory.
+
+scene even_with_the_abbey
+when topic=faith
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : My prayers are short. The abbey gets its due when I turn the month's slate over. We stand even. | I reckon my account with the Bright One stands square. Small requests. Small returns.
+b : Even? With the Bright One? | Is that how it works?
+a : With the abbey. The Bright One's accounts I leave alone. | That's my reckoning, anyhow. I'll not speak for anybody else.
+b : Hm. | Fair.
+a : That's as devout as I get. | It's honest, at least.
+
+scene coats_steaming
+when topic=weather here.weather=rain self.job=innkeeper
+does tell.self / react.self / answer.detail / react.self / assess
+a : Wet coats steaming by the fire, wet straw by noon. Twice the raking. | Dripping customers always choose the spot by my casks. There's even a dry rail for coats. Waste of timber.
+b : At least they're inside. | Told them what?
+a : Inside, and on my floor. I'll not complain. Much. | Wet fur and good oak don't mix. Stand by the fire.
+b : That's fair. | Do they listen?
+a : Fair's the most I'll give it. | Never. I rake.
+
+scene fog_trade
+when topic=weather here.weather=fog
+does tell.self / react.self / answer.detail / react.self / assess
+a : Fog. Drives folk through my door. By the time it lifts they've swallowed a night's rent. | Even my doorstep's lost its far edge. Nobody's going anywhere tonight.
+b : Good for you. | That means a full house.
+a : Good for the slate, if they pay. | Full benches and nobody leaving. My two least favourite things, with coin in them.
+b : They'll pay. | Ha.
+a : They will. I'll see to it. | I mean it.
+
+scene thunder_cups
+when topic=weather here.weather=storm
+does tell.self / react.self / answer.detail / react.self / assess
+a : Thunder rattles the pewter on the shelf. Nobody leaves in it. | The storm's put the lamps out twice. I've a candle on every bench.
+b : Bad night for it. | That's careful.
+a : Storms fill cups. Don't settle the paws holding them. | I've had a lamp tipped in straw once. Never again.
+b : I'd stay in. | I'd think not.
+a : Most do. That's my point. | Never. I check every candle before the bell.
+
+scene open_doors_flies
+when topic=season here.season=summer self.job=innkeeper
+does tell.complaint / react.complaint / answer.detail / react.self / assess
+a : Summer. Doors open, flies in, drovers late and thirsty. | Warm weeks. The straw goes stale by noon and I'm out with the rake again.
+b : Better than winter. | Every day?
+a : For the casks, no. Ale turns. | Every day. I'd sooner a frost.
+b : Hm. | I believe it.
+a : I keep them cool in the cellar. Mostly it works. | Give me a white morning any day.
+
+scene word_as_coin
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : #self.friend#'s word is good as coin to me. A short list, that one. | With #self.friend# I've given up keeping a tally. That's rare for me.
+b : Your slate will feel neglected. | Stop counting what?
+a : It will. No chalk for that account. | Favours. Tabs. Who stood who a cup. I lost track, and I don't mind.
+b : Good to have. | That's a friend, then.
+a : It is. One's enough. | That's a friend.
+
+scene front_door_city
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : That arch admits the whole city's custom. Everything worth having comes through it, and half of what isn't. | The gate bell's rung at dusk longer than anyone can say. I set my day by it.
+b : What isn't worth having? | Set your day how?
+a : Bad coin, worse drovers, and road muck. The metal goes in my till. The muck meets my rake. | Bell rings, I light the lamps and wipe the slate for the night trade.
+b : Ha. | Regular as the bell.
+a : I don't joke. It's true. | Exactly as regular. No more, no less.
+
+scene never_missed
+when topic=health self.age>=35
+does tell.boast / react.self / answer.detail / react.self / assess
+a : Nobody's had to cover my shift for years. Sickness or shine, I was there. | My knees grumble on the cellar steps. I go down anyway.
+b : Never ill? | You should rest them.
+a : Ill, yes. Absent, no. There's a difference. | When my own key opens a door on the Rise. Not before.
+b : That's stubborn. | Fair enough.
+a : It's steady. Find your own word for it. | Then they'll wait.
+
+scene foreign_coin
+when topic=player
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : That traveller paid in coin I'd not seen before. I counted it twice. It was good. | There's a traveller who's been in three nights and paid each one. I've no complaint.
+b : Where from, I wonder? | Does that settle it for you?
+a : I didn't ask. Good coin doesn't need a story. | A cleared tab speaks louder to me than a character reference.
+b : Fair. | That's high praise.
+a : That's my whole rule. | From me it is.
+
+scene listen_more
+when topic=smalltalk
+does tell.self / react.self / answer.detail / react.self / assess
+a : You talk, I'll listen. I'm better at that half. | I don't do chatter. A plain question gets my full attention.
+b : Suits me. | All right. Anything?
+a : Good. Go on, then. | Anything I know. Which is mostly what's owed and by whom.
+b : I'll try. | Ha. I'll stay off that.
+a : Plain words. That's all I ask. | Wise.
+
+scene lamps_lit
+when topic=day here.time=dusk|night self.job=innkeeper
+does tell.self / react.self / answer.detail / react.self / assess
+a : Lamps lit, slate wiped, first round poured. This is where the day earns its keep. | The bell's gone. Drovers in, casks open. From here it's pouring till I drop.
+b : Long night ahead. | Do you mind it?
+a : Long and paying. I'll take it. | Not the work. The noise. But I'll take the work.
+b : Good luck with it. | Fair.
+a : Luck's not in it. I'll count it all at the end. | Plain as that.
+
+scene restday_tap
+when topic=day here.day=rest
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Restday. The tap opens late. I walk first. | Restday, and I've the morning. I'll go up the Rise and look at doors.
+b : Where to? | Look at doors?
+a : Round the wall, to the sea end and back. | The ones I'll knock on one day. And the ones I'll have.
+b : That's a long way round. | That's a big ambition.
+a : Quiet comes dear. That bit's free. | It's a plan. There's a difference.
+
+story first_tick [topic=work self.age>=35 self.job=innkeeper]
+  : My first chalk mark was for a drink I've yet to see paid. I was young and soft.
+  : I see that face across the square sometimes. We both look the other way.
+  ask : Would you chase it, after all this time?
+  b : I'd let it lie, I think. Is it much?
+  : Two cups. That's why it stings. It was never the coin.
+
+story holes_in_the_stair [topic=memories self.age>=40]
+  : Our old stairwell had more air than wood in it.
+  : I knew every gap by heart going up, and every one going down.
+  : The morning I moved out, I didn't count. That's how I knew I was done with it.
+  ask : Could you count your own steps from memory?
+  b : I've never counted. Twenty, I'd guess. Do you still remember yours?
+  : Thirty-one, and six of them gone. I'll remember till the ground has me.
+
+story stone_rang [topic=weather|pastimes self.age>=25 self.likes=frosty_mornings]
+  : One winter I walked the wall end to end before dawn. Frost so hard the stones rang under my paws.
+  ask : Have you ever heard stone ring?
+  b : Not that I know. Did it, truly?
+  : Like a cup tapped on a cask. I tried at dawn again. Dead silent.
+
+story whole_eel [topic=food self.likes=smoked_eel]
+  : A carter put up a penny against me finishing a whole smoked eel at one sitting.
+  : I could. I did. He paid in full, which is the part I remember best.
+  ask : Would you have taken that wager, against me?
+  b : Not against you. You'd only bet on a sure thing.
+  : Exactly so. I don't bet on what I don't know.
+
+story sour_sawdust [topic=work self.job=innkeeper self.age>=30]
+  : The first taproom I worked had sawdust on the floor. Wet, sour sawdust, never changed.
+  : I swore that if I ever had the say, it'd be straw. Fresh, every time a debt came good.
+  ask : Can you smell the difference in here, now I've said it?
+  b : Now you mention it. It's sweeter than most.
+  : It costs. It's worth it. Every forkful.
+
+rule @tap_bark
+when concept=bark self.working=yes self.job=innkeeper
+does aside
+cooldown 7h
+say Bring your copper to the slate here. | Tabs close at the bell. No exceptions.
+
+rule @rake_bark
+when concept=bark self.job=innkeeper
+does aside
+cooldown 9h
+say Straw. Where's my rake. | That corner wants a fresh forkful.
+
+rule @crowd_bark
+when concept=bark here.day=market|festival self.dislikes=crowds
+does aside
+cooldown 10h
+say Elbows in. Elbows in. | Too many bodies in here for my liking.
+
+rule @muck_bark
+when concept=bark here.weather=rain self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Paws on the mat. All of you. | Half the North Road's on my boards.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn
+does aside
+cooldown 12h
+say Hard frost. Good. | Cobbles white. Best morning in a month.
+
+rule @dusk_bark
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say Lamps, then. | There goes the bell. Here we go.
+
+dlg resident.hub : #greet#. Plain question, plain answer. | #greet#. What's wanted?
+dlg resident.hub [topic.meeting=known] : #topic.player#. Nothing owed. Good. | #greet#, #topic.player#. Your tab's clear, if you're asking.
+dlg resident.hub [here.time=night] : Late knock. Let's keep this brief. | It's after the bell. Go on.
+dlg resident.hub [pair.disposition=hostile|wary] : Speak across the boards. I hear well enough. | I know your face. Say your business.
+dlg resident.job [self.job=innkeeper] : #self.trade_words.capitalize#. I pour, I chalk, I collect. | The tap's mine. The beds upstairs aren't. I keep the cups full and the slate honest.
+dlg resident.job : Work. I keep account of it. | My feet put in longer hours than my tongue.
+dlg resident.business [business=thriving] : Busy. Every bench taken and the slate mostly clear. | Doing well. The figures stay under my elbow.
+dlg resident.business [business=steady] : Steady. Drovers come, drovers go, most of them pay. | Steady. That's a figure I can live with.
+dlg resident.business [business=failing] : Thin. Empty benches and a slate full of names. | Poorly. No passing custom to speak of.
+dlg resident.news [world.news] : Off the North Road: from #world.news_from#, #world.news#. That's how it came. | A drover brought this word from #world.news_from#. #world.news#.
+dlg resident.news [world.event_words] : The whole bar's on about #world.event_words#. | It's all #world.event_words#, cup after cup.
+dlg resident.news [world.wagons=raided] : Word of robbers emptying a wagon. I'd find a bed within the walls.
+dlg resident.news [world.death=recent] : A burial lately. The tap's been quieter for it.
+dlg resident.news [world.wedding=recent] : A wedding this week. Good for the casks.
+dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : My benches have yielded precious little news. | Quiet. Ask after the evening carts.
+dlg resident.gossip [here.gossip=yes] : As I heard it: #topic.subject# #topic.claim#. I chalk only what I hear. | They say #topic.subject# #topic.claim#. That's all my chalk will stretch to.
+dlg resident.gossip [here.gossip!=yes] : Nothing I'd repeat. | Talk's cheap. I don't deal in it.
+dlg inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. Bench, bed or a cup. Coin first. | #greet#. #inn_offer#
+dlg inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : #topic.player#. Your face I remember. Shall I fetch the slate? | Back again, #topic.player#. #inn_offer#
+dlg inn.greet [here.time=night here.inn_helper!=yes here.shop!=asleep] : After dark. You'll want a bed, then. #inn_offer# | Late one. Mat first. #inn_offer#
+dlg inn.greet [here.inn_helper=yes] : #greet#. The tap's mine. #here.innkeeper# handles the beds and their keys. | I pour, nothing more. Ask #here.innkeeper# about a room.
+dlg inn.rooms : Overnight I charge #here.bed_night#p. Seven nights come to #here.bed_week#p. If the upper floor's free you can take it for #here.upstairs_night#p. Paid before you climb. | Nightly rate, #here.bed_night#p. Weekly rate, #here.bed_week#p. Coin first, then the key.
+dlg inn.roomed : Up the stairs. Your name's down and paid. That's a figure I can live with. | There's your bed. Paid in full. Sleep sound.
+dlg inn.rest [here.lodging=yes] : Sit till you're rested. Your bed's paid for. | Take the fire. Your room's waiting when you want it.
+dlg inn.rest [here.lodging!=yes] : Sit by the fire, then. A bed would do you more good. | That hearth seat costs nothing. Nobody'll move you.
+dlg inn.refused : #topic.why# | Not that. #topic.why#
+dlg inn.bye : #farewell#. I'll put my chalk away. | Off with you. Mind the step by the barrels.
+dlg resident.bye : #farewell#. Ask for the slate if you need a reckoning. | Right. Mind the step.
+dlg resident.bye [here.time=night] : Night. Keep by the gate lamps. | Night. Mind the ruts.
+
+graft resident.hub
+choice Why do you rake the straw every time? [self.job=innkeeper] -> straw
+node straw
+say A tab gets paid, the slate gets wiped, the floor gets fresh straw. One goes with the other. I've done it since my first cask.
+mood calm
+free
+choice Do folk pay sooner for it? -> sooner
+choice Back to it. -> hub
+node sooner
+say They do. Nobody likes holding up a clean sweep. Shame's a better collector than a cudgel.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Can I drink on credit? [self.job=innkeeper] -> credit
+node credit
+say Once. Your name goes on the slate, and it comes off by Restday. Miss it and you'll pay at the door from then on.
+mood stern
+free
+choice And when I pay? -> paid
+choice Back to the bar. -> greet
+node paid
+say Your name comes off, I rake the floor, and we're clear. A clean floor ends the account.
+choice Fair enough. -> greet
+choice Goodbye. -> bye

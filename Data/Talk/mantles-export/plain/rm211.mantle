@@ -1,0 +1,401 @@
+mantle rm211
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_mogens_ashley
+title the unfinished chorus
+fits stage=adult|old
+prefers job=merchant
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_the_haul_but_leaves_the_answer_for_someone_else
+likes spiced_cider dice market_bustle first_warm_day
+dislikes crowds rats
+fears the_last_voice_drowned_out a_jar_without_a_label
+hopes an_apprentice_who_interrupts a_whole_song_at_supper
+topics work +0.5 pastimes +0.4 food +0.2 health +0.3 festival -0.4
+styles comfort=busy gossip=selective refuse=brisk tease=gentle
+marks oath saying
+persona #self.first# hums the pull of a hauling song and leaves a space for an answering voice, quick to flare at a muddle and quicker to lend an elbow or a stool.
+
+words
+oath! = Cork and chorus | Rattle my last die
+saying! = Leave a place for the answering voice | A sharp tap will find a hollow
+hum = that dragging tune | my wordless haul
+answering = the answering bar | the little way home in the tune
+cup = my thick cider cup | the chipped cider mug
+spot = a single black pip | the lonesome dot
+thump = a round low thump | the knock on the downbeat
+stir = a short backwards turn | one tight circle
+label = the little paper collar | a folded label
+string = a double twist of twine | a bit of wrapping cord
+ratprint = four smudged toes | a dusty little print
+longnote = a note held open | the last low sound
+cupwarm = a faint heat round the rim | a spreading warmth in the clay
+nearedge = the edge of the crowd | the far skirt of the market
+rattle = a dry little rattle | the sound of two bones meeting
+lip = the rim of the bowl | the cool stone lip
+bellpart = the silent measure | the bit for the bell
+verse = a scrap of a verse | the hauling words
+
+any
+opinion @1 city for 2 : My favourite streets are the ones with three trades working in three different times.
+opinion @2 dole for 2 : An empty belly will join any chorus for a meal. Feed the wolf before asking for a song.
+opinion @3 festivals against 2 : Plenty of hands arranging how a crowd goes in. I'd spend a little of that care on how it gets out.
+opinion @4 newcomers for 2 : A new voice might know the answer to a verse I've been getting wrong all my life.
+opinion @5 strangers for 1 : I can learn an air off a stranger between filling a cup and passing it across.
+opinion @6 drink mixed 1 : Warm cider suits my temper. Too much of it makes my own complaining sound too tuneful.
+opinion @7 houses mixed 1 : A noble's sleeve has the same number of elbows in it as mine. We both need room to work.
+opinion @8 merchants mixed 1 : I'll pay for skill readily. For the fellow standing there announcing skill, less readily.
+opinion @9 watch mixed 1 : Best thing a patrolling wolf can do in a crowd is make one clear way out of it.
+
+grown
+line @1 greet [pair.band=strangers] : Come on into hearing. I can spare a verse. | Welcome, new voice. Plenty of room on this side.
+line @2 greet [self.working=yes] : Wait for the beat to finish. There, welcome. | No need to shout over my humming.
+line @3 greet [here.time=dawn] : Dawn again. There's my first note given. | First light and already a voice besides mine.
+line @4 greet [here.time=dusk|night] : Evening. The low notes carry nicely now. | Late welcome; still a welcome.
+line @5 greet.return : Heard that even over my tune. | Have the answer to your welcome right back.
+line @6 greet.return [pair.band=friends|family] : There's the part I leave a gap for. | One friendly voice makes quite a difference.
+line @7 greet.return [self.working=yes] : Both paws used up; my ears are free. | Keep that voice just there while I finish.
+line @8 greet.return [here.time=dusk|night] : A quiet answer for a late visitor. | Good hearing you before day's quite shut.
+line @9 kin.open [pair.kin!=no] : Family can take the unsteady stool. I know you'll tell me if it wobbles. | Sit near; no need for my carrying voice here.
+line @10 again.open : Right on the next beat, you are. | Hadn't quite lost the tune between visits.
+line @11 hail [pair.band=friends] : Here, an answering voice wanted! | Your part's coming round again!
+line @12 farewell : I'll keep a bar for next meeting. | May the thickest crowd leave you some elbowroom.
+line @13 farewell.return : That rounds us off nicely. | Let the last note carry you a little way.
+line @14 react.news : Give the words their own space. I'm listening. | I've stopped the humming for that.
+line @15 react.news.new : New words altogether. Say them once more. | There's news I've never had by ear.
+line @16 react.news.known : The words still go the same way. | I've heard one verse of that already.
+line @17 react.news.doubt : I'd rather hear the witness before I join that chorus. | It sounds a little too tidy to be quite right.
+line @18 react.news.sorrow [topic.kind=death|loss|assault] : Leave the tune out. I'll hear the rest quietly. | That's a hard piece of news to have had to carry.
+line @19 react.news.glad [topic.kind=marriage|birth] : Happy reason to get another cup down. | I'd sing for that household with both lungs.
+line @20 answer.how : A short temper in tolerable tune today. | In need of a drink and fit for company.
+line @21 ask.how : Had a clear patch of day yet? | Who's been keeping you on your feet so long?
+line @22 decline : My temper wouldn't last the first quarter of the errand. | I'd sooner refuse you now than fail you halfway.
+line @23 accept_decline : Clear answer. I appreciate getting one. | Good, we've neither of us been left guessing.
+line @24 thank : That little help came on exactly the beat. | A spare paw just when mine ran out.
+line @25 deflect_thanks : Save the breath and enjoy the easier going. | You've paid me with a clear stretch of work.
+line @26 sympathise : There's room to sit till that feeling eases. | I'll do the carrying. You look spent.
+line @27 reassure : One little bit at a time gets the whole bowl round. | We can pick up from the last clear part.
+line @28 preclose : I'd best finish the measure alone. | Enough throat-work from me for now.
+line @29 accept_preclose : Finish where it suits your breath. | Away with you while the passage is clear.
+line @30 ack : Got the beat back. | My ear's with you.
+line @31 apologise : That came out with an edge I didn't mean for you. | Forgive the bark. My impatience is my business.
+line @32 accept_apology : Let that be the last we need say of it. | Now we've air between us again.
+
+scene silent_answer
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I leave #answering# out every time I hum. | Did you hear where I stopped before the tune finished?
+b : Do you forget the last bit? | I thought you needed breath.
+a : I know it. I'd just rather have company for it. | Sometimes I do. Mostly I want to find out if somebody else knows it.
+
+scene dice_cup
+when topic=pastimes self.likes=dice
+does tell.self / react.self / assess
+a : I like the moment after the dice stop rattling and before the cup comes up. | #rattle.capitalize# gives away nothing about the throw.
+b : You might have won. | Then why shake them so long?
+a : Precisely. I enjoy being rich for that half breath. | Because that's the part I paid for. The losing's generally free.
+
+scene cider_cup
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : Smell the cup after it's emptied. You'll discover which spice had staying power. | I leave the last sip in #cup# till it's almost cool.
+b : Which one are you hoping for? | Doesn't that spoil it?
+a : Something sharp enough to wake my nose. | It tells me if I liked the cider or only the heat.
+
+scene label_day
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess
+a : A new label belongs on the full jar before your attention wanders. | That little paper collar earns its keep just sitting there.
+b : Sounds as though you've learnt that by trouble. | It hardly weighs anything.
+a : By nearly having trouble. A near miss will teach you quite cheaply. | Exactly. Strange how heavy an unlabelled jar feels when somebody asks what's in it.
+
+scene counterspace
+when topic=work self.working=yes self.job=merchant
+does give.opinion / disagree / concede
+a : I want a bare patch on every crowded counter. | Half of keeping order is keeping one space empty.
+b : Seems extravagant. | Why save space for nothing?
+a : It's where a tired wolf can put something down. I don't call that waste. | Because something unexpected invariably needs a landing place.
+
+scene pestle_note
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I can hear when you stop pressing hard against #lip#. | A grinding bowl sounds different when the bottom's clear.
+b : What gives the pressure away? | How does it change?
+a : The note comes up a little. Easier on the wrist, too. | There's a ring to the last pass. Time I put the thing down.
+
+scene marking_time
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Give me a short word to fit a dragging note. | What would you hum for the length of a slow stir?
+b : Why not let the sound stand alone? | I'd go round twice to a shorter tune.
+a : Now there's an economical lyric. I'll give that one a turn. | Sensible. I'm too stubborn to change my pace.
+
+scene outside_market
+when topic=day here.place=market
+does tell.feeling / sympathise / assess
+a : I love this bustle from exactly here at its edge. | I enjoy a market best with an open space at my back.
+b : Too much further in? | You like a quick exit?
+a : A pace can make the difference between music and a headache. | I like an exit that doesn't need to be quick.
+
+scene crowd_gap
+when topic=health|smalltalk
+does tell.self / react.self / assess
+a : Whenever a crowd packs in, I watch for somebody looking at their feet. | I can lend a shoulder without putting an arm round anybody.
+b : Why the feet? | How's that done?
+a : If you're hunting a way out you look under the elbows. | Stand by the edge and turn a little. There's a gap for whoever needs one.
+
+scene two_speeds
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner should be able to interrupt me halfway through explaining. | Give me a pupil who will admit the movement feels wrong.
+b : Wouldn't you lose your place? | Even if you're the one who showed it?
+a : Better I lose my place than somebody else loses the entire morning. | Especially then. I don't wear the learner's wrist.
+
+scene first_lesson
+when topic=work self.master=yes
+does give.opinion / disagree / concede
+a : The first lesson ought to stop before a wolf gets sore. | I don't like learning by counting motions.
+b : Won't that slow the learning? | A count tells you how far you've got.
+a : Only if we measure learning by the number of sore wolves. | It doesn't say whether you've understood the first motion yet.
+
+scene dice_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd happily lose a whole evening at dice to #self.friend#. | #self.friend# is my idea of the right company for a long game.
+b : Happy to lose your money too? | What makes good company then?
+a : The evening, I said. The money I'd dispute to the last spot. | The quiet over a poor throw is as easy as the noise over a good one.
+
+scene pepper_nose
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I keep trying to remember a good spice by humming its note. | I've a high note for pepper and a low one for toast.
+b : Does it work? | What would you give a sour apple?
+a : No. I end up remembering what I sang at supper and wondering what I ate. | A little jump halfway through. My mouth does the same thing.
+
+scene rats_foot
+when topic=animals self.dislikes=rats
+does tell.complaint / react.complaint / assess
+a : I know #ratprint# from a spill, which is not a skill I'd ever wanted. | I prefer a rat at a very generous distance.
+b : Which do you clean first? | Across the road?
+a : The spill. The print can tell me where the next spill's likely to be. | Across the idea of a road, beyond a wall, under somebody else's field.
+
+scene warm_day
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : I test the spring air with the paw that usually holds #cup#. | On a mild day I like my drink with no heat put to it.
+b : Why that one? | To save fuel?
+a : It knows the difference between warmth you borrowed and warmth that's yours. | To get a proper taste of the change in the weather.
+
+scene bad_throw
+when topic=pastimes self.likes=dice
+does give.opinion / disagree / concede
+a : A bad throw ought to be left lying a moment. | I don't play with loaded dice, even for practice.
+b : I'd sweep it away quickly. | Wouldn't it help you learn the odds?
+a : Well, I'm learning to take a disappointment without scattering it across the floor. | It'd teach me exactly one wrong lesson, very reliably.
+
+scene remedy_story
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : What's the shortest song you know for bringing somebody cheer? | I know a tune that stops a quarrel stone dead.
+b : One that just uses the listener's name. | Sing it then.
+a : Good. Makes it clear who's getting the cheer. | No, that's the trick. Both wolves lean in and all I do is carry on humming.
+
+scene quiet_evening
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : At evening I hum a little lower than I do at noon. | The nicest thing about dusk is finding the voices that were there all day.
+b : Tired voice? | Where were they hiding?
+a : No. Fewer carts to sing over. | Behind the rattles and shutters. Perfectly good neighbours, quite drowned out.
+
+scene mother_feeling
+when topic=family self.mother
+does tell.feeling / sympathise / assess
+a : I've plenty to say for myself until I think of thanking #self.mother#. | A seat beside #self.mother# would suit me on a hard day.
+b : Do the words give out? | Without saying a thing?
+a : Yes. A properly meant thanks is a mighty awkward parcel to wrap. | If need be. That's the comfort of wanting the seat and not a speech.
+
+scene news_rhythm
+when topic=news world.news
+does tell.news / react.news / assess
+a : These are the words: #world.news#. Put no tune to them yet. | Word from #world.news_from#: #world.news#.
+b : Why no tune? | Did it travel straight?
+a : Because a catchy lie will travel farther than a plain correction. | I heard the end of the journey. Only the last few yards were mine to witness.
+
+scene new_voice
+when topic=newcomer
+does tell.self / react.self / assess
+a : I like a new wolf's way of placing a cup down. It's often different. | A newcomer at a table makes everybody explain the game afresh.
+b : How many ways can there be? | Does that try your patience?
+a : One quiet tap, two rattles, a scrape. Enough to make a little song. | Delights me. Half the old players discover they never agreed on the rules.
+
+scene wet_coat
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : A wet sleeve has rubbed the tune right off my elbow. | The rain on the shutters keeps trying to get ahead of me.
+b : A tune lives in an elbow? | Let the rain go first.
+a : The motion does. The mouth just follows it along. | Grand idea. I can take the answering part for a change.
+
+scene jobs_done
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I hum much faster at the thought of finishing than I do when I've nearly finished. | My last tune of the day has no last note.
+b : Isn't that the same thing? | That's untidy.
+a : Not at all. Thinking's a much quicker occupation. | I leave the next day's beginning hanging there. Very tidy indeed.
+
+scene thin_wagons
+when topic=caravan world.wagons=late
+does tell.worry / reassure / assess
+a : Late wagons give a merchant plenty of time to dream up excuses. | I mind the quiet the late wheels leave behind.
+b : Which excuse do you like best? | Why mind quiet?
+a : The plain truth. It takes very little remembering. | Because I can hear the waiting. Different sound from a proper rest.
+
+scene helping_hand
+when topic=friends|smalltalk
+does offer / accept / assess
+a : Here, put the awkward end towards me. | If you need help, just match your step to my hum.
+b : I can manage half. | I don't know your tune.
+a : Then it's shared. That's the whole sum I had in mind. | Never mind the notes. All the feet have to know is when.
+
+scene short_temper
+when topic=health|day
+does tell.self / react.self / assess
+a : I sometimes have to put a thing down before I answer a civil question. | Do you hear me come back into tune after a temper?
+b : So you can give it all your attention? | What's the first sound?
+a : So the thing doesn't have to hear me dropping it. The attention's a happy consequence. | An apology, if I've any sense. The note comes later.
+
+scene festive_edge
+when topic=festival
+does tell.plan / ask.detail / answer.detail
+a : My sort of feast would have a quiet lane running all the way round it. | If they put me in charge of festival music I'd write a part for silence.
+b : For carrying dishes? | Who would play it?
+a : For going home without being told you haven't had enough fun. | Me. From the comfort of a bench away from the rest.
+
+scene dream_jar
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In a dream I put all the sounds I couldn't place into one crock. | I dreamt a die had seven faces and one was listening.
+b : What came out when you opened it? | Did you throw it?
+a : My own little grunt when a lid's too tight. What a collection for that. | Whispered to it instead. Woke up before it could tell me what I'd won.
+
+scene dear_place
+when topic=prices world.times=hard|lean
+does give.opinion / disagree / concede
+a : When times pinch there's a dreadful hurry to make the measure smaller. | In a lean season I'd sooner sell a clearly smaller parcel.
+b : That might keep a price down. | Won't the buyer notice?
+a : It might. But I'd like the change written large enough to read. | That's the point. No nasty surprise in the unwrapping.
+
+scene still_breath
+when topic=faith
+does tell.self / react.self / assess
+a : If I'm asked for a moment's quiet I keep the tune going inside. | There's room for a pause in any decent song.
+b : Doesn't that spoil the quiet? | Even at its loudest?
+a : Not for anybody else. And it gives my thoughts a place to stand. | Especially there. Otherwise the loud has nothing to rise out of.
+
+story rattle_cup [topic=pastimes]
+  : A potter once let me try half a dozen cups for their sound. I was after one for throwing dice.
+  : I took the dullest home and spent an evening rubbing my thumb round its lip.
+  b : Trying to make it ring?
+  : Trying to keep it dull. Only the dice were meant to make music.
+
+story first_chorus [topic=memories self.age>=25]
+  : I learnt a hauling song off an empty boat. It was coming through a knot hole in the landing.
+  : I sang the answer into the hole and a sleepy fisher under the boards rolled over and answered mine.
+  b : Was the tune right?
+  : It was after that. We had two entirely different halves of the same song.
+
+story cloth_bag [topic=work self.master=yes]
+  : I once handed a learner a cloth bag and asked for a knot I could undo with one paw.
+  : The bag came back tied with a loop exactly as big as my thumb.
+  ask : What do you think that taught me?
+  b : To ask the learner how something's done once in a while.
+  : Yes, before I've spent a whole morning explaining my old way.
+
+story end_of_feast [topic=festival]
+  : The best bit of one feast was a long wooden spoon rolling under my stool. I bent to pick it up.
+  : From down there the dancing crowd was just a collection of boots. I saw a tiny pair trying to join in.
+  b : Did they find a place?
+  : I tapped the spoon behind them. They found the beat.
+
+story brown_parcel [topic=memories]
+  : I once posted a song to somebody with a good ear and no head for written notes. Tied a little knot for every note in a bit of string.
+  : I got the string back in three pieces with a new bit tied to the end.
+  b : Was that the answer?
+  : Took me a week of humming to find out. It was a chorus better than mine.
+
+rule @measure
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Pause when the bowl begins to ring. | Clear patch here for your parcel.
+
+rule @queue
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Single elbows please, there's space for everybody. | Leave a lane for the wolf going home.
+
+rule @tea
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say This cup has kept a little warmth in reserve. | Spice holds on to the clay.
+
+rule @song
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Low voice first; plenty of day to get louder. | A hum to set the shoulders moving.
+
+rule @pips
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say One black pip looking very pleased with itself. | Enough shake; let the bones settle.
+
+rule @quiet
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Last verse stays in the throat tonight. | Quiet enough to give this tune a rest.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I'll give a new voice a clear hearing. What brings you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your part comes after my hum as usual.
+dlg @3 resident.hub [here.time=night] : Bring the volume down with the dark. I can hear well enough.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can do this civilly if you keep it to a sentence or two.
+dlg @5 resident.job [self.job=merchant self.workplace] : I work at #self.workplace#. I like a task where a steady elbow makes a difference.
+dlg @6 resident.job : I like to leave a patch of bench free for the next pair of paws.
+dlg @7 resident.news [world.news] : This I heard clearly: #world.news#. All I can give you.
+dlg @8 resident.gossip [here.gossip!=yes] : Nothing to spend a good voice repeating.
+dlg @9 resident.bye : I'll pick up the tune where you came in.
+dlg @10 master.learn [here.teaches=yes] : Start by telling me how the work feels to your paw. That gives me somewhere to teach from.
+dlg @11 master.learn [here.teaches=no] : My teaching place is filled at present. A question's still welcome.
+dlg @12 master.work : Repeated movements, a deal of attention and the nerve to stop when something feels wrong.
+dlg @13 master.wages : Learning doesn't earn you wages. You can sell what you make, and working beside me speeds up the learning.
+dlg @14 master.takes [here.take_on=no] : #here.take_on_why# I'll say plainly when the answer changes.
+dlg @15 master.refused : #topic.why# You deserve the whole reason.
+dlg @16 master.bye : Keep the elbow easy. We'll speak of the rest another time.
+
+graft resident.hub
+choice What goes in the gap in your humming? -> empty_bar
+node empty_bar
+say The answer goes there. I can sing both halves myself but then it sounds like an argument with a cupboard.
+mood warm
+choice May I try the other half? -> first_response
+choice Go back to your tune. -> hub
+node first_response
+say Start anywhere that suits the breath. If it takes us somewhere unexpected I'll have learnt something.
+choice That's enough for the moment. -> hub
+choice Goodbye for now. -> bye
+
+graft master.learn
+choice When should I interrupt you? -> lesson_pause
+node lesson_pause
+say When the motion feels wrong. When you've forgotten why. When you've found a better way and want to show it.
+choice Even in the middle of a job? -> job_pause
+choice Tell me about learning. -> learn
+node job_pause
+say The middle's precisely when. By the end we'll have to find you another job to show me on.
+choice Back to the trade. -> learn
+choice I'll think it over. -> bye
