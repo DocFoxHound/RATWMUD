@@ -1146,12 +1146,13 @@ void theKeepersAnswer()
         me->position = {npc->position.x + 1, npc->position.y};
         town.run(2);
         town.ash.events.clear();
-        town.g.command(&town.ash, cmd({{"type", "chat"}, {"text", "\"" + name + ", what do you sell?\""}, {"commandId", id}}));
+        // (Asked in their window: residents never answer open chat, doc 84 Phase 12. The answer is their last line.)
+        (void)id;
+        sayInWindow(town, town.ash, who, name + ", what do you sell?");
         town.run(.5);
         std::string reply;
         for (const auto& e : town.ash.events)
-            if (e.string("type") == "roleplay" && (contains(e.string("speaker"), name) || contains(e.string("speaker"), work)) &&
-                reply.empty())
+            if (e.string("type") == "roleplay" && (contains(e.string("speaker"), name) || contains(e.string("speaker"), work)))
                 reply = e.string("text");
         return reply;
     };

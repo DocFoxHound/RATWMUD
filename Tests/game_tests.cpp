@@ -217,6 +217,7 @@ void theGameAnswersWhatItKnows()
     game::Options o;
     o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
+    o.residentsAnswerChat = true;   // (The chat answerer, still the window's free talk's: doc 84 Phase 12.)
     o.devIdentity = true;
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
     o.voiceLog = ledger;
@@ -269,6 +270,102 @@ void theGameAnswersWhatItKnows()
     std::remove(ledger.c_str());
 }
 
+// Players speak with residents only in the dialogue window (doc 84 §13, Phase 12; the user: "I do not expect NPCs to be
+// responding to players in general conversation"). W3: every way chat once reached a resident (named, chosen, the one
+// close by, asked its thoughts, whispered), with the option off, and no resident answers in words; with it on (the
+// control), they do. What stays: a glance, "Talk to Rowan (T)" once in ten minutes, what was asked after kept in the
+// talk ledger, a name given in chat learned, and Talk opening the window.
+void residentsNeverAnswerChat()
+{
+    const auto measure = [](bool answering, int& glances, int& hints, std::string& log) {
+        game::Options o;
+        o.tiesOptional = true;
+        o.devIdentity = true;
+        o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+        o.residentsAnswerChat = answering;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "the demo world starts: " + problem);
+        Client ash;
+        ash.id = 1;
+        g.connect(&ash);
+        g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+        auto& w = g.world();
+        const auto* keeper = w.entity("npc_keeper");
+        expect(keeper, "Rowan keeps shop");
+        w.entity("player-ash")->cellId = keeper->cellId;
+        w.entity("player-ash")->position = {keeper->position.x + 1, keeper->position.y};
+        run(g, ash, .5);
+        int answers = 0;
+        glances = hints = 0;
+        int n = 0;
+        const auto chat = [&](const std::string& text, const std::vector<std::string>& targets, const char* volume) {
+            run(g, ash, 2.1);                       // (A moment between posts, as the chat rules ask.)
+            ash.events.clear();
+            auto list = json::Value::array();
+            for (const auto& t : targets)
+                list.push(t);
+            g.command(&ash, cmd({{"type", "chat"}, {"text", "\"" + text + "\""}, {"targets", list}, {"volume", volume},
+                                 {"commandId", "w3-" + std::to_string(++n)}}));
+            run(g, ash, 2.5);
+            for (const auto& e : ash.events)
+            {
+                if (e.string("type") == "talkHint")
+                    ++hints;
+                if (e.string("type") != "roleplay" || e.string("speakerId").empty() || e.string("speakerId") == "player-ash")
+                    continue;
+                bool speech = false, toMe = false;
+                for (const auto& seg : e.array("segments"))
+                    speech = speech || seg.string("kind") == "speech";
+                for (const auto& t : e.array("to"))
+                    toMe = toMe || (t.isString() && t.asString() == "you");
+                if (speech && toMe)
+                {
+                    ++answers;
+                    log += e.string("speaker") + ": " + e.string("text") + "\n";
+                }
+                else if (!speech && toMe)
+                    ++glances;
+            }
+        };
+        chat("Rowan, what do you sell?", {}, "speak");                  // Named.
+        chat("Good day to you.", {}, "speak");                          // The one resident close by.
+        chat("What do you have for sale?", {"npc_keeper"}, "speak");    // Chosen.
+        chat("What do you think, Rowan?", {"npc_keeper"}, "speak");     // Asked its thoughts.
+        chat("Rowan, what day is it?", {}, "whisper");                  // Whispered.
+        chat("I'm Ash.", {"npc_keeper"}, "speak");                     // An introduction.
+        if (!answering)
+        {
+            const auto asked = w.talkLedger().saidOf("player-ash", w.calendarDays());
+            expect(asked.count("asked") && asked.at("asked").find("asking") == 0,
+                   "what Ash asked after is kept in the talk ledger, in the world's words: " +
+                       (asked.count("asked") ? asked.at("asked") : std::string("(none)")));
+            expect(g.talkQuery("npc_keeper", "player-ash", "player.greet").facts["pair.named"] == "yes",
+                   "a name given in open chat is still learned");
+            // Talk opens the window (never a talk target).
+            ash.events.clear();
+            g.command(&ash, cmd({{"type", "action"}, {"action", "talk"}, {"target", "npc_keeper"}}));
+            run(g, ash, .5);
+            expect(!ash.last("talkTarget") && ash.last("dialogue") && !ash.last("dialogue")->string("line").empty(),
+                   "Talk opens the dialogue window: " + ash.said());
+        }
+        g.disconnect(&ash);
+        return answers;
+    };
+    int glances = 0, hints = 0;
+    std::string log;
+    const int w3 = measure(false, glances, hints, log);
+    expect(w3 == 0, "W3 = 0: no resident answers chat with the option off:\n" + log);
+    expect(glances >= 1, "a resident named or chosen glances over (" + std::to_string(glances) + ")");
+    expect(hints == 1, "and the player is told how to talk with them, once in ten minutes (" + std::to_string(hints) + ")");
+    int onGlances = 0, onHints = 0;
+    std::string onLog;
+    const int control = measure(true, onGlances, onHints, onLog);
+    std::cout << "W3 (doc 84 §15.3): " << w3 << " resident answers to 6 chat lines with the option off; " << control << " with it on\n";
+    expect(control >= 3, "the control: with residentsAnswerChat, Rowan answers (" + std::to_string(control) + "):\n" + onLog);
+    expect(onHints == 0, "and gives no hint");
+}
+
 // --log-talk-words (doc 84 §15.6, DEV worlds): the ledger keeps each line's words too, as records of their own (kind
 // "words", which tools/ai_cost.py doesn't count), and the lines' own records stay as they were, with no words.
 void theLedgerKeepsWordsWhenAsked()
@@ -278,6 +375,7 @@ void theLedgerKeepsWordsWhenAsked()
     game::Options o;
     o.tiesOptional = true;
     o.hiddenNames = false;
+    o.residentsAnswerChat = true;   // (The chat answerer, still the window's free talk's: doc 84 Phase 12.)
     o.devIdentity = true;
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
     o.voiceLog = ledger;
@@ -1478,6 +1576,7 @@ void talkTargets()
     game::Options o;
     o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
+    o.residentsAnswerChat = true;   // (Chat answered, as before doc 84 Phase 12: residentsNeverAnswerChat is the default.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -2330,6 +2429,7 @@ int main()
         fastForward();
         residentsTalkWhereAPlayerCanHear();
         talkTargets();
+        residentsNeverAnswerChat();
         residentsTalkFromWrittenScenes();
         uploadedPortraits();
         theGameAnswersWhatItKnows();

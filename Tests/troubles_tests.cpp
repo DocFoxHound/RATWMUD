@@ -37,6 +37,11 @@ void expect(bool condition, const std::string& message)
 
 void say(Town& t, Client& c, const std::string& text, const std::string& to)
 {
+    if (!to.empty())
+    {
+        sayInWindow(t, c, to, text);               // (Said to a resident: in their window, doc 84 Phase 12.)
+        return;
+    }
     auto command = parsed(cmd({{"type", "chat"}, {"text", text}, {"channel", "ic"}, {"volume", "speak"}}));
     auto targets = json::Value::array();
     targets.push(to);

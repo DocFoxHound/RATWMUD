@@ -1311,11 +1311,12 @@ void movesAndTags()
         refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}}})", "no ack");
         refused(R"({"tones": ["even"], "moves": {"nod": {"family": "ground"}, "ack": {"family": "ground", "answers": ["*"]}}})", "either opens");
     }
-    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move.
+    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move. (A
+    // companion's few words are one speaker's, as barks and reactions are: doc 84 Phase 12.)
     auto lib = foundation();
     expect(!lib.moves().empty() && lib.moves().all().size() >= 85, "the book: about 85 moves or more");
     for (const auto& c : lib.settings().concepts)
-        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c != "bark")
+        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c.rfind("companion.", 0) != 0 && c != "bark")
             expect(!lib.moves().alias(c).empty(), "the answer concept " + c + " is a move's alias");
     expect(lib.moves().alias("jest.answer") == "tease.return", "jest.answer is tease.return (§7.2)");
 

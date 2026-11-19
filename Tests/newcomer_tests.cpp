@@ -894,6 +894,9 @@ void matchmaking()
     FakeMind mind;
     auto o = options(writeStrip(root));
     o.dialogueEndpoint = mind.endpoint();
+    // (The innkeeper's briefing for a newcomer's words, as the window's free talk hears them: asked here in open chat,
+    // which only a test lets residents answer since doc 84 Phase 12. P13 moves these asks into the window.)
+    o.residentsAnswerChat = true;
     game::Game g(o);
     std::string problem;
     expect(start(g, problem), "starts: " + problem);
@@ -1078,8 +1081,14 @@ struct Inn
     game::Game g;
     std::vector<Client*> all;
     std::map<Client*, std::string> ids;
+    // (With the talk library: a newcomer's welcome is the innkeeper's greeting in her window, doc 84 Phase 12.)
+    static game::Options withTalk(game::Options o)
+    {
+        o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+        return o;
+    }
     explicit Inn(const std::string& tag) : root(fs::temp_directory_path() / ("ratw-inn-" + tag + std::to_string(::getpid()))),
-                                           g(options(writeStrip(root)))
+                                           g(withTalk(options(writeStrip(root))))
     {
         std::string problem;
         expect(start(g, problem), "starts: " + problem);
@@ -1166,6 +1175,21 @@ void evenings()
     const auto heard = [&](const std::string& text) {
         return std::any_of(nell.events.begin(), nell.events.end(), [&](const json::Value& e) { return contains(e.string("text"), text); });
     };
+    // Doc 84 Phase 12 (§13.1.5): the welcome is the innkeeper's greeting in her window. Until it is opened she only
+    // catches the newcomer's eye (seen by one who can see her across the dim room), and Nell is told how to talk with
+    // her.
+    expect(!heard("Welcome, friend"), "no word yet");
+    const auto* hint = nell.last("talkHint");
+    expect(hint && hint->string("npc") == "ui" && contains(hint->string("text"), "(T)"), "and Nell is told how to talk with her");
+    inn.place("ui", 1, 8.5, 9.5);
+    g.command(&nell, cmd({{"type", "dialogue_open"}, {"npc", "ui"}, {"entry", "talk"}}));
+    inn.run(1);
+    const auto* window = nell.last("dialogue");
+    const auto* closed = nell.last("dialogue_close");
+    expect(window && contains(window->string("line"), "Welcome, friend") && contains(window->string("line"), "That's "),
+           "her window: the welcome, and who is here: " + (window ? window->string("line") : closed ? "closed: " + closed->string("why") : std::string("(none)")));
+    if (window)
+        g.command(&nell, cmd({{"type", "dialogue_close"}, {"session", window->number("session")}, {"why", "closed"}}));
     expect(heard("Welcome, friend"), "Nell is welcomed aloud");
     expect(std::any_of(vic.events.begin(), vic.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Welcome, friend"); }),
            "the room hears it too");
@@ -1186,6 +1210,8 @@ void evenings()
     // Once a character.
     std::this_thread::sleep_for(std::chrono::milliseconds(5600));
     inn.run(1);
+    g.command(&nell, cmd({{"type", "dialogue_open"}, {"npc", "ui"}, {"entry", "talk"}}));
+    inn.run(1);
     expect(std::count_if(nell.events.begin(), nell.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Welcome, friend"); }) == 1,
            "welcomed once");
     // Pip, alone at Larkfield's inn three evenings running: on the fourth, with company, nothing (three at most).
@@ -1202,7 +1228,8 @@ void evenings()
         std::this_thread::sleep_for(std::chrono::milliseconds(5600));
         inn.run(1);
     }
-    expect(!std::any_of(pip.events.begin(), pip.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Welcome, friend"); }),
+    expect(!std::any_of(pip.events.begin(), pip.events.end(), [](const json::Value& e) { return contains(e.string("text"), "catches the newcomer's eye"); }) &&
+               !pip.last("talkHint"),
            "three evenings alone: no welcome on the fourth");
 }
 
@@ -1272,8 +1299,15 @@ void vouching()
     expect(trustIn("ui", nellId) < 1 && trustIn(household, nellId) < 1, "the share taken back from Nell, by it and its household");
     expect(std::any_of(mo.events.begin(), mo.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Word reaches you"); }),
            "Mo is told");
-    // The innkeeper brings it up next time Mo speaks to it.
-    g.command(&mo, cmd({{"type", "chat"}, {"text", "Evening."}, {"channel", "ic"}, {"volume", "speak"}, {"targets", parsed(R"(["ui"])")}}));
+    // The innkeeper brings it up next time Mo speaks to it (in her window: residents never answer open chat, doc 84
+    // Phase 12).
+    inn.place("ui", 1, 9.5, 9.5);
+    g.command(&mo, cmd({{"type", "dialogue_open"}, {"npc", "ui"}, {"entry", "talk"}}));
+    inn.run(.5);
+    const auto* talking = g.dialogueOf(moId);
+    expect(talking && talking->npc == "ui", "Mo opens the innkeeper's window" +
+                                                (mo.last("dialogue_close") ? ": closed, " + mo.last("dialogue_close")->string("why") : std::string()));
+    g.command(&mo, cmd({{"type", "dialogue_say"}, {"session", talking->id}, {"text", "Evening."}}));
     g.settle();
     inn.run(2);
     bool raised = false;

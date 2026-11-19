@@ -87,6 +87,11 @@ void pure()
 
 void say(Town& t, Client& c, const std::string& text, const std::string& to)
 {
+    if (!to.empty())
+    {
+        sayInWindow(t, c, to, text);               // (Said to a resident: in their window, doc 84 Phase 12.)
+        return;
+    }
     auto command = parsed(cmd({{"type", "chat"}, {"text", text}, {"channel", "ic"}, {"volume", "speak"}}));
     auto targets = json::Value::array();
     targets.push(to);
@@ -104,7 +109,7 @@ void inTheGame()
     const auto world = writeStrip(root);
     std::string id;
     {
-        Town t(world, save);
+        Town t(world, save, 120, true);             // (The talk library: talking to a resident is in their window, doc 84 Phase 12.)
         auto& w = t.g.world();
         t.enter(t.ash, 1, "ash", "Ash", 1, 9.5);
         const auto ash = t.ash.entityId;

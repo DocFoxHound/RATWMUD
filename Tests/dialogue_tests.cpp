@@ -1193,9 +1193,43 @@ void otherRoles()
     d = choose(pick(d, "Five pennies."));
     expect(d && d->string("node") == "thanked" && s.cash(town.ash.entityId) == mine - 5 && s.cash("up") == theirs + 5,
            "five pennies given: " + show(d));
+    const auto guardAt = spots["ug"], helperAt = spots["uh"];
+    spots["ug"] = {"c_chapel", 7.5, 2.5};           // (The guard and the pot hand away: a keeper of their own looks up.)
+    spots["uh"] = {"c_chapel", 8.5, 2.5};
+    step(2.5);                                      // (The game looks where players are every two seconds.)
+    town.ash.events.clear();
     ashCell = cellId(1);
     ashX = 9.5, ashY = 8.5;
-    step(.5);
+    step(2.5);
+    // Doc 84 Phase 12 (§13.1.4): back in the market, a keeper looks up as the customer comes in (a look, never a word:
+    // react.customer is the window's now), and the keeper's window greets one who has just come in.
+    {
+        std::string keeper, look;
+        for (const auto& e : town.ash.events)
+            if (e.string("type") == "roleplay" && !e.string("speakerId").empty() && e.string("speakerId") != town.ash.entityId)
+            {
+                bool speech = false;
+                for (const auto& seg : e.array("segments"))
+                    speech = speech || seg.string("kind") == "speech";
+                expect(!speech || e.array("to").empty() || e.array("to")[0].asString() != "you",
+                       "no keeper greets a customer aloud: " + e.string("text"));
+                if (!speech && (contains(e.string("text"), "looks up") || contains(e.string("text"), "glances up")))
+                    keeper = e.string("speakerId"), look = e.string("text");
+            }
+        expect(!keeper.empty(), "a keeper looks up as Ash comes in: " + town.ash.said());
+        expect(keeper == "ui" || keeper == "um", "the innkeeper or the master: " + keeper);
+        {
+            d = open(keeper, keeper == "ui" ? "talk" : "trade");
+            expect(d && (contains(d->string("line"), "Come in") || contains(d->string("line"), "Sit anywhere") ||
+                         contains(d->string("line"), "Have a look around")),
+                   "and the window's greeting knows the customer has just come in (" + look + "): " + show(d));
+            if (town.g.dialogueOf(town.ash.entityId))
+                choose(pick(d, "Goodbye."));
+        }
+        spots["ug"] = guardAt;
+        spots["uh"] = helperAt;
+        step(.5);
+    }
 
     // A companion: the party's orders as words (they answer in their own, and the conversation ends).
     w.setTimeOfDay(19);
@@ -1231,6 +1265,21 @@ void otherRoles()
     w.entity("u2")->position = {8.5, 9.5};
     d = open("u2", "orders");
     expect(d && pick(d, "Follow me.") > 0 && pick(d, "Wait here for me.") == 0, "waiting: follow is offered: " + show(d));
+    // "What do you think?" (doc 84 §13.1.6, Phase 12): once said to a companion in open chat and answered there; now a
+    // choice in their window, answered from their own stances (their view on one of the realm's issues), else words
+    // for having none.
+    {
+        const auto q = town.g.talkQuery("u2", town.ash.entityId, "");
+        bool holds = false;
+        for (const auto& [k, v] : q.a.facts)
+            holds = holds || (k.rfind("op_strength.", 0) == 0 && std::atoi(v.c_str()) >= 1);
+        d = choose(pick(d, "What do you think?"));
+        const auto line = d ? d->string("line") : std::string();
+        const bool none = contains(line, "Hard to say") || contains(line, "no strong view") || contains(line, "keep my thoughts");
+        expect(d && d->string("node") == "think" && !line.empty() && (holds ? !none : none),
+               std::string("What do you think?: ") + (holds ? "their view" : "no view to give") + ": " + show(d));
+        d = choose(pick(d, "Goodbye."));
+    }
     // The window's gossip keeps the street's rules: nobody gossips about their own kin (doc 84 §24, the slice-end review).
     // Married to u2, u1 has no gossip of him: a widow never says "Sad news. Orm died." of her husband.
     w.believe("u1", "u2", "stole from Merchant u", "saw it", .9);
