@@ -1,0 +1,261 @@
+mantle rm266
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_edda_muddale
+title the uphill king
+fits stage=adult|old
+prefers quarter=sump
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk crowns_draughts_pieces_with_an_old_boot_button
+likes hard_cheese draughts new_boots first_warm_day
+dislikes wet_floors cold_tea
+fears a_wet_square a_last_bed_downhill
+hopes a_high_dry_window an_unhurried_match
+topics land +0.4 pastimes +0.6 dreams +0.3 prices +0.2 gossip -0.3
+styles comfort=practical gossip=guarded refuse=blunt tease=none
+marks oath saying
+persona #self.first# keeps a boot button for a draughts crown, measures steep streets in playable squares and expects to finish the match on higher ground.
+
+words
+oath! = Sea swallow the bellows | Scald the tide
+saying! = The far row earns its button | Choose a square you can keep
+kingcap = a boot button | my brass crown
+man = a little black counter | a worn red man
+boardside = the near rank | my home row
+sole = a stiff new sole | fresh boot leather
+bite = a flake of sharp cheese | a firm corner of cheese
+tea = the hot bitter mouthful | tea that still steams
+mop = a thick wiping rag | my floor cloth
+hill = a rung up the city | another step toward the Rise
+flat = one dry square | a dry patch underfoot
+crook = the nicked corner | my board's bad edge
+wall = a sunning wall | the south-facing brick
+knot = a leather loop | my old bootlace
+
+any
+opinion @1 houses against 2 : Those gates on the Rise are ornaments till one opens to a wolf from below.
+opinion @2 city for 1 : I'd like to change my level in this town. The town itself can stay.
+opinion @3 dole for 2 : Can't buy cheese on an empty purse. Teeth still need a job.
+opinion @4 merchants against 2 : My good boots are still in a window. The price has taken more steps than I have.
+opinion @5 watch against 1 : Boots making that much show of themselves aren't my notion of help.
+opinion @6 sump for 1 : The Sump taught me the first move. I can want a different last one.
+
+grown
+line @1 greet [pair.band=strangers] : You're standing level. Welcome there. | Space for one more, just there.
+line @2 greet [here.time=dawn] : Morning. The board's empty yet. | Here's light for a civil look.
+line @3 greet [here.weather=rain] : Dripping. Take the outside square. | Wipe your feet and welcome.
+line @4 greet.return : Heard you fine. Welcome back. | That's a proper opening between us.
+line @5 greet.return [pair.band=friends|family] : Good. A player who knows the board. | You get the chair on the level.
+line @6 farewell : Spend your leather on a good road. | May the steps go easily.
+line @7 farewell.return : Off you go with your move in hand. | I'll mind the square you left.
+line @8 again.open : Twice across the same square. | We've drawn another turn together.
+line @9 kin.open [pair.kin!=no] : A nearer square for family. | Settle in. You've no introduction owing.
+line @10 hail [pair.band=friends] : Up by the dry ledge! | Spare counter over here!
+line @11 react.news : Give me the moves in order. | Begin with the bare facts of the game.
+line @12 react.news.new : First sight of that arrangement. | That's a piece I hadn't counted.
+line @13 react.news.known : Seen that move reported already. | The shape's familiar from yesterday's talk.
+line @14 react.news.doubt : I'd want another witness to that funny jump.  | There's a counter gone missing from that account somewhere.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Hard news. Set the game aside. | That's worth a real silence.
+line @16 react.news.glad [topic.kind=marriage|birth] : Best bit I've heard over this board. | Put the brass crown on that news.
+line @17 answer.how : Level enough. Keeping my square. | Managing these legs.
+line @18 decline : I haven't the time or the legs to take that on. | I can see no sound footing in that promise.
+line @19 accept_decline : That's a clean stop. | You can keep your reasons private.
+line @20 sympathise : Take the chair. You need the rest more. | A hard square to be pushed onto.
+line @21 thank : Owe you for that bit of firm footing. | A fair turn. Remembered.
+line @22 deflect_thanks : Wasn't any further than my elbow. | Save your speech till we've climbed.
+line @23 preclose : Enough talk for a whole game. | Need to sit where the light holds.
+line @24 accept_preclose : Finish the turn your way. | Aye. That's a sensible stopping square.
+line @25 farewell [here.time=night] : Watch the black squares after dark. | Go quiet on those stone steps.
+
+scene crown
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : #kingcap# crowns my first piece across. | I keep the crown under my thumb till it's earned.
+b : No second piece to stack on it? | Does it matter which piece gets it?
+a : Button sits flatter. I dislike a wobbly monarch. | First across, red or black. I don't play favourites.
+
+scene cheesecut
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I take #bite# after the last move. | Hard cheese can be cut to the size of the win.
+b : And if you've lost the game? | What counts as a large slice?
+a : Same cheese. Less reason to rush the eating. | Beating a wolf who saw my third move coming.
+
+scene floor
+when topic=smalltalk self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Wet stone's a dirty trick on decent boots. | #mop# can make a floor worth crossing.
+b : Going to do the whole passage? | Who'd notice a little square?
+a : Only the width I need. Others can join the work. | A wolf whose knee keeps count.
+
+scene cup
+when topic=food self.dislikes=cold_tea
+does give.opinion / disagree / concede
+a : There comes a point when cold tea's just a nuisance in a cup. | I've played too slowly. My tea's flat cold.
+b : I drink mine either way. | You could warm it between your paws.
+a : That's your tongue to waste. | Mine are cold enough to do it further damage.
+
+scene spring
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : I wait for #wall# to be warm at sitting height. | A fine spring morning's the day my chair comes outdoors.
+b : Must be a little warmer higher up. | What if the shade moves round?
+a : I intend finding that out in a chair of my own. | Chair has legs as well. I'll use them.
+
+scene boots
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #sole# makes a sound you could play draughts to. | New boots have no memories of slipping.
+b : What does a capture sound like? | How long does that innocence last?
+a : Tap twice and drag a little. Piece off. | Right up to the first wet stair.
+
+scene climb
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I want one good game looking down from the Heights. | I'll take my board uphill for good someday.
+b : Going to invite a grand opponent? | Which piece do you take up first?
+a : I'd play the sunbeam if it sat still on the far chair. | Myself. The rest's light packing.
+
+scene buttonloss
+when topic=smalltalk
+does tell.worry / reassure / assess
+a : I dislike the day my crown rolls off the board. | Lose #kingcap# and I've got sixteen common soldiers.
+b : A second button would do the work. | Couldn't you borrow a little coin?
+a : That one has a chip my thumb knows. I'm particular. | A borrowed king is hard to keep.
+
+scene sump
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : The Sump feels like #boardside# after a hard opening. | My Sump street has steps I know by their tilt.
+b : A rank you can't get away from? | You'd miss that knowledge further up.
+a : One I know how to move out of. | I'd enjoy finding fresh annoyances.
+
+scene prices
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : Hard cheese costs a lot of looking before I get a bite. | I can play draughts for nothing but my supper takes actual coin.
+b : You could play for cheese. | Would you bet your winnings on dinner?
+a : I'd have an opponent going hungry then. Poor game. | Never risk the board for what's going on the plate.
+
+scene pal
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I keep a decent seat by for #self.friend#. | I'd put the new leather across the table for #self.friend# to see.
+b : Saving your friend's side of the board too? | Proud of those boots already?
+a : No. The side goes by the toss of a counter. | I've looked at the pair long enough. My eyes own a share.
+
+scene thin
+when topic=times world.times=hard|lean
+does tell.feeling / sympathise / assess
+a : There's some days a cheese rind would sit like a crown on my dinner. | A whole cupboard can get down to one hard corner.
+b : Rind makes broth last a little longer. | I know how hard that corner gets.
+a : I shave it fine. My teeth do less unpaid work. | Good. Then I needn't chew the matter over aloud.
+
+scene road
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I count a steep street by the places a board could sit level. | A stair makes a tolerable seat for a short game.
+b : Where does that put you when it's slippery? | Don't the pieces tip?
+a : At the first dry wall. I count from there. | Not if you lay #knot# under the lower edge.
+
+scene wedge
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you shore up #crook# without splitting the board? | Got any use for a boot tongue that's shed its upper?
+b : A little soft leather glued underneath. | Cut a wedge from it. I see that board tilts.
+a : I'll take a strip off the tongue. That'll give nicely. | Now that's a better afterlife than most boots get.
+
+scene wind
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain on the board shows every hollow it owns. | My bad corner holds three drops after the rest runs clear.
+b : How do you play with puddles? | Do you count them all?
+a : Turn it edge on. Rain's turn is over. | Only until the tea has cooled enough for drinking.
+
+old
+
+scene knees
+when topic=dreams self.age>=55
+does tell.self / react.self / assess
+a : My knees have earned a different view for their remaining turns. | At my age a chair on the flat is a serious property.
+b : With a few steps left to get to it. | Must it have arms?
+a : I'll pay the steps once, for a window I can keep. | Enough arm to put tea down level.
+
+scene memory
+when topic=lore self.age>=55
+does tell.self / ask.detail / answer.detail
+a : I remember drawing my playing squares with a bit of char. | I used to spend new leather without looking down at it.
+b : Didn't the lines rub off? | When did that change?
+a : The board got better. The figures learned to jostle on it just the same. | When I started reckoning my boots by climbs left in them.
+
+scene lastboard
+when topic=land self.age>=55
+does give.opinion / disagree / concede
+a : I'm old enough to want my last game in a different room. | I've given the lower streets a great many soles.
+b : You might miss your first windowsill. | Cost you another pair going up.
+a : I'll take its measure with me. I can get a higher one cut to fit. | Good. A pair well used at last.
+
+grown
+
+story button_king [topic=pastimes]
+  : I once crowned a draughts piece with a crust. A long game, weak tea, and my mouth started making arrangements.
+  : I ate the crown while I was thinking my move out.
+  b : How did you finish the match?
+  : Undid my boot button. Been careful what I wear to a game since.
+
+story stone_square [topic=travel]
+  : I carried a borrowed board up a long stair to a sunny spot. One piece kept rolling into the gutter.
+  : Moved the board, moved the stone under it. Took a closer look at my counter then.
+  b : Was it round on the bottom?
+  : Quite. The stair was level; I'd brought the slope up myself.
+
+story hot_first [topic=food]
+  : I cut myself a wedge of cheese to go with my tea. Tried to even up the cut, then evened the cheese left on the plate.
+  : Looked a good job when I'd finished. The tea was cold.
+  b : What became of the trimmings?
+  : A decent meal. Haven't gone in for cutting things square since.
+
+rule @board
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Red gets the next move. | Leave that last square free.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say My soles have found the leak. | Space for a landing on the dry side.
+
+rule @wall
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Warming up, that brick. | Holds some decent heat now.
+
+rule @boot
+when concept=bark self.quarter=sump
+does aside
+cooldown 8h
+say A fair climb out of here. | One more patch on this heel.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Take a dry square and state your business.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I can set aside a move for you.
+dlg @3 resident.hub [here.time=night] : Low light. Speak from the near square.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep the width of the board between us.
+dlg @5 resident.job [self.job=none] : I've my eyes and a seat. I know what goes on across it.
+dlg @6 resident.job : I can tell a level board by touch.
+dlg @7 resident.bye : Take the better of the two turnings.
+
+graft resident.hub
+choice Why a button for the crown? -> boot_crown
+node boot_crown
+say Came off a boot that got me through three winters. That's a better claim to rank than I've heard from some wolves.
+choice Which square would you crown for yourself? -> high_square
+choice We can talk without playing. -> hub
+node high_square
+say A windowsill on a high street. One chair, one board, and water that goes to trouble somebody further downhill.
+choice A fair move. -> hub
+choice I'll leave you to play. -> bye

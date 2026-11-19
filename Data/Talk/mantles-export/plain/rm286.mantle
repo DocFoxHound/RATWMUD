@@ -1,0 +1,387 @@
+mantle rm286
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_bettany_bilgehand
+title the thunder buttons
+fits stage=young|adolescent|adult|old
+prefers talk=quiet honesty=guarded
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk counts_steps_between_lightning_and_thunder_with_old_buttons
+likes oatcakes wrestling new_boots thunder
+dislikes gulls haggling
+fears a_loose_sole_on_the_turn a_secret_shouted_from_a_rooftop
+hopes boots_with_a_pocket_for_buttons a_storm_heard_under_good_tiles
+topics weather +0.5 pastimes +0.4 food +0.2 gossip -0.4
+styles comfort=quiet gossip=guarded refuse=direct tease=none
+marks oath saying
+persona #self.first# keeps buttons for counting the quiet after lightning, hides the best one, and looks for a firm footing before a wrestling match.
+
+words
+oath! = Cracked buttonhole | Butter on my bootlace
+saying! = Keep a button for the quiet | Hear the roof before the sky
+blackone = my little black button | the button like burnt cake
+blueone = a blue button with a broken rim | my crooked blue one
+cuphand = my counting paw | a pawful of buttons
+tinring = the empty ring of a tin | a little tin rattle
+thumblip = a raised button edge | a nick under my thumb
+oatbit = a burnt oat corner | a crisp oat crumb
+laces = two new laces | a matched pair of laces
+thunderfoot = a big slow thump | the last far rumble
+stairgap = a pause at the turn | the little rest between landings
+flatrock = a smooth wrestling stone | my stone for marking the edge
+
+any
+opinion festivals for 1 : I like a sweet that takes a long time to suck. Music lasts much longer when the sweet does.
+opinion houses against 2 : All that room in a great carriage, and the wheels still throw mud on those of us by the wall.
+opinion dole for 2 : A scoop you can smell on the way home is a scoop somebody will be glad to eat.
+opinion strangers against 1 : I like to know a voice before I put a good button under a stranger's nose.
+opinion church for 1 : The bread goes round under a roof beyond the rain. My ears hear much better when the wet's out of them.
+
+grown
+
+grown
+line greet : My buttons have quit knocking. I can hear you now.
+line greet.return : I've a quiet word to send back.
+line farewell.return : I'll see that my laces are snug before I follow.
+line farewell : Find an evening where the roof keeps its word.
+line react.news : Let me put that where I can give it some thought.
+line react.news.doubt : Did somebody hear it past the first rumble?
+line ask.how : Are you feeling steady on your feet?
+line thank : Thanks for this inch of dry ground under my toes.
+
+adolescent
+line greet : Hold a space at the turn. I can listen.
+line greet.return : Heard you. Only counting under my breath.
+line farewell.return : I'll take the way with fewer elbows.
+line react.news : I might know more after I've heard the far end.
+line decline : I'd like to keep some of my pockets to myself.
+
+young
+line greet : I'm here. Don't tread on the blue one. | There's a dry step free beside me.
+line greet [pair.band=strangers] : You can speak, but I keep the tin.
+line greet [here.time=dawn] : I heard the roof waking up. Hullo.
+line greet [here.time=dusk|night] : It's dark enough to spot the sky flash now.
+line kin.open [pair.kin!=no] : Come close. You can count out of my paw.
+line again.open : You went round and came back before the buttons moved.
+line greet.return : Hullo. You're louder than a button.
+line greet.return [pair.band=friends|family] : I know you, even with my head down counting.
+line greet.return [here.time=dusk|night] : I heard a voice where my eyes couldn't find a nose.
+line farewell : Good walking. Save a step for the thunder.
+line farewell.return : I'll finish this count on my own.
+line react.news : Wait. I want the news in one ear without a tin rattling in the other.
+line react.news.new : I need another button for that bit!
+line react.news.known : I had that scrap folded away already.
+line react.news.doubt : Did you actually see with your own two eyes?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd give my dry step to a wolf who needed one.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, I could leap three whole treads.
+line answer.how : Happy enough. A full pocket sounds nice when I run.
+line ask.how : Have you got room in your head for a little game?
+line sympathise : I can sit on the other end till you want to talk.
+line reassure : I'll hold your place and won't peek.
+line decline : I won't show you that pocket. It's where private bits live.
+line accept_decline : I'll look up at the roof instead.
+line thank : That bit went better with you beside me.
+line deflect_thanks : You can give the next loose button to somebody smaller.
+line preclose : I want to catch the sound before it rolls away.
+line accept_preclose : You go first. I'll start my count again.
+line ack : Counted it.
+
+young
+
+scene swap
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : See #blackone#? It buys a turn at my game. | One button has a nick so I know it without looking.
+b : Can I give it back? | Why not open your eyes?
+a : Yes. You buy your turn, then I buy mine back. Neither of us goes home poorer. | Looking is the easy game. Eyes shut is the extra bit.
+
+scene light
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : When the sky flashes I start sliding buttons across, singly. | A little roll comes late after a big flash.
+b : Till the bang comes? | Does late mean quiet?
+a : Yes. Both paws full means the thunder took its time coming. | Not always. That's why I play from under a roof.
+
+scene oats
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I put the butter in one hollow in my oatcake. | I've got a little oat crumb on my lip.
+b : Why not spread it out? | Are you saving it?
+a : So the last bite has a whole pond in the middle. | I'm deciding if I can reach it with my tongue. Paws would be cheating.
+
+scene ring
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I put my two buttons down for the ends of a wrestling ring. | I like wrestling on dry ground best.
+b : Only two ends to a ring? | Can't you land softer on mud?
+a : You have to imagine the bends. I'm saving for more buttons. | Mud keeps hold of a boot when I try to stand up. Then mud has won.
+
+scene newboots
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : New boots sound hollow till there are feet inside. | I want a little pocket on each boot.
+b : What sound do they make with feet? | Wouldn't you have to bend to reach?
+a : The sound I've been wanting. Two thumps at once if I'm quick down a step. | I'd only put spare buttons there. Bending is what makes them spare.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull would pinch my best blue button if it thought the button was a fish eye. | I shut my tin when a gull comes close.
+b : Does it look like an eye? | Can the gull get the lid undone?
+a : Two holes, so it can't be an eye. A gull's sums are a different question. | Not with a beak. It can knock the whole open tin over, though.
+
+scene secret
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I've got one thing in my pocket I don't show. | There's a different rule for telling a secret and telling a story.
+b : What does it feel like? | What rule?
+a : Like mine. You can feel the outside of the pocket and guess. | A story's allowed to get out and go walking. I shut my fist round a secret.
+
+scene teacher
+when topic=day self.job=child
+does tell.self / ask.detail / answer.detail
+a : I draw my sums in little pairs of holes. | Counting buttons at lessons makes a smaller noise than counting on a tin.
+b : Like a button? | Do you count with the tin too?
+a : Exactly. Three pairs are easier to see than six dots skipping all over my page. | Once. The lesson came to a very sudden stop.
+
+scene stairs
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I run the Sump steps in pairs till I get to the cracked one. | There's a bit of wall I tap coming down.
+b : Do you skip the crack? | For luck?
+a : I do one proper small step on each side. That's a pair too. | So I know to slow down. The landing's right under it.
+
+scene butter
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I can draw a weather picture in soft butter. | A slice of bread holds still better than a cloud.
+b : Won't somebody eat it? | What do they have in common?
+a : I hope so. It's a storm with everything there is for my tea underneath it. | Put butter on the bread, draw cloud shapes, and you can eat the bit of sky you like.
+
+scene drytin
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : You can hear if the tin has got a gap in the lid. | My tin has a little cloth cushion underneath all the buttons.
+b : What makes the noise? | To wipe rain out?
+a : Drops. Inside drops sound smaller than the ones on top. | No, so the buttons don't all shout together when I'm sneaking by.
+
+scene festivalbit
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A sweet wrapper could make a nice kite for a button wolf. | I keep a wrapper folded the same size as two joined buttons.
+b : How does the wolf hold on? | Why that size?
+a : Through the holes, obviously. String fits better than paws on a button wolf. | It opens into a little tent. My buttons do like a festival out of the wet.
+
+scene hateprices
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : If the price is one button it had better still be one button when I pay. | A game stops being a game if the prize keeps moving.
+b : What if the prize gets bigger? | Would you walk away?
+a : Then it wasn't the prize I was playing for. I like to know beforehand. | I'd put my own prize back in my tin and play counting thunder. The sky never asks for extra.
+
+scene noiseroof
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I can tell a drop on the sill from one on the tin. | I made a little roof with my two paws.
+b : What does each one sound like? | What could go under it?
+a : One goes tick. One answers back in a larger voice. | My nose gets in. The ears have to mind the weather for themselves.
+
+scene mightsnow
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my best storm the thunder is all different sizes of button hitting a floor. | Imagine watching a flash run up the sky for a change.
+b : Who picks the buttons up? | Wouldn't you be scared?
+a : No idea. I only dream as far as playing in the pile. | From under a really thick roof I'd be nearly just curious.
+
+scene clasp
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can make a whole row of faces with holes for eyes. | Some buttons look up even if you turn them over.
+b : What about mouths? | Can you make them look down?
+a : That one's a scratch. The rest are listening very carefully. | If I put the holey side down nobody sees where the eyes went.
+
+scene feet
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If I have to jump I look where both feet will go. | Sometimes I pretend the ground is wrestling me back.
+b : Why both? | Who wins that one?
+a : Because if I only look for my left foot the right goes looking for its own adventure. | The ground. It never once has to get up afterwards.
+
+adolescent
+
+scene youngertin
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My button tin is getting too small for the old game. | I've learnt to hear the far end of thunder without counting aloud.
+b : Too many buttons now? | Have you given up keeping count?
+a : Longer fingers. I can hardly get a pinch of small ones out. | Not a chance. I just don't need the street to count along.
+
+scene schoolrace
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I can time the walk to a lesson by the echo under one roof. | I'm slower down a stair than I was as a pup.
+b : Is the echo always there? | Are your feet less sure?
+a : If there's rain. In fair weather I use my perfectly ordinary legs. | They're bigger. I won't land an adult foot in the space a little one used to fit.
+
+scene pockets
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I want boots that will carry my little tin a fair distance. | I'd thread a blue button onto one bootlace for a long walk.
+b : The boots carry the tin? | As a sign?
+a : Through me. I'd like to see another roof my tin sounds good under. | To remind me which lace likes to come untied. Less glamorous than a sign, more useful.
+
+grown
+
+scene fasteners
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep usable fastenings even after the cloth goes. | This old blue button outlasted the pocket it lived in.
+b : Where do you keep the scraps? | Did you make another pocket?
+a : In a tin that gives a different rattle each year. | Yes, with room to spare. I left the old wear marks where I could see them.
+
+scene likeboots
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : I wear a new boot round the room before I give it the street. | Laces that look the same sometimes pull quite differently.
+b : Will one room tell you much? | How do you tell?
+a : Enough to feel the rub before it's too far home to take it off. | Draw them up in separate paws. One will tell you if it's beginning to give.
+
+scene stormwait
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : I count the hush before thunder comes rolling up. | I can find the last note of a storm long after it starts to die.
+b : With numbers? | What sound does it finish with?
+a : With buttons. A habit's worth keeping when it still gives pleasure. | The little roll too low to hear with much else going on.
+
+scene sumpentry
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Water runs off a Sump step in two streams if there's a chip in the middle. | I have one sightline through the eaves for watching a storm.
+b : Does that make a step safer? | Wouldn't a rooftop give a better view?
+a : Not a bit. It tells me which edge is still dry to stand on. | Yes. I'd miss the good thick roof. Storms sound better with timber overhead.
+
+scene oatpress
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I press a spoonful of oats quite flat before turning the cake. | The irregular oatcake always looks largest on my plate.
+b : Does it make a crisper edge? | Do you pick it for that?
+a : Yes. A little soft butter sits very well against the crisp part. | I pick it for the corners, which take more colour from the pan.
+
+scene measure
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A fistful of buttons makes a decent grip exercise. | My fingers know the feel of each old button.
+b : Don't they press into your paw? | Even the smooth ones?
+a : If I squeeze too hard. The whole point's to learn when there's enough grip. | The smooth blanks are as familiar to me as the notches.
+
+scene tidytin
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I line a tin with old cloth so it doesn't announce me everywhere. | The lid has a paper seal to keep little buttons in.
+b : Does that spoil the sound? | How do you open it?
+a : I lift the cloth when I want the sound. Now the choice is mine. | One slip of paper bends back like a tab. A light thumb is quite enough.
+
+scene askonce
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I'd like to ask exactly once before I declare somebody's business public. | A rumour makes a poor fastener for a fact.
+b : What answer are you hoping for? | How would you mend the join?
+a : The one the owner cares to give. Silence holds just as well. | By leaving the two in separate boxes until there's a real reason to join them.
+
+scene slipfoot
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I like a wrestling ring drawn big enough for two decent steps of retreat. | When one foot slips I'd sooner put an end to the bout.
+b : What if somebody steps out? | Who decides?
+a : Then both can start again without anybody getting a side full of stones. | The wolf whose footing slipped. A poor sport would decide for somebody else.
+
+scene rainprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I turn a cheap coat's fastenings between my pads. | A loose button costs more time than it looks.
+b : Can you find much out like that? | How much time?
+a : Sometimes the first coatful of rain will draw the thread right through. I'd sooner test in a dry shop. | However many afternoons I spend hunting its twin once the original's slipped down a gutter.
+
+scene viewfriend
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I sometimes dream a tin has just one button too many to close. | My old dream roof has a window for watching the weather.
+b : Which button do you give away? | What keeps the rain out?
+a : I'd rather find another tin. Some things don't have to stand for a choice. | In the dream, my wish. In the waking world I'd ask for glass.
+
+scene lightfoot
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I choose the pale stones when the lane gets dim. | Towards dusk the scratches on a black button vanish first.
+b : Are the pale stones any less slippery? | Can you still count with it?
+a : No. Easier to see the bad places where the edge has gone. | My finger finds the cut even when my eye won't follow.
+
+young
+
+story runoff [topic=weather self.likes=thunder]
+  : I put my tin by the door to catch the thunder sound.
+  : A drip struck the lid and every loose button jumped at once.
+  b : Which button jumped the highest?
+  : The one already on top. That's how I discovered you should start a race on a flat floor.
+
+story blueeye [topic=memories]
+  : I drew a little wolf in dust and gave it blue buttons for eyes.
+  : Wind came along and blew the dust away. Two blue eyes stared straight out of the bare ground.
+  b : Was that a bit frightening?
+  : Only till I put them in the tin. You get used to a pocket wanting to see out.
+
+story bentcake [topic=food]
+  : My oatcake bent before I could grab the edge, so all its butter went into a valley.
+  : I tore the cake straight down both ends of the valley and rolled it up.
+  b : And the butter stayed put?
+  : Till I took the first bite. I had a very buttery nose and no regrets.
+
+young
+
+rule @tin
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say Quiet tin, sky coming through! | That's a two-button rumble.
+
+rule @boots
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say Don't stand where my right foot's going! | Two steps for a new pair.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Lid on, gull above! | My blue one's no fish eye.
+
+rule @cake
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Save me the wrinkly edge. | Butter fits in that hollow!
+
+young
+dlg resident.hub : You can stand by my tin if you keep both feet still.
+dlg resident.hub [topic.meeting=known] : Oh, #topic.player#. You may see the blue one.
+dlg resident.hub [pair.disposition=wary|hostile] : There's room by the wall. My tin stays shut.
+dlg resident.hub [here.time=night] : Are your ears awake? Mine are, even in the dark.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I can count soft things and loud things now.
+dlg resident.job : I've a private bit of sorting on my paws.
+dlg resident.bye : I'll hear your feet till you get round the bend.
+
+young
+
+graft @button_rumble resident.hub
+choice What are those buttons counting? -> button_rumble
+node button_rumble
+say The quiet before the thunder. Look, I put a black one here and move a blue one across for every beat. You can try it if you promise not to rush the blue.
+choice How do I know when it's finished? -> button_rumble_more
+choice Put the lid down gently. -> hub
+node button_rumble_more
+say The sky finishes it. If the tin goes bang first, that's you dropping the lid and we have to start the whole game again.
+choice Put the lid down gently. -> hub
+choice Leave the little tin alone. -> bye

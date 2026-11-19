@@ -1,0 +1,257 @@
+mantle rm293
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_tobias_rainley
+title the crust under the eave
+fits stage=adult|old
+prefers job=baker
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk checks_the_rain_by_a_loaf_cooling_at_the_window
+likes roast_pork wrestling quiet_chapel summer_evenings
+dislikes deep_mud haggling
+fears a_batch_that_never_gets_a_proper_crust
+hopes for_a_cooling_place_with_a_clear_view
+topics work +0.4 weather +0.3 pastimes +0.2 faith +0.1
+styles comfort=practical gossip=curt refuse=flat tease=dry
+marks oath saying
+persona #self.first# judges a break in the rain by a cooling crust and watches the street with the patience of a wrestler waiting for a grip.
+
+words
+oath! = Pin my crust | By the empty peel
+saying! = The air has the last bake | A loaf knows where the window is
+crust = a blister of crust | a thin crackling edge
+peel = the wooden peel | my floury blade
+rest = a cooling rack | a slatted shelf
+heel = a well-browned heel | my cut end
+grip = a loose wrist grip | the light hold
+knee = a stiff knee | the tender joint
+dust = a scatter of flour | a dusty cuff
+pork = a strip of crackling | a crisp pork edge
+bell = a chapel note | a quiet little chime
+mire = a furrow of muck | a boggy stretch
+sill = my cooling sill | the broad window stone
+shade = the eave shadow | the wall's grey stripe
+
+any
+opinion houses against 2 : The names above the dock gates are very clear. They're harder to find when a house has an empty chair.
+opinion festivals against 2 : For a decent bout I want consent on both sides. A feast crowd has a way of forgetting to ask.
+opinion dole for 2 : A week of ladled food kept my hands strong enough to earn the next.
+opinion merchants against 2 : If you want a smaller price, agree to a smaller weight. Don't make me shave my supper.
+opinion sump for 1 : I know how to find my own window down here by the smell on the sill.
+
+grown
+line greet [pair.band=strangers] : Hello. Keep the window clear. | Come stand beyond my floury elbow.
+line greet [self.working=yes] : Welcome where the dust has settled. | Speak while the batch rests.
+line greet [here.time=dawn] : Early light, clean sill. | Day's only just beginning to colour.
+line greet [here.time=dusk|night] : Evening. Crust's gone quiet. | Light's holding on round the eaves.
+line kin.open [pair.kin!=no] : Kin can come to the warm end. | There's the family outline.
+line again.open : Second rise to our meeting. | Back at the cooling end.
+line greet.return : I hear. Have a word. | Come to the open side.
+line greet.return [pair.band=friends|family] : You know where the sound crust goes. | Good to recognise a voice over the tin.
+line greet.return [self.working=yes] : You've time while the batch comes off. | I can work and hear at once.
+line greet.return [here.time=dusk|night] : Evening. Nearer the light if you like. | Dim enough to listen by smell.
+line farewell : Go easy past the cooling shelf. | Sound footing over the threshold.
+line farewell.return : I'll leave the sill clear. | Keep your pocket dry.
+line farewell.return [here.time=night] : Quiet streets after the last lamp. | Night. Walk where the stone's firm.
+line react.news : Let's hear how it came out. | Tell the plain baked truth.
+line react.news.new : New to my ears and cooling fast. | I hadn't had a whiff of that.
+line react.news.known : I've already lifted that lid. | That bit of news has cooled here.
+line react.news.doubt : I'd let that cool before calling it done. | A fine outside can hide a raw middle.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That puts a stone in my middle. | I'll turn the chatter down for you.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well risen news. | Ah, something good inside this day.
+line ask.how : How has the heat treated you? | What's left in your arms today?
+line answer.how : I can still turn a full tray. | A little brittle near the edges.
+line decline : I'd keep my hands clear of that batch. | I'm saving the sound knee for my own errands.
+line accept_decline : Then we leave the tray empty. | Fair. Your grip, your choice.
+line thank : That saves me a hard turn. | I count that as good bread.
+line sympathise : I'll stand on your stiff side. | There's room to rest a wrist.
+line reassure : A stumble needn't settle the bout. | Let the weight go for a minute.
+line preclose : I should turn my attention to the sill. | Time to see how things have cooled.
+
+scene crust
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : Cooling tells me as much as the oven.
+b : What does a loaf say? | Even before it's cut?
+a : In wet air the crust goes soft round the ear. | Hold the heel. A clean crackle goes a long way into it.
+
+scene cloud
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch for a ragged hole in the rain clouds.
+b : Looking for blue? | What good's a ragged one?
+a : A bit of moving air will do. Blue's an extra. | Soft weather sits like a lid. A torn edge suggests it's shifting.
+
+scene pin
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I enjoy a bout most before either wrestler's found a grip.
+b : All that circling? | What are you watching?
+a : That's when you see who's going to rush and who's thinking. | A weight shift smaller than a loaf heel.
+
+scene pork
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I listen for the skin when I carve pork.
+b : So you know it's crisp? | Doesn't the knife tell you?
+a : Exactly. A faint little crackle means supper's beginning properly. | The knife feels the rind. My ears get the first bite.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : An empty chapel gives my ears a holiday.
+b : Not praying then? | What can you hear?
+a : Prayer's easier once my head stops sounding like a bake tray. | One chair settling. All the sound a wall ought to need.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer light lets me watch a whole sill darken.
+b : Do you stay that long? | What changes first?
+a : With a seat for my knee I can manage a very idle hour. | The stone goes cool along the wall before the outer lip.
+
+scene mud
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : I can work wet dough. Deep mud's poor company for a hand that likes a shape.
+b : Doesn't it feel similar? | What shape would you give it?
+a : Only till it tries to carry off a shoe. | A good high bank well away from my road.
+
+scene bargain
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd enjoy hearing somebody bargain with the loaf itself.
+b : Would the loaf answer? | Who would win?
+a : No, which would do my head a kindness. | Hunger, same as usual. Eventually somebody has to eat.
+
+scene first
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : My first hurried loaves had fine strong bottoms.
+b : Burnt? | Did anyone mind?
+a : You could have tapped them on a door to announce supper. | I minded. A wolf's jaw ought to outlast the meal.
+
+scene sill
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd save the dry heel on my sill for #self.friend#.
+b : Couldn't it go stale? | Why that bit?
+a : That's why the offer's best made before supper. | Best sound in the batch. I like giving the good bit away.
+
+scene grief
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's one stretch of wharf I don't hurry through.
+b : What holds you? | Would company help?
+a : A missing footstep. That's enough said about it. | Maybe silent company. No need to hunt for words there.
+
+scene pride
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A bad-weather joint likes a level place to stand.
+b : Do you stop work? | Does warmth help?
+a : I make the next task one I can do on both feet. | More than pretending I never notice it.
+
+scene dough
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I dust the doorstep with the outside of my sleeves.
+b : To clean them? | Won't it track inside?
+a : First whoosh outside, second whoosh where nobody's left a cup. | Less if the dust knows which way the wind blows.
+
+scene leftover
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like a heel rubbed with the cut side of a roast.
+b : Still warm? | What about gravy?
+a : Hot enough to wake the fat up again. | Gravy hides whether the crust was good in the first place.
+
+scene table
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll tell a newcomer the bread weight before the price.
+b : To soften the price? | Does that help?
+a : To give an honest idea what the price buys. | I find an argument's shorter if we agree there's a real loaf.
+
+scene yard
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : An empty space at table can have a fine House name behind it.
+b : Would you name a House? | Do you think about that often?
+a : I know which bitterness is mine. No sense feeding a stranger with it. | Only when somebody asks me to praise the name over the gate.
+
+scene speck
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : At dawn I look down my sleeve for the first fleck of gold.
+b : A bit of sunlight? | On the flour?
+a : Yes. The arm works closer to the window than either foot. | Turns the flour cream for a moment. Makes a proper start to work.
+
+scene badbatch
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt I went to lift a loaf and it got me in a wrist lock.
+b : What did you do? | Was it a close bout?
+a : Tried the other paw. The dough took that too. | It was a very even match till I rolled off the bed.
+
+story tin [topic=memories]
+  : I once lifted a tray I'd left at the window and heard a whole line of little dry pops. Proud of my crusts, I listened a minute more.
+  : The tray was empty. A bit of grit in the metal rim was working loose under my thumb.
+  b : Good enough to fool you?
+  : Only my ears. My nose is harder to flatter.
+
+story bout [topic=pastimes self.likes=wrestling]
+  : I used to mark out a practice ring in flour. I tried one careful step sideways and took the ring with me on my sole.
+  : By the third pace I had two white feet and no boundary, which rather spoilt the point.
+  b : Did you find a better marker?
+  : A bit of cord. It doesn't give the floor ideas about being dough.
+
+story crack [topic=food]
+  : For one entire summer I tried to lift a pork crackling in a single strip. Long ones cracked, short ones came off as crumbs.
+  : The best I got was an arc that fitted perfectly round my little brown bread heel.
+  b : Did you attempt a full ring?
+  : I had better sense by then. I ate the arc.
+
+rule @aside1
+when concept=bark self.working=yes self.job=baker
+does aside
+cooldown 6h
+say Give the heel its share of air. | Let the last pan cool straight.
+
+rule @aside2
+when concept=bark self.likes=wrestling
+does aside
+cooldown 7h
+say Loose paws before the first hold. | Keep the weight inside the ring.
+
+rule @aside3
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say A shoe should return with its owner. | Take the lip where the stones show.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Last bit of light on the rack. | The sill's gone cool from the wall out.
+
+dlg resident.hub : Keep the window to my left and speak clearly. Then I can attend to two things without scorching either.
+dlg resident.job [self.job=baker self.workplace] : The ovens at #self.workplace# are only half my work. I mind the loaves till the crust holds its own.
+dlg resident.news [world.news] : Word as it came across the sill. #world.news#
+dlg resident.hub [topic.meeting=known] : I know your voice over a crackling tray, #topic.player#.
+dlg resident.bye : See if the air's kind to a crust out there.
+
+graft resident.hub
+choice What's the air got to do with a baked loaf? -> ear_air
+node ear_air
+say Listen at the heel as it cools. If the little cracks keep on speaking, there's dry air coming through. If they stop too soon, damp's winning.
+free
+choice Can you coax the crust along? -> ear_coax
+choice I'll listen to the heel. -> hub
+node ear_coax
+say A little. Give it a bare slatted shelf with space below. Nobody does well cooling off face down in a puddle.
+choice I'll remember the slats. -> hub
+choice I'll leave you your cooling space. -> bye

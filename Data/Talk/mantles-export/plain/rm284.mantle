@@ -1,0 +1,257 @@
+mantle rm284
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_lavinia_brinemarsh
+title the song with its mouth shut
+fits stage=adult|old
+prefers role=civilian
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk changes_a_hum_when_a_load_shifts
+likes oatcakes dice old_maps thunder
+dislikes salt_wind flies
+fears losing_a_good_tune_in_a_crowd
+hopes for_a_day_of_easily_balanced_loads
+topics work +0.3 pastimes +0.3 travel +0.2 weather +0.2
+styles comfort=practical gossip=close refuse=flat tease=none
+marks oath saying
+persona #self.first# hums the weight of a parcel on a single note and goes quiet when the contents begin to slide.
+
+words
+oath! = Pitch me a low note | By the mute string
+saying! = A shifting load changes its tune | One good note will carry
+hum = a low nose note | my closed-mouth tune
+strap = the broad band | a strap gone soft
+shift = a small lurch | the little slide
+bone = a bone die | a square of carved bone
+spots = the black pips | six inked pits
+cake = an oat round | my brittle oatcake
+butter = a twist of butter | a yellow dab
+salt = a salt sting | a grain on my muzzle
+buzz = a fly's whine | a sharp wing note
+map = the little sea chart | my creased chart
+sky = a grey roll overhead | a ceiling of cloud
+rim = my carrying rim | the edge of a basket
+
+any
+opinion merchants against 2 : My shoulders feel a fair day's wages. The bread wrapped in my pay is getting lighter.
+opinion festivals against 1 : I like one tune at a time and elbow room enough to breathe through it.
+opinion dole for 2 : Once supper came off a public ladle. I remember the weight of that first spoonful.
+opinion houses against 2 : My shoulders are good enough for their loads. The fine seats seem reserved for another sort of shoulder.
+opinion sump for 1 : I know each stair worn low by a thousand loaded feet and a few of them are mine.
+
+grown
+line greet [pair.band=strangers] : I've a quiet side to stand on. | Hello. Leave a little strap room.
+line greet [self.working=yes] : Your voice carries above my tune. | Come abreast of me.
+line greet [here.time=dawn] : Morning. My voice is still low. | Welcome to the first clear note.
+line greet [here.time=dusk|night] : Day's gone to a lower pitch. | Evening, with room to breathe.
+line kin.open [pair.kin!=no] : There's kin within humming distance. | Come close. Family needn't call across.
+line again.open : Same tune, another meeting. | You've come round on the next verse.
+line greet.return : Here. I heard you coming. | My ears are open, at least.
+line greet.return [pair.band=friends|family] : I can ease the strap near you. | Glad of that familiar sound.
+line greet.return [self.working=yes] : Walk beside the loaded side. | I can listen under a weight.
+line greet.return [here.time=dusk|night] : Evening. The quiet notes carry. | There's my visitor in the dim.
+line farewell : Leave me a little tune to follow. | Easy shoulders going home.
+line farewell.return : I'll let the tune go with you. | Safe carrying, even empty.
+line farewell.return [here.time=night] : Watch the low spots in the dark. | Go where the lamps still show.
+line react.news : Tell it without the chorus. | Plain words carry quite far enough.
+line react.news.new : My tune stopped on that word. | New sound to these ears.
+line react.news.known : I've heard it on an earlier turn. | That's the returning verse.
+line react.news.doubt : That telling shifts when I put weight on it. | I'd want a steadier note before trusting that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll be still with you awhile. | That's sore news for any shoulder.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My shoulders feel easier hearing that. | There's a welcome lift in that word.
+line ask.how : Are your shoulders sitting easy? | Has the day ridden you hard?
+line answer.how : I can keep a tune yet. | Still carrying my share fairly level.
+line decline : I'd sooner save my shoulders for a smaller thing. | Best leave me to a quieter load today.
+line accept_decline : Fair. Your shoulders know best. | Then we set it down.
+line thank : You've made my load sit easier. | A steadying paw earns thanks.
+line sympathise : Hand me the awkward corner. | I'll keep pace until you want quiet.
+line reassure : Most weights settle if you stand still once. | You've no need to hurry for me.
+line preclose : I'll get the strap straight again. | My tune wants a quieter street.
+
+scene note
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I hum when a load rides true.
+b : And when it slips? | Why hum at all?
+a : Hear the sudden quiet? That's me settling the straps. | If the note wobbles before my feet do, I have a little warning.
+
+scene dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I cup the dice until my tune reaches its bottom note.
+b : For luck? | Before every throw?
+a : No. To stop myself shaking the pips out of them. | Only the throws that make my fingers impatient.
+
+scene cake
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I butter an oatcake on its rough side.
+b : What difference does it make? | Does it break?
+a : More hollows to hold a precious dab. | Only when I hurry to get to the butter.
+
+scene map
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My chart has a road that runs straight out into water.
+b : A mistake? | Would you change it?
+a : Likely. I don't fancy delivering a parcel that wet. | I'd leave the road and draw a boat at the end for company.
+
+scene storm
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder can carry the low part of a tune for me.
+b : Where do you sing? | Does it keep time?
+a : Under a roof that doesn't answer back too loudly. | Terrible time. I leave it the long held notes.
+
+scene wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind makes me purse my lips till the tune disappears.
+b : Does it sting? | What gets the salt off?
+a : Just enough against my lip to spoil a quiet song. | Plain water. A tongue just tells you more about it.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I know a fly's pitch when it gets close to my ear.
+b : Higher than your hum? | Would you swat it?
+a : My lowest note gets split down the middle. | Only after the basket's safely off my shoulder.
+
+scene ink
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I like a little ink mark along the wide side of a bundle.
+b : To show the right way up? | Why ink?
+a : To find the balance again after a rest. | A chalk mark comes off on my fur before I've turned the corner.
+
+scene load
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I shift a load before an ache gets hold.
+b : Doesn't that slow you? | How much do you shift it?
+a : Briefly. A shoulder gone numb slows me worse. | Hardly the width of a finger. Plenty for a pinched spot.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : For #self.friend# I'd set a full load down and hear the whole trouble.
+b : Even in foul weather? | Does that help?
+a : I'd choose the covered side, naturally. | I can't listen properly if a slipping strap takes up half my attention.
+
+scene debt
+when topic=prices self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A debt sits further back on my shoulders than a bundle.
+b : Can't you set it down? | Does it shift?
+a : That's the trouble. The strap comes home with me. | Only with each copper I manage to lay aside.
+
+scene moon
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : The moon looks like a badly thrown die in daylight.
+b : You can see the pips? | What is a bad throw?
+a : Patches like spots, rubbed too faint to read. | One that lands on the corner and keeps you waiting.
+
+scene steps
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Sump stairs are musical if you go slowly enough.
+b : What sort of music? | Can you do it empty-handed?
+a : Low on the worn wood, a tap on the new repairs. | Better, truthfully. I can spare some attention for my feet.
+
+scene favour
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I give directions in breaths if a stranger's carrying something.
+b : Why breaths? | What's one breath worth?
+a : The distance looks different with a bundle overhead. | As far as a safe ledge where the basket can sit.
+
+scene dusk
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk a black strap disappears against a dark coat.
+b : Can you feel its end? | Does that matter much?
+a : I've a lump of stitching there for my thumb. | Very much if something's tilted and both paws are full.
+
+scene quiet
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I close my mouth when other folk's business starts leaking out.
+b : Is that where the hum comes in? | Isn't it tempting?
+a : It gives a restless tongue another occupation. | Oh I want to hear. That's precisely the danger.
+
+scene wage
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like a carrying bill that mentions the turns.
+b : Why the turns? | A straight flight costs less?
+a : A broad basket at a narrow corner is nearly a second errand. | It should. I use fewer shoulders on the straight.
+
+scene pair
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt I had a parcel full of humming dice.
+b : Could you tell the number? | What tune?
+a : They rolled too often. I barely caught the change of pitch. | Every turn of the parcel gave the tune another start.
+
+story dicegum [topic=pastimes]
+  : I once threw dice at a table with a smear of oatcake butter on it. Five sides went clean over and one side held fast.
+  : I waited in complete silence. The longer I watched that die, the more certain I was it knew which face I wanted.
+  b : Did you count the throw?
+  : I ate the bit of oatcake responsible and threw again on the dry side.
+
+story mapfold [topic=memories]
+  : I used a map as padding once, briefly, under a parcel corner. When I took it out the printed coast had bent round three sharp turns.
+  : I smoothed it on my knee and found a red line on the paper where part of the label had rubbed onto it.
+  b : Did you rub the line away?
+  : I kept it. That's the only road on that chart I know for certain I've carried.
+
+story humnote [topic=work self.job=none self.working=yes]
+  : Once I took a bundle of empty cups up a stair. The cups answered my hum as if a second carrier were coming up behind me.
+  : I called out that there was no room to pass. The answering tune stopped when mine did.
+  b : Did you look behind you?
+  : Of course. Then I changed notes, and so did my bundle.
+
+rule @aside1
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say Strap on the broad side. There's the note. | Quiet now till the shift is over.
+
+rule @aside2
+when concept=bark self.likes=dice
+does aside
+cooldown 7h
+say Throw from the elbow, not the tune. | Level table before any rolling.
+
+rule @aside3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Thumb to the stitching before the light goes. | Lower note for a late return.
+
+rule @aside4
+when concept=bark self.dislikes=flies
+does aside
+cooldown 9h
+say Take your sharp tune off my shoulder! | Another wing in the middle of my quiet.
+
+dlg resident.hub : Stand on this side so I can set things down without knocking your elbow.
+dlg resident.job [self.working=yes self.job=none self.trade_words] : #self.trade_words.capitalize#. I know when the strap fits by the note I can keep.
+dlg resident.hub [topic.meeting=known] : I'd know your step over a humming load, #topic.player#.
+dlg resident.news [world.news] : What I heard came through clearly enough. #world.news#
+dlg resident.bye : Go with your parcel sitting easy.
+
+graft resident.hub
+choice Can you tell a load by ear? -> note_load
+node note_load
+say Hum with your mouth shut. Now lift one shoulder. Hear what happens to the note? I know a basket's slipping a moment before it starts creaking.
+free
+choice What if I can't carry a tune? -> note_nosong
+choice I can feel my throat changing. -> hub
+node note_nosong
+say There's no audience for this. An ugly note will tell you quite as much as a pretty one.
+choice I'd better find a basket. -> bye
+choice That's encouraging. -> hub

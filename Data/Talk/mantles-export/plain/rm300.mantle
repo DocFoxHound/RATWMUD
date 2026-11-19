@@ -1,0 +1,295 @@
+mantle rm300
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_corra_gullford
+title the pebble for a missing road
+fits stage=young|adolescent|adult|old
+prefers piety=devout temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes hard_cheese wrestling old_maps first_warm_day
+dislikes bad_manners night_noise
+fears having_a_private_grief_drawn_for_show
+hopes finding_the_kind_way_home
+topics travel +0.5 pastimes +0.4 faith +0.4 memories +0.2
+styles comfort=quiet gossip=guarded refuse=direct tease=none
+marks oath saying
+persona #self.first# pins the missing road on old maps with a whetstone and gets fiercely protective of anyone who needs to be left off the page.
+words
+oath! = Crack my compass stone | Blunt the chalk
+saying! = The road can move | Leave tears off the map
+pinrock = a smooth whetstone | a damp flat pebble
+roadmark = a wandering line | a crooked charcoal road
+mapfold = a folded scrap | a square of creased paper
+heelring = a dusty wrestling ring | a circle scuffed by heels
+cheesecurl = a shaving of hard cheese | a little yellow curl
+sillcorner = a quiet angle | a shadowed corner
+bankside = a forked twig | a stick shaped like a road
+warmbit = a warm patch of stone | one sunlit brick
+knifewrap = a stout tool wrap | a laced leather tuck
+marginmark = a tiny black dot | a cross the size of a grain
+heelpatch = a slide mark | a print from a worn heel
+
+any
+
+opinion church for 2 : Prayers travel further than my feet. I can give one to somebody whose road I don't know.
+opinion houses mixed 1 : Formal great gates leave a lot of interesting little ways off their maps.
+opinion strangers mixed 1 : I'd point out the turning for a stranger without making a map of where my friends sleep.
+opinion dole for 2 : Some roads lead to dinner only because somebody keeps a pot for others.
+opinion sump for 1 : I love the little ways down here that a fine new map thinks aren't even there.
+opinion festivals mixed 1 : Wrestling's fine till folk gather round a fallen wolf to point.
+line react.news : Which part would you put a mark beside?
+line react.news.new : That adds another turning to the map.
+line react.news.known : I could trace that stretch with my eyes closed.
+line react.news.doubt : Sounds as though somebody drew the turning without walking it.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give that spot a nice bright star.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That belongs in a quiet corner with somebody kind.
+line reassure : We can leave that bit of your map folded shut.
+
+young
+
+line greet : Hullo. Put your boot here so my map doesn't fly off.
+line greet.return : Oh, you found the crooked way to me.
+line farewell : Get all the way home without a wrong turn.
+line farewell.return : I might draw a little flag where we met.
+line ask.how : Have your feet got much walk left in them?
+line answer.how : Cross about a small thing. It's getting smaller.
+line decline : I said I'd keep that bit folded away.
+line thank : You remembered to ask before making a mark on it.
+line sympathise : Sit behind my map. It's bigger than it looks.
+line deflect_thanks : There was room beside my pebble for you anyhow.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : This road goes right through a house on my map. | I've found a river too big for its bridge. Here, look.
+b : How will you fix it?
+a : Move #pinrock# over the bad bit. Now it's a perfectly good hill and you have to go round.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I'm learning to make lines stand still. | My sums go straight down the page but my maps go off the edge.
+b : Where do they go then?
+a : Into the next lesson. I turn the slate and pretend I'm travelling north.
+
+scene pastimes_1
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : See that mark a heel makes at the edge of our ring. | I draw the circle before a wrestling bout so we know when to stop.
+b : What happens if a toe gets out?
+a : We stop pushing. Being small isn't the same as needing somebody on top of you.
+
+scene food_1
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I cut cheese curls off with help and make tiny hills. | One tough yellow rind can be a whole country till lunchtime.
+b : Where do all the roads go?
+a : Towards me. I eat the long crooked ones first.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say a little prayer for the places the map forgot. | The Bright One can reach a sad wolf without borrowing my map.
+b : Then why draw one?
+a : So my own feet know which door to visit, if I'm wanted.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep the little tool tied up unless there's something to sharpen. | My whetstone travels in my pocket. It gets more rides than my knife.
+b : Doesn't the stone get heavy?
+a : A bit. A heavy pocket means my hill's still coming along.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Nobody gets to draw a crying face on my sheet. | I saw a tall wolf being sad once. I folded that corner right out of sight.
+b : Why hide the corner?
+a : A sad face isn't a thing to point at and say you've been there.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Night noise makes my quiet roads go all zigzag. | I can't draw a straight lane with somebody banging about.
+b : What do you draw instead?
+a : The walk home after a wrestling match. That's allowed to wobble.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : My best spring day would have one warm stone for each bare foot. | I want the first warm day to make a patch big enough to wrestle on.
+b : What about the map?
+a : It can lie at the edge under #pinrock#. Maps get a rest too.
+
+story crumbcoast [topic=memories]
+  : I drew a little coast round a crumb that wouldn't brush off.
+  : I named the crumb a hill and put a road all round it.
+  b : What happened to the hill?
+  : I got hungry. Now the map's got a very neat round pond.
+
+rule @map
+when concept=bark
+does aside
+cooldown 8h
+say Toe on that edge till I set my pebble down. | This road's gone wrong in a very good place.
+
+rule @learn
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say I can keep three sums on the road at once. | My letters took a detour round a blot.
+dlg resident.hub : Come round the side with the river on it. You won't really get wet.
+dlg resident.job [self.job=child] : At lessons I'm learning how to put things down so somebody else can find them again.
+dlg resident.bye : Leave me one bit of road to finish.
+
+graft resident.hub
+choice Where's that road under the pebble? -> pebble_road
+node pebble_road
+say I don't know yet. The old map has it going through a brick wall and my feet say that won't do.
+choice What do your feet suggest? -> pebble_feet
+choice I'll trust your feet. -> hub
+node pebble_feet
+say Walk round the wall, see what's there, and leave a nice wide margin in case there's another wall.
+choice I'll trust your feet. -> hub
+
+adolescent
+
+line greet : There's a crossing marked here nobody's bothered to test. Welcome to my afternoon.
+line greet.return : I hear you better than I read an old compass.
+line farewell : Try the wider turning if you're tired.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'm learning to fall inside the ring without landing on my pride. | The wrestling move I practise most is standing up after a loss.
+b : Who taught you?
+a : The ground. Very patient, always there, not at all concerned with my reputation.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I've started keeping a list of wrong turns that led somewhere worth seeing. | The best trip on my sheet began by reading the map wrong way up.
+b : Did you ever get where you meant?
+a : I got somewhere worth getting to. I'll try the intended place on a different day.
+
+story wetmark [topic=memories]
+  : I dried a little map beside a fire and the damp places curled right up.
+  : The longest road became a little tunnel I could almost fit a finger through.
+  b : Did you press it flat?
+  : I let it stand till morning. A map with real hills deserved one night of being right.
+
+grown
+
+line greet : Come occupy a bit of ground I've been keeping clear.
+line greet.return : I recognise the footfall before the road comes into view.
+line farewell : May the turning you need be the one you find.
+line farewell.return : I'll leave your road open at this end.
+line decline : I've no permission to put that on anybody's map.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a map with room to mark the mistakes I've made on it. | A road marked wrong invites more attention than a road marked straight.
+b : Do you value being lost?
+a : Only if I've had time to eat and a reason to trust my feet.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Wrestling gave me respect for the weight a small space can carry. | I can read a wrestling circle by the marks inside it.
+b : What do the marks show?
+a : Where the heels dug in and where two wolves remembered the rules in time.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like a cheese so hard I can draw the portions before cutting. | My favourite cheese has a dry edge and a sharp temper inside.
+b : How would you share it?
+a : Cut crosswise so each piece gets a little of the yellow heart and the brown rim.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My prayers reach over borders. I should hate a blessing to get stuck at a toll gate. | A blessing needs no better directions than a name held quietly in mind.
+b : Would you bless a stranger too?
+a : Gladly. Leave my map folded and wish a safe crossing for every foot.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend's privacy can require leaving a door off the route entirely. | A wolf ought to choose where strangers get to find the doorstep.
+b : How do you give directions then?
+a : Take the visitor as far as a public corner. Let the friend make the invitation.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a sight I've kept under a fold since I was small. | Every map I make has a place I could mark but never will.
+b : Something too painful to remember?
+a : Something another wolf was entitled to have happen without an audience.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A firm doorstep can be a landmark even when a street changes its name. | I draw home by where my feet expect the rise, never by what the rooftop looks like.
+b : What if the step moves too?
+a : Then I must learn the place again. A map can't get homesick in my stead.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I repair a bad direction with a drawing before irritation takes over. | Bad manners give me an itch simply to point any way and leave.
+b : Do you ever send somebody wrong?
+a : No. I'd sooner put a pebble on the paper till I could trust myself to speak.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A flattish stone can ease a cramp in the sole after a long climb. | I change the pocket I carry my little weight in on a long road.
+b : Does a pebble make a difference?
+a : It does when the seam sits against a hip day after day.
+
+scene weather_1
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A shower can give dry gullies back their proper names. | My map goes straight under my coat when water starts running down it.
+b : Hard to follow it then?
+a : A moment's shelter is better than an hour trying to read a river of ink.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A fair map seller ought to tell me which roads came from hearsay. | I've paid dearly for a confident line across a patch nobody's walked.
+b : How would you mark an uncertain stretch?
+a : Dots far enough apart for the reader to see the gap in my knowledge.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When money's tight my favourite journeys take place on a sheet no bigger than my palm. | Lean weeks bring me back to an ordinary walk with a piece of cheese.
+b : Does an imagined journey satisfy you?
+a : Enough that the real streets feel strange again for a minute when I look up.
+
+story footprint [topic=memories]
+  : I left a map on a doorstep with the whetstone on the wrong corner.
+  : A gust sent it under my boot and left a full heel mark across three lanes.
+  b : Did it spoil the map?
+  : I drew a street round the mark and called it a very good place to stop walking.
+
+rule @fold
+when concept=bark
+does aside
+cooldown 8h
+say A crease can hide a road longer than a wall. | Turn the stone over before you weight the page.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Better mark the last corner while I can still see the chalk. | Dark lanes need clearer directions.
+dlg resident.hub : Let's start with the ground where we both are.
+dlg resident.news [world.news] : That new mark on the chart reads thus. #world.news#.
+dlg resident.bye : May your feet correct my mistakes kindly.

@@ -1,0 +1,248 @@
+mantle rm289
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mathis_slagwell
+title the bearer of the spare napkin
+fits stage=adult|old
+prefers warmth=warm honesty=plain
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk smells_faintly_of_smoke_whatever_the_weather
+likes oatcakes riddles quiet_chapel autumn_wind
+dislikes gulls smoke
+fears embarrassing_somebody_in_public
+hopes keeping_one_clean_square_to_spare
+topics friends +0.6 faith +0.4 food +0.3 pastimes +0.3
+styles comfort=quiet gossip=careful refuse=plain tease=gentle
+marks oath saying
+persona #self.first# rolls an extra clean napkin inside a smoky cuff and offers kindness with eyes deliberately elsewhere.
+words
+oath! = Soot on my oatcake | Ash in my clean cuff
+saying! = Fold the kindness small | Leave one side unstained
+nap = a white napkin | a square of linen
+oatbit = a split oatcake | a crisp little round
+napfold = a narrow roll | a tucked corner
+ashmark = a thumb of grey | a whorl of soot
+cuffend = a frayed wristband | my dark cuff
+carrybit = an easy sling | a thick cord
+churchbit = an empty seat | a bare stretch of bench
+ruffbit = a brush of stiff fur | a patch of rough coat
+autumnbit = a sharp autumn gust | a cold leaf-scented breeze
+butter = a soft yellow shaving | a little dab of butter
+towelrag = an old wiping cloth | a rough square
+riddlemark = a crooked little clue | a puzzle in a few words
+
+grown
+
+opinion strangers for 1 : A clean square can be passed without stopping to ask who needs it.
+opinion houses against 1 : A crest doesn't keep soot off a wet face any better than a cheap cuff.
+opinion church for 1 : Nobody comes asking for your next pair of hands when a chapel's quiet.
+opinion sump for 1 : We know better than to stare at somebody standing very bravely through a rough minute.
+opinion dole for 2 : An oatcake given freely tastes better than a whole supper bought with embarrassment.
+opinion road mixed 1 : Some journeys are kindest when you have just one end of what needs carrying.
+line greet : Stand by my clean side. The other one's a little smoky.
+line greet.return : There you are. No straps to hold just now.
+line greet [here.time=dawn] : Morning. I've a clean start tucked inside my cuff.
+line farewell : Hope the wind meets you on the kinder cheek.
+line farewell.return : Take your share of the clean air with you.
+line react.news : I'll get the grey off my fingers before I touch that.
+line react.news.new : There's a fresh fold in what I thought I'd understood.
+line react.news.known : That patch had shown through already.
+line react.news.doubt : There's more grey round those words than I'd pass along.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's a clean square here if somebody wants it.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Fine cause for getting out the better butter.
+line ask.how : Are you getting your share of the easier end?
+line answer.how : A little smoky outside and reasonably clear within.
+line decline : I'll carry your parcel. That private business can stay behind.
+line thank : You noticed and kept your cleverness quiet.
+line sympathise : I'll look the other way while you have a moment.
+line reassure : Nobody's taking a reckoning of wet cheeks here.
+line accept_decline : Then I shall leave the offer tucked away.
+line deflect_thanks : It's only cloth. It'll wash and do another kindness.
+line accept_preclose : Walk on while there's a bit of quiet for it.
+line ack : I believe I've found the useful corner of that.
+
+scene friends_1
+when topic=friends
+does offer / ask.detail / answer.detail
+a : I've got #nap# rolled inside my cuff if a friend needs a minute. | There are two clean corners in this fold, and I'd spare either one.
+b : Won't your smoky cuff stain it?
+a : I roll the white part inwards. A clean face needn't carry my trade marks.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My work goes by #self.trade_words#. I keep cloth between the strap and a bare shoulder. | If there's carrying in the day I want a rag I don't mind spoiling.
+b : Why keep a spare one clean?
+a : A sore shoulder can bear a stain. An eye full of grit deserves clean linen.
+
+scene food_1
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I can break an oatcake without losing more than two crumbs. | I'll butter the ragged edge first when a cake breaks unevenly.
+b : Why start there?
+a : So neither of us can see at once which half was the accident.
+
+scene pastimes_1
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What gives its cleanest face to a stranger and keeps its dirtiest to itself? | What comes home folded round the bit it gave away?
+b : Something stitched?
+a : My napkin, after I lend a corner. Your answer came very close to the seam.
+
+scene faith_1
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : My favourite chapel hour is when my cuffs needn't smell like anybody else's. | I can sit on a bare bench longer than I can rest on a soft doorstep.
+b : What holds you there?
+a : Knowing no load is going to come thumping down beside me till I choose to rise.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull's rough on a slow eater. | I guard my oatcakes from overhead as well as from the wind.
+b : Do you ever feed a gull?
+a : It can have what falls once I've finished. I'd like the first say in the matter.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : An autumn wind carries smoke away without needing any argument. | A breeze with leaves in it makes me stand a little taller.
+b : Trying to catch the smell?
+a : Trying to let this old smoky one blow right past the end of my tail.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I air a cuff open or it'll bring yesterday indoors again. | I set smoky cloth apart from anything that's going near food.
+b : Is the smell so strong?
+a : It doesn't bother me half as much as biting an oatcake that tastes of yesterday's chimney.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn my head away when somebody's face comes apart a little. | There's a look that asks for a minute without asking aloud.
+b : Would you just walk off?
+a : I'd put #nap# within reach first. Discretion needn't leave anybody barehanded.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A square of decent linen pays for itself in small favours at every corner. | Cheap cloth may fray before the first wash gets all the soot out.
+b : What would you buy first?
+a : Good plain weave. Nobody wipes a nose more gently for a pattern of roses.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : There's a strip of folded cloth between comfort and a purple shoulder. | I check for a ridge in a sling before it gets under my coat.
+b : Would a thicker pad help?
+a : A flatter pad, usually. More cloth can simply build the ridge a storey higher.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I like a landing wide enough to pass without touching elbows. | These city steps have taught me the worth of a level foot of stone.
+b : Is that all you need to rest?
+a : If somebody takes that load's trailing end, yes. Otherwise I'd like two feet.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : These narrow weeks I mend linen right out to the last good thread. | In a lean season even the corners of a napkin work for their keep.
+b : What do worn corners become?
+a : Little pads for a rubbing strap, if they've had their last turn near a face.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once saw an important face crumple in a place full of eyes. | Some memories deserve to stay folded up even in good company.
+b : Would you say whose face it was?
+a : No. The useful bit is remembering how much a moment of privacy cost me. Nothing.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Smoke in my coat gets blamed for fires I've never gone near. | I sometimes get a worried sniff before I've so much as opened my mouth.
+b : Does it trouble you?
+a : I'd rather somebody checked than stood about wondering if the roof was alight.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd sooner quietly help a friend than announce I've arrived to save the day. | A kindness can be too big for the doorway it's meant to pass through.
+b : How would you trim that kindness down?
+a : Ask about one thing you can fix. Keep your clever explanation in your pocket.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : What went round was that #topic.subject# #topic.claim#. | Some talk has it that #topic.subject# #topic.claim#.
+b : How much will you vouch for?
+a : To having heard the words, yes. More than that costs another witness.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can point out a little patch of quiet to somebody new in town. | New feet on these stairs deserve a landing all to themselves sometimes.
+b : Which mark means quiet?
+a : Draw a clean square with a fingertip in the dust and say nobody minds a pause.
+
+story smoke [topic=memories]
+  : I put a napkin round a fresh oatcake to keep the smoke off it.
+  : Then I remembered I'd been using the outside to wipe smoky fingers.
+  b : Did the oatcake suffer?
+  : Just one grey edge. I ate the edge and gave the clean middle away.
+
+story bench [topic=faith]
+  : I dropped a copper under a chapel bench and bent to look for it.
+  : Down there I found a napkin so small it could only have belonged in a pup's pocket.
+  b : What became of it?
+  : I left it in clear sight on the seat and forgot my copper entirely till I got home.
+
+story halves [topic=food]
+  : I tried making two exactly equal pieces out of one buttered cake.
+  : Each time I levelled the halves I had a little more crumb on the board.
+  b : What was left to eat?
+  : Two small bites and a lovely buttered heap. I haven't measured a gift so precisely since.
+
+rule @linen
+when concept=bark
+does aside
+cooldown 8h
+say White corner in, smoky corner out. | A rolled cloth doesn't mind a short wait.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good light for putting the heavy part down. | Save a little quiet for the last climb.
+
+rule @faith
+when concept=bark self.likes=quiet_chapel
+does aside
+cooldown 8h
+say There's company in a quiet bench too. | Let somebody take a whole minute undisturbed.
+
+rule @hand
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Break the cake inside the cloth. Keep the crumbs. | Butter finds the cracks if you let it.
+dlg resident.hub : You can speak to this side of me. The other side's keeping an eye on the bundle.
+dlg resident.job [self.trade_words] : My day's called #self.trade_words#. The spare bit of cloth is my own idea.
+dlg resident.news [world.news] : The words survived their journey like this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : A whisper says #topic.subject# #topic.claim#. I'll repeat the uncertainty with the words.
+dlg resident.hub [topic.meeting=known] : #topic.player#, have a piece of the quiet I've been saving.
+dlg resident.bye : Keep a kind eye and a clean corner.
+
+graft resident.hub
+choice Is that cloth always clean inside? -> nap_roll
+node nap_roll
+say So long as I start with one clean square and roll it towards my wrist. Even a smoky sleeve can look after a thing properly.
+choice Why carry it at all? -> nap_give
+choice I'll leave it rolled up. -> hub
+node nap_give
+say There are little accidents folk wouldn't mind forgetting. Sometimes all the help that takes is giving a wolf a corner and looking past.
+choice I'll leave it rolled up. -> hub

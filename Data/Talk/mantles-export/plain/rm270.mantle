@@ -1,0 +1,255 @@
+mantle rm270
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_moll_dripdale
+title the hummed tally
+fits stage=adult|old
+prefers job=crafter
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk files_doubts_under_notes_of_a_sea_song
+likes fried_fish riddles fresh_straw frosty_mornings
+dislikes cold_tea crowds
+fears a_gossip_reading_the_wrong_page
+hopes a_quiet_place_to_finish_the_tune
+topics work +0.5 memories +0.4 gossip -0.6 weather +0.3
+styles comfort=terse gossip=private refuse=sharp tease=none
+marks oath saying
+persona #self.first# hums beneath the noise of the tanning yard and keeps a private reckoning in the gaps between verses.
+
+words
+oath! = Scour my bass note | Salt that ledger shut
+saying! = Humming leaves the names out | A damp margin swallows the neatest mark
+tune = a low pulling tune | a broken hauling song
+tack = a blunt brass tack | a square little tack
+rack = a leaning frame | a drying frame
+scraper = a broad dull scraper | a worn scraping blade
+hide = a patch of stiff hide | a hard edge of leather
+tally = a nick beside the margin | a private mark
+slip = a closely folded scrap | a narrow paper strip
+crackle = a thin crackling crust | a brittle edge
+strawlip = a curling straw end | a yellow stalk
+teaedge = a cold brown rim | a ring in the cup
+elbowgap = room for one elbow | a palm of space
+mist = a low damp mist | a shredding haze
+marknote = a square black note | a blunt dash
+
+any
+opinion houses against 2 : Four fine roofs make plenty of corners for a payment to change paws unseen.
+opinion watch against 2 : I'll believe a clean cuff when I've seen the lining too.
+opinion dole for 1 : A hungry wolf needn't sing for the right to eat.
+opinion merchants mixed 1 : I can admire an empty food tray at closing time. Less admirable if the helper leaves hungry.
+opinion sump for 1 : A thin partition is a good teacher. I know which notes carry and which I can keep.
+opinion festivals against 1 : Too many elbows for the amount of song a wolf gets to hear.
+
+grown
+line greet : There's space beside my quieter shoulder. | I can hear you just here.
+line greet.return : Welcome taken. Have another back. | I caught your greeting under the noise.
+line again.open : My tune hasn't reached the middle yet.
+line farewell : Stop where your coat can dry flat. | Take the uncrowded way out.
+line farewell.return : A dry cuff to you too. | I'll remember the sound of your parting.
+line react.news : Keep it low. I'm listening. | Speak at the pitch you heard it.
+line react.news.new : New verse. No mistaking that.
+line react.news.known : Same tune dressed up again.
+line react.news.doubt : I wouldn't ink a name under that yet.
+line react.news.sorrow [topic.kind=death|loss|assault] : That's a wound worth leaving in quiet.
+line react.news.glad [topic.kind=birth|marriage|work] : A clean note in a rough measure.
+line ask.how : Any room round your shoulders today?
+line answer.how : Tired, with a little air still to spare.
+line sympathise : Let the crowd go by. Stay on this side.
+line reassure : One mark on a page doesn't fill it.
+line refuse : My patience has work waiting for it already.
+line accept_decline : Fair. The last bars can stay unsung.
+line preclose : I've stretched my spare time thin enough.
+line accept_preclose : Off before the street thickens, then.
+line ack : Yes. Heard the underside of that too.
+
+scene exchange1
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : Damp hide looks sound till you flex it. | I hum to the pull of a scraper.
+b : What gives it away? | How long's a verse?
+a : The pale line where it creases. | One hide's breadth.
+
+scene exchange2
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : My pocket riddle's a tune with one note missing. | I've made a puzzle with two answers.
+b : Do I guess the note? | How do I win?
+a : You guess where the silence belongs. | Find the one that fits my little square of paper.
+
+scene exchange3
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I want fried fish I can hear when I break it. | I eat the thin end before the middle.
+b : That crisp? | Saving the best?
+a : Crisp enough to interrupt my humming. | Saving the bit that stays hot.
+
+scene exchange4
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost rubs the smell off the yard awhile. | I go out before the frost pattern breaks.
+b : All the smell? | What pattern?
+a : Enough that I can taste my breakfast. | Each footboard's a different shade of white.
+
+scene exchange5
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : New straw hushes the scrape of a stool. | I put a little straw under my sitting board.
+b : Does that matter? | Want it softer?
+a : I can finish a low verse without losing a word. | Quieter. Soft costs more.
+
+scene exchange6
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : Crowds make my tune go hard and short. | I can feel the lane filling behind me.
+b : Why sing at all? | By all the talk?
+a : I'm keeping a little space inside my head. | By how little of my own hum reaches me.
+
+scene exchange7
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea from my mug could take the colour off a hide. | My tea has time to go cold between verses.
+b : So you won't drink it? | Try a shorter song?
+a : I prefer my mouth the colour it came. | I'll try drinking on the rests.
+
+scene exchange8
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The word going round is #topic.subject# #topic.claim#. | I can hum without carrying gossip.
+b : Is it on your list? | What's the secret?
+a : My list is my business. | A note has no surname.
+
+scene exchange9
+when topic=work self.job=crafter self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I judge the draught by a loose hide end. | I put my tools down facing one direction.
+b : What if it hangs still? | Shy about showing the edges?
+a : Then I hang the next one farther off. | I'd rather find every grip exactly once.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could hum a whole verse beside #self.friend#. | I admire friends who can sit all afternoon without asking who paid what.
+b : Does everybody else interrupt? | Do you keep accounts?
+a : I keep my voice lower around strangers. | Private ones. That's all.
+
+scene exchange11
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once kept three marks for an afternoon I couldn't explain. | I have a page nobody needs to read.
+b : What's become of them? | A love letter?
+a : Still three marks. Doubt needn't grow into a story. | Far less pleasant. It keeps its fold.
+
+scene exchange12
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A stall going bare used to cheer me. | I'd take a last cold bite over a last-minute bargain.
+b : You'd sold every scrap? | Bad for trade?
+a : And had a chance at a quiet sit. | Good for a hungry set of teeth.
+
+scene exchange13
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Silence suits a chapel better than any tune I know. | I fold my paper away before a blessing.
+b : Don't you hum there? | Does it hold a prayer?
+a : I let the final note die at the door. | No. That's why it goes away.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : The quickest walk has a narrow place full of elbows. | A street where paws scrape stone gives me the lower note.
+b : How do you pass that pinch? | For a marching song?
+a : I take a longer way with my mouth shut. | For taking my time. The stone needn't set my pace.
+
+scene exchange15
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Thin times show in a thinner fish crust. | Hard days wear the edge off everyone's patience.
+b : Less batter? | Yours too?
+a : The pan goes longer between fresh drippings. | Mine didn't have much edge to spare.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The headland gives my tune a long way out. | My ears mark the change from stone to wharf boards.
+b : Does it come back? | By looking?
+a : No. The distance takes the notes off my paws. | By humming and listening under my feet.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of a whole shed's worth of quiet. | I'd take a ledger that shuts with a plain wooden clasp.
+b : What would you keep in it? | A lock won't do?
+a : One stool and no second stool. | A lock advertises the secret.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I hum lower when I'm tired. | Tight shoulders spoil my soft notes.
+b : How low is too low? | Can you loosen them?
+a : When my chin has dropped against my chest. | One long breath and a deliberate shrug.
+
+story tale1 [topic=memories]
+  : I made a notebook with hide offcuts at the corners. Left the cover otherwise bare.
+  : I forgot which way up I'd meant it to go and wrote an account in from both ends.
+  b : Did the two meet?
+  : There's a single page of clear water between the shores. I've left that page untouched.
+
+story tale2 [topic=food self.likes=fried_fish]
+  : I sold the pieces that looked untidy to myself, and fed myself rather better than I'd expected.
+  : The last ragged strip had more crisp edge than a whole handsome fish.
+  b : Were the customers cheated of the best?
+  : I put ragged strips out next time. The first buyer asked for two.
+
+story tale3 [topic=work self.job=crafter]
+  : A skin drying in the wind made a note just below my humming. I worked half a morning trying to match it.
+  : The note sank lower as the hide stretched. I ended up sounding quite mournful.
+  b : Did you finally get the note?
+  : I tightened the lower tie and made it meet me halfway.
+
+rule @call1
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say A little air between the frames there. | Hang the thin edge to the moving air.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Frost or no frost, my ears are awake. | A cool quiet moment for a low note.
+
+rule @call3
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say Give the next elbow some breathing room. | My patch of pavement is occupied.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say My paper's going inside my collar. | Wet leather likes its room to dry.
+dlg resident.hub : You can have the bit of my attention that isn't keeping count.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I remember the pitch of that greeting.
+dlg resident.hub [here.time=night] : Talk softly now. The street isn't masking our voices.
+dlg resident.hub [pair.disposition=wary|hostile] : I keep my accounts folded and my ears open.
+dlg resident.job [self.job=crafter] : I've a helper's station at #self.workplace#. Pull a frame tight and the hide shows every wrinkle.
+dlg resident.job : I like finishing at a bench with the tools as I found them.
+dlg resident.news [world.news] : Here's what carried over the humming. #world.news#.
+dlg resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. A claim isn't a signed account.
+dlg resident.bye : Choose a street where your breathing can be heard.
+
+graft resident.hub
+choice What happened to the end of that song? -> hum_gap
+node hum_gap
+say I didn't lose it. Some verses I keep quiet enough to feel against my teeth.
+free
+choice Does the song want words? -> hum_gap_again
+choice Goodbye. -> bye
+node hum_gap_again
+say Not these days. The tune's managed three changes of weather without needing a single name.
+choice I'll leave the last note to you. -> hub
+choice Goodbye. -> bye
