@@ -1,0 +1,461 @@
+# rm121, the hair-tested edge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm121
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_winifred_pitchdale
+written_by claude
+title the hair-tested edge
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=quiet warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk tries_every_edge_on_a_hair_before_the_first_cut
+likes blackberries riddles sharp_knife first_warm_day
+dislikes early_bells waiting
+fears a_blunt_blade_on_a_busy_morning the_slate_unpaid_at_rent_day
+hopes the_counter_handed_on_clear_of_debt a_riddle_that_beats_me
+topics work +0.5 prices +0.4 food +0.3 family +0.2 caravan +0.3 pastimes +0.2 gossip +0.1 faith -0.3
+styles comfort=practical gossip=sly refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a counter on the Commons and tries every blade on a single hair before the first cut of the day: quiet, shrewd at the scale, slow to say what anything weighed, fond of blackberries and a riddle worth the trouble.
+
+words
+oath! = Fat and gristle | Suet and sorrow
+saying! = The scale says what the scale says | Weigh it twice and tell it once
+edge = the edge | a proper edge
+hair = a hair off my ruff | one hair
+block = the block | my block
+hooks = the hooks | the rail of hooks
+cleaver = the cleaver | the heavy blade
+scale = the scale | my scale
+slate = the slate | the owing slate
+joint = a joint | a decent joint
+scrag = the scrag end | scrag and trimmings
+mutton = mutton | a shoulder of mutton
+brambles = blackberries | brambles from the bank by the wall
+warmday = the first warm day | the morning the shop door can stand wide
+dawnbells = bells before light | the dark-morning bells
+rentday = rent day | the quarter's rent
+counter = the counter | my counter
+riddle = a riddle | a riddle worth the trouble
+upstairs = the Rise | the Heights above us
+downhill = the Sump | down the hill
+
+any
+opinion @1 city for 1 : Born on the Commons and wed there, and I'll leave it feet first. The place suits me. | It rains, and it pays. That's more than most towns can say.
+opinion @1 merchants for 1 : Years at a block teach you a mutton cart's price before the tailboard's down. | Folk call it dear. Not one has asked me what I paid.
+opinion @1 newcomers for 1 : Every new mouth in the city wants feeding, and I sell what feeds it. | A newcomer pays ready coin. The old faces want it on #slate#.
+opinion @1 strangers for 1 : Travellers pay on the spot and carry my news off with them. I'll take both. | Strangers at my counter weigh about the same as neighbours. Pay quicker, too.
+opinion @1 road against 1 : Every late cart is meat that sits a day too long on somebody else's wheels. | The road costs me before it costs anybody.
+opinion @2 road against 2 [world.wagons=raided|late] : Late again. I pay the drover for the waiting, and the customer pays me for it after.
+opinion @1 church against 1 : The chapel is always short, and the plate's never short of a hand to pass it. | A coin at the chapel door, going in. I won't make it two because a bell rang.
+opinion @1 houses against 2 : I'll buy no salt off a Grayrock ship. My reasons are my own business. | The Houses own the stairs. We climb them and pay for the privilege.
+opinion @1 watch mixed 1 : They buy mutton and they pay. They also find somewhere else to look when a sausage walks. | Good customers. Poor at catching anything that runs.
+opinion @1 dole mixed 0 : Bread for the hungry, by all means. I'd sooner it came with a bit of work. | I put bones out the back of a night. I don't want a word of thanks.
+opinion @1 times against 2 [world.times=hard|lean] : Folk buy bones now and call it soup. I sell them, and I call it trade.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. New to the lane, are you. | #greet#. Mind the sawdust; it's fresh.
+line @2 greet [self.working=yes self.job=merchant] : #greet#. I'll be with you when this joint's done. | #greet#. Tell me the cut. The scale does the rest.
+line @3 greet : #greet#. | #greet#. Door to, please. Draught.
+line @4 greet [here.time=dawn] : #greet#. Early. Earlier than me, near enough. | #greet#. Those bells had you up too, then.
+line @5 greet [here.time=dusk|night] : #greet#. Late. I'm about done. | #greet#. The lamps are on; mind the step.
+line @1 kin.open [pair.kin!=no] : Sit down. I've kept you a bit back. | Shoes off the clean floor. Then sit.
+line @1 again.open : Back once more. Something you forgot. | A second visit. Kettle's on the hob.
+line @1 greet.return : #greet#. | #greet#. I'd wondered when.
+line @2 greet.return [pair.band=friends|family] : There you are. I'd your chair warm. | Good. Sit; I'll finish this.
+line @3 greet.return [self.working=yes] : #greet#. Paws are busy, ears aren't. | Talk on. I can cut and hear.
+line @4 greet.return [here.time=dusk|night] : #greet#. I've the shutters half down. | Evening. Late custom is still custom.
+line @1 farewell : #farewell#. | Go well. Pay your slate, mind.
+line @2 farewell [here.time=dusk|night] : #farewell#. Bolt your door. | Off home. Past the corner there's no lamp.
+line @3 farewell [self.working=yes] : I'll get back to the block. #farewell#. | Off you go; the hooks won't empty themselves.
+line @1 farewell.return : And you. | #farewell#. Come again Marketday.
+line @2 farewell.return [pair.band=friends|family] : Mind the wet steps. | Supper's at dusk. Come or don't.
+line @1 react.news : Go on. Quietly. | I'm hearing it. Don't shout.
+line @1 react.news.new : That's not crossed my counter yet. | New to me. I'll weigh it.
+line @1 react.news.known : Heard it Restday. Said nothing. | I had that from a customer, before noon.
+line @1 react.news.doubt : Who told it you, and what did they buy? | One mouth's a rumour. Bring me a second.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sorrow. I'll send something round. | A bad business. Keep it low.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. They'll want a joint for the table. | That's welcome. Give them my good word.
+line @1 answer.how : Fair. The edge is good this morning. | Steady. Can't ask more of a week.
+line @1 answer.how.busy [self.working=yes] : Busy. Half the lane wants mutton by noon. | Run off my paws. Speak while I cut.
+line @1 ask.how : Are you eating? | Keeping well, are you?
+line @1 sympathise : That's hard. Sit. I'll find a bite for you. | I'm sorry for it. It'll keep, the hurt. It does.
+line @1 reassure : Mostly it mends. Give it time. | Give it a week. Then see.
+line @1 decline : Not on the slate, I'm afraid; it's full to the bottom and rent day's close. | I'd rather not. I've my own to see to first, and that's a long list.
+line @1 accept_decline : Fair. I'll leave it lie. | Then we'll say no more.
+line @1 thank : Kindly done. I'll mind it. | Thank you. That'll not be forgotten.
+line @1 deflect_thanks : It was only scraps. | Nothing. Don't mention it to anyone.
+line @1 preclose [self.working=yes] : There's a joint wants seeing to. | I'll get back to #block#.
+line @2 preclose : Well. Supper won't cook itself. | I've the shutters to do.
+line @1 accept_preclose : Go on, then. | Aye. I'll not keep you.
+line @1 ack : #bc_right# | Mm. #bc_fair#
+line @1 give.advice : Buy on Marketday, early, before the best goes up the stairs. | Never buy a joint you haven't smelt.
+line @1 warn [world.bandits=near] : Don't send anyone out on the road for meat this week. | Wait for the carts with guards on them.
+line @1 hail [pair.band=friends] : Here. Step round the counter. | Come here a minute.
+line @1 offer : Take the scrag. It'll only go to the cats. | A bone's put by under the counter. It's yours.
+scene edge_on_hair
+when topic=work self.working=yes self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : Watch. One hair, laid on the edge. If it doesn't part, the blade's not ready. | I test every knife on #hair# before the first cut. Every one. | That's the third blade this morning that wouldn't take a hair. Back to the stone.
+b[job=merchant] #trade : I just try mine on paper. | And if it parts? | Three blunt in one morning? That's bad luck.
+b : Why a hair? | Every knife, every day? | What happens if it won't?
+a@trade : Paper lies. A hair doesn't. | Then it cuts meat as it ought, and nobody's the wiser. | Bad stone. I'll have words with whoever sold it me.
+a : A hair's the finest thing I own. If the edge goes through that, it'll go through anything. | Every one. A blunt knife tears, and torn meat sells cheap. | It goes back to the stone till it will. I don't cut with a sulking blade.
+
+scene dawn_bells
+when topic=day|work here.time=dawn here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Bells before light again. I was up already. That isn't the point. | #dawnbells.capitalize#. Somebody up at the chapel can't sleep, so nobody does. | Those bells. I'd my first cut planned for after them. Now I'm early and cross.
+b : It's not so early. | Somebody has to ring them. | You'd be up anyway.
+a : Dark is early. I don't care what the bell says. | Somebody does. They needn't be so proud of it. | I would. I'd like to choose it, that's all.
+
+scene hooks_count
+when topic=work self.working=yes self.job=merchant
+does tell.self / react.self / assess / ack
+a : Nine on #hooks#. By dusk I want three. | Mutton's going quicker than I hung it. | A full rail on a Restday eve. Somebody's going to be disappointed, and it's not me.
+b : Three's a good day. | That's trade, then. | Not you?
+a : Three's a good day if the three are bones. | Trade, and the rent. | Not me. I'll have sold it.
+b? : #bc_fair_enough# | #bc_true# | #bc_ha#
+
+scene scale_honest
+when topic=work|prices self.working=yes self.role=merchant
+does give.opinion / challenge / insist / ack
+a : The scale is honest. Anyone may ask it. | Every customer watches my paw on #scale#. Let them. | A pound's a pound in this shop. More or less.
+b : Is it, though? | Some do more than watch. | More or less?
+a : Ask it yourself. #saying#. | They watch and they learn nothing. That's how a scale works. | Less, never. More, if I like your face.
+b? : #bc_ha# | #bc_fair# | #bc_lucky_you#
+
+scene owing_slate
+when topic=work|prices self.role=merchant here.region=ridgemere
+does tell.complaint / ask.detail / answer.detail / assess
+a : #slate.capitalize#'s long this month. Longer than I'd like. | Half the lane owes me for mutton. The other half owes me for bones. | I'll not chalk another name till the first ones are rubbed out.
+b : Who owes most? | Which half is worse? | Will they pay?
+a : I'd not say. They know. | The bones. They're the ones who can least afford it. | They pay by rent day or they buy elsewhere. Elsewhere is a long walk.
+b? : #bc_i_know# | #bc_poor_soul# | #bc_fair_enough#
+
+scene scrag_out_back
+when topic=work|smalltalk self.working=yes self.role=merchant
+does confide / keep_confidence / assess
+a : I put #scrag# out the back of a night. Don't go saying. | There's a pup from #downhill# who comes for the trimmings. I leave them on the step. | The bones that won't sell go in a bucket by the back door. Somebody always takes it.
+b : I'll say nothing. | That's kind of you. | Do you know who?
+a : Good. A soft name is bad for trade. | It's not kind. It's cheaper than carting it away. | I don't look. That's the arrangement.
+
+scene late_mutton
+when topic=caravan|work world.wagons=late
+does tell.worry / reassure / assess
+a : The mutton cart's late. Two days. I've nothing to hang but hope. | No carts again. I've sent folk away with bones and an apology. | Late carts. My rail's half empty and the rent's not.
+b : It'll come tomorrow. | They'll come back for the mutton. | It'll pass.
+a : Tomorrow, then. I've heard tomorrow before. | Some will. The rest find a cart of their own. | It will. The rent won't wait for it.
+
+scene carts_in_full
+when topic=caravan world.wagons=in
+does tell.self / react.self / assess
+a : Carts in. A full rail, and an ache across my shoulders. | Three carcasses at dawn and a fourth promised. That's a good week. | Plenty on the road again. Prices will drop. Mine, last.
+b : Good for you. | That's a lot of mutton. | Last?
+a : Good for the lane. I'll take my share of it. | Gone by Restday, the lot. Every week the same. | Last. I paid for it at the old price.
+
+scene carts_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / give.opinion
+a : A cart was stripped on the road. Meat and all. | They took a drover's whole load. I'd paid half already. | #bandits.capitalize# again. I've told the drovers to come in together or not at all.
+b : That's terrible. | Paid half? | Will they listen?
+a : It is. And every pound in the lane costs more after. | Half. That coin's gone, and I'll not shout about it. | They'll listen once they've lost a load. That's how drovers learn.
+
+scene lean_week
+when topic=prices|times world.times=hard|lean
+does tell.complaint / react.complaint.agree / assess
+a : Nobody's buying a joint this week. Bones and trimmings, all day. | Folk ask for a quarter where they asked for a pound. | The Rise buys the same as ever. Everybody else buys half.
+b : Everyone's careful. | Hard times. | That's the Rise for you.
+a : Careful is fair. Careful still eats. | Hard on the lane. Hard on my till as well. | It is. They never feel a lean week. They hear about it from their cooks.
+
+scene price_of_mutton
+when topic=prices self.role=merchant
+does ask.opinion / give.opinion / concede / ack
+a : Folk say my mutton's dear. Is it, would you say? | A penny on the pound since spring. Did anybody notice? | You'd pay more up at the square. I'll say no names.
+b : A touch dear, maybe. | I noticed. | I'd believe it.
+a : A touch. The drovers have put a touch on me. It goes round. | Some did. They still bought it. | Believe it. I've seen their scale.
+b? : #bc_fair# | #bc_ha# | #bc_true#
+
+scene rise_cook
+when topic=gossip|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : A cook came down from #upstairs# for two legs of mutton. Paid without looking. | They send their kitchen pups down the stairs to me. They never come themselves. | The Rise likes my shoulder cut. Same shoulder the lane buys, if they did but know.
+b : Lucky you. | Do they pay well? | Same cut?
+a : Lucky, and quick to forget it. | Better than the lane, slower than the lane. | Same cut. They pay for the stairs it's carried up.
+
+scene rent_day
+when topic=home|work self.role=merchant
+does tell.worry / reassure / assess / ack
+a : #rentday.capitalize# on Marketday. It's put by. Every night I count it over. | The landlord's man came early this quarter. I had it ready. I always have it ready. | Rent's up again at the quarter. The figure stays with me. You'd faint.
+b : You always manage. | Good. That's done, then. | It's up everywhere.
+a : I do. I'd like it to feel less like managing. | Done till the next one. That's the trouble with rent. | Everywhere. That's no comfort to my till.
+b? : #bc_i_know# | #bc_true# | #bc_fair#
+
+scene spouse_at_block
+when topic=family self.married=yes self.spouse
+does tell.self / react.self / assess
+a : #self.spouse# does the heavy carcasses. Mine's the fine work. It suits us both. | My #self.spouse_word# can't keep a blade sharp to save a life. I keep them both. | Years at one counter with #self.spouse#. We know where each other's elbows go.
+b : That's a fair split. | Both blades? | That's a long time.
+a : Fair enough. I chose it. | Both. I'd not trust anybody else with my edges. | Past counting. Which is how it ought to be.
+
+scene child_lessons
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I want #self.child# reading better than me. That's half of what the till is for. | I'd have #self.child# keep the slate one day. A cleaner hand than mine, I hope. | A riddle for #self.child# at supper, that's my plan, if I can think of a hard one.
+b : Coin well spent, that. | Would that suit? | Have you one ready?
+a : It is. That stays behind the counter, mind. | It might. It's a living. The counter's a living. | Not yet. I'll have one by Restday.
+
+scene riddle_trade
+when topic=pastimes|smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail / laugh
+a : A drover gave me a riddle in the spring. I've still not got it. | Tell me a riddle. I'll answer it before you've finished. | Some mornings a riddle turns over and over as I cut. Passes the hours.
+b : What was it? | All right. What has a bed and never sleeps? | Which one's in there now?
+a : What do you keep only after you've given it away. I've a guess. I'll not say it. | A river. Next. | That one with the keeping. Still. Every morning.
+b? : #bc_ha# | #bc_clever# | #bc_go_on#
+
+scene riddle_night
+when topic=pastimes here.time=dusk|night self.likes=riddles
+does confide / react.self / assess
+a : I want one riddle I can't answer. Just one. None's come my way. | Supper's done, and I'm sat here turning a riddle over. That's my evening. | A good riddle lasts a week. A bad one lasts a minute, and that's a minute too long.
+b : You'll find one. | That's a quiet evening. | How do you tell a good one?
+a : Maybe. I'd thank whoever told it me, and then I'd never forgive them. | Quiet's what I've earned. | A good one makes you cross. A bad one makes you tired.
+
+scene brambles
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : #brambles.capitalize#. I'll pick a hatful on Restday and eat the half walking back. | My paws are purple. I'm not sorry. | The bushes by the wall are full. Everyone knows. Nobody's told me who's been at them first.
+b : Save some for a pie. | Purple suits you. | You'll find out.
+a : The half that gets home goes in a pie. That's the rule. | It doesn't. It washes off by Marketday. | I'll find out, and I'll be there first next year.
+
+scene supper_stew
+when topic=food
+does tell.self / react.self / assess / ack
+a : The last of the neck goes in the pot tonight. Onions and a bit of barley. | I sell the best and eat what's left. Ask any butcher. | Supper is whatever didn't sell. It's always good.
+b : Sounds good to me. | Every butcher? | Always?
+a : It is. Nobody leaves any. | Every honest one. The rest eat the best and sell you the neck. | Always. I cut it, I know what's in it.
+b? : #bc_lovely# | #bc_ha# | #bc_true#
+
+scene first_warm_day
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. Door wedged wide, and the lane let in. | Sun on the cobbles. The meat won't like it. I do. | It's the first morning I've not had cold paws at the block. I'll take that.
+b : About time. | The meat won't? | Long winter.
+a : Late, this year. I'll forgive it. | It'll keep in the cold room. I'll keep out here. | Long and wet. This makes up for a bit of it.
+
+scene wet_shop_floor
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain off every coat that comes in. The sawdust's paste by noon. | Every customer carries half the lane in, paw by paw. | The wet creeps under the sill. Sacks down, and the sacks are sodden.
+b : It's that kind of day. | They can't help it. | It'll dry.
+a : Every day's that kind of day here. | They could wipe their paws. They don't. | It'll dry by summer. The sacks won't.
+
+scene summer_flies
+when topic=weather|work here.season=summer here.weather=clear self.role=merchant
+does tell.complaint / react.complaint.agree / assess
+a : Heat and flies. Worst week of the year for meat. | I've cloths over everything and the flies still find a way. | It's too warm for mutton to hang past noon. I'm cutting it all early.
+b : I'd hate it. | They always do. | Early's sensible.
+a : I do hate it. I sell it anyway. | They do. I've stopped taking it personally. | Sensible and tiring. I'll sleep tonight.
+
+scene chapel_plate
+when topic=faith here.region=ridgemere
+does give.opinion / disagree / concede
+a : The plate went round twice at chapel. Twice. | I give at the door when I go in. Then they ask again at the end. | I'd go more if they sang more and passed less.
+b : They need it for the roof. | It's for the poor. | They do sing well.
+a : The roof's wanted mending since my own christening, near enough. | Some of it is. I'd want to see which part. | They do. That's the half I go for.
+
+scene grayrock_grudge
+when topic=memories|lore here.region=ridgemere self.age>=30
+does tell.memory / sympathise / assess
+a : I lost a brother on the wharf. A Grayrock crane. I've bought nothing off their ships since. | People forget the wharf takes. I don't. | I'll not buy Grayrock salt. If you want the reason, it's in the chapel yard.
+b : I'm sorry. | Nobody should forget it. | That's a long grudge.
+a : Long ago. It's not lighter for being long ago. | No. I keep it for those that do. | Long, aye. I'll take it to my grave and leave it at the gate.
+
+scene waiting_queue
+when topic=smalltalk|day here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : I waited an hour at the Market Hall for a word from the clerk. An hour. | I hate a queue. I'd rather pay more than stand. | The drover said dawn. It's past noon. I've stood about all morning.
+b : They're slow there. | You'd pay more? | Drovers.
+a : Slow and pleased with it. | A penny, gladly. A morning, never. | Drovers. They count time in sheep.
+
+scene gossip_quiet
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / keep_confidence
+a : A customer said #topic.subject# #topic.claim#. I said nothing back. | Over the counter today: #topic.subject# #topic.claim#. Not from me. | They're saying #topic.subject# #topic.claim#. I've a good memory and a closed till.
+b : Is it true? | I'll not say. | Who said?
+a : I sell meat, not truth. Ask somebody else. | Good. Neither will I. | I'd not tell you. #topic.they.capitalize# buys #topic.their# mutton here.
+
+scene gossip_death
+when topic=gossip topic.claim_kind=death
+does tell.news / sympathise / assess
+a : They say #topic.subject# #topic.claim#. I'll send a joint round to the house. | A customer had it: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, I'm told. A quiet day in the lane.
+b : That's sad news. | A sorrow. | It's been quiet.
+a : It is. A house in mourning still has to eat. | It is. I've put something by, if it's wanted. | Quiet, and it'll stay so till after the burying.
+
+scene gossip_good
+when topic=gossip topic.claim_kind=marriage|newcomer|promise_kept
+does tell.news / react.news.glad / assess
+a : They say #topic.subject# #topic.claim#. There'll be a joint ordered by Marketday. | Good news over the counter. #topic.subject.capitalize# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, they tell me. Somebody's luck is in.
+b : Good for #topic.them#. | That's nice to hear. | It's about time.
+a : Good for me, too. A feast wants mutton. | It is. A shoulder goes under the counter for #topic.them#. | It is. Mine's in at the till.
+
+scene new_mouths
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# has taken a room in the lane, I hear. That's another for the hooks. | They say #topic.subject# means to stop in the city. | New face at the counter yesterday. #topic.subject.capitalize#, they said.
+b : More custom, then. | I hope the city keeps #topic.them#. | And how did #topic.they# strike you?
+a : More custom. I'll see what #topic.they# buys before I decide anything else. | So do I, if #topic.they# pays. | Paid ready coin. I asked no more.
+
+scene festival_rush
+when topic=festival here.region=ridgemere
+does tell.self / react.self / assess
+a : Festival week. Every house wants a roast and they all want it Marketday. | From dark to dark at the block, me. Festivals? I like the till after. | The whole rail goes in a day at festival. I could sell twice what I hang.
+b : You'll do well, though. | Only the till? | Why not hang more?
+a : I'll do well and sleep after. Both, in that order. | The till. The rest is shouting and sawdust. | I've two paws and one block. That's the limit of it.
+
+scene traveller_counter
+when topic=player here.region=ridgemere
+does tell.self / react.self / assess
+a : A traveller asked me what was good. I said everything. That's the right answer. | There's somebody new about, pricing every counter on the lane. | Strangers count their coin at the counter like they've never seen coin. I wait.
+b : Was it good? | Asking? Not buying? | You're patient.
+a : It was all good. Some was better. I didn't say which. | Asking first. They'll buy here once they've asked elsewhere. | Patient for the coin. Not for the counting.
+
+scene good_times
+when topic=times|prices world.times=good|boom
+does tell.self / react.self / assess
+a : Folk are buying whole legs again. I'd forgotten the look of it. | Coin about. The slate's shrinking. When it's wiped clean I'll trust it. | Everyone wants the good cut. I've put my price up a hair.
+b : About time. | That's good news. | A hair?
+a : Past time. I'll take it. | Good for as long as it holds. I'll be putting by. | A hair. Nobody notices a hair. Except me.
+
+scene nicked_paw
+when topic=health self.working=yes self.role=merchant
+does tell.self / sympathise / assess
+a : A nick on the paw today. A sharp blade cuts clean, at least. | It's the blunt knife that cuts you. A sharp one goes where you send it. | I bound it and carried on. The meat didn't wait.
+b : Let me see. | Does it hurt? | You should rest it.
+a : No need. It's closed already. | Less than the rent does. | When the hooks are bare I'll rest it.
+
+story brother_wharf [topic=memories self.age>=30 here.region=ridgemere]
+  : I had a brother on the wharf, years back. He hauled for the Grayrock cranes.
+  : One morning a load slipped. That was all the word anybody brought up the hill.
+  : I've bought nothing off a Grayrock ship from that day.
+  ask : Would you forgive it, in my place?
+  b[old] : I lost people to the wharf as well. I've never forgiven it either.
+  b : In your place? I couldn't say. I'm sorry for it.
+  : Then we're agreed. Don't tell the House.
+
+story first_knife [topic=work|memories self.age>=25 self.role=merchant]
+  : When I was apprenticed, the butcher over me put a knife in my paw, and a single hair beside it.
+  : Cut that, the butcher said, and you can cut meat. I tried all afternoon.
+  : By supper it parted. I've tested every blade on a hair since.
+  b : That's a hard teacher. Did you ever thank them?
+  : I keep the edges. That's my thanks.
+
+story keeping_riddle [topic=pastimes self.likes=riddles self.age>=25]
+  : A drover asked me once what you can keep only after you've given it.
+  : I thought about it all through the shoulder of mutton and half the neck.
+  : Next spring the drover came back. I said: your word. The drover laughed and paid me double.
+  ask : Would you have got it quicker?
+  b : Not in a year. I'd have given up and asked.
+  : I nearly did. I'm glad I didn't.
+
+story rent_sausages [topic=home|work self.age>=30 self.role=merchant]
+  : My first quarter in the shop, I was short of the rent by a few coppers.
+  : The landlord's man stood at the counter and looked at the hooks.
+  : I gave him a string of sausages, and he wrote the rent as paid.
+  b : That's a good bargain. Did he ever ask again?
+  : Every quarter after. I put the price of the sausages on the rent.
+
+story warm_door [topic=season|memories self.age>=25 here.region=ridgemere]
+  : On the first warm day when I was small, every door in our lane stood propped open.
+  : The whole lane came by to sniff the air: sawdust and sun.
+  : I sat on our doorstep eating blackberries out of my paw.
+  ask : Do you remember a day like that?
+  b : I do. Nobody forgets that first one.
+  : No. I prop the door every year. Same day, near enough.
+
+rule @bark_cry
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 6h
+say Mutton, fresh on the hook. | Good joints, and a fair scale.
+
+rule @bark_edge
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 8h
+say That one wants the stone. | One hair. There. Ready.
+
+rule @bark_bells
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say Bells again. Before light, again. | #oath#. Who rings at this hour?
+
+rule @bark_rain
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 9h
+say Wipe your paws. Please. | More rain. More sawdust.
+
+rule @bark_late
+when concept=bark world.wagons=late self.role=merchant
+does aside
+cooldown 10h
+say No cart. Still no cart. | Half a rail and a full rent.
+
+rule @bark_flies
+when concept=bark here.season=summer here.weather=clear
+does aside
+cooldown 8h
+say Off it. Off. | Cloths over everything, and still they come.
+
+dlg @1 resident.hub : #greet#. Say it plain; there's a joint on the block. | #greet#. You'll be wanting something. Name it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You're back. | #greet#, #topic.player#. Something wanted?
+dlg @3 resident.hub [here.time=night] : We're shut. But say what it is. | Late. I'll hear you, quickly.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I've a knife in my paw. Say your business. | Keep your side of the counter. What is it?
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. The hooks, the block, the scale. That's my day. | I cut meat and weigh it fair. #self.workplace# is mine to keep.
+dlg @2 resident.job : A decent house, kept, and my debts paid. That's work enough. | Whatever wants doing. I don't make a speech about it.
+dlg @1 resident.business [business=thriving] : Rail's empty by noon. I've no complaints. | Better than I'd say to the landlord.
+dlg @2 resident.business [business=steady] : Steady. The rent's paid and the slate's not too long. | It keeps the door open. That's all I ask.
+dlg @3 resident.business [business=failing] : Thin. Folk are buying bones. I'll manage, somehow. | Poorly. I'll say no more to a stranger.
+dlg @1 resident.news [world.news] : A customer had it from #world.news_from#: #world.news#. | Over my block at dawn, from #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : All anyone buys with is talk of #world.event_words#. | It's #world.event_words#, all day. I've heard nothing else.
+dlg @3 resident.news [world.wagons=raided] : A cart was stripped coming in. My mutton was on it. | They hit a cart coming in. Mind yourself out there.
+dlg @4 resident.news [world.death=recent] : A burying in the lane this week. I sent a joint round. | We've lost one of our own. The lane's quiet.
+dlg @5 resident.news [world.wedding=recent] : A wedding, and I sold the feast. That's my news. | Somebody's wed. The whole lane went, and bought.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Mutton's the same price. | Nothing worth repeating. Nothing I'd repeat, anyway.
+dlg @1 resident.gossip [here.gossip=yes] : Not a thing I'd usually pass on. But they say #topic.subject# #topic.claim#. | Between us: #topic.subject# #topic.claim#. Not my words, mind.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | I hear plenty over the counter. It stays there.
+dlg @1 resident.bye : #farewell#. | Go well. Leave the sawdust where it lies.
+dlg @1 shop.greet [here.shop=open] : #greet#. Mutton, pork, and the bones are cheap. | #greet#. #shop_offer# It's all fresh today.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#. The usual, is it? | Back, #topic.player#. I kept a bit aside.
+dlg @3 shop.greet [here.shop=bare] : The rail's bare just now. I'm buying, though, if you've anything. | #shop_bare# Come back when the cart's in.
+dlg @1 shop.prices : Mutton's up a penny. Everything else is where it was. | #shop_dear# Bones are cheap. Bones are always cheap.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Mind the joint; it's heavy.
+graft resident.hub
+choice Why do you test the knife on a hair? -> hair
+node hair
+say A hair's as fine as anything gets. If an edge parts it, the edge is ready. If it doesn't, it goes back to the stone.
+mood calm
+free
+choice Every knife? -> hair_every
+choice Goodbye. -> bye
+node hair_every
+say Every one, every morning. A blunt blade tears the meat and slips into the paw. A sharp one goes where you send it.
+choice I'll let you get on. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Is your weight honest? [self.role=merchant] -> weight
+node weight
+say The scale says what the scale says. Watch my paw, if you like. Everybody does.
+mood calm
+free
+choice And if I watch closely? -> weight_close
+choice Back to the counter. -> greet
+node weight_close
+say Then you'll see a scale. A scale, and my paw.
+choice Fair enough. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,300 @@
+# rm140, the clerk of due dates (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm140
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_lothar_abbot
+written_by claude
+title the clerk of due dates
+fits stage=adult|old
+prefers job=scholar humour=dry temper=short
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk knows_the_day_every_debt_falls_due
+likes spiced_cider digging full_larder warm_rain
+dislikes night_noise flies
+fears a_lost_page_with_my_initials_on_it being_taken_for_a_fool
+hopes a_desk_by_the_window a_garden_with_no_slugs
+topics work +0.5 pastimes +0.3 food +0.2 weather +0.2 prices +0.2 festival -0.4 gossip -0.2
+styles comfort=practical gossip=dry refuse=short tease=dry
+marks oath saying
+persona #self.first# copies and files for the city and keeps every due date in a head built for it: dry, exact, quick to bristle at a slight, happiest digging a garden in a warm rain with a mug of spiced cider waiting indoors.
+
+words
+oath! = In triplicate | Initialled and witnessed | Quarter day preserve us
+saying! = Everything falls due | Ink outlives argument
+ledger = the ledger | the day-book
+stamp = the stamp | the office seal
+forms = the forms | form and counterform
+dueday = quarter day | the falling-due day
+cider = spiced cider | hot cider, cloves bobbing
+spade = the spade | my good spade
+beds = the beds | the bean rows
+flies = flies | bluebottles
+petition = a petition | a petition in three copies
+clerksbench = the clerks' bench | the copyists' bench
+ink = ink | gall ink
+slugs = slugs | the slugs
+pen = the pen | my second-best pen
+
+any
+opinion @1 festivals against 1 : Three days' racket, and on the fourth every clerk in the office comes in with a head like a dropped crate.
+opinion @1 city for 1 : Born under the smoke, filed under it, and I'll be buried under it with the form correctly completed.
+opinion @1 houses mixed 0 : The Houses pay their dues late and in full. I can forgive one of those.
+opinion @1 watch mixed 0 : The Watch bring us their reports. Spelt by ear, mostly. Still, they bring them.
+opinion @1 merchants mixed 0 : Half the counters on the Commons owe somebody on a date they've forgotten. I haven't.
+opinion @1 newcomers mixed 0 : A newcomer is three forms and a seal. After that, they're a neighbour like anyone.
+opinion @1 dole mixed 0 : The parish loaf has its own ledger. It's tidier than most, which tells you something.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If it's the record office you're after, wrong door. | #greet#. You'll be wanting directions, I expect.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. One moment. I'm mid-column. | #greet#. Don't jog the desk.
+line @3 greet [here.time=dawn] : Morning. Office opens at the bell. Not before. | Morning. I've not had my cider yet; tread carefully.
+line @4 greet [here.time=dusk|night] : Evening. The day's filed. Thank the Bright One. | Evening. I've finished being useful for today.
+line @5 greet [pair.band=friends] : Ah. A face I needn't look up in the index. | You. Good. Somebody who knows what a full stop is.
+line @6 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : Sit down. I'll hear it all, in order. | In you come. Paws on the mat; the floor's just done.
+line @1 again.open : Second visit today. You'll be wanting your own page. | Back again. Something left unfinished, then.
+line @1 greet.return : #greet#. | #greet#, and so on.
+line @2 greet.return [pair.band=friends|family] : There you are. I'd noted you were late. | Ah. On time, for once.
+line @3 greet.return [self.working=yes] : #greet#. Mind the inkwell. | #greet#. Speak; I can copy and listen.
+line @4 greet.return [here.time=dusk|night] : Evening. Is it? Evening already. | Evening. I've lost the light again.
+line @1 farewell : #farewell#. | #farewell#. Mind the gutter.
+line @2 farewell [here.time=dusk|night] : Good night. Bolt your door. The street's lively after dark. | Good night. Bed, and silence, if the street allows it.
+line @1 farewell.return : #farewell#. | Yes, yes. Off with you.
+line @1 react.news : Go on. Dates and names, if you have them. | Tell it in order, please. Beginning, middle, end.
+line @1 react.news.new : Not in any ledger I've seen. | That's not reached the office yet.
+line @1 react.news.known : Old. It came across my desk yesterday. | It reached me on paper before it reached you as talk.
+line @1 react.news.doubt : Unsigned, that is, and I don't trust unsigned things. | Two witnesses, or I don't copy it down.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'll not make a remark about it. | Hm. That's a sorry entry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Something worth writing down. | Well. A rare cheerful entry.
+line @1 answer.how : Correct, if not cheerful. | Filed and up to date.
+line @1 answer.how.busy [self.working=yes] : Busy. Thirty pages to copy before the Council sits. | Run off my pen. Ask me at dusk.
+line @1 ask.how : And you? Everything in order? | How are your affairs?
+line @1 sympathise : That's hard. I'm sorry. Truly. | Mm. Sit. Nothing's due for a while.
+line @1 decline : I can't. I've the quarter's ledger to close and nobody to close it but me. | Not this week. Every hour I have is owed somewhere already.
+line @1 accept_decline : Understood. Noted. | Very well. Withdrawn.
+line @1 thank : Thank you. It's remembered. Accurately. | That was decent of you. Noted.
+line @1 deflect_thanks : Don't. It's done; that's all. | Nothing to it. A form, a seal.
+line @1 preclose [self.working=yes] : The ink's drying on a half-finished page. | I'm wanted back at the bench.
+line @2 preclose : Well. I've a column waiting. | That's the total, carried.
+line @1 accept_preclose : Go on. I'll not keep you. | Away, then. Nothing owing.
+line @1 tease [pair.band=friends] : You're three days late with that joke, by my count. | That face has signed something it never read.
+line @1 tease.return : Very good. I'll file that under nonsense. | Ha. Dry. Nearly as dry as me.
+line @1 take_offence : I'll thank you to say that again, slowly, so I can write it down. | That's uncalled for. And I remember things.
+line @1 ack : Noted. | #bc_right#
+line @1 give.advice : Read it before you sign it. Every word. | Learn your falling-due day, and pay the one before.
+scene due_dates
+when topic=work|prices self.job=scholar
+does tell.self / react.self / tell.self / react.self / assess
+a : Ask me when anything falls due in this office; I'll have the day for you without looking. | A factor came in today and couldn't remember when his own loan fell due. I could. | Every debt on the city's books has a day, and most of those days live in my head. A habit, not a gift.
+b : Every one? | Did you tell him? | Isn't that tiring?
+a : Every one I've copied. Which is a great many. | I told him. Then I told him the interest. | Less tiring than not knowing.
+b : You'd make a good moneylender. | That must have stung. | I'd go mad.
+a : I'd make a rich one. I'd rather sleep. | It stung me less than him. | Some do. Clerks, mostly.
+
+scene due_dates_friend
+when topic=friends|smalltalk
+does tell.self / react.self / assess
+a : I know the day everybody I know owes anybody anything. I never mention it. Well. Rarely. | You still owe me a cider from the spring. I'm not saying I'm counting. | People think there's a list. There isn't. It's all in my head, which is worse.
+b[friends] #friends : I'll pay you tonight. | You're counting. | Worse for whom?
+b : Do you really never mention it? | A cider? | Worse how?
+a@friends : Tonight is acceptable. | I'm always counting. That's the trouble. | For me. You can lose a list.
+a : Only when it's very funny. | A spiced one. The debt's grown spices. | You can lose a list. I can't lose my head.
+
+scene forms_triplicate
+when topic=work self.job=scholar self.working=yes
+does tell.complaint / react.complaint / assess
+a : A petition came in on one sheet. One. I sent it back for the other two. | Somebody's filled in the form in pencil. In pencil. For the Council. | Third form today with the wrong seal on it. I'm not cross. I'm just writing it down.
+b : That seems harsh. | Does it matter? | You sound cross.
+a : It's the rule. I didn't write the rule. I just love it. | It smudges. In ten years it's a grey cloud and a guess. | I'm writing it down crossly. There's a difference.
+
+scene council_sitting
+when topic=work|lore self.job=scholar here.region=ridgemere
+does tell.self / react.self / assess
+a : The Council sits at the Rain Hall tomorrow. I've been copying their papers since dawn. | Everything said in the Rain Hall ends up on my desk in a fair hand. Mine. | An hour's quarrel in the minutes, over one word. I copied the page nine times.
+b : Do you hear what they say? | Does it ever change anything? | Which word?
+a : Every word reaches me. None leaves. That's the job. | Now and then. Slowly. With forms. | Shall against may. Shall won, after an hour of it.
+
+scene stamp_and_seal
+when topic=work self.job=scholar
+does tell.self / react.self / assess
+a : There's a right way to put the seal on. Straight, firm and not on the writing. Nobody does it. | My desk has one rule: nobody touches #pen#. | A good clerk knows where every page is. A great one knows where it should be.
+b : Is there a wrong way? | Not even your friends? | And which are you?
+a : There are about fourteen. I've seen all of them. | Especially my friends. They chew things. | Good, with a great one's temper.
+
+scene digging_garden
+when topic=pastimes
+does tell.self / react.self / assess
+a : An hour with #spade# after work, and I'm fit to be spoken to again. | Restday I turned the bean rows. Three hours without a word to anybody. Perfect. | Nobody inspects my digging. It's the only work of mine that's spared.
+b : I didn't know you gardened. | Three hours! | Nobody checks it?
+a : I don't garden. I dig. The beans happen nearby. | It goes by in a minute when you're not being spoken at. | The slugs check it. They're thorough.
+
+scene garden_slugs
+when topic=pastimes|animals
+does tell.complaint / react.complaint / assess
+a : #slugs.capitalize# have had half the lettuces. I've counted. | Nights, I go out with a lamp to pick the slugs off. A census, of sorts. | Every slug in that garden knows my name and my habits.
+b : Salt them. | Do you count the slugs too? | Then change your habits.
+a : I'd sooner not. It feels like cheating. | Forty-one last night. Not a figure I wanted. | I have none to spare. These are the ones left.
+
+scene warm_rain_digging
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : Warm rain. #spade.capitalize# and me, the minute the bell lets me go. | This is the weather for digging. The soil turns like butter and the flies stay home. | Soft rain on a warm night. Out in it I go, and no apology.
+b : You'll get soaked. | Like butter? | You like being wet?
+a : I'll get soaked and content. Both in one. | Like good butter. Not the office kind. | Warm and wet, yes. Cold and wet is the office.
+
+scene flies_summer
+when topic=weather|season here.season=summer
+does tell.complaint / react.complaint / assess
+a : There's a bluebottle in the office that's been living there three days. We've an understanding. It doesn't. | Flies in the ink. Flies on the seal. A fly walked across a petition and I had to copy it again. | I can't abide #flies#. They have no order to them.
+b : Swat it. | Again? | They're only flies.
+a : I've tried. It's quicker than me and has more time. | It left a trail. I'm not putting a fly's trail before the Council. | That's what I mean. Only flies, and no shame.
+
+scene cider_evening
+when topic=food here.time=dusk|night
+does tell.self / react.self / assess
+a : #cider.capitalize#. That's the only thing I'll hurry home for. | A hot cup of spiced cider and not one question put to me. That's an evening. | I've a jug of cider warming with cloves in it. You can have a cup if you don't talk.
+b : Just the one? | Not anything? | I'll be quiet.
+a : One. Then a second, if the day was the sort I'd rather forget. | Not a thing. Not the date, not the time. | Then sit. Good. Like that.
+
+scene full_larder_home
+when topic=food|home
+does tell.self / react.self / assess
+a : I like a full larder, every jar bought on a day I could tell you and going off on another. | Every jar in our larder has a date on it. Mine. | Nothing calms me like a stocked larder, labelled shelf by shelf.
+b : Of course you do. | Dated? | Labelled?
+a : Naturally. Nobody else would bother. | Dated, in ink. You'd be amazed how long honey keeps. | In a fair hand. Nobody else can read the rest.
+
+scene mother_herald
+when topic=family self.mother
+does tell.self / react.self / assess
+a : For #self.mother# I'd cross Ridgemere end to end, grumbling every step. | People say I take after #self.mother#. I'm quieter. I'd like that noted. | #self.mother.capitalize# makes me proud. It's not something I say. There. Said.
+b : That's family for you. | It's noted. | That's good to hear.
+a : It is. The grumbling's how I show it. | Thank you. In ink, please. | Don't repeat it. I've a reputation.
+
+scene night_noise
+when topic=home|smalltalk here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Somebody was banging on a door at two in the morning. I lay awake writing a complaint in my head. | Singing under my window again. I've noted the date and the song. | The street's louder after dark than any office I've worked in, and I've worked in the Rain Hall's.
+b : Did you send it? | The song? | Louder than the Council?
+a : I would, but there's no form for it. Yet. | Out of tune, too. That's in the note. | Nearly. The Council stops for lunch.
+
+scene festival_head
+when topic=festival
+does give.opinion / react.self / assess
+a : Festival. Three days' racket, and on the fourth the whole office smells of yesterday's ale. | They'll be singing in the square till dawn. I've wax for my ears. | Somebody always cries at a festival. Often it's whoever has to sweep up. Often me.
+b[stage=young|adolescent] #pup : But there's sweets! | Won't you come? | Do you hate it?
+b : Not for you, then. | Wax? | You sweep up?
+a@pup : There are. Eat them before somebody writes them down. | I'll come for an hour and leave early. That's a promise. | No. I just don't need three days of it.
+a : One day of it would do. | Wax and a barred shutter. | The office does. I'm the office.
+
+scene owes_factor
+when topic=prices|work self.owes=yes
+does confide / react.self / assess
+a : There's a House factor holding my note. I know its day better than the factor does. | Funny thing. I know when everyone's debts fall due, and mine's the one I lie awake over. | There's a sum I owe that I think about every time I sign something. Which is often.
+b : You'll find it. | That's hard. | Can you pay it?
+a : I'll find it. On the day. Not before, and not after. | It is. The knowing makes it worse. | In time. I've worked out to the penny how much time.
+
+scene times_ledger
+when topic=times world.times=hard|lean self.job=scholar
+does tell.self / react.self / assess
+a : Hard times show in the ledgers first. More debts, longer ones, fewer paid on the day. | The times are bad. I've copied the arrears, so I'd know. | Lean. The forms for relief have doubled. I've run out of my good ink.
+b : That's grim. | It'll turn. | You'll need more ink.
+a : It is. The numbers don't care. | It always turns. The ledger shows that too. | I've ordered it. It's late. Everything's late.
+
+scene gossip_dry
+when topic=gossip
+does tell.self / react.self / assess
+a : Plenty reaches my ears. Little gets written, and less repeated. | Gossip is a debt nobody ever pays back. I don't lend. | If it's not signed and dated, it's not news. It's weather.
+b[talk=chatty] #nosy : Not even a little? | That's a bit grim. | Weather?
+b : That's one way. | Fair. | Ha.
+a@nosy : Not even a little. Bring me paper. | It's an accurate grim. | It comes, it goes, nobody can prove it.
+a : It's the clerk's way. | It is. Fair and dull. | Exactly that.
+
+scene newcomer_forms
+when topic=newcomer here.region=ridgemere self.job=scholar
+does tell.news / react.news / assess
+a : #topic.subject.capitalize#, new to the city. The forms will reach me by the week's end. | Someone new to the city, #topic.subject#. A clerk somewhere is writing down where from. | #topic.subject.capitalize# has come to stay, they're saying. Good. A new page in the book.
+b : Will you meet #topic.them#? | You're curious. | A new page?
+a : I'll meet the forms. That's enough. | Not curious. Tidy. | Blank and clean. I do like a blank page.
+
+scene accent_office
+when topic=accent here.region=ridgemere
+does tell.self / react.self / assess
+a : I've a Commons voice and an office hand. They don't always agree. | I talk the way I copy: no words that aren't needed. | I've been told I sound like a form. Kindly meant, I decided.
+b[from!=ridgemere] #away : I can't place it. | It's very clear. | I can't tell.
+b : You do talk tidy. | It saves time. | A form?
+a@away : The Commons, with the corners squared off. | Thank you. That's what it's for. | Good. It's meant to be plain.
+a : Tidy and short. Like a receipt. | It does. Time's the dearest thing in the office. | A properly completed one.
+
+story the_lost_page [topic=work|memories self.age>=22 self.job=scholar]
+  : My first month at the office, I lost a page. One page, from a land deed, with my initials on it.
+  : I searched for three days. I didn't sleep. I didn't eat.
+  ask : Where do you suppose it turned up?
+  b : Somewhere obvious, I'd say.
+  : Under my own ink pot. It had been there the whole time, holding the pot up.
+  b : That's a lesson.
+  : I've never set an ink pot on a page since.
+
+story the_slug_census [topic=pastimes]
+  : One summer I decided to count every slug in the garden. Just to know.
+  : Out every night: a lamp, a jar, a little book.
+  ask : How many would you guess I found, in the end?
+  b : A hundred?
+  : Four hundred and twelve. Then I stopped counting. Some things you don't need to know.
+
+story the_honest_debtor [topic=memories|prices self.age>=22]
+  : An old carter came to the office once to pay a debt that had been forgotten for years.
+  : Nobody remembered it. Nobody would have asked. The ledger had it as written off.
+  ask : Would you have paid it, if nobody remembered?
+  b : I'd like to say yes.
+  : So would most. That carter did. I wrote "paid in full" in my best hand, and I've never forgotten it.
+
+rule @bark_triplicate
+when concept=bark self.job=scholar self.working=yes
+does aside
+cooldown 8h
+say #oath#. Wrong seal again. | Who's had my pen?
+
+rule @bark_due
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say Something falls due today. I'll remember what in a moment. | Quarter day's coming. Somebody won't be ready.
+
+rule @bark_flies
+when concept=bark here.season=summer
+does aside
+cooldown 9h
+say Off the page, you. | That fly again. We've met.
+
+rule @bark_rain
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 10h
+say Warm rain. Good digging. | Spade tonight, then.
+
+dlg @1 resident.hub : #greet#. Yes? | #greet#. If it's quick, I'm yours.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I remember you. I remember everyone. | #greet#, #topic.player#. In order, please.
+dlg @3 resident.hub [here.time=night] : It's late. I'm off the clock. Briefly, then. | Evening. Make it short; I've cider waiting.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you. Mind your tone; I note those too. | Say your piece. I'll write it down.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. Forms, seals, ledgers, and other people's mistakes. | I copy what the city says and file what it forgets.
+dlg @2 resident.job : I work. Carefully. Nothing more to it. | Steady work, done properly.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the gutters.
+dlg @1 resident.news [world.news] : It's on my desk already: from #world.news_from#, #world.news#. | Word from #world.news_from#: #world.news#. Written down, so it's true.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing on my desk worth repeating. | Quiet. The ledgers are dull, and dull suits me.
+dlg @1 resident.gossip [here.gossip=yes] : Unsigned, undated, but going round: #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. Not on paper anywhere, mind.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing that's been signed for. | Talk's a carter's business. Not mine.
+graft resident.hub
+choice They say you know when every debt falls due. -> debts
+node debts
+say Every one I've copied, and I've copied a great many. Ask after yours and you'll have the day. I won't tell you the sum unless you ask twice.
+mood calm
+free
+choice How do you remember them all? -> how
+choice Back to it. -> hub
+node how
+say I don't try. They just stay. It's like having a ledger for a head. Restful for the office, less so for me.
+choice I'd better pay mine on time. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,429 @@
+# rm136, the herald's rehearsal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm136
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_brenna_abbot
+written_by claude
+title the herald's rehearsal
+fits stage=adult|old
+prefers temper=calm warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk rehearses_the_day_s_announcements_aloud_on_the_climb
+likes spiced_cider old_tales fresh_straw summer_evenings
+dislikes cold_tea night_noise
+fears a_name_said_wrong_in_the_great_hall losing_the_voice
+hopes every_tale_handed_on_whole a_quiet_old_age_with_cider
+topics lore +0.5 memories +0.4 work +0.4 food +0.2 season +0.3 family +0.2 friends +0.2 gossip -0.4
+styles comfort=company gossip=discreet refuse=gentle tease=none
+marks oath saying
+persona #self.first# cries the callers' names at the great palace and practises every announcement aloud on the long climb up from the Commons: unhurried, warm and plain-spoken, careful with every name, fond of spiced cider, fresh straw underfoot and an old tale told properly.
+
+words
+oath! = Hear and heed | Staff and stair | Let it stand
+saying! = A name said right is a kindness | Nobody heeds a mumble | Breathe low and the hall hears
+staff = my staff | the herald's staff with the brass foot
+climb = the climb | the hundred stairs from my door to the palace
+callers = the callers | whoever is waiting on the bench
+bench = the waiting bench | the callers' bench under the high windows
+names = the names | the day's names
+list = the list | the morning list of callers
+voice = my voice | the carrying voice
+cider = hot cider with cloves | cider, spiced and steaming
+tale = an old tale told properly | a tale with its middle left in
+tales = old tales | the tales my grandmother kept
+straw = new straw across the boards | clean straw underfoot
+evening = a long summer evening | a midsummer dusk that never finishes
+coldtea = cold tea | tea left standing
+din = a din after the lamps | shouting under the windows at night
+proclaim = Be it known | Let it be heard | Hear this
+hush = a hush | the hush before a name
+
+any
+opinion @1 houses for 1 : Brickyards, forges, warehouses: the Houses open them every morning, and half the Commons eats by it. I've called enough House names to know. | Whatever the Houses quarrel over upstairs, the kilns are lit by dawn. That weighs with me.
+opinion @2 times for 1 : Bread, a dry roof and cider on the shelf. I'll not ask the year for more than that. | It is a decent year. I have watched worse ones walk in through the doors.
+opinion @3 times against 1 [world.times=hard|lean] : The callers on the bench look thinner this season. You can read it in their waiting. | Hard months. Fewer petitions for favours and more for bread.
+opinion @4 newcomers for 1 : This city has room for anyone who will pull with the rest. I have announced stranger arrivals than a family off the road. | Let them come. A new name is a new thing to learn to say well.
+opinion @5 strangers for 1 : To me a stranger's just a name not yet learnt. I'll ask it and say it back carefully. | I'd sooner feed a stranger than wonder about one.
+opinion @6 dole for 1 : A city that can keep a great palace can keep every belly in it fed. The parish loaf is a start and no more. | I give to the dole box at chapel and I'd give more if asked.
+opinion @7 city for 1 : Born under this smoke and glad to be. I would not trade the climb for flat ground anywhere. | Ridgemere is wet and steep and loud, and every one of those is a thing I'd miss.
+opinion @8 festivals mixed 0 : I proclaim the festivals, so I'm fond of them. I'm also the one hoarse for three days after. | A festival is a fine thing until the lamps are out and the singing is still going.
+opinion @9 watch mixed 0 : The palace guard and the city Watch are two different creatures. Leave it there. | The Watch keep the streets, mostly. I hear more at the palace doors than I'd care to repeat.
+
+grown
+line @1 greet : #greet#. You're very welcome. | #greet#. I was halfway through tomorrow's list, but it will keep. | #greet#. Sit down; the bench has space.
+line @2 greet [pair.band=strangers] : #greet#. Your name, when you're ready. I'd like to say it right. | #greet#. Welcome. Every new face brings a name, and names are my trade.
+line @3 greet [self.working=yes self.job=none] : #greet#. Forgive me, I'm between callers. Speak quietly and I'll hear you. | #greet#. Stand by the window; the next name is nearly due.
+line @4 greet [here.time=dawn] : #greet#. I'm on my way up. I go early to warm my voice. | Good morning. Nobody on the climb at this hour but me and the gulls.
+line @5 greet [here.time=dusk|night] : Good evening. Downhill at last, and gladly. | #greet#. A long day. My voice has gone to bed already, even if I haven't.
+line @6 greet [pair.band=friends|family] : There's cider warming. Come and have a cup. | You came. Good. I've a tale saved, if you've the evening.
+line @1 kin.open [pair.kin!=no] : In you come. The straw's fresh and the cider's on. | Home at last. Sit; I'll fetch the cups.
+line @1 again.open : You're back, and I'm pleased to see it. | A second visit in a day. I'll note it, kindly.
+line @1 hail [pair.band=friends] : Stay a moment. There's a tale saved for you. | Wait a little. I'll walk up with you.
+line @1 greet.return : #greet#. | #greet#. Well met indeed. | #greet#. Gladly.
+line @2 greet.return [pair.band=friends|family] : At last. I'd been listening for your step. | And to you. The cup's still warm.
+line @3 greet.return [self.working=yes self.job=none] : #greet#. Quietly, please; there's a caller inside. | #greet#. I'll listen between names.
+line @4 greet.return [here.time=dusk|night] : Good evening. A quiet one, I hope. | Good evening to you. Mind the stair, it's dark.
+line @1 farewell : #farewell#. The stair's slick; take it gently. | #farewell#. I'll keep your name. | #farewell#.
+line @2 farewell [here.time=dusk|night] : Good night. Lamplight all the way down, mind. | Good night. Sleep deep and wake hungry.
+line @1 farewell.return : #farewell#. | And you. Go well. | Gladly met.
+line @2 farewell.return [here.time=dusk|night] : Good night. | Good night, and mind the dark corner by the well.
+line @1 react.news : Take your time. Tell it from the beginning and keep the middle. | I'm listening. Slowly, please; I'd like all of it.
+line @1 react.news.new : That's passed the bench by, and very little does. Thank you. | New to me. I'll carry it carefully.
+line @1 react.news.known : It reached the bench yesterday. Somebody was whispering it in the queue. | It met me on the climb this morning.
+line @1 react.news.doubt : An eyewitness first, please. Rumour drops words on every stair. | That's been handed along too many times to come out whole.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #rest#. That's a sorrow for everyone who knew them. | Hard news. Sit here, close.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's lovely. I'd announce it from the steps if they'd let me. | Good. News like that I'd carry up a hundred stairs.
+line @1 answer.how : Well, thank you. The voice is holding, which is what matters. | Content. A quiet day, and cider waiting.
+line @1 answer.how.busy [self.working=yes] : Busy. Forty names on the list and twenty of them hard ones. | A full bench today. I'll rest when the doors close.
+line @1 answer.how.poorly : A little hoarse. It was a long morning of names. | Tired in the legs. The climb was long today.
+line @1 ask.how : And you? Well, I trust. | Tell me how you've been. Properly.
+line @2 ask.how [pair.band=friends|family] : How's the house? Everyone well? | Fed, are you? There's bread.
+line @1 sympathise : I'm sorry. Sit down, and let it rest a while. | That's heavy. Share the weight; I'm here.
+line @1 reassure : It will come right. Patience and time see to most things. | Don't trouble yourself. You'll find the way through.
+line @2 reassure [other.tired=yes] : Sit. The world can wait an hour. | Rest. You've earned it.
+line @1 decline : Forgive me, but no. Tomorrow's list is waiting, and it won't learn itself. | Not today. My evening's spoken for, and a promise said aloud must stand.
+line @1 accept_decline : Of course. Another time. | Quite all right. No need to explain.
+line @1 thank : Thank you. Kindly done, and kept in mind. | I'm grateful. Truly.
+line @1 deflect_thanks : No more than a breath's worth. | I was glad to. Don't mention it.
+line @1 preclose [self.working=yes] : I'm wanted inside. The next name is due. | I must go back to the bench.
+line @2 preclose : Well. I should start down the stairs while there's light. | Off you go. You've places to be.
+line @1 accept_preclose : Go on, then. Gladly met. | Yes, off you go. We'll talk again.
+line @1 ack : Ah. | Quite. | Just so.
+line @1 give.advice : Say a person's name as if it matters. It does. | Speak from the belly, not the throat. Your voice will last longer.
+line @2 give.advice [other.stage=young|adolescent] : Stand up straight and say your name clearly. Folk remember those who do. | Learn the old tales. Somebody will ask for them, one winter.
+line @1 warn [world.bandits=near] : There's word of robbers on the roads. I'd not pass the gate this week. | Travel in company this week. The roads are not kind.
+scene the_climb
+when topic=work|day self.job=none self.workplace here.region=ridgemere
+does tell.self / react.self / assess
+a : I say the day's names aloud on #climb#. By the top I have them all. | Every morning I practise the list on the stairs. The neighbours think I talk to myself. | Forty-one steps to the first turning. I learn one name for every step.
+b : Out loud? | Do you mind what they think? | One for every step?
+a : Out loud. A name that has never been said aloud trips on the tongue. | Not at all. I am talking to myself. Nothing teaches a name faster. | One a step, and the hard ones get two.
+
+scene hard_name
+when topic=work self.job=none self.workplace
+does tell.self / react.self / assess
+a : There was a name on the list today with three parts and no vowels I trusted. | A visitor from the south brought a name new to me. Twice I asked it, then I said it right. | I spent my whole climb on a single name this morning. It was worth it.
+b : And did you manage it? | Twice? | A single name?
+a : I did. The caller smiled. That's all the thanks I want. | Twice, slowly. Then I said it back once, properly. | One name. If you say it wrong in that hall, everyone remembers.
+
+scene the_hush
+when topic=work self.job=none self.working=yes
+does tell.self / react.self / assess
+a : Before I call a name, the hall goes quiet. #hush.capitalize#. I love that moment. | I strike the floor with #staff# and the whole room turns. It still surprises me. | My favourite moment is the silence just before a name.
+b : That's a lot of eyes on you. | Does it make you nervous? | The silence?
+a : The eyes are for the caller, not for me. I'm only the voice. | Not now. Once, as a beginner. | The silence. Everyone holding still, waiting to hear who.
+
+scene waiting_bench
+when topic=work self.job=none self.working=yes
+does tell.self / react.self / assess
+a : The callers wait on #bench#, some for hours. I bring them water when I can. | There's a merchant who has waited three days to be seen. I've given up apologising. | You learn a great deal about folk by watching how they wait.
+b : That's kind of you. | Three days? | What do you learn?
+a : It's only water. Cheap to give and dear to get. | Three. I say the name each morning, and each morning it's tomorrow. | Who's patient. Who's frightened. Who has come to ask for something they won't get.
+
+scene palace_discretion
+when topic=gossip|work self.job=none self.workplace
+does tell.self / react.self / assess
+a : What I hear in #self.workplace# stays in it. I'm a voice, not a messenger. | Folk ask me what was said inside. I answer with the weather. | I call names. I don't repeat what the names said after.
+b : Not even a little? | The weather? | That's honourable.
+a : Not even a little. That's why the post is still mine. | The weather. It's always raining, so I'm always honest. | It's only sense. A herald who talks is soon a herald who doesn't.
+
+scene street_gossip
+when topic=gossip topic.claim_kind=theft|wanted|prowling|violence|other
+does tell.gossip / react.news / assess
+a : The street is saying #topic.subject# #topic.claim#. I'm only passing on what was said. | I heard on the stairs that #topic.subject# #topic.claim#. Take it gently. | They're saying #topic.subject# #topic.claim#. I've not heard it from anyone who saw.
+b : Do you believe it? | Gently? | Then it might not be true.
+a : That it was said, I'll swear to. No further. | Rumour bruises easily. So do the people in it. | It might not. I've neither trimmed it nor dressed it up.
+
+scene good_gossip
+when topic=gossip|event topic.claim_kind=marriage|promise_kept|newcomer
+does tell.gossip / react.news / assess
+a : This one I'll gladly carry: #topic.subject# #topic.claim#. | I heard #topic.subject# #topic.claim#. It warmed me. | Good word on the stairs today. #topic.subject.capitalize# #topic.claim#.
+b : That's lovely. | It warmed you? | Good word.
+a : It is. I'd proclaim it from the steps if I could. | It did. There isn't enough of that going round. | Good word, and I'll carry it carefully.
+
+scene proclaiming_festival
+when topic=festival world.festival=soon|today
+does tell.plan / react.self / assess
+a : I'll proclaim the festival from the palace steps. I've been practising since Restday. | #proclaim.capitalize#: the festival is coming, and there will be cider. That's the part folk listen for. | My voice will be gone the day after the festival. It always is.
+b : From the steps? | Cider? | Every year?
+a : From the top step, with the whole square below. It's my favourite day of the year. | Spiced, if I've any say. I usually don't. | Every year. It's worth it.
+
+scene event_words
+when topic=event|news world.event_words
+does tell.news / react.news / assess
+a : Everyone on the bench this morning was talking of #world.event_words#. | It's all #world.event_words# on the stairs today. Every turning had it. | You'll have heard: #world.event_words#. The palace has heard it too.
+b : What do they make of it? | At every turning? | Has it?
+a : They talk. They wait. Then they talk some more. | Every one. The stairs are a good place for news. | It has. What it makes of it, I couldn't say.
+
+scene spiced_cider
+when topic=food here.time=dusk|night
+does tell.self / react.self / assess
+a : Once the doors close I warm #cider# and settle at the hearth. It mends the voice. | Cloves, cinnamon, honey by the spoonful. That's my cider. | Give me a cider by my own fire over any feast the palace lays.
+b[job=cook|brewer|innkeeper] #trade : A pinch of nutmeg's better than the honey. | No orange peel? | The palace feasts aren't so good?
+b : Does it really help? | Honey? | Than any feast?
+a@trade : I'll try the nutmeg. You'd know. | Orange peel, if ever I find any. I never do. | The feasts are grand. The cider is mine.
+a : It does. Or I believe it does, and that's nearly the same. | A spoonful. It takes the edge off the cloves. | Than any of them. The cider asks nothing of me.
+
+scene cold_tea
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : Someone set tea for me on a palace sill. Three callers later it was #coldtea#. | I can't drink cold tea. It tastes of disappointment. | If I've no time to drink it hot, I'd rather not be brought it.
+b : Did you drink it? | Disappointment? | That's fair.
+a : I thanked them and poured it on the geraniums. | And of being forgotten. Hot tea or none. | It is. It's kinder to wait.
+
+scene fresh_straw
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : I lay fresh straw on the kitchen floor every week. The smell of it is home to me. | My grandmother strewed the floor with clean straw on Restdays. I still do it. | Nothing better than walking in to #straw# after the climb.
+b : It must smell lovely. | Every Restday? | After the climb?
+a : Like a summer field, indoors. | Every one. Some habits are worth keeping. | After the climb. My feet know they're home.
+
+scene night_din
+when topic=day|smalltalk here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : There's #din# again. I have a list to learn and a voice to rest. | Somebody was singing under the window until the bells. I don't mind singing. I mind that song. | The street gets loud after the lamps now. I've taken to stuffing straw in the shutters.
+b : It'll quiet down. | That song? | Does it help?
+a : It will, eventually. I'll be asleep by then, I hope. | One verse, and that one round and round. | A little. And it smells nice.
+
+scene rain_climb
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : The climb is a stream this morning. I arrived soaked and called forty names dripping. | Rain on the stairs. I hold my staff close and my list closer. | I keep my list under my cloak in the wet. A smudged name is a lost name.
+b : Did anyone notice? | Your list? | Lost?
+a : Everyone. Nobody said a word. That's the palace. | The ink runs. Then I'm guessing, and I don't guess. | Lost. I'll not say a name I can't read.
+
+scene summer_evening
+when topic=season|weather here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : This is the best evening of the week. #evening.capitalize#, cider, and nothing to say to anyone. | I sat out on the step until nearly ten and the light still hadn't gone. | On such an evening I tell myself old tales in my head, just to hear them.
+b : It's lovely. | Nearly ten? | Old tales?
+a : It is. Indoors only when the light's spent. | Nearly ten. The swifts were still out. | The old ones. They sound best in the half-light.
+
+scene old_tale_wish
+when topic=lore|pastimes
+does tell.self / react.self / assess
+a : I'd sooner hear an old tale told properly than any song. | A tale needs its middle. Too many people tell the start and the end and skip the rest. | My grandmother knew a hundred tales. I've kept forty of them.
+b : Tell me one, then. | The middle? | Only forty?
+a : Another evening, with a fire. Tales want a fire. | The middle is where the tale lives. The rest is doors. | Forty. I lost the others by not asking in time.
+
+scene child_records
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I'd be glad if #self.child# ever wanted the voice for this work. I'd never push it. | I'm proud of #self.child#. Prouder than I ever manage to say. | I worry for #self.child# the way anyone does. Not much, and all the time.
+b : Would you like that? | Tell #self.child#, then. | That's how it goes.
+a : Only if it's wanted. A voice should choose its own work. | I shall. Tonight. Over cider. | It is. Not much, and all the time.
+
+scene friend_cider
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd share my last cider with #self.friend#, and barely a word needed. | #self.friend.capitalize# could have a tale from me I've told nobody. | After a hard day, it's #self.friend# I'd choose to sit beside.
+b : That's a good friend. | That's trust. | Everyone needs one.
+a : The best kind. Quiet and warm. | It is. Tales aren't handed out lightly. | Everyone does. I've been lucky.
+
+scene neighbour_straw
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : I'd lend #self.neighbour# my last bundle of straw and never mention it. | #self.neighbour.capitalize# is a good wall to share. Quiet and sound. | When I'm late home, I'm glad to see #self.neighbour#'s lamp still lit.
+b : That's neighbourly. | Quiet and sound? | It's a comfort.
+a : Straw's for sharing. | Both. I couldn't ask for better. | It is. A lamp through the shutter keeps me company.
+
+scene teaching_voice
+when topic=work self.master=yes self.job=none
+does tell.self / react.self / assess
+a : I'm teaching a learner to call a name across the hall without shouting. Harder than a shout, by far. | The first thing I teach is to breathe low. The voice comes from the belly. | My learner said a name wrong today and turned scarlet. I said, again, slowly.
+b : Without shouting? | From the belly? | Did they get it?
+a : A shout bounces. A called name lands. | From the belly. The throat gives out by noon. | The third time. Then they said it beautifully.
+
+scene new_faces
+when topic=newcomer
+does give.opinion / agree / assess
+a : There are new faces on the stairs. I've been learning their names. | A family came up from the road last week. I wished them welcome as they passed. | The city keeps filling. I think that's how a city should be.
+b : That's good of you. | Did they stop? | It's busy enough.
+a : A name's no trouble to learn. Names are my trade. | Only for directions. I gave them. | Busy is alive. I'd sooner busy than empty.
+
+scene houses_bench
+when topic=smalltalk|lore here.region=ridgemere
+does give.opinion / agree / assess
+a : The Houses wait on the same bench as everyone else. I find that a comfort. | I've called the names of every great House in the city. They all sound the same in that hall. | Grumble at the Houses if you will; the works open every morning because of them.
+b : Even the Houses wait? | All the same? | That's true enough.
+a : Even them. Not for long, but they wait. | The same. A name is a name once it's said. | It is. Bread comes from somewhere.
+
+scene good_year
+when topic=times world.times=good|boom
+does tell.self / react.self / assess
+a : The bench is full of folk asking for permits, not pardons. That's a good year. | Everyone's building. You can hear the hammers from the palace steps. | The callers smile more this year. It's in how they sit.
+b : Permits? | From the steps? | How they sit?
+a : To build, to trade, to marry. All good things. | From the top step. It's a cheerful noise. | Upright. Hopeful. They lean forward when I call.
+
+scene hard_year
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : There are more petitions for bread than for anything else this month. | The bench is full and quiet. Hard times make folk quiet. | Day after day, the same faces. Never called, and back again.
+b : It'll turn. | Quiet? | That's sad.
+a : I hope so. I pray it does. | Quiet, and still. You'd almost not notice them. | It is. Water, from me. That's my whole power.
+
+scene lore_rain_hall
+when topic=lore here.region=ridgemere
+does tell.self / react.self / assess
+a : They say the Rain Hall was built where the first Council met under a sail, to keep off the wet. | An old tale says the Sound was once dry, and the city climbed up the hill to get away from it rising. | There's a tale that the great palace has one stair nobody has ever reached the top of.
+b : Is that true? | Rising? | Nobody?
+a : It's a tale. Tales don't have to be true; they have to be told well. | Slowly, a step a generation. That's the tale, anyway. | Nobody. I've looked for it. I believe it's a story for pups.
+
+scene faith_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : Chapel on Restdays, me. Mostly for the singing. | The priest says the names of the dead each year. I listen to how they're said. | Long prayers aren't for me. A short one, said clearly, is enough.
+b[piety=devout] #devout : The prayers matter too. | Do they say them well? | Short ones get heard as well.
+b : Only for the singing? | How they're said? | Clearly?
+a@devout : They do. I mean every word. I just don't say many. | Well enough. Slowly, which is right. | I believe so. I hope so.
+a : Mostly. The rest is listening. | Slowly, I hope. Every name deserves that. | Clearly. Mumbled prayers are for people who aren't sure.
+
+scene autumn_cider
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : Autumn's the cider season. The new barrels come down from the orchards. | I put cloves by in autumn for the whole winter's cider. | Autumn evenings were made for a cup and a tale.
+b : New barrels? | All winter? | And a fire.
+a : Off the carts. Our street smells of apples for a week. | All winter. I count them out by the spoon. | And a fire. Always a fire.
+
+scene fog_morning
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : Fog on the stairs. I couldn't see the top, so I said the names louder. | In fog the palace looks like a story. You climb into it. | Fog swallows a voice. I'll be hoarse by noon.
+b : Did it help? | Like a story? | Already?
+a : It helped me. The fog didn't care. | The old kind, where the castle is in the clouds. | By noon. I'll have cider tonight.
+
+scene being_heard
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Most folk mumble. I forgive it, but I notice. | People lower their voices when they find out what I do. As if I'd judge them. | I can tell where somebody grew up by how they say their own name.
+b : You'd judge me? | Do you judge them? | Can you tell where I'm from?
+a : Never. I'd only want to hear you better. | Never aloud. | I could guess. I won't. It's your name to tell.
+
+scene new_season_list
+when topic=work self.job=none self.working=yes here.time=dawn
+does tell.self / react.self / assess
+a : The list for today came at dawn. I've learnt half of it on the stairs. | Thirty names before noon. I've said each one twice already. | Early. The hall's empty and my voice is fresh. This is when I practise.
+b : Half? | Twice already? | Practise how?
+a : The other half by the third turning. | Twice is safe. Once is a gamble. | Low, to the walls. The hall echoes them back to me.
+
+scene slow_wet_climb
+when topic=health|weather here.weather=rain|fog here.region=ridgemere
+does tell.self / react.self / assess
+a : The wet makes the climb heavy. I take it slowly and pace a name to each step. | Damp on the stairs, and my legs feel every one of them today. | It's an ache, nothing more. The stairs don't mind if I take them slowly.
+b : Rest a while. | Every one? | Slowly is fine.
+a : I will, after the doors close. | Every one. The names take my mind off it. | It is. I'm never late. I leave early.
+
+story the_wrong_name [topic=work|memories self.age>=30]
+  : In my first season as herald, I said a visiting lord's name with the stress on the wrong part.
+  : The hall went quiet in the wrong way. The lord looked at me for a very long time.
+  ask : Have you ever said something in front of a room and wished it back?
+  b : More than once. What did the lord do?
+  : Corrected me, gently, and thanked me. I've never forgotten that name since, nor the kindness.
+
+story grandmother_tales [topic=lore|memories self.age>=30]
+  : My grandmother told tales by the fire every night, and she never once skipped the middle.
+  : If we fidgeted, she stopped. She'd wait until we were still, then go on.
+  b : She sounds strict. Did it work?
+  : Every time. I tell tales the same way. I wait for the quiet.
+
+story the_lost_voice [topic=work|memories self.age>=30]
+  : One winter I lost my voice the night before the great festival proclamation.
+  : On the top step, with the whole square below, I had nothing but a whisper.
+  ask : Could you have gone on, in my place?
+  b : Run, probably. Did somebody else read it?
+  : No. The whole square went quiet to hear me. I whispered it, and every word reached the back.
+
+story the_rope_bridge_tale [topic=lore]
+  : There's an old tale of a herald sent to cry peace between two towns over a river.
+  : The bridge was cut. So the herald cried the peace from one bank, and the wind carried it to the other.
+  ask : Do you think a voice could really carry over a river?
+  b : On a still day, maybe. Did they make peace?
+  : They did. That's why every herald in the old tales stands with the wind behind them.
+
+story first_staff [topic=work|memories self.age>=30 self.job=none]
+  : The day I was given the staff, it was too tall for me and I struck the floor too hard.
+  : The sound went right up into the roof. Every head in the hall turned.
+  b : Were you embarrassed?
+  : A moment's worth. Then I liked it. I've struck it the same way every day since.
+
+rule @bark_list
+when concept=bark self.job=none self.working=yes
+does aside
+cooldown 6h
+say Next name. Quietly, everyone. | #proclaim.capitalize#. One moment.
+
+rule @bark_climb
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 10h
+say Forty-one steps. Forty-one names. | Up we go. One name a step.
+
+rule @bark_cider
+when concept=bark here.time=dusk|night
+does aside
+cooldown 12h
+say A cup of cider wouldn't go amiss. | Home, and the cider pot.
+
+rule @bark_din
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say A voice wants its sleep, you know. | Hush, now, all of you.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 9h
+say Keep the list dry. | Rain again. The stairs will be a stream.
+
+rule @bark_tale
+when concept=bark
+does aside
+cooldown 8h
+say Now, how did the middle of that one go. | #saying#. My grandmother said so.
+
+dlg @1 resident.hub : #greet#. You're welcome here. What may I do for you? | #greet#. Take your time. I'm in no hurry.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I said your name right, I hope. | #topic.player#. Welcome back. A pleasure, again.
+dlg @3 resident.hub [here.time=night] : It's late, but I'll listen. Quietly, please; the street's asleep. | Good evening. I'm homeward, but ask away.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll listen, at this distance. | Plainly, please. I'll answer the same way.
+dlg @1 resident.job [self.job=none self.workplace] : #self.trade_words.capitalize#. I cry the callers' names at #self.workplace#. | I call the names at the palace. Forty on a busy day, and every one said right.
+dlg @2 resident.job : I work, I learn names, and I tell old tales in the evening. | My work is my voice. I look after it.
+dlg @1 resident.news [world.news] : It reached the palace steps from #world.news_from#: #world.news#. Unaltered, from me.
+dlg @2 resident.news [world.event_words] : The whole bench was talking of #world.event_words# this morning.
+dlg @3 resident.news [world.wagons=raided] : Robbers have stripped one of the wagons. Take company with you if you travel.
+dlg @4 resident.news [world.wedding=recent] : A wedding, and half the Commons out to cheer. I'd have proclaimed it, if asked.
+dlg @5 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The bench was quiet today. | Nothing worth a herald's breath.
+dlg @1 resident.gossip [here.gossip=yes] : The street says #topic.subject# #topic.claim#. I carry it as given.
+dlg @2 resident.gossip [here.gossip!=yes] : What I hear at the palace stays there. The street tells me little. | I'm not one for gossip. I've a tale instead, if you like.
+dlg @1 resident.bye : #farewell#. Go carefully. | #farewell#. I'll keep your name.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Watch the unlit turning on the stair. | Good night. I'm off to my cider.
+dlg @1 master.learn [here.teaches=yes] : The first thing I teach is breathing. The voice lives in the belly. #learn_offer# | It's patient work. You learn a name, you say it, you say it again. #learn_offer#
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : You're back. Good. Say your own name for me, as if to the hall. | Back again. Tell me the hardest name you heard this week.
+graft resident.hub
+choice What were you saying on the stairs? -> stairs
+node stairs
+say The day's names. I say them aloud on the climb so that by the top I have them all. The neighbours think I'm talking to myself. I am.
+mood warm
+free
+choice Why say them aloud? -> stairs_why
+choice Something else. -> hub
+node stairs_why
+say A name you've never said aloud catches on the tongue. Say it once on the stairs and it comes out clean in the hall. A name said right is a kindness.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do you make a voice carry? [job=none] -> carry
+node carry
+say Breathe low, from the belly. Stand still. Don't shout: a shout bounces off the walls. Call the name, and let it land.
+mood formal
+free
+choice And if my voice gives out? -> carry_rest
+choice Back to the lesson. -> learn
+node carry_rest
+say Then you rest it, and you drink something warm, and you don't whisper. Whispering tires it worse than talking.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

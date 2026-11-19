@@ -1,0 +1,543 @@
+# rm113, the first-star provisioner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm113
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_wenna_tarford
+written_by claude
+title the first-star provisioner
+fits stage=adult|old
+prefers role=merchant temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk waits_for_the_first_star_before_locking_up
+likes mutton_stew stars fresh_straw warm_rain
+dislikes crowds salt_wind
+fears damp_in_the_store a_crush_at_the_boards
+hopes a_shopfront_by_the_north_gate
+topics work +0.4 prices +0.3 food +0.3 pastimes +0.3 caravan +0.2 weather +0.2 gossip -0.3 festival -0.2
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# sells goods that keep from boards by the water and climbs home at dusk: patient, proud and even-voiced, judging most goods by how long each keeps, and never shutting up shop before the first star is out.
+
+words
+oath! = Salt hold it | Crock and cover | By the cured side
+saying! = Time does the curing | Leave it to the salt and the hours
+keepings = smoked, salted and dried | goods that last a season | things that will wait
+boards = my boards | the stall
+crocks = the brine crocks | my salt crocks
+sides = the smoked sides | the hanging mutton
+stew = a mutton stew | mutton stewed slow with barley
+star = the first star | the evening's first star
+straw = fresh straw | a clean laying of straw
+warmrain = warm rain on dry stones | a soft rain with no cold in it
+crush = a crush of bodies | a press of elbows
+saltwind = the salt wind | that brine-wet wind the Sound sends up
+climb = the climb home | the long walk up from the water
+tally = my tally book | the stall book
+lasts = That lasts | That will last | Good. That lasts
+mm = Mm | Well
+
+any
+opinion @1 watch for 2 : The Watch walk the market lanes, so the thieves walk elsewhere. Their keep is money well spent, and I've never begrudged it.
+opinion @2 watch for 2 [self.robbed=yes] : I was robbed once and the Watch found the lot. I've thought well of them since, and I say so when it's needed.
+opinion @1 road against 1 : Every load that's late on the north road is a week I can't promise anyone. They're late more often than not now.
+opinion @1 houses for 1 : The Houses built the walls and they keep the bank. Somebody has to keep a city standing, and they do it.
+opinion @1 merchants for 1 [self.role=merchant] : Some suppose a price gets chalked out of spite. I know what the cart cost, and the salt, and the smoke, and I chalk no more than that.
+opinion @1 dole against 1 : The parish loaf is paid for by boards like mine. I'd sooner it fed the ones who can't work than the ones who won't.
+opinion @1 sump against 1 : Trouble starts low by the water and climbs. I lock everything twice, and lie easier for the trouble.
+opinion @1 city for 1 : Born here, and I'll stay. Nowhere else has the trade, or the rain to go with it.
+opinion @1 times for 1 : The times treat me fairly. Grumbling aloud would be ungrateful, and unlucky besides.
+opinion @2 times mixed 1 [world.times=hard|lean] : When the times are hard, my boards are busy. That's not a thing to be glad of.
+opinion @1 festivals mixed 0 : Good for trade and hard on the nerves. All those bodies in one street, each one shoving.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Take your time choosing; nothing here spoils while you think. | #greet#. A face I've not had at my boards before. Welcome to it.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Stand clear of the hooks and look your fill. | #greet#. Everything on #boards# was put up right.
+line @3 greet [here.time=dawn] : #greet#. You're up before the market is. | #greet#. Early hours suit a wolf. They suit me.
+line @4 greet [here.time=dusk|night] : #greet#. I'm waiting on #star#, then I'm away. | #greet#. Dark already. The steps will be greasy going up.
+line @5 greet [pair.band=friends] : So it's you. I'd half expected you before now. | #greet#. Stand where the wind won't find you.
+line @6 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : Get yourself dry first. There's food after. | Come and sit. I put something aside for you.
+line @1 again.open : Here twice before dark. The stool's yours, then. | Again. I'd barely turned round from the last time.
+line @1 greet.return : #greet#. | #greet#, #address#. Say on.
+line @2 greet.return [pair.band=strangers] : #greet#. You've the road's dust on you still. | #greet#. New to the market, are you.
+line @3 greet.return [pair.band=friends|family] : #greet#. A known face; that's a comfort today. | There you are. Come out of the crush.
+line @4 greet.return [self.working=yes] : #greet#. Talk while I wrap; I'm listening. | #greet#. Mind the crocks.
+line @5 greet.return [here.time=dusk|night] : #greet#. Nearly time for home. | Evening. I'm all but packed up.
+line @1 farewell : #farewell#. | Go carefully.
+line @2 farewell [here.time=dusk|night] : #farewell#. The steps get greasy once the lamps are lit. | Home with you. I'm not far behind.
+line @3 farewell [self.working=yes] : #farewell#. I'll be here till the star's out. | Off you go. Come before noon next time; the best goes early.
+line @1 farewell.return : #farewell#. | And you. Go carefully.
+line @2 farewell.return [pair.band=friends] : #farewell#. Not so many weeks till next time. | Come by again. Soon, mind.
+line @3 farewell.return [here.time=night] : Good night. Lamps all the way, mind. | Good night. Sleep sound.
+line @1 react.news : #mm#. That's news. | Is it. I'll chew that over.
+line @1 react.news.new : That hadn't reached me yet. I'll remember it. | #oath#. That's new to me.
+line @1 react.news.known : That reached my boards a day ago. | Old news. It got here before you did.
+line @1 react.news.doubt : One mouth's word isn't enough for me. A second, and I might. | That sounds like something somebody wanted to be true.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Grim news. I'm sorry, truly. | That's sorry news. I'll not say anything clever about it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth hearing on a wet day. | That's welcome. It puts heart in a wet week.
+line @1 answer.how : Steady. Nothing I'd trouble you with. | Well enough. The goods are sound, and I'm no worse.
+line @1 answer.how.well : Good. Sold more than I'd hoped and kept back what I meant to. | Well. Everything's dry and the till's honest.
+line @1 answer.how.poorly : A tickle in the chest. It'll pass. | Tired. The day dragged its feet.
+line @1 answer.how.busy [self.working=yes] : Busy. Talk while I wrap, if you don't mind. | Standing since first light. Sitting waits on the star.
+line @1 ask.how : And you? Well, I hope. | How's it with you?
+line @1 sympathise : That's a heavy thing. Sit a moment, if it helps. | I'm sorry. It will ease, given time.
+line @1 reassure : Give it time. Hard things soften, if they're left alone a while. | Don't fret over it tonight. It'll look smaller by daylight.
+line @1 decline : I'd sooner not. The stall can't be left, and there's only me to mind it. | Not today, I'm afraid. There's a promise made elsewhere, and it stands.
+line @1 accept_decline : That's fair. I'll not ask twice. | Some other day, then. It will keep.
+line @1 thank : I'm obliged to you. | Thank you. I'll not forget the kindness.
+line @1 deflect_thanks : It was no trouble. Don't think of it. | Leave it. I'd want the same, in your shoes.
+line @1 preclose [self.working=yes] : Well. #boards.capitalize# won't mind themselves. | I should get back. Somebody's eyeing the hams.
+line @2 preclose : Well. My feet have had enough of this spot. | That's me done for talking, I think.
+line @1 accept_preclose : Away you go. I'd not hold you here. | Of course. Another time.
+line @1 ack : #lasts#. | #mm#. | Right.
+line @1 give.advice : Buy what will wait, and you'll never be caught short. | Set a coin aside each week, however small. They gather.
+line @1 warn [world.bandits=near] : Bandits about, I hear. Go in company, or wait a week. | Don't take the road north after dark just now. It isn't safe.
+line @1 hail [pair.band=friends] : Over here. Stand with me a moment. | #greet#. This side, where the wind can't reach.
+line @1 congratulate : Well done. That will last. | Good. You've earned it, and it shows.
+line @1 deflect_praise : It's only salt and patience. Anybody could. | Kind of you. The salt does most of it.
+rule @cry_keepings
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Smoked, salted and dried. All of it will see the winter out. | Mutton and salt fish. Good for a month in a cold larder.
+
+rule @dusk_last
+when concept=bark working=yes self.role=merchant here.time=dusk
+does aside
+cooldown 8h
+say Last of the day. Broken pieces at half. | Shutting when the first star's out. Not a moment before.
+
+rule @first_star
+when concept=bark here.time=dusk|night here.outdoors=clear self.likes=stars
+does aside
+cooldown 10h
+say There it is. The first one. | One star out. The day can end now.
+
+rule @saltwind_bark
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast self.dislikes=salt_wind
+does aside
+cooldown 10h
+say #saltwind.capitalize# again. Everything wants covering. | That wind. It gets into every cloth I own.
+
+rule @crush_bark
+when concept=bark here.crowd=crowd self.dislikes=crowds
+does aside
+cooldown 8h
+say Too many bodies. Step wide of the crocks. | A little room, please. Only a little.
+
+rule @warm_rain_bark
+when concept=bark here.weather=rain here.season=spring|summer self.likes=warm_rain
+does aside
+cooldown 10h
+say Warm rain. A small mercy. | Now there's a kind rain.
+
+scene wt_dawn_boards
+when topic=work|day here.time=dawn self.role=merchant self.working=yes
+does tell.self / react.self / assess
+a : Boards down, sides hung, crocks uncovered. The market's still yawning and I'm ready. | I came down before the gulls. I like the stall to myself for an hour. | First job every morning is to smell the crocks. Nose before eyes.
+b[role=merchant] #trade : I'm not half set out yet. You put me to shame. | That hour's the only quiet one in the day. | Mine's the till first. Count before anything.
+b : That early? | Before the gulls? | And how do they smell?
+a@trade : I've less to set out than you'd think. It's the order that takes the time. | It is. I'd pay for that hour if I had to. | Count after. If the brine's turned, the till won't matter.
+a : Every day but Restday. The goods don't mind the hour, but I do. | Gulls are late risers, for all their noise. | Sound. They always are, if they were salted right.
+
+scene wt_what_lasts
+when topic=work|food self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I'm asked why I don't sell fresh. Fresh is a race. I'd sooner sell what can wait. | #keepings.capitalize#. Everything on #boards# would see the winter out. | A ham I hung in autumn is still fit to sell. Try saying that of a lettuce.
+b : What sells best? | All of it, truly? | And the oldest thing on there?
+a : Salt fish when it's lean, smoked mutton when it isn't. The weather decides more than I do. | All but the eggs. Those go to whoever's quickest. | A side of mutton from the first cold. It's better now than the day I hung it.
+
+scene wt_prices_up
+when topic=prices topic.dir=up self.role=merchant
+does tell.complaint / react.complaint / assess
+a : #topic.what.capitalize# has risen again. The new figure's on the slate and the grumbling's started. | Up again. I rubbed the old figure off the slate before breakfast. It went hard. | Dearer. I won't pretend otherwise, and I won't pretend it's my doing.
+b[role=merchant] #trade : They'll blame you for the wagon and the weather both. | We're all chalking new numbers this week. | That's the way to say it. Plain.
+b : Folk always blame the seller. | Are yours going up too? | Whose doing is it, then?
+a@trade : Let them. I've the bills to show, if anyone cares to read them. | Then we'll all hear the same grumbling, and none of it fair. | Plain costs nothing. Fancy talk costs custom.
+a : They do. Fair enough. I'd grumble too, buying. | Only as far as the cost went. Not a penny past it. | The road's, mostly. And the rain's. Never mine.
+
+scene wt_prices_down
+when topic=prices topic.dir=down self.role=merchant
+does tell.self / react.self / assess
+a : #topic.what.capitalize# is cheaper this week. I put my price down the same day. | Cheaper at last. I'll pass it on. I'd want the same, buying. | Prices down. Folk buy a little more and grumble a little less.
+b : Not everyone does that. | That's good of you. | Both welcome.
+a : I know. Their customers notice, sooner or later. | It's not goodness. It's keeping the custom I have. | Both. A quiet grumble is the best a seller can hope for.
+
+scene wt_crush
+when topic=smalltalk|day here.place=market here.crowd=busy|crowd self.role=merchant self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : #crush.capitalize# again today. I stood behind the boards and let it flow round me like a river round a post. | Too many bodies in one lane. Somebody trod on my tail and said sorry to the wrong wolf. | I like the trade a crowd brings. I don't like the crowd.
+b[stage=young|adolescent] #pup : I like crowds. You can get through under the legs. | Who did they say sorry to? | Why not?
+b : It's a crush, all right. | Did they really? | The one comes with the other.
+a@pup : You can. Mind whose purse you're near while you do it. | A sack of oats, as near as I could tell. | They push. They don't look. And they never buy while they're pushing.
+a : It passes. Everything in a market passes, if you stand still long enough. | They did. I said nothing. It wasn't worth the breath. | I know. I put up with it. Mostly.
+
+scene wt_salt_wind
+when topic=weather|smalltalk here.region=ridgemere here.outdoors=clear|overcast|fog self.dislikes=salt_wind
+does tell.complaint / react.self / assess
+a : #saltwind.capitalize# is up. It dries my eyes out and gets into everything I've covered. | Wind from the water today. My coat tastes of brine. | That wind would turn a good ham to leather if I left the cloth off.
+b[job=sailor|fisher] #sea : That's the good wind, for us. Fills a sail. | It stops stinging after a while. | Leather sells too.
+b : It's a sharp one. | Even you? | Can't you keep it covered?
+a@sea : Then you take it, and I'll keep the still days. | Never. It stings me the same as the first time. | Not at my prices, it doesn't.
+a : Sharp and damp together. I'd take either alone. | Even me. I'm not made of salt fish. | I do. It finds the gaps. It always finds the gaps.
+
+scene wt_warm_rain
+when topic=weather here.weather=rain here.season=spring|summer self.likes=warm_rain
+does tell.feeling / react.self / assess
+a : #warmrain.capitalize#. I came down the hill in it and never once hurried. | Feel that. Rain with no bite in it. I'd have it every week. | This kind of rain settles the dust and the tempers both. I like it.
+b[old] #old : I used to walk in it too. Now I stand under it. | The cold sort's the one that gets in the bones. | It settles mine, anyway.
+b : You'll be soaked. | Every week? | Does it, now?
+a@old : Under it is still in it, near enough. | It is. This kind only gets in the fur. | Then it's doing its work.
+a : I will. A dry coat's hanging by the fire. That's half the pleasure. | Every week, if it stayed warm. It won't. | It does. Nobody shoves in the wet.
+
+scene wt_cold_rain
+when topic=weather here.weather=rain here.season=autumn|winter self.role=merchant
+does tell.worry / reassure / assess
+a : Cold rain all week. I've had the crocks open twice to check the damp's not in. | This wet gets everywhere. I've moved the dried goods off the floor again. | Rain like this, I sleep with half an ear on the store.
+b : They'll be sound. You check them often enough. | Higher shelves, then. | It'll stop. It always stops.
+a : I know. I check them anyway. That's the job. | Higher, and straw under every sack. | In spring. Until then, I listen.
+
+scene wt_fog
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : The fog was that thick at dawn, I found the market by the smokehouses' smell. | Fog all down the hill. The lamps were still lit at noon. | I like a fog. The city goes quiet in it and minds its own business.
+b : By the smell? | At noon? | It does go quiet.
+a : You can't miss the smokehouses, fog or none. | Noon. Nobody had the heart to put them out. | Quiet and slow. I could live in a fog.
+
+scene wt_storm
+when topic=weather here.weather=storm here.region=ridgemere self.role=merchant
+does tell.worry / react.self / assess
+tone serious / even / even
+a : Storm off the Sound. I've lashed the awning and taken the sides down. | Listen to it. If the tide comes up the lane, it'll find my store first. | I closed early. No sense keeping a stall in this.
+b[job=sailor|fisher] #sea : Nobody's out on the water in this. | It came up our steps the last big one. | No sense being out in it, full stop.
+b : Will the awning hold? | Is your store near the water? | Wise.
+a@sea : Then we're all ashore and all waiting. | Then you know what I'm listening for. | Full stop. I'll go home and watch it from a window.
+a : It held the last time. I'll know by morning. | Near enough to worry. Not near enough to move. | Not wise. Only tired of being wet.
+
+scene wt_snow
+when topic=weather|season here.weather=snow self.role=merchant
+does tell.self / react.self / assess
+a : Snow lay on the boards at dawn. I brushed it off and sold salt mutton before noon. | Snow's good for my trade. Folk want food that will wait in the larder. | Cold enough to keep anything. The weather does half my work in winter.
+b : Before noon? | They do, in this. | Half?
+a : Snow makes folk think of the larder. Then they think of me. | A snowy week is my best of the winter. | The cold half. I do the salt half.
+
+scene wt_first_star
+when topic=pastimes|day here.time=dusk|night here.outdoors=clear self.likes=stars self.role=merchant
+does tell.self / react.self / assess
+a : I don't shut up shop till I've seen the first star. Then the day's done, and I can say so. | There. Over the Sound. The first one's out. | Every evening I wait for a star before I cover the boards. It's my bell.
+b[stage=young|adolescent] #pup : Is that a rule? | Where? I can't see it. | What if it's cloudy?
+b : What if there's cloud? | I see it. | Your bell?
+a@pup : Mine. Nobody else has to keep it. | Over the water, low down. Look a little left of where you're looking. | Then I guess. I'm usually right.
+a : Then I wait till I'm sure there would have been one. | Good. Now I can go home. | Better than a bell. It doesn't ring for anyone else.
+
+scene wt_star_names
+when topic=pastimes|dreams here.time=night here.region=ridgemere self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I've names for half the stars over the city. Nobody taught me. I gave them myself. | When the sky's clean I sit at the attic window and count what I can see. | My grandmother said every star was a lamp somebody forgot to put out. I liked that better than the truth.
+b : What do you call them? | How many can you see? | And what's the truth?
+a : Plain names. The ladle, the nail, the three on a string. Nobody argues with me. | Forty-one, the best night. Never more. The city's smoke takes the rest. | Nobody knows it. That's why I kept the lamps.
+
+scene wt_mutton_stew
+when topic=food self.likes=mutton_stew
+does tell.self / react.self / assess
+a : I left #stew# on low at home this morning. It'll be right by dark. | #stew.capitalize#, a crust to wipe the bowl, and the world can keep the rest. | Mutton's the one thing I'll cook properly. The rest I eat cold.
+b[job=cook|baker|innkeeper] #cook : Low and long. That's the only way with mutton. | Barley in it? | Mutton forgives a slow cook.
+b : All day? | Nothing at all? | Why mutton?
+a@cook : The only way. Folk who hurry mutton deserve what they chew. | Barley, and a turnip if I've one. Nothing clever. | It forgives everything but hurry.
+a : All day. The longer it sits, the kinder it gets. | Nothing. A dry bed after, perhaps. | It was my grandmother's pot. It's the one receipt I kept.
+
+scene wt_cold_supper
+when topic=food self.role=merchant
+does tell.self / react.self / assess
+a : People suppose I eat my own smoked fish. I can't look at it after a day of selling. | I eat the broken pieces. A cracked biscuit sells for nothing and tastes the same. | Supper's whatever didn't sell and won't wait. Mostly eggs.
+b : So what's your supper? | That's thrifty. | Every night?
+a : Bread and a mild cheese. Nothing that's seen smoke. | It's not thrift. I can't bear the waste. | Most nights. Eggs are honest. They tell you when they've turned.
+
+scene wt_fresh_straw
+when topic=home self.likes=fresh_straw
+does tell.feeling / react.self / assess
+a : I lay new straw at home every Restday, whether the old wants changing or not. | Nothing smells as clean as #straw#. Better than any soap. | I sleep better on a new laying of straw. Call it foolish if you like.
+b[job=farmer|herder] #land : I've straw to spare, if you want a load. | Wait till it's been in a byre a week. | Nothing foolish in it. Beasts know the same.
+b : Every Restday? | Better than soap? | I'd not call it foolish.
+a@land : I'd want it, and I'd pay for it. Farm straw is drier than the market's. | Not in my house, it won't. | Good. Then the beasts and I agree.
+a : Every one. It's a small thing that keeps the week in order. | To me. Soap smells of trying too hard. | Good. Then I'll not stop.
+
+scene wt_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# could carry my purse home and I'd never once count it. I can't say that of many. | A whole evening with #self.friend# can pass with hardly a word, and it's a good evening. | When the day's gone badly, #self.friend# is who I want across the table.
+b : That's a rare thing. | The quiet sort's the best sort. | Everybody needs one of those.
+a : Rare. I ought to say it more than I do. | It is. Words wear out. Good company lasts. | Everybody does. I'm lucky in mine.
+
+scene wt_neighbour
+when topic=home|friends self.neighbour
+does tell.self / react.self / assess
+a : I hear #self.neighbour#'s shutters go of a morning. It's a good sound to wake to. | Out of all the feet on our stair, I could pick #self.neighbour#'s blind. | There are worse neighbours than #self.neighbour#. I've had none better.
+b : That's a comfort. | That's being settled. | High praise, from you.
+a : It is. A street's only as good as who's on it. | It is settled. I've no wish to move. | It's meant. I'm sparing with it.
+
+scene wt_hand
+when topic=work self.hand self.role=merchant
+does tell.self / react.self / assess
+a : I could leave the stall with #self.hand# an afternoon and never count the coin after. | I'm showing #self.hand# how to hang a side so it doesn't sweat. It takes a while. | #self.hand# gives me my evenings back. Not that I'd say so where I'd be heard.
+b : That's trust, that is. | Hard, is it? | You ought to say so.
+a : It is. I've given it to few. | Not hard. Slow. The salt won't be hurried, and nor will a learner. | Perhaps. Saying things isn't my way.
+
+scene wt_no_family
+when topic=family self.married=no self.parent=no self.role=merchant
+does tell.self / react.self / assess
+a : No mate, no pups. The stall's household enough for now. | Folk keep asking when I'll marry. I keep asking them what for. | I'll settle when the business is settled. Not before.
+b[old] #old : Don't leave it too long. The years don't wait. | And what do they tell you? | That's sense.
+b : Plenty of time yet. | What do they say? | Sensible.
+a@old : I know. I'm not leaving it. I'm putting it in order. | Company. As if I lacked it. | I've never managed anything another way.
+a : There is. I'm in no hurry. | Company. I've a whole market of company. | Patient, not sensible. They look the same from outside.
+
+scene wt_married
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : I'd stay out till midnight if there were nobody to go home to. There's #self.spouse#, so I don't. | The best hour I have is the one at home with #self.spouse#. A quiet supper and no talk of prices. | Marrying is like a good salting. It wants time before you know if it took.
+b : That's a good match. | That sounds peaceful. | And did it take?
+a : I think so. Testing it would be foolish. | It is. Peace, and a warm room. | It took. Slowly, the way the best ones do.
+
+scene wt_shopfront
+when topic=dreams self.role=merchant
+does confide / react.self / assess
+a : I'd like a proper shopfront one day. Glass panes, a counter, and a bolt on the door. | Boards in the market do well enough. A shop by the north gate would do better. | I've a sum in mind. When #tally# reaches it, I'll stop sleeping on the plan and act.
+b[role=merchant] #trade : Glass costs. So do the shutters for it. | The gate's good for trade. Carts all day. | Don't wait too long. The good corners go.
+b : You'll have it. | Why by the gate? | How near are you?
+a@trade : I've priced both. I'm not dreaming, I'm adding up. | All day, and every driver hungry from the road. | I know. I'm watching two of them.
+a : I mean to. I'm not in a hurry, but I mean to. | Carts come in from the road with empty bellies. I'd be the first door they see. | Nearer than I'll say aloud.
+
+scene wt_faith
+when topic=faith
+does give.opinion / react.self / assess
+a : At the first frost I light one candle and ask for a dry store. The Bright One's never yet failed me. | Chapel, when the stall allows. I do more listening than singing. | My prayers are short. A short prayer and a true scale; that's what I owe.
+b[piety=devout] #devout : You'd be welcome more than once a year. | Singing's a kind of listening too. | Short prayers carry, the same as long.
+b : Not once? | Listening's enough. | That's fair.
+a@devout : Kind of you. I'll come once the winter's in. | Not the way I sing. | I hope so. I've never had the patience for long ones.
+a : Not once. I don't push my luck by saying so often. | It is, for me. | It's what I can offer.
+
+scene wt_carts_in
+when topic=caravan|travel here.region=ridgemere world.wagons=in self.role=merchant
+does tell.news / react.news / assess
+a : The carts came through the north gate. I'll be there by noon to see what's on them. | Wagons in. There'll be fresh salt by morning, if I'm quick. | The carts got through. Prices should settle a little now.
+b[job=carter] #road : Long road, but quiet this time. | Come early. It goes quick. | They will, for a week.
+b : Good news for you. | You'll be early, then. | That's welcome.
+a@road : Quiet is all anyone asks of a road. I'm glad of it. | I'll be there before you've unharnessed. | A week's something. I'll take a week.
+a : Good for anyone who eats. | Early as I can be. Salt goes first. | It is. I'd stopped counting on it.
+
+scene wt_carts_late
+when topic=caravan|prices world.wagons=late self.role=merchant
+does tell.worry / reassure / assess
+a : The carts are late from the north. I've two weeks of salt and I've started counting it. | Late again. I can't promise anyone a side of mutton till the wagons come. | Every day the wagons are late is a day I sell what I'd meant to put by.
+b : They'll come. They've never not come. | Folk will understand. | Can you stretch it?
+a : They do. The question is what's on my boards when they do. | Some will. The rest buy elsewhere and don't come back. | A little. I'll sell smaller and say why.
+
+scene wt_carts_robbed
+when topic=caravan|bandits world.wagons=raided
+does tell.news / react.news / assess
+tone serious / serious / even
+a : Word is a wagon got stripped bare out past the walls. I hope the drivers came through whole. | Another load gone, out beyond the gate. The road's long and the Watch is only so many. | Another robbery out past the walls. We'll all pay for that load as surely as if we'd driven it.
+b : The drivers are what matters. | They'd need twice the Watch. | How so?
+a : They are. I'll light something for them tonight. | Twice, and paid for. And who'd pay? We would. | Dearer salt, dearer everything. Somebody always pays for a robbery, and it's never the robber.
+
+scene wt_times_hard
+when topic=times world.times=hard|lean self.role=merchant
+does tell.self / react.self / assess
+a : Lean times sell salt fish. I'd rather not know it so well. | When times are hard, folk buy what will last. My boards are busier, and it gives me no joy. | I've put a basket of broken pieces beside the stall. Cheap, and no questions.
+b[wealth=poor|destitute] #poor : Broken pieces still fill a pot. | Busy's something, at least. | Kindly done. I might come by.
+b : It's a hard sum. | Better busy than not. | That's kind.
+a@poor : They do. Dig down to the bottom. The best bits sink. | Busy, yes. I'll not crow about it. | Come before noon. It's gone by noon.
+a : It is. I do the sum every night. | Busier isn't better. Not when it's for this reason. | Not kind. Fair. A crumb shouldn't cost what a loaf does.
+
+scene wt_times_good
+when topic=times world.times=good|boom self.role=merchant
+does tell.self / react.self / assess
+a : Good times. Folk are buying fresh and leaving my salt alone. I don't mind. It waits. | Coin about the city again. Somebody bought a whole side today without asking the price. | The times are fair. I'm not fool enough to complain aloud.
+b : Will you be all right? | Lucky you. | No sense tempting it.
+a : Quite all right. Good times end, and salt doesn't. | Not luck. I'd hung it a long time. It deserved a buyer like that. | None. I'll touch wood and get on.
+
+scene wt_gossip_held
+when topic=gossip
+does tell.self / react.self / assess
+a : Plenty is said across my boards. It stops there. Loose talk loses custom. | They talk while I'm wrapping. They forget I've ears, and I let them. | If you want gossip, try a taproom. I deal in salt.
+b[talk=chatty] #nosy : Not even a little bit? | Then what do you hear? | Salt's dull, though.
+b : That's wise. | And you let them? | Fair enough.
+a@nosy : Not one crumb of it. | Everything. And you'll hear none of it from me. | Dull and honest. I'll take that.
+a : It's not wisdom. It's custom. Talkers don't buy from a tattler. | I do. It's their business, not mine. | It is. The city talks enough without me.
+
+scene wt_gossip_glad
+when topic=gossip topic.subject topic.claim_kind=marriage|newcomer|promise_kept
+does tell.gossip / react.news / assess
+a : Word across my boards is that #topic.subject# #topic.claim#. No more came with it. | Word is #topic.subject# #topic.claim#. Unsworn, but welcome if it's so. | #topic.subject.capitalize# #topic.claim#, I'm told. It cheered me.
+b : Good news, that. | Let's hope it's true. | So am I.
+a : It is. Good news is thin on the ground. | Let's. I'd like one thing this week to be true and pleasant both. | Good. Pass it on kindly, if you pass it on at all.
+
+scene wt_gossip_grim
+when topic=gossip topic.subject topic.claim_kind=theft|violence|wanted
+does tell.gossip / react.news / assess
+tone serious / serious / even
+a : It's said #topic.subject# #topic.claim#. I'll carry it no further than that. | It's going round that #topic.subject# #topic.claim#. I'd keep it quiet till it's known for certain. | #topic.subject.capitalize# #topic.claim#, folk say. Grim talk for a market morning.
+b : That's ugly. | Wise. | It is.
+a : It is. I'll lock up twice tonight. | Loose talk robs more than the cutpurses do. | Harder to say. I've said it once and that's enough.
+
+scene wt_newcomer
+when topic=newcomer topic.subject
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# has come to live here, I hear. New folk need feeding. The market knows before the street does. | A new arrival. #topic.subject.capitalize#, I'm told. | A new face, #topic.subject#. I don't judge till I've seen how #topic.they# pays.
+b[from!=ridgemere] #away : I was new once myself, not long since. | Is that good or bad? | Give a newcomer a fair look.
+b : Another mouth for the market. | Have you met? | That's fair.
+a@away : And you found your way to the market quick enough. Everybody does. | Neither, yet. The city decides. | I always do. Fair look, fair price.
+a : Another custom, I'd say. | Not yet. I'll know the order before I know the name. | It's never once failed me.
+
+scene wt_festival
+when topic=festival self.role=merchant
+does give.opinion / react.self / assess
+a : Festivals are good for the till and hard on the nerves. All those bodies in one street. | I sell well the day before a festival and shut on the day. I don't want the crowd. | Bells, music, ale on the cobbles. I'll watch from a window, thank you.
+b[stage=young|adolescent] #pup : But the music's the best bit! | You shut? On the best day? | Come down, it's fun!
+b : You don't go? | Shut? | Not even for the bells?
+a@pup : For you it is. Go and enjoy it, and mind your paws in the crowd. | Best for you. For me the best day's the one after, when it's quiet. | I hear them fine from the window.
+a : An hour, no more. I'm home before the crowd thickens. | Shut. The sides are safer hung at home than out in a crush. | The bells I like. It's the pushing.
+
+scene wt_theft
+when topic=crime topic.kind=theft here.region=ridgemere
+does tell.news / react.news / assess
+tone serious / even / even
+a : #topic.victim# was robbed, I hear. A sorry business. My locks get checked twice tonight. | Robbed, #topic.victim#. Light paws come up from the water and go back down. | Another theft. #topic.victim#, this time. The Watch will be busy.
+b[job=guard] #watch : We're on it. | We'll find who did it. | Busy enough already.
+b : Twice? | You think it came from the water? | They will.
+a@watch : Then I'll sleep easier. I'm obliged to you. | I hope so. I'll pay my share for the finding. | Busier is better than idle, for the Watch.
+a : Twice. Once is habit. Twice is sense. | Trouble starts low and works its way up. I've seen it on the stairs. | Good. That's what we pay them for.
+
+scene wt_health
+when topic=health
+does tell.self / sympathise / assess
+a : I've #chill# coming on. #remedy.capitalize# and an early bed, and I'll be right by morning. | There's damp settled on my chest. It always comes the first week of the cold. | The hill home has stiffened my back. Don't tell a soul.
+b : Rest, then. | Mind it doesn't settle. | Take it slower on the hill.
+a : I'll rest on Restday. Not before. | It won't. I won't let it. | There's no slow way up that hill. Only up.
+
+scene wt_accent
+when topic=accent
+does tell.self / react.self / assess
+a : My talk is Ridgemere's because Ridgemere's all I've known. I've no wish for another. | The Heights reckon my talk smells of the market. I take it as kindly meant. | My words are plain. They go further that way.
+b[from!=ridgemere] #away : You sound like Ridgemere, sure enough. | It sounds fine to me. | Plain's easier to follow.
+b : I like how you talk. | Kindly meant? | They do.
+a@away : It's all I am. I'd not know how to sound otherwise. | Good. It's the only voice I've got. | That's the point of them.
+a : Thank you. I don't put it on. | I choose to think so. It saves me a quarrel. | And they come back. That's what counts.
+
+scene wt_animals
+when topic=animals here.region=ridgemere self.role=merchant
+does tell.self / react.self / assess
+a : There's a market cat sits by my crocks all day and never steals. I give it the trimmings. | Gulls went for the hanging sides at first light. I've a cloth over them now. | Rats will cross the whole city for salt meat. I keep a cat and a tight lid.
+b[stage=young|adolescent] #pup : What's it called? | Did they get any? | Is the cat any good?
+b : Clever cat. | Bold birds. | Two good answers.
+a@pup : Not one I gave it. It came with the stall, I think. | A corner. I cut it off and threw it to them. Fair's fair. | Better than the lid. Lids don't purr.
+a : Clever enough to know who feeds it. | Bold and greedy. The cloth's heavier than they are. | They are. Neither one asks for wages.
+
+scene wt_dusk_close
+when topic=day|work here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : Boards scrubbed, crocks lidded, sides back in the store. Now I wait for a star. | Slow afternoon. I sold more in the last hour than in the four before it. | Packed up. The walk home is uphill all the way, and every step of it pleases me.
+b : And then home? | Funny how that goes. | Glad?
+a : Then home, and the stew, and bed. In that order. | It's always the last hour. Folk remember their supper. | Every step's one further from the salt wind.
+
+scene wt_city
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : I was born under these clouds and I'll lie under them at the last. The towns can keep themselves. | Everything comes to Ridgemere in the end. Salt, mutton, news. I've only to stand still and it arrives. | Folk call the city loud and wet. It is, and it's the one place a stall like mine could thrive.
+b[from!=ridgemere] #away : The towns are quieter. | That's true enough. It all comes here. | Loud and wet. You've summed it up.
+b : Never wanted to travel? | It does all come here. | Like yours?
+a@away : Quiet doesn't buy salt. | It does. And the best of it stays. | I've lived in it long enough to say so kindly.
+a : Not once. I've the gate for that. Whatever's worth seeing comes through it in a cart. | All of it. I only have to wait. | One that sells what will wait. The towns put up their own.
+
+story wt_story_rags [topic=memories|work self.role=merchant]
+  : I sold cloth before I sold food. Remnants and rags, sorted by colour, on the same boards I have now.
+  : Then the city got hungry, and nobody wanted a remnant. I sold the last bale for salt and started over.
+  ask : Would you have held on, or let it go?
+  b[role=merchant] : I'd have held on too long. I always do. You were quicker than me.
+  b : I'd have held on, I think. Was it hard to let go?
+  : Harder to start. But I've never sold so much in my life.
+
+story wt_story_crock [topic=memories|food]
+  : My grandmother kept one crock of brine going all her life. She never once let it run dry.
+  : When she was gone, I carried it home myself. It weighed nearly as much as I did.
+  ask : Is there something of your old folk you've held on to?
+  b[old] : A spoon, bent. I eat with it still.
+  b : Not much. A few of their words. Is the crock still going?
+  : Still going. I add salt every winter, and I think of her when I do.
+
+story wt_story_flood [topic=memories|weather here.region=ridgemere self.role=merchant]
+  : The first winter I had the stall, the tide climbed the lane in a storm and got into the store.
+  : I stood all night in water to my hocks, lifting crocks onto barrels by lamplight.
+  ask : Which would you have lifted first, the till or the crocks?
+  b : The money, I think. What did you save?
+  : The salt. Wet money dries. Wet salt is only brine.
+
+story wt_story_late_coin [topic=memories self.role=merchant]
+  : A carter once took a side of mutton on a promise to pay on the way back.
+  : A year went by. I struck it from #tally# and stopped thinking of it.
+  : Then one morning there was the coin on my boards, wrapped in a rag, and nobody near.
+  b : Honest after all. Did you ever see who left it?
+  : Never. There was no need. It was the right money, to the penny.
+
+story wt_story_roof [topic=memories|pastimes here.region=ridgemere self.age>=16]
+  : As a pup I'd climb onto the roof to count stars, and get a hiding every time.
+  : One night I counted so long I fell asleep up there, and woke with the bells going and drizzle in my ears.
+  ask : What's the daftest thing you did as a pup?
+  b[stage=young|adolescent] : I'm nearly doing it now. Did you get down safe?
+  b : Too many to pick one. Never a roof, though. Were you frozen?
+  : Stiff as a board. I went up again the next clear night.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. A new face. Tell me what's wanted. | #greet#. Take your time; nothing here is in a hurry.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Back again, and welcome. | #topic.player#. Come out of the wind and say what's wanted.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #mm#. Speak from where you stand. | Go on, then. Paws by your sides, if you please.
+dlg @4 resident.hub [here.time=night] : It's late. The first star's long out, and I'm for home. Be quick. | Late for talk. Go on, then. Briefly.
+dlg @5 resident.hub : #greet#. A question? I've a moment. | #greet#. What is it?
+dlg @1 resident.job [self.role=merchant] : #keepings.capitalize#. Nothing on #boards# spoils by the week's end. | #self.trade_words.capitalize#. Salt, smoke and patience. Nothing more to it.
+dlg @2 resident.job : I work, I put a little by, and I go home when the first star is out. | Steady work. I don't ask more of a day than that.
+dlg @1 resident.business [business=thriving] : Better than I'd hoped. Folk want food that will wait, and I have it. | Very well. I've had to hang twice as many sides.
+dlg @2 resident.business [business=failing] : Badly, I won't lie. The goods last; the custom doesn't. | Slow. Too slow. I'm counting more than I'm selling.
+dlg @3 resident.business [business!=thriving|failing] : Steady. Steady suits me. | Well enough. Rent paid, and a little laid by.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. That came past my boards this morning. | I heard from #world.news_from# that #world.news#. That's all of it I have.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# in the market today. It's on every tongue.
+dlg @3 resident.news [world.wagons=raided] : Robbers have stripped a loaded wagon beyond the gate. Anyone travelling should find company first.
+dlg @4 resident.news [world.death=recent] : There's been a burying this week. The street's kept its voice down since.
+dlg @5 resident.news [world.wedding=recent] : Somebody was married this week. Our street emptied to watch.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing worth repeating. The market's been quiet. | #news_none# Ask me again once the wagons come.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. So it was told me; I add nothing. | Folk say #topic.subject# #topic.claim#. Once is all I'll say it.
+dlg @2 resident.gossip [here.gossip!=yes] : What's said at my boards stays at my boards. | Nothing I'd pass on. Try a taproom.
+dlg @1 resident.bye : #farewell#. Mind the wet steps. | Go carefully. Come before noon next time.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Take the lamplit way up. | Good night. I'm for home myself.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. #keepings.capitalize#; everything here will last you. | #greet#. Smoked mutton, salt fish, dried beans. Take your time.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : #greet#, #topic.player#. I put a good piece aside on the chance you'd come. | #topic.player#. Your usual, or something to put by for later?
+dlg @3 shop.greet [here.shop=bare] : #greet#. The boards are near bare. The carts are owed me. I'll still buy, mind. | Hardly a thing left. Try me after the wagons.
+dlg @1 shop.prices : The chalk is the price. I don't add for the asking. | Fair for goods that last. Dearer than fresh, cheaper than going hungry in a month.
+dlg @1 shop.bye : Keep it somewhere dry and cool. It'll see you through. | #farewell#. Mind the brine; it drips.
+graft resident.hub
+choice Why do you keep looking at the sky? -> star
+node star
+say I'm watching for the first star. I don't call a day finished until it's out. Then the day's done, and I can say so.
+mood calm
+free
+choice What if it's cloudy? -> cloud
+choice Goodbye. -> bye
+node cloud
+say Then I wait until I'm sure there would have been one. I'm seldom wrong by much. A day ought to have an end you can point at.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What keeps the longest? -> longest
+node longest
+say Hard-smoked mutton, if it's hung dry. A year, near enough. Salt fish half that, and beans as long as the weevils allow.
+mood pleased
+free
+choice How do you keep it dry? -> dry
+choice Let me see your goods. -> greet
+node dry
+say Off the floor, out of the salt wind, and checked every morning by nose before eyes. There's no trick. Only patience.
+choice Let me see your goods. -> greet
+choice Goodbye. -> bye

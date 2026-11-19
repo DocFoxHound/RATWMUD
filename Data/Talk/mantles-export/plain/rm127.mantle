@@ -1,0 +1,437 @@
+# rm127, the frost-ship drawer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm127
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_gwen_pitchdale
+written_by claude
+title the frost-ship drawer
+fits stage=young|adolescent|adult|old
+prefers talk=quiet drive=content
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk draws_ships_with_one_claw_on_anything_that_holds_a_line
+likes honey_cakes dice new_boots frosty_mornings
+dislikes early_bells haggling
+fears deep_water
+hopes a_berth_on_a_ship_bound_somewhere_dry
+topics ships +0.5 dreams +0.4 food +0.2 pastimes +0.3 weather +0.2 gossip -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# is a quiet, faraway pup of the Commons who draws ships with one claw on frost, slate and paper, dreams of a berth on a ship bound somewhere dry, and has never once put a paw in deep water.
+
+words
+oath! = Fair wind and far | Sails and sugar
+saying! = Somewhere it isn't raining | There's always a ship going out
+ship = a ship | a tall ship with three masts
+dry = somewhere dry | a place where it never rains
+cakes = honey cakes | a honey cake, sticky all over
+dice = dice | a dice game on the step
+boots = new boots | boots that still squeak
+frost = a frosty morning | frost on the windows
+claw = my claw | one claw
+counter = the counter downstairs | the shop counter
+bells = the early bells | bells before it's even light
+deep = deep water | the deep part of the Sound
+wall = the sea wall | the long wall where the gulls sit
+mm = Mm | Oh
+
+any
+opinion @1 festivals for 1 : Lamps on strings and honey cakes for a penny. And bedtime gets forgotten.
+opinion @1 city for 1 : Every ship in the world comes to Ridgemere first. So it must be the best place, even wet.
+opinion @1 houses for 1 : The Houses have the ships. If I'm good at sums, maybe one of them will want me.
+opinion @1 times for 1 : We've bread and a roof and boots with no holes. That's enough, mostly.
+opinion @1 merchants mixed 0 : I don't like it when they argue about money over a counter. Everybody's voice goes tight.
+opinion @1 watch mixed 0 : The Watch walk very slowly, as if they've nowhere to be. I'd like a job like that, on a ship.
+
+grown
+line @1 greet : #greet#. | #greet#, #address#.
+line @2 greet [pair.band=strangers] : #greet#. I was somewhere else; you've brought me back. | #greet#. A new face. Nice to meet it.
+line @1 greet.return : #greet#. | #greet#. Sorry; I was far off.
+line @2 greet.return [pair.band=friends|family] : There you are. I'd drifted off again. | #greet#. There's room beside me.
+line @1 farewell : #farewell#. | Fair wind to you, then.
+line @1 farewell.return : #farewell#. | And to you. Go gently.
+line @1 react.news : #mm#. I'll turn that over. | Is it, now.
+line @1 react.news.new : That's new to me. News finds me late, always. | #oath#. I'd not heard.
+line @1 react.news.known : I'd heard. Slowly, but I'd heard. | I knew that one. Even I did.
+line @1 react.news.doubt : I'll believe it once I've looked for myself. | That has the shape of a tale.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. That's a heavy, sad thing. | Oh. That's hard news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely. | Good. News with a kind ending.
+line @1 answer.how : Quiet. Content. | Well enough. Somewhere in my head, as ever.
+line @1 decline : I'd rather not, if you don't mind. My heart wouldn't be in it. | Not today. I've kept myself an hour with nothing in it.
+line @1 accept_decline : Another day, then. It's no matter. | Of course. No harm.
+line @1 thank : Thank you. That's kind. | Thanks. I'll remember.
+line @1 ack : #mm#. | Mm-hm. | So.
+scene gp_grown_at_sea
+when topic=ships|work self.job=sailor
+does tell.feeling / react.self / assess
+a : I went to sea in the end. Every morning I still can't believe it. | Some nights on deck I draw the coast in the salt on the rail. Old habit. | The Sound's behind me most days now. I miss the wall, a little.
+b[job=sailor] #crew : Nor can I, some days. | You'd draw on the sails if they let you. | We all miss something ashore.
+b : You did it, then. | Old habits stay. | Only a little?
+a@crew : I'm glad it's not only me. | I would. They won't. | The honey cakes. That's what I miss.
+a : I did. Slowly, as I do most things. | They do. This one I'll keep. | A little. Most of me is glad to be gone.
+
+scene gp_grown_ashore
+when topic=ships|dreams self.job!=sailor here.region=ridgemere
+does confide / react.self / assess
+a : I never went to sea. I still walk to the wall on a clear day to count the masts. | Grown, and I still draw ships on every frosty window. My claw does it by itself. | I meant to sail somewhere dry. I stayed. I'm not sorry, quite.
+b : There's time yet. | It's a kind of going, drawing them. | Not quite?
+a : Maybe. The ships aren't in any hurry, and nor am I. | So I say. It's nearly true. | Not quite. There's a dry place I'll never see. I can live with that.
+
+scene gp_grown_dry_place
+when topic=dreams|weather here.weather=rain
+does tell.feeling / react.self / assess
+a : Rain again. Somewhere a ship's tied up where it hasn't rained all year. | I still think about #dry# when it pours. I always will. | They say there are towns where the roads are dust. I'd like to walk on dust once.
+b[from=saltwell] #waste : Dust gets in everything. You'd miss the rain. | There's such a place. I come from it. | Dust is no treat. Ask anyone from the Waste.
+b : You'd miss the rain. | Always? | Dust?
+a@waste : Maybe. Ask me after a dry year. | Then I've met someone from my dream. That's strange. | I'll judge that when my own paws are in it.
+a : I'd miss it for a week, then I'd forget it. | Always. It's how I'm made. | Dust. Dry and warm under your paws.
+
+scene gp_grown_frost
+when topic=weather|season here.season=winter here.time=dawn
+does tell.self / react.self / assess
+a : Frost on the glass this morning. I drew a ship before I'd even washed. | A frosty morning's the best kind. The air bites and you know you're awake. | My claw found the frost before I did. Three masts, and a flag.
+b : You still do that? | It does bite. | A flag for which House?
+a : Every winter. I'll do it when I'm grey. | It's honest, a frost. No airs about it. | No House. A flag of my own, out of my head.
+
+scene gp_grown_cakes
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess
+a : I'll go three streets round for #cakes#. Proudly. | Honey cakes and nothing else. If I could, I'd sail on them. | One stall sells them warm on cold days. I know its hours better than my own.
+b : Neither would I be. | You'd sink. | Which stall?
+a : Good. Sit, then; we'll be shameless together. | I'd sink happy. | I'll not say. You'd be ahead of me in the queue.
+
+scene gp_grown_dice
+when topic=pastimes self.likes=dice
+does tell.self / react.self / assess
+a : I still throw dice on the doorstep after supper. I lose, mostly, and I don't mind. | Dice is a quiet game if you play it right. Nobody needs to talk. | Three dice rattling and a long look at nothing. That's an evening.
+b : Lose, mostly? | It is, quiet. | Sounds restful.
+a : I play for the throwing, not the winning. | Quiet's the whole charm. | It is. I need a lot of rest from talking.
+
+scene gp_grown_bells
+when topic=day|faith here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : The bells went before it was light again. I'd just reached the good part of a dream. | I'll never love the dawn bells. I've tried for years. | Every morning, those bells, as if the dark were a crime.
+b[piety=devout] #devout : They call us to prayer. | They're meant to wake you. | The day starts with them.
+b : They're loud, those bells. | Tried how? | They're early, aye.
+a@devout : I know. I'd pray better after a lie-in. | They do. I wish they wouldn't. | It starts too soon, then.
+a : Loud, and early, and right through my sleep. | Pillow over the ears. It doesn't help. | I'll get up when the sun does, thank you.
+
+scene gp_grown_haggle
+when topic=prices|work self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : Somebody haggled for a quarter hour today over a penny. I had to go and stand outside. | I can't bear haggling. The voices go thin and sharp, like gulls. | I hand over whatever's asked and leave. My purse would like me to argue. I can't.
+b[role=merchant] #trade : It's half the trade. | Gulls get what they want, though. | Your purse is right.
+b : All that for a penny? | Like gulls? | Pay what's asked?
+a@trade : Then I'll never be a trader. | They do. I'd still rather be quiet and hungry. | It's usually right. It's never once won.
+a : All that, and they both went away sour. | Just like. Circling the same scrap. | What's asked. Arguing costs me more than the coin.
+
+scene gp_grown_ship_due
+when topic=ships topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s due in, they say. I'll be on the wall to watch the sails. | They say #topic.ship# is coming. I'll go and look for it, even if it's late. | #topic.ship.capitalize#. I've drawn that one, I think. Or one like it.
+b[job=sailor] #crew : We'll see you up there. | Late, most likely. | They all look alike from the wall.
+b : You'll go and watch? | Even late? | Like it?
+a@crew : I'll wave. You won't see me. | Late is fine. The wall's not going anywhere. | Not to me. Each one's itself.
+a : I always do. It's my best hour. | Later's better. Fewer folk up there. | Near enough. My eye will tell me.
+
+scene gp_grown_deep_water
+when topic=health|smalltalk|ships here.region=ridgemere
+does confide / reassure / assess
+a : I've never put a paw in #deep#. All this dreaming of ships, and I can't swim a stroke. | The deep part of the Sound frightens me. I don't say so much. | I'd sail anywhere if I never had to look down.
+b : You can learn. | Lots of folk feel that. | Sailors don't look down.
+a : I could. I keep meaning to. | Lots. It's a comfort, a little. | Then they've more sense than me.
+
+scene gp_grown_family
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : #self.spouse# lets me be quiet. That's the best thing anyone's done for me. | I married somebody who doesn't mind my head being in the clouds. | A quiet house, #self.spouse#, and a window that frosts. I'm a lucky one.
+b : That's a good match. | That's rare. | You are.
+a : It is. We talk less than most and say more. | It is. I knew it was the day we met. | I know it. I tell myself every winter.
+
+scene gp_grown_quiet
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I've never been one for crowds of talk. A few words and a long look suits me. | Folk think I'm not listening. I am. I'm just slow to answer. | I'm better at quiet than I am at talk. Always was.
+b : Nothing wrong with that. | Slow's fine. | Quiet has its uses.
+a : I hope not. It's too late to change it. | Good. You'd be the first to think so. | It does. Mostly it lets me think.
+
+story gp_grown_story_window [topic=memories|weather self.age>=20]
+  : As a little thing I drew a ship on the frost of the front window, the biggest I'd ever done.
+  : It was there all morning. Folk stopped to look. One old wolf took off his hat to it.
+  ask : Has anybody ever honoured some small thing of yours like that?
+  b[old] : Once, long ago. You don't forget. Did it melt?
+  b : I'm not sure they did. Did it melt?
+  : By noon. I've been trying to draw that ship again ever since.
+
+dlg @1 resident.hub : #greet#. I was miles off. What is it? | #greet#. Mm. Go on.
+dlg @1 resident.job [self.job!=child] : #self.trade_words.capitalize#. Quietly, as I do most things. | Work. It keeps my claws busy between ships.
+
+young
+line @1 greet : #greet#. I was thinking. You can stop me. | #greet#. I didn't hear you come.
+line @2 greet [pair.band=strangers] : #greet#. You're not from round our street. | #greet#. I don't know you, but that's all right.
+line @1 kin.open [pair.kin!=no] : I drew a ship on the window. Come and see before it melts. | Look at my boots. Well, they're newer than the old ones.
+line @1 again.open : You again. My head was full of ships. | Here again. I'm still on the same step.
+line @1 greet.return : #greet#. | #greet#. I was miles away.
+line @1 farewell : Bye. I'm going to the wall to look at the water. | Bye. Don't tell anyone I was dreaming.
+line @1 farewell.return : Bye. | Bye, then.
+line @1 react.news : Oh. Is it really? | Mm. I'll think about that later.
+line @1 react.news.new : Oh. I hadn't heard. Pups never hear things first. | #oath#. Is that true?
+line @1 react.news.known : I heard. I was under the counter. | Everyone knows that. Even the cat.
+line @1 react.news.doubt : I don't think that's right. Somebody's made it up. | That's a made-up one, I think.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's horrid. I don't like that at all. | Oh no. That's a sad one.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's nice. That's really nice. | Good. I like happy news best.
+line @1 answer.how : All right. Sleepy. | I'm well. I was somewhere else in my head.
+line @1 ask.how : Are you all right? | How are you today?
+line @1 thank : Thank you. Really. | Thanks. That was kind.
+line @1 decline : Best not. That's not allowed, and I'd get told off. | No, thank you. I'd rather not, and it doesn't feel right.
+line @1 accept_decline : All right. You needn't. | Never mind. I'll ask the ships instead.
+line @1 sympathise : That's sad. I'm sorry. | Oh. I'd be sad too.
+line @1 ack : Mm. | Oh. | All right.
+rule @frost_ship
+when concept=bark here.season=winter here.time=dawn|day
+does aside
+cooldown 8h
+say There. Three masts. Nobody breathe on it. | I'll make the sails bigger this time.
+
+rule @bells_dawn
+when concept=bark here.time=dawn self.dislikes=early_bells
+does aside
+cooldown 12h
+say Bells already. It's not even light. | Stop ringing. I was halfway through a dream.
+
+rule @dice_throw
+when concept=bark here.place=street|home self.likes=dice
+does aside
+cooldown 8h
+say Seven! Sailors say seven's lucky. | Ones again. The dice don't like me today.
+
+scene gp_drawing
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I draw ships. On the window, on the slate, on the paper the shopping comes home in. | I can draw a ship with one claw and never lift it. Watch. | I drew a ship on my slate at lessons instead of doing sums. Teacher wasn't pleased.
+b[stage=young|adolescent] #pup : Can you draw me one? | Can you do a horse? | Were your sums right?
+b : Why ships? | Never lift it? | Was it a good ship?
+a@pup : Tomorrow. Today's ship is mine. | No. Horses have too many legs. | Two were. The ship was better.
+a : Because they go away. Things that stay don't need drawing. | Never. If I lift it, the ship sinks. | It was the best one I've done. That's why I got told off.
+
+scene gp_dry_place
+when topic=dreams
+does confide / react.self / assess
+a : Once I'm grown I'll sail away to #dry#. Nobody believes me. | There's a place where it never rains. I'm going to find it. | I want to sail where the ground is warm and dusty and nobody needs a hood.
+b[stage=adult|old] #grown : I believe you. Mind you learn your sums first. | There's such places. They're a long way. | You'd miss the rain, I bet.
+b : Never rains? | Is there? | No hoods at all?
+a@grown : I'm learning them. Slowly. | Good. I like a long way. | I'd miss it for a day. Maybe two.
+a : Never. Not even a little. Somebody told me. | There is. I've drawn it. | None. You could walk about with your ears dry all day.
+
+scene gp_berth
+when topic=ships|dreams here.region=ridgemere
+does tell.self / react.self / assess
+a : The big ships from the wharf have little round windows. I'd like one of those to sleep by. | A berth's what I want. That's a bed on a ship. I looked it up. | I counted the ships at the wharf today. Eleven. One will be mine.
+b[job=sailor|fisher] #crew : A berth's a narrow bed. You'd not turn over. | You've got the word right. | Eleven. Busy day. Which one?
+b : A round window? | A berth? | Which one?
+a@crew : I don't turn over anyway. I lie still and listen. | I practise saying it. | The one with the blue at the front. It looks kind.
+a : To look out of at night. You'd see the water going past. | A bed on a ship. You sleep and the ship keeps going. | I haven't decided. The one that goes furthest.
+
+scene gp_cakes
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess
+a : I had #cakes# today. I've still got honey on my paws. Look. | If I had a penny I'd spend it on honey cakes. Every penny. | I eat the honey off the top first and save the cake for after.
+b[stage=adult|old] #grown : Lick them clean before your mother sees. | Save a penny or two, mind. | Top first is proper.
+b : Lucky you. | Every one? | Does that work?
+a@grown : I've licked them twice. It doesn't come off. | I'd save one. For a ship. | I know. Nobody else does it.
+a : I am. I don't get them often. | Every one. Except one for dice. | It does. The cake's better plain, after.
+
+scene gp_dice
+when topic=pastimes self.likes=dice
+does tell.self / react.self / assess
+a : I play dice on our step with the pup from across the lane. I never win. | A six means a ship's due. I made that up. | I've got three dice. One has a chip in it. That one's lucky.
+b[stage=young|adolescent] #pup : I'll play you! | Does it work? | Can I hold the lucky one?
+b : Never? | Does it work? | Lucky how?
+a@pup : All right. You'll win. Everyone does. | Sometimes. The ships come anyway. | If you give it back.
+a : Never once. It's fine. The rattle's the best part. | It does if you wait long enough. | It rolls crooked. Crooked is lucky.
+
+scene gp_boots
+when topic=smalltalk|day self.likes=new_boots
+does tell.boast / react.self / assess
+a : I've got new boots. Listen to them squeak on the stairs. | My new boots are a bit big. I'll grow into them, they said. | I stood in a puddle on purpose in my new boots. They didn't let the water in.
+b[stage=adult|old] #grown : Very smart. Mind the puddles. | You will, faster than you think. | Good boots, those.
+b : Very nice. | Too big? | Not a drop?
+a@grown : I'm trying. The mud's everywhere. | I'd better. I keep tripping. | Good boots. I'm going to sail in them.
+a : I keep looking at them. I can't stop. | A bit. I put straw in the toes. | Not a drop. I checked my socks.
+
+scene gp_frost
+when topic=weather|season here.season=winter here.time=dawn|day
+does tell.feeling / react.self / assess
+a : There's frost on every window. I've drawn ships on four of them already. | I love a frosty morning. The air stings my nose and the puddles go hard. | I breathed on the window to make a clear bit and drew a ship in it.
+b[stage=adult|old] #grown : Not on the shop window, I hope. | Careful on those icy steps. | It'll melt by noon, your ship.
+b : Four? | Hard puddles? | A good one?
+a@grown : Only the inside. That's allowed. | I slide on it. That's the best bit. | I know. Ships always go.
+a : Four. With sails. One had a flag. | Hard as a cobble. You can stamp on them. | Three masts. I'm getting better.
+
+scene gp_early_bells
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.self / assess
+a : The bells woke me up again before it was light. I was on a ship. | Why do the bells have to go so early? Nobody's awake to hear them. | I pull my pillow over my head when the bells start. It doesn't work.
+b[stage=adult|old] #grown : They ring for the first prayers. | Somebody's always awake, pup. | Try two pillows.
+b : What ship? | Nobody? | It never does.
+a@grown : I'd pray better if I'd slept. | Not me. Not till the bells. | I only have one pillow.
+a : A big one. Going somewhere warm. Then the bells sank it. | Nobody I know. Only the bells. | No. They get in round the edges.
+
+scene gp_haggle
+when topic=work|day self.shopkeeper self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : When folk haggle at #counter# I go and sit on the stairs. I don't like the voices. | Somebody argued about a penny for ages today. I went and drew a ship. | I'll never haggle when I'm big. I'll just pay and go away.
+b[stage=adult|old] #grown : That's how buying's done, pup. | A penny's a penny to some. | You'll pay too much, then.
+b : Don't you like it? | For ages? | Never?
+a@grown : I know. I don't have to listen, though. | I gave them my penny once to stop them. I got told off. | I'll pay too much and be happy.
+a : No. Everybody gets cross and then they say thank you. It's strange. | Ages and ages. The ship was nearly finished. | Never. I'll be a sailor. Sailors don't haggle. I think.
+
+scene gp_rain
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / assess
+a : It's raining again. I'm drawing a dry place on the window so I can look at it. | Rain on the roof sounds like a ship's deck, I think. I've never been on one. | All the gutters are running. I put a paper boat in and it went all the way down.
+b[stage=adult|old] #grown : You're right, it's just like that. I've been on one. | You'll go one day. | Where did it go?
+b : A dry place? | Does it? | All the way?
+a@grown : Does it really? Then I'm right. | I will. I'll write and tell you. | Under the street. It's on its way to sea now.
+a : With a sun in it. We've no other sun today. | I think so. I'll find out. | Right to the corner. Then it went under.
+
+scene gp_wall
+when topic=ships|smalltalk here.region=ridgemere here.time=day
+does tell.self / react.self / assess
+a : I went up to #wall# and watched the ships come round the headland. I stayed till my paws went cold. | From the wall you can see all the way out to where the Sound turns grey. | Up on the wall I named all the ships I could see. I made up the names.
+b[stage=adult|old] #grown : Don't sit too near the edge, pup. | That's where the sea starts. | What names?
+b : How many came? | All the way? | Made up?
+a@grown : I keep my tail on the safe side. | I know. I'm going there. | Honey-cake, warm-sand and the quiet one.
+a : Two. A big one and a little one following it. | All the way. Past that is everywhere else. | They didn't tell me theirs. So I gave them mine.
+
+scene gp_lessons
+when topic=day|work self.job=child
+does tell.self / react.self / assess
+a : Sums at lessons this morning. I like sums. You need them on a ship. | The teacher says I look out of the window too much. The window has the sky in it. | We had to write a story. Mine was about a ship. They all are.
+b[stage=adult|old] #grown : Sums will take you far. | Look at the board for a bit. | Was it good?
+b : Do you? | The sky? | Again?
+a@grown : That's what I'm hoping. All the way. | The board doesn't go anywhere. | It had a storm. Nobody drowned.
+a : For counting the stars at night, to steer. | The sky's got clouds. Clouds are going places. | Again. It was a different ship.
+
+scene gp_family
+when topic=family self.mother self.father
+does tell.self / react.self / assess
+a : #mum# says I'll float away one day. #dad# says I already have. | #dad# allows me up on the high kitchen stool. #mum# pretends not to see. | When I said I'm going on a ship, #mum# went quiet and #dad# laughed.
+b[stage=adult|old] #grown : They'd miss you, if you did. | That's a fine seat. | They'll come round.
+b : Have you? | The high stool? | Why did they?
+a@grown : I'd come back. I'd bring honey. | It is. From up there the window's all sky. | I hope so. I'll draw them a ship.
+a : A bit. I always come back for supper. | The tall one. My boots don't reach the rung. | I don't know. Grown-ups are hard.
+
+scene gp_ship_news
+when topic=ships topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s coming, they say. I'm going to the wall to watch for it. | They said #topic.ship# is due. I'll draw it when it comes. | #topic.ship.capitalize#! A whole week I've waited for a ship.
+b[stage=adult|old] #grown : Not on your own, pup. | You'll need a big slate. | It may be late.
+b : You'll watch? | Will you? | All week?
+a@grown : I'll take somebody. Somebody quiet. | I've got a big slate. It's for ships. | Late is all right. Ships are worth any wait.
+a : From the wall. With my paws tucked in. | When it comes. With all its ropes. | All week. Some weeks there aren't any.
+
+scene gp_festival
+when topic=festival
+does tell.feeling / react.self / assess
+a : At festivals there's honey cakes for a penny and lamps strung across the square. | I like the festival lamps. They look like a ship's lights at night. | Nobody notices if you stay up late at a festival. I stayed up till the last lamp died.
+b[stage=young|adolescent] #pup : I'm going to have six cakes! | They do look like that. | Till they all went out?
+b : For a penny? | Like a ship? | Till the end?
+a@pup : You'll be sick. I'll have two. | I know. I said it first. | All but one. That one stayed lit.
+a : For a penny. I save up for it. | Lots of ships, all tied up together. | Till the end. Then I walked home in the dark. It was lovely.
+
+scene gp_quiet
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I'm no talker. I think a lot, though. I'm thinking now. | Folk say I'm a quiet pup. I'm not quiet inside. | I like sitting next to somebody and not talking. That's my favourite.
+b[stage=young|adolescent] #pup : What are you thinking about? | What's inside, then? | We can do that.
+b : What about? | What's inside? | Nothing wrong with that.
+a@pup : Ships. Always ships. | Ships and the sea and somewhere dry. | All right. You start.
+a : Ships, mostly. And whether there's honey cakes at home. | Ships. And the sea. And noise, a bit. | No. Quiet company's the nicest kind.
+
+story gp_story_big_ship [topic=memories|ships here.region=ridgemere]
+  : One morning the biggest ship I ever saw came round the headland. It had four masts.
+  : All the gulls flew up at once, and the bells rang, and I was on the wall and saw it all.
+  ask : What's the biggest thing you've ever seen?
+  b[stage=adult|old] : The Sound in a storm, I think. Did you draw it?
+  b : A whale, once, far out. Did you draw it?
+  : On every window in our house. I got told off four times.
+
+story gp_story_dream [topic=memories|dreams]
+  : I dreamed I was on a ship and it sailed clean through the rain to a place where the sun was hot.
+  : The ground was gold, like a honey cake, and there were no bells at all.
+  ask : Do you have dreams you remember in the morning?
+  b[stage=adult|old] : Not often now. That's a good one. Then what happened?
+  b : Sometimes. Not like that one. Then what happened?
+  : Then the early bells went, and I was in my bed, and it was raining.
+
+dlg @2 resident.hub [topic.meeting=stranger] : #greet#. A stranger. I'll talk, a little. | #greet#. You made me jump. I was thinking.
+dlg @3 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I drew a ship today. | #topic.player#. I remember you. You're the one with the boots.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'm meant to keep away from folk I don't know. | Stay over there. Your voice carries fine.
+dlg @5 resident.hub [here.time=night] : I should be in bed. Don't tell anyone. | It's dark. I'm only looking at the stars.
+dlg @2 resident.job [self.job=child] : Lessons, in the mornings. And I draw ships. That's my real work. | Sums and letters. Ships, after.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : No news. Only ships. | Nothing. Grown-ups keep their news up high, where I can't reach.
+dlg @1 resident.bye : Bye. If you see a ship, tell me. | Bye. Fair wind.
+graft resident.hub
+choice What are you drawing there? -> drawing
+node drawing
+say A ship. Three masts and a flag of my own. It's going somewhere dry. I always draw them going away.
+mood pleased
+free
+choice Where is it going? -> going
+choice Goodbye. -> bye
+node going
+say Somewhere it never rains. The ground's warm and you can lie on it. I'll go there myself, when I'm big. I'll need a berth.
+choice I hope you get there. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. Pay me no heed; I'm only half here. | #greet#. I was watching the masts.
+line @1 answer.how : Fine. Dreaming, as usual, so they tell me. | Well enough. Restless at the edges.
+line @1 react.news.new : I hadn't heard. Nobody tells me first. | #oath#. When did that happen?
+line @1 farewell.return : Bye, then. | Fair wind.
+line @1 decline : I'd better not. I've chores, and I'm already in trouble for drawing. | Not now, thank you. Maybe another day.
+rule @teen_masts
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 10h
+say Nine masts at the wharf today. One more than yesterday. | Every ship out there has a name from me. Not their real ones. Mine.
+
+scene gp_teen_charts
+when topic=dreams|ships
+does confide / react.self / assess
+a : I want to learn to read sea charts. I asked at the wharf and they laughed. | I've been copying a map of the coast. I'm only up to the second headland. | If I can steer by the stars, a ship will want me. So I'm learning them.
+b[stage=adult|old] #grown : They laugh at everyone the first time. Ask again. | Neat work's worth more than quick. | They'll want you. Good steerers are scarce.
+b : They laughed? | Only the second? | How many do you know?
+a@grown : I will. I'll ask until they stop laughing. | Then I'll be neat. I'm slow anyway. | I hope so. I'm not good at much else.
+a : Not unkindly. I'll go back with my sums. | It's slow. The coast keeps wiggling. | Six. Seven if it's clear.
+
+scene gp_teen_counter
+when topic=work self.shopkeeper self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : I'm let serve at #counter# now. I hate it when they haggle. My voice goes small. | Somebody beat me down a whole penny today. I couldn't say no. | I give the price and stand very still. They haggle anyway.
+b[stage=adult|old] #grown : You'll learn to hold your ground. | It happens to all of us at first. | Stillness works, given time.
+b : That's hard. | A whole penny? | Do they?
+a@grown : Maybe. I'd rather learn the stars. | I paid it back from my own. Don't tell. | Maybe. I'll stand stiller.
+a : It is. Ships don't haggle. | A whole one. I'll do better. Probably not. | Every time. I think they can tell.
+
+scene gp_teen_water
+when topic=health|ships here.region=ridgemere
+does confide / reassure / assess
+a : I'm trying to learn to swim. I've only been in to my belly. The deep frightens me. | Everyone at the steps can swim but me. I watch. I'm going in next week. | I want to go to sea and I'm scared of #deep#. That's daft, isn't it.
+b[stage=adult|old] #grown : Up to the middle's a start. Go slow. | Next week, then. Hold me to it. | It's not daft. Lots of sailors can't swim.
+b : Keep at it. | You'll manage. | It's not daft.
+a@grown : Slow's my only speed. | I'll hold myself to it. Maybe. | Really? Then I'm halfway to a sailor.
+a : I will. My middle's very brave. | I hope so. The water's so dark. | It feels daft. I'll go anyway.
+
+scene gp_teen_dreamer
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : They call me the dreamer at lessons. I don't mind as much as they think. | Somebody said I'll never get off this street. I didn't say anything. I'll just go. | I've stopped telling folk about the ships. I just draw them now.
+b[stage=young|adolescent] #pup : They call me worse. | You'll go. I know it. | Show me one sometime.
+b : Do they? | You'll show them. | That's a shame.
+a@pup : Then we'll be dreamers together. | Thank you. I needed somebody to know it. | When it's a good one. Most aren't yet.
+a : They do. Dreamers get somewhere in the end. | I won't show anybody. I'll just go. | It's all right. Drawing's quieter.

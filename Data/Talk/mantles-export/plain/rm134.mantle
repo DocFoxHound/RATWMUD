@@ -1,0 +1,424 @@
+# rm134, the copper-tin pup at the oven (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm134
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_silas_brinegate
+written_by claude
+title the copper-tin pup at the oven
+fits stage=young|adolescent|adult|old
+prefers humour=dry temper=short
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk knocks_on_the_bottom_of_every_loaf_to_hear_it_ring
+likes warm_bread old_tales fresh_straw first_warm_day
+dislikes night_noise deep_mud
+fears being_laughed_at
+hopes a_stall_on_the_commons_market
+topics food +0.4 dreams +0.4 prices +0.3 memories +0.2 season +0.2 gossip -0.3 festival -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=dry
+marks oath saying
+persona #self.first# is a stocky, dry little pup of Northgate who thumps the bottom of every loaf to hear whether it rings hollow, counts coppers into a tin under the bed for a stall of #self.first#'s own, and bristles at anyone who says small.
+
+words
+oath! = Burnt bottoms | Hot tins
+saying! = Knock twice, then listen | Hollow means ready
+loaf = a loaf | a loaf with a hollow bottom
+bread = warm bread | bread too hot to hold
+tin = my savings tin | the rattly tin I keep hidden
+coppers = coppers | my coppers
+stall = boards on the Commons market | a stall that's mine
+tales = old tales | a story from the old days
+straw = fresh straw | a crackly new bedding of straw
+warmday = the first warm day | a morning too mild for a coat
+noise = noise at night | carts banging past in the dark
+mud = deep mud | mud over the ankles
+hmph = Hmph | Huh
+
+any
+opinion @1 festivals against 1 : Festivals are shouting and sticky cobbles, and you can't sleep for days. Bread sells, though.
+opinion @1 city for 1 : Ridgemere's got the most mouths of anywhere. Most mouths means most bread. It's the right city for me.
+opinion @1 merchants for 1 : Somebody has to sell things, or you'd be baking your own boots. I'll be one of them.
+opinion @1 watch mixed 0 : The night watch rattle past our window with their lamps. I'd thank them more if they did it quieter.
+opinion @1 houses mixed 0 : The Houses are rich. Where it all goes, nobody's told me. They don't buy enough bread, I'd say.
+opinion @1 times mixed 0 : When times are bad, folk buy the stale loaves. When they're good, the warm ones. Either way, they buy.
+
+grown
+line @1 greet : #greet#. | #greet#, #address#.
+line @2 greet [pair.band=strangers] : #greet#. You look bread-hungry to me. | #greet#. A stranger to these streets, I'd guess.
+line @3 greet [here.time=dawn] : Morning. I've had flour on me since the dark. | #greet#. Early. The bread's earlier.
+line @1 greet.return : #greet#. | #hmph#. #greet#.
+line @2 greet.return [pair.band=friends|family] : You. Good. Sit. | #greet#. Took your time.
+line @1 farewell : #farewell#. | Go on, then.
+line @1 farewell.return : #farewell#. | Aye. Mind the mud.
+line @1 react.news : #hmph#. Is it. | Well. That's a thing.
+line @1 react.news.new : That's new. Hadn't reached me. | #oath#. First I know of it.
+line @1 react.news.known : Carters brought that in with the dawn loads. | Old. It went past the gate yesterday.
+line @1 react.news.doubt : Somebody sober can say it twice, then I'll listen. | Sounds half-baked to me, and I know baking.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. Nobody deserves that. | #hmph#. Hard news. I'm sorry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's well done. | Now that's worth leaving a warm bed for.
+line @1 answer.how : Can't grumble. Well, I can. I won't. | Steady. Floury.
+line @1 answer.how.busy [self.working=yes] : Busy. Talk while I knead. | Run off my legs since the oven was lit.
+line @1 decline : Not this time. I've the oven to mind, and it won't mind itself. | I'd sooner not. I'd do it badly and then hear about it.
+line @1 accept_decline : Fair enough. No harm. | Right. Another time.
+line @1 thank : Thanks. I'll not forget it. | That's decent. Ta.
+line @1 tease : You've flour on your nose and you don't even work here. | Look at you, all dressed up for the mud.
+line @1 tease.return : Says the one with crumbs down the front. | You'd know about mud.
+line @1 ack : #hmph#. | Right. | Aye.
+scene sb_grown_knock
+when topic=food|work self.job=baker
+does tell.self / react.self / assess
+a : I still knock every loaf on the bottom before it goes out. Two knocks. If it rings, it's done. | Thirty loaves this morning. I knocked every one. Two came back under. | My paw knows the sound of a done loaf better than my ear does now.
+b[job=baker|cook] #trade : Hollow and ringing. That's the test. | Back in for a minute, those two. | You get so you don't need to think.
+b : Every one? | Under? | Better than your ear?
+a@trade : There's no other test worth the name. | A minute each. They came out singing. | Thinking burns bread. Knocking doesn't.
+a : Every one. A loaf can't fib to a knock. | Dull as a stone. Back in they went. | It's had more practice. I started young.
+
+scene sb_grown_stall
+when topic=work|dreams self.role=merchant
+does tell.self / react.self / assess
+a : I've a stall now. I saved for it from when I was no taller than a flour sack. | Every copper in the tin went on these boards. I'd do it again. | The stall's mine. Not much, but mine, and nobody can say otherwise.
+b[role=merchant] #trade : Hard won, that. | The first boards are the dearest. | Mine's the same. Small and mine.
+b : Since you were small? | All of it? | Good for you.
+a@trade : Hard won, and I'll hold it. | Dearest and best. | Small's fine. Small doesn't fall over.
+a : Small, aye. But serious about it. | Every one. The tin's empty and I don't care. | It is good for me. I'll not pretend otherwise.
+
+scene sb_grown_stall_wish
+when topic=dreams self.role!=merchant
+does confide / react.self / assess
+a : I meant to have boards on the Commons by now. I'm still saving. Slower than I'd like. | Hidden at home is a tin with years of coppers in it. One day it'll be boards. | I've the stall planned to the last nail. All I'm short of is the coin.
+b : You'll get there. | Years? | That's a good start.
+a : I will. I'm stubborn, and I'm patient, and I'm counting. | Years. I keep the count private. It's embarrassing. | It's a start. Starts don't sell bread.
+
+scene sb_grown_warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : There's nothing to touch #bread#. Butter on it and I'm anybody's. | I tear the end off a new loaf before it's cooled. Burns every time. | Warm bread and a quiet kitchen. I'd want nothing else in a day.
+b : With butter? | Every time? | That's a good day.
+a : With butter, and nobody watching. | Every time. I never learn. I don't want to. | It is. Most of mine are like that.
+
+scene sb_grown_tales
+when topic=memories|pastimes self.likes=old_tales
+does tell.self / react.self / assess
+a : I'll sit up late for a good old tale. The old ones who tell them are going, one by one. | Give me a long tale told slow by a fire. Music's welcome to everyone else. | I know a dozen old tales by heart. I tell them badly, but I tell them.
+b[old] #old : I've a few left in me yet. | Music's for the young. | Badly's how they were always told.
+b : Going? | You'd skip the music? | A dozen?
+a@old : Then tell me one. I'll fetch a loaf. | It's noise with a tune. A tale's got bones. | Good. Then I'm doing it right.
+a : Going, aye. Somebody's got to keep the tales. | Every time. A tale lasts longer. | A dozen. Thirteen, counting the one about the oven.
+
+scene sb_grown_warm_day
+when topic=season|weather here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : First warm day of the year. The coat stays home today, and nobody's sending me back for it. | Sun on the step and the mud drying. That's spring, to me. | Sitting-out weather. I've waited for it since the frost.
+b : It'll turn cold again. | Drying at last. | Since the frost?
+a : Then I'll be cold. Today I'm not. | At last. My boots thank it. | Since the very first one. I count the days.
+
+scene sb_grown_night_noise
+when topic=home|day here.time=dawn self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : Carts banging past all night again. I'd like one quiet night before I'm grey. | Somebody sang under the window till near dawn. Badly. | The bakers' hours are bad enough without the street awake all night.
+b : It's a noisy city. | Badly, you say? | You keep hard hours.
+a : Loudest there is. I'd keep it, mind. | Like a barrow with one bad wheel. | Hard hours and short nights. That's bread.
+
+scene sb_grown_mud
+when topic=weather here.weather=rain self.dislikes=deep_mud
+does tell.complaint / react.self / assess
+a : Mud over the ankles on the way in. My boots need a knife to them now. | I hate deep mud. It takes your boot and keeps it. | The lane's a river of mud. I went the long way round.
+b : It's the rain. | Took it? | The long way?
+a : It's always the rain. And then it's always the mud. | Clean off. I hopped home. | Longer, but drier. Drier's worth it.
+
+scene sb_grown_family
+when topic=family self.parent=yes
+does tell.feeling / react.self / assess
+a : I'd like #self.child# to hear when a loaf is done. Nobody taught me; it came. | I'm saving for #self.child# the way I saved for the stall. Copper by copper. | Every Restday I bake a little loaf for #self.child# alone. Nobody else touches it.
+b : It might run in the family. | That's love. | A little one?
+a : Then the customers had better get used to knocking. | It's arithmetic. Love's in there too, somewhere. | Little. With a cross cut in the top.
+
+scene sb_grown_teased
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : I was a small pup. I'm not now. I'll thank folk to remember that. | Somebody called me the little baker today. I'm taller than they are. | I've a temper. I'm told it's my best feature. I'm told that by people who don't know me.
+b : Nobody'd call you small now. | Taller? | Who told you that?
+a : They'd better not. I remember everything. | By a whisker. A whisker's enough. | Somebody who knows me well. Fine. It's true.
+
+scene sb_grown_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : Folk talk across a bread counter. I let it go in one ear and out with the crumbs. | What I hear stays behind the counter. Bread goes out, talk stays in. | For gossip, try the carters. I've loaves to knock.
+b[talk=chatty] #nosy : Not one bit? | Come on. Something. | The carters are worse.
+b : Wise. | Fair enough. | Fair.
+a@nosy : Not a single crust. | Something. The loaves are done. That's my news. | They are. That's why I said them.
+a : Wise or lazy. One of the two. | Nobody had to teach me that one. | It is fair. I'm a fair sort.
+
+scene sb_grown_festival
+when topic=festival
+does give.opinion / react.self / assess
+a : Festivals mean three days of no sleep and a queue into the street. I'll take the queue. | I don't care for the noise. I care for the takings. | Music in the street till dawn. I bake through it with my ears stuffed with wool.
+b[stage=young|adolescent] #pup : But there's sweets! | Won't you come and dance? | It's the best bit!
+b : The takings? | Wool? | Not a festival sort?
+a@pup : Sweets, aye. I'll buy you one. Just the one. | I'll dance when the bread's out. Which is never. | Yours, maybe. Mine's an oven and a headache.
+a : Takings. That's the best music I know. | Wool. Works better than you'd think. | Never was. Not even small.
+
+story sb_grown_story_burnt [topic=memories|food self.age>=18]
+  : My first loaf alone came out of the oven black as a boot. I was eight, or near it.
+  : I knocked on the bottom anyway, as I'd been taught. It rang out loud and hollow. It was done, sure enough. Done to cinders.
+  ask : Have you ever ruined something you tried your hardest at?
+  b[old] : A shirt, sewn to my own sleeve. Did you eat it?
+  b : A pot of stew, I think. Did you eat it?
+  : Every crumb. I'd made it. You eat what you make. I still do.
+
+dlg @1 resident.hub : #greet#. If it's bread, you're in luck. If not, be quick. | #greet#. Go on.
+dlg @1 resident.job [self.job!=child] : #self.trade_words.capitalize#. Up before dawn, done before dark, flour in everything. | I work. I knock on things to see if they're done. You'd be surprised how often that's the job.
+
+young
+line @1 greet : #greet#. | #greet#. Busy, me. Talk anyway.
+line @2 greet [pair.band=strangers] : #greet#. I don't know you. You can still talk. | #greet#. You're new. I'm not.
+line @3 greet [here.time=dawn] : I've been up ages. The bread's in. | Morning. You're up late.
+line @1 kin.open [pair.kin!=no] : I knocked a loaf and it rang first go. Ask me how many. | Look. Four coppers. Don't touch.
+line @1 again.open : You again. I've not gone anywhere. | Back. You must like me, then.
+line @1 greet.return : #greet#. | #hmph#. #greet#.
+line @2 greet.return [pair.band=friends|family] : You. Good. Sit there. | You came. I was waiting. Not long.
+line @1 farewell : Bye. I've coppers to count. | Bye. Keep out of the gate mud.
+line @1 farewell.return : Bye. | Bye, then.
+line @1 react.news : #hmph#. Is it? | Oh. That's something.
+line @1 react.news.new : I didn't hear that. And I hear things. | #oath#. Really?
+line @1 react.news.known : Everybody knows that. The carts knew it first. | Old news. The bread's fresher.
+line @1 react.news.doubt : That's fibbing. Your face has gone all twisty. | Somebody made that up, and made it up badly.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I don't like it. | Oh. That's horrid news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | That's nice. I'll tell my tin.
+line @1 answer.how : Fine. Floury. | All right. I'm hungry. Bread hungry.
+line @1 ask.how : You all right, then? | How's yours going?
+line @1 thank : Thanks. I won't forget. | Ta. Kind, that.
+line @1 decline : No. My coppers stay put, and I'm not allowed besides. | I'd better not. I'll get told off and you won't.
+line @1 accept_decline : All right. Your loss. | Fine. I didn't want to anyway.
+line @1 tease : You've got a face like a loaf that didn't rise. | You walk like you've mud in your boots.
+line @1 tease.return : At least my boots fit. | Says you, with crumbs on.
+line @1 take_offence : I'm not little. Try that again, then. | Don't call me that. I'm nine and a bit.
+line @1 ack : #hmph#. | Right. | Mm.
+rule @knock_bark
+when concept=bark here.place=home|work|market
+does aside
+cooldown 8h
+say Knock knock. Hollow. That one's done. | Two knocks. It rang. Good loaf.
+
+rule @coppers_bark
+when concept=bark here.place=home|street
+does aside
+cooldown 10h
+say One, two, three, four. Still four. Good. | Four coppers and a button. The button doesn't count.
+
+rule @night_bark
+when concept=bark here.time=night self.dislikes=night_noise
+does aside
+cooldown 12h
+say Another cart. At this hour. Who does that. | Shush out there. Bakers are trying to sleep.
+
+scene sb_knock_loaf
+when topic=food|smalltalk
+does tell.self / ask.detail / answer.detail
+a : You knock a loaf on the bottom, like a door. If it rings hollow, it's done. | I knock every loaf in the house before anyone eats it. It's my job. I gave it myself. | A loaf that thuds isn't done. A loaf that rings is. Nobody else listens properly.
+b[stage=young|adolescent] #pup : Can I knock one? | Does it hurt the loaf? | Rings like a bell?
+b : Like a door? | Every loaf? | And it sounds like?
+a@pup : One. A small one. Gently. | No. It likes it. Nobody else ever asks a loaf anything. | Like a little drum. You'll know it once you've heard it.
+a : Like a door. Two knocks. Then you listen. | Every one. Even the ones in the shop window. Through the glass. | Hollow. Like an empty jug. That's a done loaf.
+
+scene sb_tin
+when topic=dreams|prices
+does confide / react.self / assess
+a : I've a tin under the bed. It's got eleven coppers in it. It's for a stall. | Every copper I get goes in #tin#. Even the bent ones. | I'm saving for #stall#. I've been saving since I was six. That's ages.
+b[stage=adult|old] #grown : Eleven's a good start. Keep at it. | A bent copper still spends. | Ages, at your age.
+b : Eleven? | Even the bent ones? | Since six?
+a@grown : I'll keep at it. I'm stubborn. Everyone says. | It does. I checked. | Three years. Nearly half my life.
+a : Eleven. And a button. The button's for luck. | They're worth the same. I asked. | Since six. I'm nine now. Do the sum.
+
+scene sb_stall_plan
+when topic=dreams|work
+does tell.self / react.self / assess
+a : My stall will have loaves in rows, and a sign, and no cats on it. | I'll sell bread. Obviously. And I'll knock every one before it goes. | When I've a stall, I'll have a stool behind it. A tall one. So I can see over.
+b[stage=adult|old] #grown : No cats is wise. | Folk will like that. | A tall stool. You'll want that.
+b : No cats? | Obviously? | So you can see?
+a@grown : Cats lie on the bread. I've seen it. | They'll have to. It's the rule. | For now. When I'm big I'll stand.
+a : None. I'll put a sign up. A picture of a cat with a line through it. | What else is there? Boots are for cobblers. | Over the counter. Folk won't take me seriously otherwise.
+
+scene sb_warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : #bread.capitalize# is the best food there is. I'm not asking; I'm telling. | I got the heel of the first loaf today. Still hot. I burnt my tongue and I don't care. | When the oven's opened the whole street smells good for a minute. That's my favourite minute.
+b[stage=young|adolescent] #pup : Can I have some? | Did it hurt? | I'd come and smell it.
+b : The best? | Burnt your tongue? | A good minute.
+a@pup : If you ask nice. And you've washed. | A bit. Worth it. | Come at dawn. It's free.
+a : The best. Cake's for show-offs. | It's still burnt. I can taste it. | The best one. Then the cart goes past and spoils it.
+
+scene sb_tales
+when topic=memories|pastimes here.region=ridgemere self.likes=old_tales
+does tell.self / react.self / assess
+a : There's an old drover at the gate who tells tales for a crust. I give him one most days. | I like old tales. The ones with wolves who walk out of the snow and know things. | I heard a tale about a baker whose oven never once went out, not since before anyone's gran was born.
+b[stage=adult|old] #grown : Those old drovers know a tale or two. | Walk out of the snow? | Never out? That's a long fire.
+b : For a crust? | Know things? | Never once?
+a@grown : He knows hundreds. I've heard about nine. | And tell you where the bread's gone wrong. | It is. Somebody had to sit up with it.
+a : A fair price. The tales are long. | Secret things. Nobody tells you what. That's the point. | Never once. I'd like an oven like that.
+
+scene sb_straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : We got fresh straw for the beds. I rolled in it for ages. It smells like summer. | #straw.capitalize# crackles when you lie down. Old straw doesn't. It just sighs. | I'd sleep in a stable if the straw was new. I said so. Nobody let me.
+b[stage=adult|old] #grown : It's a good smell, fresh straw. | Sighs? | You'd not like the horses.
+b : Like summer? | Sighs? | Nobody?
+a@grown : The best smell after bread. | Like it's tired. Old straw's always tired. | I'd sleep at the other end.
+a : Summer in a sack. You should try it. | Tired, like. Old straw's had enough. | Nobody. They said I'd come home smelling of horse. I would.
+
+scene sb_warm_day
+when topic=season|weather here.season=spring here.weather=clear self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : It's warm! My coat's off and nobody's said a word. | First warm day. The step's warm when you sit on it. Feel. | I've been waiting for #warmday# since the snow. It's come.
+b[stage=adult|old] #grown : It'll turn, mind. Keep the coat near. | Warm as toast. | Sit in it while it lasts.
+b : Nobody? | Warm already? | It's come at last.
+a@grown : I'll keep it near. Not on. | Toast is my favourite thing that's warm. | I will. I'm sitting in it all afternoon.
+a : Nobody yet. I'm keeping quiet. | Warm as a loaf. Nearly. | At last. I counted the days and it's ninety.
+
+scene sb_night_noise
+when topic=home|day self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : The carts go past our window all night from the gate. Bang, rattle, bang. I can't sleep. | At midnight somebody sang under our window. Not even a good song. | We get up early for the bread. The street doesn't care. It stays up late.
+b[stage=adult|old] #grown : That's the gate for you. It never shuts. | Ale songs. They're never good. | The street never does care.
+b : All night? | Not good? | It never does.
+a@grown : It should shut. Just at night. For bakers. | Not even in tune. Even I'd be better, and I can't sing. | It should. It should learn.
+a : All of it. I counted eleven carts and then I fell asleep cross. | It was about a goat. The goat was the best bit. | Never. I've asked it nicely.
+
+scene sb_mud
+when topic=weather here.weather=rain self.dislikes=deep_mud
+does tell.complaint / react.self / assess
+a : The mud by the gate's up to my knees. It ate one of my boots yesterday. | I hate #mud#. It grabs your feet like it wants to keep you. | I take the cobbled way. It's longer. I don't care.
+b[stage=young|adolescent] #pup : I jump in it! | It's only mud. | Can I come round with you?
+b : A whole boot? | Grabs you? | Longer, though.
+a@pup : Then you can fetch my boot. | Only mud is the worst kind. | If you keep up. I walk fast.
+a : A whole one. I fished for it with a stick. Found it. Full. | Like hands. Muddy hands. | Longer and drier. Drier wins.
+
+scene sb_teased
+when topic=smalltalk|friends
+does tell.complaint / react.self / assess
+a : Somebody called me small today. I'm not small. I'm stocky. That's different. | A big pup laughed at my stall tin. I didn't cry. I went red, though. | They call me the little baker on our street. I'm not little and I'm not a baker yet.
+b[stage=adult|old] #grown : Stocky's a fine thing to be. | Red's all right. You didn't cry. | You'll be both, soon enough.
+b : Stocky? | Did you say anything? | Not yet?
+a@grown : It is. Stocky doesn't fall over in the wind. | No. I'm saving it. I'll say it when I've a stall. | Baker soon. Big later.
+a : Stocky. Look it up. It's a real word. | No. I counted my coppers at them. Slowly. | Not yet. I'll tell you when.
+
+scene sb_mother
+when topic=family|work self.mother
+does tell.self / react.self / assess
+a : #mum# lets me knock the loaves now. I've got the ear for it, apparently. | I get up with #mum# when the oven's lit. Nobody else in the street is awake. | #mum# says I'll be a baker. I said I'll be a baker with a stall. That's better.
+b[stage=adult|old] #grown : An ear for bread's a gift. | That's an early start for a pup. | It is better. Aim high.
+b : The ear? | Nobody? | Is it?
+a@grown : It is. I got it from nowhere. It just came. | I'm used to it. I yawn till lessons. | I'm aiming at a stall. That's high enough.
+a : For the hollow. Not everyone can hear it. | Nobody but the cats. And the carts. | It's better. You get a sign.
+
+scene sb_carts_in
+when topic=caravan world.wagons=in here.region=ridgemere
+does tell.news / react.news / assess
+a : Carts through the gate at dawn. The drivers bought bread before they'd even sat down. | Wagons in. That means flour. Flour means bread. Bread means coppers. | The carts are in. Muddy ones. The drivers smell like rain and horses.
+b[job=carter] #road : Long road. We were hungry. | Flour on the second wagon. | We do. It's the road.
+b : Hungry, were they? | Coppers for you? | Rain and horses?
+a@road : I could tell. You ate the end off one in the street. | I know. I watched it go in. | It's fine. You buy bread.
+a : Starving. They eat a loaf standing up. | For #tin#. One day. | And the road. The road has a smell. Like wet stones.
+
+scene sb_lessons
+when topic=day self.job=child
+does tell.self / react.self / assess
+a : At lessons we did counting. I was best. I count coppers every night. | Teacher asked what I'll be. I said a baker with a stall. Everybody laughed. I didn't. | I'd rather be at the oven than lessons. But I need the sums for the stall.
+b[stage=young|adolescent] #pup : You were best? | Why did they laugh? | Sums are boring.
+b : The best? | Laughed? | You do need sums.
+a@pup : I'm always best at counting. It's my thing. | Because they want to be boring things. | Not if they're coppers. Coppers are interesting.
+a : The best. I'm not boasting. I'm telling. | They'll buy bread from me later. Then we'll see. | I know. It's the whole reason I go.
+
+scene sb_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : I don't tell secrets. I hear them, though. Folk forget I'm under the counter. | Somebody said something about somebody. I'm not saying who. | Gossip's for people with nothing to count. I've got coppers.
+b[stage=young|adolescent] #pup : Tell me one. Just one. | Go on, who? | I've got coppers too.
+b : Good for you. | Not even a little? | Fair enough.
+a@pup : No. You'd tell. | No. That one belongs to somebody else. | How many? Bet I've more.
+a : It's good for everybody. Secrets go stale, like bread. | Not even a crumb. | It is fair. I'm fair. Mostly.
+
+story sb_story_drover [topic=memories|lore here.region=ridgemere]
+  : The old drover at the gate says there was once so much snow it reached the roofs, and nobody could get bread.
+  : One baker dug a tunnel from her oven to the street and passed loaves through it all winter.
+  ask : Would you dig a tunnel for bread?
+  b[stage=adult|old] : For good bread, I might. Is it true?
+  b : For warm bread, yes. Is it true?
+  : He says so. He says it was his grandmother. I've decided it's true.
+
+story sb_story_first_knock [topic=memories|food]
+  : The first time I knocked a loaf I hit it so hard it went flat on one side.
+  : Everyone laughed. I didn't. I knocked the next one gently and it rang like a little bell.
+  ask : Did you ever get a thing wrong first and right straight after?
+  b[stage=adult|old] : Most things, pup. That's how learning goes. Did you eat the flat one?
+  b : Lots of times. Did you eat the flat one?
+  : I ate it. Flat bread is still bread.
+
+dlg @2 resident.hub [topic.meeting=stranger] : #greet#. I don't know you. You can still buy bread. | #greet#. A new face. Go on, then.
+dlg @3 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've got twelve coppers now. | #topic.player#. You came back. I knew you would.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay there. Your voice reaches. | Be quick. I'm busy counting.
+dlg @5 resident.hub [here.time=night] : I should be asleep. The carts woke me. | It's late. Bakers go to bed early.
+dlg @2 resident.job [self.job=child] : Lessons, mornings. And I knock the loaves. That's my real job. | Lessons. And saving for a stall. I'm good at saving.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : No news. Only bread. | Nothing. Ask the carters. They know everything.
+dlg @1 resident.bye : Bye. Don't step in the mud. | Bye. Buy bread somewhere. Ours, ideally.
+graft resident.hub
+choice Why do you knock on the bread? -> knock
+node knock
+say To hear it. A done loaf rings hollow, like a drum. A loaf that isn't done just goes thud. You can't tell by looking. You have to listen.
+mood pleased
+free
+choice Can anyone learn it? -> learn
+choice Goodbye. -> bye
+node learn
+say If they've the ear. Two knocks on the bottom, then quiet. Most folk talk while they knock. That's why they never hear it.
+choice I'll try it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. Mind the flour. | #hmph#. #greet#.
+line @1 answer.how : Tired. The oven doesn't care about lessons. | Fine. Saving. Always saving.
+line @1 react.news.new : Didn't hear that. Odd; I hear most of it. | #oath#. When was that?
+line @1 farewell.return : Bye, then. | Aye. Go on.
+line @1 take_offence : I'm not a pup any more. Speak to me properly. | Once more and there's no bread for you.
+rule @teen_knock
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Two knocks. Rings. Next. | That one's under. Back in.
+
+scene sb_teen_oven
+when topic=work self.mother
+does tell.self / react.self / assess
+a : I'm let do the first batch on my own now. #mum# just watches and says nothing. Loudly. | I lit the oven myself today. First time. Nobody told me how. I watched for years. | I knocked forty loaves before lessons. Two were under. I caught them both.
+b[stage=adult|old] #grown : That's trust, that is. | Watching's half the learning. | Two caught is forty good.
+b : On your own? | Nobody told you? | Forty?
+a@grown : It's trust. Then every loaf gets checked once I've gone. | The other half's burning your paws. I've done that too. | Thirty-eight. But I'll take forty.
+a : On my own. Mostly. Somebody's always there, pretending not to be. | Nobody. I just knew. | Forty. My arm's sore.
+
+scene sb_teen_tin
+when topic=dreams|prices
+does confide / react.self / assess
+a : The tin's nearly full. A second's begun. | I asked how much a stall costs on the Commons. I'm a quarter there. | I've stopped telling folk how much I've saved. They want to borrow it.
+b[stage=adult|old] #grown : A second tin's a good sign. | A quarter's not nothing. | Wise. Keep it close.
+b : A second one? | A quarter? | Do they?
+a@grown : It's a heavy sign. I can't lift it. | It's not nothing. It's not a stall, either. | Close as under my bed.
+a : A second. The first one's too heavy to hide properly. | A quarter. Three quarters to go. | They do. The answer's no.
+
+scene sb_teen_teased
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : They still call me the little baker. I'm taller than most of them now. | Somebody laughed at my floury coat. I sold them a loaf. They stopped laughing. | My temper's slower now. Only a little slower.
+b[stage=young|adolescent] #pup : Taller? Really? | Good. | Nearly?
+b : They'll stop. | That's one way. | Progress.
+a@pup : By an ear. An ear's enough. | It's the only way that pays. | Nearly. Ask me next year.
+a : They'd better. I've a long memory. | The best way. They're eating my bread now. | Slow progress. Like dough.
+
+scene sb_teen_warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : I still steal the heel of the first loaf. I'm old enough to know better and I don't. | My nose knows a ready loaf now. I still knock. Habit. | Warm bread and a quiet morning before lessons. That's the day's top hour.
+b : Who'd stop you? | Still knock? | Sounds right.
+a : Nobody. That's what makes it stealing, I think. | Knocking's for certain. Smelling's for guessing. | It is right. Then lessons ruin it.

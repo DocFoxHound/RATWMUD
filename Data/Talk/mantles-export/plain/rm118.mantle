@@ -1,0 +1,317 @@
+# rm118, the eyes-shut whittler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm118
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_dagfinn_kettlecote
+written_by claude
+title the eyes-shut whittler
+fits stage=adult|old
+prefers talk=quiet temper=calm
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk whittles_by_feel_with_eyes_shut_to_hear_the_market
+likes crisp_apples whittling market_bustle warm_rain
+dislikes waiting rats
+fears the_market_gone_quiet stiff_paws_that_cannot_hold_a_blade
+hopes to_carve_the_whole_market_in_little a_warm_wet_summer
+topics pastimes +0.5 day +0.3 weather +0.3 family +0.2 memories +0.2 prices -0.3 crime -0.3
+styles comfort=presence gossip=overheard refuse=soft tease=none
+marks oath saying
+persona #self.first# sits at the edge of the market with a knife and a bit of soft wood, eyes shut, listening to the city haggle: slow, gentle, few in words, content with bread and a roof, and short of patience only with folk who keep others waiting.
+
+words
+oath! = Shavings and sawdust | Knots and curls | Mind the grain
+saying! = Let it come at its own pace | Soft wood, slow knife, no harm done
+blade = the little blade | my whittling knife
+wood = a bit of soft wood | a lime offcut
+curls = the shavings | a lapful of curls
+figure = a little carved wolf | a figure the length of my claw
+market = the market | the Market Hall crowd
+din = the din | all that racket from the stalls
+wetwarm = a warm rain | the soft summer wet
+fruit = a crisp apple | a barrow apple, cold from the night
+pocket = my coat pocket | the pocket with the figures in
+seat = the step by the hall door | my old stool
+rats = the rats | something with a long tail in the wall
+boards = the floorboards | the boards under the stairs
+fire = the fire | the kitchen fire
+
+any
+opinion @1 houses for 1 : House money turns the kilns, and the kilns fill the stalls. I've no quarrel there. | Greatly's bricks built half this city. You can't sneer at a wall that keeps the rain off.
+opinion @1 newcomers against 1 [self.age>=50] : I knew every voice in #market# once. Now half are strange to me. | They're welcome, I suppose. I'd just like the old voices back.
+opinion @1 times for 1 : A loaf, a dry bed, a bit of wood to carve. I want nothing more of the times. | Good or bad, the market still opens. That'll do for me.
+opinion @1 church for 1 [self.age>=50] : I've stood at enough gravesides. Somebody ought to say the words, and the priests do. | The chapel's hush suits me, mostly.
+opinion @1 road against 1 : The north road's rougher than it was. The carters say so, and they'd know. | I'd not go far on it now. Not that I go far.
+opinion @1 city for 1 : Ridgemere's noisy, wet and crowded. I'd not swap a stone of it. | Listen to it. A whole city talking. Where else would you get that?
+opinion @1 merchants mixed 0 : Some of them shout their prices like a song. Those I like. | They're folk like the rest. Some honest, some loud, a few both.
+
+grown
+line @1 greet : #greet#. Mm. Sit, if you want. | #greet#. I heard you coming.
+line @2 greet [pair.band=strangers] : #greet#. New voice. I'd not heard yours before. | #greet#, #address#. Your voice isn't one of the hall's.
+line @3 greet [here.time=dawn] : #greet#. Market's only just waking. | Morning. The stalls are still yawning.
+line @4 greet [here.time=dusk|night] : #greet#. Stalls are packing up. Listen to the shutters. | Evening. Quieter now. I miss it already.
+line @5 greet [here.place=market] : #greet#. Step out of the jostle a minute. | #greet#. Busy, isn't it. Lovely.
+line @1 greet.return : #greet#. Mm. | #greet# to you. Sit.
+line @2 greet.return [pair.band=friends|family] : There you are. I knew the step. | #greet#. I'd been half listening for you.
+line @3 greet.return [here.time=dusk|night] : Evening. Go quiet; the street's sleeping. | Evening. My mind was on the fire.
+line @1 kin.open [pair.kin!=no] : Sit by me. Not too close to the blade. | There's an apple in my pocket. Halves.
+line @1 again.open : You're back. I'd only just shut my eyes. | Twice now. I'll know your step soon.
+line @1 farewell : #farewell#. Go gently. | #farewell#. Mind the crowd by the hall.
+line @2 farewell [here.time=dusk|night] : Good night. Mind the wet cobbles. | #farewell#. Fire's waiting for both of us.
+line @1 farewell.return : And you. Go gently. | #farewell#. Mm.
+line @2 farewell.return [here.time=dusk|night] : Good night to you. | Night. Sleep easy.
+line @1 react.news : Mm. Go on. | I'm listening. Eyes shut, but listening.
+line @1 react.news.new : #oath#. That's not reached the stalls yet. | New, that. And this step hears most things.
+line @1 react.news.known : I heard it by the pie stall at noon. | Somebody said it behind me this morning. Two somebodies.
+line @1 react.news.doubt : I'd want that twice, from two mouths. | Market talk grows legs. I'd wait.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. Sad, that. Very sad. | Hm. That sits heavy. Poor souls.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's nice. That's very nice. | Good. Somebody's happy today, then.
+line @1 answer.how : Content. Same as ever. | Well. Warm enough. Can't ask more.
+line @2 answer.how [here.weather=rain] : Happy as a duck, if the rain's warm. | Wet. I don't mind it.
+line @1 ask.how : Eating, are you? | Sleeping all right?
+line @1 sympathise : Sit by me. No need for words. | I'm sorry. That's hard. I'll sit with you.
+line @1 reassure : Give it time. Wood comes good for the gentle. | It'll settle. #saying#.
+line @1 decline : Not today, thank you. My knees want the step, not the stairs. | I'll not. I'm too slow for it, and I'd only keep you.
+line @1 accept_decline : That's all right. | No matter. Another day.
+line @1 thank : That's kind. Thank you. | Thank you. I'll carve you something for that.
+line @1 deflect_thanks : Oh, it was nothing. | Mm. Glad to.
+line @1 preclose : Well. My fire's calling. | Damp's finding my knees. In I go.
+line @1 accept_preclose : Go on. I'll be here. | Off you go, then. Gently.
+line @1 ack : Mm. | Mm-hm. | #bc_true#
+line @1 give.advice : Don't hurry a thing that wants time. Wood or folk. | Shut your eyes in the market one day. You'll hear more than you see.
+line @1 warn [world.bandits=near] : Carters say the road's unsafe this week. Keep inside the walls. | Keep within the walls a while. Not alone, out there.
+scene eyes_shut
+when topic=pastimes|day
+does tell.self / ask.detail / answer.detail
+a : I whittle with my eyes shut. My paws know the wood; my ears want the market. | Don't mind my eyes. I'm not asleep. I'm listening. | I can carve a wolf's ear blind now. Took me half a lifetime.
+b : Doesn't the knife slip? | Listening to what? | Half a lifetime for an ear?
+a : Not if you go slow. #saying#. | Everything. The pie cry, the carts, somebody arguing over a hen. It's like music. | An ear's hard. Feet are harder. I'm still on feet.
+
+scene what_carving
+when topic=pastimes
+does tell.self / react.self / assess
+a : This one's going to be a wolf. Sitting. Or lying down, if it argues. | I've a pocketful of little figures. Every one a face I heard in #market#. | It's a pup with a pie. I heard one this morning, crying for one.
+b : It's coming along. | Every one? | Did the pup get the pie?
+a : It is. Wood decides, mostly. I just help. | Most. Some I've not met yet. | Somebody gave it half. I'll carve that in too.
+
+scene market_din
+when topic=day|smalltalk here.crowd=busy|crowd
+does tell.feeling / react.self / assess
+a : Hear that? The whole square going at once. I love a busy market. | Some folk can't stand the noise. I'd sit in it till dark. | Fish cry on one side, pots on the other. It's better than chapel singing.
+b : It's loud today. | I'd go deaf. | Better than singing?
+a : Loud's good. Noisy stalls are selling stalls. | You'd get used to it. It's company, is noise. | For me, yes. Keep that from the priest.
+
+scene market_quiet
+when topic=day|smalltalk here.crowd=quiet
+does tell.worry / reassure / assess
+a : Hardly a voice in the square today. I don't like it. | Too still. You can hear the pigeons. | Half the stalls are empty. Makes me uneasy.
+b : It'll pick up. | Pigeons aren't bad. | It's just the day.
+a : I hope so. A quiet market's a hungry one. | No. But I'd rather hear folk. | Maybe. I'll sit and see. Patiently, for once.
+
+scene warm_wet
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : Dry all week, and now this. Soft and warm. I'd sit out in it till supper. | Feel it on your nose. Warm as milk. The whole street smells new. | The dust's gone off the cobbles. Best rain of the year.
+b : You'll get soaked. | It does smell good. | You like rain?
+a : I'll dry by the fire. Worth it. | It's the stones. They've been waiting for it. | Warm rain, I do. Cold rain I leave to the ducks.
+
+scene cold_wet
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : Cold rain. My paws won't bend round the knife. | This sort gets in your bones. No good for whittling. | Not my rain, this. Too cold by half.
+b : Go in by the fire. | It's miserable. | There's a warm kind?
+a : I will. The wood'll keep. | It is. I'll carve tomorrow. | In summer, after a dry spell. You'll see.
+
+scene apple_whole
+when topic=food
+does tell.self / react.self / assess
+a : #fruit.capitalize#, and I eat the lot. Core, pips, everything but the stalk. | Nothing better than an apple that snaps. The mushy ones I feed the carthorses. | There's always an apple in #pocket#, saved. It never stays saved.
+b : The core too? | The horses must love you. | Who eats it, then?
+a : Waste not. The pips are the best bit. | They know my pockets. Nosy things. | Me, ten minutes after. I've no patience with apples.
+
+scene child_fusses
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : #self.child# thinks I'll catch my death on this step. I let the worrying happen. | #self.child# fetches me a blanket whenever it spits. I don't need it. I take it anyway. | I'd have #self.child# near me over anybody.
+b : Somebody cares about you. | That's kind. | Lucky, the pair of you.
+a : Mm. That's the nice thing about it. | It is. Out loud, though, I'd never. | We are. And there's somebody who'd notice if I didn't come home.
+
+scene child_proud
+when topic=family|work self.parent=yes self.age>=45
+does tell.boast / react.self / assess
+a : #self.child# makes me proud. I've never said. I ought to. | #self.child# works harder than I ever did. I just sit and listen. | I carved #self.child# a little figure, years ago. It's still on the shelf.
+b : Then say it, before it goes stale. | Somebody has to sit and listen. | Keep that one safe.
+a : I will. One of these days. | That's my job now. I'm good at it. | It is. Lost an ear, but it's still there.
+
+scene rats_in_wall
+when topic=animals|home
+does tell.complaint / react.complaint / assess
+a : There's something with a long tail under #boards#. Scrabbling, after dark. | Rats. I can't abide them. Scratch, scratch, all night. | A rat ran right past my stool today. Bold as a carter.
+b : Get a cat. | Horrible things. | Bold, was it?
+a : I'd like one. A quiet one. | They are. The one thing I'd hurry, getting rid of them. | Bold as you like. I put my feet up.
+
+scene kept_waiting
+when topic=smalltalk|friends
+does tell.complaint / react.complaint / concede
+a : I've all the patience in the world for wood. None for folk who say an hour and mean three. | Waited half the morning on somebody. Carved a whole foot while I sat. | I don't mind slow. I mind being kept.
+b : That's a bit much. | At least you got a foot. | There's a difference?
+a : #oath#, it is. Wood doesn't promise. | True. I'll call the foot their fault. | A big one. Slow's honest. Kept's rude.
+
+scene times_content
+when topic=times world.times=ordinary|good|boom
+does give.opinion / react.self / assess
+a : Bread on the table, roof over it. I'd call that good times. | The stalls are full and folk are buying. What else is there? | I'm content. Folk think that's odd. I don't.
+b : You're easily pleased. | Not much else, I suppose. | It's not odd.
+a : I am. It's cheaper that way. | A warm rain, now and then. | Thank you. I'll tell my knife.
+
+scene times_lean
+when topic=times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : The market's thin these days. Fewer voices, and the ones there are, quieter. | Hard times. You can hear it. Folk haggle longer. | Times are lean. I'd give a figure to every pup at the hall, if it helped.
+b : It's hard all round. | Can you? | It would, a bit.
+a : It is. We'll sit it out. That's what the old do. | Every penny gets argued now. Twice. | Then I'll carve faster. Slowly faster.
+
+scene new_voice
+when topic=newcomer
+does tell.self / react.self / assess
+a : There's a new voice at the stalls. Sing-song. Not from here. | Somebody new's moved in near the hall. I heard them before I saw them. | New folk in the market. I'll learn the voices first, then the faces.
+b : Who is it? | What did they sound like? | Voices first?
+a : Couldn't tell you. I'd know it again, though. | Cheerful. That's a good start. | Always. Faces change. Voices don't.
+
+scene overheard
+when topic=gossip topic.subject
+does tell.gossip / react.news / assess
+a : Folk forget an old wolf with shut eyes still has ears. I heard #topic.subject# #topic.claim#. | Two stallholders behind me, this morning: #topic.subject# #topic.claim#, they said. | I wasn't listening. Well. I was. They say #topic.subject# #topic.claim#.
+b : Is that so? | Behind you, were they? | You're a sly one.
+a : That's what was said. I'd not put my paw on a book for it. | Right behind. They thought I was asleep. | Not sly. Just still.
+
+scene kept_quiet
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I hear things. Mostly I let them roll past, like the carts. | Somebody said a thing about somebody. That's theirs, not mine. | My ears are long. My tongue's short.
+b : Very wise. | Fair enough. | Sensible.
+a : Not wise. Just lazy, maybe. | It'll find its way without me. | It's served me a long while.
+
+scene old_hall
+when topic=memories self.age>=60
+does tell.memory / react.self / assess
+a : The hall had straw on the floor in my pup days. There were pennies in it for the patient. | An old wolf sold whistles by the pillar, back then. Their shrilling's in my ears yet. | The market used to close at noon on Restdays. Now it hardly closes.
+b : Did you ever find one? | Whistles? | Better or worse now?
+a : Three, in a whole summer. I was very patient. | Bird whistles. Every pup in the square had one. Noise, all day. | Louder now. I like it louder.
+
+scene lore_bricks
+when topic=lore|land here.region=ridgemere
+does tell.self / react.self / assess
+a : Greatly's bricks under us, Timberland's beams over us. Half the city came out of a House yard. | Every wall round the square came out of a Greatly kiln, they say. | Listen to the rain on the tiles. That's Greatly tile. You can tell by the sound.
+b : Never noticed. | They say that? | By the sound?
+a : Most don't. They tread it every day and never look. | They do. I'd believe it. | Deeper. Thicker. I've had a long life to listen.
+
+scene festival_crowd
+when topic=festival
+does tell.feeling / react.self / assess
+a : A festival's the market turned up loud. I'll be there, on my stool. | All the town in the square at once. I don't dance. I listen. | I carve a little something for the festival every year. Leave it on a stall for somebody.
+b : You'll not dance? | Listening's dancing for some. | Who gets it?
+a : My knees dance. I don't let them. | It is, for me. | Whoever finds it. I never see who.
+
+scene winter_paws
+when topic=season|health here.season=winter
+does tell.complaint / sympathise / assess
+a : Winter. My paws go stiff as the wood. Hard to tell which is which. | Too cold to carve. I sit by the fire and think about carving. | The market's half shut and my fingers won't bend. Bad month.
+b : Warm them first. | That's something, thinking. | It'll pass.
+a : I do. Then I do it again. | It's most of carving, thinking. | It will. Spring, and warm rain.
+
+scene dream_little_market
+when topic=dreams
+does confide / react.self / assess
+a : I'd like to carve the whole market in little. Every stall, every wolf. Before I go. | I dream about it. A little square, little figures, and every one shouting. | Nobody knows this. I've got forty figures in a box. It's a start.
+b : That's a lot of carving. | Shouting wood? | Forty's a good start.
+a : It is. I've time. Probably. | You'd hear them, if you shut your eyes. | It is. Only another few hundred to go.
+
+story first_blade [topic=memories|pastimes self.age>=40]
+  : My grandad gave me a knife when I was small. Told me to carve him a wolf.
+  : I brought him a lump with four bumps. He turned it round and round and called it the finest wolf in Ridgemere.
+  ask : Did anyone ever lie to you that kindly?
+  b : Once or twice. They stick.
+  : He kept it on the mantel till he died. I've carved a thousand since. None better, he'd say.
+
+story low_street_water [topic=memories|weather self.age>=40]
+  : One spring the rain came for three days and the low streets went under.
+  : I sat on the hall steps and watched a whole barrow float by, apples and all.
+  b : Apples and all? What did you do?
+  : Waded in and saved what I could. Ate them for a week. Best flood I ever had.
+
+story crying_pup [topic=memories|family self.age>=40]
+  : A pup sat by me crying once, lost in the crowd.
+  : I said nothing. I carved, and the pup watched.
+  : By the time the pup's mother came, there was a little wolf in the pup's paw.
+  ask : Would you have kept a thing like that, at that age?
+  b : I'd have kept it for ever. I still would.
+  : I hope that pup did. I never asked. Some things you leave be.
+
+rule @curls_bark
+when concept=bark
+does aside
+cooldown 8h
+say Mind the grain. Mind the grain. | #oath#. There. An ear.
+
+rule @market_bark
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 9h
+say Listen to that. Whole city haggling. | Pie cry's late today.
+
+rule @rain_bark
+when concept=bark here.weather=rain here.season=spring|summer
+does aside
+cooldown 10h
+say Warm rain. That's the good kind. | Smell the cobbles.
+
+rule @rat_bark
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say There it goes again. Under the boards. | Scratch, scratch. Go away.
+
+dlg @1 resident.hub : #greet#. Mm. Wanted something? | #greet#. Sit. I'm only carving.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I knew your step. | #greet#, #topic.player#. Back again. That's nice.
+dlg @3 resident.hub [here.time=night] : Late, this. I'm nearly in. Quick, then. | Evening. I can't see the wood any more. Talk to me instead.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Only a knife, a stick and an old wolf here. Say what you want. | Gently, now. What is it?
+dlg @1 resident.job [self.job=none self.stage=old] : I sit by the market and carve. And listen. That's all, these days. | Nothing much. Whittling. Listening. It's enough.
+dlg @2 resident.job : #job_busy# Not much to tell. | Bits and pieces. Paws like to be busy.
+dlg @1 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : I've heard nothing worth passing on. Only prices. | #news_none# Ask the stalls; they hear it first.
+dlg @2 resident.news [world.news] : The stallholders had it from #world.news_from#: #world.news#.
+dlg @3 resident.news [world.event_words] : The whole market's full of it: #world.event_words#.
+dlg @1 resident.gossip [here.gossip!=yes] : Plenty passes this step. I let it pass. | #gossip_none#
+dlg @2 resident.gossip [here.gossip=yes] : I heard it behind me: #topic.subject# #topic.claim#. Only heard, mind.
+dlg @1 resident.bye : #farewell#. Go gently. | #farewell#. Come by again.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Mind the wet stones.
+graft resident.hub
+choice What are you carving? -> carving
+node carving
+say A wolf, I think. It hasn't told me yet. I carve with my eyes shut, mostly, so I can hear the market. The wood knows what it wants.
+mood warm
+free
+choice Why keep your eyes shut? -> carving_eyes
+choice Goodbye. -> bye
+node carving_eyes
+say Eyes are busy. They'll tell you what a thing looks like. Ears tell you what it's doing. Try it, some day. Shut them in a crowd and just listen.
+choice I'll try it. -> hub
+choice Goodbye. -> bye
+
+
+old
+scene slow_now
+when topic=health|day
+does tell.self / react.self / assess
+a : Slower every year, and I don't mind. The market comes to me. | These knees and the hall are of an age. Nearly. | I walk to the step, I sit, I carve, I walk home. A good day.
+b : Sounds a fine day. | Nearly? | A good day, that.
+a : It is. Better than most I had young. | Nearly. The hall's had more repairs. | It is. Every one of them, lately.
+
+scene old_voices
+when topic=memories|friends
+does tell.feeling / sympathise / assess
+a : Most of the voices I grew up with have gone quiet. My ears go looking for them. | There was a wolf cried pies by the pillar for thirty years. I miss that cry. | I hear an old voice in the crowd sometimes. It's never them.
+b : That's hard. | Thirty years. | It must be strange.
+a : It's not so hard. They were good voices. | Thirty, and never once out of tune. | It is. But kind, a little. Like they're passing by.

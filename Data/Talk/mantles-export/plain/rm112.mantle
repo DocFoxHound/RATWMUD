@@ -1,0 +1,486 @@
+# rm112, the one-line chorus (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm112
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_rosamund_tarridge
+written_by claude
+title the one-line chorus
+fits stage=adult|old
+prefers role=merchant job=innkeeper talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk starts_the_taproom_singing_with_one_hummed_line
+likes mutton_stew singing sharp_knife warm_rain
+dislikes salt_wind deep_mud
+fears a_silent_room_on_a_festival_night the_north_road_shut_for_good
+hopes every_bed_let_on_marketday a_song_the_whole_room_knows_to_the_end
+topics caravan +0.5 gossip +0.4 newcomer +0.4 travel +0.3 food +0.3 pastimes +0.3 festival +0.3 weather +0.2 faith -0.3 family -0.2
+styles comfort=company gossip=eager refuse=soft tease=merry
+marks oath saying chorus
+persona #self.first# keeps a busy house by the north gate: quick, teasing and frank, first with whatever news comes off the carts, proud of the stew pot and the carving knife, quick to joke and slow to talk about self, and forever humming one line of a sea song for the room to finish.
+
+words
+oath! = Strike me sober | Well, strike me sober | Sober me, Bright One
+saying! = News comes in wet and goes out dry | A full house sings itself | Bowl first, questions second
+chorus! = Oh, the tide went out and the— no, you finish it | And down to the Sound we rowed— go on, somebody, you know it | Haul round, haul round, and— come on, that bit's yours
+stew = the mutton stew | a ladle of the mutton
+pot = the stew pot | the big black pot
+knife = the carving knife | the long knife
+gate = the north gate | the gate
+road = the north road | the long road north
+drovers = the drovers | the cattle drovers
+carts = the carts | the first carts through
+bell = the gate bell | the closing bell
+warmrain = a warm rain | a soft rain that settles the dust
+saltwind = the salt wind | the wind with the Sound in it
+roadmud = North Road mud | mud to the hocks
+taproom = the taproom | the long room
+benches = the benches | every bench
+travellers = travellers | folk off the road
+book = the guest book | the book on the counter
+lamp = the door lamp | my lamp by the step
+toll = the gate toll | the toll
+hark = Oh, hark at me | Listen to me go
+
+any
+opinion @1 strangers for 2 : Folk off the road pay for my roof and bring the gossip in for nothing. Best bargain in the city.
+opinion @1 road against 1 : Every load late through #gate# costs me a bed I'd have let. And every month they're later, never sooner.
+opinion @2 road against 2 [world.wagons=raided] : Robbed on #road# again. I'll have drovers drinking to forget it and nobody taking rooms.
+opinion @1 drink for 2 : Good ale's an honest trade. I'll pour it, I'll drink it, and I'll put out anyone who can't carry it.
+opinion @1 festivals for 2 : Festival night the benches groan and the whole room sings. I'd have one a week if the Council let me.
+opinion @1 watch for 2 : The Watch walk by #lamp# two times a night, and light paws stay off the counter. I sleep for it.
+opinion @1 houses for 1 : Moan about the Houses if it pleases you. Their factors pay on the nail and never argue over a candle.
+opinion @1 sump against 1 : Quarrels start low and climb the hill. Half the reason I bar the door after #bell# lives down there.
+opinion @1 dole against 1 : My coin goes into it, and the same muzzles queue for seconds. Help, aye. Seconds, no.
+opinion @1 newcomers for 1 : A new face means new coin and maybe a song I've not heard. I'm not so grand I'd turn up my nose at either.
+opinion @1 city for 1 : Rain, smoke and gossip. There's no town on any cart's road I'd trade it for.
+opinion @1 church mixed 0 : A candle from me when the road's foul. The rest I leave to the abbey bells and those who can sit still.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#. Shake the road off and come nearer the fire. | #greet#. There's a long road hanging off you. Take a stool before your legs decide for you.
+line @2 greet [self.working=yes self.job=innkeeper] : #greet#. Mind that bench, it bites shins. | #greet#. Talk away. Pouring and listening, I manage both.
+line @3 greet [here.time=dawn] : Morning. There's a queue of carts at #gate# already. | Morning. You're up before the drovers, and that's saying a good deal.
+line @4 greet [here.time=dusk|night] : Evening. Lamps are lit, and so is half the room. | Evening. You've beaten #bell#, well done you.
+line @5 greet [pair.band=friends] : Here you are! I'd a wager on with myself you'd come. | Look who it is. I was just starting to want company.
+line @6 greet [here.weather=rain] : #greet#. Rain again, and nobody's to grumble about it in my hearing. | #greet#. Drip on my floor if you must, it's that sort of day.
+line @7 greet : #greet#. Sit if you're staying, stand if you're quick. | #greet#. #oath#, the day I'm having. Come in.
+line @1 kin.open [pair.kin!=no] : There's my own. Sit down, the pot's hot. | Come here, you. Wet coat off and into a chair.
+line @1 again.open : Twice in one day. That bench will want rent off you. | Back already. The fire missed you.
+line @1 greet.return : #greet#. A face that isn't a drover's, and very welcome. | #greet#, and welcome to it.
+line @2 greet.return [pair.band=friends|family] : And you! Come here, I've news saved up. | At last! I was about to send out a search party.
+line @3 greet.return [self.working=yes] : #greet#. Busy, but never so busy as all that. | #greet#. One paw on the jug, but go on.
+line @4 greet.return [here.time=dusk|night] : Evening yourself. It's a lively one in here. | Evening. Mind the step, it's black as a boot at the door.
+line @1 farewell : #farewell#. Mind the carts at #gate#. | Off you go. Bring me news next time.
+line @2 farewell [here.time=dusk|night] : Good night. Stick by the lit doors all the way home. | Good night, and don't let the gutters have you.
+line @1 farewell.return : And you. Come back hungry. | #farewell#. The pot'll miss you.
+line @2 farewell.return [here.time=dusk|night] : Night, then. Sleep sound. | Night. The first wheels will have me up soon enough.
+line @1 react.news : Every last word of it, please. | Oh, now that's worth hearing. Again, and slower.
+line @1 react.news.new : Nobody's carried that through #gate# yet. I'll be first with it. | New to me, and most things reach my ears by breakfast.
+line @1 react.news.known : Heard it off a drover over the porridge. You're a little behind. | Old by my fire, but it's nice to hear it told well.
+line @1 react.news.doubt : Off a cart, was it? Carts add a mile to every tale. | Two mouths telling it, then I'll pass it on. Not before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's hard. I'll not make light of that one. | That's a sorry thing. There's no song for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's worth a round! | Oh, good. The whole room will have it by supper.
+line @1 answer.how : Run off my legs and glad of it. | Busy, loud and warm. Same as ever.
+line @1 answer.how.busy [self.working=yes] : Rooms to turn and a pot to watch. Ask me again at closing. | Every bench full and a cart at the door.
+line @1 answer.how.poorly : Low today. Give me an hour and a tune and I'll mend. | Out of sorts. I'll not bore you with it.
+line @1 ask.how : And you? How's the world been treating you? | What's the road done to you today?
+line @1 sympathise : Oh, come and sit. Nobody's asking you to sing. | That's heavy. Take the warm end of the bench and say nothing for a while.
+line @1 reassure : Sleep on it. Morning's kinder than midnight, always. | Don't fret. I've seen worse walk in that door and leave laughing.
+line @1 decline : Not tonight, sorry. The room won't run itself, and nobody else knows how. | Not this time. I've beds to turn and only two paws for it.
+line @1 accept_decline : Then another time. The offer keeps. | Fair enough. No harm in my asking.
+line @1 thank : Bless you, that's a kindness. | Oh, you're a treasure. I'll not forget that.
+line @1 deflect_thanks : Pah, it was nothing, and I enjoyed it. | Don't thank me. Pour me one some night instead.
+line @1 preclose [self.working=yes] : Right, that's a cart at the door. I'm wanted. | I can hear the pot boiling over. Hold that thought.
+line @2 preclose : There, I've talked till your ears are tired. | #hark.capitalize#, running on. I'll let you go.
+line @1 accept_preclose : Go, go. You've given me a good long helping. | Away, then. The rest keeps till you're back.
+line @1 tease [pair.band=friends] : Somebody sang last night who oughtn't, and it shows on your face. | Is that a new coat, or did you lose a wager?
+line @1 tease.return : Hark at you, muddy to the knees! | Oh, says the wolf who sings flat.
+line @1 ack : #bc_right# | Mm-hm, go on.
+line @1 give.advice : Ask a drover before you take #road#. They know which ruts eat wheels. | Eat before you travel. Nobody ever walked well hungry.
+line @1 warn [world.bandits=near] : Don't go out #gate# alone this week. Wait for a guarded cart and walk in its shadow. | Robbers about on #road#. Go in company or stop here another night.
+line @1 hail [pair.band=friends] : Oi! This bench here, it's been kept warm on purpose. | There's my favourite face. Come here.
+line @1 congratulate : Well done, you! That's one for the whole room. | Oh, good for you! I knew you had it in you.
+line @1 laugh : Ha! Oh, that's one for the benches. | Oh, stop it, I've a pot to watch.
+scene first_wheels
+when topic=day|work here.time=dawn here.region=ridgemere self.job=innkeeper
+does tell.self / react.self / tell.self / react.self / assess
+a : Four carts at #gate# before the bell, and every driver wanting breakfast. | I heard wheels on the cobbles before I'd the fire lit. | A drover knocked me up at dawn wanting stew. Stew, at dawn!
+b : Did you feed them all? | You can't get much sleep, then. | And did you give it over?
+a : Bread and dripping all round, and not a crumb left. | Not much. I sleep with an ear on the cobbles. Keeping a house by #gate# does that to a wolf. | Cold from last night's pot. Ate it like a feast and paid me double.
+b : They'll be back tonight, then. | That sounds wearing. | Double! Lucky you.
+a : They will, and hungrier. #saying#. | It is, but I'd not swap the noise for quiet. | Lucky nothing. I know a hungry face when I see one.
+
+scene carts_late
+when topic=caravan world.wagons=late here.region=ridgemere self.job=innkeeper
+does tell.worry / reassure / assess
+a : Carts are late again on #road#. I've rooms made up and nobody to sleep in them. | Three days now with no wagons through #gate#. The drovers' benches are bare. | Late again. I keep glaring at the door as if it owes me a debt.
+b : Give them time. Wheels go slow in the wet. | Mud, most likely. Nothing worse. | They'll be in before Restday, you watch.
+a : I hope so. Empty beds don't pay the coal man. | Mud I can forgive. I've seen #roadmud#. | From your mouth. I'll keep the pot on till they are.
+
+scene carts_in
+when topic=caravan world.wagons=in here.region=ridgemere self.job=innkeeper
+does tell.news / react.news / assess
+a : Carts are in! Half #road# came through #gate# at noon, thirsty to a wolf. | The wagons are in. I've drovers three to a bench and the jugs going round. | You hear that racket? That's the carts in, and late enough.
+b : Good news for you, then. | Any word off them? | About time is right.
+a : The till likes it. My ears less so. I'll take it. | Plenty, and I'll pass on what's fit to pass. | I said the same to the first one through the door. Got a laugh, too.
+
+scene carts_raided
+when topic=caravan world.wagons=raided here.region=ridgemere self.job=innkeeper
+does tell.news / sympathise / assess
+tone serious / serious / even
+a : There's a wagon been stripped on #road#. The drovers came in grey and nobody sang. | Word is a cart got stopped and stripped up the road north. I gave the drivers their supper free. | Robbed, out on #road#. I'd a room full of drovers last night and not one laughed.
+b : That's a grim thing. Were they hurt? | Kind, that. | Poor souls. They'll go armed now.
+a : Shaken, I'd say. I didn't ask more than they'd tell. | It was only stew. I'd not take coin off them for it. | They will, and I'll charge them for the room the same. Times are times.
+
+scene gossip_passed
+when topic=gossip topic.subject here.region=ridgemere
+does tell.gossip / react.news / assess
+a : Here's what came in with the porridge: #topic.subject# #topic.claim#. | Here's one off the benches. They say #topic.subject# #topic.claim#. | You'll want this. #topic.subject.capitalize#, so the benches say, #topic.claim#.
+b : Is that so? Who said? | Do you believe it? | You hear everything in that house.
+a : A drover, and drovers never lie before noon. | Half of it. Which half, I'll leave you to choose. | I do. #saying#.
+
+scene gossip_sad
+when topic=gossip topic.claim_kind=death|violence|victim here.region=ridgemere
+does tell.gossip / sympathise / assess
+tone serious / serious / even
+a : There's sad talk going round: #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. I'll not sing tonight. | I heard a hard thing this morning. #topic.subject.capitalize# #topic.claim#.
+b : That's cruel news. | You've a kind heart for it. | That's bitter, that.
+a : It is. I'll pass it on gently or not at all. | Not kind. Just not daft enough to sing over it. | Bitter's the word. Let's not make a tale of it.
+
+scene newcomer_bench
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : Word is #topic.subject# has only just come to the city. I'll have #topic.them# on a bench by the week's end. | There's word #topic.subject# has come to stay. More custom. | New in town, #topic.subject#. I do like a fresh face at the fire.
+b[from!=ridgemere] #incomer : That was me, once. Still is, some days. | And what if it's a wolf who won't drink? | The city's wet for a newcomer.
+b : You'll want to feed the poor creature, then. | Good for trade. | You like everybody.
+a@incomer : And now here you sit, drinking with Northgate. | Then it's stew instead, and I still win. | Wet as a fish. I'll keep a dry bench by.
+a : Feed first and ask where from after. That's the order. | Good for the ears, too. | Not everybody. Just everybody who pays.
+
+scene festival_coming
+when topic=festival world.festival=soon self.job=innkeeper
+does tell.plan / react.self / assess
+a : Festival's near. I've the benches out of the cellar and a cask on order. | I mean to have the whole room singing by the second jug. | Festival. I've been humming the same three songs for a week to be ready.
+b[stage=young|adolescent] #pup : Can I come in and listen? | Will there be dancing? | Which three?
+b : Busy for you. | Will they sing? | You'll be hoarse.
+a@pup : At the door, by the lamp, in my sight. And no ale. | In the yard, if it's dry. Bring your feet. | You'll know all three before the lamps are trimmed. Everyone does.
+a : Busy and loud, the best kind. | They'll sing. If they're slow I'll start them off myself. | Hoarse and happy. Worth it.
+
+scene festival_night
+when topic=festival world.festival=today here.time=dusk|night here.region=ridgemere self.job=innkeeper
+does tell.feeling / react.self / assess
+a : Listen to them! A full house, and every voice wrong, and not one note I'd change. | It's been singing since the lamps went up. My feet are done for. | Somebody's started the old one about the Sound. That's my favourite.
+b : They're loud enough. | Sit down a while, then. | Sing it with them.
+a : Loud's the point. Quiet's for the abbey. | When they go home. Not a minute before. | I started it! #chorus#.
+
+scene humming_start
+when topic=pastimes|smalltalk
+does tell.self / react.self / tell.self / react.self / assess
+a : I hum the first line and let the room do the rest. It works every time. | I never sing a whole song. One line, then I stop and see who picks it up. | #chorus#. That's all I ever give them.
+b : Every time? | Why stop at one line? | And somebody always finishes it?
+a : Near enough. Somebody always knows the second line. | Then it's theirs, not mine. A song does better shared out. | Always. Once it was a pup, once a priest. The priest knew more verses.
+b : That's a clever trick. | Sharing it out, that's kind. | A priest!
+a : It's not a trick. It's how a room gets warm. | It is. #saying#. | I'd say the Bright One's fond of a sea song too.
+
+scene song_wrong
+when topic=pastimes
+does tell.complaint / react.complaint / assess
+a : A cart driver sang the last verse wrong last night, and the whole room followed. | They've changed the words on the old harbour song. Somebody up the hill did it. | I heard a song done so badly last night, I had to sing it right myself.
+b : Does it matter? | Which song? | Did they thank you?
+a : Not a bit. But I like knowing which way it's gone wrong. | The one with the bell in it. You'd know it if I hummed it. | They told me to hush. So I sang louder.
+
+scene stew_pride
+when topic=food self.job=innkeeper|cook
+does tell.boast / react.self / assess
+a : #stew.capitalize#'s been on since dawn. You could stand in it, it's that thick. | Nobody does mutton like I do, and I'd tell the Council as much. | That's #pot#. It's older than me and it's not failed me yet.
+b[job=cook|baker|innkeeper] #trade : What's your secret? | We'll see about that. | Mine burns on the bottom.
+b : It smells grand. | Truly? | What's in it?
+a@trade : Time, and not stirring. And I'm not saying more. | Come and taste it, then, and eat your words with it. | Stop stirring it. That's half your trouble.
+a : It tastes better. Have a bowl. | Truly. Ask any drover. They'd walk an extra day for it. | Mutton, barley, onions, and patience. No more, no less.
+
+scene stew_knife
+when topic=food|work self.job=innkeeper
+does tell.self / react.self / assess
+a : #knife.capitalize# goes on the strop every morning before I touch the meat. | I'll carve the joint myself. Nobody else holds #knife# in my house. | A blunt blade tears mutton, and torn meat looks mean on a plate.
+b : You're fussy about it. | Not even your hand? | Is that why it's so good?
+a : I am, and the meat thanks me for it. | Not even them. They can carry the bowls. | Half of why. The rest is the pot.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : Now this is weather I'll stand in. Soft and warm, and the dust laid at last. | Rain on hot cobbles. Nose up and breathe that. | I stood out back, nose to the sky, just now. Don't tell anyone.
+b : You like getting wet? | It smells like mud to me. | You'll catch your death.
+a : Warm wet, aye. Cold wet, no. There's a difference. | Then your nose wants mending. | Not in this. It's like a bath that came to you.
+
+scene salt_wind
+when topic=weather here.region=ridgemere here.weather=clear|overcast|storm
+does tell.complaint / react.complaint / assess
+a : #saltwind.capitalize#'s up again. That salt settles into my coat for a week. | That wind from the water stiffens everything it touches. My washing, my coat, my temper. | Wind's come round off the water. There's salt in the stew and I never put it there.
+b : It's the price of a harbour. | Comb it out. | You can't taste it.
+a : I'll pay it in coin, not in fur. | I do, every night. It comes back by morning. | I can. So can every drover. They say nothing because they're hungry.
+
+scene north_road_mud
+when topic=weather here.weather=rain here.region=ridgemere self.job=innkeeper
+does tell.complaint / react.self / assess
+a : Every drover today brought half #road# in on their boots. My floor's a farmyard. | #roadmud.capitalize#. I swept it out twice and it came back twice. | They come in wet to the hocks and stand on my rug. On my rug!
+b : Put down straw. | Make them wipe their feet. | It'll dry.
+a : I did. Now it's wet straw and mud. | Make a drover wipe anything? You've not met one. | It'll dry to dust, and then I'll sweep that too.
+
+scene gate_hours
+when topic=lore|smalltalk here.region=ridgemere self.job=innkeeper
+does tell.self / react.self / assess
+a : When #bell# goes, the gate shuts and my door opens wider. That's how Northgate works. | You can tell the hour by my taproom. Busy at dawn, quiet at noon, mad at dusk. | All the city's news comes through #gate#, and most of it stops for a drink first.
+b[from!=ridgemere] #away : Our town has no gate at all. | And at noon? | Is that where you hear it all?
+b : I didn't know that. | Quiet at noon? | Is it?
+a@away : No gate? Then what tells you it's time for the first jug? | At noon I sit down for the first time all day. | Every word. I'm a sieve with ears.
+a : Live here a year and you'll set your supper by it. | As a chapel. I count the spoons. | It is. No seat in the city hears more.
+
+scene toll_grumble
+when topic=prices|travel here.region=ridgemere self.job=innkeeper
+does tell.complaint / react.complaint / assess
+a : The drovers grumble at #toll# and then spend twice it on ale. I'll not complain. | Everybody moans about the gate toll, and everybody pays it. | The toll went on a cart's load and off a drover's temper, I'd say.
+b : They always grumble. | It's dear, though. | Ha. You'd know.
+a : It's good for them. Grumbling's thirsty work. | Dear's what keeps the gate mended, so they tell me. | I would. I've a window on the gate and a long memory.
+
+scene prices_up
+when topic=prices topic.dir=up topic.good self.job=innkeeper
+does tell.complaint / react.complaint / assess
+a : #topic.good.capitalize# is dearer again. I'll not water the ale, so the price goes up instead. | #topic.good.capitalize# is up. I put a penny on the bowl and lost a regular for it. | They've raised #topic.good# on me again. I'll swallow the difference while the cellar holds.
+b[role=merchant] #trade : It's every counter in the city. | They'll come back. | That's the trade.
+b : You'll lose custom. | One regular? | How long can you?
+a@trade : Aye, but I've the drovers to tell. They'll take it worse. | They will, once they've tasted the place down the road. | It is. Liking it's another matter.
+a : Some. Never the ones here for the singing. | One is too many. I'll have them back by Restday. | Till the cellar's empty. Then I'll think again.
+
+scene hard_times
+when topic=times world.times=hard|lean self.job=innkeeper
+does tell.self / react.self / assess
+a : Lean times. Folk who took a room now take a bench by the fire for the night. | The benches are full and the rooms are empty. That's how I know times are hard. | I've drovers sharing one bowl between two. I give them extra bread and say nothing.
+b : That's good of you. | Do they sleep there? | Will it turn?
+a : It's bread. It costs me less than a song. | On the bench? Aye. I'd not put anyone out into the wet. | It always does. And when it does, they remember who fed them.
+
+scene good_times
+when topic=times world.times=good|boom self.job=innkeeper
+does tell.boast / react.self / assess
+a : Every bed taken three nights running. I'm not complaining, I'm boasting. | Good times. The drovers stand rounds for folk they've never met. | Coin about. The singing's louder when purses are fat.
+b : You've earned it. | For folk they've never met! | Is it?
+a : I have, and I'll spend it on a new pot hook. | Never met, and paying. I nearly fell over. | Twice as loud. Ask my ears.
+
+scene abbey_bells
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I hear the cathedral bells from my door and think, well, somebody's praying. Saves me the trip. | The Bright One's never had a quarrel out of me. I feed the hungry and don't ask much back. | A candle when the road's foul, and that's my whole religion, near enough.
+b[piety=devout] #devout : You'd be welcome at the service. | It's a start. | A candle's no small thing.
+b : That's a lazy sort of faith. | A fair one. | It's enough.
+a@devout : I'd be welcome and I'd be asleep. Better I feed you after. | It is. I'll start on the rest when I've a quiet week. | No. It's a flame and a hope. That's plenty.
+a : It's my way. The bells don't mind. | It is. I'd say it's working. | It does me.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd trust #self.friend# with the cellar keys, and I count those keys twice a night. | If the roof fell in, it's #self.friend# I'd shout for. | Beside #self.friend# I'll keep quiet a whole evening, and nobody frets about it.
+b : That's a good friend. | You'd need one. | That's rare.
+a : It is. I've a lot of customers and few of those. | I would, the way this roof leaks. | It is. #saying#.
+
+scene neighbour_door
+when topic=home|friends self.neighbour here.region=ridgemere
+does tell.self / react.self / assess
+a : My singing goes through the wall to #self.neighbour#. I call it a free concert. | I keep a bowl back for #self.neighbour# when it's a cold night. | Among a hundred feet on the stair, I'd pick out #self.neighbour#'s.
+b : Free's a good price. | That's kind. | That's a neighbour.
+a : The best. Nobody next door's paid it yet. | It's stew. I make enough for a ship's crew. | It is. Years on the same stair do that.
+
+scene house_full
+when topic=home here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : Northgate never sleeps. Somebody up, somebody eating, somebody singing. Usually me. | There's no quiet hour in Northgate, and a quiet hour would only worry me. | My house runs on bread, gossip and a creaking stair. I love every bit of it.
+b : Sounds lively. | You'd go mad somewhere quiet. | And the stair?
+a : Lively's the word. Noisy's the other. | I would. I'd talk to the walls. | It tells me who's home. Better than a bell.
+
+scene ask_after_self
+when topic=family|memories
+does tell.self / react.self / assess
+a : Folk ask about me and I tell them about the stew. It's a far better story. | I'm not much for talking about myself. Ask me about anyone else. | My own news? Nothing to it. I've a room full of other people's.
+b : There must be something. | All right. Who's courting? | Fair enough.
+a : There is, and it's mine. Have a bowl. | Now you're talking. Sit down, this'll take a while. | Fair's the word. I'd sooner listen.
+
+scene drover_tales
+when topic=travel
+does tell.self / react.self / assess
+a : A drover told me the hills up north are so steep the sheep lean on each other. I nearly believed it. | Every traveller says their town's the best. Then they taste Ridgemere ale and go quiet. | I've never been further than a day's walk out #gate#. No call to. The road comes to me.
+b[from!=ridgemere] #away : They do lean, a bit. | Ours is the best. | You should see it.
+b : Drovers will say anything. | Do they? | You don't want to travel?
+a@away : Then I owe that drover an apology and a jug. | Then what are you doing out in Ridgemere's rain? | Tell me instead. Slowly, with the smells in.
+a : For a free jug, anything at all. | Every time. Best compliment the city gets. | Not a step. I'd miss the gossip.
+
+scene accent_northgate
+when topic=accent here.region=ridgemere
+does tell.self / react.self / assess
+a : I talk like Northgate. Quick, because there's always a cart waiting. | I've picked up a bit of every town the carts bring in. Listen and you'll hear them. | The Heights folk say I talk too fast. I say they listen too slow.
+b[from!=ridgemere] #away : I can't place it. | Mine's in there too, then. | You do talk fast.
+b : You do talk quick. | Which towns? | Ha. They do.
+a@away : Northgate. You can't place it because it's every place at once. | Probably. I'll be talking it by Restday. | And you listen well. That's a fair trade.
+a : Quick and to the point. Mostly the point. | All of them, a little. Drovers are generous with their words. | They do. They've the time for it.
+
+scene cat_in_the_cellar
+when topic=animals self.job=innkeeper
+does tell.self / react.self / assess
+a : I keep a cat in the cellar for the rats, and it's fatter than any guest. | The gulls come right up to #gate# now, after the drovers' crusts. Bold as factors. | There's a goat on a cart in the yard that's eaten the wagoner's hat. I've given it a name.
+b : Does it catch any? | Bold as factors! | What's its name?
+a : One a week, and it brings it to show me. Proud as I am of the stew. | Bolder. Factors at least pretend to ask. | I'll not say. It'd go to its head, and then the hat would want one too.
+
+scene health_cold
+when topic=health
+does tell.self / react.self / assess
+a : Everybody who comes in from #road# has a cough. I've honey and onion steeping on the hob for the coughers. | I'm never ill. I haven't the time to be. | A sore throat would finish me. I'd have to stop singing and start listening.
+b : You're a nurse as well, now. | Lucky. | That'd be a change.
+a : Nurse, cook, singer, gossip. I'll take a wage for any of them. | It's not luck. It's being too busy to notice. | A change nobody'd thank me for.
+
+scene closing_bell
+when topic=day|work here.time=night self.job=innkeeper self.working=yes
+does tell.self / react.self / assess
+a : Last jug's poured. Now I count the spoons, bar the door and hum myself up the stairs. | That's the closing bell. Out they go, and in goes the quiet. | Benches up, fire banked. The best ten minutes of the day.
+b : Do you ever lose a spoon? | You like that bit? | You've earned it.
+a : One a month. I think the cat takes them. | For ten minutes. Then I start missing the noise. | Every minute of it. Then up again for the first wheels.
+
+scene rooms_let
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : Every bed let and two drovers on the benches. A good night's work before it's even dark. | One of my rooms looks right down on #gate#. Folk pay extra to watch the carts come in. | I keep #book# on the counter. Every name in it has a story, and I've heard most of them.
+b : That's a full house. | Extra, for carts? | Half the realm's been through, then.
+a : It is. #saying#. | Some folk like a show with their breakfast. | Half the realm and all its gossip. The other half's on its way.
+
+scene dream_hall
+when topic=dreams
+does confide / react.self / assess
+a : Someday I'll own a room big enough that the whole of Northgate can sing in it at once. | I'd like to hear a song finished, start to end, by folk who all know the words. Just once. | Someday I'll write down every song the drovers bring. Somebody should.
+b : You'd need a hall. | That's a small wish. | You should.
+a : I'd need a hall and a Council that doesn't mind noise. | Small, and I've never had it. Somebody always forgets the third verse. | I should. I'd need someone who can write, and patience I haven't got.
+
+story the_quiet_room [topic=memories self.age>=25]
+  : There was one festival night the room went quiet. No song, nothing. Everyone just tired.
+  : So I hummed one line of the old harbour song, and waited, and nobody picked it up.
+  ask : Picture the whole room looking at you. Would you have sung on, or sat down?
+  b : Sung the next line myself, I think.
+  : I did. Badly. And a pup by the door laughed, and then the whole room was singing to drown me out.
+  b[stage=young|adolescent] : I'd have laughed too.
+  b : That's a good way for a night to turn.
+
+story the_blind_drover [topic=travel|memories self.age>=25 self.job=innkeeper]
+  : An old drover came in once who'd lost his sight on the road years back, and still drove the same route.
+  : Found my door by the stew alone, nose first. Walked straight to the same bench every season.
+  ask : Have you ever known somebody find their way by the nose like that?
+  b : An old one in my family could, round a kitchen.
+  : Then you'll know. One year that bench stayed empty, and I kept it empty till spring.
+
+story the_spoon_thief [topic=memories self.job=innkeeper]
+  : All one winter, a spoon went missing every week. Counted every night, one short.
+  : I blamed the drovers. I blamed the cat. I even blamed the priest who came for supper.
+  ask : Go on, guess who had them.
+  b : The cat, surely.
+  : A magpie, up on the ridge tiles, sitting on my spoons. I had them back in the spring and the nest too.
+  b : That's a story for the fireside.
+
+story the_cold_night [topic=weather|memories self.age>=25 here.region=ridgemere self.job=innkeeper]
+  : The worst winter I remember, the gate shut for three days for the snow.
+  : Every carter in Northgate was in my long room, and we burnt the old benches to keep warm.
+  ask : Can you guess what we sang, three days running?
+  b : Every song you knew, and then some.
+  : One song, over and over, the only one every soul there knew to the end.
+
+story the_first_knife [topic=memories|work self.age>=25 self.job=innkeeper]
+  : When I first had the house, I carved the joint with a knife so blunt it bounced.
+  : An old carter laughed, took the thing away, and sat an hour putting an edge on it by the fire.
+  ask : What would you call that, a gift or a lesson?
+  b : Both, I should think.
+  : Both. I've kept that edge on #knife# every day since, and I still hear that laugh doing it.
+
+rule @bark_chorus
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say #chorus#. | Mm, hm hm. #chorus#.
+
+rule @bark_stew
+when concept=bark self.job=innkeeper self.working=yes
+does aside
+cooldown 6h
+say #stew.capitalize#'s hot. Bowls on the counter. | Stew's on. First come, first fed.
+
+rule @bark_gate_carts
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 10h
+say There go the first wheels. Up you get. | Carts at #gate#. Kettle on.
+
+rule @bark_mud
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 9h
+say Wipe your feet! The lot of you! | Somebody's brought #road# in on their boots again.
+
+rule @bark_closing
+when concept=bark here.time=night self.job=innkeeper
+does aside
+cooldown 12h
+say Last jug, then home with you. | Benches up! Unless you're sleeping on them.
+
+rule @bark_carts_late
+when concept=bark world.wagons=late here.region=ridgemere
+does aside
+cooldown 10h
+say Still no carts. I'll talk to the door if I have to. | Beds made, and nobody to lie in them.
+
+dlg @1 resident.hub : #greet#. Take the weight off. That's road dust on you, or I'm a goose. | #greet#. Find a stool. Where did the road start for you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! Back again, and looking well on it. | #greet#, #topic.player#. The bench by the fire's yours.
+dlg @3 resident.hub [here.time=night] : It's late, but the fire's not out. Come in. | Late one. I'm still up, so you'll do.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you're here for, and say it quiet. | I keep a peaceful house. Speak plain and we'll get on.
+dlg @1 resident.job [self.job=innkeeper] : #self.trade_words.capitalize#, by #gate#. Beds, stew, and every scrap of news off the road. | I keep the house. If it's warm, fed or gossiping, it's mine.
+dlg @2 resident.job : Run off my legs, and glad. Ask me the news, never mind the work. | Work's what I do between bits of gossip.
+dlg @1 resident.bye : #farewell#. Mind the carts. | Away with you, and bring a song back.
+dlg @2 resident.bye [here.time=night] : Good night. Lit doors only, mind. | Good night. The door's open till the bell.
+dlg @1 resident.news [world.news] : The dawn carts brought it: from #world.news_from#, #world.news#. You heard it here first. | A drover had it from #world.news_from#. #world.news#.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# at my tables today. | Everyone's on about #world.event_words#. I've heard it nine ways already.
+dlg @3 resident.news [world.wagons=raided] : A wagon's been stripped out on #road#. Go with company or wait for some.
+dlg @4 resident.news [world.death=recent] : Somebody of ours went in the ground this week. The room's been quieter since.
+dlg @5 resident.news [world.wedding=recent] : A wedding this week! I sang myself hoarse.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing off the carts today, and that's news in itself. | Quiet. Come back after the evening wagons.
+dlg @1 resident.gossip [here.gossip=yes] : Word is #topic.subject# #topic.claim#. That's off my benches, not out of my mouth. Mostly. | Here's one: #topic.subject# #topic.claim#. Pass it on kindly.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing worth the passing, for once. | It's a dull week. Even the drovers are behaving.
+dlg @1 resident.business [business=thriving] : Every bed taken and a queue for the stew. Can't complain. | Full house most nights. Touch the bench for luck.
+dlg @2 resident.business [business=steady] : Steady. The carts keep the beds warm. | Steady enough. Marketdays are better.
+dlg @3 resident.business [business=failing] : Thin. Too many empty beds and not enough carts. | Poorly, if I'm honest. The road's not bringing them.
+dlg @1 inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. Bed, bowl or jug? I've all three. | #greet#. In you come. #inn_offer#
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : #topic.player#! Your bench is free and the pot's on. | Back again, #topic.player#. #inn_offer#
+dlg @3 inn.greet [here.time=night here.inn_helper!=yes here.shop!=asleep] : Late one, and wet, I'd guess. #inn_offer# | You've just beaten the bell. #inn_offer#
+dlg @4 inn.greet [here.inn_helper=yes] : #greet#. I only lend a paw here. #here.innkeeper# keeps the house and lets the beds.
+dlg @1 inn.rooms : One bed, #here.bed_night#p the night; #here.bed_week#p if you stay seven nights. All of upstairs to yourself, #here.upstairs_night#p, when nobody's in. | #here.bed_night#p the night, #here.bed_week#p the week, and the stew's extra.
+dlg @1 inn.roomed : Up the stairs, second door. The third step creaks; that's how I know you're home. | There's your bed. Clean sheets and a chest for your things.
+dlg @1 inn.rest [here.lodging=yes] : Take your time. Your bed's upstairs when you've had enough of the fire. | Stay by the fire till you're baked. You've a room paid.
+dlg @2 inn.rest [here.lodging!=yes] : Warm yourself. A bed upstairs would rest you better, mind. | The bench by the fire's free. Nobody'll shift you.
+dlg @1 inn.refused : #topic.why# | Sorry, #address#. #topic.why#
+dlg @1 inn.bye : #farewell#. Come back hungry. | Off you go. The door's always open till the bell.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say Just the first line of an old sea song. I hum it and wait. Somebody always finishes it. #chorus#.
+mood pleased
+free
+choice What if nobody finishes it? -> nobody
+choice Back to it. -> hub
+node nobody
+say Then I sing the second line myself, badly, and somebody finishes it out of pity. It works either way.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice What's good tonight? [self.job=innkeeper] -> stew
+node stew
+say #stew.capitalize#, and nothing else is worth asking about. On since dawn, barley and onion and good mutton.
+mood warm
+free
+choice Is it dear? -> dear
+choice Back to the counter. -> greet
+node dear
+say Not for what it is. Have a bowl, and if you don't like it you can tell the whole of Northgate I said so.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye

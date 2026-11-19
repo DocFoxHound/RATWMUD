@@ -1,0 +1,326 @@
+# rm123, the top-landing pride (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm123
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_ivar_netherworth
+written_by claude
+title the top-landing pride
+fits stage=adult|old
+prefers temper=short talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk never_rests_on_the_stairs_while_anyone_is_watching
+likes oatcakes singing full_larder frosty_mornings
+dislikes bad_manners wet_floors
+fears being_seen_in_the_dole_queue a_bare_shelf_at_midwinter
+hopes one_more_song_in_four_parts a_larder_full_by_the_first_frost
+topics memories +0.4 times +0.3 home +0.3 pastimes +0.3 food +0.2 gossip -0.4 newcomer -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# is proud, upright and anxious, keeps a decent coat and a civil tongue, sang bass in the old part-songs, and will never be caught resting on a stair while anyone can see.
+
+words
+oath! = Bright One mend my knees | By my last good coat | Steady on, Bright One
+saying! = Manners cost nothing, and they're all I've left | A wolf stands straight or not at all | Decent is a thing you do, not a thing you have
+stairs = the long stair | the steps to my landing
+landing = the landing | the top landing
+coat = my good coat | the brown coat with the mended cuff
+shelf = my larder shelf | the larder
+oatcake = plain oatcake | oatcake, no butter
+song = the old part-songs | a song in four parts
+frost = a hard frost | frost on the sill
+floor = the hall floor | the scrubbed boards inside my door
+queue = the dole queue | the line at the chapel door
+knees = my knees | these old knees
+hill = the Rise | the big houses up the hill
+below = the Sump | the streets down by the water
+youngsters = the young ones | the youngsters on the stair
+
+any
+opinion @1 church for 2 : The chapel feeds houses nobody else will feed. I'll not sit quiet while it's run down. | Somebody must say the words over the dead, and say them properly. The chapel does, and I'm glad.
+opinion @1 dole for 2 [self.on_dole=yes] : I stand in #queue# now, I who never owed a farthing. I'm grateful, and I loathe it. | Some weeks the parish loaf is all my shelf holds. I'll own that, though it costs me.
+opinion @2 dole mixed 1 [self.on_dole!=yes] : No wolf should starve in so big a city. Nor should anybody grow comfortable on the parish loaf.
+opinion @1 festivals against 1 : A feast is a great deal of noise, a great deal of spilt ale, and tears in a doorway before the bells. I keep in. | They call it merriment. I call it a great many folk forgetting their manners at once.
+opinion @1 merchants against 1 : No more coin climbs my stair than last year, yet the loaf costs a farthing more. Somebody explain it to me civilly.
+opinion @1 newcomers against 1 : Each new face wears the street down a little, like a step. I mean no harm by saying it. I'm only sorry. | Folk come up the stair who've never learned to say good day. Where were they raised?
+opinion @1 times against 2 : Harder by the week, and up #hill# they look the other way. | When a decent house counts its oatcakes, the times are bad.
+opinion @1 road against 1 : I walked the roads as a youngster without a care. I'd not walk them now, whatever folk tell you.
+
+grown
+line @1 greet : #greet#. Pardon me not rising quickly; the knees are slow this morning. | #greet#, #address#. A civil good day to you.
+line @2 greet [pair.band=strangers] : #greet#. We've not been introduced, I think. | #greet#. A face this street hasn't shown me before, unless my eyes are going.
+line @3 greet [here.time=dawn] : Good morning. There's frost on the sill, if you looked. | Good morning. Early, and the street to myself.
+line @4 greet [here.time=dusk|night] : Good evening. It's late for calling, but you're welcome. | Good evening. I'd my paw on the door bar.
+line @1 greet.return : #greet#. Kind of you to look in. | #greet#. There you are again. Good.
+line @2 greet.return [pair.band=friends|family] : Ah. Now there's a face I'm pleased to see. Shut out that draught. | Good. I'd hoped somebody would come by.
+line @3 greet.return [here.time=dusk|night] : Evening. I've no lamp to spare, but sit. | Good evening. Feel for the rail; the stair's black as pitch.
+line @1 kin.open [pair.kin!=no] : There you are. Close that door; the draught goes for my knees. | Come and sit. I've been keeping the good chair warm.
+line @1 again.open : Twice today. I'm honoured, I'm sure. | You've come back. I take that kindly.
+line @1 farewell : #farewell#. Keep a civil tongue out there; it's rarer than coin. | #farewell#. Go carefully on the steps.
+line @2 farewell [here.time=dusk|night] : Good night. The third stair's a liar; step over it. | Good night. Bright One spare you the frost on the way home.
+line @1 farewell.return : #farewell#. It was kind of you. | #farewell#. Come again; I'm mostly in.
+line @2 farewell.return [here.time=dusk|night] : Good night to you. I'll bar the door. | Good night. Sleep warm, if you can.
+line @1 react.news : Tell it plainly, please. I'll listen. | Go on. I'm not deaf, only slow to stand.
+line @1 react.news.new : That's not reached my landing. Who had it? | Is it so? Nobody troubles to tell an old wolf a thing.
+line @1 react.news.known : I'd heard. Word climbs stairs, in the end. | Yes. It came up the stair yesterday.
+line @1 react.news.doubt : Find me the wolf who watched it happen, and then I'll credit it. | The first telling is always taller. I wait for the second.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sorry thing. I'm grieved to hear it. | Bright One help them. That's a heavy word to climb a stair with.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's decent news. It does an old heart good. | Good. Good. I'd raise a cup to it, had I a cup worth raising.
+line @1 answer.how : Well enough. I'll not complain to a guest. | Upright, which is what counts.
+line @2 answer.how [self.hungry=yes] : A little hollow, if I'm truthful. It passes. | Hungry, but I'll not make a parade of it.
+line @1 ask.how : You've a tired look. Are they keeping you fed? | Truly, now. How do you fare? Not the polite answer.
+line @1 sympathise : That's a weight. Set it on the table a minute and sit. | I'm sorry. That's all I'll say, and every word is meant.
+line @1 reassure : It'll mend. Most things mend, given their own time. | Hold off fretting. There's time for that once it's certain.
+line @1 decline : I'd sooner not, thank you. These knees of mine would object. | No, thank you. I've always managed alone, and I'll manage this.
+line @1 accept_decline : Then we'll leave it. You were right to ask. | Quite right. I'd not have done it either.
+line @1 thank : That's kind. Kinder than you know. | #thanks#. I'll not forget a kindness.
+line @1 deflect_thanks : It was nothing. Common courtesy, that's all. | Don't thank me. It's what decent folk do.
+line @1 preclose : Well. I'll not keep you on your feet. | I'd best be getting back up the stair.
+line @1 accept_preclose : Off you go. Don't let me hold you. | Yes, yes. Go on with you.
+line @1 ack : Quite so. | Very well.
+line @1 give.advice : Wish folk good day. It's free, and it's remembered. | Keep your boots off a clean floor and you'll have friends for life.
+line @1 warn [world.bandits=near] : Keep inside the walls. The road's not fit for anybody just now. | Don't stray beyond the gate this week. I'm in earnest.
+line @1 take_offence : I'll ask you to mind your tone with me. | There was no need for that. None whatever.
+line @1 accept_apology : Well. We'll let it drop. | Very well. Accepted. Let it be.
+scene the_stair_unseen
+when topic=day|health here.region=ridgemere
+does tell.self / react.self / assess
+a : I climb #stairs# without stopping while there's anyone below to see. On the landing, with the door shut, I rest. | Some days I wait at the bottom until the stair's empty. Then I go up at my own pace. | I'll not be the old one puffing on the steps for the whole street to pity.
+b : There's no shame in resting. | Doesn't the waiting take longer? | Nobody would pity you.
+a : No shame, perhaps. But there's pride in not, and I've always had pride to spare. | It does. I'd sooner lose an hour than be seen. | They would. Kindly, too. That's what I can't abide.
+
+scene seen_resting
+when topic=smalltalk|health here.region=ridgemere
+does tell.self / tease / take_offence / apologise / accept_apology
+a : Up and down #stairs# twice already today, and not a breath out of place. | Those steps are nothing to me. I could climb them asleep. | I don't rest on a stair. I never have.
+b : I saw you sitting on the third step yesterday, mind. | Not a breath, you say? | I've seen you lean on the rail.
+a : You did not. I was looking at a loose board. | Not one. And I'd ask you not to count them. | Lean? I was steadying the rail. It's loose.
+b : All right. A loose board it was. | Sorry. I meant no harm by it. | Of course. It's a terrible rail.
+a : Very well. I'll forget you said it. | Well. Let's leave it there. | It is. The landlord's man should mend it.
+
+scene frost_on_the_sill
+when topic=weather|season here.season=winter here.time=dawn self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : #frost.capitalize# this morning. I stood at the glass a good while before the kettle. | A frosty morning does more for the head than any tea. | The roofs all white and the chimney smoke standing up like posts. That's a proper winter dawn.
+b : It's bitter out, though. | Better than tea? | It is a fine sight.
+a : Bitter, yes. But clean. Everything sharp at the edges. | Better than the tea I can afford, certainly. | Winter has that one gift. Summer has nothing to match it.
+
+scene muddy_boards
+when topic=weather|home here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Every wet day the hall floor's a mire of other folks' paws. Not one of them wipes. | I scrubbed #floor# yesterday, and it's mud again by noon. | Rain I can bear. Rain walked over a clean floor I cannot.
+b : It's hard to keep clean in this weather. | Folk don't think. | Rain's rain, though.
+a : It's not hard to wipe your paws. A child could do it. Most children do. | They don't. They never did, but they used to be shamed into it. | Rain's rain. A wiped paw is manners. One I forgive, the other I ask.
+
+scene the_manners_gone
+when topic=smalltalk|newcomer here.region=ridgemere
+does give.opinion / agree / assess
+a : A youngster shoved past me on the stair today, not a word. Not one word. | Folk used to bid good day on the street. Now they study the cobbles. | I said good morning to a youngster and got a look as if I'd stolen a purse.
+b : It's the times. Everybody's in a hurry. | It's not like it was, I'll grant you. | Some of them are shy.
+a : The times don't make anybody rude. They give rude folk an excuse. | It's not. And it won't be again unless somebody insists. I insist. | Shy or rude, it's all one on a narrow stair.
+
+scene in_the_queue
+when topic=times|prices self.on_dole=yes
+does confide / sympathise / assess
+tone serious / tender / even
+a : I stood in #queue# again this week. I wore #coat# so nobody would mistake me. | Never thought I'd see the day I'd hold out my paws for the parish loaf. | I go early to the queue, before the street's awake. Fewer folk to see.
+b : Nobody minds it. Half the street's been there. | That can't be easy. | That's wise, I suppose.
+a : Nobody minds, they tell me. I mind. I'm still waiting not to. | It isn't. But it's bread, and bread's not proud, so I mustn't be. | Wise, or proud. With me it's hard to tell them apart.
+
+scene the_bare_shelf
+when topic=food|home self.hungry=yes
+does tell.feeling / react.self / assess
+a : A full larder. I remember what one looked like. Shelves of it. | There's an oatcake and a heel of something on my shelf. That's supper and breakfast both. | I like to see a shelf full. It's not vanity. It's knowing you'll eat tomorrow.
+b : Times will turn. | Could I bring you something? | Most of us are counting, these days.
+a : They will. I'll be thinner when they do. | No. No, thank you. I'll manage, as I always have. | I thought you might. Most folk on this street do, these days.
+
+scene plain_oatcake
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : Give me #oatcake# and a mug of something warm, and I'm a contented old wolf. | I bake oatcakes on my own griddle, as I learned it young. Nothing in them but oats and salt. | An oatcake keeps a week if you wrap it right. That's a food that understands hard times.
+b : That's simple fare. | Just oats and salt? | It is a patient sort of food.
+a : Simple and honest. I've no use for fancy. | Oats, salt, water, and patience. The patience is the dear part. | Patient, yes. Like me. Mostly.
+
+scene four_parts
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I sang bass in the old part-songs, four voices to a song. There's nothing like it. | Friends round a warm room, all singing their own line. That's an evening worth the name. | There was a time a street could raise four parts from four doors. You'd not get two now.
+b : Do you still sing? | What made it so good? | Why not now?
+a : When there's anybody to sing with. A bass alone is only a hum. | Every voice doing its own work, and it all coming right together. Like a decent street ought to. | The young ones don't know the parts. Nobody taught them. Nobody asked to learn.
+
+scene humming_the_bass
+when topic=pastimes|day here.time=dusk|night self.likes=singing
+does tell.self / react.self / assess
+a : I hum the low part to myself of an evening. The other three I hear in my head. | Somebody on the stair below was singing tonight. Out of tune. I could have wept with gladness. | I keep the bass line going when I'm worried. It steadies me.
+b : That's a lonely way to sing. | Out of tune, and still glad? | That's a good habit.
+a : It is. But a hum's better than silence on a long night. | Glad as anything. A bad song's a song all the same. | It's the only habit I have left that costs nothing.
+
+scene up_the_hill
+when topic=lore|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : When the air's clear I can see the gardens on #hill# from my window. I don't begrudge them. Not much. | The big houses on the Rise keep a light burning at each window. I count them some nights. | An old coal carrier I knew climbed up to the Rise once. Swore they had a room just for hats.
+b : They've more than they need up there. | Count them? | A room for hats?
+a : They have. And still I'd sooner they kept their manners than lost their money. | Twenty-six, last night. It's a foolish thing to do and I do it. | For hats. I've one hat, and it's on my head. That's the difference between us.
+
+scene down_the_hill
+when topic=times|smalltalk here.region=ridgemere self.wealth=poor|destitute
+does tell.worry / reassure / assess
+a : Two hard winters, and I'd be living down in #below#. I'll not pretend otherwise. | Every year the Sump climbs a street closer. I watch it from my window. | There are decent folk down by the water. I bear them no grudge. I only don't care to join them.
+b : You'll not end up down there. | It's not as close as that. | They're no worse than anybody.
+a : I hope not. I'd climb a great many stairs to stay out of it. | Isn't it? Look at the price of bread and tell me again. | No worse. Only colder, and wetter. And further from the chapel.
+
+scene new_on_the_stair
+when topic=newcomer|player
+does give.opinion / react.self / assess
+a : A new tenant on the stair below. They nod. I'll give them that. | Another stranger in the street. Nobody asks where they come from any more. | Somebody new took the room under mine. They've a heavy step and no rug.
+b : They might turn out decent. | Does it matter where they're from? | That'll be noisy.
+a : They might. A month, and their floor will tell me. | It used to. You knew whose cousin everyone was. | Every night. I'll knock on the boards once, politely. Then twice.
+
+scene leaner_every_week
+when topic=times world.times=hard|lean
+does tell.worry / agree / assess
+a : Every week I count what's left and every week there's less to count. | The baker's loaf gets smaller and not a soul complains aloud. | Hard times. I've seen them before. I liked them no better then.
+b : Nobody's spared it. | I've noticed that too. | They pass, though.
+a : Not up the hill it isn't. | Of course you have. You've eyes. They hope we haven't. | They pass. They take a little of you with them, each time.
+
+scene good_times_elsewhere
+when topic=times world.times=good|boom
+does tell.feeling / react.self / assess
+a : They say times are good. I'm glad for whoever they're good to. | Plenty about, I hear. It's not found its way up my stair yet. | Good times, they tell me. Let the loaf get cheaper first, then I'll say so.
+b : It'll reach you soon. | Give it time. | It might, this time.
+a : Perhaps. Good times walk slow up stairs, I've noticed. | I've given it years. I'll give it a few more. | Then I'll say I was wrong. I'd be glad to.
+
+scene the_festival_noise
+when topic=festival|season world.festival=today|soon
+does give.opinion / disagree / insist / concede / assess
+a : Feast coming. I'll shut the window and sit it out. | All that racket, and come midnight there's always one sobbing on a step. | They'll be bawling in the street till the small hours, and none of them in tune.
+b : It's one day. Let folk enjoy it. | Not always. Some just dance. | You like singing, though.
+a : One day of noise and three of sweeping up. | Some do. The rest weep, or fight. I've seen enough feasts to know the order of it. | I like singing. Shouting with a tune near it is another thing.
+b : You might enjoy it, if you came out. | Fair enough. | Fair. I'll grant you that.
+a : I might. This year, though, it'll be my own fire and my own quiet. | There. You see. | Good. We understand each other.
+
+scene the_chapel_bread
+when topic=faith
+does tell.self / react.self / assess
+a : The chapel's fed houses on this street that nobody else would. That's why I go every Restday. | Long prayers aren't my way. I say mine short and mean every word. | I've promised the Bright One I'll keep my coat clean. I ask very little back.
+b : There's no better reason. | Short and meant. That's best. | That's a fair bargain.
+a : The best I know. A full belly's a sermon of its own. | I think so. The Bright One's busy enough. | It's held a long while. Mostly on my side.
+
+scene not_for_repeating
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard something about #topic.subject# on the stair. I'll not repeat it. | Things are being said about #topic.subject#. I'd sooner the street held its tongue. | Talk's going round about #topic.subject#. It's not my business, nor yours.
+b : Go on, you can tell me. | Is it bad? | Fair enough.
+a : I can, and I won't. Ask somebody with less pride. | Bad enough to keep behind my teeth. | It is. Let it lie. Talk is how a street loses its manners.
+
+scene a_hard_word
+when topic=gossip|crime here.gossip=yes topic.claim_kind=death|violence|theft|victim
+does tell.gossip / sympathise / assess
+tone grave / serious / even
+a : You'll have heard. #topic.subject.capitalize# #topic.claim#. I'm grieved by it. | #topic.subject.capitalize# #topic.claim#. That came up the stair this morning like cold air. | It's a sorry thing. #topic.subject.capitalize# #topic.claim#.
+b : I had. It's a terrible thing. | That's grievous to hear. | Bright One keep #topic.them#.
+a : It is. I'll say a word at the chapel, for what it's worth. | It is. We'll leave it there, if you don't mind. | Bright One hold #topic.them#, and the rest of us as well.
+
+scene a_good_neighbour
+when topic=friends|home self.neighbour
+does tell.feeling / react.self / assess
+a : #self.neighbour# says good morning properly, every morning. You'd be surprised how much that's worth. | I'd hand #self.neighbour# my door key tomorrow. There's few I'd say that of. | There's always a nod from #self.neighbour# on the stair. Some days that nod's all the company I get.
+b : That's a good neighbour. | Not small at all. | A nod's worth having.
+a : A decent one. There aren't so many as there were. | No. It's the biggest thing I've got to give. | It is. I nod back, and we're both the better for it.
+
+scene the_road_raided
+when topic=caravan|bandits world.wagons=raided
+does give.opinion / agree / assess
+a : They've had another wagon on the road. In my day the road was safe enough for a pup. | Robbers out on the highway again. When I was young you'd walk to Larkfield with a song. | Another wagon taken. Somebody up the hill ought to be ashamed.
+b : It's worse now, no doubt. | With a song? | Somebody ought.
+a : No doubt at all. Whatever the young ones say. | With a song, and come back with two. Not now. | They ought. They won't. But they ought.
+
+
+old
+line @1 answer.how : These knees and I are on speaking terms, mostly. | Old, upright, and not dead yet. That'll do.
+line @1 greet [here.time=dawn] : Morning. Up with the frost, as old bones are. | Good morning. I've had my look at the sky already.
+scene old_knees
+when topic=health
+does tell.complaint / sympathise / assess
+a : #knees.capitalize# have started forecasting the weather. They're never wrong, and never cheerful. | Coming down, I take the stair step by step now. Going up, as I always have, when nobody's watching. | An old neighbour of ours had knees like these. Called them the two barometers.
+b : That sounds painful. | Slow on the way down is sense. | Do they hurt much?
+a : It's a nuisance, not a pain. I'll not make it a pain by talking of it. | Sensible. I'm sensible on the way down. On the way up I'm proud. | Enough to remind me. Not enough to stop me.
+
+scene in_my_day
+when topic=memories self.age>=60
+does tell.memory / react.self / assess
+a : When I was young you'd raise your hat to a lady in the street and nobody laughed. | Midwinter, we'd sing on the stair with every door open. Four parts from four floors. | In my day a landlord's man knocked and waited. Now they knock and come in.
+b : That's a different city to this one. | That must have been something. | That's not right.
+a : Different, and better in the small ways. Life's mostly small ways. | It was. Close my eyes and it's there yet. | It's not. I said so to one of them. He'll not forget it.
+
+story the_good_coat [topic=memories self.age>=40]
+  : I bought this coat for a wedding, long ago, with the first good money I ever earned.
+  : The cuff's been mended three times and the elbows twice. It still sits right on the shoulders.
+  ask : Is there a thing of yours you'd keep whatever it fetched?
+  b : I think so. Something small.
+  : Then you understand. A coat like this isn't cloth. It's proof I was somebody once, and still am.
+
+story bass_at_midwinter [topic=pastimes|memories self.likes=singing self.age>=40]
+  : One midwinter we sang the long carol in four parts on the chapel steps, with snow coming down.
+  : The tenor lost his place, and I held the bass under him till he found it again.
+  ask : Did you ever hold a line steady so another could find their way back to it?
+  b : Once or twice. It's harder than it looks.
+  : It is. That's what the low part's for. Nobody hears it, and everything stands on it.
+
+story first_frost [topic=weather|memories self.age>=30 self.likes=frosty_mornings]
+  : As a pup I'd wake to frost drawn in ferns across our window. Whole forests of them, white on the glass.
+  : I'd be let trace one with a claw before the fire was lit and it all melted.
+  b : What a thing to keep in mind all these years. Did you ever see it again?
+  : Every winter, if the window's old enough. Mine is. I trace one still, and nobody sees.
+
+rule @stair_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Up we go. Nobody look. | Nearly there. Shoulders back.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn
+does aside
+cooldown 10h
+say Frost on the sill. Good. | A proper cold morning, at last.
+
+rule @wet_floor_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe your paws. Wipe them. | Mud on the boards again, and not mine.
+
+rule @hollow_bark
+when concept=bark self.hungry=yes
+does aside
+cooldown 12h
+say Supper can wait. It'll have to. | An oatcake would go down well about now.
+
+dlg @1 resident.hub : #greet#, #address#. How may I help? | #greet#. Pardon me not getting up.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Good of you to come up. | #topic.player#. A familiar face. Sit, if you like.
+dlg @3 resident.hub [here.time=night] : It's late, #address#. Your business, then I'll bar the door.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll ask you to keep a civil tongue. Now, what is it? | State your business plainly, if you please.
+dlg @1 resident.job [self.working=no] : I watch the street from my window. Someone should, and the hours are mine. | My working years are behind me. Now I watch, and keep my coat clean.
+dlg @2 resident.job : I keep busy, at my own pace. I'll leave it at that.
+dlg @1 resident.news [world.news] : Word from #world.news_from#, so the stair says: #world.news#. That's all I had of it.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Not much climbs my stair, and what does is stale. | Nothing I've heard. Ask somebody nearer the street.
+dlg @1 resident.gossip [here.gossip!=yes] : #gossip_none# | I'll not carry tales. I never have.
+dlg @2 resident.gossip [here.gossip=yes] : There's talk that #topic.subject# #topic.claim#. I'd keep it to myself, but you asked me straight.
+dlg @1 resident.bye : #farewell#. Mind the steps. | #farewell#. Keep a civil tongue out there.
+dlg @2 resident.bye [here.time=night] : Good night. Go down slowly; the dark's thick on the stair.
+graft resident.hub
+choice Can I give you a paw up the stairs? [here.region=ridgemere] -> stairs
+node stairs
+say You can not. I've climbed those stairs a great many years, and I'll climb them a good many more. Thank you all the same.
+mood stern
+free
+choice I meant no offence. -> stairs_why
+choice Goodbye. -> bye
+node stairs_why
+say No. I know you didn't. It's only that a wolf stands straight or not at all, and I'd sooner stand. I rest on the landing, where nobody sees.
+mood warm
+choice I understand. -> hub
+choice Goodbye. -> bye

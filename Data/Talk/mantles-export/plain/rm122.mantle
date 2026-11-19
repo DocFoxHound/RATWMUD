@@ -1,0 +1,447 @@
+# rm122, the key-ring keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm122
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_oda_cotton
+written_by claude
+title the key-ring keeper
+fits stage=adult|old
+prefers job=merchant piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk knows_every_key_on_the_ring_by_its_weight_in_the_dark
+likes oatcakes digging full_larder summer_evenings
+dislikes waiting night_noise
+fears a_count_that_will_not_come_right a_knock_at_the_door_after_the_lamps
+hopes a_walled_garden_of_its_own a_larder_full_before_the_first_frost
+topics work +0.5 caravan +0.4 prices +0.3 faith +0.3 home +0.2 pastimes +0.2 gossip -0.2 festival -0.3
+styles comfort=practical gossip=exact refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps the long store by the north gate with a ring of keys known one from another by weight alone: exact, devout, reserved and humourless, happiest with a full larder, a spade in the evening and the tally square.
+
+words
+oath! = Bright One square the count | Keys and candles | Bright One mind the bolts
+saying! = A key you can't name is a door you've lost | Short count, long night | Count twice and pray once
+ring = the key ring | my ring of keys | the ring at my belt
+keys = the keys | nineteen keys
+key = the key | the small brass key
+tally = the tally | my tally book
+shelves = the long shelves | shelf after shelf
+aisle = the back aisle | the dim end where the lamp oil lives
+carts = the north road carts | whatever rolls down from the north road
+gate = the north gate | Northgate
+oatcakes = oatcakes and butter | a plate of oatcakes, buttered
+larder = a full larder | a larder stocked to the lintel
+spade = my spade | the spade by the back door
+beds = the garden beds | my three beds behind the house
+evening = a long summer evening | the light that lasts past supper
+waiting = waiting on folk | standing about on other people's time
+racket = a racket after dark | singing in the street at night
+bolts = the bolts | the bar and both bolts
+damp = the damp | the wet that gets into the sacks
+daybook = the day book | the book by the till
+
+any
+opinion @1 church for 1 : The Bright One has carried me through leaner years than this one. I'll be in my place on Restday. | I keep my accounts straight and my pew warm. Neither is a hardship.
+opinion @2 drink against 1 : I've watched a cup at the gate inns turn into a cart left standing and a family left waiting. I'll not keep it on my shelves. | Drink makes folk loud past the lamps and slow at the shutters. I abide neither.
+opinion @3 newcomers for 1 : A new household wants lamps, rope and a broom inside a week. I've the three ready. | Whoever settles here, I write the name in the day book and wish them well.
+opinion @4 strangers for 1 : Half my custom comes in at #gate# grey with road dust. Barring the door would be barring the till. | A traveller tells me the road's news while I wrap the twine. Both of us leave satisfied.
+opinion @5 times for 1 : I have no complaint to make, and I'd be ungrateful to make one. | The shelves turn over and the tally comes right. Nineteen keys and no complaint. That's a year.
+opinion @6 times against 1 [world.times=hard|lean] : The shelves are fuller than I like. Things sit. Things sitting is the first sign. | Every copper gets turned over at my counter now, twice. I'd do the same.
+opinion @7 city for 1 : Ridgemere has never once been dry and never once been dull. I'd not leave it for a palace. | Born within sound of #gate#, and I'll lie within sound of it.
+opinion @8 road mixed 0 : The road brings my stock and takes my sleep. Every late cart is a night I lie awake. | Thanks for the carters, and a candle lit for each of them. The two go together.
+opinion @9 road against 2 [world.wagons=raided] : Another cart stripped out there. Somebody's winter gone, and the guards paid all the same. | When a cart is robbed, I lose a shelf and the carter loses a living. Somebody should answer for it.
+opinion @10 watch mixed 0 : The Watch pass the store at the proper hours, most nights. Most. | I'm glad of them. I check my own bolts regardless.
+opinion @11 houses mixed 0 [self.job=merchant] : Whoever holds the deed to the roof, the count is mine, and every nail of it is my answering. | I serve the great families' custom. Their opinions stay with them.
+
+grown
+line @1 greet : #greet#. Wipe your paws, please; the boards were oiled yesterday. | #greet#. One moment. Seventeen, eighteen. There. | #greet#. I'll go on counting, if you'll pardon it.
+line @2 greet [pair.band=strangers] : #greet#. That's north road dust on you. Come in. | #greet#. If you want the way, I can give it. If you want stock, I can give that too.
+line @3 greet [self.working=yes self.job=merchant] : #greet#. I'm at the shelves. Speak up and I'll hear you. | #greet#. Step round the sacks; they're counted.
+line @4 greet [here.time=dawn] : #greet#. The gate's just opened; I heard the bar go. | Early. Good. Early is when things get done.
+line @5 greet [here.time=dusk|night] : #greet#. I'm locking up shortly, so be brief. | Evening. I've the bolts to do, and then I'm yours.
+line @6 greet [pair.band=friends|family] : Sit down. There are oatcakes, and I buttered them myself. | Come in. I've put the kettle where it'll stay warm.
+line @1 kin.open [pair.kin!=no] : Home before the lamps. Good. I'd started counting the hours. | In with you. Both bolts, please.
+line @1 again.open : A second visit today. I'll write it in the book. | Again. Something was forgotten, I expect.
+line @1 hail [pair.band=friends] : A word, before you pass. It's about the beans. | This way a moment. Two minutes, by the bell.
+line @1 greet.return : #greet#. | #greet#. Say what's wanted. | #greet#. Well met.
+line @2 greet.return [pair.band=friends|family] : And to you. There's a stool, if you'll stop. | You came. Good. Sit down.
+line @3 greet.return [self.working=yes] : #greet#. I'm at the tally, but I can listen. | #greet#. Keep talking; I count better with a voice nearby.
+line @4 greet.return [here.time=dusk|night] : Good evening. The gate lamps are going. | Evening. I'll be home within the hour.
+line @1 farewell : #farewell#. Bright One go before you on the road. | #farewell#. Shut the door firmly; it sticks. | #farewell#.
+line @2 farewell [here.time=dusk|night] : Good night. Lamplit streets only, mind. | Good night. You'll be in my prayers before I sleep.
+line @1 farewell.return : #farewell#. | And you. Safe home. | #bless#.
+line @2 farewell.return [here.time=dusk|night] : Good night. Lock up behind you. | Good night. Bright One guard your door.
+line @1 react.news : Say it plainly, please, and in order. | I'm listening. From the start, if you would.
+line @1 react.news.new : None of that has come in at #gate#. I'd have had it. | New to me. I'll mark the day I heard it.
+line @1 react.news.known : The carters had that yesterday. | Two customers told it me before nine.
+line @1 react.news.doubt : Hearsay, that, until a witness owns to it. | That's one account. I prefer two.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #rest#. I'll remember it at chapel. | A heavy thing. There will be a candle for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'll mark that in my heart and on the calendar both. | Thanks be. Something going right is worth marking.
+line @1 answer.how : Well. The count came right this morning. | Well, thank you. Busy, which is better than idle.
+line @1 answer.how.busy [self.working=yes] : Busy. Three carts unloaded and only the one day book. | Run off my paws. I'll be easier when the shelves are full.
+line @1 answer.how.poorly : A little chesty. The damp. It's nothing. | Tired. It was a long count.
+line @1 ask.how : And you. Keeping well? | How are things at home with you?
+line @1 sympathise : Hard. Sit on the sack there; I'll make tea. | I'm sorry for it. You'll have a candle from me on Restday.
+line @1 reassure : Patience and a little prayer. It mends more than you'd credit. | Give it a week. A week settles most accounts.
+line @1 decline : I'd rather not. The store needs me; I'm promised to it till the bolts are drawn. | Not today. There's a delivery wants checking and nobody else to check it.
+line @1 accept_decline : I understand. Another time. | Of course. Your answer would have been mine.
+line @1 thank : Thank you. That was well done. | I'm obliged. It goes in the book, on the good side.
+line @1 deflect_thanks : It needed doing, and I was there. | No thanks needed. You'd do the same.
+line @1 preclose [self.working=yes] : The shelves are calling me back. | The day book won't fill itself in.
+line @2 preclose : Well. That's enough of your time spent. | Home for me, before the lamps.
+line @1 accept_preclose : Yes, go. You've given me enough of the day. | Yes. We'll talk again.
+line @1 ack : Noted. | That's so. | So it's written.
+line @1 give.advice : Count it when it comes in, count it when it goes out. Then you'll sleep. | Keep your keys on one ring and know every one of them.
+line @2 give.advice [other.stage=young|adolescent] : Learn your figures. Nobody can cheat a pup who can add. | Say your prayers and wipe your paws. In that order.
+line @1 warn [world.bandits=near] : Robbers on the north road. Go with a guarded cart or not at all. | Don't travel alone this week. The carters are going in threes.
+scene keys_in_the_dark
+when topic=smalltalk|work
+does tell.self / react.self / assess
+a : I can find any key on #ring# with the lamp out. Each one has its own weight. | Nineteen keys. I know them the way you'd know your own teeth. | Somebody once hid the ring from me for a joke. The drawer gave it away; I heard it jingle.
+b : Every one of them? | That's a lot of keys. | That's a poor joke.
+a : Every one. The small brass one is the cellar. It's the lightest and the most important. | It's the right number. Each door has one and no door has two. | It was. I don't care for jokes about keys.
+
+scene morning_count
+when topic=work self.job=merchant here.time=dawn
+does tell.self / react.self / assess
+a : Before I lift the shutter I walk #shelves# and count. Every morning. | I count the rope first, then the sacks, then the oil. Always in that order. | The count is my first prayer each morning, and the only one I say on my feet.
+b : Every morning? | Why that order? | You count the stock as a prayer?
+a : Every morning since I took the keys. A day I skip is a day something goes missing. | Heavy things first. If they're short, the rest hardly matters. | In a manner of speaking. The Bright One likes things where they belong.
+
+scene the_one_short
+when topic=work self.job=merchant
+does tell.worry / reassure / assess
+a : One sack short this morning. One. I counted it four times. | The tally says forty lamps and the shelf says thirty-nine. I'll find the fortieth. | A gap on the third shelf, where last night there was none.
+b : It'll turn up. | Perhaps it was sold. | Somebody moved it, maybe.
+a : It did. Behind the door, where a carter left it. I'll speak to the carter. | Then it's in the day book, and I'll find it there. Things are always somewhere. | Perhaps. I'll look until I know. I won't sleep otherwise.
+
+scene carts_in
+when topic=caravan|work world.wagons=in here.region=ridgemere
+does tell.news / react.news / assess
+a : Carts in. I heard the wheels at #gate# before the bells rang. | Four carts down the north road today, all four lighter than I ordered. | Wheels in the yard at first light. Shelves full by evening, Bright One willing.
+b : That's good. | Lighter? | Full by evening?
+a : It is. A full store is a quiet mind. | Lighter. Somebody between here and there is short of honesty. I'll find out who. | If the carters stop talking long enough to unload.
+
+scene carts_late
+when topic=caravan|times world.wagons=late here.region=ridgemere
+does tell.worry / reassure / assess
+a : Late, the carts, again. A shelf of empty hooks and a customer asking every hour. | Two days late, the north road carts. I've stopped writing a date in the book. | They're late, and nobody at #gate# will tell me why.
+b : They'll come. | Two days isn't much. | Somebody will know.
+a : They will. Which day is what I want, so I can stop listening for wheels. | It's two days of folk asking me and getting nothing. | Then that somebody should come and tell me. I'm not hard to find.
+
+scene carts_robbed
+when topic=caravan|bandits|crime world.wagons=raided
+does tell.news / react.news / assess
+a : A cart's been stripped on the north road. My stock for the month with it. | Robbers again. A carter came in at #gate# with nothing behind but an empty bed. | They've taken a cart. Bright One shelter the carter; the goods can go.
+b : That's terrible. | Was anyone hurt? | The goods can go?
+a : It is. I'll pray for the carter and write the loss in red. | I wasn't told. Nobody tells a storekeeper that part. | They can. Rope comes again on the next cart. A carter doesn't.
+
+scene customer_waiting
+when topic=work self.working=yes
+does tell.complaint / react.complaint / assess
+a : Somebody stood at the counter a quarter hour this morning, deciding between two kinds of string. | I can't abide #waiting#. Hand me the job instead and it's done. | The factor said noon. It's past two. I've done three hours' work standing here.
+b : String? | It's hard to wait. | Two hours late.
+a : Two kinds, the same price. They bought neither. | It is. Each minute gets counted, and I wish I didn't. | And no word of why. I've written it down.
+
+scene grayrock_roof
+when topic=work self.job=merchant self.workplace
+does give.opinion / react.self / assess
+a : Whoever holds the deed to #self.workplace#, I'm the one who keeps it. That's a different thing. | A clerk comes down once a month to check my books. Not one mistake found yet. | Somebody else's stock, somebody else's roof. The count is mine.
+b : Does that sit well with you? | Never a mistake? | Yours and nobody else's.
+a : It does. I'd rather keep a store than own one. Owning is worry with a deed on it. | Never once. I'd be ashamed if a clerk found one. | Mine. If a nail's missing, I'm the one who answers.
+
+scene gate_bar
+when topic=day|smalltalk here.region=ridgemere here.time=dusk|night
+does tell.self / react.self / assess
+a : Listen. That's #gate# shutting. The bar goes down heavy. | Every night I hear the gate close and I check my own bolts after. | When the gate shuts, the carts that aren't in are out for the night. I pray for those.
+b : All this way off? | Every night? | That's kind.
+a : From here and from home. I've heard it all my life. | Every night. If the city locks up, so do I. | It costs me a breath. They carry my stock.
+
+scene travellers_ask
+when topic=newcomer|travel here.region=ridgemere
+does tell.self / react.self / assess
+a : Travellers come in through #gate# and stop at my door first. I'm the first lamp they see. | A family, road-weary, asked me where to sleep. I pointed them to the chapel. | Folk new to the city ask me where things are. I can tell them to the shelf.
+b : First lamp. I like that. | The chapel? | To the shelf?
+a : It is. The road's news reaches my door an hour before the criers. | The chapel never turns anyone away. I'd do the same, if I had the room. | Within these walls I could. The city, near enough.
+
+scene newcomer_coin
+when topic=newcomer
+does give.opinion / agree / assess
+a : Strangers settling on the street. Good. Newcomers buy rope and lamp oil. | Somebody new took the rooms over the chandler's. I've already sold them a lamp. | A new neighbour pleases me. More so once the first bill's paid.
+b : You're glad of it. | A lamp already? | A fair way to see it.
+a : Glad, and plainly so. | And a broom. A sensible start. | A paid bill says more of a wolf than a smile does.
+
+scene garden_hour
+when topic=pastimes|home here.time=dusk|day
+does tell.self / react.self / assess
+a : After I lock up I go home and dig for an hour. It empties my head of figures. | I turned over #beds# last night. The soil's heavy. I like heavy. | There's nothing like a spade for putting a day in its place.
+b : What do you grow? | Heavy soil? | A spade?
+a : Leeks, beans, and a row of onions I'm proud of. | Heavy holds the water. In this city that's not hard. | A spade. In, turn, lift. No arguing with it.
+
+scene garden_rain
+when topic=weather|pastimes here.weather=rain
+does tell.self / react.self / assess
+a : No digging today. The beds are a pond. | The rain's at it again. My beans will be up to their knees. | I went out with #spade# and came back in. The ground wasn't having it.
+b : It'll dry out. | Beans don't mind water. | Better to wait.
+a : By Restday, perhaps. I'll wait, though I don't care to. | Some water. Not this much. | Better to wait, yes. I've never been good at it.
+
+scene oatcakes_supper
+when topic=food
+does tell.self / react.self / assess
+a : #oatcakes.capitalize#. Six nights of seven, and no wish for other. | I bake the oatcakes myself on Restday, enough for the week. | There's nothing wrong with a plain supper. An oatcake is honest food.
+b[job=baker|cook] #food : Do you put salt in yours? | A week's worth? | Honest's the word.
+b : Every night? | A week's worth? | Plain's best.
+a@food : A pinch. Not more. Some folk drown them. | Twelve a day. I count them out. | It is. You can't hide anything in an oatcake.
+a : Six of seven. Fuss at table never suited me. | Twelve a day. I count them out. | It is. A plain supper and a quiet house.
+
+scene larder_full
+when topic=home|food|season here.season=autumn
+does tell.self / react.self / assess
+a : My larder's stocked to the lintel. I could feed the street till spring. | I've put by enough for the winter. Sleep comes easier for it. | Last night I opened the larder only to look. I'm not ashamed.
+b : That's a comfort. | Enough for all winter? | Just to look?
+a : It is. Each jar up there is a prayer answered. | And a little over, for whoever knocks. | Just to look. I counted the jars while I was there.
+
+scene summer_light
+when topic=season|weather here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : Here's the finest hour summer gives. #evening.capitalize#, and nothing to count. | I sat out till nearly ten last night. The light wouldn't go. | Evenings like this, I forgive the city its rain.
+b : It's lovely. | Nearly ten? | All of it?
+a : It is. I'll go in when it's gone, and not before. | Nearly. I had the spade out until the last of it. | Most of it. Ask me again in the autumn.
+
+scene night_racket
+when topic=day|smalltalk here.time=night here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : There's #racket# from the gate inns every night now. I lie awake counting the songs. | Carters singing below my window past midnight. I'll speak to the innkeeper. | Somebody rolled a barrel down our street at two. I heard every cobble.
+b : Inns will be inns. | Will that help? | Every cobble?
+a : They'll be quiet inns, if I have my say. | It will not. I'll speak anyway. | Each. Forty-one cobbles to the corner, I counted.
+
+scene damp_in_sacks
+when topic=weather|work here.weather=rain|fog self.job=merchant
+does tell.worry / reassure / assess
+a : The damp is in the sacks again. I've had them off the floor all morning. | Wet weather. The flour's been turned twice, and a third time's coming. | Fog's got into the store. Everything smells of the Sound.
+b : You've a cough. | It'll dry. | Does it spoil the stock?
+a : It's nothing. A tickle. The sacks matter more. | It will, if I'm stubborn. I am. | Not if they're turned. They'll be turned.
+
+scene fog_at_gate
+when topic=weather here.weather=fog here.region=ridgemere
+does tell.self / react.self / assess
+a : No #gate# to be seen from the store today, and I can always see the gate. | Fog. The carts will be crawling. I'll not expect them before noon. | They've lit the gate lamps at midday. That's how thick it is.
+b : It's thick. | Crawling? | In the day?
+a : Thick as wool. I'll keep the shutter half down. | Crawling, and the carters cursing. I don't blame them. | In the day. I lit my own as well.
+
+scene restday_chapel
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : Same pew at chapel, Restday after Restday, since I was small. | Every Restday I give thanks for a full store and a dry roof. | One prayer for the carters, one for the count. Both get heard, I trust.
+b[piety=devout] #devout : I sit near the back myself. | Plenty to give thanks for. | I pray for the carters too.
+b : The same place? | That's a lot to give thanks for. | Both?
+a@devout : Then we've likely nodded to each other. I'll look for you. | There is. Most folk forget to say so. | Then they've two of us. Good.
+a : The same place. Third row, by the pillar. | It is. I try not to take it for granted. | Both. Choosing between them would be unkind.
+
+scene child_late
+when topic=family self.parent=yes
+does tell.worry / reassure / assess
+a : When #self.child# is out past the lamps, there's no sleep for me till the latch goes. | A lamp burns in my window for #self.child#. It always has. | I worry over #self.child# more than over the store. That's as it should be.
+b : You'll hear the door. | That's kind. | As it should be.
+a : I will. The latch always goes, in the end. | One candle a night. Cheap at the price. | It is. A store can be restocked.
+
+scene neighbour_wall
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : #self.neighbour.capitalize# could hold one of my keys. Few could. | One wall between #self.neighbour# and me for years, and no quarrel through it. | A lit lamp next door means #self.neighbour# is home. I like knowing.
+b : From you, that's praise. | Never once? | It's a comfort.
+a : It is. I count my keys carefully. | Not once. We're both quiet, and that helps. | It is. A quiet street is a lit window and a shut door.
+
+scene learner_count
+when topic=work self.master=yes self.job=merchant
+does tell.self / react.self / assess
+a : I've a learner who can't count rope without losing their place. I've them do it again. | I teach the count first. Before the prices, before the customers. | The learner asked me why I count twice. Once is guessing, I said.
+b : Again? | Before the prices? | Once is a guess.
+a : Again and again, until it's right. Then once more. | Prices change. The count doesn't. | It is. Twice is a fact. I'd like the learner to know the difference.
+
+scene prices_written
+when topic=prices self.job=merchant
+does tell.self / react.self / assess
+a : Every price goes on a card, pinned to its shelf. Nobody need ask. | Lamp oil's gone up again. New figure on the card, old figure underneath. | I don't haggle. The card says it, and the card is honest.
+b : That's fair. | The old one under it? | Never haggle?
+a : Fair to me, and just as fair to them. | So they can see what it was. I'd want to know, in their place. | Never. A price you can talk down was never the price.
+
+scene hard_times
+when topic=times|prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Folk are buying half measures this month. Half a rope. I've never sold half a rope. | Things are sitting on the shelves. Things sitting is how a store goes quiet. | I've had three people ask to pay next week. I've said yes to all three. I wrote it down.
+b : It'll turn. | It's a hard time. | That's good of you.
+a : It will. Until it does I'll cut rope. | It is. My prayers go to the shelves, and to the folk who'd buy if they could. | It's written down. Kindness and a book can go together.
+
+scene good_times
+when topic=times|work world.times=good|boom self.job=merchant
+does tell.self / react.self / assess
+a : The shelves empty faster than the carts can fill them. That's a good year. | Twice this month I've sent to the wharf for more rope. Twice. | Everybody's buying. I can't keep the count up with the selling.
+b : That's good, isn't it? | More rope? | A good problem.
+a : It is. Thanks on Restday, and a fresh count the morning after. | More rope. The city must be tying itself together. | A happy trouble. I'll bear it.
+
+scene gossip_exact
+when topic=gossip topic.claim_kind=theft|wanted|prowling|violence|other
+does tell.gossip / react.news / assess
+a : I heard #topic.subject# #topic.claim#. That's how it was said to me, word for word. | Across my counter it came that #topic.subject# #topic.claim#. I add nothing to what I hear. | A carter told me #topic.subject# #topic.claim#. I've not repeated it until now.
+b : Is that so? | You don't add to it? | Why tell me?
+a : It's what I heard. I'll not make it bigger. | Never. A story grows enough without help. | Because you asked, and because you'll keep it to yourself.
+
+scene gossip_wedding
+when topic=gossip|event topic.claim_kind=marriage|promise_kept
+does tell.gossip / react.news / assess
+a : Good news across the counter today: #topic.subject# #topic.claim#. | I heard #topic.subject# #topic.claim#. I'm glad. That's a prayer of thanks for tonight. | There's a happy thing going round: #topic.subject# #topic.claim#.
+b : That's lovely. | A prayer? | Happy, yes.
+a : It is. We need more of it. | A prayer of thanks. They're the easy ones. | Happy. I'll be glad all day.
+
+scene thieves_about
+when topic=crime world.crime=recent here.region=ridgemere
+does tell.worry / reassure / assess
+a : There's been thieving on the street. I checked #bolts# three times last night. | Somebody's been light-pawed on the Commons. The till sits at the back now. | A shop was broken into by the gate. I've asked the Watch to come by twice of a night.
+b : The Watch will be about. | That's wise. | Twice?
+a : They will. I'll check my bolts regardless. | It's only sense. I'd rather move a till than lose one. | Twice. I'll count them going past.
+
+scene winter_road
+when topic=season|caravan here.season=winter
+does tell.worry / reassure / assess
+a : The north road's half shut with the snow. I've stocked for it, but I don't like it. | In winter the carts come once a week if the road's kind. I order three weeks ahead. | Snow at the gate. The carters will want hot drinks and I'll give them tea.
+b : You're ready for it. | Three weeks ahead? | Tea?
+a : I'm ready. I'm not glad. | Three weeks. One empty winter taught me. | Tea. I'll not keep anything stronger.
+
+scene market_morning
+when topic=day here.day=market here.region=ridgemere
+does tell.self / react.self / assess
+a : Market day. Half of Northgate tramps by my door to the square. | On market days I open an hour early. Folk want rope before they buy the thing to tie up. | It's market day, and I've already sold more twine than all of last week.
+b : Busy, then. | An hour early? | Twine?
+a : Busy. I'll eat standing up. | An hour. It's worth it. | Twine. Everybody has something to tie on market day.
+
+scene walled_garden
+when topic=dreams|pastimes
+does confide / react.self / assess
+a : I'd like a garden with a wall round it. Not big. Just mine, and quiet. | Someday, a garden with a gate I can lock. My beds now are borrowed ground. | Some coin goes aside each month for a walled garden. I've the place in mind.
+b[friends] #friends : You've wanted that for years. | You'll have it. | Where?
+b : A walled garden? | A gate you can lock? | Where is it?
+a@friends : I have. I'm patient. I'm also stubborn. | I will. The sum's worked out already. | Not saying. It's not mine yet.
+a : A wall, a gate, and a key on my ring that's for nothing but the garden. | Of course. I'd want to know it was mine. | Not saying. It's not mine yet.
+
+story first_keys [topic=work|memories self.age>=35 self.job=merchant]
+  : The day they gave me the keys, I sat on a crate in the back aisle and learnt them one by one.
+  : It took me till dark. I didn't go home until I could find every lock with my eyes shut.
+  ask : Have you ever been handed something you weren't sure you could keep?
+  b : Now and then. Were you ready for it?
+  : Not at all. I felt ready by the morning, which was soon enough.
+
+story the_night_count [topic=work self.job=merchant]
+  : One night the count was out by a single coil of rope, and I couldn't sleep.
+  : I got up, dressed, and walked down to the store with a lantern to count it again.
+  : It was there. It had been under a sack all along.
+  b : All that for one coil? Was it worth it?
+  : It was worth the sleep I had after. I'd do it again.
+
+story the_long_winter [topic=season|memories self.age>=40]
+  : One winter the north road shut for six weeks, and no cart came through the gate.
+  : We sold what we had down to the last nail. Folk brought back things they didn't need, so others could have them.
+  ask : Would you have brought back what you'd bought, for a neighbour?
+  b : I'd want to. Whether I would, I can't promise.
+  : Most did. I've thought better of this street ever since.
+
+story the_honest_coin [topic=newcomer|memories self.age>=30]
+  : A traveller once came back through the gate a week after buying, to pay me a copper I'd undercharged.
+  : I'd not noticed. I'd counted wrong. That traveller had come a day out of the way to put it right.
+  b : That's rare. Did you thank them?
+  : I did. I wrote the copper in the day book with a mark beside it. It's still there.
+
+story first_onions [topic=pastimes|memories]
+  : The first year I dug the beds, I planted onions too close together and got nothing but leaves.
+  : The second year I measured every row with a length of string. Every one came up.
+  ask : Do you measure things, or do you trust your eye?
+  b : My eye, mostly. It's wrong often enough.
+  : Mine was too. I trust the string now.
+
+rule @bark_keys
+when concept=bark
+does aside
+cooldown 8h
+say Nineteen. All there. | Where's the small brass one. There.
+
+rule @bark_count
+when concept=bark self.working=yes self.job=merchant
+does aside
+cooldown 6h
+say Forty, forty-one, forty-two. | Twice counted. Good.
+
+rule @bark_carts
+when concept=bark world.wagons=late
+does aside
+cooldown 10h
+say Still no carts. | Bright One bring them in before dark.
+
+rule @bark_gate
+when concept=bark here.time=dusk here.region=ridgemere
+does aside
+cooldown 12h
+say There goes the gate. | Bar's down. Bolts next.
+
+rule @bark_racket
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say Will they never stop singing. | There's a store to open at dawn, you know.
+
+rule @bark_damp
+when concept=bark here.weather=rain|fog
+does aside
+cooldown 9h
+say The sacks will want turning. | It's nothing. Only a tickle.
+
+dlg @1 resident.hub : #greet#. You'll want something, I expect. Name it, and I'll say if it's on a shelf. | #greet#. Mind the sacks, they're counted.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I remember you. You paid. | #topic.player#. Good. What do you need?
+dlg @3 resident.hub [here.time=night] : It's past the lamps. I'm only here to check the bolts. | It's late. Be quick, please; the house is waiting.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Your business, please. I'll hear it from there. | The counter stays between us, I think.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Rope, lamps, sacks, oil and nails, counted twice. | I keep #self.workplace#. The deed's another's; the count is mine.
+dlg @2 resident.job : I work, I count the work, and I sleep at night. There's my trade entire. | My work is keeping things where they belong. It's more work than it sounds.
+dlg @1 resident.business [business=thriving] : The shelves empty quicker than the carts fill them, thanks be. | Thriving. I've sent for more twice this month.
+dlg @2 resident.business [business=steady] : Steady. The count comes right and the rent's paid. | Steady, thank you. Asking for more would be greed.
+dlg @3 resident.business [business=failing] : Poorly. Things sit on the shelves. I'm praying and I'm counting. | Not well. I'll not pretend otherwise.
+dlg @1 resident.news [world.news] : It came through the gate from #world.news_from#: #world.news#. I've told it as I had it.
+dlg @2 resident.news [world.event_words] : Every customer today has had #world.event_words# to tell me. Twelve, so far.
+dlg @3 resident.news [world.wagons=raided] : Robbers stripped a cart on the north road. Wait for a guarded one if you're going out.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The carts came and went, and the count came right. | Not a scrap new in at the gate today.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. That's as it was said; I've not added to it.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't carry tales. I carry rope. | Nothing I'd repeat, and nothing I'd want repeated.
+dlg @1 resident.bye : #farewell#. Bright One see you safe. | #farewell#. Shut the door firmly; it sticks.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Lamplit ways home, please. | Good night. I've the bolts to see to.
+dlg @1 shop.greet [here.shop=open] : #greet#. Rope, lamps, sacks, oil and nails. Prices on the cards. | #greet#. Name it and I'll fetch it. Everything here is counted.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #greet#, #topic.player#. The usual, or something fresh? | #topic.player#. Your custom's welcome. What do you need?
+dlg @1 shop.prices : Every price is on its card. No haggling here, and no cheating either. | Every price is written down. If it's gone up, the old one's under it.
+dlg @1 shop.bye : Thank you. That's your change, counted twice over. | #farewell#. When you run low, you know the door.
+dlg @1 master.learn [here.teaches=yes] : I'll teach the count first. If you can't count, you can't keep. #learn_offer# | Keeping a store is knowing where everything is, every day. #learn_offer#
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : You've come back. Good. Tell me what's on the third shelf. | Back again. Let's see if you remember the order.
+graft resident.hub
+choice That's a heavy ring of keys. -> keys
+node keys
+say Nineteen keys, and each one known by its weight. The cellar key I could find in a black cellar with my eyes shut.
+mood calm
+free
+choice How do you tell them apart? -> keys_how
+choice Something else. -> hub
+node keys_how
+say Each one's a different weight in the paw. The small brass one is lightest, and it's the one that matters most. You learn them, or you lose doors.
+choice I see. Something else. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do you keep a count true? -> count
+node count
+say Every coil coming in gets counted. Every coil going out, the same. Both in the book. Then at dawn, see if the shelf agrees with it.
+mood formal
+free
+choice And if it doesn't? -> count_wrong
+choice Back to the lesson. -> learn
+node count_wrong
+say Then you count again, and again, until it does. You don't go home with a wrong count. Not once.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

@@ -1,0 +1,415 @@
+# rm128, the charcoal copyist (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm128
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_jasper_brackham
+written_by claude
+title the charcoal copyist
+fits stage=young|adolescent|adult|old
+prefers drive=ambitious temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk copies_out_every_posted_notice_with_a_charcoal_stub
+likes smoked_eel singing sharp_knife misty_dawns
+dislikes flies waiting
+fears staying_on_the_dole_for_good being_laughed_at_by_a_clerk
+hopes a_clerk_s_stool_at_the_city_office a_hand_fair_enough_to_be_hired
+topics lore +0.4 dreams +0.4 work +0.3 pastimes +0.3 food +0.2 times +0.2 gossip -0.2 family -0.4
+styles comfort=practical gossip=plain refuse=short tease=none
+marks oath saying
+persona #self.first# copies every notice posted in the square with a stub of charcoal, letter for letter, to learn a clerk's hand: prickly, stubborn, set on a stool at the City Office, fond of smoked eel, a song with others, and a misty dawn.
+
+words
+oath! = Rub it out | Stubs and scraps
+saying! = Nobody hands you a stool for waiting | Copy it fair or copy it twice
+stub = a charcoal stub | my bit of charcoal
+notice = the notice | the posted notice
+board = the notice board | the board by the Market Hall
+scrap = a scrap | the back of an old handbill
+letters = my letters | a fair hand
+stool = a clerk's stool | a stool at the City Office
+office = the City Office | Records Square
+eel = smoked eel | a curl of eel off the smoke stall
+mist = a misty dawn | grey mist lying in the square before anyone's up
+song = a song | a good loud song with the others
+knife = my little knife | the knife I sharpen stubs with
+bench = the school bench | the back bench at lessons
+teacher = the teacher | the schoolteacher
+flies = flies | the summer flies
+
+any
+opinion @1 houses against 1 : No one gets a stool in the Office without some House putting a word in first. I'll get there without one. | The Houses hand out the good places like sweets. Not to the likes of me.
+opinion @1 dole for 2 [self.on_dole=yes] : #dole.capitalize# fed me through the leanest week of my life. One day I'll hand it back, in work.
+opinion @2 dole for 1 : Bread's bread. The shame is for those who've never stood in the line.
+opinion @1 church for 1 : The chapel gave me paper once. Proper paper, a whole sheet. I've not forgotten.
+opinion @1 city for 2 : The City Office is the only place worth climbing to, and it's here. Why would I go anywhere else.
+opinion @1 merchants against 1 : One price on the slate outside, another at the counter. I've copied both. They don't match.
+opinion @1 times against 1 : The loaf shrinks a little every Marketday. Up the hill they've never once noticed.
+opinion @1 festivals mixed 1 : There's singing. That's the good part. The rest is standing about.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. If it's a form you want, I can help. | #greet#. Say your business.
+line @2 greet : #greet#. | #greet#. I've a minute.
+line @1 kin.open [pair.kin!=no] : Sit. I'll finish this line. | You. Good. Mind the ink.
+line @1 again.open : Back. Same page, still. | You again. This desk hasn't let me go.
+line @1 greet.return : #greet#. | #greet#. Say it plain.
+line @2 greet.return [pair.band=friends|family] : You. Come and see this hand. | Good. Sit. I've a story.
+line @1 farewell : #farewell#. | Right. Work's waiting.
+line @1 farewell.return : #farewell#. | And you.
+line @1 react.news : Go on. | Say it properly.
+line @1 react.news.new : That's not in writing anywhere yet. | New to me. Where's it posted?
+line @1 react.news.known : I read it this morning. | Old news. It was posted yesterday.
+line @1 react.news.doubt : Is it written down anywhere? If not, it's only talk. | Paste it on the board and then I'll trust it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. A rotten thing. | Hard news. Rotten.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Somebody's done well. | That's worth writing down.
+line @1 answer.how : Busy. Ambitious. Same as ever. | Fine. Getting on.
+line @1 answer.how.busy [self.working=yes] : Busy. Pages to copy. | Buried in forms.
+line @1 ask.how : Keeping well? | Eating properly?
+line @1 sympathise : That's hard. I'd be furious. | Rotten. I'm sorry.
+line @1 reassure : It'll come right. Keep at it. | Stick with it. It turns.
+line @1 decline : I can't. There's too much on my desk, and a rushed job is a bad one. | Not now. I've a deadline and no patience left.
+line @1 accept_decline : Fair. Suit yourself. | All right.
+line @1 thank : Thanks. I mean it. | That's good of you.
+line @1 deflect_thanks : It was nothing. | Don't mention it.
+line @1 preclose : I've work. | The desk's waiting.
+line @1 accept_preclose : Go on, then. | Right. Later.
+line @1 ack : #bc_right# | Mm. #bc_fair#
+scene clerk_desk
+when topic=work self.working=yes self.job=official|scholar
+does tell.self / react.self / assess
+a : I've #stool# now. By the window. I said I would. | Copying the Council's minutes. Every word. My hand's the fairest in the room. | A clerk laughed at my stub once. Now I sit two desks from that clerk.
+b : Good for you. | Fairest? | That must feel good.
+a : I said I would. Nobody believed me. | Fairest. I'll say it because nobody else will. | It does. I keep quiet and let the pen talk.
+
+scene still_copying
+when topic=lore|day here.region=ridgemere
+does tell.self / react.self / assess
+a : I still copy the notices off the board. Old habit. | There's a new notice up. I've got it down already. | I read the board every morning, first of all.
+b : Still? | Already? | Every morning?
+a : Still. Habits don't stop because you've a job. | Already. Before the paste was dry. | Each one. Since I was too short to reach it.
+
+scene grown_ambition
+when topic=dreams|work
+does confide / react.self / assess
+a : I want the senior desk. I'll have it. | I'm not stopping at a stool. There's an office above the office. | One day they'll ask me. And I'll know.
+b : You will. | Ambitious. | You'll get there.
+a : I will. #saying#. | Ambitious. I'll take that. | I'll get there. I've never stopped yet.
+
+scene grown_eel
+when topic=food
+does tell.self / react.self / assess
+a : #eel.capitalize# at noon. Every day, now I can afford it. | I buy eel every Restday. I told myself I would. | Best thing in the city's still a copper's worth of eel.
+b : Every day? | You kept your word. | Still?
+a : Every day. I earned it. | I kept it. I always do. | Still. Some things don't get better.
+
+scene grown_mist
+when topic=weather|day here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. I walk to work slow on days like this. | Fog on the square. The board's grey and wet. I read it anyway. | Best light there is, a misty dawn. Even if you can't see a thing.
+b : It's cold. | Anyway? | Odd thing to like.
+a : Cold's fine. Cold's quiet. | Anyway. I can read it in the dark, nearly. | Odd. I don't mind odd.
+
+scene grown_flies
+when topic=weather here.season=summer
+does tell.complaint / react.complaint.agree / assess
+a : Flies in the office. On the ink. On me. | Too hot to write. The ink dries on the nib. | Flies again. Summer's the worst season for a clerk.
+b : They're everywhere. | That's a nuisance. | The worst?
+a : Everywhere. I'd swat them, given a spare paw. | It is. I write anyway. | The worst. Winter you can at least light a lamp.
+
+scene grown_singing
+when topic=pastimes|friends here.time=dusk|night
+does tell.self / react.self / assess
+a : We still sing, some nights. Same steps, same song. | I'm a terrible singer. I sing anyway. With others it doesn't matter. | There's a song we sang as pups. I can still do every verse.
+b : That's nice. | Me too. | Every verse?
+a : It is. Best part of a week. | Then sing with us. Badly. | Every one. I copied them all out once.
+
+scene grown_waiting
+when topic=smalltalk|day here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Half a morning gone, waiting on one signature. Half a morning. | Queues. I'd rather pay double. | Nobody gets on by waiting. I learned that young.
+b : Signatures take time. | You'd pay? | True enough.
+a : Not that much time. | Gladly. Coin's easier to earn than time. | Young and the hard way.
+
+scene grown_houses
+when topic=gossip|times here.region=ridgemere
+does give.opinion / disagree / concede
+a : Half the clerks got their stools through a House's word. I got mine through my hand. | The Houses say who rises. I didn't wait for them to say it. | Nobody gave me anything. I'll say that till I'm old.
+b : That's how the city works. | Good for you. | You were lucky, too.
+a : It's how it works. It doesn't have to be how it ends. | Good for me. Hard for me, too. | Lucky? I made my own luck. With a stub.
+
+scene grown_news
+when topic=event|news world.event_words here.region=ridgemere
+does tell.news / react.news / assess
+a : The Office has been all #world.event_words# this week. | #world.event_words.capitalize#. The board's full of it. I've every word. | There's a notice up about #world.event_words#. I've read it twice.
+b : What's it say? | Every word? | Twice?
+a : Enough to keep the Office busy. | Every word. In a fair hand. | Twice. Once for me, once to check the spelling.
+
+scene grown_gossip
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. It's not on paper, so I'm not sure. | Heard in the Office: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, people say. That's the lot.
+b : Is it true? | Huh. | Maybe.
+a : Not till it's written down. | Huh. That's about right. | Maybe. I'll wait for paper.
+
+scene grown_hard_times
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint.agree / assess
+a : The line for the dole's longer than ever. I walk past it to work. | I remember that line. I'll not forget it. | Hard times. The Office makes the notices. It doesn't make the bread.
+b : It's bad everywhere. | You were in it? | True.
+a : Everywhere but up the hill. | I was. I don't hide it. | True. I wish it did.
+
+rule @grown_bark
+when concept=bark here.region=ridgemere
+does aside
+cooldown 10h
+say New notice. Let's see. | #oath#. Ink on my cuff again.
+
+dlg @6 resident.hub : #greet#. What is it? | #greet#. I've a minute.
+dlg @4 resident.job [self.job=official|scholar] : I'm a clerk. I've #stool#. I said I would. | #self.trade_words.capitalize#. Copying, filing, being asked things.
+dlg @2 resident.bye : #farewell#. | Right. Back to it.
+
+young
+line @1 greet : #greet#. I'm drawing. | Hello. Look what I did.
+line @2 greet [pair.band=strangers] : #greet#. I don't know you. I'm busy. | Hello. You can't touch my charcoal.
+line @1 greet.return : #greet#. | Hello. Watch me.
+line @1 farewell : Bye. I've got drawing to do. | Bye, then.
+line @1 farewell.return : Bye. | Bye! Don't step on my letters.
+line @1 react.news : What? Tell me. | Is that true?
+line @1 react.news.new : I didn't know that. | Nobody told me that.
+line @1 answer.how : Fine. I'm drawing letters. | Hungry. Fine.
+line @1 decline : No. It's mine and I'm using it. | I don't want to. I'm busy with my letters.
+line @1 accept_decline : Fine. | All right, then.
+line @1 thank : Thank you. | Thanks!
+line @1 ack : Mm. | Mm-hm.
+scene ad_chalk_wall
+when topic=pastimes|day here.region=ridgemere
+does tell.self / react.self / assess
+a : I drew a letter on the wall with charcoal. The first one of my name. | I got told off for the wall. It was a good letter, though. | I can do all my letters now. On the wall. Not on paper. There's no paper.
+b[stage=adult|old] #grown : Not on the wall, little one. | It was a good letter. | Paper's dear.
+b : What letter? | Was it good? | No paper?
+a@grown : Where else, then? | I know. Everybody said so. After. | Everything's dear.
+a : My letter. It's the best one. | The best. The wall thinks so. | None. I've asked.
+
+scene ad_eel_end
+when topic=food
+does tell.self / react.self / assess
+a : The eel lady gave me an end. It was the best thing ever. | I want smoked eel. I always want smoked eel. | I had eel and now my paws smell of eel.
+b[stage=adult|old] #grown : That was kind of her. | It's dear, eel. | Wash them, then.
+b : Lucky! | Me too. | Ha.
+a@grown : She's the best. | I know. Why else would I want it. | I'm not washing them. They smell good.
+a : Lucky. I'll go back tomorrow. | Eel's the best. | Smell. Go on.
+
+scene ad_singing
+when topic=pastimes
+does tell.self / react.self / assess
+a : We sang on the steps and a grown-up told us to hush. We didn't. | I know a song about a boat. I sing it loud. | I can't sing very well. I like it anyway.
+b : Good for you. | Sing it, then. | Me neither.
+a : We sang louder. | Later. When it's just us. | Then we can sing together. Badly.
+
+story ad_first_letter [concept=talk.memories]
+  : Somebody showed me how to scratch a letter in the mud with a stick.
+  : I made fifty. The whole lane was letters.
+  b : Fifty! Did anyone mind?
+  : The rain did. It washed them all away. I did them again.
+
+rule @ad_bark
+when concept=bark
+does aside
+cooldown 8h
+say Round, and down, and round. | Where's my charcoal?
+
+dlg @5 resident.hub : Hello. I'm doing letters. | Hello. Do you know your letters?
+dlg @3 resident.job : I'm a pup. I'm learning letters. | I draw letters on walls. Not allowed, but I do.
+
+adolescent
+line @1 greet [pair.band=strangers] : #greet#. I don't know you. | #greet#. If you're after the board, it's that way.
+line @2 greet : #greet#. | #greet#. Busy. Talk anyway.
+line @3 greet [here.time=dawn] : #greet#. Early. I like early. | Morning. Best light for copying.
+line @1 kin.open [pair.kin!=no] : Oh. You. Sit, then. | You. Fine. Mind my papers.
+line @1 again.open : You again. I've not finished. | Back, then. I'm still at it.
+line @1 greet.return : #greet#. | #greet#. Say it quick.
+line @2 greet.return [pair.band=friends] : You. Good. See this. | Good. Come and see what I've copied.
+line @1 farewell : Right. #farewell#. | I've copying to do. Off you go.
+line @2 farewell [here.time=dusk|night] : It's dark. Go home. | #farewell#. Board's no good in the dark anyway.
+line @1 farewell.return : #farewell#. | Fine. Bye.
+line @1 react.news : Go on, then. | What? Say it properly.
+line @1 react.news.new : That's not on the board yet. | Nobody's posted that.
+line @1 react.news.known : I copied that off the board yesterday. | Old. It was up by noon.
+line @1 react.news.doubt : Is it posted? If it's not posted, it's talk. | Who says? Somebody who can read?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'm sorry. | Rotten. Really rotten.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | Huh. Somebody got lucky, then.
+line @1 answer.how : Fine. Busy. | Same as ever. Working on my hand.
+line @1 ask.how : You all right? | Eaten today?
+line @1 sympathise : That's hard. I'd be angry too. | Rotten luck. I know how it is.
+line @1 reassure : It'll come right. Wait and see. | Don't fret it. I don't.
+line @1 decline : No. I'm not doing that, and you can't make me; I've copying to finish. | Not today. I've lessons, then the board, and that's my whole day.
+line @1 accept_decline : Fine. Suit yourself. | All right. I'll manage.
+line @1 thank : Thanks. I mean it. | Ta. That helps.
+line @1 deflect_thanks : It was nothing. | Leave it. It's done.
+line @1 preclose : Board's waiting. | I've got to go.
+line @1 accept_preclose : Go on, then. | Right. Later.
+line @1 ack : #bc_right# | Mm. #bc_fair#
+line @1 take_offence [pair.band=strangers] : I'm not a pup. Speak to me proper. | I can read better than you, I bet.
+scene copying_notice
+when topic=lore|day|news here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : There's a new #notice# up. I copied it before the paste was dry. | I've got every notice off #board# since spring. Every single one. | Look. That's my hand. Same as the clerk's, near enough.
+b[stage=adult|old] #grown : What's it say? | Every one? What for? | It's not bad. The tails are long.
+b : What's it say? | What for? | Let me see.
+a@grown : Stall hours on the square. Dull. Copied it anyway. | Practice. A clerk writes all day. I'm getting ahead. | I'll shorten them. Thanks. I mean it.
+a : Something about stall hours. In writing, so it's true. | So I can write like a clerk. That's what for. | There. Fair, isn't it. Better than last week.
+
+scene stool_dream
+when topic=dreams|work here.region=ridgemere
+does confide / react.self / assess
+a : #stool.capitalize# will be mine. A proper desk, ink, the lot. | One day I'll walk into #office# and they'll give me a pen. Not a stub. A pen. | I watch the clerks come out at noon. I know which stool's going to be mine.
+b[stage=adult|old] #grown : They don't take many. | Mind you're not disappointed. | Which one?
+b : You will, too. | A pen, eh? | Which one?
+a@grown : Then they'll take one. Me. | I won't be. It'll be mine. | By the window. Light for writing.
+a : I know. #saying#. | A real pen. With a nib. | By the window. I've decided.
+
+scene school_bench
+when topic=work|day self.job=child self.working=yes
+does tell.complaint / react.complaint / assess
+a : #teacher.capitalize# makes us copy the same line twenty times. First go, I had it. | Sums today. I hate sums. I'm good at them, I just hate them. | I sit at #bench#. Good light, and no one peering at my paper.
+b : It's how you learn. | Being good at them helps. | Smart.
+a : I learned it the first time. The other nineteen are for show. | It does. Clerks do sums. So I'll do sums. | It's not smart. It's the back bench. Somebody has to want it.
+
+scene called_pup
+when topic=smalltalk here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A grown-up at the board just called me pup. I'm not a pup. | The clerk laughed at my stub. Laughed. | Somebody told me to run along. I wasn't running anywhere.
+b[stage=adult|old] #grown : I'm sure nobody meant anything by it. | Clerks laugh at everything. | Sorry. That was probably me.
+b : That's rotten. | Don't mind them. | That's rude.
+a@grown : They meant it. I'll mean something back one day. | They'll stop when I'm one of them. | Oh. Well. Don't do it again.
+a : It is. I'll remember it. | I mind them. I mind them a lot. | Rude and wrong. I'll be there longer than them.
+
+scene misty_dawn
+when topic=weather|day here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #mist.capitalize#. I love this. Nobody about but me and the board. | Fog on the square. You can hear the carts but you can't see them. | I came out early. The mist makes the whole city quiet. Even me.
+b : It's cold. | Spooky. | Even you?
+a : Cold's fine. Cold's quiet. | It's not. It's peaceful. That's different. | Even me. Don't tell anyone.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : #eel.capitalize#. Nothing in the whole city beats it, for a copper. | I'd eat eel every day if I had the coppers. | The eel stall gives me the ends cheap. I don't ask why.
+b : Eel? Really? | Every day? | Lucky.
+a : Really. You've not had it right, then. | Every day. Twice on Restday. | Lucky. I'll take lucky.
+
+scene singing_others
+when topic=pastimes|friends here.region=ridgemere
+does tell.self / react.self / assess
+a : We sing on the steps after lessons. Loud. Nobody's stopped us yet. | I can't sing well. I sing anyway. With the others, it doesn't matter. | There's a song about the Sound we all know. We do it twice through.
+b : Sounds fun. | That's the spirit. | Twice through?
+a : Yes. Best thing going, bar the board. | It is. Nobody sings alone and sounds good. | Twice. The second time's louder.
+
+scene sharp_stub
+when topic=pastimes|work
+does tell.self / ask.detail / answer.detail
+a : I sharpen my stub with #knife#. A fine point makes a fine letter. | That knife's the only thing I own worth owning. | Watch. Three strokes, and the point's like a needle.
+b : Where'd you get the knife? | Is it, though? | Can you do mine?
+a : Found it. In the gutter by the Office. I took that as a sign. | It is. Everything else is borrowed or broken. | Bring it. I'll do it, if you don't watch me.
+
+scene flies_summer
+when topic=weather here.season=summer
+does tell.complaint / react.complaint.agree / assess
+a : Flies on the paste. Flies on my paper. Flies everywhere. | They land on the notice right where I'm reading. On purpose, I swear. | It's too hot to copy and the flies don't help.
+b : They're the worst. | They do that. | Go in the shade.
+a : The worst. I'd swat every one if I had time. | On purpose. I'm sure of it. | There's no shade on the board. That's the trouble.
+
+scene waiting_line
+when topic=times|smalltalk self.on_dole=yes here.region=ridgemere
+does tell.complaint / sympathise / assess
+a : I waited an hour in #dole# line. I copied the whole notice on the wall while I stood. | I hate the queue. I hate waiting. But I hate hungry worse. | The line was out the door. I counted forty-one in front of me.
+b : That's a long wait. | Hungry's worse. | Forty-one?
+a : Long. I got the whole notice down, though. Worth something. | It is. So I stand, and I copy the wall. | Forty-one. Then they ran short at thirty.
+
+scene hard_week
+when topic=times|prices world.times=hard|lean
+does tell.complaint / react.complaint.agree / assess
+a : Loaf's smaller again. I measured it against last week's. | They didn't put the price up. They made the loaf smaller. | Everyone in the line looked thinner this week. Me too, probably.
+b : You measured it? | That's a trick, that. | Hard times.
+a : With a string. I keep the string. | A trick, aye. I've the string to prove it. | Hard, and the hill folk never queue for bread.
+
+scene event_posted
+when topic=event|news world.event_words here.region=ridgemere
+does tell.news / react.news / assess
+a : There's a notice up about #world.event_words#. I copied it. | Everyone's reading the board. It's #world.event_words#. | #world.event_words.capitalize#. It's posted. So it's true.
+b : What's it say? | Everyone? | If you say so.
+a : Enough. I've got it all down, if you want it read. | Everyone who can read. Not many. | It's posted. That settles it.
+
+scene newcomer_heard
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# is new, I heard. Can't read the board yet, I bet. | #topic.subject.capitalize# means to stop here, they say. Another one for the line. | Heard the name #topic.subject# at the board. New, apparently.
+b : Give #topic.them# a chance. | Another one? | New's new.
+a : Fine. I'll show #topic.them# where the board is. | Another one. The line's long enough. | New's new. I was new once. At something.
+
+scene gossip_plain
+when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / assess
+a : People are saying #topic.subject# #topic.claim#. It's not posted, so I'm not sure. | Heard by the board: #topic.subject# #topic.claim#. | #topic.subject.capitalize# #topic.claim#, people reckon. Reckon's not proof.
+b : Is it true? | Huh. | Maybe.
+a : Don't know. Not till it's in writing. | Huh is right. | Maybe. Once it's pasted up, I'll credit it.
+
+story first_notice [topic=memories|lore self.age>=12]
+  : The first notice I ever copied, I got every word wrong but three.
+  : I didn't know my letters properly then. I copied the shapes.
+  : I kept the scrap. I look at it when I think I'm not getting better.
+  ask : Have you got anything like that, from when you were bad at something?
+  b : Not kept. I wish I had. Does it help?
+  : It helps. I'm a lot better than three words now.
+
+story pen_borrowed [topic=dreams|work self.age>=12 here.region=ridgemere]
+  : A clerk dropped a pen on the Office steps once. I picked it up.
+  : I wrote my name across an old handbill with it, just once, before I gave it back.
+  : The clerk didn't even look at me. Took it and went in.
+  b : Rude. Did you keep the handbill?
+  : I did. It's my best writing. With a real pen.
+
+rule @bark_notice
+when concept=bark here.region=ridgemere here.time=day
+does aside
+cooldown 8h
+say New notice. Where's my stub. | #oath#. Smudged it.
+
+rule @bark_flies_teen
+when concept=bark here.season=summer here.weather=clear
+does aside
+cooldown 8h
+say Get off the paper. | Flies. On the paste again.
+
+rule @bark_wait
+when concept=bark self.on_dole=yes
+does aside
+cooldown 12h
+say Still waiting. Still waiting. | #saying#.
+
+dlg @1 resident.hub : #greet#. What? I'm copying. | #greet#. Go on, then.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You again. Fine. | Oh, #topic.player#. What is it?
+dlg @3 resident.hub [here.time=night] : It's late. I can't see the board. What? | Night. Say it quick.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay over there. What do you want? | I'm not scared of you. What is it?
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. And copying the board. One day, the City Office. | I'm at lessons. Otherwise I'm learning a clerk's hand off the notices.
+dlg @2 resident.job : I'm working on my letters. That's work. | Copying. Learning. Getting better.
+dlg @1 resident.news [world.news] : It's on the board, near enough: from #world.news_from#, #world.news#. | Heard by the board, from #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : The board's all #world.event_words#. I copied it. | It's #world.event_words#. Posted and everything.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Nothing new on the board. | Same notices as yesterday. I checked.
+dlg @1 resident.gossip [here.gossip=yes] : People say #topic.subject# #topic.claim#. It's not posted, mind. | They say #topic.subject# #topic.claim#. Not in writing, though.
+dlg @2 resident.gossip [here.gossip!=yes] : #gossip_none# | Nothing worth writing down.
+dlg @1 resident.bye : Right. #farewell#. | Bye. I've the board to do.
+graft resident.hub
+choice What are you copying? -> copy
+node copy
+say The notice off the board. Every one that goes up, I copy, letter for letter. I'm learning a clerk's hand.
+mood keen
+free
+choice Why a clerk? -> copy_why
+choice Goodbye. -> bye
+node copy_why
+say Clerks sit indoors, out of the rain, and everybody has to ask them things. I'd like to be asked.
+choice Good luck to you. -> hub
+choice Goodbye. -> bye

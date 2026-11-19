@@ -1,0 +1,459 @@
+# rm119, the peg of spare hoods (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm119
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_imogen_ashby
+written_by claude
+title the peg of spare hoods
+fits stage=adult|old
+prefers job=scholar warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_spare_oilcloth_hoods_for_pupils_who_forget_theirs
+likes blackberries cards full_larder autumn_wind
+dislikes night_noise rats
+fears a_pupil_going_hungry_unnoticed the_school_roof_giving_way
+hopes every_pup_in_northgate_able_to_read_a_notice a_letter_written_for_everyone_who_asks
+topics work +0.5 food +0.3 season +0.3 pastimes +0.3 friends +0.3 weather +0.2 newcomer +0.2 gossip -0.4 crime -0.3
+styles comfort=food gossip=reluctant refuse=soft tease=none
+marks oath saying pet
+persona #self.first# teaches letters and sums by the north gate and writes letters for anyone who cannot: kind, plain-spoken and steady, quick to feed a caller and slow to judge, with a peg of spare oilcloth hoods by the door for every pupil who comes without.
+
+words
+oath! = Mercy, my slates | Oh, slates and chalk | Chalk dust and mercy
+saying! = Letters keep, words wander | What's written down can't wander off | Slow letters are still letters
+pet!! = petal | my lamb | chick
+slates = the slates | the little slates
+chalk = chalk | the stub of chalk
+hood = the spare hood | an oilcloth hood off my peg
+peg = the peg by the door | my peg of spare hoods
+school = the school | the schoolroom
+pupils = my pupils | the little ones at their letters
+bell = the hand bell | the school bell
+alphabet = the alphabet | the letters from first to last
+letterhome = a letter home | a few lines for somebody's mother
+blackberries = blackberries | blackberries off the brambles
+larder = the larder | a larder crammed shelf over shelf
+cards = a hand of cards | cards on the scrubbed table
+autumnwind = an autumn wind | a leafy gale banging at the shutters
+abbey = the abbey close | the abbey
+nightnoise = noise in the night | shouting in the street after dark
+rats = rats | the rats behind the wainscot
+copybook = the copybook | my old copybook
+tart = a blackberry tart | a slice of tart
+reading = reading | reading aloud
+
+any
+opinion @1 dole for 1 : An empty belly can't do sums. I'd feed every pup in the city before I'd teach one of them a letter.
+opinion @2 dole for 2 [world.times=hard|lean] : In lean weeks half my pupils come in with nothing inside them. The parish loaf is the only lesson they hear.
+opinion @1 newcomers for 1 : My bench has space for any wolf willing to sit and learn. I don't care which road they came in by.
+opinion @1 strangers for 1 : A stranger's only a caller with no tart in front of them yet. I can mend that.
+opinion @1 city for 1 : I was born here and I'll be buried here, and in between I mean to teach half of it to read.
+opinion @1 church mixed 0 : I like the abbey's quiet and its books. I'm less sure about the sermons; they're long for a pup.
+opinion @1 festivals mixed 0 : The fiddles I'm fond of. The midnight bawling, less so, and my pupils pay for it the next morning.
+opinion @1 watch mixed 0 : The Watch are polite to me. I'd think more of them if more of them could read a warrant.
+opinion @1 houses mixed 0 : Greatly put up our walls and Fell fills our cups. I've yet to see any House buy a pup a slate.
+opinion @1 merchants mixed 0 : Most of the counters on our street are honest. A few could do with learning to add.
+opinion @1 drink against 1 : I've seen too many pupils sent to school by a parent with a sore head. I'll take tea.
+opinion @1 sump mixed 0 : The Sump has clever pups the same as anywhere. Nobody sends them up the hill to learn.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Something warm inside you would do no harm, by the look. | #greet#. Step off the cobbles, there's a kettle on.
+line @2 greet [self.working=yes self.job=scholar] : #greet#. Mind the slates on the bench. | #greet#. Speak softly, there's a lesson on.
+line @3 greet [here.time=dawn] : #good_day#. You're up with the bell, like a good pupil. | #good_day#. I've the stove going if you're cold.
+line @4 greet [here.time=dusk|night] : #good_day#. Late for wandering; step in and dry off. | #good_day#. You'll have had your supper, I hope.
+line @5 greet [pair.band=friends] : #pet.capitalize#! You've come just when I wanted you. | Ah, #pet#. I put a slice by in case you came.
+line @6 greet [here.weather=rain] : #greet#. Where's your hood? Never mind, I've one spare. | #greet#. You're wet through. There's a hood on #peg#.
+line @7 greet : #greet#, #address#. | #greet#. It's nice to see a face.
+line @1 kin.open [pair.kin!=no] : Sit beside me, #pet#. Bread's on the board if you're empty. | Sit down, #pet#. Tell me everything.
+line @1 again.open : Back again. The kettle can boil a second time. | Twice in one day. Something must be on your mind.
+line @1 greet.return : #greet#. It's nice of you to say so. | #greet#. And to you, #address#.
+line @2 greet.return [pair.band=friends|family] : Ah, #pet#. Sit, sit. | #pet.capitalize#. I was only now thinking of you.
+line @3 greet.return [self.working=yes] : #greet#. Give me one minute to finish this line. | #greet#. I've a pupil reading, but go on.
+line @4 greet.return [here.time=dusk|night] : #good_day#. Home before the street turns rowdy, mind. | #good_day#. It's a cold one; I hope you're wrapped up.
+line @1 farewell : #farewell#. Wrap up warm. | #farewell#, #pet#. Bring me your news another day.
+line @2 farewell [here.time=dusk|night] : Good night, #pet#. Home, and no dawdling. | Good night. Watch for puddles, they hide in the dark.
+line @1 farewell.return : And you. Eat something hot before bed. | #farewell#. Look after yourself.
+line @2 farewell.return [here.weather=rain] : Take a hood off #peg# on your way. | Pull your collar up, #pet#. It's coming down.
+line @1 react.news : Tell me slowly, #pet#, from the beginning. | Go on. You have all of my ears.
+line @1 react.news.new : Not one word of that came my way. | That's new to me. Who told you?
+line @1 react.news.known : I'd heard it from the abbey, but tell me your way. | Yes, it came up at the kitchen table last night.
+line @1 react.news.doubt : I'd want that written down before I believed it. | That sounds like a story that's grown on the way here.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's dreadful. Sit down a moment. | Oh, those poor souls. They'll be in my thoughts tonight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely news. I'm so glad. | That's warmed me right through.
+line @1 answer.how : Well enough. The pupils keep me young. | Steady, #pet#. Busy and steady.
+line @1 answer.how.busy [self.working=yes] : Twenty slates to look over and the stove to feed. | Busy as a hive, and happy so.
+line @1 answer.how.poorly : A little worn. Nothing a cup and an early night won't mend. | Low today. I'll be better for seeing you.
+line @1 ask.how : And you, #pet#? Tell me honestly. | Are you eating properly?
+line @1 sympathise : Oh, #pet#. The warm chair's yours, and something hot with it. | That's heavy. Let me take a corner of it.
+line @1 reassure : By daylight it'll have shrunk. Troubles do. | You'll get there, a letter at a time.
+line @1 decline : I'm sorry, #pet#, not today; there are twenty pups waiting on me. | I'd gladly, only the evening's promised elsewhere already.
+line @1 accept_decline : Of course. Another day, then. | No matter at all. I quite see.
+line @1 thank : Thank you, #pet#. You've a good heart. | Bless you for that. I won't forget it.
+line @1 deflect_thanks : Hush, it was no trouble. | Don't thank me. Just eat it while it's hot.
+line @1 preclose [self.working=yes] : I must ring #bell# now, or they'll riot. | The slates won't mark themselves, #pet#.
+line @2 preclose : I've kept you on your feet too long. | Well. Off you go about your day.
+line @1 accept_preclose : Of course, go on. Come back soon. | Off you go, #pet#. It was lovely to see you.
+line @1 ack : #bc_i_know# | Yes, #pet#.
+line @1 give.advice : Write it down. A thing written down stops going round your head. | Eat first, then decide. Nobody chooses well hungry.
+line @2 give.advice [other.stage=young|adolescent] : Practise your letters ten minutes a day, and you'll read before you know it. | Ask when you don't understand. That's what I'm for.
+line @1 warn [world.bandits=near] : Don't go out the gate alone, #pet#. Wait for company. | Keep within the walls till the road's safe, please. I'd worry.
+line @1 congratulate : Oh, well done! I always knew you would. | That's wonderful. I'm proud of you.
+line @1 praise : That's beautifully done. | You've a good steady paw for that.
+line @1 deflect_praise : It's only practice, #pet#. Years of it. | Oh, anyone could, given the patience.
+scene hood_peg
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / react.self / tell.self / react.self / assess
+a : Three pupils came in today without a hood between them. #peg.capitalize# is nearly bare. | I've lent out four hoods this week and had two back. | Look at you, dripping. Take one of mine; I keep a peg of them.
+b : Do they ever bring them back? | You'll run out. | You keep spare hoods?
+a : Some do. Some bring them back with a blackberry stain and a sorry face. | Then I'll stitch more. Oilcloth's cheap enough, and colds aren't. | For the pupils, mostly. A wet pup can't think about letters.
+b : That's kind of you. | You're very good to them. | That's thoughtful.
+a : It's sense, not kindness. A dry pup learns. | Somebody has to be. Their mothers have enough to do. | It's only oilcloth. A cold costs more.
+
+scene hood_mine
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does tell.self / react.self / assess
+a : I never step outside without my hood. Not once, since I first had one. | People laugh at my hood until they're soaked. Then they borrow one. | This old hood has kept the rain off me through more winters than I'll admit to.
+b : Not even on a dry day? | You could sell them. | It's held up well.
+a : A dry day in Ridgemere lasts an hour. I'd be caught out by noon. | Sell them? I'd sooner lend them and have them come back. | It's been patched twice. I'll patch it again.
+
+scene first_letters
+when topic=work self.job=scholar self.working=yes
+does tell.self / react.self / assess
+a : A pup wrote a whole word on the slate this morning without help. I could have cried. | We're on the letters from the middle of #alphabet# this week. The ones with curls in them give the most trouble. | A pupil of mine can read the notice on the gate now. Read it aloud to the carters.
+b : Which word? | Which ones? | They must have been proud.
+a : Their own name. That's always the first, and always the best. | The ones that look alike in a mirror. Every pup mixes them up. | Proud as a cockerel. The carters gave a cheer.
+
+scene slates_marking
+when topic=work self.job=scholar
+does tell.self / react.self / assess
+a : Twenty #slates# to look over before supper, and every other one smudged. | I mark every slate myself. A pup can tell if you haven't really looked. | Some of the sums on these slates would make a factor weep. We'll go over them again.
+b : That's an evening gone. | Can they really tell? | Are they that bad?
+a : It's the best reading I do all day. | Every time. They watch your eyes. | Not bad. Young. There's a difference.
+
+scene fidget_pupil
+when topic=work self.job=scholar
+does tell.worry / reassure / assess
+a : I've a pupil who can't sit still for longer than a line. I don't know how to reach that one. | One of mine hasn't said a word all term. I worry I'm missing something. | There's a pup who comes in tired every morning. I think there's trouble at home.
+b : Give it time. | Some are just quiet. | Have you asked?
+a : I'll try letting that one stand at the board. Some learn on their feet. | Perhaps. I'll sit beside that one tomorrow and see. | Gently. I've left a bit of bread on the bench, too.
+
+scene school_bell
+when topic=day|work here.time=dawn self.job=scholar
+does tell.self / react.self / assess
+a : I ring #bell# at the same minute every morning. The pups set their day by it. | The schoolroom's coldest just before they arrive. I light the stove early so they never know. | First thing every day, I count the hoods on the peg and the faces on the bench.
+b : Do they come on time? | They'd thank you, if they knew. | Do the numbers match?
+a : Most. The rest come running, which is nearly as good. | They don't need to know. They need to be warm. | Rarely. That tells me who forgot and who's away.
+
+scene letters_for_carters
+when topic=work|travel here.region=ridgemere self.job=scholar
+does tell.self / react.self / assess
+a : A carter came to my door last night wanting a letter written home. I write a good many of those. | Half the drovers on our street can't write. I put their words down for them, and I never change one. | I wrote a letter for an old carter today. Three lines to a daughter, and it took us an hour.
+b : Do you charge for it? | Even the rude words? | Why so long?
+a : A penny for the paper. The writing is free. | Even those. It's their letter, not mine. | Choosing the three lines. The rest was crossed out.
+
+scene letters_read
+when topic=work|family here.region=ridgemere self.job=scholar
+does tell.self / react.self / assess
+a : Folk bring me letters to read out, too. I read the good ones twice. | I read a letter aloud to a neighbour today. Good news from a sister, and we both cried. | When a letter comes and nobody can read it, it sits on a shelf like a stone. I can't bear that.
+b : And the bad ones? | Good tears, then. | So you read them.
+a : Once, slowly, and then I stay a while. | The best kind. I came home lighter. | Every one I'm given. A letter that isn't read is a waste of somebody's heart.
+
+scene blackberries
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : I went out along the brambles past the north gate on Restday and came back purple to the elbows. | #blackberries.capitalize#. Best thing in the whole year, and free on every hedge. | I've made blackberry tarts for the whole street. There'll be purple mouths till Restday.
+b : Any left? | Free and good? | They'll love you for it.
+a : A bowlful. Sit down and I'll find you one. | The best things are. The brambles don't send a bill. | They love me already. The tarts just help.
+
+scene full_larder
+when topic=food|home
+does tell.self / react.self / assess
+a : There's nothing in the world I like better than #larder#. It means nobody here goes without. | I keep the larder stocked as if the whole street might call. Some weeks it does. | I filled the larder today. Then I just admired it a while, like a painting.
+b : Who comes by? | That's a lot of bread. | It's a good feeling.
+a : Neighbours, pups off the street, anyone. Whoever's hungry. | It goes. It always goes. | The best one I know.
+
+scene tart_for_caller
+when topic=food|smalltalk
+does offer / accept / assess
+a : Have a slice of tart before you go. I won't take no. | There's bread and butter on the side. Help yourself, #pet#. | You look thin. Sit and eat something while we talk.
+b[stage=young|adolescent] #pup : Can I have two? | With jam? | I'm not hungry. Well, a bit.
+b : If you insist. | Thank you, I will. | I've only just eaten.
+a@pup : One now and one for your pocket. Don't tell the others. | With jam, and butter under it. You're growing. | A bit hungry is hungry. Sit.
+a : I do insist. Go on. | Good. There's plenty. | Then eat a little again. It won't hurt you.
+
+scene cards_at_night
+when topic=pastimes here.time=dusk|night
+does tell.self / react.self / assess
+a : We play cards most evenings in our kitchen. I lose, and I don't mind a bit. | Supper cleared, cards dealt: I'd not trade that hour for gold. | I taught the whole house a new card game last week. Now they beat me at it.
+b : What do you play for? | Better than the school? | Serves you right.
+a : Buttons. I owe the house about forty. | Different. Nobody needs me to be clever at cards. | It does. That's what comes of teaching.
+
+scene cards_lesson
+when topic=pastimes self.job=scholar
+does tell.self / react.self / assess
+a : I teach sums with a pack of cards. Pups who won't add a column will add a hand all day. | Cards are the best counting lesson there is. I don't tell the abbey that. | A pup who can count to twenty-one can count to anything.
+b : Doesn't anyone object? | Why not? | Is that so?
+a : Not once they see the sums improve. | They'd think I was teaching gambling. I'm teaching adding. | It's true. Twenty-one is where they start caring.
+
+scene autumn_wind
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : Listen to that wind. #autumnwind.capitalize#. I love it. | A blustery day like this puts colour in the pups' faces. They run all the way in. | The wind took a whole pile of leaves into the schoolroom this morning. We counted them.
+b : It's cold, though. | They'll come in wild. | Counted them?
+a : Cold and clean. It blows the soot out of the streets. | Wild, and awake. I'll take awake. | Forty-one. We did adding with them after.
+
+scene autumn_shutters
+when topic=season|home here.season=autumn here.time=dusk|night
+does tell.self / react.self / assess
+a : Shutters rattling at night are a happy sound to me, lying snug. | Autumn evenings are for a lamp, a hand of cards and the wind outside. | The leaves are down on our street and the gutters are full of them.
+b : Not to me. | That sounds a good evening. | Mind you don't slip.
+a : It means the house is snug and I'm inside it. | It's the best. Come and join us one night. | I'll sweep the step in the morning. It's half the fun.
+
+scene night_noise
+when topic=home|smalltalk here.time=night here.region=ridgemere self.quarter=commons
+does tell.complaint / react.complaint / assess
+a : There were carts rumbling past till all hours. I couldn't sleep a wink. | Somebody bawled under my window past midnight. I had my paws over my ears. | Night noise near the gate: that's what I'd change on our street, if I could.
+b : Carters keep odd hours. | Drink, I expect. | The gate's always busy.
+a : They do, poor things. I only wish they'd keep them more quietly. | I expect so. I'll still be up at the bell all the same. | It is. If gates could be moved, I'd move it.
+
+scene rats_wainscot
+when topic=animals|home
+does tell.complaint / react.complaint / assess
+a : I heard #rats# again last night. I can't abide them. | There's a rat living somewhere in our walls. It's eaten the corner off a book. | I've put down a trap and stuffed the hole with rags. I still hear them.
+b : Get a cat. | A book? | They'll find another way.
+a : I've asked around for one. A good mouser is worth a lot to me. | The corners and the cover. A well-read rat, at least. | They always do. I'll keep stuffing.
+
+scene friend_housemate
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I keep the kettle warm for #self.friend# every evening. It's become a habit. | The chair beside mine is kept for #self.friend#. Nobody else sits there. | #self.friend# I'd trust with the larder key, and with whatever I don't say aloud.
+b : That's a fine habit. | Nobody? | That's rare.
+a : The kindest one I have, I think. | Nobody. Not even the cat, and the cat's tried. | It is. I'm grateful for it every day.
+
+scene abbey_close
+when topic=faith here.region=ridgemere self.quarter=commons
+does tell.self / react.self / assess
+a : I walk through the abbey close on the way home. It's the quietest stretch in the whole city. | I go to the abbey for the books more than the prayers. The Bright One understands, I think. | The abbey bells carry right into our kitchen. I set the kettle by them.
+b[piety=devout] #devout : The prayers are worth staying for. | The books are a prayer of their own. | Kettle and bell, a prayer in its way.
+b : It's lovely in there. | Do they lend books? | Do they keep good time?
+a@devout : I'm sure they are. I say mine walking. | Now there's a thought to keep. I'll write it down. | Then I pray twice a day, with tea.
+a : It is. I slow right down when I'm in it. | To me they do. I'm careful with them. | Better than any clock in the city.
+
+scene newcomer_pupil
+when topic=newcomer here.region=ridgemere self.job=scholar
+does tell.news / react.news / assess
+a : Word is #topic.subject# has moved onto a street near ours. I hope that means pups wanting letters. | There's word of a newcomer, #topic.subject#. I'll leave a note at the door about the school. | Someone new, #topic.subject#, they're saying. I'll take round a tart.
+b[from!=ridgemere] #away : That's how I was welcomed, once. | A note? | That's kind.
+b : #topic.they.capitalize# may not have pups. | That's a good idea. | You'd feed the whole city.
+a@away : Then the street is doing its job. | Written plain, so anyone can read it. | It's only a tart.
+a : Then perhaps a grown one who wants to learn. It happens. | It's worked before. | I would, if I had the flour.
+
+scene gossip_withheld
+when topic=gossip
+does tell.self / react.self / assess
+a : All sorts gets said on our step, and none of it goes further. Pups listen. | Folk tell me all sorts. It stays shut up like my larder. | I'd rather not pass on talk about anyone. I wouldn't want it said of me.
+b[talk=chatty] #nosy : Not even a little? | Just one thing. | You must hear plenty.
+b : That's fair. | Very wise. | Fair enough.
+a@nosy : Not even a little, #pet#. Have a slice instead. | No. But I'll tell you which hedge has the fattest blackberries. | Plenty. And it stays with me.
+a : Nobody's trusted who repeats things. | Not wise. Careful. | I knew you'd understand.
+
+scene gossip_sad
+when topic=gossip topic.claim_kind=death|violence|victim here.region=ridgemere
+does tell.gossip / sympathise / assess
+tone serious / serious / even
+a : Passing talk on isn't my habit, but this one's going round: #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. I hope it isn't so. | It's sad talk today. #topic.subject.capitalize# #topic.claim#.
+b : That's terrible. | So do I. | Poor soul.
+a : It is. A kind thought for everyone in it. I can give that much. | We'll know soon enough. Until then, gently. | Yes. We'll not add to it.
+
+scene hard_times_pupils
+when topic=times world.times=hard|lean self.job=scholar
+does tell.worry / reassure / assess
+a : Fewer pupils this month. Their families need them earning, not learning. | I've started keeping bread in the schoolroom. Some of them come with nothing inside. | Hard times empty a school faster than anything.
+b : They'll come back when it eases. | That's good of you. | It'll turn.
+a : I hope so. Once they stop, it's hard to start again. | It's only bread. Letters don't go in on an empty belly. | It will. I'll keep the slates clean for them.
+
+scene good_times
+when topic=times world.times=good|boom self.job=scholar
+does tell.self / react.self / assess
+a : Good times on our street. Three new pupils this month, and they all came with slates. | When money's about, folk remember their pups want learning. I've a full bench. | The larder's full and so's the schoolroom. I could hardly ask for more.
+b : That's grand. | A full bench is good. | You've earned it.
+a : It is. Slates are the best sign I know. | Nothing warms me like it. | Earned or not, I'm grateful.
+
+scene caravan_letters
+when topic=caravan world.wagons=late here.region=ridgemere self.job=scholar
+does tell.worry / reassure / assess
+a : No carts means no letters. There's a mother on our street waiting on one. | No wagons through the gate in days. My carters will be wanting letters written to say they're stuck. | Late wagons mean my letters sitting out somewhere in the rain.
+b : They'll come. | They'll find you. | Oilcloth, I hope.
+a : I hope so. I'll take her a tart this evening, all the same. | They always do. Paper's ready. | I wrapped them myself. I hope that's enough.
+
+scene festival_noise
+when topic=festival
+does give.opinion / react.self / assess
+a : I like the music at a festival. It's the shouting at midnight I could do without. | I'll go for the singing and come home before the drinking starts. | Our street sleeps half the next day. I'll keep the kettle busy.
+b[stage=young|adolescent] #pup : There's sweets, though! | Will you dance? | Will you bake?
+b : It's just the one night. | That's sensible. | Very sensible.
+a@pup : There are. Don't eat them all before supper. | Once, a long time ago. You'll not see it again. | A tray of tarts. Come early.
+a : I remind myself of that, around midnight. | It suits me. | It's experience, mostly.
+
+scene accent_proper
+when topic=accent here.region=ridgemere self.job=scholar
+does tell.self / react.self / assess
+a : I speak the way I'd want my pupils to speak. Plainly, and to be understood. | My speech is bookish, folk say. I take that kindly. | I don't mind how anyone speaks, so long as they can write it down.
+b[from!=ridgemere] #away : I talk different, though. | Do you correct people? | I can't write mine.
+b : You do speak clearly. | Like a book? | That's fair.
+a@away : Different is fine. Everyone talks the way they were raised. | Only my pupils, and only kindly. | Then come by the school some evening. I'll teach you.
+a : Thank you. It's a great deal of practice. | A good one, I hope. | That's my single rule.
+
+scene dream_reading
+when topic=dreams self.job=scholar
+does confide / react.self / assess
+a : I'd like every pup in Northgate to be able to read the notice on the gate. That's all I want. | Someday I'd like a proper schoolroom with a sound roof and windows that open. | I dream of a shelf of books the pups can take home. Not chained, not locked. Just borrowed.
+b : That's not so much to ask. | You'll get it. | They'd lose them.
+a : It's not. And yet here we are. | I'll keep saving. A slate at a time. | Some. Most would come back. Pups are better than people think.
+
+scene health_abbey
+when topic=health here.region=ridgemere
+does tell.self / react.self / assess
+a : Our street's caught a cough off somebody. I've sent honey to three doors. | A cough in the house and I'm up with honey and a hot brick. | The damp gets in our walls. I keep the stove lit and the windows shut.
+b : You'll catch it next. | Nursing too, now? | You'll stifle in there.
+a : Not if I keep my hood on and my feet dry. | Whatever's needed that day, I'm that. | Better stifled than coughing.
+
+scene memories_copybook
+when topic=memories self.age>=40
+does tell.memory / react.self / assess
+a : I still have my first copybook. The letters are terrible. I keep it to show the pups. | I was a slow reader as a pup. That's why I'm patient with the slow ones now. | My own teacher used to say letters keep and words wander. I've never found a truer thing.
+b : Do they laugh at it? | Truly? | That's wise.
+a : They laugh, and then they try harder. It's what the copybook is for. | Truly. I was the last in my class. | It was. I've said it every day since.
+
+scene no_pups_of_own
+when topic=family self.parent=no self.married=no self.job=scholar
+does tell.self / react.self / assess
+a : No pups of my own. I've had a hundred others, though, and every name stays with me. | People ask if I mind having no family. I have a schoolroom full of it. | I never married. The school and the kitchen table have been more than enough.
+b : A hundred! | A sensible way of looking. | No regrets?
+a : More, by now. They wave from across the square. | It's the true way, for me. | Not about that. About the roof leaking, perhaps.
+
+story the_lost_hood [topic=weather|memories self.age>=25 here.region=ridgemere self.job=scholar]
+  : The first winter I taught, a little one came in soaked to the skin with no hood at all.
+  : I gave that pup my own hood and walked home in the rain without one.
+  ask : What do you think I did the next morning?
+  b : Bought yourself another one.
+  : I bought six. That's how the peg started, and there's been a hood on it ever since.
+  b : That's a good beginning.
+
+story the_letter_unread [topic=memories|family self.age>=30 self.job=scholar]
+  : Years ago, an old neighbour kept a letter on the shelf for a whole winter, unopened.
+  : Nobody in the house could read it, and nobody liked to ask.
+  ask : Will you guess what it said, after a winter on the shelf?
+  b : News of a death, perhaps.
+  : News of a birth. A grandchild, born at midsummer. By the time I read it out, the pup was walking.
+  b : All that time. That's a sad thing and a happy one.
+
+story the_brave_reader [topic=work self.age>=25 self.job=scholar]
+  : I had a pupil once who was too frightened to read aloud. Would shake just holding the slate.
+  : So I had that pup read to the stove instead, with everyone's back turned.
+  ask : Would you have thought of that?
+  b : No. But it sounds like it worked.
+  : It did. A month later, the stove had a rival. That pup read the whole room a story.
+
+story the_blackberry_day [topic=food|memories self.age>=25]
+  : As a small pup I was taken out past the gate by an old aunt, to pick blackberries.
+  : We filled two baskets and ate the third, and came home with purple paws and a stomach ache.
+  ask : Do you have a day like that, one you go back to?
+  b : A few. Not with blackberries.
+  : I go back to that one every autumn. I always eat one basket on the way home.
+
+story the_card_debt [topic=pastimes]
+  : I taught our house to play a card game for buttons, and lost every hand for a month.
+  : By spring I owed so many buttons I had to cut them off my old coat.
+  ask : Whose pocket do you think all my buttons went to?
+  b : Whoever you taught first, I'd say.
+  : Yes. That's the trouble with teaching. They always end up better than you.
+
+rule @bark_hood
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say Where's that pup's hood? Never mind, there's one on #peg#. | Hoods up, everybody. It's pouring.
+
+rule @bark_bell
+when concept=bark here.time=dawn self.job=scholar self.working=yes
+does aside
+cooldown 10h
+say Slates out, and settle down. | In you come. Hoods on the peg, slates on your knees.
+
+rule @bark_reading
+when concept=bark self.job=scholar self.working=yes here.time=day
+does aside
+cooldown 7h
+say Slowly. Sound it out. There. | Read it again, a little louder. Good.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Listen to that wind. Lovely. | Leaves everywhere. I'll sweep later.
+
+rule @bark_rats
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say There's that scratching again. | I'll stuff another rag in that hole tomorrow.
+
+rule @bark_noise
+when concept=bark here.time=night here.region=ridgemere
+does aside
+cooldown 12h
+say Must they shout under every window? | Some of us teach in the morning.
+
+dlg @1 resident.hub : #greet#. Come in and sit down; there's tea. | #greet#. That face has had a long day in it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#! In with you, #pet#, the kettle's nearly singing. | #greet#, #topic.player#. You've been eating, I hope.
+dlg @3 resident.hub [here.time=night] : It's late, #pet#. Come in quickly and get warm. | It's dark out there. Sit down a moment.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll listen, but softly, please. There are sleepers upstairs. | Your errand, then. Plainly, if you would.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#, at #self.workplace#. Slates, sums and patience by the bucket. | I teach pups their letters, and I write letters for anyone who can't.
+dlg @2 resident.job : I keep busy, and grateful for it. | Work keeps me steady. That's enough.
+dlg @1 resident.bye : #farewell#. Wrap up warm. | #farewell#, #pet#. Come back soon.
+dlg @2 resident.bye [here.weather=rain] : Take a hood off #peg# on your way out. | Mind the wet. Here, take a hood.
+dlg @3 resident.bye [here.time=night] : Good night. No lingering on the way. | Good night, #pet#. Keep near the lamps, it's black out.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. One of the carters told me. | I heard from #world.news_from# that #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody's talking about #world.event_words#. The pups most of all. | It's all #world.event_words# at the school door.
+dlg @3 resident.news [world.wagons=raided] : A wagon was set on along the road. Please don't travel alone.
+dlg @4 resident.news [world.death=recent] : Someone from our street was laid to rest this week. It's been a quiet house.
+dlg @5 resident.news [world.wedding=recent] : There's been a wedding! The pups talked of nothing else.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing new, #pet#, and quiet suits me. | Quiet here. The only news is a pupil who can spell now.
+dlg @1 resident.gossip [here.gossip=yes] : I'd rather not, but it's going round: #topic.subject# #topic.claim#. | Folk say #topic.subject# #topic.claim#. I hope it's kinder than it sounds.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't pass on talk, #pet#. You'll get nothing from me. | There's nothing I'd repeat.
+dlg @1 master.learn [here.teaches=yes] : You want to learn? Good. Sit down, here's a slate. | #learn_offer# Learning's never wasted. Ask me anything.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : #topic.player#, back for more. Good. Slate on your knee. | You came back, #topic.player#. We'll start where we left off.
+dlg @3 master.learn [here.teaches=no] : I've someone learning beside me already. Questions are free, though. | My bench is full for now. Ask anyway.
+dlg @1 master.work : Long days, but there's nothing better than seeing a pup read. | It's patient work. Slow, and worth it.
+dlg @1 master.takes [here.take_on=yes] : A single learner, given everything I have. You'd do well. | One learner, and one I trust. Ask and it's settled.
+dlg @2 master.takes [here.take_on=no] : Just the one learner, never two. #here.take_on_why#
+dlg @1 master.bye : #farewell#. Practise your letters. | #farewell#, #pet#. A little every day.
+graft resident.hub
+choice Why the row of hoods by the door? -> hoods
+node hoods
+say They're for the pupils who come without. A wet pup can't think about letters. Take one if you need it; I always get them back, mostly.
+mood warm
+free
+choice How many do you lend? -> howmany
+choice Back to it. -> hub
+node howmany
+say Four or five a week in the wet, and the wet's most weeks. I stitch a new one every month to keep up.
+choice I'll bring one back. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice Could you write a letter for me? [self.job=scholar] -> letter
+node letter
+say Of course. Tell me who it's for and what you want to say, and I'll put it down exactly as you say it. A penny for the paper, and nothing for the writing.
+mood warm
+free
+choice Why nothing for the writing? -> why
+choice Back to the lesson. -> learn
+node why
+say Because a letter that never gets written is a sad thing, and I can stop it. That's reason enough.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

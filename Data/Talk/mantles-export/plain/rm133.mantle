@@ -1,0 +1,402 @@
+# rm133, the carver of pairs (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm133
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_rune_pitchhand
+written_by claude
+title the carver of pairs
+fits stage=young|adolescent|adult|old
+prefers temper=calm talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk trusts_no_one_from_a_rival_house
+likes oatcakes whittling quiet_chapel summer_evenings
+dislikes gulls stale_bread
+fears a_carving_left_without_its_pair being_laughed_at_and_not_forgetting_it
+hopes a_stall_of_carved_pairs_on_the_commons a_pair_good_enough_to_give_the_chapel
+topics pastimes +0.5 faith +0.3 food +0.2 season +0.2 dreams +0.3 animals +0.2 gossip -0.4 festival -0.1
+styles comfort=quiet gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# whittles little animals out of offcuts, always two of a kind so none stands alone, puts every spare coin by for a stall to sell the pairs from, sits in the chapel in the empty hours, speaks plainly and patiently, takes offence quietly and holds it long, and has picked a House to stand by and trusts nobody in another's colours.
+
+words
+oath! = Knots and burrs | Whittle me thin | Pith and pine
+saying! = Cut with the grain | Slow knife, clean curl | Never carve one when you can carve two
+knife = the whittling knife | the small blade
+wood = a bit of wood | a good offcut
+shavings = shavings | curls of pale shaving
+pair = a pair | two of a kind
+pairs = pairs | the little pairs I carve
+oatcakes = oatcakes | oatcakes, buttered and warm
+chapel = the chapel | the chapel in its empty hours
+gulls = gulls | those screeching thieves
+stalebread = stale bread | a loaf left out gone like a brick
+tin = the savings jar | the jar behind the loose board
+stall = a stall | a stall full of pairs, someday
+timber = Timberland timber | sweet pine off the Timberland yards
+colours = livery | another House's colours
+
+any
+opinion @1 festivals for 1 : Fiddles, sweets and no bedtime. Dancing's not for me; watching from the kerb is.
+opinion @1 houses for 1 [!self.house] : Timberland gives the city its timber. I'll stand by them. I'd not trust the others with a matchstick.
+opinion @2 houses mixed 0 [self.house] : My own House has my loyalty. The rest get my good day and no more.
+opinion @1 merchants for 1 : A good stall's an honest thing. I mean to have one, and keep it honest.
+opinion @1 city for 1 : I'll stay here. I'd miss the bells and the hills of roofs.
+opinion @1 church for 1 : The chapel's at its best empty. I sit, and nobody minds me.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. A new face, I think. | #greet#. New to the street, are you.
+line @2 greet [self.working=yes] : #greet#. One moment. I'm mid-cut. | #greet#. Let me put the knife down.
+line @3 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : Come in. Sit. | There you are. The new pair's done; have a look.
+line @1 again.open : Back again. I've not gone far. | You're back. Good.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @1 farewell : #farewell#. | Goodbye, then.
+line @1 farewell.return : #farewell#. | Goodbye. Go carefully.
+line @1 react.news : Tell me properly. | Go on. Slowly.
+line @1 react.news.new : I'd not heard that. | That's new to me.
+line @1 react.news.known : I'd heard. | Somebody told me yesterday.
+line @1 react.news.doubt : Saying isn't seeing. I'd want a witness. | I'm not sure. It sounds bent in the telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sad thing. | Oh. That's grievous.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'm glad. | That's good news.
+line @1 answer.how : Steady. | Well enough, thank you.
+line @1 ask.how : Are you well? | How have you been?
+line @1 decline : I'd rather not. There's work wants finishing while it's light. | Not today, sorry. My word's given to somebody else.
+line @1 accept_decline : That's all right. | Another time, then.
+line @1 thank : Thank you. It's not forgotten. | That's kind of you.
+line @1 deflect_thanks : It was nothing. | I was glad to.
+line @1 preclose : I should get on. | I'd better go.
+line @1 accept_preclose : All right. Goodbye. | Go on, then.
+line @1 take_offence : That's not kind. I'll leave it there. | Go on laughing. Without me.
+line @1 ack : Mm. | #bc_i_know#
+scene gr_carving
+when topic=pastimes
+does tell.self / react.self / assess
+a : I still carve in the evenings. Always in pairs. Two herons this week. | There's a shelf of pairs at home now. It started with two lopsided hares. | Carving's how I rest. A knife, some wood, and nobody talking.
+b : Still in pairs? | Lopsided? | That sounds peaceful.
+a : Always. I can't leave one alone. | One leaned. I kept them anyway. | It is. #saying#.
+
+scene gr_stall
+when topic=dreams|work
+does confide / react.self / assess
+a : I still mean to have a stall of carved pairs. I've saved for years. | Any spare coin, into the jar. It's a deep jar. | Someday the Commons will have a stall with my pairs on it.
+b : You'll get there. | A deep jar? | I'd buy one.
+a : I will. Slowly. | It's taking a long while to fill. | Good. I'll keep you a pair.
+
+scene gr_chapel
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : The chapel in its empty hours is still my favourite place. | The afternoon light in the chapel. I've never seen anything better. | I go in to think. I don't pray much. The Bright One doesn't seem to mind.
+b : It is quiet. | Never? | I'm sure not.
+a : It is. Quiet like wood. | Never. I've looked. | I hope not.
+
+scene gr_houses
+when topic=lore|times here.region=ridgemere !self.house
+does give.opinion / react.self / assess
+a : I've always been for Timberland. Their wood's honest. | I don't trust anybody in the wrong colours. I never have. | The other Houses can be civil. I'll be civil back. That's all.
+b : Always? | Never? | That's fair, I suppose.
+a : From a pup up. | Never. It's how I'm made. | It's all I'll give them.
+
+scene gr_oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : Oatcakes and butter. Nothing's ever beaten them. | I'll not eat stale bread. Never have. | A warm oatcake on a cold morning. That's all I want.
+b : Still? | Never? | That's simple.
+a : Still. | Never. I'd go hungry. | It's meant to be.
+
+scene gr_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Gulls. Still the worst birds in the city. | A gull took my lunch off the step again. | There's always a gull watching. Always.
+b : They're only hungry. | Again? | Always?
+a : So's everybody. | Again. I should learn. | Always. I watch back.
+
+scene gr_summer
+when topic=season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : Summer evenings are still best for carving. Light till late. | On the doorstep with a knife till I can't see the grain. | A whole summer evening and a bit of good wood. That's enough.
+b : Nice. | Till dark? | Enough?
+a : It is. | Till dark. Then a bit after. | Enough for me.
+
+scene gr_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : There's nothing of mine #self.friend# couldn't hold for me. | Any new pair, I show #self.friend# first. | A botched carving, I'd let #self.friend# see. Nobody else.
+b : That's good. | First? | That's rare.
+a : It is. | First, always. | It is. I'm slow to trust, so it counts.
+
+scene gr_newcomer
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : Somebody new. #topic.subject#. I'll be polite and see. | Word is #topic.subject# means to stop here. I'll want to know which House. | #topic.subject.capitalize#, new here. I'll take my time.
+b : That's fair. | Does it matter? | Fair enough.
+a : I'm slow to trust. | It does to me. | I always do.
+
+scene gr_gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : Talk about other folk isn't for me. I'd not want it about me. | Folk say things. I listen and carve. | If it's not kind, I'd rather not hear it.
+b : Fair. | That's one way. | That's good.
+a : It's how I am. | It's my way. | I try.
+
+scene gr_work
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : Slow and proper. I don't have a quicker way. | I don't rush. Rushing spoils things. | Work's like carving. Go with the grain.
+b : Slow's fine. | Never rush? | With the grain?
+a : Slow's still done. | Never. | With it. Not against it.
+
+scene gr_festival
+when topic=festival
+does tell.self / react.self / assess
+a : I like watching the festival. I don't dance. | Music and lights. I'll find a doorstep and watch the square. | I carved two little fiddlers for the festival once. I still have them.
+b : Never dance? | Just watch? | Fiddlers?
+a : Never. I'd trip. | Just watch. It's enough. | Small. With bows made of twigs.
+
+
+young
+line @1 greet : #greet#. I'm making two hares. Look. | #greet#. I'm not allowed the big knife yet.
+line @1 greet.return : #greet#. | #greet#. You can watch me carve, if you're quiet.
+line @1 farewell : Bye. Mind the gulls. | Bye, then.
+line @1 farewell.return : Bye! | Bye. Come and see them when they're done.
+line @1 react.news : Tell me properly. From the start. | What happened?
+line @1 react.news.new : I didn't know that. | Nobody told me.
+line @1 answer.how : Good. I found a bit of wood. | All right. A gull took my oatcake.
+line @1 accept_decline : All right. | That's fine.
+scene yg_first_pair
+when topic=pastimes
+does tell.self / react.self / assess
+a : I've carved a hare. Now I have to carve another, so it's got a friend. | I always make two. One on its own looks sad. | I made two fish. One's fatter. It doesn't matter.
+b : Why two? | Do they look sad? | Fish are hard.
+a : Nobody should be on their own. Not even a hare. | A bit. Two looks right. | Fish are easy. Hares are hard.
+
+scene yg_gull_thief
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : A gull snatched my oatcake. Just snatched it! | I hate gulls. They scream and they steal. | There's a big gull on our roof that watches me. I watch it back.
+b : They do that. | They're only birds. | Who wins?
+a : It's not fair. I'd only had one bite. | Thieving birds. | Nobody yet.
+
+scene yg_oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : Oatcakes with butter on. That's my favourite food. | I had four oatcakes for breakfast. Four. | I don't like bread when it's gone hard. It hurts my teeth.
+b : Better than honey cakes? | Four! | Nobody does.
+a : Yes. Honey cakes are too sticky. | I was hungry. I'm still a bit hungry. | Then they should eat it while it's soft.
+
+rule @yg_bark_gulls
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Go away, gull! | That gull's looking at my oatcake.
+
+
+adolescent
+line @1 greet [pair.band=strangers] : #greet#. You're a new face to me. | #greet#. You'll be new to the street.
+line @2 greet [self.working=yes] : #greet#. Half a moment; I'm on an ear. | #greet#. Give me this last curl first.
+line @3 greet [here.time=dusk|night] : Evening. I was nearly in. | Evening. It's getting dark for carving.
+line @4 greet : #greet#. | #greet#, #address#.
+line @1 kin.open [pair.kin!=no] : Come and sit. I'm nearly done with this pair. | Oh, it's you. Look what I've made.
+line @1 again.open : You're back. I've done another leg. | Back again. Same step, same knife.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @2 greet.return [pair.band=friends|family] : Hello. Sit if you like. | Oh, good. I wanted to show you something.
+line @1 farewell : #farewell#. | Goodbye, then.
+line @1 farewell.return : #farewell#. | Goodbye. Mind how you go.
+line @1 react.news : Tell me properly. Don't rush it. | Go on. I'm listening.
+line @1 react.news.new : I hadn't heard that at all. | That's news to me.
+line @1 react.news.known : I'd heard. It was going round the school. | I know. Somebody told me at lessons.
+line @1 react.news.doubt : Talk's not seeing. I'd want an eye that was there. | That sounds made up to me. Like a story with bits added.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's sad. I'm sorry. | Oh. That's heavy news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'm glad. | That's nice news.
+line @1 answer.how : Well enough. I've got a good bit of wood. | All right. Steady.
+line @1 answer.how.poorly : Not so good today. I'll be better tomorrow. | A bit low. Somebody laughed at my carving.
+line @1 ask.how : Are you well? | How are you keeping?
+line @1 decline : I'd rather not, thank you. There's a pair to finish before dark. | I can't today. I promised to be home.
+line @1 accept_decline : That's all right. | No matter. Another time.
+line @1 thank : Thank you. That's kind. | Thanks. That'll stay with me.
+line @1 deflect_thanks : It was nothing. | I was glad to.
+line @1 preclose : I should go. It's nearly dark. | I'd better get home.
+line @1 accept_preclose : All right. Goodbye. | Go on, then. See you.
+line @1 take_offence : That's not kind. I'll not talk about it any more. | Laugh at me and I go. I'm going.
+line @1 accept_apology : All right. I'll forget it. Mostly. | It's done. Let's not say any more.
+line @1 ack : Mm. | #bc_i_know#
+line @1 give.advice : Cut with the grain, not against it. It's easier. | Put one coin by every week. It mounts up.
+line @1 warn [world.bandits=near] : Don't go outside the walls this week. There's robbers about. | Stay in the city. The road's not safe.
+scene ad_whittling
+when topic=pastimes
+does tell.self / react.self / tell.self / react.self / assess
+a : I whittle little animals out of offcuts. Two of everything. Two hedgehogs this week. | I made two boats this week. They both float, side by side. | I've carved eleven pairs. They stand on the windowsill, two by two.
+b : Why two of everything? | Both float? | Eleven pairs!
+a : One on its own looks lonely. I can't leave it like that. | Both. One a bit sideways, but they float together. | Twelve by Restday, if the wood's good.
+b : That's kind, in a way. | Will you sell them? | Can I see them?
+a : Pairs are right. Singles aren't. #saying#. | Not the boats. The first pair stays. | If you're careful with them. Hedgehog spines snap.
+
+scene ad_grain
+when topic=pastimes|smalltalk
+does give.advice / react.self / assess
+a : The trick is the grain. Go with it and the wood helps you. Go against it and it splits. | You can't hurry a carving. If you push the knife, it slips. | Look at this curl. Long and clean. That's how you know the knife's right.
+b : Did someone teach you? | Have you cut yourself? | It is a nice curl.
+a : I watched a carpenter once, and then I practised. | Twice. Never since I learned to go slow. | Thank you. I'll keep it. I keep the good ones.
+
+scene ad_laughed_at
+when topic=pastimes|friends
+does tell.feeling / reassure / assess
+a : Somebody laughed at my hedgehogs. Said they looked like potatoes. I've not shown anyone since. | When folk laugh at the carvings I go quiet. I can't help it. | An older pup snapped one of my hares, so its pair's alone now. I'll not forget it.
+b : It's probably very good. | That's fair enough. | That was mean.
+a : They're not bad. They're not potatoes. | It's how I am. I'm slow to forgive. | It was. I'll carve the hare a new partner. Better.
+
+scene ad_savings_jar
+when topic=dreams|prices
+does confide / react.self / assess
+a : Every coin I'm given goes into a jar behind a loose board. It's for a stall. | Someday there'll be a Commons stall that's all pairs, a price tied to each. | I count the jar on Restdays. It's slow. Slow's all right.
+b : Is it filling? | All pairs? | It's a start.
+a : Not enough. More than last month. | All pairs. I'll not sell one without the other. | It is. Years don't frighten me.
+
+scene ad_chapel_empty
+when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
+a : I like the chapel in the afternoons, when it's empty. I just sit. | The chapel's quiet after the noon bell. The light comes in slant. | Praying's hard for me. Sitting and thinking in there is near enough.
+b[piety=devout] #devout : Sitting counts, with the Bright One. | That's the best light. | Thinking's a kind of praying.
+b : What fills your head in there? | Isn't it cold? | Don't you get bored?
+a@devout : I'd like that. I hope so. | It is. I'd carve that light, given the skill. | Then I pray a great deal.
+a : Carvings, mostly. And the Bright One, a bit. | A bit. I don't mind. | No. It's the quietest place I know.
+
+scene ad_chapel_pair
+when topic=faith|dreams
+does confide / react.self / assess
+a : One day I'd like to carve a pair good enough to leave in the chapel. | I'm practising two little lambs. If they come out well, they're for the chapel. | The best pair I ever make, I'll give to the chapel. Not sell it. Give it.
+b : That's a good thought. | Lambs? | Why give it?
+a : I've years of practice before that. | Lambs are hard. The wool's all little cuts. | Because some things shouldn't have a price.
+
+scene ad_houses_side
+when topic=lore|times here.region=ridgemere !self.house
+does give.opinion / react.self / assess
+a : I'm for Timberland. They give the city its timber. I'd not trust the others. | Timberland wood's the best for carving. The others are all wine and stone and boats. | I don't trust anybody in Grayrock colours. Or Fell's. Or Greatly's. Timberland's honest.
+b : Why Timberland? | Does it matter which? | Isn't that a bit unfair?
+a : They make the wood. Wood's what I love. | It matters to me. | Perhaps. My mind's made up, though.
+
+scene ad_livery
+when topic=smalltalk|gossip here.region=ridgemere !self.house
+does tell.self / react.self / assess
+a : A wolf in another House's colours spoke to me today. I said good day and nothing else. | I won't buy from a stall with the wrong livery over it. | When I see the wrong colours coming, I cross the street. Politely.
+b : There may be nothing wrong with them. | Even if it's cheaper? | That's a lot of crossing.
+a : Maybe. I'll wait a year or so and decide. | Even then. | It is. I'm used to it.
+
+scene ad_oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : #oatcakes.capitalize#. I'd have them every meal if I could. | Oatcakes beat bread. They don't go hard overnight. | On summer evenings I take oatcakes out on the roof and eat them looking at the bay.
+b : Every meal? | Truly? | Don't the gulls come?
+a : Every one. With butter, warm. | Truly. I can't bear a hard loaf. | They come. I keep a stick.
+
+scene ad_stale_bread
+when topic=food
+does tell.complaint / react.complaint / assess
+a : Bread that's gone hard is the worst thing. It's like chewing a doorstep. | I won't eat stale bread. I'd rather go hungry. | Yesterday's loaf left out all night. Fit for mending the wall.
+b : Toast it. | You'd really go hungry? | Feed it to the birds.
+a : Toasting stale bread just makes hot stale bread. | Nearly. I'd eat an oatcake instead. | Not the gulls. Anything but the gulls.
+
+scene ad_gulls
+when topic=animals here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Gulls are the worst birds in the city. They scream and steal and stare. | Last week a gull took a buttered oatcake from between my fingers. | There's a gull on our chimney every morning. It watches me.
+b : They're only hungry. | A whole one? | It's waiting for crumbs.
+a : I'm hungry too. I don't go snatching. | A whole one. I'd only had a bite. | It'll not get one.
+
+scene ad_summer_evening
+when topic=season|pastimes here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : Long summer evenings are best for carving. There's light till late. | Summer, I carve on our doorstep until the light's gone. | In summer I can finish a whole pair before dark.
+b : That sounds nice. | Till the light goes? | A whole pair?
+a : It is. Nobody calls me in. | Till I can't see the grain. | A small pair. Mice. Mice are quick.
+
+scene ad_lessons
+when topic=work|day self.job=child
+does tell.self / react.self / assess
+a : Lessons are all right. I like the sums about coin. They help with the jar. | I'm slow at letters. The teacher says that's fine. Slow's still letters. | We had to write what we want to be. I wrote stallholder.
+b : The jar? | Slow's fine. | Stallholder?
+a : The savings jar. Sums tell me how long. | It is. I'm slow at everything. I get there. | For the pairs. I spelt it right, too.
+
+scene ad_mother
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #self.mother# wakes me before the bell. I don't mind. Early's quiet. | I carved #self.mother# two little loaves of wood once. The pair sits on our shelf still. | #self.mother# says I'm too slow at everything. Then says it's not a bad thing.
+b : Early's good. | That's sweet. | It isn't.
+a : It is. I get my carving done before lessons. | They're not very good. They stay there anyway. | I don't think so either.
+
+scene ad_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : Every new pair goes to #self.friend# first, before anybody. | I'd trust #self.friend# with my jar, and that's saying something. | A pair that's gone wrong, I'd show #self.friend# and nobody else.
+b : That's a good friend. | With the jar! | That's rare.
+a : It is. I'm lucky. | With the jar. Nobody else. | It is. I'll carve a pair just for that one, someday.
+
+scene ad_newcomer
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : Somebody new, #topic.subject#. I'll want to know which House before I say much. | Word is #topic.subject# has moved in near us. Perhaps a buyer for a pair. | There's a newcomer, #topic.subject#. I'll be polite and see.
+b : Does that matter? | Maybe. | That's fair.
+a : To me it does. | Perhaps. I'll not push. | I'll be polite for a long while.
+
+story ad_story_first_knife [topic=memories]
+  : The first knife I had was an old one somebody threw out. Blunt as a spoon.
+  : Every morning for a month I ground it on our doorstone, and still it wouldn't cut.
+  ask : Would you have kept at it that long?
+  b : Probably not. I'd want a new one.
+  : I nearly gave up. Then one day it took a clean curl, and from then it was mine. I still use it.
+
+story ad_story_broken_hare [topic=memories|pastimes]
+  : I carved two hares for a whole week once. Every hair on them.
+  : I dropped one on the stairs the day they were finished, and its ears came off.
+  ask : The broken one, the one with no ears: could you have mended it?
+  b : Glued them back on, I suppose.
+  : Ears don't glue. So I cut both of them down into rabbits. Rabbits have short ears. Nobody knew.
+
+story ad_story_chapel_light [topic=faith|memories here.region=ridgemere]
+  : One afternoon in the chapel the light came in through the high window and lay right across the floor.
+  : I sat and watched it move till it reached the door. Nobody came in the whole time.
+  ask : Have you ever sat still that long for anything?
+  b : Not often. Never for light.
+  : It's the stillest I've ever been. I'd like to carve how it felt. I don't know how.
+
+rule @ad_bark_carving
+when concept=bark
+does aside
+cooldown 8h
+say Steady. With the grain. There. | One more curl and it's an ear. Then the other one.
+
+rule @ad_bark_gulls
+when concept=bark here.region=ridgemere
+does aside
+cooldown 9h
+say Shoo, gull! That's mine. | Don't you dare, you thieving bird.
+
+rule @ad_bark_jar
+when concept=bark
+does aside
+cooldown 12h
+say Another coin for the jar. | That's three more this week. Good.
+
+dlg @1 resident.hub : #greet#. I'm carving. You can watch if you're quiet. | #greet#. I've a new pair finished, if you'd like a look.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I've finished the hedgehogs. | #greet#, #topic.player#. I've done another pair since.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I don't want any trouble. | Please don't touch the carvings.
+dlg @1 resident.job [self.job=child] : At lessons, mostly. Carving the hours after. | Lessons. And putting coin by for a stall.
+dlg @1 resident.bye : #farewell#. | Goodbye. Mind the gulls.
+dlg @1 resident.news [world.news] : The school had it this morning: from #world.news_from#, #world.news#. | Somebody said #world.news#. From #world.news_from#.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : I've not heard anything. | Nothing new. Just the gulls.
+dlg @1 resident.gossip [here.gossip=yes] : People are saying #topic.subject# #topic.claim#. Whether that's so, there's no knowing. | I heard #topic.subject# #topic.claim#. I'd not repeat it, usually.
+dlg @2 resident.gossip [here.gossip!=yes] : Talk goes past me, mostly. | Nothing I'd want to pass on.
+graft resident.hub
+choice Why do you carve everything in pairs? -> pairs
+node pairs
+say One on its own looks lonely. So I always carve two, and they stand together. I've eleven pairs on the windowsill now.
+mood pleased
+free
+choice Do you sell them? -> sell
+choice Back to it. -> hub
+node sell
+say Not yet. When I've saved enough there'll be a stall, up on the Commons, and every pair will have a price. Never one without the other.
+choice I'll come and buy a pair. -> hub
+choice Goodbye. -> bye

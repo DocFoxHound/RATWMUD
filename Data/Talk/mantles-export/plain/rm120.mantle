@@ -1,0 +1,325 @@
+# rm120, the banner-reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm120
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ulf_cinderley
+written_by claude
+title the banner-reader
+fits stage=adult|old
+prefers job=crafter temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk checks_which_house_banners_fly_over_the_rain_hall
+likes plum_tart stars festival_bells first_snow
+dislikes rats bad_manners
+fears dying_behind_the_same_counter
+hopes to_go_past_the_north_gate_and_keep_walking
+topics lore +0.4 times +0.4 travel +0.3 dreams +0.3 food +0.2 weather +0.1 festival -0.2
+styles comfort=blunt gossip=careful refuse=short tease=none
+marks oath saying
+persona #self.first# helps behind a family counter on the Commons and chafes at it: short-tempered, restless and touchy about manners, reading the House banners over the Rain Hall every morning for the quarrel sure to come.
+
+words
+oath! = Needle and nap | Rot the bolts | Wool and thunder
+saying! = Four Houses at one table, and too few chairs | Quiet halls come before loud quarrels
+banners = the banners on the Rain Hall | the House colours over the Rain Hall
+houses = the four Houses | all four of the Houses
+counter = the counter | the shop counter
+tart = a plum tart | plum tart, purple to the crust
+bells = the festival bells | the feast-day peal
+snow = the first snow | the year's first snowfall
+gate = the north gate | the gate out of the city
+tch = Tch | Huh
+deaf = I heard you | I'm not deaf
+door = the shop door | that door with its jangling bell
+
+any
+opinion @1 houses mixed 2 : The Houses smile at each other in the Rain Hall and sharpen their knives at home. One of them will break before the snow's gone.
+opinion @2 houses against 2 [world.times=hard|lean] : Lean times make the Houses hungry, and hungry Houses bite. Somebody's banner comes down over this.
+opinion @1 festivals against 1 : The bells I'll stand out for. The rest is shouting, puddles of ale and fists by dark.
+opinion @1 newcomers for 1 : Anyone who packs up and comes here has more nerve than I've got. Let them have a corner, and welcome.
+opinion @1 road for 1 : A road's only cruel to fools who walk it gawping. I'd take it tomorrow if I'd somewhere to go.
+opinion @1 city mixed 1 : The city's mine and I'm fond of it. I'd like, once, to look back at it from the road.
+opinion @1 watch mixed 0 : The Watch are fine till they're rude to you. Then they're anyone else in a coat.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. A stranger, wanting something, I'd guess. | #greet#. Mind the doorstep; it catches everyone.
+line @2 greet [self.working=yes] : #greet#. I'm minding #counter#, so be quick about it. | #greet#. If you're buying, I'm all ears.
+line @3 greet [here.time=dawn] : #greet#. Up with the banners, me. | Morning. Early, for anyone sensible.
+line @4 greet [here.time=dusk|night] : #greet#. Another minute and #door# would have been barred. | Evening. You've caught me between one thing and the next.
+line @5 greet [pair.band=friends] : You. Good. I needed an ear to fill. | #greet#. Come in. What a day it's been.
+line @6 greet : #greet#. | #tch#. #greet#.
+line @1 kin.open [pair.kin!=no] : There you are. Don't start on me; the sweeping's done. | Come in. Upright since first light and thanked by nobody.
+line @1 again.open : Still here, the same spot. Nothing's changed. | Back already. Something must have gone wrong.
+line @1 greet.return : #greet#. | #greet#. Say it, then.
+line @2 greet.return [pair.band=friends|family] : There you are. About time. | #greet#. I'd given you up.
+line @3 greet.return [self.working=yes] : #greet#. I'm listening and counting both. | #greet#. Don't lean on the shelves.
+line @4 greet.return [here.time=dusk|night] : Evening. I'm half out the door. | #greet#. Late for it.
+line @1 farewell : #farewell#. | Right. Off you go.
+line @2 farewell [here.time=dusk|night] : Go on. Keep clear of the unlit alleys. | #farewell#. Bar your door tonight.
+line @1 farewell.return : #farewell#. | Aye. Go on, then.
+line @2 farewell.return [pair.band=friends] : Next time, come with news. Any news. | Come round again. I'll still be stuck here.
+line @1 react.news : #tch#. Is that right. | Well. There's a thing.
+line @1 react.news.new : News to me. Nobody tells the back room anything. | #oath#. Nobody ever tells me first.
+line @1 react.news.known : Heard it yesterday. Everyone did. | Old. The whole Commons had it by noon.
+line @1 react.news.doubt : That's a tale somebody's polished. I'll wait for the plain version. | I'll want that from somebody with nothing to sell.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's rotten. Nobody should get that. | #tch#. That's a black thing to hear.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. For once a thing's turned out well. | Now that's worth the hearing.
+line @1 answer.how : Same as ever. Restless. | Middling. I'd be better somewhere else.
+line @1 answer.how.busy [self.working=yes] : Busy, and going nowhere with it. | At the counter all day. Talk fast.
+line @1 answer.how.poorly : Out of sorts. Couldn't say what's at the root. | Sour. It'll wear off by supper.
+line @1 ask.how : And you? Getting on? | How's yours, then?
+line @1 sympathise : That's hard. I'd be raging, in your place. | That's bad luck, and you did nothing to earn it.
+line @1 decline : Can't. I'm tied to #counter# till dark, and that's not my choosing. | Not today. My heart's not in it, and you'd get a botched job.
+line @1 accept_decline : Fine. I'll not ask again. | Suit yourself. No hard feelings.
+line @1 thank : Thanks. I mean it. | That's decent of you.
+line @1 deflect_thanks : Leave off. A trifle, that. | Leave it. I'd have hated not to.
+line @1 preclose [self.working=yes] : I'll be shouted for in a minute. Back I go. | Right. #counter.capitalize# won't mind itself.
+line @2 preclose : Well. I've said my piece. | Right. That's enough of me.
+line @1 accept_preclose : Go on, then. | Fine. Another time.
+line @1 take_offence : You'll take that back. | Mind how you talk to me.
+line @1 accept_apology : Fine. Forgotten. Mostly. | All right. Just don't do it twice.
+line @1 ack : #tch#. | Right. | #deaf#.
+line @1 give.advice : Watch the banners, not the speeches. You'll know first. | Say please. It costs nothing and it'll get you served.
+line @1 warn [world.bandits=near] : There are robbers working the roads. Not this week, if you've any sense. | Stop inside the gates until it calms. It's ugly out there.
+rule @banner_check
+when concept=bark here.time=dawn here.region=ridgemere
+does aside
+cooldown 12h
+say Four banners still up. For now. | Still four colours on the Rain Hall. I'll look again tomorrow.
+
+rule @slow_counter
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Nobody. Not a soul since noon. | I could grow a beard waiting on a customer.
+
+rule @rat_bark
+when concept=bark self.dislikes=rats here.place=home|work
+does aside
+cooldown 8h
+say There. A rat. I saw its tail. | Something's at the back stores again.
+
+rule @bells_bark
+when concept=bark here.day=festival self.likes=festival_bells
+does aside
+cooldown 10h
+say Listen. The bells. That's the only part worth having. | Bells. I'll stand out in the street for those.
+
+scene ul_banners
+when topic=lore|times here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : First thing every morning I look up at #banners#. They get counted before the till does. | Four banners on the Rain Hall today. One was hanging crooked. I didn't like it. | I can see the Rain Hall roof from our step. I know every colour on it.
+b : Why count them? | Crooked how? | Watching for what?
+a : The day a House quarrels, its colours come down. I mean to be the first who notices. | Twisted on its pole, as if somebody had pulled it. The wind, probably. Probably. | A gap. Sooner or later there'll be a gap, and I'll have seen it.
+
+scene ul_quarrel_coming
+when topic=times|gossip|lore
+does give.opinion / disagree / insist
+a : There'll be a split among the Houses before the winter's done. You can tell from how politely they speak. | Mark me: four Houses can't share one hall for ever. Something will give. | Too much bowing in the Rain Hall lately. Bowing is what you do before a fight.
+b : They've shared it a long time. | I don't see it myself. | You read a lot into a bow.
+a : Long enough to be sick of each other. That's my point. | You will. Everyone will, after. | I read what's there. Nobody bows that deep to someone they like.
+
+scene ul_lean_houses
+when topic=times world.times=hard|lean
+does tell.worry / reassure / insist
+a : Lean times, and the Houses are counting their purses out loud. That's how it starts. | Hard times make every House snappish. I've seen the same in our kitchen. | When the bread's dear the Houses blame each other. Next comes worse.
+b : It'll pass. Times turn. | Families squabble. It doesn't mean anything. | Worse how?
+a : Times turn. Tempers don't, so quick. | In a kitchen it's a broken cup. In the Rain Hall it's a broken city. | A banner down. A gate shut. I don't know. Something.
+
+scene ul_counter_slow
+when topic=work|day self.working=yes
+does tell.complaint / react.complaint / assess
+a : Three customers since dawn, and one only wanted out of the rain. | I've folded the same bolt four times. There's nothing else to do. | The day crawls behind a counter. I stare at the latch and it stares at me.
+b[role=merchant] #trade : That kind of day you just outlast. | Fold it a fifth. It'll look loved. | That's every shop on the Commons.
+b : Slow day, then. | Four times? | Grim, that.
+a@trade : I'm bad at waiting. Everyone says so. | It'll look worn, is what it'll look. | Then every shop on the Commons wants a window to climb out of.
+a : Slow as a wet Restday. I'd sooner be carrying sacks. | Four. I could fold it blind. | Grim and true.
+
+scene ul_apprentice
+when topic=work|family self.apprentice=yes
+does tell.complaint / sympathise / assess
+a : I've the paws for the work, so I'm told, and not the patience. Half true. | Every year I hear I'm nearly ready. Nearly is a long word. | Learning a trade under somebody's eye is a slow kind of cage.
+b : Patience comes. | You'll get there. | A cage with wages, though.
+a : Not to me. I've waited on it all my life. | I'll get there, and then I'll want to be somewhere else. | Small wages. Big cage.
+
+scene ul_father
+when topic=family self.father
+does confide / react.self / assess
+a : #self.father# and I manage about six words a day. Four concern the weather. | There's not much I wouldn't do for #self.father#. Leaving the city, it seems, is the one thing. | We get on well enough, #self.father# and me. Better with a wall between us.
+b : Six words is plenty, some days. | That's a hard knot. | Most families are like that.
+a : It's enough. I'd not want more, nor fewer. | I know. I've been picking at it for years. | Most. We're no worse. We're only louder about it.
+
+scene ul_plum_tart
+when topic=food here.region=ridgemere self.likes=plum_tart
+does tell.self / react.self / assess
+a : A cookshop by the square sells #tart# on Marketdays. I'm there before the cloth's off. | I'd go from the wharf to the Heights for #tart#. That's the only travelling I've done. | Plum tart, a cold morning and nobody asking me anything. That's a good hour.
+b[job=baker|cook] #cook : The trick's not to stew the plums first. | Come to my oven. I'll not make you walk far. | And a jug of milk.
+b : Every Marketday? | The only walking? | That does sound good.
+a@cook : Don't stew them. I'll remember that and never use it. | I might. I'd want it warm, mind. | Milk, aye. If it's cold.
+a : Every one. I've missed two in a year, and I was ill both times. | Near enough. I talk about the road more than I take it. | It is. I don't get many.
+
+scene ul_stars_road
+when topic=pastimes|dreams here.time=night here.outdoors=clear self.likes=stars
+does tell.feeling / react.self / assess
+a : The stars over the north gate are the same ones the drovers sleep under. I think about that. | When the sky's empty of cloud I lean out the window and pick a star to walk to. I never go. | Sailors steer by the stars, I'm told. I'd settle for one that told me when to leave.
+b : They are the same ones. | Pick a near one. | Maybe it does, and you're not listening.
+a : Same stars, different roads. Theirs go somewhere. | They're all a long way. That's the trouble. | Maybe. I'm a poor listener. Ask anyone.
+
+scene ul_first_snow
+when topic=weather|season here.weather=snow self.likes=first_snow
+does tell.feeling / react.self / assess
+a : #snow.capitalize#. I caught it on my tongue in the street, grown wolf that I am. No regrets. | Snow on the Rain Hall roof. The banners look brighter against it. | The first snow shuts the city up. Even the gulls stop arguing.
+b[stage=young|adolescent] #pup : I did that too! | Can you see all four? | I like it quiet.
+b : Like a pup? | Brighter? | They do.
+a@pup : Good. Somebody has to. | All four. I checked twice. | So do I. Don't spread it; folk expect me sour.
+a : Exactly like one. Snow's wasted on the dignified. | Every colour. Nothing hides in the snow. | For a day. Slush and shouting by the morning after.
+
+scene ul_rain_kept_in
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : Rain again. Nobody comes in, nobody goes out, and I'm stuck between. | The gutter over our door's broken. Every caller gets a collar of water. | Another wet week. I could walk out of this city and the rain would come along.
+b : It's Ridgemere. | Get it mended. | It would, too.
+a : That's my complaint exactly. It's always Ridgemere. | I've asked. Asking's all I'm let do. | It follows everyone. That's no reason not to try.
+
+scene ul_rats
+when topic=animals|home self.dislikes=rats
+does tell.complaint / give.advice / assess
+a : A rat's got into the back stores. It scrabbled till dawn. | Rats got into a sack in the back. Chewed a hole I could put my fist through. | I can't abide rats. The tail, mostly. The way it follows them about.
+b : Get a cat. | Set a trap. | That's the worst of them.
+a : We had a cat. The rats ran it off. | I've set three. They eat round them. | The worst. You see one tail and you know there's ten more.
+
+scene ul_manners
+when topic=smalltalk|day self.dislikes=bad_manners
+does tell.complaint / react.complaint / assess
+a : One fellow today walked in without a word of greeting and pointed at the shelf like I was furniture. | At the pump somebody shoved ahead of an elder and never even looked round. I said something. | Nobody says please any more. Not on the Commons, and that's meant to be the respectable end.
+b : Some folk are raised in a barn. | What did you say? | Did they ever?
+a : Then they can go back to it. | Enough. More than I should. I'm told that's my trouble. | My gran did. Every time, to everyone. I miss it.
+
+scene ul_festival_bells
+when topic=festival self.likes=festival_bells
+does give.opinion / react.self / assess
+a : I'll stand in the street for #bells#. Everything else about a festival I could do without. | The bells start before dawn when there's a feast. I lie awake waiting, like a pup. | Bells, then ale, then a fight, then somebody crying. I go home after the bells.
+b[stage=young|adolescent] #pup : The sweets are the best bit. | I wake up for them too! | Not the dancing?
+b : Only the bells? | Like a pup? | You'd miss the music.
+a@pup : Sweets rot teeth. Bells don't. | Good. Somebody else who knows. | Me, dance? I've two left feet and a temper.
+a : Only the bells. They're the honest part. | Every year. I'll not stop for anyone. | It carries to my window. Better at a distance.
+
+scene ul_road_out
+when topic=dreams|travel self.age>=18
+does confide / react.self / assess
+a : One day I'll walk out of #gate# and keep going. I've said that every spring for years. | I've packed a bag twice. It's under the bed. It's still packed. | Everyone I know will live and die on the same street. I'd like one thing to be different.
+b[from!=ridgemere] #away : I did it. It's not as hard as you think. | What stops you? | A street's no prison.
+b : Where would you go? | Twice? | Different how?
+a@away : Then you've the nerve I haven't. I'll not pretend otherwise. | Me. Mostly me. And the counter. | Not bad. Small.
+a : Anywhere that isn't here. I'd choose on the road. | Twice. It's my nerve that gets unpacked, every time, not the bag. | Any way at all. A different window would do.
+
+scene ul_newcomer
+when topic=newcomer topic.subject
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# has come to settle here, they say. That took nerve. More than I've got. | Somebody new in town. #topic.subject.capitalize#. I'd ask what the road was like, if I'd the face to ask. | A newcomer, #topic.subject#. I'll be civil. Civil's the least anyone's owed.
+b : Good luck to the newcomer. | You'd want to know? | That's fair.
+a : Good luck, and a dry roof. It's more than I'd manage. | Every step of it. The toll house is as far as I've got. | Being civil's one rule I keep unprompted.
+
+scene ul_carts_in
+when topic=caravan world.wagons=in here.region=ridgemere
+does tell.news / react.news / assess
+a : Carts in at last. I went to the gate to watch them unload and smell the road on them. | Wagons in from the north. Mud to the axles. That's somewhere, that mud. | The drovers are in. They walk like wolves who've seen things.
+b[job=carter] #road : It's just mud, the road. Mostly mud. | Mud's all it is. | Seen weather, mostly.
+b : What does the road smell of? | Somewhere? | Seen what?
+a@road : Mud from somewhere else is still a thing to see. | Somebody else's mud. That's what I'm after. | Weather's a thing. I've only seen ours.
+a : Horses, mud, and somewhere that isn't here. | A town I've never stood in. That mud's been there. | Places. I wouldn't know which. That's the point.
+
+scene ul_gossip_glad
+when topic=gossip topic.subject topic.claim_kind=marriage|promise_kept|newcomer
+does tell.gossip / react.news / assess
+a : They say #topic.subject# #topic.claim#. Good. I like hearing something that isn't a quarrel. | Heard it at the pump: #topic.subject# #topic.claim#. That's every scrap I got. | #topic.subject.capitalize# #topic.claim#, apparently. I'll believe it. It's nice enough to be true.
+b : That's good to hear. | Fair enough. | Nice things are true sometimes.
+a : It is. Not much is, lately. | I'm no gossip. I heard it once and I've said it once. | Sometimes. I'd like it more often.
+
+scene ul_gossip_grim
+when topic=gossip topic.subject topic.claim_kind=theft|violence|wanted|promise_broken
+does tell.gossip / react.news / assess
+tone serious / serious / even
+a : #topic.subject.capitalize# #topic.claim#, folk are saying. I'd keep my door barred, if I were you. | Word is #topic.subject# #topic.claim#. I only heard it; I'll not swear it. | They say #topic.subject# #topic.claim#. That's ugly, if it's so.
+b : Ugly, aye. | Fair. | Let's hope it's not so.
+a : I'll bar mine. Twice. | Fair's all I aim at. I miss often enough. | Hoping's free. Barring the door's free too.
+
+scene ul_faith
+when topic=faith
+does give.opinion / react.self / assess
+a : At chapel I sit in the last pew, so I can slip out. I never do, mind. | The Bright One hears little enough from me. I'm told that's my fault. | The hymns are good. The sermons I mostly leave at the door.
+b[piety=devout] #devout : The back pew's still a pew. | It's never too late to start. | You'd like them more if you stayed.
+b : But you stay. | Whose fault, then? | Mostly?
+a@devout : It is. I'll grant it that. | Maybe. Once I start, I'd not stop. | I might. I'm told I'm stubborn.
+a : I stay. I don't know why. Habit, or worse. | Mine, I suppose. I'm short with everybody. | Mostly. There was a good one once, about patience. It didn't take.
+
+scene ul_friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : #self.friend# is the one wolf allowed to tell me to calm down without getting bitten. | I'd stand up for #self.friend# against the whole Commons, and I'd lose, and I'd do it anyway. | There's nobody I'd sooner sit out a bad temper with than #self.friend#.
+b : Everybody needs one like that. | That's loyal. | That's worth a lot.
+a : Everybody. Me more than most. | Loyal or daft. Same thing, most days. | It is. That stays with you.
+
+scene ul_temper
+when topic=smalltalk|day
+does confide / reassure / assess
+a : I snapped at somebody today over nothing. A spilt cup. I've been sour about it since. | My temper got there before I did again. I'll be apologising tomorrow. | Somebody laughed at the wrong moment and I bristled. No harm was meant.
+b : Say sorry and be done. | Everyone's like that sometimes. | You know that now, at least.
+a : I will. It's the saying I'm bad at. | Not like me, they're not. Mine's quick. | I know it after. Never before. That's the trouble.
+
+scene ul_accent
+when topic=accent
+does tell.self / react.self / assess
+a : My voice is pure Commons, and I'd swap it for somewhere else's. Anywhere else's. | Folk from the towns say we talk fast in the city. Plenty to say and nowhere to go. | Nothing special about how I talk. Plain, and a bit sharp, I'm told.
+b[from!=ridgemere] #away : You'd miss it, if you lost it. | We talk slow because there's time. | Sharp's one word.
+b : I like the Commons sound. | Nowhere to go? | Sharp?
+a@away : Maybe. I'd like the chance to miss it. | Time. That's what the towns have. That and room. | It's the one I'll own to.
+a : You can keep it. | It's a small city for all the noise. | Sharp. Like a door that sticks.
+
+story ul_story_toll [topic=memories|travel self.age>=15]
+  : Small as I was, I once marched to the north gate with a crust tied in a cloth. I meant to see the world.
+  : The toll house stopped me. The keeper asked where I was going, and I couldn't think of a single place.
+  ask : Where would you have said, in my shoes?
+  b[from!=ridgemere] : My own town, I suppose. Did you go home?
+  b : Anywhere at all. The first name that came. Did you go home?
+  : I went home and ate the bread. I've had an answer ready ever since. Nobody's asked.
+
+story ul_story_banner [topic=memories|lore here.region=ridgemere]
+  : There was a gale once that tore a banner clean off the Rain Hall. It dropped into the square like a shot bird.
+  : Nobody would touch it. A House's colours, lying in the mud. We all stood and looked.
+  ask : Would you have picked it up?
+  b : I'd have left it for somebody braver. Did anyone?
+  : A Watch officer, in the end, folded like a shirt. I've counted the banners every morning since.
+
+story ul_story_tart [topic=memories|food self.age>=18]
+  : An old baker on the Commons gave me a plum tart every year, the morning the first snow fell.
+  : I never asked why. I just turned up, snow on my ears, and held out my paws.
+  ask : What tells you the year's turned, for you?
+  b[old] : The first frost on the pump handle. I'm still waiting on it. Is the baker still there?
+  b : The first frost, maybe. Is the baker still there?
+  : Gone, long since. I still go to that corner when it snows. Habit.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Don't mind the mess. What's wanted? | #greet#. You've found me standing about. Go on.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Back again. Go on, then. | #greet#, #topic.player#. I've been stood here all day; talk to me.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : What is it? Be quick, and be civil. | Out with it. I've no patience for games today.
+dlg @4 resident.hub [here.time=night] : It's late. #door.capitalize#'s nearly barred. | Night. If it's quick, ask it.
+dlg @1 resident.job [self.apprentice=yes] : Learning the trade, so they tell me. I've been learning it a long while. | #self.trade_words.capitalize#. Still learning. Always learning, it feels like.
+dlg @2 resident.job : I work. I'd rather be walking. | Behind a counter, mostly. Watching the door.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. Somebody gets to see these places. | Out of #world.news_from#: #world.news#. That's what came my way.
+dlg @2 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing. The banners are all still up, if that's news. | #news_none# Ask at the gate. They hear first.
+dlg @1 resident.bye : #farewell#. Pull #door# hard as you go; it sticks. | Off with you. The step catches everyone.
+graft resident.hub
+choice Why do you keep looking up at the Rain Hall? [here.region=ridgemere] -> banners
+node banners
+say I count the House banners every morning. Four, for now. When the Houses split, a banner will come down, and I'll be watching for it.
+mood keen
+free
+choice You think they'll fall out? -> quarrel
+choice Goodbye. -> bye
+node quarrel
+say Before next winter. There's too much bowing in that hall, and too low. Remember I said so.
+choice I'll remember. -> hub
+choice Goodbye. -> bye
