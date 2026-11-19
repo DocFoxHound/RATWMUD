@@ -628,6 +628,7 @@ void Sim::hook()
             if (seen.insert(p).second)
                 people.push(p);
         head.add("people", people);
+        head.add("picked", e.teller);               // (The director's teller: doc 84 §43, a talk whose first line is the other's was cast.)
         c.head = head;
         convs_ << json::dump(head) << '\n';
         done_.push_back(std::move(c));

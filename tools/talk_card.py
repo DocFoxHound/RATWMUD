@@ -4,7 +4,7 @@ Ridgemere 3, side by side, scored with the shuffled control and compared with th
 
   python3 tools/talk_card.py --fixtures DIR --out artifacts/talk/runs/NAME [--modes frozen,fixtures] [--profiles L1,...]
           [--world ridgemere3] [--build build-core] [--jobs 10] [--hours H] [--freeze-at DAY]
-          [--baseline artifacts/talk/scorecard-baseline.json] [--bless] [--most-heard OUT.tsv] [--rescore]
+          [--talk-data DIR] [--mantles-from DIR] [--baseline artifacts/talk/scorecard-baseline.json] [--bless] [--most-heard OUT.tsv] [--rescore]
 
 Modes: `frozen` (the phase-end measure: the recorded world frozen at --freeze-at, noon of the fixture's first whole day
 unless said, so every phase starts from the same moment) and `fixtures` (talk replayed over the whole recorded run).
@@ -59,7 +59,7 @@ def freeze_day(fixtures: Path) -> float:
 
 
 def run_one(build: Path, world: str, fixtures: Path, mode: str, profile: str, out: Path, hours: float | None,
-            freeze_at: float) -> dict:
+            freeze_at: float, talk_data: Path | None = None, mantles_from: Path | None = None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     for name in OUTPUTS:                            # (Never scored from what an earlier run left: a failed run leaves none.)
         (out / name).unlink(missing_ok=True)
@@ -69,6 +69,10 @@ def run_one(build: Path, world: str, fixtures: Path, mode: str, profile: str, ou
         cmd += ["--freeze-at", f"{freeze_at}"]
     if hours:
         cmd += ["--hours", str(hours)]
+    if talk_data:
+        cmd += ["--talk-data", str(talk_data)]
+    if mantles_from:
+        cmd += ["--mantles-from", str(mantles_from)]
     started = time.monotonic()
     p = subprocess.run(cmd, capture_output=True, text=True)
     (out / "talk_sim.log").write_text(p.stderr)
@@ -120,6 +124,8 @@ def main() -> int:
     parser.add_argument("--refreeze", default="", help="metric ids whose baseline rows this card replaces (with --why)")
     parser.add_argument("--why", default="", help="why --refreeze (kept in the baseline)")
     parser.add_argument("--most-heard", type=Path)
+    parser.add_argument("--talk-data", type=Path, help="the talk library to run (talk_sim --talk-data; an A/B of settings)")
+    parser.add_argument("--mantles-from", type=Path, help="the mantles worn, from files (talk_sim --mantles-from), not DEV's rows")
     parser.add_argument("--rescore", action="store_true", help="score the runs already in --out, running nothing")
     args = parser.parse_args()
     refreeze = [m for m in args.refreeze.split(",") if m]
@@ -137,7 +143,7 @@ def main() -> int:
         jobs = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = [pool.submit(run_one, args.build, args.world, args.fixtures, m, p, args.out / f"{m}-{p}", args.hours,
-                               freeze_at) for m, p in jobs]
+                               freeze_at, args.talk_data, args.mantles_from) for m, p in jobs]
         for f in concurrent.futures.as_completed(futures):
             r = f.result()
             results.append(r)
